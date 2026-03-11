@@ -72,13 +72,15 @@ import java.util.Arrays;
 @SmallTest
 public class FrameTrackerTest {
     private static final String SESSION_NAME = "SessionName";
-    private static final long FRAME_TIME_60Hz = (long) 1e9 / 60;
-    private static final long FRAME_TIME_120Hz = (long) 1e9 / 120;
+    private static final long FT_60Hz = (long) 1e9 / 60;
+    private static final long FT_120Hz = (long) 1e9 / 120;
     private static final long REGULAR_FT = 8 * 1000000;
     private static final long JANK_FT = 14 * 1000000;
     private static final long SEVERE_JANK_FT = 30 * 1000000;
     private static final long REGULAR_60Hz_FT = 16 * 1000000;
     private static final long JANK_60Hz_FT = 20 * 1000000;
+    private static final int JANK_APP = JANK_APPLICATION;
+    private static final int JANK_SF = JANK_COMPOSER;
 
     private ViewAttachTestActivity mActivity;
 
@@ -220,7 +222,7 @@ public class FrameTrackerTest {
                 eq(1L) /* missedSfFramesCount */,
                 eq(0L) /* missedAppFramesCount */,
                 eq(1L) /* maxSuccessiveMissedFramesCount */,
-                eq(3 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(3 * FT_120Hz) /* totalAnimationTime */,
                 eq(1.0f) /* weightedJank */,
                 eq(1.0f) /* sfWeightedJank */,
                 eq(0.0f) /* appWeightedJank */);
@@ -256,7 +258,7 @@ public class FrameTrackerTest {
                 eq(0L) /* missedSfFramesCount */,
                 eq(0L) /* missedAppFramesCount */,
                 eq(0L) /* maxSuccessiveMissedFramesCount */,
-                eq(2 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(2 * FT_120Hz) /* totalAnimationTime */,
                 eq(0.0f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank */,
                 eq(0.0f) /* appWeightedJank */);
@@ -293,7 +295,7 @@ public class FrameTrackerTest {
                 eq(0L) /* missedSfFramesCount */,
                 eq(1L) /* missedAppFramesCount */,
                 eq(1L) /* maxSuccessiveMissedFramesCount */,
-                eq(3 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(3 * FT_120Hz) /* totalAnimationTime */,
                 eq(1.0f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank */,
                 eq(1.0f) /* appWeightedJank */);
@@ -330,7 +332,7 @@ public class FrameTrackerTest {
                 eq(0L) /* missedSfFramesCount */,
                 eq(1L) /* missedAppFramesCount */,
                 eq(1L) /* maxSuccessiveMissedFramesCount */,
-                eq(5 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(5 * FT_120Hz) /* totalAnimationTime */,
                 // severe jank should have a wheight of 2.
                 eq(2.0f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank */,
@@ -368,11 +370,11 @@ public class FrameTrackerTest {
                 eq(0L) /* missedSfFramesCount */,
                 eq(1L) /* missedAppFramesCount */,
                 eq(1L) /* maxSuccessiveMissedFramesCount */,
-                eq(3 * FRAME_TIME_60Hz) /* totalAnimationTime */,
+                eq(3 * FT_60Hz) /* totalAnimationTime */,
                 // 60Hz jank should have a wheight of sqrt(120/60).
-                eq((float) Math.sqrt(2.0), 0.001f) /* weightedJank */,
+                eq(1.5f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank */,
-                eq((float) Math.sqrt(2.0), 0.001f) /* appWeightedJank */);
+                eq(1.5f) /* appWeightedJank */);
     }
 
     @Test
@@ -410,7 +412,7 @@ public class FrameTrackerTest {
                 eq(0L) /* missedSfFramesCount */,
                 eq(1L) /* missedAppFramesCount */,
                 eq(1L) /* maxSuccessiveMissedFramesCount */,
-                eq(3 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(3 * FT_120Hz) /* totalAnimationTime */,
                 eq(1.0f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank */,
                 eq(1.0f) /* appWeightedJank */);
@@ -452,7 +454,7 @@ public class FrameTrackerTest {
                 eq(0L) /* missedSfFramesCount */,
                 eq(0L) /* missedAppFramesCount */,
                 eq(0L) /* maxSuccessiveMissedFramesCount */,
-                eq(2 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(2 * FT_120Hz) /* totalAnimationTime */,
                 eq(0.0f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank */,
                 eq(0.0f) /* appWeightedJank */);
@@ -547,7 +549,7 @@ public class FrameTrackerTest {
 
         sendSurfaceOnlyFrame(tracker, JANK_NONE, 100L);
         sendSurfaceOnlyFrame(tracker, JANK_NONE, 101L);
-        sendSurfaceOnlyFrame(tracker, JANK_APPLICATION, 102L);
+        sendSurfaceOnlyFrame(tracker, JANK_APP, 102L);
 
         when(mChoreographer.getVsyncId()).thenReturn(102L);
         tracker.end(FrameTracker.REASON_CANCEL_NORMAL);
@@ -568,7 +570,7 @@ public class FrameTrackerTest {
                 eq(0L) /* missedSfFramesCount */,
                 eq(1L) /* missedAppFramesCount */,
                 eq(1L) /* maxSuccessiveMissedFramesCount */,
-                eq(3 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(3 * FT_120Hz) /* totalAnimationTime */,
                 eq(1.0f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank */,
                 eq(1.0f) /* appWeightedJank */);
@@ -583,7 +585,7 @@ public class FrameTrackerTest {
         mRunnableArgumentCaptor.getValue().run();
         verify(mSurfaceControlWrapper).addJankStatsListener(any(), any());
 
-        sendSurfaceOnlyFrame(tracker, JANK_APPLICATION, 100L);
+        sendSurfaceOnlyFrame(tracker, JANK_APP, 100L);
         sendSurfaceOnlyFrame(tracker, JANK_NONE, 101L);
         sendSurfaceOnlyFrame(tracker, JANK_NONE, 102L);
 
@@ -605,7 +607,7 @@ public class FrameTrackerTest {
                 eq(0L) /* missedSfFramesCount */,
                 eq(0L) /* missedAppFramesCount */,
                 eq(0L) /* maxSuccessiveMissedFramesCount */,
-                eq(2 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(2 * FT_120Hz) /* totalAnimationTime */,
                 eq(0.0f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank */,
                 eq(0.0f) /* appWeightedJank */);
@@ -627,7 +629,7 @@ public class FrameTrackerTest {
         when(mChoreographer.getVsyncId()).thenReturn(102L);
         tracker.end(FrameTracker.REASON_CANCEL_NORMAL);
 
-        sendSurfaceOnlyFrame(tracker, JANK_APPLICATION, 103L);
+        sendSurfaceOnlyFrame(tracker, JANK_APP, 103L);
 
         verify(mJankStatsRegistration).removeAfter(anyLong());
         verify(mTrackerListener, never()).triggerPerfetto(any());
@@ -642,7 +644,7 @@ public class FrameTrackerTest {
                 eq(0L) /* missedSfFramesCount */,
                 eq(0L) /* missedAppFramesCount */,
                 eq(0L) /* maxSuccessiveMissedFramesCount */,
-                eq(2 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(2 * FT_120Hz) /* totalAnimationTime */,
                 eq(0.0f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank */,
                 eq(0.0f) /* appWeightedJank */);
@@ -720,7 +722,7 @@ public class FrameTrackerTest {
                 eq(2L) /* missedSfFramesCount */,
                 eq(3L) /* missedAppFramesCount */,
                 eq(3L) /* maxSuccessiveMissedFramesCount */,
-                eq(11 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(11 * FT_120Hz) /* totalAnimationTime */,
                 eq(5.0f) /* weightedJank */,
                 eq(2.0f) /* sfWeightedJank */,
                 eq(3.0f) /* appWeightedJank */);
@@ -736,8 +738,7 @@ public class FrameTrackerTest {
 
         // Send a janky frame with an invalid (zero) frame interval.
         // It should be treated as a 120Hz frame.
-        sendSurfaceOnlyFrame(tracker, JANK_APPLICATION, 101L, 0,
-                FRAME_TIME_120Hz);
+        sendSurfaceOnlyFrame(tracker, JANK_APP, 101L, 0);
 
         when(mChoreographer.getVsyncId()).thenReturn(102L);
         tracker.end(FrameTracker.REASON_END_NORMAL);
@@ -759,47 +760,7 @@ public class FrameTrackerTest {
                 eq(0L) /* missedSfFramesCount */,
                 eq(1L) /* missedAppFramesCount */,
                 eq(1L) /* maxSuccessiveMissedFramesCount */,
-                eq(2 * FRAME_TIME_120Hz) /* totalAnimationTime */,
-                eq(1.0f) /* weightedJank */,
-                eq(0.0f) /* sfWeightedJank */,
-                eq(1.0f) /* appWeightedJank */);
-    }
-
-    @Test
-    public void testEarlyFrame() {
-        FrameTracker tracker = spyFrameTracker(/* surfaceOnly= */ true);
-
-        when(mChoreographer.getVsyncId()).thenReturn(100L);
-        tracker.begin();
-        mRunnableArgumentCaptor.getValue().run();
-
-        // Send an "early" frame. It should be treated as janky, but the negative present delay
-        // should not be subtracted from the total animation time.
-        long negativePresentDelay = -FRAME_TIME_120Hz;
-        sendSurfaceOnlyFrame(tracker, JANK_APPLICATION, 101L, FRAME_TIME_120Hz,
-                negativePresentDelay);
-
-        when(mChoreographer.getVsyncId()).thenReturn(102L);
-        tracker.end(FrameTracker.REASON_END_NORMAL);
-
-        // an extra frame to trigger finish
-        sendSurfaceOnlyFrame(tracker, JANK_NONE, 103L);
-
-        verify(mTrackerListener).triggerPerfetto(any());
-
-        // The jank should be computed as if the frame was late by the same amount.
-        // The total animation time should ignore the negative present delay.
-        verify(mStatsLog).write(eq(UI_INTERACTION_FRAME_INFO_REPORTED),
-                eq(42), /* displayId */
-                eq(DisplayRefreshRate.REFRESH_RATE_120_HZ),
-                eq(Cuj.getStatsdInteractionType(CUJ_WALLPAPER_TRANSITION)),
-                eq(1L) /* totalFrames */,
-                eq(1L) /* missedFrames */,
-                eq(0L) /* maxFrameTimeNanos */,
-                eq(0L) /* missedSfFramesCount */,
-                eq(1L) /* missedAppFramesCount */,
-                eq(1L) /* maxSuccessiveMissedFramesCount */,
-                eq(FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(2 * FT_120Hz) /* totalAnimationTime */,
                 eq(1.0f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank */,
                 eq(1.0f) /* appWeightedJank */);
@@ -819,16 +780,16 @@ public class FrameTrackerTest {
         mRunnableArgumentCaptor.getValue().run();
 
         // On time frame - legacy is janky, experimental is on time.
-        sendFrame(tracker, REGULAR_FT, 0, 100, JANK_APPLICATION, JANK_NONE, FRAME_TIME_120Hz);
+        sendFrame(tracker, REGULAR_FT, 0.0, 0, 100, JANK_APP, JANK_NONE, FT_120Hz);
         // Janky frame - legacy is sf jank, experimental is app jank.
-        sendFrame(tracker, SEVERE_JANK_FT, 3 * FRAME_TIME_120Hz, 101, JANK_COMPOSER,
-                JANK_APPLICATION, FRAME_TIME_120Hz);
+        sendFrame(tracker, SEVERE_JANK_FT, 2.0, 3 * FT_120Hz, 101, JANK_SF,
+                JANK_APP, FT_120Hz);
 
         // end the trace session
         when(mChoreographer.getVsyncId()).thenReturn(102L);
         tracker.end(FrameTracker.REASON_END_NORMAL);
         // On time frame - legacy is janky, experimental is on time.
-        sendFrame(tracker, REGULAR_FT, 0, 102, JANK_APPLICATION, JANK_NONE, FRAME_TIME_120Hz);
+        sendFrame(tracker, REGULAR_FT, 0.0, 0, 102, JANK_APP, JANK_NONE, FT_120Hz);
 
         verify(tracker).removeObservers();
 
@@ -845,69 +806,63 @@ public class FrameTrackerTest {
                 eq(1L) /* missedSfFramesCount (using legacy) */,
                 eq(1L) /* missedAppFramesCount (using legacy) */,
                 eq(1L) /* maxSuccessiveMissedFramesCount (using exp) */,
-                eq(5 * FRAME_TIME_120Hz) /* totalAnimationTime */,
+                eq(5 * FT_120Hz) /* totalAnimationTime */,
                 eq(2.0f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank (using exp) */,
                 eq(2.0f) /* appWeightedJank (using exp) */);
     }
 
-    private void sendJankyFirstWindowFrame(FrameTracker tracker, long vsyncId) {
-        sendFrame(tracker, JANK_FT, FRAME_TIME_120Hz, vsyncId, JANK_APPLICATION, FRAME_TIME_120Hz);
+    private void sendJankyFirstWindowFrame(FrameTracker t, long vsyncId) {
+        sendFrame(t, JANK_FT, 1.0, FT_120Hz, vsyncId, JANK_APP, JANK_APP, FT_120Hz);
     }
 
-    private void sendJankyFrame(FrameTracker tracker, long vsyncId) {
-        sendFrame(tracker, JANK_FT, FRAME_TIME_120Hz, vsyncId, JANK_APPLICATION, FRAME_TIME_120Hz);
+    private void sendJankyFrame(FrameTracker t, long vsyncId) {
+        sendFrame(t, JANK_FT, 1.0, FT_120Hz, vsyncId, JANK_APP, JANK_APP, FT_120Hz);
     }
 
-    private void sendSevereJankyFrame(FrameTracker tracker, long vsyncId) {
-        sendFrame(tracker, SEVERE_JANK_FT, 3 * FRAME_TIME_120Hz, vsyncId, JANK_APPLICATION,
-                FRAME_TIME_120Hz);
+    private void sendSevereJankyFrame(FrameTracker t, long vsyncId) {
+        sendFrame(t, SEVERE_JANK_FT, 2.0, 3 * FT_120Hz, vsyncId, JANK_APP, JANK_APP, FT_120Hz);
     }
 
-    private void sendSfJankyFrame(FrameTracker tracker, long vsyncId) {
-        sendFrame(tracker, REGULAR_FT, FRAME_TIME_120Hz, vsyncId, JANK_COMPOSER, FRAME_TIME_120Hz);
+    private void sendSfJankyFrame(FrameTracker t, long vsyncId) {
+        sendFrame(t, REGULAR_FT, 1.0, FT_120Hz, vsyncId, JANK_SF, JANK_SF, FT_120Hz);
     }
 
-    private void sendOnTimeFrame(FrameTracker tracker, long vsyncId) {
-        sendFrame(tracker, REGULAR_FT, 0, vsyncId, JANK_NONE, FRAME_TIME_120Hz);
+    private void sendOnTimeFrame(FrameTracker t, long vsyncId) {
+        sendFrame(t, REGULAR_FT, 0.0, 0, vsyncId, JANK_NONE, JANK_NONE, FT_120Hz);
     }
 
     private void sendSurfaceOnlyFrame(FrameTracker tracker, @JankType int jankType, long vsyncId) {
         assertThat(tracker.mSurfaceOnly).isTrue();
-        long delay = (jankType == JANK_NONE) ? 0 : FRAME_TIME_120Hz;
-        sendFrame(tracker, /* durationNs */ -1, delay, vsyncId, jankType, FRAME_TIME_120Hz);
+        sendSurfaceOnlyFrame(tracker, jankType, vsyncId, FT_120Hz);
     }
 
-    private void sendSurfaceOnlyFrame(FrameTracker tracker, @JankType int jankType, long vsyncId,
-            long frameInterval, long presentDelay) {
+    private void sendSurfaceOnlyFrame(
+                FrameTracker tracker, @JankType int jankType, long vsyncId, long frameInterval) {
         assertThat(tracker.mSurfaceOnly).isTrue();
-        sendFrame(tracker, /* durationNs */ -1, presentDelay, vsyncId, jankType, frameInterval);
+        double score = (jankType == JANK_NONE) ? 0.0 : 1.0;
+        long delay = (jankType == JANK_NONE) ? 0 : FT_120Hz;
+        sendFrame(tracker, /* durationNs */ -1, score, delay, vsyncId, jankType, jankType,
+                frameInterval);
     }
 
     private void send60HzFrame(FrameTracker tracker, long vsyncId, boolean janky) {
         assertThat(tracker.mSurfaceOnly).isFalse();
         long duration = janky ? JANK_60Hz_FT : REGULAR_60Hz_FT;
-        long delay = janky ? FRAME_TIME_60Hz : 0;
-        int type = janky ? JANK_APPLICATION : JANK_NONE;
-        sendFrame(tracker, duration, delay, vsyncId, type, FRAME_TIME_60Hz);
+        double score = janky ? 1.5 : 0.0;
+        long delay = janky ? FT_60Hz : 0;
+        int type = janky ? JANK_APP : JANK_NONE;
+        sendFrame(tracker, duration, score, delay, vsyncId, type, type, FT_60Hz);
     }
 
-    private void sendFrame(FrameTracker tracker, long durationNs, long delayNs, long vsyncId,
-            @JankType int jankType, long frameIntervalNanos) {
-        // Always send 0 for experimental jank type if flag is not set to test that we don't use
-        // the experimental version when the flag is disabled.
-        int expJankType = Flags.useNewJankClassificationForJps() ? jankType : 0;
-        sendFrame(tracker, durationNs, delayNs, vsyncId, jankType, expJankType, frameIntervalNanos);
-    }
-
-    private void sendFrame(FrameTracker tracker, long durationNs, long delayNs, long vsyncId,
-            @JankType int jankTypeLegacy, @JankType int jankTypeExperimental,
+    private void sendFrame(FrameTracker tracker, long durationNs, double score, long delayNs,
+            long vsyncId, @JankType int jankTypeLegacy, @JankType int jankTypeExperimental,
             long frameIntervalNanos) {
         final ArgumentCaptor<Runnable> captor = ArgumentCaptor.forClass(Runnable.class);
         doNothing().when(tracker).postCallback(captor.capture());
         mListenerCapture.getValue().onJankDataAvailable(Arrays.asList(
             new JankData(vsyncId, jankTypeLegacy, jankTypeExperimental, frameIntervalNanos,
-                    frameIntervalNanos, durationNs, delayNs)));
+                    frameIntervalNanos, durationNs, delayNs, score)));
         captor.getValue().run();
     }
 }

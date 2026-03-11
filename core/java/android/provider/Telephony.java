@@ -40,6 +40,7 @@ import android.content.Intent;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.sqlite.SqliteWrapper;
+import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.os.Build;
@@ -387,6 +388,43 @@ public final class Telephony {
                     Rlog.v(TAG, "Failed to update message to unrestricted: " + messageUri);
                 }
             }
+        }
+
+        /**
+         * Performs database update when {@link #READ_RESTRICTED_COLUMN_NAME} is modified.
+         *
+         * Enforces that only one row can be updated at a time when the {@link
+         * #READ_RESTRICTION_COLUMN_NAME} column is modified.
+         *
+         * @param db The database to execute the update on.
+         * @param table The table to update.
+         * @param values The values to update.
+         * @param whereClause The where clause to use for the update.
+         * @param whereArgs The where arguments to use for the update.
+         * @return The number of rows updated.
+         * @hide
+         */
+        public static int performReadRestrictionDatabaseUpdate(SQLiteDatabase db,
+            String table,
+            ContentValues values,
+            String whereClause,
+            String[] whereArgs) {
+            if (!Flags.secureAccessToRestrictedRcsMessages()) {
+                return 0;
+            }
+            int updatedRowsCount = 0;
+            db.beginTransaction();
+            try {
+                updatedRowsCount = db.update(table, values, whereClause, whereArgs);
+                if (updatedRowsCount > 1) {
+                    throw new UnsupportedOperationException(
+                        "Updating more than one row with READ_RESTRICTION column is forbidden.");
+                }
+                db.setTransactionSuccessful();
+            } finally {
+                db.endTransaction();
+            }
+            return updatedRowsCount;
         }
 
         /**

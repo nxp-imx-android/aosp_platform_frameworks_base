@@ -18,13 +18,12 @@ package com.android.server.notification;
 
 import static android.app.Flags.nmContextualDisplayLaunch;
 import static android.app.Notification.FLAG_PROMOTED_ONGOING;
-import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 import static android.app.NotificationManager.IMPORTANCE_LOW;
 import static android.app.NotificationManager.IMPORTANCE_NONE;
 import static android.app.NotificationRule.Action.PRIMARY_ACTION_BLOCK;
 import static android.app.NotificationRule.Action.PRIMARY_ACTION_BUNDLE;
-import static android.app.NotificationRule.Action.PRIMARY_ACTION_DEFAULT;
 import static android.app.NotificationRule.Action.PRIMARY_ACTION_HIGHLIGHT;
+import static android.app.NotificationRule.Action.PRIMARY_ACTION_HIGHLIGHT_AND_ALERT;
 import static android.app.NotificationRule.Filter.CONVERSATION_LEVEL_PRIORITY;
 import static android.app.NotificationRule.RESERVED_ID_IMPORTANT_NOTIFICATIONS;
 import static android.app.NotificationRule.RESERVED_ID_PRIORITY_CONVERSATIONS;
@@ -33,10 +32,11 @@ import static android.app.NotificationRule.RESERVED_ID_STATIC_BUNDLES;
 import static android.app.NotificationRule.RULE_TAG;
 import static android.app.NotificationRule.USER_ATTR;
 import static android.os.UserHandle.USER_ALL;
+import static android.service.notification.Adjustment.KEY_BREAKTHROUGH_ALL_MODES;
 import static android.service.notification.Adjustment.KEY_HIGHLIGHT;
 import static android.service.notification.Adjustment.KEY_IMPORTANCE;
 import static android.service.notification.Adjustment.KEY_LIGHT;
-import static android.service.notification.Adjustment.KEY_MODE_BREAKTHROUGHS;
+import static android.service.notification.Adjustment.KEY_MODE_BREAKTHROUGH_LIST;
 import static android.service.notification.Adjustment.KEY_SOUND;
 import static android.service.notification.Adjustment.KEY_TYPE;
 
@@ -234,7 +234,7 @@ public class NotificationRuleManager {
                             rule.writeXml(out, forBackup, user, mContext);
                             persistedRules++;
                         } catch (Exception e) {
-                            Slog.d(TAG, "Failed to backup " + rule.getName(), e);
+                            Slog.d(TAG, "Failed to backup " + rule.getId(), e);
                         }
                     }
                 }
@@ -909,12 +909,12 @@ public class NotificationRuleManager {
                 NotificationRule.Action action = rule.getAction();
                 Bundle signals = new Bundle();
                 switch (action.getPrimaryAction()) {
+                    case PRIMARY_ACTION_HIGHLIGHT_AND_ALERT:
+                        signals.putBoolean(KEY_HIGHLIGHT, true);
+                        signals.putBoolean(KEY_BREAKTHROUGH_ALL_MODES, true);
+                        break;
                     case PRIMARY_ACTION_HIGHLIGHT:
                         signals.putBoolean(KEY_HIGHLIGHT, true);
-                        // TODO(b/438704204): Add highlight default behaviors
-                        break;
-                    case PRIMARY_ACTION_DEFAULT:
-                        signals.putInt(KEY_IMPORTANCE, IMPORTANCE_DEFAULT);
                         break;
                     case NotificationRule.Action.PRIMARY_ACTION_LOW:
                         signals.putInt(KEY_IMPORTANCE, IMPORTANCE_LOW);
@@ -948,7 +948,7 @@ public class NotificationRuleManager {
             signals.putParcelable(KEY_SOUND, action.getSoundHapticOverride());
         }
         if (!action.getModeBreakthroughIds().isEmpty()) {
-            signals.putStringArrayList(KEY_MODE_BREAKTHROUGHS,
+            signals.putStringArrayList(KEY_MODE_BREAKTHROUGH_LIST,
                     new ArrayList<>(action.getModeBreakthroughIds()));
         }
     }
@@ -972,8 +972,8 @@ public class NotificationRuleManager {
 
     private ArrayList<NotificationRule> getDefaultSystemRules(@UserIdInt int userId) {
         ArrayList<NotificationRule> rules = new ArrayList<>();
-        NotificationRule promoted = new NotificationRule.Builder(RESERVED_ID_PROMOTED, "Promoted")
-                .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT).build())
+        NotificationRule promoted = new NotificationRule.Builder(RESERVED_ID_PROMOTED,
+                new NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT).build())
                 .setCanBeDisabled(false)
                 .setEditIntentAction("android.settings.MANAGE_APP_POST_PROMOTED_NOTIFICATIONS")
                 .addFilter(new NotificationRule.Filter.Builder().setFlags(FLAG_PROMOTED_ONGOING)
@@ -981,8 +981,7 @@ public class NotificationRuleManager {
                 .build();
         rules.add(promoted);
         NotificationRule convos = new NotificationRule.Builder(RESERVED_ID_PRIORITY_CONVERSATIONS,
-                "Conversations")
-                .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT).build())
+                new NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT).build())
                 .setCanBeDisabled(false)
                 .setEditIntentAction("android.settings.CONVERSATION_SETTINGS")
                 .addFilter(new NotificationRule.Filter.Builder().setConversationLevel(
@@ -993,8 +992,8 @@ public class NotificationRuleManager {
             rules.add(getDefaultStaticBundleRule(userId));
         }
         NotificationRule important = new NotificationRule.Builder(
-                RESERVED_ID_IMPORTANT_NOTIFICATIONS, "Important")
-                .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT).build())
+                RESERVED_ID_IMPORTANT_NOTIFICATIONS,
+                new NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT).build())
                 .setCanBeDisabled(true)
                 .build();
         rules.add(important);
@@ -1004,8 +1003,8 @@ public class NotificationRuleManager {
 
     private NotificationRule getDefaultStaticBundleRule(@UserIdInt int userId) {
         return new NotificationRule.Builder(
-                RESERVED_ID_STATIC_BUNDLES, "Bundle")
-                .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_BUNDLE).build())
+                RESERVED_ID_STATIC_BUNDLES,
+                new NotificationRule.Action.Builder(PRIMARY_ACTION_BUNDLE).build())
                 .setEditIntentAction("android.settings.NOTIFICATION_BUNDLES")
                 .addFilter(new NotificationRule.Filter.Builder()
                         .setStaticBundleTypes(List.of(DEFAULT_ALLOWED_ADJUSTMENT_KEY_TYPES))

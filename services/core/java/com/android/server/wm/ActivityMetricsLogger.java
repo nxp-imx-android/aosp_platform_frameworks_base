@@ -80,6 +80,7 @@ import static com.android.window.flags.Flags.inheritConsecutiveLaunchCallerUid;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.ActivityManager.ProcessState;
 import android.app.ActivityOptions;
 import android.app.ActivityOptions.SourceInfo;
 import android.app.ApplicationExitInfo;
@@ -327,7 +328,7 @@ class ActivityMetricsLogger {
         /** whether the process of the launching activity didn't have any active activity. */
         final boolean mProcessSwitch;
         /** The process state of the launching activity prior to the launch */
-        final int mProcessState;
+        final @ProcessState int mProcessState;
         /** The oom adj score of the launching activity prior to the launch */
         final @OomAdjust int mProcessOomAdj;
         /** Whether the activity is launched above a visible activity in the same task. */
@@ -373,7 +374,7 @@ class ActivityMetricsLogger {
         @Nullable
         static TransitionInfo create(@NonNull ActivityRecord r,
                 @NonNull LaunchingState launchingState, @Nullable ActivityOptions options,
-                boolean processRunning, boolean processSwitch, int processState,
+                boolean processRunning, boolean processSwitch, @ProcessState int processState,
                 @OomAdjust int processOomAdj, boolean newActivityCreated,
                 boolean isInTaskActivityStart, int startResult) {
             if (startResult != START_SUCCESS && startResult != START_TASK_TO_FRONT) {
@@ -396,7 +397,7 @@ class ActivityMetricsLogger {
         /** Use {@link TransitionInfo#create} instead to ensure the transition type is valid. */
         private TransitionInfo(ActivityRecord r, LaunchingState launchingState,
                 ActivityOptions options, int transitionType, boolean processRunning,
-                boolean processSwitch, int processState, @OomAdjust int processOomAdj,
+                boolean processSwitch, @ProcessState int processState, @OomAdjust int processOomAdj,
                 boolean isInTaskActivityStart) {
             mLaunchingState = launchingState;
             mTransitionType = transitionType;
@@ -636,8 +637,8 @@ class ActivityMetricsLogger {
 
     private static final class LaunchingProcessState {
         int mPid = -1;
-        int mProcState;
-        int mOomAdj;
+        @ProcessState int mProcState;
+        @OomAdjust int mOomAdj;
     }
 
     private static final class CrossPackageLaunchTracker {
@@ -866,7 +867,7 @@ class ActivityMetricsLogger {
         // interesting.
         final boolean processSwitch = !processRunning
                 || !processRecord.hasStartedActivity(launchedActivity);
-        final int processState;
+        final @ProcessState int processState;
         final @OomAdjust int processOomAdj;
         if (processRunning) {
             if (mCurrentLaunchingProcessState.mPid == processRecord.getPid()) {
@@ -1358,7 +1359,7 @@ class ActivityMetricsLogger {
         final boolean isOpaque = info.mLastLaunchedActivity.mStyleFillsParent;
         final long uptimeNs = info.mLaunchingState.mStartUptimeNs;
         final int transitionDelay = info.mCurrentTransitionDelayMs;
-        final int processState = info.mProcessState;
+        final @ProcessState int processState = info.mProcessState;
         final @OomAdjust int processOomAdj = info.mProcessOomAdj;
         mLoggerHandler.post(() -> {
             if (info.isInterestingToLoggerAndObserver()) {
@@ -1382,7 +1383,7 @@ class ActivityMetricsLogger {
     // This gets called on another thread without holding the activity manager lock.
     private void logAppTransition(long transitionDeviceUptimeNs,
             int currentTransitionDelayMs, TransitionInfoSnapshot info, boolean isHibernating,
-            int processState, @OomAdjust int processOomAdj) {
+            @ProcessState int processState, @OomAdjust int processOomAdj) {
         final LogMaker builder = new LogMaker(APP_TRANSITION);
         builder.setPackageName(info.packageName);
         builder.setType(info.type);
@@ -1653,10 +1654,9 @@ class ActivityMetricsLogger {
     }
 
     void logAbortedBgActivityStart(Intent intent, WindowProcessController callerApp,
-            int callingUid, String callingPackage, int callingUidProcState,
-            boolean callingUidHasAnyVisibleWindow,
-            int realCallingUid, int realCallingUidProcState,
-            boolean realCallingUidHasAnyVisibleWindow,
+            int callingUid, String callingPackage, @ProcessState int callingUidProcState,
+            boolean callingUidHasAnyVisibleWindow, int realCallingUid,
+            @ProcessState int realCallingUidProcState, boolean realCallingUidHasAnyVisibleWindow,
             boolean comingFromPendingIntent) {
 
         final long nowElapsed = SystemClock.elapsedRealtime();

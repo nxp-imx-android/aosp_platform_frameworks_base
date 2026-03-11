@@ -20,6 +20,7 @@ import android.Manifest.permission.INTERACT_ACROSS_PROFILES
 import android.app.Application
 import android.content.Context
 import android.platform.test.annotations.EnableFlags
+import android.provider.Settings
 import androidx.test.core.app.ApplicationProvider
 import com.android.settingslib.catalyst.flags.Flags
 import com.android.settingslib.ipc.ApiPermissionChecker
@@ -109,6 +110,11 @@ class PreferenceSetterApiHandlerTest {
         setRegistryFactories()
         PreferenceScreenRegistry.defaultWritePermit = ReadWritePermit.DISALLOW
         makePermissionPass(application, INTERACT_ACROSS_PROFILES, true)
+        Settings.Global.putInt(
+            context.contentResolver,
+            "com.android.settings.UNKNOWN_SENSITIVITY_IS_AVAILABLE",
+            0
+        )
     }
 
     @After
@@ -355,6 +361,11 @@ class PreferenceSetterApiHandlerTest {
     fun invoke_onUnknownSensitivityPreferenceAndDebuggable_succeeds() {
         // makes build debuggable
         ShadowBuild.setType("userdebug")
+        Settings.Global.putInt(
+            context.contentResolver,
+            "com.android.settings.UNKNOWN_SENSITIVITY_IS_AVAILABLE",
+            1
+        )
         val unknownSensitivityPreference = createPersistentPreference<Boolean>(
             PersistentPreferenceConfig(
                 preferenceConfig = PreferenceConfig(
@@ -568,7 +579,7 @@ class PreferenceSetterApiHandlerTest {
                 preferenceConfig = PreferenceConfig(
                     key = "preference_key",
                     purpose = R.string.preference_purpose,
-                    sensitivityLevel = SensitivityLevel.REQUIRES_CONFIRMATION,
+                    sensitivityLevel = SensitivityLevel.NO_SENSITIVITY,
                 ),
                 valueType = Int::class.javaObjectType,
                 writePermission = INTERACT_ACROSS_PROFILES,
@@ -631,7 +642,7 @@ class PreferenceSetterApiHandlerTest {
                 preferenceConfig = PreferenceConfig(
                     key = "preference_key",
                     purpose = R.string.preference_purpose,
-                    sensitivityLevel = SensitivityLevel.REQUIRES_CONFIRMATION,
+                    sensitivityLevel = SensitivityLevel.NO_SENSITIVITY,
                 ),
                 valueType = String::class.javaObjectType,
                 writePermission = INTERACT_ACROSS_PROFILES,
@@ -734,7 +745,7 @@ class PreferenceSetterApiHandlerTest {
                 preferenceConfig = PreferenceConfig(
                     key = "preference_key",
                     purpose = R.string.preference_purpose,
-                    sensitivityLevel = SensitivityLevel.REQUIRES_CONFIRMATION,
+                    sensitivityLevel = SensitivityLevel.NO_SENSITIVITY,
                 ),
                 valueType = Float::class.javaObjectType,
                 writePermission = INTERACT_ACROSS_PROFILES,

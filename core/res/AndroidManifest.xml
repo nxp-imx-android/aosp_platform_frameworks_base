@@ -4916,12 +4916,21 @@
         android:protectionLevel="signature|privileged|development"
         android:permissionFlags="allowedInPrivateComputeCore" />
 
-    <!-- Allows use of PendingIntent.getIntent(), .
+    <!-- Allows use of PendingIntent.getIntent().
          @hide @SystemApi(client=android.annotation.SystemApi.Client.MODULE_LIBRARIES)
          -->
     <permission android:name="android.permission.GET_INTENT_SENDER_INTENT"
         android:protectionLevel="signature"
-        android:permissionFlags="allowedInPrivateComputeCore" />
+        android:permissionFlags="allowedInPrivateComputeCore"
+        android:featureFlag="!android.companion.virtualdevice.flags.remove_start_mode_from_blocked_intents" />
+
+    <!-- Allows use of PendingIntent.getIntent().
+         @hide @SystemApi(client=android.annotation.SystemApi.Client.MODULE_LIBRARIES)
+         -->
+    <permission android:name="android.permission.GET_INTENT_SENDER_INTENT"
+        android:protectionLevel="signature|role"
+        android:permissionFlags="allowedInPrivateComputeCore"
+        android:featureFlag="android.companion.virtualdevice.flags.remove_start_mode_from_blocked_intents" />
 
     <!-- ================================== -->
     <!-- Permissions affecting the display of other applications  -->
@@ -9486,6 +9495,12 @@
     <permission android:name="android.permission.ACCESS_COMPUTER_CONTROL"
         android:protectionLevel="internal|privileged"
         android:featureFlag="android.companion.virtualdevice.flags.computer_control_access"/>
+
+    <!-- Allows an application to manage computer control consent.
+     @hide -->
+    <permission android:name="android.permission.MANAGE_COMPUTER_CONTROL_CONSENT"
+        android:protectionLevel="signature"
+        android:featureFlag="android.companion.virtualdevice.flags.computer_control_per_app_consent"/>
 
     <!-- @SystemApi Must be required by a safety source to send an update using the
              {@link android.safetycenter.SafetyCenterManager}.

@@ -89,6 +89,7 @@ import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChips
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.core.StatusBarEventForwardingModernization
 import com.android.systemui.statusbar.core.StatusBarForDesktop
+import com.android.systemui.statusbar.systemstatusicons.domain.interactor.SystemStatusIconBlocklistInteractor
 import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.layout.ui.viewmodel.AppHandlesViewModel
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.ConnectedDisplaysStatusBarNotificationIconViewStore
@@ -590,6 +591,8 @@ private fun addEndSideComposable(
                         viewModelFactory = statusBarViewModel.systemStatusIconsViewModelFactory,
                         isDark = statusBarViewModel.areaDark,
                         modifier = Modifier.weight(1f, fill = false),
+                        systemStatusIconBlockListInteractor =
+                            statusBarViewModel.systemStatusIconBlockListInteractor,
                     )
 
                     val height =
@@ -619,6 +622,7 @@ private fun SystemStatusIconsContainer(
     viewModelFactory: SystemStatusIconsViewModel.Factory,
     isDark: IsAreaDark,
     modifier: Modifier = Modifier,
+    systemStatusIconBlockListInteractor: SystemStatusIconBlocklistInteractor,
 ) {
     var bounds by remember { mutableStateOf(Rect()) }
     val tint = if (isDark.isDarkTheme(bounds)) Color.White else Color.Black
@@ -630,6 +634,7 @@ private fun SystemStatusIconsContainer(
                 bounds =
                     with(relativeLayoutBounds.boundsInScreen) { Rect(left, top, right, bottom) }
             },
+        systemStatusIconBlocklistInteractor = systemStatusIconBlockListInteractor,
     )
 }
 

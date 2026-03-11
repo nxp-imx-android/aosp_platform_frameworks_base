@@ -71,6 +71,13 @@ object KeyguardSettingsViewBinder {
                                 view.setOnTouchListener(
                                     KeyguardSettingsButtonOnTouchListener(viewModel = viewModel)
                                 )
+                                if (viewModel.shouldAddClickListenerForA11y.value) {
+                                    textView.setOnClickListener {
+                                        viewModel.clickKeyguardSettingsPopupMenu()
+                                    }
+                                } else {
+                                    textView.setOnClickListener(null)
+                                }
                                 IconViewBinder.bind(
                                     icon = viewModel.icon,
                                     view = view.requireViewById(R.id.icon),

@@ -63,7 +63,7 @@ class PackageUpdateTransitionHandler(
         val changes = getUpdateChanges(info)
 
         // Nothing to animate
-        if(changes.totalTasks == 0) {
+        if (changes.totalTasks == 0) {
             startTransaction.apply()
             finishCallback.onTransitionFinished(/* wct */ null)
             return true
@@ -105,18 +105,12 @@ class PackageUpdateTransitionHandler(
 
         // If the opening activity is not the PackageUpdateActivity then track the closing activity.
         if (!PackageUpdateActivity.isPackageUpdateActivityComponent(change.activityComponent)) {
-            change = changes.closingChanges[0]
+            change = changes.closingChanges.firstOrNull() ?: return
             surface = change.leash
             tag = "Closing"
         }
 
-        interactionJankMonitor.begin(
-            surface,
-            context,
-            shellMainHandler,
-            CUJ_APP_UPDATE,
-            tag
-        )
+        interactionJankMonitor.begin(surface, context, shellMainHandler, CUJ_APP_UPDATE, tag)
     }
 
     override fun handleRequest(

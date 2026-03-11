@@ -19,11 +19,14 @@ package com.android.settingslib.metadata
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.provider.Settings
 import androidx.annotation.AnyThread
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.android.settingslib.metadata.preferencesapi.ApiPreference
 import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreen
+import com.android.settingslib.utils.applications.AppUtils
 
 /** Indicates how sensitive of the data. */
 @Retention(AnnotationRetention.SOURCE)
@@ -205,6 +208,26 @@ interface PreferenceMetadata {
 
 /**
  * If this metadata can be exposed to the user
+ */
+fun PreferenceMetadata.isExposable(context: Context) : Boolean {
+    val showUiOnlyPreferences=
+        AppUtils.isDebuggable() && (Settings.Global.getInt(
+            context.contentResolver,
+            "com.android.settings.EXCLUDE_UI_ONLY_PREFERENCES",
+            1,
+        ) == 0)
+    val showDoNotExposePreferences =
+        AppUtils.isDebuggable() && (Settings.Global.getInt(
+            context.contentResolver,
+            "com.android.settings.UNKNOWN_SENSITIVITY_IS_AVAILABLE",
+            0,
+        ) == 1)
+    return (this.isExposureAllowed() || showDoNotExposePreferences)
+            && (!this.isUiOnlyPreference(context) || showUiOnlyPreferences)
+}
+
+/**
+ * If this metadata object has a sensitivity which allows exposure
  */
 fun PreferenceMetadata.isExposureAllowed() : Boolean = listOf(
     SensitivityLevel.NO_SENSITIVITY,

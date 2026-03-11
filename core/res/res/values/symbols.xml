@@ -2564,7 +2564,6 @@
   <java-symbol type="anim" name="lock_screen_behind_enter_wallpaper" />
   <java-symbol type="anim" name="lock_screen_behind_enter_fade_in" />
   <java-symbol type="anim" name="lock_screen_behind_enter_subtle" />
-  <java-symbol type="anim" name="lock_screen_wallpaper_exit" />
   <java-symbol type="anim" name="launch_task_behind_source" />
   <java-symbol type="anim" name="wallpaper_open_exit" />
 
@@ -4166,7 +4165,9 @@
   <java-symbol type="dimen" name="notification_right_icon_size"/>
   <java-symbol type="dimen" name="notification_2025_right_icon_content_margin"/>
   <java-symbol type="dimen" name="notification_actions_icon_drawable_size"/>
-  <java-symbol type="dimen" name="notification_custom_view_max_image_height"/>
+  <java-symbol type="dimen" name="notification_collapsed_custom_view_max_image_height"/>
+  <java-symbol type="dimen" name="notification_hun_custom_view_max_image_height"/>
+  <java-symbol type="dimen" name="notification_expanded_custom_view_max_image_height"/>
   <java-symbol type="dimen" name="notification_custom_view_max_image_width"/>
   <java-symbol type="dimen" name="notification_person_icon_max_size" />
   <java-symbol type="dimen" name="notification_progress_icon_size" />
@@ -4181,15 +4182,8 @@
   <java-symbol type="dimen" name="notification_progress_points_radius" />
   <java-symbol type="dimen" name="notification_progress_points_corner_radius" />
   <java-symbol type="dimen" name="notification_progress_points_inset" />
-
-  <java-symbol type="dimen" name="notification_small_icon_size_low_ram"/>
-  <java-symbol type="dimen" name="notification_big_picture_max_height_low_ram"/>
-  <java-symbol type="dimen" name="notification_big_picture_max_width_low_ram"/>
-  <java-symbol type="dimen" name="notification_right_icon_size_low_ram"/>
+  <java-symbol type="dimen" name="notification_bubble_size" />
   <java-symbol type="dimen" name="notification_grayscale_icon_max_size"/>
-  <java-symbol type="dimen" name="notification_custom_view_max_image_height_low_ram"/>
-  <java-symbol type="dimen" name="notification_custom_view_max_image_width_low_ram"/>
-  <java-symbol type="dimen" name="notification_person_icon_max_size_low_ram" />
 
   <!-- Accessibility fingerprint gestures -->
   <java-symbol type="string" name="capability_title_canCaptureFingerprintGestures" />
@@ -6243,6 +6237,10 @@
   <java-symbol type="string" name="satellite_messaging_location_disabled_notification_title" />
   <java-symbol type="string" name="satellite_messaging_location_disabled_notification_summary" />
   <java-symbol type="string" name="satellite_indicator" />
+  <java-symbol type="string" name="satellite_upsell_notification_title" />
+  <java-symbol type="string" name="satellite_upsell_notification_summary" />
+  <java-symbol type="string" name="satellite_upsell_notification_learn_more" />
+  <java-symbol type="string" name="satellite_upsell_notification_suppress" />
 
   <!-- DisplayManager configs. -->
   <java-symbol type="bool" name="config_evenDimmerEnabled" />

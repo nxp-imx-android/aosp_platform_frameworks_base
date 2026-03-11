@@ -42,17 +42,6 @@ flag {
 }
 
 flag {
-    name: "notify_individual_aconfig_sysprop_changed"
-    namespace: "core_experiments_team_internal"
-    description: "When enabled, propagate individual aconfig sys props on flag stage."
-    bug: "331963764"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "check_root_and_read_only"
     namespace: "core_experiments_team_internal"
     description: "Check root and aconfig flag permissions in adb shell device_config commands."

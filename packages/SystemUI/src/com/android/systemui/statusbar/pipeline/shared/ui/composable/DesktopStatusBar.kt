@@ -126,7 +126,7 @@ fun DesktopStatusBar(
                 if (ClockModernization.isEnabled) {
                     Clock(clockViewModel = clockViewModel, textColor = tint, textStyle = textStyle)
                 } else {
-                    ClockLegacy(textColor = tint, onClick = null)
+                    ClockLegacy(textColor = tint, onClick = null, textStyle = textStyle)
                 }
 
                 VariableDayDate(
@@ -300,6 +300,8 @@ private fun QuickSettingsChip(
                     viewModelFactory = viewModel.systemStatusIconsViewModelFactory,
                     tint = tint,
                     modifier = modifier,
+                    systemStatusIconBlocklistInteractor =
+                        viewModel.systemStatusIconBlockListInteractor,
                 )
             } else {
                 val localContext = LocalContext.current

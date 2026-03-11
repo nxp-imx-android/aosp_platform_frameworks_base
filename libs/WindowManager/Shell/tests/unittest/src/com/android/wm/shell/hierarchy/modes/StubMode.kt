@@ -31,7 +31,7 @@ open class StubMode(
     val leavingContainers = mutableListOf<Container>()
     val removedContainers = mutableListOf<Container>()
     val changedContainers = mutableListOf<Container>()
-    val displayChanges = mutableListOf<DisplayContainerProperties>()
+    val requestedDisplayChanges = mutableListOf<DisplayContainerProperties>()
     var globalStateSnapshot: HierarchySnapshot? = null
 
     override fun getId(): String {
@@ -70,6 +70,6 @@ open class StubMode(
         newProps: DisplayContainerProperties,
         wct: WindowContainerTransaction
     ) {
-        displayChanges.add(newProps)
+        requestedDisplayChanges.add(newProps)
     }
 }

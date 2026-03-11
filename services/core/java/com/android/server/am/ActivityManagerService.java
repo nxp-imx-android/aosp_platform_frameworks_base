@@ -19171,6 +19171,13 @@ public class ActivityManagerService extends IActivityManager.Stub
         public void addCreatorToken(Intent intent, String creatorPackage) {
             ActivityManagerService.this.addCreatorToken(intent, creatorPackage);
         }
+
+        @Override
+        public boolean hasServiceBindingOrProviderUse(int uid, int clientUid) {
+            synchronized (mGlobalLock) {
+                return hasServiceBindingOrProviderUseLocked(uid, clientUid);
+            }
+        }
     }
 
     long inputDispatchingTimedOut(int pid, final boolean aboveSystem, TimeoutRecord timeoutRecord) {

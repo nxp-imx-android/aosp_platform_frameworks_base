@@ -17,15 +17,14 @@
 package com.android.server.dreams;
 
 import static com.google.common.truth.Truth.assertThat;
+
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
 
 import android.content.ComponentName;
 import android.os.Handler;
@@ -43,7 +42,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -209,23 +207,30 @@ public class DreamPlaylistUpdaterTest {
     }
 
     @Test
-    public void refresh_usesLatestArguments() {
-        ComponentName systemA = new ComponentName("com.sys", "A");
-        ComponentName systemB = new ComponentName("com.sys", "B");
+    public void refresh_deduplicatesLogicallyEquivalentPlaylists() throws RemoteException {
+        final DreamPlaylist p1 =
+                new DreamPlaylist(
+                        Collections.singletonList(new DreamItem.Builder(DREAM_1).build()), 0);
+        final DreamPlaylist p2 =
+                new DreamPlaylist(
+                        Collections.singletonList(new DreamItem.Builder(DREAM_1).build()), 0);
 
-        // 1. Call with System A
-        mUpdater.refresh(USER_ID, systemA);
+        // Verify they are different objects but logically equal
+        assertThat(p1).isNotSameInstanceAs(p2);
+        assertThat(p1).isEqualTo(p2);
 
-        // 2. Call with System B (within debounce window)
-        mUpdater.refresh(USER_ID, systemB);
+        mUpdater.registerListener(mListener, USER_ID);
 
-        // 3. Wait for debounce
-        mLooper.moveTimeForward(TEST_DEBOUNCE_DELAY_MS + 50);
-        mLooper.dispatchAll();
+        // 1. First refresh with p1
+        when(mResolver.getDreamPlaylist(any())).thenReturn(p1);
+        mUpdater.refreshImmediately(USER_ID, null);
+        verify(mListener, times(1)).onPlaylistChanged(eq(p1));
 
-        // 4. Verify the resolver was called with System B
-        verify(mResolver).getDreamPlaylist(eq(systemB));
-        // Verify it was NOT called with System A
-        verify(mResolver, never()).getDreamPlaylist(eq(systemA));
+        // 2. Second refresh with p2 (logically equivalent but different object)
+        when(mResolver.getDreamPlaylist(any())).thenReturn(p2);
+        mUpdater.refreshImmediately(USER_ID, null);
+
+        // Verify NO second callback
+        verify(mListener, times(1)).onPlaylistChanged(any());
     }
 }

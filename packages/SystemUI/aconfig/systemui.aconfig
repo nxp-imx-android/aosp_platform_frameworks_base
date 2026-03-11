@@ -629,6 +629,16 @@ flag {
 }
 
 flag {
+   name: "fix_main_thread_blocking_on_first_unlock"
+   namespace: "systemui"
+   description: "Fixes main thread blocking Binder calls during the first unlock."
+   bug: "491497495"
+   metadata {
+        purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
     name: "fix_notes_role_in_freeform"
     namespace: "note"
     description: "Fix issues related to notes role under the freeform environment."
@@ -1310,6 +1320,13 @@ flag {
     namespace: "systemui"
     description: "Splits the Internet tile into Wifi (with internet info) + Mobile Data. Read/write"
     bug: "201143076"
+}
+
+flag {
+    name: "qs_split_internet_tile_suppression"
+    namespace: "systemui"
+    description: "Suppresses the split from qs_split_internet_tile_rw reverting to the internet tile. We are changing the upgrade logic and will use this flag to ramp internal users up and down to test it."
+    bug: "490473248"
 }
 
 flag {

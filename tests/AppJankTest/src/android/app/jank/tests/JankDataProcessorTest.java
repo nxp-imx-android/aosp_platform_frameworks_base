@@ -325,7 +325,8 @@ public class JankDataProcessorTest {
                             NANOS_PER_MS * ((long) i),
                             NANOS_PER_MS * ((long) i),
                             NANOS_PER_MS * ((long) i),
-                            /*delay*/ 0));
+                            /*delay*/ 0,
+                            /*score*/ 0.0));
         }
 
         return mockData;
@@ -346,7 +347,8 @@ public class JankDataProcessorTest {
                             NANOS_PER_MS * ((long) i),
                             NANOS_PER_MS * ((long) i),
                             NANOS_PER_MS * ((long) i),
-                            /*delay*/ 0));
+                            /*delay*/ 0,
+                            /*score*/ 0.0));
         }
 
         return mockData;

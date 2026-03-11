@@ -228,7 +228,6 @@ public class AutofillInlineRequestHint extends ContextHint {
     public boolean equals(Object o) {
         if (!(o instanceof AutofillInlineRequestHint that)) return false;
         if (!super.equals(o)) return false;
-        // mFillEventHistory is omitted as FillEventHistory does not implement equals.
         return mSessionId == that.mSessionId
                 && mTaskId == that.mTaskId
                 && Objects.equals(mRequestTimestamp, that.mRequestTimestamp)
@@ -237,13 +236,12 @@ public class AutofillInlineRequestHint extends ContextHint {
                 && Objects.equals(mAutofillValue, that.mAutofillValue)
                 && Objects.equals(mInlineSuggestionsRequest, that.mInlineSuggestionsRequest)
                 && Objects.equals(
-                        mAugmentedAutofillProxy.asBinder(),
-                        that.mAugmentedAutofillProxy.asBinder());
+                        mAugmentedAutofillProxy.asBinder(), that.mAugmentedAutofillProxy.asBinder())
+                && Objects.equals(mFillEventHistory, that.mFillEventHistory);
     }
 
     @Override
     public int hashCode() {
-        // mFillEventHistory is omitted as FillEventHistory does not implement hashCode.
         return Objects.hash(
                 super.hashCode(),
                 mSessionId,
@@ -253,7 +251,8 @@ public class AutofillInlineRequestHint extends ContextHint {
                 mFocusedId,
                 mAutofillValue,
                 mInlineSuggestionsRequest,
-                mAugmentedAutofillProxy.asBinder());
+                mAugmentedAutofillProxy.asBinder(),
+                mFillEventHistory);
     }
 
     @Override

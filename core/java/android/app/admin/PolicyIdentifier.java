@@ -19,6 +19,7 @@ package android.app.admin;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_CONTENT_RESTRICTION_APPS;
+import static android.Manifest.permission.MANAGE_DEVICE_POLICY_FACTORY_RESET;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_FUN;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCKSCREEN_MESSAGE;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS;
@@ -32,6 +33,7 @@ import static android.app.admin.DevicePolicyManager.RESOURCE_PER_USER;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_AUTO_TIME;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_AUTO_TIME_ZONE;
+import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_DISALLOW_FACTORY_RESET;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_EASTER_EGGS;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_LOCKSCREEN_MESSAGE;
 import static android.processor.devicepolicy.AllowedDpcTypes.ALLOWED;
@@ -41,15 +43,13 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.app.admin.flags.Flags;
-import android.content.Intent;
-import android.os.UserManager;
 import android.processor.devicepolicy.AllowedDpcTypes;
 import android.processor.devicepolicy.EnumPolicyDefinition;
 import android.processor.devicepolicy.EnumResolutionMechanism;
 import android.processor.devicepolicy.ListOfStringPolicyDefinition;
+import android.processor.devicepolicy.ListResolutionMechanism;
 import android.processor.devicepolicy.PolicyDefinition;
 import android.processor.devicepolicy.StringPolicyDefinition;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
@@ -351,14 +351,15 @@ public final class PolicyIdentifier<T> {
                                             requiredCrossUserPermission =
                                                     MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL,
                                             allowedDpcTypes =
-                                                    @AllowedDpcTypes(
-                                                            deviceOwner = ALLOWED,
-                                                            managedProfileOwnerOfOrganizationOwnedDevice =
-                                                                    ALLOWED,
-                                                            managedProfileOwnerOfPersonalOwnedDevice =
-                                                                    DISALLOWED,
-                                                            unaffiliatedFullUserProfileOwner =
-                                                                    DISALLOWED))))
+                                                            @AllowedDpcTypes(
+                                                                    deviceOwner = ALLOWED,
+                                                                    managedProfileOwnerOfOrganizationOwnedDevice =
+                                                                            ALLOWED,
+                                                                    managedProfileOwnerOfPersonalOwnedDevice =
+                                                                            DISALLOWED,
+                                                                    unaffiliatedFullUserProfileOwner =
+                                                                            DISALLOWED))),
+                            resolutionMechanism = @ListResolutionMechanism(custom = true))
     public static final PolicyIdentifier<List<String>> CONTENT_RESTRICTION_APPS =
             new PolicyIdentifier<>("CONTENT_RESTRICTION_APPS");
 
@@ -486,6 +487,59 @@ public final class PolicyIdentifier<T> {
             resolutionMechanism = @EnumResolutionMechanism(custom = true))
     public static final PolicyIdentifier<Integer> EASTER_EGGS =
             new PolicyIdentifier<>("EASTER_EGGS");
+
+    /**
+     * Possible values {@link FACTORY_RESET}
+     *
+     * @hide
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(
+            prefix = {"FACTORY_RESET_"},
+            value = {
+                FACTORY_RESET_DISALLOWED,
+                FACTORY_RESET_ALLOWED,
+            })
+    public @interface FactoryResetValue {}
+
+    /**
+     * The settings menu of the user has factory reset disabled.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING_DISALLOW_FACTORY_RESET)
+    public static final int FACTORY_RESET_DISALLOWED = 1;
+
+    /**
+     * The settings menu of the user has the factory reset option.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING_DISALLOW_FACTORY_RESET)
+    public static final int FACTORY_RESET_ALLOWED = 2;
+
+    /**
+     * Policy that controls if the factory reset option is available in the
+     * settings menu. Even if it is disabled factory reset might still be
+     * possible through other means.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING_DISALLOW_FACTORY_RESET)
+    @NonNull
+    @EnumPolicyDefinition(
+            base =
+                    @PolicyDefinition(
+                            allowedScopes = {POLICY_SCOPE_DEVICE, POLICY_SCOPE_USER},
+                            affectedResource = RESOURCE_PER_USER,
+                            requiredPermission = MANAGE_DEVICE_POLICY_FACTORY_RESET,
+                            requiredCrossUserPermission = MANAGE_DEVICE_POLICY_ACROSS_USERS,
+                            allowedDpcTypes =
+                            @AllowedDpcTypes(
+                                    deviceOwner = ALLOWED,
+                                    profileOwnerOnUser0 = ALLOWED,
+                                    managedProfileOwnerOfOrganizationOwnedDevice = DISALLOWED,
+                                    managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                    unaffiliatedFullUserProfileOwner = DISALLOWED)),
+            intDef = FactoryResetValue.class,
+            defaultValue = FACTORY_RESET_ALLOWED,
+            resolutionMechanism = @EnumResolutionMechanism(custom = true))
+    public static final PolicyIdentifier<Integer> FACTORY_RESET =
+            new PolicyIdentifier<>("FACTORY_RESET");
 
     // LINT.ThenChange(/tools/policymetadata/policies.textproto)
 }

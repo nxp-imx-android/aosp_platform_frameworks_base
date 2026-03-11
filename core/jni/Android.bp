@@ -116,6 +116,7 @@ cc_defaults_for_libandroid_runtime {
 
     static_libs: [
         "android.content.res.flags-aconfig-cc-host-ro",
+        "libkernelconfigs",
         "libziparchive_for_incfs",
         "libguiflags",
     ],
@@ -185,8 +186,6 @@ cc_defaults_for_libandroid_runtime {
                 "android_os_NativeHandle.cpp",
                 "android_os_MemoryFile.cpp",
                 "android_os_MessageQueue.cpp",
-                "android_os_PerfettoTrace.cpp",
-                "android_os_PerfettoTrackEventExtra.cpp",
                 "android_os_Parcel.cpp",
                 "android_os_PerformanceHintManager.cpp",
                 "android_os_SELinux.cpp",
@@ -311,7 +310,6 @@ cc_defaults_for_libandroid_runtime {
                 "libdmabufinfo",
                 "libgenfslabelsversion.ffi",
                 "libgui_window_info_static",
-                "libkernelconfigs",
                 "libnativehelper_lazy",
                 "libseccomp_policy",
                 "libgrallocusage",

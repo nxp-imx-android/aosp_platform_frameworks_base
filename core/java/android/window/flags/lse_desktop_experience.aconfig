@@ -1032,6 +1032,16 @@ flag {
 }
 
 flag {
+    name: "handle_overview_desktop_scrim_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Force disable scrim effect for overview"
+    bug: "487785554"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
    name: "home_package_windowing_exemptions_bug_fix"
     namespace: "lse_desktop_experience"
     description: "Fixes issue with retrieving the home package during the windowing exemptions \n"
@@ -1225,10 +1235,50 @@ flag {
 }
 
 flag {
+    name: "update_desktop_scrim_on_desktop_task_launch"
+    namespace: "lse_desktop_experience"
+    description: "Updates the desktop scrim when a desktop task is launched."
+    bug: "489912400"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "update_desktop_scrim_on_drag_resize_end"
+    namespace: "lse_desktop_experience"
+    description: "Updates the desktop scrim when drag resize is finihsed"
+    bug: "484100709"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "update_desktop_scrim_on_move_task_to_desk"
+    namespace: "lse_desktop_experience"
+    description: "Updates the desktop scrim when a task is moved to desktop."
+    bug: "489912261"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "update_desktop_scrim_when_locked_bugfix"
     namespace: "lse_desktop_experience"
     description: "Fixes the issue that desktop scrim effect not get updated when device locked and unlocked."
     bug: "484800239"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "update_desktop_scrim_when_move_task_to_front_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fixes the issue that desktop scrim effect not get updated when task moves to front."
+    bug: "483868832"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

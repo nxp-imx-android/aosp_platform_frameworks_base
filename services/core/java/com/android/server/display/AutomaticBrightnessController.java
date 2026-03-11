@@ -199,7 +199,7 @@ public class AutomaticBrightnessController {
     private float mFastAmbientLux;
 
     // The last ambient lux value prior to passing the darkening or brightening threshold.
-    private float mPreThresholdLux;
+    private float mPreThresholdLux = INVALID_LUX;
 
     // True if mAmbientLux holds a valid value.
     private boolean mAmbientLuxValid;
@@ -521,6 +521,17 @@ public class AutomaticBrightnessController {
         return mAmbientLux;
     }
 
+    /**
+     * @return The absolute difference between the current and previous ambient lux values, or
+     * {@link BrightnessMappingStrategy#INVALID_LUX} if one of them is invalid.
+     */
+    float getLuxDelta() {
+        if (mPreThresholdLux == INVALID_LUX || mAmbientLux == INVALID_LUX) {
+            return INVALID_LUX;
+        }
+        return Math.abs(mAmbientLux - mPreThresholdLux);
+    }
+
     float getSlowAmbientLux() {
         return mSlowAmbientLux;
     }
@@ -720,7 +731,7 @@ public class AutomaticBrightnessController {
             mLightSensorEnabled = false;
             mAmbientLuxValid = !mResetAmbientLuxAfterWarmUpConfig;
             if (!mAmbientLuxValid) {
-                mPreThresholdLux = PowerManager.BRIGHTNESS_INVALID_FLOAT;
+                mPreThresholdLux = INVALID_LUX;
             }
             mScreenAutoBrightness = PowerManager.BRIGHTNESS_INVALID_FLOAT;
             mRawScreenAutoBrightness = PowerManager.BRIGHTNESS_INVALID_FLOAT;

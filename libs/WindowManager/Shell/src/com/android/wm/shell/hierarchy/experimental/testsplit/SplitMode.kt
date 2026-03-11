@@ -25,7 +25,6 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.util.Log
 import android.view.Gravity
-import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_TO_BACK
@@ -51,7 +50,7 @@ import java.io.PrintWriter
  * a basic Split-mode to prototype basic configurations of a split like 1x1, 2x1.
  */
 class SplitMode(
-    private val context: Context,
+    private val appContext: Context,
     private val hierarchy: ContainerHierarchy,
 ) : Mode {
     private val rootsPerDisplay = mutableMapOf<Int, Container>()
@@ -79,6 +78,7 @@ class SplitMode(
     /** @see Mode.prepareForDisplay */
     override fun prepareForDisplay(updateContext: Mode.UpdateContext, display: Container) {
         Log.d(TAG, "prepareForDisplay: $display")
+        val windowContext = display.displayProps().createWindowContext(appContext)
         val displayId = display.props<DisplayContainerProperties>().displayId
         // Create a top level root task
         var params = TaskCreationParams.Builder()
@@ -97,8 +97,8 @@ class SplitMode(
         verticalDividerWindowManager =
             SplitWindowManager(
                 "VerticalDivider",
-                context,
-                context.resources.configuration
+                windowContext,
+                windowContext.resources.configuration
             ) { builder ->
                 try {
                     builder.setParent(splitRoot.leash)
@@ -110,8 +110,8 @@ class SplitMode(
         horizontalDividerWindowManager =
             SplitWindowManager(
                 "HorizontalDivider",
-                context,
-                context.resources.configuration
+                windowContext,
+                windowContext.resources.configuration
             ) { builder ->
                 try {
                     builder.setParent(splitRoot.leash)
@@ -140,7 +140,7 @@ class SplitMode(
         wct.setLaunchAdjacentFlagRoot(nodeRoots[1].token)
         hierarchy.update.wm("add child container", TRANSIT_CHANGE, wct)
 
-        setupOverlay(updateContext, displayId)
+        setupOverlay(updateContext, displayId, windowContext)
     }
 
     private fun updateLeftRightSplit(display: DisplayContainerProperties) {
@@ -150,18 +150,85 @@ class SplitMode(
         )
     }
 
-    private fun setupOverlay(updateContext: Mode.UpdateContext, displayId: Int) {
+    private fun setupOverlay(updateContext: Mode.UpdateContext, displayId: Int, windowContext: Context) {
         // Create an overlay that can launch tasks into this root
         val overlay = ViewOverlayContainer(
             WindowContainerToken.createProxy(":split_mode_overlay"),
             { context, _ ->
-                FrameLayout(context)
+                val rootView = FrameLayout(context)
+
+                // Create two buttons in the root view that will add and remove sub containers
+                val button1 = FrameLayout(context)
+                button1.setLayoutParams(FrameLayout.LayoutParams(100, MATCH_PARENT))
+                button1.setBackgroundColor(Color.argb(128, 0, 255, 0))
+                val text1 = TextView(context).apply {
+                    text = "1x0"
+                    gravity = Gravity.CENTER
+                }
+                button1.addView(text1)
+                button1.setOnClickListener {
+                    buttonLaunch = true
+                    removeAllContainers(displayId)
+                    addContainersAndLaunch(1 /*containerCount*/)
+                }
+                val button2 = FrameLayout(context)
+                button2.setBackgroundColor(Color.argb(128, 100, 128, 0))
+                button2.setLayoutParams(FrameLayout.LayoutParams(100, MATCH_PARENT).apply {
+                    leftMargin = 100
+                })
+                val text2 = TextView(context).apply {
+                    text = "1x1"
+                    gravity = Gravity.CENTER
+                }
+                button2.addView(text2)
+                button2.setOnClickListener {
+                    buttonLaunch = true
+                    removeAllContainers(displayId)
+                    addContainersAndLaunch(2)
+                }
+
+                val button3 = FrameLayout(context)
+                button3.setBackgroundColor(Color.argb(128, 160, 0, 100))
+                button3.setLayoutParams(FrameLayout.LayoutParams(100, MATCH_PARENT).apply {
+                    leftMargin = 200
+                })
+                val text3 = TextView(context).apply {
+                    text = "2x1"
+                    gravity = Gravity.CENTER
+                }
+                button3.addView(text3)
+                button3.setOnClickListener {
+                    buttonLaunch = true
+                    removeAllContainers(displayId)
+                    addContainersAndLaunch(3)
+                }
+
+                val button4 = FrameLayout(context)
+                button4.setBackgroundColor(Color.argb(128, 255, 0, 0))
+                button4.setLayoutParams(FrameLayout.LayoutParams(100, MATCH_PARENT).apply {
+                    leftMargin = 300
+                })
+                val text4 = TextView(context).apply {
+                    text = "CLEAR"
+                    gravity = Gravity.CENTER
+                }
+                button4.addView(text4)
+                button4.setOnClickListener {
+                    buttonLaunch = true
+                    removeAllContainers(displayId)
+                }
+
+                rootView.addView(button1)
+                rootView.addView(button2)
+                rootView.addView(button3)
+                rootView.addView(button4)
+                rootView
             },
             overrideWidth = 800,
             overrideHeight = 200,
         )
         overlay.parent = splitRoot
-        overlay.initialize(context)
+        overlay.initialize(windowContext)
 
         val newBounds = RectF(overlay.props.bounds)
         newBounds.offset(100f, 100f)
@@ -172,73 +239,6 @@ class SplitMode(
             .setLayer(tx, Integer.MAX_VALUE)
             .show(tx)
         overlays[splitRoot.token] = overlay
-
-        // Create two buttons in the root view that will add and remove sub containers
-        val button1 = FrameLayout(context)
-        button1.setLayoutParams(FrameLayout.LayoutParams(100, MATCH_PARENT))
-        button1.setBackgroundColor(Color.argb(128, 0, 255, 0))
-        val text1 = TextView(context).apply {
-            text = "1x0"
-            gravity = Gravity.CENTER
-        }
-        button1.addView(text1)
-        button1.setOnClickListener {
-            buttonLaunch = true
-            removeAllContainers(displayId)
-            addContainersAndLaunch(1 /*containerCount*/)
-        }
-        val button2 = FrameLayout(context)
-        button2.setBackgroundColor(Color.argb(128, 100, 128, 0))
-        button2.setLayoutParams(FrameLayout.LayoutParams(100, MATCH_PARENT).apply {
-            leftMargin = 100
-        })
-        val text2 = TextView(context).apply {
-            text = "1x1"
-            gravity = Gravity.CENTER
-        }
-        button2.addView(text2)
-        button2.setOnClickListener {
-            buttonLaunch = true
-            removeAllContainers(displayId)
-            addContainersAndLaunch(2)
-        }
-
-        val button3 = FrameLayout(context)
-        button3.setBackgroundColor(Color.argb(128, 160, 0, 100))
-        button3.setLayoutParams(FrameLayout.LayoutParams(100, MATCH_PARENT).apply {
-            leftMargin = 200
-        })
-        val text3 = TextView(context).apply {
-            text = "2x1"
-            gravity = Gravity.CENTER
-        }
-        button3.addView(text3)
-        button3.setOnClickListener {
-            buttonLaunch = true
-            removeAllContainers(displayId)
-            addContainersAndLaunch(3)
-        }
-
-        val button4 = FrameLayout(context)
-        button4.setBackgroundColor(Color.argb(128, 255, 0, 0))
-        button4.setLayoutParams(FrameLayout.LayoutParams(100, MATCH_PARENT).apply {
-            leftMargin = 300
-        })
-        val text4 = TextView(context).apply {
-            text = "CLEAR"
-            gravity = Gravity.CENTER
-        }
-        button4.addView(text4)
-        button4.setOnClickListener {
-            buttonLaunch = true
-            removeAllContainers(displayId)
-        }
-
-        val parent = overlay.rootView as ViewGroup
-        parent.addView(button1)
-        parent.addView(button2)
-        parent.addView(button3)
-        parent.addView(button4)
     }
 
     private fun addContainersAndLaunch(containerCount: Int) {
@@ -295,7 +295,7 @@ class SplitMode(
                 setLaunchRootTask(tokenList.get(i))
             }
             intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
-            context.startActivity(intent, opts.toBundle())
+            appContext.startActivity(intent, opts.toBundle())
         }
     }
 
@@ -313,6 +313,7 @@ class SplitMode(
         }
 
         val wct = WindowContainerTransaction()
+        // TODO: ensure this is done on the right spilt root
         val nodeRootContainers = nodeRoots[splitRoot]
         if (nodeRootContainers != null && activeContainerCount > 0) {
             val tokens = nodeRootContainers.take(activeContainerCount).map { it.token }
@@ -435,7 +436,7 @@ class SplitMode(
                         break
                     }
                 }
-                currentNodeRoot = nodeRoots[splitRoot]
+                currentNodeRoot = nodeRoots[modeContainer]
                     ?.find { it.children.isNotEmpty() && it != addedNodeRoot }
                 Log.d(TAG, "currentNodeRoot: $currentNodeRoot addedNodeRoot: $addedNodeRoot")
                 if (currentNodeRoot != null && addedNodeRoot != null && activeContainerCount == 1) {
@@ -613,7 +614,8 @@ class SplitMode(
         }
 
         // Update Dividers
-        val density = context.resources.displayMetrics.density
+        // TODO: This method should probably take the split root that its affecting
+        val density = splitRoot.props.config.densityDpi
         val dividerWindowWidth = (DividerView.DIVIDER_SIZE_DP * density).toInt()
         val verticalPos = verticalDividerWindowManager.getDividerPosition().toInt()
         val horizontalPos = horizontalDividerWindowManager.getDividerPosition().toInt()

@@ -122,7 +122,7 @@ fun SensorActivityDrillIn(
                     )
                 },
                 modifier =
-                    Modifier.clip(shape = RoundedCornerShape(size = 26.dp))
+                    Modifier.clip(shape = RoundedCornerShape(size = 1000.dp)) // Make it a circle
                         .clickable(onClick = { viewModel.openPrivacyDashboard() }),
                 colors =
                     ListItemDefaults.colors()
@@ -150,7 +150,7 @@ private fun AppDetailItem(
     val ICONS_ENABLED = false
     val colorScheme = MaterialTheme.colorScheme
 
-    val bigRadius = 26.dp
+    val bigRadius = 16.dp
     val smallRadius = 4.dp
     val topCornerRadius = if (isFirstItem) bigRadius else smallRadius
     val bottomCornerRadius = if (isLastItem) bigRadius else smallRadius

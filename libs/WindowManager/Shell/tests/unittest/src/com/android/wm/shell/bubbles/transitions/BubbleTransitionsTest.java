@@ -103,8 +103,8 @@ import com.android.wm.shell.bubbles.user.model.BubbleUserInfo;
 import com.android.wm.shell.common.HomeIntentProvider;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
-import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.taskview.TaskView;
 import com.android.wm.shell.taskview.TaskViewRepository;
 import com.android.wm.shell.taskview.TaskViewTaskController;
@@ -183,7 +183,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mRepository = new TaskViewRepository();
-        mBubbleHelper = spy(new BubbleHelperImpl(mBubbleRootTask));
+        mBubbleHelper = spy(new BubbleHelperImpl(mBubbleRootTask, mBubbleData));
         final ShellExecutor syncExecutor = new TestSyncExecutor();
 
         BubbleUserResolver bubbleUserResolver = userId -> new BubbleUserInfo(userId, UserType.MAIN);

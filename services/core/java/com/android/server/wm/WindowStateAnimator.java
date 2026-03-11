@@ -542,9 +542,6 @@ class WindowStateAnimator {
                     case WindowManagerPolicy.TRANSIT_SHOW:
                         attr = com.android.internal.R.styleable.WindowAnimation_windowShowAnimation;
                         break;
-                    case WindowManagerPolicy.TRANSIT_HIDE:
-                        attr = com.android.internal.R.styleable.WindowAnimation_windowHideAnimation;
-                        break;
                 }
                 if (attr >= 0) {
                     a = mWin.mDisplayContent.mTransitionAnimation.loadAnimationAttr(

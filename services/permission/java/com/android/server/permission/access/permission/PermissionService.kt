@@ -64,6 +64,8 @@ import com.android.internal.logging.MetricsLogger
 import com.android.internal.logging.nano.MetricsProto
 import com.android.internal.util.DumpUtils
 import com.android.internal.util.Preconditions
+import com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_PERMISSION_CHECK_RESULT__RESULT__PERMISSION_DENIED_NOT_IN_PCC_ALLOWLIST
+import com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_PERMISSION_CHECK_RESULT__RESULT__PERMISSION_INHERITED_FROM_MAIN_APP
 import com.android.server.FgThread
 import com.android.server.LocalManagerRegistry
 import com.android.server.LocalServices
@@ -103,6 +105,7 @@ import com.android.server.pm.permission.PermissionManagerServiceInterface
 import com.android.server.pm.permission.PermissionManagerServiceInternal
 import com.android.server.pm.pkg.AndroidPackage
 import com.android.server.pm.pkg.PackageState
+import com.android.server.privatecompute.PrivateComputeStatsLogUtil
 import java.io.FileDescriptor
 import java.io.PrintWriter
 import java.util.concurrent.CompletableFuture
@@ -570,7 +573,18 @@ class PermissionService(private val service: AccessCheckingService) :
         ) {
             val permission = service.getState { with(policy) { getPermissions()[permissionName] } }
             if (permission?.isAllowedInPrivateComputeCore != true) {
+                PrivateComputeStatsLogUtil.logPccPermissionCheckResult(
+                    PCC_PERMISSION_CHECK_RESULT__RESULT__PERMISSION_DENIED_NOT_IN_PCC_ALLOWLIST,
+                    permissionName,
+                    uid,
+                )
                 return PackageManager.PERMISSION_DENIED
+            } else {
+                PrivateComputeStatsLogUtil.logPccPermissionCheckResult(
+                    PCC_PERMISSION_CHECK_RESULT__RESULT__PERMISSION_INHERITED_FROM_MAIN_APP,
+                    permissionName,
+                    uid,
+                )
             }
         }
 

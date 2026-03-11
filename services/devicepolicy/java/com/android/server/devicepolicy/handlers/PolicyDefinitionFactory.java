@@ -189,6 +189,11 @@ public class PolicyDefinitionFactory {
                     // of `EnumStoredAsBooleanPolicyHandler`.
                     return null;
                 });
+        addFactory(
+                PolicyIdentifier.FACTORY_RESET,
+                builder -> {
+                    return null;
+                });
     }
 
     public static Map<PolicyIdentifier<?>, PolicyDefinition<?>> buildAll() {

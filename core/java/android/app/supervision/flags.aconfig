@@ -58,14 +58,6 @@ flag {
 }
 
 flag {
-  name: "enable_web_content_filters_screen"
-  is_exported: true
-  namespace: "supervision"
-  description: "Flag that enables the web content filters screen with Supervision settings entry point"
-  bug: "395134536"
-}
-
-flag {
   name: "enable_supervision_settings_ui_updates"
   is_exported: true
   namespace: "supervision"

@@ -108,6 +108,9 @@ public class AccessibilityUserState {
 
     final Set<ComponentName> mEnabledServices = new HashSet<>();
 
+    // All service connections currently bound or binding, including crashed ones.
+    private final Set<AccessibilityServiceConnection> mServiceConnections = new HashSet<>();
+
     private Set<String> mPermittedAccessibilityServices = null;
 
     final Set<ComponentName> mTouchExplorationGrantedServices = new HashSet<>();
@@ -304,6 +307,14 @@ public class AccessibilityUserState {
             mComponentNameToServiceMap.put(boundClient.getComponentName(), boundClient);
         }
         mServiceInfoChangeListener.onServiceInfoChangedLocked(this);
+    }
+
+    void addServiceConnectionLocked(AccessibilityServiceConnection connection) {
+        mServiceConnections.add(connection);
+    }
+
+    void removeServiceConnectionLocked(AccessibilityServiceConnection connection) {
+        mServiceConnections.remove(connection);
     }
 
     /**
@@ -532,12 +543,15 @@ public class AccessibilityUserState {
                 & SHOW_MODE_HARD_KEYBOARD_ORIGINAL_VALUE) != 0;
     }
 
+    Set<AccessibilityServiceConnection> getServiceConnections() {
+        return mServiceConnections;
+    }
+
     private void unbindAllServicesLocked() {
-        final List<AccessibilityServiceConnection> services = mBoundServices;
-        for (int count = services.size(); count > 0; count--) {
-            // When the service is unbound, it disappears from the list, so there's no need to
-            // keep track of the index
-            services.get(0).unbindLocked();
+        // Copy the set because unbindLocked() removes the connection from the set.
+        final Set<AccessibilityServiceConnection> connections = new HashSet<>(mServiceConnections);
+        for (AccessibilityServiceConnection connection : connections) {
+            connection.unbindLocked();
         }
     }
 

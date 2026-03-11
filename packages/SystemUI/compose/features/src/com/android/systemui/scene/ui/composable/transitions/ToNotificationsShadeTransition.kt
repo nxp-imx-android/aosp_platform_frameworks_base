@@ -57,11 +57,9 @@ fun TransitionBuilder.toNotificationsShadeTransition(
 
     verticalContainerReveal(NotificationsShade.Elements.Panel, shadeExpansionMotion, revealHaptics)
 
+    fractionRange(start = .16f, end = 0.8f) { fade(NotificationsShade.Elements.StatusBar) }
+    fractionRange(start = .33f, end = 0.8f) { fade(Notifications.Elements.StackPlaceholder) }
     fractionRange(end = .5f) { fade(OverlayShade.Elements.Scrim) }
-    fractionRange(start = .5f) {
-        fade(NotificationsShade.Elements.StatusBar)
-        fade(Notifications.Elements.StackPlaceholder)
-    }
 }
 
 private val DefaultDuration = 300.milliseconds

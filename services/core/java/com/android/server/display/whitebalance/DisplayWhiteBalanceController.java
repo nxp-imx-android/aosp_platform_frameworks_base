@@ -584,6 +584,13 @@ public class DisplayWhiteBalanceController implements
     }
 
     /**
+     * Returns the current ambient color temperature.
+     */
+    public float getAmbientColorTemperature() {
+        return mAmbientColorTemperature;
+    }
+
+    /**
      * Updates the display color temperature.
      */
     public void updateDisplayColorTemperature() {

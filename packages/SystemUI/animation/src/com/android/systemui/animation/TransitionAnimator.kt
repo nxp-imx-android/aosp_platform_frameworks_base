@@ -751,7 +751,8 @@ class TransitionAnimator(
             state.bottomCornerRadius =
                 MathUtils.lerp(startBottomCornerRadius, endBottomCornerRadius, progress)
 
-            state.visible = checkVisibility(timings, linearProgress, controller.isLaunching)
+            state.visible =
+                checkVisibility(linearProgress, controller.isLaunching, useSpring = false)
 
             if (!movedBackgroundLayer) {
                 movedBackgroundLayer =
@@ -1013,7 +1014,8 @@ class TransitionAnimator(
                             ),
                     )
                     .apply {
-                        visible = checkVisibility(timings, state.scale, controller.isLaunching)
+                        visible =
+                            checkVisibility(state.scale, controller.isLaunching, useSpring = true)
                     }
 
             if (!movedBackgroundLayer) {
@@ -1221,26 +1223,53 @@ class TransitionAnimator(
         }
     }
 
-    /** Returns whether is the controller's view should be visible with the given [timings]. */
-    private fun checkVisibility(timings: Timings, progress: Float, isLaunching: Boolean): Boolean {
+    /**
+     * Returns whether is the controller's view should be visible according to [progress] and the
+     * appropriate timings, based on [useSpring].
+     */
+    private fun checkVisibility(
+        progress: Float,
+        isLaunching: Boolean,
+        useSpring: Boolean,
+    ): Boolean {
+        val totalDuration =
+            if (useSpring) {
+                1f
+            } else {
+                timings.totalDuration.toFloat()
+            }
         return if (isLaunching) {
+            val (delay, duration) =
+                if (useSpring) {
+                    Pair(
+                        springTimings!!.contentBeforeFadeOutDelay,
+                        springTimings.contentBeforeFadeOutDuration,
+                    )
+                } else {
+                    Pair(
+                        timings.contentBeforeFadeOutDelay.toFloat(),
+                        timings.contentBeforeFadeOutDuration.toFloat(),
+                    )
+                }
             // The expanding view can/should be hidden once it is completely covered by the opening
             // window.
-            getProgress(
-                timings,
-                progress,
-                timings.contentBeforeFadeOutDelay,
-                timings.contentBeforeFadeOutDuration,
-            ) < 1
+            getProgressInternal(totalDuration, progress, delay, duration) < 1
         } else {
+            val (delay, duration) =
+                if (useSpring) {
+                    Pair(
+                        springTimings!!.contentAfterFadeInDelay,
+                        springTimings.contentAfterFadeInDuration,
+                    )
+                } else {
+                    Pair(
+                        timings.contentAfterFadeInDelay.toFloat(),
+                        timings.contentAfterFadeInDuration.toFloat(),
+                    )
+                }
             // The shrinking view can/should be hidden while it is completely covered by the closing
             // window.
-            getProgress(
-                timings,
-                progress,
-                timings.contentAfterFadeInDelay,
-                timings.contentAfterFadeInDuration,
-            ) > 0
+            getProgressInternal(totalDuration, progress, delay, duration) > 0
         }
     }
 

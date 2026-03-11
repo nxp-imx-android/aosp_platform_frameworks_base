@@ -17,6 +17,7 @@
 package com.android.systemui.keyguard.ui.lockscreen.elementproviders
 
 import android.content.testableContext
+import com.android.systemui.accessibility.domain.interactor.accessibilityInteractor
 import com.android.systemui.common.ui.domain.interactor.configurationInteractor
 import com.android.systemui.haptics.vibratorHelper
 import com.android.systemui.keyguard.domain.interactor.keyguardTouchHandlingInteractor
@@ -34,6 +35,7 @@ val Kosmos.settingsMenuElementProvider by
                 KeyguardSettingsMenuViewModel(
                     interactor = keyguardTouchHandlingInteractor,
                     configurationInteractor = configurationInteractor,
+                    accessibilityInteractor = accessibilityInteractor,
                 ),
             touchHandlingViewModelFactory = keyguardTouchHandlingViewModelFactory,
             vibratorHelper = vibratorHelper,

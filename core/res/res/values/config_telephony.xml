@@ -596,7 +596,6 @@
     <bool name="config_update_operator_name_after_carrier_config_loaded">false</bool>
     <java-symbol type="bool" name="config_update_operator_name_after_carrier_config_loaded" />
 
-
     <!-- Name of the NetworkChangeNotification that prompts the user when the 2G network is
     enabled/disabled by the carrier. -->
     <string name="config_network_change_notification">
@@ -604,4 +603,11 @@
     </string>
     <java-symbol type="string" name="config_network_change_notification" />
 
+    <!-- Default wait time in seconds for dismissing upsell notification after TN is stable -->
+    <integer name="config_upsell_notification_dismiss_delay_after_tn_stable_sec">1800</integer>
+    <java-symbol type="integer" name="config_upsell_notification_dismiss_delay_after_tn_stable_sec" />
+
+    <!-- Default maximum search time in seconds for upsell network scan -->
+    <integer name="config_upsell_network_scan_max_search_time_sec">60</integer>
+    <java-symbol type="integer" name="config_upsell_network_scan_max_search_time_sec" />
 </resources>

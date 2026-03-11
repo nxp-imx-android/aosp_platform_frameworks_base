@@ -66,15 +66,16 @@ import android.util.Slog;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.server.LocalManagerRegistry;
 import com.android.server.LocalServices;
 import com.android.server.ServiceThread;
 import com.android.server.Watchdog;
-import com.android.server.appop.AppOpsManagerLocal;
 import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
+import com.android.server.wm.ActivityTaskManagerInternal;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -100,11 +101,11 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
     private final KeyguardManager mKeyguardManager;
     private final AuthenticationPolicyManager mAuthenticationPolicyManager;
     private final AppOpsManager mAppOpsManager;
-    private final AppOpsManagerLocal mAppOpsManagerLocal;
     private final PackageManager mPackageManager;
     private final UserManager mUserManager;
     private final DevicePolicyManager mDevicePolicyManager;
     private final DevicePolicyManagerInternal mDevicePolicyManagerInternal;
+    private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
     private final VirtualDeviceManagerInternal mVirtualDeviceManagerInternal;
     private final VirtualDeviceFactory mVirtualDeviceFactory;
     private final PendingIntentFactory mPendingIntentFactory;
@@ -143,11 +144,11 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
         mKeyguardManager = context.getSystemService(KeyguardManager.class);
         mAuthenticationPolicyManager = context.getSystemService(AuthenticationPolicyManager.class);
         mAppOpsManager = context.getSystemService(AppOpsManager.class);
-        mAppOpsManagerLocal = LocalManagerRegistry.getManager(AppOpsManagerLocal.class);
         mPackageManager = context.getPackageManager();
         mUserManager = context.getSystemService(UserManager.class);
         mDevicePolicyManager = context.getSystemService(DevicePolicyManager.class);
         mDevicePolicyManagerInternal = LocalServices.getService(DevicePolicyManagerInternal.class);
+        mActivityTaskManagerInternal = LocalServices.getService(ActivityTaskManagerInternal.class);
         mAllowlistController = allowlistController;
         mReferenceDisplayAddress = context.getString(
                 R.string.config_computerControlReferenceDisplayPhysicalAddress);
@@ -175,14 +176,32 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
 
         final int opResult = mAppOpsManager.noteOpNoThrow(
                 AppOpsManager.OP_COMPUTER_CONTROL, attributionSource, "create session");
-        if (opResult == AppOpsManager.MODE_ALLOWED) {
-            mHandler.post(() -> createSession(appThread, attributionSource, params, callback));
-            return;
-        } else if (opResult == AppOpsManager.MODE_IGNORED
+        final List<String> targetPackagesForConsentRequest = new ArrayList<>();
+        if (opResult == AppOpsManager.MODE_IGNORED
                 || opResult == AppOpsManager.MODE_ERRORED) {
             Slog.w(TAG, "No permission to request computer control session: " + params.getName());
             dispatchSessionCreationFailed(callback, attributionSource, params,
                     ComputerControlSession.ERROR_PERMISSION_DENIED);
+            return;
+        }
+        if (opResult == AppOpsManager.MODE_ALLOWED) {
+            if (android.companion.virtualdevice.flags.Flags.computerControlPerAppConsent()) {
+                final int callerUid = attributionSource.getUid();
+                final String callerPackageName = attributionSource.getPackageName();
+                for (int i = 0; i < params.getTargetPackageNames().size(); i++) {
+                    final String packageName = params.getTargetPackageNames().get(i);
+                    if (!mAllowlistController.doesAgentHaveConsentToAutomateTargetApp(callerUid,
+                            callerPackageName, packageName)) {
+                        targetPackagesForConsentRequest.add(packageName);
+                    }
+                }
+            }
+        } else {
+            targetPackagesForConsentRequest.addAll(params.getTargetPackageNames());
+        }
+        if (targetPackagesForConsentRequest.isEmpty()) {
+            // Start session if no additional consent required
+            mHandler.post(() -> createSession(appThread, attributionSource, params, callback));
             return;
         }
 
@@ -197,7 +216,10 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
                         .prepareForIpc();
         final Intent intent = new Intent(ComputerControlSession.ACTION_REQUEST_ACCESS)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                .putExtra(Intent.EXTRA_UID, attributionSource.getUid())
                 .putExtra(Intent.EXTRA_PACKAGE_NAME, attributionSource.getPackageName())
+                .putExtra(Intent.EXTRA_PACKAGES,
+                        targetPackagesForConsentRequest.toArray(new String[0]))
                 .putExtra(Intent.EXTRA_RESULT_RECEIVER, resultReceiver);
         final PendingIntent pendingIntent =
                 mPendingIntentFactory.create(mContext, Binder.getCallingUid(), intent);
@@ -328,6 +350,59 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
         return findSession(deviceId) != null;
     }
 
+    /**
+     * Adds a package to the automatable app list for the specified agent.
+     */
+    public void addAppToAutomatableAppListForAgent(int agentUid, @NonNull String agentPackageName,
+            @NonNull String packageName) {
+        mAllowlistController.addAppToAutomatableAppListForAgent(agentUid, agentPackageName,
+                packageName);
+    }
+
+    /**
+     * Removes a package from the automatable app list for the specified agent.
+     */
+    public void removeAppFromAutomatableAppListForAgent(int agentUid,
+            @NonNull String agentPackageName,
+            @NonNull String packageName) {
+        mAllowlistController.removeAppFromAutomatableAppListForAgent(agentUid, agentPackageName,
+                packageName);
+        // Close any ongoing automation session for the agent where the agent is automating the
+        // removed automatable app.
+        synchronized (mSessions) {
+            for (int i = 0; i < mSessions.size(); i++) {
+                ComputerControlSessionImpl session = mSessions.valueAt(i);
+                if (session.getOwnerPackageName().equals(agentPackageName)
+                        && session.isAutomatingPackage(packageName)) {
+                    session.close(CLOSE_REASON_USER_INITIATED);
+                }
+            }
+        }
+    }
+
+    /**
+     * Clears the automatable app list for the specified agent.
+     */
+    public void clearAutomatableAppListForAgent(int agentUid, @NonNull String agentPackageName) {
+        mAllowlistController.clearAutomatableAppListForAgent(agentUid, agentPackageName);
+        // Close any ongoing automation session for the agent
+        synchronized (mSessions) {
+            for (int i = 0; i < mSessions.size(); i++) {
+                ComputerControlSessionImpl session = mSessions.valueAt(i);
+                if (session.getOwnerPackageName().equals(agentPackageName)) {
+                    session.close(CLOSE_REASON_USER_INITIATED);
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the automatable app list for the specified agent.
+     */
+    public String[] getAutomatableAppListForAgent(int agentUid, @NonNull String agentPackageName) {
+        return mAllowlistController.getAutomatableAppListForAgent(agentUid, agentPackageName);
+    }
+
     private void startHandlerThreadIfNeeded() {
         synchronized (mHandlerThreadLock) {
             if (mHandlerThread != null) {
@@ -419,7 +494,10 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
             return false;
         }
         if (params.getTargetComputerControlVersion() >= MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17
-                && !mAppOpsManagerLocal.isUidInForeground(attributionSource.getUid())) {
+                // This returns true only if the uid has a visible non-toast window on any display.
+                && !mActivityTaskManagerInternal.isUidForeground(attributionSource.getUid())) {
+            Slog.e(TAG, "Agent app " + attributionSource.getPackageName()
+                    + " does not have a non-toast visible window on any display.");
             dispatchSessionCreationFailed(callback, attributionSource, params,
                     ComputerControlSession.ERROR_PERMISSION_DENIED);
             return false;
@@ -434,7 +512,8 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
         // seen on the device they claim to be running on, fallback to default.
         final int deviceId;
         if (attributionSource.getDeviceId() != Context.DEVICE_ID_DEFAULT
-                && isDeviceIdAssociationValid(attributionSource)) {
+                && mVirtualDeviceManagerInternal.isDeviceIdAssociationValid(
+                        attributionSource.getUid(), attributionSource.getDeviceId())) {
             deviceId = attributionSource.getDeviceId();
         } else {
             deviceId = Context.DEVICE_ID_DEFAULT;
@@ -451,12 +530,6 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
                 return mKeyguardManager.isDeviceLocked(userId, deviceId);
             }
         });
-    }
-
-    /** Returns true of the source's UID is seen on the device given by the source's deviceId. */
-    private boolean isDeviceIdAssociationValid(@NonNull AttributionSource attributionSource) {
-        return mVirtualDeviceManagerInternal.getDeviceIdsForUid(attributionSource.getUid())
-                .contains(attributionSource.getDeviceId());
     }
 
     /** Notifies the client that session creation failed. */

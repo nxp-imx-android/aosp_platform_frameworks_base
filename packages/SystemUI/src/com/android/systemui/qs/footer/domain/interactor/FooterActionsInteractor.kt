@@ -116,19 +116,11 @@ constructor(
     @ShadeDisplayAware private val context: Context,
 ) : FooterActionsInteractor {
     override val securityButtonConfig: Flow<SecurityButtonConfig?> =
-        if (android.app.supervision.flags.Flags.enableSupervisionAppService()) {
-            securityRepository.security.combine(supervisionRepository.supervision) {
+        securityRepository.security.combine(supervisionRepository.supervision) {
                 security,
                 supervision ->
-                withContext(bgDispatcher) {
-                    qsSecurityFooterUtils.getButtonConfig(security, supervision)
-                }
-            }
-        } else {
-            securityRepository.security.map { security ->
-                withContext(bgDispatcher) {
-                    qsSecurityFooterUtils.getButtonConfig(security, /* supervisionModel= */ null)
-                }
+            withContext(bgDispatcher) {
+                qsSecurityFooterUtils.getButtonConfig(security, supervision)
             }
         }
 

@@ -29,6 +29,7 @@ import com.android.settingslib.metadata.KeyParametersSchema
 import com.android.settingslib.metadata.PreferenceHierarchy
 import com.android.settingslib.metadata.PreferenceMetadata
 import com.android.settingslib.metadata.PreferenceScreenMetadata
+import com.android.settingslib.metadata.SensitivityLevel
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageMultipleDefines
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageWrongOrder
 import com.android.settingslib.metadata.preferencesapi.category.Category
@@ -276,6 +277,7 @@ abstract class PreferencesApiScreen private constructor(
     var screenPermissions: Permissions? = null
     var screenPreconditions: PreconditionsConfig? = null
     var screenTags: List<String>? = null
+    var screenSensitivityLevel: @SensitivityLevel Int? = null
 
     override val keyParametersSchema: KeyParametersSchema?
         get() = parametersSchema
@@ -299,6 +301,9 @@ abstract class PreferencesApiScreen private constructor(
             cachedLaunchScreenExtra = bundle
             return bundle
         }
+
+    override val sensitivityLevel
+        get() = screenSensitivityLevel ?: SensitivityLevel.NO_SENSITIVITY
 
     private lateinit var screenParameters: ValidatedKeyParameters
     private var prepareScreenExtras: ((ValidatedKeyParameters, Bundle) -> Unit)? = null
@@ -436,7 +441,7 @@ abstract class PreferencesApiScreen private constructor(
             error(getExceptionMessageMultipleDefines("flag"))
         }
 
-        if (parametersSchema != null || preferences.isNotEmpty() || screenPermissions != null || screenPreconditions != null || screenTags != null) {
+        if (parametersSchema != null || preferences.isNotEmpty() || screenPermissions != null || screenPreconditions != null || screenTags != null || screenSensitivityLevel != null) {
             error(getExceptionMessageWrongOrder("flag"))
         }
 
@@ -518,6 +523,22 @@ abstract class PreferencesApiScreen private constructor(
         } else {
             throw IllegalStateException(getExceptionMessageWrongOrder("parameters"))
         }
+    }
+
+    /**
+     * Configure this screen's sensitivity level.
+     *
+     * The default is SensitivityLevel.NO_SENSITIVITY. The screen sensitivity will impact whether
+     * this screen and its preferences will be exposed or not in the api.
+     */
+    protected fun sensitivityLevel(sensitivityLevel: @SensitivityLevel Int) {
+        if(screenSensitivityLevel != null) {
+            error(getExceptionMessageMultipleDefines("sensitivityLevel"))
+        }
+        if (preferences.isNotEmpty()) {
+            error(getExceptionMessageWrongOrder("sensitivityLevel"))
+        }
+        screenSensitivityLevel = sensitivityLevel
     }
 
     /**

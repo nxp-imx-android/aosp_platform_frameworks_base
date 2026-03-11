@@ -16,8 +16,7 @@
 package com.android.wm.shell.hierarchy.properties
 
 import android.content.Context
-import android.content.res.Configuration.ORIENTATION_LANDSCAPE
-import android.content.res.Configuration.ORIENTATION_PORTRAIT
+import android.content.res.Configuration
 import android.graphics.Rect
 import android.hardware.display.DisplayManager
 import android.view.Display.DEFAULT_DISPLAY
@@ -26,8 +25,9 @@ import android.view.WindowInsets.Type.displayCutout
 import android.view.WindowInsets.Type.ime
 import android.view.WindowInsets.Type.navigationBars
 import android.view.WindowInsets.Type.statusBars
+import android.view.WindowManager.LayoutParams.TYPE_APPLICATION
+import android.window.TransitionInfo
 import androidx.core.graphics.toRect
-import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.dagger.hierarchy.WmSyncedProperty
 import com.android.wm.shell.hierarchy.updates.HierarchyChangeFlags
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_INSETS
@@ -94,14 +94,17 @@ class DisplayContainerProperties(
 
     // A display context for this display, this should not be used directly and does not need to be
     // copied or diffed
-    private lateinit var cachedContext: Context
+    private var cachedContext: Context? = null
+
+    // Temporary configuration for diffing against new changes
+    private val tmpConfig = Configuration()
 
     /**
      * Returns a display context for this display.
      */
     fun getDisplayContext(baseContext: Context): Context {
-        if (::cachedContext.isInitialized) {
-            return cachedContext
+        if (cachedContext != null) {
+            return cachedContext!!
         }
         cachedContext = if (displayId == DEFAULT_DISPLAY) {
             baseContext
@@ -110,21 +113,15 @@ class DisplayContainerProperties(
             val display = displayMgr!!.getDisplay(displayId)
             baseContext.createDisplayContext(display)
         }
-        return cachedContext
+        return cachedContext!!
     }
 
     /**
-     * This method is only called during a display change notification, and may be removed in the
-     * future if we can migrate entirely to transitions for reporting display changes.
+     * Convenience method to create a window context for this display, for the purposes of showing
+     * UI.
      */
-    fun updateFromDisplayLayout(displayLayout: DisplayLayout) {
-        // TODO: Fill in more properties
-        val width = displayLayout.width()
-        val height = displayLayout.height()
-        config.windowConfiguration.bounds.set(0, 0, width, height)
-        config.windowConfiguration.maxBounds.set(0, 0, width, height)
-        config.windowConfiguration.rotation = displayLayout.rotation()
-        config.orientation = if (width >= height) ORIENTATION_LANDSCAPE else ORIENTATION_PORTRAIT
+    fun createWindowContext(baseContext: Context): Context {
+        return getDisplayContext(baseContext).createWindowContext(TYPE_APPLICATION, null)
     }
 
     /**
@@ -136,6 +133,18 @@ class DisplayContainerProperties(
             return true
         }
         return false
+    }
+
+    /** @see ContainerProperties.updateFromWindowChange */
+    override fun updateFromWindowChange(change: TransitionInfo.Change) {
+        // TODO(b/491214137): Update configuration once we have display area info
+        tmpConfig.setTo(config)
+        super.updateFromWindowChange(change)
+        if (tmpConfig.diff(config) != 0) {
+            // If there were any changes, then invalidate the cached display context so it can be
+            // recreated
+            cachedContext = null
+        }
     }
 
     /** @see ContainerProperties.copyFrom */

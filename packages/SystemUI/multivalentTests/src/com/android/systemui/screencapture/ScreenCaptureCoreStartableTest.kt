@@ -36,6 +36,7 @@ import com.android.systemui.plugins.activityStarter
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.data.repository.fakeScreenCaptureDeviceStateRepository
 import com.android.systemui.screencapture.domain.interactor.screenCaptureComponentInteractor
+import com.android.systemui.screencapture.domain.interactor.screenCaptureTargetDisplayInteractor
 import com.android.systemui.screencapture.domain.interactor.screenCaptureTracingInteractor
 import com.android.systemui.screencapture.domain.interactor.screenCaptureUiInteractor
 import com.android.systemui.screencapture.record.domain.interactor.screenCaptureRecordFeaturesInteractor
@@ -84,8 +85,7 @@ class ScreenCaptureCoreStartableTest : SysuiTestCase() {
                 context = applicationContext,
                 screenCaptureComponentInteractor = screenCaptureComponentInteractor,
                 screenCaptureUiInteractor = screenCaptureUiInteractor,
-                focusedDisplayRepository = fakeFocusedDisplayRepository,
-                displayRepository = displayRepository,
+                screenCaptureTargetDisplayInteractor = screenCaptureTargetDisplayInteractor,
                 screenRecordingServiceInteractor = screenRecordingServiceInteractor,
                 postRecordingShelfFactory = postRecordingShelfFactory,
                 activityStarter = activityStarter,

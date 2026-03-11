@@ -213,7 +213,14 @@
         android:label="@string/keyboard_layout_slovak"
         android:keyboardLayout="@raw/keyboard_layout_slovak"
         android:keyboardLocale="sk-Latn"
-        android:keyboardLayoutType="qwerty" />
+        android:keyboardLayoutType="qwertz" />
+
+    <keyboard-layout
+        android:name="keyboard_layout_slovak_qwerty"
+        android:label="@string/keyboard_layout_slovak_qwerty"
+        android:keyboardLayout="@raw/keyboard_layout_slovak_qwerty"
+        android:keyboardLocale="sk-Latn"
+	    android:keyboardLayoutType="qwerty" />
 
     <keyboard-layout
         android:name="keyboard_layout_slovenian"

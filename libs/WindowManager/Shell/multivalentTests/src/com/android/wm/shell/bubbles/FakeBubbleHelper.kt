@@ -45,6 +45,10 @@ class FakeBubbleHelper : BubbleHelper {
         return false
     }
 
+    override fun isBubbleTask(taskInfo: ActivityManager.RunningTaskInfo): Boolean {
+        return false
+    }
+
     override fun getEnterBubbleTask(info: TransitionInfo): TransitionInfo.Change? {
         return null
     }

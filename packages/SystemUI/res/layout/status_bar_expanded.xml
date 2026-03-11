@@ -113,4 +113,15 @@
     <include
         layout="@layout/keyguard_bottom_area"
         android:visibility="gone" />
+
+    <include
+        android:id="@+id/keyguard_charging_button"
+        layout="@layout/keyguard_settings_popup_menu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:layout_marginBottom="@dimen/keyguard_affordance_vertical_offset"
+        android:layout_marginHorizontal="@dimen/keyguard_affordance_horizontal_offset"
+        android:visibility="gone"
+        />
 </com.android.systemui.shade.NotificationPanelView>

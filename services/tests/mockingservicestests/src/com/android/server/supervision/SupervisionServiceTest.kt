@@ -848,14 +848,12 @@ class SupervisionServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE)
     fun registerAndUnregisteSupervisionListener() {
         val (listener, binder) = registerSupervisionListenerForUser(USER_ID)
         unregisterSupervisionListener(listener, binder)
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE)
     fun setSupervisionEnabledForUser_notifiesSupervisionListeners_multipleUsers() {
         val listeners = buildMap {
             userData.keys.forEach { userId ->

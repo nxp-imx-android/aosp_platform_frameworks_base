@@ -560,13 +560,15 @@ public final class SurfaceControl implements Parcelable {
         private final @DurationNanosLong long mScheduledAppFrameTimeNs;
         private final @DurationNanosLong long mActualAppFrameTimeNs;
         private final @DurationNanosLong long mPresentDelayNs;
+        private final double mJankScore;
 
         /**
          * @hide
          */
         public JankData(long frameVsyncId, @JankType int jankTypeLegacy,
                 @JankType int jankTypeExperimental, long frameIntervalNs,
-                long scheduledAppFrameTimeNs, long actualAppFrameTimeNs, long presentDelayNs) {
+                long scheduledAppFrameTimeNs, long actualAppFrameTimeNs,
+                long presentDelayNs, double jankScore) {
             mFrameVsyncId = frameVsyncId;
             mJankTypeLegacy = jankTypeLegacy;
             mJankTypeExperimental = jankTypeExperimental;
@@ -574,6 +576,7 @@ public final class SurfaceControl implements Parcelable {
             mScheduledAppFrameTimeNs = scheduledAppFrameTimeNs;
             mActualAppFrameTimeNs = actualAppFrameTimeNs;
             mPresentDelayNs = presentDelayNs;
+            mJankScore = jankScore;
         }
 
         /**
@@ -663,6 +666,19 @@ public final class SurfaceControl implements Parcelable {
          */
         public @DurationNanosLong long getPresentDelayNanos() {
             return mPresentDelayNs;
+        }
+
+        /**
+         * Returns the jank severity score for this frame. This score is computed using the duration
+         * of the jank and the current frame rate. The score is normalized to a unit relative to a
+         * single frame jank at 120Hz. Therefore, for example, a score of 2 would mean a jank that
+         * is roughly equivalent to two single frame janks at 120Hz.
+         *
+         * @return the jank severity score
+         * @hide
+         */
+        public double getJankScore() {
+            return mJankScore;
         }
 
         @Override

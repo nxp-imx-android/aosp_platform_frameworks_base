@@ -355,11 +355,11 @@ public class TvPipController implements PipTransitionState.PipTransitionStateCha
     /**
      * Opens the "Pip-ed" Activity fullscreen.
      */
-    private void movePipToFullscreen() {
+    private void movePipToFullscreen(boolean wasVisible) {
         ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                 "%s: movePipToFullscreen()", TAG);
 
-        // TODO(b/463390460): Make call to TvPipScheduler to exit PiP.
+        mTvPipScheduler.scheduleExitPipViaExpand(wasVisible);
     }
 
     private void togglePipExpansion() {
@@ -517,7 +517,7 @@ public class TvPipController implements PipTransitionState.PipTransitionStateCha
                             "%s: onPinnedActivityRestartAttempt()", TAG);
                     // If the "Pip-ed" Activity is launched again by Launcher or intent, make it
                     // fullscreen.
-                    movePipToFullscreen();
+                    movePipToFullscreen(wasVisible);
                 }
             }
         });
@@ -632,7 +632,7 @@ public class TvPipController implements PipTransitionState.PipTransitionStateCha
     private void executeAction(@TvPipAction.ActionType int actionType) {
         switch (actionType) {
             case TvPipAction.ACTION_FULLSCREEN:
-                movePipToFullscreen();
+                movePipToFullscreen(/* wasVisible= */ true);
                 break;
             case TvPipAction.ACTION_CLOSE:
                 closePip();

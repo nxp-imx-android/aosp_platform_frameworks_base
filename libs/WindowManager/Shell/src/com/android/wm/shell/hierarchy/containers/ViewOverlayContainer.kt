@@ -16,6 +16,7 @@
 package com.android.wm.shell.hierarchy.containers
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.PixelFormat
 import android.graphics.RectF
 import android.os.Binder
@@ -26,7 +27,9 @@ import android.view.WindowManager
 import android.view.WindowlessWindowManager
 import android.window.WindowContainerToken
 import androidx.core.graphics.toRect
+import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.hierarchy.utils.HierarchyUtils
+import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_MODES
 
 typealias RootViewSupplier = (Context, ViewOverlayContainer) -> View
 
@@ -42,32 +45,24 @@ class ViewOverlayContainer(
     private val overrideWidth: Int? = null,
     private val overrideHeight: Int? = null,
 ) : Container(token = token, name = token.asBinder().interfaceDescriptor) {
+    // The WWM for the SCVH
+    private var windowlessWM: WindowlessWindowManager? = null
     // The view host for this container
     private var viewHost: SurfaceControlViewHost? = null
-
     // The root view of this container. This should only be used after 'initialize()' is called
     lateinit var rootView: View
 
     /**
-     * Initializes the overlay container. The container must be in the hierarchy before this is
-     * called.
+     * Returns the layout params for this windowless window.
      */
-    fun initialize(context: Context) {
-        val parent = this.parent!!
-
-        val display = HierarchyUtils.getAncestorDisplay(this)!!
-        val displayContext = display.displayProps().getDisplayContext(context)
-        rootView =
-            rootViewSupplier(displayContext.createConfigurationContext(parent.props.config), this)
-
-        // Set WM flags, tokens, and sizing
+    private fun getLayoutParams(parent: Container): WindowManager.LayoutParams {
         val width = overrideWidth ?: parent.props.bounds.width().toInt()
         val height = overrideHeight ?: parent.props.bounds.height().toInt()
         val lp = WindowManager.LayoutParams(
             width,
             height,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            0,
+            WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
             PixelFormat.TRANSPARENT
         )
         lp.token = Binder()
@@ -75,6 +70,20 @@ class ViewOverlayContainer(
         lp.privateFlags =
             lp.privateFlags or (WindowManager.LayoutParams.PRIVATE_FLAG_NO_MOVE_ANIMATION
                     or WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY)
+        return lp
+    }
+
+    /**
+     * Initializes the overlay container. The container must be in the hierarchy before this is
+     * called.
+     */
+    fun initialize(windowContext: Context) {
+        val parent = this.parent!!
+
+        rootView = rootViewSupplier(windowContext, this)
+
+        // Set WM flags, tokens, and sizing
+        val lp = getLayoutParams(parent)
         rootView.layoutParams = lp
 
         // Create a new leash
@@ -86,9 +95,9 @@ class ViewOverlayContainer(
         leash = builder.build()
 
         // Create a new viewhost
-        val wwm = WindowlessWindowManager(parent.props.config, leash, null)
+        windowlessWM = WindowlessWindowManager(parent.props.config, leash, null)
         viewHost = SurfaceControlViewHost(
-            displayContext, displayContext.display, wwm, name,
+            windowContext, windowContext.display, windowlessWM!!, name,
         )
         viewHost!!.setView(rootView, lp)
 
@@ -96,12 +105,33 @@ class ViewOverlayContainer(
         val relBounds = RectF(
             0f,
             0f,
-            width.toFloat(),
-            height.toFloat()
+            lp.width.toFloat(),
+            lp.height.toFloat()
         )
         surface.updateReferenceFrame(relBounds)
+        // Update the configuration for this container to match its parents
+        props.config.setTo(parent.props.config)
         props.config.windowConfiguration.setBounds(relBounds.toRect())
         updateSurfaceFromPropertyChanges()
+    }
+
+    /** @see Container.updateConfigurationFromParentIfNeeded */
+    override fun updateConfigurationFromParentIfNeeded(parentConfig: Configuration) {
+        val viewHost = this.viewHost
+        if (viewHost == null) {
+            return
+        }
+
+        // Update the configuration to match the parent container
+        if (props.config.diff(parentConfig) != 0) {
+            ProtoLog.v(WM_SHELL_MODES, "Updating view overlay from config changes: %s", name)
+            props.config.setTo(parentConfig)
+
+            // Update the config of the embedded view hierarchy & relayout to pick up the changes
+            windowlessWM!!.setConfiguration(props.config)
+            viewHost.relayout(getLayoutParams(parent!!))
+            updateSurfaceFromPropertyChanges()
+        }
     }
 
     /**

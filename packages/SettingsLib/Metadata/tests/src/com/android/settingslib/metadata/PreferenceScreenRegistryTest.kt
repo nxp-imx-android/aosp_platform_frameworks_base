@@ -234,6 +234,97 @@ class PreferenceScreenRegistryTest {
         assertThat(resultSchema).isSameInstanceAs(schema)
     }
 
+    @Test
+    fun createScreenInstanceForMetadata_onKeyAndInexistentFactory_returnsNull() {
+        val result = PreferenceScreenRegistry.createScreenInstanceForMetadata(context, notAScreenKey)
+
+        assertThat(result).isNull()
+    }
+
+    @Test
+    fun createScreenInstanceForMetadata_onNullKey_returnsNull() {
+        val result = PreferenceScreenRegistry.createScreenInstanceForMetadata(context, null)
+
+        assertThat(result).isNull()
+    }
+
+    @Test
+    fun createScreenInstanceForMetadata_onValidKey_returnsMetadata() {
+        setMetadataFactory(screenKey) { mockScreen }
+
+        val result = PreferenceScreenRegistry.createScreenInstanceForMetadata(context, screenKey)
+
+        assertThat(result).isSameInstanceAs(mockScreen)
+    }
+
+    @Test
+    fun createScreenInstanceForMetadata_onNotParameterizedFactory_returnsMetadata() {
+        val factory = PreferenceScreenMetadataFactory { mockScreen }
+
+        val result = PreferenceScreenRegistry.createScreenInstanceForMetadata(context, factory)
+
+        assertThat(result).isSameInstanceAs(mockScreen)
+    }
+
+    @Test
+    fun createScreenInstanceForMetadata_onParameterizedFactory_flagEnabled_returnsMetadata() {
+        setCatalystUseKeyParameters(true)
+        val schema = KeyParametersSchema { parameter("id", R.string.required_param_purpose, type = AnyString) }
+        val keyParams = schema.prepare("id" to "123")
+        val factory = object : TestParameterizedFactory {
+            override fun keyParameters(context: Context) = flowOf(keyParams)
+            override fun createWithKeyParameters(context: Context, keyParameters: ValidatedKeyParameters): PreferenceScreenMetadata {
+                assertThat(keyParameters).isEqualTo(keyParams)
+                return mockScreen
+            }
+        }
+
+        val result = PreferenceScreenRegistry.createScreenInstanceForMetadata(context, factory)
+
+        assertThat(result).isSameInstanceAs(mockScreen)
+    }
+
+    @Test
+    fun createScreenInstanceForMetadata_onParameterizedFactory_flagEnabled_noParameters_returnsNull() {
+        setCatalystUseKeyParameters(true)
+        val factory = object : TestParameterizedFactory {
+            override fun keyParameters(context: Context): Flow<ValidatedKeyParameters> = flowOf()
+        }
+
+        val result = PreferenceScreenRegistry.createScreenInstanceForMetadata(context, factory)
+
+        assertThat(result).isNull()
+    }
+
+    @Test
+    fun createScreenInstanceForMetadata_onParameterizedFactory_flagDisabled_returnsMetadata() {
+        setCatalystUseKeyParameters(false)
+        val args = Bundle().apply { putString("id", "123") }
+        val factory = object : TestParameterizedFactory {
+            override fun parameters(context: Context) = flowOf(args)
+            override fun create(context: Context, args: Bundle): PreferenceScreenMetadata {
+                assertThat(args.getString("id")).isEqualTo("123")
+                return mockScreen
+            }
+        }
+
+        val result = PreferenceScreenRegistry.createScreenInstanceForMetadata(context, factory)
+
+        assertThat(result).isSameInstanceAs(mockScreen)
+    }
+
+    @Test
+    fun createScreenInstanceForMetadata_onParameterizedFactory_flagDisabled_noParameters_returnsNull() {
+        setCatalystUseKeyParameters(false)
+        val factory = object : TestParameterizedFactory {
+            override fun parameters(context: Context): Flow<Bundle> = flowOf()
+        }
+
+        val result = PreferenceScreenRegistry.createScreenInstanceForMetadata(context, factory)
+
+        assertThat(result).isNull()
+    }
+
     interface TestParameterizedFactory : PreferenceScreenMetadataParameterizedFactory {
         override fun create(context: Context, args: Bundle): PreferenceScreenMetadata = error("Should not be called")
         override fun parameters(context: Context): Flow<Bundle> = flowOf(Bundle.EMPTY)

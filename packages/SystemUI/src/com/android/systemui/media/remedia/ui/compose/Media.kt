@@ -124,6 +124,7 @@ import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.node.Ref
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -1513,6 +1514,9 @@ private fun DeviceChip(
                 indication = null,
             ) {
                 viewModel.onClick(expandable)
+            }
+            .clearAndSetSemantics {
+                contentDescription = viewModel.text ?: viewModel.defaultDescription
             }
     ) {
         Expandable(

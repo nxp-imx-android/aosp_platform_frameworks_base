@@ -178,6 +178,7 @@ object WindowDecorationTestHelper {
                 pinnedLayerController = pinnedLayerController,
                 focusTransitionObserver = mock<FocusTransitionObserver>(),
                 recentsTransitionStateListener = recentsTransitionStateListener,
+                desktopTasksController = mock(),
             )
         val wrapped = decoration.wrapped()
         val positioner =

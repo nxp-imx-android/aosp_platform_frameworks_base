@@ -17,13 +17,13 @@
 package com.android.server.dreams;
 
 import static com.google.common.truth.Truth.assertThat;
+
 import static org.mockito.Mockito.when;
 
 import android.content.ComponentName;
 import android.hardware.display.AmbientDisplayConfiguration;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
-import android.provider.Settings;
 import android.service.dreams.DreamItem;
 import android.service.dreams.DreamPlaylist;
 import android.service.dreams.Flags;
@@ -248,6 +248,92 @@ public class DreamComponentsResolverTest {
     @Test
     public void isValid_nullComponent_returnsFalse() {
         assertThat(mResolver.isValid(null)).isFalse();
+    }
+
+    @Test
+    public void getDreamPlaylist_usesCache() {
+        mockDreamItem(DREAM_COMPONENT);
+        when(mDreamRepository.getDreamComponentsForUser(USER_ID))
+                .thenReturn(new ComponentName[] {DREAM_COMPONENT});
+
+        final DreamPlaylist playlist1 = mResolver.getDreamPlaylist(null);
+        final DreamPlaylist playlist2 = mResolver.getDreamPlaylist(null);
+
+        // Verify reference equality (same object from cache)
+        assertThat(playlist1).isSameInstanceAs(playlist2);
+    }
+
+    @Test
+    public void invalidate_clearsCache() {
+        mockDreamItem(DREAM_COMPONENT);
+        when(mDreamRepository.getDreamComponentsForUser(USER_ID))
+                .thenReturn(new ComponentName[] {DREAM_COMPONENT});
+
+        final DreamPlaylist playlist1 = mResolver.getDreamPlaylist(null);
+        mResolver.invalidate();
+        final DreamPlaylist playlist2 = mResolver.getDreamPlaylist(null);
+
+        // Verify cache was cleared (different objects)
+        assertThat(playlist1).isNotSameInstanceAs(playlist2);
+        assertThat(playlist1).isEqualTo(playlist2);
+    }
+
+    @Test
+    public void onPackageChanged_relevantPackage_invalidatesCache() {
+        mockDreamItem(DREAM_COMPONENT);
+        when(mDreamRepository.getDreamComponentsForUser(USER_ID))
+                .thenReturn(new ComponentName[] {DREAM_COMPONENT});
+
+        final DreamPlaylist playlist1 = mResolver.getDreamPlaylist(null);
+        mResolver.onPackageChanged(DREAM_COMPONENT.getPackageName());
+        final DreamPlaylist playlist2 = mResolver.getDreamPlaylist(null);
+
+        // Verify cache was cleared
+        assertThat(playlist1).isNotSameInstanceAs(playlist2);
+    }
+
+    @Test
+    public void onPackageChanged_irrelevantPackage_doesNotInvalidate() {
+        mockDreamItem(DREAM_COMPONENT);
+        when(mDreamRepository.getDreamComponentsForUser(USER_ID))
+                .thenReturn(new ComponentName[] {DREAM_COMPONENT});
+
+        final DreamPlaylist playlist1 = mResolver.getDreamPlaylist(null);
+        mResolver.onPackageChanged("com.irrelevant.package");
+        final DreamPlaylist playlist2 = mResolver.getDreamPlaylist(null);
+
+        // Verify cache was NOT cleared
+        assertThat(playlist1).isSameInstanceAs(playlist2);
+    }
+
+    @Test
+    public void onPackageChanged_defaultDream_invalidatesCache() {
+        when(mDreamRepository.getDreamComponentsForUser(USER_ID)).thenReturn(new ComponentName[0]);
+        when(mDreamRepository.getDefaultDreamComponentForUser(USER_ID))
+                .thenReturn(DEFAULT_DREAM_COMPONENT);
+        mockDreamItem(DEFAULT_DREAM_COMPONENT);
+
+        final DreamPlaylist playlist1 = mResolver.getDreamPlaylist(null);
+        mResolver.onPackageChanged(DEFAULT_DREAM_COMPONENT.getPackageName());
+        final DreamPlaylist playlist2 = mResolver.getDreamPlaylist(null);
+
+        // Verify cache was cleared
+        assertThat(playlist1).isNotSameInstanceAs(playlist2);
+    }
+
+    @Test
+    public void onPackageChanged_configuredButInvalid_invalidatesCache() {
+        final ComponentName invalidDream = new ComponentName("com.invalid", ".Dream");
+        when(mDreamRepository.getDreamComponentsForUser(USER_ID))
+                .thenReturn(new ComponentName[] {invalidDream});
+        when(mDreamRepository.getDreamItem(invalidDream)).thenReturn(java.util.Optional.empty());
+
+        final DreamPlaylist playlist1 = mResolver.getDreamPlaylist(null);
+        mResolver.onPackageChanged(invalidDream.getPackageName());
+        final DreamPlaylist playlist2 = mResolver.getDreamPlaylist(null);
+
+        // Verify cache was cleared
+        assertThat(playlist1).isNotSameInstanceAs(playlist2);
     }
 
     private DreamItem createDreamItem(ComponentName component) {

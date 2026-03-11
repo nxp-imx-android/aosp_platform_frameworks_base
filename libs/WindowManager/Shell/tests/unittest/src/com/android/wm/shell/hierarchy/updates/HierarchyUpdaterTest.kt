@@ -17,18 +17,22 @@ package com.android.wm.shell.hierarchy.updates
 
 import android.app.ActivityManager
 import android.content.ComponentName
+import android.content.Context
 import android.content.pm.UserInfo
 import android.graphics.Rect
 import android.hardware.devicestate.DeviceStateManager
+import android.hardware.display.DisplayManager
 import android.os.Handler
 import android.os.IBinder
 import android.platform.test.annotations.EnableFlags
+import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.InsetsSource
 import android.view.InsetsState
 import android.view.Surface
 import android.view.SurfaceControl
 import android.view.WindowInsets.Type.navigationBars
+import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_OPEN
 import android.view.WindowManager.TRANSIT_TO_BACK
@@ -104,21 +108,21 @@ class HierarchyUpdaterTest : ShellTestCase() {
 
     // Create a test hierarchy
     private val display =
-        Container(
+        StubContainer(
             WindowContainerToken.createProxy("Display"),
             DisplayContainerProperties(DEFAULT_DISPLAY)
         ).apply {
             leash = mock<SurfaceControl>()
         }
     private val displayArea =
-        Container(
+        StubContainer(
             WindowContainerToken.createProxy("DisplayArea"),
             DisplayAreaContainerProperties(FEATURE_DEFAULT_TASK_CONTAINER)
         ).apply {
             leash = mock<SurfaceControl>()
         }
     private val child1 =
-        Container(
+        StubContainer(
             WindowContainerToken.createProxy("Child1"),
             TaskContainerProperties(ActivityManager.RunningTaskInfo().apply {
                 taskId = 1
@@ -126,7 +130,7 @@ class HierarchyUpdaterTest : ShellTestCase() {
         )
     private val child1Mode = spy(StubMode("Child1Mode"))
     private val child2 =
-        Container(
+        StubContainer(
             WindowContainerToken.createProxy("Child2"),
             TaskContainerProperties(ActivityManager.RunningTaskInfo().apply {
                 taskId = 2
@@ -283,6 +287,77 @@ class HierarchyUpdaterTest : ShellTestCase() {
                 container1
             )
         )
+    }
+
+    @Test
+    fun testDisplayChangeInvalidatesContext() {
+        val mockDisplayManager = mock<DisplayManager>()
+        mockDisplayManager.stub {
+            on { getDisplay(any()) } doAnswer {
+                mock<Display>()
+            }
+        }
+        val baseContext = mock<Context>()
+        baseContext.stub {
+            on { getSystemService(eq(DisplayManager::class.java)) } doAnswer {
+                mockDisplayManager
+            }
+            on { createDisplayContext(any()) } doAnswer {
+                mock<Context>()
+            }
+        }
+
+        // Create a separate display container since we don't create display contexts for the
+        // default display
+        val otherDisplay =
+            Container(
+                WindowContainerToken.createProxy("Display2"),
+                DisplayContainerProperties(12345)
+            ).apply {
+                parent = hierarchy.root
+                leash = mock<SurfaceControl>()
+            }
+
+        // Get the old context instance
+        val displayProps = otherDisplay.displayProps()
+        val preChangeDisplayContext = displayProps.getDisplayContext(baseContext)
+        // Just verify it's cached
+        assertThat(displayProps.getDisplayContext(baseContext)).isEqualTo(preChangeDisplayContext)
+
+        // Trigger a default display change
+        val info = TransitionInfo(TRANSIT_CHANGE, 0).apply {
+            val change = TransitionInfo.Change(otherDisplay.token, otherDisplay.leash).apply {
+                mode = TRANSIT_CHANGE
+                setEndAbsBounds(Rect(0, 0, 500, 500))
+                setRotation(Surface.ROTATION_0, Surface.ROTATION_90)
+            }
+            addChange(change)
+        }
+        updater.handleTransition(
+            mock<IBinder>(),
+            mock<AnimationPlan>(),
+            info,
+            mock<SurfaceControl.Transaction>(),
+        )
+
+        // Verify that the context has changed
+        assertThat(displayProps.getDisplayContext(baseContext))
+            .isNotEqualTo(preChangeDisplayContext)
+    }
+
+    @Test
+    fun testUpdateChildOfParentPropsChanging() {
+        // Update child1
+        val change = TransitionInfo.Change(child1.token, mock<SurfaceControl>()).apply {
+            mode = TRANSIT_CHANGE
+            setEndAbsBounds(Rect(0, 0, 500, 500))
+        }
+        child1.updateFromWindowChange(hierarchy.root, change)
+
+        // Verify that the children have changed
+        for (child in child1.children) {
+            assertThat((child as StubContainer).parentConfigChanged).isTrue()
+        }
     }
 
     @Test
@@ -586,7 +661,7 @@ class HierarchyUpdaterTest : ShellTestCase() {
     }
 
     @Test
-    fun testUpdateDisplay() {
+    fun testRequestUpdateForDisplayChange() {
         // Create two displays in the hierarchy with children that have modes
         val otherDisplay =
             Container(
@@ -607,9 +682,9 @@ class HierarchyUpdaterTest : ShellTestCase() {
         updater.updateDisplay(DEFAULT_DISPLAY, displayLayout, wct)
 
         // Verify that the root & default display modes are notified, but not others
-        assertThat((hierarchy.root.mode as StubMode).displayChanges).isNotEmpty()
-        assertThat(child1Mode.displayChanges).isNotEmpty()
-        assertThat(otherDisplayChildMode.displayChanges).isEmpty()
+        assertThat((hierarchy.root.mode as StubMode).requestedDisplayChanges).isNotEmpty()
+        assertThat(child1Mode.requestedDisplayChanges).isNotEmpty()
+        assertThat(otherDisplayChildMode.requestedDisplayChanges).isEmpty()
     }
 
     @Test

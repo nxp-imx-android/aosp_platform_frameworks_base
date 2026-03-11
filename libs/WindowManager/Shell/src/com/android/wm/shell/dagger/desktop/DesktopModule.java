@@ -25,6 +25,7 @@ import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.suppliers.TransactionSupplier;
 import com.android.wm.shell.dagger.DynamicOverride;
 import com.android.wm.shell.dagger.WMSingleton;
+import com.android.wm.shell.desktopmode.DesktopModeShellCommandHandler;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.ShellDesktopState;
@@ -37,8 +38,10 @@ import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
+import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
 import com.android.wm.shell.sysui.ShellInit;
+import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
 
 import dagger.Module;
@@ -110,5 +113,22 @@ public class DesktopModule {
     ) {
         return new DesktopHomeScreenPeekTransitionHandler(mainExecutor, transitions,
                 transactionSupplier, shellController, desktopUserRepositories);
+    }
+
+    @WMSingleton
+    @Provides
+    static DesktopModeShellCommandHandler provideDesktopModeShellCommandHandler(
+            Optional<DesktopTasksController> controller,
+            FocusTransitionObserver focusTransitionObserver,
+            @DynamicOverride DesktopUserRepositories userRepositories,
+            ShellDesktopState shellDesktopState,
+            ShellCommandHandler shellCommandHandler,
+            ShellController shellController,
+            ShellInit shellInit,
+            DesktopHomeScreenPeekController desktopHomeScreenPeekController
+    ) {
+        return new DesktopModeShellCommandHandler(controller, focusTransitionObserver,
+                userRepositories, shellController, shellDesktopState, shellCommandHandler,
+                shellInit, desktopHomeScreenPeekController);
     }
 }

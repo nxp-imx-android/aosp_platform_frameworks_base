@@ -82,6 +82,7 @@ val Kosmos.defaultKeyguardBlueprint by
             keyguardSliceViewSection = mock(),
             udfpsAccessibilityOverlaySection = mock(),
             accessibilityActionsSection = mock(),
+            batteryChargingPopupMenuSection = mock(),
         )
     }
 
@@ -104,6 +105,7 @@ val Kosmos.splitShadeBlueprint by
             smartspaceSection = keyguardSmartspaceSection,
             mediaSection = mock(),
             accessibilityActionsSection = mock(),
+            batteryChargingPopupMenuSection = mock(),
         )
     }
 

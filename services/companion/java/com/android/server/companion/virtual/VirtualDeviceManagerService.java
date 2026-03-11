@@ -31,6 +31,7 @@ import android.annotation.PermissionManuallyEnforced;
 import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
+import android.app.ActivityManagerInternal;
 import android.app.ActivityOptions;
 import android.app.IApplicationThread;
 import android.app.compat.CompatChanges;
@@ -48,6 +49,7 @@ import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IAutomatedPackageListener;
+import android.companion.virtual.computercontrol.IComputerControlConsentManager;
 import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
 import android.companion.virtual.sensor.VirtualSensor;
 import android.companion.virtualdevice.flags.Flags;
@@ -156,6 +158,8 @@ public class VirtualDeviceManagerService extends SystemService {
 
     @SuppressWarnings("NullAway") // Initialized on start, not in constructor
     private ActivityTaskManagerInternal mActivityTaskManagerInternal;
+    @SuppressWarnings("NullAway") // Initialized on start, not in constructor
+    private ActivityManagerInternal mActivityManagerInternal;
     private final VirtualDeviceManagerImpl mImpl;
     private final VirtualDeviceManagerNativeImpl mNativeImpl;
     private final VirtualDeviceManagerInternal mLocalService;
@@ -163,6 +167,7 @@ public class VirtualDeviceManagerService extends SystemService {
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     private final PendingTrampolineMap mPendingTrampolines = new PendingTrampolineMap(mHandler);
     private final ComputerControlSessionProcessor mComputerControlSessionProcessor;
+    private final IComputerControlConsentManager mComputerControlConsentManager;
     private final AutomatedPackagesRepository mAutomatedPackagesRepository;
 
     private static final AtomicInteger sNextUniqueIndex = new AtomicInteger(
@@ -220,6 +225,7 @@ public class VirtualDeviceManagerService extends SystemService {
                                         mImpl.createLocalVirtualDevice(
                                                 token, attributionSource, params,
                                                 DEVICE_PROFILE_COMPUTER_CONTROL)));
+        mComputerControlConsentManager = new ComputerControlConsentManagerImpl();
         mAutomatedPackagesRepository = new AutomatedPackagesRepository(mHandler);
     }
 
@@ -286,6 +292,7 @@ public class VirtualDeviceManagerService extends SystemService {
         mActivityTaskManagerInternal.registerActivityStartInterceptor(
                 VIRTUAL_DEVICE_SERVICE_ORDERED_ID,
                 mActivityInterceptorCallback);
+        mActivityManagerInternal = getLocalService(ActivityManagerInternal.class);
 
         CompanionDeviceManager cdm = getContext().getSystemService(CompanionDeviceManager.class);
         if (cdm != null) {
@@ -570,6 +577,11 @@ public class VirtualDeviceManagerService extends SystemService {
 
             mComputerControlSessionProcessor.processNewSessionRequest(
                     appThread, attributionSource, params, callback);
+        }
+
+        @Override // Binder call
+        public IComputerControlConsentManager getComputerControlConsentManager() {
+            return mComputerControlConsentManager;
         }
 
         @EnforcePermission(android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
@@ -907,6 +919,73 @@ public class VirtualDeviceManagerService extends SystemService {
         }
     }
 
+    private final class ComputerControlConsentManagerImpl extends
+            IComputerControlConsentManager.Stub {
+
+        @Override // Binder call
+        @EnforcePermission(android.Manifest.permission.MANAGE_COMPUTER_CONTROL_CONSENT)
+        public void addAppToAutomatableAppListForAgent(int agentUid,
+                @NonNull String agentPackageName, @NonNull String packageName) {
+            addAppToAutomatableAppListForAgent_enforcePermission();
+            Objects.requireNonNull(packageName);
+            if (!android.companion.virtualdevice.flags.Flags.computerControlPerAppConsent()) {
+                return;
+            }
+            mComputerControlSessionProcessor.addAppToAutomatableAppListForAgent(agentUid,
+                    agentPackageName, packageName);
+        }
+
+        @Override // Binder call
+        @EnforcePermission(android.Manifest.permission.MANAGE_COMPUTER_CONTROL_CONSENT)
+        public void removeAppFromAutomatableAppListForAgent(int agentUid,
+                @NonNull String agentPackageName,
+                @NonNull String packageName) {
+            removeAppFromAutomatableAppListForAgent_enforcePermission();
+            Objects.requireNonNull(packageName);
+            if (!android.companion.virtualdevice.flags.Flags.computerControlPerAppConsent()) {
+                return;
+            }
+            mComputerControlSessionProcessor.removeAppFromAutomatableAppListForAgent(agentUid,
+                    agentPackageName, packageName);
+        }
+
+        @Override // Binder call
+        @EnforcePermission(android.Manifest.permission.MANAGE_COMPUTER_CONTROL_CONSENT)
+        public void clearAutomatableAppListForAgent(int agentUid,
+                @NonNull String agentPackageName) {
+            clearAutomatableAppListForAgent_enforcePermission();
+            if (!android.companion.virtualdevice.flags.Flags.computerControlPerAppConsent()) {
+                return;
+            }
+            mComputerControlSessionProcessor.clearAutomatableAppListForAgent(agentUid,
+                    agentPackageName);
+        }
+
+        @Override // Binder call
+        @PermissionManuallyEnforced
+        public String[] getAutomatableAppListForAgent(int agentUid,
+                @NonNull String agentPackageName) {
+            if (!android.companion.virtualdevice.flags.Flags.computerControlPerAppConsent()) {
+                return new String[0];
+            }
+            // Allow agents to query its own automatable app list
+            final int callingUid = Binder.getCallingUid();
+            if (callingUid == agentUid) {
+                if (!PermissionUtils.validateCallingPackageName(getContext(), agentPackageName)) {
+                    throw new SecurityException(
+                            "Package name " + agentPackageName + " does not belong to calling uid "
+                                    + callingUid);
+                }
+            } else {
+                getContext().enforceCallingOrSelfPermission(
+                        android.Manifest.permission.MANAGE_COMPUTER_CONTROL_CONSENT,
+                        "getAutomatableAppListForAgent");
+            }
+            return mComputerControlSessionProcessor.getAutomatableAppListForAgent(agentUid,
+                    agentPackageName);
+        }
+    }
+
     private String computeDeviceProfile(@Nullable AssociationInfo associationInfo,
             @Nullable String deviceProfile) {
         if (deviceProfile != null) {
@@ -987,6 +1066,24 @@ public class VirtualDeviceManagerService extends SystemService {
                 }
             }
             return result;
+        }
+
+        @Override
+        public boolean isDeviceIdAssociationValid(int uid, int deviceId) {
+            if (getDeviceIdsForUid(uid).contains(deviceId)) {
+                return true;
+            }
+            VirtualDeviceImpl virtualDevice = getVirtualDeviceForId(deviceId);
+            if (virtualDevice == null) {
+                return false;
+            }
+            // Allow the device owners to be associated with their devices without having to run
+            // activities there.
+            if (uid == virtualDevice.getOwnerUid()) {
+                return true;
+            }
+            return mActivityManagerInternal.hasServiceBindingOrProviderUse(
+                    uid, virtualDevice.getOwnerUid());
         }
 
         @Override

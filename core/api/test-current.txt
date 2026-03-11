@@ -683,6 +683,14 @@ package android.app.admin {
     ctor public IntentFilterPolicyKey(@NonNull String, @NonNull android.content.IntentFilter);
   }
 
+  @FlaggedApi("android.app.admin.flags.policy_streamlining") public final class LeastRecent<V> extends android.app.admin.ResolutionMechanism<V> {
+    ctor public LeastRecent();
+    method public int describeContents();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.admin.LeastRecent<?>> CREATOR;
+    field @NonNull public static final android.app.admin.LeastRecent<?> LEAST_RECENT;
+  }
+
   public final class MostRecent<V> extends android.app.admin.ResolutionMechanism<V> {
     ctor public MostRecent();
     method public int describeContents();
@@ -3540,9 +3548,10 @@ package android.service.notification {
     method @FlaggedApi("android.app.nm_contextual_display_launch") public int getOriginatingRuleOrder();
     method @FlaggedApi("android.app.nm_contextual_display_launch") public void setOriginatingRuleId(int);
     method @FlaggedApi("android.app.nm_contextual_display_launch") public void setOriginatingRuleOrder(int);
+    field @FlaggedApi("android.app.nm_contextual_display_launch") public static final String KEY_BREAKTHROUGH_ALL_MODES = "breakthrough_all_modes";
     field @FlaggedApi("android.app.nm_contextual_display_launch") public static final String KEY_HIGHLIGHT = "highlight";
     field @FlaggedApi("android.app.nm_contextual_display_launch") public static final String KEY_LIGHT = "light";
-    field @FlaggedApi("android.app.nm_contextual_display_launch") public static final String KEY_MODE_BREAKTHROUGHS = "mode_breakthrough";
+    field @FlaggedApi("android.app.nm_contextual_display_launch") public static final String KEY_MODE_BREAKTHROUGH_LIST = "mode_breakthrough";
     field @FlaggedApi("android.app.nm_contextual_display_launch") public static final String KEY_SOUND = "sound";
   }
 

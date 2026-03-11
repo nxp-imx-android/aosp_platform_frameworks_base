@@ -58,6 +58,8 @@ constructor(
     @Named(KeyguardSectionsModule.KEYGUARD_AMBIENT_INDICATION_AREA_SECTION)
     defaultAmbientIndicationAreaSection: Optional<KeyguardSection>,
     defaultSettingsPopupMenuSection: DefaultSettingsPopupMenuSection,
+    @Named(KeyguardSectionsModule.KEYGUARD_BATTERY_CHARGING_SECTION)
+    batteryChargingPopupMenuSection: Optional<KeyguardSection>,
     defaultStatusBarSection: DefaultStatusBarSection,
     splitShadeNotificationStackScrollLayoutSection: SplitShadeNotificationStackScrollLayoutSection,
     splitShadeGuidelines: SplitShadeGuidelines,
@@ -79,6 +81,7 @@ constructor(
             defaultShortcutsSection,
             defaultAmbientIndicationAreaSection.getOrNull(),
             defaultSettingsPopupMenuSection,
+            batteryChargingPopupMenuSection.getOrNull(),
             defaultStatusBarSection,
             splitShadeNotificationStackScrollLayoutSection,
             splitShadeGuidelines,

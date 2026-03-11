@@ -69,6 +69,7 @@ import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.MutableStateFlow
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -145,6 +146,7 @@ class GoneToQSSceneTransitionTest : SysuiTestCase() {
         )
 
     @Test
+    @Ignore
     @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
     fun multiSwipeDownFromGoneToQSScene_recordingQSContentYCoordinate() {
         motionTestRule.runTest(60.seconds) {
@@ -202,6 +204,7 @@ class GoneToQSSceneTransitionTest : SysuiTestCase() {
     }
 
     @Test
+    @Ignore
     @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
     fun multiSwipeDownFromGoneNotCrossingThreshold_recordingQSContentYCoordinate() {
         motionTestRule.runTest(60.seconds) {

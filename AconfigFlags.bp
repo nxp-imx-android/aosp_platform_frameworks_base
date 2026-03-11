@@ -431,6 +431,12 @@ java_aconfig_library {
     ],
 }
 
+rust_aconfig_library {
+    name: "libandroid_hardware_input_flags_rust",
+    crate_name: "android_hardware_input_flags",
+    aconfig_declarations: "com.android.hardware.input.input-aconfig",
+}
+
 aconfig_declarations {
     name: "com.android.internal.widget.flags-aconfig",
     package: "com.android.internal.widget.flags",
@@ -2610,11 +2616,16 @@ java_aconfig_library {
     min_sdk_version: "30",
     apex_available: [
         "//apex_available:platform",
+        "com.android.adservices",
+        "com.android.appsearch",
         // ART needs access to PCC flags to include PCC along with isolated processes
         // in the shared-app logic
         "com.android.art",
         "com.android.art.debug",
-        "com.android.appsearch",
+        "com.android.extservices",
+        "com.android.healthfitness",
+        "com.android.mediaprovider",
+        "com.android.permission",
     ],
 }
 

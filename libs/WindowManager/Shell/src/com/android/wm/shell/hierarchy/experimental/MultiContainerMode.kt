@@ -26,6 +26,7 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.WindowManager.LayoutParams.TYPE_APPLICATION
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.widget.FrameLayout
 import android.window.TaskCreationParams
@@ -48,7 +49,7 @@ import java.io.PrintWriter
  * which can be reordered.
  */
 class MultiContainerMode(
-    private val context: Context,
+    private val appContext: Context,
     private val hierarchy: ContainerHierarchy,
 ) : Mode {
     private val rootsPerDisplay = mutableMapOf<Int, Container>()
@@ -73,13 +74,33 @@ class MultiContainerMode(
         val overlay = ViewOverlayContainer(
             WindowContainerToken.createProxy(":multi_container_mode_overlay"),
             { context, _ ->
-                FrameLayout(context)
+                val rootView = FrameLayout(context)
+
+                // Create two buttons in the root view that will add and remove sub containers
+                val button1 = FrameLayout(context)
+                button1.setLayoutParams(FrameLayout.LayoutParams(100, MATCH_PARENT))
+                button1.setBackgroundColor(Color.argb(128, 0, 255, 0))
+                button1.setOnClickListener {
+                    launchExampleAppIntoContainer(addContainer(displayId))
+                }
+                val button2 = FrameLayout(context)
+                button2.setBackgroundColor(Color.argb(128, 255, 0, 0))
+                button2.setLayoutParams(FrameLayout.LayoutParams(100, MATCH_PARENT).apply {
+                    leftMargin = 100
+                })
+                button2.setOnClickListener {
+                    removeLastContainer(displayId)
+                }
+
+                rootView.addView(button1)
+                rootView.addView(button2)
+                rootView
             },
             overrideWidth = 400,
             overrideHeight = 200,
         )
         overlay.parent = root
-        overlay.initialize(context)
+        overlay.initialize(display.displayProps().createWindowContext(appContext))
 
         val newBounds = RectF(overlay.props.bounds)
         newBounds.offset(100f, 100f)
@@ -90,26 +111,6 @@ class MultiContainerMode(
             .setLayer(tx, Integer.MAX_VALUE)
             .show(tx)
         overlays[root.token] = overlay
-
-        // Create two buttons in the root view that will add and remove sub containers
-        val button1 = FrameLayout(context)
-        button1.setLayoutParams(FrameLayout.LayoutParams(100, MATCH_PARENT))
-        button1.setBackgroundColor(Color.argb(128, 0, 255, 0))
-        button1.setOnClickListener {
-            launchExampleAppIntoContainer(addContainer(displayId))
-        }
-        val button2 = FrameLayout(context)
-        button2.setBackgroundColor(Color.argb(128, 255, 0, 0))
-        button2.setLayoutParams(FrameLayout.LayoutParams(100, MATCH_PARENT).apply {
-            leftMargin = 100
-        })
-        button2.setOnClickListener {
-            removeLastContainer(displayId)
-        }
-
-        val parent = overlay.rootView as ViewGroup
-        parent.addView(button1)
-        parent.addView(button2)
     }
 
     private fun addContainer(displayId: Int): WindowContainerToken {
@@ -139,7 +140,7 @@ class MultiContainerMode(
         }
         val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_APP_BROWSER)
         intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(intent, opts.toBundle())
+        appContext.startActivity(intent, opts.toBundle())
     }
 
     private fun layoutChildren(

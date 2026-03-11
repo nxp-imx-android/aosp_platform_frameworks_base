@@ -24,6 +24,7 @@ import static com.android.wm.shell.common.pip.PipMenuController.ALPHA_NO_CHANGE;
 import static com.android.wm.shell.pip2.phone.transition.PipTransitionUtils.getChangeByToken;
 import static com.android.wm.shell.pip2.phone.transition.PipTransitionUtils.getPipChange;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE;
+import static com.android.wm.shell.transition.Transitions.TRANSIT_EXIT_PIP;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_PIP_BOUNDS_CHANGE;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_REMOVE_PIP;
 
@@ -34,6 +35,7 @@ import android.app.PictureInPictureParams;
 import android.app.TaskInfo;
 import android.content.Context;
 import android.graphics.Insets;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -62,6 +64,7 @@ import com.android.wm.shell.pip.tv.TvPipMenuController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
 import com.android.wm.shell.pip2.animation.PipEnterAnimator;
+import com.android.wm.shell.pip2.animation.PipExpandAnimator;
 import com.android.wm.shell.pip2.animation.PipResizeAnimator;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
 import com.android.wm.shell.pip2.phone.transition.PipTransitionUtils;
@@ -103,6 +106,8 @@ public class TvPipTransition extends PipTransitionController implements
 
     @Nullable
     private IBinder mEnterTransition;
+    @Nullable
+    private IBinder mExitViaExpandTransition;
     @Nullable
     private IBinder mRemoveTransition;
     @Nullable
@@ -146,6 +151,16 @@ public class TvPipTransition extends PipTransitionController implements
                     "%s: V2 Flag is ON, registering TvPip2Transition handler.", TAG);
             mTransitions.addHandler(this);
         }
+    }
+
+    @Override
+    public IBinder startExpandTransition(
+            WindowContainerTransaction wct, boolean toSplit, boolean hasFirstHandler) {
+        if (wct == null) return null;
+        mPipTransitionState.setState(PipTransitionState.EXITING_PIP);
+        Transitions.TransitionHandler handler = hasFirstHandler ? this : null;
+        mExitViaExpandTransition = mTransitions.startTransition(TRANSIT_EXIT_PIP, wct, handler);
+        return mExitViaExpandTransition;
     }
 
     @Override
@@ -273,12 +288,88 @@ public class TvPipTransition extends PipTransitionController implements
                 pipActivityChange);
 
         animator.setAnimationStartCallback(() -> animator.setEnterStartState(pipChange));
+        animator.addUpdateListener(animation -> {
+            float fraction = animation.getAnimatedFraction();
+            mTvPipMenuController.movePipMenu(/* pipTx= */ null, destinationBounds, fraction);
+        });
         animator.setAnimationEndCallback(() -> {
-            // Show menu, rounded corners, and shadow at the end of the animation.
-            mPipSurfaceTransactionHelper.round(finishTransaction, leash, false);
-            mPipSurfaceTransactionHelper.shadow(finishTransaction, leash, false);
-            mTvPipMenuController.movePipMenu(finishTransaction, destinationBounds, 1f);
+            finishTransition();
+        });
 
+        mCurrentAnimator = animator;
+        animator.start();
+        return true;
+    }
+
+    private boolean startExpandAnimation(@NonNull TransitionInfo info,
+            @NonNull SurfaceControl.Transaction startTransaction,
+            @NonNull SurfaceControl.Transaction finishTransaction,
+            @NonNull Transitions.TransitionFinishCallback finishCallback) {
+        WindowContainerToken pipToken = mPipTransitionState.getPipTaskToken();
+        TransitionInfo.Change pipChange = getChangeByToken(info, pipToken);
+        SurfaceControl activitySc = null;
+        if (pipChange == null) {
+            // The pipTaskChange is null, this can happen if we are reparenting the
+            // PIP activity back to its original Task. In that case, we should animate
+            // the activity leash instead, which should be the change whose last parent
+            // is the recorded PiP Task.
+            for (TransitionInfo.Change change : info.getChanges()) {
+                if (change.getTaskInfo() == null
+                        && change.getLastParent() != null
+                        && change.getLastParent().equals(pipToken)) {
+                    pipChange = change;
+                    activitySc = change.getLeash();
+                    break;
+                }
+            }
+            if (pipChange == null) {
+                return false;
+            }
+        }
+        mPipTransitionState.setState(PipTransitionState.EXITING_PIP);
+        mFinishCallback = finishCallback;
+
+        final TransitionInfo.Root root = TransitionUtil.getRootFor(pipChange, info);
+        final SurfaceControl pipLeash;
+
+        if (activitySc != null) {
+            // Use a local leash to animate activity in case the activity has
+            // letterbox which may be broken by PiP animation, e.g. always end at 0,0
+            // in parent and unable to include letterbox area in crop bounds.
+            pipLeash = new SurfaceControl.Builder()
+                    .setName(activitySc + "_pip-leash")
+                    .setContainerLayer()
+                    .setParent(root.getLeash())
+                    .build();
+
+            startTransaction.reparent(activitySc, pipLeash);
+
+            final Point activityOffset = pipChange.getEndRelOffset();
+            startTransaction.setPosition(activitySc, activityOffset.x, activityOffset.y);
+            startTransaction.show(pipLeash);
+        } else {
+            pipLeash = pipChange.getLeash();
+            startTransaction.reparent(pipLeash, root.getLeash());
+        }
+
+        startTransaction.setLayer(pipLeash, Integer.MAX_VALUE);
+
+        final Rect startBounds = pipChange.getStartAbsBounds();
+        final Rect destinationBounds = pipChange.getEndAbsBounds();
+
+        final PipExpandAnimator animator = new PipExpandAnimator(mContext,
+                mPipSurfaceTransactionHelper, pipLeash,
+                startTransaction, finishTransaction, destinationBounds, startBounds,
+                destinationBounds, /* sourceRectHint= */ null, Surface.ROTATION_0,
+                /* isPipInDesktopMode= */ false);
+
+        animator.addUpdateListener(animation -> {
+            float fraction = animation.getAnimatedFraction();
+            mTvPipMenuController.movePipMenu(/* pipTx= */ null, /* pipBounds= */ null,
+                    1f - fraction);
+        });
+
+        animator.setAnimationEndCallback(() -> {
             finishTransition();
         });
 
@@ -388,6 +479,9 @@ public class TvPipTransition extends PipTransitionController implements
             extra.putParcelable(PIP_TASK_INFO, pipChange.getTaskInfo());
             mPipTransitionState.setState(PipTransitionState.ENTERING_PIP, extra);
             return startEnterAnimation(info, startTransaction, finishTransaction, finishCallback);
+        } else if (transition == mExitViaExpandTransition) {
+            mExitViaExpandTransition = null;
+            return startExpandAnimation(info, startTransaction, finishTransaction, finishCallback);
         } else if (transition == mBoundsChangeTransition) {
             ProtoLog.d(WM_SHELL_PICTURE_IN_PICTURE,
                     "%s: starting PiP bounds change animation", TAG);

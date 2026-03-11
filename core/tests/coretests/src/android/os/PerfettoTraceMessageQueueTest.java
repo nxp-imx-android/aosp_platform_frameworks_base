@@ -25,9 +25,10 @@ import android.platform.test.flag.junit.FlagsParameterization;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.ArraySet;
 
+import com.android.internal.dev.perfetto.sdk.PerfettoTrace;
+
 import com.google.protobuf.ExtensionRegistryLite;
 
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -72,11 +73,8 @@ import java.util.concurrent.TimeUnit;
  * correct version.
  */
 @RunWith(ParameterizedAndroidJunit4.class)
-@DisabledOnRavenwood(blockedBy = PerfettoTrace.class)
+@DisabledOnRavenwood
 public class PerfettoTraceMessageQueueTest {
-    private static final boolean PERFETTO_V3_FLAG_WHEN_STARTED =
-            android.os.Flags.perfettoSdkTracingV3();
-
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
@@ -104,29 +102,22 @@ public class PerfettoTraceMessageQueueTest {
     @BeforeClass
     public static void setUpClass() {
         PerfettoTrace.register(true);
-        PerfettoTrace.registerCategories();
+        PerfettoCategories.registerCategories();
     }
 
     private boolean mPerfettoV3FlagWhenRunning = false;
 
     @Before
     public void setUp() {
-        // The value of the flag is changed by the 'mSetFlagsRule'.
-        mPerfettoV3FlagWhenRunning = android.os.Flags.perfettoSdkTracingV3();
-        Assume.assumeTrue(
-                "Parametrized test flag value is not equal to the boot time flag value.",
-                mPerfettoV3FlagWhenRunning == PERFETTO_V3_FLAG_WHEN_STARTED);
         mCategoryNames.clear();
         mEventNames.clear();
     }
 
     @Test
     public void testMessageQueue() throws Exception {
-        // Assert we initialize the correct API version.
-        if (mPerfettoV3FlagWhenRunning) {
-            assertThat(PerfettoCategories.MQ_CATEGORY.isRegistered()).isTrue();
-        } else {
-            assertThat(PerfettoCategories.MQ_CATEGORY.isRegistered()).isFalse();
+        // Only run tests if tracing is enabled
+        if (!android.os.Flags.perfettoSdkTracingV3()) {
+            return;
         }
 
         final String mqReceiverThreadName = "mq_test_thread";

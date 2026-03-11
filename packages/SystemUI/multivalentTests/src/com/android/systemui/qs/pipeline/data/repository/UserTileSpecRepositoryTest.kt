@@ -495,6 +495,7 @@ class UserTileSpecRepositoryTest(flags: FlagsParameterization) : SysuiTestCase()
 
     @Test
     @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.SUPPRESSION_FLAG_NAME)
     fun flagEnabled_readFromSettings_largeInternetTileBecomesWifiAndCellSmall() =
         kosmos.runTest {
             val storedInSettings = "a,b,internet,c"
@@ -522,6 +523,7 @@ class UserTileSpecRepositoryTest(flags: FlagsParameterization) : SysuiTestCase()
 
     @Test
     @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.SUPPRESSION_FLAG_NAME)
     fun flagEnabled_readFromSettings_notMainUser_largeInternetTileBecomesLargeWifi() =
         kosmos.runTest {
             val user = FakeUserRepository.MAIN_USER_ID + 1
@@ -563,6 +565,7 @@ class UserTileSpecRepositoryTest(flags: FlagsParameterization) : SysuiTestCase()
 
     @Test
     @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.SUPPRESSION_FLAG_NAME)
     fun flagEnabled_readFromSettings_smallInternetTileBecomesSmallWifi() =
         kosmos.runTest {
             val storedInSettings = "a,b,internet,c"
@@ -586,6 +589,7 @@ class UserTileSpecRepositoryTest(flags: FlagsParameterization) : SysuiTestCase()
 
     @Test
     @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.SUPPRESSION_FLAG_NAME)
     fun flagEnabled_largeInternetTile_changeAfterMigration_correctMigration() =
         kosmos.runTest {
             val storedInSettings = "internet,a"
@@ -619,6 +623,7 @@ class UserTileSpecRepositoryTest(flags: FlagsParameterization) : SysuiTestCase()
 
     @Test
     @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.SUPPRESSION_FLAG_NAME)
     fun flagEnabled_restore_largeInternet_smallWifiCell() =
         kosmos.runTest {
             val tiles by collectLastValue(underTest.tiles())

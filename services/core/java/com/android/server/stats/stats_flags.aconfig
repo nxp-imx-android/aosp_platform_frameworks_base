@@ -55,3 +55,10 @@ flag {
     description: "Adds adaptive_suspend_stats atom logging"
     bug: "442333174"
 }
+
+flag {
+    name: "add_webview_pin_quota_puller"
+    namespace: "webview"
+    description: "Adds webview_pin_quota atom logging"
+    bug: "491437662"
+}

@@ -383,6 +383,12 @@ public class AdbService extends IAdbManager.Stub {
     }
 
     @Override
+    public String getAdbWirelessHostName() {
+        mContext.enforceCallingOrSelfPermission(android.Manifest.permission.MANAGE_DEBUGGING, null);
+        return mDebuggingManager.getAdbWirelessHostName().orElse(null);
+    }
+
+    @Override
     public void registerCallback(IAdbCallback callback) throws RemoteException {
         Slog.d(TAG, "Registering callback " + callback);
         mCallbacks.register(callback);

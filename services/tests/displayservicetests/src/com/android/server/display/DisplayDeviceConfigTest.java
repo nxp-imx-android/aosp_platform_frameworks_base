@@ -49,8 +49,8 @@ import android.content.res.TypedArray;
 import android.hardware.display.DisplayManagerInternal;
 import android.os.PowerManager;
 import android.os.Temperature;
-import android.platform.test.flag.junit.CheckFlagsRule;
-import android.platform.test.flag.junit.DeviceFlagsValueProvider;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.util.SparseArray;
 import android.util.Spline;
@@ -70,6 +70,7 @@ import com.android.server.display.config.RefreshRateData;
 import com.android.server.display.config.SupportedModeData;
 import com.android.server.display.config.ThermalStatus;
 import com.android.server.display.feature.DisplayManagerFlags;
+import com.android.server.display.feature.flags.Flags;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -113,7 +114,7 @@ public final class DisplayDeviceConfigTest {
     private static final float SMALL_DELTA = 0.0001f;
 
     @Rule
-    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Rule
     public final TemporaryFolder mTestFolder = new TemporaryFolder();
@@ -1736,6 +1737,20 @@ public final class DisplayDeviceConfigTest {
                 +       getBedTimeModeWearCurveConfig()
                 +       getChargingModeCurveConfig()
                 +       "<idleStylusTimeoutMillis>1000</idleStylusTimeoutMillis>\n"
+                +       "<brighteningRampGamma>2.0</brighteningRampGamma>\n"
+                +       "<darkeningRampGamma>3.0</darkeningRampGamma>\n"
+                +       "<luxDeltaToRampLimits>\n"
+                +           "<point>\n"
+                +               "<luxDelta>10</luxDelta>\n"
+                +               "<rampIncreaseMaxMillis>1000</rampIncreaseMaxMillis>\n"
+                +               "<rampDecreaseMaxMillis>2000</rampDecreaseMaxMillis>\n"
+                +           "</point>\n"
+                +           "<point>\n"
+                +               "<luxDelta>100</luxDelta>\n"
+                +               "<rampIncreaseMaxMillis>3000</rampIncreaseMaxMillis>\n"
+                +               "<rampDecreaseMaxMillis>4000</rampDecreaseMaxMillis>\n"
+                +           "</point>\n"
+                +       "</luxDeltaToRampLimits>\n"
                 +   "</autoBrightness>\n"
                 +  getPowerThrottlingConfig()
                 +   "<highBrightnessMode enabled=\"true\">\n"
@@ -2166,6 +2181,27 @@ public final class DisplayDeviceConfigTest {
 
         mDisplayDeviceConfig = DisplayDeviceConfig.create(mContext, /* useConfigXml= */ true,
                 mFlags);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SMART_ADAPTIVE_BRIGHTNESS)
+    public void testAutoBrightnessGammaAndRampLimits() throws IOException {
+        setupDisplayDeviceConfigFromDisplayConfigFile();
+
+        assertEquals(2.0f, mDisplayDeviceConfig.getAutoBrightnessBrighteningRampGamma(),
+                ZERO_DELTA);
+        assertEquals(3.0f, mDisplayDeviceConfig.getAutoBrightnessDarkeningRampGamma(), ZERO_DELTA);
+
+        Spline luxDeltaToRampIncreaseMaxMillis =
+                mDisplayDeviceConfig.getLuxDeltaToRampIncreaseMaxMillis();
+        Spline luxDeltaToRampDecreaseMaxMillis =
+                mDisplayDeviceConfig.getLuxDeltaToRampDecreaseMaxMillis();
+
+        assertEquals(1000, luxDeltaToRampIncreaseMaxMillis.interpolate(10), ZERO_DELTA);
+        assertEquals(3000, luxDeltaToRampIncreaseMaxMillis.interpolate(100), ZERO_DELTA);
+
+        assertEquals(2000, luxDeltaToRampDecreaseMaxMillis.interpolate(10), ZERO_DELTA);
+        assertEquals(4000, luxDeltaToRampDecreaseMaxMillis.interpolate(100), ZERO_DELTA);
     }
 
     private TypedArray createFloatTypedArray(float[] vals) {

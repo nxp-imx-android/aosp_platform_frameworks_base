@@ -368,6 +368,20 @@ flag {
 }
 
 flag {
+     name: "user_switching_dialog_use_system_wallpaper"
+     namespace: "multiuser"
+     description: "Use the system wallpaper as the background for the UserSwitchingDialog"
+     bug: "476060010"
+}
+
+flag {
+     name: "user_switching_dialog_animate_user_avatar"
+     namespace: "multiuser"
+     description: "Animate the user avatar as a rotating cookie in the UserSwitchingDialog"
+     bug: "433908654"
+}
+
+flag {
      name: "credential_capture"
      namespace: "multiuser"
      description: "Perform authentication in the login app on desktop before switching to a user"

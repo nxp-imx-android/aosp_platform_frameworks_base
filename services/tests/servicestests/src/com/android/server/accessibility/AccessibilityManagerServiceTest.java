@@ -427,6 +427,10 @@ public class AccessibilityManagerServiceTest {
                 mock(MagnificationProcessor.class));
         mTestableContext.addMockService(COMPONENT_NAME, mMockBinder);
 
+        when(mMockServiceInfo.getComponentName()).thenReturn(COMPONENT_NAME);
+        when(mMockServiceInfo.getId()).thenReturn(COMPONENT_NAME.flattenToString());
+        userState.mInstalledServicesMap.put(COMPONENT_NAME, mMockServiceInfo);
+
         mMockServiceInfo.flags = serviceInfoFlag;
         mAccessibilityServiceConnection = new AccessibilityServiceConnection(
                 userState,
@@ -892,6 +896,24 @@ public class AccessibilityManagerServiceTest {
         setupAccessibilityServiceConnection(AccessibilityServiceInfo.FLAG_INPUT_METHOD_EDITOR);
         mAccessibilityServiceConnection.binderDied();
         verify(mMockSystemSupport).unbindImeLocked(mAccessibilityServiceConnection);
+    }
+
+    @Test
+    public void testUnbindService_whenServiceCrashedThenUserSwitched() {
+        setupAccessibilityServiceConnection(0);
+        final int userId = mA11yms.getCurrentUserIdLocked();
+        final AccessibilityUserState userState = mA11yms.mUserStates.get(userId);
+        assertThat(userState.mBoundServices).contains(mAccessibilityServiceConnection);
+
+        // Simulate crash
+        mAccessibilityServiceConnection.binderDied();
+        assertThat(userState.mBoundServices).doesNotContain(mAccessibilityServiceConnection);
+
+        // Switch user
+        switchUser(userId + 1);
+
+        // Verify that unbindService was called for the crashed connection
+        assertThat(mTestableContext.getUnboundServices()).contains(mAccessibilityServiceConnection);
     }
 
     @Test
@@ -3348,11 +3370,22 @@ public class AccessibilityManagerServiceTest {
         private final Map<String, List<BroadcastReceiver>> mBroadcastReceivers = new ArrayMap<>();
         private ArrayMap<Integer, Context> mMockUserContexts = new ArrayMap<>();
         private boolean mIgnoreBindService = false;
+        private List<ServiceConnection> mUnboundServices = new ArrayList<>();
 
         A11yTestableContext(Context base) {
             super(base);
             mMockContext = mock(Context.class);
 
+        }
+
+        @Override
+        public void unbindService(ServiceConnection conn) {
+            mUnboundServices.add(conn);
+            super.unbindService(conn);
+        }
+
+        List<ServiceConnection> getUnboundServices() {
+            return mUnboundServices;
         }
 
         @Override

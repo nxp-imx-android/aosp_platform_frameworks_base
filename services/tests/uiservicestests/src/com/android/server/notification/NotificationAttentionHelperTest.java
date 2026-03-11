@@ -121,6 +121,7 @@ import com.android.internal.util.VibrationStatsWriter;
 import com.android.server.UiServiceTestCase;
 import com.android.server.lights.LightsManager;
 import com.android.server.lights.LogicalLight;
+import android.app.Person;
 import com.android.server.pm.PackageManagerService;
 
 import org.junit.Before;
@@ -152,6 +153,7 @@ public class NotificationAttentionHelperTest extends UiServiceTestCase {
     @Mock Vibrator mVibrator;
     @Mock android.media.IRingtonePlayer mRingtonePlayer;
     @Mock LogicalLight mLight;
+    @Mock LogicalLight mPriorityNotificationLight;
     @Mock
     NotificationUsageStats mUsageStats;
     @Mock
@@ -257,7 +259,7 @@ public class NotificationAttentionHelperTest extends UiServiceTestCase {
                 Flags.FLAG_VIBRATE_WHILE_UNLOCKED,
                 Flags.FLAG_POLITE_NOTIFICATIONS_ATTN_UPDATE);
 
-        mService = spy(new TestableNotificationManagerService(getContext(), 
+        mService = spy(new TestableNotificationManagerService(getContext(),
                 TestableLooper.get(this)));
         mService.init();
 
@@ -267,15 +269,20 @@ public class NotificationAttentionHelperTest extends UiServiceTestCase {
     }
 
     private void initAttentionHelper(TestableFlagResolver flagResolver) {
+        LightsManager lightsManager = mock(LightsManager.class);
+        when(lightsManager.getLight(eq(LightsManager.LIGHT_ID_NOTIFICATIONS))).thenReturn(mLight);
+        when(lightsManager.getLight(eq(LightsManager.LIGHT_ID_ATTENTION))).thenReturn(mLight);
+        when(lightsManager.getLight(eq(LightsManager.LIGHT_ID_PRIORITY_NOTIFICATIONS)))
+                .thenReturn(mPriorityNotificationLight);
+
         mAttentionHelper = new NotificationAttentionHelper(getContext(), new Object(),
-                mock(LightsManager.class),mAccessibilityManager, mPackageManager,
+                lightsManager, mAccessibilityManager, mPackageManager,
                 mUserManager, mUsageStats, mService.mNotificationManagerPrivate,
                 mock(ZenModeHelper.class), flagResolver, mVibrationStatsWriter);
         mAttentionHelper.onSystemReady();
         mAttentionHelper.setVibratorHelper(spy(new VibratorHelper(getContext())));
         mAttentionHelper.setAudioManager(mAudioManager);
         mAttentionHelper.setSystemReady(true);
-        mAttentionHelper.setLights(mLight);
         mAttentionHelper.setScreenOn(false);
         mAttentionHelper.setAccessibilityManager(mAccessibilityManager);
         mAttentionHelper.setKeyguardManager(mKeyguardManager);
@@ -1657,6 +1664,7 @@ public class NotificationAttentionHelperTest extends UiServiceTestCase {
     @Test
     public void testLightsNoLightOnDevice() {
         mAttentionHelper.mHasLight = false;
+        mAttentionHelper.setLights(null);
         NotificationRecord r = getLightsNotification();
         mAttentionHelper.buzzBeepBlinkLocked(r, DEFAULT_SIGNALS);
         verifyNeverLights();
@@ -3351,6 +3359,335 @@ public class NotificationAttentionHelperTest extends UiServiceTestCase {
         verify(mVibrationStatsWriter).logCustomVibrationPatternEventIfNeeded(
                 VibrationStatsWriter.VIBRATION_PATTERN_PLAYED,
                 RingtoneManager.TYPE_NOTIFICATION, ringtoneNotification.getSound());
+    }
+
+    private NotificationRecord getScreeningCallRecord(int id, boolean isStarred) {
+        PendingIntent pi =
+                PendingIntent.getActivity(
+                        getContext(), 0, new Intent(), PendingIntent.FLAG_IMMUTABLE);
+        Notification.Builder builder =
+                new Builder(getContext(), mChannel.getId())
+                        .setContentTitle("call")
+                        .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                        .setStyle(
+                                Notification.CallStyle.forScreeningCall(
+                                        new Person.Builder().setName("caller").build(), pi, pi));
+
+        Notification n = builder.build();
+
+        StatusBarNotification sbn =
+                new StatusBarNotification(mPkg, mPkg, id, mTag, mUid,mPid,
+                        n, mUser, null,System.currentTimeMillis());
+
+        NotificationRecord r = new NotificationRecord(getContext(), sbn, mChannel);
+        if (isStarred) {
+            r.setContactAffinity(ValidateNotificationPeople.STARRED_CONTACT);
+        } else {
+            r.setContactAffinity(ValidateNotificationPeople.NONE);
+        }
+        r.setIsRealCallIncomingNotification(false);
+        mService.addNotification(r);
+        return r;
+    }
+
+    private NotificationRecord getIncomingCallRecord(int id, boolean isStarred) {
+        PendingIntent pi =
+                PendingIntent.getActivity(
+                        getContext(), 0, new Intent(), PendingIntent.FLAG_IMMUTABLE);
+        Notification.Builder builder =
+                new Builder(getContext(), mChannel.getId())
+                        .setContentTitle("call")
+                        .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                        .setStyle(
+                                Notification.CallStyle.forIncomingCall(
+                                        new Person.Builder().setName("caller").build(), pi, pi));
+
+        Notification n = builder.build();
+
+        StatusBarNotification sbn =
+                new StatusBarNotification(mPkg, mPkg, id, mTag, mUid,mPid,
+                        n, mUser, null,System.currentTimeMillis());
+
+        NotificationRecord r = new NotificationRecord(getContext(), sbn, mChannel);
+        if (isStarred) {
+            r.setContactAffinity(ValidateNotificationPeople.STARRED_CONTACT);
+        } else {
+            r.setContactAffinity(ValidateNotificationPeople.NONE);
+        }
+        r.setIsRealCallIncomingNotification(true);
+        mService.addNotification(r);
+        return r;
+    }
+
+    private NotificationRecord getNonCallStyleRecord(int id, boolean isStarred, String category) {
+        Notification.Builder builder =
+                new Builder(getContext(), mChannel.getId())
+                        .setContentTitle("call")
+                        .setSmallIcon(android.R.drawable.sym_def_app_icon);
+        if (category != null) {
+            builder.setCategory(category);
+        }
+        Notification n = builder.build();
+        StatusBarNotification sbn =
+                new StatusBarNotification(mPkg, mPkg, id, mTag, mUid,mPid,
+                        n, mUser, null,System.currentTimeMillis());
+
+        NotificationRecord r = new NotificationRecord(getContext(), sbn, mChannel);
+        r.setContactAffinity(
+                isStarred
+                        ? ValidateNotificationPeople.STARRED_CONTACT
+                        : ValidateNotificationPeople.NONE);
+        r.setIsRealCallIncomingNotification(false);
+        mService.addNotification(r);
+        return r;
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FAVORITES_INCOMING_CALL_LIGHTS)
+    public void testBuzzBeepBlinkLocked_incomingCall_favorite() {
+        Settings.Secure.putInt(
+                getContext().getContentResolver(),
+                Settings.Secure.LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED,
+                1);
+
+        initAttentionHelper(mTestFlagResolver);
+
+        mAttentionHelper.setScreenOn(false);
+        mAttentionHelper.setUserPresent(false);
+
+        NotificationRecord r = getIncomingCallRecord(mId, true);
+
+        mAttentionHelper.buzzBeepBlinkLocked(r, DEFAULT_SIGNALS);
+
+        verify(mPriorityNotificationLight)
+                .setFlashing(
+                        eq(Color.WHITE), eq(LogicalLight.LIGHT_FLASH_TIMED), eq(500), eq(2000));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FAVORITES_INCOMING_CALL_LIGHTS)
+    public void testBuzzBeepBlinkLocked_incomingCall_notFavorite() {
+        Settings.Secure.putInt(
+                getContext().getContentResolver(),
+                Settings.Secure.LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED,
+                1);
+
+        initAttentionHelper(mTestFlagResolver);
+
+        mAttentionHelper.setScreenOn(false);
+        mAttentionHelper.setUserPresent(false);
+
+        NotificationRecord r = getIncomingCallRecord(mId, false);
+
+        mAttentionHelper.buzzBeepBlinkLocked(r, DEFAULT_SIGNALS);
+
+        verify(mPriorityNotificationLight, never())
+                .setFlashing(anyInt(), anyInt(), anyInt(), anyInt());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FAVORITES_INCOMING_CALL_LIGHTS)
+    public void testEvaluateLateCallLightLocked_incomingCall_favorite_screenOff() {
+        Settings.Secure.putInt(
+                getContext().getContentResolver(),
+                Settings.Secure.LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED,
+                1);
+
+        initAttentionHelper(mTestFlagResolver);
+
+        mAttentionHelper.setScreenOn(false);
+        mAttentionHelper.setUserPresent(false);
+
+        NotificationRecord r = getIncomingCallRecord(mId, true);
+
+        mAttentionHelper.evaluateLateCallLightLocked(r, DEFAULT_SIGNALS);
+
+        verify(mPriorityNotificationLight)
+                .setFlashing(
+                        eq(Color.WHITE), eq(LogicalLight.LIGHT_FLASH_TIMED), eq(500), eq(2000));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FAVORITES_INCOMING_CALL_LIGHTS)
+    public void testEvaluateLateCallLightLocked_incomingCall_notFavorite() {
+        Settings.Secure.putInt(
+                getContext().getContentResolver(),
+                Settings.Secure.LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED,
+                1);
+
+        initAttentionHelper(mTestFlagResolver);
+
+        mAttentionHelper.setScreenOn(false);
+        mAttentionHelper.setUserPresent(false);
+
+        NotificationRecord r = getIncomingCallRecord(mId, false);
+
+        mAttentionHelper.evaluateLateCallLightLocked(r, DEFAULT_SIGNALS);
+
+        verify(mPriorityNotificationLight, never())
+                .setFlashing(anyInt(), anyInt(), anyInt(), anyInt());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FAVORITES_INCOMING_CALL_LIGHTS)
+    public void testEvaluateLateCallLightLocked_incomingCall_favorite_disabledSettings() {
+        Settings.Secure.putInt(
+                getContext().getContentResolver(),
+                Settings.Secure.LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED,
+                0);
+
+        initAttentionHelper(mTestFlagResolver);
+
+        mAttentionHelper.setScreenOn(false);
+        mAttentionHelper.setUserPresent(false);
+
+        NotificationRecord r = getIncomingCallRecord(mId, true);
+
+        mAttentionHelper.evaluateLateCallLightLocked(r, DEFAULT_SIGNALS);
+
+        verify(mPriorityNotificationLight, never())
+                .setFlashing(anyInt(), anyInt(), anyInt(), anyInt());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FAVORITES_INCOMING_CALL_LIGHTS)
+    public void testEvaluateLateCallLightLocked_incomingCall_favorite_userPresent() {
+        Settings.Secure.putInt(
+                getContext().getContentResolver(),
+                Settings.Secure.LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED,
+                1);
+
+        initAttentionHelper(mTestFlagResolver);
+
+        mAttentionHelper.setScreenOn(true);
+        mAttentionHelper.setUserPresent(true);
+
+        NotificationRecord r = getIncomingCallRecord(mId, true);
+
+        mAttentionHelper.evaluateLateCallLightLocked(r, DEFAULT_SIGNALS);
+
+        verify(mPriorityNotificationLight, never())
+                .setFlashing(anyInt(), anyInt(), anyInt(), anyInt());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FAVORITES_INCOMING_CALL_LIGHTS)
+    public void testEvaluateLateCallLightLocked_stopLight() {
+        Settings.Secure.putInt(
+                getContext().getContentResolver(),
+                Settings.Secure.LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED,
+                1);
+
+        initAttentionHelper(mTestFlagResolver);
+
+        mAttentionHelper.setScreenOn(false);
+        mAttentionHelper.setUserPresent(false);
+
+        NotificationRecord r = getIncomingCallRecord(mId, true);
+
+        // Start light
+        mAttentionHelper.evaluateLateCallLightLocked(r, DEFAULT_SIGNALS);
+        verify(mPriorityNotificationLight)
+                .setFlashing(
+                        eq(Color.WHITE), eq(LogicalLight.LIGHT_FLASH_TIMED), eq(500), eq(2000));
+
+        // Stop light
+        mAttentionHelper.setUserPresent(true);
+        mAttentionHelper.updateLightsLocked();
+
+        verify(mPriorityNotificationLight, atLeastOnce()).turnOff();
+    }
+
+
+    @Test
+    @EnableFlags(Flags.FLAG_FAVORITES_INCOMING_CALL_LIGHTS)
+    public void testCallLight_UpdateToScreeningCallCancelsLight() {
+        Settings.Secure.putInt(
+                getContext().getContentResolver(),
+                Settings.Secure.LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED,
+                1);
+
+        initAttentionHelper(mTestFlagResolver);
+
+        mAttentionHelper.setScreenOn(false);
+        mAttentionHelper.setUserPresent(false);
+
+        // 1. Initial valid call notification
+        NotificationRecord r = getIncomingCallRecord(mId, true);
+        mAttentionHelper.evaluateLateCallLightLocked(r, DEFAULT_SIGNALS);
+        verify(mPriorityNotificationLight)
+                .setFlashing(
+                        eq(Color.WHITE), eq(LogicalLight.LIGHT_FLASH_TIMED), eq(500), eq(2000));
+
+
+        // 2. Update to screening call
+        NotificationRecord screeningCall = getScreeningCallRecord(mId, true);
+        mAttentionHelper.evaluateLateCallLightLocked(screeningCall, DEFAULT_SIGNALS);
+
+        // Light should turn off because it's no longer an incoming call
+        verify(mPriorityNotificationLight, atLeastOnce()).turnOff();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FAVORITES_INCOMING_CALL_LIGHTS)
+    public void testCallLight_UpdateToIncomingCallDoesNotRestartLight() {
+        Settings.Secure.putInt(
+                getContext().getContentResolver(),
+                Settings.Secure.LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED,
+                1);
+
+        initAttentionHelper(mTestFlagResolver);
+
+        mAttentionHelper.setScreenOn(false);
+        mAttentionHelper.setUserPresent(false);
+
+        // 1. Initial valid call notification
+        NotificationRecord r = getIncomingCallRecord(mId, true);
+        mAttentionHelper.evaluateLateCallLightLocked(r, DEFAULT_SIGNALS);
+        verify(mPriorityNotificationLight)
+                .setFlashing(
+                        eq(Color.WHITE), eq(LogicalLight.LIGHT_FLASH_TIMED), eq(500), eq(2000));
+
+        Mockito.reset(mPriorityNotificationLight);
+
+        // 2. Update with another incoming call notification
+        NotificationRecord r2 = getIncomingCallRecord(mId, true);
+        mAttentionHelper.evaluateLateCallLightLocked(r2, DEFAULT_SIGNALS);
+
+        // Light should NOT be restarted (flashing again)
+        verify(mPriorityNotificationLight, never())
+                .setFlashing(anyInt(), anyInt(), anyInt(), anyInt());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FAVORITES_INCOMING_CALL_LIGHTS)
+    public void testCallLight_MissedCallCancelsLight() {
+        Settings.Secure.putInt(
+                getContext().getContentResolver(),
+                Settings.Secure.LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED,
+                1);
+
+        initAttentionHelper(mTestFlagResolver);
+
+        mAttentionHelper.setScreenOn(false);
+        mAttentionHelper.setUserPresent(false);
+
+        // 1. Initial valid call notification
+        NotificationRecord r = getIncomingCallRecord(mId, true);
+        mAttentionHelper.evaluateLateCallLightLocked(r, DEFAULT_SIGNALS);
+        verify(mPriorityNotificationLight)
+                .setFlashing(
+                        eq(Color.WHITE), eq(LogicalLight.LIGHT_FLASH_TIMED), eq(500), eq(2000));
+
+        Mockito.reset(mPriorityNotificationLight);
+
+        // 2. Update with Missed Call category
+        NotificationRecord missedCall =
+                getNonCallStyleRecord(mId, true, Notification.CATEGORY_MISSED_CALL);
+        mAttentionHelper.evaluateLateCallLightLocked(missedCall, DEFAULT_SIGNALS);
+
+        // Light should turn off because missed call clears cache
+        verify(mPriorityNotificationLight).turnOff();
     }
 
     static class VibrateRepeatMatcher implements ArgumentMatcher<VibrationEffect> {

@@ -182,6 +182,7 @@ import static android.service.notification.NotificationListenerService.TRIM_LIGH
 import static android.service.personalcontext.Flags.enablePersonalContextService;
 import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.contentprotection.flags.Flags.rapidClearNotificationsByListenerAppOpEnabled;
+import static com.android.server.notification.Flags.favoritesIncomingCallLights;
 
 import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.NLS_COMPLETION_DURATION_MS;
 import static com.android.internal.util.FrameworkStatsLog.DND_MODE_RULE;
@@ -10805,6 +10806,14 @@ public class NotificationManagerService extends SystemService {
                     boolean isCallNotificationAndCorrectStyle = isCallNotification
                             && notification.isStyle(Notification.CallStyle.class);
 
+                    if (favoritesIncomingCallLights()) {
+                        int callType = notification.extras.getInt(Notification.EXTRA_CALL_TYPE, -1);
+                        boolean isIncomingCall =
+                                callType == Notification.CallStyle.CALL_TYPE_INCOMING;
+                        r.setIsRealCallIncomingNotification(
+                                isCallNotificationAndCorrectStyle && isIncomingCall);
+                    }
+
                     if (!(notification.isMediaNotification() || isCallNotificationAndCorrectStyle)
                             && (appBanned || isRecordBlockedLocked(r))) {
                         mUsageStats.registerBlocked(r);
@@ -11508,7 +11517,8 @@ public class NotificationManagerService extends SystemService {
                 && CompatChanges.isChangeEnabled(CHANGE_BACKGROUND_CUSTOM_TOAST_BLOCK, uid);
     }
 
-    private void handleRankingReconsideration(Message message) {
+    @VisibleForTesting
+    void handleRankingReconsideration(Message message) {
         if (!(message.obj instanceof RankingReconsideration)) return;
         RankingReconsideration recon = (RankingReconsideration) message.obj;
         recon.run();
@@ -11522,31 +11532,45 @@ public class NotificationManagerService extends SystemService {
             boolean interceptBefore = record.isIntercepted();
             int visibilityBefore = record.getPackageVisibilityOverride();
             boolean interruptiveBefore = record.isInterruptive();
+            float affinityBefore = record.getContactAffinity();
 
             recon.applyChangesLocked(record);
             applyZenModeLocked(record);
+
             mRankingHelper.sort(mNotificationList);
             boolean indexChanged = indexBefore != findNotificationRecordIndexLocked(record);
             boolean interceptChanged = interceptBefore != record.isIntercepted();
             boolean visibilityChanged = visibilityBefore != record.getPackageVisibilityOverride();
+            boolean affinityChanged = affinityBefore != record.getContactAffinity();
 
             // Broadcast isInterruptive changes for bubbles.
             boolean interruptiveChanged =
                     record.canBubble() && (interruptiveBefore != record.isInterruptive());
 
-            changed = indexChanged
-                    || interceptChanged
-                    || visibilityChanged
-                    || interruptiveChanged;
-            if (interceptBefore && !record.isIntercepted()
+            changed = indexChanged || interceptChanged || visibilityChanged || interruptiveChanged;
+            if (interceptBefore
+                    && !record.isIntercepted()
                     && record.isNewEnoughForAlerting(System.currentTimeMillis())) {
 
-                mAttentionHelper.buzzBeepBlinkLocked(record,
-                        new NotificationAttentionHelper.Signals(mUserProfiles.isCurrentProfile(
-                                record.getUserId()), mListenerHints));
+                mAttentionHelper.buzzBeepBlinkLocked(
+                        record,
+                        new NotificationAttentionHelper.Signals(
+                                mUserProfiles.isCurrentProfile(record.getUserId()),
+                                mListenerHints));
 
                 // Log alert after change in intercepted state to Zen Log as well
                 ZenLog.traceAlertOnUpdatedIntercept(record);
+            }
+
+            if (favoritesIncomingCallLights() &&
+                    record.isRealCallIncomingNotification() &&
+                    affinityChanged &&
+                    record.isNewEnoughForAlerting(System.currentTimeMillis())) {
+                mAttentionHelper.evaluateLateCallLightLocked(
+                        record,
+                        new NotificationAttentionHelper.Signals(
+                                mUserProfiles.isCurrentProfile(record.getUserId()),
+                                mListenerHints));
             }
         }
         if (changed) {

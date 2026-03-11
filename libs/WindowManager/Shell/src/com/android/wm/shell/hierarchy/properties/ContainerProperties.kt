@@ -17,6 +17,8 @@ package com.android.wm.shell.hierarchy.properties
 
 import android.app.WindowConfiguration
 import android.content.res.Configuration
+import android.content.res.Configuration.ORIENTATION_LANDSCAPE
+import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.graphics.RectF
 import android.view.Surface
 import android.window.TransitionInfo
@@ -88,8 +90,15 @@ open class ContainerProperties(
         } else if (TransitionUtil.isClosingMode(change.mode)) {
             visibleRequested = false
         }
+        // In lieu of being able to update the configuration entirely, update the most useful bits
+        // from the generic change info (property subclasses that have access to the full
+        // configuration will also override this method and set it directly)
+        val width = change.endAbsBounds.width()
+        val height = change.endAbsBounds.height()
         config.windowConfiguration.setBounds(change.endAbsBounds)
+        config.windowConfiguration.setMaxBounds(change.endAbsBounds)
         config.windowConfiguration.rotation = change.endRotation
+        config.orientation = if (width >= height) ORIENTATION_LANDSCAPE else ORIENTATION_PORTRAIT
     }
 
     /**

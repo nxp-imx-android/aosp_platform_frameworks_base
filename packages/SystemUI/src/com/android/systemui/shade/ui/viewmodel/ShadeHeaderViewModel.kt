@@ -44,6 +44,7 @@ import com.android.systemui.shade.domain.interactor.PrivacyChipInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.ui.composable.ChipHighlightModel
+import com.android.systemui.statusbar.systemstatusicons.domain.interactor.EmptySystemStatusIconBlockListInteractor
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
 import com.android.systemui.statusbar.phone.domain.interactor.ShadeDarkIconInteractor
@@ -75,6 +76,7 @@ constructor(
     shadeDarkIconInteractor: ShadeDarkIconInteractor,
     mobileIconsInteractor: MobileIconsInteractor,
     val mobileIconsViewModel: dagger.Lazy<MobileIconsViewModel>,
+    val systemStatusIconsBlockListInteractor: EmptySystemStatusIconBlockListInteractor,
     private val privacyChipInteractor: PrivacyChipInteractor,
     private val clockInteractor: ClockInteractor,
     private val batteryMeterViewControllerFactory: BatteryMeterViewController.Factory,

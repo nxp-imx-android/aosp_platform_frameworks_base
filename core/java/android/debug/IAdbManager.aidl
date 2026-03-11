@@ -99,6 +99,12 @@ interface IAdbManager {
     int getAdbWirelessPort();
 
     /**
+     * Returns the device mDNS hostname on the network that adb wireless is running on.
+     * The value will be null if wireless debugging is disabled or mDNS service registration is still in progress.
+     */
+    String getAdbWirelessHostName();
+
+    /**
      * Disables pairing.
      */
     void disablePairing();
