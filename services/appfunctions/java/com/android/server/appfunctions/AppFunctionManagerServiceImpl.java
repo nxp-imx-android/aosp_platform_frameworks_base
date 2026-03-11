@@ -263,7 +263,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 /* shouldSetRuntimeMetadataSchemaUnconditionally= */ android.app.appfunctions.flags
                         .Flags.enableAppFunctionPermissionV2());
         PackageMonitor pkgMonitorForUser =
-                AppFunctionPackageMonitor.registerPackageMonitorForUser(mContext, user);
+                AppFunctionPackageMonitor.registerPackageMonitorForUser(
+                        mContext, user, mAppFunctionMetadataObserver);
         mPackageMonitors.append(user.getUserIdentifier(), pkgMonitorForUser);
 
         File appFunctionsLogDir =

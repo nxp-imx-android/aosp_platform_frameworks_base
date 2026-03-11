@@ -16,8 +16,11 @@
 
 package com.android.server.appfunctions;
 
+import static android.app.appfunctions.AppFunctionManager.APP_FUNCTION_STATE_DEFAULT;
+
 import android.annotation.MainThread;
 import android.annotation.NonNull;
+import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionRuntimeMetadata;
 import android.app.appsearch.AppSearchManager;
 import android.app.appsearch.PutDocumentsRequest;
@@ -25,6 +28,7 @@ import android.app.appsearch.SearchResult;
 import android.app.appsearch.SearchSpec;
 import android.content.Context;
 import android.os.UserHandle;
+import android.util.ArraySet;
 import android.util.Slog;
 
 import com.android.internal.content.PackageMonitor;
@@ -34,6 +38,7 @@ import com.android.server.SystemService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Monitors package events and manages {@link AppFunctionRuntimeMetadata} entries stored in
@@ -43,6 +48,8 @@ public class AppFunctionPackageMonitor extends PackageMonitor {
     private static final String TAG = AppFunctionPackageMonitor.class.getSimpleName();
 
     private final AppSearchManager mAppSearchManager;
+    private final AppFunctionMetadataObserver mMetadataObserver;
+    private final UserHandle mUserHandle;
 
     /**
      * Creates a new AppFunctionPackageMonitor instance.
@@ -50,8 +57,13 @@ public class AppFunctionPackageMonitor extends PackageMonitor {
      * @param context The context used to retrieve {@link AppSearchManager}.
      * @param userHandle The user whose package events should be monitored.
      */
-    public AppFunctionPackageMonitor(@NonNull Context context, @NonNull UserHandle userHandle) {
+    public AppFunctionPackageMonitor(
+            @NonNull Context context,
+            @NonNull UserHandle userHandle,
+            @NonNull AppFunctionMetadataObserver metadataObserver) {
         super(/* supportsPackageRestartQuery= */ true);
+        mUserHandle = userHandle;
+        mMetadataObserver = Objects.requireNonNull(metadataObserver);
         mAppSearchManager =
                 context.createContextAsUser(userHandle, /* flags= */ 0)
                         .getSystemService(AppSearchManager.class);
@@ -67,6 +79,11 @@ public class AppFunctionPackageMonitor extends PackageMonitor {
      */
     @Override
     public void onPackageDataCleared(String packageName, int uid) {
+        if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
+            onPackageDataClearedWithNotification(packageName);
+            return;
+        }
+
         String packageQuery =
                 AppFunctionRuntimeMetadata.PROPERTY_PACKAGE_NAME + ":\"" + packageName + "\"";
         SearchSpec runtimeSearchSpec =
@@ -118,6 +135,74 @@ public class AppFunctionPackageMonitor extends PackageMonitor {
         }
     }
 
+    private void onPackageDataClearedWithNotification(String packageName) {
+        String packageQuery =
+                AppFunctionRuntimeMetadata.PROPERTY_PACKAGE_NAME + ":\"" + packageName + "\"";
+        SearchSpec runtimeSearchSpec =
+                new SearchSpec.Builder()
+                        .addFilterSchemas(AppFunctionRuntimeMetadata.RUNTIME_SCHEMA_TYPE)
+                        .setVerbatimSearchEnabled(true)
+                        .build();
+        AppSearchManager.SearchContext searchContext =
+                new AppSearchManager.SearchContext.Builder(
+                                AppFunctionRuntimeMetadata.APP_FUNCTION_RUNTIME_METADATA_DB)
+                        .build();
+
+        Set<AppFunctionName> functionsWithResetStates = new ArraySet<>();
+
+        try (FutureAppSearchSession searchSession =
+                new FutureAppSearchSessionImpl(mAppSearchManager, Runnable::run, searchContext)) {
+            List<AppFunctionRuntimeMetadata> updatedRuntimeMetadataList = new ArrayList<>();
+
+            try (FutureSearchResults futureSearchResults =
+                    searchSession.search(packageQuery, runtimeSearchSpec).get()) {
+
+                List<SearchResult> results;
+                do {
+                    results = futureSearchResults.getNextPage().get();
+                    for (SearchResult result : results) {
+                        String functionId =
+                                result.getGenericDocument()
+                                        .getPropertyString(
+                                                AppFunctionRuntimeMetadata.PROPERTY_FUNCTION_ID);
+                        updatedRuntimeMetadataList.add(
+                                new AppFunctionRuntimeMetadata.Builder(
+                                                packageName, Objects.requireNonNull(functionId))
+                                        .build());
+
+                        int existingEnabledState =
+                                (int)
+                                        result.getGenericDocument()
+                                                .getPropertyLong(
+                                                        AppFunctionRuntimeMetadata
+                                                                .PROPERTY_ENABLED);
+                        if (existingEnabledState != APP_FUNCTION_STATE_DEFAULT) {
+                            functionsWithResetStates.add(
+                                    new AppFunctionName(packageName, functionId));
+                        }
+                    }
+                } while (!results.isEmpty());
+
+                PutDocumentsRequest putRequest =
+                        new PutDocumentsRequest.Builder()
+                                .addGenericDocuments(updatedRuntimeMetadataList)
+                                .build();
+
+                searchSession.put(putRequest).get();
+                if (!functionsWithResetStates.isEmpty()) {
+                    mMetadataObserver.onEnabledStatesChanged(mUserHandle, functionsWithResetStates);
+                }
+            } catch (Exception e) {
+                Slog.e(
+                        TAG,
+                        "Unable to reset the AppFunctionRuntimeMetadata when clearing data for "
+                                + "package: "
+                                + packageName,
+                        e);
+            }
+        }
+    }
+
     /**
      * Registers a {@link AppFunctionPackageMonitor} instance for the given user context. This
      * allows it to observe package-related events and react accordingly.
@@ -127,9 +212,11 @@ public class AppFunctionPackageMonitor extends PackageMonitor {
      */
     @MainThread
     public static PackageMonitor registerPackageMonitorForUser(
-            @NonNull Context context, @NonNull SystemService.TargetUser user) {
+            @NonNull Context context,
+            @NonNull SystemService.TargetUser user,
+            @NonNull AppFunctionMetadataObserver metadataObserver) {
         AppFunctionPackageMonitor monitor =
-                new AppFunctionPackageMonitor(context, user.getUserHandle());
+                new AppFunctionPackageMonitor(context, user.getUserHandle(), metadataObserver);
 
         monitor.register(context, user.getUserHandle(), BackgroundThread.getHandler());
         return monitor;
