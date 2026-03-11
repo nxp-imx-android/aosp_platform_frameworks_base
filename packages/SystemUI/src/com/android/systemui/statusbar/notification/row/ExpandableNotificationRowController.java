@@ -409,6 +409,15 @@ public class ExpandableNotificationRowController implements NotifViewController 
                 }
                 return mNotificationGutsManager.openGuts(v, x, y, item);
             });
+
+            if (Flags.inlineNotificationSettingsAccess()) {
+                mView.setOnContextClickListener(v -> {
+                    // Open the notification guts. Since OnContextClickListener doesn't provide
+                    // the exact event location, we use the center of the view as a fallback.
+                    mView.doLongClickCallback(mView.getWidth() / 2, mView.getHeight() / 2);
+                    return true;
+                });
+            }
         }
         if (ENABLE_REMOTE_INPUT) {
             mView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
