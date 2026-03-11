@@ -139,7 +139,7 @@ constructor(
                         thumbnail = recording.thumbnail,
                         notificationId = videoViewModel.notificationId,
                     )
-                    finish()
+                    finishAndRemoveTask()
                 }
                 isShowingDeletionDialog = false
             }
