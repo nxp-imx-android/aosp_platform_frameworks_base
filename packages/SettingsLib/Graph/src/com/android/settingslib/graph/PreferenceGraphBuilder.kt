@@ -60,16 +60,17 @@ import com.android.settingslib.metadata.PreferenceScreenMetadata
 import com.android.settingslib.metadata.PreferenceScreenMetadataFactory
 import com.android.settingslib.metadata.PreferenceScreenMetadataParameterizedFactory
 import com.android.settingslib.metadata.PreferenceScreenRegistry
-import com.android.settingslib.metadata.PreferenceSetWarningProvider
 import com.android.settingslib.metadata.PreferenceScreenRegistry.createScreenInstanceForMetadata
+import com.android.settingslib.metadata.PreferenceSetWarningProvider
 import com.android.settingslib.metadata.PreferenceSummaryProvider
 import com.android.settingslib.metadata.PreferenceTitleProvider
 import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.SensitivityLevel.Companion.DEEP_LINK_ONLY
-import com.android.settingslib.metadata.SensitivityLevel.Companion.REQUIRES_CONFIRMATION
 import com.android.settingslib.metadata.SensitivityLevel.Companion.DO_NOT_EXPOSE
+import com.android.settingslib.metadata.SensitivityLevel.Companion.REQUIRES_CONFIRMATION
 import com.android.settingslib.metadata.ValidatedKeyParameters
 import com.android.settingslib.metadata.getPreferenceIcon
+import com.android.settingslib.metadata.getTrampolinedLaunchIntent
 import com.android.settingslib.metadata.isExposable
 import com.android.settingslib.metadata.isPreferenceIndexable
 import com.android.settingslib.metadata.preferencesapi.ApiPreference
@@ -82,12 +83,12 @@ import com.android.settingslib.preference.PreferenceScreenFactory
 import com.android.settingslib.preference.PreferenceScreenProvider
 import com.android.settingslib.utils.applications.AppUtils
 import com.google.errorprone.annotations.CanIgnoreReturnValue
-import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import java.util.Locale
 
 private const val TAG = "PreferenceGraphBuilder"
 
@@ -149,7 +150,7 @@ private constructor(
             intent.setClassName(context, activityClassName)
             if (
                 context.packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY) ==
-                    null
+                null
             ) {
                 Log.e(TAG, "$activityClassName is not activity")
                 return
@@ -265,7 +266,7 @@ private constructor(
     ): Boolean {
         val screenMetadata = createScreenInstanceForMetadata(context, factory)
         val isScreenExposable = screenMetadata?.isExposable(context) ?: false
-        if(!isScreenExposable)
+        if (!isScreenExposable)
             return false
         if (factory !is PreferenceScreenMetadataParameterizedFactory) {
             return addPreferenceScreen(factory.create(context))
@@ -281,7 +282,8 @@ private constructor(
             if (includeParameters) {
                 if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
                     factory.keyParameters(context).collect {
-                        screen.addKeyParameters(it.toProto()) }
+                        screen.addKeyParameters(it.toProto())
+                    }
                 } else {
                     factory.parameters(context).collect { screen.addParameters(it.toProto()) }
                 }
@@ -294,14 +296,17 @@ private constructor(
                 // if there are no valid parameter sets
                 val parameters = factory.keyParameters(context).toList()
                 if (parameters.isEmpty()) {
-                    addPreferenceScreen(factory.create(context), PreferenceScreenCoordinate(screenKey + ":empty"))
+                    addPreferenceScreen(
+                        factory.create(context),
+                        PreferenceScreenCoordinate(screenKey + ":empty")
+                    )
                 } else {
-                parameters.forEach {
-                    if (flagEnabled == false) return@forEach
-                    val screenMetadata = factory.createWithKeyParameters(context, it)
-                    if (flagEnabled == null) flagEnabled = checkScreenFlag(screenMetadata)
-                    if (flagEnabled) addPreferenceScreen(screenMetadata)
-                }
+                    parameters.forEach {
+                        if (flagEnabled == false) return@forEach
+                        val screenMetadata = factory.createWithKeyParameters(context, it)
+                        if (flagEnabled == null) flagEnabled = checkScreenFlag(screenMetadata)
+                        if (flagEnabled) addPreferenceScreen(screenMetadata)
+                    }
                 }
             } else {
                 factory.parameters(context).collect {
@@ -316,7 +321,13 @@ private constructor(
     }
 
     @CanIgnoreReturnValue
-    private suspend fun addPreferenceScreen(metadata: PreferenceScreenMetadata, coordinate: PreferenceScreenCoordinate = PreferenceScreenCoordinate(metadata.key, metadata.keyParameters)): Boolean {
+    private suspend fun addPreferenceScreen(
+        metadata: PreferenceScreenMetadata,
+        coordinate: PreferenceScreenCoordinate = PreferenceScreenCoordinate(
+            metadata.key,
+            metadata.keyParameters
+        )
+    ): Boolean {
         if (!checkScreenFlag(metadata)) return false
         if (!metadata.isExposable(context)) return false
 
@@ -354,6 +365,7 @@ private constructor(
                 is PreferencesApiScreen -> {
                     !metadata.isFlagEnabled(context)
                 }
+
                 else -> {
                     false
                 }
@@ -477,14 +489,14 @@ private constructor(
             preference = toProto(screenMetadata, this@toProto.metadata, isRoot)
         }
         forEachAsync {
-            if(it !is PreferenceHierarchy && !it.metadata.isExposable(context))
+            if (it !is PreferenceHierarchy && !it.metadata.isExposable(context))
                 return@forEachAsync
             addPreferences(
                 preferenceOrGroupProto {
                     if (it is PreferenceHierarchy) {
                         group = it.toProto(screenMetadata, false)
                     } else {
-                       preference = toProto(screenMetadata, it.metadata, false)
+                        preference = toProto(screenMetadata, it.metadata, false)
                     }
                 }
             )
@@ -540,7 +552,7 @@ private constructor(
     private suspend fun Class<out Fragment>.toActionTarget(extras: Bundle?): ActionTarget? {
         if (
             !PreferenceScreenProvider::class.java.isAssignableFrom(this) &&
-                !PreferenceScreenBindingKeyProvider::class.java.isAssignableFrom(this)
+            !PreferenceScreenBindingKeyProvider::class.java.isAssignableFrom(this)
         ) {
             return null
         }
@@ -681,8 +693,10 @@ fun PreferenceMetadata.toProto(
             }
         }
 
-        val launchTarget = if (screenMetadata != metadata) metadata else null
-        screenMetadata.getLaunchIntent(context, launchTarget)?.let { launchIntent = it.toProto() }
+        screenMetadata.getTrampolinedLaunchIntent(context, metadata)?.let {
+            launchIntent = it.toProto()
+        }
+
         for (tag in metadata.tags(context)) addTags(tag)
     }
     purpose = metadata.purpose
@@ -735,10 +749,10 @@ fun PreferenceMetadata.toProto(
     readWritePermit = ReadWritePermit.make(readPermit, writePermit)
     if (
         flags.includeValue() &&
-            enabled &&
-            (!hasAvailable() || available) &&
-            (!hasRestricted() || !restricted) &&
-            readPermit == ReadWritePermit.ALLOW
+        enabled &&
+        (!hasAvailable() || available) &&
+        (!hasRestricted() || !restricted) &&
+        readPermit == ReadWritePermit.ALLOW
     ) {
         val storage = metadata.storage(context)
         value = preferenceValueProto {
@@ -746,14 +760,19 @@ fun PreferenceMetadata.toProto(
             when (metadata.valueType) {
                 Int::class.java,
                 Int::class.javaObjectType -> storage.getInt(key)?.let { intValue = it }
+
                 Boolean::class.java,
                 Boolean::class.javaObjectType -> storage.getBoolean(key)?.let { booleanValue = it }
+
                 Float::class.java,
                 Float::class.javaObjectType -> storage.getFloat(key)?.let { floatValue = it }
+
                 Long::class.java,
                 Long::class.javaObjectType -> storage.getLong(key)?.let { longValue = it }
+
                 String::class.java,
                 String::class.javaObjectType -> storage.getString(key)?.let { stringValue = it }
+
                 else -> error("Error: Unsupported type ${metadata.valueType}")
             }
         }
@@ -777,14 +796,19 @@ fun PreferenceMetadata.toProto(
                             rangeValue = rangeValueProto {}
                         }
                     }
+
                     Boolean::class.java,
                     Boolean::class.javaObjectType -> booleanType = true
+
                     Float::class.java,
                     Float::class.javaObjectType -> floatType = true
+
                     Long::class.java,
                     Long::class.javaObjectType -> longType = true
+
                     String::class.java,
                     String::class.javaObjectType -> stringType = true
+
                     else -> error("Error: Unsupported type ${metadata.valueType}")
                 }
             }
@@ -802,6 +826,7 @@ fun <T> PersistentPreference<T>.evalReadPermit(
         sensitivityLevel == DO_NOT_EXPOSE -> ReadWritePermit.DISALLOW
         getReadPermissions(context)?.check(context, callingPid, callingUid) == false ->
             ReadWritePermit.REQUIRE_APP_PERMISSION
+
         else -> getReadPermit(context, callingPid, callingUid)
     }
 
@@ -829,7 +854,7 @@ fun <T> PersistentPreference<T>.evalWritePermit(
         // Unknown sensitivity is disallowed, unless we are on a debuggable build
         // and the caller holds the WRITE_SECURE_SETTINGS permission.
         sensitivityLevel == DO_NOT_EXPOSE &&
-            !(isDebuggable && hasUnknownSensitivitySettings) -> ReadWritePermit.DISALLOW
+                !(isDebuggable && hasUnknownSensitivitySettings) -> ReadWritePermit.DISALLOW
 
         // If the app lacks the required permissions, require them.
         getWritePermissions(context)?.check(context, callingPid, callingUid) == false ->
@@ -909,14 +934,19 @@ private fun ApiType<*>.toProto(
                     rangeValue = rangeValueProto {}
                 }
             }
+
             Boolean::class.java,
             Boolean::class.javaObjectType -> booleanType = true
+
             Float::class.java,
             Float::class.javaObjectType -> floatType = true
+
             Long::class.java,
             Long::class.javaObjectType -> longType = true
+
             String::class.java,
             String::class.javaObjectType -> stringType = true
+
             else -> error("Error: Unsupported type $valueType")
         }
     }
@@ -940,14 +970,20 @@ private fun ApiType<*>.toProto(
                                 when (this@toProto.getType()) {
                                     Int::class.java,
                                     Int::class.javaObjectType -> intValue = it.first as Int
+
                                     Boolean::class.java,
-                                    Boolean::class.javaObjectType -> booleanValue = it.first as Boolean
+                                    Boolean::class.javaObjectType -> booleanValue =
+                                        it.first as Boolean
+
                                     Float::class.java,
                                     Float::class.javaObjectType -> floatValue = it.first as Float
+
                                     Long::class.java,
                                     Long::class.javaObjectType -> longValue = it.first as Long
+
                                     String::class.java,
                                     String::class.javaObjectType -> stringValue = it.first as String
+
                                     else -> error("Error: Unsupported type ${this@toProto.getType()}")
                                 }
                             }
