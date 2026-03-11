@@ -20,139 +20,171 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="@drawable/bottomsheet_background"
+    android:layout_ignoreOffset="true"
     android:fitsSystemWindows="true">
+
+    <ScrollView
+        android:id="@+id/app_lock_edu_scrollview"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbars="vertical"
+        android:fadeScrollbars="false"
+        android:nestedScrollingEnabled="true"
+        android:overScrollMode="never">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="?android:attr/dialogPreferredPadding"
+            android:paddingEnd="?android:attr/dialogPreferredPadding"
+            android:paddingTop="0dp">
+
+            <ImageView
+                android:layout_width="@dimen/resolver_icon_size"
+                android:layout_height="@dimen/resolver_icon_size"
+                android:src="@drawable/ic_lock_bold"
+                android:layout_gravity="center_horizontal"
+                android:contentDescription="@null"
+                android:tint="@color/materialColorOnSurface"
+                android:layout_marginBottom="@dimen/action_bar_content_inset_material"/>
+
+            <TextView
+                android:id="@+id/app_lock_edu_dialog_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/app_lock_edu_dialog_enable_app_lock_title"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:textColor="@color/materialColorOnSurface"
+                android:layout_marginBottom="@dimen/dialog_title_divider_material"/>
+
+            <TextView
+                android:id="@+id/app_lock_edu_dialog_desc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:justificationMode="inter_word"
+                android:textColor="@color/materialColorOnSurfaceVariant"
+                android:layout_marginBottom="@dimen/dialog_padding_material"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/app_lock_edu_dialog_info_header"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textStyle="bold"
+                android:textColor="@color/materialColorOnSurfaceVariant"
+                android:layout_marginBottom="@dimen/preference_breadcrumbs_padding_start_material"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="@dimen/preference_breadcrumbs_padding_start_material">
+
+                <ImageView
+                    android:layout_width="@dimen/app_lock_icon_size_small"
+                    android:layout_height="@dimen/app_lock_icon_size_small"
+                    android:src="@drawable/ic_notification_block"
+                    android:contentDescription="@null"
+                    android:tint="@color/materialColorOnSurface"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_lock_edu_dialog_info_notifications"
+                    android:layout_marginStart="@dimen/preference_breadcrumbs_padding_start_material"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="@color/materialColorOnSurface"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="@dimen/preference_breadcrumbs_padding_start_material">
+
+                <ImageView
+                    android:layout_height="@dimen/app_lock_icon_size_small"
+                    android:layout_width="@dimen/app_lock_icon_size_small"
+                    android:src="@drawable/ic_apps"
+                    android:contentDescription="@null"
+                    android:tint="@color/materialColorOnSurface"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_lock_edu_dialog_info_widgets"
+                    android:layout_marginStart="@dimen/preference_breadcrumbs_padding_start_material"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="@color/materialColorOnSurface"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="@dimen/dialog_padding_material">
+
+                <ImageView
+                    android:layout_height="@dimen/app_lock_icon_size_small"
+                    android:layout_width="@dimen/app_lock_icon_size_small"
+                    android:src="@drawable/ic_info_sparkle"
+                    android:contentDescription="@null"
+                    android:tint="@color/materialColorOnSurface"/>
+                <TextView
+                    android:id="@+id/app_lock_edu_dialog_info_ai_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/preference_breadcrumbs_padding_start_material"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="@color/materialColorOnSurface"/>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <View
+        android:id="@+id/app_lock_edu_bottom_sheet_divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="@dimen/app_lock_item_margin"
+        android:layout_marginBottom="@dimen/app_lock_item_margin"
+        android:background="?android:attr/listDivider" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingStart="?android:attr/dialogPreferredPadding"
-        android:paddingEnd="?android:attr/dialogPreferredPadding"
-        android:paddingTop="0dp"
-        android:paddingBottom="@dimen/dialog_padding_material">
+        android:paddingEnd="?android:attr/dialogPreferredPadding">
 
-    <ImageView
-        android:layout_width="@dimen/resolver_icon_size"
-        android:layout_height="@dimen/resolver_icon_size"
-        android:src="@drawable/ic_lock_bold"
-        android:layout_gravity="center_horizontal"
-        android:contentDescription="@null"
-        android:tint="@color/materialColorOnSurface"
-        android:layout_marginBottom="@dimen/action_bar_content_inset_material"/>
-
-    <TextView
-        android:id="@+id/app_lock_edu_dialog_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/app_lock_edu_dialog_enable_app_lock_title"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:textColor="@color/materialColorOnSurface"
-        android:layout_marginBottom="@dimen/dialog_title_divider_material"/>
-
-    <TextView
-        android:id="@+id/app_lock_edu_dialog_desc"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:justificationMode="inter_word"
-        android:textColor="@color/materialColorOnSurfaceVariant"
-        android:layout_marginBottom="@dimen/dialog_padding_material"/>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/app_lock_edu_dialog_info_header"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textStyle="bold"
-        android:textColor="@color/materialColorOnSurfaceVariant"
-        android:layout_marginBottom="@dimen/preference_breadcrumbs_padding_start_material"/>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="@dimen/preference_breadcrumbs_padding_start_material">
-
-        <ImageView
-            android:layout_width="@dimen/app_lock_icon_size_small"
-            android:layout_height="@dimen/app_lock_icon_size_small"
-            android:src="@drawable/ic_notification_block"
-            android:contentDescription="@null"
-            android:tint="@color/materialColorOnSurface"/>
-
-        <TextView
-            android:layout_width="wrap_content"
+        <Button
+            android:id="@+id/app_lock_edu_dialog_btn_lock_app"
+            style="@android:style/Widget.DeviceDefault.Button.Colored"
+            android:background="@drawable/app_lock_btn_pill_background"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/app_lock_edu_dialog_info_notifications"
-            android:layout_marginStart="@dimen/preference_breadcrumbs_padding_start_material"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@color/materialColorOnSurface"/>
-    </LinearLayout>
+            android:minHeight="@dimen/app_lock_edu_button_min_height"
+            android:layout_marginBottom="@dimen/button_padding_horizontal_material"
+            android:text="@string/app_lock_edu_dialog_button_lock"
+            android:textColor="@color/materialColorOnPrimary"
+            android:textAllCaps="false"/>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="@dimen/preference_breadcrumbs_padding_start_material">
-        <ImageView
-            android:layout_height="@dimen/app_lock_icon_size_small"
-            android:layout_width="@dimen/app_lock_icon_size_small"
-            android:src="@drawable/ic_apps"
-            android:contentDescription="@null"
-            android:tint="@color/materialColorOnSurface"/>
-
-        <TextView
-            android:layout_width="wrap_content"
+        <Button
+            android:id="@+id/app_lock_edu_dialog_btn_cancel"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/app_lock_edu_dialog_info_widgets"
-            android:layout_marginStart="@dimen/preference_breadcrumbs_padding_start_material"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@color/materialColorOnSurface"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="@dimen/dialog_padding_material">
-        <ImageView
-            android:layout_height="@dimen/app_lock_icon_size_small"
-            android:layout_width="@dimen/app_lock_icon_size_small"
-            android:src="@drawable/ic_info_sparkle"
-            android:contentDescription="@null"
-            android:tint="@color/materialColorOnSurface"/>
-        <TextView
-            android:id="@+id/app_lock_edu_dialog_info_ai_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/preference_breadcrumbs_padding_start_material"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@color/materialColorOnSurface"/>
-    </LinearLayout>
-
-    <Button
-        android:id="@+id/app_lock_edu_dialog_btn_lock_app"
-        style="@android:style/Widget.DeviceDefault.Button.Colored"
-        android:background="@drawable/app_lock_btn_pill_background"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/button_padding_horizontal_material"
-        android:text="@string/app_lock_edu_dialog_button_lock"
-        android:textColor="@color/materialColorOnPrimary"
-        android:textAllCaps="false"/>
-
-    <Button
-        android:id="@+id/app_lock_edu_dialog_btn_cancel"
-        style="?android:attr/borderlessButtonStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@android:string/cancel"
-        android:textColor="@color/materialColorOnSurfaceVariant"
-        android:textAllCaps="false"/>
+            android:minHeight="@dimen/app_lock_edu_button_min_height"
+            android:text="@android:string/cancel"
+            android:textColor="@color/materialColorOnSurfaceVariant"
+            android:textAllCaps="false"/>
     </LinearLayout>
 </LinearLayout>
