@@ -338,6 +338,13 @@ flag {
 }
 
 flag {
+    name: "smart_adaptive_brightness"
+    namespace: "display_manager"
+    description: "Improve the brightness transition tuning capability, making the brightness transition model smarter."
+    bug: "463249331"
+}
+
+flag {
     name: "virtual_secondary_displays"
     namespace: "lse_desktop_experience"
     description: "Enable Connected Display features on virtual displays with proper configuration"

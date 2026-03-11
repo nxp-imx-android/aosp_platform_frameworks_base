@@ -5,17 +5,23 @@ package com.android.server.display.config {
     ctor public AutoBrightness();
     method public final java.math.BigInteger getBrighteningLightDebounceIdleMillis();
     method public final java.math.BigInteger getBrighteningLightDebounceMillis();
+    method public final java.math.BigDecimal getBrighteningRampGamma();
     method public final java.math.BigInteger getDarkeningLightDebounceIdleMillis();
     method public final java.math.BigInteger getDarkeningLightDebounceMillis();
+    method public final java.math.BigDecimal getDarkeningRampGamma();
     method public boolean getEnabled();
     method public final java.math.BigInteger getIdleStylusTimeoutMillis();
+    method public final com.android.server.display.config.LuxDeltaToRampLimits getLuxDeltaToRampLimits();
     method public final java.util.List<com.android.server.display.config.LuxToBrightnessMapping> getLuxToBrightnessMapping();
     method public final void setBrighteningLightDebounceIdleMillis(java.math.BigInteger);
     method public final void setBrighteningLightDebounceMillis(java.math.BigInteger);
+    method public final void setBrighteningRampGamma(java.math.BigDecimal);
     method public final void setDarkeningLightDebounceIdleMillis(java.math.BigInteger);
     method public final void setDarkeningLightDebounceMillis(java.math.BigInteger);
+    method public final void setDarkeningRampGamma(java.math.BigDecimal);
     method public void setEnabled(boolean);
     method public final void setIdleStylusTimeoutMillis(java.math.BigInteger);
+    method public final void setLuxDeltaToRampLimits(com.android.server.display.config.LuxDeltaToRampLimits);
   }
 
   public enum AutoBrightnessModeName {
@@ -303,6 +309,21 @@ package com.android.server.display.config {
   public class IntegerArray {
     ctor public IntegerArray();
     method public java.util.List<java.math.BigInteger> getItem();
+  }
+
+  public class LuxDeltaRampLimitPoint {
+    ctor public LuxDeltaRampLimitPoint();
+    method @NonNull public final java.math.BigInteger getLuxDelta();
+    method @NonNull public final java.math.BigInteger getRampDecreaseMaxMillis();
+    method @NonNull public final java.math.BigInteger getRampIncreaseMaxMillis();
+    method public final void setLuxDelta(@NonNull java.math.BigInteger);
+    method public final void setRampDecreaseMaxMillis(@NonNull java.math.BigInteger);
+    method public final void setRampIncreaseMaxMillis(@NonNull java.math.BigInteger);
+  }
+
+  public class LuxDeltaToRampLimits {
+    ctor public LuxDeltaToRampLimits();
+    method @NonNull public final java.util.List<com.android.server.display.config.LuxDeltaRampLimitPoint> getPoint();
   }
 
   public class LuxThrottling {

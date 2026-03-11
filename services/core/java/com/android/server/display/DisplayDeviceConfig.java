@@ -62,6 +62,7 @@ import com.android.server.display.config.IdleScreenRefreshRateTimeout;
 import com.android.server.display.config.IdleScreenRefreshRateTimeoutLuxThresholdPoint;
 import com.android.server.display.config.IdleScreenRefreshRateTimeoutLuxThresholds;
 import com.android.server.display.config.IntegerArray;
+import com.android.server.display.config.LuxDeltaRampLimitPoint;
 import com.android.server.display.config.LuxThrottling;
 import com.android.server.display.config.NitsMap;
 import com.android.server.display.config.NonNegativeFloatToFloatPoint;
@@ -80,6 +81,7 @@ import com.android.server.display.config.ThermalThrottlingData;
 import com.android.server.display.config.UsiVersion;
 import com.android.server.display.config.XmlParser;
 import com.android.server.display.feature.DisplayManagerFlags;
+import com.android.server.display.feature.flags.Flags;
 import com.android.server.display.utils.DebugUtils;
 
 import org.xmlpull.v1.XmlPullParserException;
@@ -405,6 +407,21 @@ import javax.xml.datatype.DatatypeConfigurationException;
  *            </map>
  *          </luxToBrightnessMapping>
  *          <idleStylusTimeoutMillis>10000</idleStylusTimeoutMillis>
+ *
+ *          <brighteningGamma>0.2</brighteningGamma>
+ *          <darkeningGamma>0.3</darkeningGamma>
+ *          <luxDeltaToRampLimits>
+ *            <point>
+ *              <lux>200</lux>
+ *              <rampIncreaseMaxMillis>20</rampIncreaseMaxMillis>
+ *              <rampDecreaseMaxMillis>30</rampDecreaseMaxMillis>
+ *            </point>
+ *            <point>
+ *              <lux>300</lux>
+ *              <rampIncreaseMaxMillis>30</rampIncreaseMaxMillis>
+ *              <rampDecreaseMaxMillis>40</rampDecreaseMaxMillis>
+ *            </point>
+ *          </luxDeltaToRampLimits>
  *      </autoBrightness>
  *
  *      <screenBrightnessRampFastDecrease>0.01</screenBrightnessRampFastDecrease>
@@ -846,6 +863,16 @@ public class DisplayDeviceConfig {
     // Represents the auto-brightness darkening light debounce for idle screen brightness mode.
     private long mAutoBrightnessDarkeningLightDebounceIdle =
             INVALID_AUTO_BRIGHTNESS_LIGHT_DEBOUNCE;
+
+    // Used to compute the brightness ramp animation transitions
+    private float mAutoBrightnessBrighteningRampGamma = Float.NaN;
+    private float mAutoBrightnessDarkeningRampGamma = Float.NaN;
+
+    // Given a lux change, defines the max brightness animation duration
+    @Nullable
+    private Spline mLuxDeltaToRampIncreaseMaxMillis;
+    @Nullable
+    private Spline mLuxDeltaToRampDecreaseMaxMillis;
 
     // This setting allows non-default displays to have autobrightness enabled.
     private boolean mAutoBrightnessAvailable = false;
@@ -1610,6 +1637,36 @@ public class DisplayDeviceConfig {
         return mDisplayBrightnessMapping.getBrightnessArray(mode, preset);
     }
 
+    /**
+     * @return Auto brightness brightening gamma used to perform ramp brightness transitions
+     */
+    public float getAutoBrightnessBrighteningRampGamma() {
+        return mAutoBrightnessBrighteningRampGamma;
+    }
+
+    /**
+     * @return Auto brightness darkening gamma used to perform ramp brightness transitions
+     */
+    public float getAutoBrightnessDarkeningRampGamma() {
+        return mAutoBrightnessDarkeningRampGamma;
+    }
+
+    /**
+     * @return Spline mapping auto-brightness lux delta to brightness ramp increase max millis
+     */
+    @Nullable
+    public Spline getLuxDeltaToRampIncreaseMaxMillis() {
+        return mLuxDeltaToRampIncreaseMaxMillis;
+    }
+
+    /**
+     * @return Spline mapping auto-brightness lux delta to brightness ramp decrease max millis
+     */
+    @Nullable
+    public Spline getLuxDeltaToRampDecreaseMaxMillis() {
+        return mLuxDeltaToRampDecreaseMaxMillis;
+    }
+
     public RefreshRateData getRefreshRateData() {
         return mRefreshRateData;
     }
@@ -1829,6 +1886,10 @@ public class DisplayDeviceConfig {
                 + ", mBrightnessRampIncreaseMaxMillis=" + mBrightnessRampIncreaseMaxMillis
                 + ", mBrightnessRampDecreaseMaxIdleMillis=" + mBrightnessRampDecreaseMaxIdleMillis
                 + ", mBrightnessRampIncreaseMaxIdleMillis=" + mBrightnessRampIncreaseMaxIdleMillis
+                + ", mLuxDeltaToRampIncreaseMaxMillis=" + mLuxDeltaToRampIncreaseMaxMillis
+                + ", mLuxDeltaToRampDecreaseMaxMillis=" + mLuxDeltaToRampDecreaseMaxMillis
+                + ", mAutoBrightnessBrighteningRampGamma=" + mAutoBrightnessBrighteningRampGamma
+                + ", mAutoBrightnessDarkeningRampGamma=" + mAutoBrightnessDarkeningRampGamma
                 + "\n"
                 + "mAmbientHorizonLong=" + mAmbientHorizonLong
                 + ", mAmbientHorizonShort=" + mAmbientHorizonShort
@@ -2436,6 +2497,11 @@ public class DisplayDeviceConfig {
                 autoBrightness, getBacklightToBrightnessSpline());
         loadIdleStylusTimeoutMillis(autoBrightness);
         loadEnableAutoBrightness(autoBrightness);
+        if (Flags.smartAdaptiveBrightness()) {
+            loadAutoBrightnessBrighteningGamma(autoBrightness);
+            loadAutoBrightnessDarkeningGamma(autoBrightness);
+            loadAutoBrightnessLuxDeltaToRampLimits(autoBrightness);
+        }
     }
 
     /**
@@ -2444,6 +2510,42 @@ public class DisplayDeviceConfig {
      */
     public int getIdleStylusTimeoutMillis() {
         return mIdleStylusTimeoutMillis;
+    }
+
+    private void loadAutoBrightnessBrighteningGamma(AutoBrightness autoBrightness) {
+        if (autoBrightness != null && autoBrightness.getBrighteningRampGamma() != null) {
+            mAutoBrightnessBrighteningRampGamma =
+                    autoBrightness.getBrighteningRampGamma().floatValue();
+        }
+    }
+
+    private void loadAutoBrightnessDarkeningGamma(AutoBrightness autoBrightness) {
+        if (autoBrightness != null && autoBrightness.getDarkeningRampGamma() != null) {
+            mAutoBrightnessDarkeningRampGamma = autoBrightness.getDarkeningRampGamma().floatValue();
+        }
+    }
+
+    private void loadAutoBrightnessLuxDeltaToRampLimits(AutoBrightness autoBrightness) {
+        if (autoBrightness == null || autoBrightness.getLuxDeltaToRampLimits() == null) {
+            return;
+        }
+
+        List<LuxDeltaRampLimitPoint> points = autoBrightness.getLuxDeltaToRampLimits().getPoint();
+        int size = points.size();
+        float[] luxDelta = new float[size];
+        float[] rampIncreaseMaxMillis = new float[size];
+        float[] rampDecreaseMaxMillis = new float[size];
+        for (int i = 0; i < size; i++) {
+            LuxDeltaRampLimitPoint point = points.get(i);
+            luxDelta[i] = point.getLuxDelta().floatValue();
+            rampIncreaseMaxMillis[i] = point.getRampIncreaseMaxMillis().floatValue();
+            rampDecreaseMaxMillis[i] = point.getRampDecreaseMaxMillis().floatValue();
+        }
+
+        mLuxDeltaToRampIncreaseMaxMillis = Spline.createLinearSpline(luxDelta,
+                rampIncreaseMaxMillis);
+        mLuxDeltaToRampDecreaseMaxMillis = Spline.createLinearSpline(luxDelta,
+                rampDecreaseMaxMillis);
     }
 
     /**
