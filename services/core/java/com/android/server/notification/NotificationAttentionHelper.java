@@ -28,6 +28,7 @@ import static android.media.audio.Flags.focusExclusiveWithRecording;
 import static android.service.notification.NotificationListenerService.HINT_HOST_DISABLE_CALL_EFFECTS;
 import static android.service.notification.NotificationListenerService.HINT_HOST_DISABLE_EFFECTS;
 import static android.service.notification.NotificationListenerService.HINT_HOST_DISABLE_NOTIFICATION_EFFECTS;
+import static com.android.server.notification.Flags.favoritesIncomingCallLights;
 
 import android.Manifest.permission;
 import android.annotation.IntDef;
@@ -47,6 +48,7 @@ import android.content.pm.ShortcutInfo;
 import android.content.pm.UserInfo;
 import android.content.res.Resources;
 import android.database.ContentObserver;
+import android.graphics.Color;
 import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.media.IRingtonePlayer;
@@ -154,6 +156,9 @@ public final class NotificationAttentionHelper {
     @Retention(RetentionPolicy.SOURCE)
     @interface MuteReason {}
 
+    static final int FAVORITE_CALL_LIGHT_SETTING_VELUE_ON = 1;
+    static final int FAVORITE_CALL_LIGHT_SETTING_VELUE_OFF = 0;
+
     private final Context mContext;
     //This is NMS.mNotificationLock.
     private final Object mLock;
@@ -174,8 +179,10 @@ public final class NotificationAttentionHelper {
     // The last key in this list owns the hardware.
     @GuardedBy("mLock")
     ArrayList<String> mLights = new ArrayList<>();
+
     private LogicalLight mNotificationLight;
     private LogicalLight mAttentionLight;
+    private LogicalLight mPriorityNotificationLight;
 
     private final boolean mUseAttentionLight;
     boolean mHasLight;
@@ -207,6 +214,9 @@ public final class NotificationAttentionHelper {
     private boolean mNotificationCooldownApplyToAll;
     private boolean mNotificationCooldownVibrateUnlocked;
 
+    private boolean mFavoritesIncomingCallLightsEnabled;
+    private boolean mFavoritesIncomingCallLightsForWorkEnabled;
+
     private final PolitenessStrategy mStrategy;
     private int mCurrentWorkProfileId = UserHandle.USER_NULL;
 
@@ -233,6 +243,10 @@ public final class NotificationAttentionHelper {
 
         mNotificationLight = lightsManager.getLight(LightsManager.LIGHT_ID_NOTIFICATIONS);
         mAttentionLight = lightsManager.getLight(LightsManager.LIGHT_ID_ATTENTION);
+        if (favoritesIncomingCallLights()) {
+            mPriorityNotificationLight =
+                    lightsManager.getLight(LightsManager.LIGHT_ID_PRIORITY_NOTIFICATIONS);
+        }
 
         Resources resources = context.getResources();
         mUseAttentionLight = resources.getBoolean(R.bool.config_useAttentionLight);
@@ -344,7 +358,18 @@ public final class NotificationAttentionHelper {
         mContext.getContentResolver().registerContentObserver(
                 SettingsObserver.NOTIFICATION_LIGHT_PULSE_URI, false, mSettingsObserver,
                 UserHandle.USER_ALL);
+
+        if (favoritesIncomingCallLights()) {
+            mContext.getContentResolver()
+                    .registerContentObserver(
+                            SettingsObserver.LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED_URI,
+                            false,
+                            mSettingsObserver,
+                            UserHandle.USER_ALL);
+        }
+
         if (Flags.politeNotifications()) {
+            mCurrentWorkProfileId = getManagedProfileId(ActivityManager.getCurrentUser());
             mContext.getContentResolver().registerContentObserver(
                     SettingsObserver.NOTIFICATION_COOLDOWN_ENABLED_URI, false, mSettingsObserver,
                     UserHandle.USER_ALL);
@@ -396,6 +421,50 @@ public final class NotificationAttentionHelper {
                         DEFAULT_NOTIFICATION_COOLDOWN_VIBRATE_UNLOCKED,
                         UserHandle.USER_CURRENT) != 0;
                 }
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to read Settings: " + e);
+            }
+        }
+
+        if (favoritesIncomingCallLights()) {
+            try {
+                if (mCurrentWorkProfileId == UserHandle.USER_NULL) {
+                    mCurrentWorkProfileId = getManagedProfileId(ActivityManager.getCurrentUser());
+                }
+
+                final boolean favoritesIncomingCallLightsEnabled =
+                        Settings.Secure.getIntForUser(
+                                        mContext.getContentResolver(),
+                                        Settings.Secure.LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED,
+                                        FAVORITE_CALL_LIGHT_SETTING_VELUE_ON,
+                                        UserHandle.USER_CURRENT)
+                                != FAVORITE_CALL_LIGHT_SETTING_VELUE_OFF;
+                boolean favoritesIncomingCallLightsForWorkEnabled = false;
+
+                if (mCurrentWorkProfileId != UserHandle.USER_NULL) {
+                    favoritesIncomingCallLightsForWorkEnabled =
+                            Settings.Secure.getIntForUser(
+                                            mContext.getContentResolver(),
+                                            Settings.Secure.LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED,
+                                            FAVORITE_CALL_LIGHT_SETTING_VELUE_ON,
+                                            mCurrentWorkProfileId)
+                                    != FAVORITE_CALL_LIGHT_SETTING_VELUE_OFF;
+                } else {
+                    favoritesIncomingCallLightsForWorkEnabled = false;
+                }
+                synchronized (mLock) {
+                    if (mFavoritesIncomingCallLightsEnabled != favoritesIncomingCallLightsEnabled
+                            || mFavoritesIncomingCallLightsForWorkEnabled
+                                    != favoritesIncomingCallLightsForWorkEnabled) {
+
+                        mFavoritesIncomingCallLightsEnabled = favoritesIncomingCallLightsEnabled;
+                        mFavoritesIncomingCallLightsForWorkEnabled =
+                                favoritesIncomingCallLightsForWorkEnabled;
+
+                        updateLightsLocked();
+                    }
+                }
+
             } catch (Exception e) {
                 Log.e(TAG, "Failed to read Settings: " + e);
             }
@@ -533,6 +602,9 @@ public final class NotificationAttentionHelper {
             updateLightsLocked();
             if (mUseAttentionLight && mAttentionLight != null) {
                 mAttentionLight.pulse();
+            }
+            if (favoritesIncomingCallLights() && isCallLight(record) && !wasShowLights) {
+                startPriorityNotificationLight();
             }
             blink = true;
         } else if (wasShowLights) {
@@ -938,11 +1010,46 @@ public final class NotificationAttentionHelper {
         clearLightsLocked();
     }
 
-    void updateLightsLocked() {
-        if (mNotificationLight == null) {
+    public void evaluateLateCallLightLocked(
+            final NotificationRecord record, final Signals signals) {
+        if (!favoritesIncomingCallLights()) return;
+
+        // Should this notification make noise, vibe, or use the LED?
+        final boolean aboveThreshold =
+                mIsAutomotive
+                        ? record.getImportance() > NotificationManager.IMPORTANCE_DEFAULT
+                        : record.getImportance() >= NotificationManager.IMPORTANCE_DEFAULT;
+
+
+        boolean canShowLights = canShowLightsLocked(record, signals, aboveThreshold);
+
+        // Remove the notification from the list, and add it on top if canShowLights is true
+        boolean wasShowLights = mLights.remove(record.getKey());
+
+        if (canShowLights && mPriorityNotificationLight != null) {
+            mLights.add(record.getKey());
+        }
+
+        if (!canShowLights || mPriorityNotificationLight == null) {
+            if (wasShowLights) {
+                updateLightsLocked();
+            }
             return;
         }
 
+        boolean isCallLight = isCallLight(record);
+
+
+        if (isCallLight) {
+            if (!wasShowLights) {
+                startPriorityNotificationLight();
+            }
+        } else if (wasShowLights) {
+            updateLightsLocked();
+        }
+    }
+
+    void updateLightsLocked() {
         // handle notification lights
         NotificationRecord ledNotification = null;
         while (ledNotification == null && !mLights.isEmpty()) {
@@ -952,6 +1059,16 @@ public final class NotificationAttentionHelper {
                 Slog.wtfStack(TAG, "LED Notification does not exist: " + owner);
                 mLights.remove(owner);
             }
+        }
+
+        if (favoritesIncomingCallLights()) {
+            if (!isCallLight(ledNotification) || mUserPresent || isInCall()) {
+                stopPriorityNotificationLight();
+            }
+        }
+
+        if (mNotificationLight == null) {
+            return;
         }
 
         // Don't flash while we are in a call or screen is on
@@ -967,13 +1084,41 @@ public final class NotificationAttentionHelper {
         }
     }
 
+    private void stopNotificationLight() {
+        if (mNotificationLight != null) mNotificationLight.turnOff();
+    }
+
+    private void startPriorityNotificationLight() {
+        if (mPriorityNotificationLight != null) {
+            mPriorityNotificationLight.setFlashing(
+                    Color.WHITE, LogicalLight.LIGHT_FLASH_TIMED, 500, 2000);
+            if (DEBUG) {
+                Slog.d(TAG, "START. startPriorityNotificationLight");
+            }
+        }
+    }
+
+    private void stopPriorityNotificationLight() {
+        if (mPriorityNotificationLight != null) {
+            mPriorityNotificationLight.turnOff();
+            if (DEBUG) {
+                Slog.d(TAG, "STOP.  stopPriorityNotificationLight");
+            }
+        }
+    }
+
     boolean canShowLightsLocked(final NotificationRecord record, final Signals signals,
             boolean aboveThreshold) {
         if (!mSystemReady) {
             return false;
         }
+
+        if (mUserPresent) {
+            return false;
+        }
+
         // device lacks light
-        if (!mHasLight) {
+        if (!mHasLight && mPriorityNotificationLight == null) {
             return false;
         }
         // user turned lights off globally
@@ -981,7 +1126,8 @@ public final class NotificationAttentionHelper {
             return false;
         }
         // the notification/channel has no light
-        if (record.getLight() == null) {
+        // TODO (b/491071211): Investigate why light is sometimes null.
+        if (record.getLight() == null && !isCallLight(record)) {
             return false;
         }
         // unimportant notification
@@ -1011,6 +1157,26 @@ public final class NotificationAttentionHelper {
         }
         // Light, but only when the screen is off
         return true;
+    }
+
+   private boolean isCallLight(NotificationRecord record) {
+        if (!favoritesIncomingCallLights() || mPriorityNotificationLight == null) return false;
+
+        if (record == null
+                || !record.isRealCallIncomingNotification()
+                || record.getNotification() == null) {
+            return false;
+        }
+
+
+        boolean isFavoriteCall =
+                record.getContactAffinity() >= ValidateNotificationPeople.STARRED_CONTACT;
+        boolean isFavoritesIncomingCallLightsEnabled =
+                isNotificationForWorkProfile(record)
+                        ? mFavoritesIncomingCallLightsForWorkEnabled
+                        : mFavoritesIncomingCallLightsEnabled;
+
+        return isFavoriteCall && isFavoritesIncomingCallLightsEnabled;
     }
 
     private String disableNotificationEffects(NotificationRecord record, int listenerHints) {
@@ -1705,9 +1871,8 @@ public final class NotificationAttentionHelper {
             } else if (action.equals(Intent.ACTION_USER_PRESENT)) {
                 mUserPresent = true;
                 // turn off LED when user passes through lock screen
-                if (mNotificationLight != null) {
-                    mNotificationLight.turnOff();
-                }
+                stopNotificationLight();
+                stopPriorityNotificationLight();
             } else if (action.equals(Intent.ACTION_USER_ADDED)
                         || action.equals(Intent.ACTION_USER_REMOVED)
                         || action.equals(Intent.ACTION_USER_SWITCHED)
@@ -1743,6 +1908,8 @@ public final class NotificationAttentionHelper {
 
         private static final Uri NOTIFICATION_LIGHT_PULSE_URI = Settings.System.getUriFor(
                 Settings.System.NOTIFICATION_LIGHT_PULSE);
+        private static final Uri LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED_URI =
+                Settings.Secure.getUriFor(Settings.Secure.LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED);
         private static final Uri NOTIFICATION_COOLDOWN_ENABLED_URI = Settings.System.getUriFor(
                 Settings.System.NOTIFICATION_COOLDOWN_ENABLED);
         private static final Uri NOTIFICATION_COOLDOWN_ALL_URI = Settings.System.getUriFor(
@@ -1766,6 +1933,32 @@ public final class NotificationAttentionHelper {
                         mNotificationPulseEnabled = pulseEnabled;
                         updateLightsLocked();
                     }
+                }
+            }
+            if (favoritesIncomingCallLights()
+                    && LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED_URI.equals(uri)) {
+                mFavoritesIncomingCallLightsEnabled =
+                        Settings.Secure.getIntForUser(
+                                        mContext.getContentResolver(),
+                                        Settings.Secure.LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED,
+                                        1,
+                                        UserHandle.USER_CURRENT)
+                                != 0;
+
+                if (mCurrentWorkProfileId != UserHandle.USER_NULL) {
+                    mFavoritesIncomingCallLightsForWorkEnabled =
+                            Settings.Secure.getIntForUser(
+                                            mContext.getContentResolver(),
+                                            Settings.Secure.LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED,
+                                            1,
+                                            mCurrentWorkProfileId)
+                                    != 0;
+                } else {
+                    mFavoritesIncomingCallLightsForWorkEnabled = false;
+                }
+
+                synchronized (mLock) {
+                    updateLightsLocked();
                 }
             }
             if (Flags.politeNotifications()) {
@@ -1862,6 +2055,9 @@ public final class NotificationAttentionHelper {
     void setLights(LogicalLight light) {
         mNotificationLight = light;
         mAttentionLight = light;
+        if (favoritesIncomingCallLights()) {
+            mPriorityNotificationLight = light;
+        }
     }
 
     @VisibleForTesting

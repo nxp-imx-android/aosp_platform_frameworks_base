@@ -250,6 +250,9 @@ public final class NotificationRecord {
     // Used for permission checks against the local app's notification permissions.
     private int mBridgedAppUid = android.os.Process.INVALID_UID;
 
+    // Whether this notification is a real call incoming notification.
+    private boolean mIsRealCallIncomingNotification = false;
+
     public NotificationRecord(Context context, StatusBarNotification sbn,
             NotificationChannel channel) {
         this.sbn = sbn;
@@ -1904,6 +1907,20 @@ public final class NotificationRecord {
             mKeyguardManager = mContext.getSystemService(KeyguardManager.class);
         }
         return mKeyguardManager;
+    }
+
+    /**
+     * Returns whether this notification is a real call notification.
+     */
+    public boolean isRealCallIncomingNotification() {
+        return mIsRealCallIncomingNotification;
+    }
+
+    /**
+     * Sets whether this notification is a real call notification.
+     */
+    public void setIsRealCallIncomingNotification(boolean isRealCallIncomingNotification) {
+        mIsRealCallIncomingNotification = isRealCallIncomingNotification;
     }
 
     @VisibleForTesting

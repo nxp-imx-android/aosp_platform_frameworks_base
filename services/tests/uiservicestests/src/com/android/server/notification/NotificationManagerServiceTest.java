@@ -103,6 +103,7 @@ import static android.service.notification.Flags.FLAG_NOTIFICATION_BITMAP_OFFLOA
 import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION;
+import static com.android.server.notification.Flags.FLAG_FAVORITES_INCOMING_CALL_LIGHTS;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_SILENT_FLAG;
 import static android.service.notification.Flags.FLAG_REDACT_SENSITIVE_NOTIFICATIONS_FROM_UNTRUSTED_LISTENERS;
 import static android.service.notification.NotificationListenerService.FLAG_FILTER_TYPE_ALERTING;
@@ -20370,4 +20371,137 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         assertThat(mBinderService.getAdjustmentDeniedPackages(mUserId, KEY_TYPE)).asList()
                 .containsExactly(PKG_O);
     }
+
+    @Test
+    @EnableFlags(FLAG_FAVORITES_INCOMING_CALL_LIGHTS)
+    public void testRankingReconsideration_affinityChanged() throws Exception {
+        Person person = new Person.Builder().setName("caller").build();
+        Notification n =
+                new Notification.Builder(mContext, "test")
+                        .setStyle(
+                                Notification.CallStyle.forIncomingCall(
+                                        person, mActivityIntent, mActivityIntent))
+                        .build();
+        StatusBarNotification sbn = new StatusBarNotification(mPkg, mPkg, 8, "tag", mUid, 0,
+                n, UserHandle.getUserHandleForUid(mUid), null, System.currentTimeMillis());
+        NotificationRecord r = new NotificationRecord(mContext, sbn, mTestNotificationChannel);
+        mService.addNotification(r);
+        r.setContactAffinity(0f);
+        r.setIsRealCallIncomingNotification(true);
+
+        RankingReconsideration recon = mock(RankingReconsideration.class);
+        when(recon.getKey()).thenReturn(r.getKey());
+        doAnswer(invocationOnMock -> {
+            NotificationRecord record = (NotificationRecord) invocationOnMock.getArguments()[0];
+            record.setContactAffinity(1f);
+            return null;
+        }).when(recon).applyChangesLocked(any());
+
+        android.os.Message m = android.os.Message.obtain();
+        m.obj = recon;
+
+        mService.handleRankingReconsideration(m);
+
+        verify(mAttentionHelper).evaluateLateCallLightLocked(eq(r), any());
+    }
+
+    @Test
+    @EnableFlags(FLAG_FAVORITES_INCOMING_CALL_LIGHTS)
+    public void testRankingReconsideration_affinityNotChanged() throws Exception {
+        Person person = new Person.Builder().setName("caller").build();
+        Notification n =
+                new Notification.Builder(mContext, "test")
+                        .setStyle(
+                                Notification.CallStyle.forIncomingCall(
+                                        person, mActivityIntent, mActivityIntent))
+                        .build();
+        StatusBarNotification sbn = new StatusBarNotification(mPkg, mPkg, 8, "tag", mUid, 0,
+                n, UserHandle.getUserHandleForUid(mUid), null, System.currentTimeMillis());
+        NotificationRecord r = new NotificationRecord(mContext, sbn, mTestNotificationChannel);
+        mService.addNotification(r);
+        r.setContactAffinity(0f);
+        r.setIsRealCallIncomingNotification(true);
+
+        RankingReconsideration recon = mock(RankingReconsideration.class);
+        when(recon.getKey()).thenReturn(r.getKey());
+        doAnswer(invocationOnMock -> {
+            NotificationRecord record = (NotificationRecord) invocationOnMock.getArguments()[0];
+            record.setContactAffinity(0f);
+            return null;
+        }).when(recon).applyChangesLocked(any());
+
+        android.os.Message m = android.os.Message.obtain();
+        m.obj = recon;
+
+        mService.handleRankingReconsideration(m);
+
+        verify(mAttentionHelper, never()).evaluateLateCallLightLocked(eq(r), any());
+    }
+
+    @Test
+    @EnableFlags(FLAG_FAVORITES_INCOMING_CALL_LIGHTS)
+    public void testRankingReconsideration_notRealCallIncomingNotification() throws Exception {
+        Person person = new Person.Builder().setName("caller").build();
+        Notification n =
+                new Notification.Builder(mContext, "test")
+                        .setStyle(
+                                Notification.CallStyle.forIncomingCall(
+                                        person, mActivityIntent, mActivityIntent))
+                        .build();
+        StatusBarNotification sbn = new StatusBarNotification(mPkg, mPkg, 8, "tag", mUid, 0,
+                n, UserHandle.getUserHandleForUid(mUid), null, System.currentTimeMillis());
+        NotificationRecord r = new NotificationRecord(mContext, sbn, mTestNotificationChannel);
+        mService.addNotification(r);
+        r.setContactAffinity(0f);
+        r.setIsRealCallIncomingNotification(false);
+
+        RankingReconsideration recon = mock(RankingReconsideration.class);
+        when(recon.getKey()).thenReturn(r.getKey());
+        doAnswer(invocationOnMock -> {
+            NotificationRecord record = (NotificationRecord) invocationOnMock.getArguments()[0];
+            record.setContactAffinity(1f);
+            return null;
+        }).when(recon).applyChangesLocked(any());
+
+        android.os.Message m = android.os.Message.obtain();
+        m.obj = recon;
+
+        mService.handleRankingReconsideration(m);
+
+        verify(mAttentionHelper, never()).evaluateLateCallLightLocked(eq(r), any());
+    }
+
+    @Test
+    @EnableFlags(FLAG_FAVORITES_INCOMING_CALL_LIGHTS)
+    public void testRankingReconsideration_notNewEnoughForAlerting() throws Exception {
+        Person person = new Person.Builder().setName("caller").build();
+        Notification n =
+                new Notification.Builder(mContext, "test")
+                        .setStyle(
+                                Notification.CallStyle.forIncomingCall(
+                                        person, mActivityIntent, mActivityIntent))
+                        .build();
+        StatusBarNotification sbn = new StatusBarNotification(mPkg, mPkg, 8, "tag", mUid, 0,
+                n, UserHandle.getUserHandleForUid(mUid), null, System.currentTimeMillis() - 10000);
+        NotificationRecord r = new NotificationRecord(mContext, sbn, mTestNotificationChannel);
+        mService.addNotification(r);
+        r.setContactAffinity(0f);
+        r.setIsRealCallIncomingNotification(true);
+
+        RankingReconsideration recon = mock(RankingReconsideration.class);
+        when(recon.getKey()).thenReturn(r.getKey());
+        doAnswer(invocationOnMock -> {
+            NotificationRecord record = (NotificationRecord) invocationOnMock.getArguments()[0];
+            record.setContactAffinity(1f);
+            return null;
+        }).when(recon).applyChangesLocked(any());
+
+        android.os.Message m = android.os.Message.obtain();
+        m.obj = recon;
+
+        mService.handleRankingReconsideration(m);
+
+        verify(mAttentionHelper, never()).evaluateLateCallLightLocked(eq(r), any());
+    }
+
 }
