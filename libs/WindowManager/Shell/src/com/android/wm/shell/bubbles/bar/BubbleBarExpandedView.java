@@ -79,6 +79,8 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
         void onUnBubbleConversation(String bubbleKey);
         /** Called when expanded view task view back button pressed */
         void onBackPressed();
+        /** Called when the handle menu is opened */
+        void onHandleMenuOpened();
     }
 
     /**
@@ -263,6 +265,9 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
             public void onMenuVisibilityChanged(boolean visible) {
                 setObscured(visible);
                 if (visible) {
+                    if (mListener != null) {
+                        mListener.onHandleMenuOpened();
+                    }
                     getHandleView().setFocusable(false);
                     getHandleView().setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
                 } else {
@@ -561,7 +566,7 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
         mLayerBoundsSupplier = supplier;
     }
 
-    /** Sets expanded view listener */
+    /** Sets listener used to notify {@link BubbleBarLayerView} of events  */
     void setListener(@Nullable Listener listener) {
         mListener = listener;
     }
