@@ -187,11 +187,12 @@ final class AppCompatUtils {
                 ? aspectRatio : TaskInfo.PROPERTY_VALUE_UNSET;
         final AppCompatLetterboxPolicy letterboxPolicy =
                 top.mAppCompatController.getLetterboxPolicy();
-        final boolean isTopActivityLetterboxed = letterboxPolicy.isRunning();
-        appCompatTaskInfo.setTopActivityLetterboxed(isTopActivityLetterboxed);
+        final boolean isLetterboxRunning = letterboxPolicy.isRunning();
+        appCompatTaskInfo.setTopActivityLetterboxed(top.areBoundsLetterboxed());
         appCompatTaskInfo.setHasMainWindowRoundedCorners(
                 letterboxPolicy.hasMainWindowRoundedCorners());
-        if (isTopActivityLetterboxed) {
+        appCompatTaskInfo.setTopActivityLetterboxRunning(isLetterboxRunning);
+        if (isLetterboxRunning) {
             // TODO(b/379824541) Remove duplicate information.
             appCompatTaskInfo.topActivityLetterboxBounds = new Rect();
             letterboxPolicy.getLetterboxInnerBounds(appCompatTaskInfo.topActivityLetterboxBounds);

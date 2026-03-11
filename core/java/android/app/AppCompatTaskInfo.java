@@ -115,6 +115,8 @@ public class AppCompatTaskInfo implements Parcelable {
     public static final int FLAG_HAS_MAIN_WINDOW_ROUNDED_CORNERS = FLAG_BASE << 14;
     /** The top activity has excluded caption insets from app bounds treatment. */
     public static final int FLAG_IS_EXCLUDE_CAPTION_INSETS = FLAG_BASE << 15;
+    /** The top activity has letterbox state that is running, but might be hidden. */
+    public static final int FLAG_IS_LETTERBOX_RUNNING = FLAG_BASE << 16;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(flag = true, value = {
@@ -134,7 +136,8 @@ public class AppCompatTaskInfo implements Parcelable {
             FLAG_SAFE_REGION_LETTERBOXED,
             FLAG_IS_LEAF_TASK,
             FLAG_HAS_MAIN_WINDOW_ROUNDED_CORNERS,
-            FLAG_IS_EXCLUDE_CAPTION_INSETS
+            FLAG_IS_EXCLUDE_CAPTION_INSETS,
+            FLAG_IS_LETTERBOX_RUNNING
     })
     public @interface TopActivityFlag {}
 
@@ -151,7 +154,7 @@ public class AppCompatTaskInfo implements Parcelable {
             | FLAG_FULLSCREEN_OVERRIDE_USER | FLAG_HAS_MIN_ASPECT_RATIO_OVERRIDE
             | FLAG_OPT_OUT_EDGE_TO_EDGE | FLAG_ENABLE_RESTART_MENU_FOR_DISPLAY_MOVE
             | FLAG_IS_LEAF_TASK | FLAG_HAS_MAIN_WINDOW_ROUNDED_CORNERS
-            | FLAG_IS_EXCLUDE_CAPTION_INSETS;
+            | FLAG_IS_EXCLUDE_CAPTION_INSETS | FLAG_IS_LETTERBOX_RUNNING;
 
     @TopActivityFlag
     private static final int FLAGS_COMPAT_UI_INTERESTED = FLAGS_ORGANIZER_INTERESTED
@@ -409,6 +412,20 @@ public class AppCompatTaskInfo implements Parcelable {
      */
     public void setTopActivityLetterboxed(boolean enable) {
         setTopActivityFlag(FLAG_LETTERBOXED, enable);
+    }
+
+    /**
+     * @return {@code true} if the top activity letterbox is running, which could be hidden.
+     */
+    public boolean isTopActivityLetterboxRunning() {
+        return isTopActivityFlagEnabled(FLAG_IS_LETTERBOX_RUNNING);
+    }
+
+    /**
+     * Sets the top activity flag for whether letterbox is running, which could be hidden.
+     */
+    public void setTopActivityLetterboxRunning(boolean enable) {
+        setTopActivityFlag(FLAG_IS_LETTERBOX_RUNNING, enable);
     }
 
     /**

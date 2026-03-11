@@ -268,7 +268,7 @@ public class AppCompatUtilsTest extends WindowTestsBase {
             robot.setLetterboxPolicyLetterboxBounds(new Rect(20, 30, 520, 630));
             robot.setIsLetterboxedForAspectRatioOnly(/* forAspectRatio */ true);
 
-
+            robot.checkTopActivityIsLetterboxed(true);
             robot.checkTaskInfoTopActivityHasBounds(/* expected */ new Rect(20, 30, 520, 630));
         });
     }
@@ -281,6 +281,7 @@ public class AppCompatUtilsTest extends WindowTestsBase {
                 a.setIgnoreOrientationRequest(true);
             });
 
+            robot.checkTopActivityIsLetterboxed(false);
             robot.checkTaskInfoTopActivityHasBounds(/* expected */ null);
         });
     }
@@ -436,6 +437,11 @@ public class AppCompatUtilsTest extends WindowTestsBase {
         void checkTaskInfoTopActivityAsInSizeCompatMode(boolean eligible) {
             Assert.assertEquals(eligible, getTopTaskInfo().appCompatTaskInfo
                     .isTopActivityInSizeCompat());
+        }
+
+        void checkTopActivityIsLetterboxed(boolean expected) {
+            Assert.assertEquals(expected,
+                    getTopTaskInfo().appCompatTaskInfo.isTopActivityLetterboxed());
         }
 
         void checkTaskInfoTopActivityHasBounds(Rect bounds) {
