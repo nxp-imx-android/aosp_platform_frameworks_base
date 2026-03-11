@@ -635,16 +635,6 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         startTransitionAndMergeThenVerifyCanceled(mergeTransitionInfo, true /* useLeashes */);
     }
 
-    @Test
-    public void testMerge_cancelToHome_onUnmergedTransition() throws Exception {
-        ActivityManager.RunningTaskInfo taskInfo = new TestRunningTaskInfoBuilder().setTaskId(
-                123).build();
-        TransitionInfo mergeTransitionInfo = new TransitionInfoBuilder(TRANSIT_CHANGE)
-                .addChange(TRANSIT_CHANGE, taskInfo)
-                .build();
-        startTransitionAndMergeThenVerifyCanceled(mergeTransitionInfo, true /* useLeashes */);
-    }
-
     @EnableFlags(FLAG_ADD_ONE_OFF_HANDLER_LEASHES)
     @Test
     public void testMerge_cancelOnRecentsVisible() throws Exception {

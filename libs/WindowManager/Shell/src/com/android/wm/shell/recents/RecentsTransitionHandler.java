@@ -1507,14 +1507,16 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 Slog.d(TAG, "Got an activity only transition during recents, so apply directly");
                 mergeActivityOnly(info, startT);
             } else if (!didMergeThings) {
-                // Didn't recognize anything in incoming transition so don't merge it, but cancel
-                // the transition so that the queued transition can play (this also prevents
-                // Launcher from finishing the transition back to the app, which can block
-                // indefinitely since we are not merging).
+                // Didn't recognize anything in incoming transition so don't merge it.
                 final boolean recentsChanging = (recentsOpening != null) || foundRecentsClosing;
                 Slog.w(TAG, "Don't know how to merge this transition, recentsChanging="
                         + recentsChanging + " recentsTaskId=" + mRecentsTaskId);
-                refuseMerge(startT, () -> cancel("didn't merge"));
+                refuseMerge(startT, () -> {
+                    if (recentsChanging || mRecentsTaskId < 0) {
+                        mWillFinishToHome = false;
+                        cancel("didn't merge");
+                    }
+                });
                 return;
             }
 
