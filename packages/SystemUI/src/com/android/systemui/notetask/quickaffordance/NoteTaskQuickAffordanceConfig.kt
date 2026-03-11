@@ -60,7 +60,7 @@ constructor(
     private val context: Context,
     private val controller: NoteTaskController,
     private val noteTaskInfoResolver: NoteTaskInfoResolver,
-    private val stylusManager: StylusManager,
+    private val stylusManager: Lazy<StylusManager>,
     private val roleManager: RoleManager,
     private val keyguardMonitor: KeyguardUpdateMonitor,
     private val userManager: UserManager,
@@ -82,7 +82,7 @@ constructor(
     override val lockScreenState by lazy {
         val repository = lazyRepository.get()
         val configSelectedFlow = repository.createConfigSelectedFlow(key)
-        val stylusEverUsedFlow = stylusManager.createStylusEverUsedFlow(context)
+        val stylusEverUsedFlow = stylusManager.get().createStylusEverUsedFlow(context)
         val userUnlockedFlow = userManager.createUserUnlockedFlow(keyguardMonitor)
         val defaultNotesAppFlow =
             roleManager.createNotesRoleFlow(backgroundExecutor, controller, noteTaskInfoResolver)

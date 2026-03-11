@@ -62,6 +62,6 @@ var Kosmos.keyguardQuickAffordanceInteractor by Fixture {
         backgroundDispatcher = testDispatcher,
         appContext = applicationContext,
         sceneInteractor = { sceneInteractor },
-        msdlPlayer = msdlPlayer,
+        msdlPlayer = { msdlPlayer },
     )
 }
