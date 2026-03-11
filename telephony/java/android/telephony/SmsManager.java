@@ -3878,7 +3878,13 @@ public final class SmsManager {
         if (user == null || user == UserHandle.ALL) {
             user = context.getUser();
         }
-        Context userContext = context.createContextAsUser(user, 0);
+        Context userContext;
+        try {
+            userContext = context.createContextAsUser(user, 0);
+        } catch (IllegalStateException e) {
+            Log.w(TAG, "Failed to create context for user " + user, e);
+            return new ArraySet<>();
+        }
         PackageManager pm = userContext.getPackageManager();
         Set<String> trustedPackages = new ArraySet<>();
         final long token = Binder.clearCallingIdentity();
@@ -3940,8 +3946,18 @@ public final class SmsManager {
         final long token = Binder.clearCallingIdentity();
         try {
             Trace.beginSection("isAppTrustedForSmsOtp");
-            Context userContext =
-                    context.createContextAsUser(UserHandle.getUserHandleForUid(uid), 0);
+            UserHandle userHandle = UserHandle.getUserHandleForUid(uid);
+            Context userContext;
+            try {
+                // We use the "android" package name here because it is guaranteed to be "installed"
+                // for every user/profile on the device. This avoids IllegalStateException when the
+                // telephony provider package is not present in a sub-user (e.g. cloned profile).
+                userContext = context.createPackageContextAsUser("android", 0, userHandle);
+            } catch (PackageManager.NameNotFoundException e) {
+                Log.wtf(TAG, "Package 'android' not found", e);
+                return false;
+            }
+
             // Holders of the RECEIVE_SENSITIVE_NOTIFICATIONS permission have access
             if (userContext.getPackageManager()
                     .checkPermission(RECEIVE_SENSITIVE_NOTIFICATIONS, packageName)
@@ -3949,7 +3965,8 @@ public final class SmsManager {
                 return true;
             }
 
-            if (userContext.getSystemService(DevicePolicyManager.class).isDeviceManaged()) {
+            DevicePolicyManager dpm = userContext.getSystemService(DevicePolicyManager.class);
+            if (dpm != null && dpm.isDeviceManaged()) {
                 return true;
             }
 
@@ -3989,6 +4006,9 @@ public final class SmsManager {
     @SuppressLint("MissingPermission")
     private static Set<String> getTrustedOtpSmsRolePackages(Context context, UserHandle user) {
         RoleManager rm = context.getSystemService(RoleManager.class);
+        if (rm == null) {
+            return new ArraySet<>();
+        }
         Set<String> roleHoldingPackages = new ArraySet<>();
         for (String role: SMS_OTP_READING_ROLES) {
             List<String> holders = rm.getRoleHoldersAsUser(role, user);
@@ -4004,6 +4024,9 @@ public final class SmsManager {
 
     private static boolean hasSmsOtpAppOp(Context context, String packageName, int uid) {
         AppOpsManager aom = context.getSystemService(AppOpsManager.class);
+        if (aom == null) {
+            return false;
+        }
         return aom.checkOpNoThrow(AppOpsManager.OP_READ_OTP_SMS, uid, packageName)
                 == AppOpsManager.MODE_ALLOWED;
     }
@@ -4043,6 +4066,9 @@ public final class SmsManager {
     @SuppressLint("MissingPermission")
     private static List<AssociationInfo> getAllCdmAssociations(Context context) {
         CompanionDeviceManager cdm = context.getSystemService(CompanionDeviceManager.class);
+        if (cdm == null) {
+            return new ArrayList<>();
+        }
         return cdm.getAllAssociations();
     }
 }
