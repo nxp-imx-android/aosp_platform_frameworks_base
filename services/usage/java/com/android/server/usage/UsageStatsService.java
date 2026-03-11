@@ -431,12 +431,9 @@ public class UsageStatsService extends SystemService implements
     public void onBootPhase(int phase) {
         mAppStandby.onBootPhase(phase);
         if (phase == PHASE_SYSTEM_SERVICES_READY) {
-            // initialize mDpmInternal
+            // initialize internal services
             getDpmInternal();
-            // initialize mShortcutServiceInternal
-            if (android.app.supervision.flags.Flags.deprecateDpmSupervisionApis()) {
-                getSupervisionManagerInternal();
-            }
+            getSupervisionManagerInternal();
             getShortcutServiceInternal();
             mResponseStatsTracker.onSystemServicesReady(getContext());
 
@@ -754,13 +751,8 @@ public class UsageStatsService extends SystemService implements
     }
 
     private boolean isSupervisionEnabled(int callingUid) {
-        if (android.app.supervision.flags.Flags.deprecateDpmSupervisionApis()) {
-            SupervisionManagerInternal smInternal = getSupervisionManagerInternal();
-            return smInternal != null && smInternal.isActiveSupervisionApp(callingUid);
-        } else {
-            DevicePolicyManagerInternal dpmInternal = getDpmInternal();
-            return dpmInternal != null && dpmInternal.isActiveSupervisionApp(callingUid);
-        }
+        SupervisionManagerInternal smInternal = getSupervisionManagerInternal();
+        return smInternal != null && smInternal.isActiveSupervisionApp(callingUid);
     }
 
     private static void deleteRecursively(final File path) {
@@ -1906,18 +1898,10 @@ public class UsageStatsService extends SystemService implements
     }
 
     private boolean shouldDeleteObsoleteData(UserHandle userHandle) {
-        if (android.app.supervision.flags.Flags.deprecateDpmSupervisionApis()) {
-            final SupervisionManagerInternal smInternal = getSupervisionManagerInternal();
-            // If supervision is not enabled for the given user, obsolete data should be deleted.
-            return smInternal == null
-                    || !smInternal.isSupervisionEnabledForUser(userHandle.getIdentifier());
-        } else {
-            final DevicePolicyManagerInternal dpmInternal = getDpmInternal();
-            // If a profile owner is not defined for the given user, obsolete data should be deleted
-            return dpmInternal == null
-                    || dpmInternal.getProfileOwnerOrDeviceOwnerSupervisionComponent(userHandle)
-                            == null;
-        }
+        final SupervisionManagerInternal smInternal = getSupervisionManagerInternal();
+        // If supervision is not enabled for the given user, obsolete data should be deleted.
+        return smInternal == null
+                || !smInternal.isSupervisionEnabledForUser(userHandle.getIdentifier());
     }
 
     private String buildFullToken(String packageName, String token) {
