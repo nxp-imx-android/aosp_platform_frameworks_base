@@ -50,8 +50,8 @@ import static android.Manifest.permission.MANAGE_DEVICE_POLICY_STATUS_BAR;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_STORAGE_LIMIT;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_USB_DATA_SIGNALLING;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_WIPE_DATA;
-import static android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS;
 import static android.Manifest.permission.MANAGE_MULTIUSER_DEVICE_PROVISIONING_STATE;
+import static android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS;
 import static android.Manifest.permission.MANAGE_ROLE_HOLDERS;
 import static android.Manifest.permission.MASTER_CLEAR;
 import static android.Manifest.permission.NOTIFY_PENDING_SYSTEM_UPDATE;
@@ -89,6 +89,7 @@ import static android.app.admin.DevicePolicyManager.ACTION_MANAGED_PROFILE_PROVI
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_DEVICE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_USER;
+import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MULTIUSER_MANAGED_DEVICE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MULTIUSER_MANAGED_USER;
 import static android.app.admin.DevicePolicyManager.ACTION_SYSTEM_UPDATE_POLICY_CHANGED;
 import static android.app.admin.DevicePolicyManager.APP_FUNCTIONS_NOT_CONTROLLED_BY_POLICY;
@@ -132,6 +133,10 @@ import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_NOTIFICATI
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_OVERVIEW;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_QUICK_SETTINGS;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_SYSTEM_INFO;
+import static android.app.admin.DevicePolicyManager.MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_COMPLETED;
+import static android.app.admin.DevicePolicyManager.MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_STARTED;
+import static android.app.admin.DevicePolicyManager.MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_UNMANAGED;
+import static android.app.admin.DevicePolicyManager.MultiuserManagedDeviceProvisioningState;
 import static android.app.admin.DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
 import static android.app.admin.DevicePolicyManager.NON_ORG_OWNED_PROFILE_KEYGUARD_FEATURES_AFFECT_OWNER;
 import static android.app.admin.DevicePolicyManager.OPERATION_SAFETY_REASON_NONE;
@@ -192,10 +197,6 @@ import static android.app.admin.DevicePolicyManager.WIPE_EUICC;
 import static android.app.admin.DevicePolicyManager.WIPE_EXTERNAL_STORAGE;
 import static android.app.admin.DevicePolicyManager.WIPE_RESET_PROTECTION_DATA;
 import static android.app.admin.DevicePolicyManager.WIPE_SILENTLY;
-import static android.app.admin.DevicePolicyManager.MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_COMPLETED;
-import static android.app.admin.DevicePolicyManager.MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_STARTED;
-import static android.app.admin.DevicePolicyManager.MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_UNMANAGED;
-import static android.app.admin.DevicePolicyManager.MultiuserManagedDeviceProvisioningState;
 import static android.app.admin.DevicePolicyResources.Strings.Core.LOCATION_CHANGED_MESSAGE;
 import static android.app.admin.DevicePolicyResources.Strings.Core.LOCATION_CHANGED_TITLE;
 import static android.app.admin.DevicePolicyResources.Strings.Core.NETWORK_LOGGING_MESSAGE;
@@ -943,6 +944,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             "The alias provided must be contained in the aliases specified in the credential "
                     + "management app's authentication policy";
     private static final String NOT_SYSTEM_CALLER_MSG = "Only the system can %s";
+
+    static final String PROVISIONING_PRECONDITIONS_FAILED_WITH_RESULT =
+            "Provisioning preconditions failed with result: ";
 
     private static final int RETRY_COPY_ACCOUNT_ATTEMPTS = 3;
 
@@ -10381,7 +10385,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         }
     }
 
-    private String computeProvisioningErrorString(int code, @UserIdInt int userId) {
+    String computeProvisioningErrorString(int code, @UserIdInt int userId) {
         synchronized (getLockObject()) {
             return computeProvisioningErrorStringLocked(code, userId, /* newOwner= */ null,
                     /* showComponentOnError= */ false);
@@ -16662,7 +16666,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     private int checkProvisioningPreconditionSkipPermission(
             String action, String packageName, @Nullable ComponentName componentName, int userId) {
         if (Flags.multiUserManagementDeviceProvisioning()
-                && DevicePolicyManager.ACTION_PROVISION_MULTIUSER_MANAGED_DEVICE.equals(action)) {
+                && ACTION_PROVISION_MULTIUSER_MANAGED_DEVICE.equals(action)) {
             return checkMultiuserManagedDeviceProvisioningPreCondition(packageName, userId);
         }
         if (Flags.multiUserManagementUserProvisioning()
@@ -21125,7 +21129,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             if (result != STATUS_OK) {
                 throw new ServiceSpecificException(
                         ERROR_PRE_CONDITION_FAILED,
-                        "Provisioning preconditions failed with result: " + result);
+                        PROVISIONING_PRECONDITIONS_FAILED_WITH_RESULT + result);
             }
 
             final long startTime = SystemClock.elapsedRealtime();
@@ -21236,7 +21240,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             if (result != STATUS_OK) {
                 throw new ServiceSpecificException(
                         ERROR_PRE_CONDITION_FAILED,
-                        "Provisioning preconditions failed with result: " + result);
+                        PROVISIONING_PRECONDITIONS_FAILED_WITH_RESULT + result);
             }
 
             final long startTime = SystemClock.elapsedRealtime();
@@ -21759,7 +21763,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             if (result != STATUS_OK) {
                 throw new ServiceSpecificException(
                         ERROR_PRE_CONDITION_FAILED,
-                        "Provisioning preconditions failed with result: " + result);
+                        PROVISIONING_PRECONDITIONS_FAILED_WITH_RESULT + result);
             }
             onProvisionFullyManagedDeviceStarted(provisioningParams);
 
@@ -21840,7 +21844,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                     ACTION_PROVISION_MULTIUSER_MANAGED_USER, admin, userId);
             if (preconditionResult != STATUS_OK) {
                 throw new ServiceSpecificException(ERROR_PRE_CONDITION_FAILED,
-                        "Provisioning preconditions failed with result: " + preconditionResult);
+                        PROVISIONING_PRECONDITIONS_FAILED_WITH_RESULT + preconditionResult);
             }
 
             provisioningParams.logParams(callerPackage);
@@ -21954,7 +21958,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                         + computeProvisioningErrorString(result, caller.getUserId()));
                 throw new ServiceSpecificException(
                         ERROR_PRE_CONDITION_FAILED,
-                        "Provisioning preconditions failed with result: " + result);
+                        PROVISIONING_PRECONDITIONS_FAILED_WITH_RESULT + result);
             }
 
             onProvisionMultiuserManagedDeviceStarted(provisioningParams);
