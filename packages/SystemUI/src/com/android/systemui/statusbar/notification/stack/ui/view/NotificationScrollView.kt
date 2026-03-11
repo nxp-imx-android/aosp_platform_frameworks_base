@@ -182,12 +182,9 @@ interface NotificationScrollView {
     /** @return a callback to access the ExpandableNotificationRows to be manipulated. */
     fun getExpandHelperCallback(): SwipeToExpandCallback
 
-    /** Sets the base side paddings when not aligning to the QS tiles. */
-    fun setBaseSidePadding(basePadding: Int)
-
     /**
-     * Sets whether the notification panel should inset its left and right paddings to visually
-     * align with the second tile from each edge in the QQS above notifications.
+     * Sets the side padding configuration, including the base padding and whether to align to the
+     * QQS tiles.
      */
-    fun setAlignToInnerQqsTiles(alignToInnerQqsTiles: Boolean)
+    fun setSidePaddingConfig(basePadding: Int, alignToInnerQqsTiles: Boolean)
 }
