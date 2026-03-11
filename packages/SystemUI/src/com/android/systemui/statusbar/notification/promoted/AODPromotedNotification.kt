@@ -337,7 +337,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 
     private val defaultTypeface = Typeface.create(FontStyles.GSF_BODY_MEDIUM, Typeface.NORMAL)
     private val metricValueTypeface =
-        Typeface.create(FontStyles.GSF_DISPLAY_SMALL_EMPHASIZED_NARROW_LIGHT, Typeface.NORMAL)
+        Typeface.create(FontStyles.GSF_DISPLAY_SMALL_EMPHASIZED_LIGHT, Typeface.NORMAL)
 
     private val marginPx: Int =
         root.context.resources.getDimensionPixelSize(R.dimen.notification_2025_margin)
