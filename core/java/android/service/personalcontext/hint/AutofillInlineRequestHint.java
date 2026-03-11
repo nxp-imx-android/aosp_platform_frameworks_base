@@ -321,13 +321,18 @@ public class AutofillInlineRequestHint extends ContextHint {
         /**
          * @see AutofillInlineRequestHintConsumer#fetchFocusedViewNode()
          */
+        // TODO(b/491604658): change @NonNull to @Nullable
         @NonNull
         @Override
         public AssistStructure.ViewNode fetchFocusedViewNode(@NonNull AutofillId focusedId) {
             try {
                 final AssistStructure.ViewNodeParcelable viewNodeParcelable =
                         mClient.getViewNodeParcelable(focusedId);
-                return viewNodeParcelable.getViewNode();
+                if (viewNodeParcelable != null) {
+                    return viewNodeParcelable.getViewNode();
+                } else {
+                    return null;
+                }
             } catch (RemoteException e) {
                 throw new RuntimeException(e);
             }
