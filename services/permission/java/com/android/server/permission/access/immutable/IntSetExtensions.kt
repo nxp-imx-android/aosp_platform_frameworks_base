@@ -46,6 +46,9 @@ inline fun IntSet.forEachReversedIndexed(action: (Int, Int) -> Unit) {
     }
 }
 
+@Suppress("NOTHING_TO_INLINE")
+inline fun IntSet.isNotEmpty(): Boolean = !isEmpty()
+
 inline val IntSet.lastIndex: Int
     get() = size - 1
 
