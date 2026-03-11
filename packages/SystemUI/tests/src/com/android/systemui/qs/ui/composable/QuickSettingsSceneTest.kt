@@ -34,6 +34,7 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.notificationRulesParentViewModelFactory
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
+import com.android.systemui.qs.flags.QsSplitInternetTile
 import com.android.systemui.qs.pipeline.domain.interactor.currentTilesInteractor
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.ui.viewmodel.quickSettingsSceneContentViewModelFactory
@@ -80,7 +81,7 @@ class QuickSettingsSceneTest : SysuiTestCase() {
             usingMediaInComposeFragment = true
 
             currentTilesInteractor.setTiles(
-                listOf(TileSpec.create("internet"), TileSpec.create("bt"))
+                listOf(TileSpec.create(internetTileName), TileSpec.create("bt"))
             )
 
             testScope.runCurrent()
@@ -116,7 +117,11 @@ class QuickSettingsSceneTest : SysuiTestCase() {
             composeTestRule.onNodeWithTag(resIdToTestTag("brightness_slider")).assertExists()
 
             // Verify that the tiles exist.
-            composeTestRule.onNodeWithTag("element:internet").assertExists()
+            composeTestRule.onNodeWithTag("element:$internetTileName").assertExists()
             composeTestRule.onNodeWithTag("element:bt").assertExists()
         }
+
+    companion object {
+        private val internetTileName = if (QsSplitInternetTile.isEnabled) "wifi" else "internet"
+    }
 }
