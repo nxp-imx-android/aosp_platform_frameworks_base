@@ -42,12 +42,8 @@ import java.util.List
 import org.junit.After
 import org.junit.Assert.assertThrows
 import org.junit.Before
-import android.app.admin.flags.Flags
-import android.platform.test.annotations.EnableFlags
-import android.platform.test.flag.junit.SetFlagsRule
 import org.junit.BeforeClass
 import org.junit.ClassRule
-import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
@@ -77,8 +73,6 @@ class DevicePolicyEngineTest {
 
     private val lock = Any()
     private lateinit var devicePolicyEngine: DevicePolicyEngine
-
-    @get:Rule val mSetFlagsRule = SetFlagsRule()
 
     @Before
     fun setUp() {
@@ -482,39 +476,6 @@ class DevicePolicyEngineTest {
         assertThat(enforcingAdmins).isEmpty()
     }
 
-    @Test
-    @EnableFlags(Flags.FLAG_REMOVE_HACK_IN_POLICY_ENGINE)
-    fun setLocalPackageListPolicy_multipleEnforcingAdmins_resolvesToListUnion() {
-        ensurePolicyIsSetLocally(
-            CONTENT_RESTRICTION_APPS_POLICY,
-            PACKAGE_LIST_POLICY_VALUE_1,
-            SYSTEM_USER_ID,
-            DEVICE_OWNER_ADMIN,
-        )
-        ensurePolicyIsSetLocally(
-            CONTENT_RESTRICTION_APPS_POLICY,
-            PACKAGE_LIST_POLICY_VALUE_2,
-            SYSTEM_USER_ID,
-            SYSTEM_ADMIN,
-        )
-
-        val resolvedPolicy =
-            devicePolicyEngine.getResolvedPolicy(
-                CONTENT_RESTRICTION_APPS_POLICY,
-                SYSTEM_USER_ID,
-            )
-        val enforcingAdmins =
-            devicePolicyEngine.getEnforcingAdminsForResolvedPolicy(
-                CONTENT_RESTRICTION_APPS_POLICY,
-                SYSTEM_USER_ID,
-            )
-
-        assertThat(resolvedPolicy)
-            .containsExactlyElementsIn(
-                PACKAGE_LIST_POLICY_VALUE_1.value.union(PACKAGE_LIST_POLICY_VALUE_2.value))
-        assertThat(enforcingAdmins).containsExactly(DEVICE_OWNER_ADMIN, SYSTEM_ADMIN)
-    }
-
     private val stringPolicyDefinition =
         PolicyDefinition<String>(
             NoArgsPolicyKey("testStringPolicy"),
@@ -796,7 +757,6 @@ class DevicePolicyEngineTest {
         private val COMMON_CRITERIA_MODE_POLICY = PolicyDefinition.COMMON_CRITERIA_MODE
         private val USER_CONTROLLED_DISABLED_PACKAGES_POLICY =
             PolicyDefinition.USER_CONTROLLED_DISABLED_PACKAGES
-        private val CONTENT_RESTRICTION_APPS_POLICY = PolicyDefinition.CONTENT_RESTRICTION_APPS
 
         private val HIGH_PASSWORD_COMPLEXITY =
             IntegerPolicyValue(DevicePolicyManager.PASSWORD_COMPLEXITY_HIGH)
@@ -810,10 +770,6 @@ class DevicePolicyEngineTest {
             PackageSetPolicyValue(setOf("com.example.package1"))
         private val PACKAGE_SET_POLICY_VALUE_2 =
             PackageSetPolicyValue(setOf("com.example.package2", "com.example.package3"))
-        private val PACKAGE_LIST_POLICY_VALUE_1 =
-            ListOfStringPolicyValue(listOf("com.example.package1", "com.example.package2"))
-        private val PACKAGE_LIST_POLICY_VALUE_2 =
-            ListOfStringPolicyValue(listOf("com.example.package2", "com.example.package3"))
 
         private const val SYSTEM_USER_ID = UserHandle.USER_SYSTEM
         private val SYSTEM_ADMIN = EnforcingAdmin.createSystemEnforcingAdmin("system_entity")
