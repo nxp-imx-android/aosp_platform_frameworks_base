@@ -29,9 +29,9 @@ import android.annotation.RequiresNoPermission;
 import android.annotation.UserIdInt;
 import android.app.contentrestriction.ClassifiableContent;
 import android.app.contentrestriction.ContentRestrictionManager;
+import android.app.contentrestriction.IContentRestrictionAppService;
 import android.app.contentrestriction.IContentRestrictionCallback;
 import android.app.contentrestriction.IContentRestrictionManager;
-import android.app.contentrestriction.IContentRestrictionAppService;
 import android.app.role.OnRoleHoldersChangedListener;
 import android.app.role.RoleManager;
 import android.content.Context;
@@ -39,27 +39,20 @@ import android.content.Intent;
 import android.content.LocusId;
 import android.content.pm.UserInfo;
 import android.os.Binder;
-import android.os.IBinder;
-import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.Slog;
 
-import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.util.FunctionalUtils.RemoteExceptionIgnoringConsumer;
-import com.android.server.LocalServices;
 import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.DumpUtils;
+import com.android.internal.util.FunctionalUtils.RemoteExceptionIgnoringConsumer;
 import com.android.internal.util.IndentingPrintWriter;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.appbinding.AppBindingService;
-import com.android.server.appbinding.AppServiceConnection;
 import com.android.server.appbinding.finders.ContentRestrictionAppServiceFinder;
-import com.android.server.contentrestriction.ContentRestrictionSettings;
-import com.android.server.contentrestriction.ContentRestrictionUserData;
 import com.android.server.pm.UserManagerInternal;
 
 import java.io.FileDescriptor;
@@ -68,9 +61,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.function.Consumer;
 
 /**
  * System service for handling content restrictions.
@@ -235,6 +225,10 @@ public class ContentRestrictionService extends IContentRestrictionManager.Stub {
             ContentRestrictionAppServiceFinder.class,
             userId,
             (connection) -> {
+                if (connection == null) {
+                    action.accept(null);
+                    return;
+                }
                 IContentRestrictionAppService binder =
                         (IContentRestrictionAppService) connection.getServiceBinder();
                 action.accept(binder);
