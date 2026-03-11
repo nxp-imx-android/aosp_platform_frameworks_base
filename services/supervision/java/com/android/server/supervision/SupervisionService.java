@@ -952,20 +952,12 @@ public class SupervisionService extends ISupervisionManager.Stub {
                 connection -> onAppServiceConnection(connection, action));
     }
 
-    private void onAppServiceConnection(
-            @Nullable AppServiceConnection connection,
+    private void onAppServiceConnection(AppServiceConnection connection,
             @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
-        if (connection == null) {
-            if (DEBUG) {
-                Slogf.i(SupervisionLog.TAG, "AppService connection is null.");
-            }
+        if (Flags.enableTimeoutInDispatchAppServiceEvent() &&
+                (connection == null || !connection.isConnected())) {
             return;
         }
-
-        if (Flags.enableTimeoutInDispatchAppServiceEvent() && !connection.isConnected()) {
-            return;
-        }
-
         ISupervisionListener binder =
                 (ISupervisionListener) connection.getServiceBinder();
         String target = connection.getPackageName();

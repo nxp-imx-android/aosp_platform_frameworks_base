@@ -41,6 +41,7 @@ import android.util.IndentingPrintWriter;
 import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.util.FunctionalUtils.RemoteExceptionIgnoringConsumer;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.appbinding.AppBindingService;
@@ -51,7 +52,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 /**
  * A system service which interfaces with allowlist clients via the AllowlistManager, and the
@@ -151,18 +151,7 @@ public final class AllowlistService extends SystemService {
             }
         } else {
             dispatchAllowlistServiceEvent(getContext().getUserId(), service -> {
-                if (service == null) {
-                    Slog.w(LOG_TAG, "AllowlistProviderService connection is null");
-                    callback.sendResult(null);
-                    return;
-                }
-
-                try {
-                    service.queryAllowlist(request, callback);
-                } catch (RemoteException e) {
-                    Slog.w(LOG_TAG, "Exception when querying allowlist", e);
-                    callback.sendResult(null);
-                }
+                service.queryAllowlist(request, callback);
             });
         }
     }
@@ -201,18 +190,7 @@ public final class AllowlistService extends SystemService {
             }
         } else {
             dispatchAllowlistServiceEvent(getContext().getUserId(), service -> {
-                if (service == null) {
-                    Slog.w(LOG_TAG, "AllowlistProviderService connection is null");
-                    return;
-                }
-
-                try {
-                    service.addRequestForAllowlistChange(request,
-                            mOnProviderAllowlistsChangedListener);
-                } catch (RemoteException e) {
-                    Slog.w(LOG_TAG, "Exception when adding allowlist listener", e);
-                    return;
-                }
+                service.addRequestForAllowlistChange(request, mOnProviderAllowlistsChangedListener);
                 // If this is the first listener, when receiving the IBinder, call
                 // linkToDeath so when the binder dies we can re-register listeners.
                 if (isFirstListener) {
@@ -264,17 +242,7 @@ public final class AllowlistService extends SystemService {
                 }
             } else {
                 dispatchAllowlistServiceEvent(getContext().getUserId(), service -> {
-                    if (service == null) {
-                        Slog.w(LOG_TAG, "AllowlistProviderService connection is null");
-                        return;
-                    }
-
-                    try {
-                        service.removeRequestForAllowlistChange(request);
-                    } catch (RemoteException e) {
-                        Slog.w(LOG_TAG, "Exception when removing allowlist listener", e);
-                        return;
-                    }
+                    service.removeRequestForAllowlistChange(request);
                 });
             }
         }
@@ -314,14 +282,9 @@ public final class AllowlistService extends SystemService {
     }
 
     private void dispatchAllowlistServiceEvent(@UserIdInt int userId,
-            @NonNull Consumer<IAllowlistProviderService> action) {
+            @NonNull RemoteExceptionIgnoringConsumer<IAllowlistProviderService> action) {
         getAppBindingService().dispatchAppServiceEvent(AllowlistProviderServiceFinder.class, userId,
                 connection -> {
-                    if (connection == null) {
-                        Slog.w(LOG_TAG, "AllowlistProviderService connection is null");
-                        action.accept(null);
-                        return;
-                    }
                     IAllowlistProviderService binder =
                             (IAllowlistProviderService) connection.getServiceBinder();
                     action.accept(binder);
