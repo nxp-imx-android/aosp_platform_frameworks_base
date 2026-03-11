@@ -1103,7 +1103,9 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
             mActivityIntent.cancel();
         }
 
-        mService.clearNotifications();
+        if (mService != null) {
+            mService.clearNotifications();
+        }
         if (mTestableLooper != null) {
             mTestableLooper.processAllMessages();
         }
