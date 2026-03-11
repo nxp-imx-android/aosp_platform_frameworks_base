@@ -69,7 +69,7 @@ constructor(
     bundleCoordinator: BundleCoordinator,
     summarizationCoordinator: SummarizationCoordinator,
     highlightsCoordinator: HighlightsCoordinator,
-    hideNotifsForHsuCoordinator: HideNotifsForHsuCoordinator,
+    hsuCoordinator: HsuCoordinator,
 ) : NotifCoordinators {
 
     private val mCoreCoordinators: MutableList<CoreCoordinator> = ArrayList()
@@ -118,7 +118,7 @@ constructor(
             (Flags.hsuDisableNotifications() || Flags.hsuAllowlistNotifications()) &&
                 UserManager.isHeadlessSystemUserMode()
         ) {
-            mCoordinators.add(hideNotifsForHsuCoordinator)
+            mCoordinators.add(hsuCoordinator)
         }
 
         // Manually add Ordered Sections

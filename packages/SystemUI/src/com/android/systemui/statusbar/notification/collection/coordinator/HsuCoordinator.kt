@@ -25,9 +25,6 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.plugga
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import javax.inject.Inject
 
-// TODO(b/491189122): rename to just HsuCoordinator (or something like that) as it's also logging
-// now - will be done in a separate CL to mitigate the git changes
-
 /**
  * A coordinator that handles notifications posted to the HSU (Headless System User).
  *
@@ -35,7 +32,7 @@ import javax.inject.Inject
  * managed by an allowlist), and should be logged.
  */
 @CoordinatorScope
-class HideNotifsForHsuCoordinator
+class HsuCoordinator
 @Inject
 constructor(
     private val selectedUserInteractor: SelectedUserInteractor,
@@ -68,7 +65,7 @@ constructor(
         }
 
     companion object {
-        private const val TAG = "HideNotifsForHsuCoordinator"
+        private const val TAG = "HsuCoordinator"
 
         // TODO(b/414326600): use proper constants from allowlist class (once available)
         const val STATUS_ALLOWED_DISABLED_MODE = 2
