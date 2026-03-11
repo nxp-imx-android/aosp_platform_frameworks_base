@@ -99,6 +99,9 @@ public class Clock extends TextView implements
 
     // Tracks config changes that will make the clock change dimensions
     private final InterestingConfigChanges mInterestingConfigChanges;
+
+    private boolean mShouldApplyPadding = true;
+
     /**
      * Color to be set on this {@link TextView}, when wallpaperTextColor is <b>not</b> utilized.
      */
@@ -297,18 +300,28 @@ public class Clock extends TextView implements
         reloadDimens();
     }
 
+    /**
+     * Sets whether the clock should automatically apply padding from resources when configuration
+     * changes. True by default.
+     */
+    public void setShouldApplyPadding(boolean shouldApply) {
+        mShouldApplyPadding = shouldApply;
+    }
+
     private void reloadDimens() {
         FontSizeUtils.updateFontSize(this, R.dimen.status_bar_clock_size);
 
-        // Note: The padding for the clock in the shade is controlled by ShadeHeaderController so
-        // this just affects the status bar clock.
-        setPaddingRelative(
-                mContext.getResources().getDimensionPixelSize(
-                        R.dimen.status_bar_clock_starting_padding),
-                0,
-                mContext.getResources().getDimensionPixelSize(
-                        R.dimen.status_bar_clock_end_padding),
-                0);
+        if (mShouldApplyPadding) {
+            // Note: The padding for the clock in the shade is controlled by ShadeHeaderController
+            // so this just affects the status bar clock.
+            setPaddingRelative(
+                    mContext.getResources().getDimensionPixelSize(
+                            R.dimen.status_bar_clock_starting_padding),
+                    0,
+                    mContext.getResources().getDimensionPixelSize(
+                            R.dimen.status_bar_clock_end_padding),
+                    0);
+        }
     }
 
 
