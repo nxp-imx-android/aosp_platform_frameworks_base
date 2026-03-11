@@ -18,15 +18,11 @@ package com.android.server.companion.virtual.computercontrol;
 
 import static android.Manifest.permission.ACCESS_COMPUTER_CONTROL;
 
-import static com.android.server.companion.virtual.computercontrol.ComputerControlAllowlistController.COMPUTER_CONTROL_NAMESPACE;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlAllowlistController.COMPUTER_CONTROL_AUTOMATABLE_APP_ALLOWLIST_KEY;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlAllowlistController.COMPUTER_CONTROL_AUTOMATABLE_APP_DENYLIST_KEY;
+import static com.android.server.companion.virtual.computercontrol.ComputerControlAllowlistController.COMPUTER_CONTROL_NAMESPACE;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlAllowlistController.COMPUTER_CONTROL_SESSION_OWNER_ALLOWLIST_KEY;
 
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
@@ -35,12 +31,18 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.annotation.NonNull;
 import android.app.KeyguardManager;
 import android.app.role.RoleManager;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtualdevice.flags.Flags;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -50,9 +52,11 @@ import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.content.pm.SigningInfo;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.os.Process;
 import android.os.SystemClock;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -75,6 +79,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -801,6 +806,122 @@ public class ComputerControlAllowlistControllerTest {
 
         // Verify that the denylist is cleared.
         assertEquals("", Files.readString(filePath));
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_PER_APP_CONSENT)
+    public void isPackageAutomatableByAgent_perAppConsentDisabled_returnsTrue() {
+        assertTrue(mAllowlistController.doesAgentHaveConsentToAutomateTargetApp(
+                Process.myUid(), "com.agent", "com.target"));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_PER_APP_CONSENT)
+    public void isPackageAutomatableByAgent_perAppConsentEnabled_returnsTrueIfAdded() {
+        int agentUid = Process.myUid();
+        String agentPkg = "com.agent";
+        String targetPkg = "com.target";
+
+        assertFalse(mAllowlistController.doesAgentHaveConsentToAutomateTargetApp(
+                agentUid, agentPkg, targetPkg));
+        mAllowlistController.addAppToAutomatableAppListForAgent(agentUid, agentPkg, targetPkg);
+
+        assertTrue(mAllowlistController.doesAgentHaveConsentToAutomateTargetApp(
+                agentUid, agentPkg, targetPkg));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_PER_APP_CONSENT)
+    public void getAutomatableAppListForAgent_returnsCorrectList() {
+        int agentUid = Process.myUid();
+        String agentPkg = "com.agent";
+        String targetPkg1 = "com.target1";
+        String targetPkg2 = "com.target2";
+
+        mAllowlistController.addAppToAutomatableAppListForAgent(agentUid, agentPkg, targetPkg1);
+        mAllowlistController.addAppToAutomatableAppListForAgent(agentUid, agentPkg, targetPkg2);
+
+        String[] result = mAllowlistController.getAutomatableAppListForAgent(agentUid, agentPkg);
+        assertEquals(2, result.length);
+        List<String> resultList = List.of(result);
+        assertTrue(resultList.contains(targetPkg1));
+        assertTrue(resultList.contains(targetPkg2));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_PER_APP_CONSENT)
+    public void removeAppFromAutomatableAppListForAgent_removesApp() {
+        int agentUid = Process.myUid();
+        String agentPkg = "com.agent";
+        String targetPkg = "com.target";
+
+        mAllowlistController.addAppToAutomatableAppListForAgent(agentUid, agentPkg, targetPkg);
+        mAllowlistController.removeAppFromAutomatableAppListForAgent(agentUid, agentPkg, targetPkg);
+
+        assertFalse(mAllowlistController.doesAgentHaveConsentToAutomateTargetApp(agentUid, agentPkg,
+                targetPkg));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_PER_APP_CONSENT)
+    public void clearAutomatableAppListForAgent_clearsList() {
+        int agentUid = Process.myUid();
+        String agentPkg = "com.agent";
+        String targetPkg = "com.target";
+
+        mAllowlistController.addAppToAutomatableAppListForAgent(agentUid, agentPkg, targetPkg);
+        mAllowlistController.clearAutomatableAppListForAgent(agentUid, agentPkg);
+
+        assertFalse(mAllowlistController.doesAgentHaveConsentToAutomateTargetApp(
+                agentUid, agentPkg, targetPkg));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_PER_APP_CONSENT)
+    public void onPackageRemoved_perAppConsentEnabled_removesAgentFromMap() {
+        ArgumentCaptor<BroadcastReceiver> receiverCaptor =
+                ArgumentCaptor.forClass(BroadcastReceiver.class);
+        verify(mSpyContext).registerReceiver(receiverCaptor.capture(), any());
+        BroadcastReceiver receiver = receiverCaptor.getValue();
+
+        int agentUid = Process.myUid();
+        String agentPkg = "com.agent";
+        String targetPkg = "com.target";
+        mAllowlistController.addAppToAutomatableAppListForAgent(agentUid, agentPkg, targetPkg);
+
+        // Simulate agent package removal
+        Intent intent = new Intent(Intent.ACTION_PACKAGE_REMOVED);
+        intent.setData(Uri.parse("package:" + agentPkg));
+        intent.putExtra(Intent.EXTRA_UID, agentUid);
+        receiver.onReceive(mContext, intent);
+
+        assertFalse(mAllowlistController.doesAgentHaveConsentToAutomateTargetApp(
+                agentUid, agentPkg, targetPkg));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_PER_APP_CONSENT)
+    public void onPackageRemoved_perAppConsentEnabled_removesTargetFromMap() {
+        ArgumentCaptor<BroadcastReceiver> receiverCaptor =
+                ArgumentCaptor.forClass(BroadcastReceiver.class);
+        verify(mSpyContext).registerReceiver(receiverCaptor.capture(), any());
+        BroadcastReceiver receiver = receiverCaptor.getValue();
+
+        int agentUid = Process.myUid();
+        String agentPkg = "com.agent";
+        String targetPkg = "com.target";
+        int targetUid = Process.myUid();
+
+        mAllowlistController.addAppToAutomatableAppListForAgent(agentUid, agentPkg, targetPkg);
+
+        // Simulate target package removal
+        Intent intent = new Intent(Intent.ACTION_PACKAGE_REMOVED);
+        intent.setData(Uri.parse("package:" + targetPkg));
+        intent.putExtra(Intent.EXTRA_UID, targetUid);
+        receiver.onReceive(mContext, intent);
+
+        assertFalse(mAllowlistController.doesAgentHaveConsentToAutomateTargetApp(
+                agentUid, agentPkg, targetPkg));
     }
 
     private void createAllowlistController(boolean buildIsDebuggable) {

@@ -213,6 +213,16 @@ flag {
 }
 
 flag {
+    name: "computer_control_per_app_consent"
+    namespace: "virtual_devices"
+    description: "Change consent flow for computer control to a per app model"
+    bug: "483624078"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "multi_user_view_configuration"
     namespace: "virtual_devices"
     description: "Apply custom ViewConfiguration for virtual devices across users."
