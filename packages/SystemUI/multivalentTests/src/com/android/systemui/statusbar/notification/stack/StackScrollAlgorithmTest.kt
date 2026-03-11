@@ -2078,6 +2078,21 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
+    fun resetViewStates_isFullyHidden_notLockscreen() {
+        ambientState.hideAmount = 1.0f // isFullyHidden()
+        ambientState.isCurrentSceneLockscreen = false
+
+        whenever(notificationRow.isHeadsUpState).thenReturn(false)
+
+        stackScrollAlgorithm.initView(context)
+
+        stackScrollAlgorithm.resetViewStates(ambientState, /* speedBumpIndex= */ 0)
+
+        assertThat(notificationRow.viewState.alpha).isEqualTo(0f)
+    }
+
+    @Test
+    @EnableSceneContainer
     fun resetViewStates_placeholderFading_alphaFollowsPlaceholder() {
         // Given: STL has set an alpha on the StackPlaceholder, while shade expansion is changing
         ambientState.placeholderAlpha = 0.5f

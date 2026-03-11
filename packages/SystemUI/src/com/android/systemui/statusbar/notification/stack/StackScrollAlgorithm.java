@@ -223,6 +223,10 @@ public class StackScrollAlgorithm {
                     viewState.setAlpha(interpolateNotificationContentAlpha(ambientState),
                             "expansionChanging notif");
                 }
+            } else if (SceneContainerFlag.isEnabled() && ambientState.isFullyHidden()
+                        && !ambientState.isCurrentSceneLockscreen()) {
+                // Hide notifications when transitioning to/from AOD/Occluded to avoid glitches.
+                viewState.setAlpha(0, "aod transition");
             }
 
             // On the final call to {@link #resetViewState}, the alpha is set back to 1f but
