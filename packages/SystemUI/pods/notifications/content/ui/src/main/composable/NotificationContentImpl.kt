@@ -26,12 +26,15 @@ import com.android.systemui.notifications.content.ui.composable.component.Expand
 import com.android.systemui.notifications.content.ui.composable.component.Title
 import com.android.systemui.notifications.content.ui.composable.component.TopLineText
 import com.android.systemui.notifications.content.ui.composable.content.NotificationRow
-import com.android.systemui.notifications.content.ui.viewmodel.NotificationViewModel
+import com.android.systemui.notifications.content.ui.viewmodel.NotificationContentViewModel
 import javax.inject.Inject
 
 class NotificationContentImpl @Inject constructor() : NotificationContent {
     @Composable
-    override fun Content(viewModelFactory: NotificationViewModel.Factory, modifier: Modifier) {
+    override fun Content(
+        viewModelFactory: NotificationContentViewModel.Factory,
+        modifier: Modifier,
+    ) {
         val viewModel = rememberViewModel("Notification") { viewModelFactory.create() }
 
         if (!viewModel.isExpanded) {
