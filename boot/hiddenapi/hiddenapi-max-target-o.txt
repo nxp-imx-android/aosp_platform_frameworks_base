@@ -74608,7 +74608,6 @@ Lcom/android/internal/R$anim;->linear_interpolator:I
 Lcom/android/internal/R$anim;->lock_screen_behind_enter:I
 Lcom/android/internal/R$anim;->lock_screen_behind_enter_fade_in:I
 Lcom/android/internal/R$anim;->lock_screen_behind_enter_wallpaper:I
-Lcom/android/internal/R$anim;->lock_screen_wallpaper_exit:I
 Lcom/android/internal/R$anim;->overshoot_interpolator:I
 Lcom/android/internal/R$anim;->push_down_in:I
 Lcom/android/internal/R$anim;->push_down_out:I
