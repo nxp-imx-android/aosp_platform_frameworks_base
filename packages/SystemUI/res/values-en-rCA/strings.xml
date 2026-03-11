@@ -987,12 +987,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Done"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Apply"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Turn off"</string>
-    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"device"</string>
-    <string name="bridged_device_type_phone" msgid="7971199513068521770">"phone"</string>
-    <string name="bridged_device_type_tablet" msgid="7403330807933649592">"tablet"</string>
-    <string name="bridged_device_type_laptop" msgid="8027976360936787349">"laptop"</string>
-    <string name="bridged_device_type_watch" msgid="2634106046119813073">"watch"</string>
-    <string name="bridged_device_type_tv" msgid="5471822369478942796">"TV"</string>
+    <string name="bridged_source_device" msgid="2233591993331607836">"source device"</string>
     <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"Open <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> settings"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"Silent"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Default"</string>
@@ -1229,10 +1224,8 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"Open <xliff:g id="ID_1">%s</xliff:g> settings."</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"Edit order of Quick Settings."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Power menu"</string>
-    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
-    <skip />
-    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
-    <skip />
+    <string name="accessibility_quick_settings_power_menu_expanded" msgid="4665161431290201722">"Expanded"</string>
+    <string name="accessibility_quick_settings_power_menu_collapsed" msgid="5800930916550853776">"Collapsed"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Page <xliff:g id="ID_1">%1$d</xliff:g> of <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Turn on <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> is the keyboard shortcut to use <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1495,8 +1488,8 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Available devices for audio output."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Volume"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <string name="media_output_dialog_missing_permissions_warning" msgid="1279351363821022727">"Some devices are not visible. Update your app permissions"</string>
-    <string name="media_output_dialog_warning_button_fix" msgid="3324600211761037516">"Fix"</string>
+    <string name="media_output_dialog_missing_permissions_warning" msgid="4312830846174995199">"To see more devices, you may need to allow permissions for <xliff:g id="MEDIA_APP_NAME">%1$s</xliff:g>"</string>
+    <string name="media_output_dialog_warning_button_fix" msgid="3650735180540135181">"Open <xliff:g id="MEDIA_APP_NAME">%1$s</xliff:g>"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Connected speakers"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Speakers &amp; Displays"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Suggested"</string>
@@ -1606,8 +1599,7 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"Image preview"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"edit"</string>
     <string name="add" msgid="81036585205287996">"Add"</string>
-    <!-- no translation found for remove (7031760447233505700) -->
-    <skip />
+    <string name="remove" msgid="7031760447233505700">"Remove"</string>
     <string name="manage_users" msgid="1823875311934643849">"Manage users"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"This notification does not support dragging to split screen"</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"Location active"</string>

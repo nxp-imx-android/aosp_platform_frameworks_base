@@ -8,3 +8,10 @@ flag{
     description: "Feature flag for permission to Read dropbox data"
     bug: "287512663"
 }
+
+flag{
+    name: "enable_wtf_exception_dropbox_carveout"
+    namespace: "system_performance"
+    description: "Feature flag to enable a narrow subset of dropbox wtf exception types by default"
+    bug: "481975725"
+}

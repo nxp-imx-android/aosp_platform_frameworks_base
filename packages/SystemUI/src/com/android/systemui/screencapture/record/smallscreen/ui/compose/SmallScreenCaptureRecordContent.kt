@@ -264,11 +264,27 @@ constructor(
                             icon = {
                                 val colorInt =
                                     viewModel.recordDetailsColorPickerViewModel.cameraColor
-                                RecordDetailsColorItem(
-                                    color = Color(colorInt),
-                                    selected = false,
-                                    modifier = Modifier.size(20.dp),
-                                )
+                                if (colorInt == android.graphics.Color.TRANSPARENT) {
+                                    LoadingIcon(
+                                        icon =
+                                            loadIcon(
+                                                    viewModel = viewModel,
+                                                    resId = R.drawable.ic_palette,
+                                                    contentDescription =
+                                                        ContentDescription.Resource(
+                                                            R.string.screen_record_color_picker
+                                                        ),
+                                                )
+                                                .value,
+                                        modifier = Modifier.size(24.dp),
+                                    )
+                                } else {
+                                    RecordDetailsColorItem(
+                                        color = Color(colorInt),
+                                        selected = false,
+                                        modifier = Modifier.size(20.dp),
+                                    )
+                                }
                             },
                         )
 

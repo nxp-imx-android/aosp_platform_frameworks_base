@@ -98,6 +98,14 @@ interface PreferenceIndexableProvider {
 interface PreferenceAvailabilityProvider {
 
     /**
+     * Returns a human readable description of the availability of the preference.
+     *
+     * This should describe any preconditions that must be met for the
+     * preference to be available.
+     */
+    val availabilityDescription: String
+
+    /**
      * Returns if the preference is available.
      *
      * When unavailable (i.e. `false` returned),
@@ -119,6 +127,18 @@ interface PreferenceRestrictionProvider {
     /** Returns if preference is restricted by managed configs. */
     fun isRestricted(context: Context): Boolean
 }
+
+/** Interface to provide an optional warning before setting a preference value. */
+interface PreferenceSetWarningProvider {
+    /** [WarningInfo] of the set warning. */
+    val setWarning: WarningInfo?
+}
+
+/** Representation of a warning information. */
+class WarningInfo(
+    val preconditionsDescription: String? = null,
+    val warningMessage: String
+)
 
 /**
  * Preference lifecycle to deal with preference UI state.

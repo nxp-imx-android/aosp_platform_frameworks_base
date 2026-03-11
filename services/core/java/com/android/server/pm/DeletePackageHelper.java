@@ -120,7 +120,7 @@ final class DeletePackageHelper {
      *                         the user-initiated action.
      */
     public int deletePackageX(String packageName, long versionCode, int userId, int deleteFlags,
-            boolean removedBySystem) {
+            boolean removedBySystem, int callingUid) {
         final PackageRemovedInfo info = new PackageRemovedInfo();
         final boolean res;
 
@@ -251,7 +251,7 @@ final class DeletePackageHelper {
             try (PackageFreezer freezer = mPm.freezePackageForDelete(packageName, freezeUser,
                     deleteFlags, "deletePackageX", ApplicationExitInfo.REASON_OTHER)) {
                 res = deletePackageLIF(packageName, UserHandle.of(removeUser), true, allUsers,
-                        deleteFlags | PackageManager.DELETE_CHATTY, info, true);
+                        deleteFlags | PackageManager.DELETE_CHATTY, info, true, callingUid);
             }
             if (res && pkg != null) {
                 final boolean packageInstalledForSomeUsers;
@@ -375,7 +375,7 @@ final class DeletePackageHelper {
     @GuardedBy("mPm.mInstallLock")
     public boolean deletePackageLIF(@NonNull String packageName, UserHandle user,
             boolean deleteCodeAndResources, @NonNull int[] allUserHandles, int flags,
-            @NonNull PackageRemovedInfo outInfo, boolean writeSettings) {
+            @NonNull PackageRemovedInfo outInfo, boolean writeSettings, int callingUid) {
         final DeletePackageAction action;
         synchronized (mPm.mLock) {
             final PackageSetting ps = mPm.mSettings.getPackageLPr(packageName);
@@ -392,7 +392,7 @@ final class DeletePackageHelper {
                 Slog.w(TAG, "Attempt to delete keyguard system package " + packageName);
                 return false;
             }
-            action = mayDeletePackageLocked(outInfo, ps, disabledPs, flags, user);
+            action = mayDeletePackageLocked(outInfo, ps, disabledPs, flags, user, callingUid);
         }
         if (DEBUG_REMOVE) Slog.d(TAG, "deletePackageLI: " + packageName + " user " + user);
         if (null == action) {
@@ -417,7 +417,7 @@ final class DeletePackageHelper {
     @Nullable
     public static DeletePackageAction mayDeletePackageLocked(@NonNull PackageRemovedInfo outInfo,
             PackageSetting ps, @Nullable PackageSetting disabledPs,
-            int flags, UserHandle user) {
+            int flags, UserHandle user, int callingUid) {
         if (ps == null) {
             return null;
         }
@@ -434,7 +434,7 @@ final class DeletePackageHelper {
             // An updated system app can be deleted. This will also have to restore
             // the system pkg from system partition reader
         }
-        return new DeletePackageAction(ps, disabledPs, outInfo, flags, user);
+        return new DeletePackageAction(ps, disabledPs, outInfo, flags, user, callingUid);
     }
 
     public void executeDeletePackage(DeletePackageAction action, String packageName,
@@ -459,6 +459,7 @@ final class DeletePackageHelper {
                 keepArtProfile ? action.mFlags | Installer.FLAG_CLEAR_APP_DATA_KEEP_ART_PROFILES
                         : action.mFlags;
         final boolean systemApp = PackageManagerServiceUtils.isSystemApp(ps);
+        final int callingUid = action.mCallingUid;
 
         // We need to get the permission state before package state is (potentially) destroyed.
         final SparseBooleanArray hadSuspendAppsPermission = new SparseBooleanArray();
@@ -490,7 +491,7 @@ final class DeletePackageHelper {
             // semantics than normal for uninstalling system apps.
             final boolean clearPackageStateAndReturn;
             synchronized (mPm.mLock) {
-                markPackageUninstalledForUserLPw(ps, user, flags);
+                markPackageUninstalledForUserLPw(ps, user, flags, callingUid);
                 if (!systemApp) {
                     // Do not uninstall the APK if an app should be cached
                     boolean keepUninstalledPackage =
@@ -590,7 +591,8 @@ final class DeletePackageHelper {
     }
 
     @GuardedBy("mPm.mLock")
-    private void markPackageUninstalledForUserLPw(PackageSetting ps, UserHandle user, int flags) {
+    private void markPackageUninstalledForUserLPw(PackageSetting ps, UserHandle user, int flags,
+            int callingUid) {
         final int[] userIds = (user == null || user.getIdentifier() == USER_ALL)
                 ? mUserManagerInternal.getUserIds()
                 : new int[] {user.getIdentifier()};
@@ -654,6 +656,12 @@ final class DeletePackageHelper {
                     appLockEnablementState,
                     PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET,
                     PackageManager.PERSONAL_CONTEXT_MODE_UNSET);
+
+            if (ps.isSystem()) {
+                PackageManagerServiceUtils.logCriticalInfo(Log.INFO,
+                    "System package " + ps.getPackageName() + " uninstalled for user: " + nextUserId
+                    + " callingUid: " + callingUid);
+            }
         }
         mPm.mSettings.writeKernelMappingLPr(ps);
     }
@@ -889,7 +897,7 @@ final class DeletePackageHelper {
             if (doDeletePackage) {
                 if (!deleteAllUsers) {
                     returnCode = deletePackageX(internalPackageName, versionCode,
-                            userId, deleteFlags, false /*removedBySystem*/);
+                            userId, deleteFlags, false /*removedBySystem*/, callingUid);
 
                     // Delete package in child only if successfully deleted in parent.
                     if (returnCode == DELETE_SUCCEEDED && packageState != null) {
@@ -912,7 +920,8 @@ final class DeletePackageHelper {
                                     .getUserProperties(childId);
                             if (userProperties != null && userProperties.getDeleteAppWithParent()) {
                                 returnCodeOfChild = deletePackageX(internalPackageName, versionCode,
-                                        childId, deleteFlags, false /*removedBySystem*/);
+                                        childId, deleteFlags, false /*removedBySystem*/,
+                                        callingUid);
                                 if (returnCodeOfChild != DELETE_SUCCEEDED) {
                                     Slog.w(TAG, "Package delete failed for user " + childId
                                             + ", returnCode " + returnCodeOfChild);
@@ -927,14 +936,14 @@ final class DeletePackageHelper {
                     // If nobody is blocking uninstall, proceed with delete for all users
                     if (ArrayUtils.isEmpty(blockUninstallUserIds)) {
                         returnCode = deletePackageX(internalPackageName, versionCode,
-                                userId, deleteFlags, false /*removedBySystem*/);
+                                userId, deleteFlags, false /*removedBySystem*/, callingUid);
                     } else {
                         // Otherwise uninstall individually for users with blockUninstalls=false
                         final int userFlags = deleteFlags & ~PackageManager.DELETE_ALL_USERS;
                         for (int userId1 : users) {
                             if (!ArrayUtils.contains(blockUninstallUserIds, userId1)) {
                                 returnCode = deletePackageX(internalPackageName, versionCode,
-                                        userId1, userFlags, false /*removedBySystem*/);
+                                        userId1, userFlags, false /*removedBySystem*/, callingUid);
                                 if (returnCode != DELETE_SUCCEEDED) {
                                     Slog.w(TAG, "Package delete failed for user " + userId1
                                             + ", returnCode " + returnCode);
@@ -1084,7 +1093,7 @@ final class DeletePackageHelper {
                 //end run
                 mPm.mHandler.post(() -> deletePackageX(
                         packageName, PackageManager.VERSION_CODE_HIGHEST,
-                        userId, 0, true /*removedBySystem*/));
+                        userId, 0, true /*removedBySystem*/, Process.SYSTEM_UID));
             }
         }
     }

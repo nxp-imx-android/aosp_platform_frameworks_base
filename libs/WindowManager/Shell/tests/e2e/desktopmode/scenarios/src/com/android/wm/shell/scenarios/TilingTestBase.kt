@@ -94,8 +94,13 @@ abstract class TilingTestBase(private val rotation: Rotation = Rotation.ROTATION
     }
 
     fun snapTileAppsWithDrag() {
-        leftTestApp.dragToSnapResizeRegion(wmHelper, device, isLeft = true)
-        rightTestPipApp.dragToSnapResizeRegion(wmHelper, device, isLeft = false)
+        leftTestApp.dragToSnapResizeRegion(wmHelper, device, instrumentation.context, isLeft = true)
+        rightTestPipApp.dragToSnapResizeRegion(
+            wmHelper,
+            device,
+            instrumentation.context,
+            isLeft = false,
+        )
     }
 
     fun removeTiledApp(removeLeft: Boolean) {

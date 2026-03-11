@@ -208,7 +208,7 @@ interface Mode {
         // The surface transactions that are to be applied if there is an associated transition
         // with the update, if there isn't then these will be null, and the logic doing the update
         // must apply and surface updates itself.
-        val preTransitionTx: SurfaceControl.Transaction? = null,
+        var preTransitionTx: SurfaceControl.Transaction? = null,
         // The specific container to dump (otherwise the full hierarchy will be dumped)
         var dumpOnlyContainer: Container? = null,
     )

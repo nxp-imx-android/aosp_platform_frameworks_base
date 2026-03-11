@@ -25,6 +25,11 @@ public sealed interface RulesScreenViewState {
     /** The rules screen is showing a list of the currently saved rules. */
     public data object CurrentRules : RulesScreenViewState
 
+    /** The user can input freeform text to generate a new rule. */
+    public data class FreeformTextRuleCreation(
+        val viewModel: NotificationRuleFreeformTextCreationViewModel
+    ) : RulesScreenViewState
+
     /** The rules screen is showing an edit page for the given [viewModel.rule]. */
     public data class EditRule(val viewModel: NotificationRuleEditViewModel) : RulesScreenViewState
 

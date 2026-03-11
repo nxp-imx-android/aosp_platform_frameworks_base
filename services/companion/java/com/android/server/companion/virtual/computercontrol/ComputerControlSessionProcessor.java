@@ -38,6 +38,7 @@ import android.app.KeyguardManager;
 import android.app.PendingIntent;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManagerInternal;
+import android.companion.virtual.CompanionDeviceId;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.computercontrol.ComputerControlSession;
@@ -231,7 +232,7 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
         final PackageManager ownerPackageManager = ownerContext.getPackageManager();
         final String callerPackageName = attributionSource.getPackageName();
         if (!mAllowlistController.isPackageAllowedToCreateSession(callerPackageName,
-                ownerPackageManager)) {
+                ownerPackageManager, ownerUser, params.getTargetComputerControlVersion())) {
             ComputerControlStatsController.writeFailedSessionWithStatsReason(
                     mPackageManager, attributionSource, params,
                     COMPUTER_CONTROL_FAILED_SESSION_REPORTED__REASON__CALLER_NOT_ALLOWED);
@@ -270,7 +271,8 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
     /**
      * Returns whether the computer control functionality is available for the caller.
      */
-    public boolean isComputerControlAvailable(@NonNull AttributionSource attributionSource) {
+    public boolean isComputerControlAvailable(@NonNull AttributionSource attributionSource,
+            int targetComputerControlVersion) {
         final UserHandle ownerUser = UserHandle.getUserHandleForUid(attributionSource.getUid());
         final Context ownerContext;
         final long token = Binder.clearCallingIdentity();
@@ -286,7 +288,7 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
         final String callerPackageName = attributionSource.getPackageName();
         try {
             return mAllowlistController.isPackageAllowedToCreateSession(callerPackageName,
-                    ownerPackageManager);
+                    ownerPackageManager, ownerUser, targetComputerControlVersion);
         } catch (SecurityException e) {
             return false;
         }
@@ -406,7 +408,7 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
             @NonNull AttributionSource attributionSource,
             @NonNull ComputerControlSessionParams params,
             @NonNull IComputerControlSessionCallback callback) {
-        if (isDeviceLocked(attributionSource)) {
+        if (isDeviceLocked(attributionSource, params.getCompanionDeviceId())) {
             dispatchSessionCreationFailed(callback, attributionSource, params,
                     ComputerControlSession.ERROR_DEVICE_LOCKED);
             return false;
@@ -425,7 +427,8 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
         return true;
     }
 
-    private boolean isDeviceLocked(@NonNull AttributionSource attributionSource) {
+    private boolean isDeviceLocked(@NonNull AttributionSource attributionSource,
+            @Nullable CompanionDeviceId companionDeviceId) {
         // If the caller claims to be running on a virtual device, make sure that this is actually
         // the case and this is not just an explicitly created device context. If the uid is not
         // seen on the device they claim to be running on, fallback to default.
@@ -439,9 +442,11 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
         final int userId = UserHandle.getUserId(attributionSource.getUid());
         return Binder.withCleanCallingIdentity(() -> {
             if (android.companion.Flags.supportAiAgent() && mAuthenticationPolicyManager != null) {
-                // TODO(b/482988620): replace null with CDM DeviceId for xdevice scenarios
+                // Note: isAgentAuthorized validates things about the agent AND the device state,
+                //       including the devices keyguard state.
                 return !mAuthenticationPolicyManager.isAgentAuthorized(
-                        userId, deviceId, /* companionDeviceId */ null);
+                        userId, deviceId,
+                        companionDeviceId == null ? null : companionDeviceId.getDeviceId());
             } else {
                 return mKeyguardManager.isDeviceLocked(userId, deviceId);
             }

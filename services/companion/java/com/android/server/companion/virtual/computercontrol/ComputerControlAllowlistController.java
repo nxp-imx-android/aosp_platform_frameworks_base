@@ -19,10 +19,13 @@ package com.android.server.companion.virtual.computercontrol;
 import static android.Manifest.permission.ACCESS_COMPUTER_CONTROL;
 import static android.Manifest.permission.POST_NOTIFICATIONS;
 
+import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionProcessor.MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.app.KeyguardManager;
+import android.app.role.RoleManager;
 import android.companion.virtual.VirtualDeviceManager;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -34,6 +37,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Process;
+import android.os.UserHandle;
 import android.provider.DeviceConfig;
 import android.text.TextUtils;
 import android.util.AtomicFile;
@@ -169,7 +173,9 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
     }
 
     boolean isPackageAllowedToCreateSession(@Nullable String packageName,
-            @NonNull PackageManager packageManager) {
+            @NonNull PackageManager packageManager,
+            @NonNull UserHandle ownerUser,
+            int targetComputerControlVersion) {
         if (packageName == null) {
             return false;
         }
@@ -207,6 +213,24 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
                 Slog.e(TAG, "isPackageAllowedToCreateSession: Test agent " + packageName
                         + " is not testOnly app");
                 return false;
+            }
+        }
+
+        if (android.companion.virtualdevice.flags.Flags.computerControlRoleAssistantRequirement()) {
+            if (targetComputerControlVersion >= MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17) {
+                final long token = Binder.clearCallingIdentity();
+                try {
+                    RoleManager roleManager = mContext.getSystemService(RoleManager.class);
+                    if (roleManager == null || !roleManager.getRoleHoldersAsUser(
+                            RoleManager.ROLE_ASSISTANT, ownerUser).contains(packageName)) {
+                        Slog.i(TAG, "isPackageAllowedToCreateSession: Calling application "
+                                + packageName
+                                + " is not the ASSISTANT role holder");
+                        return false;
+                    }
+                } finally {
+                    Binder.restoreCallingIdentity(token);
+                }
             }
         }
 

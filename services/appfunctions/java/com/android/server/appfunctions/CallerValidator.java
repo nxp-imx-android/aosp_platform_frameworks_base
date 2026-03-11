@@ -27,6 +27,7 @@ import com.android.internal.infra.AndroidFuture;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Interface for validating that the caller has the correct privilege to call an AppFunctionManager
@@ -75,7 +76,7 @@ public interface CallerValidator {
      * @return Whether the caller can execute the specified app function.
      */
     @CanExecuteAppFunctionResult
-    AndroidFuture<Integer> verifyCallerCanExecuteAppFunction(
+    CompletableFuture<Integer> verifyCallerCanExecuteAppFunction(
             int callingUid,
             int callingPid,
             @NonNull UserHandle targetUser,

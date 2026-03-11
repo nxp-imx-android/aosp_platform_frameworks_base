@@ -187,7 +187,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"మ్యూట్ చేయండి"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"అన్‌మ్యూట్ చేయండి"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="DURATION">%2$s</xliff:g>లో <xliff:g id="ELAPSED_TIME">%1$s</xliff:g>"</string>
-    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"సర్దుబాటు చేయడానికి సెల్ఫీని వేళ్లతో స్క్రీన్‌ను నియంత్రించి, లాగి, ట్యాప్ చేయండి"</string>
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"సర్దుబాటు చేయడానికి సెల్ఫీని వేళ్లతో స్క్రీన్‌ను కంట్రోల్ చేసి, లాగి, ట్యాప్ చేయండి"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"మీ IT అడ్మిన్ ద్వారా స్క్రీన్ క్యాప్చర్ బ్లాక్ చేయబడింది"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"ఫుల్-స్క్రీన్ తాలూకు స్క్రీన్‌షాట్ తీయండి"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"ఫుల్ స్క్రీన్‌ను రికార్డ్ చేయండి"</string>
@@ -987,12 +987,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"పూర్తయింది"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"వర్తింపజేయండి"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ఆఫ్ చేయండి"</string>
-    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"డివైజ్"</string>
-    <string name="bridged_device_type_phone" msgid="7971199513068521770">"ఫోన్"</string>
-    <string name="bridged_device_type_tablet" msgid="7403330807933649592">"టాబ్లెట్"</string>
-    <string name="bridged_device_type_laptop" msgid="8027976360936787349">"ల్యాప్‌టాప్"</string>
-    <string name="bridged_device_type_watch" msgid="2634106046119813073">"వాచ్"</string>
-    <string name="bridged_device_type_tv" msgid="5471822369478942796">"టీవీ"</string>
+    <string name="bridged_source_device" msgid="2233591993331607836">"సోర్స్ డివైజ్"</string>
     <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"<xliff:g id="DEVICE_TYPE">%1$s</xliff:g> సెట్టింగ్‌లను తెరవండి"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"నిశ్శబ్దం"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"ఆటోమేటిక్ సెట్టింగ్"</string>
@@ -1229,10 +1224,8 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"<xliff:g id="ID_1">%s</xliff:g> సెట్టింగ్‌లను తెరవండి."</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"క్విక్ సెట్టింగ్‌ల క్రమాన్ని ఎడిట్ చేయండి."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"పవర్ మెనూ"</string>
-    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
-    <skip />
-    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
-    <skip />
+    <string name="accessibility_quick_settings_power_menu_expanded" msgid="4665161431290201722">"విస్తరించడం జరిగింది"</string>
+    <string name="accessibility_quick_settings_power_menu_collapsed" msgid="5800930916550853776">"కుదించడం జరిగింది"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_2">%2$d</xliff:g>లో <xliff:g id="ID_1">%1$d</xliff:g>వ పేజీ"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g>‌ను ఆన్ చేయాలా?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_4">^4</xliff:g>‌ను ఉపయోగించడానికి సంబంధించిన కీబోర్డ్ షార్ట్‌కట్: <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"చిహ్నం"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1495,8 +1488,10 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"ఆడియో అవుట్‌పుట్ కోసం అందుబాటులో ఉన్న పరికరాలు."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"వాల్యూమ్"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <string name="media_output_dialog_missing_permissions_warning" msgid="1279351363821022727">"కొన్ని డివైజ్‌లు కనిపించడం లేదు. మీ యాప్ అనుమతులను అప్‌డేట్ చేయండి"</string>
-    <string name="media_output_dialog_warning_button_fix" msgid="3324600211761037516">"సరి చేయండి"</string>
+    <!-- no translation found for media_output_dialog_missing_permissions_warning (4312830846174995199) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_warning_button_fix (3650735180540135181) -->
+    <skip />
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"కనెక్ట్ అయిన స్పీకర్‌లు"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"స్పీకర్‌లు &amp; డిస్‌ప్లేలు"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"సూచించినవి"</string>
@@ -1606,8 +1601,7 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"ఇమేజ్ ప్రివ్యూ"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"ఎడిట్"</string>
     <string name="add" msgid="81036585205287996">"జోడించండి"</string>
-    <!-- no translation found for remove (7031760447233505700) -->
-    <skip />
+    <string name="remove" msgid="7031760447233505700">"తీసివేయండి"</string>
     <string name="manage_users" msgid="1823875311934643849">"యూజర్‌లను మేనేజ్ చేయండి"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"ఈ నోటిఫికేషన్ స్ప్లిట్ స్క్రీన్‌కు లాగడాన్ని సపోర్ట్ చేయదు"</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"లొకేషన్ యాక్టివ్‌గా ఉంది"</string>

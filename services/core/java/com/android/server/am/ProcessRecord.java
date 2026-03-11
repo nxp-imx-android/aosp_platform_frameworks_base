@@ -24,6 +24,7 @@ import static com.android.internal.util.Preconditions.checkArgument;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.am.ActivityManagerService.MY_PID;
+import static com.android.server.am.psc.Constants.INVALID_ADJ;
 
 import static java.util.Objects.requireNonNull;
 
@@ -67,6 +68,7 @@ import com.android.internal.app.procstats.ProcessState;
 import com.android.internal.app.procstats.ProcessStats;
 import com.android.internal.os.Zygote;
 import com.android.server.FgThread;
+import com.android.server.am.psc.Constants.OomAdjust;
 import com.android.server.am.psc.OomAdjuster;
 import com.android.server.am.psc.OomAdjusterImpl.ProcessRecordNode;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
@@ -192,6 +194,12 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
      */
     @GuardedBy("mService")
     private long mStartSeq;
+
+    /**
+     * Sequence id for identifying LRU update cycles.
+     */
+    @GuardedBy("mService")
+    private int mLruSeq;
 
     /**
      * Params used in starting this process.
@@ -440,6 +448,12 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     @GuardedBy("mService")
     volatile boolean mWasForceStopped;
 
+    /**
+     * The last adjustment that was verified as actually being set.
+     */
+    @GuardedBy("mService")
+    private @OomAdjust int mVerifiedAdj = INVALID_ADJ;
+
     void setStartParams(int startUid, HostingRecord hostingRecord, String seInfo,
             long startUptime, long startElapsedTime) {
         this.mStartUid = startUid;
@@ -528,7 +542,8 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         if (mPendingStart) {
             pw.print(prefix); pw.print("pendingStart="); pw.println(mPendingStart);
         }
-        pw.print(prefix); pw.print("startSeq="); pw.println(mStartSeq);
+        pw.print(prefix); pw.print("startSeq="); pw.print(mStartSeq);
+        pw.print(" lruSeq="); pw.println(mLruSeq);
         pw.print(prefix); pw.print("mountMode="); pw.println(
                 DebugUtils.valueToString(Zygote.class, "MOUNT_EXTERNAL_", mMountMode));
         if (isKilled() || isKilledByAm() || getWaitingToKill() != null) {
@@ -863,6 +878,16 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     @GuardedBy("mService")
     void setStartSeq(long startSeq) {
         mStartSeq = startSeq;
+    }
+
+    @GuardedBy("mService")
+    int getLruSeq() {
+        return mLruSeq;
+    }
+
+    @GuardedBy("mService")
+    void setLruSeq(int lruSeq) {
+        mLruSeq = lruSeq;
     }
 
     HostingRecord getHostingRecord() {
@@ -1246,6 +1271,16 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         return info;
     }
 
+    @GuardedBy("mService")
+    void setVerifiedAdj(@OomAdjust int verifiedAdj) {
+        mVerifiedAdj = verifiedAdj;
+    }
+
+    @GuardedBy("mService")
+    @OomAdjust int getVerifiedAdj() {
+        return mVerifiedAdj;
+    }
+
     @GuardedBy({"mService", "mProcLock"})
     boolean onCleanupApplicationRecordLSP(ProcessStatsService processStats, boolean allowRestart,
             boolean unlinkDeath) {
@@ -1259,6 +1294,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         mService.mProcessStateController.setWaitingToKill(this, /* reason= */ null);
 
         super.onCleanupApplicationRecordLSP();
+        mVerifiedAdj = INVALID_ADJ;
         mService.mProcessStateController.onCleanupApplicationRecord(mServices);
         mReceivers.onCleanupApplicationRecordLocked();
         mService.mOomAdjuster.onProcessEndLocked(this);

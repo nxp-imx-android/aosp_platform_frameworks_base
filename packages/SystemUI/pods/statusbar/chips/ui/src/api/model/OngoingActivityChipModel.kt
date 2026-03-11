@@ -189,6 +189,14 @@ sealed class OngoingActivityChipModel {
         data class Text(val text: String) : Content() {
             override val logName = "Text($text)"
         }
+
+        /**
+         * This chip shows one of the specified [textVariants] in the chip. According to the
+         * available space, the first one tha fits will be shown.
+         */
+        data class TextVariants(val textVariants: List<String>) : Content() {
+            override val logName = "TextVariants($textVariants)"
+        }
     }
 
     /** Represents an icon to show on the chip. */

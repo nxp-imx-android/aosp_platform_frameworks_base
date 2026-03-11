@@ -91,6 +91,30 @@ public final class HostingRecordTest {
     }
 
     @Test
+    public void testGetHostingZygote() {
+        HostingRecord record = new HostingRecord(HostingRecord.HOSTING_TYPE_ACTIVITY);
+        assertThat(record.getHostingZygote()).isEqualTo(HostingRecord.ZYGOTE_TYPE_REGULAR);
+    }
+
+    @Test
+    public void testGetHostingZygote_typeWebview() {
+        HostingRecord webviewRecord = HostingRecord.byWebviewZygote(
+                HostingRecord.HOSTING_TYPE_BOUND_SERVICE,
+                COMPONENT_NAME, DEFINING_PACKAGE_NAME, DEFINING_UID, DEFINING_PROCESS_NAME,
+                CALLER_UID, CALLER_PROCESS_NAME);
+        assertThat(webviewRecord.getHostingZygote()).isEqualTo(HostingRecord.ZYGOTE_TYPE_WEBVIEW);
+    }
+
+    @Test
+    public void testGetHostingZygote_typeApp() {
+        HostingRecord appZygoteRecord = HostingRecord.byAppZygote(
+                HostingRecord.HOSTING_TYPE_BOUND_SERVICE,
+                COMPONENT_NAME, DEFINING_PACKAGE_NAME, DEFINING_UID, DEFINING_PROCESS_NAME,
+                /* isNativeService */ false, CALLER_UID, CALLER_PROCESS_NAME);
+        assertThat(appZygoteRecord.getHostingZygote()).isEqualTo(HostingRecord.ZYGOTE_TYPE_APP);
+    }
+
+    @Test
     public void testContentProviderInfo() {
         String authority = "com.android.authority";
         boolean stable = true;

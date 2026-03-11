@@ -21,16 +21,19 @@ import android.app.admin.DevicePolicyManager.POLICY_SCOPE_PARENT_USER
 import android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER
 import android.app.admin.DevicePolicyManager.RESOURCE_PER_USER
 import android.app.admin.NoArgsPolicyKey
+import android.app.admin.PackageIdentifier
 import android.app.admin.PolicyIdentifier
 import android.app.admin.PolicyValueTransport
 import android.app.admin.metadata.EnumPolicyMetadata
 import android.app.admin.metadata.IntegerPolicyMetadata
 import android.app.admin.metadata.ListPolicyMetadata
 import android.app.admin.metadata.LongPolicyMetadata
+import android.app.admin.metadata.PackagePolicyMetadata
 import android.app.admin.metadata.ResolutionMechanismMetadata
 import android.app.admin.metadata.StringPolicyMetadata
 import com.android.server.devicepolicy.CallerIdentity
 import com.android.server.devicepolicy.IntegerPolicySerializer
+import com.android.server.devicepolicy.PackagePolicySerializer
 import com.android.server.devicepolicy.ListOfStringPolicySerializer
 import com.android.server.devicepolicy.LongPolicySerializer
 import com.android.server.devicepolicy.MostRecent
@@ -284,3 +287,30 @@ fun LongPolicyMetadata.copy(minValue: Long? = null, maxValue: Long? = null) =
         minValue ?: this.minValue,
         maxValue ?: this.maxValue,
     )
+
+object PackagePolicy {
+    val name = "thePackagePolicy"
+    val key = PolicyIdentifier<PackageIdentifier>(name)
+    val metadata =
+        PackagePolicyMetadata(
+            key,
+            /*allowedScopes=*/ setOf(POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE),
+            /*affectedResource=*/ RESOURCE_PER_USER,
+            /*requiredPermission=*/ "testPermission",
+            /*requiredCrossUserPermission=*/ "testCrossUserPermission",
+            /*allowedDpcTypes=*/ setOf(),
+        )
+    val anyTransportValue: PolicyValueTransport =
+        PolicyValueTransport.packageField(
+            PackageIdentifier("com.example.app").createTransport(),
+        )
+
+    val definition =
+        PolicyDefinition<PackageIdentifier>(
+            NoArgsPolicyKey(name),
+            MostRecent(),
+            PolicyEnforcerCallbacks::noOp,
+            PackagePolicySerializer(),
+        )
+}
+

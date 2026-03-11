@@ -239,3 +239,13 @@ flag {
     bug: "487943236"
     is_exported: true
 }
+
+flag {
+    name: "computer_control_role_assistant_requirement"
+    namespace: "virtual_devices"
+    description: "Require the ASSISTANT role for computer control session creation"
+    bug: "487979979"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

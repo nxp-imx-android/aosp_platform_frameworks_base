@@ -30,6 +30,7 @@ import android.window.TransitionInfo.FLAG_IS_DISPLAY
 import android.window.TransitionInfo.FLAG_IS_WALLPAPER
 import android.window.TransitionInfo.FLAG_MOVED_TO_TOP
 import android.window.TransitionInfo.FLAG_NO_ANIMATION
+import android.window.TransitionInfo.FLAG_SHOW_WALLPAPER
 import android.window.TransitionInfo.FLAG_TRANSLUCENT
 import android.window.WindowContainerToken
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -171,6 +172,19 @@ class TransitionUtilTest {
                 TRANSIT_CHANGE,
             )
         assertEquals(expected = 4, result)
+
+        if (com.android.window.flags.Flags.keepShowWallpaperOnBottom()) {
+            change.flags = change.flags and FLAG_IS_WALLPAPER.inv()
+            change.flags = change.flags or FLAG_SHOW_WALLPAPER
+            result =
+                TransitionUtil.calculateAnimLayer(
+                    change,
+                    3 /* order */,
+                    6 /* numChanges */,
+                    TRANSIT_CHANGE,
+                )
+            assertEquals(expected = 4, result)
+        }
 
         // Opening transition type, other mode (order only).
         change.flags = change.flags or FLAG_MOVED_TO_TOP

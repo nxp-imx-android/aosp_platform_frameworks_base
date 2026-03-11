@@ -987,12 +987,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"થઈ ગયું"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"લાગુ કરો"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"બંધ કરો"</string>
-    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"ડિવાઇસ"</string>
-    <string name="bridged_device_type_phone" msgid="7971199513068521770">"ફોન"</string>
-    <string name="bridged_device_type_tablet" msgid="7403330807933649592">"ટૅબ્લેટ"</string>
-    <string name="bridged_device_type_laptop" msgid="8027976360936787349">"લૅપટૉપ"</string>
-    <string name="bridged_device_type_watch" msgid="2634106046119813073">"વૉચ"</string>
-    <string name="bridged_device_type_tv" msgid="5471822369478942796">"ટીવી"</string>
+    <string name="bridged_source_device" msgid="2233591993331607836">"સૉર્સ ડિવાઇસ"</string>
     <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>ના સેટિંગ ખોલો"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"સાઇલન્ટ"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"ડિફૉલ્ટ"</string>
@@ -1229,10 +1224,8 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"<xliff:g id="ID_1">%s</xliff:g> સેટિંગ ખોલો."</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"ઝડપી સેટિંગના ક્રમમાં ફેરફાર કરો."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"પાવર મેનૂ"</string>
-    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
-    <skip />
-    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
-    <skip />
+    <string name="accessibility_quick_settings_power_menu_expanded" msgid="4665161431290201722">"મોટું કર્યું"</string>
+    <string name="accessibility_quick_settings_power_menu_collapsed" msgid="5800930916550853776">"નાનું કર્યું"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_2">%2$d</xliff:g>માંથી <xliff:g id="ID_1">%1$d</xliff:g> પેજ"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g>ને ચાલુ કરીએ?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"આઇકન"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> એ <xliff:g id="ID_4">^4</xliff:g>નો ઉપયોગ કરવા માટે કીબોર્ડ શૉર્ટકટ છે. <xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1252,7 +1245,7 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"તે સ્ક્રીન પરનું બધું કન્ટેન્ટ વાંચી શકે છે અને કન્ટેન્ટને અન્ય ઍપની ઉપર ડિસ્પ્લે કરી શકે છે."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"ઍક્શન જુઓ અને તેને પર્ફોર્મ કરો"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"તે કોઈ ઍપ અથવા હાર્ડવેર સેન્સર સાથેની તમારી ક્રિયાપ્રતિક્રિયાઓને ટ્રૅક કરી શકે છે અને તમારા વતી ઍપ સાથે ક્રિયાપ્રતિક્રિયા કરી શકે છે."</string>
-    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"આઇકન"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> એ <xliff:g id="ID_4">^4</xliff:g>નો ઉપયોગ કરવા માટે કીબોર્ડ શૉર્ટકટ છે. આનાથી તમે ફૉન્ટ અને સ્પેસિંગ કસ્ટમાઇઝ કરી શકો છો અને સીધા તમારા ડિવાઇસ પર ટેક્સ્ટ મોટેથી વંચાતી સાંભળી શકો છો."</string>
+    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"આઇકન"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> એ <xliff:g id="ID_4">^4</xliff:g>નો ઉપયોગ કરવા માટે કીબોર્ડ શૉર્ટકટ છે. આનાથી તમે ફૉન્ટ અને સ્પેસિંગ કસ્ટમાઇઝ કરી શકો છો અને તમારા ડિવાઇસ પર જ ટેક્સ્ટને મોટેથી વંચાતા સાંભળી શકો છો."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"આઇકન"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> દબાવવાથી <xliff:g id="ID_4">^4</xliff:g> ચાલુ થાય છે, જે એક ઍક્સેસિબિલિટી સુવિધા છે. આ તમને હાથના ઉપયોગ વિના તમારા ડિવાઇસને નિયંત્રિત કરવાની સુવિધા આપે છે."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"ઍક્સેસિબિલિટી કી"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"ઍક્સેસિબિલિટી સુવિધાઓનો ઉપયોગ કરવાનું શરૂ કરવા માટે, તમે ઍક્સેસિબિલિટી કી દબાવી શકો છો."</string>
@@ -1495,8 +1488,10 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"ઑડિયો આઉટપુટ માટે ઉપલબ્ધ ડિવાઇસ."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"વૉલ્યૂમ"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <string name="media_output_dialog_missing_permissions_warning" msgid="1279351363821022727">"કેટલાક ડિવાઇસ દેખાતા નથી. તમારી ઍપ પરવાનગીઓ અપડેટ કરો"</string>
-    <string name="media_output_dialog_warning_button_fix" msgid="3324600211761037516">"ઠીક કરો"</string>
+    <!-- no translation found for media_output_dialog_missing_permissions_warning (4312830846174995199) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_warning_button_fix (3650735180540135181) -->
+    <skip />
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"કનેક્ટ કરેલા સ્પીકર"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"સ્પીકર અને ડિસ્પ્લે"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"સૂચવેલા"</string>
@@ -1606,8 +1601,7 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"છબીનો પ્રીવ્યૂ"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"ફેરફાર કરો"</string>
     <string name="add" msgid="81036585205287996">"ઉમેરો"</string>
-    <!-- no translation found for remove (7031760447233505700) -->
-    <skip />
+    <string name="remove" msgid="7031760447233505700">"કાઢી નાખો"</string>
     <string name="manage_users" msgid="1823875311934643849">"વપરાશકર્તાઓને મેનેજ કરો"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"આ નોટિફિકેશન તેને વિભાજિત સ્ક્રીનમાં ખેંચવાની સુવિધાને સપોર્ટ કરતું નથી"</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"લોકેશન સક્રિય"</string>

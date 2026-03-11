@@ -706,18 +706,12 @@
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"충전하는 동안 즐겨 찾는 위젯과 화면 보호기를 표시하세요."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"시작"</string>
     <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"충전 중에 즐겨찾는 화면 보호기 표시"</string>
-    <!-- no translation found for dream_switcher_select_dream_title (2784437029616150736) -->
-    <skip />
-    <!-- no translation found for dream_switcher_choose_screensaver (3073471555365511227) -->
-    <skip />
-    <!-- no translation found for dream_switcher_edit_button_text (2152516873780618659) -->
-    <skip />
-    <!-- no translation found for dream_switcher_go_to_app_button_text (6043693674135654080) -->
-    <skip />
-    <!-- no translation found for dream_switcher_more_screensavers (6672017768044989604) -->
-    <skip />
-    <!-- no translation found for dreams_switcher_accessibility_action (2910870945341642369) -->
-    <skip />
+    <string name="dream_switcher_select_dream_title" msgid="2784437029616150736">"드림 선택"</string>
+    <string name="dream_switcher_choose_screensaver" msgid="3073471555365511227">"화면 보호기 선택"</string>
+    <string name="dream_switcher_edit_button_text" msgid="2152516873780618659">"<xliff:g id="DREAM_NAME">%1$s</xliff:g> 수정"</string>
+    <string name="dream_switcher_go_to_app_button_text" msgid="6043693674135654080">"<xliff:g id="APP_NAME">%1$s</xliff:g> 앱으로 이동"</string>
+    <string name="dream_switcher_more_screensavers" msgid="6672017768044989604">"화면 보호기 더보기"</string>
+    <string name="dreams_switcher_accessibility_action" msgid="2910870945341642369">"드림 선택 메뉴 열기"</string>
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"사용자 전환"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"풀다운 메뉴"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"이 세션에 있는 모든 앱과 데이터가 삭제됩니다."</string>
@@ -993,12 +987,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"완료"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"적용"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"사용 중지"</string>
-    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"기기"</string>
-    <string name="bridged_device_type_phone" msgid="7971199513068521770">"휴대전화"</string>
-    <string name="bridged_device_type_tablet" msgid="7403330807933649592">"태블릿"</string>
-    <string name="bridged_device_type_laptop" msgid="8027976360936787349">"노트북"</string>
-    <string name="bridged_device_type_watch" msgid="2634106046119813073">"시계"</string>
-    <string name="bridged_device_type_tv" msgid="5471822369478942796">"TV"</string>
+    <string name="bridged_source_device" msgid="2233591993331607836">"소스 기기"</string>
     <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"<xliff:g id="DEVICE_TYPE">%1$s</xliff:g> 설정 열기"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"무음"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"기본값"</string>
@@ -1112,8 +1101,7 @@
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"설정 열기"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"디지털 어시스턴트 열기"</string>
     <string name="group_system_access_contextual_search" msgid="525635757621336007">"문맥 검색"</string>
-    <!-- no translation found for group_system_access_contextual_cursor (200587108400598774) -->
-    <skip />
+    <string name="group_system_access_contextual_cursor" msgid="200587108400598774">"문맥 커서"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"화면 잠금"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"메모 작성"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"멀티태스킹"</string>
@@ -1236,10 +1224,8 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"<xliff:g id="ID_1">%s</xliff:g> 설정 열기"</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"빠른 설정 순서 수정"</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"전원 메뉴"</string>
-    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
-    <skip />
-    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
-    <skip />
+    <string name="accessibility_quick_settings_power_menu_expanded" msgid="4665161431290201722">"펼침"</string>
+    <string name="accessibility_quick_settings_power_menu_collapsed" msgid="5800930916550853776">"접힘"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_2">%2$d</xliff:g>페이지 중 <xliff:g id="ID_1">%1$d</xliff:g>페이지"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> 기능을 사용 설정하시겠습니까?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> 키는 <xliff:g id="ID_4">^4</xliff:g> 기능을 사용할 수 있는 단축키입니다. <xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1502,8 +1488,10 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"오디오 출력에 사용 가능한 기기입니다."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"볼륨"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <string name="media_output_dialog_missing_permissions_warning" msgid="1279351363821022727">"일부 기기가 표시되지 않습니다. 앱 권한을 업데이트하세요."</string>
-    <string name="media_output_dialog_warning_button_fix" msgid="3324600211761037516">"수정"</string>
+    <!-- no translation found for media_output_dialog_missing_permissions_warning (4312830846174995199) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_warning_button_fix (3650735180540135181) -->
+    <skip />
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"연결된 스피커"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"스피커 및 디스플레이"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"추천"</string>

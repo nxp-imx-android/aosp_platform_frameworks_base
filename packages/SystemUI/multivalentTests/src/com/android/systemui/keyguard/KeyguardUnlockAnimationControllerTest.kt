@@ -657,30 +657,30 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
     }
 
     companion object {
-        private fun createSurface(leash: SurfaceControl): AnimatedSurface {
-            return AnimatedSurface(
-                leash,
-                null /* startState */,
-                WindowAnimationState().apply { bounds = RectF() } /* endState */,
-                0 /* backgroundColor */,
-                false /* isTranslucent */,
-                null /* taskInfo */,
-                AnimatedSurface.Mode.OTHER,
-                Rect() /* screenSpaceBounds */,
-                Rect() /* localBounds */,
-                Point() /* position */,
-                0 /* rotationChange */,
-                WindowConfiguration() /* windowConfiguration */,
-                -1 /* taskId */,
-                INVALID_WINDOW_TYPE /* windowType */,
-                null /* startLeash */,
-                Rect() /* startBounds */,
-                Rect() /* contentInsets */,
-                false /* willShowImeOnTarget */,
-                true /* isNotInRecents */,
-                false /* allowEnterPip */,
-                -1, /* order */
-            )
+        private fun createSurface(surfaceControl: SurfaceControl): AnimatedSurface {
+            return AnimatedSurface().apply {
+                leash = surfaceControl
+                startLeash = null
+                startState = null
+                endState = WindowAnimationState().apply { bounds = RectF() }
+                backgroundColor = 0
+                isTranslucent = false
+                taskInfo = null
+                mode = AnimatedSurface.Mode.OTHER
+                screenSpaceBounds = Rect()
+                localBounds = Rect()
+                startBounds = Rect()
+                contentInsets = Rect()
+                position = Point()
+                rotationChange = 0
+                windowConfiguration = WindowConfiguration()
+                taskId = -1
+                windowType = INVALID_WINDOW_TYPE
+                willShowImeOnTarget = false
+                isNotInRecents = true
+                allowEnterPip = false
+                order = -1
+            }
         }
     }
 }

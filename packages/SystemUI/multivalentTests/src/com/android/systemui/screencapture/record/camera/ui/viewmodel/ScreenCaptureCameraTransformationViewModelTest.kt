@@ -91,7 +91,7 @@ class ScreenCaptureCameraTransformationViewModelTest : SysuiTestCase() {
 
             assertThat(underTest.transformableByTouchAnywhere).isFalse()
             assertThat(underTest.touchableRegion.bounds)
-                .isEqualTo(Region(546, 960, 547, 961).bounds)
+                .isEqualTo(Region(441, 665, 469, 693).bounds)
         }
 
     @Test

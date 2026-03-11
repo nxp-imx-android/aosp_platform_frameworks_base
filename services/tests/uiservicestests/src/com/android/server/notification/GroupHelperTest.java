@@ -24,6 +24,7 @@ import static android.app.Notification.FLAG_FOREGROUND_SERVICE;
 import static android.app.Notification.FLAG_GROUP_SUMMARY;
 import static android.app.Notification.FLAG_NO_CLEAR;
 import static android.app.Notification.FLAG_ONGOING_EVENT;
+import static android.app.Notification.FLAG_SILENT;
 import static android.app.Notification.GROUP_ALERT_ALL;
 import static android.app.Notification.GROUP_ALERT_CHILDREN;
 import static android.app.Notification.GROUP_ALERT_SUMMARY;
@@ -315,6 +316,43 @@ public class GroupHelperTest extends UiServiceTestCase {
                 FLAG_AUTO_CANCEL | FLAG_FOREGROUND_SERVICE | FLAG_ONGOING_EVENT));
 
         assertEquals(FLAG_AUTO_CANCEL| FLAG_ONGOING_EVENT | BASE_FLAGS,
+                GroupHelper.getAutogroupSummaryFlags(children));
+    }
+
+    @Test
+    public void testGetAutogroupSummaryFlags_someSilent() {
+        ArrayMap<String, NotificationAttributes> children = new ArrayMap<>();
+        children.put("a", getNotificationAttributes(0));
+        children.put("b", getNotificationAttributes(FLAG_SILENT));
+        children.put("c", getNotificationAttributes(FLAG_BUBBLE));
+
+        assertEquals(BASE_FLAGS,
+                GroupHelper.getAutogroupSummaryFlags(children));
+    }
+
+    @Test
+    public void testGetAutogroupSummaryFlags_allSilent() {
+        ArrayMap<String, NotificationAttributes> children = new ArrayMap<>();
+        children.put("a", getNotificationAttributes(FLAG_SILENT));
+        children.put("b", getNotificationAttributes(FLAG_SILENT | FLAG_CAN_COLORIZE));
+        children.put("c", getNotificationAttributes(FLAG_SILENT));
+        children.put("d", getNotificationAttributes(FLAG_SILENT | FLAG_FOREGROUND_SERVICE));
+
+        assertEquals(FLAG_SILENT | BASE_FLAGS,
+                GroupHelper.getAutogroupSummaryFlags(children));
+    }
+
+    @Test
+    public void testGetAutogroupSummaryFlags_allChildrenFlags() {
+        ArrayMap<String, NotificationAttributes> children = new ArrayMap<>();
+        children.put("a", getNotificationAttributes(FLAG_SILENT | FLAG_AUTO_CANCEL));
+        children.put("b",
+                getNotificationAttributes(FLAG_SILENT | FLAG_AUTO_CANCEL | FLAG_CAN_COLORIZE));
+        children.put("c", getNotificationAttributes(FLAG_SILENT | FLAG_AUTO_CANCEL));
+        children.put("d",
+                getNotificationAttributes(FLAG_SILENT | FLAG_AUTO_CANCEL | FLAG_FOREGROUND_SERVICE));
+
+        assertEquals(FLAG_SILENT | FLAG_AUTO_CANCEL| BASE_FLAGS,
                 GroupHelper.getAutogroupSummaryFlags(children));
     }
 

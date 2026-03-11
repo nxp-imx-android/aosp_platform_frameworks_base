@@ -60,6 +60,7 @@ import com.android.settingslib.metadata.PreferenceScreenMetadata
 import com.android.settingslib.metadata.PreferenceScreenMetadataFactory
 import com.android.settingslib.metadata.PreferenceScreenMetadataParameterizedFactory
 import com.android.settingslib.metadata.PreferenceScreenRegistry
+import com.android.settingslib.metadata.PreferenceSetWarningProvider
 import com.android.settingslib.metadata.PreferenceSummaryProvider
 import com.android.settingslib.metadata.PreferenceTitleProvider
 import com.android.settingslib.metadata.ReadWritePermit
@@ -83,6 +84,7 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue
 import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
@@ -245,7 +247,6 @@ private constructor(
         }
 
         val args = preferenceScreen.peekExtras()?.getBundle(EXTRA_BINDING_SCREEN_ARGS)
-
         if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
             val parametersSchema = PreferenceScreenRegistry.getScreenParametersSchema(key)
             val keyParameters = args?.let { parametersSchema?.prepare(it) }
@@ -291,11 +292,18 @@ private constructor(
         if (includeHierarchy) {
             var flagEnabled: Boolean? = null
             if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
-                factory.keyParameters(context).collect {
-                    if (flagEnabled == false) return@collect
+                // We need to instantiate without parameters to add an empty default entry
+                // if there are no valid parameter sets
+                val parameters = factory.keyParameters(context).toList()
+                if (parameters.isEmpty()) {
+                    addPreferenceScreen(factory.create(context), PreferenceScreenCoordinate(screenKey + ":empty"))
+                } else {
+                parameters.forEach {
+                    if (flagEnabled == false) return@forEach
                     val screenMetadata = factory.createWithKeyParameters(context, it)
                     if (flagEnabled == null) flagEnabled = checkScreenFlag(screenMetadata)
                     if (flagEnabled) addPreferenceScreen(screenMetadata)
+                }
                 }
             } else {
                 factory.parameters(context).collect {
@@ -310,11 +318,11 @@ private constructor(
     }
 
     @CanIgnoreReturnValue
-    private suspend fun addPreferenceScreen(metadata: PreferenceScreenMetadata): Boolean {
+    private suspend fun addPreferenceScreen(metadata: PreferenceScreenMetadata, coordinate: PreferenceScreenCoordinate = PreferenceScreenCoordinate(metadata.key, metadata.keyParameters)): Boolean {
         if (!checkScreenFlag(metadata)) return false
 
         return if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
-            addPreferenceScreenWithKeyParameters(metadata.key, metadata.keyParameters) {
+            addPreferenceScreenWithKeyParameters(metadata.key, metadata.keyParameters, coordinate) {
                 completeHierarchy = metadata.hasCompleteHierarchy()
                 root =
                     if (includeHierarchy) {
@@ -373,6 +381,11 @@ private constructor(
         } else if (args.isEmpty) { // parameterized screen with backward compatibility
             val builder = screens.getOrPut(key) { newParameterizedScreenBuilder() }
             init(builder)
+            val parameterizedScreen = parameterizedPreferenceScreenProto {
+                setArgs(args.toProto())
+                setScreen(newParameterizedScreenBuilder().also { init(it) })
+            }
+            builder.addParameterizedScreens(parameterizedScreen)
         } else { // parameterized screen with non-empty arguments
             val builder = screens.getOrPut(key) { newParameterizedScreenBuilder() }
             val parameterizedScreen = parameterizedPreferenceScreenProto {
@@ -388,9 +401,10 @@ private constructor(
     private suspend fun addPreferenceScreenWithKeyParameters(
         key: String,
         keyParameters: ValidatedKeyParameters?,
+        coordinate: PreferenceScreenCoordinate = PreferenceScreenCoordinate(key, keyParameters),
         init: suspend PreferenceScreenProto.Builder.() -> Unit,
     ): Boolean {
-        if (!visitedScreens.add(PreferenceScreenCoordinate(key, keyParameters))) return false
+        if (!visitedScreens.add(coordinate)) return false
 
         fun newParameterizedScreenBuilder() =
             PreferenceScreenProto.newBuilder().also {
@@ -405,6 +419,11 @@ private constructor(
         } else if (keyParameters.isEmpty) { // parameterized screen with backward compatibility
             val builder = screens.getOrPut(key) { newParameterizedScreenBuilder() }
             init(builder)
+            val parameterizedScreen = parameterizedPreferenceScreenProto {
+                setKeyParameters(keyParameters.toProto())
+                setScreen(newParameterizedScreenBuilder().also { init(it) })
+            }
+            builder.addParameterizedScreens(parameterizedScreen)
         } else { // parameterized screen with non-empty arguments
             val builder = screens.getOrPut(key) { newParameterizedScreenBuilder() }
             val parameterizedScreen = parameterizedPreferenceScreenProto {
@@ -651,6 +670,13 @@ fun PreferenceMetadata.toProto(
                     parametersSchema = it.toProto(context, valueDescriptors)
                 }
                 metadata.getParameters()?.let { keyParameters = it.toProto() }
+            } else {
+                // We don't automatically add key parameters onto the
+                // preferences in catalyst v1 so we can add them here.
+                screenMetadata.keyParametersSchema?.let {
+                    parametersSchema = it.toProto(context, valueDescriptors)
+                }
+                screenMetadata.keyParameters?.let { keyParameters = it.toProto() }
             }
         }
 
@@ -683,8 +709,19 @@ fun PreferenceMetadata.toProto(
                 preconditionsDescription?.let { addPreconditions(it) }
             }
         }
-    } else if (metadata is PreferencesApiScreen) {
-        metadata.screenPreconditions?.getDescription(context)?.let { addGetPreconditions(it) }
+    } else {
+        if (metadata is PreferencesApiScreen) {
+            metadata.screenPreconditions?.getDescription(context)?.let { addGetPreconditions(it) }
+        } else if (metadata is PreferenceSetWarningProvider) {
+            metadata.setWarning?.let { warningInfo ->
+                setWarning =
+                    setWarningProto {
+                        warning = warningInfo.warningMessage
+                        warningInfo.preconditionsDescription?.let { addPreconditions(it) }
+                    }
+
+            }
+        }
     }
     persistent = metadata.isPersistent(context)
     if (metadata !is PersistentPreference<*>) return@preferenceProto

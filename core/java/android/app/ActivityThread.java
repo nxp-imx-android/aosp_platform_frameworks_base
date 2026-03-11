@@ -2468,16 +2468,10 @@ public final class ActivityThread extends ClientTransactionHandler
         public void getExecutableMethodFileOffsets(
                 @NonNull MethodDescriptor methodDescriptor,
                 @NonNull IOffsetCallback resultCallback) {
-            Executable executable;
-            if (android.security.Flags.dynamicInstrumentationAppClassloader()) {
-                Application app = currentApplication();
-                ClassLoader cl = (app != null) ? app.getClassLoader() : getClass().getClassLoader();
-                executable = MethodDescriptorParser.parseMethodDescriptor(cl, methodDescriptor);
-            } else {
-                executable =
-                        MethodDescriptorParser.parseMethodDescriptor(
-                                getClass().getClassLoader(), methodDescriptor);
-            }
+            Application app = currentApplication();
+            ClassLoader cl = (app != null) ? app.getClassLoader() : getClass().getClassLoader();
+            Executable executable =
+                    MethodDescriptorParser.parseMethodDescriptor(cl, methodDescriptor);
 
             VMDebug.ExecutableMethodFileOffsets location;
             if (com.android.art.flags.Flags.executableMethodFileOffsetsV2()) {

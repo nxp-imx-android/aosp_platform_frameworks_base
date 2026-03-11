@@ -49,6 +49,7 @@ import static android.Manifest.permission.MANAGE_DEVICE_POLICY_SYSTEM_UPDATES;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_USB_DATA_SIGNALLING;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_WIFI;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_WIPE_DATA;
+import static android.Manifest.permission.MANAGE_MULTIUSER_DEVICE_PROVISIONING_STATE;
 import static android.Manifest.permission.QUERY_ADMIN_POLICY;
 import static android.Manifest.permission.QUERY_DEVICE_STOLEN_STATE;
 import static android.Manifest.permission.REQUEST_PASSWORD_COMPLEXITY;
@@ -571,15 +572,15 @@ public class DevicePolicyManager {
     // migrated to an enum with other modes. Also, consider renaming the
     // checkProvisioningPrecondition parameter to managementMode.
     /**
-     * Constant to indicate multi-user device provisioning.
+     * Constant to indicate multiuser device provisioning.
      *
-     * <p> When multi-user device provisioning has completed, an intent of the type
+     * <p> When multiuser device provisioning has completed, an intent of the type
      * {@link DeviceAdminReceiver#ACTION_PROFILE_PROVISIONING_COMPLETE} is
      * broadcast. The extra {@link #EXTRA_PROVISIONING_ACTION} will be set to
      * {@link #ACTION_PROVISION_MULTIUSER_MANAGED_DEVICE}.
      *
      * <p> This can also be passed to {@link #checkProvisioningPrecondition} to check if the
-     * multi-user device provisioning is allowed.
+     * multiuser device provisioning is allowed.
      *
      * @hide
      */
@@ -590,7 +591,7 @@ public class DevicePolicyManager {
             "android.app.admin.action.PROVISION_MULTIUSER_MANAGED_DEVICE";
 
     /**
-     * Activity action: Starts the provisioning flow for managed full user on a multi-user device.
+     * Activity action: Starts the provisioning flow for managed full user on a multiuser device.
      *
      * <p>It is possible to check if provisioning is allowed or not by querying the methods {@link
      * #isProvisioningAllowed(String)} and {@link #checkProvisioningPrecondition(String, String)}.
@@ -894,7 +895,7 @@ public class DevicePolicyManager {
      * Result code that can be returned by the {@link
      * #ACTION_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE} or {@link
      * #ACTION_ROLE_HOLDER_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE} intent handlers if the
-     * multi-user device was provisioned.
+     * multiuser device was provisioned.
      *
      * <p>This will be removed soon. Please use
      * {@link #RESULT_MULTIUSER_MANAGED_DEVICE_PROVISIONED} instead.
@@ -10182,29 +10183,140 @@ public class DevicePolicyManager {
             new IpcDataCache<>(sDpmCaches.child("hasDeviceOwner"),
                     (query) -> getService().hasDeviceOwner());
 
+    private IpcDataCache<String, Boolean> mIsDeviceManagedCache =
+            new IpcDataCache<>(sDpmCaches.child("isDeviceManaged"),
+                    (packageName) -> getService().isDeviceManaged(packageName));
+
     /**
-     * Called by the system to find out whether the device is managed by a Device Owner.
+     * Returns whether the device is managed.
      *
-     * @return whether the device is managed by a Device Owner.
-     * @throws SecurityException if the caller is not the device owner, does not hold
-     *         MANAGE_USERS or MANAGE_PROFILE_AND_DEVICE_OWNERS permissions and is not the system.
+     * <p><b>Note:</b> For applications targeting
+     * {@link android.os.Build.VERSION_CODES#CINNAMON_BUN} and above, the definition of "managed"
+     * is extended. In addition to fully managed devices,
+     * this method will also return {@code true} for organization-owned devices with managed
+     * profiles as well as future device management modes where the entire device is under
+     * management.
+     * Apps targeting older SDK version will only return {@code true} if a device owner is present.
+     *
+     * @return whether the device is under management.
+     * @throws SecurityException if the caller is not the device or the profile owner,
+     *         does not hold MANAGE_USERS or MANAGE_PROFILE_AND_DEVICE_OWNERS permissions
+     *         and is not the system.
      *
      * @hide
      */
     @SystemApi
     @SuppressLint("RequiresPermission")
     public boolean isDeviceManaged() {
-        // TODO(b/390162247): Add API level check to avoid breaking existing apps targeting old API.
+        if (android.app.admin.flags.Flags.managedDeviceDefinitionExtended() && mService != null) {
+            return mIsDeviceManagedCache.query(mContext.getPackageName());
+        }
         if (android.app.admin.flags.Flags.multiUserManagementDeviceProvisioning()
                 && mService != null) {
             try {
-                // TODO(b/390162247): Consider adding a cache just like we do for hasDeviceOwner.
-                return mService.isDeviceManaged();
+                return mService.isDeviceManaged(mContext.getPackageName());
             } catch (RemoteException re) {
-                throw re.rethrowFromSystemServer();
+                re.rethrowFromSystemServer();
             }
         }
         return mHasDeviceOwnerCache.query(null);
+    }
+
+    /**
+     * Constant for {@link #getMultiuserManagedDeviceProvisioningState()}: the device is not
+     * managed.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING)
+    public static final int MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_UNMANAGED = 1;
+
+    /**
+     * Constant for {@link #getMultiuserManagedDeviceProvisioningState()}: managed device
+     * provisioning has started.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING)
+    public static final int MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_STARTED = 2;
+
+    /**
+     * Constant for {@link #getMultiuserManagedDeviceProvisioningState()}: the device is managed.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING)
+    public static final int MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_COMPLETED = 3;
+
+    /**
+     * The state of managed device provisioning.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING)
+    @IntDef(prefix = { "MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_" }, value = {
+            MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_UNMANAGED,
+            MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_STARTED,
+            MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_COMPLETED
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface MultiuserManagedDeviceProvisioningState {}
+
+    /**
+     * Returns the multiuser managed device provisioning state for a Headless System User Mode
+     * (HSUM) device.
+     *
+     * <p> This API is intended to be called by the Setup Wizard to determine the stage of the HSUM
+     * multiuser managed device provisioning flow to process the interrupted provisioning flow
+     * accordingly.
+     *
+     * <p><b>Note: </b> Setup Wizard sets
+     * {@code MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_STARTED} state only when entering the
+     * multiuser managed device provisioning flow.
+     *
+     * @return The current managed provisioning state of the multiuser device.
+     *
+     * @throws SecurityException if the caller does not hold
+     *         {@code MANAGE_MULTIUSER_DEVICE_PROVISIONING_STATE} permission.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING)
+    @RequiresPermission(value = MANAGE_MULTIUSER_DEVICE_PROVISIONING_STATE, conditional = true)
+    public @MultiuserManagedDeviceProvisioningState int
+            getMultiuserManagedDeviceProvisioningState() {
+        if (mService != null) {
+            try {
+                return mService.getMultiuserManagedDeviceProvisioningState();
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+        return MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_UNMANAGED;
+    }
+
+    /**
+     * Indicates the intention of the caller to start the managed device provisioning flow for a
+     * Headless System User Mode (HSUM) device.
+     *
+     * <p>This API is intended to be called by the Setup Wizard.
+     *
+     * <p>The Setup Wizard should call this method once the user consents to multiuser managed
+     * device provisioning.
+     *
+     * @throws IllegalArgumentException if called after the device has already been provisioned.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING)
+    @RequiresPermission(value = MANAGE_MULTIUSER_DEVICE_PROVISIONING_STATE, conditional = true)
+    public void startMultiuserManagedDeviceProvisioning() {
+        if (mService != null) {
+            try {
+                mService.startMultiuserManagedDeviceProvisioning();
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
     }
 
     /**
@@ -15795,7 +15907,7 @@ public class DevicePolicyManager {
     }
 
     /**
-     * Clears the multi-user device management state for testing purposes. Can only remove
+     * Clears the multiuser device management state for testing purposes. Can only remove
      * management set up by test packages. Does not send a broadcast about the removal.
      *
      * @param deviceControllerPackageName Package name of the device controller.
@@ -18029,7 +18141,7 @@ public class DevicePolicyManager {
      *
      * <p>This will be removed soon. Please use {@link #provisionMultiuserManagedDevice} instead.
      *
-     * @param provisioningParams Params required to provision a multi-user device, see
+     * @param provisioningParams Params required to provision a multiuser device, see
      * {@link MultiUserDeviceProvisioningParams}.
      *
      * @throws ProvisioningException if an error occurred during provisioning.
@@ -18055,7 +18167,7 @@ public class DevicePolicyManager {
      * <p>The method {@link #checkProvisioningPrecondition} must be returning {@link #STATUS_OK}
      * before calling this method. If it doesn't, a {@link ProvisioningException} will be thrown.
      *
-     * @param provisioningParams Params required to provision a multi-user device, see
+     * @param provisioningParams Params required to provision a multiuser device, see
      * {@link MultiuserManagedDeviceProvisioningParams}.
      *
      * @throws ProvisioningException if an error occurred during provisioning.
@@ -18081,7 +18193,7 @@ public class DevicePolicyManager {
     }
 
     /**
-     * Provisions a managed full user on a multi-user device.
+     * Provisions a managed full user on a multiuser device.
      *
      * <p>The method {@link #checkProvisioningPrecondition} must be returning {@link #STATUS_OK}
      * before calling this method.

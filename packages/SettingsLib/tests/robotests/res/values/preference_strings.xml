@@ -19,4 +19,6 @@
     <string name="preference_purpose">Preference purpose</string>
     <string name="preference_screen_purpose">Preference screen purpose</string>
     <string name="preference_screen_title">Preference screen title</string>
+    <string name="preference_screen_summary">Preference screen summary</string>
+    <string name="preference_summary">Preference summary</string>
 </resources>

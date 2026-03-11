@@ -263,21 +263,29 @@ public class ProtoLog {
 
     private static void logStringMessage(@NonNull LogLevel logLevel, @NonNull IProtoLogGroup group,
             @NonNull String stringMessage, @NonNull Object... args) {
-        var instance = sController.mProtoLogInstance;
+        IProtoLog instance = sController.mProtoLogInstance;
         if (instance == null) {
-            if (android.tracing.Flags.protologAsyncInit()) {
-                initAsync(group);
-                instance = sController.mProtoLogInstance;
-                Log.w(LOG_TAG, "ProtoLog used before initialization, calling initAsync");
-            } else {
-                Log.wtfStack(LOG_TAG,
-                        "Trying to use ProtoLog before it is initialized in this process.");
+            instance = initializeInstance(group);
+            if (instance == null) {
                 return;
             }
         }
 
         if (instance.isEnabled(group, logLevel)) {
             instance.log(logLevel, group, stringMessage, args);
+        }
+    }
+
+    /** Keep this out of the hot path to facilitate JIT inlining of logStringMessage. */
+    private static IProtoLog initializeInstance(IProtoLogGroup group) {
+        if (android.tracing.Flags.protologAsyncInit()) {
+            initAsync(group);
+            Log.w(LOG_TAG, "ProtoLog used before initialization, calling initAsync");
+            return sController.mProtoLogInstance;
+        } else {
+            Log.wtfStack(LOG_TAG,
+                    "Trying to use ProtoLog before it is initialized in this process.");
+            return null;
         }
     }
 

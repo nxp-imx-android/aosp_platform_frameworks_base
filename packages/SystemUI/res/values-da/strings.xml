@@ -530,7 +530,7 @@
     <string name="quick_settings_night_secondary_label_on_at" msgid="3584738542293528235">"Tænd kl. <xliff:g id="TIME">%s</xliff:g>"</string>
     <string name="quick_settings_secondary_label_until" msgid="1883981263191927372">"Indtil <xliff:g id="TIME">%s</xliff:g>"</string>
     <string name="quick_settings_ui_mode_night_label" msgid="1398928270610780470">"Mørkt tema"</string>
-    <string name="quick_settings_dark_mode_secondary_label_battery_saver" msgid="4990712734503013251">"Batterisparefunktion"</string>
+    <string name="quick_settings_dark_mode_secondary_label_battery_saver" msgid="4990712734503013251">"Batterispare­funktion"</string>
     <string name="quick_settings_dark_mode_secondary_label_on_at_sunset" msgid="6017379738102015710">"Til ved solnedgang"</string>
     <string name="quick_settings_dark_mode_secondary_label_until_sunrise" msgid="4404885070316716472">"Indtil solopgang"</string>
     <string name="quick_settings_dark_mode_secondary_label_on_at" msgid="5128758823486361279">"Tænd kl. <xliff:g id="TIME">%s</xliff:g>"</string>
@@ -706,18 +706,12 @@
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"Få adgang til dine foretrukne widgets og pauseskærme under opladning."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"Kom i gang"</string>
     <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"Vis dine foretrukne pauseskærme under opladning"</string>
-    <!-- no translation found for dream_switcher_select_dream_title (2784437029616150736) -->
-    <skip />
-    <!-- no translation found for dream_switcher_choose_screensaver (3073471555365511227) -->
-    <skip />
-    <!-- no translation found for dream_switcher_edit_button_text (2152516873780618659) -->
-    <skip />
-    <!-- no translation found for dream_switcher_go_to_app_button_text (6043693674135654080) -->
-    <skip />
-    <!-- no translation found for dream_switcher_more_screensavers (6672017768044989604) -->
-    <skip />
-    <!-- no translation found for dreams_switcher_accessibility_action (2910870945341642369) -->
-    <skip />
+    <string name="dream_switcher_select_dream_title" msgid="2784437029616150736">"Vælg drøm"</string>
+    <string name="dream_switcher_choose_screensaver" msgid="3073471555365511227">"Vælg en pauseskærm"</string>
+    <string name="dream_switcher_edit_button_text" msgid="2152516873780618659">"Rediger <xliff:g id="DREAM_NAME">%1$s</xliff:g>"</string>
+    <string name="dream_switcher_go_to_app_button_text" msgid="6043693674135654080">"Gå til <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="dream_switcher_more_screensavers" msgid="6672017768044989604">"Flere pauseskærme"</string>
+    <string name="dreams_switcher_accessibility_action" msgid="2910870945341642369">"Åbn menuen til valg af drøm"</string>
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"Skift bruger"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"rullemenu"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"Alle apps og data i denne session slettes."</string>
@@ -993,12 +987,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Udfør"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Anvend"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Deaktiver"</string>
-    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"enhed"</string>
-    <string name="bridged_device_type_phone" msgid="7971199513068521770">"din telefon"</string>
-    <string name="bridged_device_type_tablet" msgid="7403330807933649592">"din tablet"</string>
-    <string name="bridged_device_type_laptop" msgid="8027976360936787349">"din bærbare computer"</string>
-    <string name="bridged_device_type_watch" msgid="2634106046119813073">"dit ur"</string>
-    <string name="bridged_device_type_tv" msgid="5471822369478942796">"dit tv"</string>
+    <string name="bridged_source_device" msgid="2233591993331607836">"kildeenhed"</string>
     <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"Åbn indstillingerne for <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"Lydløs"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Standard"</string>
@@ -1054,7 +1043,7 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# time}=2{# timer}one{# time}other{# timer}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# minut}one{# minut}other{# minutter}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"for at åbne menuen til nedrykning"</string>
-    <string name="battery_detail_switch_title" msgid="6940976502957380405">"Batterisparefunktion"</string>
+    <string name="battery_detail_switch_title" msgid="6940976502957380405">"Batterispare­funktion"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"<xliff:g id="NAME">%1$s</xliff:g>-knap"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
     <string name="keyboard_key_back" msgid="4185420465469481999">"Tilbage"</string>
@@ -1112,8 +1101,7 @@
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Åbn indstillinger"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Åbn digital assistent"</string>
     <string name="group_system_access_contextual_search" msgid="525635757621336007">"Kontekstuel søgning"</string>
-    <!-- no translation found for group_system_access_contextual_cursor (200587108400598774) -->
-    <skip />
+    <string name="group_system_access_contextual_cursor" msgid="200587108400598774">"Kontekstbestemt markør"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Lås skærm"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Skriv en note"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitasking"</string>
@@ -1236,10 +1224,8 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"Åbn <xliff:g id="ID_1">%s</xliff:g>-indstillinger."</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"Rediger rækkefølgen af kvikmenuen."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menu for afbryderknappen"</string>
-    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
-    <skip />
-    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
-    <skip />
+    <string name="accessibility_quick_settings_power_menu_expanded" msgid="4665161431290201722">"Udvidet"</string>
+    <string name="accessibility_quick_settings_power_menu_collapsed" msgid="5800930916550853776">"Skjult"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Side <xliff:g id="ID_1">%1$d</xliff:g> af <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Vil du aktivere <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612"><annotation id="action_key_icon">"Ikonet"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> er tastaturgenvejen til at bruge <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1502,8 +1488,10 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Enheder, der er tilgængelige for lydudgang."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Lydstyrke"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g> %%"</string>
-    <string name="media_output_dialog_missing_permissions_warning" msgid="1279351363821022727">"Nogle enheder er ikke synlige. Opdater dine apptilladelser"</string>
-    <string name="media_output_dialog_warning_button_fix" msgid="3324600211761037516">"Løs problem"</string>
+    <!-- no translation found for media_output_dialog_missing_permissions_warning (4312830846174995199) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_warning_button_fix (3650735180540135181) -->
+    <skip />
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Forbundne højttalere"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Højttalere og skærme"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Forslag"</string>

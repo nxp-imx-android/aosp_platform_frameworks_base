@@ -45,6 +45,7 @@ import static com.android.server.companion.utils.PermissionsUtils.enforceCallerI
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerIsSystemOrCanInteractWithUserId;
 import static com.android.server.companion.utils.PermissionsUtils.enforceMessagePermissions;
 import static com.android.server.companion.utils.PermissionsUtils.enforceValidServiceName;
+import static com.android.server.companion.utils.Utils.generateRandom128BitKey;
 
 import static java.util.Objects.requireNonNull;
 
@@ -87,6 +88,7 @@ import android.content.Intent;
 import android.content.pm.PackageManagerInternal;
 import android.net.MacAddress;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.PersistableBundle;
@@ -357,9 +359,11 @@ public class CompanionDeviceManagerService extends SystemService {
         @Override
         public void associate(AssociationRequest request, IAssociationRequestCallback callback,
                 String packageName, int userId) throws RemoteException {
-            Slog.i(TAG, "associate() "
-                    + "request=" + request + ", "
-                    + "package=u" + userId + "/" + packageName);
+            if (Build.isDebuggable()) {
+                Slog.d(TAG, "associate() "
+                        + "request=" + request + ", "
+                        + "package=u" + userId + "/" + packageName);
+            }
             enforceCallerCanManageAssociationsForPackage(getContext(), userId, packageName,
                     "create associations");
 
@@ -720,7 +724,7 @@ public class CompanionDeviceManagerService extends SystemService {
         public void enableSystemDataSync(int associationId, int flags) {
             enforceCallerCanInteractWithSystemDataSyncFlags(getContext(), flags);
 
-            mAssociationRequestsProcessor.enableSystemDataSync(associationId, flags);
+            mDataSyncProcessor.enableSystemDataSync(associationId, flags);
         }
 
         @Override
@@ -728,7 +732,7 @@ public class CompanionDeviceManagerService extends SystemService {
         public void disableSystemDataSync(int associationId, int flags) {
             enforceCallerCanInteractWithSystemDataSyncFlags(getContext(), flags);
 
-            mAssociationRequestsProcessor.disableSystemDataSync(associationId, flags);
+            mDataSyncProcessor.disableSystemDataSync(associationId, flags);
         }
 
         @Override
@@ -870,7 +874,21 @@ public class CompanionDeviceManagerService extends SystemService {
 
         @Override
         public DeviceId setDeviceId(int associationId, DeviceId deviceId) {
-            return mAssociationRequestsProcessor.setDeviceId(associationId, deviceId);
+            Slog.i(TAG, "Setting DeviceId=[" + deviceId + "] to id=[" + associationId + "]...");
+
+            DeviceId newDeviceId = deviceId != null
+                    ? new DeviceId.Builder()
+                    .setCustomId(deviceId.getCustomId())
+                    .setMacAddress(deviceId.getMacAddress())
+                    .setKey(generateRandom128BitKey())
+                    .build()
+                    : null;
+            mAssociationStore.updateAssociation(associationId,
+                    a -> (new AssociationInfo.Builder(a))
+                            .setDeviceId(newDeviceId)
+                            .build());
+
+            return newDeviceId;
         }
 
         @Override

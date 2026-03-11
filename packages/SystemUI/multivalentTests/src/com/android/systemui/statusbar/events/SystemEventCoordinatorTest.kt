@@ -112,8 +112,7 @@ class SystemEventCoordinatorTest(flags: FlagsParameterization) : SysuiTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SYSTEM_STATUS_ANIMATION_PER_DISPLAY)
-    fun startObserving_flagEnabled_batteryPluggedIn_doesNotPropagateOnStart() =
+    fun startObserving_batteryPluggedIn_doesNotPropagateOnStart() =
         testScope.runTest {
             batteryController._isPluggedIn = true
 
@@ -123,25 +122,13 @@ class SystemEventCoordinatorTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_SYSTEM_STATUS_ANIMATION_PER_DISPLAY)
-    fun startObserving_flagEnabled_batteryPluggedInAfterStart_propagatesEvent() =
+    fun startObserving_batteryPluggedInAfterStart_propagatesEvent() =
         testScope.runTest {
             systemEventCoordinator.startObserving()
 
             batteryController._isPluggedIn = true
 
             verify(scheduler).onStatusEvent(any<BatteryEvent>())
-        }
-
-    @Test
-    @DisableFlags(Flags.FLAG_SYSTEM_STATUS_ANIMATION_PER_DISPLAY)
-    fun startObserving_flagDisabled_propagatesOnStart() =
-        testScope.runTest {
-            batteryController._isPluggedIn = true
-
-            systemEventCoordinator.startObserving()
-
-            verify(scheduler).onStatusEvent(any())
         }
 
     @Test

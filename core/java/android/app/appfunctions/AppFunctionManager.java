@@ -32,6 +32,7 @@ import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SdkConstant;
 import android.annotation.SystemApi;
@@ -322,7 +323,11 @@ public final class AppFunctionManager {
     @Retention(RetentionPolicy.SOURCE)
     public @interface EnabledState {}
 
-    private final AppFunctionRegistry mRegistry;
+    private final Object mRegistryLock = new Object();
+
+    @GuardedBy("mRegistryLock")
+    @Nullable
+    private AppFunctionRegistry mRegistry;
 
     /**
      * Creates an instance.
@@ -334,7 +339,16 @@ public final class AppFunctionManager {
     public AppFunctionManager(IAppFunctionManager service, Context context) {
         mService = service;
         mContext = context;
-        mRegistry = new AppFunctionRegistry(mContext);
+    }
+
+    @NonNull
+    private AppFunctionRegistry ensureRegistry() {
+        synchronized (mRegistryLock) {
+            if (mRegistry == null) {
+                mRegistry = new AppFunctionRegistry(mContext);
+            }
+            return mRegistry;
+        }
     }
 
     /**
@@ -776,7 +790,6 @@ public final class AppFunctionManager {
         isAppFunctionEnabledInternal(functionIdentifier, targetPackage, executor, callback);
     }
 
-    // TODO: b/483628788 - Explain XSD.
     /**
      * Registers a runtime implementation for an app function, that can be executed using {@link
      * #executeAppFunction}.
@@ -796,7 +809,7 @@ public final class AppFunctionManager {
      * <pre>{@code
      * <application ...>
      *   <property
-     *       android:name="android.app.appfunctions.v2"
+     *       android:name="android.app.appfunctions"
      *       android:value="your_app_functions.xml" />
      *   ...
      * </application>
@@ -839,7 +852,7 @@ public final class AppFunctionManager {
             @NonNull String functionIdentifier,
             @NonNull Executor executor,
             @NonNull AppFunction appFunction) {
-        return mRegistry.register(
+        return ensureRegistry().register(
                 List.of(new RegisterAppFunctionRequest(functionIdentifier, executor, appFunction)));
     }
 
@@ -882,7 +895,7 @@ public final class AppFunctionManager {
         if (requests.isEmpty()) {
             throw new IllegalArgumentException("No functions provided.");
         }
-        return mRegistry.register(requests);
+        return ensureRegistry().register(requests);
     }
 
     /**
@@ -1288,17 +1301,22 @@ public final class AppFunctionManager {
      * Unregisters all app functions that were registered through this {@code AppFunctionManager}
      * instance.
      *
-     * <p>This method should be called to clean up all registrations when the associated
-     * {@link Context} is destroyed.
+     * <p>This method should be called to clean up all registrations when the associated {@link
+     * Context} is destroyed.
      *
      * @param callerDescription A description of the caller, used for logging.
-     *
      * @hide
      */
     @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
     public void unregisterAllAppFunctions(@NonNull String callerDescription) {
         Objects.requireNonNull(callerDescription);
-        mRegistry.unregisterAllAppFunctions(callerDescription);
+        AppFunctionRegistry registry;
+        synchronized (mRegistryLock) {
+            registry = mRegistry;
+        }
+        if (registry != null) {
+            registry.unregisterAllAppFunctions(callerDescription);
+        }
     }
 
     /**
@@ -1444,9 +1462,7 @@ public final class AppFunctionManager {
                 }
                 try {
                     mService.unregisterAppFunctions(
-                            mContext.getPackageName(),
-                            functionIdsToUnregister,
-                            mExecutor);
+                            mContext.getPackageName(), functionIdsToUnregister, mExecutor);
                 } catch (RemoteException e) {
                     throw e.rethrowFromSystemServer();
                 }
@@ -1459,8 +1475,12 @@ public final class AppFunctionManager {
                 if (mRegistrations.isEmpty()) {
                     return;
                 }
-                Slog.e(TAG, "Leaked AppFunction registrations detected from " + callerDescription
-                                + ". Functions: [" + String.join(", ", mRegistrations.keySet())
+                Slog.e(
+                        TAG,
+                        "Leaked AppFunction registrations detected from "
+                                + callerDescription
+                                + ". Functions: ["
+                                + String.join(", ", mRegistrations.keySet())
                                 + "]. Ensure AppFunctionRegistration.unregister() is called to"
                                 + " prevent memory leaks.");
                 try {

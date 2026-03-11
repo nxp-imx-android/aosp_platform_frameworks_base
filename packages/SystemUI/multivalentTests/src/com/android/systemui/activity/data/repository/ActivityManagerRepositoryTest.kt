@@ -249,6 +249,61 @@ class ActivityManagerRepositoryTest : SysuiTestCase() {
             assertThat(latest!!.isAppCurrentlyVisible).isFalse()
         }
 
+    @Test
+    fun createIsAppDeadFlow_fetchesInitialValue_true() =
+        kosmos.runTest {
+            whenever(activityManager.getUidImportance(THIS_UID)).thenReturn(IMPORTANCE_GONE)
+
+            val latest by collectLastValue(underTest.createIsAppDeadFlow(THIS_UID, logger, LOG_TAG))
+
+            assertThat(latest).isTrue()
+        }
+
+    @Test
+    fun createIsAppDeadFlow_fetchesInitialValue_false() =
+        kosmos.runTest {
+            whenever(activityManager.getUidImportance(THIS_UID)).thenReturn(IMPORTANCE_FOREGROUND)
+
+            val latest by collectLastValue(underTest.createIsAppDeadFlow(THIS_UID, logger, LOG_TAG))
+
+            assertThat(latest).isFalse()
+        }
+
+    @Test
+    fun createIsAppDeadFlow_getsImportanceUpdates() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.createIsAppDeadFlow(THIS_UID, logger, LOG_TAG))
+
+            val listenerCaptor = argumentCaptor<ActivityManager.OnUidImportanceListener>()
+            verify(activityManager).addOnUidImportanceListener(listenerCaptor.capture(), any())
+            val listener = listenerCaptor.firstValue
+
+            listener.onUidImportance(THIS_UID, IMPORTANCE_GONE)
+            assertThat(latest).isTrue()
+
+            listener.onUidImportance(THIS_UID, IMPORTANCE_FOREGROUND)
+            assertThat(latest).isFalse()
+        }
+
+    @Test
+    fun createIsAppDeadFlow_ignoresUpdatesForOtherUids() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.createIsAppDeadFlow(THIS_UID, logger, LOG_TAG))
+
+            val listenerCaptor = argumentCaptor<ActivityManager.OnUidImportanceListener>()
+            verify(activityManager).addOnUidImportanceListener(listenerCaptor.capture(), any())
+            val listener = listenerCaptor.firstValue
+
+            listener.onUidImportance(THIS_UID, IMPORTANCE_FOREGROUND)
+            assertThat(latest).isFalse()
+
+            // WHEN another UID dies
+            listener.onUidImportance(THIS_UID + 2, IMPORTANCE_GONE)
+
+            // THEN this UID still stays not dead
+            assertThat(latest).isFalse()
+        }
+
     companion object {
         private const val THIS_UID = 558
         private const val LOG_TAG = "LogTag"

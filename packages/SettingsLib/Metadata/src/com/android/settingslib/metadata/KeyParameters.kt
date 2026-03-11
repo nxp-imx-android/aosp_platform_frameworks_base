@@ -338,7 +338,11 @@ class KeyParametersSchema private constructor(
      * the parameterized screen is expected to gracefully accept and handle empty [ValidatedKeyParameters]
      * to ensure compatibility with older configurations or entry points.
      */
-    fun prepareEmpty() = prepare(emptyMap())
+    fun prepareEmpty(): ValidatedKeyParameters {
+        // This skips the required check as it is used when there are no
+        // parameters.
+        return ValidatedKeyParameters(this, mapOf())
+    }
 
     /**
      * Returns the map of parameter definitions.

@@ -17,6 +17,7 @@
 package com.android.systemui.globalactions;
 
 import static android.content.pm.UserInfo.FLAG_ADMIN;
+import static android.os.UserHandle.USER_SYSTEM;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 
@@ -53,7 +54,11 @@ import android.testing.TestableLooper;
 import android.view.Display;
 import android.view.IWindowManager;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManagerPolicyConstants;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 
@@ -1565,6 +1570,89 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Verify that requireStrongAuth is never called with any arguments during the lock action.
         verify(mLockPatternUtils, never()).requireStrongAuth(anyInt(), anyInt());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_INSET_FOCUS_RINGS_IN_SUW)
+    public void testMyAdapter_getView_suwFocusRing_setsFocusListener() {
+        mockConfigurationForInsetFocusRings(/* enableConfig= */ true, /* inSuw= */ true);
+
+        GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
+
+        GlobalActionsDialogLite.MyAdapter adapter = globalActionsDialogLite.new MyAdapter();
+        ViewGroup parent = new LinearLayout(mContext);
+        View view = adapter.getView(/* position= */ 0, /* convertView= */ null, parent);
+
+        View.OnFocusChangeListener listener = view.getOnFocusChangeListener();
+        assertThat(listener).isNotNull();
+
+        ImageView icon = view.findViewById(com.android.internal.R.id.icon);
+        assertThat(icon.getForeground()).isNull();
+
+        listener.onFocusChange(view, true);
+        assertThat(icon.getForeground()).isNotNull();
+
+        listener.onFocusChange(view, false);
+        assertThat(icon.getForeground()).isNull();
+    }
+
+    @Test
+    @RequiresFlagsDisabled(Flags.FLAG_ENABLE_INSET_FOCUS_RINGS_IN_SUW)
+    public void testMyAdapter_getView_suwFocusRing_whenFlagDisabled_doesNotSetFocusListener() {
+        mockConfigurationForInsetFocusRings(/* enableConfig= */ true, /* inSuw= */ true);
+
+        GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
+
+        GlobalActionsDialogLite.MyAdapter adapter = globalActionsDialogLite.new MyAdapter();
+        ViewGroup parent = new LinearLayout(mContext);
+        View view = adapter.getView(/* position= */ 0, /* convertView= */ null, parent);
+
+        View.OnFocusChangeListener listener = view.getOnFocusChangeListener();
+        assertThat(listener).isNull();
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_INSET_FOCUS_RINGS_IN_SUW)
+    public void testMyAdapter_getView_suwFocusRing_whenConfigDisabled_doesNotSetFocusListener() {
+        mockConfigurationForInsetFocusRings(/* enableConfig= */ false, /* inSuw= */ true);
+
+        GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
+
+        GlobalActionsDialogLite.MyAdapter adapter = globalActionsDialogLite.new MyAdapter();
+        ViewGroup parent = new LinearLayout(mContext);
+        View view = adapter.getView(/* position= */ 0, /* convertView= */ null, parent);
+
+        View.OnFocusChangeListener listener = view.getOnFocusChangeListener();
+        assertThat(listener).isNull();
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_INSET_FOCUS_RINGS_IN_SUW)
+    public void testMyAdapter_getView_suwFocusRing_whenNotInSuw_doesNotSetFocusListener() {
+        mockConfigurationForInsetFocusRings(/* enableConfig= */ true, /* inSuw= */ false);
+
+        GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
+
+        GlobalActionsDialogLite.MyAdapter adapter = globalActionsDialogLite.new MyAdapter();
+        ViewGroup parent = new LinearLayout(mContext);
+        View view = adapter.getView(/* position= */ 0, /* convertView= */ null, parent);
+
+        View.OnFocusChangeListener listener = view.getOnFocusChangeListener();
+        assertThat(listener).isNull();
+    }
+
+    private void mockConfigurationForInsetFocusRings(boolean enableConfig, boolean inSuw) {
+        setMaxShownPowerItems(1);
+        mRepository.setPossibleGlobalActions(List.of(GlobalActionType.POWER));
+        when(mResources.getBoolean(com.android.internal.R.bool.config_enableInsetFocusRingsInSuw))
+                .thenReturn(enableConfig);
+        when(mUserTracker.getUserId()).thenReturn(USER_SYSTEM);
+        mSecureSettings.putIntForUser(
+                Settings.Secure.USER_SETUP_COMPLETE, /* value= */ inSuw ? 0 : 1, USER_SYSTEM);
     }
 
     /**

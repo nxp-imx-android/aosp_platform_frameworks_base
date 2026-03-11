@@ -31,7 +31,7 @@ namespace android {
 namespace uirenderer {
 
 // This value must be in sync with `FRAME_INFO_SIZE` in FrameInfo.Java
-static constexpr size_t UI_THREAD_FRAME_INFO_SIZE = 13;
+static constexpr size_t UI_THREAD_FRAME_INFO_SIZE = 14;
 
 enum class FrameInfoIndex {
     Flags = 0,
@@ -46,12 +46,12 @@ enum class FrameInfoIndex {
     FrameDeadline,
     FrameStartTime,
     FrameInterval,
-    // End of UI frame info
 
     // The target workload duration based on the original frame deadline and
-    // and intended vsync. Counted in UI_THREAD_FRAME_INFO_SIZE so its value
-    // can be set in setVsync().
+    // and intended vsync.
     WorkloadTarget,
+    AnimationTime,
+    // End of UI frame info
 
     SyncQueued,
 
@@ -101,6 +101,7 @@ public:
         // Therefore, we can skip setting the value for InputEventId here. If the value for
         // INVALID_INPUT_EVENT_ID changes, this code would have to be updated, as well.
         set(FrameInfoIndex::FrameDeadline) = std::numeric_limits<int64_t>::max();
+        set(FrameInfoIndex::AnimationTime) = -1;
     }
 
     UiFrameInfoBuilder& setVsync(nsecs_t vsyncTime, int64_t vsyncId, int64_t frameDeadline,

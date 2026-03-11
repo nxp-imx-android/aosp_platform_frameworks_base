@@ -166,9 +166,9 @@ public class DisassociationProcessor {
             Slog.i(TAG, "Cannot disassociate id=[" + id + "] now - process is visible. "
                     + "Start listening to package importance...");
 
-            AssociationInfo revokedAssociation = (new AssociationInfo.Builder(
-                    association)).setRevoked(true).build();
-            mAssociationStore.updateAssociation(revokedAssociation);
+            mAssociationStore.updateAssociation(id, a -> (new AssociationInfo.Builder(a))
+                    .setRevoked(true)
+                    .build());
             startListening();
             return;
         }

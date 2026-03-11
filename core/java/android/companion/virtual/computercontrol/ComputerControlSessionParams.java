@@ -20,6 +20,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.AppInteractionAttribution;
 import android.app.PendingIntent;
+import android.companion.virtual.CompanionDeviceId;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -38,18 +39,21 @@ public final class ComputerControlSessionParams implements Parcelable {
     private final List<String> mTargetPackageNames;
     private final PendingIntent mPreviewIntent;
     private final AppInteractionAttribution mAppInteractionAttribution;
+    private final CompanionDeviceId mCompanionDeviceId;
 
     private ComputerControlSessionParams(
             @NonNull String name,
             int targetComputerControlVersion,
             @NonNull List<String> targetPackageNames,
             @Nullable PendingIntent previewIntent,
-            @Nullable AppInteractionAttribution appInteractionAttribution) {
+            @Nullable AppInteractionAttribution appInteractionAttribution,
+            @Nullable CompanionDeviceId companionDeviceId) {
         mName = name;
         mTargetComputerControlVersion = targetComputerControlVersion;
         mTargetPackageNames = targetPackageNames;
         mPreviewIntent = previewIntent;
         mAppInteractionAttribution = appInteractionAttribution;
+        mCompanionDeviceId = companionDeviceId;
     }
 
     private ComputerControlSessionParams(Parcel parcel) {
@@ -59,6 +63,7 @@ public final class ComputerControlSessionParams implements Parcelable {
         mPreviewIntent = parcel.readTypedObject(PendingIntent.CREATOR);
         mAppInteractionAttribution = parcel.readTypedObject(AppInteractionAttribution.CREATOR);
         mTargetComputerControlVersion = parcel.readInt();
+        mCompanionDeviceId = parcel.readTypedObject(CompanionDeviceId.CREATOR);
     }
 
     /** Returns the name of this computer control session. */
@@ -95,6 +100,14 @@ public final class ComputerControlSessionParams implements Parcelable {
         return mAppInteractionAttribution;
     }
 
+    /**
+     * Returns the companion device id of the device that is controlling this session.
+     */
+    @Nullable
+    public CompanionDeviceId getCompanionDeviceId() {
+        return mCompanionDeviceId;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -107,6 +120,7 @@ public final class ComputerControlSessionParams implements Parcelable {
         dest.writeTypedObject(mPreviewIntent, flags);
         dest.writeTypedObject(mAppInteractionAttribution, flags);
         dest.writeInt(mTargetComputerControlVersion);
+        dest.writeTypedObject(mCompanionDeviceId, flags);
     }
 
     @NonNull
@@ -132,6 +146,7 @@ public final class ComputerControlSessionParams implements Parcelable {
         private List<String> mTargetPackageNames;
         private PendingIntent mPreviewIntent;
         private AppInteractionAttribution mAppInteractionAttribution;
+        private CompanionDeviceId mCompanionDeviceId = null;
 
         /**
          * Sets the name of this computer control session.
@@ -193,6 +208,18 @@ public final class ComputerControlSessionParams implements Parcelable {
         }
 
         /**
+         * Sets the companion device id of the device that is controlling this session.
+         *
+         * @param companionDeviceId The companion device id.
+         * @return This builder.
+         */
+        @NonNull
+        public Builder setCompanionDeviceId(@Nullable CompanionDeviceId companionDeviceId) {
+            mCompanionDeviceId = companionDeviceId;
+            return this;
+        }
+
+        /**
          * Sets the target computer control version of the computer control session.
          *
          * @param targetComputerControlVersion The target computer control version.
@@ -225,12 +252,19 @@ public final class ComputerControlSessionParams implements Parcelable {
                 throw new IllegalArgumentException("App interaction attribution must be set");
             }
 
+            if (mCompanionDeviceId != null && mTargetComputerControlVersion < 5) {
+                throw new IllegalArgumentException(
+                        "companionDeviceId can only be used with targetComputerControlVersion 5 "
+                                + "or above");
+            }
+
             return new ComputerControlSessionParams(
                     mName,
                     mTargetComputerControlVersion,
                     mTargetPackageNames,
                     mPreviewIntent,
-                    mAppInteractionAttribution);
+                    mAppInteractionAttribution,
+                    mCompanionDeviceId);
         }
     }
 }

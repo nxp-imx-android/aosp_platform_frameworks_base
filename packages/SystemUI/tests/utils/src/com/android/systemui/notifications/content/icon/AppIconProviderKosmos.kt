@@ -28,9 +28,10 @@ import androidx.core.graphics.drawable.toDrawable
 import com.android.launcher3.util.UserIconInfo
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.statusbar.notification.row.icon.AppIconHelper
+import com.android.systemui.statusbar.notification.row.icon.AppIconHelperImpl
 import com.android.systemui.statusbar.notification.row.icon.AppIconProviderImpl
 import com.android.systemui.util.time.fakeSystemClock
-import com.android.users.UserType
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
@@ -72,27 +73,28 @@ data class FakeNotificationPackage(
 
 /** Sets up an [AppIconProvider] that returns fake app icons based on the list of fake packages. */
 fun Kosmos.setupFakeAppIcons(context: Context, fakePackages: List<FakeNotificationPackage>) {
-    appIconProvider =
-        object : AppIconProviderImpl(applicationContext, dumpManager, fakeSystemClock) {
-            override fun getRawIcon(packageName: String, userHandle: UserHandle): Drawable? {
+    appIconHelper =
+        object : AppIconHelper {
+            override fun getUnbadgedIcon(packageName: String, userHandle: UserHandle): Drawable? {
                 return context.getDrawable(
                     fakePackages.find { it.packageName == packageName }?.iconRes
                         ?: android.R.drawable.sym_def_app_icon
                 )
             }
 
-            override fun getUserIconInfo(
-                userHandle: UserHandle,
-                allowProfileBadge: Boolean,
-            ): UserIconInfo {
-                val userType = fakeUserType.takeIf { allowProfileBadge } ?: UserType.MAIN
-                return UserIconInfo(user = userHandle, type = userType)
+            override fun getUserIconInfo(userHandle: UserHandle): UserIconInfo {
+                return UserIconInfo(user = userHandle, type = fakeUserType)
             }
         }
+    appIconProvider = realAppIconProvider
 }
 
+var Kosmos.appIconHelper: AppIconHelper by Kosmos.Fixture { AppIconHelperImpl(applicationContext) }
+
 var Kosmos.realAppIconProvider: AppIconProviderImpl by
-    Kosmos.Fixture { AppIconProviderImpl(applicationContext, dumpManager, fakeSystemClock) }
+    Kosmos.Fixture {
+        AppIconProviderImpl(applicationContext, dumpManager, fakeSystemClock, appIconHelper)
+    }
 
 class FallbackAppIconProvider(
     private val realProvider: AppIconProvider,

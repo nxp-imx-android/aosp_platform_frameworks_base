@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.events
+package com.android.systemui.volume.dialog.captions.ui.binder
 
-import com.android.systemui.display.data.repository.displayRepository
+import android.os.fakeHandler
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.statusbar.data.repository.systemEventChipAnimationControllerStore
+import com.android.systemui.volume.dialog.captions.ui.viewmodel.volumeDialogCaptionsButtonViewModelKosmos
+import com.android.systemui.volume.dialog.ui.viewmodel.volumeDialogViewModel
 
-val Kosmos.multiDisplaySystemEventChipAnimationController by
+val Kosmos.volumeDialogCaptionsButtonViewBinder by
     Kosmos.Fixture {
-        MultiDisplaySystemEventChipAnimationController(
-            displayRepository,
-            systemEventChipAnimationControllerStore,
+        VolumeDialogCaptionsButtonViewBinder(
+            volumeDialogCaptionsButtonViewModelKosmos,
+            volumeDialogViewModel,
+            fakeHandler,
         )
     }

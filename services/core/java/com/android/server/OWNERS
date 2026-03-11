@@ -52,3 +52,7 @@ per-file Cert*.java = tweek@google.com, brambonne@google.com, prb@google.com, mi
 
 # TradeInMode
 per-file TradeInModeService.java = file:/TRADE_IN_MODE_OWNERS
+
+# Locked down DropBox-related constants.
+per-file DropBoxRestrictedConstants.java = set noparent
+per-file DropBoxRestrictedConstants.java = file:/FF_LEADS_OWNERS

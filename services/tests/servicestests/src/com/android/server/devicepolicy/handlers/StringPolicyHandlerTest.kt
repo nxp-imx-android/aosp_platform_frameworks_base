@@ -121,4 +121,43 @@ class StringPolicyHandlerTest {
         verify(mockDelegate)
             .storePolicy(anyCaller, StringPolicy.definition, anyScope, StringPolicyValue(""))
     }
+
+    @Test
+    fun setPolicyUnchecked_unprintableCharactersAllowed_shouldAllowUnprintableCharacters() {
+        val metadataAllowingUnprintableCharacters =
+            StringPolicy.metadata.copy(unprintableCharactersAllowed = true)
+        val handler = createHandler(metadata = metadataAllowingUnprintableCharacters)
+
+        handler.setPolicyUnchecked(
+            anyCaller,
+            anyScope,
+            PolicyValueTransport.stringField("test_value_1\u0000"),
+        )
+
+        verify(mockDelegate)
+            .storePolicy(
+                anyCaller,
+                StringPolicy.definition,
+                anyScope,
+                StringPolicyValue("test_value_1\u0000"),
+            )
+    }
+
+    @Test
+    fun setPolicyUnchecked_unprintableCharactersDisallowed_shouldRejectUnprintableCharacters() {
+        val metadataBlockingUnprintableCharacters =
+            StringPolicy.metadata.copy(unprintableCharactersAllowed = false)
+        val handler = createHandler(metadata = metadataBlockingUnprintableCharacters)
+
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                handler.setPolicyUnchecked(
+                    anyCaller,
+                    anyScope,
+                    PolicyValueTransport.stringField("test_value_1\u0000"),
+                )
+            }
+        assertThat(exception.message)
+            .contains("Unprintable characters are not allowed for policy ${StringPolicy.key}")
+    }
 }

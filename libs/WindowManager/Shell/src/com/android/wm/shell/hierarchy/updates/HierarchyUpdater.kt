@@ -122,6 +122,14 @@ class HierarchyUpdater(
         ProtoLog.v(WM_SHELL_MODES, "Hierarchy updated requested: %s", updateContext.reason)
         updaterTestHook?.onHierarchyUpdated()
 
+        // If a transaction was not provided, then create one now for convenience and apply it
+        // after notifying the modes
+        var preTransitTx: SurfaceControl.Transaction? = null
+        if (updateContext.preTransitionTx == null) {
+            preTransitTx = SurfaceControl.Transaction()
+            updateContext.preTransitionTx = preTransitTx
+        }
+
         // Iterate the pre-existing containers from bottom-up to notify old modes that their
         // descendants have been removed
         val postUpdateContainers = hierarchy.toContainerList()
@@ -217,6 +225,9 @@ class HierarchyUpdater(
             }
         }
         updaterTestHook?.onModesNotified()
+
+        // Apply the tx created above if necessary
+        preTransitTx?.apply()
 
         // Dump the container requested, or the full hierarchy
         if (updateContext.dumpOnlyContainer != null) {

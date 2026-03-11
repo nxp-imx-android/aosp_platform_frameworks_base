@@ -21,6 +21,7 @@ import android.content.pm.PackageManager
 import android.content.pm.SharedLibraryInfo
 import android.content.pm.VersionedPackage
 import android.os.Build
+import android.os.Process
 import android.os.UserHandle
 import android.os.storage.StorageManager
 import android.util.ArrayMap
@@ -131,7 +132,7 @@ class SharedLibrariesImplTest {
         doAnswer { mComputer }.`when`(mPms).snapshotComputer()
         doAnswer { STATIC_LIB_PACKAGE_NAME }.`when`(mComputer).resolveInternalPackageName(
             eq(STATIC_LIB_DECLARING_PACKAGE_NAME), eq(STATIC_LIB_VERSION))
-        whenever(mDeletePackageHelper.deletePackageX(any(), any(), any(), any(), any()))
+        whenever(mDeletePackageHelper.deletePackageX(any(), any(), any(), any(), any(), any()))
             .thenReturn(PackageManager.DELETE_SUCCEEDED)
         whenever(mMockSystem.mocks().injector.compatibility).thenReturn(mPlatformCompat)
         wheneverStatic { HexEncoding.decode(STATIC_LIB_NAME, false) }
@@ -240,7 +241,7 @@ class SharedLibrariesImplTest {
             Long.MAX_VALUE, 0)
 
         verify(mDeletePackageHelper)
-            .deletePackageX(eq(STATIC_LIB_PACKAGE_NAME), any(), any(), any(), any())
+            .deletePackageX(eq(STATIC_LIB_PACKAGE_NAME), any(), any(), any(), any(), any())
     }
 
     @Test

@@ -127,6 +127,7 @@ package com.android.server.display.config {
     method public final java.math.BigInteger getAmbientLightHorizonLong();
     method public final java.math.BigInteger getAmbientLightHorizonShort();
     method public com.android.server.display.config.AutoBrightness getAutoBrightness();
+    method public final com.android.server.display.config.SensorDetails getColorSensor();
     method public final java.math.BigDecimal getDefaultDozeBrightness();
     method @Nullable public final com.android.server.display.config.DensityMapping getDensityMapping();
     method @NonNull public final com.android.server.display.config.Thresholds getDisplayBrightnessChangeThresholds();
@@ -168,6 +169,7 @@ package com.android.server.display.config {
     method public final void setAmbientLightHorizonLong(java.math.BigInteger);
     method public final void setAmbientLightHorizonShort(java.math.BigInteger);
     method public void setAutoBrightness(com.android.server.display.config.AutoBrightness);
+    method public final void setColorSensor(com.android.server.display.config.SensorDetails);
     method public final void setDefaultDozeBrightness(java.math.BigDecimal);
     method public final void setDensityMapping(@Nullable com.android.server.display.config.DensityMapping);
     method public final void setDisplayBrightnessChangeThresholds(@NonNull com.android.server.display.config.Thresholds);

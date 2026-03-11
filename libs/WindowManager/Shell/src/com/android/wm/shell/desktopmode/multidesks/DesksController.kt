@@ -129,6 +129,10 @@ class DesksController(
             userId,
             enforceDeskLimit,
         )
+        if (!canCreateDeskInDisplay(displayId, userId, enforceDeskLimit)) {
+            logW("createDeskSuspending new desk cannot be created, ignoring request")
+            return null
+        }
         val repository = userRepositories.getProfile(userId)
         val deskId = createDeskRootSuspending(displayId, userId)
         if (deskId == null) {

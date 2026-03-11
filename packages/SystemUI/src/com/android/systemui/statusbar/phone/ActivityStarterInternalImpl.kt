@@ -23,7 +23,6 @@ import android.app.PendingIntent
 import android.app.TaskStackBuilder
 import android.content.Context
 import android.content.Intent
-import android.content.res.Resources
 import android.os.Bundle
 import android.os.RemoteException
 import android.os.UserHandle
@@ -46,7 +45,6 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.desktop.DesktopFirstRepository
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
-import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
@@ -85,7 +83,6 @@ constructor(
     private val keyguardInteractor: KeyguardInteractor,
     private val centralSurfacesOptLazy: Lazy<Optional<CentralSurfaces>>,
     private val contextInteractor: ShadeDialogContextInteractor,
-    @Main private val resources: Resources,
     private val selectedUserInteractor: SelectedUserInteractor,
     private val deviceEntryInteractor: DeviceEntryInteractor,
     private val activityTransitionAnimator: ActivityTransitionAnimator,
@@ -99,7 +96,6 @@ constructor(
     private val shadeControllerLazy: Lazy<ShadeController>,
     private val communalSceneInteractor: CommunalSceneInteractor,
     private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
-    private val keyguardViewMediatorLazy: Lazy<KeyguardViewMediator>,
     private val shadeAnimationInteractor: ShadeAnimationInteractor,
     private val notifShadeWindowControllerLazy: Lazy<NotificationShadeWindowController>,
     private val commandQueue: CommandQueue,

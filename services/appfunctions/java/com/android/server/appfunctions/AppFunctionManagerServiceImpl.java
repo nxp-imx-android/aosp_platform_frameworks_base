@@ -186,7 +186,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @Nullable AppInteractionService appInteractionService,
             @NonNull AppFunctionMetadataReader appFunctionMetadataReader,
             @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
-            @NonNull AppFunctionAllowlistReader allowlistReader) {
+            @Nullable AppFunctionAllowlistReader allowlistReader) {
         this(
                 context,
                 new RemoteServiceCallerImpl<>(
@@ -463,14 +463,10 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                             }
 
                             if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
-                                try {
-                                    validateExecuteAppFunctionRequestTargetScope(
-                                            requestInternal.getClientRequest(),
-                                            targetPackageName,
-                                            targetUser);
-                                } catch (AppFunctionNotFoundException e) {
-                                    return AndroidFuture.failedFuture(e);
-                                }
+                                validateExecuteAppFunctionRequestTargetScope(
+                                        requestInternal.getClientRequest(),
+                                        targetPackageName,
+                                        targetUser);
                             }
 
                             return isAppFunctionEnabledInternal(

@@ -19,6 +19,7 @@ package com.android.systemui.notifications.intelligence.rules.ui.composable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModel
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleFreeformTextCreationViewModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesScreenViewModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RulesScreenViewState
 
@@ -35,6 +36,7 @@ public interface NotificationRulesScreen {
     public fun Content(
         viewModelFactory: NotificationRulesScreenViewModel.Factory,
         editViewModelFactory: NotificationRuleEditViewModel.Factory,
+        freeformTextViewModelFactory: NotificationRuleFreeformTextCreationViewModel.Factory,
         dismissRulesScreen: () -> Unit,
         startingBackStack: List<RulesScreenViewState> = listOf(RulesScreenViewState.CurrentRules),
         modifier: Modifier,

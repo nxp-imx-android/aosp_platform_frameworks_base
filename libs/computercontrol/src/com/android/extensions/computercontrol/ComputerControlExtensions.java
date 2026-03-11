@@ -20,6 +20,7 @@ import android.Manifest;
 import android.annotation.CallbackExecutor;
 import android.annotation.RequiresPermission;
 import android.app.role.RoleManager;
+import android.companion.virtual.CompanionDeviceId;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.content.Context;
@@ -119,6 +120,11 @@ public class ComputerControlExtensions {
         Objects.requireNonNull(executor, "Missing Executor");
         Objects.requireNonNull(callback, "Missing ComputerControlSession.Callback");
 
+        CompanionDeviceId companionDeviceId = null;
+        if (params.getCompanionDeviceId() != null) {
+            companionDeviceId = new CompanionDeviceId(params.getCompanionDeviceId());
+        }
+
         ComputerControlSessionParams sessionParams =
                 new ComputerControlSessionParams.Builder()
                         .setName(params.getName())
@@ -126,6 +132,7 @@ public class ComputerControlExtensions {
                         .setTargetPackageNames(params.getTargetPackageNames())
                         .setPreviewIntent(params.getPreviewIntent())
                         .setAppInteractionAttribution(params.getAppInteractionAttribution())
+                        .setCompanionDeviceId(companionDeviceId)
                         .build();
 
         var sessionCallback =
@@ -246,6 +253,7 @@ public class ComputerControlExtensions {
         if (!isAvailable(context)) {
             return false;
         }
-        return context.getSystemService(VirtualDeviceManager.class).isComputerControlAvailable();
+        return context.getSystemService(VirtualDeviceManager.class).isComputerControlAvailable(
+                targetComputerControlVersion);
     }
 }

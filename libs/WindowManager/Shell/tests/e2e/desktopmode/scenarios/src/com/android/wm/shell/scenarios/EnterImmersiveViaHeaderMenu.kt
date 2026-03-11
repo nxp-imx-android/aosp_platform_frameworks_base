@@ -43,7 +43,7 @@ abstract class EnterImmersiveViaHeaderMenu(val rotation: Rotation = Rotation.ROT
     @Before
     fun setup() {
         immersiveAppHelper.launchViaIntent(wmHelper)
-        immersiveApp.enterDesktopModeFromAppHandleMenu(wmHelper, device, true)
+        immersiveApp.enterDesktopMode(wmHelper, device, isImmersiveApp = true)
     }
 
     @Test

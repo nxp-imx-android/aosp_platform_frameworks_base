@@ -34,6 +34,8 @@ import androidx.core.graphics.createBitmap
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.activity.data.repository.activityManagerRepository
+import com.android.systemui.activity.data.repository.fake
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
@@ -128,7 +130,7 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
         kosmos.shareScreenUiInteractor.initialize(
             projection = mock(),
             reviewGrantedConsentRequired = true,
-            hostUserHandle = UserHandle.of(100),
+            hostUserHandle = UserHandle.CURRENT,
             uid = 100,
             packageName = context.packageName,
             initialDisplayId = 0,
@@ -406,7 +408,7 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
                 RecentTask(
                     taskId = 42,
                     displayId = 0,
-                    userId = 100,
+                    userId = UserHandle.CURRENT.identifier,
                     topActivityComponent = ComponentName(context.packageName, "HostClass"),
                     baseIntentComponent = ComponentName(context.packageName, "HostClass"),
                     baseIntent = Intent(),
@@ -425,7 +427,7 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
                 .thenReturn(Intent())
             val mockUserContext = mock<Context>()
             whenever(mockUserContext.packageManager).thenReturn(mockUserPackageManager)
-            val hostUserHandle = UserHandle.of(hostRecentTask.userId)
+            val hostUserHandle = UserHandle.CURRENT
             context.prepareCreateContextAsUser(hostUserHandle, mockUserContext)
 
             whenever(
@@ -543,7 +545,7 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
             // Populate the view model with the fake target.
             kosmos.fakeScreenCaptureRecentTaskRepository.setRecentTasks(kosmos.fakeRecentTask)
             kosmos.fakeScreenCaptureAppContentRepository.setAppContentSuccess(
-                packageName = "FakeBasePackage",
+                packageName = context.packageName,
                 user = UserHandle.CURRENT,
                 listOf(fakeMediaProjectionAppContent),
                 WeakReference(fakeCallback),
@@ -562,7 +564,7 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
 
             kosmos.fakeMediaProjectionRepository.mediaProjectionState.value =
                 MediaProjectionState.Projecting.SingleTask(
-                    hostPackage = "FakeBasePackage",
+                    hostPackage = context.packageName,
                     hostDeviceName = null,
                     task = mock(),
                 )
@@ -578,5 +580,25 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
                 assertThat(lastSetReviewedConsentResult)
                     .isEqualTo(ReviewGrantedConsentResult.RECORD_CONTENT_TASK)
             }
+        }
+
+    @Test
+    fun onHostAppDead_closesUi() =
+        kosmos.runTest {
+            val hostUid = 100
+            setupViewModel(
+                config =
+                    mock<MediaProjectionConfig> {
+                        on { initiallySelectedSource } doReturn PROJECTION_SOURCE_APP_CONTENT
+                        on { isSourceEnabled(any()) } doReturn true
+                    }
+            )
+            val sharingState by collectLastValue(kosmos.shareScreenUiInteractor.sharingState)
+
+            // Trigger app death via the fake repository
+            kosmos.activityManagerRepository.fake.setIsAppDead(hostUid, true)
+
+            // Verify the sharing state is updated to [Denied], which signifies closing.
+            assertThat(sharingState).isEqualTo(ShareScreenUiInteractor.SharingState.Denied)
         }
 }

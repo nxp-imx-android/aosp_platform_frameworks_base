@@ -18,6 +18,8 @@ package com.android.systemui.notifications.intelligence.rules.domain.interactor
 
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRulesRepository
+import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 import javax.inject.Inject
 
@@ -27,6 +29,13 @@ class NotificationRulesInteractorImpl
 constructor(private val repository: NotificationRulesRepository) : NotificationRulesInteractor {
     override val rules: List<RuleModel>
         get() = repository.rules
+
+    override suspend fun createDraftRuleFromFreeformText(
+        action: ActionModel,
+        text: String,
+    ): DraftRuleModel {
+        return repository.createDraftRuleFromFreeformText(action, text)
+    }
 
     override fun createRule(newRule: RuleModel) {
         repository.createRule(newRule)

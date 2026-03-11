@@ -19,12 +19,12 @@ package com.android.systemui.statusbar.events.domain.interactor
 import android.view.View
 import androidx.core.animation.Animator
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.events.data.repository.SystemStatusEventAnimationRepository
 import com.android.systemui.statusbar.phone.fragment.StatusBarSystemEventDefaultAnimator
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -34,22 +34,14 @@ import kotlinx.coroutines.flow.stateIn
  * current [animationState], and defines some common animation functions that an handle hiding
  * system chrome in order to make space for the event chips
  */
+@PerDisplaySingleton
 class SystemStatusEventAnimationInteractor
-@AssistedInject
+@Inject
 constructor(
-    @Assisted repo: SystemStatusEventAnimationRepository,
-    @Assisted configurationInteractor: ConfigurationInteractor,
-    @Assisted scope: CoroutineScope,
+    @DisplayAware repo: SystemStatusEventAnimationRepository,
+    @DisplayAware configurationInteractor: ConfigurationInteractor,
+    @DisplayAware scope: CoroutineScope,
 ) {
-
-    @AssistedFactory
-    interface Factory {
-        fun create(
-            repo: SystemStatusEventAnimationRepository,
-            configurationInteractor: ConfigurationInteractor,
-            scope: CoroutineScope,
-        ): SystemStatusEventAnimationInteractor
-    }
 
     private val chipAnimateInTranslationX =
         configurationInteractor

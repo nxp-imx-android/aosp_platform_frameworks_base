@@ -1939,7 +1939,9 @@ public class JobSchedulerService extends com.android.server.SystemService
             // This may throw a SecurityException.
             jobStatus.prepareLocked();
 
-            checkProxiedJobCountsLocked(jobStatus, toCancel, isNewJob);
+            if (!isWithinProxiedJobLimitLocked(jobStatus, toCancel, isNewJob)) {
+                return JobScheduler.RESULT_FAILURE;
+            }
 
             if (toCancel != null) {
                 // On T and below, JobWorkItem count was unlimited but they could not be
@@ -6176,21 +6178,22 @@ public class JobSchedulerService extends com.android.server.SystemService
     }
 
     @GuardedBy("mLock")
-    private void checkProxiedJobCountsLocked(JobStatus jobStatus, JobStatus toCancel,
+    private boolean isWithinProxiedJobLimitLocked(JobStatus jobStatus, JobStatus toCancel,
             boolean isNewJob) {
         if (!Flags.enforceProxiedJobsLimit()) {
-            return;
+            return true;
         }
         final boolean systemProxiedNewJob = isSystemProxiedJob(jobStatus);
         final boolean systemProxiedToCancelJob = !isNewJob && isSystemProxiedJob(toCancel);
         if (systemProxiedNewJob && !systemProxiedToCancelJob) {
             if (isOverProxiedJobCountLimitLocked(jobStatus.getSourceUid(),
                     jobStatus.getSourcePackageName())) {
-                Slog.w(TAG, "Too many proxied sync jobs for " + jobStatus.getSourcePackageName()
-                        + " (uid " + jobStatus.getSourceUid() + ") - REJECTED");
-                throw new IllegalStateException("Too many proxied sync jobs");
+                Slog.wtf(TAG, "Too many proxied sync jobs for " + jobStatus.getSourcePackageName()
+                        + " (uid " + jobStatus.getSourceUid() + ")");
+                return false;
             }
         }
+        return true;
     }
 
     @GuardedBy("mLock")

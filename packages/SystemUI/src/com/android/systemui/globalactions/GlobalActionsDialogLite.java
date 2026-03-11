@@ -1680,6 +1680,31 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             Action action = getItem(position);
             Context context = parent.getContext();
             View view = action.create(context, convertView, parent, LayoutInflater.from(context));
+
+            if (Flags.enableInsetFocusRingsInSuw()
+                    && mResources.getBoolean(
+                            com.android.internal.R.bool.config_enableInsetFocusRingsInSuw)) {
+                boolean inSetupWizard =
+                        mSecureSettings.getIntForUser(
+                                        Settings.Secure.USER_SETUP_COMPLETE,
+                                        /* default= */ 0,
+                                        mUserTracker.getUserId())
+                                != 1;
+                if (inSetupWizard) {
+                    Drawable focusIndicator =
+                            context.getDrawable(
+                                    com.android.systemui.res.R.drawable
+                                            .global_focus_indicator_rounded_rectangle);
+                    view.setOnFocusChangeListener(
+                            (v, hasFocus) -> {
+                                View icon = v.findViewById(com.android.internal.R.id.icon);
+                                if (icon != null) {
+                                    icon.setForeground(hasFocus ? focusIndicator.mutate() : null);
+                                }
+                            });
+                }
+            }
+
             view.setOnClickListener(v -> onClickItem(position));
             if (action instanceof LongPressAction) {
                 view.setOnLongClickListener(v -> onLongClickItem(position));

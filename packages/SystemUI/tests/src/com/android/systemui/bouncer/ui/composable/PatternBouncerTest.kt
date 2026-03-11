@@ -45,6 +45,7 @@ import platform.test.motion.compose.motionTestValueOfNode
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
 import platform.test.motion.golden.DataPointTypes
+import platform.test.motion.golden.dataPointType
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
@@ -122,6 +123,6 @@ class PatternBouncerTest : SysuiTestCase() {
         }
 
     companion object {
-        val floatArray = DataPointTypes.listOf(DataPointTypes.float)
+        val floatArray = DataPointTypes.listOf(Float.dataPointType)
     }
 }

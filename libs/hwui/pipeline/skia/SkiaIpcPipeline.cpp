@@ -447,6 +447,7 @@ void SkiaIpcPipeline::setFrameTimelineInfo(const struct ANativeWindowFrameTimeli
     ftlInfo.skippedFrameStartTimeNanos = info.skippedFrameStartTimeNanos;
     ftlInfo.vsyncResyncedJitterNanos = info.vsyncResyncedJitterNanos;
     ftlInfo.dequeueBufferDurationNanos = info.dequeueBufferDurationNanos;
+    ftlInfo.animationTime = info.animationTime;
     mPendingFrameTimelines.emplace(info.frameNumber, ftlInfo);
 }
 

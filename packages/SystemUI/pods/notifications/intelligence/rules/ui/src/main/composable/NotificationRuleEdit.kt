@@ -100,7 +100,13 @@ fun NotificationRuleEdit(
                 },
             onDismissRequest = onDismissRuleEditScreen,
         )
-        EditableAction(viewModel, onEnterEditField = onEnterEditField)
+        EditableAction(
+            action = viewModel.rule.action,
+            onEnterEditField = onEnterEditField,
+            onActionSaved = { newAction ->
+                viewModel.rule = viewModel.rule.copy(action = newAction)
+            },
+        )
         Text(text = text, style = MaterialTheme.typography.titleLargeEmphasized)
 
         AddButton(

@@ -203,6 +203,34 @@ interface PreferenceMetadata {
     fun intent(context: Context): Intent? = null
 }
 
+/**
+ * If this metadata can be exposed to the user
+ */
+fun PreferenceMetadata.isExposureAllowed() : Boolean = listOf(
+    SensitivityLevel.NO_SENSITIVITY,
+    SensitivityLevel.MUST_PROVIDE_UNDO,
+    SensitivityLevel.REQUIRES_CONFIRMATION,
+    SensitivityLevel.DEEP_LINK_ONLY
+).contains(sensitivityLevel)
+
+/**
+ * If this metadata is allowed to have a get value
+ */
+fun PreferenceMetadata.isGetAllowed() : Boolean = listOf(
+    SensitivityLevel.NO_SENSITIVITY,
+    SensitivityLevel.MUST_PROVIDE_UNDO,
+    SensitivityLevel.REQUIRES_CONFIRMATION,
+    SensitivityLevel.DEEP_LINK_ONLY
+).contains(sensitivityLevel)
+
+/**
+ * If this metadata is allowed to have a set value
+ */
+fun PreferenceMetadata.isSetAllowed() : Boolean = listOf(
+    SensitivityLevel.NO_SENSITIVITY,
+    SensitivityLevel.MUST_PROVIDE_UNDO
+).contains(sensitivityLevel)
+
 /** Metadata of preference group. */
 @AnyThread
 interface PreferenceGroup : PreferenceMetadata {
@@ -278,25 +306,41 @@ fun PreferenceMetadata.setPreconditionsAsString(context: Context): String? {
 
 /** Returns a string describing the warning for writing the preference. */
 fun PreferenceMetadata.setWarningAsString(context: Context): String? {
-    return (this as? ApiPreference<*>)?.set?.warning?.let { warningConfig ->
-        val warningMessage = warningConfig.getWarning(context)
+    val warningInfo = when (this) {
+        is ApiPreference<*> -> {
+            this.set?.warning?.let { warningConfig ->
+                val warningMessage = warningConfig.getWarning(context)
 
-        val preconditionsDescription = when {
-            warningConfig.preconditions != null ->
-                warningConfig.preconditions.getDescription(context)
+                val preconditionsDescription = when {
+                    warningConfig.preconditions != null ->
+                        warningConfig.preconditions.getDescription(context)
 
-            warningConfig.valuePreconditions != null ->
-                warningConfig.valuePreconditions.getDescription(context)
+                    warningConfig.valuePreconditions != null ->
+                        warningConfig.valuePreconditions.getDescription(context)
 
-            else -> null
+                    else -> null
+                }
+
+                WarningInfo(preconditionsDescription, warningMessage)
+            }
         }
 
+        is PreferenceSetWarningProvider -> {
+            this.setWarning
+        }
+
+        else -> {
+            null
+        }
+    }
+
+    return warningInfo?.let { warning ->
         // Compute the set warning as a string message
         val conditionalText =
-            preconditionsDescription?.takeIf { it.isNotBlank() }?.let { description ->
-                " if preconditions are met: $description"
+            warning.preconditionsDescription?.takeIf { it.isNotBlank() }?.let { description ->
+                " (if preconditions are met: $description)"
             } ?: ""
 
-        "Warning before writing: $warningMessage (must be shown$conditionalText)."
+        "[Must show to user]: ${warning.warningMessage}$conditionalText."
     }
 }

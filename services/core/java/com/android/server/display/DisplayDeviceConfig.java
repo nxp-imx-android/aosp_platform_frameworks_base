@@ -744,6 +744,9 @@ public class DisplayDeviceConfig {
     // The details of the doze brightness sensor associated with this display.
     private SensorData mScreenOffBrightnessSensor;
 
+    // The details of the color sensor associated with this display.
+    private SensorData mColorSensor;
+
     // The details of the proximity sensor associated with this display.
     // Is null when no sensor should be used for that display
     @Nullable
@@ -1445,6 +1448,13 @@ public class DisplayDeviceConfig {
         return mAmbientLightSensor;
     }
 
+    /**
+     * @return The details of the color sensor associated with this display.
+     */
+    public SensorData getColorSensor() {
+        return mColorSensor;
+    }
+
     public SensorData getScreenOffBrightnessSensor() {
         return mScreenOffBrightnessSensor;
     }
@@ -1963,6 +1973,7 @@ public class DisplayDeviceConfig {
                 mAmbientLightSensor = SensorData.loadAmbientLightSensorConfig(config,
                         mContext.getResources());
                 mScreenOffBrightnessSensor = SensorData.loadScreenOffBrightnessSensorConfig(config);
+                mColorSensor = SensorData.loadColorSensorConfig(config, mContext.getResources());
                 mProximitySensor = SensorData.loadProxSensorConfig(mFlags, config);
                 mTempSensor = SensorData.loadTempSensorConfig(mFlags, config);
                 mRefreshRateData = RefreshRateData
@@ -1998,6 +2009,7 @@ public class DisplayDeviceConfig {
         loadBrightnessMapFromConfigXml();
         loadBrightnessRampsFromConfigXml();
         mAmbientLightSensor = SensorData.loadAmbientLightSensorConfig(mContext.getResources());
+        mColorSensor = SensorData.loadColorSensorConfig(mContext.getResources());
         mProximitySensor = SensorData.loadSensorUnspecifiedConfig();
         mTempSensor = SensorData.loadTempSensorUnspecifiedConfig();
         mRefreshRateData = RefreshRateData
@@ -2031,6 +2043,7 @@ public class DisplayDeviceConfig {
         mBrightnessRampIncreaseMaxIdleMillis = 0;
         setSimpleMappingStrategyValues();
         mAmbientLightSensor = SensorData.loadAmbientLightSensorConfig(mContext.getResources());
+        mColorSensor = SensorData.loadColorSensorConfig(mContext.getResources());
         mProximitySensor = SensorData.loadSensorUnspecifiedConfig();
         mTempSensor = SensorData.loadTempSensorUnspecifiedConfig();
         loadAutoBrightnessAvailableFromConfigXml();

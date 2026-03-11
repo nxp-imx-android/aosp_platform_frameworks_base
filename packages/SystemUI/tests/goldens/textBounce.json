@@ -29,7 +29,7 @@
   ],
   "features": [
     {
-      "name": "bounceScale_bounceScale",
+      "name": "bounceScale",
       "type": "float",
       "data_points": [
         1,

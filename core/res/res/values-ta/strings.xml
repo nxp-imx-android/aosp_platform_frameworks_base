@@ -554,10 +554,8 @@
     <string name="permdesc_backgroundCamera" msgid="1615291686191138250">"இந்த ஆப்ஸால் எப்போது வேண்டுமானாலும் கேமராவைப் பயன்படுத்தி படங்கள் எடுக்கவும் வீடியோக்களை ரெக்கார்டு செய்யவும் முடியும்."</string>
     <string name="permlab_systemCamera" msgid="3642917457796210580">"படங்களையும் வீடியோக்களையும் எடுப்பதற்கு சிஸ்டம் கேமராக்களை அணுக ஆப்ஸையோ சேவையையோ அனுமதி"</string>
     <string name="permdesc_systemCamera" msgid="5938360914419175986">"இந்த முன்னுரிமை பெற்ற அல்லது சிஸ்டம் ஆப்ஸால் சிஸ்டம் கேமராவைப் பயன்படுத்தி எப்போது வேண்டுமானாலும் படங்களை எடுக்கவோ வீடியோக்களை ரெக்கார்டு செய்யவோ முடியும். android.permission.CAMERA அனுமதியும் ஆப்ஸிற்குத் தேவை"</string>
-    <!-- no translation found for permlab_warmUpCamera (6135692056406854923) -->
-    <skip />
-    <!-- no translation found for permdesc_warmUpCamera (925343364567764736) -->
-    <skip />
+    <string name="permlab_warmUpCamera" msgid="6135692056406854923">"கேமரா துணை சிஸ்டத்திற்கு \'முன்பே துரிதப்படுத்தும் சிக்னலை\' அனுப்ப ஆப்ஸையோ சேவையையோ அனுமதியுங்கள்"</string>
+    <string name="permdesc_warmUpCamera" msgid="925343364567764736">"பிற பலன்களுடன் கேமரா சாதனத்தின் செயல்திறனை மேம்படுத்த உதவும் வகையில் அந்தச் சாதனத்தை முன்பே துரிதப்படுத்த, இந்தச் சிறப்புரிமை பெற்ற/சிஸ்டம் ஆப்ஸால் கேமரா துணை சிஸ்டத்திற்கு சிக்னலை அனுப்ப முடியும்"</string>
     <string name="permlab_cameraOpenCloseListener" msgid="5548732769068109315">"கேமரா சாதனங்கள் திறக்கப்படும்போதோ மூடப்படும்போதோ அது குறித்த கால்பேக்குகளைப் பெற ஒரு ஆப்ஸையோ சேவையையோ அனுமதிக்கவும்."</string>
     <string name="permdesc_cameraOpenCloseListener" msgid="2002636131008772908">"எந்தக் கேமரா சாதனமும் (எந்த ஆப்ஸாலும்) திறக்கப்படும்போதோ மூடப்படும்போதோ இந்த ஆப்ஸால் கால்பேக்குகளைப் பெற முடியும்."</string>
     <string name="permlab_cameraHeadlessSystemUser" msgid="680194666834500050">"காட்சி இடைமுகமற்ற சிஸ்டம் பயனராகக் கேமராவை அணுக ஆப்ஸையோ சேவையையோ அனுமதியுங்கள்."</string>
@@ -2149,7 +2147,7 @@
     <string name="app_suspended_more_details" msgid="211260942831587014">"மேலும் அறிக"</string>
     <string name="app_suspended_unsuspend_message" msgid="1665438589450555459">"ஆப்ஸ் இயக்கு"</string>
     <string name="app_lock_add_screen_lock_button_text" msgid="9209013414563206600">"திரைப் பூட்டைச் சேர்"</string>
-    <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"பின், பேட்டர்ன், கடவுச்சொல் ஆகியவையாக உங்கள் திரைப் பூட்டு இருக்கலாம். உங்கள் சாதனத்தை அன்லாக் செய்யவும் பூட்டப்பட்ட ஆப்ஸை அணுகவும் இதை நீங்கள் பயன்படுத்த முடியும்."</string>
+    <string name="app_lock_add_screen_lock_message" msgid="6107009360675769892">"பின், பேட்டர்ன், கடவுச்சொல் ஆகியவற்றைத் திரைப் பூட்டாகப் பயன்படுத்தலாம். இதன் மூலம் உங்கள் சாதனத்தை அன்லாக் செய்யலாம் பூட்டப்பட்ட ஆப்ஸை அணுகலாம்."</string>
     <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"முதலில் திரைப் பூட்டைச் சேருங்கள்"</string>
     <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"<xliff:g id="APP_NAME">%1$s</xliff:g> பூட்டப்பட்டது"</string>
     <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"<xliff:g id="APP_NAME">%1$s</xliff:g> ஆப்ஸைப் பூட்ட முடியவில்லை"</string>

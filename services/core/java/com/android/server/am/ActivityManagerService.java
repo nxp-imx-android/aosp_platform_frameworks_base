@@ -211,6 +211,7 @@ import static com.android.server.am.psc.Constants.SYSTEM_ADJ;
 import static com.android.server.am.psc.Constants.UNKNOWN_ADJ;
 import static com.android.server.am.psc.Constants.VISIBLE_APP_ADJ;
 import static com.android.server.am.psc.PlatformCompatCache.CACHED_COMPAT_CHANGE_USE_SHORT_FGS_USAGE_INTERACTION_TIME;
+import static com.android.server.feature.flags.Flags.enableWtfExceptionDropboxCarveout;
 import static com.android.server.flags.Flags.disableSystemCompaction;
 import static com.android.server.net.NetworkPolicyManagerInternal.updateBlockedReasonsWithProcState;
 import static com.android.server.pm.PackageManagerService.PLATFORM_PACKAGE_NAME;
@@ -2602,8 +2603,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         mCachedAppOptimizer = new CachedAppOptimizer(this);
         mProcessStateController = new ProcessStateController
-                .Builder(mProcessList, activeUids, oomConstants, new OomAdjusterCallback(),
-                         new OomAdjusterStateGetter())
+                .Builder(mProcessList, activeUids, oomConstants, new OomAdjusterCallback())
                 .setHandlerThread(handlerThread)
                 .setHostingTypeProvider(this)
                 .build();
@@ -2678,8 +2678,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         final Looper activityTaskLooper = DisplayThread.get().getLooper();
         mCachedAppOptimizer = new CachedAppOptimizer(this);
         mProcessStateController = new ProcessStateController
-                .Builder(mProcessList, activeUids, oomConstants, new OomAdjusterCallback(),
-                         new OomAdjusterStateGetter())
+                .Builder(mProcessList, activeUids, oomConstants, new OomAdjusterCallback())
                 .setLockObject(this)
                 .setProcLockObject(this.mProcLock)
                 .setTopProcessChangeCallback(this::updateTopAppListeners)
@@ -2923,21 +2922,28 @@ public class ActivityManagerService extends IActivityManager.Stub
             }
 
             // Check for association on both source and target packages.
-            PackageAssociationInfo pai = mAllowedAssociations.get(pkg1);
-            if (pai != null && !pai.isPackageAssociationAllowed(pkg2)) {
-                return false;
-            }
-            pai = mAllowedAssociations.get(pkg2);
-            if (pai != null && !pai.isPackageAssociationAllowed(pkg1)) {
-                return false;
-            }
+            PackageAssociationInfo associationsOfPkg1 = mAllowedAssociations.get(pkg1);
+            PackageAssociationInfo associationsOfPkg2 = mAllowedAssociations.get(pkg2);
 
             if (isPccFrameworkSupportEnabled && callerOrTargetIsPcc) {
-                // No generalized rules applicable, and no OEM defined associations.
+                // Framework requires explicit allow associations in sysconfig from PCC
+                // with non-PCC packages.
+                if (associationsOfPkg1 == null && associationsOfPkg2 == null) {
+                    return false;
+                }
+            }
+
+            if (associationsOfPkg1 != null
+                    && !associationsOfPkg1.isPackageAssociationAllowed(pkg2)) {
                 return false;
             }
 
-            // If no explicit associations are provided in the manifest at this
+            if (associationsOfPkg2 != null
+                    && !associationsOfPkg2.isPackageAssociationAllowed(pkg1)) {
+                return false;
+            }
+
+            // For non-PCC: If no explicit associations are provided in the manifest at this
             // stage, then the app is allowed associations with any package.
             return true;
         } finally {
@@ -5636,7 +5642,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                     hostingRecord.getCallerUid(),
                     hostingRecord.getCallerProcessName(),
                     hostingRecord.getHostingAuthority(),
-                    hostingRecord.isProviderStable());
+                    hostingRecord.isProviderStable(),
+                    hostingRecord.getHostingZygote());
         }
     }
 
@@ -10449,9 +10456,17 @@ public class ActivityManagerService extends IActivityManager.Stub
             return;
         }
 
+        if (dbox == null) return;
+
         // Exit early if the dropbox isn't configured to accept this report type.
         final String dropboxTag = processClass(process) + "_" + eventType;
-        if (dbox == null || !dbox.isTagEnabled(dropboxTag)) return;
+        if (enableWtfExceptionDropboxCarveout() && crashInfo != null) {
+            // For a subset of errors, we augment the check with the associated exception class
+            // name to allow more granular filtering and control.
+            if (!dbox.isTagEnabled(dropboxTag, crashInfo.exceptionClassName)) return;
+        } else {
+            if (!dbox.isTagEnabled(dropboxTag)) return;
+        }
 
         // Check if we should rate limit and abort early if needed.
         final DropboxRateLimiter.RateLimitResult rateLimitResult =
@@ -10519,12 +10534,23 @@ public class ActivityManagerService extends IActivityManager.Stub
         if (keyguardManager != null) {
             sb.append("Keyguard-Locked: ").append(keyguardManager.isKeyguardLocked()).append("\n");
         }
-        if (crashInfo != null && crashInfo.exceptionHandlerClassName != null
-                && !crashInfo.exceptionHandlerClassName.isEmpty()) {
-            sb.append("Crash-Handler: ").append(crashInfo.exceptionHandlerClassName).append("\n");
-        }
-        if (crashInfo != null && crashInfo.crashTag != null && !crashInfo.crashTag.isEmpty()) {
-            sb.append("Crash-Tag: ").append(crashInfo.crashTag).append("\n");
+        if (crashInfo != null) {
+            if (crashInfo.exceptionHandlerClassName != null
+                    && !crashInfo.exceptionHandlerClassName.isEmpty()) {
+                sb.append("Crash-Handler: ")
+                        .append(crashInfo.exceptionHandlerClassName)
+                        .append("\n");
+            }
+            if (crashInfo.crashTag != null && !crashInfo.crashTag.isEmpty()) {
+                sb.append("Crash-Tag: ").append(crashInfo.crashTag).append("\n");
+            }
+            if (eventType.equals("wtf")
+                    && crashInfo.exceptionClassName != null
+                    && !crashInfo.exceptionClassName.isEmpty()) {
+                // For now, only inject the full exception for wtf-specific signals to simplify any
+                // downstream filtering. See b/481975725.
+                sb.append("Crash-Exception: ").append(crashInfo.exceptionClassName).append("\n");
+            }
         }
         if (loadingProgress != null) {
             sb.append("Loading-Progress: ").append(loadingProgress.floatValue()).append("\n");
@@ -14876,7 +14902,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
             proc.mProfile.addHostingComponentType(HOSTING_COMPONENT_TYPE_BACKUP);
 
-            if (Flags.pushGlobalStateToOomadjuster() && Flags.autoTriggerOomadjUpdates()) {
+            if (Flags.autoTriggerOomadjUpdates()) {
                 // Do nothing, ProcessStateController will handle the update in setBackupTarget.
             } else {
                 // Try not to kill the process during backup
@@ -15012,7 +15038,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 // Not backing this app up any more; reset its OOM adjustment
                 final ProcessRecord proc = backupTarget.app;
 
-                if (Flags.pushGlobalStateToOomadjuster() && Flags.autoTriggerOomadjUpdates()) {
+                if (Flags.autoTriggerOomadjUpdates()) {
                     // Do nothing.
                     // ProcessStateController will handle the update in stopBackupTarget.
                 } else {
@@ -20170,8 +20196,10 @@ public class ActivityManagerService extends IActivityManager.Stub
         @Override
         @GuardedBy({"ActivityManagerService.this", "ActivityManagerService.this.mProcLock"})
         public void onOomAdjustChanged(@OomAdjust int oldAdj, @OomAdjust int newAdj,
-                ProcessRecordInternal app) {
-            mCachedAppOptimizer.onOomAdjustChanged(oldAdj, newAdj, (ProcessRecord) app);
+                ProcessRecordInternal appInternal) {
+            final ProcessRecord app = (ProcessRecord) appInternal;
+            mCachedAppOptimizer.onOomAdjustChanged(oldAdj, newAdj, app);
+            app.setVerifiedAdj(INVALID_ADJ);
         }
 
         @Override
@@ -20574,32 +20602,6 @@ public class ActivityManagerService extends IActivityManager.Stub
         app.setHasReportedInteraction(isInteraction);
         if (!isInteraction) {
             app.setInteractionEventTime(0);
-        }
-    }
-
-    private final class OomAdjusterStateGetter implements OomAdjuster.StateGetter {
-        @Override
-        public boolean isDeviceFullyAwake() {
-            return mWakefulness.get() == PowerManagerInternal.WAKEFULNESS_AWAKE;
-        }
-
-        @Override
-        public boolean isBackupProcess(ProcessRecordInternal app) {
-            final BackupRecord backupTarget = mBackupTargets.get(app.userId);
-            if (backupTarget == null) {
-                return false;
-            }
-            return app == backupTarget.app;
-        }
-
-        @Override
-        public boolean isLastMemoryLevelNormal() {
-            return mAppProfiler.isLastMemoryLevelNormal();
-        }
-
-        @Override
-        public int getFrozenProcessCount() {
-            return mCachedAppOptimizer.getFrozenProcessCount();
         }
     }
 

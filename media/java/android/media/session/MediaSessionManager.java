@@ -441,9 +441,9 @@ public final class MediaSessionManager {
 
     /**
      * Add a listener to be notified when the list of active sessions changes for the {@code
-     * packageName}, as returned by {@link #getActiveSessionsForPackage} (String)}. The
+     * packageName}, as returned by {@link #getActiveSessionsForPackage}. The
      * registered listener can be removed by calling {@link
-     * MediaSessionManager#removeOnActiveSessionsForPackageChangedListener}.
+     * #removeOnActiveSessionsForPackageChangedListener}.
      *
      * <p>
      * If the {@code packageName} is different from the {@link Context#getPackageName()}, it
@@ -483,9 +483,9 @@ public final class MediaSessionManager {
 
     /**
      * Add a listener to be notified when the list of active controllers changes for the {@code
-     * packageName}, as returned by {@link #getActiveSessionsForPackage} (String)}. The
+     * packageName}, as returned by {@link #getActiveSessionsForPackage}. The
      * registered listener can be removed by calling {@link
-     * MediaSessionManager#removeOnActiveSessionsForPackageChangedListener}.
+     * #removeOnActiveSessionsForPackageChangedListener}.
      *
      * <p>
      * If the {@code packageName} is different from the {@link Context#getPackageName()}, it

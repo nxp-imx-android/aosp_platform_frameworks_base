@@ -361,3 +361,23 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "white_balance_controller_ddc_config"
+    namespace: "display_manager"
+    description: "Enable white balance controller per display configuration if corresponding configuration is present"
+    bug: "479641696"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "display_settings_api_screen_support"
+    namespace: "display_manager"
+    description: "Flag for API screen support in display settings"
+    bug: "464987761"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

@@ -55,23 +55,24 @@ import java.util.List;
 public class DragResizeWindowGeometryTests extends ShellTestCase {
     private static final Size TASK_SIZE = new Size(500, 1000);
     private static final int TASK_CORNER_RADIUS = 10;
-    private static final int EDGE_RESIZE_THICKNESS = 12;
+    private static final int EDGE_RESIZE_HANDLE_OUTSET = 12;
     private static final int EDGE_RESIZE_HANDLE_INSET = 4;
+    private static final int EDGE_RESIZE_THICKNESS =
+            EDGE_RESIZE_HANDLE_OUTSET + EDGE_RESIZE_HANDLE_INSET;
     private static final int FINE_CORNER_SIZE = EDGE_RESIZE_THICKNESS * 2 + 10;
     private static final int LARGE_CORNER_SIZE = FINE_CORNER_SIZE + 10;
-    private static final int SMALL_OFFSET = 10;
     private static final DragResizeWindowGeometry GEOMETRY = new DragResizeWindowGeometry(
             TASK_CORNER_RADIUS, TASK_SIZE, EDGE_RESIZE_THICKNESS, EDGE_RESIZE_HANDLE_INSET,
             FINE_CORNER_SIZE, LARGE_CORNER_SIZE, DragResizeWindowGeometry.DisabledEdge.NONE);
     // Points in the edge resize handle. Note that coordinates start from the top left.
     private static final Point TOP_EDGE_POINT = new Point(TASK_SIZE.getWidth() / 2,
-            -EDGE_RESIZE_THICKNESS / 2);
-    private static final Point LEFT_EDGE_POINT = new Point(-EDGE_RESIZE_THICKNESS / 2,
+            -EDGE_RESIZE_HANDLE_OUTSET / 2);
+    private static final Point LEFT_EDGE_POINT = new Point(-EDGE_RESIZE_HANDLE_OUTSET / 2,
             TASK_SIZE.getHeight() / 2);
     private static final Point RIGHT_EDGE_POINT = new Point(
-            TASK_SIZE.getWidth() + EDGE_RESIZE_THICKNESS / 2, TASK_SIZE.getHeight() / 2);
+            TASK_SIZE.getWidth() + EDGE_RESIZE_HANDLE_OUTSET / 2, TASK_SIZE.getHeight() / 2);
     private static final Point BOTTOM_EDGE_POINT = new Point(TASK_SIZE.getWidth() / 2,
-            TASK_SIZE.getHeight() + EDGE_RESIZE_THICKNESS / 2);
+            TASK_SIZE.getHeight() + EDGE_RESIZE_HANDLE_OUTSET / 2);
     // Points in the inset of the task bounds still within the edge resize handle.
     // Note that coordinates start from the top left.
     private static final Point TOP_INSET_POINT = new Point(TASK_SIZE.getWidth() / 2,
@@ -82,6 +83,22 @@ public class DragResizeWindowGeometryTests extends ShellTestCase {
             TASK_SIZE.getWidth() - EDGE_RESIZE_HANDLE_INSET / 2, TASK_SIZE.getHeight() / 2);
     private static final Point BOTTOM_INSET_POINT = new Point(TASK_SIZE.getWidth() / 2,
             TASK_SIZE.getHeight() - EDGE_RESIZE_HANDLE_INSET / 2);
+
+    private static final Point TOP_EDGE_CENTER = centroidOf(TOP_EDGE_POINT, TOP_INSET_POINT);
+    private static final Point LEFT_EDGE_CENTER = centroidOf(LEFT_EDGE_POINT, LEFT_INSET_POINT);
+    private static final Point RIGHT_EDGE_CENTER = centroidOf(RIGHT_EDGE_POINT, RIGHT_INSET_POINT);
+    private static final Point BOTTOM_EDGE_CENTER =
+            centroidOf(BOTTOM_EDGE_POINT, BOTTOM_INSET_POINT);
+
+    private static Point centroidOf(Point... points) {
+        int x = 0;
+        int y = 0;
+        for (Point point : points) {
+            x += point.x;
+            y += point.y;
+        }
+        return new Point(x / points.length, y / points.length);
+    }
 
     /**
      * Check that both groups of objects satisfy equals/hashcode within each group, and that each
@@ -143,10 +160,10 @@ public class DragResizeWindowGeometryTests extends ShellTestCase {
         // Region excludes task area. Note that coordinates start from top left.
         assertThat(region.contains(TASK_SIZE.getWidth() / 2, TASK_SIZE.getHeight() / 2)).isFalse();
         // Region includes edges outside the task window.
-        verifyVerticalEdge(region, LEFT_EDGE_POINT);
-        verifyHorizontalEdge(region, TOP_EDGE_POINT);
-        verifyVerticalEdge(region, RIGHT_EDGE_POINT);
-        verifyHorizontalEdge(region, BOTTOM_EDGE_POINT);
+        verifyVerticalEdge(region, LEFT_EDGE_CENTER);
+        verifyHorizontalEdge(region, TOP_EDGE_CENTER);
+        verifyVerticalEdge(region, RIGHT_EDGE_CENTER);
+        verifyHorizontalEdge(region, BOTTOM_EDGE_CENTER);
     }
 
     private static void verifyHorizontalEdge(@NonNull Region region, @NonNull Point point) {
@@ -155,19 +172,15 @@ public class DragResizeWindowGeometryTests extends ShellTestCase {
         assertThat(region.contains(point.x + EDGE_RESIZE_THICKNESS, point.y)).isTrue();
         assertThat(region.contains(point.x - EDGE_RESIZE_THICKNESS, point.y)).isTrue();
         // Vertically along the edge is not contained.
-        assertThat(
-                region.contains(point.x, point.y - EDGE_RESIZE_THICKNESS - SMALL_OFFSET)).isFalse();
-        assertThat(
-                region.contains(point.x, point.y + EDGE_RESIZE_THICKNESS + SMALL_OFFSET)).isFalse();
+        assertThat(region.contains(point.x, point.y - EDGE_RESIZE_THICKNESS)).isFalse();
+        assertThat(region.contains(point.x, point.y + EDGE_RESIZE_THICKNESS)).isFalse();
     }
 
     private static void verifyVerticalEdge(@NonNull Region region, @NonNull Point point) {
         assertThat(region.contains(point.x, point.y)).isTrue();
         // Horizontally along the edge is not contained.
-        assertThat(
-                region.contains(point.x + EDGE_RESIZE_THICKNESS + SMALL_OFFSET, point.y)).isFalse();
-        assertThat(
-                region.contains(point.x - EDGE_RESIZE_THICKNESS - SMALL_OFFSET, point.y)).isFalse();
+        assertThat(region.contains(point.x + EDGE_RESIZE_THICKNESS, point.y)).isFalse();
+        assertThat(region.contains(point.x - EDGE_RESIZE_THICKNESS, point.y)).isFalse();
         // Vertically along the edge is contained.
         assertThat(region.contains(point.x, point.y - EDGE_RESIZE_THICKNESS)).isTrue();
         assertThat(region.contains(point.x, point.y + EDGE_RESIZE_THICKNESS)).isTrue();

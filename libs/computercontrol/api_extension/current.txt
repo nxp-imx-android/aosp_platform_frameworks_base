@@ -64,6 +64,7 @@ package com.android.extensions.computercontrol {
 
   public static class ComputerControlSession.Params {
     method @Nullable public android.app.AppInteractionAttribution getAppInteractionAttribution();
+    method @Nullable public android.companion.DeviceId getCompanionDeviceId();
     method @NonNull public android.content.Context getContext();
     method @NonNull public String getName();
     method @NonNull public java.util.List<java.lang.String> getTargetPackageNames();
@@ -73,6 +74,7 @@ package com.android.extensions.computercontrol {
     ctor public ComputerControlSession.Params.Builder(@NonNull android.content.Context);
     method @NonNull public com.android.extensions.computercontrol.ComputerControlSession.Params build();
     method @NonNull public com.android.extensions.computercontrol.ComputerControlSession.Params.Builder setAppInteractionAttribution(@Nullable android.app.AppInteractionAttribution);
+    method @NonNull public com.android.extensions.computercontrol.ComputerControlSession.Params.Builder setCompanionDeviceId(@Nullable android.companion.DeviceId);
     method @NonNull public com.android.extensions.computercontrol.ComputerControlSession.Params.Builder setName(@NonNull String);
     method @NonNull public com.android.extensions.computercontrol.ComputerControlSession.Params.Builder setPreviewIntent(@Nullable android.app.PendingIntent);
     method @NonNull public com.android.extensions.computercontrol.ComputerControlSession.Params.Builder setTargetPackageNames(@NonNull java.util.List<java.lang.String>);

@@ -139,6 +139,7 @@ class BiometricSettingsRepositoryTest : SysuiTestCase() {
                 devicePolicyManager = devicePolicyManager,
                 scope = testScope.backgroundScope,
                 backgroundDispatcher = testDispatcher,
+                backgroundLooper = testableLooper!!.looper,
                 biometricManager = biometricManager,
                 devicePostureRepository = devicePostureRepository,
                 dumpManager = dumpManager,

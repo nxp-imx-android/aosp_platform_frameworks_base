@@ -30,10 +30,12 @@ import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
 
+import android.util.Slog;
 import com.android.internal.infra.AndroidFuture;
 import com.android.server.appfunctions.allowlist.AppFunctionAllowlistReader;
 
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 /* Validates that caller has the correct privilege to call an AppFunctionManager Api. */
 class CallerValidatorImpl implements CallerValidator {
@@ -46,10 +48,10 @@ class CallerValidatorImpl implements CallerValidator {
     CallerValidatorImpl(
             @NonNull Context context,
             @NonNull UserManager userManager,
-            @NonNull AppFunctionAllowlistReader allowlistReader) {
+            @Nullable AppFunctionAllowlistReader allowlistReader) {
         mContext = Objects.requireNonNull(context);
         mUserManager = Objects.requireNonNull(userManager);
-        mAllowlistReader = Objects.requireNonNull(allowlistReader);
+        mAllowlistReader = allowlistReader;
     }
 
     @Override
@@ -93,7 +95,7 @@ class CallerValidatorImpl implements CallerValidator {
 
     @Override
     @CanExecuteAppFunctionResult
-    public AndroidFuture<Integer> verifyCallerCanExecuteAppFunction(
+    public CompletableFuture<Integer> verifyCallerCanExecuteAppFunction(
             int callingUid,
             int callingPid,
             @NonNull UserHandle targetUser,
@@ -106,9 +108,13 @@ class CallerValidatorImpl implements CallerValidator {
             return AndroidFuture.completedFuture(CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION);
         }
 
-        if (android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
-            return mAllowlistReader
-                    .isAllowlisted(callerPackageName, targetPackageName, targetUser.getIdentifier())
+        if (Flags.enableAppFunctionPermissionV2()) {
+            return Objects.requireNonNull(mAllowlistReader)
+                    .isAllowlisted(
+                            callerPackageName,
+                            targetPackageName,
+                            callingUid,
+                            targetUser.getIdentifier())
                     .thenCompose(
                             (isAllowlisted) ->
                                     verifyCallerCanExecuteAppFunctionWithAllowlist(

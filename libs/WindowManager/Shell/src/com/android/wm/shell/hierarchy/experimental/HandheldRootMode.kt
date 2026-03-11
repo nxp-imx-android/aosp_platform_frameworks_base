@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.wm.shell.hierarchy.experimental
 
-syntax = "proto2";
+import com.android.wm.shell.hierarchy.modes.Mode
 
-package com.android.wm.shell;
-
-option java_multiple_files = true;
-
-message WmShellTraceProto {
-
-    // Not used, just a test value
-    optional bool test_value = 1;
-}
+/**
+ * The root mode for handling default behavior on handhelds.
+ */
+class HandheldRootMode : Mode

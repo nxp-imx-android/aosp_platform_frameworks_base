@@ -306,34 +306,37 @@ class SnapshotController {
         if (convertToLow) {
             // If the cached snapshot is high-resolution and the client requests a low-resolution
             // version, wait for the persist queue to create it. This avoids an ION memory surge.
-            if (mSnapshotPersistQueue.isConvertingToLowRes(task.mTaskId, task.mUserId)) {
+            try {
+                if (mSnapshotPersistQueue.isConvertingToLowRes(task.mTaskId, task.mUserId)) {
+                    final boolean traceEnabled = Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER);
+                    if (traceEnabled) {
+                        Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER,
+                                "waitSnapshotUpdated_Id=" + taskId);
+                    }
+                    Thread.yield();
+                    mTaskSnapshotController.mCache.waitForLowResSnapshotEntryPutOrRemoved(taskId);
+                    if (traceEnabled) {
+                        Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
+                        Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "waitSnapshotUpdated_reload");
+                    }
+                    final TaskSnapshot knownSnapshot = mTaskSnapshotController.getSnapshot(
+                            taskId, retrieveResolution, TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
+                    if (traceEnabled) {
+                        Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
+                    }
+                    if (knownSnapshot != null) {
+                        return knownSnapshot;
+                    }
+                }
+                // Conversion timed out before completion; creating low-res snapshot immediately.
+                final TaskSnapshot convertLowResSnapshot =
+                        convertToLowResSnapshot(task, true /* updateCache */, inCacheSnapshot);
+                if (convertLowResSnapshot != null) {
+                    convertLowResSnapshot.addReference(TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
+                    return convertLowResSnapshot;
+                }
+            } finally {
                 inCacheSnapshot.removeReference(TaskSnapshot.REFERENCE_CONVERT_RESOLUTION);
-                final boolean traceEnabled = Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER);
-                if (traceEnabled) {
-                    Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER,
-                            "waitSnapshotUpdated_Id=" + taskId);
-                }
-                Thread.yield();
-                mTaskSnapshotController.mCache.waitForLowResSnapshotEntryPutOrRemoved(taskId);
-                if (traceEnabled) {
-                    Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
-                    Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "waitSnapshotUpdated_reload");
-                }
-                final TaskSnapshot knownSnapshot = mTaskSnapshotController.getSnapshot(
-                        taskId, retrieveResolution, TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
-                if (traceEnabled) {
-                    Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
-                }
-                if (knownSnapshot != null) {
-                    return knownSnapshot;
-                }
-            }
-            // Conversion timed out before completion; creating low-res snapshot immediately.
-            final TaskSnapshot convertLowResSnapshot =
-                    convertToLowResSnapshot(task, true /* updateCache */, inCacheSnapshot);
-            if (convertLowResSnapshot != null) {
-                convertLowResSnapshot.addReference(TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
-                return convertLowResSnapshot;
             }
         }
         if (mSnapshotPersistQueue.isDeleting(taskId, task.mUserId)) {

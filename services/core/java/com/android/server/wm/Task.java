@@ -405,9 +405,11 @@ class Task extends TaskFragment {
     String mCallingPackage;
     String mCallingFeatureId;
 
+    // If the activity that started this task has caption insets excluded from its app bounds.
     private boolean mIsCaptionInsetsExcluded;
 
-    private float mCompatAspectRatio;
+    // The aspect ratio of the non-resizeable activity that started this task.
+    private float mCompatAspectRatio = TaskInfo.PROPERTY_VALUE_UNSET;
 
     // Last non-fullscreen bounds the task was launched in or resized to.
     // The information is persisted and used to determine the appropriate root task to launch the
@@ -3155,6 +3157,17 @@ class Task extends TaskFragment {
         return mCompatAspectRatio;
     }
 
+    /**
+     * Updates the aspect ratio of the non-resizeable activity if AppCompatDisplayInsets was
+     * not initialised yet when the activity started this task.
+     * @param aspectRatio
+     */
+    void updateCompatAspectRatioIfNeeded(float aspectRatio) {
+        if (mCompatAspectRatio == TaskInfo.PROPERTY_VALUE_UNSET) {
+            mCompatAspectRatio = aspectRatio;
+        }
+    }
+
     boolean cropWindowsToRootTaskBounds() {
         // Don't crop HOME/RECENTS windows to root task bounds. This is because in split-screen
         // they extend past their root task and sysui uses the root task surface to control
@@ -5083,8 +5096,12 @@ class Task extends TaskFragment {
     }
 
     void resumeNextFocusAfterReparent() {
+        resumeNextFocusAfterReparent(true /* moveDisplayToTop */);
+    }
+
+    void resumeNextFocusAfterReparent(boolean moveDisplayToTop) {
         adjustFocusToNextFocusableTask("reparent", true /* allowFocusSelf */,
-                true /* moveDisplayToTop */);
+                moveDisplayToTop);
         mRootWindowContainer.resumeFocusedTasksTopActivities();
         // Update visibility of activities before notifying WM. This way it won't try to resize
         // windows that are no longer visible.

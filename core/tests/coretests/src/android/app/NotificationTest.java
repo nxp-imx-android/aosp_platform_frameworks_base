@@ -77,6 +77,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import android.annotation.Nullable;
+import android.app.Notification.Metric.FixedInt;
+import android.app.Notification.Metric.TimeDifference;
 import android.compat.testing.PlatformCompatChangeRule;
 import android.content.Context;
 import android.content.Intent;
@@ -114,9 +116,9 @@ import com.android.internal.R;
 import com.android.internal.util.ContrastColorUtil;
 import com.android.internal.widget.NotificationProgressModel;
 
-import junit.framework.Assert;
-
 import libcore.junit.util.compat.CoreCompatChangeRule;
+
+import junit.framework.Assert;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -125,6 +127,8 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -289,7 +293,7 @@ public class NotificationTest {
         Notification n = new Notification.Builder(mContext, "test")
                 .setStyle(new Notification.MetricStyle()
                         .addMetric(new Notification.Metric(
-                                new Notification.Metric.FixedInt(1), "Int")))
+                                new FixedInt(1), "Int")))
                 .build();
         assertThat(n.hasTitle()).isTrue();
     }
@@ -405,7 +409,7 @@ public class NotificationTest {
         Notification n = new Notification.Builder(mContext, "test")
                 .setStyle(new Notification.MetricStyle()
                         .addMetric(new Notification.Metric(
-                                new Notification.Metric.FixedInt(1), "Int")))
+                                new FixedInt(1), "Int")))
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
                 .build();
         assertThat(n.extras.getString(Notification.EXTRA_TEMPLATE))
@@ -705,7 +709,7 @@ public class NotificationTest {
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
                 .setStyle(new Notification.MetricStyle()
                         .addMetric(new Notification.Metric(
-                                new Notification.Metric.FixedInt(1), "Int")))
+                                new FixedInt(1), "Int")))
                 .setOngoing(true)
                 .setRequestPromotedOngoing(true)
                 .build();
@@ -1395,6 +1399,161 @@ public class NotificationTest {
     @Test
     public void testColors_ensureColors_colorized_producesValidPalette_black() {
         validateColorizedPaletteForColor(Color.BLACK);
+    }
+
+    @Test
+    public void testGetHistoryTitle_noStyle() {
+        Notification n = new Notification.Builder(mContext, "test")
+                .setContentTitle("setContentTitle")
+                .build();
+        assertThat(n.getHistoryTitle(mContext)).isEqualTo("setContentTitle");
+    }
+
+    @Test
+    public void testGetHistoryTitle_bigTextStyle() {
+        Notification n = new Notification.Builder(mContext, "test")
+                .setStyle(new Notification.BigTextStyle().setBigContentTitle("setBigContentTitle"))
+                .build();
+        assertThat(n.getHistoryTitle(mContext)).isEqualTo("setBigContentTitle");
+    }
+
+    @Test
+    public void testGetHistoryTitle_noTitle() {
+        Notification n = new Notification.Builder(mContext, "test")
+                .build();
+        assertThat(n.getHistoryTitle(mContext))
+                .isEqualTo(mContext.getString(R.string.notification_history_title_placeholder));
+    }
+
+    @Test
+    public void testGetHistoryText_noStyle() {
+        Notification n = new Notification.Builder(mContext, "test")
+                .setContentText("setContentText")
+                .build();
+        assertThat(n.getHistoryText(mContext)).isEqualTo("setContentText");
+    }
+
+    @Test
+    public void testGetHistoryText_bigTextStyle() {
+        Notification n = new Notification.Builder(mContext, "test")
+                .setContentText("setContentText")
+                .setStyle(new Notification.BigTextStyle().bigText("bigText"))
+                .build();
+        assertThat(n.getHistoryText(mContext)).isEqualTo("bigText");
+    }
+
+    @Test
+    public void testGetHistoryText_messagingStyle() {
+        Notification n = new Notification.Builder(mContext, "test")
+                .setContentText("setContentText")
+                .setStyle(new Notification.MessagingStyle("user")
+                        .addMessage("message1", 0, "sender")
+                        .addMessage("message2", 0, "sender"))
+                .build();
+        assertThat(n.getHistoryText(mContext)).isEqualTo("message2");
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_API_METRIC_STYLE)
+    public void testGetHistoryText_metricStyle_fixedInt() {
+        Notification n = new Notification.Builder(mContext, "test")
+                .setContentText("setContentText")
+                .setStyle(new Notification.MetricStyle()
+                        .addMetric(new Notification.Metric(
+                                new FixedInt(1, "count"), "Int")))
+                .build();
+        assertThat(n.getHistoryText(mContext)).isEqualTo("Int (count): 1");
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_API_METRIC_STYLE)
+    public void testGetHistoryText_metricStyle_timeDifference_runningStopwatch() {
+        Notification n = new Notification.Builder(mContext, "test")
+                .setContentText("setContentText")
+                .setStyle(new Notification.MetricStyle()
+                        .addMetric(new Notification.Metric(
+                                TimeDifference.forStopwatch(
+                                        Instant.now(),
+                                        TimeDifference.FORMAT_CHRONOMETER),
+                                "Time")))
+                .build();
+        assertThat(n.getHistoryText(mContext))
+                .isEqualTo("Time: "
+                        + mContext.getString(R.string.notification_metric_running_stopwatch));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_API_METRIC_STYLE)
+    public void testGetHistoryText_metricStyle_timeDifference_runningTimer() {
+        Notification n = new Notification.Builder(mContext, "test")
+                .setContentText("setContentText")
+                .setStyle(new Notification.MetricStyle()
+                        .addMetric(new Notification.Metric(
+                                TimeDifference.forTimer(
+                                        Instant.ofEpochSecond(30),
+                                        TimeDifference.FORMAT_CHRONOMETER),
+                                "Time")))
+                .build();
+        assertThat(n.getHistoryText(mContext))
+                .isEqualTo("Time: "
+                        + mContext.getString(R.string.notification_metric_running_timer));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_API_METRIC_STYLE)
+    public void testGetHistoryText_metricStyle_timeDifference_pausedStopwatch() {
+        Notification n = new Notification.Builder(mContext, "test")
+                .setContentText("setContentText")
+                .setStyle(new Notification.MetricStyle()
+                        .addMetric(
+                                new Notification.Metric(
+                                TimeDifference.forPausedStopwatch(Duration.ofSeconds(30),
+                                        TimeDifference.FORMAT_CHRONOMETER), "Time")))
+                .build();
+        assertThat(n.getHistoryText(mContext)).isEqualTo("Time: 00:30");
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_API_METRIC_STYLE)
+    public void testGetHistoryText_metricStyle_timeDifference_pausedTimer() {
+        Notification n = new Notification.Builder(mContext, "test")
+                .setContentText("setContentText")
+                .setStyle(new Notification.MetricStyle()
+                        .addMetric(
+                                new Notification.Metric(
+                                        TimeDifference.forPausedTimer(Duration.ofSeconds(30),
+                                                TimeDifference.FORMAT_CHRONOMETER), "Time")))
+                        .build();
+        assertThat(n.getHistoryText(mContext)).isEqualTo("Time: 00:30");
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_API_METRIC_STYLE)
+    public void testGetHistoryText_metricStyle_multipleMetrics() {
+        Notification n = new Notification.Builder(mContext, "test")
+                .setContentText("setContentText")
+                .setStyle(new Notification.MetricStyle()
+                        .addMetric(
+                                new Notification.Metric(
+                                        TimeDifference.forPausedTimer(Duration.ofSeconds(30),
+                                                TimeDifference.FORMAT_CHRONOMETER), "Time"))
+                        .addMetric(new Notification.Metric(
+                                new FixedInt(1, "count"), "Int")))
+                        .build();
+        assertThat(n.getHistoryText(mContext)).isEqualTo("Time: 00:30 "
+                + mContext.getString(R.string.notification_header_divider_symbol)
+                + " Int (count): 1");
+    }
+    @Test
+    public void testGetHistoryText_inboxStyle() {
+        // InboxStyle doesn't override getHistoryText, so it should fall back to EXTRA_TEXT
+        Notification n = new Notification.Builder(mContext, "test")
+                .setContentText("setContentText")
+                .setStyle(new Notification.InboxStyle()
+                        .addLine("line1")
+                        .addLine("line2"))
+                .build();
+        assertThat(n.getHistoryText(mContext)).isEqualTo("setContentText");
     }
 
     @Test

@@ -659,7 +659,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         if (mDisplayId == Display.DEFAULT_DISPLAY) {
             try {
                 displayWhiteBalanceController = mInjector.getDisplayWhiteBalanceController(
-                        mHandler, mSensorManager, resources);
+                        mHandler, mSensorManager, resources, mDisplayDeviceConfig);
                 displayWhiteBalanceSettings = new DisplayWhiteBalanceSettings(mContext, mHandler);
                 displayWhiteBalanceSettings.setCallbacks(this);
                 displayWhiteBalanceController.setCallbacks(this);
@@ -1010,6 +1010,9 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
 
         mDisplayBrightnessController.onDisplayChanged(mDisplayDeviceConfig);
         mBrightnessRangeController.loadFromConfig(hbmMetadata, token, info, mDisplayDeviceConfig);
+        if (mDisplayWhiteBalanceController != null) {
+            mDisplayWhiteBalanceController.onDisplayChanged(mDisplayDeviceConfig);
+        }
     }
 
     private void sendUpdatePowerState() {
@@ -3415,9 +3418,10 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         }
 
         DisplayWhiteBalanceController getDisplayWhiteBalanceController(Handler handler,
-                SensorManager sensorManager, Resources resources) {
+                SensorManager sensorManager, Resources resources,
+                DisplayDeviceConfig displayDeviceConfig) {
             return DisplayWhiteBalanceFactory.create(handler,
-                    sensorManager, resources);
+                    sensorManager, resources, displayDeviceConfig);
         }
 
         boolean isColorFadeEnabled(Context context) {

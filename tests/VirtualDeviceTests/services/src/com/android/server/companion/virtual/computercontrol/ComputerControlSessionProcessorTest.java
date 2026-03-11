@@ -27,7 +27,6 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -43,6 +42,8 @@ import android.app.IApplicationThread;
 import android.app.KeyguardManager;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManagerInternal;
+import android.companion.DeviceId;
+import android.companion.virtual.CompanionDeviceId;
 import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
 import android.companion.virtual.audio.AudioCapture;
 import android.companion.virtual.audio.AudioInjection;
@@ -116,12 +117,18 @@ public class ComputerControlSessionProcessorTest {
     private static final AppInteractionAttribution APP_INTERACTION_ATTRIBUTION =
             new AppInteractionAttribution.Builder(
                     AppInteractionAttribution.INTERACTION_TYPE_USER_QUERY).build();
+    private static final DeviceId COMP_DEVICE_ID = new DeviceId.Builder()
+            .setCustomId("test")
+            .build();
+    private static final CompanionDeviceId COMPANION_DEVICE_ID =
+            new CompanionDeviceId(COMP_DEVICE_ID);
     private static final ComputerControlSessionParams PARAMS =
             new ComputerControlSessionParams.Builder()
                     .setName(ComputerControlSessionImplTest.class.getSimpleName())
                     .setTargetPackageNames(List.of(TARGET_PACKAGE))
                     .setTargetComputerControlVersion(MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17)
                     .setAppInteractionAttribution(APP_INTERACTION_ATTRIBUTION)
+                    .setCompanionDeviceId(COMPANION_DEVICE_ID)
                     .build();
 
     @Rule
@@ -242,12 +249,12 @@ public class ComputerControlSessionProcessorTest {
 
         when(mComputerControlSessionCallback.asBinder()).thenReturn(new Binder());
 
-        when(mAllowlistController.isPackageAllowedToCreateSession(anyString(), any()))
-                .thenReturn(true);
+        when(mAllowlistController.isPackageAllowedToCreateSession(anyString(), any(), any(),
+                anyInt())).thenReturn(true);
         when(mAllowlistController.isPackageAutomatable(
                 eq(TARGET_PACKAGE), eq(OWNER_PACKAGE_NAME), any())).thenReturn(true);
 
-        when(mAuthenticationPolicyService.isAgentAuthorized(any(), anyInt(), isNull()))
+        when(mAuthenticationPolicyService.isAgentAuthorized(any(), anyInt(), any()))
                 .thenReturn(true);
 
         mProcessor = new ComputerControlSessionProcessor(
@@ -271,7 +278,7 @@ public class ComputerControlSessionProcessorTest {
     @EnableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
     public void defaultDevice_keyguardLocked_sessionNotCreated() throws Exception {
         when(mAuthenticationPolicyService.isAgentAuthorized(
-                any(), eq(Context.DEVICE_ID_DEFAULT), isNull())).thenReturn(false);
+                any(), eq(Context.DEVICE_ID_DEFAULT), eq(COMP_DEVICE_ID))).thenReturn(false);
 
         mProcessor.processNewSessionRequest(
                 mAppThread, ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
@@ -299,7 +306,7 @@ public class ComputerControlSessionProcessorTest {
         when(mVirtualDeviceManagerInternal.getDeviceIdsForUid(ATTRIBUTION_SOURCE.getUid()))
                 .thenReturn(new ArraySet<>(Set.of(Context.DEVICE_ID_DEFAULT)));
         when(mAuthenticationPolicyService.isAgentAuthorized(
-                any(), eq(Context.DEVICE_ID_DEFAULT), isNull())).thenReturn(false);
+                any(), eq(Context.DEVICE_ID_DEFAULT), eq(COMP_DEVICE_ID))).thenReturn(false);
 
         mProcessor.processNewSessionRequest(
                 mAppThread, ATTRIBUTION_SOURCE.withDeviceId(NON_DEFAULT_DEVICE_ID), PARAMS,
@@ -332,7 +339,7 @@ public class ComputerControlSessionProcessorTest {
                 .thenReturn(
                         new ArraySet<>(Set.of(Context.DEVICE_ID_DEFAULT, NON_DEFAULT_DEVICE_ID)));
         when(mAuthenticationPolicyService.isAgentAuthorized(
-                any(), eq(NON_DEFAULT_DEVICE_ID), isNull())).thenReturn(true);
+                any(), eq(NON_DEFAULT_DEVICE_ID), eq(COMP_DEVICE_ID))).thenReturn(true);
 
         mProcessor.processNewSessionRequest(
                 mAppThread, ATTRIBUTION_SOURCE.withDeviceId(NON_DEFAULT_DEVICE_ID), PARAMS,
@@ -340,6 +347,21 @@ public class ComputerControlSessionProcessorTest {
 
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS).times(1))
                 .onSessionCreated(anyInt(), any());
+    }
+
+    @Test
+    @EnableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
+    public void sessionCreation_passesCompanionDeviceIdToPolicy() throws Exception {
+        when(mVirtualDeviceManagerInternal.getDeviceIdsForUid(ATTRIBUTION_SOURCE.getUid()))
+                .thenReturn(
+                        new ArraySet<>(Set.of(Context.DEVICE_ID_DEFAULT, NON_DEFAULT_DEVICE_ID)));
+
+        mProcessor.processNewSessionRequest(
+                mAppThread, ATTRIBUTION_SOURCE.withDeviceId(NON_DEFAULT_DEVICE_ID), PARAMS,
+                mComputerControlSessionCallback);
+
+        verify(mAuthenticationPolicyService, timeout(CALLBACK_TIMEOUT_MS)).isAgentAuthorized(
+                any(), eq(NON_DEFAULT_DEVICE_ID), eq(COMP_DEVICE_ID));
     }
 
     @Test
@@ -383,8 +405,8 @@ public class ComputerControlSessionProcessorTest {
 
     @Test
     public void callerNotAllowListed_throwsException() throws Exception {
-        when(mAllowlistController.isPackageAllowedToCreateSession(anyString(), any()))
-                .thenReturn(false);
+        when(mAllowlistController.isPackageAllowedToCreateSession(anyString(), any(), any(),
+                anyInt())).thenReturn(false);
 
         assertThrows(SecurityException.class,
                 () -> mProcessor.processNewSessionRequest(

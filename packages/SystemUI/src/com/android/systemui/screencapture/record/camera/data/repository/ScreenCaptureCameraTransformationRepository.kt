@@ -29,6 +29,6 @@ class ScreenCaptureCameraTransformationRepository @Inject constructor() {
     var isTransforming by mutableStateOf(false)
     var offsetX by mutableFloatStateOf(0f)
     var offsetY by mutableFloatStateOf(0f)
-    var scale by mutableFloatStateOf(1f)
+    var scale by mutableFloatStateOf(0.5f)
     var rotation by mutableFloatStateOf(0f)
 }

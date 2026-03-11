@@ -503,14 +503,14 @@ class CompanionDeviceShellCommand extends ShellCommand {
                 case "disable-context-sync": {
                     associationId = getNextIntArgRequired();
                     int flag = getNextIntArgRequired();
-                    mAssociationRequestsProcessor.disableSystemDataSync(associationId, flag);
+                    mDataSyncProcessor.disableSystemDataSync(associationId, flag);
                     break;
                 }
 
                 case "enable-context-sync": {
                     associationId = getNextIntArgRequired();
                     int flag = getNextIntArgRequired();
-                    mAssociationRequestsProcessor.enableSystemDataSync(associationId, flag);
+                    mDataSyncProcessor.enableSystemDataSync(associationId, flag);
                     break;
                 }
 

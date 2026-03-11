@@ -70,8 +70,8 @@ import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
 import platform.test.motion.compose.values.MotionTestValueKey
 import platform.test.motion.compose.values.motionTestValues
-import platform.test.motion.golden.DataPointTypes
 import platform.test.motion.golden.asDataPoint
+import platform.test.motion.golden.dataPointType
 import platform.test.motion.golden.feature
 import platform.test.motion.testing.createGoldenPathManager
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
@@ -308,8 +308,6 @@ class SwipeAnimationMotionTest(flags: FlagsParameterization) {
         }
     }
 
-    val floatArrayType = DataPointTypes.listOf(DataPointTypes.float)
-
     private fun recordSceneTransition(
         initialScene: SceneKey,
         recordScrollState: Boolean = true,
@@ -373,7 +371,7 @@ class SwipeAnimationMotionTest(flags: FlagsParameterization) {
 
                     feature(
                         overscrollDistanceKey,
-                        DataPointTypes.float,
+                        Float.dataPointType,
                         matcher =
                             hasMotionTestValue(overscrollDistanceKey) and
                                 SemanticsMatcher.inContent(SceneB),
@@ -383,7 +381,7 @@ class SwipeAnimationMotionTest(flags: FlagsParameterization) {
 
                         feature(
                             scrollValueKey,
-                            DataPointTypes.int,
+                            Int.dataPointType,
                             matcher =
                                 hasMotionTestValue(scrollValueKey) and
                                     (SemanticsMatcher.inContent(SceneC) or

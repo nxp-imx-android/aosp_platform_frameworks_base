@@ -29,13 +29,11 @@ import com.android.compose.animation.scene.TransitionKey
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.content.state.TransitionState
-import com.android.systemui.Flags
 import com.android.systemui.authentication.domain.interactor.AuthenticationInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor
 import com.android.systemui.deviceentry.domain.interactor.RestrictedModeInteractor
-import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.scenetransition.LockscreenSceneTransitionInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
@@ -54,7 +52,6 @@ import com.android.systemui.util.kotlin.pairwise
 import com.android.systemui.util.println
 import dagger.Lazy
 import java.io.PrintWriter
-import java.io.StringWriter
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -94,7 +91,6 @@ constructor(
     private val shadeModeInteractor: ShadeModeInteractor,
     private val authenticationInteractor: Lazy<AuthenticationInteractor>,
     private val lockscreenSceneTransitionInteractor: Lazy<LockscreenSceneTransitionInteractor>,
-    private val dumpManager: DumpManager,
 ) {
 
     /**
@@ -125,6 +121,10 @@ constructor(
      * Note that during a transition between overlays, a different set of overlays may be rendered -
      * but only the ones in this set are considered the current overlays.
      */
+    @Deprecated(
+        "Prefer the more performant non-Flow version.",
+        ReplaceWith("transitionState.currentOverlays"),
+    )
     val currentOverlays: StateFlow<Set<OverlayKey>> = repository.currentOverlays
 
     @Deprecated("Prefer the more performant non-Flow version.", ReplaceWith("transitionState"))
@@ -338,7 +338,7 @@ constructor(
         }
 
         if (hideAllOverlays) {
-            currentOverlays.value.forEach {
+            transitionState.currentOverlays.forEach {
                 hideOverlay(it, "Hiding overlay ${it.debugName} due to scene change request")
             }
         }
@@ -530,7 +530,7 @@ constructor(
 
         logger.logOverlayChangeRequested(to = overlay, reason = loggingReason)
 
-        repository.instantlyTransitionTo(overlays = currentOverlays.value + overlay)
+        repository.instantlyTransitionTo(overlays = transitionState.currentOverlays + overlay)
     }
 
     /**
@@ -546,7 +546,7 @@ constructor(
 
         logger.logOverlayChangeRequested(from = overlay, reason = loggingReason)
 
-        repository.instantlyTransitionTo(overlays = currentOverlays.value - overlay)
+        repository.instantlyTransitionTo(overlays = transitionState.currentOverlays - overlay)
     }
 
     /**
@@ -620,25 +620,6 @@ constructor(
             }
 
             Event.UserInputEnd -> {
-                // TODO(b/467878509) Delete this temporary code and the flag
-                if (Flags.logStateOnShadeGestureFailure()) {
-                    // indicates that b/467878509 has probably just triggered
-                    if (!repository.isSceneContainerUserInputOngoing) {
-                        dumpManager.getDumpables().forEach { entry ->
-                            val stringWriter = StringWriter()
-                            val printWriter = PrintWriter(stringWriter)
-                            if (
-                                entry.name.contains("AmbientState") ||
-                                    entry.name.contains("Notification") ||
-                                    entry.name.contains("Keyguard") ||
-                                    entry.name.contains("Shade")
-                            ) {
-                                entry.dumpable.dump(printWriter, emptyArray())
-                            }
-                            logger.logDumpable(entry.name, stringWriter.toString())
-                        }
-                    }
-                }
                 repository.isRemoteUserInputOngoing = false
                 repository.isSceneContainerUserInputOngoing = false
             }
@@ -893,7 +874,7 @@ constructor(
     ): Boolean {
         check(from != null || to != null) {
             "No overlay key provided for requested change." +
-                " Current transition state is ${transitionStateFlow.value}." +
+                " Current transition state is $transitionState." +
                 " Logging reason for overlay change was: $loggingReason"
         }
 
@@ -935,7 +916,7 @@ constructor(
                 false
             }
 
-            from != null && from !in currentOverlays.value -> {
+            from != null && from !in transitionState.currentOverlays -> {
                 logger.logContentChangeRejection(
                     from = from,
                     to = to,
@@ -945,7 +926,7 @@ constructor(
                 false
             }
 
-            to != null && to in currentOverlays.value -> {
+            to != null && to in transitionState.currentOverlays -> {
                 logger.logContentChangeRejection(
                     from = from,
                     to = to,
@@ -1031,7 +1012,7 @@ constructor(
             }
 
             launch {
-                currentOverlays
+                snapshotFlow { transitionState.currentOverlays }
                     .map { overlayKeys -> DiffableOverlayKeys(keys = overlayKeys) }
                     .pairwise()
                     .collect { (prev, current) ->

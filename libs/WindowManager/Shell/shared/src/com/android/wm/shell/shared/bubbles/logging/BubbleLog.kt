@@ -48,10 +48,16 @@ object BubbleLog {
      * loggers, including any added through this method.
      *
      * @param debugLogger The [DebugLogger] instance to add.
+     * @return true if the logger was added successfully, false otherwise.
      */
     @JvmStatic
-    fun addLogger(debugLogger: DebugLogger) {
+    fun addLogger(debugLogger: DebugLogger): Boolean {
+        if (loggers.any { it.javaClass == debugLogger.javaClass }) {
+            Log.w(TAG, "Logger of type  ${debugLogger.javaClass}  already registered.")
+            return false
+        }
         loggers.add(debugLogger)
+        return true
     }
 
     /** Logs a DEBUG level message for all registered [DebugLogger]s. */

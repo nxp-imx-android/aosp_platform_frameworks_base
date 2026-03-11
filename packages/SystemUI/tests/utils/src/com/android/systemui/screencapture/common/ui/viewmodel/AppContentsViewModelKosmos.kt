@@ -18,10 +18,9 @@ package com.android.systemui.screencapture.common.ui.viewmodel
 
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.screencapture.common.domain.interactor.screenCaptureAppContentInteractor
-import com.android.systemui.screencapture.common.domain.interactor.screenCaptureRecentTaskInteractor
 
 var Kosmos.appContentsViewModel: AppContentsViewModel by
-    Kosmos.Fixture { appContentsViewModelFactory.create(200, 100, 50) }
+    Kosmos.Fixture { appContentsViewModelFactory.create("fake.host.package", 200, 100, 50) }
 
 val Kosmos.fakeAppContentsViewModel by
     Kosmos.Fixture { FakeAppContentsViewModel(appContentViewModelFactory, drawableLoaderViewModel) }
@@ -30,16 +29,17 @@ var Kosmos.appContentsViewModelFactory: AppContentsViewModel.Factory by
     Kosmos.Fixture {
         object : AppContentsViewModel.Factory {
             override fun create(
+                hostPackageName: String,
                 thumbnailWidthPx: Int,
                 thumbnailHeightPx: Int,
                 iconSizePx: Int,
             ): AppContentsViewModel =
                 AppContentsViewModelImpl(
                     appContentInteractor = screenCaptureAppContentInteractor,
-                    recentTaskInteractor = screenCaptureRecentTaskInteractor,
                     appContentViewModelFactory = appContentViewModelFactory,
                     drawableLoaderViewModel = drawableLoaderViewModel,
                     audioSwitchViewModel = AudioSwitchViewModelImpl(),
+                    hostPackageName = hostPackageName,
                     thumbnailWidthPx = thumbnailWidthPx,
                     thumbnailHeightPx = thumbnailHeightPx,
                     iconSizePx = iconSizePx,
@@ -51,6 +51,7 @@ val Kosmos.fakeAppContentsViewModelFactory: AppContentsViewModel.Factory by
     Kosmos.Fixture {
         object : AppContentsViewModel.Factory {
             override fun create(
+                hostPackageName: String,
                 thumbnailWidthPx: Int,
                 thumbnailHeightPx: Int,
                 iconSizePx: Int,

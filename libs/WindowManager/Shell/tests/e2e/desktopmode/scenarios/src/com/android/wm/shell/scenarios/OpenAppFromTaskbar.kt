@@ -17,6 +17,7 @@
 package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
+import android.platform.test.annotations.WithDesktopTest
 import android.tools.Rotation
 import android.tools.device.apphelpers.BrowserAppHelper
 import android.tools.traces.parsers.WindowManagerStateHelper
@@ -30,6 +31,7 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 
+@WithDesktopTest
 @Ignore("Test Base Class")
 abstract class OpenAppFromTaskbar(val rotation: Rotation = Rotation.ROTATION_0) :
     TestScenarioBase(rotation) {

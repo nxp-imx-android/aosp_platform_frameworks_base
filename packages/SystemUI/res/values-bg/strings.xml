@@ -987,13 +987,8 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Готово"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Прилагане"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Изключване"</string>
-    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"устройство"</string>
-    <string name="bridged_device_type_phone" msgid="7971199513068521770">"телефона"</string>
-    <string name="bridged_device_type_tablet" msgid="7403330807933649592">"таблета"</string>
-    <string name="bridged_device_type_laptop" msgid="8027976360936787349">"лаптопа"</string>
-    <string name="bridged_device_type_watch" msgid="2634106046119813073">"часовника"</string>
-    <string name="bridged_device_type_tv" msgid="5471822369478942796">"телевизора"</string>
-    <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"Отворете настройките на <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
+    <string name="bridged_source_device" msgid="2233591993331607836">"изходно устройство"</string>
+    <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"Отваряне на настройките на <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"Тих режим"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Стандартно"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Автоматично"</string>
@@ -1229,10 +1224,8 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"Отваряне на настройките за <xliff:g id="ID_1">%s</xliff:g>."</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"Редактиране на подредбата на бързите настройки."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Меню за включване/изключване"</string>
-    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
-    <skip />
-    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
-    <skip />
+    <string name="accessibility_quick_settings_power_menu_expanded" msgid="4665161431290201722">"Разгънато"</string>
+    <string name="accessibility_quick_settings_power_menu_collapsed" msgid="5800930916550853776">"Свито"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Страница <xliff:g id="ID_1">%1$d</xliff:g> от <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Да се включи ли <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612"><annotation id="action_key_icon">"Иконата"</annotation>" за <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> е клавишната комбинация за използване на <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1495,8 +1488,10 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Налични устройства за аудиоизход."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Сила на звука"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <string name="media_output_dialog_missing_permissions_warning" msgid="1279351363821022727">"Някои устройства не са видими. Актуализирайте разрешенията за приложението"</string>
-    <string name="media_output_dialog_warning_button_fix" msgid="3324600211761037516">"Коригиране"</string>
+    <!-- no translation found for media_output_dialog_missing_permissions_warning (4312830846174995199) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_warning_button_fix (3650735180540135181) -->
+    <skip />
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Свързани високоговорители"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Високоговорители и екрани"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Предложени"</string>

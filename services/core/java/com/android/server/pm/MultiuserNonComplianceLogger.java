@@ -32,6 +32,8 @@ import android.util.ArraySet;
 import android.util.IndentingPrintWriter;
 import android.util.SparseIntArray;
 
+import com.android.internal.annotations.VisibleForTesting;
+
 import java.util.Map;
 
 /**
@@ -42,6 +44,24 @@ import java.util.Map;
 final class MultiuserNonComplianceLogger {
 
     private static final String PROP_ENABLE_IT = "fw.user.log_non_compliance";
+
+    /**
+     * When this property is set to {@code true}, the title of the notifications shown in the HSU
+     * (Headless System User) will be logged.
+     *
+     * <p>This is fine because it's unlikely that the title will contain PII:
+     *   <ul>
+     *     <li>If the target user is USER_SYSTEM, it wouldn't have PII because the HSU is not
+     *         associated with a “human” user (for example, it cannot have accounts or apps manually
+     *         installed from the app store).
+     *     <li>If it's USER_ALL, the same title would be shown to all users – hence, if a
+     *         system app / service is adding PII about a particular user in the title of a
+     *         notification sent to USER_ALL, it’s leaking that PII to the other users.
+     *   </ul>
+     */
+    @VisibleForTesting
+    static final String PROP_SHOW_HSU_NOTIFICATION_TITLE = "fw.user.log_hsu_notification_title";
+
     private static final int PROP_ENABLED = 1;
     private static final int PROP_DEFAULT = -1;
 
@@ -79,14 +99,39 @@ final class MultiuserNonComplianceLogger {
             int id,
             @CanBeALL @UserIdInt int targetUserId,
             int visibility,
+            @Nullable CharSequence title,
+            boolean redacted,
             @Nullable String category,
             @Nullable String channel) {
+
+        HsuNotification {
+            if (title == null) {
+                redacted = false;
+            } else {
+                // TODO(b/414326600): current notifications are only logged for the HSU, but if /
+                // once the mechanism becomes more generic, it should check that the actual user is
+                // the HSU (notice that's different than the target user, which could be USER_ALL).
+                redacted = !SystemProperties.getBoolean(PROP_SHOW_HSU_NOTIFICATION_TITLE, false);
+                if (redacted) {
+                    title = title.length() + "_chars";
+                }
+            }
+        }
 
         void dump(IndentingPrintWriter pw) {
             pw.print("[pkg="); pw.print(pkg);
             pw.print(", tag="); pw.print(tag);
             pw.print(", id="); pw.print(id);
-            pw.print(", user="); pw.print(targetUserId);
+            pw.print(", targetUserId="); pw.print(targetUserId);
+            pw.print(", title=");
+            if (title == null) {
+                pw.print("null");
+            } else if (redacted) {
+                // Don't need to wrap with "" (i.e. "title") as it will be X_chars
+                pw.printf("%s (redacted)", title);
+            } else {
+                pw.printf("\"%s\"", title);
+            }
             pw.print(", vis="); pw.print(Notification.visibilityToString(visibility));
             pw.print(", category="); pw.print(category);
             pw.print(", channel="); pw.print(channel);
@@ -154,9 +199,13 @@ final class MultiuserNonComplianceLogger {
             return;
         }
         Notification notification = sbn.getNotification();
+        CharSequence title = notification.extras.getCharSequence(Notification.EXTRA_TITLE);
+        // NOTE: title could have PII, so it must be redacted, but that's done in the
+        // HsuNotification constructor.
         HsuNotification notif = new HsuNotification(
                 sbn.getPackageName(), sbn.getTag(), sbn.getId(), sbn.getUser().getIdentifier(),
-                notification.visibility, notification.category, notification.getChannelId());
+                notification.visibility, title, /* redacted= */ true, notification.category,
+                notification.getChannelId());
         mHandler.post(() -> {
             Integer currentCount = mShownHsuNotifications.get(notif);
             if (currentCount == null) {

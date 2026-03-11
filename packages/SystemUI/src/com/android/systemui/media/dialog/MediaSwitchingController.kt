@@ -770,28 +770,44 @@ constructor(
         mOutputMediaItemListProxy.clear()
     }
 
-    fun addDeviceToPlayMedia(device: MediaDevice): Boolean {
+    fun addDeviceToPlayMedia(device: MediaDevice) {
         mMetricLogger.logInteractionExpansion(device)
         val routingChangeInfo =
             RoutingChangeInfo(
                 RoutingChangeInfo.ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER,
                 device.isSuggestedDevice,
             )
-        return mLocalMediaManager.addDeviceToPlayMedia(device, routingChangeInfo)
+        if (Flags.moveOutputSwitcherCallsToBackgroundThread()) {
+            mBackgroundExecutor.execute {
+                mLocalMediaManager.addDeviceToPlayMedia(device, routingChangeInfo)
+            }
+        } else {
+            mLocalMediaManager.addDeviceToPlayMedia(device, routingChangeInfo)
+        }
     }
 
-    fun removeDeviceFromPlayMedia(device: MediaDevice): Boolean {
+    fun removeDeviceFromPlayMedia(device: MediaDevice) {
         mMetricLogger.logInteractionContraction(device)
         val routingChangeInfo =
             RoutingChangeInfo(
                 RoutingChangeInfo.ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER,
                 device.isSuggestedDevice,
             )
-        return mLocalMediaManager.removeDeviceFromPlayMedia(device, routingChangeInfo)
+        if (Flags.moveOutputSwitcherCallsToBackgroundThread()) {
+            mBackgroundExecutor.execute {
+                mLocalMediaManager.removeDeviceFromPlayMedia(device, routingChangeInfo)
+            }
+        } else {
+            mLocalMediaManager.removeDeviceFromPlayMedia(device, routingChangeInfo)
+        }
     }
 
     fun adjustSessionVolume(volume: Int) {
-        mLocalMediaManager.adjustSessionVolume(volume)
+        if (Flags.moveOutputSwitcherCallsToBackgroundThread()) {
+            mBackgroundExecutor.execute { mLocalMediaManager.adjustSessionVolume(volume) }
+        } else {
+            mLocalMediaManager.adjustSessionVolume(volume)
+        }
     }
 
     fun getSessionVolumeMax(): Int = mLocalMediaManager.getSessionVolumeMax()
@@ -809,7 +825,11 @@ constructor(
         } else {
             mMetricLogger.logInteractionStopCasting()
         }
-        mLocalMediaManager.releaseSession()
+        if (Flags.moveOutputSwitcherCallsToBackgroundThread()) {
+            mBackgroundExecutor.execute { mLocalMediaManager.releaseSession() }
+        } else {
+            mLocalMediaManager.releaseSession()
+        }
     }
 
     fun getActiveRemoteMediaDevices(): List<RoutingSessionInfo?> =
@@ -969,23 +989,13 @@ constructor(
             return null
         }
 
-        if (Flags.enableUseOfSessionReleaseTypeForStopButton()) {
-            return when (getSessionReleaseType()) {
-                RoutingSessionInfo.RELEASE_TYPE_SHARING ->
-                    R.string.media_output_dialog_button_stop_sharing
-                RoutingSessionInfo.RELEASE_TYPE_CASTING ->
-                    R.string.media_output_dialog_button_stop_casting
-                else -> null
-            }
-        } else {
-            val inBroadcast = getSessionReleaseType() == RoutingSessionInfo.RELEASE_TYPE_SHARING
-            if (inBroadcast) {
-                return R.string.media_output_dialog_button_stop_sharing
-            } else if (isCurrentConnectedDeviceRemote()) {
-                return R.string.media_output_dialog_button_stop_casting
-            }
+        return when (getSessionReleaseType()) {
+            RoutingSessionInfo.RELEASE_TYPE_SHARING ->
+                R.string.media_output_dialog_button_stop_sharing
+            RoutingSessionInfo.RELEASE_TYPE_CASTING ->
+                R.string.media_output_dialog_button_stop_casting
+            else -> null
         }
-        return null
     }
 
     private fun startActivity(intent: Intent, controller: ActivityTransitionAnimator.Controller?) {

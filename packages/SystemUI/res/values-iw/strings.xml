@@ -187,7 +187,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"השתקה"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"ביטול ההשתקה"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"‫<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> מתוך <xliff:g id="DURATION">%2$s</xliff:g>"</string>
-    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"כדי לשנות את הסלפי, סוגרים את האצבעות, גוררים ולוחצים על הסלפי"</string>
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"כדי לשנות את מיקום הסלפי, סוגרים את האצבעות על גבי המסך, גוררים ולוחצים על הסלפי"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"‏צילום המסך חסום על ידי האדמין ממחלקת IT"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"צילום מסך של כל המסך"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"הקלטה של כל המסך"</string>
@@ -706,18 +706,12 @@
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"אפשר לגשת לווידג\'טים ולשומרי המסך בזמן הטעינה."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"שנתחיל?"</string>
     <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"בחירת שומרי המסך שיוצגו בזמן הטעינה"</string>
-    <!-- no translation found for dream_switcher_select_dream_title (2784437029616150736) -->
-    <skip />
-    <!-- no translation found for dream_switcher_choose_screensaver (3073471555365511227) -->
-    <skip />
-    <!-- no translation found for dream_switcher_edit_button_text (2152516873780618659) -->
-    <skip />
-    <!-- no translation found for dream_switcher_go_to_app_button_text (6043693674135654080) -->
-    <skip />
-    <!-- no translation found for dream_switcher_more_screensavers (6672017768044989604) -->
-    <skip />
-    <!-- no translation found for dreams_switcher_accessibility_action (2910870945341642369) -->
-    <skip />
+    <string name="dream_switcher_select_dream_title" msgid="2784437029616150736">"‏בחירת Dream"</string>
+    <string name="dream_switcher_choose_screensaver" msgid="3073471555365511227">"בחירת שומר מסך"</string>
+    <string name="dream_switcher_edit_button_text" msgid="2152516873780618659">"עריכת <xliff:g id="DREAM_NAME">%1$s</xliff:g>"</string>
+    <string name="dream_switcher_go_to_app_button_text" msgid="6043693674135654080">"כניסה אל <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="dream_switcher_more_screensavers" msgid="6672017768044989604">"שומרי מסך נוספים"</string>
+    <string name="dreams_switcher_accessibility_action" msgid="2910870945341642369">"‏פתיחת התפריט לבחירת Dream"</string>
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"החלפת משתמש"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"תפריט במשיכה למטה"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"כל האפליקציות והנתונים בסשן הזה יימחקו."</string>
@@ -921,7 +915,7 @@
     <string name="volume_panel_hint_muted" msgid="1124844870181285320">"השתקה"</string>
     <string name="volume_panel_hint_vibrate" msgid="4136223145435914132">"רטט"</string>
     <string name="media_output_label_title" msgid="872824698593182505">"הפעלה של <xliff:g id="LABEL">%s</xliff:g> במכשיר"</string>
-    <string name="media_output_title_without_playing" msgid="3825663683169305013">"איפה האודיו יופעל"</string>
+    <string name="media_output_title_without_playing" msgid="3825663683169305013">"איפה האודיו יושמע"</string>
     <string name="media_output_title_ongoing_call" msgid="208426888064112006">"איפה השיחה מתבצעת"</string>
     <string name="system_ui_tuner" msgid="1471348823289954729">"System UI Tuner"</string>
     <string name="status_bar" msgid="4357390266055077437">"שורת סטטוס"</string>
@@ -993,17 +987,12 @@
     <string name="inline_done_button" msgid="6043094985588909584">"סיום"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"אישור"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"השבתה"</string>
-    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"מכשיר"</string>
-    <string name="bridged_device_type_phone" msgid="7971199513068521770">"טלפון"</string>
-    <string name="bridged_device_type_tablet" msgid="7403330807933649592">"טאבלט"</string>
-    <string name="bridged_device_type_laptop" msgid="8027976360936787349">"מחשב נייד"</string>
-    <string name="bridged_device_type_watch" msgid="2634106046119813073">"שעון"</string>
-    <string name="bridged_device_type_tv" msgid="5471822369478942796">"טלוויזיה"</string>
-    <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"פתיחת ההגדרות של <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
+    <string name="bridged_source_device" msgid="2233591993331607836">"מכשיר המקור"</string>
+    <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"פתיחת ההגדרות של ה<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"שקט"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"ברירת מחדל"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"באופן אוטומטי"</string>
-    <string name="notification_bridged_title" msgid="4213554380230273828">"ההתראה הזו היא מ-<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
+    <string name="notification_bridged_title" msgid="4213554380230273828">"ההתראה הזו היא מה<xliff:g id="DEVICE_TYPE">%1$s</xliff:g> שלך"</string>
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"ללא צליל או רטט"</string>
     <string name="notification_conversation_summary_low" msgid="3855696451919728790">"ללא צליל או רטט אבל עדיין תופיע בחלק של התראות השיחה"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"ייתכן שיופעל צלצול או רטט בהתאם להגדרות במכשיר"</string>
@@ -1112,8 +1101,7 @@
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"פתיחת ההגדרות"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"פתיחת העוזר האישי"</string>
     <string name="group_system_access_contextual_search" msgid="525635757621336007">"חיפוש לפי הקשר"</string>
-    <!-- no translation found for group_system_access_contextual_cursor (200587108400598774) -->
-    <skip />
+    <string name="group_system_access_contextual_cursor" msgid="200587108400598774">"סמן לפי הקשר"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"נעילת המסך"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"כתיבת הערה"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"ריבוי משימות"</string>
@@ -1192,7 +1180,7 @@
     <string name="right_keycode" msgid="2480715509844798438">"קוד מפתח ימני"</string>
     <string name="left_icon" msgid="5036278531966897006">"סמל שמאלי"</string>
     <string name="right_icon" msgid="1103955040645237425">"סמל ימני"</string>
-    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"אפשר לבחור כפתורים כדי לשנות את הסדר והגודל שלהם"</string>
+    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"כדי לשנות את הסדר והגודל של כפתור, צריך ללחוץ עליו"</string>
     <string name="tap_to_remove_tiles" msgid="76564688376603718">"צריך ללחוץ כדי להסיר אריחים"</string>
     <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"שינוי הגודל וסידור מחדש של הפריסה"</string>
     <string name="qs_edit_edit_tab" msgid="467315123555871860">"עריכה"</string>
@@ -1236,10 +1224,8 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"פתיחת הגדרות של <xliff:g id="ID_1">%s</xliff:g>."</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"שינוי הסדר של ההגדרות המהירות."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"תפריט הפעלה"</string>
-    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
-    <skip />
-    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
-    <skip />
+    <string name="accessibility_quick_settings_power_menu_expanded" msgid="4665161431290201722">"מורחב"</string>
+    <string name="accessibility_quick_settings_power_menu_collapsed" msgid="5800930916550853776">"מכווץ"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"דף <xliff:g id="ID_1">%1$d</xliff:g> מתוך <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"להפעיל את <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"‫<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"סמל"</annotation>" + <xliff:g id="ID_2">^2</xliff:g>‏ + <xliff:g id="ID_3">^3</xliff:g> הם מקשי הקיצור לשימוש בתכונה <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1502,8 +1488,10 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"מכשירים זמינים לפלט אודיו."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"עוצמת הקול"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"‎<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%‎‎"</string>
-    <string name="media_output_dialog_missing_permissions_warning" msgid="1279351363821022727">"חלק מהמכשירים לא מוצגים לך. צריך לעדכן את ההרשאות של האפליקציה"</string>
-    <string name="media_output_dialog_warning_button_fix" msgid="3324600211761037516">"תיקון"</string>
+    <!-- no translation found for media_output_dialog_missing_permissions_warning (4312830846174995199) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_warning_button_fix (3650735180540135181) -->
+    <skip />
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"רמקולים מחוברים"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"רמקולים ומסכים"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"הצעות"</string>
@@ -1745,7 +1733,7 @@
     <string name="shortcut_helper_customize_dialog_reset_button_label" msgid="7645535254306312685">"כן, לאפס"</string>
     <string name="shortcut_helper_customize_dialog_cancel_button_label" msgid="5595546460431741178">"ביטול"</string>
     <string name="shortcut_helper_add_shortcut_dialog_placeholder" msgid="9154297849458741995">"צריך ללחוץ על מקש"</string>
-    <string name="shortcut_helper_customizer_action_key_text" msgid="3979063901857046887">"פעולה"</string>
+    <string name="shortcut_helper_customizer_action_key_text" msgid="3979063901857046887">"מקש הפעולה"</string>
     <string name="shortcut_customizer_key_combination_in_use_error_message" msgid="3325858369539848162">"שילוב המקשים הזה תפוס. צריך לנסות שילוב אחר."</string>
     <string name="shortcut_customizer_generic_error_message" msgid="3128454624049722741">"לא ניתן להגדיר את קיצור הדרך."</string>
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>

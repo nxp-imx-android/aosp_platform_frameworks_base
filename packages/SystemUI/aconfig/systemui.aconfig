@@ -438,6 +438,16 @@ flag {
 }
 
 flag {
+    name: "enable_inset_focus_rings_in_suw"
+    namespace: "systemui"
+    description: "Decides whether to enable inset focus rings in the global actions dialog during the SuW."
+    bug: "484084632"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   name: "enable_layout_tracing"
   namespace: "systemui"
   description: "Enables detailed traversal slices during measure and layout in perfetto traces"
@@ -654,16 +664,6 @@ flag {
     metadata {
       purpose: PURPOSE_BUGFIX
     }
-}
-
-flag {
-   name: "get_connected_device_name_unsynchronized"
-   namespace: "systemui"
-   description: "Decide whether to fetch the connected bluetooth device name outside a synchronized block."
-   bug: "323995015"
-   metadata {
-        purpose: PURPOSE_BUGFIX
-   }
 }
 
 flag {
@@ -895,16 +895,6 @@ flag {
     bug: "459609903"
     metadata {
       purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "log_state_on_shade_gesture_failure"
-    namespace: "systemui"
-    description: "Logs state of relevant classes if the shade fails to open."
-    bug: "467878509"
-    metadata {
-        purpose: PURPOSE_BUGFIX
     }
 }
 
@@ -1288,6 +1278,13 @@ flag {
 }
 
 flag {
+    name: "qs_layout_mode"
+    namespace: "systemui"
+    description: "Adds a layout page to QS Edit mode to reorder QS Components"
+    bug: "485262315"
+}
+
+flag {
    name: "qs_new_tiles"
    namespace: "systemui"
    description: "Use the new tiles in the Quick Settings. Should have no behavior changes."
@@ -1487,16 +1484,6 @@ flag {
     namespace: "systemui"
     description: "Allow showing key glyph in shortcut helper"
     bug: "353902478"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "show_audio_sharing_slider_in_volume_panel"
-    namespace: "cross_device_experiences"
-    description: "Show two sliders in volume panel when audio sharing."
-    bug: "336183611"
     metadata {
       purpose: PURPOSE_BUGFIX
     }
@@ -1789,16 +1776,6 @@ flag {
     metadata {
       purpose: PURPOSE_BUGFIX
     }
-}
-
-flag {
-   name: "system_status_animation_per_display"
-   namespace: "systemui"
-   description: "Make system status events / animations per display"
-   bug: "378578911"
-   metadata {
-       purpose: PURPOSE_BUGFIX
-   }
 }
 
 flag {

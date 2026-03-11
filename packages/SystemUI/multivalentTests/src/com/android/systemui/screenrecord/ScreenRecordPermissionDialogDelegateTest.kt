@@ -33,10 +33,7 @@ import android.widget.TextView
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.media.projection.flags.Flags
-import com.android.systemui.Dependency
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.animation.DialogTransitionAnimator
-import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.display.data.repository.FakeDisplayWindowPropertiesRepository
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.mediaprojection.appselector.MediaProjectionAppSelectorActivity
@@ -47,9 +44,8 @@ import com.android.systemui.res.R
 import com.android.systemui.screenrecord.data.repository.screenRecordingStartStopRepository
 import com.android.systemui.shade.data.repository.shadeDialogContextInteractor
 import com.android.systemui.statusbar.phone.SystemUIDialog
-import com.android.systemui.statusbar.phone.SystemUIDialogManager
+import com.android.systemui.statusbar.phone.systemUIDialogDotFactory
 import com.android.systemui.testKosmos
-import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import org.junit.After
@@ -94,15 +90,6 @@ class ScreenRecordPermissionDialogDelegateTest : SysuiTestCase() {
     fun setUp() {
         MockitoAnnotations.initMocks(this)
 
-        val systemUIDialogFactory =
-            SystemUIDialog.Factory(
-                context,
-                Dependency.get(SystemUIDialogManager::class.java),
-                Dependency.get(BroadcastDispatcher::class.java),
-                Dependency.get(DialogTransitionAnimator::class.java),
-                kosmos.windowRootViewBlurInteractor,
-            )
-
         displayManager = Mockito.spy(context.getSystemService(DisplayManager::class.java)!!)
 
         underTest =
@@ -113,7 +100,7 @@ class ScreenRecordPermissionDialogDelegateTest : SysuiTestCase() {
                 starter,
                 onStartRecordingClicked,
                 mediaProjectionMetricsLogger,
-                systemUIDialogFactory,
+                kosmos.systemUIDialogDotFactory,
                 context,
                 displayManager,
                 kosmos.screenRecordingStartStopRepository,

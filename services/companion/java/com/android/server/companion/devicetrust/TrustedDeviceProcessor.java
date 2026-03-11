@@ -326,7 +326,10 @@ public class TrustedDeviceProcessor {
                 // If either step failed, then just abandon the procedure and forget session key.
                 Slog.w(TAG, "Association id=[" + associationId + "] is not a trusted device.");
                 mVerificationLatches.remove(associationId);
-                updateAssociationTrustedStatus(associationId, false);
+                mAssociationStore.updateAssociation(associationId,
+                        a -> (new AssociationInfo.Builder(a))
+                                .setTrusted(false)
+                                .build());
 
                 mTrustedDeviceStore.removeSessionKey(userId, associationId);
                 return;
@@ -338,7 +341,10 @@ public class TrustedDeviceProcessor {
                 Slog.i(TAG, "Association id=[" + associationId + "] is a trusted device.");
                 mVerificationLatches.remove(associationId);
 
-                updateAssociationTrustedStatus(associationId, true);
+                mAssociationStore.updateAssociation(associationId,
+                        a -> (new AssociationInfo.Builder(a))
+                                .setTrusted(true)
+                                .build());
                 Transport session = mCurrentSessions.get(associationId);
 
                 // Store the key for session resumption
@@ -346,20 +352,5 @@ public class TrustedDeviceProcessor {
                 mTrustedDeviceStore.storeSessionKey(userId, associationId, sessionKey);
             }
         }
-    }
-
-    private void updateAssociationTrustedStatus(int associationId, boolean isTrusted) {
-        Slog.d(TAG, "Updating association id=[" + associationId + "] to trusted=" + isTrusted);
-        AssociationInfo association = mAssociationStore.getAssociationWithCallerChecks(
-                associationId);
-
-        if (association.isTrusted() == isTrusted) {
-            return;
-        }
-
-        AssociationInfo updated = (new AssociationInfo.Builder(association))
-                .setTrusted(isTrusted)
-                .build();
-        mAssociationStore.updateAssociation(updated);
     }
 }

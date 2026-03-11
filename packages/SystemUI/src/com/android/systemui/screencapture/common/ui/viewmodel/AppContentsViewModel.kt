@@ -22,10 +22,8 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureAppContentInteractor
-import com.android.systemui.screencapture.common.domain.interactor.ScreenCaptureRecentTaskInteractor
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureAppContent
 import com.android.systemui.screencapture.common.domain.model.TargetModel
-import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -74,6 +72,7 @@ interface AppContentsViewModel : TargetsViewModel {
 
     interface Factory {
         fun create(
+            hostPackageName: String,
             thumbnailWidthPx: Int,
             thumbnailHeightPx: Int,
             iconSizePx: Int,
@@ -84,11 +83,11 @@ interface AppContentsViewModel : TargetsViewModel {
 class AppContentsViewModelImpl
 @AssistedInject
 constructor(
-    private val appContentInteractor: ScreenCaptureAppContentInteractor,
-    recentTaskInteractor: ScreenCaptureRecentTaskInteractor,
+    appContentInteractor: ScreenCaptureAppContentInteractor,
     private val appContentViewModelFactory: AppContentViewModel.Factory,
     drawableLoaderViewModel: DrawableLoaderViewModel,
     audioSwitchViewModel: AudioSwitchViewModel,
+    @Assisted("hostPackageName") private val hostPackageName: String,
     @Assisted("thumbnailWidthPx") private val thumbnailWidthPx: Int,
     @Assisted("thumbnailHeightPx") private val thumbnailHeightPx: Int,
     @Assisted("iconSizePx") private val iconSizePx: Int,
@@ -98,31 +97,24 @@ constructor(
     AudioSwitchViewModel by audioSwitchViewModel,
     HydratedActivatable() {
 
-    /**
-     * The full app content result from the interactor, containing both the list of shareable
-     * content and the projection callbacks for each package.
-     */
+    /** The app content result from the interactor for the host package. */
     private val appContent =
-        recentTaskInteractor.recentTasks
-            .flatMapLatestConflated { tasks ->
-                appContentInteractor.appContentsFor(
-                    packageNames = tasks.mapNotNull { it.component?.packageName },
-                    thumbnailWidthPx = thumbnailWidthPx,
-                    thumbnailHeightPx = thumbnailHeightPx,
-                    iconSizePx = iconSizePx,
-                )
-            }
+        appContentInteractor
+            .appContentsFor(
+                packageName = hostPackageName,
+                thumbnailWidthPx = thumbnailWidthPx,
+                thumbnailHeightPx = thumbnailHeightPx,
+                iconSizePx = iconSizePx,
+            )
             .hydratedStateOf("AppContentsViewModel#getAppContents", null)
 
     override val projectionCallback: State<WeakReference<IAppContentProjectionCallback>?> =
         derivedStateOf {
-            selectedTarget.value?.let {
-                appContent.value?.projectionCallbacks?.get(it.model.packageName)
-            }
+            selectedTarget.value?.let { appContent.value?.getOrNull()?.projectionCallback }
         }
 
     override val targets: State<List<ScreenCaptureAppContent>?> = derivedStateOf {
-        appContent.value?.contents
+        appContent.value?.getOrNull()?.contents
     }
 
     private val _selectedTarget = mutableStateOf<AppContentViewModel?>(null)
@@ -138,6 +130,7 @@ constructor(
     @AssistedFactory
     interface Factory : AppContentsViewModel.Factory {
         override fun create(
+            @Assisted("hostPackageName") hostPackageName: String,
             @Assisted("thumbnailWidthPx") thumbnailWidthPx: Int,
             @Assisted("thumbnailHeightPx") thumbnailHeightPx: Int,
             @Assisted("iconSizePx") iconSizePx: Int,

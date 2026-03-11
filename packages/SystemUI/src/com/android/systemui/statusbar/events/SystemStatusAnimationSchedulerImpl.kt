@@ -25,6 +25,8 @@ import androidx.core.animation.AnimatorListenerAdapter
 import androidx.core.animation.AnimatorSet
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.AnimatingIn
@@ -36,11 +38,9 @@ import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationSt
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.util.Assert
 import com.android.systemui.util.time.SystemClock
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
 import java.io.PrintWriter
 import java.util.concurrent.Executor
+import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
@@ -74,30 +74,21 @@ import kotlinx.coroutines.withTimeout
  * their respective views based on the progress of the animator.
  */
 @OptIn(FlowPreview::class)
+@PerDisplaySingleton
 open class SystemStatusAnimationSchedulerImpl
-@AssistedInject
+@Inject
 constructor(
-    @Assisted private val coordinator: SystemEventCoordinator,
-    @Assisted private val chipAnimationController: SystemEventChipAnimationController,
-    @Assisted private val displayId: Int,
+    @DisplayAware private val coordinator: SystemEventCoordinator,
+    @DisplayAware private val chipAnimationController: SystemEventChipAnimationController,
+    @DisplayAware private val displayId: Int,
     private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
     private val dumpManager: DumpManager,
     private val systemClock: SystemClock,
-    @Assisted private val coroutineScope: CoroutineScope,
+    @DisplayAware private val coroutineScope: CoroutineScope,
     private val logger: SystemStatusAnimationSchedulerLogger?,
     @Main private val mainCoroutineContext: CoroutineContext,
     @Main private val mainExecutor: Executor,
 ) : SystemStatusAnimationScheduler {
-
-    @AssistedFactory
-    interface Factory {
-        fun create(
-            coordinator: SystemEventCoordinator,
-            chipAnimationController: SystemEventChipAnimationController,
-            displayId: Int,
-            coroutineScope: CoroutineScope,
-        ): SystemStatusAnimationSchedulerImpl
-    }
 
     companion object {
         private const val PROPERTY_ENABLE_IMMERSIVE_INDICATOR = "enable_immersive_indicator"
