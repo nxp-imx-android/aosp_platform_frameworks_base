@@ -18,9 +18,16 @@ package com.android.server.appfunctions;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.appfunctions.AppFunctionName;
+import android.app.appfunctions.AppFunctionStaticMetadataHelper;
 import android.app.appfunctions.IObserveAppFunctionChangesCallback;
+import android.app.appsearch.AppSearchManager;
+import android.app.appsearch.AppSearchSchema;
+import android.app.appsearch.GetSchemaResponse;
 import android.app.appsearch.observer.DocumentChangeInfo;
 import android.app.appsearch.observer.SchemaChangeInfo;
+import android.content.Context;
+import android.os.Build;
+import android.os.IBinder;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.os.SystemClock;
@@ -31,9 +38,12 @@ import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 
+import com.android.internal.infra.AndroidFuture;
+import com.android.internal.os.BackgroundThread;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
@@ -47,9 +57,9 @@ import java.util.concurrent.TimeUnit;
  * appropriate {@link IObserveAppFunctionChangesCallback} instances.
  */
 class InternalObserverCallbackRouter {
+    private static final boolean DEBUG = Build.TYPE.equals("eng");
     private static final String TAG = InternalObserverCallbackRouter.class.getSimpleName();
 
-    // TODO: b/481984551 - Handle callbacks for frozen processes.
     private final RemoteCallbackList<IObserveAppFunctionChangesCallback> mInternalCallbacks =
             new RemoteCallbackList<IObserveAppFunctionChangesCallback>() {
                 @Override
@@ -57,6 +67,9 @@ class InternalObserverCallbackRouter {
                         IObserveAppFunctionChangesCallback callback, Object cookie) {
                     if (!(cookie instanceof CallerIdentity deadCallbackIdentity)) {
                         return;
+                    }
+                    synchronized (mFrozenStateLock) {
+                        mFrozenCallbacks.remove(callback.asBinder());
                     }
                     maybeCleanupVisibilityCache(deadCallbackIdentity);
                 }
@@ -67,6 +80,17 @@ class InternalObserverCallbackRouter {
     @GuardedBy("mVisibilityCacheLock")
     private final ArrayMap<CallerIdentity, ArraySet<String>> mIdentityToVisiblePackages =
             new ArrayMap<>();
+
+    private final Object mFrozenStateLock = new Object();
+
+    // Value indicates if any updates have been received since the callback was frozen. To avoid
+    // notifying the observer when nothing has changed, this could be very frequent depending on
+    // how aggressive the cache process freezer is on the device.
+    @GuardedBy("mFrozenStateLock")
+    private final ArrayMap<IBinder, Boolean> mFrozenCallbacks = new ArrayMap<>();
+
+    private final IBinderFrozenStateCallback mFrozenStateCallback =
+            new IBinderFrozenStateCallback();
 
     private final int mMetadataChangeDebounceMs;
     private final long mEnabledStateDebounceMs;
@@ -99,22 +123,33 @@ class InternalObserverCallbackRouter {
 
     private final VisibilityHelper mVisibilityHelper;
 
+    private final Executor mFrozenStateListenerExecutor;
+
+    private final FutureGlobalSearchSession mFutureGlobalSearchSession;
+
     InternalObserverCallbackRouter(
-            @NonNull ServiceConfig serviceConfig, @NonNull VisibilityHelper visibilityHelper) {
+            @NonNull FutureGlobalSearchSession futureGlobalSearchSession,
+            @NonNull ServiceConfig serviceConfig,
+            @NonNull VisibilityHelper visibilityHelper) {
         this(
+                futureGlobalSearchSession,
                 serviceConfig,
                 visibilityHelper,
                 Executors.newSingleThreadScheduledExecutor(
                         new NamedThreadFactory("AppFunctionsObserverRouter")),
-                SystemClock::elapsedRealtimeNanos);
+                SystemClock::elapsedRealtimeNanos,
+                BackgroundThread.getExecutor());
     }
 
     @VisibleForTesting
     InternalObserverCallbackRouter(
+            @NonNull FutureGlobalSearchSession futureGlobalSearchSession,
             @NonNull ServiceConfig serviceConfig,
             @NonNull VisibilityHelper visibilityHelper,
             @NonNull ScheduledExecutorService executor,
-            @NonNull TimeSource timeSource) {
+            @NonNull TimeSource timeSource,
+            @NonNull Executor frozenStateListenerExecutor) {
+        mFutureGlobalSearchSession = Objects.requireNonNull(futureGlobalSearchSession);
         mMetadataChangeDebounceMs =
                 serviceConfig.getAppFunctionMetadataChangeDebounceMilliseconds();
         mEnabledStateDebounceMs =
@@ -124,6 +159,7 @@ class InternalObserverCallbackRouter {
         mVisibilityHelper = visibilityHelper;
         mExecutor = executor;
         mTimeSource = timeSource;
+        mFrozenStateListenerExecutor = frozenStateListenerExecutor;
     }
 
     @VisibleForTesting
@@ -258,6 +294,12 @@ class InternalObserverCallbackRouter {
         mInternalCallbacks.broadcast(
                 (callback, cookie) -> {
                     if (cookie instanceof CallerIdentity callerIdentity) {
+                        synchronized (mFrozenStateLock) {
+                            if (mFrozenCallbacks.containsKey(callback.asBinder())) {
+                                mFrozenCallbacks.put(callback.asBinder(), true);
+                                return;
+                            }
+                        }
                         try {
                             Set<String> packagesToNotify =
                                     filterPackagesToNotify(
@@ -281,6 +323,12 @@ class InternalObserverCallbackRouter {
         mInternalCallbacks.broadcast(
                 (callback, cookie) -> {
                     if (cookie instanceof CallerIdentity callerIdentity) {
+                        synchronized (mFrozenStateLock) {
+                            if (mFrozenCallbacks.containsKey(callback.asBinder())) {
+                                mFrozenCallbacks.put(callback.asBinder(), true);
+                                return;
+                            }
+                        }
                         try {
                             Set<AppFunctionName> functionsToNotify =
                                     filterFunctionsToNotify(
@@ -310,12 +358,28 @@ class InternalObserverCallbackRouter {
             @NonNull IObserveAppFunctionChangesCallback callbackToAdd,
             @NonNull CallerIdentity callerIdentity) {
         mInternalCallbacks.register(callbackToAdd, callerIdentity);
+        try {
+            callbackToAdd
+                    .asBinder()
+                    .addFrozenStateChangeCallback(
+                            mFrozenStateListenerExecutor, mFrozenStateCallback);
+        } catch (RemoteException | UnsupportedOperationException e) {
+            Slog.e(TAG, "Failed to register callback.", e);
+        }
     }
 
     void removeCallback(
             @NonNull IObserveAppFunctionChangesCallback callbackToRemove,
             @NonNull CallerIdentity callerIdentity) {
         mInternalCallbacks.unregister(callbackToRemove);
+        synchronized (mFrozenStateLock) {
+            mFrozenCallbacks.remove(callbackToRemove.asBinder());
+        }
+        try {
+            callbackToRemove.asBinder().removeFrozenStateChangeCallback(mFrozenStateCallback);
+        } catch (UnsupportedOperationException | IllegalArgumentException e) {
+            Slog.e(TAG, "Failed to remove frozen state change callback.", e);
+        }
         maybeCleanupVisibilityCache(callerIdentity);
     }
 
@@ -368,7 +432,6 @@ class InternalObserverCallbackRouter {
 
     /** Removes cached visibility list for the given caller identity, if no longer needed. */
     private void maybeCleanupVisibilityCache(@NonNull CallerIdentity identityToRemove) {
-
         Runnable scheduledRunnable =
                 () -> {
                     int callbacksSize = mInternalCallbacks.beginBroadcast();
@@ -393,6 +456,95 @@ class InternalObserverCallbackRouter {
         }
     }
 
+    private void notifyUnfrozenObserver(@NonNull IBinder who) {
+        if (DEBUG) {
+            Slog.d(TAG, "notifyUnfrozenObserver#started");
+        }
+        // The number of possible observer is limited since related permissions are all
+        // either privileged or role-based. Therefore, instead of storing the changed package,
+        // we query from AppSearch directly to get all packages to notify the unfrozen observer
+        // to update the snapshot. If the number of possible observers becomes more in the future,
+        // we can consider caching the changed packages instead.
+        mFutureGlobalSearchSession
+                .getSchema(
+                        AppFunctionStaticMetadataHelper.APP_FUNCTION_INDEXER_PACKAGE,
+                        AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_METADATA_DB)
+                .thenComposeAsync(
+                        result -> {
+                            if (!result.isSuccess()) {
+                                return AndroidFuture.failedFuture(
+                                        new RuntimeException(
+                                                "Unable to get AppFunction packages."
+                                                        + result.getErrorMessage()));
+                            }
+                            GetSchemaResponse schemaResponse = result.getResultValue();
+                            Set<String> appFunctionPackages = new ArraySet<>();
+                            for (AppSearchSchema schema : schemaResponse.getSchemas()) {
+                                if (!schema.getSchemaType()
+                                        .startsWith(
+                                                AppFunctionStaticMetadataHelper
+                                                        .STATIC_SCHEMA_TYPE)) {
+                                    continue;
+                                }
+                                String packageName =
+                                        getPackageNameFromSchemaName(schema.getSchemaType());
+                                if (packageName != null) {
+                                    appFunctionPackages.add(packageName);
+                                }
+                            }
+                            return AndroidFuture.completedFuture(appFunctionPackages);
+                        },
+                        mExecutor)
+                .whenComplete(
+                        (packages, exception) -> {
+                            if (exception != null) {
+                                Slog.e(TAG, "Failed to get app function packages.", exception);
+                                return;
+                            }
+                            mInternalCallbacks.broadcast(
+                                    (callback, cookie) -> {
+                                        if (!who.equals(callback.asBinder())) {
+                                            return;
+                                        }
+                                        if (cookie instanceof CallerIdentity callerIdentity) {
+                                            synchronized (mFrozenStateLock) {
+                                                boolean shouldNotify =
+                                                        mFrozenCallbacks.getOrDefault(
+                                                                callback.asBinder(), false);
+                                                if (!shouldNotify) {
+                                                    return;
+                                                }
+                                                mFrozenCallbacks.remove(callback.asBinder());
+                                            }
+                                            try {
+                                                Set<String> packagesToNotify =
+                                                        filterPackagesToNotify(
+                                                                packages, callerIdentity);
+
+                                                if (!packagesToNotify.isEmpty()) {
+                                                    if (DEBUG) {
+                                                        Slog.d(
+                                                                TAG,
+                                                                "notifyUnfrozenObserver#notifying "
+                                                                        + callerIdentity
+                                                                        + " with packages: "
+                                                                        + packagesToNotify);
+                                                    }
+                                                    callback.onPackagesChanged(
+                                                            new ArrayList<>(packagesToNotify));
+                                                }
+                                            } catch (RemoteException e) {
+                                                Slog.e(
+                                                        TAG,
+                                                        "Failed to execute"
+                                                                + " callback#onPackagesChanged.",
+                                                        e);
+                                            }
+                                        }
+                                    });
+                        });
+    }
+
     // AppSearch schema names for app functions are expected to be in the format
     // "schemaType-packageName".
     @Nullable
@@ -405,6 +557,26 @@ class InternalObserverCallbackRouter {
             return schemaName.substring(indexBeforePackageName + 1);
         } catch (IndexOutOfBoundsException e) {
             return null;
+        }
+    }
+
+    private final class IBinderFrozenStateCallback implements IBinder.FrozenStateChangeCallback {
+        @Override
+        public void onFrozenStateChanged(
+                @NonNull IBinder who, @IBinder.FrozenStateChangeCallback.State int state) {
+            boolean isFrozen = state == IBinder.FrozenStateChangeCallback.STATE_FROZEN;
+            synchronized (mFrozenStateLock) {
+                if (isFrozen) {
+                    mFrozenCallbacks.put(who, false);
+                } else {
+                    boolean shouldNotify = mFrozenCallbacks.getOrDefault(who, false);
+                    if (shouldNotify) {
+                        notifyUnfrozenObserver(who);
+                    } else {
+                        mFrozenCallbacks.remove(who);
+                    }
+                }
+            }
         }
     }
 }
