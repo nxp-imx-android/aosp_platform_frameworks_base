@@ -74,6 +74,7 @@ import com.android.systemui.clock.ui.viewmodel.ClockViewModel
 import com.android.systemui.common.ui.compose.gestures.detectTapGesturesStrict
 import com.android.systemui.communal.ui.compose.extensions.detectLongPressGesture
 import com.android.systemui.compose.modifiers.sysUiResTagContainer
+import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.lifecycle.WindowLifecycleState
@@ -585,12 +586,13 @@ private fun addEndSideComposable(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     modifier =
-                        Modifier.widthIn(max = with(LocalDensity.current) { endSideWidth.toDp() }),
+                        Modifier.widthIn(max = with(LocalDensity.current) { endSideWidth.toDp() })
+                            .sysUiResTagContainer(),
                 ) {
                     SystemStatusIconsContainer(
                         viewModelFactory = statusBarViewModel.systemStatusIconsViewModelFactory,
                         isDark = statusBarViewModel.areaDark,
-                        modifier = Modifier.weight(1f, fill = false),
+                        modifier = Modifier.weight(1f, fill = false).sysuiResTag("system_icons"),
                         systemStatusIconBlockListInteractor =
                             statusBarViewModel.systemStatusIconBlockListInteractor,
                     )
@@ -606,7 +608,7 @@ private fun addEndSideComposable(
                     UnifiedBattery(
                         viewModel = viewModel,
                         isDarkProvider = { statusBarViewModel.areaDark },
-                        modifier = Modifier.sysUiResTagContainer().height(height).wrapContentWidth(),
+                        modifier = Modifier.height(height).wrapContentWidth(),
                     )
                 }
             }
