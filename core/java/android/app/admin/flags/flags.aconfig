@@ -523,16 +523,6 @@ flag {
 }
 
 flag {
-  name: "fix_usb_data_signaling_restriction_after_reboot"
-  namespace: "enterprise"
-  bug: "451575023"
-  description: "'DevicePolicyManager.setUsbDataSignalingEnabled(false)' is not working after device reboot."
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "secure_adb_role_bypassing"
   namespace: "enterprise"
   description: "Making sure that the existing `adb shell cmd role set-bypassing-role-qualification` command is protected against abuse on MUM devices."

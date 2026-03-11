@@ -258,8 +258,7 @@ public class UsbService extends IUsbManager.Stub {
                         mDeviceManager.updateUserRestrictions();
                     }
                 }
-                if (android.app.admin.flags.Flags.fixUsbDataSignalingRestrictionAfterReboot()
-                        && UsbManager.ACTION_USB_PORT_CHANGED.equals(action)) {
+                if (UsbManager.ACTION_USB_PORT_CHANGED.equals(action)) {
                     boolean enabled = mDevicePolicyManagerInternal.isUsbDataSignalingEnabled();
                     Slog.i(TAG, "Broadcast ACTION_USB_PORT_CHANGED received, setting USB "
                             + "data signal to " + enabled);
