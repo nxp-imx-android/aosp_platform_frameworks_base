@@ -70,6 +70,7 @@ import java.util.Map;
 public class IntegrationTests {
     public static final int WAIT_FOR_TIMEOUT_MS = 5000;
     public static final int WAIT_FOR_PENDING_JANKSTATS_MS = 1000;
+    public static final int WAIT_FOR_COMPONENT_INITIALIZATION_MS = 2000;
 
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
@@ -209,6 +210,7 @@ public class IntegrationTests {
         TestWidget testWidget = jankTrackerActivity.findViewById(R.id.jank_tracker_widget);
         JankTracker jankTracker = testWidget.getJankTracker();
         jankTracker.forceListenerRegistration();
+        JankUtils.waitForShouldTrackTrue(jankTracker, WAIT_FOR_COMPONENT_INITIALIZATION_MS);
 
         assertTrue(jankTracker.shouldTrack());
 
@@ -217,6 +219,42 @@ public class IntegrationTests {
         mDevice.waitForIdle(WAIT_FOR_TIMEOUT_MS);
 
         assertFalse(jankTracker.shouldTrack());
+    }
+
+    /**
+     * Confirm no NPE is thrown when a widget attempts to update state prior to state object
+     * initialization.
+     */
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_DETAILED_APP_JANK_METRICS_API)
+    public void jankTracking_noNullPointerException_whenViewsUpdateStatesEarly() {
+        JankTrackerActivity jankTrackerActivity = mJankTrackerActivityRule.launchActivity(null);
+        TestWidget testWidget = jankTrackerActivity.findViewById(R.id.jank_tracker_widget);
+        JankTracker jankTracker = testWidget.getJankTracker();
+
+        // Forcing the registration allows widgets to start updating state, however, widgets
+        // could update state before state tracking objects are initialized resulting in NPE.
+        jankTracker.forceListenerRegistration();
+
+        // Previously this would throw an NPE when called immediately after registration.
+        // The additional check in JankTracker.shouldTrack() will prevent the NPE.
+        jankTracker.updateUiState(
+                AppJankStats.WIDGET_CATEGORY_OTHER,
+                "TEST_WIDGET_ID_01",
+                AppJankStats.WIDGET_STATE_NONE,
+                AppJankStats.WIDGET_STATE_SCROLLING);
+
+        JankUtils.waitForShouldTrackTrue(jankTracker, WAIT_FOR_COMPONENT_INITIALIZATION_MS);
+        assertTrue(jankTracker.shouldTrack());
+
+        jankTracker.updateUiState(
+                AppJankStats.WIDGET_CATEGORY_OTHER,
+                "TEST_WIDGET_ID_02",
+                AppJankStats.WIDGET_STATE_NONE,
+                AppJankStats.WIDGET_STATE_SCROLLING);
+        ArrayList<StateTracker.StateData> stateData = new ArrayList<>();
+        jankTracker.getAllUiStates(stateData);
+        assertEquals(2, stateData.size()); // Activity Name + TEST_WIDGET_ID_02
     }
 
     @Test

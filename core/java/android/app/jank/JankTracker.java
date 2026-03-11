@@ -74,6 +74,9 @@ public class JankTracker {
     // View that gives us access to ViewTreeObserver.
     private View mDecorView;
 
+    // Set to true after initializeJankTrackingComponents is called.
+    private boolean mComponentsReady = false;
+
     /**
      * Set by the activity to enable or disable jank tracking. Activities may disable tracking if
      * they are paused or not enable tracking if they are not visible or if the app category is not
@@ -140,6 +143,7 @@ public class JankTracker {
         mJankDataProcessor = new JankDataProcessor(mStateTracker);
         mDecorView = decorView;
         mHandlerThread.start();
+        mComponentsReady = true;
         registerWindowListeners();
     }
 
@@ -321,10 +325,11 @@ public class JankTracker {
     @VisibleForTesting
     public boolean shouldTrack() {
         if (DEBUG) {
-            Log.d(DEBUG_KEY, String.format("mTrackingEnabled: %s | mListenersRegistered: %s",
-                    mTrackingEnabled, mListenersRegistered));
+            Log.d(DEBUG_KEY, String.format("mTrackingEnabled: %s | mListenersRegistered: %s | "
+                            + "mComponentsReady: %s",
+                    mTrackingEnabled, mListenersRegistered, mComponentsReady));
         }
-        return mTrackingEnabled && mListenersRegistered;
+        return mTrackingEnabled && mListenersRegistered && mComponentsReady;
     }
 
     /**
@@ -396,6 +401,7 @@ public class JankTracker {
             mJankDataProcessor = new JankDataProcessor(mStateTracker);
         }
 
+        mComponentsReady = true;
         addActivityToStateTracking();
         registerForJankData();
     }
