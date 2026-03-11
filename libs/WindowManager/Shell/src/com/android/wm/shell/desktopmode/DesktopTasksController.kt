@@ -2415,7 +2415,7 @@ class DesktopTasksController(
         remoteTransition: RemoteTransition? = null,
         unminimizeReason: UnminimizeReason,
     ) {
-        val task = shellTaskOrganizer.getRunningTaskInfo(taskId)
+        var task = shellTaskOrganizer.getRunningTaskInfo(taskId)
         if (task == null) {
             moveBackgroundTaskToFront(
                 taskId = taskId,
@@ -2423,9 +2423,14 @@ class DesktopTasksController(
                 remoteTransition = remoteTransition,
                 unminimizeReason = unminimizeReason,
             )
+            task = shellTaskOrganizer.getRunningTaskInfo(taskId)
         } else {
             moveTaskToFront(task, remoteTransition, unminimizeReason)
         }
+        if (!Flags.updateDesktopScrimWhenMoveTaskToFrontBugfix() || task == null) {
+            return
+        }
+        desktopScrimController.updateDesktopScrimIfNeeded(task.displayId, userId)
     }
 
     /**
