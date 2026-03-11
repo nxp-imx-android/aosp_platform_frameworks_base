@@ -162,6 +162,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.ActivityManager.ProcessCapability;
+import android.app.ActivityManager.ProcessState;
 import android.app.ActivityManagerInternal;
 import android.app.AppGlobals;
 import android.app.AppOpsManager;
@@ -1277,7 +1278,8 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
          */
         @GuardedBy("mUidStateCallbackInfos")
         private boolean isUidStateChangeRelevant(UidStateCallbackInfo previousInfo,
-                int newProcState, long newProcStateSeq, int newCapability) {
+                @ProcessState int newProcState, long newProcStateSeq,
+                @ProcessCapability int newCapability) {
             if (previousInfo.procStateSeq == -1) {
                 // No previous record. Always process the first state change callback.
                 return true;
@@ -1286,7 +1288,7 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
                 // Stale callback. Ignore.
                 return false;
             }
-            final int previousProcState = previousInfo.procState;
+            final @ProcessState int previousProcState = previousInfo.procState;
             if ((previousProcState <= TOP_THRESHOLD_STATE)
                     || (newProcState <= TOP_THRESHOLD_STATE)) {
                 // If the proc-state change crossed TOP_THRESHOLD_STATE, network rules for the
@@ -1317,8 +1319,9 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
                 // transition delay is reduced, so we may have to update the rules sooner.
                 return true;
             }
-            final int networkCapabilities = PROCESS_CAPABILITY_POWER_RESTRICTED_NETWORK
-                    | PROCESS_CAPABILITY_USER_RESTRICTED_NETWORK;
+            final @ProcessCapability int networkCapabilities =
+                    PROCESS_CAPABILITY_POWER_RESTRICTED_NETWORK
+                            | PROCESS_CAPABILITY_USER_RESTRICTED_NETWORK;
             if ((previousInfo.capability & networkCapabilities)
                     != (newCapability & networkCapabilities)) {
                 return true;
@@ -1326,8 +1329,9 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
             return false;
         }
 
-        @Override public void onUidStateChanged(int uid, int procState, long procStateSeq,
-                @ProcessCapability int capability) {
+        @Override
+        public void onUidStateChanged(int uid, @ProcessState int procState,
+                long procStateSeq, @ProcessCapability int capability) {
             synchronized (mUidStateCallbackInfos) {
                 UidStateCallbackInfo callbackInfo = mUidStateCallbackInfos.get(uid);
                 if (callbackInfo == null) {
@@ -1355,13 +1359,15 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
 
     private static final class UidStateCallbackInfo {
         public int uid;
+        @ProcessState
         public int procState = ActivityManager.PROCESS_STATE_NONEXISTENT;
         public long procStateSeq = -1;
         @ProcessCapability
         public int capability;
         public boolean isPending;
 
-        public void update(int uid, int procState, long procStateSeq, int capability) {
+        public void update(int uid, @ProcessState int procState,
+                long procStateSeq, @ProcessCapability int capability) {
             this.uid = uid;
             this.procState = procState;
             this.procStateSeq = procStateSeq;
@@ -4645,7 +4651,7 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
                 || isProcStateAllowedNetworkWhileBackground(mUidState.get(uid));
     }
 
-    private long getBackgroundTransitioningDelay(int procState) {
+    private long getBackgroundTransitioningDelay(@ProcessState int procState) {
         if (mUseDifferentDelaysForBackgroundChain) {
             return procState <= PROCESS_STATE_LAST_ACTIVITY ? mBackgroundRestrictionLongDelayMs
                     : mBackgroundRestrictionShortDelayMs;
@@ -4660,8 +4666,8 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
      * {@link #updateRulesForPowerRestrictionsUL(int)}. Returns true if the state was updated.
      */
     @GuardedBy("mUidRulesFirstLock")
-    private boolean updateUidStateUL(int uid, int procState, long procStateSeq,
-            @ProcessCapability int capability) {
+    private boolean updateUidStateUL(int uid, @ProcessState int procState,
+            long procStateSeq, @ProcessCapability int capability) {
         Trace.traceBegin(Trace.TRACE_TAG_NETWORK, "updateUidStateUL: " + uid + "/"
                 + ActivityManager.procStateToString(procState) + "/" + procStateSeq + "/"
                 + ActivityManager.getCapabilitiesSummary(capability));
@@ -6256,9 +6262,9 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
     void handleUidChanged(int uid) {
         Trace.traceBegin(Trace.TRACE_TAG_NETWORK, "onUidStateChanged");
         try {
-            final int procState;
+            final @ProcessState int procState;
             final long procStateSeq;
-            final int capability;
+            final @ProcessCapability int capability;
             synchronized (mUidStateCallbackInfos) {
                 final UidStateCallbackInfo uidStateCallbackInfo = mUidStateCallbackInfos.get(uid);
                 if (uidStateCallbackInfo == null) {
@@ -7112,7 +7118,7 @@ public class NetworkPolicyManagerService extends INetworkPolicyManager.Stub {
             return effectiveBlockedReasons;
         }
 
-        static int getAllowedReasonsForProcState(int procState) {
+        static int getAllowedReasonsForProcState(@ProcessState int procState) {
             if (procState <= NetworkPolicyManager.TOP_THRESHOLD_STATE) {
                 return ALLOWED_REASON_TOP | ALLOWED_REASON_FOREGROUND
                         | ALLOWED_METERED_REASON_FOREGROUND | ALLOWED_REASON_NOT_IN_BACKGROUND;
