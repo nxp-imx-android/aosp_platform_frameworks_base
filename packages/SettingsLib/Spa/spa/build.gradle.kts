@@ -51,6 +51,7 @@ android {
 dependencies {
     api(project(":SettingsLib:Color"))
     api("androidx.appcompat:appcompat:1.7.1")
+    api("androidx.compose.foundation:foundation:1.8.0-alpha01")
     api("androidx.compose.material3:material3:1.5.0-alpha11")
     api("androidx.compose.material:material-icons-extended:1.7.8")
     api("androidx.compose.ui:ui-tooling-preview:$jetpackComposeVersion")
