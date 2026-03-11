@@ -86,7 +86,7 @@ class AdbPairingThread extends Thread implements NsdManager.RegistrationListener
             return;
         }
 
-        AdbdServicesManager servicesManager = new AdbdServicesManager(mContext, "pair");
+        AdbdServicesManager servicesManager = new AdbdServicesManager(mContext, "pair", mHandler);
         int port = native_pairing_get_port(mPairingServer);
         if (port <= 0) {
             Slog.e(TAG, "Pairing server has invalid port");

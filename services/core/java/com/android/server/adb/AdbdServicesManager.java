@@ -21,6 +21,7 @@ import android.content.Context;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.net.wifi.WifiManager;
+import android.os.Handler;
 import android.os.SystemProperties;
 import android.provider.Settings;
 import android.util.Slog;
@@ -33,6 +34,8 @@ import java.util.Map;
 public class AdbdServicesManager implements AdbdIServicesManager {
 
     private static final String TAG = AdbDebuggingManager.class.getSimpleName();
+
+    private final Handler mHandler;
 
     // The manager we use to publish/unpublish services
     private final NsdManager mNsdManager;
@@ -62,7 +65,8 @@ public class AdbdServicesManager implements AdbdIServicesManager {
                 public void onServiceUnregistered(NsdServiceInfo serviceInfo) {}
             };
 
-    AdbdServicesManager(Context context, String purpose) {
+    AdbdServicesManager(Context context, String purpose, Handler handler) {
+        mHandler = handler;
         mNsdManager = context.getSystemService(NsdManager.class);
         mContentResolver = context.getContentResolver();
         WifiManager wifiManager =
@@ -157,7 +161,11 @@ public class AdbdServicesManager implements AdbdIServicesManager {
             unregisterService(service.mInstanceName, service.mServiceType);
         }
         for (AdbdRegistrationListener service : services) {
-            registerService(service.mInstanceName, service.mServiceType, service.mPort);
+            registerService(
+                    service.mInstanceName,
+                    service.mServiceType,
+                    service.mPort,
+                    service.mRegistrationCallback);
         }
     }
 
@@ -171,7 +179,7 @@ public class AdbdServicesManager implements AdbdIServicesManager {
         }
     }
 
-    private static class AdbdRegistrationListener implements NsdManager.RegistrationListener {
+    private class AdbdRegistrationListener implements NsdManager.RegistrationListener {
         final String mInstanceName;
         final String mServiceType;
         final int mPort;
@@ -203,6 +211,13 @@ public class AdbdServicesManager implements AdbdIServicesManager {
         @Override
         public void onServiceRegistered(NsdServiceInfo serviceInfo) {
             Slog.i(TAG, "Registered service '" + serviceInfo + "'");
+            String hostname = serviceInfo.getHostname();
+            if (hostname != null) {
+                mHandler.sendMessage(
+                        mHandler.obtainMessage(
+                                AdbDebuggingManager.AdbDebuggingHandler.MSG_ON_LOCALHOSTNAME_KNOWN,
+                                hostname + ".local"));
+            }
             mRegistrationCallback.onServiceRegistered(serviceInfo);
         }
 
