@@ -25,9 +25,7 @@ import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.MotionEventHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
-import com.android.window.flags.Flags
 import org.junit.After
-import org.junit.Assume
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
@@ -47,7 +45,6 @@ constructor(
 
     @Before
     fun setup() {
-        Assume.assumeTrue(Flags.enableWindowingEdgeDragResize())
         testApp.enterDesktopMode(wmHelper, device)
     }
 

@@ -28,14 +28,11 @@ import android.annotation.NonNull;
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.Region;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.testing.AndroidTestingRunner;
 import android.util.Size;
 
 import androidx.test.filters.SmallTest;
 
-import com.android.window.flags.Flags;
 import com.android.wm.shell.ShellTestCase;
 
 import org.junit.Test;
@@ -192,7 +189,6 @@ public class DragResizeWindowGeometryTests extends ShellTestCase {
      * <p>Note that capturing input does not necessarily mean that the event will be handled.
      */
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOWING_EDGE_DRAG_RESIZE)
     public void testRegionUnion_edgeDragResizeEnabled_containsLargeCorners() {
         Region region = new Region();
         GEOMETRY.union(region);
@@ -201,36 +197,13 @@ public class DragResizeWindowGeometryTests extends ShellTestCase {
         new TestPoints(mContext, TASK_SIZE, cornerRadius).validateRegion(region);
     }
 
-    /**
-     * Validate that with the flag disabled, the corner resize regions are the original smaller
-     * size.
-     */
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_WINDOWING_EDGE_DRAG_RESIZE)
-    public void testRegionUnion_edgeDragResizeDisabled_containsFineCorners() {
-        Region region = new Region();
-        GEOMETRY.union(region);
-        final int cornerRadius = FINE_CORNER_SIZE / 2;
-
-        new TestPoints(mContext, TASK_SIZE, cornerRadius).validateRegion(region);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOWING_EDGE_DRAG_RESIZE)
     public void testCalculateControlType_edgeDragResizeEnabled_edges() {
         // The input source (touchscreen or cursor) shouldn't impact the edge resize size.
         validateCtrlTypeForEdges(/* isTouchscreen= */ false, /* isEdgeResizePermitted= */ false);
         validateCtrlTypeForEdges(/* isTouchscreen= */ true, /* isEdgeResizePermitted= */ false);
         validateCtrlTypeForEdges(/* isTouchscreen= */ false, /* isEdgeResizePermitted= */ true);
         validateCtrlTypeForEdges(/* isTouchscreen= */ true, /* isEdgeResizePermitted= */ true);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_WINDOWING_EDGE_DRAG_RESIZE)
-    public void testCalculateControlType_edgeDragResizeDisabled_edges() {
-        // Edge resizing is not supported for touchscreen input when the flag is disabled.
-        validateCtrlTypeForEdges(/* isTouchscreen= */ false, /* isEdgeResizePermitted= */ true);
-        validateCtrlTypeForEdges(/* isTouchscreen= */ true, /* isEdgeResizePermitted= */ false);
     }
 
     private void validateCtrlTypeForEdges(boolean isTouchscreen, boolean isEdgeResizePermitted) {
@@ -249,7 +222,6 @@ public class DragResizeWindowGeometryTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOWING_EDGE_DRAG_RESIZE)
     public void testCalculateControlType_edgeDragResizeEnabled_corners() {
         final TestPoints fineTestPoints = new TestPoints(mContext, TASK_SIZE, FINE_CORNER_SIZE / 2);
         final TestPoints largeCornerTestPoints =
@@ -279,48 +251,6 @@ public class DragResizeWindowGeometryTests extends ShellTestCase {
         // is within the corner for large touch inputs.
         largeCornerTestPoints.validateCtrlTypeForInnerPoints(GEOMETRY, /* isTouchscreen= */
                 true, /* isEdgeResizePermitted= */ true, true);
-        largeCornerTestPoints.validateCtrlTypeForOutsidePoints(GEOMETRY, /* isTouchscreen= */
-                true, /* isEdgeResizePermitted= */ true, false);
-        largeCornerTestPoints.validateCtrlTypeForInnerPoints(GEOMETRY, /* isTouchscreen= */
-                false, /* isEdgeResizePermitted= */ true, false);
-        largeCornerTestPoints.validateCtrlTypeForOutsidePoints(GEOMETRY, /* isTouchscreen= */
-                false, /* isEdgeResizePermitted= */ true, false);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_WINDOWING_EDGE_DRAG_RESIZE)
-    public void testCalculateControlType_edgeDragResizeDisabled_corners() {
-        final TestPoints fineTestPoints =
-                new TestPoints(mContext, TASK_SIZE, FINE_CORNER_SIZE / 2);
-        final TestPoints largeCornerTestPoints =
-                new TestPoints(mContext, TASK_SIZE, LARGE_CORNER_SIZE / 2);
-
-        // When the flag is disabled, points within fine corners should pass only from touchscreen.
-        // Edge resize permitted (indicating the event is from a cursor/stylus) should have no
-        // impact.
-        fineTestPoints.validateCtrlTypeForInnerPoints(GEOMETRY, /* isTouchscreen= */
-                true, /* isEdgeResizePermitted= */ true, true);
-        fineTestPoints.validateCtrlTypeForOutsidePoints(GEOMETRY, /* isTouchscreen= */
-                true, /* isEdgeResizePermitted= */ true, false);
-        fineTestPoints.validateCtrlTypeForInnerPoints(GEOMETRY, /* isTouchscreen= */
-                true, /* isEdgeResizePermitted= */ false, true);
-        fineTestPoints.validateCtrlTypeForOutsidePoints(GEOMETRY, /* isTouchscreen= */
-                true, /* isEdgeResizePermitted= */ false, false);
-
-        // Points within fine corners should never pass when not from touchscreen; expect edge
-        // resizing only.
-        fineTestPoints.validateCtrlTypeForInnerPoints(GEOMETRY, /* isTouchscreen= */
-                false, /* isEdgeResizePermitted= */ true, false);
-        fineTestPoints.validateCtrlTypeForOutsidePoints(GEOMETRY, /* isTouchscreen= */
-                false, /* isEdgeResizePermitted= */ true, false);
-        fineTestPoints.validateCtrlTypeForInnerPoints(GEOMETRY, /* isTouchscreen= */
-                false, /* isEdgeResizePermitted= */ false, false);
-        fineTestPoints.validateCtrlTypeForOutsidePoints(GEOMETRY, /* isTouchscreen= */
-                false, /* isEdgeResizePermitted= */ false, false);
-
-        // When the flag is disabled, points near the large corners should never pass.
-        largeCornerTestPoints.validateCtrlTypeForInnerPoints(GEOMETRY, /* isTouchscreen= */
-                true, /* isEdgeResizePermitted= */ true, false);
         largeCornerTestPoints.validateCtrlTypeForOutsidePoints(GEOMETRY, /* isTouchscreen= */
                 true, /* isEdgeResizePermitted= */ true, false);
         largeCornerTestPoints.validateCtrlTypeForInnerPoints(GEOMETRY, /* isTouchscreen= */
