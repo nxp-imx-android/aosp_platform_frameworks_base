@@ -2432,7 +2432,7 @@ public class PackageParser {
         List<SplitPermissionInfoParcelable> splitPermissionParcelables;
         try {
             splitPermissionParcelables = ActivityThread.getPermissionManager()
-                    .getSplitPermissions();
+                    .getSplitPermissions(false);
         } catch (RemoteException e) {
             splitPermissionParcelables = Collections.emptyList();
         }
@@ -2446,7 +2446,9 @@ public class PackageParser {
             splitPermissions.add(new PermissionManager.SplitPermissionInfo(
                     splitPermissionParcelable.getSplitPermission(),
                     splitPermissionParcelable.getNewPermissions(),
-                    splitPermissionParcelable.getTargetSdk()
+                    splitPermissionParcelable.getTargetSdk(),
+                    splitPermissionParcelable.getFeatureFlag(),
+                    splitPermissionParcelable.isFeatureFlagNegated()
             ));
         }
 

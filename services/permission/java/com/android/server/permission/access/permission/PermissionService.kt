@@ -2013,9 +2013,9 @@ class PermissionService(private val service: AccessCheckingService) :
         onPermissionsChangeListeners.removeListener(listener)
     }
 
-    override fun getSplitPermissions(): List<SplitPermissionInfoParcelable> {
+    override fun getSplitPermissions(includeDisabled: Boolean): List<SplitPermissionInfoParcelable> {
         return PermissionManager.splitPermissionInfoListToParcelableList(
-            systemConfig.splitPermissions
+            systemConfig.getSplitPermissions(includeDisabled)
         )
     }
 

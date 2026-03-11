@@ -247,7 +247,7 @@ public class SystemConfigTest {
         SplitPermissionInfo expectedPermission =
                 new SplitPermissionInfo(
                         "android.permission.FOO", List.of("android.permission.BAR"),
-                        36);
+                        36, ALWAYS_ON_FLAG, false);
 
         final ArrayList<SplitPermissionInfo> permissions =
                 mSysConfig.getSplitPermissions();
@@ -274,6 +274,37 @@ public class SystemConfigTest {
         final ArrayList<SplitPermissionInfo> permissions =
                 mSysConfig.getSplitPermissions();
         assertThat(permissions).isEmpty();
+
+        final ArrayList<SplitPermissionInfo> rawPermissions =
+                mSysConfig.getSplitPermissions(true);
+        assertThat(rawPermissions.size()).isEqualTo(1);
+        assertThat(rawPermissions.get(0).getSplitPermission()).isEqualTo("android.permission.FOO");
+        assertThat(rawPermissions.get(0).getFeatureFlag()).isEqualTo(ALWAYS_OFF_FLAG);
+        assertThat(rawPermissions.get(0).isFeatureFlagNegated()).isFalse();
+    }
+
+    @Test
+    public void testSplitPermission_featureFlagNegated() throws Exception {
+        final String contents =
+                "<permissions>"
+                        + "<split-permission name=\"android.permission.FOO\""
+                        + "featureFlag=\"!" + ALWAYS_OFF_FLAG + "\""
+                        + "targetSdk=\"36\">"
+                        + "<new-permission name=\"android.permission.BAR\" />"
+                        + "</split-permission>"
+                        + "</permissions>";
+
+        final File folder = createTempSubfolder("folder/etc/permissions");
+        createTempFile(folder, "platform.xml", contents);
+
+        readPermissions(folder, /* Grant all permission flags */ ~0);
+
+        final ArrayList<SplitPermissionInfo> permissions =
+                mSysConfig.getSplitPermissions();
+        assertThat(permissions.size()).isEqualTo(1);
+        assertThat(permissions.get(0).getSplitPermission()).isEqualTo("android.permission.FOO");
+        assertThat(permissions.get(0).getFeatureFlag()).isEqualTo(ALWAYS_OFF_FLAG);
+        assertThat(permissions.get(0).isFeatureFlagNegated()).isTrue();
     }
 
     @Test
