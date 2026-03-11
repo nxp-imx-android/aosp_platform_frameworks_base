@@ -141,6 +141,7 @@ public class TaskSnapshotWindow {
             final SurfaceControl surfaceControl = new SurfaceControl.Builder()
                     .setName(layoutParams.getTitle() + " - task-snapshot-surface")
                     .setBLASTLayer().setNotAddToRoot()
+                    .setHidden(false)
                     .setFormat(format)
                     .setCallsite("TaskSnapshotWindow#create").build();
             final Runnable reportDrawn = () -> {
