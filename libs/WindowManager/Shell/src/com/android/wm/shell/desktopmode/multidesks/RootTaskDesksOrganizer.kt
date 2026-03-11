@@ -244,6 +244,8 @@ class RootTaskDesksOrganizer(
         // Core display policy will change the desk's windowing mode to UNDEFINED, causing desk
         // (and children) to become fullscreen via inheritance. Set the desk to FREEFORM explicitly
         // to prevent this when the changes merge.
+        // TODO: b/491858802 - add policy to set the windowing mode on reparent so that this
+        // correction isn't needed.
         wct.setWindowingMode(root.token, WINDOWING_MODE_FREEFORM)
         wct.setWindowingMode(minimizationRoot.token, WINDOWING_MODE_FREEFORM)
         wct.setDensityDpi(root.token, Configuration.DENSITY_DPI_UNDEFINED)
@@ -622,8 +624,8 @@ class RootTaskDesksOrganizer(
             val deskId = taskInfo.taskId
             logV("Desk #%d appeared", deskId)
             if (taskInfo.windowingMode != WINDOWING_MODE_FREEFORM) {
-                logW(
-                    "Desk is not in FREEFORM mode: %s",
+                logWtf(
+                    "Desk is not in FREEFORM mode: %s. This is illegal state. Please file a bug.",
                     windowingModeToString(taskInfo.windowingMode),
                 )
             }
@@ -672,6 +674,7 @@ class RootTaskDesksOrganizer(
     private fun handleTaskInfoChanged(taskInfo: RunningTaskInfo) {
         if (deskRootsByDeskId.contains(taskInfo.taskId)) {
             val deskId = taskInfo.taskId
+            val previousDeskDisplayId = deskRootsByDeskId[deskId].taskInfo.displayId
             deskRootsByDeskId[deskId] = deskRootsByDeskId[deskId].copy(taskInfo = taskInfo)
             logV(
                 "Desk #%d's task info changed in display#%d visible=%b children=%s",
@@ -681,9 +684,16 @@ class RootTaskDesksOrganizer(
                 deskRootsByDeskId[deskId].children,
             )
             if (taskInfo.windowingMode != WINDOWING_MODE_FREEFORM) {
-                logW(
-                    "Desk is not in FREEFORM mode: %s",
+                logWtf(
+                    "Desk is not in FREEFORM mode: %s. This is illegal state. Please file a bug.",
                     windowingModeToString(taskInfo.windowingMode),
+                )
+            }
+            if (previousDeskDisplayId != taskInfo.displayId) {
+                logD(
+                    "Desk moved from display #%d to display #%d.",
+                    previousDeskDisplayId,
+                    taskInfo.displayId,
                 )
             }
             return
@@ -907,6 +917,12 @@ class RootTaskDesksOrganizer(
     @SuppressWarnings("ProtoLogNonConstantFormat")
     private fun logE(msg: String, vararg arguments: Any?) {
         ProtoLog.e(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    // TODO(b/478792808): Remove suppression
+    @SuppressWarnings("ProtoLogNonConstantFormat")
+    private fun logWtf(msg: String, vararg arguments: Any?) {
+        ProtoLog.wtf(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
     override fun dump(pw: PrintWriter, prefix: String) {
