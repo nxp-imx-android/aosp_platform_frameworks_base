@@ -26,14 +26,17 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.AndroidEmbeddedExternalSurface
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.safeGestures
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -53,6 +56,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.android.compose.modifiers.thenIf
@@ -168,7 +173,7 @@ constructor(
                     cameraTransformationViewModel.create()
                 }
             var windowBounds: Rect by remember { mutableStateOf(Rect.Zero) }
-
+            transformationViewModel.onUiBoundsChangedWithInsets(windowBounds)
             transformationViewModel.fillTouchableRegionInto(outTouchableRegion)
 
             Box(
@@ -177,9 +182,7 @@ constructor(
                     modifier
                         .fillMaxSize()
                         .onGloballyPositioned { layoutCoordinates ->
-                            val layoutBounds = layoutCoordinates.boundsInWindow()
-                            windowBounds = layoutBounds
-                            transformationViewModel.onUiBoundsChanged(layoutBounds)
+                            windowBounds = layoutCoordinates.boundsInWindow()
                         }
                         .selfieTransformableModifier(
                             viewModel = transformationViewModel,
@@ -222,10 +225,6 @@ constructor(
                                 val boundsInWindow = layoutCoordinates.boundsInWindow(false)
                                 transformationViewModel.onSurfaceScreenBoundsUpdated(boundsInWindow)
                             }
-                            .selfieTransformableModifier(
-                                viewModel = transformationViewModel,
-                                isEverywhere = false,
-                            )
                             .graphicsLayer {
                                 translationX = transformationViewModel.offsetX
                                 translationY = transformationViewModel.offsetY
@@ -233,12 +232,19 @@ constructor(
                                 scaleX = transformationViewModel.scale
                                 scaleY = transformationViewModel.scale
                             }
+                            .selfieTransformableModifier(
+                                viewModel = transformationViewModel,
+                                isEverywhere = false,
+                            )
                             .thenIf(viewModel.areTapsSupported) {
                                 Modifier.clickable(
                                     interactionSource = null,
                                     indication = null,
                                     onClick = { viewModel.onSurfaceClicked() },
                                 )
+                            }
+                            .thenIf(transformationViewModel.shouldShowTouchBounds) {
+                                Modifier.background(Color.Green.copy(alpha = 0.5f))
                             }
                 )
             }
@@ -255,14 +261,14 @@ constructor(
         isEverywhere: Boolean,
     ): Modifier {
         return if (isEverywhere == viewModel.transformableByTouchAnywhere) {
-            transformable(viewModel)
+            transformable(viewModel.transformableState)
         } else {
             this
         }
     }
 
     /**
-     * Shows the UI and suspends until it's is dismissed. Cancelling the suspension dismisses the UI
+     * Shows the UI and suspends until it's dismissed. Cancelling the suspension dismisses the UI
      */
     suspend fun show(): Unit = suspendCancellableCoroutine { invocation ->
         dialog.setOnDismissListener {
@@ -287,6 +293,27 @@ private fun ScreenCaptureCameraTransformationViewModel.fillTouchableRegionInto(o
             .sample(outsideRegionUpdateSampleDuration)
             .onEach { outRegion.set(it) }
             .launchIn(this)
+    }
+}
+
+@Composable
+private fun ScreenCaptureCameraTransformationViewModel.onUiBoundsChangedWithInsets(
+    windowBounds: Rect
+) {
+    val insets: WindowInsets = WindowInsets.safeGestures
+    val density = LocalDensity.current
+    val layoutDirection = LocalLayoutDirection.current
+    LaunchedEffect(this, density, layoutDirection, windowBounds, insets) {
+        onUiBoundsChanged(
+            uiBounds = windowBounds,
+            safeGestureBounds =
+                Rect(
+                    left = windowBounds.left + insets.getLeft(density, layoutDirection),
+                    top = windowBounds.top + insets.getTop(density),
+                    right = windowBounds.right - insets.getRight(density, layoutDirection),
+                    bottom = windowBounds.bottom - insets.getBottom(density),
+                ),
+        )
     }
 }
 
