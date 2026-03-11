@@ -4,6 +4,16 @@ container: "system"
 # Flags are ordered alphabetically by name.
 
 flag {
+    name: "cleanup_unnecessary_scan_request_in_settings"
+    namespace: "media_better_together"
+    description: "Removes unnecessary scan requests from Settings to reduce battery consumption"
+    bug: "336521860"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "disable_set_bluetooth_ad2p_on_calls"
     namespace: "media_better_together"
     description: "Prevents calls to AudioService.setBluetoothA2dpOn(), known to cause incorrect audio routing to the built-in speakers."
