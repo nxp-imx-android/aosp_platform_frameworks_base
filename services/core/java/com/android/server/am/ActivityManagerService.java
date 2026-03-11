@@ -4119,7 +4119,16 @@ public class ActivityManagerService extends IActivityManager.Stub
                 } catch (RemoteException e) {
                     /* ignore */
                 }
-                permitted = (applicationInfo != null && applicationInfo.uid == uid
+
+                int hostAppUid = uid;
+                if (enablePccFrameworkSupport() && Process.isPrivateComputeCoreUid(uid)) {
+                    try {
+                        hostAppUid = getPackageManager().getAppUidForPrivateComputeCoreUid(uid);
+                    } catch (RemoteException e) {
+                        /* ignore */
+                    }
+                }
+                permitted = (applicationInfo != null && applicationInfo.uid == hostAppUid
                         && !restorePregrantedPermissions) // own uid data, not changing pregrants
                         || (checkComponentPermission(permission.CLEAR_APP_USER_DATA,
                                 pid, uid, -1, true) == PackageManager.PERMISSION_GRANTED);
@@ -4157,7 +4166,12 @@ public class ActivityManagerService extends IActivityManager.Stub
 
             synchronized (mGlobalLock) {
                 if (appInfo != null) {
+                    // When killing processes, all processes related to a packageName are now killed
+                    // including PCC processes.
                     forceStopPackageLocked(packageName, appInfo.uid, "clear data");
+
+                    // The following will kill all tasks, including PCC, as the tasks to be killed
+                    // are filtered based on packageName and userId
                     mAtmInternal.removeRecentTasksByPackageName(packageName, resolvedUserId);
                 }
             }
