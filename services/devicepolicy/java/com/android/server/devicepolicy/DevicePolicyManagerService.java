@@ -7512,9 +7512,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     private void wipeDataNoLock(@Nullable ComponentName admin, int flags, String internalReason,
             String wipeReasonForUser, @UserIdInt int userId, @Nullable Boolean factoryReset) {
         Slogf.i(LOG_TAG, "wipeDataNoLock(): admin=%s, flags=%d, internalReason=%s, "
-                + "wipeReasonForUser=%s, userId=%d, factoryReset=%s, Flags.deviceOwnerForAll()=%b",
-                admin, flags, internalReason, wipeReasonForUser, userId, factoryReset,
-                Flags.deviceOwnerForAll());
+                + "wipeReasonForUser=%s, userId=%d, factoryReset=%s",
+                admin, flags, internalReason, wipeReasonForUser, userId, factoryReset);
         wtfIfInLock();
         final String adminPackage;
         if (admin != null) {
@@ -7533,9 +7532,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             boolean isSingleUserDoMode = getHeadlessDeviceOwnerModeForDeviceOwner()
                     == HEADLESS_DEVICE_OWNER_MODE_SINGLE_USER;
             if (isSingleUserDoMode) {
-                shouldFactoryReset = Flags.deviceOwnerForAll()
-                        ? userId == mDeviceAdmins.getDeviceOwnerUserIdUnchecked()
-                        : userId == getMainUserId();
+                shouldFactoryReset = userId == mDeviceAdmins.getDeviceOwnerUserIdUnchecked();
             } else {
                 shouldFactoryReset = userId == UserHandle.USER_SYSTEM;
             }
@@ -16991,19 +16988,11 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 }
 
                 if (isHeadlessModeSingleUser) {
-                    if (Flags.deviceOwnerForAll()) {
-                        int status = checkDeviceOwnerForHeadlessModeSingleUser(deviceOwnerUserId);
-                        if (status == STATUS_OK) {
-                            ensureSetUpUser = deviceOwnerUserId;
-                        } else {
-                            return status;
-                        }
-
+                    int status = checkDeviceOwnerForHeadlessModeSingleUser(deviceOwnerUserId);
+                    if (status == STATUS_OK) {
+                        ensureSetUpUser = deviceOwnerUserId;
                     } else {
-                        ensureSetUpUser = mUserManagerInternal.getMainUserId();
-                        if (ensureSetUpUser == UserHandle.USER_NULL) {
-                            return STATUS_HEADLESS_ONLY_SYSTEM_USER;
-                        }
+                        return status;
                     }
                 }
             }
@@ -21950,16 +21939,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
             int deviceOwnerUserId = UserHandle.USER_SYSTEM;
             if (isSingleUserMode && mInjector.userManagerIsHeadlessSystemUserMode()) {
-                if (Flags.deviceOwnerForAll()) {
-                    deviceOwnerUserId = callerUserId;
-                    Slogf.d(LOG_TAG,
-                            "provisionFullyManagedDevice(): using calling user id (%d) as DO",
-                            deviceOwnerUserId);
-                } else {
-                    deviceOwnerUserId = mUserManagerInternal.getMainUserId();
-                    Slogf.d(LOG_TAG, "provisionFullyManagedDevice(): using main user id (%d) as DO",
-                            deviceOwnerUserId);
-                }
+                deviceOwnerUserId = callerUserId;
+                Slogf.d(LOG_TAG,
+                        "provisionFullyManagedDevice(): using calling user id (%d) as DO",
+                        deviceOwnerUserId);
             }
             if (!removeNonRequiredAppsForManagedDevice(
                     deviceOwnerUserId,
