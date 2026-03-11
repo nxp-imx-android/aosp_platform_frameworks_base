@@ -20,6 +20,7 @@ import android.annotation.IntDef;
 import android.app.TaskInfo;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Handler;
 import android.os.Message;
 import android.view.SurfaceControl;
@@ -443,9 +444,12 @@ public class PipTransitionState {
      * state immediately after.</p>
      */
     public void setIsDisplayChangeScheduled(boolean isDisplayChangeScheduled) {
-        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                "%s: Set mIsDisplayChangeScheduled=%b", TAG, isDisplayChangeScheduled);
-        mIsDisplayChangeScheduled = isDisplayChangeScheduled;
+        if (mIsDisplayChangeScheduled != isDisplayChangeScheduled) {
+            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                    "%s: Set mIsDisplayChangeScheduled=%b callers=\n%s",
+                    TAG, isDisplayChangeScheduled, Debug.getCallers(4, "    "));
+            mIsDisplayChangeScheduled = isDisplayChangeScheduled;
+        }
     }
 
     /**
