@@ -21,6 +21,13 @@ flag {
 }
 
 flag {
+  name: "notifs_all_use_pill_buttons"
+  namespace: "notifications"
+  description: "[prototype] Change all notifications to use pill-shaped action buttons."
+  bug: "449676256"
+}
+
+flag {
   name: "api_metric_style"
   is_exported: true
   namespace: "notifications"
