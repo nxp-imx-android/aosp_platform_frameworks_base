@@ -1012,6 +1012,21 @@ static void android_hardware_HubEndpoint_removeHostSink(JNIEnv* env, jobject /* 
     }
 }
 
+static jintArray android_hardware_HubEndpoint_getSharedDataSupportVersion(JNIEnv* env,
+                                                                          jclass /* clazz */) {
+    std::vector<jint> out;
+    out.push_back(android::contexthub::data_flow::kVersion.major);
+    out.push_back(android::contexthub::data_flow::kVersion.minor);
+    out.push_back(android::contexthub::data_flow::kVersion.patch);
+    out.push_back(android::contexthub::data_flow::kMinCompatibleMajorVersion);
+
+    jintArray javaArray = env->NewIntArray(out.size());
+    if (javaArray != nullptr) {
+        env->SetIntArrayRegion(javaArray, 0, out.size(), out.data());
+    }
+    return javaArray;
+}
+
 static void android_hardware_HubEndpoint_deinit(JNIEnv* env, jobject thiz, jlong handle) {
     HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
     if (resource != nullptr) {
@@ -1021,6 +1036,8 @@ static void android_hardware_HubEndpoint_deinit(JNIEnv* env, jobject thiz, jlong
 }
 
 static const JNINativeMethod method_table[] = {
+        {"native_getSharedDataSupportVersion", "()[I",
+         (void*)android_hardware_HubEndpoint_getSharedDataSupportVersion},
         {"native_init",
          "(Landroid/os/MessageQueue;Landroid/hardware/contexthub/"
          "HubEndpoint$DataFlowJniCallback;JJ)J",

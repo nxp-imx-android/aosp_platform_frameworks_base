@@ -146,6 +146,10 @@ public final class HubEndpointInfo implements Parcelable {
     @NonNull private final List<String> mRequiredPermissions;
     @NonNull private final List<HubServiceInfo> mHubServiceInfos;
 
+    @Nullable
+    private final android.hardware.contexthub.EndpointInfo.SharedDataSupportVersion
+            mSharedDataSupportVersion;
+
     /** @hide */
     public HubEndpointInfo(android.hardware.contexthub.EndpointInfo endpointInfo) {
         mId = new HubEndpointIdentifier(endpointInfo.id.hubId, endpointInfo.id.id);
@@ -158,6 +162,7 @@ public final class HubEndpointInfo implements Parcelable {
         for (int i = 0; i < endpointInfo.services.length; i++) {
             mHubServiceInfos.add(new HubServiceInfo(endpointInfo.services[i]));
         }
+        mSharedDataSupportVersion = endpointInfo.sharedDataSupportVersion;
     }
 
     /** @hide */
@@ -165,7 +170,10 @@ public final class HubEndpointInfo implements Parcelable {
             String name,
             int version,
             @Nullable String tag,
-            @NonNull List<HubServiceInfo> hubServiceInfos) {
+            @NonNull List<HubServiceInfo> hubServiceInfos,
+            @Nullable
+                    android.hardware.contexthub.EndpointInfo.SharedDataSupportVersion
+                            sharedDataSupportVersion) {
         mId = HubEndpointIdentifier.invalid();
         mType = TYPE_APP;
         mName = name;
@@ -173,6 +181,7 @@ public final class HubEndpointInfo implements Parcelable {
         mTag = tag;
         mRequiredPermissions = Collections.emptyList();
         mHubServiceInfos = hubServiceInfos;
+        mSharedDataSupportVersion = sharedDataSupportVersion;
     }
 
     private HubEndpointInfo(Parcel in) {
@@ -187,6 +196,8 @@ public final class HubEndpointInfo implements Parcelable {
         in.readStringList(mRequiredPermissions);
         mHubServiceInfos = new ArrayList<>();
         in.readTypedList(mHubServiceInfos, HubServiceInfo.CREATOR);
+        mSharedDataSupportVersion =
+                in.readParcelable(null, EndpointInfo.SharedDataSupportVersion.class);
     }
 
     /** Parcel implementation details */
@@ -210,6 +221,7 @@ public final class HubEndpointInfo implements Parcelable {
         dest.writeString(mTag);
         dest.writeStringList(mRequiredPermissions);
         dest.writeTypedList(mHubServiceInfos, flags);
+        dest.writeParcelable(mSharedDataSupportVersion, flags);
     }
 
     /** Get a unique identifier for this endpoint. */
