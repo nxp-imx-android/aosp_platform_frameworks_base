@@ -16,7 +16,11 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
+import android.annotation.Px
+import android.content.Context
 import android.content.res.Resources
+import android.graphics.Bitmap
+import android.net.Uri
 import com.android.systemui.lifecycle.Activatable
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 
@@ -39,6 +43,13 @@ public interface NotificationRulesScreenViewModel : Activatable {
      * are more visually prominent but not clickable.
      */
     public fun buildRuleText(rule: RuleModel, resources: Resources): RuleDisplayModel
+
+    /**
+     * Loads the photo thumbnail for a contact from the given [uri].
+     *
+     * @param userContext a context specific to the user that owns the notification rule.
+     */
+    suspend fun loadContactBitmapFromUri(uri: Uri, userContext: Context, @Px sizePx: Int): Bitmap?
 
     /** Creates a new rule and adds it to the list of saved rules. */
     public fun createRule(newRule: RuleModel)

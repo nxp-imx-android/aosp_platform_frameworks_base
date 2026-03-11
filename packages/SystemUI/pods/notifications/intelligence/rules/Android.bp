@@ -29,10 +29,15 @@ java_library {
     name: "com.android.systemui.notifications.intelligence.rules_main",
     defaults: ["sysui_main"],
     static_libs: [
-        "com.android.systemui.graphics_api",
-        "com.android.systemui.notifications.intelligence.rules_api",
-        "kotlinx_coroutines",
+        // go/keep-sorted start
         "SystemUISharedLib",
+        "com.android.systemui-api",
+        "com.android.systemui.graphics_api",
+        "com.android.systemui.notifications.content.icon_api",
+        "com.android.systemui.notifications.intelligence.rules_api",
+        "com.android.systemui.user.data-api",
+        "kotlinx_coroutines",
+        // go/keep-sorted end
     ],
     visibility: [
         "//frameworks/base/packages/SystemUI/pods/notifications/intelligence/rules/ui",
@@ -55,6 +60,7 @@ java_library {
     static_libs: [
         "com.android.systemui.notifications.intelligence.rules_api",
         "com.android.systemui.notifications.intelligence.rules_main",
+        "platform-test-annotations",
     ],
 }
 

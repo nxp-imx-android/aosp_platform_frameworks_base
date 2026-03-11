@@ -33,6 +33,7 @@ class DraftRuleModelTest : SysuiTestCase() {
     fun toDraft_allNull() {
         val rule =
             RuleModel(
+                id = 1,
                 action = ActionModel.Bundle,
                 filter = FilterModel(contacts = null, includedApps = null),
             )
@@ -66,6 +67,7 @@ class DraftRuleModelTest : SysuiTestCase() {
             )
         val rule =
             RuleModel(
+                id = 2,
                 action = ActionModel.Silence,
                 filter = FilterModel(contacts = contacts, includedApps = includedApps),
             )

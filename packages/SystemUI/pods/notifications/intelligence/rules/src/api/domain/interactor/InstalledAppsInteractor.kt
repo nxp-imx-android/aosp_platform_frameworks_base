@@ -16,10 +16,11 @@
 
 package com.android.systemui.notifications.intelligence.rules.domain.interactor
 
+import android.content.Context
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 
 /** Interactor for information about installed apps. */
 public interface InstalledAppsInteractor {
     /** Fetches all apps installed on the device. */
-    public suspend fun fetchInstalledApps(): List<AppModel>
+    public suspend fun fetchInstalledApps(context: Context): List<AppModel>
 }

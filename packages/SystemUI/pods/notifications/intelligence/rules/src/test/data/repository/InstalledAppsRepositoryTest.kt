@@ -16,17 +16,22 @@
 
 package com.android.systemui.notifications.intelligence.rules.data.repository
 
+import android.content.applicationContext
 import android.content.packageManager
 import android.content.pm.ApplicationInfo
+import android.content.pm.UserInfo
 import android.graphics.drawable.Drawable
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
-import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.notifications.content.icon.mockAppIconProvider
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 import com.android.systemui.testKosmosNew
+import com.android.systemui.user.data.model.SelectedUserModel
+import com.android.systemui.user.data.model.SelectionStatus
+import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -40,35 +45,70 @@ import org.mockito.kotlin.whenever
 class InstalledAppsRepositoryTest : SysuiTestCase() {
     private val kosmos = testKosmosNew()
 
-    // TODO: b/478225883 - Put InstalledAppsRepository in a test fixture.
-    private val Kosmos.underTest by
-        Kosmos.Fixture { InstalledAppsRepositoryImpl(kosmos.testDispatcher, kosmos.packageManager) }
+    private val Kosmos.underTest by Kosmos.Fixture { realInstalledAppsRepository }
 
     @Test
-    fun fetchInstalledApps_getsAll() =
+    fun fetchInstalledApps_getsAll_forUser() =
         kosmos.runTest {
+            fakeUserRepository.selectedUser.value =
+                SelectedUserModel(SELECTED_USER_INFO, SelectionStatus.SELECTION_COMPLETE)
+
             val drawable1 = mock<Drawable>()
             val appInfo1 =
                 mock<ApplicationInfo>().apply {
                     this.uid = 1
                     whenever(this.loadLabel(eq(packageManager))).thenReturn("App 1")
-                    whenever(this.loadIcon(eq(packageManager))).thenReturn(drawable1)
                     this.packageName = "app.1"
                 }
+            whenever(
+                    mockAppIconProvider.getOrFetchAppIcon(
+                        eq("app.1"),
+                        eq(SELECTED_USER_INFO.userHandle),
+                        any<String>(),
+                    )
+                )
+                .thenReturn(drawable1)
 
             val drawable2 = mock<Drawable>()
             val appInfo2 =
                 mock<ApplicationInfo>().apply {
                     this.uid = 2
                     whenever(this.loadLabel(eq(packageManager))).thenReturn("App 2")
-                    whenever(this.loadIcon(eq(packageManager))).thenReturn(drawable2)
                     this.packageName = "app.2"
                 }
+            whenever(
+                    mockAppIconProvider.getOrFetchAppIcon(
+                        eq("app.2"),
+                        eq(SELECTED_USER_INFO.userHandle),
+                        any<String>(),
+                    )
+                )
+                .thenReturn(drawable2)
 
-            whenever(packageManager.getInstalledApplications(any<Int>()))
+            val drawable3 = mock<Drawable>()
+            val appForOtherUser =
+                mock<ApplicationInfo>().apply {
+                    this.uid = 3
+                    whenever(this.loadLabel(eq(packageManager))).thenReturn("App 3")
+                    this.packageName = "app.3"
+                }
+            whenever(
+                    mockAppIconProvider.getOrFetchAppIcon(
+                        eq("app.3"),
+                        eq(OTHER_USER_INFO.userHandle),
+                        any<String>(),
+                    )
+                )
+                .thenReturn(drawable3)
+
+            whenever(
+                    packageManager.getInstalledApplicationsAsUser(any<Int>(), eq(SELECTED_USER_ID))
+                )
                 .thenReturn(listOf(appInfo1, appInfo2))
+            whenever(packageManager.getInstalledApplicationsAsUser(any<Int>(), eq(OTHER_USER_ID)))
+                .thenReturn(listOf(appForOtherUser))
 
-            val result = underTest.fetchInstalledApps()
+            val result = underTest.fetchInstalledApps(applicationContext)
 
             assertThat(result)
                 .containsExactly(
@@ -77,4 +117,11 @@ class InstalledAppsRepositoryTest : SysuiTestCase() {
                 )
                 .inOrder()
         }
+
+    companion object {
+        private const val SELECTED_USER_ID = 12
+        private val SELECTED_USER_INFO = UserInfo(SELECTED_USER_ID, "selected user", 0)
+        private const val OTHER_USER_ID = SELECTED_USER_ID + 2
+        private val OTHER_USER_INFO = UserInfo(OTHER_USER_ID, "other user", 0)
+    }
 }

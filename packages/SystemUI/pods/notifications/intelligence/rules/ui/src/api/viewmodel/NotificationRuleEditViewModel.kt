@@ -72,7 +72,7 @@ public interface NotificationRuleEditViewModel {
     ): Bitmap?
 
     /** Fetches all apps installed on the device. */
-    public suspend fun fetchInstalledApps(): List<AppModel>
+    public suspend fun fetchInstalledApps(context: Context): List<AppModel>
 
     public interface Factory {
         public fun create(rule: DraftRuleModel): NotificationRuleEditViewModel

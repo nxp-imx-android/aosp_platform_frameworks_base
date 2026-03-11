@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
@@ -41,8 +40,6 @@ class NotificationRulesScreenImpl @Inject constructor() : NotificationRulesScree
         startingBackStack: List<RulesScreenViewState>,
         modifier: Modifier,
     ) {
-        val scope = rememberCoroutineScope()
-
         // TODO: b/486844997 - When the new platform drop for androidx.compose.animation is in, this
         // can be replaced by the navigation3 library, which will also support back gestures.
         val backStack = remember {
@@ -68,7 +65,7 @@ class NotificationRulesScreenImpl @Inject constructor() : NotificationRulesScree
                         onNavigateToFreeformRuleCreationScreen = {
                             backStack.add(
                                 RulesScreenViewState.FreeformTextRuleCreation(
-                                    freeformTextViewModelFactory.create()
+                                    freeformTextViewModelFactory.create(onNavigateToEditScreen)
                                 )
                             )
                         },
@@ -80,7 +77,6 @@ class NotificationRulesScreenImpl @Inject constructor() : NotificationRulesScree
                         viewModel = viewState.viewModel,
                         onDismissRequest = onDismissRequest,
                         onEnterEditField = onEnterEditField,
-                        onNavigateToEditScreen = onNavigateToEditScreen,
                         modifier = Modifier.fillMaxSize(),
                     )
                 }

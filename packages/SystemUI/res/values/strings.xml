@@ -2683,6 +2683,12 @@
     <string name="notification_rules_activity_title" translatable="false">Notification Rules</string>
     <!-- Title for a page where users can create a new notification rule. [CHAR LIMIT=NONE]-->
     <string name="notification_rules_create_new_title" translatable="false">Create New</string>
+    <!-- Text explaining that a notification rule is being generated and the user must wait for generation to finish. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_generating" translatable="false">Generating a rule\u2026</string>
+    <!-- Title for an error box explaining that a notification rule could not be generated. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_generation_error_title" translatable="false">Generation error</string>
+    <!-- Error text explaining that a notification rule could not be generated. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_generation_error_body" translatable="false">The rule could not be generated. Please try again.</string>
     <!-- Title for a button that will let users move to the next step of creating a new notification rule. [CHAR LIMIT=NONE]-->
     <string name="notification_rules_next" translatable="false">Next</string>
 
@@ -2704,6 +2710,8 @@
     <!-- Title for a page where users choose the action for a notification rule. [CHAR LIMIT=50]-->
     <string name="notification_rules_choose_action_title" translatable="false">Choose Action</string>
 
+    <!-- The full text for a notification rule. Includes substrings for particular parts of the rule, like what apps are part of the rule or what contacts are part of the rule. [CHAR LIMIT=NONE] -->
+    <string name="notification_rules_full_text" translatable="false">Notifications<xliff:g id="appsSubstring">%1$s</xliff:g><xliff:g id="contactsSubstring">%2$s</xliff:g></string>
     <!-- Text explaining that the notification rule applies to a single item. For example, "from Phone" explains that the rule applies to just notifications from the 'Phone' app.
      The "valueField" annotation specifies that 'Phone' is the item value. When the user taps on 'Phone', they will be able to change which items(s) are selected. [CHAR LIMIT=NONE]-->
     <string name="notification_rules_from_single_item" translatable="false">\u0020from <annotation valueField="true"><xliff:g id="item">^1</xliff:g></annotation></string>
