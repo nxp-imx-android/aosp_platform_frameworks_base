@@ -100,6 +100,8 @@ public abstract class GenericAllowlist<E> {
     public static final int STATUS_DISALLOWED_NOT_IN_TEMPORARY_LIST = -1;
     /** Element is not allowed because it's not included in the permanent allowlist. */
     public static final int STATUS_DISALLOWED_NOT_IN_PERMANENT_LIST = -2;
+    /** Element is not allowed because the feature being allowlisted is disabled. */
+    public static final int STATUS_DISALLOWED_FEATURE_DISABLED = -3;
 
     /** Element is allowed because the allowlist mode is invalid. */
     public static final int STATUS_ALLOWED_INVALID_MODE = 1;
@@ -141,7 +143,8 @@ public abstract class GenericAllowlist<E> {
             STATUS_ALLOWED_BY_PERMANENT_LIST,
             STATUS_DISALLOWED_NOT_IN_PERMANENT_LIST,
             STATUS_ALLOWED_ALLOWLISTING_DISABLED_BY_SHELL_CMD,
-            STATUS_ALLOWED_ALLOWLISTING_DISABLED_WHILE_DEVICE_IS_PROVISIONING
+            STATUS_ALLOWED_ALLOWLISTING_DISABLED_WHILE_DEVICE_IS_PROVISIONING,
+            STATUS_DISALLOWED_FEATURE_DISABLED
             })
     public @interface AllowlistStatus {}
 
