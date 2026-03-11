@@ -509,7 +509,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                         safeExecuteAppFunctionCallback,
                                         localCancelTransport);
                             } else {
-                                if (android.app.appfunctions.flags.Flags.enableMultiService()) {
+                                if (android.app.appfunctions.flags.Flags
+                                        .enableMultiServiceBugfix()) {
                                     executeMultiServiceAppFunctionInternal(
                                             requestInternal,
                                             callingUid,
