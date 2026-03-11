@@ -16904,6 +16904,19 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
      */
     @FlaggedApi(FLAG_SCROLL_TO_TOP)
     public boolean dispatchScrollToTop(int x) {
+        return onScrollToTop(x);
+    }
+
+    /**
+     * Called when a scroll-to-top command is received.
+     *
+     * @param x The x-coordinate of the scroll-to-top command, in the coordinate
+     *          space of this view.
+     * @return true if the event was consumed and should not be propagated to other
+     * potential handlers.
+     */
+    @FlaggedApi(FLAG_SCROLL_TO_TOP)
+    public boolean onScrollToTop(int x) {
         return false;
     }
 
