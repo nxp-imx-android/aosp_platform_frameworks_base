@@ -713,7 +713,7 @@ fun Modifier.forwardDragAndSwipeToShadeRootView(
             onDown(down.position, size)
             try {
                 // Loop to process events for the current gesture.
-                while (true) {
+                do {
                     val event = awaitPointerEvent(pass = PointerEventPass.Initial)
                     val mainChange = event.changes.first()
 
@@ -736,11 +736,10 @@ fun Modifier.forwardDragAndSwipeToShadeRootView(
                         }
                     }
 
-                    // Exit the loop if the primary pointer is up.
-                    if (mainChange.pressed.not()) {
-                        break
-                    }
-                }
+                    // Continue tracking until ALL pointers involved in the gesture are lifted.
+                    // This ensures downstream nodes receive their terminal events during
+                    // multi-touch gestures.
+                } while (event.changes.any { it.pressed })
             } finally {
                 // Ensure all cached events are recycled at the end of the gesture.
                 cachedEvents.forEach { it.recycle() }

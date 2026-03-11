@@ -198,4 +198,56 @@ class ForwardDragAndSwipeToShadeRootViewTest : SysuiTestCase() {
 
         assertThat(capturedActions).isEqualTo(expectedActions)
     }
+
+    @Test
+    fun drag_multiTouch_doesNotStopWhenPrimaryPointerLifts() {
+        composeTestRule.setContent {
+            Box(
+                modifier =
+                    Modifier.testTag(TEST_TAG)
+                        .size(100.dp)
+                        .forwardDragAndSwipeToShadeRootView(
+                            view = legacyView,
+                            touchSlop = touchSlop,
+                            onDown = onDownCallback,
+                        )
+            )
+        }
+
+        composeTestRule.onNodeWithTag(TEST_TAG).performTouchInput {
+            // 1. Put both fingers down.
+            down(0, center)
+            down(1, center + Offset(10f, 0f))
+
+            // 2. Drag both fingers to exceed the touch slop.
+            moveBy(0, Offset(0f, touchSlop * 2f))
+            moveBy(1, Offset(0f, touchSlop * 2f))
+
+            // 3. Lift the FIRST (primary) finger.
+            up(0)
+
+            // 4. Move the SECOND finger a bit more to prove we are still tracking.
+            moveBy(1, Offset(0f, 10f))
+
+            // 5. Lift the SECOND finger.
+            up(1)
+        }
+
+        verify(legacyView, atLeastOnce()).dispatchTouchEvent(motionEventCaptor.capture())
+
+        val capturedEvents = motionEventCaptor.allValues
+
+        // We check actionMasked because multi-touch events use bitmasks
+        // (e.g., ACTION_POINTER_DOWN, ACTION_POINTER_UP)
+        val capturedActionsMasked = capturedEvents.map { it.actionMasked }
+
+        // Assert that the gesture completed successfully.
+        // Before the fix, the loop would break when pointer1 lifted,
+        // meaning the final ACTION_UP for the gesture would never be dispatched.
+        assertThat(capturedActionsMasked.last()).isEqualTo(MotionEvent.ACTION_UP)
+
+        // Verify that a pointer was lifted mid-gesture, proving our multi-touch
+        // scenario actually executed as expected.
+        assertThat(capturedActionsMasked).contains(MotionEvent.ACTION_POINTER_UP)
+    }
 }
