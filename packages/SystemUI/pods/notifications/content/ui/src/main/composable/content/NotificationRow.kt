@@ -30,11 +30,11 @@ import androidx.compose.ui.unit.dp
 import com.android.systemui.notifications.content.ui.composable.component.AppIcon
 import com.android.systemui.notifications.content.ui.composable.component.Expander
 import com.android.systemui.notifications.content.ui.composable.component.LargeIcon
-import com.android.systemui.notifications.content.ui.viewmodel.NotificationViewModel
+import com.android.systemui.notifications.content.ui.viewmodel.NotificationContentViewModel
 
 @Composable
 internal fun NotificationRow(
-    viewModel: NotificationViewModel,
+    viewModel: NotificationContentViewModel,
     firstLine: @Composable () -> Unit,
     secondLine: @Composable () -> Unit,
     modifier: Modifier = Modifier,
@@ -66,7 +66,7 @@ internal fun NotificationRow(
  */
 @Composable
 private fun HeaderWithLargeIcon(
-    viewModel: NotificationViewModel,
+    viewModel: NotificationContentViewModel,
     firstLine: @Composable () -> Unit,
     secondLine: @Composable () -> Unit,
     modifier: Modifier = Modifier,
@@ -97,7 +97,7 @@ private fun HeaderWithLargeIcon(
  */
 @Composable
 private fun HeaderWithoutLargeIcon(
-    viewModel: NotificationViewModel,
+    viewModel: NotificationContentViewModel,
     firstLine: @Composable () -> Unit,
     secondLine: @Composable () -> Unit,
     modifier: Modifier = Modifier,

@@ -19,7 +19,7 @@ package com.android.systemui.notifications.content.ui.viewmodel
 import android.graphics.drawable.Drawable
 
 /** ViewModel representing the content of a notification view. */
-public interface NotificationViewModel {
+public interface NotificationContentViewModel {
     /** Whether the notification should show its larger (expanded) content. */
     public val isExpanded: Boolean
 
@@ -58,6 +58,6 @@ public interface NotificationViewModel {
     public val maxLargeIconAspectRatio: Float
 
     public interface Factory {
-        public fun create(): NotificationViewModel
+        public fun create(): NotificationContentViewModel
     }
 }
