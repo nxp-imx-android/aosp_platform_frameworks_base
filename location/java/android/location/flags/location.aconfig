@@ -217,6 +217,16 @@ flag {
 }
 
 flag {
+    name: "check_bypass_permission_before_emergency_mode"
+    namespace: "location"
+    description: "Check bypass permission before checking emergency mode to avoid unnecessary IPC calls."
+    bug: "355384257"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "gnss_qzss_svid_range_extension"
     namespace: "location"
     description: "Extend QZSS SVID range from [183, 206] to [183, 212]"
