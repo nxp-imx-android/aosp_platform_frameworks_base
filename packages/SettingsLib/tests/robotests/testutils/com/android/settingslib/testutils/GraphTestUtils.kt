@@ -282,6 +282,8 @@ object GraphTestUtils {
                 persistentPreferenceConfig.writePermit
             else error("Write permit failed")
 
+        override val supportsWrite = true
+
         override fun getWritePermissions(context: Context) =
             persistentPreferenceConfig.writePermission?.let {
                 Permissions.allOf(it)
@@ -330,6 +332,8 @@ object GraphTestUtils {
             callingPid: Int,
             callingUid: Int
         ): @ReadWritePermit Int = ReadWritePermit.ALLOW
+
+        override val supportsWrite = true
 
         override fun storage(context: Context): KeyValueStore = storage
         override val key: String

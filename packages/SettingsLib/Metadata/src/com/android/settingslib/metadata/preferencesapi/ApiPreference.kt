@@ -1008,6 +1008,7 @@ class ApiPreferenceConfigBuilder<V : Any>(
 
         override val get: GetConfig<V> = getConfig ?: error("'get' block is required")
         override val set: SetConfig<V>? = setConfig
+        override val supportsWrite: Boolean = setConfig != null
         override val type: ApiType<V> = this@ApiPreferenceConfigBuilder.type
         override val valueType: Class<V> = this@ApiPreferenceConfigBuilder.valueType
         override val key: String = this@ApiPreferenceConfigBuilder.key
