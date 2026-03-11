@@ -8028,6 +8028,9 @@
     <!-- The package name of the allowlist provider service -->
     <string name="config_allowlistProviderServicePackage" />
 
+    <!-- Whether PersonalContextManagerService is enabled on this device -->
+    <bool name="config_enablePersonalContextManagerService">false</bool>
+
     <!-- Packages allowed to publish hints to PersonalContextManagerService -->
     <string-array translatable="false" name="config_allowlistPersonalContextHintPublishing">
     </string-array>
