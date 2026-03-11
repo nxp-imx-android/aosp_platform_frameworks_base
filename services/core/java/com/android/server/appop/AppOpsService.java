@@ -85,6 +85,8 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
+import android.app.ActivityManager.ProcessCapability;
+import android.app.ActivityManager.ProcessState;
 import android.app.ActivityManagerInternal;
 import android.app.AppGlobals;
 import android.app.AppOpsManager;
@@ -1706,8 +1708,8 @@ public class AppOpsService extends IAppOpsService.Stub {
     /**
      * Notify the proc state or capability has changed for a certain UID.
      */
-    public void updateUidProcState(int uid, int procState,
-            @ActivityManager.ProcessCapability int capability) {
+    public void updateUidProcState(int uid, @ProcessState int procState,
+            @ProcessCapability int capability) {
         synchronized (this) {
             getUidStateTracker().updateUidProcState(uid, procState, capability);
         }
