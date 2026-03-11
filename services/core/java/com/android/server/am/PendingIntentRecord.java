@@ -36,6 +36,7 @@ import static com.android.window.flags.Flags.balDontAddBalTokenInSetAllowBgActiv
 import android.annotation.IntDef;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.SpecialUsers.CanBeCURRENT;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
 import android.app.BackgroundStartPrivileges;
@@ -146,7 +147,7 @@ public final class PendingIntentRecord extends IIntentSender.Stub {
         String[] allResolvedTypes;
         final int flags;
         final int hashCode;
-        final int userId;
+        final @CanBeCURRENT int userId;
 
         private static final int ODD_PRIME_NUMBER = 37;
 
