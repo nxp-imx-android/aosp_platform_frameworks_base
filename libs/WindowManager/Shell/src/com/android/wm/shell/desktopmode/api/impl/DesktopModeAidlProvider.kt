@@ -16,24 +16,26 @@
 
 package com.android.wm.shell.desktopmode.api.impl
 
+import com.android.wm.shell.dagger.WMSingleton
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.api.IDesktopMode
-import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import java.util.Optional
+import javax.inject.Inject
 import kotlin.jvm.optionals.getOrNull
 
 /** Registers an implementation for the IDesktopMode interface. */
-class IDesktopModeProvider(
+@WMSingleton
+class DesktopModeAidlProvider
+@Inject constructor(
     private val shellInit: ShellInit,
     private val shellController: ShellController,
     private val desktopTasksController: Optional<DesktopTasksController>,
-    private val desktopState: DesktopState,
 ) {
 
     init {
-        if (desktopState.canEnterDesktopMode) {
+        if (desktopTasksController.isPresent()) {
             shellInit.addInitCallback({ onInit() }, this)
         }
     }
