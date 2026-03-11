@@ -17,9 +17,11 @@
 package com.android.systemui.touchpad.tutorial.ui.viewmodel
 
 import android.content.res.mockResources
+import android.platform.test.annotations.EnableFlags
 import android.view.MotionEvent
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.inputdevice.tutorial.inputDeviceTutorialLogger
@@ -27,6 +29,7 @@ import com.android.systemui.inputdevice.tutorial.ui.composable.TutorialActionSta
 import com.android.systemui.inputdevice.tutorial.ui.composable.TutorialActionState.Error
 import com.android.systemui.inputdevice.tutorial.ui.composable.TutorialActionState.Finished
 import com.android.systemui.inputdevice.tutorial.ui.composable.TutorialActionState.InProgress
+import com.android.systemui.inputdevice.tutorial.ui.composable.TutorialActionState.PartialSuccess
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
@@ -46,6 +49,7 @@ import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@EnableFlags(Flags.FLAG_TOUCHPAD_GESTURE_TUTORIAL_BUG_FIXES)
 class HomeGestureScreenViewModelTest : SysuiTestCase() {
 
     companion object {
@@ -86,7 +90,7 @@ class HomeGestureScreenViewModelTest : SysuiTestCase() {
                 expected =
                     InProgress(
                         progress = 1f,
-                        startMarker = "drag with gesture",
+                        startMarker = "drag with gesture 1",
                         endMarker = "release playback realtime",
                     ),
             )
@@ -96,8 +100,8 @@ class HomeGestureScreenViewModelTest : SysuiTestCase() {
     fun emitsFinishedStateWithSuccessAnimation() =
         kosmos.runTest {
             assertStateAfterEvents(
-                events = ThreeFingerGesture.swipeUp(),
-                expected = Finished(successAnimation = R.raw.trackpad_home_success),
+                events = ThreeFingerGesture.swipeUp() + ThreeFingerGesture.swipeUp(),
+                expected = Finished(successAnimation = R.raw.trackpad_recent_then_home_success),
             )
         }
 
@@ -109,6 +113,8 @@ class HomeGestureScreenViewModelTest : SysuiTestCase() {
     fun gestureRecognitionTakesLatestDistanceThresholdIntoAccount() =
         kosmos.runTest {
             val state by collectLastValue(viewModel.tutorialState)
+            performHomeGesture()
+            assertThat(state).isInstanceOf(PartialSuccess::class.java)
             performHomeGesture()
             assertThat(state).isInstanceOf(Finished::class.java)
 
@@ -122,6 +128,8 @@ class HomeGestureScreenViewModelTest : SysuiTestCase() {
     fun gestureRecognitionTakesLatestVelocityThresholdIntoAccount() =
         kosmos.runTest {
             val state by collectLastValue(viewModel.tutorialState)
+            performHomeGesture()
+            assertThat(state).isInstanceOf(PartialSuccess::class.java)
             performHomeGesture()
             assertThat(state).isInstanceOf(Finished::class.java)
 
