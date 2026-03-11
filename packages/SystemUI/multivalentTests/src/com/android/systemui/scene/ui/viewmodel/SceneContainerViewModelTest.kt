@@ -27,6 +27,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.DynamicSizeEdgeDetector
 import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.systemui.Flags.FLAG_BLACK_SCREEN_ON_SCENE_CONTAINER_START_FIX
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.data.repository.fakeAccessibilityRepository
@@ -109,7 +110,29 @@ class SceneContainerViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun isVisible() =
+    @EnableFlags(FLAG_BLACK_SCREEN_ON_SCENE_CONTAINER_START_FIX)
+    fun isVisible_false_onlyAfterIdleComposed() =
+        kosmos.runTest {
+            assertThat(underTest.isVisible).isTrue()
+
+            unlockDevice()
+            sceneInteractor.changeScene(Scenes.Gone, "Switch to Gone to make isVisible be false.")
+            assertThat(underTest.isVisible).isTrue()
+
+            sceneInteractor.onIdleSceneEnteredComposition(Scenes.Gone)
+            assertThat(underTest.isVisible).isFalse()
+
+            unlockDevice()
+            sceneInteractor.changeScene(
+                Scenes.Lockscreen,
+                "Switch to Lockscreen to make isVisible be false.",
+            )
+            assertThat(underTest.isVisible).isTrue()
+        }
+
+    @Test
+    @DisableFlags(FLAG_BLACK_SCREEN_ON_SCENE_CONTAINER_START_FIX)
+    fun isVisible_false_immediately_ifFlagDisabled() =
         kosmos.runTest {
             assertThat(underTest.isVisible).isTrue()
 
@@ -428,6 +451,7 @@ class SceneContainerViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             unlockDevice()
             sceneInteractor.changeScene(Scenes.Gone, "Switch to Gone to make isVisible be false.")
+            sceneInteractor.onIdleSceneEnteredComposition(Scenes.Gone)
             assertThat(underTest.isVisible).isFalse()
 
             sceneInteractor.onRemoteUserInputStarted("reason")

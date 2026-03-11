@@ -19,11 +19,13 @@ package com.android.systemui.scene.domain.interactor
 import android.app.StatusBarManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.SetFlagsRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.ObservableTransitionState.Transition.ShowOrHideOverlay
 import com.android.compose.animation.scene.SceneKey
+import com.android.systemui.Flags.FLAG_BLACK_SCREEN_ON_SCENE_CONTAINER_START_FIX
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
@@ -67,6 +69,7 @@ import kotlinx.coroutines.flow.toList
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -74,6 +77,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @EnableSceneContainer
 class SceneInteractorTest : SysuiTestCase() {
+    @get:Rule val setFlagsRule = SetFlagsRule()
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val Kosmos.underTest by Kosmos.Fixture { sceneInteractor }
@@ -553,6 +557,7 @@ class SceneInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             unlockDevice()
             underTest.changeScene(Scenes.Gone, "Switch to Gone to make isVisible be false.")
+            underTest.onIdleSceneEnteredComposition(Scenes.Gone)
             assertThat(underTest.isVisible).isFalse()
 
             underTest.onRemoteUserInputStarted("reason")
@@ -685,6 +690,7 @@ class SceneInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             unlockDevice()
             underTest.changeScene(Scenes.Gone, "Switch to Gone to make isVisible be false.")
+            underTest.onIdleSceneEnteredComposition(Scenes.Gone)
             assertThat(underTest.isVisible).isFalse()
 
             underTest.onTransitionAnimationStart()
@@ -707,6 +713,7 @@ class SceneInteractorTest : SysuiTestCase() {
                 Scenes.Lockscreen,
                 "Switch to Lockscreen to make isVisible be false.",
             )
+            underTest.onIdleSceneExitedComposition(Scenes.Gone)
             assertThat(underTest.isVisible).isTrue()
 
             underTest.onTransitionAnimationStart()
@@ -716,6 +723,7 @@ class SceneInteractorTest : SysuiTestCase() {
 
             unlockDevice()
             underTest.changeScene(Scenes.Gone, "Switch to Gone to make isVisible be false.")
+            underTest.onIdleSceneEnteredComposition(Scenes.Gone)
             // Two animations are active, forced visible.
             assertThat(underTest.isVisible).isTrue()
 
@@ -991,6 +999,7 @@ class SceneInteractorTest : SysuiTestCase() {
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             underTest.snapToScene(Scenes.Gone, "gone to make isVisible be false")
+            underTest.onIdleSceneEnteredComposition(Scenes.Gone)
             assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Gone)
             assertThat(underTest.isVisible).isFalse()
 
@@ -1013,6 +1022,7 @@ class SceneInteractorTest : SysuiTestCase() {
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             underTest.snapToScene(Scenes.Gone, "gone to make isVisible be false")
+            underTest.onIdleSceneEnteredComposition(Scenes.Gone)
             assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Gone)
             assertThat(underTest.transitionState.currentOverlays).isEmpty()
             assertThat(underTest.isVisible).isFalse()
@@ -1071,6 +1081,7 @@ class SceneInteractorTest : SysuiTestCase() {
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             underTest.changeScene(Scenes.Gone, "gone to unlock device and make isVisible be false")
+            underTest.onIdleSceneEnteredComposition(Scenes.Gone)
             assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Gone)
             assertThat(underTest.transitionState.currentOverlays).isEmpty()
             assertThat(underTest.isVisible).isFalse()
@@ -1097,6 +1108,7 @@ class SceneInteractorTest : SysuiTestCase() {
                 biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
             )
             underTest.changeScene(Scenes.Gone, "gone to start off not visible")
+            underTest.onIdleSceneEnteredComposition(Scenes.Gone)
             assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Gone)
             assertThat(underTest.transitionState.currentOverlays).isEmpty()
             assertThat(underTest.isVisible).isFalse()
@@ -1107,6 +1119,70 @@ class SceneInteractorTest : SysuiTestCase() {
 
             // Hide a HUN
             underTest.handleEvent(SceneInteractor.Event.HeadsUpNotificationVisibilityChange(false))
+            assertThat(underTest.isVisible).isFalse()
+        }
+
+    @Test
+    @EnableFlags(FLAG_BLACK_SCREEN_ON_SCENE_CONTAINER_START_FIX)
+    fun isVisible_false_onlyAfterIdleComposed() =
+        kosmos.runTest {
+            // Unlock so transitioning to the Gone scene becomes possible.
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+
+            // GIVEN that SceneContainer is supposed to be on the Gone scene but it has not composed
+            // yet
+            underTest.onIdleSceneExitedComposition(Scenes.Gone)
+            underTest.snapToScene(Scenes.Gone, "Gone, but not composed yet")
+
+            // ASSERT that visibility is still true (so composition is not paused)
+            assertThat(underTest.isVisible).isTrue()
+
+            // WHEN the scene is done composing
+            underTest.onIdleSceneEnteredComposition(Scenes.Gone)
+
+            // THEN visibility should be false
+            assertThat(underTest.isVisible).isFalse()
+
+            // WHEN the scene changes, even to another transparent scene
+            underTest.changeScene(Scenes.Occluded, "Occluded, but not composed yet")
+
+            // ASSERT that visibility is true (so Occluded can compose)
+            assertThat(underTest.isVisible).isTrue()
+
+            // WHEN the new scene is done composing
+            underTest.onIdleSceneExitedComposition(Scenes.Gone)
+            underTest.onIdleSceneEnteredComposition(Scenes.Occluded)
+
+            // THEN visibility should be false
+            assertThat(underTest.isVisible).isFalse()
+        }
+
+    @Test
+    @DisableFlags(FLAG_BLACK_SCREEN_ON_SCENE_CONTAINER_START_FIX)
+    fun isVisible_false_immediately_ifFlagDisabled() =
+        kosmos.runTest {
+            // Unlock so transitioning to the Gone scene becomes possible.
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+
+            // GIVEN that SceneContainer is supposed to be on the Gone scene but it has not composed
+            // yet
+            underTest.onIdleSceneExitedComposition(Scenes.Gone)
+            underTest.snapToScene(Scenes.Gone, "Gone, but not composed yet")
+
+            // ASSERT that visibility is already false even without a signal that the Gone scene has
+            // composed, because FLAG_BLACK_SCREEN_ON_SCENE_CONTAINER_START_FIX is off.
+            assertThat(underTest.isVisible).isFalse()
+
+            // WHEN the scene changesto another transparent scene
+            underTest.changeScene(Scenes.Occluded, "Occluded, but not composed yet")
+
+            // ASSERT that visibility is still false
             assertThat(underTest.isVisible).isFalse()
         }
 
