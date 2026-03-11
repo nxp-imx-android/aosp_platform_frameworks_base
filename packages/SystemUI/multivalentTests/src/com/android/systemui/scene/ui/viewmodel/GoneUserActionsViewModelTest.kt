@@ -20,6 +20,7 @@ import android.content.res.mainResources
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
+import androidx.compose.ui.input.pointer.PointerType
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.Edge
@@ -45,7 +46,9 @@ import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.testKosmos
+import com.google.common.truth.Expect
 import com.google.common.truth.Truth.assertThat
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -54,6 +57,8 @@ import org.junit.runner.RunWith
 @TestableLooper.RunWithLooper
 @EnableSceneContainer
 class GoneUserActionsViewModelTest : SysuiTestCase() {
+
+    @get:Rule val expect: Expect = Expect.create()
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val Kosmos.underTest: GoneUserActionsViewModel by
@@ -87,13 +92,72 @@ class GoneUserActionsViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(FLAG_DUAL_SHADE)
-    fun downTransitionKey_dualShade_goesToNotificationsShade() =
+    fun swipeDown_exceptWithMouse_dualShade_goesToNotificationsShade() =
         kosmos.runTest {
             underTest.activateIn(testScope)
             val userActions by collectLastValue(underTest.actions)
             enableDualShade(wideLayout = true)
 
-            assertThat(userActions?.get(Swipe.Down)?.transitionKey).isNull()
+            expect
+                .that(userActions?.get(Swipe.Down(pointerType = PointerType.Eraser)))
+                .isEqualTo(ShowOverlay(Overlays.NotificationsShade))
+            expect
+                .that(userActions?.get(Swipe.Down(pointerType = PointerType.Stylus)))
+                .isEqualTo(ShowOverlay(Overlays.NotificationsShade))
+            expect
+                .that(userActions?.get(Swipe.Down(pointerType = PointerType.Touch)))
+                .isEqualTo(ShowOverlay(Overlays.NotificationsShade))
+            expect.that(userActions?.get(Swipe.Down(pointerType = PointerType.Mouse))).isNull()
+        }
+
+    @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
+    fun swipeDownFromTopEdgeAndHalf_expectForMouse_dualShade_goesToQuickSettings() =
+        kosmos.runTest {
+            underTest.activateIn(testScope)
+            val userActions by collectLastValue(underTest.actions)
+            enableDualShade(wideLayout = true)
+
+            expect
+                .that(
+                    userActions?.get(
+                        Swipe.Down(
+                            fromSource = SceneContainerArea.TopEdgeEndHalf,
+                            pointerType = PointerType.Eraser,
+                        )
+                    )
+                )
+                .isEqualTo(ShowOverlay(Overlays.QuickSettingsShade))
+            expect
+                .that(
+                    userActions?.get(
+                        Swipe.Down(
+                            fromSource = SceneContainerArea.TopEdgeEndHalf,
+                            pointerType = PointerType.Stylus,
+                        )
+                    )
+                )
+                .isEqualTo(ShowOverlay(Overlays.QuickSettingsShade))
+            expect
+                .that(
+                    userActions?.get(
+                        Swipe.Down(
+                            fromSource = SceneContainerArea.TopEdgeEndHalf,
+                            pointerType = PointerType.Touch,
+                        )
+                    )
+                )
+                .isEqualTo(ShowOverlay(Overlays.QuickSettingsShade))
+            expect
+                .that(
+                    userActions?.get(
+                        Swipe.Down(
+                            fromSource = SceneContainerArea.TopEdgeEndHalf,
+                            pointerType = PointerType.Mouse,
+                        )
+                    )
+                )
+                .isNull()
         }
 
     @Test

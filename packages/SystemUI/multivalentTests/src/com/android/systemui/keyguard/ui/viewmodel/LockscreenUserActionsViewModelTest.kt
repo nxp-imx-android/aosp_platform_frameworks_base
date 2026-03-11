@@ -19,6 +19,7 @@ package com.android.systemui.keyguard.ui.viewmodel
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
+import androidx.compose.ui.input.pointer.PointerType
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.Edge
@@ -294,6 +295,8 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
                     Swipe.Down(
                         fromSource = Edge.Top.takeIf { downFromEdge },
                         pointerCount = if (downWithTwoPointers) 2 else 1,
+                        // ShadeUserActions filters one-finger swipes to "not mouse".
+                        pointerType = if (downWithTwoPointers) null else PointerType.Touch,
                     )
                 )
 

@@ -18,6 +18,7 @@ package com.android.systemui.dreams.ui.viewmodel
 
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import androidx.compose.ui.input.pointer.PointerType
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.Edge
@@ -42,15 +43,19 @@ import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.testKosmos
+import com.google.common.truth.Expect
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
 import org.junit.Before
+import org.junit.Rule
 import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @EnableSceneContainer
 class DreamUserActionsViewModelTest : SysuiTestCase() {
+
+    @get:Rule val expect: Expect = Expect.create()
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
@@ -71,11 +76,11 @@ class DreamUserActionsViewModelTest : SysuiTestCase() {
 
             setUpState(isShadeTouchable = true)
             assertThat(actions).isNotEmpty()
-            assertThat(actions?.get(Swipe.Up)).isNull()
-            assertThat(actions?.get(Swipe.Down)).isEqualTo(UserActionResult(Scenes.Shade))
-            assertThat(actions?.get(Swipe.Down(fromSource = Edge.Top))).isNull()
-            assertThat(actions?.get(Swipe.Start)).isNull()
-            assertThat(actions?.get(Swipe.End)).isNull()
+            expect.that(actions?.get(Swipe.Up)).isNull()
+            expect.that(actions?.get(Swipe.Down)).isEqualTo(UserActionResult(Scenes.Shade))
+            expect.that(actions?.get(Swipe.Down(fromSource = Edge.Top))).isNull()
+            expect.that(actions?.get(Swipe.Start)).isNull()
+            expect.that(actions?.get(Swipe.End)).isNull()
 
             setUpState(isShadeTouchable = false)
             assertThat(actions).isEmpty()
@@ -91,11 +96,12 @@ class DreamUserActionsViewModelTest : SysuiTestCase() {
 
             setUpState(isShadeTouchable = true)
             assertThat(actions).isNotEmpty()
-            assertThat(actions?.get(Swipe.Up)).isNull()
-            assertThat(actions?.get(Swipe.Down))
+            expect.that(actions?.get(Swipe.Up)).isNull()
+            expect
+                .that(actions?.get(Swipe.Down))
                 .isEqualTo(UserActionResult(Scenes.Shade, ToSplitShade))
-            assertThat(actions?.get(Swipe.Start)).isNull()
-            assertThat(actions?.get(Swipe.End)).isNull()
+            expect.that(actions?.get(Swipe.Start)).isNull()
+            expect.that(actions?.get(Swipe.End)).isNull()
 
             setUpState(isShadeTouchable = false)
             assertThat(actions).isEmpty()
@@ -111,11 +117,18 @@ class DreamUserActionsViewModelTest : SysuiTestCase() {
 
             setUpState(isShadeTouchable = true)
             assertThat(actions).isNotEmpty()
-            assertThat(actions?.get(Swipe.Up)).isNull()
-            assertThat(actions?.get(Swipe.Down))
+            expect.that(actions?.get(Swipe.Up)).isNull()
+            expect
+                .that(actions?.get(Swipe.Down(pointerType = PointerType.Eraser)))
                 .isEqualTo(UserActionResult.ShowOverlay(Overlays.NotificationsShade))
-            assertThat(actions?.get(Swipe.Start)).isNull()
-            assertThat(actions?.get(Swipe.End)).isNull()
+            expect
+                .that(actions?.get(Swipe.Down(pointerType = PointerType.Stylus)))
+                .isEqualTo(UserActionResult.ShowOverlay(Overlays.NotificationsShade))
+            expect
+                .that(actions?.get(Swipe.Down(pointerType = PointerType.Touch)))
+                .isEqualTo(UserActionResult.ShowOverlay(Overlays.NotificationsShade))
+            expect.that(actions?.get(Swipe.Start)).isNull()
+            expect.that(actions?.get(Swipe.End)).isNull()
 
             setUpState(isShadeTouchable = false)
             assertThat(actions).isEmpty()

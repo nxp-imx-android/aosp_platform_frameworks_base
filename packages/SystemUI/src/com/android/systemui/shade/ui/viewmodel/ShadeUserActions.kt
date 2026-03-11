@@ -16,6 +16,7 @@
 
 package com.android.systemui.shade.ui.viewmodel
 
+import androidx.compose.ui.input.pointer.PointerType
 import com.android.compose.animation.scene.Edge
 import com.android.compose.animation.scene.Swipe
 import com.android.compose.animation.scene.UserAction
@@ -71,18 +72,29 @@ fun dualShadeActions(
     twoFingerSwipeEnabled: Boolean = true
 ): Array<Pair<UserAction, UserActionResult>> {
     return buildList {
-            add(Swipe.Down to Overlays.NotificationsShade)
+            allPointerTypesButMouse {
+                // Don't add the "single pointer swipe down" actions for PointerType.Mouse because
+                // it is easy to accidentally trigger them when trying to dragging windows.
+                add(Swipe.Down(pointerType = it) to Overlays.NotificationsShade)
+                add(
+                    Swipe.Down(fromSource = SceneContainerArea.TopEdgeEndHalf, pointerType = it) to
+                        Overlays.QuickSettingsShade
+                )
+            }
             if (twoFingerSwipeEnabled) {
                 add(Swipe.Down(pointerCount = 2) to Overlays.QuickSettingsShade)
             }
-            add(
-                Swipe.Down(fromSource = SceneContainerArea.TopEdgeEndHalf) to
-                    Overlays.QuickSettingsShade
-            )
         }
         .toTypedArray()
 }
 
 private fun swipeDownFromTopEdge(pointerCount: Int = 1): Swipe {
     return Swipe.Down(fromSource = Edge.Top, pointerCount = pointerCount)
+}
+
+/** Invokes [block] for all PointerTypes except MOUSE (which means Mouse / Touchpad). */
+private fun allPointerTypesButMouse(block: (pointerType: PointerType) -> Unit) {
+    block(PointerType.Eraser)
+    block(PointerType.Stylus)
+    block(PointerType.Touch)
 }
