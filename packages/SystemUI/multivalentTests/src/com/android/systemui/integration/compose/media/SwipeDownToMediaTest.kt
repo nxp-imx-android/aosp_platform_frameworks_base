@@ -37,9 +37,8 @@ import com.android.systemui.integration.SystemUiIntegrationTest
 import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
-import com.android.systemui.media.remedia.data.repository.fakeActiveMedia
-import com.android.systemui.media.remedia.data.repository.setFakeCurrentMedia
-import com.android.systemui.media.remedia.data.repository.setHasMedia
+import com.android.systemui.media.remedia.data.repository.fakeActiveMediaData
+import com.android.systemui.media.remedia.data.repository.setFakeCurrentMediaData
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.notificationRulesParentViewModelFactory
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.scene.session.shared.SessionStorage
@@ -97,7 +96,7 @@ class SwipeDownToMediaTest : SysuiTestCase() {
 
     @Before
     fun setup() {
-        kosmos.setFakeCurrentMedia(listOf(kosmos.fakeActiveMedia))
+        kosmos.setFakeCurrentMediaData(listOf(kosmos.fakeActiveMediaData))
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -106,7 +105,6 @@ class SwipeDownToMediaTest : SysuiTestCase() {
         kosmos.runTest {
             usingMediaInComposeFragment = true
             enableSingleShade()
-            setHasMedia(true)
 
             // Start with the shade closed to properly test the swipe gesture.
             composeTestRule.setContent {
@@ -139,7 +137,6 @@ class SwipeDownToMediaTest : SysuiTestCase() {
         kosmos.runTest {
             usingMediaInComposeFragment = true
             enableSplitShade()
-            setHasMedia(true)
 
             // Start with the shade closed to properly test the swipe gesture.
             composeTestRule.setContent {
