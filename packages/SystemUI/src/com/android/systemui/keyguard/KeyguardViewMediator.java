@@ -2727,7 +2727,8 @@ public class KeyguardViewMediator implements CoreStartable,
      * Send message to keyguard telling it to reset its state.
      * @see #handleReset
      */
-    private void resetStateLocked() {
+    @VisibleForTesting
+    void resetStateLocked() {
         resetStateLocked(/* hideBouncer= */ true);
     }
 
@@ -4091,10 +4092,13 @@ public class KeyguardViewMediator implements CoreStartable,
             mIsKeyguardExitAnimationCanceled = true;
 
             // There are cases where a reset will be triggered as the process to hide keyguard
-            // begins. Make sure to tell WM to cancel any requests to go away.
+            // begins. Make sure to tell WM to cancel any requests to go away and notify
+            // KeyguardStateController to ensure both understand that keyguard is showing.
             if (mHiding) {
                 setShowingLocked(true /* showing */, true /* force */,
                         "handleReset while mHiding == true");
+                mKeyguardStateController.notifyKeyguardState(true,
+                        mKeyguardStateController.isOccluded());
                 mKeyguardInteractor.showKeyguard();
             }
 
