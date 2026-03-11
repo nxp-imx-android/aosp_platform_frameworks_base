@@ -33,6 +33,7 @@ import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
 import android.annotation.RequiresNoPermission;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager.ProcessState;
 import android.app.AlarmManager;
 import android.app.StatsManager;
 import android.app.usage.NetworkStatsManager;
@@ -932,7 +933,7 @@ public final class BatteryStatsService extends IBatteryStats.Stub
     }
 
     /** @param state Process state from ActivityManager.java. */
-    void noteUidProcessState(int uid, int state) {
+    void noteUidProcessState(int uid, @ProcessState int state) {
         synchronized (mClock) {
             final long elapsedRealtime = mClock.elapsedRealtime();
             final long uptime = mClock.uptimeMillis();

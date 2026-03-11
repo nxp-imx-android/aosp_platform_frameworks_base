@@ -21,6 +21,8 @@ import static android.content.pm.PackageManager.FLAG_PERMISSION_ONE_TIME;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
+import android.app.ActivityManager.ProcessCapability;
+import android.app.ActivityManager.ProcessState;
 import android.app.ActivityManagerInternal;
 import android.app.AlarmManager;
 import android.app.IActivityManager;
@@ -219,8 +221,8 @@ public class OneTimePermissionUserManager {
             }
 
             @Override
-            public void onUidStateChanged(int uid, int procState, long procStateSeq,
-                    int capability) {
+            public void onUidStateChanged(int uid, @ProcessState int procState,
+                    long procStateSeq, @ProcessCapability int capability) {
                 if (uid == mUid) {
                     if (procState > ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE
                             && procState != ActivityManager.PROCESS_STATE_NONEXISTENT) {
@@ -325,7 +327,7 @@ public class OneTimePermissionUserManager {
             return getStateFromProcState(mActivityManagerInternal.getUidProcessState(mUid));
         }
 
-        private int getStateFromProcState(int procState) {
+        private int getStateFromProcState(@ProcessState int procState) {
             if (procState == ActivityManager.PROCESS_STATE_NONEXISTENT) {
                 return STATE_GONE;
             } else {
