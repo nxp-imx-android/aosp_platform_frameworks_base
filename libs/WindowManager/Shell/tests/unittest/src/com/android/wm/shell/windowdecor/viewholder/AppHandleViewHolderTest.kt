@@ -281,6 +281,10 @@ class AppHandleViewHolderTest : ShellTestCase() {
                 mockWindowManagerWrapper,
                 mockHandler,
                 mockDesktopModeUiEventLogger,
+                mockHandleMenuController,
+                mockFocusTransitionObserver,
+                mockPinnedLayerController,
+                mockDesktopTasksController,
             )
             .apply {
                 visible?.let { this.rootView.visibility = if (visible) View.VISIBLE else View.GONE }
