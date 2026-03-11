@@ -147,42 +147,6 @@ public class AppBindingService extends Binder {
     }
 
     /**
-     * Get the list of services bound to a specific finder class.
-     *
-     * This method will block until all connections are established or a timeout occurs.
-     *
-     * <p><b>NOTE: This method should be called from a background thread other than
-     * {@link BackgroundThread}, otherwise the {@link PersistentConnection} callbacks will not be
-     * delivered until after this method returns.</b></p>
-     */
-    public List<AppServiceConnection> getAppServiceConnectionsBlocking(
-            Class<? extends AppServiceFinder<?, ?>> appServiceFinderClass, int userId) {
-        List<AppServiceConnection> serviceConnections = new ArrayList<>();
-        synchronized (mLock) {
-            for (int i = 0; i < mApps.size(); i++) {
-                final AppServiceFinder app = mApps.get(i);
-                if (app.getClass() != appServiceFinderClass) {
-                    continue;
-                }
-                serviceConnections.addAll(getConnectionsLocked(userId, app));
-            }
-        }
-
-        List<AppServiceConnection> boundConnections = new ArrayList<>();
-        for (AppServiceConnection conn: serviceConnections) {
-            conn.bind();
-            if (conn.awaitConnection()) {
-                boundConnections.add(conn);
-            } else {
-                Slogf.w(TAG, "Failed to establish connection for %s, user %d, package %s",
-                        conn.getFinder().getAppDescription(), userId, conn.getPackageName());
-            }
-        }
-        return boundConnections;
-    }
-
-
-    /**
      * Dispatches an event without a timeout (fire-and-forget).
      */
     public void dispatchAppServiceEvent(
@@ -862,9 +826,5 @@ public class AppBindingService extends Binder {
             }
             forAllAppsLocked((app) -> app.dumpSimple(pw));
         }
-    }
-
-    AppBindingConstants getConstantsForTest() {
-        return mConstants;
     }
 }

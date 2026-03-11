@@ -88,18 +88,7 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
 
     @Override
     protected void onConnected(@NonNull IInterface service) {
-        if (Flags.enableAppServiceConnectionCallbacks()) {
-            scheduleCallbacks();
-        } else {
-            mConditionVariable.open();
-        }
-    }
-
-    @Override
-    protected void onDisconnected() {
-        if (!Flags.enableAppServiceConnectionCallbacks()) {
-            mConditionVariable.close();
-        }
+        scheduleCallbacks();
     }
 
     public AppServiceFinder getFinder() {
@@ -120,12 +109,10 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
             addCallback(callback, 0);
             return;
         }
-        if (Flags.enableAppServiceConnectionCallbacks()) {
-            synchronized (mLock) {
-                mCallbacks.add(callback);
-            }
-            scheduleCallbacks();
+        synchronized (mLock) {
+            mCallbacks.add(callback);
         }
+        scheduleCallbacks();
     }
     /**
      * Adds a callback to the queue and tries to schedule it immediately
@@ -174,20 +161,6 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
                 callback.postAction();
             }
         }
-    }
-
-    /**
-     * Establishes the service connection and blocks until the service is connected
-     * or a timeout occurs.
-     *
-     * @return true if the service connected successfully within the timeout, false otherwise.
-     */
-    public boolean awaitConnection() {
-        if (!Flags.enableAppServiceConnectionCallbacks()) {
-            long timeoutMs = mConstants.SERVICE_RECONNECT_MAX_BACKOFF_SEC * 10 * 1000L;
-            return mConditionVariable.block(timeoutMs) && isConnected();
-        }
-        return isConnected();
     }
 
     /**
