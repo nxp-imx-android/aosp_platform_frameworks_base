@@ -71,6 +71,7 @@ import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.security.authenticationpolicy.AuthenticationPolicyManager;
 import android.security.authenticationpolicy.IAuthenticationPolicyService;
+import android.util.ArraySet;
 import android.view.Display;
 import android.view.Surface;
 
@@ -95,6 +96,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
+import java.util.Set;
 
 @Presubmit
 @RunWith(AndroidJUnit4.class)
