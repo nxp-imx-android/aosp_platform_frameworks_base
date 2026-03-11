@@ -288,13 +288,6 @@ class DesktopTasksController(
     UserChangeListener {
 
     private var visualIndicator: DesktopModeVisualIndicator? = null
-    private val desktopModeShellCommandHandler: DesktopModeShellCommandHandler =
-        DesktopModeShellCommandHandler(
-            this,
-            focusTransitionObserver,
-            userRepositories,
-            shellController,
-        )
 
     private val wallpaperTouchReceiver =
         object : BroadcastReceiver() {
@@ -418,7 +411,6 @@ class DesktopTasksController(
             launcherApps.registerCallback(launcherAppsCallback)
         }
         shellCommandHandler.addDumpCallback(this::dump, this)
-        shellCommandHandler.addCommandCallback("desktopmode", desktopModeShellCommandHandler, this)
         shellController.addUserChangeListener(this)
         if (Flags.changeDisplayFocusOnWallpaperTouch()) {
             context.registerReceiver(
