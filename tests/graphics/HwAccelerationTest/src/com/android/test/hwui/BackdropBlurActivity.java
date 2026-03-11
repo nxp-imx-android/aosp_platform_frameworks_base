@@ -51,10 +51,31 @@ public class BackdropBlurActivity extends Activity {
         contentView.addView(scrollView,
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         final FrameLayout tempFrame = new FrameLayout(this);
-        tempFrame.addView(new BackdropBlurView(this), 300, 300);
+        BackdropBlurView blurView = new BackdropBlurView(this);
+        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(300, 300);
+        layoutParams.gravity = android.view.Gravity.CENTER;
+        tempFrame.addView(blurView, layoutParams);
         tempFrame.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         contentView.addView(tempFrame,
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+        final android.widget.Button toggleButton = new android.widget.Button(this);
+        toggleButton.setText("Toggle Hardware Layer (ON)");
+        toggleButton.setOnClickListener(v -> {
+            if (tempFrame.getLayerType() == View.LAYER_TYPE_HARDWARE) {
+                tempFrame.setLayerType(View.LAYER_TYPE_NONE, null);
+                toggleButton.setText("Toggle Hardware Layer (OFF)");
+            } else {
+                tempFrame.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+                toggleButton.setText("Toggle Hardware Layer (ON)");
+            }
+        });
+
+        FrameLayout.LayoutParams buttonParams = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        buttonParams.gravity = android.view.Gravity.BOTTOM | android.view.Gravity.CENTER_HORIZONTAL;
+        contentView.addView(toggleButton, buttonParams);
 
         setContentView(contentView);
     }
