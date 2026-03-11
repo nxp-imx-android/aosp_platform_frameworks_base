@@ -15,6 +15,7 @@
  */
 package com.android.wm.shell.hierarchy.containers
 
+import android.content.res.Configuration
 import android.graphics.Rect
 import android.window.WindowContainerToken
 import com.android.wm.shell.hierarchy.properties.ContainerProperties
@@ -26,9 +27,15 @@ class StubContainer(
     token: WindowContainerToken = WindowContainerToken.createProxy("test"),
     window: ContainerProperties = ContainerProperties(),
 ) : Container(token=token, props=window) {
+    // Whether the parent config has changed
+    var parentConfigChanged = false
 
     /** Convenience method to set the bounds of the container */
     fun setBounds(bounds: Rect) {
         props.config.windowConfiguration.setBounds(bounds)
+    }
+
+    override fun updateConfigurationFromParentIfNeeded(parentConfig: Configuration) {
+        parentConfigChanged = true
     }
 }

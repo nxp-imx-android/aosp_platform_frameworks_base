@@ -43,7 +43,7 @@ import kotlin.collections.set
  * This windowing mode is always on top, and is not fullscreen.
  */
 class AlwaysOnTopMode(
-    private val context: Context,
+    private val appContext: Context,
     private val hierarchy: ContainerHierarchy,
 ) : Mode {
     private val rootsPerDisplay = mutableMapOf<Int, Container>()
@@ -77,7 +77,7 @@ class AlwaysOnTopMode(
             overrideHeight = 200,
         )
         overlay.parent = root
-        overlay.initialize(context)
+        overlay.initialize(display.displayProps().createWindowContext(appContext))
         val tx = updateContext.preTransitionTx!!
         overlay.surface
             .setLayer(tx, Integer.MAX_VALUE)
@@ -122,7 +122,7 @@ class AlwaysOnTopMode(
 
                 val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_APP_BROWSER)
                 intent.setFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(intent, opts.toBundle())
+                appContext.startActivity(intent, opts.toBundle())
             }
 
             "move_focused_task" -> {

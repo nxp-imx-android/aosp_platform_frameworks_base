@@ -15,6 +15,7 @@
  */
 package com.android.wm.shell.hierarchy.containers
 
+import android.content.res.Configuration
 import android.graphics.RectF
 import android.view.SurfaceControl
 import android.window.TransitionInfo
@@ -129,6 +130,11 @@ open class Container(
         updateSurfaceFromPropertyChanges()
         // Update the leash
         leash = change.leash
+
+        // Update shell-only container's configurations as necessary
+        for (child in children) {
+            child.updateConfigurationFromParentIfNeeded(props.config)
+        }
     }
 
     /**
@@ -141,6 +147,14 @@ open class Container(
         val relBounds = RectF(props.bounds)
         relBounds.offset(-parentBounds.left, -parentBounds.top)
         surface.updateReferenceFrame(relBounds)
+    }
+
+    /**
+     * Called when the parent's properties change. This is primarily for shell-only containers that
+     * are dependent on the configuration of other WM containers in the hierarchy.
+     */
+    protected open fun updateConfigurationFromParentIfNeeded(parentConfig: Configuration) {
+        // No-op
     }
 
     override fun toString(): String {
