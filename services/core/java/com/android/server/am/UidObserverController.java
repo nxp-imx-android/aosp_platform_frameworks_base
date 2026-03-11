@@ -24,6 +24,8 @@ import static com.android.server.am.ActivityManagerService.TAG_UID_OBSERVERS;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
+import android.app.ActivityManager.ProcessCapability;
+import android.app.ActivityManager.ProcessState;
 import android.app.ActivityManagerProto;
 import android.app.IUidObserver;
 import android.content.pm.PackageManager;
@@ -45,6 +47,7 @@ import android.util.proto.ProtoUtils;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.am.ActivityManagerServiceDumpProcessesProto.UidObserverRegistrationProto;
+import com.android.server.am.psc.Constants.OomAdjust;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -167,8 +170,9 @@ public class UidObserverController {
         mUidObservers.finishBroadcast();
     }
 
-    int enqueueUidChange(@Nullable ChangeRecord currentRecord, int uid, int change, int procState,
-            int procAdj, long procStateSeq, int capability, boolean ephemeral) {
+    int enqueueUidChange(@Nullable ChangeRecord currentRecord, int uid, int change,
+            @ProcessState int procState, @OomAdjust int procAdj, long procStateSeq,
+            @ProcessCapability int capability, boolean ephemeral) {
         synchronized (mLock) {
             if (mPendingUidChanges.size() == 0) {
                 if (DEBUG_UID_OBSERVERS) {
@@ -535,9 +539,9 @@ public class UidObserverController {
         public boolean isPending;
         public int uid;
         public int change;
-        public int procState;
-        public int procAdj;
-        public int capability;
+        public @ProcessState int procState;
+        public @OomAdjust int procAdj;
+        public @ProcessCapability int capability;
         public boolean ephemeral;
         public long procStateSeq;
 
@@ -561,9 +565,9 @@ public class UidObserverController {
         /** The unique identifier for the user/process. */
         private final int mUid;
         /** The current process state of the UID. */
-        private int mProcState = ActivityManager.PROCESS_STATE_CACHED_EMPTY;
+        private @ProcessState int mProcState = ActivityManager.PROCESS_STATE_CACHED_EMPTY;
         /** The current process capability of the UID. */
-        private int mCapability = 0;
+        private @ProcessCapability int mCapability = ActivityManager.PROCESS_CAPABILITY_NONE;
         /** Whether the UID is currently in an idle state. */
         private boolean mIdle = true;
 
@@ -575,19 +579,20 @@ public class UidObserverController {
             return mUid;
         }
 
+        @ProcessState
         int getProcState() {
             return mProcState;
         }
 
-        private void setProcState(int procState) {
+        private void setProcState(@ProcessState int procState) {
             mProcState = procState;
         }
 
-        private int getCapability() {
+        private @ProcessCapability int getCapability() {
             return mCapability;
         }
 
-        private void setCapability(int capability) {
+        private void setCapability(@ProcessCapability int capability) {
             mCapability = capability;
         }
 

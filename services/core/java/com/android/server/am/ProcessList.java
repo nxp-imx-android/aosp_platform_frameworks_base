@@ -98,6 +98,7 @@ import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityManager.ProcessCapability;
+import android.app.ActivityManager.ProcessState;
 import android.app.ActivityThread;
 import android.app.AppGlobals;
 import android.app.AppProtoEnums;
@@ -1177,11 +1178,13 @@ public final class ProcessList extends ProcessListInternal
         }
     }
 
-    public static String makeProcStateString(int curProcState) {
+    /** Returns a readable string representation of the given process state. */
+    public static String makeProcStateString(@ProcessState int curProcState) {
         return ActivityManager.procStateToString(curProcState);
     }
 
-    public static int makeProcStateProtoEnum(int curProcState) {
+    /** Maps a process state integer to its corresponding AppProtoEnums value. */
+    public static int makeProcStateProtoEnum(@ProcessState int curProcState) {
         switch (curProcState) {
             case ActivityManager.PROCESS_STATE_PERSISTENT:
                 return AppProtoEnums.PROCESS_STATE_PERSISTENT;
@@ -1440,7 +1443,9 @@ public final class ProcessList extends ProcessListInternal
         }
     }
 
-    public static boolean procStatesDifferForMem(int procState1, int procState2) {
+    /** Returns true if the two process states represent different memory buckets. */
+    public static boolean procStatesDifferForMem(@ProcessState int procState1,
+            @ProcessState int procState2) {
         return sProcStateToProcMem[procState1] != sProcStateToProcMem[procState2];
     }
 
@@ -1448,8 +1453,9 @@ public final class ProcessList extends ProcessListInternal
         return test ? PSS_TEST_MIN_TIME_FROM_STATE_CHANGE : PSS_MIN_TIME_FROM_STATE_CHANGE;
     }
 
-    public static long computeNextPssTime(int procState, ProcStateMemTracker tracker, boolean test,
-            boolean sleeping, long now, long earliest) {
+    /** Computes the next scheduled time to perform a PSS memory sample for a process. */
+    public static long computeNextPssTime(@ProcessState int procState, ProcStateMemTracker tracker,
+            boolean test, boolean sleeping, long now, long earliest) {
         boolean first;
         float scalingFactor;
         final int memState = sProcStateToProcMem[procState];
@@ -3706,7 +3712,7 @@ public final class ProcessList extends ProcessListInternal
      * @param maxProcState
      */
     @GuardedBy({"mService", "mProcLock"})
-    void killAllBackgroundProcessesExceptLSP(int minTargetSdk, int maxProcState) {
+    void killAllBackgroundProcessesExceptLSP(int minTargetSdk, @ProcessState int maxProcState) {
         final ArrayList<ProcessRecord> procs = new ArrayList<>();
         final int NP = mProcessNames.getMap().size();
         for (int ip = 0; ip < NP; ip++) {
@@ -4363,7 +4369,7 @@ public final class ProcessList extends ProcessListInternal
         }
         outInfo.lastTrimLevel = app.mProfile.getTrimMemoryLevel();
         final ProcessRecordInternal state = app;
-        final int procState = state.getProcState();
+        final @ProcessState int procState = state.getProcState();
         outInfo.importance = ActivityManager.RunningAppProcessInfo
                                 .procStateToImportanceForTargetSdk(procState, clientTargetSdk);
         if (outInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_BACKGROUND) {
@@ -4805,7 +4811,7 @@ public final class ProcessList extends ProcessListInternal
                         if (adj != 0) {
                             return adj;
                         }
-                        final int procState = object2.first.getSetProcState()
+                        final @ProcessState int procState = object2.first.getSetProcState()
                                 - object1.first.getSetProcState();
                         if (procState != 0) {
                             return procState;
@@ -5435,7 +5441,7 @@ public final class ProcessList extends ProcessListInternal
      * if not running
      */
     @GuardedBy(anyOf = {"mService", "mProcLock"})
-    int getUidProcStateLOSP(int uid) {
+    @ProcessState int getUidProcStateLOSP(int uid) {
         UidRecordInternal uidRec = mActiveUids.get(uid);
         return uidRec == null ? PROCESS_STATE_NONEXISTENT : uidRec.getCurProcState();
     }

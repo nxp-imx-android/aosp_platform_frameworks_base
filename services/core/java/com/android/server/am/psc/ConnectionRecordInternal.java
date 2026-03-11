@@ -17,6 +17,7 @@
 package com.android.server.am.psc;
 
 import android.annotation.NonNull;
+import android.app.ActivityManager.ProcessState;
 import android.content.Context;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.Slog;
@@ -60,7 +61,7 @@ public abstract class ConnectionRecordInternal implements OomAdjusterImpl.Connec
     public abstract ProcessRecordInternal getAttributedClient();
 
     /** Tracks the current process state and sequence number for association management. */
-    public abstract void trackProcState(int procState, int seq);
+    public abstract void trackProcState(@ProcessState int procState, int seq);
 
     /** Returns a concise string representation of this record for logging and debugging. */
     public abstract String toShortString();
