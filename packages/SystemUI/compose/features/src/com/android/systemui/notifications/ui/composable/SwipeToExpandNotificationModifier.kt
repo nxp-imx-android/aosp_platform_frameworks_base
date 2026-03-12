@@ -19,229 +19,263 @@ package com.android.systemui.notifications.ui.composable
 import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.OverscrollEffect
+import androidx.compose.foundation.gestures.awaitDragOrCancellation
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitVerticalTouchSlopOrCancellation
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.pointer.PointerType
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.pointer.PointerInputScope
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.input.pointer.util.VelocityTracker
+import androidx.compose.ui.input.pointer.util.addPointerInputChange
 import androidx.compose.ui.layout.LayoutCoordinates
-import com.android.compose.gesture.NestedDraggable
-import com.android.compose.gesture.nestedDraggable
+import androidx.compose.ui.unit.Velocity
 import com.android.systemui.ExpandHelper
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
-import kotlin.math.abs
 import kotlin.math.roundToInt
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 /**
- * A [Modifier] that enables swipe-to-expand gestures for notifications by bridging Compose nested
- * scroll events to the legacy NSSL. It uses the [callback] to obtain and directly manipulate the
- * target [ExpandableView] while synchronizing with the Compose gesture system.
+ * A [Modifier] that enables swipe-to-expand gestures for notifications by bridging Compose gesture
+ * detection to the legacy NSSL. It uses a [pointerInput] node to detect a vertical drag. Uses a
+ * [callback] to obtain a target [ExpandableView], and directly manipulates it by the drag down
+ * amount. Dispatches the remaining delta to the received [overscrollEffect].
  */
-fun Modifier.swipeToExpandNotification(draggable: SwipeToExpandNotificationDraggable): Modifier =
-    this.nestedDraggable(draggable = draggable, orientation = Orientation.Vertical)
+fun Modifier.swipeToExpandNotification(
+    callback: ExpandHelper.Callback,
+    overscrollEffect: OverscrollEffect,
+    layoutCoordinatesProvider: () -> LayoutCoordinates?,
+    allowStartGesture: () -> Boolean = { true },
+    velocityThresholdPx: Float,
+    distanceThresholdPx: Float,
+): Modifier = composed {
+    val currentLayoutCoordinates by rememberUpdatedState(layoutCoordinatesProvider)
+    val currentAllowStartGesture by rememberUpdatedState(allowStartGesture)
+    val currentCallback by rememberUpdatedState(callback)
 
-class SwipeToExpandNotificationDraggable(
-    private val callback: ExpandHelper.Callback,
-    private val layoutCoordinatesProvider: () -> LayoutCoordinates?,
-    private val allowStartGesture: () -> Boolean = { true },
-    private val velocityThresholdPx: Float,
-    private val distanceThresholdPx: Float,
-) : NestedDraggable {
+    this.pointerInput(velocityThresholdPx, distanceThresholdPx) {
+        coroutineScope {
+            swipeToExpandPointerInput(
+                scope = this,
+                callback = currentCallback,
+                overscrollEffect = overscrollEffect,
+                layoutCoordinatesProvider = { currentLayoutCoordinates() },
+                allowStartGesture = { currentAllowStartGesture() },
+                velocityThresholdPx = velocityThresholdPx,
+                distanceThresholdPx = distanceThresholdPx,
+            )
+        }
+    }
+}
 
-    override fun onDragStarted(
-        position: Offset,
-        sign: Float,
-        pointersDown: Int,
-        pointerType: PointerType?,
-    ): NestedDraggable.Controller {
+private suspend fun PointerInputScope.swipeToExpandPointerInput(
+    scope: CoroutineScope,
+    callback: ExpandHelper.Callback,
+    overscrollEffect: OverscrollEffect,
+    layoutCoordinatesProvider: () -> LayoutCoordinates?,
+    allowStartGesture: () -> Boolean,
+    velocityThresholdPx: Float,
+    distanceThresholdPx: Float,
+) {
+    val velocityTracker = VelocityTracker()
+    var animationJob: Job? = null
+
+    awaitEachGesture {
+        // Phase 1: Finding a target
+        val down = awaitFirstDown()
+        velocityTracker.resetTracking()
+        velocityTracker.addPointerInputChange(down)
+        animationJob?.cancel()
+        debugLog { "DOWN at ${down.position}" }
+
         if (!allowStartGesture()) {
-            return NoopController()
+            debugLog { "Gesture not allowed.." }
+            return@awaitEachGesture
         }
 
-        val target =
-            obtainExpandableTarget(position)
+        val targetView =
+            obtainExpandableTarget(down.position, callback, layoutCoordinatesProvider)
                 ?: run {
                     debugLog { "No target found." }
-                    return NoopController()
+                    return@awaitEachGesture
                 }
-        return SwipeToExpandDragController(
-            target,
-            callback,
-            velocityThresholdPx = velocityThresholdPx,
-            distanceThresholdPx = distanceThresholdPx,
-        )
-    }
 
-    private fun obtainExpandableTarget(positionDown: Offset): ExpandableView? {
-        debugLog { "DOWN at $positionDown" }
+        var isExpanding = false
+        var currentHeight = targetView.actualHeight.toFloat()
+        val collapsedHeight = targetView.collapsedHeight.toFloat()
+        val expandedHeight = targetView.maxContentHeight.toFloat()
 
-        val coords = layoutCoordinatesProvider()
-        if (coords == null || !coords.isAttached) {
-            return null
-        }
+        /** Inline helper to handle the drag for an expansion. */
+        fun processDrag(dragAmount: Float) {
+            if (!isExpanding) {
+                val movingDown = dragAmount > 0
+                if (movingDown) {
+                    debugLog { "START expanding" }
+                    isExpanding = true
+                    callback.setUserSwipingToExpand(targetView, true)
+                    callback.expansionStateChanged(true)
+                } else {
+                    debugLog { "Upward drag, not expanding yet" }
+                }
+            }
 
-        // Touch coordinates are relative to the Composable where this node is attached.
-        // Expand target positions are relative to the NSSL, so map them to be correct.
-        val startPositionInWindow = coords.localToWindow(positionDown)
+            if (isExpanding) {
+                val dragDelta = Offset(0f, dragAmount)
 
-        // Find expandable view at position. Use the raw position to account for shade modes when
-        // NSSL is not full screen.
-        val targetView =
-            callback.getChildAtRawPosition(startPositionInWindow.x, startPositionInWindow.y)
-                ?: return null
+                // Dispatch DRAG to OverscrollEffect
+                overscrollEffect.applyToScroll(
+                    delta = dragDelta,
+                    source = NestedScrollSource.UserInput,
+                ) { availableDelta ->
+                    val availableY = availableDelta.y
+                    // Theoretical new height based on the drag
+                    val rawHeight = currentHeight + availableY
+                    val newHeight = rawHeight.coerceIn(collapsedHeight, expandedHeight)
+                    val actualDelta = newHeight - currentHeight
 
-        if (!callback.canChildBeExpanded(targetView)) {
-            return null
-        }
+                    if (newHeight != currentHeight) {
+                        targetView.setFinalActualHeight(newHeight.toInt())
+                        currentHeight = newHeight
+                    }
 
-        // Check if fully expanded
-        if (targetView.intrinsicHeight == targetView.maxContentHeight) {
-            return null
-        }
+                    debugLog {
+                        "processDrag isExpanding:$isExpanding totalDrag:$dragAmount currentHeight:$currentHeight newHeight:$newHeight"
+                    }
 
-        debugLog {
-            "Obtained target ${(targetView as? ExpandableNotificationRow)?.key ?: targetView}"
-        }
-
-        return targetView
-    }
-}
-
-private class NoopController : NestedDraggable.Controller {
-    override fun onDrag(delta: Float): Float = 0f
-
-    override suspend fun onDragStopped(velocity: Float, awaitFling: suspend () -> Unit): Float = 0f
-}
-
-private class SwipeToExpandDragController(
-    private val targetView: ExpandableView,
-    private val callback: ExpandHelper.Callback,
-    private val velocityThresholdPx: Float,
-    private val distanceThresholdPx: Float,
-) : NestedDraggable.Controller {
-    var isExpanding = false
-
-    var currentHeight = targetView.actualHeight.toFloat()
-    val collapsedHeight = targetView.collapsedHeight.toFloat()
-    val expandedHeight = targetView.maxContentHeight.toFloat()
-
-    var totalDrag: Float = 0f
-    var hasPopped = false
-
-    // Latch flag to keep the view expanded once it reaches the max height, to prevent upward drags
-    // from collapsing it during this gesture.
-    var hasFullyExpanded = false
-
-    override fun onDrag(delta: Float): Float {
-        debugLog { "onDrag:$delta isExpanding:$isExpanding hasPopped:$hasPopped total:$totalDrag" }
-
-        totalDrag += delta
-
-        if (!isExpanding) {
-            val movingDown = delta > 0
-            if (movingDown) {
-                debugLog { "START expanding" }
-                isExpanding = true
-                callback.setUserSwipingToExpand(targetView, true)
-                callback.expansionStateChanged(true)
-            } else {
-                debugLog { "Upward drag, not for us" }
-                return 0f
+                    // Return exactly how much the expand/collapse consumed
+                    Offset(0f, actualDelta)
+                }
             }
         }
 
-        // Theoretical new height based on the drag
-        val rawHeight = currentHeight + delta
+        // Phase 2: Vertical drag slop detection
+        // Wait for a vertical drag motion before doing anything.
+        var lastChange =
+            awaitVerticalTouchSlopOrCancellation(down.id) { change, over ->
+                velocityTracker.addPointerInputChange(change)
+                processDrag(over)
+                if (isExpanding) {
+                    // Consume all of the change during an expansion.
+                    change.consume()
+                }
+            }
 
-        // NEW: Latch the state when reaching the expand boundary
-        if (rawHeight >= expandedHeight) {
-            hasFullyExpanded = true
+        // Phase 3: Drag
+        // Consume pointer input events, and handle drags in any directions.
+        while (lastChange != null && lastChange.pressed) {
+            val change = awaitDragOrCancellation(lastChange.id)
+            if (change != null && change.pressed) {
+                velocityTracker.addPointerInputChange(change)
+                processDrag(change.positionChange().y)
+                if (isExpanding) {
+                    // Consume all of the change during an expansion.
+                    change.consume()
+                }
+            }
+            lastChange = change
         }
 
-        // After fully expanded, the new minimum height becomes the expandedHeight,
-        // otherwise clamp new height to the limits.
-        val newHeight =
-            if (hasFullyExpanded) expandedHeight
-            else rawHeight.coerceIn(collapsedHeight, expandedHeight)
-        val actualDelta = newHeight - currentHeight
-
-        if (!hasPopped && abs(actualDelta) > 0) {
-            hasPopped = true
-        }
-        if (currentHeight != newHeight) {
-            targetView.setFinalActualHeight(newHeight.roundToInt())
-            currentHeight = newHeight
-        }
-
-        debugLog {
-            "Expanded to newHeight$newHeight currentHeight:$currentHeight newHeight:$newHeight"
-        }
-
-        return actualDelta
-    }
-
-    override suspend fun onDragStopped(velocity: Float, awaitFling: suspend () -> Unit): Float {
-        debugLog { "onDragStopped expansionStarted:$isExpanding" }
-
+        // Phase 4: Finish the expansion
+        // Animate the target to either collapsed or expanded.
         if (isExpanding) {
-            finishExpansionCompose(
-                view = targetView,
-                callback = callback,
-                hasPoppedToExpanded = hasFullyExpanded,
-                currentHeight = currentHeight,
-                collapsedHeight = collapsedHeight,
-                expandedHeight = expandedHeight,
-                initialVelocity = velocity,
-            )
-
+            val initialVelocity = velocityTracker.calculateVelocity().y
+            debugLog { "STOP expanding with velocity:$initialVelocity" }
+            animationJob =
+                scope.launch {
+                    finishExpansion(
+                        view = targetView,
+                        callback = callback,
+                        overscrollEffect = overscrollEffect,
+                        currentHeight = currentHeight,
+                        collapsedHeight = collapsedHeight,
+                        expandedHeight = expandedHeight,
+                        initialVelocity = initialVelocity,
+                        velocityThresholdPx = velocityThresholdPx,
+                        distanceThresholdPx = distanceThresholdPx,
+                    )
+                }
             isExpanding = false
         }
-
-        return velocity // Consume all to prevent a fling after the animated expansion.
     }
+}
 
-    private suspend fun finishExpansionCompose(
-        view: ExpandableView,
-        callback: ExpandHelper.Callback,
-        hasPoppedToExpanded: Boolean,
-        currentHeight: Float,
-        collapsedHeight: Float,
-        expandedHeight: Float,
-        initialVelocity: Float,
-    ) {
-        val totalChange = expandedHeight - collapsedHeight
-        if (totalChange <= 0) return
+private fun obtainExpandableTarget(
+    positionDown: Offset,
+    callback: ExpandHelper.Callback,
+    layoutCoordinatesProvider: () -> LayoutCoordinates?,
+): ExpandableView? {
+    val coords = layoutCoordinatesProvider()
+    if (coords == null || !coords.isAttached) return null
 
-        val progress = (currentHeight - collapsedHeight) / totalChange
+    val startPositionInWindow = coords.localToWindow(positionDown)
+    val targetView =
+        callback.getChildAtRawPosition(startPositionInWindow.x, startPositionInWindow.y)
+            ?: return null
 
-        val shouldExpand =
-            when {
-                // Keep the view expanded once it reached the max height
-                hasPoppedToExpanded -> true
+    if (!callback.canChildBeExpanded(targetView)) return null
+    if (targetView.intrinsicHeight == targetView.maxContentHeight) return null
 
-                // Fast fling down -> Expand
-                initialVelocity > velocityThresholdPx -> true
+    debugLog { "Obtained target ${(targetView as? ExpandableNotificationRow)?.key ?: targetView}" }
 
-                // Fast fling up -> Collapse
-                initialVelocity < -velocityThresholdPx -> false
+    return targetView
+}
 
-                // Dragging slowly: decide based on the position
-                else -> {
-                    val draggedFarEnough = (currentHeight - collapsedHeight) > distanceThresholdPx
-                    val isMoreThanHalfWay = progress > 0.5f
-                    draggedFarEnough || isMoreThanHalfWay
-                }
+private suspend fun finishExpansion(
+    view: ExpandableView,
+    callback: ExpandHelper.Callback,
+    overscrollEffect: OverscrollEffect,
+    currentHeight: Float,
+    collapsedHeight: Float,
+    expandedHeight: Float,
+    initialVelocity: Float,
+    velocityThresholdPx: Float,
+    distanceThresholdPx: Float,
+) {
+    val totalChange = expandedHeight - collapsedHeight
+    if (totalChange <= 0) return
+
+    val progress = (currentHeight - collapsedHeight) / totalChange
+
+    val shouldExpand =
+        when {
+            // Fast fling down -> Expand
+            initialVelocity > velocityThresholdPx -> true
+
+            // Fast fling up -> Collapse
+            initialVelocity < -velocityThresholdPx -> false
+
+            // Dragging slowly: decide based on the position
+            else -> {
+                val draggedFarEnough = (currentHeight - collapsedHeight) > distanceThresholdPx
+                val isMoreThanHalfWay = progress > 0.5f
+                draggedFarEnough || isMoreThanHalfWay
             }
+        }
 
-        callback.expansionStateChanged(false)
-        val targetHeight = if (shouldExpand) expandedHeight else collapsedHeight
+    callback.expansionStateChanged(false)
+    val targetHeight = if (shouldExpand) expandedHeight else collapsedHeight
+
+    // Dispatch FLING to OverscrollEffect
+    overscrollEffect.applyToFling(velocity = Velocity(0f, initialVelocity)) { availableVelocity ->
+        val availableY = availableVelocity.y
 
         if (targetHeight != currentHeight) {
             val animatable = Animatable(currentHeight)
             try {
                 animatable.animateTo(
                     targetValue = targetHeight,
-                    initialVelocity = initialVelocity,
+                    initialVelocity = availableY,
                     animationSpec = spring(),
                 ) {
                     view.setFinalActualHeight(value.roundToInt())
@@ -249,19 +283,24 @@ private class SwipeToExpandDragController(
             } finally {
                 finalizeAnimation(view, callback, shouldExpand)
             }
+
+            // The spring inherently consumes the velocity to brake exactly at the target.
+            Velocity(0f, availableY)
         } else {
+            // Already at the target, so the expand/collapse didn't consume any velocity.
             finalizeAnimation(view, callback, shouldExpand)
+            Velocity.Zero
         }
     }
+}
 
-    private fun finalizeAnimation(
-        view: ExpandableView,
-        callback: ExpandHelper.Callback,
-        expanded: Boolean,
-    ) {
-        callback.setUserExpandedChild(view, expanded)
-        callback.setUserSwipingToExpand(view, false)
-    }
+private fun finalizeAnimation(
+    view: ExpandableView,
+    callback: ExpandHelper.Callback,
+    expanded: Boolean,
+) {
+    callback.setUserExpandedChild(view, expanded)
+    callback.setUserSwipingToExpand(view, false)
 }
 
 private inline fun debugLog(msg: () -> String) {

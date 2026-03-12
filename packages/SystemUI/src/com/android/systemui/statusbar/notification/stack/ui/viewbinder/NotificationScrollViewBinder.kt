@@ -28,9 +28,8 @@ import com.android.systemui.dump.DumpManager
 import com.android.systemui.lifecycle.WindowLifecycleState
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.lifecycle.viewModel
-import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
-import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.statusbar.notification.shared.NsslTouchDispatchFix
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationScrollViewModel
 import com.android.systemui.util.kotlin.FlowDumperImpl
@@ -153,8 +152,10 @@ constructor(
             launchAndDispose {
                 buildDisposableHandle {
                     bind(viewModel.syntheticScrollConsumer) { view.setSyntheticScrollConsumer(it) }
-                    bind(viewModel.currentGestureExpandingNotifConsumer) {
-                        view.setCurrentGestureExpandingNotificationConsumer(it)
+                    if (!NsslTouchDispatchFix.isEnabled) {
+                        bind(viewModel.currentGestureExpandingNotifConsumer) {
+                            view.setCurrentGestureExpandingNotificationConsumer(it)
+                        }
                     }
                     bind(viewModel.currentGestureInGutsConsumer) {
                         view.setCurrentGestureInGutsConsumer(it)

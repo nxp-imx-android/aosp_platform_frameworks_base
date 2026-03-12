@@ -478,6 +478,8 @@ fun ContentScope.NestedScrollingNotificationPanel(
     val backgroundHeightDp =
         LocalWindowInfo.current.containerDpSize.height + OffsetOverscrollEffect.DefaultMaxDistance
 
+    val expansionOverscrollEffect = rememberOffsetOverscrollEffect()
+
     Layout(
         modifier =
             modifier
@@ -491,6 +493,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
                         }
                         .overscroll(scrollingContentOverscrollEffect) // Content scrolling
                         .overscroll(shortContentOverscrollEffect) // Short/Empty content swipes
+                        .overscroll(expansionOverscrollEffect) // Child swipe-to-expand gesture
                 }
                 // Use onPlaced/onUnplaced instead of onGloballyPositioned to avoid
                 // receiving 0x0 bounds when the element is detached/unplaced but still composed.
@@ -569,17 +572,6 @@ fun ContentScope.NestedScrollingNotificationPanel(
 
                     var layoutCoordinates: LayoutCoordinates? by remember { mutableStateOf(null) }
 
-                    val swipeToExpandDraggable: SwipeToExpandNotificationDraggable =
-                        remember(stackScrollView, allowSwipeToExpandChildren) {
-                            SwipeToExpandNotificationDraggable(
-                                callback = stackScrollView.getExpandHelperCallback(),
-                                layoutCoordinatesProvider = { layoutCoordinates },
-                                allowStartGesture = allowSwipeToExpandChildren,
-                                velocityThresholdPx = with(density) { 125.dp.toPx() }, // px/sec
-                                distanceThresholdPx = with(density) { 56.dp.toPx() },
-                            )
-                        }
-
                     // NotificationPanel content
                     Box {
                         Column(
@@ -609,17 +601,11 @@ fun ContentScope.NestedScrollingNotificationPanel(
                                     }
                                     .debugBackground(viewModel, DEBUG_BOX_COLOR)
                                     .disableSwipesWhenScrolling() // prevents scene changes
-                                    .then(
-                                        if (NsslTouchDispatchFix.isEnabled) {
-                                            Modifier.swipeToExpandNotification(
-                                                draggable = swipeToExpandDraggable
-                                            )
-                                        } else {
-                                            Modifier.nestedScroll(
-                                                swipeToExpandNotificationScrollConnection
-                                            )
-                                        }
-                                    )
+                                    .thenIf(!NsslTouchDispatchFix.isEnabled) {
+                                        Modifier.nestedScroll(
+                                            swipeToExpandNotificationScrollConnection
+                                        )
+                                    }
                                     .nestedScroll(
                                         connection = object : NestedScrollConnection {},
                                         dispatcher = nestedScrollDispatcher,
@@ -641,6 +627,17 @@ fun ContentScope.NestedScrollingNotificationPanel(
                                         // Active only when the content is non-scrollable.
                                         enabled = !isScrollable,
                                     )
+                                    .thenIf(NsslTouchDispatchFix.isEnabled) {
+                                        Modifier.swipeToExpandNotification(
+                                            callback = stackScrollView.getExpandHelperCallback(),
+                                            overscrollEffect = expansionOverscrollEffect,
+                                            layoutCoordinatesProvider = { layoutCoordinates },
+                                            allowStartGesture = allowSwipeToExpandChildren,
+                                            velocityThresholdPx =
+                                                with(density) { 125.dp.toPx() }, // px/sec
+                                            distanceThresholdPx = with(density) { 56.dp.toPx() },
+                                        )
+                                    }
                                     // Added extra bottom padding for keeping footerView inside
                                     // parent Viewbounds during overscroll, refer to
                                     // b/437347340#comment3
