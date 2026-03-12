@@ -4944,6 +4944,7 @@
   <java-symbol type="dimen" name="importance_ring_anim_max_stroke_width" />
   <java-symbol type="dimen" name="importance_ring_size" />
   <java-symbol type="dimen" name="notification_2025_conversation_icon_badge_size" />
+  <java-symbol type="dimen" name="notification_2025_icon_circle_padding" />
 
   <!-- Intent resolver and share sheet -->
   <java-symbol type="string" name="resolver_personal_tab" />
