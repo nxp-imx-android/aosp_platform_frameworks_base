@@ -104,7 +104,20 @@ public final class SignalConstant {
     public static final String KEY_AUDIO_FRONT_CH_NUM = "FRONT_CH_NUM";
     /** The number of rear audio channel, int */
     public static final String KEY_AUDIO_REAR_CH_NUM = "REAR_CH_NUM";
-    /** The dolby icon to display, int value based on {@link android.media.AudioFormat} */
+    /** The Dolby icon to display, int value based on {@link DolbyAudioIcon} */
     public static final String KEY_AUDIO_DOLBY_ICON = "DOLBY_ICON";
+
+    @IntDef({
+            DOLBY_AUDIO_ICON_NONE,
+            DOLBY_AUDIO_ICON_AUDIO,
+            DOLBY_AUDIO_ICON_ATMOS
+    })
+    public @interface DolbyAudioIcon{}
+    /** No Dolby icon. */
+    public static final int DOLBY_AUDIO_ICON_NONE = 0;
+    /** Dolby Audio icon. */
+    public static final int DOLBY_AUDIO_ICON_AUDIO = 1;
+    /** Dolby Atmos icon. */
+    public static final int DOLBY_AUDIO_ICON_ATMOS = 2;
 
 }
