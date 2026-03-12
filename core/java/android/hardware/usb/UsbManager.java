@@ -38,6 +38,7 @@ import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.TestApi;
+import android.annotation.UserHandleAware;
 import android.app.PendingIntent;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.ComponentName;
@@ -162,7 +163,7 @@ public class UsbManager {
      *
      * <p>This intent is sent when the permission for a USB device or accessory has changed. Only
      * one of {@link #EXTRA_DEVICE} or {@link #EXTRA_ACCESSORY} will be provided depending on the
-     * source of the broadcast. This broadcast is only sent to registered intents (as it is
+     * source of the broadcast. This broadcast is only sent to registered receivers (as it is
      * informational).
      *
      * <ul>
@@ -1692,7 +1693,7 @@ public class UsbManager {
     }
 
     /**
-     * Revoke access to the UsbDevice for the given app for the current user.
+     * Revoke access to the UsbDevice for the given app.
      *
      * <p>Note: If the revoked app is also the Default app for this USB device, that setting will
      * also be removed.
@@ -1703,6 +1704,7 @@ public class UsbManager {
      */
     @FlaggedApi(Flags.FLAG_ENABLE_PERSISTENT_USB_DEVICE_PERMISSIONS)
     @SystemApi
+    @UserHandleAware
     @RequiresPermission(Manifest.permission.MANAGE_USB)
     public void revokePermission(@NonNull UsbDevice device, @NonNull String packageName) {
         try {
