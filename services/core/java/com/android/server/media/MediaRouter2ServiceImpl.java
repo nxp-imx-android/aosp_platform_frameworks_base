@@ -2641,11 +2641,13 @@ class MediaRouter2ServiceImpl {
      * Returns whether the given permission should be considered to be satisfied because of the
      * app compatibility setting for local networking restrictions.
      *
-     * TODO(b/386260596): This is a temporary workaround, which we hope to remove in the next
-     * release.
+     * TODO(b/492280649): Remove this method and stop calling it.
      */
     private boolean permissionAllowedForAppCompat(String permission, int uid,
             Predicate<String> permissionChecker) {
+        if (Flags.removeLocalNetworkAccessCompatFlagCheck()) {
+            return false;
+        }
         // TODO(b/386260596) - replace this string with a Manifest.permission constant once
         // one is available.
         if (TextUtils.equals(permission, "android.permission.ACCESS_LOCAL_NETWORK")) {
