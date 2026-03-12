@@ -2174,8 +2174,9 @@ public class BubbleController implements ConfigurationChangeListener,
                 ? mBubbleBarViewCallback
                 : mBubbleStackViewCallback;
 
-        // reset the overflow so that it can be re-added later if needed.
         if (mStackView != null) {
+            mStackView.cancelClipAnimation();
+            // reset the overflow so that it can be re-added later if needed.
             mStackView.resetOverflowView();
             mStackView.removeAllViews();
         }

@@ -314,6 +314,7 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT);
         addView(mTaskView, lp);
         mTaskView.setEnableSurfaceClipping(true);
+        mTaskView.setClipBounds(null);
         mTaskView.setCornerRadius(mCurrentCornerRadius);
         mTaskView.setVisibility(VISIBLE);
         mTaskView.setCaptionInsets(Insets.of(0, mCaptionHeight, 0, 0));

@@ -2478,6 +2478,8 @@ public class BubbleTransitions {
             startT.show(mTaskLeash);
             startT.apply();
 
+            expandedView.setContentVisibility(true);
+
             finishT.reparent(mTaskLeash, taskViewSurface);
             finishT.setPosition(mTaskLeash, 0, 0);
             finishT.setWindowCrop(mTaskLeash, mBounds.width(), mBounds.height());
