@@ -105,6 +105,17 @@ public class UserIconDrawable extends Drawable implements Drawable.Callback {
                         context, com.android.internal.R.drawable.ic_corp_user_badge));
     }
 
+    /**
+     * Gets the Headless System User badge as a drawable. This drawable is tint-able.
+     *
+     * @param context the context
+     * @return drawable containing just the badge
+     */
+    public static Drawable getHeadlessSystemUserDrawable(Context context) {
+        return getDrawableForDisplayDensity(
+                context, com.android.internal.R.drawable.ic_hsu_badge);
+    }
+
     private static Drawable getDrawableForDisplayDensity(
             Context context, @DrawableRes int drawable) {
         int density = context.getResources().getDisplayMetrics().densityDpi;
