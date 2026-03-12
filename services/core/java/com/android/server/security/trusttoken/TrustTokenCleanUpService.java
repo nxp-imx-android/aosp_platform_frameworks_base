@@ -103,9 +103,9 @@ public class TrustTokenCleanUpService extends JobService {
                             .setRequiresCharging(true)
                             .setRequiresDeviceIdle(true);
             if (mJobScheduler.schedule(jobInfo.build()) == JobScheduler.RESULT_SUCCESS) {
-                Slog.i(TAG, "Regular trust token refresh scheduled.");
+                Slog.i(TAG, "Regular trust token cleanup scheduled.");
             } else {
-                Slog.e(TAG, "Regular trust token refresh failed to schedule.");
+                Slog.e(TAG, "Regular trust token cleanup failed to schedule.");
             }
         }
     }
