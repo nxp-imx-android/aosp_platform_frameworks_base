@@ -139,7 +139,7 @@ namespace android {
 static jint android_os_NativeZygoteProcess_startNativeProcess(
         JNIEnv* env, jclass /* classObj */, jobject sockFd, jint uid, jint gid, jlong startSeq,
         jstring packageName, jstring niceName, jint targetSdkVersion, jboolean startChildZygote,
-        jint runtimeFlags, jstring seInfo) {
+        jint runtimeFlags, jstring seInfo, jboolean isTopApp) {
     int fd = jniGetFDFromFileDescriptor(env, sockFd);
     if (fd < 0) {
         jniThrowRuntimeException(env, "Failed to get a valid file descriptor");
@@ -151,11 +151,12 @@ static jint android_os_NativeZygoteProcess_startNativeProcess(
     const char* packageNamePtr = packageNameStr ? packageNameStr.value().c_str() : nullptr;
     const char* niceNamePtr = niceNameStr ? niceNameStr.value().c_str() : nullptr;
     const char* seInfoPtr = seInfoStr ? seInfoStr.value().c_str() : nullptr;
+    bool is_top_app = isTopApp == JNI_TRUE;
 
     flatbuffers::FlatBufferBuilder builder;
     auto spawnAndroidNativeCmd =
             CreateSpawnAndroidNativeDirect(builder, packageNamePtr, startSeq, targetSdkVersion,
-                                           static_cast<unsigned>(runtimeFlags));
+                                           static_cast<unsigned>(runtimeFlags), is_top_app);
     bool is_child_zygote = startChildZygote == JNI_TRUE;
     CreateSpawnParcel(builder, env, uid, gid, niceNamePtr, is_child_zygote, seInfoPtr,
                       /**subspecies_data=*/nullptr, SpawnPayload_SpawnAndroidNative,
@@ -260,7 +261,7 @@ static void android_os_NativeZygoteProcess_prewarmNativeZygote(JNIEnv* env, jcla
 static const JNINativeMethod method_table[] = {
         /* name, signature, funcPtr */
         {"nativeStartNativeProcess",
-         "(Ljava/io/FileDescriptor;IIJLjava/lang/String;Ljava/lang/String;IZILjava/lang/String;)I",
+         "(Ljava/io/FileDescriptor;IIJLjava/lang/String;Ljava/lang/String;IZILjava/lang/String;Z)I",
          (void*)android_os_NativeZygoteProcess_startNativeProcess},
         {"nativeStartNativeChildZygote",
          "(Ljava/io/FileDescriptor;IILjava/lang/String;Ljava/lang/String;II"
