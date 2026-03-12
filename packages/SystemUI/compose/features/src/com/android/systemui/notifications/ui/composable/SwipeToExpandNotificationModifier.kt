@@ -17,6 +17,7 @@
 package com.android.systemui.notifications.ui.composable
 
 import android.util.Log
+import android.view.View
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.OverscrollEffect
@@ -37,7 +38,6 @@ import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.input.pointer.util.addPointerInputChange
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.unit.Velocity
-import com.android.systemui.ExpandHelper
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
 import kotlin.math.roundToInt
@@ -47,13 +47,40 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 /**
+ * Bridges compatibility between the Legacy NSSL and Compose, allowing the Compose modifier to query
+ * and interact with legacy View notifications.
+ */
+interface SwipeToExpandCallback {
+    /** Returns the view at the given raw coordinates. */
+    fun getChildAtRawPosition(x: Float, y: Float): ExpandableView?
+
+    /** Returns whether the given view is expandable. */
+    fun canChildBeExpanded(v: View?): Boolean
+
+    /** Sets the user expanded state of the given view. */
+    fun setUserExpandedChild(v: View?, userExpanded: Boolean)
+
+    /** Sets whether the user is currently swiping to expand the given view. */
+    fun setUserSwipingToExpand(v: View?, isUserSwiping: Boolean)
+
+    /** Called when the expansion state changes. */
+    fun expansionStateChanged(isExpanding: Boolean)
+
+    /** Called when the expansion finish animation gets cancelled. */
+    fun setExpansionCancelled(v: View?)
+
+    /** Plays haptic feedback when the target view starts the expansion. */
+    fun playExpandStartHaptic()
+}
+
+/**
  * A [Modifier] that enables swipe-to-expand gestures for notifications by bridging Compose gesture
  * detection to the legacy NSSL. It uses a [pointerInput] node to detect a vertical drag. Uses a
  * [callback] to obtain a target [ExpandableView], and directly manipulates it by the drag down
  * amount. Dispatches the remaining delta to the received [overscrollEffect].
  */
 fun Modifier.swipeToExpandNotification(
-    callback: ExpandHelper.Callback,
+    callback: SwipeToExpandCallback,
     overscrollEffect: OverscrollEffect,
     layoutCoordinatesProvider: () -> LayoutCoordinates?,
     allowStartGesture: () -> Boolean = { true },
@@ -81,7 +108,7 @@ fun Modifier.swipeToExpandNotification(
 
 private suspend fun PointerInputScope.swipeToExpandPointerInput(
     scope: CoroutineScope,
-    callback: ExpandHelper.Callback,
+    callback: SwipeToExpandCallback,
     overscrollEffect: OverscrollEffect,
     layoutCoordinatesProvider: () -> LayoutCoordinates?,
     allowStartGesture: () -> Boolean,
@@ -125,6 +152,7 @@ private suspend fun PointerInputScope.swipeToExpandPointerInput(
                     isExpanding = true
                     callback.setUserSwipingToExpand(targetView, true)
                     callback.expansionStateChanged(true)
+                    callback.playExpandStartHaptic()
                 } else {
                     debugLog { "Upward drag, not expanding yet" }
                 }
@@ -212,7 +240,7 @@ private suspend fun PointerInputScope.swipeToExpandPointerInput(
 
 private fun obtainExpandableTarget(
     positionDown: Offset,
-    callback: ExpandHelper.Callback,
+    callback: SwipeToExpandCallback,
     layoutCoordinatesProvider: () -> LayoutCoordinates?,
 ): ExpandableView? {
     val coords = layoutCoordinatesProvider()
@@ -233,7 +261,7 @@ private fun obtainExpandableTarget(
 
 private suspend fun finishExpansion(
     view: ExpandableView,
-    callback: ExpandHelper.Callback,
+    callback: SwipeToExpandCallback,
     overscrollEffect: OverscrollEffect,
     currentHeight: Float,
     collapsedHeight: Float,
@@ -296,7 +324,7 @@ private suspend fun finishExpansion(
 
 private fun finalizeAnimation(
     view: ExpandableView,
-    callback: ExpandHelper.Callback,
+    callback: SwipeToExpandCallback,
     expanded: Boolean,
 ) {
     callback.setUserExpandedChild(view, expanded)
