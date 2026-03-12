@@ -2056,6 +2056,9 @@
     <!-- True if live wallpapers can be supported in the deskop experience -->
     <bool name="config_isLiveWallpaperSupportedInDesktopExperience">false</bool>
 
+     <!-- Whether to create scaled versions of the default wallpaper image to match the display size -->
+    <bool name="config_optimizeDefaultWallpaper">false</bool>
+
     <!-- Specifies priority of automatic time sources. Suggestions from higher entries in the list
          take precedence over lower ones.
          See com.android.server.timedetector.TimeDetectorStrategy for available sources. -->

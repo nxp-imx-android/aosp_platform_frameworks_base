@@ -19,6 +19,7 @@ package android.app;
 import static android.Manifest.permission.MANAGE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.READ_WALLPAPER_INTERNAL;
 import static android.Manifest.permission.SET_WALLPAPER_DIM_AMOUNT;
+import static android.app.Flags.optimizeDefaultWallpaper;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.ParcelFileDescriptor.MODE_READ_ONLY;
 import static android.view.Display.INVALID_DISPLAY;
@@ -3400,6 +3401,24 @@ public class WallpaperManager {
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static InputStream openDefaultWallpaper(Context context, @SetWallpaperFlags int which) {
+        if (optimizeDefaultWallpaper() &&  context.getResources().getBoolean(
+                R.bool.config_optimizeDefaultWallpaper)) {
+            return openRawDefaultWallpaper(context, which);
+        }
+        return openRawDefaultWallpaper(context, which);
+    }
+
+    /**
+     * Opens the raw default wallpaper without attempting to request a scaled version
+     * from the service.
+     *
+     * If the device defines no default wallpaper of the requested kind,
+     * {@code null} is returned.
+     *
+     * @hide
+     */
+    public static InputStream openRawDefaultWallpaper(Context context,
+            @SetWallpaperFlags int which) {
         final String whichProp;
         final int defaultResId;
         /* Factory-default lock wallpapers are not yet supported.
