@@ -45,17 +45,17 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @EnableSceneContainer
-class LockscreenNotificationDisplayConfigInteractorTest : SysuiTestCase() {
+class LockscreenNotificationsInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    private val Kosmos.underTest: LockscreenNotificationDisplayConfigInteractor by
-        Kosmos.Fixture { lockscreenNotificationDisplayConfigInteractor }
+    private val Kosmos.underTest: LockscreenNotificationsInteractor by
+        Kosmos.Fixture { lockscreenNotificationsInteractor }
 
     private val maxNotifications = 5 // something that's not -1
     private val calculateMaxNotifications: (Int, Boolean) -> Int = { _, _ -> maxNotifications }
 
     @Test
-    fun singleShade_IdleOnLockScreen_showOnlyFullHeight() =
+    fun singleShade_IdleOnLockScreen_isConstrained() =
         kosmos.runTest {
             enableSingleShade()
 
@@ -64,12 +64,12 @@ class LockscreenNotificationDisplayConfigInteractorTest : SysuiTestCase() {
 
             setTransitionState(ObservableTransitionState.Idle(Scenes.Lockscreen))
 
-            assertShowOnlyFullHeight(lockScreenConfig)
+            isConstrained(lockScreenConfig)
         }
 
     @Test
     @DisableFlags(FLAG_DUAL_SHADE)
-    fun splitShade_IdleOnLockScreen_showOnlyFullHeight() =
+    fun splitShade_IdleOnLockScreen_isConstrained() =
         kosmos.runTest {
             enableSplitShade()
 
@@ -78,12 +78,12 @@ class LockscreenNotificationDisplayConfigInteractorTest : SysuiTestCase() {
 
             setTransitionState(ObservableTransitionState.Idle(Scenes.Lockscreen))
 
-            assertShowOnlyFullHeight(lockScreenConfig)
+            isConstrained(lockScreenConfig)
         }
 
     @Test
     @EnableFlags(FLAG_DUAL_SHADE)
-    fun dualShadeShade_IdleOnLockScreen_showOnlyFullHeight() =
+    fun dualShadeShade_IdleOnLockScreen_isConstrained() =
         kosmos.runTest {
             enableDualShade()
 
@@ -92,7 +92,7 @@ class LockscreenNotificationDisplayConfigInteractorTest : SysuiTestCase() {
 
             setTransitionState(ObservableTransitionState.Idle(Scenes.Lockscreen))
 
-            assertShowOnlyFullHeight(lockScreenConfig)
+            isConstrained(lockScreenConfig)
         }
 
     @Test
@@ -143,7 +143,7 @@ class LockscreenNotificationDisplayConfigInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(FLAG_DUAL_SHADE)
-    fun dualShadeShade_QuickSettingsOverLockScreen_showOnlyFullHeight() =
+    fun dualShadeShade_QuickSettingsOverLockScreen_isConstrained() =
         kosmos.runTest {
             enableDualShade()
 
@@ -157,11 +157,11 @@ class LockscreenNotificationDisplayConfigInteractorTest : SysuiTestCase() {
                 )
             )
 
-            assertShowOnlyFullHeight(lockScreenConfig)
+            isConstrained(lockScreenConfig)
         }
 
     @Test
-    fun singleShade_TransitionToShade_noUserInputAndNoProgres_showOnlyFullHeight() =
+    fun singleShade_TransitionToShade_noUserInputAndNoProgres_isConstrained() =
         kosmos.runTest {
             enableSingleShade()
 
@@ -183,7 +183,7 @@ class LockscreenNotificationDisplayConfigInteractorTest : SysuiTestCase() {
                 )
             )
 
-            assertShowOnlyFullHeight(lockScreenConfig)
+            isConstrained(lockScreenConfig)
         }
 
     @Test
@@ -213,7 +213,7 @@ class LockscreenNotificationDisplayConfigInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun singleShade_TransitionToShade_userInputOngoingAndProgres_showOnlyFullHeight() =
+    fun singleShade_TransitionToShade_userInputOngoingAndProgres_isConstrained() =
         kosmos.runTest {
             enableSingleShade()
 
@@ -235,11 +235,11 @@ class LockscreenNotificationDisplayConfigInteractorTest : SysuiTestCase() {
                 )
             )
 
-            assertShowOnlyFullHeight(lockScreenConfig)
+            isConstrained(lockScreenConfig)
         }
 
     @Test
-    fun singleShade_TransitionFromCommunalToLockscreen_showOnlyFullHeight() =
+    fun singleShade_TransitionFromCommunalToLockscreen_isConstrained() =
         kosmos.runTest {
             enableSingleShade()
 
@@ -261,7 +261,7 @@ class LockscreenNotificationDisplayConfigInteractorTest : SysuiTestCase() {
                 )
             )
 
-            assertShowOnlyFullHeight(lockScreenConfig)
+            isConstrained(lockScreenConfig)
         }
 
     private fun Kosmos.setTransitionState(transitionState: ObservableTransitionState) {
@@ -276,7 +276,7 @@ class LockscreenNotificationDisplayConfigInteractorTest : SysuiTestCase() {
         assertThat(lockScreenConfig.maxNotifications).isEqualTo(-1)
     }
 
-    private fun assertShowOnlyFullHeight(lockScreenConfig: LockscreenDisplayConfig?) {
+    private fun isConstrained(lockScreenConfig: LockscreenDisplayConfig?) {
         assertThat(lockScreenConfig).isNotNull()
         assertThat(lockScreenConfig!!.isOnLockscreen).isTrue()
         assertThat(lockScreenConfig.maxNotifications).isEqualTo(maxNotifications)

@@ -20,8 +20,8 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 
-val Kosmos.lockscreenNotificationDisplayConfigInteractor by Fixture {
-    LockscreenNotificationDisplayConfigInteractor(
+val Kosmos.lockscreenNotificationsInteractor by Fixture {
+    LockscreenNotificationsInteractor(
         sceneInteractor = sceneInteractor,
         sharedNotificationContainerInteractor = sharedNotificationContainerInteractor,
         notificationStackAppearanceInteractor = notificationStackAppearanceInteractor,
