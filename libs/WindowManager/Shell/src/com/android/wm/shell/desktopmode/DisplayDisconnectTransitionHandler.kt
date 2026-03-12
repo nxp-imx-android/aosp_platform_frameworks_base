@@ -28,7 +28,6 @@ import com.android.internal.protolog.ProtoLog
 import com.android.window.flags.Flags.enableDisplayDisconnectSplitscreen
 import com.android.wm.shell.fullscreen.FullscreenDisconnectHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
-import com.android.wm.shell.pip2.phone.PipDisplayDisconnectHandler
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.sysui.ShellInit
@@ -38,7 +37,7 @@ import java.util.Optional
 /**
  * Handler to animate the transition from disconnecting a display.
  *
- * TODO: b/391652399 Consider moving this out of desktop package as it becomes less
+ * TODO: b/488139835 Consider moving this out of desktop package as it becomes less
  *   desktop-specific.
  */
 class DisplayDisconnectTransitionHandler(

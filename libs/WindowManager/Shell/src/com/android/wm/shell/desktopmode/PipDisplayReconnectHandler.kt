@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.pip2.phone
+package com.android.wm.shell.desktopmode
 
 import android.app.KeyguardManager
 import android.content.Context
@@ -26,6 +26,8 @@ import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayController.OnDisplaysChangedListener
+import com.android.wm.shell.pip2.phone.PipDisplayTransferHandler
+import com.android.wm.shell.pip2.phone.PipTransitionState
 import com.android.wm.shell.protolog.ShellProtoLogGroup
 import com.android.wm.shell.sysui.KeyguardChangeListener
 import com.android.wm.shell.sysui.ShellController
@@ -37,6 +39,8 @@ import com.android.wm.shell.sysui.UserChangeListener
  * taskId - uniqueDisplayId pair on disconnect, then referring against those when the same
  * uniqueDisplayId display is connected. Events that can trigger a reconnect include adding a
  * display, changing a user, and unlocking the keyguard.
+ *
+ * TODO: b/488139835 Consider moving this out of desktop package.
  */
 class PipDisplayReconnectHandler(
     private val keyguardManager: KeyguardManager,

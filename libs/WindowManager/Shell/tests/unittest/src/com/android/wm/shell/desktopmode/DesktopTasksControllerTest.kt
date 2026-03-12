@@ -160,7 +160,6 @@ import com.android.wm.shell.draganddrop.DragAndDropController
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter
 import com.android.wm.shell.fullscreen.FullscreenDisconnectHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
-import com.android.wm.shell.pip2.phone.PipDisplayDisconnectHandler
 import com.android.wm.shell.pip2.phone.PipScheduler
 import com.android.wm.shell.pip2.phone.PipTransitionState
 import com.android.wm.shell.recents.RecentTasksController
