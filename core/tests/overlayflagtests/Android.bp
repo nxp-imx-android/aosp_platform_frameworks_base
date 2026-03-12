@@ -25,7 +25,10 @@ package {
 java_test_host {
     name: "OverlayFlaggingTests",
     srcs: ["src/**/*.kt"],
-    libs: ["tradefed"],
+    libs: [
+        "tradefed",
+        "platform-test-annotations-host",
+    ],
     test_suites: [
         "device-tests",
     ],
