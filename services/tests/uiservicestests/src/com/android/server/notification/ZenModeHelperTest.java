@@ -106,6 +106,8 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
@@ -1070,6 +1072,8 @@ public class ZenModeHelperTest extends UiServiceTestCase {
     @Test
     @EnableFlags(FLAG_FILTER_CALL_ON_LISTENER_HINT)
     public void testSuppressedCallEffects_matchesCallFilter() {
+        var pm = mContext.getPackageManager();
+        assumeFalse(pm.hasSystemFeature(PackageManager.FEATURE_WATCH));
         // With suppressed effects, regardless of Zen state, all calls should be filtered out
         mZenModeHelper.setSuppressedEffects(ZenModeHelper.SUPPRESSED_EFFECT_CALLS);
 
@@ -1088,9 +1092,24 @@ public class ZenModeHelperTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags(FLAG_FILTER_CALL_ON_LISTENER_HINT)
+    public void testSuppressedCallEffects_matchesCallFilter_LegacyOnWatch() {
+        // Verify retainining legacy behavior on Watch
+        var pm = mContext.getPackageManager();
+        assumeTrue(pm.hasSystemFeature(PackageManager.FEATURE_WATCH));
+
+        mZenModeHelper.setSuppressedEffects(ZenModeHelper.SUPPRESSED_EFFECT_CALLS);
+
+        mZenModeHelper.mZenMode = ZEN_MODE_OFF;
+        // Should be allowed because suppression check is skipped
+        assertTrue(mZenModeHelper.matchesCallFilter(UserHandle.CURRENT, null, null, 0, 0, 0));
+    }
+
+    @Test
     @DisableFlags(FLAG_FILTER_CALL_ON_LISTENER_HINT)
     public void testSuppressedCallEffects_matchesCallFilter_flagDisabled() {
-        // With suppressed effects, but flag disabled, calls should NOT be filtered out by suppression
+        // With suppressed effects, but flag disabled, calls should NOT be filtered out by
+        // suppression
         mZenModeHelper.setSuppressedEffects(ZenModeHelper.SUPPRESSED_EFFECT_CALLS);
 
         mZenModeHelper.mZenMode = ZEN_MODE_OFF;
