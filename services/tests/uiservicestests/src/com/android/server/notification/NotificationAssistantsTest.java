@@ -19,6 +19,8 @@ import static android.Manifest.permission.STATUS_BAR_SERVICE;
 import static android.app.Flags.nmContextualDisplayLaunch;
 import static android.app.NotificationManager.SUPPORTED_NAS_ADJUSTMENT_KEYS_CHANGED;
 import static android.app.NotificationRule.Action.PRIMARY_ACTION_BUNDLE;
+import static android.app.NotificationRule.Action.PRIMARY_ACTION_HIGHLIGHT;
+import static android.app.NotificationRule.Action.PRIMARY_ACTION_LOW;
 import static android.app.NotificationRule.RESERVED_ID_IMPORTANT_NOTIFICATIONS;
 import static android.app.NotificationRule.RESERVED_ID_PRIORITY_CONVERSATIONS;
 import static android.app.NotificationRule.RESERVED_ID_PROMOTED;
@@ -72,6 +74,7 @@ import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.UserInfo;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.platform.test.annotations.EnableFlags;
@@ -162,6 +165,13 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
             UserInfo.FLAG_PROFILE, USER_TYPE_PROFILE_MANAGED);
     UserInfo mSecondary = new UserInfo(mZero.id + 3, "secondary", UserInfo.FLAG_FULL);
     List<UserInfo> mUsers = List.of(mZero, mZeroProfile, mZeroManagedProfile, mSecondary);
+
+    @Mock
+    private INotificationListener mAssistantZero;
+    private ManagedServices.ManagedServiceInfo mAssistantZeroInfo;
+    @Mock
+    private INotificationListener mAssistantSecondary;
+    private ManagedServices.ManagedServiceInfo mAssistantSecondaryInfo;
 
     ComponentName mCn = new ComponentName("a", "b");
 
@@ -295,6 +305,14 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         NotificationExtensionAtoms.registerAllExtensions(mRegistry);
 
         mAssistants = mNm.mAssistants;
+
+        // set up managed services (NAS for each of mZero and mSecondary)
+        when(mAssistantZero.asBinder()).thenReturn(mock(IBinder.class));
+        when(mAssistantSecondary.asBinder()).thenReturn(mock(IBinder.class));
+        mAssistants.registerSystemService(mAssistantZero, mCn, mZero.id, 1000);
+        mAssistants.registerSystemService(mAssistantSecondary, mCn, mSecondary.id, 1001);
+        mAssistantZeroInfo = mAssistants.checkServiceTokenLocked(mAssistantZero);
+        mAssistantSecondaryInfo = mAssistants.checkServiceTokenLocked(mAssistantSecondary);
 
         // a lot of tests verify counts about updating defaults, so ignore counts that
         // happen in init()
@@ -1660,5 +1678,51 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
 
         assertThat(mNm.getBinderService().getAllowedClassificationTypes()).asList()
                 .containsExactly(TYPE_SOCIAL_MEDIA);
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void testNotifyNotificationRuleAdded_notifiesAssistantForUser()
+            throws RemoteException {
+        // when: rule added
+        NotificationRule rule = new NotificationRule.Builder(123,
+                new NotificationRule.Action(PRIMARY_ACTION_HIGHLIGHT)).build();
+        mAssistants.notifyNotificationRuleAdded(mZero.id, rule);
+
+        // make sure the runnables actually run
+        mTestableLooper.processAllMessages();
+
+        // then: assistant for mZero is notified, but not mSecondary
+        verify(mAssistantZero, times(1)).onNotificationRuleAdded(eq(rule));
+        verify(mAssistantSecondary, never()).onNotificationRuleAdded(any());
+
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void testNotifyNotificationRuleModified_notifiesAssistantForUser()
+            throws RemoteException {
+        // when: notification rule modified
+        NotificationRule updated = new NotificationRule.Builder(123,
+                new NotificationRule.Action(PRIMARY_ACTION_LOW)).build();
+        mAssistants.notifyNotificationRuleModified(mZero.id, updated);
+        mTestableLooper.processAllMessages();
+
+        // then: assistant for mZero is notified but not mSecondary
+        verify(mAssistantZero, times(1)).onNotificationRuleModified(eq(updated));
+        verify(mAssistantSecondary, never()).onNotificationRuleModified(any());
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void testNotifyNotificationRuleRemoved_notifiesAssistantForUser()
+            throws RemoteException {
+        // when: notification rule removed for mSecondary
+        mAssistants.notifyNotificationRuleRemoved(mSecondary.id, 123);
+        mTestableLooper.processAllMessages();
+
+        // then: assistant for mSecondary is notified but not mZero
+        verify(mAssistantZero, never()).onNotificationRuleRemoved(anyInt());
+        verify(mAssistantSecondary, times(1)).onNotificationRuleRemoved(123);
     }
 }

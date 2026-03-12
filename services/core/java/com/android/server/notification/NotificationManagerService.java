@@ -183,7 +183,6 @@ import static android.service.notification.NotificationListenerService.TRIM_LIGH
 import static android.service.personalcontext.Flags.enablePersonalContextService;
 import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.contentprotection.flags.Flags.rapidClearNotificationsByListenerAppOpEnabled;
-import static com.android.server.notification.Flags.favoritesIncomingCallLights;
 
 import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.NLS_COMPLETION_DURATION_MS;
 import static com.android.internal.util.FrameworkStatsLog.DND_MODE_RULE;
@@ -197,6 +196,7 @@ import static com.android.server.am.PendingIntentRecord.FLAG_ACTIVITY_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_BROADCAST_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_SERVICE_SENDER;
 import static com.android.server.bitmapoffload.BitmapOffload.BITMAP_SOURCE_NOTIFICATIONS;
+import static com.android.server.notification.Flags.favoritesIncomingCallLights;
 import static com.android.server.notification.Flags.managedServicesConcurrentMultiuser;
 import static com.android.server.notification.NotificationManagerService.NotificationPostEvent.NOTIFICATION_POSTED_CACHED;
 import static com.android.server.policy.PhoneWindowManager.TOAST_WINDOW_ANIM_BUFFER;
@@ -8016,6 +8016,7 @@ public class NotificationManagerService extends SystemService {
 
             if (mNotificationRuleManager.addNotificationRule(userId, pos, rule)) {
                 handleSaveRulesFile();
+                mAssistants.notifyNotificationRuleAdded(userId, rule);
                 return mNotificationRuleManager.getNotificationRule(userId, rule.getId());
             } else {
                 return null;
@@ -8034,6 +8035,7 @@ public class NotificationManagerService extends SystemService {
 
             if (mNotificationRuleManager.updateNotificationRule(userId, rule)) {
                 handleSaveRulesFile();
+                mAssistants.notifyNotificationRuleModified(userId, rule);
                 return mNotificationRuleManager.getNotificationRule(userId, rule.getId());
             } else {
                 return null;
@@ -8050,6 +8052,7 @@ public class NotificationManagerService extends SystemService {
 
             if (mNotificationRuleManager.removeNotificationRule(userId, ruleId)) {
                 handleSaveRulesFile();
+                mAssistants.notifyNotificationRuleRemoved(userId, ruleId);
                 return true;
             } else {
                 return false;
@@ -13684,6 +13687,66 @@ public class NotificationManagerService extends SystemService {
                 assistant.onNotificationsSeen(keys);
             } catch (RemoteException ex) {
                 Slog.e(TAG, "unable to notify assistant (seen): " + info, ex);
+            }
+        }
+
+        protected void notifyNotificationRuleAdded(@UserIdInt int userId, NotificationRule rule) {
+            if (rule == null) {
+                return;
+            }
+
+            for (final ManagedServiceInfo info : NotificationAssistants.this.getServices()) {
+                if (!info.isSameUser(userId)) {
+                    continue;
+                }
+
+                mHandler.post(() -> {
+                    final INotificationListener assistant = (INotificationListener) info.service;
+                    try {
+                        assistant.onNotificationRuleAdded(rule);
+                    } catch (RemoteException ex) {
+                        Slog.e(TAG, "unable to notify assistant (rule added): " + info, ex);
+                    }
+                });
+            }
+        }
+
+        protected void notifyNotificationRuleModified(@UserIdInt int userId,
+                NotificationRule rule) {
+            if (rule == null) {
+                return;
+            }
+
+            for (final ManagedServiceInfo info : NotificationAssistants.this.getServices()) {
+                if (!info.isSameUser(userId)) {
+                    continue;
+                }
+
+                mHandler.post(() -> {
+                    final INotificationListener assistant = (INotificationListener) info.service;
+                    try {
+                        assistant.onNotificationRuleModified(rule);
+                    } catch (RemoteException ex) {
+                        Slog.e(TAG, "unable to notify assistant (rule modified): " + info, ex);
+                    }
+                });
+            }
+        }
+
+        protected void notifyNotificationRuleRemoved(@UserIdInt int userId, int ruleId) {
+            for (final ManagedServiceInfo info : NotificationAssistants.this.getServices()) {
+                if (!info.isSameUser(userId)) {
+                    continue;
+                }
+
+                mHandler.post(() -> {
+                    final INotificationListener assistant = (INotificationListener) info.service;
+                    try {
+                        assistant.onNotificationRuleRemoved(ruleId);
+                    } catch (RemoteException ex) {
+                        Slog.e(TAG, "unable to notify assistant (rule removed): " + info, ex);
+                    }
+                });
             }
         }
 

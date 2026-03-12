@@ -14963,6 +14963,7 @@ package android.service.notification {
     method @FlaggedApi("android.app.nm_contextual_display") public final void createDynamicBundle(@IntRange(from=0x64, to=0xc8) int, @NonNull CharSequence);
     method @FlaggedApi("android.app.nm_contextual_display") public final void deleteDynamicBundle(@IntRange(from=0x64, to=0xc8) int);
     method @FlaggedApi("android.app.nm_contextual_display") @NonNull public final java.util.Set<android.service.notification.DynamicBundle> getDynamicBundles();
+    method @FlaggedApi("android.app.nm_contextual_display_launch") @NonNull public final java.util.List<android.app.NotificationRule> getNotificationRules();
     method public void onActionInvoked(@NonNull String, @NonNull android.app.Notification.Action, int);
     method public void onAllowedAdjustmentsChanged();
     method @NonNull public final android.os.IBinder onBind(@Nullable android.content.Intent);
@@ -14973,6 +14974,9 @@ package android.service.notification {
     method @Nullable public android.service.notification.Adjustment onNotificationEnqueued(@NonNull android.service.notification.StatusBarNotification, @NonNull android.app.NotificationChannel, @NonNull android.service.notification.NotificationListenerService.RankingMap);
     method public void onNotificationExpansionChanged(@NonNull String, boolean, boolean);
     method public void onNotificationFeedbackReceived(@NonNull String, @NonNull android.service.notification.NotificationListenerService.RankingMap, @NonNull android.os.Bundle);
+    method @FlaggedApi("android.app.nm_contextual_display_launch") public void onNotificationRuleAdded(@NonNull android.app.NotificationRule);
+    method @FlaggedApi("android.app.nm_contextual_display_launch") public void onNotificationRuleModified(@NonNull android.app.NotificationRule);
+    method @FlaggedApi("android.app.nm_contextual_display_launch") public void onNotificationRuleRemoved(int);
     method public abstract void onNotificationSnoozedUntilContext(@NonNull android.service.notification.StatusBarNotification, @NonNull String);
     method public void onNotificationVisibilityChanged(@NonNull String, boolean);
     method public void onNotificationsSeen(@NonNull java.util.List<java.lang.String>);

@@ -19,6 +19,7 @@ package android.service.notification;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
+import android.app.NotificationRule;
 import android.content.pm.ParceledListSlice;
 import android.os.Bundle;
 import android.os.UserHandle;
@@ -65,4 +66,7 @@ oneway interface INotificationListener
     void onNotificationFeedbackReceived(
             String key, in NotificationRankingUpdate update, in Bundle feedback);
     void onSystemAdjustmentsReceived(in List<Adjustment> adjustments);
+    void onNotificationRuleAdded(in NotificationRule rule);
+    void onNotificationRuleModified(in NotificationRule rule);
+    void onNotificationRuleRemoved(int ruleId);
 }
