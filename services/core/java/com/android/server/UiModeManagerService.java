@@ -1445,7 +1445,7 @@ final class UiModeManagerService extends SystemService {
 
         @Override
         public List<String> getAllForceInvertAlwaysDisableApps(int userId) {
-            if (Binder.getCallingUid() != Process.SYSTEM_UID) {
+            if (!UserHandle.isSameApp(Binder.getCallingUid(), Process.SYSTEM_UID)) {
                 return null;
             }
             synchronized (mLock) {
@@ -1460,7 +1460,7 @@ final class UiModeManagerService extends SystemService {
                 int userId, String packageName,
                 @ForceInvertPackageOverrideState int newState) {
             setForceInvertOverrideState_enforcePermission();
-            if (Binder.getCallingUid() != Process.SYSTEM_UID) {
+            if (!UserHandle.isSameApp(Binder.getCallingUid(), Process.SYSTEM_UID)) {
                 return false;
             }
             synchronized (mLock) {
