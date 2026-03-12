@@ -3663,7 +3663,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
     @Override
     public boolean dispatchPopulateAccessibilityEventInternal(AccessibilityEvent event) {
         boolean handled = false;
-        if (includeForAccessibility(false)) {
+        if (includeForAccessibility(sRestrictViewGroupAccessibilityEventPopulation)) {
             handled = super.dispatchPopulateAccessibilityEventInternal(event);
             if (handled) {
                 return handled;
@@ -3684,6 +3684,12 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
                         // by AccessibilityManagerService.
                         if (child.includeForAccessibility(true)) {
                             handled = child.dispatchPopulateAccessibilityEvent(event);
+                        } else if (child instanceof ViewGroup group) {
+                            // If the child is a ViewGroup, it may contain children that are
+                            // included for accessibility, even if the ViewGroup itself is not.
+                            // We call the internal method to traverse the children without
+                            // potentially populating the event with the ViewGroup's content itself.
+                            handled = group.dispatchPopulateAccessibilityEventInternal(event);
                         }
                     } else {
                         handled = child.dispatchPopulateAccessibilityEvent(event);
