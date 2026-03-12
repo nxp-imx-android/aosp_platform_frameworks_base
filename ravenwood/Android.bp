@@ -331,13 +331,6 @@ platform_compat_config {
     visibility: ["//visibility:private"],
 }
 
-java_library {
-    name: "ext-ravenwood",
-    installable: false,
-    static_libs: ["ext"],
-    visibility: ["//visibility:private"],
-}
-
 filegroup {
     name: "ravenwood-data",
     device_common_srcs: [
@@ -658,7 +651,7 @@ android_ravenwood_libgroup {
     libs: [
         "kxml2-android",
         "json-prebuilt",
-        "ext-ravenwood",
+        "ext",
         "icu4j-icudata-jarjar",
         "icu4j-icutzdata-jarjar",
         "mockito-ravenwood-prebuilt",
