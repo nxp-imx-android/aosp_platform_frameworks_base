@@ -53,6 +53,8 @@ import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.ActivityManager.ProcessCapability;
+import android.app.ActivityManager.ProcessState;
 import android.app.ActivityManagerInternal;
 import android.app.AppGlobals;
 import android.app.IUidObserver;
@@ -2534,7 +2536,8 @@ public class JobSchedulerService extends com.android.server.SystemService
         }
     }
 
-    void updateUidState(int uid, int procState, int capabilities) {
+    void updateUidState(int uid, @ProcessState int procState,
+            @ProcessCapability int capabilities) {
         if (DEBUG) {
             Slog.d(TAG, "UID " + uid + " proc state changed to "
                     + ActivityManager.procStateToString(procState)
@@ -2585,14 +2588,14 @@ public class JobSchedulerService extends com.android.server.SystemService
      * Return the current {@link ActivityManager#PROCESS_CAPABILITY_ALL capabilities}
      * of the given UID.
      */
-    public int getUidCapabilities(int uid) {
+    public @ProcessCapability int getUidCapabilities(int uid) {
         synchronized (mLock) {
             return mUidCapabilities.get(uid, ActivityManager.PROCESS_CAPABILITY_NONE);
         }
     }
 
     /** Return the current proc state of the given UID. */
-    public int getUidProcState(int uid) {
+    public @ProcessState int getUidProcState(int uid) {
         synchronized (mLock) {
             return mUidProcStates.get(uid, ActivityManager.PROCESS_STATE_UNKNOWN);
         }
