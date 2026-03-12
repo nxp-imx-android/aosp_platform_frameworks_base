@@ -322,8 +322,7 @@ public final class TransitionFilter implements Parcelable {
                     }
                 }
                 if (mIsCrossDisplayMove) {
-                    if (change.getTaskInfo() == null
-                            || change.getStartDisplayId() == change.getEndDisplayId()) {
+                    if (change.getTaskInfo() == null || !change.isCrossDisplay()) {
                         continue;
                     }
                 }

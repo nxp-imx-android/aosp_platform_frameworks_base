@@ -37,13 +37,14 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atMostOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
 
 import android.animation.ValueAnimator;
 import android.app.ActivityManager.RunningTaskInfo;
 import android.content.Context;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.os.Binder;
 import android.os.Handler;
@@ -497,6 +498,70 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
         verify(startT).setAlpha(change.getLeash(), 0f);
         verify(startT, atMostOnce()).reparent(any(), any());
         verify(startT, never()).show(any());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(com.android.window.flags.Flags.FLAG_CROSS_DISPLAY_TRANSITION)
+    public void startAnimation_childTask() {
+        // 1. Cross-display move
+        final int startDisplayId = 0;
+        final int endDisplayId = 1;
+
+        final RunningTaskInfo parentTaskInfo = createTaskInfo(1, WINDOWING_MODE_FREEFORM);
+        final TransitionInfo.Change parentChange = new ChangeBuilder(parentTaskInfo, TRANSIT_CHANGE)
+                .build();
+
+        final RunningTaskInfo childTaskInfo = createTaskInfo(2, WINDOWING_MODE_FREEFORM);
+        childTaskInfo.positionInParent = new Point(100, 100);
+        final TransitionInfo.Change childChange = new ChangeBuilder(childTaskInfo, TRANSIT_CHANGE)
+                .build();
+        childChange.setDisplayId(startDisplayId, endDisplayId);
+        childChange.setParent(parentChange.getContainer());
+        final SurfaceControl mockSnapshot = mock(SurfaceControl.class);
+        childChange.setSnapshot(mockSnapshot, 0);
+
+        final IBinder token = new Binder();
+        final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_CHANGE)
+                .addChange(parentChange)
+                .addChange(childChange)
+                .build();
+        info.addRootLeash(startDisplayId, mock(SurfaceControl.class), 0, 0);
+
+        final SurfaceControl.Transaction startT = MockTransactionPool.create();
+        final SurfaceControl.Transaction finishT = MockTransactionPool.create();
+
+        mTransitionHandler.startAnimation(token, info, startT, finishT,
+                mock(Transitions.TransitionFinishCallback.class));
+        flushHandlers();
+
+        // Should follow display move path: set alpha to 0 and reparent snapshot
+        verify(startT).setAlpha(eq(childChange.getLeash()), eq(0f));
+        verify(startT).reparent(eq(mockSnapshot), any());
+
+        // 2. Non-cross-display move
+        final int sameDisplayId = 0;
+        final RunningTaskInfo childTaskInfo2 = createTaskInfo(3, WINDOWING_MODE_FREEFORM);
+        final Point positionInParent = new Point(200, 200);
+        childTaskInfo2.positionInParent = positionInParent;
+        final TransitionInfo.Change childChange2 = new ChangeBuilder(childTaskInfo2, TRANSIT_CHANGE)
+                .build();
+        childChange2.setDisplayId(sameDisplayId, sameDisplayId);
+        childChange2.setParent(parentChange.getContainer());
+
+        final IBinder token2 = new Binder();
+        final TransitionInfo info2 = new TransitionInfoBuilder(TRANSIT_CHANGE)
+                .addChange(parentChange)
+                .addChange(childChange2)
+                .build();
+
+        final SurfaceControl.Transaction startT2 = MockTransactionPool.create();
+        mTransitionHandler.startAnimation(token2, info2, startT2, MockTransactionPool.create(),
+                mock(Transitions.TransitionFinishCallback.class));
+        flushHandlers();
+
+        // Should NOT follow display move path
+        verify(startT2, never()).setAlpha(eq(childChange2.getLeash()), anyFloat());
+        verify(startT2, never()).reparent(any(), any());
     }
 
     private static void mergeSync(Transitions.TransitionHandler handler, IBinder token) {
