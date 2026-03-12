@@ -1871,7 +1871,7 @@ public class BiometricService extends SystemService {
 
                 if (Flags.bpComputerControlled() && mVirtualDeviceManagerInternal != null
                         && promptInfo.shouldNotifyVdmAuthenticationRequested()) {
-                    mVirtualDeviceManagerInternal.onAuthenticationPrompt(userId,
+                    mVirtualDeviceManagerInternal.onAuthenticationPrompt(
                             promptInfo.getDisplayId(), opPackageName);
                 }
 

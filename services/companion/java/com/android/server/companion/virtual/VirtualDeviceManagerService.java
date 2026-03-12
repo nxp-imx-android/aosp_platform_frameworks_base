@@ -1127,10 +1127,10 @@ public class VirtualDeviceManagerService extends SystemService implements Watchd
         }
 
         @Override
-        public void onAuthenticationPrompt(int uid, int displayId, String packageName) {
+        public void onAuthenticationPrompt(int displayId, String packageName) {
             VirtualDeviceImpl device = getVirtualDeviceForDisplayId(displayId);
             if (device != null) {
-                device.onAuthenticationPrompt(uid, packageName, displayId);
+                device.onAuthenticationPrompt(displayId, packageName);
             }
         }
 

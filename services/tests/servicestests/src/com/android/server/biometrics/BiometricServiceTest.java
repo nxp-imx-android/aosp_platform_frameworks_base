@@ -2492,8 +2492,7 @@ public class BiometricServiceTest {
         );
         waitForIdle();
 
-        verify(mVirtualDeviceManagerInternal).onAuthenticationPrompt(anyInt(), anyInt(),
-                anyString());
+        verify(mVirtualDeviceManagerInternal).onAuthenticationPrompt(anyInt(), anyString());
     }
 
     @Test
@@ -2518,7 +2517,7 @@ public class BiometricServiceTest {
         );
         waitForIdle();
 
-        verify(mVirtualDeviceManagerInternal, never()).onAuthenticationPrompt(anyInt(), anyInt(),
+        verify(mVirtualDeviceManagerInternal, never()).onAuthenticationPrompt(anyInt(),
                 anyString());
     }
 
@@ -2538,8 +2537,7 @@ public class BiometricServiceTest {
         );
         waitForIdle();
 
-        verify(mVirtualDeviceManagerInternal).onAuthenticationPrompt(anyInt(), anyInt(),
-                anyString());
+        verify(mVirtualDeviceManagerInternal).onAuthenticationPrompt(anyInt(), anyString());
     }
 
     // Helper methods
