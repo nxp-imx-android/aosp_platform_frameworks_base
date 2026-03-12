@@ -541,5 +541,10 @@ public final class PolicyIdentifier<T> {
     public static final PolicyIdentifier<Integer> FACTORY_RESET =
             new PolicyIdentifier<>("FACTORY_RESET");
 
+    // Make sure to update the policy metadata file when updating the definitions above by running
+    // the following commands:
+    // m framework-minus-apex
+    // cp out/soong/.intermediates/frameworks/base/framework-minus-apex/android_common/javac/*/anno/android/processor/devicepolicy/policies.textproto frameworks/base/tools/policymetadata/policies.textproto
+
     // LINT.ThenChange(/tools/policymetadata/policies.textproto)
 }
