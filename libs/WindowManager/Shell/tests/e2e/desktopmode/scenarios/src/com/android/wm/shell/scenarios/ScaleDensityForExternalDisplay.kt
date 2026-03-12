@@ -16,18 +16,11 @@
 
 package com.android.wm.shell.scenarios
 
-import android.app.ActivityManager
-import android.app.Instrumentation
-import android.content.Intent
-import android.hardware.display.DisplayManager
 import android.os.UserHandle
 import android.platform.test.annotations.RequiresFlagsEnabled
-import android.provider.Settings
 import android.view.IWindowManager
 import android.view.WindowManagerGlobal
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By.desc
-import androidx.test.uiautomator.By.text
 import androidx.test.uiautomator.Condition
 import androidx.test.uiautomator.UiDevice
 import com.android.compatibility.common.util.UiAutomatorUtils2.waitFindObject
@@ -35,52 +28,43 @@ import com.android.window.flags.Flags
 import com.google.common.truth.Truth.assertThat
 import junit.framework.Assert.fail
 import org.junit.After
+import org.junit.Before
 import org.junit.Ignore
-import org.junit.Rule
 import org.junit.Test
-import platform.test.desktop.SimulatedConnectedDisplayTestRule
+import platform.test.desktop.DisplayDevice
+import platform.test.desktop.DisplayPeripheral
+import platform.test.desktop.DisplaySize
+import platform.test.desktop.PeripheralType
 
 @Ignore("Test Base Class")
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
-abstract class ScaleDensityForExternalDisplay : TestScenarioBase() {
+abstract class ScaleDensityForExternalDisplay : SettingsConnectedDisplayTestBase() {
 
-    private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
-    private val device = UiDevice.getInstance(instrumentation)
     private val wm: IWindowManager = requireNotNull(WindowManagerGlobal.getWindowManagerService())
-    private val context = InstrumentationRegistry.getInstrumentation().targetContext
-
-    private val displayManager = context.getSystemService(DisplayManager::class.java)
-    private val activityManager: ActivityManager? =
-        instrumentation.context.getSystemService(ActivityManager::class.java)
 
     private val settingsResources =
         instrumentation.context.packageManager.getResourcesForApplication(SETTINGS_PACKAGE_NAME)
-    private val externalDisplaySettings = getSettingsString(EXTERNAL_DISPLAY_SETTING_RES)
     private val increaseDensityDescription = getSettingsString(INCREASE_DENSITY_DESCRIPTION_RES)
     private val decreaseDensityDescription = getSettingsString(DECREASE_DENSITY_DESCRIPTION_RES)
 
-    @get:Rule val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
+    @Before
+    fun setUp() {
+        wm.clearForcedDisplayDensityForUser(addedDisplayId, UserHandle.myUserId())
+    }
+
+    @After
+    fun tearDown() {
+        wm.clearForcedDisplayDensityForUser(addedDisplayId, UserHandle.myUserId())
+    }
 
     @Test
     fun increaseDensity() {
-        val connectedDisplayId = connectedDisplayRule.setupTestDisplay()
-        val displayName = displayManager.getDisplay(connectedDisplayId).name
-        device.waitForIdle()
-        wm.clearForcedDisplayDensityForUser(connectedDisplayId, UserHandle.myUserId())
-        val initialDensity = wm.getBaseDisplayDensity(connectedDisplayId)
+        val initialDensity = wm.getBaseDisplayDensity(addedDisplayId)
 
-        instrumentation.context.startActivity(
-            Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
-                .addCategory(Intent.CATEGORY_DEFAULT)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        )
-
-        waitFindObject(text(externalDisplaySettings)).click()
-        waitFindObject(text(displayName)).click()
         waitFindObject(desc(increaseDensityDescription)).click()
         val currentDensity =
             waitForDensityCondition(
-                connectedDisplayId,
+                addedDisplayId,
                 "Density Increased",
                 predicate = { it > initialDensity },
             )
@@ -90,23 +74,12 @@ abstract class ScaleDensityForExternalDisplay : TestScenarioBase() {
 
     @Test
     fun decreaseDensity() {
-        val connectedDisplayId = connectedDisplayRule.setupTestDisplay()
-        val displayName = displayManager.getDisplay(connectedDisplayId).name
-        device.waitForIdle()
-        wm.clearForcedDisplayDensityForUser(connectedDisplayId, UserHandle.myUserId())
-        val initialDensity = wm.getBaseDisplayDensity(connectedDisplayId)
+        val initialDensity = wm.getBaseDisplayDensity(addedDisplayId)
 
-        instrumentation.context.startActivity(
-            Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
-                .addCategory(Intent.CATEGORY_DEFAULT)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        )
-        waitFindObject(text(externalDisplaySettings)).click()
-        waitFindObject(text(displayName)).click()
         waitFindObject(desc(decreaseDensityDescription)).click()
         val currentDensity =
             waitForDensityCondition(
-                connectedDisplayId,
+                addedDisplayId,
                 "Density Decreased",
                 predicate = { it < initialDensity },
             )
@@ -116,39 +89,31 @@ abstract class ScaleDensityForExternalDisplay : TestScenarioBase() {
 
     @Test
     fun restoreDensityAfterReconnection() {
-        var connectedDisplayId = connectedDisplayRule.setupTestDisplay()
-        val displayName = displayManager.getDisplay(connectedDisplayId).name
-        device.waitForIdle()
-        wm.clearForcedDisplayDensityForUser(connectedDisplayId, UserHandle.myUserId())
-        val initialDensity = wm.getBaseDisplayDensity(connectedDisplayId)
+        val initialDensity = wm.getBaseDisplayDensity(addedDisplayId)
 
-        instrumentation.context.startActivity(
-            Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
-                .addCategory(Intent.CATEGORY_DEFAULT)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        )
-
-        waitFindObject(text(externalDisplaySettings)).click()
-        waitFindObject(text(displayName)).click()
         waitFindObject(desc(increaseDensityDescription)).click()
 
         val lastDensity =
             waitForDensityCondition(
-                connectedDisplayId,
+                addedDisplayId,
                 "Density Increased before disconnect",
                 predicate = { it > initialDensity },
             )
 
-        var idAfterReconnection = connectedDisplayRule.setupTestDisplay()
+        peripheralDeviceRule.disconnectAll()
+        device.waitForIdle()
+
+        val response =
+            peripheralDeviceRule.requestPeripherals(
+                DisplayPeripheral(PeripheralType.SIMULATED, DisplaySize.SIZE_1080P)
+            )
+        val idAfterReconnection =
+            response.devices.filterIsInstance<DisplayDevice>().first().displayId
+
         device.waitForIdle()
         val densityAfterReconnection = wm.getBaseDisplayDensity(idAfterReconnection)
 
         assertThat(lastDensity).isEqualTo(densityAfterReconnection)
-    }
-
-    @After
-    fun teardown() {
-        activityManager?.forceStopPackage(SETTINGS_PACKAGE_NAME)
     }
 
     private fun getSettingsString(resName: String): String {
@@ -198,7 +163,6 @@ abstract class ScaleDensityForExternalDisplay : TestScenarioBase() {
 
     private companion object {
         const val SETTINGS_PACKAGE_NAME = "com.android.settings"
-        const val EXTERNAL_DISPLAY_SETTING_RES = "external_display_settings_title"
         const val INCREASE_DENSITY_DESCRIPTION_RES = "screen_zoom_make_larger_desc"
         const val DECREASE_DENSITY_DESCRIPTION_RES = "screen_zoom_make_smaller_desc"
         const val WAIT_FOR_DENSITY_TIMEOUT: Long = 3000
