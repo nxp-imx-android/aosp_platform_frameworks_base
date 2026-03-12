@@ -43,6 +43,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.util.MemInfoReader;
 import com.android.server.am.MemoryLimiter.Configuration;
+import com.android.server.am.MemoryLimiter.Limits;
 
 import org.junit.After;
 import org.junit.Before;
@@ -132,11 +133,10 @@ public class MemoryLimiterTest {
     // maximum memory in the native handlers, but the test uses -1 for consistency.
     private static final Long sProcessMemoryMax = (long) (-1);
 
-    // The available system memory.
-    private static final long sSystemMemory = getSystemMemory();
+    // The available system memory nad the system swap.
+    private static final long sSystemMemory = getMemTotal();
 
-    // Fetch the system memory.
-    private static long getSystemMemory() {
+    private static long getMemTotal() {
         MemInfoReader memInfo = new MemInfoReader();
         memInfo.readMemInfo();
         return memInfo.getTotalSize();
@@ -234,11 +234,11 @@ public class MemoryLimiterTest {
 
         // Get the memory limit for the process state.  Use one of the process states above.
         @Override
-        public Long getStateLimit(@ProcessState int newState) {
+        public Limits getStateLimit(@ProcessState int newState) {
             return switch (newState) {
-                case PROCESS_STATE_10M -> sProcessMemory10M;
-                case PROCESS_STATE_100M -> sProcessMemory100M;
-                case PROCESS_STATE_MAX -> sProcessMemoryMax;
+                case PROCESS_STATE_10M -> new Limits(sProcessMemory10M, sProcessMemory10M);
+                case PROCESS_STATE_100M -> new Limits(sProcessMemory100M, sProcessMemory100M);
+                case PROCESS_STATE_MAX -> new Limits(sProcessMemoryMax, sProcessMemoryMax);
                 default -> {
                     fail("invalid state for testing: " + newState);
                     yield null;
@@ -405,30 +405,37 @@ public class MemoryLimiterTest {
             return Files.exists(Paths.get(path));
         }
 
-        // Return the current memory of the helper app, as reported by memcg.
-        long currentMemory() throws Exception {
-            String path = cgroupFile("memory.current");
-            Path filePath = Paths.get(path);
-            // Always specify the Charset, e.g., UTF_8.  This may throw: allow the test to fail.
-            String value = Files.readString(filePath, StandardCharsets.UTF_8).trim();
-            return Long.parseLong(value);
-        }
-
-        // Return the current memory.high limit of the helper app, as reported by memcg.
-        private long currentLimit() throws Exception {
-            String path = cgroupFile("memory.high");
+        // Return the value from a cgroup file.  As a special case, this converts the string "max"
+        // to sProcessMemoryMax (aka, -1).
+        private long cgroupValue(String which) throws Exception {
+            String path = cgroupFile(which);
             Path filePath = Paths.get(path);
 
             // Always specify the Charset, e.g., UTF_8.  This may throw: allow the test to fail.
             String value = Files.readString(filePath, StandardCharsets.UTF_8).trim();
 
-            // The limit can be the string "max"; if so, return -1.  Otherwise, the string must be a
-            // valid integer.
+            // The value can be the string "max"; if so, return -1.  Otherwise, the string must be
+            // a valid integer.
             if (value.equals("max")) {
                 return sProcessMemoryMax;
             } else {
                 return Long.parseLong(value);
             }
+        }
+
+        // Return the current memory of the helper app, as reported by memcg.
+        long currentMemory() throws Exception {
+            return cgroupValue("memory.current");
+        }
+
+        // Return the current memory.high limit of the helper app, as reported by memcg.
+        private long currentMemHigh() throws Exception {
+            return cgroupValue("memory.high");
+        }
+
+        // Return the current memory.high limit of the helper app, as reported by memcg.
+        private long currentSwapMax() throws Exception {
+            return cgroupValue("memory.swap.max");
         }
 
         // Return the current value for high events.
@@ -641,7 +648,7 @@ public class MemoryLimiterTest {
     public void testOperation() throws Exception {
         // Use the default "enabled" controller to fetch the limit.  There is no need for a full
         // MemoryLimiter.
-        final long expectedLimit;
+        final Limits expectedLimit;
         final TestInjector inj = new TestInjector();
         try (MemoryLimiter.Controller controller = new MemoryLimiter.ControllerEnabled(inj)) {
             expectedLimit = controller.getStateLimit(ActivityManager.PROCESS_STATE_TOP);
@@ -653,10 +660,21 @@ public class MemoryLimiterTest {
         Helper helper = new Helper();
 
         // Poll until the limit is set by system_server.
-        for (int i = 0; i < 100 && helper.currentLimit() != expectedLimit; i++) {
+        for (int i = 0; i < 100 && helper.currentMemHigh() != expectedLimit.memHigh(); i++) {
             Thread.sleep(100); // Wait a bit before polling again.
         }
-        assertThat(helper.currentLimit()).isEqualTo(expectedLimit);
+        assertThat(helper.currentMemHigh()).isEqualTo(expectedLimit.memHigh());
+
+        if (Flags.memoryLimiterSwap()) {
+            // Poll until the limit is set by system_server.
+            for (int i = 0; i < 100 && helper.currentSwapMax() != expectedLimit.swapMax(); i++) {
+                Thread.sleep(100); // Wait a bit before polling again.
+            }
+            assertThat(helper.currentSwapMax()).isEqualTo(expectedLimit.swapMax());
+        } else {
+            Thread.sleep(200);
+            assertThat(helper.currentSwapMax()).isEqualTo(sProcessMemoryMax);
+        }
     }
 
     /**
@@ -682,8 +700,22 @@ public class MemoryLimiterTest {
                 // Wait for the system server to set its limit.  Any limit that is not "max" is
                 // okay.  This test only runs if default app limits are configured, and none of
                 // thse are "max".
-                for (int i = 0; i < 100 && helper.currentLimit() != sProcessMemoryMax; i++) {
+                for (int i = 0; i < 100 && helper.currentMemHigh() != sProcessMemoryMax; i++) {
                     Thread.sleep(100); // Wait a bit before polling again.
+                }
+                assertThat(helper.currentMemHigh()).isNotEqualTo(sProcessMemoryMax);
+
+                if (Flags.memoryLimiterSwap()) {
+                    for (int i = 0; i < 100 && helper.currentSwapMax() != sProcessMemoryMax; i++) {
+                        Thread.sleep(100); // Wait a bit before polling again.
+                    }
+                    assertThat(helper.currentSwapMax()).isNotEqualTo(sProcessMemoryMax);
+                } else {
+                    // The flag is off, so the swap limit should always be "max".  Wait 200ms ,
+                    // because limit are set asynchronously, and then verify that the limit is still
+                    // max.
+                    Thread.sleep(200);
+                    assertThat(helper.currentSwapMax()).isEqualTo(sProcessMemoryMax);
                 }
 
                 // Now make system server stop watching the UID.  The native layer may still be
@@ -754,14 +786,14 @@ public class MemoryLimiterTest {
                 Helper helper = new Helper();
                 // The limit should be "max" initially because the test setup blocks the system
                 // limiter from acting on the test UID.
-                assertThat(helper.currentLimit()).isEqualTo(sProcessMemoryMax);
+                assertThat(helper.currentMemHigh()).isEqualTo(sProcessMemoryMax);
 
                 // Attempt to set a manual limit. Since the controller is disabled, this should be
                 // a no-op.
                 controller.setManualLimit(helper.getPid(), helper.getUid(), 20);
 
                 // The call is a synchronous no-op, so the limit should be unchanged immediately.
-                assertThat(helper.currentLimit()).isEqualTo(sProcessMemoryMax);
+                assertThat(helper.currentMemHigh()).isEqualTo(sProcessMemoryMax);
             }
         }
     }
