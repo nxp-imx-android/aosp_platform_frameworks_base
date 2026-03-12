@@ -36,8 +36,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.android.compose.animation.Expandable
@@ -83,6 +85,7 @@ constructor(private val viewModelFactory: MediaInputViewModel.Factory) :
                     // necessary for larger font or display sizes.
                     .heightIn(min = dimensionResource(R.dimen.volume_panel_audio_tile_height))
                     .semantics {
+                        role = Role.Button
                         liveRegion = LiveRegionMode.Polite
                         this.onClick(label = clickLabel) {
                             viewModel.onBarClick(null)
