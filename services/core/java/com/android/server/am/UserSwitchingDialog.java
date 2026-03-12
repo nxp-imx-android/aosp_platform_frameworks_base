@@ -159,7 +159,8 @@ class UserSwitchingDialog extends Dialog {
     }
 
     private Bitmap getUserIconRounded() {
-        final Bitmap bmp = ObjectUtils.getOrElse(BitmapFactory.decodeFile(mNewUser.iconPath),
+        final String iconPath = mIsLogout ? mOldUser.iconPath : mNewUser.iconPath;
+        final Bitmap bmp = ObjectUtils.getOrElse(BitmapFactory.decodeFile(iconPath),
                 defaultUserIcon(mNewUser.id));
         final int w = bmp.getWidth();
         final int h = bmp.getHeight();
