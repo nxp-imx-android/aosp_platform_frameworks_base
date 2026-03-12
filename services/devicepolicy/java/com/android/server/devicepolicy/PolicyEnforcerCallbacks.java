@@ -308,10 +308,7 @@ public final class PolicyEnforcerCallbacks {
             return false;
         }
         if (Flags.policyStreamliningAutoTime()) {
-            // TODO(444381293): Make sure AUTO_TIME_ENABLED_UNENFORCED is declared with
-            // DPM.AUTO_TIME_ENABLED and remove this redundant check.
-            return policy == DevicePolicyManager.AUTO_TIME_ENABLED
-                    || policy == PolicyIdentifier.AUTO_TIME_ENABLED_UNENFORCED
+            return policy == PolicyIdentifier.AUTO_TIME_ENABLED_UNENFORCED
                     || policy == PolicyIdentifier.AUTO_TIME_ENABLED;
         }
 
@@ -323,10 +320,7 @@ public final class PolicyEnforcerCallbacks {
             return false;
         }
         if (Flags.policyStreamliningAutoTimeZone()) {
-            // TODO(444381293): Make sure AUTO_TIME_ZONE_ENABLED_UNENFORCED is declared with
-            // DPM.AUTO_TIME_ZONE_ENABLED and remove this redundant check.
-            return policy == DevicePolicyManager.AUTO_TIME_ZONE_ENABLED
-                    || policy == PolicyIdentifier.AUTO_TIME_ZONE_ENABLED_UNENFORCED
+            return policy == PolicyIdentifier.AUTO_TIME_ZONE_ENABLED_UNENFORCED
                     || policy == PolicyIdentifier.AUTO_TIME_ZONE_ENABLED;
         }
 
