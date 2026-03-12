@@ -16,29 +16,37 @@
 
 package com.android.systemui.biometrics.ui.view
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedSecureTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.android.systemui.common.ui.compose.SelectedUserAwareInputConnection
+import com.android.systemui.common.ui.compose.SelectedUserAwareLocalContext
+import com.android.systemui.res.R
 import kotlinx.coroutines.launch
 
 @Composable
@@ -47,51 +55,75 @@ fun CredentialPasswordView(
     onSuccess: (ByteArray) -> Unit,
     isVisible: Boolean,
     error: String = "",
+    userId: Int,
 ) {
-    var text by remember { mutableStateOf("") }
+    val state = remember { TextFieldState() }
 
     val scope = rememberCoroutineScope()
     val focusRequester = remember { FocusRequester() }
-    val keyboardController = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(isVisible) {
         if (isVisible) {
             focusRequester.requestFocus()
-            keyboardController?.show()
         } else {
-            text = ""
+            state.clearText()
         }
     }
 
     val onSubmit = {
-        if (text.isNotEmpty()) {
+        if (state.text.isNotEmpty()) {
             scope.launch {
-                val attestation = onVerify(text)
+                val attestation = onVerify(state.text)
                 if (attestation != null) {
                     onSuccess(attestation)
                 } else {
-                    text = ""
+                    state.clearText()
                 }
             }
         }
     }
 
-    OutlinedTextField(
-        value = text,
-        onValueChange = { newText -> text = newText },
-        modifier =
-            Modifier.fillMaxWidth()
-                .testTag("lockPassword")
-                .wrapContentHeight()
-                .padding(bottom = 16.dp)
-                .focusRequester(focusRequester),
-        label = { Text("Password") },
-        singleLine = true,
-        visualTransformation = PasswordVisualTransformation(),
-        keyboardOptions =
-            KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
-        isError = !error.isEmpty(),
-        supportingText = { if (error.isEmpty()) Text(error) },
-        keyboardActions = KeyboardActions(onDone = { onSubmit() }),
-    )
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            text = if (error.isNotEmpty()) error else " ",
+            style = MaterialTheme.typography.bodyMedium,
+            color =
+                MaterialTheme.colorScheme.error.copy(alpha = if (error.isNotEmpty()) 1f else 0f),
+            modifier = Modifier.padding(bottom = 16.dp),
+        )
+
+        val color = MaterialTheme.colorScheme.onSurfaceVariant
+        SelectedUserAwareInputConnection(selectedUserId = userId) {
+            SelectedUserAwareLocalContext(selectedUserId = userId) {
+                OutlinedSecureTextField(
+                    state = state,
+                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                    modifier =
+                        Modifier.width(
+                                dimensionResource(id = R.dimen.keyguard_password_field_width)
+                            )
+                            .testTag("lockPassword")
+                            .focusRequester(focusRequester),
+                    keyboardOptions =
+                        KeyboardOptions(
+                            autoCorrectEnabled = false,
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Done,
+                        ),
+                    isError = error.isNotEmpty(),
+                    onKeyboardAction = { onSubmit() },
+                    shape = RoundedCornerShape(28.dp),
+                    colors =
+                        OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = color,
+                            unfocusedBorderColor = color,
+                        ),
+                )
+            }
+        }
+    }
 }

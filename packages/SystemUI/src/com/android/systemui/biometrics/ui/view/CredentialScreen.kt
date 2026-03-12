@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -178,6 +179,7 @@ fun CredentialScreen(
                                 onSuccess = { credential -> handleSuccess(credential) },
                                 isVisible = currentView == BiometricPromptView.CREDENTIAL,
                                 error = errorMessage,
+                                userId = header.user.userIdForPasswordEntry,
                             )
                         }
                         PromptKind.Pattern -> {
@@ -234,7 +236,8 @@ private fun PortraitCredentialLayout(
 ) {
     Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 32.dp),
+            modifier =
+                Modifier.fillMaxWidth().imePadding().padding(horizontal = 24.dp, vertical = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -323,7 +326,7 @@ private fun LandscapeCredentialLayout(
         val inputPane =
             @Composable {
                 Column(
-                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    modifier = Modifier.weight(1f).fillMaxHeight().imePadding(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
