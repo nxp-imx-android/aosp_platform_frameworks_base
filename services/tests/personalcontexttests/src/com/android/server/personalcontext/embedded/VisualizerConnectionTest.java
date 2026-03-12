@@ -87,9 +87,18 @@ public class VisualizerConnectionTest {
 
     private class TestInjector implements VisualizerConnection.Injector {
         private ServiceConnection mServiceConnection;
+        private int mDisconnectCount = 0;
 
         public ServiceConnection getServiceConnection() {
             return mServiceConnection;
+        }
+
+        public int getDisconnectCount() {
+            return mDisconnectCount;
+        }
+
+        public void resetDisconnectCount() {
+            mDisconnectCount = 0;
         }
 
         @Override
@@ -107,6 +116,7 @@ public class VisualizerConnectionTest {
         @Override
         public void disconnectFromService(ServiceConnection serviceConnection) {
             mServiceConnection = null;
+            mDisconnectCount += 1;
         }
 
         @Override
@@ -240,6 +250,39 @@ public class VisualizerConnectionTest {
         assertThat(capturedIntent.getComponent()).isEqualTo(mComponentName);
         assertThat(capturedIntent.getAction())
                 .isEqualTo(InsightSurfaceVisualizerService.SERVICE_INTERFACE);
+    }
+
+    @Test
+    public void testOnServiceDisconnected_doesNotCallDisconnectFromService()
+            throws RemoteException {
+        createVisualizationForClient(createClient(), true);
+        ServiceConnection serviceConnection = mTestInjector.getServiceConnection();
+        assertThat(serviceConnection).isNotNull();
+
+        serviceConnection.onServiceDisconnected(mComponentName);
+        assertThat(mTestInjector.getServiceConnection()).isNotNull();
+    }
+
+    @Test
+    public void testOnBindingDied_doesNotCallDisconnectFromService()
+            throws RemoteException {
+        createVisualizationForClient(createClient(), true);
+        ServiceConnection serviceConnection = mTestInjector.getServiceConnection();
+        assertThat(serviceConnection).isNotNull();
+
+        serviceConnection.onBindingDied(mComponentName);
+        assertThat(mTestInjector.getServiceConnection()).isNotNull();
+    }
+
+    @Test
+    public void testNoVisualization_andClientDisconnects_disconnectsVisualizerOnce()
+            throws RemoteException {
+        mTestInjector.resetDisconnectCount();
+        final InsightSurfaceClientInfo client = createClient();
+        createVisualizationForClient(client, true);
+        createVisualizationForClient(client, false);
+        mVisualizerConnection.onClientDisconnected(client);
+        assertThat(mTestInjector.getDisconnectCount()).isEqualTo(1);
     }
 
     private InsightSurfaceClientInfo createClient() {
