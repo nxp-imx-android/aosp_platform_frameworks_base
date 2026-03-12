@@ -21,7 +21,6 @@ import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
-import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.KeyEventHelper
 import com.android.server.wm.flicker.helpers.NonResizeableAppHelper
@@ -38,7 +37,6 @@ abstract class SnapResizeAppWindowWithKeyboardShortcuts(
     val rotation: Rotation = Rotation.ROTATION_0,
 ) : TestScenarioBase(rotation) {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
-    private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val keyEventHelper = KeyEventHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
@@ -51,7 +49,7 @@ abstract class SnapResizeAppWindowWithKeyboardShortcuts(
 
     @Before
     fun setup() {
-        testApp.enterDesktopMode(wmHelper, device, shouldUseDragToDesktop = true)
+        testApp.enterDesktopMode(wmHelper, device)
     }
 
     @Test
