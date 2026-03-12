@@ -78,6 +78,7 @@ import static com.android.internal.util.FrameworkStatsLog.TIME_ZONE_DETECTOR_STA
 import static com.android.internal.util.FrameworkStatsLog.TIME_ZONE_DETECTOR_STATE__DETECTION_MODE__TELEPHONY;
 import static com.android.internal.util.FrameworkStatsLog.TIME_ZONE_DETECTOR_STATE__DETECTION_MODE__UNKNOWN;
 import static com.android.server.stats.Flags.addAdaptiveSuspendStatsPuller;
+import static com.android.server.stats.Flags.addKeystorePerUidPuller;
 import static com.android.server.stats.Flags.addMemcgMemoryInformationPuller;
 import static com.android.server.stats.Flags.addMobileBytesTransferByProcStatePuller;
 import static com.android.server.stats.Flags.addWebviewPinQuotaPuller;
@@ -171,9 +172,11 @@ import android.provider.DeviceConfig;
 import android.provider.Settings;
 import android.security.metrics.CrashStats;
 import android.security.metrics.IKeystoreMetrics;
+import android.security.metrics.KeyCreationPerUid;
 import android.security.metrics.KeyCreationWithAuthInfo;
 import android.security.metrics.KeyCreationWithGeneralInfo;
 import android.security.metrics.KeyCreationWithPurposeAndModesInfo;
+import android.security.metrics.KeyOperationPerUid;
 import android.security.metrics.KeyOperationWithGeneralInfo;
 import android.security.metrics.KeyOperationWithPurposeAndModesInfo;
 import android.security.metrics.KeysPerUid;
@@ -491,6 +494,9 @@ public class StatsPullAtomService extends SystemService {
 
     private static final boolean ENABLE_WEBVIEW_PIN_QUOTA_PULLER =
                 addWebviewPinQuotaPuller();
+
+    private static final boolean ENABLE_KEYSTORE_PER_UID_PULLER =
+                addKeystorePerUidPuller();
 
     private static final ArrayMap<String, Integer> mPreviousThermalThrottlingStatus =
             new ArrayMap<>();
@@ -856,6 +862,8 @@ public class StatsPullAtomService extends SystemService {
                     case FrameworkStatsLog.RKP_ERROR_STATS:
                     case FrameworkStatsLog.KEYSTORE2_CRASH_STATS:
                     case FrameworkStatsLog.KEYSTORE2_KEYS_PER_UID:
+                    case FrameworkStatsLog.KEYSTORE2_KEY_CREATION_PER_UID:
+                    case FrameworkStatsLog.KEYSTORE2_KEY_OPERATION_PER_UID:
                         return pullKeystoreAtoms(atomTag, data);
                     case FrameworkStatsLog.ACCESSIBILITY_SHORTCUT_STATS:
                         return pullAccessibilityShortcutStatsLocked(data);
@@ -4812,6 +4820,19 @@ public class StatsPullAtomService extends SystemService {
                     DIRECT_EXECUTOR,
                     mStatsCallbackImpl);
         }
+
+        if (ENABLE_KEYSTORE_PER_UID_PULLER) {
+            for (int tag : new int[] {
+                    FrameworkStatsLog.KEYSTORE2_KEY_CREATION_PER_UID,
+                    FrameworkStatsLog.KEYSTORE2_KEY_OPERATION_PER_UID
+            }) {
+                mStatsManager.setPullAtomCallback(
+                        tag,
+                        null,
+                        DIRECT_EXECUTOR,
+                        mStatsCallbackImpl);
+            }
+        }
     }
 
     private void registerAccessibilityShortcutStats() {
@@ -4990,6 +5011,37 @@ public class StatsPullAtomService extends SystemService {
         return StatsManager.PULL_SUCCESS;
     }
 
+    int parseKeystoreKeyCreationPerUid(KeystoreAtom[] atoms,
+            List<StatsEvent> pulledData) {
+        if (Arrays.stream(atoms).anyMatch(
+                atom -> atom.payload.getTag() != KeystoreAtomPayload.keyCreationPerUid)) {
+            return StatsManager.PULL_SKIP;
+        }
+        for (KeystoreAtom atomWrapper : atoms) {
+            KeyCreationPerUid atom = atomWrapper.payload.getKeyCreationPerUid();
+            pulledData.add(FrameworkStatsLog.buildStatsEvent(
+                    FrameworkStatsLog.KEYSTORE2_KEY_CREATION_PER_UID, atom.uid, atom.security_level,
+                    atom.algorithm, atom.user_auth_type, atom.attestation_requested,
+                    atomWrapper.count));
+        }
+        return StatsManager.PULL_SUCCESS;
+    }
+
+    int parseKeystoreKeyOperationPerUid(KeystoreAtom[] atoms,
+            List<StatsEvent> pulledData) {
+        if (Arrays.stream(atoms).anyMatch(
+                atom -> atom.payload.getTag() != KeystoreAtomPayload.keyOperationPerUid)) {
+            return StatsManager.PULL_SKIP;
+        }
+        for (KeystoreAtom atomWrapper : atoms) {
+            KeyOperationPerUid atom = atomWrapper.payload.getKeyOperationPerUid();
+            pulledData.add(FrameworkStatsLog.buildStatsEvent(
+                    FrameworkStatsLog.KEYSTORE2_KEY_OPERATION_PER_UID, atom.uid,
+                    atom.security_level, atomWrapper.count));
+        }
+        return StatsManager.PULL_SUCCESS;
+    }
+
     int pullKeystoreAtoms(int atomTag, List<StatsEvent> pulledData) {
         IKeystoreMetrics keystoreMetricsService = getIKeystoreMetricsService();
         if (keystoreMetricsService == null) {
@@ -5020,6 +5072,10 @@ public class StatsPullAtomService extends SystemService {
                     return parseKeystoreCrashStats(atoms, pulledData);
                 case FrameworkStatsLog.KEYSTORE2_KEYS_PER_UID:
                     return parseKeystoreKeysPerUid(atoms, pulledData);
+                case FrameworkStatsLog.KEYSTORE2_KEY_CREATION_PER_UID:
+                    return parseKeystoreKeyCreationPerUid(atoms, pulledData);
+                case FrameworkStatsLog.KEYSTORE2_KEY_OPERATION_PER_UID:
+                    return parseKeystoreKeyOperationPerUid(atoms, pulledData);
                 default:
                     Slog.w(TAG, "Unsupported keystore atom: " + atomTag);
                     return StatsManager.PULL_SKIP;
