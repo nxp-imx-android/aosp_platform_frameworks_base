@@ -38,6 +38,7 @@ import androidx.core.animation.ObjectAnimator;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.jank.InteractionJankMonitor;
+import com.android.systemui.notifications.ui.composable.SwipeToExpandCallback;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
@@ -47,7 +48,7 @@ import com.android.systemui.statusbar.policy.ScrollAdapter;
 import com.android.wm.shell.animation.FlingAnimationUtils;
 
 public class ExpandHelper implements Gefingerpoken {
-    public interface Callback {
+    public interface Callback extends SwipeToExpandCallback {
         ExpandableView getChildAtRawPosition(float x, float y);
         ExpandableView getChildAtPosition(float x, float y);
         boolean canChildBeExpanded(View v);

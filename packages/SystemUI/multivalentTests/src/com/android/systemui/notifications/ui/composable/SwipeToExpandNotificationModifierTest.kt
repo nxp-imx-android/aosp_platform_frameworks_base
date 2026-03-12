@@ -35,7 +35,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
-import com.android.systemui.ExpandHelper
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.statusbar.notification.row.ExpandableView
@@ -157,6 +156,31 @@ class SwipeToExpandNotificationModifierTest : SysuiTestCase() {
     }
 
     @Test
+    fun testDragDown_playsHapticFeedbackOnce() {
+        val target = FakeExpandableTarget(context, collapsedHeight = 100, expandedHeight = 300)
+        callback.childAtPosition = target
+
+        setTestContent()
+
+        rule.onNodeWithTag(EXPANDABLE_TAG).performTouchInput {
+            down(center)
+            moveBy(Offset(0f, 50f)) // Exceed slop, trigger expansion
+        }
+
+        assertThat(callback.hapticPlayCount).isEqualTo(1)
+
+        rule.onNodeWithTag(EXPANDABLE_TAG).performTouchInput {
+            moveBy(Offset(0f, 50f)) // Continue dragging
+        }
+
+        // Clean up gesture
+        rule.onNodeWithTag(EXPANDABLE_TAG).performTouchInput { up() }
+
+        // Haptic should NOT be played again on subsequent input events
+        assertThat(callback.hapticPlayCount).isEqualTo(1)
+    }
+
+    @Test
     fun testDragUpThenDown_expandsSuccessfully() {
         val target = FakeExpandableTarget(context, collapsedHeight = 100, expandedHeight = 300)
         callback.childAtPosition = target
@@ -230,16 +254,16 @@ class SwipeToExpandNotificationModifierTest : SysuiTestCase() {
     }
 }
 
-private class FakeExpandHelperCallback : ExpandHelper.Callback {
+private class FakeExpandHelperCallback : SwipeToExpandCallback {
     var childAtPosition: FakeExpandableTarget? = null
     var canChildbeExpanded = true
     var isExpanding = false
+        private set
+
+    var hapticPlayCount = 0
+        private set
 
     override fun getChildAtRawPosition(x: Float, y: Float): ExpandableView? {
-        return childAtPosition
-    }
-
-    override fun getChildAtPosition(x: Float, y: Float): ExpandableView? {
         return childAtPosition
     }
 
@@ -263,14 +287,14 @@ private class FakeExpandHelperCallback : ExpandHelper.Callback {
         this.isExpanding = isExpanding
     }
 
-    override fun getMaxExpandHeight(view: ExpandableView?): Int {
-        return (view as FakeExpandableTarget).maxContentHeight
+    override fun setExpansionCancelled(v: View?) {
+        if (v is FakeExpandableTarget) {
+            v.expansionCancelled = true
+        }
     }
 
-    override fun setExpansionCancelled(view: View?) {
-        if (view is FakeExpandableTarget) {
-            view.expansionCancelled = true
-        }
+    override fun playExpandStartHaptic() {
+        hapticPlayCount++
     }
 }
 
