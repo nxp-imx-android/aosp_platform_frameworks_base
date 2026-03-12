@@ -24,6 +24,7 @@ import androidx.test.filters.SmallTest
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason
 import com.android.wm.shell.shared.desktopmode.DesktopScrimListener
 import com.android.wm.shell.sysui.ShellController
 import org.junit.Before
@@ -32,6 +33,7 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito.clearInvocations
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
@@ -68,6 +70,41 @@ class DesktopScrimControllerTest : ShellTestCase() {
                 keyguardManager,
                 shellExecutor,
             )
+    }
+
+    @Test
+    @EnableFlags(
+        com.android.window.flags.Flags.FLAG_UPDATE_DESKTOP_SCRIM_ON_FULLSCREEN_LAUNCH,
+        com.android.systemui.Flags.FLAG_OPAQUE_STATUS_BAR,
+    )
+    fun disableScrimEffectWhenTopFullscreenLaunched() {
+        controller.addDesktopScrimListener(desktopScrimListener, shellExecutor)
+        controller.handleExitCleanUp(
+            DEFAULT_DISPLAY,
+            shouldEndUpAtHome = false,
+            ExitReason.FULLSCREEN_LAUNCH,
+        )
+        shellExecutor.flushAll()
+        // Callback is called to handle exiting desk to fullscreen launch
+        verify(desktopScrimListener).onDesktopScrimEffectChanged(DEFAULT_DISPLAY, false)
+    }
+
+    @Test
+    @EnableFlags(
+        com.android.window.flags.Flags.FLAG_UPDATE_DESKTOP_SCRIM_ON_FULLSCREEN_LAUNCH,
+        com.android.systemui.Flags.FLAG_OPAQUE_STATUS_BAR,
+    )
+    fun doNotDisableScrimEffectWhenNotBackToHomeAndNotLaunchingFullscreen() {
+        controller.addDesktopScrimListener(desktopScrimListener, shellExecutor)
+        controller.handleExitCleanUp(
+            DEFAULT_DISPLAY,
+            shouldEndUpAtHome = false,
+            ExitReason.SCREEN_OFF,
+        )
+        shellExecutor.flushAll()
+        // No callback call when the desk is not going back home and the reason is not
+        // FULLSCREEN_LAUNCH
+        verify(desktopScrimListener, never()).onDesktopScrimEffectChanged(any(), any())
     }
 
     @Test

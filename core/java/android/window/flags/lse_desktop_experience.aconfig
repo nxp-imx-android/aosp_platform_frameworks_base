@@ -1241,6 +1241,16 @@ flag {
 }
 
 flag {
+    name: "update_desktop_scrim_on_fullscreen_launch"
+    namespace: "lse_desktop_experience"
+    description: "Updates the desktop scrim when fullscreen activity launched"
+    bug: "483478809"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "update_desktop_scrim_on_move_task_to_desk"
     namespace: "lse_desktop_experience"
     description: "Updates the desktop scrim when a task is moved to desktop."

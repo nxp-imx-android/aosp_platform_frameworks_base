@@ -264,5 +264,13 @@ class DesktopScrimController(
             // We are going back to home, remove any effects for the maximized/snapped tasks.
             updateDesktopScrim(displayId, applyLightOutEffect = false)
         }
+        if (
+            Flags.updateDesktopScrimOnFullscreenLaunch() &&
+                exitReason == ExitReason.FULLSCREEN_LAUNCH
+        ) {
+            // Exiting desktop mode because there is a fullscreen activity launched and taking the
+            // entire display.
+            updateDesktopScrim(displayId, applyLightOutEffect = false)
+        }
     }
 }
