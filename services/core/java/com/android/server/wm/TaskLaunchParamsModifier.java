@@ -161,8 +161,9 @@ class TaskLaunchParamsModifier extends DefaultLaunchParamsModifier {
             appendLog("inherit-from-source="
                     + WindowConfiguration.windowingModeToString(launchMode));
         }
-        final boolean isRelaunchOriginatedFromHome =
-                request != null && request.mLaunchOriginatedFromHome;
+        final boolean isRelaunchOriginatedFromHome = request != null
+                && mSupervisor.mService.mHomeProcess != null
+                && mSupervisor.mService.mHomeProcess.mUid == request.mOriginalCallerUid;
         final boolean isRelaunchFromHomeToReparent = isRelaunchOriginatedFromHome
                 && task != null && task.getRootTask() != null
                 && task.getRootTask().mReparentLeafTaskIfRelaunchFromHome;

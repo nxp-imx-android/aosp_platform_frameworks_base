@@ -33,6 +33,7 @@ import static android.view.Display.INVALID_DISPLAY;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ORIENTATION;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_TASKS;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
+import static com.android.server.wm.ActivityStarter.Request.DEFAULT_REAL_CALLING_UID;
 import static com.android.server.wm.ActivityTaskManagerService.TAG_ROOT_TASK;
 import static com.android.server.wm.DisplayContent.alwaysCreateRootTask;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_ROOT_TASK;
@@ -775,12 +776,13 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
      * Returns an existing root task compatible with the windowing mode and activity type or
      * creates one if a compatible root task doesn't exist.
      *
-     * @see #getOrCreateRootTask(int, int, boolean, Task, Task, ActivityOptions, int, boolean)
+     * @see #getOrCreateRootTask(int, int, boolean, Task, Task, ActivityOptions, int, boolean, int)
      */
     Task getOrCreateRootTask(int windowingMode, int activityType, boolean onTop) {
         return getOrCreateRootTask(windowingMode, activityType, onTop, null /* candidateTask */,
                 null /* sourceTask */, null /* options */, 0 /* intent */,
-                false /* forceReparentLeafTaskToTda */);
+                false /* forceReparentLeafTaskToTda */,
+                DEFAULT_REAL_CALLING_UID /* originalCallerUid */);
     }
 
     /**
@@ -799,13 +801,14 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
      * @param options       The activity options used to the launch. Can be null.
      * @param launchFlags   The launch flags for this launch.
      * @param forceReparentLeafTaskToTda If true the leaf task will be force reparent to TDA.
+     * @param originalCallerUid The original caller uid of the launch event.
      * @return The root task to use for the launch.
      * @see #getRootTask(int, int)
      */
     Task getOrCreateRootTask(int windowingMode, int activityType, boolean onTop,
             @Nullable Task candidateTask, @Nullable Task sourceTask,
             @Nullable ActivityOptions options, int launchFlags,
-            boolean forceReparentLeafTaskToTda) {
+            boolean forceReparentLeafTaskToTda, int originalCallerUid) {
         final int resolvedWindowingMode =
                 windowingMode == WINDOWING_MODE_UNDEFINED ? getWindowingMode() : windowingMode;
         // Need to pass in a determined windowing mode to see if a new root task should be created,
@@ -818,7 +821,7 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
         } else if (candidateTask != null) {
             final int position = onTop ? POSITION_TOP : POSITION_BOTTOM;
             final Task launchParentTask = getLaunchRootTask(resolvedWindowingMode, activityType,
-                    options, sourceTask, launchFlags, candidateTask);
+                    options, sourceTask, launchFlags, candidateTask, originalCallerUid);
             final boolean reparentToTda = (options != null && options.getReparentLeafTaskToTda())
                     || candidateTask.getRootTask().mReparentLeafTaskIfRelaunch
                     || forceReparentLeafTaskToTda
@@ -878,7 +881,8 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
      */
     Task getOrCreateRootTask(@Nullable ActivityRecord r, @Nullable ActivityOptions options,
             @Nullable Task candidateTask, @Nullable Task sourceTask,
-            @Nullable LaunchParams launchParams, int launchFlags, int activityType, boolean onTop) {
+            @Nullable LaunchParams launchParams, int launchFlags, int activityType, boolean onTop,
+            int originalCallerUid) {
         int windowingMode = WINDOWING_MODE_UNDEFINED;
         if (launchParams != null) {
             // If launchParams isn't null, windowing mode is already resolved.
@@ -896,7 +900,7 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
         final boolean forceReparentLeafTaskToTda =
                 launchParams != null && launchParams.mIsRelaunchFromHomeToReparent;
         return getOrCreateRootTask(windowingMode, activityType, onTop, candidateTask, sourceTask,
-                options, launchFlags, forceReparentLeafTaskToTda);
+                options, launchFlags, forceReparentLeafTaskToTda, originalCallerUid);
     }
 
     @VisibleForTesting
@@ -996,12 +1000,13 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
     Task getLaunchRootTask(int windowingMode, int activityType, @Nullable ActivityOptions options,
             @Nullable Task sourceTask, int launchFlags) {
         return getLaunchRootTask(windowingMode, activityType, options, sourceTask, launchFlags,
-                null /* candidateTask */);
+                null /* candidateTask */, DEFAULT_REAL_CALLING_UID /* originalCallerUid */);
     }
 
     @Nullable
     Task getLaunchRootTask(int windowingMode, int activityType, @Nullable ActivityOptions options,
-            @Nullable Task sourceTask, int launchFlags, @Nullable Task candidateTask) {
+            @Nullable Task sourceTask, int launchFlags, @Nullable Task candidateTask,
+            int originalCallerUid) {
         // Try to use the launch root task in options if available.
         if (options != null) {
             final Task launchRootTask = Task.fromWindowContainerToken(options.getLaunchRootTask());
@@ -1070,7 +1075,15 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
             final Task preservedRootTask = candidateTask.getPreservedRootTaskIfEnabled();
             if (preservedRootTask != null) {
                 // Reuse the existing root task if it should be preserved.
-                return preservedRootTask;
+                // However, if the source task is in a split screen and the candidate task is a
+                // multi-trampoline launch from the same app, we want the candidate task to be
+                // reparented to the split screen root task instead of reusing the preserved root
+                // task (e.g. bubble).
+                final boolean isSourceWithAdjacent = sourceTask.getTaskWithAdjacent() != null;
+                final boolean isSameAppTrampoline = originalCallerUid == candidateTask.effectiveUid;
+                if (!(isSourceWithAdjacent && isSameAppTrampoline)) {
+                    return preservedRootTask;
+                }
             }
         }
         return candidateLaunchRoot;

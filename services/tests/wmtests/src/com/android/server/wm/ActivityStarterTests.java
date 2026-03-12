@@ -1984,7 +1984,7 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
 
     @Test
     @EnableFlags(FLAG_TRACK_LAUNCH_ORIGINATOR)
-    public void launchActivity_homeCallingUid_setsLaunchOriginatedFromHome() {
+    public void launchActivity_homeCallingUid_setsOriginalCallerUid() {
         final int homeUid = 51121;
         final Task homeTask = mRootWindowContainer.getDefaultTaskDisplayArea().getRootHomeTask();
         final ActivityRecord homeActivity = new ActivityBuilder(mAtm).setTask(homeTask).build();
@@ -1996,7 +1996,7 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
         // Launch from home.
         starter.execute();
 
-        assertTrue(starter.mRequest.mLaunchOriginatedFromHome);
+        assertEquals(homeUid, starter.mRequest.mOriginalCallerUid);
     }
 
     /**
