@@ -16,6 +16,7 @@
 
 package android.app.admin.metadata;
 
+import static android.app.admin.PolicyIdentifier.FLAGGED_POLICY;
 import static android.app.admin.PolicyIdentifier.MOST_RESTRICTIVE_ENUM_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_BOOLEAN_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_ENUM_POLICY;
@@ -270,6 +271,18 @@ public class Policies {
                 5, // MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
                 7  // AFFILIATED_FULL_USER_PROFILE_OWNER
             ),
+            /* minValue= */ Integer.MIN_VALUE,
+            /* maxValue= */ Integer.MAX_VALUE
+        ));
+        policies.add(new IntegerPolicyMetadata(
+            /* id= */ FLAGGED_POLICY,
+            /* allowedScopes= */ Set.of(
+                1
+            ),
+            /* affectedResource= */ 1,
+            /* requiredPermission= */ null,
+            /* requiredCrossUserPermission= */ null,
+            /* allowedDpcTypes= */ Set.of(),
             /* minValue= */ Integer.MIN_VALUE,
             /* maxValue= */ Integer.MAX_VALUE
         ));

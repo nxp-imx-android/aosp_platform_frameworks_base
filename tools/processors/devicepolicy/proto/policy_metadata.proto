@@ -76,6 +76,8 @@ message PolicyMetadata {
   }
   // LINT.ThenChange(/core/java/android/app/admin/DevicePolicyManager.java:dpc_type)
   repeated DpcType allowed_dpc_types = 9;
+
+  optional string flag = 10;
 }
 
 message TypeSpecificPolicyMetadata {

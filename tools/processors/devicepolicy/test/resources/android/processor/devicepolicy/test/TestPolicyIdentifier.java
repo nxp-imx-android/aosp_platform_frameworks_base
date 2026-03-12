@@ -22,6 +22,7 @@ import static android.processor.devicepolicy.AllowedDpcTypes.SAME_AS_UNAFFILIATE
 
 import android.app.admin.PackageIdentifier;
 import android.annotation.IntDef;
+import android.annotation.FlaggedApi;
 import android.processor.devicepolicy.AllowedDpcTypes;
 import android.processor.devicepolicy.BooleanPolicyDefinition;
 import android.processor.devicepolicy.EnumPolicyDefinition;
@@ -565,4 +566,23 @@ public final class PolicyIdentifier<T> {
                             mostRestrictive = {ENUM_ENTRY_1, ENUM_ENTRY_2, ENUM_ENTRY_3}))
     public static final PolicyIdentifier<Integer> MOST_RESTRICTIVE_ENUM_POLICY =
             new PolicyIdentifier<>("MOST_RESTRICTIVE_ENUM_POLICY");
+
+    /** Test policy that is flagged. */
+    @FlaggedApi("my.flagged.api")
+    @IntegerPolicyDefinition(
+            base =
+                    @PolicyDefinition(
+                            allowedScopes = {
+                                1 // POLICY_SCOPE_USER
+                            },
+                            affectedResource = 1, // RESOURCE_DEVICE_WIDE
+                            allowedDpcTypes =
+                                    @AllowedDpcTypes(
+                                            deviceOwner = DISALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice =
+                                                    DISALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                            unaffiliatedFullUserProfileOwner = DISALLOWED)))
+    public static final PolicyIdentifier<Integer> FLAGGED_POLICY =
+            new PolicyIdentifier<>("FLAGGED_POLICY");
 }
