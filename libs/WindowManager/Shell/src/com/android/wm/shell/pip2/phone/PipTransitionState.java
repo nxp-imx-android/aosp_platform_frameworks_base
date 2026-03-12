@@ -395,7 +395,7 @@ public class PipTransitionState {
         mPipTaskInfo = pipTaskInfo;
     }
 
-    @Nullable TaskInfo getPipCandidateTaskInfo() {
+    @Nullable public TaskInfo getPipCandidateTaskInfo() {
         return mPipCandidateTaskInfo;
     }
 
