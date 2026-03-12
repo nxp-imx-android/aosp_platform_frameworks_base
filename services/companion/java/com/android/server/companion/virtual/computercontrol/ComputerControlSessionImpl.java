@@ -425,9 +425,11 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         final int displayWidth = virtualDisplayConfig.getWidth();
         final int displayHeight = virtualDisplayConfig.getHeight();
 
+        VirtualDevice virtualDevice = null;
         try {
-            mVirtualDevice = virtualDeviceFactory.createVirtualDevice(mAppToken, attributionSource,
+            virtualDevice = virtualDeviceFactory.createVirtualDevice(mAppToken, attributionSource,
                     virtualDeviceParams);
+            mVirtualDevice = virtualDevice;
             mVirtualDeviceId = mVirtualDevice.getDeviceId();
             mVirtualDevice.addActivityListener(mScheduler, new ComputerControlActivityListener());
 
@@ -481,6 +483,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mAppToken.linkToDeath(this, 0);
             startSessionCloseGlobalTimeout();
         } catch (RemoteException e) {
+            if (virtualDevice != null) {
+                virtualDevice.close();
+            }
             throw e.rethrowFromSystemServer();
         }
 

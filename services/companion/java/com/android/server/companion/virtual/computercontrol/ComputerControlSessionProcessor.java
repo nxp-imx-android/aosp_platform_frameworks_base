@@ -432,17 +432,31 @@ public final class ComputerControlSessionProcessor {
         }
 
         Slog.d(TAG, "Creating ComputerControlSession " + params.getName());
-        final ComputerControlSessionImpl session = Binder.withCleanCallingIdentity(
-                () -> new ComputerControlSessionImpl(
-                        mContext, mAllowlistController, callback.asBinder(), params,
-                        appThread, attributionSource,
-                        mVirtualDeviceFactory, (closedSession) -> {
-                    synchronized (mSessions) {
-                        mSessions.remove(closedSession);
-                    }
-                }, mReferenceDisplayAddress));
-        synchronized (mSessions) {
-            mSessions.add(session);
+        final ComputerControlSessionImpl session;
+        final long token = Binder.clearCallingIdentity();
+        try {
+            session = new ComputerControlSessionImpl(
+                    mContext, mAllowlistController, callback.asBinder(), params,
+                    appThread, attributionSource,
+                    mVirtualDeviceFactory, (closedSession) -> {
+                        synchronized (mSessions) {
+                            mSessions.remove(closedSession);
+                        }
+                    }, mReferenceDisplayAddress);
+            synchronized (mSessions) {
+                mSessions.add(session);
+            }
+        } catch (RuntimeException e) {
+            // The virtual device for a ComputerControlSession lives in the system server.
+            // The app requesting the session may die anytime, invalidating the device.
+            // If this happens during the initialization of the session it will produce
+            // an Exception when trying to access the virtual device.
+            Slog.e(TAG, "Exception creating ComputerControlSession " + params.getName(), e);
+            dispatchSessionCreationFailed(callback, attributionSource, params,
+                    ComputerControlSession.ERROR_UNKNOWN);
+            return;
+        } finally {
+            Binder.restoreCallingIdentity(token);
         }
 
         try {
