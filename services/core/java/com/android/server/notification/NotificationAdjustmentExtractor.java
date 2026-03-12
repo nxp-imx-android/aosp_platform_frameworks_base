@@ -62,6 +62,7 @@ public class NotificationAdjustmentExtractor implements NotificationSignalExtrac
         }
 
         if (nmContextualDisplayLaunch()) {
+            record.resetRuleBehaviors();
             Adjustment matchingRules = record.getMatchingRulesAdjustment();
             if (matchingRules != null) {
                 for (Adjustment adjustment : mRuleManager.getAdjustmentsForRules(matchingRules)) {
@@ -93,7 +94,6 @@ public class NotificationAdjustmentExtractor implements NotificationSignalExtrac
 
         if (hasAdjustedClassification && record.getLastAudiblyAlertedMs() > 0) {
             record.applyAdjustments(new ArraySet<>(new String[] {KEY_TYPE, KEY_DYNAMIC_BUNDLE}));
-
             return getClassificationReconsideration(record);
         }
 

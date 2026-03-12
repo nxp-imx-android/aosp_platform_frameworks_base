@@ -152,7 +152,7 @@ public class TestableNotificationManagerService extends NotificationManagerServi
         NotificationAssistants assistants = spy(new NotificationAssistants(
                 mTestableContext, mock(IPackageManager.class)));
 
-        super.init(new WorkerHandler(mTestableLooper.getLooper()),
+        super.init(spy(new WorkerHandler(mTestableLooper.getLooper())),
                 mock(RankingHandler.class), new Handler(mTestableLooper.getLooper()),
                 mock(IPackageManager.class), mock(PackageManager.class),
                 mock(LightsManager.class),
@@ -181,7 +181,8 @@ public class TestableNotificationManagerService extends NotificationManagerServi
                 new NotificationManagerService.PostNotificationTrackerFactory() {},
                 mock(UiEventLogger.class),
                 mock(BitmapOffloadInternal.class), new NotificationListenerStats(),
-                new NotificationRecordLoggerFake(), new InstanceIdSequenceFake(1 << 30));
+                new NotificationRecordLoggerFake(), new InstanceIdSequenceFake(1 << 30),
+                new TestPreferencesHelperFactory());
 
         when(mNas.asBinder()).thenReturn(mock(IBinder.class));
         mAssistants.registerSystemService(mNas, ComponentName.unflattenFromString("a/b"),
