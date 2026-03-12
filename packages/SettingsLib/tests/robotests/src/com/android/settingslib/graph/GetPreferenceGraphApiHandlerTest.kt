@@ -471,6 +471,100 @@ class GetPreferenceGraphApiHandlerTest {
         assertThat(innerCategoryProto.preferencesList).hasSize(0)
     }
 
+    @Test
+    fun invoke_onNoSensitivityScreen_hasNoSummary() = runTest {
+        setRegistryFactories(createScreen(
+            PreferenceScreenConfig(
+                screenKey = "screen_key",
+                purpose = R.string.preference_screen_purpose,
+                sensitivityLevel = SensitivityLevel.NO_SENSITIVITY,
+                summary = R.string.preference_screen_summary
+            )
+        ))
+        val responseProto = invokeWithFlags(
+            "screen_key",
+            PreferenceGetterFlags.METADATA
+        )
+        val screenMetadata = responseProto.screensMap["screen_key"]!!.rootOrNull?.preference
+        assertThat(screenMetadata?.summaryOrNull).isNull()
+    }
+
+    @Test
+    fun invoke_onNoSensitivityScreen_hasSensitivityLevel() = runTest {
+        setRegistryFactories(createScreen(
+            PreferenceScreenConfig(
+                screenKey = "screen_key",
+                purpose = R.string.preference_screen_purpose,
+                sensitivityLevel = SensitivityLevel.NO_SENSITIVITY,
+                summary = R.string.preference_screen_summary
+            )
+        ))
+        val responseProto = invokeWithFlags(
+            "screen_key",
+            PreferenceGetterFlags.METADATA
+        )
+        val screenMetadata = responseProto.screensMap["screen_key"]!!.rootOrNull?.preference
+        assertThat(screenMetadata?.sensitivityLevel).isEqualTo(SensitivityLevel.NO_SENSITIVITY)
+    }
+
+    @Test
+    fun invoke_onNoSensitivityPreference_hasSummary() = runTest {
+        setRegistryFactories(createScreen(
+            PreferenceScreenConfig(
+                screenKey = "screen_key",
+                purpose = R.string.preference_screen_purpose,
+                sensitivityLevel = SensitivityLevel.NO_SENSITIVITY,
+                preferences = listOf(
+                    createSimplePreference(
+                        GraphTestUtils.PreferenceConfig(
+                            key = "preference_key",
+                            purpose = R.string.preference_purpose,
+                            summary = (R.string.preference_summary),
+                            sensitivityLevel = SensitivityLevel.NO_SENSITIVITY
+                        )
+                    )
+                )
+            )
+        ))
+
+        val responseProto = invokeWithFlags(
+            "screen_key",
+            PreferenceGetterFlags.METADATA
+        )
+
+        val preferenceProto = responseProto.screensMap["screen_key"]!!.root?.preferencesList[0]?.preference
+        assertThat(preferenceProto?.summary?.resourceId).isEqualTo(R.string.preference_summary)
+    }
+
+    @Test
+    fun invoke_onNoSensitivityPreference_hasSensitivityLevel() = runTest {
+        setRegistryFactories(createScreen(
+            PreferenceScreenConfig(
+                screenKey = "screen_key",
+                purpose = R.string.preference_screen_purpose,
+                sensitivityLevel = SensitivityLevel.NO_SENSITIVITY,
+                preferences = listOf(
+                    createSimplePreference(
+                        GraphTestUtils.PreferenceConfig(
+                            key = "preference_key",
+                            purpose = R.string.preference_purpose,
+                            summary = (R.string.preference_summary),
+                            sensitivityLevel = SensitivityLevel.NO_SENSITIVITY
+                        )
+                    )
+                )
+            )
+        ))
+
+        val responseProto = invokeWithFlags(
+            "screen_key",
+            PreferenceGetterFlags.METADATA
+        )
+
+        val preferenceProto = responseProto.screensMap["screen_key"]!!.root?.preferencesList[0]?.preference
+        assertThat(preferenceProto?.sensitivityLevel).isEqualTo(SensitivityLevel.NO_SENSITIVITY)
+    }
+
 
     private fun screenWithUiPreferencesProtoHasOnlyNonUiOnly(responseProto: PreferenceGraphProto) {
         assertThat(responseProto.screensMap).hasSize(1)

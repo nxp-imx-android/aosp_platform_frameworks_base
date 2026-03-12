@@ -623,9 +623,9 @@ fun PreferenceMetadata.toProto(
     key = metadata.key
     if (flags.includeMetadata()) {
         metadata.getTitleTextProto(context, isRoot)?.let { title = it }
-        if (metadata.summary != 0) {
+        if (metadata.summary != 0 && metadata !is PreferenceScreenMetadata) {
             summary = textProto { resourceId = metadata.summary }
-        } else {
+        } else if(metadata !is PreferenceScreenMetadata){
             (metadata as? PreferenceSummaryProvider)?.getSummary(context)?.let {
                 summary = textProto { string = it.toString() }
             }
@@ -730,8 +730,8 @@ fun PreferenceMetadata.toProto(
         }
     }
     persistent = metadata.isPersistent(context)
-    if (metadata !is PersistentPreference<*>) return@preferenceProto
     sensitivityLevel = metadata.sensitivityLevel
+    if (metadata !is PersistentPreference<*> || metadata is PreferenceScreenMetadata) return@preferenceProto
     metadata.getReadPermissions(context)?.let { if (it.size > 0) readPermissions = it.toProto() }
     metadata.getWritePermissions(context)?.let { if (it.size > 0) writePermissions = it.toProto() }
     val readPermit = metadata.evalReadPermit(context, callingPid, callingUid)
