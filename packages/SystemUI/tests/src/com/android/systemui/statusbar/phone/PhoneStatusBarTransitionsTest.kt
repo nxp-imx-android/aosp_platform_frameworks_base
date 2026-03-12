@@ -23,7 +23,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.res.R
 import com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_LIGHTS_OUT
 import com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_LIGHTS_OUT_TRANSPARENT
-import com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_OPAQUE
+import com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_OPAQUE_DARK
 import com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_SEMI_TRANSPARENT
 import com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_TRANSPARENT
 import com.android.systemui.util.mockito.argumentCaptor
@@ -106,7 +106,7 @@ class PhoneStatusBarTransitionsTest : SysuiTestCase() {
     @Test
     fun transitionTo_transparentMode_startIconsShown() {
         // Transparent is the default, so we need to switch to a different mode first
-        underTest.transitionTo(/* mode= */ MODE_OPAQUE, /* animate= */ false)
+        underTest.transitionTo(/* mode= */ MODE_OPAQUE_DARK, /* animate= */ false)
         reset(startIcons)
 
         underTest.transitionTo(/* mode= */ MODE_TRANSPARENT, /* animate= */ false)
@@ -116,14 +116,14 @@ class PhoneStatusBarTransitionsTest : SysuiTestCase() {
 
     @Test
     fun transitionTo_opaqueMode_statusIconsUseResourceAlpha() {
-        underTest.transitionTo(/* mode= */ MODE_OPAQUE, /* animate= */ false)
+        underTest.transitionTo(/* mode= */ MODE_OPAQUE_DARK, /* animate= */ false)
 
         assertThat(statusIcons.capturedAlpha()).isEqualTo(RESOURCE_ALPHA)
     }
 
     @Test
     fun transitionTo_opaqueMode_startIconsUseResourceAlpha() {
-        underTest.transitionTo(/* mode= */ MODE_OPAQUE, /* animate= */ false)
+        underTest.transitionTo(/* mode= */ MODE_OPAQUE_DARK, /* animate= */ false)
 
         assertThat(startIcons.capturedAlpha()).isEqualTo(RESOURCE_ALPHA)
     }
@@ -140,7 +140,7 @@ class PhoneStatusBarTransitionsTest : SysuiTestCase() {
 
     @Test
     fun onHeadsUpStateChanged_true_opaqueMode_startIconsUseResourceAlpha() {
-        underTest.transitionTo(/* mode= */ MODE_OPAQUE, /* animate= */ false)
+        underTest.transitionTo(/* mode= */ MODE_OPAQUE_DARK, /* animate= */ false)
         reset(startIcons)
 
         underTest.onHeadsUpStateChanged(true)
@@ -171,7 +171,7 @@ class PhoneStatusBarTransitionsTest : SysuiTestCase() {
 
     @Test
     fun onHeadsUpStateChanged_false_opaqueMode_startIconsUseResourceAlpha() {
-        underTest.transitionTo(/* mode= */ MODE_OPAQUE, /* animate= */ false)
+        underTest.transitionTo(/* mode= */ MODE_OPAQUE_DARK, /* animate= */ false)
         reset(startIcons)
 
         underTest.onHeadsUpStateChanged(false)

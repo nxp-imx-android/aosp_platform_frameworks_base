@@ -31,7 +31,7 @@ import static com.android.systemui.accessibility.SystemActions.SYSTEM_ACTION_ID_
 import static com.android.systemui.accessibility.SystemActions.SYSTEM_ACTION_ID_ACCESSIBILITY_BUTTON_CHOOSER;
 import static com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_LIGHTS_OUT;
 import static com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_LIGHTS_OUT_TRANSPARENT;
-import static com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_OPAQUE;
+import static com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_OPAQUE_DARK;
 import static com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_SEMI_TRANSPARENT;
 import static com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_TRANSPARENT;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_A11Y_BUTTON_CLICKABLE;
@@ -616,7 +616,7 @@ public final class NavBarHelper implements
         } else if ((appearance & APPEARANCE_LOW_PROFILE_BARS) != 0) {
             return MODE_LIGHTS_OUT_TRANSPARENT;
         } else if ((appearance & APPEARANCE_OPAQUE_NAVIGATION_BARS) != 0) {
-            return MODE_OPAQUE;
+            return MODE_OPAQUE_DARK;
         } else if ((appearance & APPEARANCE_SEMI_TRANSPARENT_NAVIGATION_BARS) != 0) {
             return MODE_SEMI_TRANSPARENT;
         } else {

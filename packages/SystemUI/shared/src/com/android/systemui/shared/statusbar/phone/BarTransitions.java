@@ -44,8 +44,10 @@ public class BarTransitions {
     private static final boolean DEBUG = false;
     private static final boolean DEBUG_COLORS = false;
 
+    /** Dark background color for the opaque bar. */
     @ColorInt
-    private static final int SYSTEM_BAR_BACKGROUND_OPAQUE = Color.BLACK;
+    private static final int SYSTEM_BAR_BACKGROUND_OPAQUE_DARK = Color.BLACK;
+
     @ColorInt
     private static final int SYSTEM_BAR_BACKGROUND_TRANSPARENT = Color.TRANSPARENT;
 
@@ -53,12 +55,12 @@ public class BarTransitions {
     public static final int MODE_SEMI_TRANSPARENT = 1;
     public static final int MODE_TRANSLUCENT = 2;
     public static final int MODE_LIGHTS_OUT = 3;
-    public static final int MODE_OPAQUE = 4;
+    public static final int MODE_OPAQUE_DARK = 4;
     public static final int MODE_WARNING = 5;
     public static final int MODE_LIGHTS_OUT_TRANSPARENT = 6;
 
     @IntDef(flag = true, prefix = { "MODE_" }, value = {
-            MODE_OPAQUE,
+            MODE_OPAQUE_DARK,
             MODE_SEMI_TRANSPARENT,
             MODE_TRANSLUCENT,
             MODE_LIGHTS_OUT,
@@ -91,7 +93,7 @@ public class BarTransitions {
         // To be overridden
     }
 
-    public int getMode() {
+    public @TransitionMode int getMode() {
         return mMode;
     }
 
@@ -112,10 +114,10 @@ public class BarTransitions {
         return mAlwaysOpaque;
     }
 
-    public void transitionTo(int mode, boolean animate) {
+    public void transitionTo(@TransitionMode int mode, boolean animate) {
         if (isAlwaysOpaque() && (mode == MODE_SEMI_TRANSPARENT || mode == MODE_TRANSLUCENT
                 || mode == MODE_TRANSPARENT)) {
-            mode = MODE_OPAQUE;
+            mode = MODE_OPAQUE_DARK;
         }
         if (isAlwaysOpaque() && (mode == MODE_LIGHTS_OUT_TRANSPARENT)) {
             mode = MODE_LIGHTS_OUT;
@@ -128,18 +130,18 @@ public class BarTransitions {
         onTransition(oldMode, mMode, animate);
     }
 
-    protected void onTransition(int oldMode, int newMode, boolean animate) {
+    protected void onTransition(@TransitionMode int oldMode, @TransitionMode int newMode, boolean animate) {
         applyModeBackground(oldMode, newMode, animate);
     }
 
-    protected void applyModeBackground(int oldMode, int newMode, boolean animate) {
+    protected void applyModeBackground(@TransitionMode int oldMode, @TransitionMode int newMode, boolean animate) {
         if (DEBUG) Log.d(mTag, String.format("applyModeBackground oldMode=%s newMode=%s animate=%s",
                 modeToString(oldMode), modeToString(newMode), animate));
         mBarBackground.applyModeBackground(oldMode, newMode, animate);
     }
 
-    public static String modeToString(int mode) {
-        if (mode == MODE_OPAQUE) return "MODE_OPAQUE";
+    public static String modeToString(@TransitionMode int mode) {
+        if (mode == MODE_OPAQUE_DARK) return "MODE_OPAQUE";
         if (mode == MODE_SEMI_TRANSPARENT) return "MODE_SEMI_TRANSPARENT";
         if (mode == MODE_TRANSLUCENT) return "MODE_TRANSLUCENT";
         if (mode == MODE_LIGHTS_OUT) return "MODE_LIGHTS_OUT";
@@ -153,12 +155,15 @@ public class BarTransitions {
         mBarBackground.finishAnimation();
     }
 
-    protected boolean isLightsOut(int mode) {
+    protected boolean isLightsOut(@TransitionMode int mode) {
         return mode == MODE_LIGHTS_OUT || mode == MODE_LIGHTS_OUT_TRANSPARENT;
     }
 
     protected static class BarBackgroundDrawable extends Drawable {
+        // Opaque background color for the bar.
+        // TODO(b/478335671): Adapt to light/dark mode.
         private final int mOpaque;
+
         private final int mSemiTransparent;
         private final int mTransparent;
         private final int mWarning;
@@ -188,7 +193,7 @@ public class BarTransitions {
                 mTransparent = 0x2f0000ff;
                 mWarning = 0xffff0000;
             } else {
-                mOpaque = SYSTEM_BAR_BACKGROUND_OPAQUE;
+                mOpaque = SYSTEM_BAR_BACKGROUND_OPAQUE_DARK;
                 mSemiTransparent = context.getColor(
                         com.android.internal.R.color.system_bar_background_semi_transparent);
                 mTransparent = SYSTEM_BAR_BACKGROUND_TRANSPARENT;
@@ -253,7 +258,7 @@ public class BarTransitions {
             mGradient.setBounds(bounds);
         }
 
-        public void applyModeBackground(int oldMode, int newMode, boolean animate) {
+        public void applyModeBackground(@TransitionMode int oldMode, @TransitionMode int newMode, boolean animate) {
             if (mMode == newMode) return;
             mMode = newMode;
             mAnimating = animate;

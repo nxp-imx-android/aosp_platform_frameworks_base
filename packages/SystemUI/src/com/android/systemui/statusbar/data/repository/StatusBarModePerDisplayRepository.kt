@@ -320,7 +320,7 @@ constructor(
         return when {
             this and lightsOutOpaque == lightsOutOpaque -> StatusBarMode.LIGHTS_OUT
             this and APPEARANCE_LOW_PROFILE_BARS != 0 -> StatusBarMode.LIGHTS_OUT_TRANSPARENT
-            this and APPEARANCE_OPAQUE_STATUS_BARS != 0 -> StatusBarMode.OPAQUE
+            this and APPEARANCE_OPAQUE_STATUS_BARS != 0 -> StatusBarMode.OPAQUE_DARK
             this and APPEARANCE_SEMI_TRANSPARENT_STATUS_BARS != 0 -> StatusBarMode.SEMI_TRANSPARENT
             else -> StatusBarMode.TRANSPARENT
         }

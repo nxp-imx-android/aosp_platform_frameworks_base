@@ -504,7 +504,7 @@ class StatusBarModeRepositoryImplTest : SysuiTestCase() {
                 appearance = APPEARANCE_OPAQUE_STATUS_BARS,
             )
 
-            assertThat(latest!!.mode).isEqualTo(StatusBarMode.OPAQUE)
+            assertThat(latest!!.mode).isEqualTo(StatusBarMode.OPAQUE_DARK)
         }
 
     @Test
@@ -518,7 +518,7 @@ class StatusBarModeRepositoryImplTest : SysuiTestCase() {
                 appearance = APPEARANCE_OPAQUE_STATUS_BARS,
             )
 
-            assertThat(latest!!.mode).isEqualTo(StatusBarMode.OPAQUE)
+            assertThat(latest!!.mode).isEqualTo(StatusBarMode.OPAQUE_DARK)
         }
 
     @Test
@@ -561,7 +561,7 @@ class StatusBarModeRepositoryImplTest : SysuiTestCase() {
 
             onSystemBarAttributesChanged(appearance = APPEARANCE_OPAQUE_STATUS_BARS)
 
-            assertThat(latest!!.mode).isEqualTo(StatusBarMode.OPAQUE)
+            assertThat(latest!!.mode).isEqualTo(StatusBarMode.OPAQUE_DARK)
         }
 
     @Test
