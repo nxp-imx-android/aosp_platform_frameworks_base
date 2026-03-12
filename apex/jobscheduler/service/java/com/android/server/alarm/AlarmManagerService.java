@@ -246,6 +246,19 @@ public class AlarmManagerService extends SystemService {
     private UsageStatsManagerInternal mUsageStatsManagerInternal;
     private ActivityManagerInternal mActivityManagerInternal;
     private PackageManagerInternal mPackageManagerInternal;
+
+    @VisibleForTesting
+    boolean isSameApp(int uid1, int uid2) {
+        if (uid1 == uid2) {
+            return true;
+        }
+        final int mappedUid1 = Process.isPrivateComputeCoreUid(uid1)
+                ? getContext().getPackageManager().getAppUidForPrivateComputeCoreUid(uid1) : uid1;
+        final int mappedUid2 = Process.isPrivateComputeCoreUid(uid2)
+                ? getContext().getPackageManager().getAppUidForPrivateComputeCoreUid(uid2) : uid2;
+        return UserHandle.isSameApp(mappedUid1, mappedUid2);
+    }
+
     private BatteryStatsInternal mBatteryStatsInternal;
     private RoleManager mRoleManager;
     private volatile PermissionManagerServiceInternal mLocalPermissionManager;
@@ -2761,7 +2774,7 @@ public class AlarmManagerService extends SystemService {
         if (Build.IS_DEBUGGABLE && Thread.holdsLock(mLock)) {
             Slog.wtfStack(TAG, "Alarm lock held while calling into DeviceIdleController");
         }
-        return (UserHandle.isSameApp(mSystemUiUid, uid)
+        return (isSameApp(mSystemUiUid, uid)
                 || UserHandle.isCore(uid)
                 || mLocalDeviceIdleController == null
                 || mLocalDeviceIdleController.isAppOnWhitelist(UserHandle.getAppId(uid)));
@@ -2781,7 +2794,7 @@ public class AlarmManagerService extends SystemService {
 
             // make sure the caller is not lying about which package should be blamed for
             // wakelock time spent in alarm delivery
-            if (callingUid != mPackageManagerInternal.getPackageUid(callingPackage, 0,
+            if (!mPackageManagerInternal.isSameApp(callingPackage, 0, callingUid,
                     callingUserId)) {
                 throw new SecurityException("Package " + callingPackage
                         + " does not belong to the calling uid " + callingUid);
@@ -2825,7 +2838,7 @@ public class AlarmManagerService extends SystemService {
             // This means we will allow these alarms to go off as normal even while idle, with no
             // timing restrictions.
             } else if (workSource == null && (UserHandle.isCore(callingUid)
-                    || UserHandle.isSameApp(callingUid, mSystemUiUid)
+                    || isSameApp(callingUid, mSystemUiUid)
                     || ((mAppStateTracker != null)
                     && mAppStateTracker.isUidPowerSaveUserExempt(callingUid)))) {
                 flags |= FLAG_ALLOW_WHILE_IDLE_UNRESTRICTED;
@@ -2933,14 +2946,14 @@ public class AlarmManagerService extends SystemService {
         public boolean canScheduleExactAlarms(String packageName) {
             final int callingUid = mInjector.getCallingUid();
             final int userId = UserHandle.getUserId(callingUid);
-            final int packageUid = mPackageManagerInternal.getPackageUid(packageName, 0, userId);
-            if (callingUid != packageUid) {
+            if (!mPackageManagerInternal.isSameApp(packageName, 0, callingUid, userId)) {
                 throw new SecurityException("Uid " + callingUid
                         + " cannot query canScheduleExactAlarms for package " + packageName);
             }
             if (!isExactAlarmChangeEnabled(packageName, userId)) {
                 return true;
             }
+            final int packageUid = mPackageManagerInternal.getPackageUid(packageName, 0, userId);
             return isExemptFromExactAlarmPermissionNoLock(packageUid)
                     || hasScheduleExactAlarmInternal(packageName, packageUid)
                     || hasUseExactAlarmInternal(packageName, packageUid);
