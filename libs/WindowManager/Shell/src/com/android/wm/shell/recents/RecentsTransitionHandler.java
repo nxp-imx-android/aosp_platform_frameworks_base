@@ -1197,7 +1197,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             boolean hasChangingApp = false;
             final TransitionUtil.LeafTaskFilter leafTaskFilter =
                     new TransitionUtil.LeafTaskFilter(info);
-            boolean hasTaskChange = false;
+            boolean hasTaskChanges = false;
             for (int i = 0; i < info.getChanges().size(); ++i) {
                 final TransitionInfo.Change change = info.getChanges().get(i);
                 final ActivityManager.RunningTaskInfo taskInfo = change.getTaskInfo();
@@ -1237,8 +1237,9 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         && TransitionInfo.isIndependent(change, info);
                 final boolean isRecentsTask = mRecentsTask != null
                         && mRecentsTask.equals(change.getContainer());
-                hasTaskChange = hasTaskChange || isRootTask;
                 final boolean isLeafTask = leafTaskFilter.test(change);
+                // Assume that all task changes are interesting by default
+                boolean hasInterestingTaskChanges = isRootTask;
                 if (TransitionUtil.isOpeningType(change.getMode())
                         || TransitionUtil.isOrderOnly(change)) {
                     final String chgTypeMsg = TransitionUtil.isOpeningType(change.getMode())
@@ -1297,7 +1298,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         return;
                     }
                     // Don't consider stationary & non-leaf changes as changing apps.
-                    if (!TransitionUtil.isStationary(change) && isLeafTask) {
+                    if (isLeafTask && !TransitionUtil.isStationary(change)) {
                         hasChangingApp = true;
                         // Check if the changing app is moving to top and fullscreen. This handles
                         // the case where we moved from desktop to recents and launching a desktop
@@ -1328,8 +1329,16 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         }
                         openingTasks.add(change);
                         openingTaskIsLeafs.add(1);
+                    } else if (isLeafTask) {
+                        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                                "[%d]   Non-interesting change in task=%d", mInstanceId,
+                                taskInfo.taskId);
+                        // Otherwise this is "stationary", so consider it a non-interesting change
+                        hasInterestingTaskChanges = false;
                     }
                 }
+
+                hasTaskChanges |= hasInterestingTaskChanges;
             }
             if (hasChangingApp && foundRecentsClosing) {
                 // This happens when a visible app is expanding (usually PiP). In this case,
@@ -1500,22 +1509,20 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                         "[%d] RecentsController.merge: empty pausing tasks", mInstanceId);
             }
-            if (!hasTaskChange) {
+            if (!hasTaskChanges) {
                 // Activity only transition, so consume the merge as it doesn't affect the rest of
                 // recents.
                 Slog.d(TAG, "Got an activity only transition during recents, so apply directly");
                 mergeActivityOnly(info, startT);
             } else if (!didMergeThings) {
-                // Didn't recognize anything in incoming transition so don't merge it.
+                // Didn't recognize anything in incoming transition so don't merge it, but cancel
+                // the transition so that the queued transition can play (this also prevents
+                // Launcher from finishing the transition back to the app, which can block
+                // indefinitely since we are not merging).
                 final boolean recentsChanging = (recentsOpening != null) || foundRecentsClosing;
                 Slog.w(TAG, "Don't know how to merge this transition, recentsChanging="
                         + recentsChanging + " recentsTaskId=" + mRecentsTaskId);
-                refuseMerge(startT, () -> {
-                    if (recentsChanging || mRecentsTaskId < 0) {
-                        mWillFinishToHome = false;
-                        cancel("didn't merge");
-                    }
-                });
+                refuseMerge(startT, () -> cancel("didn't merge"));
                 return;
             }
 
