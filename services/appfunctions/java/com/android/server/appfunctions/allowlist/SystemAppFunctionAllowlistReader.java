@@ -27,7 +27,6 @@ import android.annotation.RequiresPermission;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManagerInternal;
 import android.content.pm.Signature;
 import android.content.pm.SignedPackage;
 import android.content.pm.SigningInfo;
@@ -88,7 +87,7 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
     @GuardedBy("mListenerLock")
     private OnAllowlistChangedListener mOnAllowlistChangedListener = null;
 
-    private final PackageManagerInternal mPackageManagerInternal;
+    private final PackageManager mPackageManager;
 
     private final AllowlistManager mAllowlistManager;
 
@@ -98,12 +97,12 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
 
     @VisibleForTesting
     public SystemAppFunctionAllowlistReader(
-            @NonNull PackageManagerInternal packageManagerInternal,
+            @NonNull PackageManager packageManager,
             @NonNull AllowlistManager allowlistManager,
             @NonNull ServiceConfig serviceConfig,
             @NonNull Executor threadPoolExecutor,
             @NonNull Executor backgroundExecutor) {
-        mPackageManagerInternal = Objects.requireNonNull(packageManagerInternal);
+        mPackageManager = Objects.requireNonNull(packageManager);
         mAllowlistManager = Objects.requireNonNull(allowlistManager);
         mCache = new LruCache<>(serviceConfig.getAppFunctionAllowlistCacheSize());
         mThreadPoolExecutor = Objects.requireNonNull(threadPoolExecutor);
@@ -141,26 +140,21 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
 
     @Override
     @NonNull
-    @RequiresPermission(android.Manifest.permission.QUERY_ALLOWLIST)
+    @RequiresPermission(
+            allOf = {
+                android.Manifest.permission.QUERY_ALLOWLIST,
+                android.Manifest.permission.INTERACT_ACROSS_USERS
+            })
     public CompletableFuture<Boolean> isAllowlisted(
-            @NonNull String agentPackageName,
-            @NonNull String targetPackageName,
-            int callingUid,
-            int userId) {
+            @NonNull String agentPackageName, @NonNull String targetPackageName, int userId) {
         if (mEnable.get()) {
             if (agentPackageName.equals(targetPackageName)) {
                 // Interaction with the app's own AppFunction is implicitly allowed.
                 return AndroidFuture.completedFuture(true);
             }
 
-            PackageInfo agentPackageInfo = getPackageInfo(agentPackageName, callingUid, userId);
+            PackageInfo agentPackageInfo = getPackageInfo(agentPackageName, userId);
             if (agentPackageInfo == null) {
-                Slog.w(
-                        TAG,
-                        "Unable to resolve PackageInfo for "
-                                + agentPackageName
-                                + " in user "
-                                + userId);
                 return AndroidFuture.completedFuture(false);
             }
 
@@ -208,10 +202,11 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
                                             ((AllowlistResponseException) exception).getStatus();
                                     if (status == RESPONSE_STATUS_ERROR_PROVIDER
                                             || status == RESPONSE_STATUS_ERROR_NETWORK) {
-                                        // If the allowlist provider is not available or unable to
-                                        // return the first allowlist due to network issue, it would
-                                        // temporarily allow all interactions.
-                                        return true;
+                                        // TODO(b/457349791): Once the Shell command is available
+                                        // to override the allowlist in AllowlistService, remove
+                                        // this to return true.
+                                        return isInTestAllowlist(
+                                                agentSignedPackage, targetPackageName);
                                     }
                                 }
                                 if (exception instanceof TimeoutException) {
@@ -325,12 +320,15 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
     }
 
     @Nullable
-    private PackageInfo getPackageInfo(@NonNull String packageName, int callingUid, int userId) {
-        return mPackageManagerInternal.getPackageInfo(
-                packageName,
-                /* flags= */ PackageManager.GET_SIGNING_CERTIFICATES,
-                callingUid,
-                userId);
+    @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
+    private PackageInfo getPackageInfo(@NonNull String packageName, int userId) {
+        try {
+            return mPackageManager.getPackageInfoAsUser(
+                    packageName, /* flags= */ PackageManager.GET_SIGNING_CERTIFICATES, userId);
+        } catch (PackageManager.NameNotFoundException e) {
+            Slog.w(TAG, "Unable to resolve PackageInfo for " + packageName + " in user " + userId);
+            return null;
+        }
     }
 
     private final class OnAllowlistChangedListener implements Consumer<AllowlistRequest> {
@@ -420,6 +418,9 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
         Bundle requestData = new Bundle();
         requestData.putParcelableArrayList(
                 AllowlistManager.REQUEST_KEY_FILTER_PACKAGES, filterAgentPackages);
+        // Empty filter targets means match all
+        requestData.putParcelableArrayList(
+                AllowlistManager.REQUEST_KEY_FILTER_TARGETS, new ArrayList<>());
         requestData.putBoolean(AllowlistManager.REQUEST_KEY_INSTALLED_PACKAGES_ONLY, true);
         return new AllowlistRequest(AllowlistManager.ALLOWLIST_ID_APP_FUNCTION, requestData);
     }
@@ -485,7 +486,7 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
         if (sInstance == null) {
             sInstance =
                     new SystemAppFunctionAllowlistReader(
-                            LocalServices.getService(PackageManagerInternal.class),
+                            context.getPackageManager(),
                             context.getSystemService(AllowlistManager.class),
                             new ServiceConfigImpl(),
                             THREAD_POOL_EXECUTOR,

@@ -32,10 +32,11 @@ public interface AppFunctionAllowlistReader {
      * @return The {@link AndroidFuture} for the result.
      */
     @NonNull
-    @RequiresPermission(android.Manifest.permission.QUERY_ALLOWLIST)
+    @RequiresPermission(
+            allOf = {
+                android.Manifest.permission.QUERY_ALLOWLIST,
+                android.Manifest.permission.INTERACT_ACROSS_USERS
+            })
     CompletableFuture<Boolean> isAllowlisted(
-            @NonNull String agentPackageName,
-            @NonNull String targetPackageName,
-            int callingUid,
-            int userId);
+            @NonNull String agentPackageName, @NonNull String targetPackageName, int userId);
 }
