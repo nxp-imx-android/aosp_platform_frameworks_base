@@ -114,6 +114,8 @@ public class PccSandboxManagerInternalTest {
     @Mock
     private PackageManagerInternal mPackageManagerInternal;
     @Mock
+    private android.app.ActivityManagerInternal mMockActivityManagerInternal;
+    @Mock
     private RoleManager mMockRoleManager;
     @Mock
     private UserManager mMockUserManager;
@@ -122,7 +124,11 @@ public class PccSandboxManagerInternalTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         Context context = spy(InstrumentationRegistry.getInstrumentation().getContext());
+        LocalServices.removeServiceForTest(PackageManagerInternal.class);
         LocalServices.addService(PackageManagerInternal.class, mPackageManagerInternal);
+        LocalServices.removeServiceForTest(android.app.ActivityManagerInternal.class);
+        LocalServices.addService(android.app.ActivityManagerInternal.class,
+                mMockActivityManagerInternal);
 
         int testUid = android.os.Process.myUid();
         when(mPackageManagerInternal.isSameApp(CORRECT_CALLING_PACKAGE, testUid,
@@ -162,6 +168,49 @@ public class PccSandboxManagerInternalTest {
     @After
     public void tearDown() {
         LocalServices.removeServiceForTest(PackageManagerInternal.class);
+        LocalServices.removeServiceForTest(android.app.ActivityManagerInternal.class);
+    }
+
+    @Test
+    public void createPccProxyIfNeeded_asInstrumentedClient_trustDisabled_returnsProxyBinder() {
+        int instrumentedUid = 12345;
+        when(mMockActivityManagerInternal.getInstrumentationSourceUid(instrumentedUid))
+                .thenReturn(67890);
+        mPccSandboxManagerInternal.setTrustInstrumentedClients(false);
+
+        IBinder returnedBinder = mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, 0,
+                mIntent, mRealBinder, instrumentedUid);
+
+        assertNotEquals("Should return a proxy binder when trust is disabled", mRealBinder,
+                returnedBinder);
+    }
+
+    @Test
+    public void createPccProxyIfNeeded_asInstrumentedClient_trustEnabled_returnsDirectBinder() {
+        int instrumentedUid = 12345;
+        when(mMockActivityManagerInternal.getInstrumentationSourceUid(instrumentedUid))
+                .thenReturn(67890);
+        mPccSandboxManagerInternal.setTrustInstrumentedClients(true);
+
+        IBinder returnedBinder = mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, 0,
+                mIntent, mRealBinder, instrumentedUid);
+
+        assertEquals("Should return a direct binder when trust is enabled", mRealBinder,
+                returnedBinder);
+    }
+
+    @Test
+    public void createPccProxyIfNeeded_asNonInstrumentedClient_trustEnabled_returnsProxyBinder() {
+        int nonInstrumentedUid = 12345;
+        when(mMockActivityManagerInternal.getInstrumentationSourceUid(nonInstrumentedUid))
+                .thenReturn(Process.INVALID_UID);
+        mPccSandboxManagerInternal.setTrustInstrumentedClients(true);
+
+        IBinder returnedBinder = mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, 0,
+                mIntent, mRealBinder, nonInstrumentedUid);
+
+        assertNotEquals("Should return a proxy binder for non-instrumented client even if trust is "
+                        + "enabled", mRealBinder, returnedBinder);
     }
 
     @Test

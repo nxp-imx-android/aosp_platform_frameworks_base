@@ -198,7 +198,7 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
     boolean writeToAuditLogInternal(
             @NonNull List<PersistableBundle> data, @NonNull String packageName)
             throws SecurityException {
-        final int callingUid = Binder.getCallingUid();
+        final int callingUid = mInjector.getCallingUid();
         if (!mPackageManagerInternal.isSameApp(
                 packageName, callingUid, UserHandle.getUserId(callingUid))) {
             // We don't report the security exception to apps, but we log it.
@@ -259,7 +259,7 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
             final PrintWriter pw = getOutPrintWriter();
             switch (cmd) {
                 case "add-allowed-package" -> {
-                    final int callingUid = Binder.getCallingUid();
+                    final int callingUid = mInjector.getCallingUid();
                     if (callingUid != Process.ROOT_UID && callingUid != Process.SHELL_UID) {
                         pw.println("Error: must be root or shell to use this command");
                         return -1;
@@ -272,7 +272,7 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
                     return 0;
                 }
                 case "remove-allowed-package" -> {
-                    final int callingUid = Binder.getCallingUid();
+                    final int callingUid = mInjector.getCallingUid();
                     if (callingUid != Process.ROOT_UID && callingUid != Process.SHELL_UID) {
                         pw.println("Error: must be root or shell to use this command");
                         return -1;
@@ -281,6 +281,30 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
                     if (mInternal != null) {
                         mInternal.removeTestAllowedPackage(packageName);
                         pw.println("Removed " + packageName + " from allowed packages");
+                    }
+                    return 0;
+                }
+                case "enable-trust-instrumented-clients" -> {
+                    final int callingUid = mInjector.getCallingUid();
+                    if (callingUid != Process.ROOT_UID && callingUid != Process.SHELL_UID) {
+                        pw.println("Error: must be root or shell to use this command");
+                        return -1;
+                    }
+                    if (mInternal != null) {
+                        mInternal.setTrustInstrumentedClients(true);
+                        pw.println("Enabled trusting instrumented clients");
+                    }
+                    return 0;
+                }
+                case "disable-trust-instrumented-clients" -> {
+                    final int callingUid = mInjector.getCallingUid();
+                    if (callingUid != Process.ROOT_UID && callingUid != Process.SHELL_UID) {
+                        pw.println("Error: must be root or shell to use this command");
+                        return -1;
+                    }
+                    if (mInternal != null) {
+                        mInternal.setTrustInstrumentedClients(false);
+                        pw.println("Disabled trusting instrumented clients");
                     }
                     return 0;
                 }
@@ -300,6 +324,10 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
             pw.println("    Add a package to the list of allowed PCC packages for testing.");
             pw.println("  remove-allowed-package PACKAGE");
             pw.println("    Remove a package from the list of allowed PCC packages for testing.");
+            pw.println("  enable-trust-instrumented-clients");
+            pw.println("    Temporarily consider instrumented clients as trusted.");
+            pw.println("  disable-trust-instrumented-clients");
+            pw.println("    Stop considering instrumented clients as trusted.");
         }
     }
 
