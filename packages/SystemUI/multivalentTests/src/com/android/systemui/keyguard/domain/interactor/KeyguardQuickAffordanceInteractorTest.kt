@@ -216,7 +216,7 @@ class KeyguardQuickAffordanceInteractorTest : SysuiTestCase() {
                 appContext = context,
                 accessibilityInteractor = accessibilityInteractor,
                 sceneInteractor = { kosmos.sceneInteractor },
-                msdlPlayer = msdlPlayer,
+                msdlPlayer = { msdlPlayer },
             )
         kosmos.keyguardQuickAffordanceInteractor = underTest
 

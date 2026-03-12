@@ -100,13 +100,15 @@ constructor(
     @Background private val backgroundDispatcher: CoroutineDispatcher,
     @ShadeDisplayAware private val appContext: Context,
     private val sceneInteractor: Lazy<SceneInteractor>,
-    private val msdlPlayer: MSDLPlayer,
+    private val msdlPlayer: Lazy<MSDLPlayer>,
 ) {
     /**
      * Whether a quick affordance is being launched. Quick Affordances are interactive lockscreen UI
      * elements that allow the user to perform quick actions without unlocking their device.
      */
-    val launchingAffordance: StateFlow<Boolean> = repository.get().launchingAffordance.asStateFlow()
+    val launchingAffordance: StateFlow<Boolean> by lazy {
+        repository.get().launchingAffordance.asStateFlow()
+    }
 
     /**
      * Whether the UI should use the long press gesture to activate quick affordances.
@@ -229,15 +231,15 @@ constructor(
                     canShowWhileLocked = result.canShowWhileLocked,
                     expandable = expandable,
                 )
-                msdlPlayer.playToken(MSDLToken.LONG_PRESS)
+                msdlPlayer.get().playToken(MSDLToken.LONG_PRESS)
             }
             is KeyguardQuickAffordanceConfig.OnTriggeredResult.Handled -> {
                 if (result.actionLaunched) {
-                    msdlPlayer.playToken(MSDLToken.LONG_PRESS)
+                    msdlPlayer.get().playToken(MSDLToken.LONG_PRESS)
                 }
             }
             is KeyguardQuickAffordanceConfig.OnTriggeredResult.ShowDialog -> {
-                msdlPlayer.playToken(MSDLToken.LONG_PRESS)
+                msdlPlayer.get().playToken(MSDLToken.LONG_PRESS)
                 showDialog(result.dialog, result.expandable)
             }
         }
