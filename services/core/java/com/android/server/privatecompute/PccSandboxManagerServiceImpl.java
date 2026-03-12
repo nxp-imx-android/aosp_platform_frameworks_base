@@ -16,6 +16,10 @@
 
 package com.android.server.privatecompute;
 
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_WRITE_TO_AUDIT_LOG__WRITE_TYPE__BATCHED;
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_WRITE_TO_AUDIT_LOG__WRITE_TYPE__DIRECT;
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_WRITE_TO_AUDIT_LOG__WRITE_TYPE__NATIVE;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
@@ -207,6 +211,8 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
     @RequiresNoPermission
     public void writeToAuditLog(@NonNull PersistableBundle bundle, @NonNull String packageName) {
         try {
+            PrivateComputeStatsLogUtil.logPccWriteToAuditLog(
+                    PCC_WRITE_TO_AUDIT_LOG__WRITE_TYPE__DIRECT);
             writeToAuditLogInternal(bundle, packageName);
         } catch (SecurityException e) {
             Log.e(TAG, "Failed to write to audit log: " + e);
@@ -219,6 +225,8 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
     public void batchWriteToAuditLog(
             @NonNull List<PersistableBundle> data, @NonNull String packageName) {
         try {
+            PrivateComputeStatsLogUtil.logPccWriteToAuditLog(
+                    PCC_WRITE_TO_AUDIT_LOG__WRITE_TYPE__BATCHED);
             writeToAuditLogInternal(data, packageName);
         } catch (SecurityException e) {
             Log.e(TAG, "Failed to batch write to audit log: " + e);
@@ -280,6 +288,8 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
         @RequiresNoPermission
         public void writeToAuditLog(@NonNull PersistableBundle bundle) {
             String packageName = mContext.getPackageManager().getNameForUid(Binder.getCallingUid());
+            PrivateComputeStatsLogUtil.logPccWriteToAuditLog(
+                    PCC_WRITE_TO_AUDIT_LOG__WRITE_TYPE__NATIVE);
             writeToAuditLogInternal(bundle, packageName);
         }
     }
