@@ -3493,6 +3493,11 @@ final class ActivityRecord extends WindowToken {
         // End search once we get to the activity that doesn't have the same affinity.
         if (!Objects.equals(r.taskAffinity, taskAffinity)) return true;
 
+        // Do not allow task to finish if last task in lockTask mode.
+        if (mAtmService.getLockTaskController().activityBlockedFromFinish(r)) {
+            return false;
+        }
+
         r.finishIfPossible("request-affinity", true /* oomAdj */);
         return false;
     }

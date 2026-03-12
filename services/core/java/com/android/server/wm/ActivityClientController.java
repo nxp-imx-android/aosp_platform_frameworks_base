@@ -530,8 +530,7 @@ class ActivityClientController extends IActivityClientController.Stub {
             if (rootR == null) {
                 Slog.w(TAG, "Finishing task with all activities already finished");
             }
-            // Do not allow task to finish if last task in lockTask mode. Launchable priv-apps can
-            // finish.
+            // Do not allow task to finish if last task in lockTask mode.
             if (mService.getLockTaskController().activityBlockedFromFinish(r)) {
                 return false;
             }
@@ -618,16 +617,10 @@ class ActivityClientController extends IActivityClientController.Stub {
                     return false;
                 }
 
-                // Do not allow task to finish if last task in lockTask mode. Launchable priv-apps
-                // can finish.
-                if (mService.getLockTaskController().activityBlockedFromFinish(r)) {
-                    return false;
-                }
-
                 r.getTask().forAllActivities(activity -> r.finishIfSameAffinity(activity),
                         r /* boundary */, true /* includeBoundary */,
                         true /* traverseTopToBottom */);
-                return true;
+                return r.finishing;
             }
         } finally {
             Binder.restoreCallingIdentity(origId);
