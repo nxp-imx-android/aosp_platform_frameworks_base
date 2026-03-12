@@ -8307,6 +8307,19 @@ public final class ActivityThread extends ClientTransactionHandler
                     if (preloadedFontsResource != 0) {
                         data.info.getResources().preloadFonts(preloadedFontsResource);
                     }
+
+                    if (com.android.text.flags.Flags.perAppFontationSettings()) {
+                        // Uses AndroidManifest meta-data to switch the Text Renderer backend on a
+                        // per-application basis. This is primarily used to fix the renderer backend
+                        // during screenshot tests not to break by feature flag rollout.
+                        // This functionality is temporary and will be removed once Fontation
+                        // becomes the default backend.
+                        final int useFontation = info.metaData.getInt(
+                                "android.graphics.text_renderer", -1);
+                        if (useFontation != -1) {
+                            Typeface.setFontRenderingBackend(useFontation);
+                        }
+                    }
                 }
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
