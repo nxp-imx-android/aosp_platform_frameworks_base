@@ -58,6 +58,7 @@ import com.android.systemui.scene.ui.composable.transitions.shadeToQuickSettings
 import com.android.systemui.scene.ui.composable.transitions.sharedBouncerTransitions
 import com.android.systemui.scene.ui.composable.transitions.toBouncerTransition
 import com.android.systemui.scene.ui.composable.transitions.toNotificationsShadeTransition
+import com.android.systemui.scene.ui.composable.transitions.toQuickActionsTransition
 import com.android.systemui.scene.ui.composable.transitions.toQuickSettingsShadeTransition
 import com.android.systemui.scene.ui.viewmodel.ToBouncerTransitionViewModel
 import com.android.systemui.shade.ui.composable.Shade
@@ -406,6 +407,8 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
             }
 
             // Overlay transitions
+
+            to(Overlays.QuickActions) { toQuickActionsTransition() }
 
             sharedBouncerTransitions(toBouncerTransitionViewModel = toBouncerTransitionViewModel)
             from(Overlays.Bouncer, to = Scenes.Gone) { bouncerToGoneTransition() }

@@ -67,7 +67,7 @@ constructor(
 
     private val ignoredSceneChanges: Set<SceneKey> = setOf(Scenes.Shade, Scenes.QuickSettings)
     private val ignoredOverlayChanges: Set<OverlayKey> =
-        setOf(Overlays.QuickSettingsShade, Overlays.NotificationsShade)
+        setOf(Overlays.QuickSettingsShade, Overlays.NotificationsShade, Overlays.QuickActions)
 
     private val isCommunalBackgroundBlurred: Boolean by
         communalSettingsInteractor.communalBackground

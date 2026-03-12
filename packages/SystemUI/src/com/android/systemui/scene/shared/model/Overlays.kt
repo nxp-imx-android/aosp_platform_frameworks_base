@@ -49,6 +49,13 @@ object Overlays {
     @JvmField val NotificationsShade = LockscreenMovableParentKeys.NotificationsShade
 
     /**
+     * The quick actions overlay hosts QuickActionPanels. These are anchored panels that are shown
+     * when a [QuickActionChip] is selected in the status bar. Examples include: IME Panel, Media
+     * Controls, Video Conferencing controls. This feature is only available on large screens.
+     */
+    @JvmField val QuickActions = OverlayKey("quick_actions")
+
+    /**
      * The quick settings shade overlay shows the quick settings tiles UI.
      *
      * It's used only in the dual shade configuration, where there are two separate shades: one for

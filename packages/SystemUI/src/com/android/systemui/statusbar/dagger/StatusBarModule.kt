@@ -37,6 +37,7 @@ import com.android.systemui.statusbar.phone.AutoHideControllerImpl
 import com.android.systemui.statusbar.phone.LightBarController
 import com.android.systemui.statusbar.phone.StatusBarSignalPolicy
 import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallLog
+import com.android.systemui.statusbar.quickactions.QuickActionsModule
 import com.android.systemui.statusbar.ui.StatusBarUiLayerModule
 import com.android.systemui.statusbar.ui.SystemBarUtilsProxyImpl
 import com.android.systemui.statusbar.window.MultiDisplayStatusBarWindowControllerStore
@@ -62,6 +63,7 @@ import dagger.multibindings.IntoMap
 @Module(
     includes =
         [
+            QuickActionsModule::class,
             StatusBarDataLayerModule::class,
             StatusBarUiLayerModule::class,
             SystemBarUtilsProxyImpl.Module::class,
