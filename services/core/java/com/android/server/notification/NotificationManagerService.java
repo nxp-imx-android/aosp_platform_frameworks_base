@@ -414,6 +414,7 @@ import com.android.server.EventLogTags;
 import com.android.server.IoThread;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
+import com.android.server.bitmapoffload.BitmapOffloadContract;
 import com.android.server.bitmapoffload.BitmapOffloadInternal;
 import com.android.server.job.JobSchedulerInternal;
 import com.android.server.lights.LightsManager;
@@ -471,6 +472,7 @@ import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -895,6 +897,8 @@ public class NotificationManagerService extends SystemService {
     private ModuleInfo mAdservicesModuleInfo;
 
     private BitmapOffloadInternal mBitmapOffloader;
+    private final Set<Uri> mOffloadedBitmapsPendingCleanup = new HashSet<>();
+    private static final Duration OFFLOADED_BITMAP_CLEANUP_DELAY = Duration.ofHours(6);
 
     static class Archive {
         final SparseArray<Boolean> mEnabled;
@@ -2636,7 +2640,10 @@ public class NotificationManagerService extends SystemService {
                 if (userHandle >= 0) {
                     cancelAllNotificationsInt(MY_UID, MY_PID, null, null, 0, 0, userHandle,
                             REASON_PROFILE_TURNED_OFF);
-                    mSnoozeHelper.clearData(userHandle);
+                    List<NotificationRecord> snoozed = mSnoozeHelper.clearData(userHandle);
+                    for (NotificationRecord r : snoozed) {
+                        markOffloadedBitmapsForDeletion(r);
+                    }
                 }
             } else if (action.equals(Intent.ACTION_USER_SWITCHED)) {
                 if (!Flags.useSsmUserSwitchSignal()) {
@@ -5825,7 +5832,11 @@ public class NotificationManagerService extends SystemService {
             }
 
             // Snoozing
-            mSnoozeHelper.clearData(UserHandle.getUserId(uid), packageName);
+            List<NotificationRecord> snoozed = mSnoozeHelper.clearData(UserHandle.getUserId(uid),
+                    packageName);
+            for (NotificationRecord r : snoozed) {
+                markOffloadedBitmapsForDeletion(r);
+            }
 
             // Reset notification preferences
             if (!fromApp) {
@@ -9477,6 +9488,9 @@ public class NotificationManagerService extends SystemService {
 
         if (!checkDisqualifyingFeatures(userId, notificationUid, id, tag, r,
                 r.getSbn().getOverrideGroupKey() != null, byForegroundService)) {
+            synchronized (mNotificationLock) {
+                markOffloadedBitmapsForDeletion(r);
+            }
             return false;
         }
 
@@ -10616,8 +10630,10 @@ public class NotificationManagerService extends SystemService {
 
                     // No notification was found, assume that it is snoozed and cancel it.
                     if (mReason != REASON_SNOOZED) {
-                        final boolean wasSnoozed = mSnoozeHelper.cancel(mUserId, mPkg, mTag, mId);
-                        if (wasSnoozed) {
+                        final NotificationRecord wasSnoozed = mSnoozeHelper.cancel(mUserId, mPkg,
+                                mTag, mId);
+                        if (wasSnoozed != null) {
+                            markOffloadedBitmapsForDeletion(wasSnoozed);
                             handleSavePolicyFile();
                         }
                     }
@@ -10688,6 +10704,9 @@ public class NotificationManagerService extends SystemService {
             } finally {
                 if (!enqueued) {
                     mTracker.cancel();
+                    synchronized (mNotificationLock) {
+                        markOffloadedBitmapsForDeletion(r);
+                    }
                 }
             }
         }
@@ -10955,6 +10974,7 @@ public class NotificationManagerService extends SystemService {
                         if (isInterruptive) {
                             r.resetRankingTime();
                         }
+                        markOffloadedBitmapsForDeletion(old);
                     }
 
                     mNotificationsByKey.put(n.getKey(), r);
@@ -11919,6 +11939,61 @@ public class NotificationManagerService extends SystemService {
     }
 
     @GuardedBy("mNotificationLock")
+    private void markOffloadedBitmapsForDeletion(NotificationRecord r) {
+        if (mBitmapOffloader == null) {
+            return;
+        }
+        synchronized (mOffloadedBitmapsPendingCleanup) {
+            r.getNotification().visitUris((uri) -> {
+                if (uri != null && BitmapOffloadContract.AUTHORITY.equals(uri.getAuthority())) {
+                    if (mOffloadedBitmapsPendingCleanup.isEmpty()) {
+                        mHandler.postDelayed(mCleanupOffloadedBitmaps,
+                                OFFLOADED_BITMAP_CLEANUP_DELAY.toMillis());
+                    }
+                    mOffloadedBitmapsPendingCleanup.add(uri);
+                }
+            });
+        }
+    }
+
+    @VisibleForTesting
+    final Runnable mCleanupOffloadedBitmaps = new Runnable() {
+        @Override
+        public void run() {
+            Set<Uri> candidates;
+            synchronized (mOffloadedBitmapsPendingCleanup) {
+                candidates = new HashSet<>(mOffloadedBitmapsPendingCleanup);
+                mOffloadedBitmapsPendingCleanup.clear();
+            }
+            if (candidates.isEmpty() || mBitmapOffloader == null) {
+                return;
+            }
+
+            synchronized (mNotificationLock) {
+                Consumer<Uri> visitor = (uri) -> {
+                    if (uri != null && BitmapOffloadContract.AUTHORITY.equals(uri.getAuthority())) {
+                        candidates.remove(uri);
+                    }
+                };
+                // Check active notifications
+                for (NotificationRecord r : mNotificationList) {
+                    r.getNotification().visitUris(visitor);
+                }
+                // Check enqueued notifications
+                for (NotificationRecord r : mEnqueuedNotifications) {
+                    r.getNotification().visitUris(visitor);
+                }
+                // Check snoozed notifications
+                mSnoozeHelper.visitUris(visitor);
+            }
+
+            for (Uri uri : candidates) {
+                mBitmapOffloader.removeBitmap(uri);
+            }
+        }
+    };
+
+    @GuardedBy("mNotificationLock")
     private void cancelNotificationLocked(NotificationRecord r, boolean sendDelete,
             @NotificationListenerService.NotificationCancelReason int reason,
             boolean wasPosted, String listenerName,
@@ -12025,6 +12100,10 @@ public class NotificationManagerService extends SystemService {
         // Save it for users of getHistoricalNotifications(), unless the whole channel was deleted
         if (reason != REASON_CHANNEL_REMOVED) {
             mArchive.record(getSbnForArchive(r, reason), reason);
+        }
+
+        if (reason != REASON_SNOOZED) {
+            markOffloadedBitmapsForDeletion(r);
         }
 
         final long now = System.currentTimeMillis();
@@ -12293,7 +12372,10 @@ public class NotificationManagerService extends SystemService {
                             false /*includeCurrentProfiles*/, userId, false /*sendDelete*/, reason,
                             null /* listenerName */, false /* wasPosted */,
                             cancellationElapsedTimeMs);
-                    mSnoozeHelper.cancel(userId, pkg);
+                    List<NotificationRecord> snoozed = mSnoozeHelper.cancel(userId, pkg);
+                    for (NotificationRecord r : snoozed) {
+                        markOffloadedBitmapsForDeletion(r);
+                    }
                 }
             }
         });
@@ -12549,7 +12631,11 @@ public class NotificationManagerService extends SystemService {
                             null, false /*nullPkgIndicatesUserSwitch*/, null,
                             flagChecker, includeCurrentProfiles, userId, true /*sendDelete*/,
                             reason, listenerName, false, cancellationElapsedTimeMs);
-                    mSnoozeHelper.cancel(userId, includeCurrentProfiles);
+                    List<NotificationRecord> snoozed = mSnoozeHelper.cancel(userId,
+                            includeCurrentProfiles);
+                    for (NotificationRecord r : snoozed) {
+                        markOffloadedBitmapsForDeletion(r);
+                    }
                 }
             }
         });
