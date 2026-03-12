@@ -111,6 +111,18 @@ public class PersonalContextManagerService extends SystemService {
     @VisibleForTesting
     static final String ROLE_SYSTEM_UI_INTELLIGENCE = "android.app.role.SYSTEM_UI_INTELLIGENCE";
 
+    /**
+     * Default value for the per-app personal context mode setting, if
+     * {@link Settings.Secure.PERSONAL_CONTEXT_MODE_ENABLED_DEFAULT} is not present and the app's
+     * setting value has not been manually changed.
+     *
+     * <p>0 means disabled, 1 means enabled.
+     *
+     * @see PersonalContextManager#isPersonalContextModeEnabled(String)
+     */
+    // TODO(b/481494584): flip the default to disabled (0).
+    public static final int PERSONAL_CONTEXT_MODE_ENABLED_DEFAULT_VALUE = 1;
+
     static final SecretKeySpec HINT_SIGNING_KEY;
 
     static {
@@ -720,10 +732,20 @@ public class PersonalContextManagerService extends SystemService {
                                 int personalContextMode =
                                         mPackageManager.getPersonalContextMode(
                                                 packageName, callingUid, userId);
-                                return personalContextMode
-                                        == PackageManager.PERSONAL_CONTEXT_MODE_UNSET
-                                        || personalContextMode
-                                        == PackageManager.PERSONAL_CONTEXT_MODE_USER_ON;
+                                if (personalContextMode
+                                        == PackageManager.PERSONAL_CONTEXT_MODE_UNSET) {
+                                    // Mode is unset for this app, check the default value.
+                                    return Settings.Secure.getIntForUser(
+                                                    getService().getContext().getContentResolver(),
+                                                    Settings.Secure
+                                                            .PERSONAL_CONTEXT_MODE_ENABLED_DEFAULT,
+                                                    PERSONAL_CONTEXT_MODE_ENABLED_DEFAULT_VALUE,
+                                                    userId)
+                                            == 1;
+                                } else {
+                                    return personalContextMode
+                                            == PackageManager.PERSONAL_CONTEXT_MODE_USER_ON;
+                                }
                             }));
         }
 
