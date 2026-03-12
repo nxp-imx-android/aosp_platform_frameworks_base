@@ -47,6 +47,8 @@
     <string name="summary_virtual_device" msgid="1062189396947962635">"<xliff:g id="APP_NAME">%2$s</xliff:g> će dobiti sljedeća odobrenja:"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"uređaj"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Ova aplikacija će moći sinhronizirati informacije, kao što je ime osobe koja upućuje poziv, između vašeg telefona i odabranog uređaja"</string>
+    <!-- no translation found for summary_generic_with_remote_ai_capability (5053633566439056634) -->
+    <skip />
     <string name="consent_yes" msgid="8344487259618762872">"Dozvoli"</string>
     <string name="consent_no" msgid="2640796915611404382">"Nemoj dozvoliti"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Otkaži"</string>

@@ -47,6 +47,8 @@
     <string name="summary_virtual_device" msgid="1062189396947962635">"<xliff:g id="APP_NAME">%2$s</xliff:g> នឹងទទួលបានការអនុញ្ញាតខាងក្រោម៖"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"ឧបករណ៍"</string>
     <string name="summary_generic" msgid="1761976003668044801">"កម្មវិធីនេះនឹងអាច​ធ្វើសមកាលកម្មព័ត៌មាន ដូចជាឈ្មោះមនុស្សដែលហៅទូរសព្ទជាដើម​ រវាងឧបករណ៍ដែលបានជ្រើសរើស និងទូរសព្ទរបស់អ្នក"</string>
+    <!-- no translation found for summary_generic_with_remote_ai_capability (5053633566439056634) -->
+    <skip />
     <string name="consent_yes" msgid="8344487259618762872">"អនុញ្ញាត"</string>
     <string name="consent_no" msgid="2640796915611404382">"មិនអនុញ្ញាត"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"បោះបង់"</string>

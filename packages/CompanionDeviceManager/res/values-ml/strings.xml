@@ -47,6 +47,7 @@
     <string name="summary_virtual_device" msgid="1062189396947962635">"<xliff:g id="APP_NAME">%2$s</xliff:g> എന്നതിന് ഇനിപ്പറയുന്ന അനുമതികൾ നൽകും:"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"ഉപകരണം"</string>
     <string name="summary_generic" msgid="1761976003668044801">"വിളിക്കുന്നയാളുടെ പേര് പോലുള്ള വിവരങ്ങൾ നിങ്ങളുടെ ഫോണിനും തിരഞ്ഞെടുത്ത ഉപകരണത്തിനും ഇടയിൽ സമന്വയിപ്പിക്കുന്നതിന് ഈ ആപ്പിന് കഴിയും"</string>
+    <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"നിങ്ങളുടെ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> എന്നതിൽ നിന്ന് വിളിക്കുന്നയാളുടെ വിവരങ്ങൾ പോലുള്ള വിവരങ്ങൾ സമന്വയിപ്പിക്കാനും സ്‌മാർട്ട് പ്രവർത്തനങ്ങൾ റൺ ചെയ്യാനും &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; എന്നതിനെ അനുവദിക്കുക"</string>
     <string name="consent_yes" msgid="8344487259618762872">"അനുവദിക്കുക"</string>
     <string name="consent_no" msgid="2640796915611404382">"അനുവദിക്കരുത്"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"റദ്ദാക്കുക"</string>

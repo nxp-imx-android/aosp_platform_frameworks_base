@@ -47,6 +47,7 @@
     <string name="summary_virtual_device" msgid="1062189396947962635">"<xliff:g id="APP_NAME">%2$s</xliff:g> will be granted the following permissions:"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"device"</string>
     <string name="summary_generic" msgid="1761976003668044801">"This app will be able to sync info, like the name of someone calling, between your phone and the chosen device"</string>
+    <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Allow &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; to sync info such as caller info and run smart actions from your <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Allow"</string>
     <string name="consent_no" msgid="2640796915611404382">"Don\'t allow"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Cancel"</string>
