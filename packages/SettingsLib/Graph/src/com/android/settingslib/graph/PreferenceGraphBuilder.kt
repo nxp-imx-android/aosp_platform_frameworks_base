@@ -479,6 +479,9 @@ private constructor(
         forEachAsync {
             if(it !is PreferenceHierarchy && !it.metadata.isExposable(context))
                 return@forEachAsync
+            if(it.metadata is PreferenceScreenMetadata)
+                return@forEachAsync
+
             addPreferences(
                 preferenceOrGroupProto {
                     if (it is PreferenceHierarchy) {
