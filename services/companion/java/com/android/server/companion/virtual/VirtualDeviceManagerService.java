@@ -96,6 +96,7 @@ import com.android.modules.expresslog.Counter;
 import com.android.server.LocalServices;
 import com.android.server.LockGuard;
 import com.android.server.SystemService;
+import com.android.server.Watchdog;
 import com.android.server.companion.virtual.VirtualDeviceImpl.PendingTrampoline;
 import com.android.server.companion.virtual.computercontrol.AutomatedPackagesRepository;
 import com.android.server.companion.virtual.computercontrol.ComputerControlSessionProcessor;
@@ -116,7 +117,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @SuppressLint("LongLogTag")
-public class VirtualDeviceManagerService extends SystemService {
+public class VirtualDeviceManagerService extends SystemService implements Watchdog.Monitor {
 
     private static final String TAG = "VirtualDeviceManagerService";
 
@@ -227,6 +228,7 @@ public class VirtualDeviceManagerService extends SystemService {
                                                 DEVICE_PROFILE_COMPUTER_CONTROL)));
         mComputerControlConsentManager = new ComputerControlConsentManagerImpl();
         mAutomatedPackagesRepository = new AutomatedPackagesRepository(mHandler);
+        Watchdog.getInstance().addMonitor(this);
     }
 
     private final ActivityInterceptorCallback mActivityInterceptorCallback =
@@ -279,6 +281,14 @@ public class VirtualDeviceManagerService extends SystemService {
                     return null;
                 }
             };
+
+    @Override
+    public void monitor() {
+        synchronized (mVirtualDeviceManagerLock) { /* no-op */ }
+        mComputerControlSessionProcessor.monitor();
+        mAutomatedPackagesRepository.monitor();
+        // TODO: b/488023190 - Integrate all VDM locks into this monitor request.
+    }
 
     @Initializer
     @Override

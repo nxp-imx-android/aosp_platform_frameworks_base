@@ -68,7 +68,6 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
 import com.android.server.ServiceThread;
-import com.android.server.Watchdog;
 import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal;
 
@@ -84,7 +83,7 @@ import java.util.Objects;
  * <p>This class enforces session creation policies, such as limiting the number of concurrent
  * sessions and preventing creation when the device is locked.
  */
-public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
+public final class ComputerControlSessionProcessor {
 
     private static final String TAG = ComputerControlSessionProcessor.class.getSimpleName();
 
@@ -128,7 +127,6 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
         this(context, virtualDeviceManagerInternal, virtualDeviceFactory,
                 ComputerControlSessionProcessor::createPendingIntent,
                 new ComputerControlAllowlistController(context));
-        Watchdog.getInstance().addMonitor(this);
     }
 
     @VisibleForTesting
@@ -575,7 +573,6 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
         }
     }
 
-    @Override
     public void monitor() {
         synchronized (mSessions) {
             for (int i = 0; i < mSessions.size(); i++) {
