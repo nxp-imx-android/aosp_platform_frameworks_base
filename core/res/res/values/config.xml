@@ -7761,6 +7761,11 @@
     <!-- List of packages which should be excluded from transparency based desktop exemptions. -->
     <string-array name="config_desktopTransparentExemptionIgnoreList" translatable="false"/>
 
+    <!-- List of activities in the home package which should be allowed in desktop mode. -->
+    <string-array name="config_desktopHomePackageFreeformActivities" translatable="false">
+        <item>com.android.launcher3.settings.SettingsActivity</item>
+    </string-array>
+
     <!-- Frame rate compatibility value for Wallpaper
          FRAME_RATE_COMPATIBILITY_MIN (102) is used by default for lower power consumption -->
     <integer name="config_wallpaperFrameRateCompatibility">102</integer>
