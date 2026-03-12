@@ -1234,9 +1234,12 @@ public class DreamManagerServiceTest {
         }
 
         @Override
-        public DreamComponentsResolver getDreamComponentsResolver(Context context,
-                int userId, AmbientDisplayConfiguration dozeConfig,
-                UserManagerInternal userManagerInternal, boolean dreamsOnlyEnabledForDockUser,
+        public DreamComponentsResolver getDreamComponentsResolver(
+                DreamValidator dreamValidator,
+                int userId,
+                AmbientDisplayConfiguration dozeConfig,
+                UserManagerInternal userManagerInternal,
+                boolean dreamsOnlyEnabledForDockUser,
                 DreamRepository dreamRepository) {
             return mDreamComponentsResolver;
         }

@@ -95,9 +95,9 @@ public final class DreamItem implements Parcelable {
     public String toString() {
         StringBuilder sb = new StringBuilder(DreamItem.class.getSimpleName());
         sb.append('[').append(title);
-        sb.append(',').append(componentName);
+        sb.append(',').append(componentName.toShortString());
         if (settingsActivity != null) {
-            sb.append(",settings=").append(settingsActivity);
+            sb.append(",settings=").append(settingsActivity.toShortString());
         }
         return sb.append(']').toString();
     }
