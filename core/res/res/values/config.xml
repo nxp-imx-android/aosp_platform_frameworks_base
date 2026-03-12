@@ -8046,4 +8046,9 @@
 
     <!-- Whether the Wear-specific charging experience is enabled -->
     <bool name="config_wearChargingExperienceEnabled">false</bool>
+
+    <!-- List of package names to be forced to be dexopted in the synchronous phase of pre-reboot
+         dexopt. -->
+    <string-array translatable="false" name="config_pr_dexopt_sync_forced_packages">
+    </string-array>
 </resources>
