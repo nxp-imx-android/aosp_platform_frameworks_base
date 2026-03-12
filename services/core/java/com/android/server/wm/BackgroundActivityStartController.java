@@ -117,7 +117,7 @@ public class BackgroundActivityStartController {
     private static final String DOC_LINK = "go/android-asm";
 
     /** Used to determine which version of the ASM logic was used in logs while we iterate */
-    private static final int ASM_VERSION = 13;
+    private static final int ASM_VERSION = 14;
     private static final int NO_PROCESS_UID = -1;
     private static final int NO_GRACE_PERIOD = -1;
 
@@ -2379,6 +2379,10 @@ public class BackgroundActivityStartController {
         private ActivityRecord mActivityOptedIn;
 
         BlockActivityStart optedIn(ActivityRecord activity) {
+            if (activity == null) {
+                Slog.wtfStack(TAG, "BlockActivityStart.optedIn called with null activity");
+                return this;
+            }
             mTopActivityOptedIn = true;
             if (mActivityOptedIn == null) {
                 mActivityOptedIn = activity;
