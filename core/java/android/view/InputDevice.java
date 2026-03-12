@@ -42,6 +42,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.Vibrator;
 import android.os.VibratorManager;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.text.TextUtils;
 
 import com.android.internal.annotations.GuardedBy;
@@ -67,6 +68,7 @@ import java.util.List;
  * the appropriate interpretation.
  * </p>
  */
+@RavenwoodKeepWholeClass
 public final class InputDevice implements Parcelable {
     private final int mId;
     private final int mGeneration;

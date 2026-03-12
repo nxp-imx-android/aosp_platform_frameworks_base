@@ -20,6 +20,7 @@ import static com.android.ravenwood.common.RavenwoodInternalUtils.getRavenwoodRu
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.view.KeyCharacterMap;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -53,6 +54,14 @@ public final class RavenwoodNativeLoader {
             android.text.AndroidCharacter.class,
             android.text.Hyphenator.class,
             com.android.internal.util.VirtualRefBasePtr.class,
+            android.view.KeyCharacterMap.class,
+            android.view.KeyEvent.class,
+            android.view.InputChannel.class,
+            android.view.InputDevice.class,
+            android.view.InputEventReceiver.class,
+            android.view.InputEventSender.class,
+            android.view.MotionEvent.class,
+            android.view.MotionPredictor.class,
     };
 
     /**
@@ -60,12 +69,6 @@ public final class RavenwoodNativeLoader {
      * native code too.
      */
     private static final Class<?>[] sLibandroidExperimentalClasses = {
-            android.view.KeyCharacterMap.class,
-            android.view.KeyEvent.class,
-            android.view.InputChannel.class,
-            android.view.InputDevice.class,
-            android.view.InputEventReceiver.class,
-            android.view.MotionEvent.class,
             android.animation.PropertyValuesHolder.class,
     };
 
@@ -128,7 +131,7 @@ public final class RavenwoodNativeLoader {
      *
      * Several entries are not actually a class, so we just hardcode them here.
      */
-    public final static String[] GRAPHICS_EXTRA_INIT_PARAMS = new String[] {
+    private static final String[] GRAPHICS_EXTRA_INIT_PARAMS = new String[] {
             "android.graphics.Graphics",
             "android.graphics.ByteBufferStreamAdaptor",
             "android.graphics.CreateJavaOutputStreamAdaptor"
@@ -163,6 +166,11 @@ public final class RavenwoodNativeLoader {
     }
 
     private static native void initFrameworkNativeCode(String runtimePath);
+
+    /**
+     * Creates a KeyCharacterMap from a key character map file.
+     */
+    public static native KeyCharacterMap createKeyCharacterMap(int deviceId, String keyMapFile);
 
     /**
      * libandroid_runtime uses Java's system properties to decide what JNI methods to set up.

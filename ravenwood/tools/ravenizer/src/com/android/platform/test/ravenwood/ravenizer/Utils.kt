@@ -162,6 +162,8 @@ fun String.isMockitoFile(): Boolean {
         "org/mockito/", // Mockito
         "com/android/dx/", // DexMaker
         "mockito-extensions/", // DexMaker overrides
+    ) && !this.startsWithAny(
+        "org/mockito/kotlin/", // mockito-kotlin
     )
 }
 

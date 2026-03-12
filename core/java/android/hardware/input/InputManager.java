@@ -49,6 +49,7 @@ import android.os.InputEventInjectionSync;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.Vibrator;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.Log;
 import android.view.Display;
 import android.view.InputDevice;
@@ -76,6 +77,11 @@ import java.util.concurrent.Executor;
  * Provides information about input devices and available key layouts.
  */
 @SystemService(Context.INPUT_SERVICE)
+@RavenwoodKeepWholeClass(conditional = true, comment = """
+        Need to provide an implementation of IInputManager and initialize with
+        InputManagerGlobal#createTestSession before using any of its methods.
+        The behavior of this class fully depends on the provided IInputManager.
+        """)
 public final class InputManager {
     private static final String TAG = "InputManager";
     // To enable these logs, run: 'adb shell setprop log.tag.InputManager DEBUG' (requires restart)

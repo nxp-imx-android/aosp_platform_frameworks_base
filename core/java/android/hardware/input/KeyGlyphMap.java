@@ -27,6 +27,7 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
@@ -43,6 +44,7 @@ import java.util.Objects;
  *
  * @hide
  */
+@RavenwoodKeepWholeClass
 public final class KeyGlyphMap implements Parcelable {
     private static final String TAG = "KeyGlyphMap";
 

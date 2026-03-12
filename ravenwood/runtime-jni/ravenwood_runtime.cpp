@@ -16,6 +16,7 @@
 
 #include <android-base/properties.h>
 #include <android_runtime/AndroidRuntime.h>
+#include <android_view_KeyCharacterMap.h>
 #include <utils/misc.h>
 #include <unicode/utypes.h>
 #include <nativehelper/ScopedUtfChars.h>
@@ -217,6 +218,16 @@ static void initFrameworkNativeCode(JNIEnv* env, jclass, jstring javaRuntimePath
     runtime.start("RavenwoodRuntime", args, false);
 }
 
+// Creates a KeyCharacterMap from a key character map file
+static jobject createKeyCharacterMap(JNIEnv* env, jclass, jint deviceId, jstring keyboardPath) {
+    using namespace android;
+
+    ScopedUtfChars path(env, keyboardPath);
+    base::Result<std::unique_ptr<KeyCharacterMap>> charMap =
+            KeyCharacterMap::load(path.c_str(), KeyCharacterMap::Format::BASE);
+    return android_view_KeyCharacterMap_create(env, deviceId, std::move(*charMap));
+}
+
 // ---- Registration ----
 
 extern void register_android_system_OsConstants(JNIEnv* env);
@@ -240,6 +251,8 @@ static const JNINativeMethod sNativeMethods[] =
 static const JNINativeMethod sLoaderMethods[] =
 {
     { "initFrameworkNativeCode", "(Ljava/lang/String;)V", (void*)initFrameworkNativeCode },
+    { "createKeyCharacterMap", "(ILjava/lang/String;)Landroid/view/KeyCharacterMap;",
+        (void*)createKeyCharacterMap },
 };
 
 extern "C" jint JNI_OnLoad(JavaVM* vm, void* /* reserved */) {

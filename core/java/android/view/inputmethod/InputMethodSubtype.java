@@ -29,6 +29,7 @@ import android.icu.text.LocaleDisplayNames;
 import android.icu.util.ULocale;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.text.TextUtils;
 import android.util.Printer;
 import android.util.Slog;
@@ -73,6 +74,7 @@ import java.util.Objects;
  * @attr ref android.R.styleable#InputMethod_Subtype_subtypeId
  * @attr ref android.R.styleable#InputMethod_Subtype_isAsciiCapable
  */
+@RavenwoodKeepWholeClass
 public final class InputMethodSubtype implements Parcelable {
     private static final String TAG = InputMethodSubtype.class.getSimpleName();
     private static final String LANGUAGE_TAG_NONE = "";

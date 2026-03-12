@@ -25,6 +25,7 @@ import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.companion.virtualdevice.flags.Flags;
 import android.os.Parcel;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.view.Display;
 
 import java.nio.charset.StandardCharsets;
@@ -36,6 +37,7 @@ import java.util.Objects;
  * @hide
  */
 @SystemApi
+@RavenwoodKeepWholeClass
 public abstract class VirtualInputDeviceConfig {
 
     /**
