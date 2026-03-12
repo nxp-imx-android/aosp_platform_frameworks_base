@@ -1852,4 +1852,16 @@ please see styles_device_defaults.xml.
            parent="@style/Theme.DeviceDefault.Light.DialogWhenLarge">
         <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
     </style>
+
+    <!-- Shared layout style for App Lock Info Item containers in App Lock user education dialog to reduce duplication -->
+    <style name="AppLockInfoItemStyle">
+        <item name="layout_width">match_parent</item>
+        <item name="layout_height">wrap_content</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="textAppearance">@style/TextAppearance.DeviceDefault.AppLock.ItemText</item>
+        <item name="paddingTop">@dimen/app_lock_padding_extra_small</item>
+        <item name="paddingBottom">@dimen/app_lock_padding_extra_small</item>
+        <item name="android:layout_marginBottom">@dimen/app_lock_margin</item>
+    </style>
 </resources>

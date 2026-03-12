@@ -32,9 +32,12 @@
     android:id="@+id/app_lock_edu_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:maxWidth="@dimen/resolver_max_width"
+    android:maxWidth="@dimen/app_lock_dialog_max_width"
     android:maxCollapsedHeight="@dimen/app_lock_edu_dialog_max_collapsed_height"
-    android:ignoreOffsetTopLimit="@id/app_lock_edu_dialog">
+    android:ignoreOffsetTopLimit="@id/app_lock_edu_dialog"
+    android:paddingTop="@dimen/app_lock_top_margin"
+    android:clipToPadding="false"
+    android:clipChildren="false">
 
     <include
         android:id="@+id/app_lock_edu_dialog"
