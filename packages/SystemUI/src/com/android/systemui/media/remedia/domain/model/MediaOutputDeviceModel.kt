@@ -20,7 +20,7 @@ import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
 
 data class MediaOutputDeviceModel(
-    val name: String,
+    val name: CharSequence?,
     val icon: Icon,
     val isInProgress: Boolean,
     val onClick: (Expandable?) -> Unit,
