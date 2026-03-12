@@ -31,6 +31,7 @@ import android.provider.Settings;
 import android.text.ShowSecretsSetting;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.view.KeyEvent;
 import android.widget.EditText;
 
 import androidx.test.core.app.ApplicationProvider;
@@ -220,6 +221,27 @@ public class PasswordTransformationMethodTest {
                             mMethod.getTransformation(s, mEditText);
                             s.append("abc");
                             mMethod.onTextChanged(s, 0, 0, 3);
+                        });
+
+        assertFalse(hasVisibleSpan(s));
+    }
+
+    @Test
+    @EnableCompatChanges({ShowSecretsSetting.SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL})
+    @EnableFlags(Flags.FLAG_SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)
+    public void testPhysicalInputSpan_OnReplace_DoesNotExpand() {
+        setPasswordsVisibility(false, true, false);
+
+        final SpannableStringBuilder s = new SpannableStringBuilder("test");
+        InstrumentationRegistry.getInstrumentation()
+                .runOnMainSync(
+                        () -> {
+                            mMethod.getTransformation(s, mEditText);
+                            s.setSpan(mMethod, 0, s.length(), Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+
+                            long now = System.currentTimeMillis();
+                            KeyEvent event = new KeyEvent(now, "A", 1, 0);
+                            BaseKeyListener.replaceText(s, 0, 4, "A", 0, 1, event);
                         });
 
         assertFalse(hasVisibleSpan(s));
