@@ -17,6 +17,10 @@
 package com.android.systemui.headline.ui.viewmodel
 
 import android.widget.ImageView
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Rect
 import com.android.compose.animation.scene.HoistedSceneTransitionLayoutState
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.common.shared.model.ContentDescription
@@ -54,6 +58,8 @@ class FakeHeadlineViewModel(
     }
 
     override fun iconView(key: String): ImageView? = iconViewStore.invoke(key)
+
+    override var uiBounds: Rect by mutableStateOf(Rect.Zero)
 
     companion object {
         private fun defaultInitialScene(items: List<HeadlineItem>): SceneKey =

@@ -18,6 +18,7 @@ package com.android.systemui.headline.ui.viewmodel
 
 import android.annotation.CurrentTimeMillisLong
 import android.widget.ImageView
+import androidx.compose.ui.geometry.Rect
 import com.android.compose.animation.scene.HoistedSceneTransitionLayoutState
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.common.shared.model.Icon
@@ -56,6 +57,8 @@ public interface HeadlineViewModel {
      * or null if none exists.
      */
     public fun iconView(key: String): ImageView?
+
+    public var uiBounds: Rect
 
     public companion object {
         /**

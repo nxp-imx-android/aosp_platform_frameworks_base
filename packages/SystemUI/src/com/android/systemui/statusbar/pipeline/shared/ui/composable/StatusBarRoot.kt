@@ -79,6 +79,7 @@ import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.headline.ui.compose.Headline
+import com.android.systemui.headline.ui.compose.drawWithHeadlineScrim
 import com.android.systemui.headline.ui.viewmodel.HeadlineViewModel
 import com.android.systemui.initOnBackPressedDispatcherOwner
 import com.android.systemui.lifecycle.WindowLifecycleState
@@ -222,6 +223,12 @@ fun StatusBarRoot(
         rememberViewModel("AppHandleBounds") {
             statusBarViewModel.appHandlesViewModelFactory.create(displayId)
         }
+    val headlineViewModel =
+        if (StatusBarHeadline.isEnabled) {
+            rememberViewModel("HeadlineViewModel") { headlineViewModelFactory.create() }
+        } else {
+            null
+        }
     var touchableExclusionRegionDisposableHandle: DisposableHandle? = null
 
     val touchSlop = LocalViewConfiguration.current.touchSlop
@@ -341,37 +348,41 @@ fun StatusBarRoot(
                 phoneStatusBarView
             },
             modifier =
-                modifier.thenIf(StatusBarEventForwardingModernization.isEnabled) {
-                    Modifier.pointerInput(Unit) {
-                            if (ViewFlags.scrollToTop()) {
-                                detectTapGesturesStrict(
-                                    onTap = { statusBarViewModel.onStatusBarTap(it.x) },
-                                    onLongPress = { statusBarViewModel.onStatusBarLongPressed() },
-                                )
-                            } else {
-                                detectLongPressGesture {
-                                    statusBarViewModel.onStatusBarLongPressed()
+                modifier
+                    .thenIf(StatusBarEventForwardingModernization.isEnabled) {
+                        Modifier.pointerInput(Unit) {
+                                if (ViewFlags.scrollToTop()) {
+                                    detectTapGesturesStrict(
+                                        onTap = { statusBarViewModel.onStatusBarTap(it.x) },
+                                        onLongPress = {
+                                            statusBarViewModel.onStatusBarLongPressed()
+                                        },
+                                    )
+                                } else {
+                                    detectLongPressGesture {
+                                        statusBarViewModel.onStatusBarLongPressed()
+                                    }
                                 }
                             }
-                        }
-                        .forwardDragAndSwipeToShadeRootView(shadeWindowRootView, touchSlop) {
-                            position,
-                            size ->
-                            // This call is needed to make sure the shade is preemptively moved to
-                            // the display that the user is currently interacting with.
-                            statusBarViewModel.onShadeExpansionIntent(position.x, size.width)
-                        }
-                },
+                            .forwardDragAndSwipeToShadeRootView(shadeWindowRootView, touchSlop) {
+                                position,
+                                size ->
+                                // This call is needed to make sure the shade is preemptively moved
+                                // to
+                                // the display that the user is currently interacting with.
+                                statusBarViewModel.onShadeExpansionIntent(position.x, size.width)
+                            }
+                    }
+                    .thenIf(headlineViewModel != null) {
+                        Modifier.drawWithHeadlineScrim(headlineViewModel!!)
+                    },
             onRelease = { touchableExclusionRegionDisposableHandle?.dispose() },
         )
 
-        if (StatusBarHeadline.isEnabled) {
+        if (StatusBarHeadline.isEnabled && headlineViewModel != null) {
             val lifecycle = LocalLifecycleOwner.current.lifecycle
             parent.initOnBackPressedDispatcherOwner(lifecycle, force = true)
-            headlineComposer.Content(
-                headlineViewModelFactory,
-                modifier = Modifier.align(Alignment.Center),
-            )
+            headlineComposer.Content(headlineViewModel, modifier = Modifier.align(Alignment.Center))
         }
     }
 }

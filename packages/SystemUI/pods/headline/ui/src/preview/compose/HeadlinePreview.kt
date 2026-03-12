@@ -17,15 +17,19 @@
 package com.android.systemui.headline.ui.compose
 
 import android.widget.ImageView
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
@@ -67,7 +71,10 @@ fun HeadlineScreen(items: List<HeadlineItem> = remember { fakeHeadlineItems() })
         list: List<HeadlineItem> = items,
     ): FakeHeadlineViewModel = rememberViewModel(list, currentItemIndex)
 
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         // No item selected.
         FakeHeadline(rememberViewModel(currentItemIndex = null))
 
@@ -159,7 +166,28 @@ internal fun rememberViewModel(
 
 @Composable
 fun FakeHeadline(viewModel: FakeHeadlineViewModel, modifier: Modifier = Modifier) {
-    WithFakeCameraCutout(modifier) { Headline(viewModel, Modifier.height(36.dp)) }
+    WithHeadlineScrim(viewModel, modifier) {
+        WithFakeCameraCutout(Modifier.align(Alignment.Center)) {
+            Headline(viewModel, Modifier.height(36.dp))
+        }
+    }
+}
+
+@Composable
+private fun WithHeadlineScrim(
+    viewModel: FakeHeadlineViewModel,
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    Box(modifier.height(40.dp).fillMaxWidth()) {
+        Box(
+            Modifier.fillMaxSize()
+                .drawWithHeadlineScrim(viewModel)
+                .background(MaterialTheme.colorScheme.primary)
+        )
+
+        content()
+    }
 }
 
 @Composable

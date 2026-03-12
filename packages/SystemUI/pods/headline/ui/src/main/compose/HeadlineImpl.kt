@@ -25,13 +25,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LocalContentColor
@@ -46,15 +45,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.approachLayout
+import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.constrain
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.viewinterop.AndroidView
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
@@ -72,7 +75,6 @@ import com.android.systemui.headline.ui.viewmodel.HeadlineItemContent
 import com.android.systemui.headline.ui.viewmodel.HeadlineViewModel
 import com.android.systemui.headline.ui.viewmodel.HeadlineViewModel.Companion.GoneScene
 import com.android.systemui.headline.ui.viewmodel.toHeadlineItemKey
-import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.formatTimeRemainingData
 import com.android.systemui.statusbar.chips.ui.viewmodel.rememberChronometerState
 import com.android.systemui.statusbar.chips.ui.viewmodel.rememberTimeRemainingState
@@ -83,8 +85,7 @@ import kotlinx.coroutines.launch
 /** Implementation of the [Headline] composer. */
 public class HeadlineImpl @Inject constructor() : Headline {
     @Composable
-    override fun Content(viewModelFactory: HeadlineViewModel.Factory, modifier: Modifier) {
-        val viewModel = rememberViewModel("HeadlineImpl") { viewModelFactory.create() }
+    override fun Content(viewModel: HeadlineViewModel, modifier: Modifier) {
         Headline(viewModel, modifier = modifier.height(HeadlineHeight))
     }
 }
@@ -100,7 +101,10 @@ public fun Headline(viewModel: HeadlineViewModel, modifier: Modifier = Modifier)
         SceneTransitionLayout(
             state = viewModel.state,
             transitions = HeadlineTransitions,
-            modifier = modifier,
+            modifier =
+                modifier.onPlaced {
+                    viewModel.uiBounds = Rect(it.positionInRoot(), it.size.toSize())
+                },
             debugName = "Headline",
         ) {
             scene(GoneScene) { GoneScene() }
@@ -136,11 +140,11 @@ private fun ContentScope.GoneScene(modifier: Modifier = Modifier) {
     val elementKey = otherContent?.let { it as SceneKey }?.toHeadlineItemKey()?.toPillElementKey()
 
     // Draw the largest possible circle that is centered and fits the max parent constraints.
-    Box(modifier.fillMaxSize()) {
+    Box(modifier.fillMaxHeight()) {
         Box(
             Modifier.align(Alignment.Center)
                 .thenIf(elementKey != null) { Modifier.element(elementKey!!) }
-                .aspectRatio(1f)
+                .size(GoneSceneSize)
                 .drawBehind { drawCircle(Color.Black) }
         )
     }
@@ -155,7 +159,7 @@ private fun ContentScope.HeadlineItemScene(
     iconViewStore: (key: String) -> ImageView?,
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier.fillMaxWidth()) {
+    Box(modifier) {
         Box(Modifier.align(Alignment.Center).padding(horizontal = DotIndicatorOffset)) {
             // Dot indicator before the pill.
             DotIndicator(
@@ -442,3 +446,4 @@ private fun Modifier.noResizeContentDuringTransitions(
 private val HeadlineHeight: Dp = 36.dp
 private val DotIndicatorSize = 8.dp
 private val DotIndicatorOffset = DotIndicatorSize * 1.5f
+private val GoneSceneSize = 30.dp

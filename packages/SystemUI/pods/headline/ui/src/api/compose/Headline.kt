@@ -23,5 +23,5 @@ import com.android.systemui.headline.ui.viewmodel.HeadlineViewModel
 /** Interface for the Headline UI composer. */
 public interface Headline {
     /** Renders the headline UI. */
-    @Composable public fun Content(viewModelFactory: HeadlineViewModel.Factory, modifier: Modifier)
+    @Composable public fun Content(viewModel: HeadlineViewModel, modifier: Modifier)
 }
