@@ -45,6 +45,8 @@ constructor(
     }
 
     fun handleClick() {
+        // TODO(b/491809338): Ensure the device is unlocked before opening the notes app from the
+        //  lockscreen using the Quick Settings tile.
         noteTaskController.showNoteTask(NoteTaskEntryPoint.QS_NOTES_TILE)
         panelInteractor.collapsePanels()
     }
