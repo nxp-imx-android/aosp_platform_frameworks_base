@@ -442,3 +442,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fix_bubbles_handle_user_education"
+    namespace: "multitasking"
+    description: "Fixes an issue where user education didn't dismiss"
+    bug: "490187640"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
