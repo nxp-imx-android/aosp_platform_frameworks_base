@@ -98,12 +98,12 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
     private final DeviceConfigRemoteList mAutomatableAppDenylist;
     private final boolean mBuildIsDebuggable;
     private final PermissionManagerServiceInterface mPermissionManager;
+    private final ComputerControlDataStore mDataStore;
     // In debuggable builds, we can have a list of "super agents" (defined by a config resource)
     // which are allowed to automate any app.
     private final SignedPackageList mSuperAgentPackages = new SignedPackageList();
     // List of automatable apps per agent package uid, package name.
     // Maps: Agent UID -> (Agent Package Name -> Set of Target Package Names)
-    // TODO(b/483624078): persist allowlist data
     @GuardedBy("mPerAgentAutomatableAppList")
     private final SparseArray<Map<String, Set<String>>> mPerAgentAutomatableAppList =
             new SparseArray<>();
@@ -117,7 +117,7 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
                 new File(new File(Environment.getDataSystemDirectory(), COMPUTER_CONTROL_DIR),
                         AUTOMATABLE_APP_DENYLIST_FILE_NAME),
                 LocalServices.getService(PermissionManagerServiceInterface.class),
-                Build.isDebuggable());
+                new ComputerControlDataStore(), Build.isDebuggable());
     }
 
     @VisibleForTesting
@@ -125,6 +125,7 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
             @NonNull File agentAllowlistFile, @NonNull File automatableAppsAllowlistFile,
             @NonNull File automatableAppsDenylistFile,
             @NonNull PermissionManagerServiceInterface permissionManager,
+            @NonNull ComputerControlDataStore dataStore,
             boolean buildIsDebuggable) {
         mContext = context;
         mBackgroundExecutor = executor;
@@ -136,6 +137,7 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
                 COMPUTER_CONTROL_AUTOMATABLE_APP_DENYLIST_KEY);
         mPermissionManager = permissionManager;
         mBuildIsDebuggable = buildIsDebuggable;
+        mDataStore = dataStore;
         final Resources resources = context.getResources();
         try {
             final String[] superAgentConfigItems =
@@ -180,6 +182,16 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
             mSessionOwnerAllowlist.update();
             mAutomatableAppAllowlist.update();
             mAutomatableAppDenylist.update();
+            if (android.companion.virtualdevice.flags.Flags.computerControlPerAppConsent()) {
+                SparseArray<Map<String, Set<String>>> automatableApps =
+                        mDataStore.readAutomatableAppList();
+                synchronized (mPerAgentAutomatableAppList) {
+                    for (int i = 0; i < automatableApps.size(); i++) {
+                        mPerAgentAutomatableAppList.put(automatableApps.keyAt(i),
+                                automatableApps.valueAt(i));
+                    }
+                }
+            }
         });
         DeviceConfig.addOnPropertiesChangedListener(
                 COMPUTER_CONTROL_NAMESPACE, mBackgroundExecutor, this);
@@ -409,6 +421,7 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
                 agentMap.put(agentPackageName, allowlist);
             }
             allowlist.add(packageName);
+            scheduleWritePerAgentConsentData();
         }
     }
 
@@ -433,6 +446,7 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
                     mPerAgentAutomatableAppList.remove(agentUid);
                 }
             }
+            scheduleWritePerAgentConsentData();
         }
     }
 
@@ -449,6 +463,7 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
             if (agentMap.isEmpty()) {
                 mPerAgentAutomatableAppList.remove(agentUid);
             }
+            scheduleWritePerAgentConsentData();
         }
     }
 
@@ -469,6 +484,7 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
         Slog.i(TAG, "Package removed: " + packageName);
         final int userId = UserHandle.getUserId(uid);
         synchronized (mPerAgentAutomatableAppList) {
+            boolean changed = false;
             // If the removed package was an agent, remove it from the agent map
             Map<String, Set<String>> agentMap = mPerAgentAutomatableAppList.get(uid);
             if (agentMap != null) {
@@ -476,6 +492,7 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
                 if (agentMap.isEmpty()) {
                     mPerAgentAutomatableAppList.remove(uid);
                 }
+                changed = true;
             }
 
             // If the removed package was a target app, remove it from all agents' lists
@@ -485,11 +502,35 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
                 if (UserHandle.getUserId(agentUid) == userId) {
                     Map<String, Set<String>> map = mPerAgentAutomatableAppList.valueAt(i);
                     for (Set<String> targets : map.values()) {
-                        targets.remove(packageName);
+                        if (targets.remove(packageName)) {
+                            changed = true;
+                        }
                     }
                 }
             }
+            if (changed) {
+                scheduleWritePerAgentConsentData();
+            }
         }
+    }
+
+    private void scheduleWritePerAgentConsentData() {
+        // Create a copy of the data to write, to avoid holding the lock during I/O.
+        final SparseArray<Map<String, Set<String>>> automatableAppsCopy = new SparseArray<>();
+        synchronized (mPerAgentAutomatableAppList) {
+            for (int i = 0; i < mPerAgentAutomatableAppList.size(); i++) {
+                int key = mPerAgentAutomatableAppList.keyAt(i);
+                Map<String, Set<String>> value = mPerAgentAutomatableAppList.valueAt(i);
+                Map<String, Set<String>> valueCopy = new ArrayMap<>();
+                for (Map.Entry<String, Set<String>> entry : value.entrySet()) {
+                    valueCopy.put(entry.getKey(), new ArraySet<>(entry.getValue()));
+                }
+                automatableAppsCopy.put(key, valueCopy);
+            }
+        }
+        mBackgroundExecutor.execute(() -> {
+            mDataStore.writeAutomatableAppList(automatableAppsCopy);
+        });
     }
 
     private static int getPackageUid(@NonNull String packageName,

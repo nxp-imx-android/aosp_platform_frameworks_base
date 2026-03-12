@@ -62,7 +62,9 @@ import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.DeviceConfig;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.PackageUtils;
+import android.util.SparseArray;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -88,7 +90,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 @Presubmit
 @RunWith(JUnitParamsRunner.class)
@@ -111,6 +115,8 @@ public class ComputerControlAllowlistControllerTest {
     private ComputerControlSessionImpl mSession;
     @Mock
     private Resources mResources;
+    @Mock
+    private ComputerControlDataStore mDataStore;
     @Mock
     private RoleManager mRoleManager;
 
@@ -151,6 +157,8 @@ public class ComputerControlAllowlistControllerTest {
                 new File(new File(mContext.getFilesDir(), folderName), "automatable_apps.txt");
         mAutomatableAppDenylistFile =
                 new File(new File(mContext.getFilesDir(), folderName), "blocked_apps.txt");
+        final SparseArray<Map<String, Set<String>>> persistedData = new SparseArray<>();
+        when(mDataStore.readAutomatableAppList()).thenReturn(persistedData);
         createAllowlistController(/* buildIsDebuggable */ true);
 
         when(mSession.isTestSession()).thenReturn(false);
@@ -919,11 +927,83 @@ public class ComputerControlAllowlistControllerTest {
                 agentUid, agentPkg, targetPkg));
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_PER_APP_CONSENT)
+    public void initialize_loadsPersistedAutomatableList() {
+        int agentUid = 12345;
+        String agentPkg = "com.agent";
+        String targetPkg = "com.target";
+        SparseArray<Map<String, Set<String>>> persistedData = new SparseArray<>();
+        Map<String, Set<String>> agentMap = new ArrayMap<>();
+        agentMap.put(agentPkg, Set.of(targetPkg));
+        persistedData.put(agentUid, agentMap);
+
+        when(mDataStore.readAutomatableAppList()).thenReturn(persistedData);
+
+        // Re-initialize controller to trigger data loading
+        mAllowlistController.initialize();
+        // Wait for background thread
+        SystemClock.sleep(TIMEOUT_MILLIS);
+
+        assertTrue(mAllowlistController.doesAgentHaveConsentToAutomateTargetApp(agentUid, agentPkg,
+                targetPkg));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_PER_APP_CONSENT)
+    public void addAppToAutomatableAppListForAgent_persistsData() {
+        int agentUid = Process.myUid();
+        String agentPkg = "com.agent";
+        String targetPkg = "com.target";
+
+        mAllowlistController.addAppToAutomatableAppListForAgent(agentUid, agentPkg, targetPkg);
+        // Wait for background thread
+        SystemClock.sleep(TIMEOUT_MILLIS);
+
+        ArgumentCaptor<SparseArray<Map<String, Set<String>>>> captor =
+                ArgumentCaptor.forClass(SparseArray.class);
+        verify(mDataStore).writeAutomatableAppList(captor.capture());
+        SparseArray<Map<String, Set<String>>> capturedData = captor.getValue();
+        assertEquals(1, capturedData.size());
+        assertEquals(agentUid, capturedData.keyAt(0));
+        Map<String, Set<String>> agentMap = capturedData.valueAt(0);
+        assertTrue(agentMap.containsKey(agentPkg));
+        assertTrue(agentMap.get(agentPkg).contains(targetPkg));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_PER_APP_CONSENT)
+    public void removeAppFromAutomatableAppListForAgent_persistsData() {
+        int agentUid = Process.myUid();
+        String agentPkg = "com.agent";
+        String targetPkg = "com.target";
+
+        // Pre-populate data store
+        SparseArray<Map<String, Set<String>>> data = new SparseArray<>();
+        Map<String, Set<String>> agentMap = new ArrayMap<>();
+        agentMap.put(agentPkg, new ArraySet<>(Set.of(targetPkg)));
+        data.put(agentUid, agentMap);
+        when(mDataStore.readAutomatableAppList()).thenReturn(data);
+        DeviceConfig.removeOnPropertiesChangedListener(mAllowlistController);
+        createAllowlistController(/* buildIsDebuggable= */ true);
+        SystemClock.sleep(TIMEOUT_MILLIS);
+
+        mAllowlistController.removeAppFromAutomatableAppListForAgent(agentUid, agentPkg, targetPkg);
+        SystemClock.sleep(TIMEOUT_MILLIS);
+
+        ArgumentCaptor<SparseArray<Map<String, Set<String>>>> captor =
+                ArgumentCaptor.forClass(SparseArray.class);
+        verify(mDataStore).writeAutomatableAppList(captor.capture());
+
+        SparseArray<Map<String, Set<String>>> writtenData = captor.getValue();
+        assertEquals(0, writtenData.size());
+    }
+
     private void createAllowlistController(boolean buildIsDebuggable) {
         mAllowlistController = new ComputerControlAllowlistController(mSpyContext,
                 MoreExecutors.directExecutor(), mSessionOwnerAllowlistFile,
                 mAutomatableAppAllowlistFile, mAutomatableAppDenylistFile, mPermissionManager,
-                buildIsDebuggable);
+                mDataStore, buildIsDebuggable);
         mAllowlistController.initialize();
     }
 
