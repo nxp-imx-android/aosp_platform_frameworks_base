@@ -25,9 +25,12 @@ import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.android.systemui.log.LogBuffer
+import com.android.systemui.log.core.Logger
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.ContactsInteractor
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.InstalledAppsInteractor
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
+import com.android.systemui.notifications.intelligence.rules.shared.NotificationRulesLog
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
@@ -44,7 +47,9 @@ constructor(
     @Assisted startingRule: DraftRuleModel,
     private val contactsInteractor: ContactsInteractor,
     private val installedAppsInteractor: InstalledAppsInteractor,
+    @NotificationRulesLog logBuffer: LogBuffer,
 ) : NotificationRuleEditViewModel {
+    private val logger = Logger(logBuffer, "EditViewModel")
 
     override var rule: DraftRuleModel by mutableStateOf(startingRule)
 
@@ -59,6 +64,7 @@ constructor(
             onAppsSaved = { onAppsSaved(it, onExitEditField) },
             onContactsSaved = { onContactsSaved(it, onExitEditField) },
             resources = resources,
+            logger = logger,
         )
     }
 

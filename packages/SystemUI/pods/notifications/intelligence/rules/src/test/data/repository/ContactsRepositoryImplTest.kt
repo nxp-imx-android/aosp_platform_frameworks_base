@@ -26,6 +26,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.notifications.intelligence.rules.shared.notificationRulesLogBuffer
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import java.sql.SQLException
@@ -45,7 +46,8 @@ class ContactsRepositoryImplTest : SysuiTestCase() {
     private val kosmos = testKosmosNew()
 
     // TODO: b/478225883 - Put ContactsRepository in a test fixture.
-    private val Kosmos.underTest by Kosmos.Fixture { ContactsRepositoryImpl(kosmos.testDispatcher) }
+    private val Kosmos.underTest by
+        Kosmos.Fixture { ContactsRepositoryImpl(kosmos.testDispatcher, notificationRulesLogBuffer) }
 
     @Test
     fun fetchContacts_nullCursor_returnsEmptyList() =
