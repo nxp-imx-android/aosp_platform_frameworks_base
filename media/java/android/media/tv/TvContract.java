@@ -2596,7 +2596,8 @@ public final class TvContract {
          * service operator name for the service operator channel list constructed from broadcast
          * SI or one may assign the {@code profile_name} of the operator_info() APDU defined in CI
          * Plus 1.3 for the dedicated CICAM operator profile channel list constructed
-         * from CICAM NIT.
+         * from CICAM NIT. For reference values, please see
+         * {@link android.media.tv.extension.scan.ScanConstants.ChannelListId}.
          *
          * <p>Type: TEXT
          */
