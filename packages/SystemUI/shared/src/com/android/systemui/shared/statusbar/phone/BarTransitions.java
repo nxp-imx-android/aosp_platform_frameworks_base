@@ -48,6 +48,10 @@ public class BarTransitions {
     @ColorInt
     private static final int SYSTEM_BAR_BACKGROUND_OPAQUE_DARK = Color.BLACK;
 
+    /** Light background color for the opaque bar. */
+    @ColorInt
+    private static final int SYSTEM_BAR_BACKGROUND_OPAQUE_LIGHT = Color.WHITE;
+
     @ColorInt
     private static final int SYSTEM_BAR_BACKGROUND_TRANSPARENT = Color.TRANSPARENT;
 
@@ -58,6 +62,7 @@ public class BarTransitions {
     public static final int MODE_OPAQUE_DARK = 4;
     public static final int MODE_WARNING = 5;
     public static final int MODE_LIGHTS_OUT_TRANSPARENT = 6;
+    public static final int MODE_OPAQUE_LIGHT = 7;
 
     @IntDef(flag = true, prefix = { "MODE_" }, value = {
             MODE_OPAQUE_DARK,
@@ -66,7 +71,8 @@ public class BarTransitions {
             MODE_LIGHTS_OUT,
             MODE_TRANSPARENT,
             MODE_WARNING,
-            MODE_LIGHTS_OUT_TRANSPARENT
+            MODE_LIGHTS_OUT_TRANSPARENT,
+            MODE_OPAQUE_LIGHT
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface TransitionMode {}
@@ -141,13 +147,14 @@ public class BarTransitions {
     }
 
     public static String modeToString(@TransitionMode int mode) {
-        if (mode == MODE_OPAQUE_DARK) return "MODE_OPAQUE";
+        if (mode == MODE_OPAQUE_DARK) return "MODE_OPAQUE_DARK";
         if (mode == MODE_SEMI_TRANSPARENT) return "MODE_SEMI_TRANSPARENT";
         if (mode == MODE_TRANSLUCENT) return "MODE_TRANSLUCENT";
         if (mode == MODE_LIGHTS_OUT) return "MODE_LIGHTS_OUT";
         if (mode == MODE_TRANSPARENT) return "MODE_TRANSPARENT";
         if (mode == MODE_WARNING) return "MODE_WARNING";
         if (mode == MODE_LIGHTS_OUT_TRANSPARENT) return "MODE_LIGHTS_OUT_TRANSPARENT";
+        if (mode == MODE_OPAQUE_LIGHT) return "MODE_OPAQUE_LIGHT";
         throw new IllegalArgumentException("Unknown mode " + mode);
     }
 
@@ -160,9 +167,9 @@ public class BarTransitions {
     }
 
     protected static class BarBackgroundDrawable extends Drawable {
-        // Opaque background color for the bar.
-        // TODO(b/478335671): Adapt to light/dark mode.
-        private final int mOpaque;
+        // Opaque background colors for the bar.
+        private final int mOpaqueDark;
+        private final int mOpaqueLight;
 
         private final int mSemiTransparent;
         private final int mTransparent;
@@ -188,12 +195,14 @@ public class BarTransitions {
         public BarBackgroundDrawable(Context context, int gradientResourceId) {
             final Resources res = context.getResources();
             if (DEBUG_COLORS) {
-                mOpaque = 0xff0000ff;
+                mOpaqueDark = 0xff0000ff;
+                mOpaqueLight = 0xff0000ff;
                 mSemiTransparent = 0x7f0000ff;
                 mTransparent = 0x2f0000ff;
                 mWarning = 0xffff0000;
             } else {
-                mOpaque = SYSTEM_BAR_BACKGROUND_OPAQUE_DARK;
+                mOpaqueDark = SYSTEM_BAR_BACKGROUND_OPAQUE_DARK;
+                mOpaqueLight = SYSTEM_BAR_BACKGROUND_OPAQUE_LIGHT;
                 mSemiTransparent = context.getColor(
                         com.android.internal.R.color.system_bar_background_semi_transparent);
                 mTransparent = SYSTEM_BAR_BACKGROUND_TRANSPARENT;
@@ -295,8 +304,10 @@ public class BarTransitions {
                 targetColor = mSemiTransparent;
             } else if (mMode == MODE_TRANSPARENT || mMode == MODE_LIGHTS_OUT_TRANSPARENT) {
                 targetColor = mTransparent;
+            } else if (mMode == MODE_OPAQUE_LIGHT) {
+                targetColor = mOpaqueLight;
             } else {
-                targetColor = mOpaque;
+                targetColor = mOpaqueDark;
             }
 
             if (!mAnimating) {

@@ -20,6 +20,7 @@ import static android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BA
 import static android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS;
 
 import static com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_LIGHTS_OUT_TRANSPARENT;
+import static com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_OPAQUE_LIGHT;
 import static com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_TRANSPARENT;
 
 import android.graphics.Rect;
@@ -34,6 +35,7 @@ import androidx.annotation.Nullable;
 
 import com.android.internal.colorextraction.ColorExtractor.GradientColors;
 import com.android.internal.view.AppearanceRegion;
+import com.android.systemui.Flags;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.navigationbar.NavigationModeController;
@@ -377,6 +379,10 @@ public class LightBarControllerImpl implements
     }
 
     private static boolean isLight(int appearance, int barMode, int flag) {
+        if (Flags.opaqueStatusBar() && barMode == MODE_OPAQUE_LIGHT) {
+            return true;
+        }
+
         final boolean isTransparentBar = (barMode == MODE_TRANSPARENT
                 || barMode == MODE_LIGHTS_OUT_TRANSPARENT);
         final boolean light = (appearance & flag) != 0;
