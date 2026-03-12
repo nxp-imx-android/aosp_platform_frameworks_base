@@ -18,12 +18,15 @@ package com.android.server.notification;
 
 import static android.app.Flags.nmContextualDisplayLaunch;
 import static android.app.Notification.FLAG_PROMOTED_ONGOING;
+import static android.app.NotificationLoggingConstants.DATA_TYPE_NOTIFICATION_RULES;
+import static android.app.NotificationLoggingConstants.ERROR_XML_PARSING;
 import static android.app.NotificationManager.IMPORTANCE_LOW;
 import static android.app.NotificationManager.IMPORTANCE_NONE;
 import static android.app.NotificationRule.Action.PRIMARY_ACTION_BLOCK;
 import static android.app.NotificationRule.Action.PRIMARY_ACTION_BUNDLE;
 import static android.app.NotificationRule.Action.PRIMARY_ACTION_HIGHLIGHT;
 import static android.app.NotificationRule.Action.PRIMARY_ACTION_HIGHLIGHT_AND_ALERT;
+import static android.app.NotificationRule.Action.PRIMARY_ACTION_NONE;
 import static android.app.NotificationRule.Filter.CONVERSATION_LEVEL_PRIORITY;
 import static android.app.NotificationRule.RESERVED_ID_IMPORTANT_NOTIFICATIONS;
 import static android.app.NotificationRule.RESERVED_ID_PRIORITY_CONVERSATIONS;
@@ -32,16 +35,15 @@ import static android.app.NotificationRule.RESERVED_ID_STATIC_BUNDLES;
 import static android.app.NotificationRule.RULE_TAG;
 import static android.app.NotificationRule.USER_ATTR;
 import static android.os.UserHandle.USER_ALL;
+import static android.os.UserHandle.USER_SYSTEM;
 import static android.service.notification.Adjustment.KEY_BREAKTHROUGH_ALL_MODES;
+import static android.service.notification.Adjustment.KEY_DYNAMIC_BUNDLE;
 import static android.service.notification.Adjustment.KEY_HIGHLIGHT;
 import static android.service.notification.Adjustment.KEY_IMPORTANCE;
 import static android.service.notification.Adjustment.KEY_LIGHT;
 import static android.service.notification.Adjustment.KEY_MODE_BREAKTHROUGH_LIST;
 import static android.service.notification.Adjustment.KEY_SOUND;
 import static android.service.notification.Adjustment.KEY_TYPE;
-
-import static android.app.NotificationLoggingConstants.DATA_TYPE_NOTIFICATION_RULES;
-import static android.app.NotificationLoggingConstants.ERROR_XML_PARSING;
 import static android.service.notification.Adjustment.TYPE_NEWS;
 import static android.service.notification.Adjustment.TYPE_PROMOTION;
 
@@ -60,6 +62,7 @@ import static com.android.server.pm.UserManagerInternal.USER_FILTER_WITH_DYING_U
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
+import android.app.NotificationChannel;
 import android.app.NotificationRule;
 import android.app.backup.BackupRestoreEventLogger;
 import android.content.Context;
@@ -891,50 +894,65 @@ public class NotificationRuleManager {
     /**
      * Validates incoming ids, and denormalizes the single rule adjustment into a list of behavioral
      * adjustments. Each valid ruleId in the provided Adjustment will turn into an Adjustment with
-     * a collection of behavioral signals to apply. The list of Adjustments will be provided
-     * in priority order from highest to lowest priority.
+     * a collection of behavioral signals to apply. In order to be 'valid', a rule must have the
+     * same primary action as the highest priority matching rule.
      */
-    List<Adjustment> getAdjustmentsForRules(@UserIdInt int user, Adjustment ruleIdAdjustment) {
+    List<Adjustment> getAdjustmentsForRules(Adjustment ruleIdAdjustment) {
         List<Integer> ruleIds = ruleIdAdjustment.getSignals().getIntegerArrayList(
                 Adjustment.KEY_NOTIFICATION_RULES);
         List<Adjustment> behavioralAdjustments = new ArrayList<>();
+        int userId = ruleIdAdjustment.getUser();
+        if (userId == USER_ALL) {
+            userId = USER_SYSTEM;
+        }
         synchronized (mLock) {
+            // these MUST be sorted in priority order
             List<NotificationRule> matchingRules =
-                    mNotificationRules.getOrDefault(user, new ArrayList<>())
+                    mNotificationRules.getOrDefault(userId, new ArrayList<>())
                             .stream().filter(notificationRule ->
                                     ruleIds.contains(notificationRule.getId())
                                             && notificationRule.isEnabled())
                             .toList();
+            int highestPriorityPrimaryAction = PRIMARY_ACTION_NONE;
             for (NotificationRule rule : matchingRules) {
                 NotificationRule.Action action = rule.getAction();
                 Bundle signals = new Bundle();
-                switch (action.getPrimaryAction()) {
-                    case PRIMARY_ACTION_HIGHLIGHT_AND_ALERT:
-                        signals.putBoolean(KEY_HIGHLIGHT, true);
-                        signals.putBoolean(KEY_BREAKTHROUGH_ALL_MODES, true);
-                        break;
-                    case PRIMARY_ACTION_HIGHLIGHT:
-                        signals.putBoolean(KEY_HIGHLIGHT, true);
-                        break;
-                    case NotificationRule.Action.PRIMARY_ACTION_LOW:
-                        signals.putInt(KEY_IMPORTANCE, IMPORTANCE_LOW);
-                        break;
-                    case PRIMARY_ACTION_BUNDLE:
-                        signals.putInt(KEY_TYPE, rule.getId());
-                        break;
-                    case PRIMARY_ACTION_BLOCK:
-                        signals.putInt(KEY_IMPORTANCE, IMPORTANCE_NONE);
-                        break;
-                    default:
-                        break;
+                if (highestPriorityPrimaryAction == PRIMARY_ACTION_NONE) {
+                    highestPriorityPrimaryAction = action.getPrimaryAction();
                 }
-                addActionOverrideBehaviors(action, signals);
-                Adjustment adjustment = new Adjustment(ruleIdAdjustment.getPackage(),
-                        ruleIdAdjustment.getKey(), signals, null, ruleIdAdjustment.getUserHandle());
-                // TODO(b/477961511): does this really matter? or just the 'type'?
-                //adjustment.setOriginatingRuleOrder();
-                adjustment.setOriginatingRuleId(rule.getId());
-                behavioralAdjustments.add(adjustment);
+                if (highestPriorityPrimaryAction == action.getPrimaryAction()) {
+                    switch (action.getPrimaryAction()) {
+                        case PRIMARY_ACTION_HIGHLIGHT_AND_ALERT:
+                            signals.putBoolean(KEY_HIGHLIGHT, true);
+                            signals.putBoolean(KEY_BREAKTHROUGH_ALL_MODES, true);
+                            break;
+                        case PRIMARY_ACTION_HIGHLIGHT:
+                            signals.putBoolean(KEY_HIGHLIGHT, true);
+                            break;
+                        case NotificationRule.Action.PRIMARY_ACTION_LOW:
+                            signals.putInt(KEY_IMPORTANCE, IMPORTANCE_LOW);
+                            break;
+                        case PRIMARY_ACTION_BUNDLE:
+                            signals.putParcelable(KEY_DYNAMIC_BUNDLE,
+                                    new NotificationRule.DynamicBundle(
+                                            NotificationChannel.getChannelIdForBundleType(
+                                                    rule.getId()),
+                                            action.getDynamicBundleName(),
+                                            action.getDynamicBundleEmojiIcon()));
+                            break;
+                        case PRIMARY_ACTION_BLOCK:
+                            signals.putInt(KEY_IMPORTANCE, IMPORTANCE_NONE);
+                            break;
+                        default:
+                            break;
+                    }
+                    addActionOverrideBehaviors(action, signals);
+                    Adjustment adjustment = new Adjustment(ruleIdAdjustment.getPackage(),
+                            ruleIdAdjustment.getKey(), signals, null,
+                            ruleIdAdjustment.getUserHandle());
+                    adjustment.setOriginatingRuleId(rule.getId());
+                    behavioralAdjustments.add(adjustment);
+                }
             }
         }
         return behavioralAdjustments;

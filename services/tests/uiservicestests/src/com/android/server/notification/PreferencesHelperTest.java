@@ -161,7 +161,6 @@ import com.android.os.AtomsProto.PackageNotificationPreferences;
 import com.android.os.notification.NotificationProtoEnums;
 import com.android.server.UiServiceTestCase;
 import com.android.server.notification.PermissionHelper.PackagePermission;
-import com.android.server.uri.UriGrantsManagerInternal;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -234,6 +233,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     @Mock PermissionManager mPermissionManager;
     @Mock
     BackupRestoreEventLogger mBackupRestoreLogger;
+    @Mock NotificationManagerPrivate mNmPrivate;
 
     private NotificationManager.Policy mTestNotificationPolicy;
 
@@ -377,10 +377,10 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
         mHelper = new TestPreferencesHelper(getContext(), mPm, mHandler, mMockZenModeHelper,
                 mPermissionHelper, mPermissionManager, mLogger, mAppOpsManager, mUserProfiles,
-                mUgmInternal, false, mClock);
+                mUgmInternal, false, mClock, mNmPrivate);
         mXmlHelper = new TestPreferencesHelper(getContext(), mPm, mHandler, mMockZenModeHelper,
                 mPermissionHelper, mPermissionManager, mLogger, mAppOpsManager, mUserProfiles,
-                mUgmInternal, false, mClock);
+                mUgmInternal, false, mClock, mNmPrivate);
         resetZenModeHelper();
 
         mAudioAttributes = new AudioAttributes.Builder()
@@ -448,6 +448,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         assertEquals(expected.getConversationId(), actual.getConversationId());
         assertEquals(expected.isDemoted(), actual.isDemoted());
         assertEquals(false, actual.isBundleChannel());
+        assertEquals(expected.getEmoji(), actual.getEmoji());
     }
 
     private void compareChannelsParentChild(NotificationChannel parent,
@@ -629,6 +630,9 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         channel2.setLightColor(Color.BLUE);
         channel2.setConversationId("id1", "conversation");
         channel2.setDemoted(true);
+        if (android.app.Flags.nmContextualDisplayLaunch()) {
+            channel2.setEmoji("\uD83D\uDC80");
+        }
 
         NotificationChannel dynamicBundle =
                 new NotificationChannel("dynamic", "dynamic", IMPORTANCE_LOW);
@@ -810,7 +814,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     public void testReadXml_oldXml_migrates() throws Exception {
         mXmlHelper = new TestPreferencesHelper(getContext(), mPm, mHandler, mMockZenModeHelper,
                 mPermissionHelper, mPermissionManager, mLogger, mAppOpsManager, mUserProfiles,
-                mUgmInternal, /* showReviewPermissionsNotification= */ true, mClock);
+                mUgmInternal, /* showReviewPermissionsNotification= */ true, mClock, mNmPrivate);
 
         String xml = "<ranking version=\"2\">\n"
                 + "<package name=\"" + PKG_N_MR1 + "\" uid=\"" + UID_N_MR1
@@ -953,7 +957,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     public void testReadXml_newXml_noMigration_showPermissionNotification() throws Exception {
         mXmlHelper = new TestPreferencesHelper(getContext(), mPm, mHandler, mMockZenModeHelper,
                 mPermissionHelper, mPermissionManager, mLogger, mAppOpsManager, mUserProfiles,
-                mUgmInternal, /* showReviewPermissionsNotification= */ true, mClock);
+                mUgmInternal, /* showReviewPermissionsNotification= */ true, mClock, mNmPrivate);
 
         String xml = "<ranking version=\"3\">\n"
                 + "<package name=\"" + PKG_N_MR1 + "\" show_badge=\"true\">\n"
@@ -1012,7 +1016,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     public void testReadXml_newXml_permissionNotificationOff() throws Exception {
         mHelper = new TestPreferencesHelper(getContext(), mPm, mHandler, mMockZenModeHelper,
                 mPermissionHelper, mPermissionManager, mLogger, mAppOpsManager, mUserProfiles,
-                mUgmInternal, /* showReviewPermissionsNotification= */ false, mClock);
+                mUgmInternal, /* showReviewPermissionsNotification= */ false, mClock, mNmPrivate);
 
         String xml = "<ranking version=\"3\">\n"
                 + "<package name=\"" + PKG_N_MR1 + "\" show_badge=\"true\">\n"
@@ -1071,7 +1075,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     public void testReadXml_newXml_noMigration_noPermissionNotification() throws Exception {
         mHelper = new TestPreferencesHelper(getContext(), mPm, mHandler, mMockZenModeHelper,
                 mPermissionHelper, mPermissionManager, mLogger, mAppOpsManager, mUserProfiles,
-                mUgmInternal, /* showReviewPermissionsNotification= */ true, mClock);
+                mUgmInternal, /* showReviewPermissionsNotification= */ true, mClock, mNmPrivate);
 
         String xml = "<ranking version=\"4\">\n"
                 + "<package name=\"" + PKG_N_MR1 + "\" show_badge=\"true\">\n"
@@ -1686,7 +1690,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         // simulate load after reboot
         mXmlHelper = new TestPreferencesHelper(getContext(), mPm, mHandler, mMockZenModeHelper,
                 mPermissionHelper, mPermissionManager, mLogger, mAppOpsManager, mUserProfiles,
-                mUgmInternal, false, mClock);
+                mUgmInternal, false, mClock, mNmPrivate);
         loadByteArrayXml(baos.toByteArray(), false, USER_ALL);
 
         // Trigger 2nd restore pass
@@ -1741,7 +1745,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         // simulate load after reboot
         mXmlHelper = new TestPreferencesHelper(getContext(), mPm, mHandler, mMockZenModeHelper,
                 mPermissionHelper, mPermissionManager, mLogger, mAppOpsManager, mUserProfiles,
-                mUgmInternal, false, mClock);
+                mUgmInternal, false, mClock, mNmPrivate);
         loadByteArrayXml(xml.getBytes(), false, USER_ALL);
 
         // Trigger 2nd restore pass
@@ -1819,10 +1823,10 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
         mHelper = new TestPreferencesHelper(mContext, mPm, mHandler, mMockZenModeHelper,
                 mPermissionHelper, mPermissionManager, mLogger, mAppOpsManager, mUserProfiles,
-            mUgmInternal, false, mClock);
+            mUgmInternal, false, mClock, mNmPrivate);
         mXmlHelper = new TestPreferencesHelper(mContext, mPm, mHandler, mMockZenModeHelper,
                 mPermissionHelper, mPermissionManager, mLogger, mAppOpsManager, mUserProfiles,
-                mUgmInternal, false, mClock);
+                mUgmInternal, false, mClock, mNmPrivate);
 
         NotificationChannel channel =
                 new NotificationChannel("id", "name", IMPORTANCE_LOW);
@@ -6912,48 +6916,6 @@ public class PreferencesHelperTest extends UiServiceTestCase {
             helper.dump(pw, "", new NotificationManagerService.DumpFilter(), null);
             pw.flush();
             return sw.toString();
-        }
-    }
-
-    // Test version of PreferencesHelper whose only functional difference is that it does not
-    // interact with the real IpcDataCache, and instead tracks whether or not the cache has been
-    // invalidated since creation or the last reset.
-    private static class TestPreferencesHelper extends PreferencesHelper {
-        private boolean mChannelCacheInvalidated = false;
-        private boolean mGroupCacheInvalidated = false;
-
-        TestPreferencesHelper(Context context, PackageManager pm, RankingHandler rankingHandler,
-                ZenModeHelper zenHelper, PermissionHelper permHelper, PermissionManager permManager,
-                NotificationChannelLogger notificationChannelLogger,
-                AppOpsManager appOpsManager, ManagedServices.UserProfiles userProfiles,
-                UriGrantsManagerInternal ugmInternal, boolean showReviewPermissionsNotification,
-                Clock clock) {
-            super(context, pm, rankingHandler, zenHelper, permHelper, permManager,
-                    notificationChannelLogger, appOpsManager, userProfiles,
-                    ugmInternal, showReviewPermissionsNotification, clock);
-        }
-
-        @Override
-        protected void invalidateNotificationChannelCache() {
-            mChannelCacheInvalidated = true;
-        }
-
-        @Override
-        protected void invalidateNotificationChannelGroupCache() {
-            mGroupCacheInvalidated = true;
-        }
-
-        boolean hasChannelCacheBeenInvalidated() {
-            return mChannelCacheInvalidated;
-        }
-
-        boolean hasGroupCacheBeenInvalidated() {
-            return mGroupCacheInvalidated;
-        }
-
-        void resetCacheInvalidation() {
-            mChannelCacheInvalidated = false;
-            mGroupCacheInvalidated = false;
         }
     }
 }

@@ -15,17 +15,22 @@
 */
 package com.android.server.notification;
 
+import static android.app.Flags.nmContextualDisplayLaunch;
+import static android.app.Notification.FLAG_PROMOTED_ONGOING;
+import static android.service.notification.Adjustment.KEY_DYNAMIC_BUNDLE;
 import static android.service.notification.Adjustment.KEY_TYPE;
 import static android.service.notification.Adjustment.KEY_UNCLASSIFY;
 
+import android.annotation.NonNull;
+import android.app.NotificationChannel;
+import android.app.NotificationRule;
 import android.content.Context;
+import android.os.Bundle;
+import android.service.notification.Adjustment;
 import android.util.ArraySet;
 import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Applies adjustments from the group helper and notification assistant
@@ -34,6 +39,8 @@ public class NotificationAdjustmentExtractor implements NotificationSignalExtrac
     private static final String TAG = "AdjustmentExtractor";
     private static final boolean DBG = false;
     private GroupHelper mGroupHelper;
+    private NotificationRuleManager mRuleManager;
+    private RankingConfig mRankingConfig;
 
     /** Length of time (in milliseconds) that a noisy notification will stay in its non-bundled
      * classification.
@@ -54,11 +61,38 @@ public class NotificationAdjustmentExtractor implements NotificationSignalExtrac
             return null;
         }
 
-        final boolean hasAdjustedClassification = record.hasAdjustment(KEY_TYPE);
+        if (nmContextualDisplayLaunch()) {
+            Adjustment matchingRules = record.getMatchingRulesAdjustment();
+            if (matchingRules != null) {
+                for (Adjustment adjustment : mRuleManager.getAdjustmentsForRules(matchingRules)) {
+                    Bundle signals = adjustment.getSignals();
+                    NotificationRule.DynamicBundle dynamicBundle =
+                            signals.getParcelable(KEY_DYNAMIC_BUNDLE,
+                                    NotificationRule.DynamicBundle.class);
+                    if (dynamicBundle != null) {
+                        final NotificationChannel newChannel =
+                                getDynamicBundleChannelLocked(record, dynamicBundle);
+                        if (newChannel.getId().equals(record.getChannel().getId())) {
+                            signals.remove(KEY_DYNAMIC_BUNDLE);
+                        } else if (record.getNotification().hasFlag(FLAG_PROMOTED_ONGOING)) {
+                            // Don't bundle any promoted ongoing notifications
+                            signals.remove(KEY_DYNAMIC_BUNDLE);
+                        } else {
+                            // swap app provided type with the real thing
+                            signals.putParcelable(KEY_DYNAMIC_BUNDLE, newChannel);
+                        }
+                    }
+                    record.addAdjustment(adjustment);
+                }
+            }
+        }
+
+        final boolean hasAdjustedClassification = record.hasAdjustment(KEY_TYPE)
+                || (nmContextualDisplayLaunch() && record.hasAdjustment(KEY_DYNAMIC_BUNDLE));
         final boolean removedClassification = record.hasAdjustment(KEY_UNCLASSIFY);
 
         if (hasAdjustedClassification && record.getLastAudiblyAlertedMs() > 0) {
-            record.applyAdjustments(new ArraySet<>(new String[] {KEY_TYPE}));
+            record.applyAdjustments(new ArraySet<>(new String[] {KEY_TYPE, KEY_DYNAMIC_BUNDLE}));
 
             return getClassificationReconsideration(record);
         }
@@ -76,12 +110,12 @@ public class NotificationAdjustmentExtractor implements NotificationSignalExtrac
 
     @Override
     public void setConfig(RankingConfig config) {
-        // config is not used
+        mRankingConfig = config;
     }
 
     @Override
-    public void setZenHelper(ZenModeHelper helper) {
-
+    public void setRuleManager(NotificationRuleManager ruleManager) {
+        mRuleManager = ruleManager;
     }
 
     @Override
@@ -138,6 +172,20 @@ public class NotificationAdjustmentExtractor implements NotificationSignalExtrac
             }
         };
     }
+
+    @NonNull
+    private NotificationChannel getDynamicBundleChannelLocked(NotificationRecord r,
+            NotificationRule.DynamicBundle dynamicBundle) {
+        NotificationChannel channel = mRankingConfig.getNotificationChannel(
+                r.getSbn().getPackageName(), r.getUid(), dynamicBundle.getChannelId(), false);
+        if (channel == null) {
+            channel = mRankingConfig.createReservedChannel(r.getSbn().getPackageName(), r.getUid(),
+                    dynamicBundle.getChannelId(), dynamicBundle.getBundleName(),
+                    dynamicBundle.getEmojiIcon());
+        }
+        return channel;
+    }
+
 
     static class InjectedTime {
         private final long mCurrentTimeMillis;
