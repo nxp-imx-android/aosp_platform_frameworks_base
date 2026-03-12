@@ -22,15 +22,19 @@ import android.content.theming.ThemeStyle;
 import com.android.internal.annotations.VisibleForTesting;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Represents the immutable theme state for a specific user.
  * <p>
- * This class encapsulates attributes like seed color, style, contrast, and associated user
+ * This class encapsulates attributes like seed colors, style, contrast, and associated user
  * profiles. This record provides a convenient way to store and update the theme-related
  * settings for a user, ensuring immutability and ease of comparison between different states.
  * <p>
@@ -40,7 +44,7 @@ import java.util.Set;
  *
  * @param userId        The ID of the user.
  * @param isSetup       {@code true} if the user has completed the setup wizard.
- * @param seedColor     The seed color used for theme generation.
+ * @param seedColors    The list of seed colors used for theme generation.
  * @param contrast      The user-selected contrast level.
  * @param style         The theme style, e.g., TONAL_SPOT, VIBRANT.
  * @param childProfiles A set of user IDs for associated profiles.
@@ -51,27 +55,40 @@ import java.util.Set;
 public record ThemeState(
         int userId,
         boolean isSetup,
-        int seedColor,
+        List<Integer> seedColors,
         float contrast,
         int style,
         Set<Integer> childProfiles,
         long timeStamp
 ) {
-    ThemeState(int userId, boolean isSetup, int seedColor, float contrast,
+    ThemeState(int userId, boolean isSetup, List<Integer> seedColors, float contrast,
             @ThemeStyle.Type Integer style, Set<Integer> childProfiles, long timeStamp) {
-        this(userId, isSetup, seedColor, contrast, style == null ? 0 : style, childProfiles,
+        this(userId, isSetup, Collections.unmodifiableList(new ArrayList<>(seedColors)),
+                contrast, style == null ? 0 : style,
+                Collections.unmodifiableSet(new HashSet<>(childProfiles)),
                 timeStamp); // Delegates to canonical
     }
 
+    /**
+     * Returns the primary seed color.
+     */
+    int seedColor() {
+        return seedColors.get(0);
+    }
+
     ThemeState withSeedColor(int newSeedColor) {
-        if (seedColor == newSeedColor) {
+        return withSeedColors(List.of(newSeedColor));
+    }
+
+    ThemeState withSeedColors(List<Integer> newSeedColors) {
+        if (Objects.equals(seedColors, newSeedColors)) {
             return this;
         }
 
         return new ThemeState(
                 userId,
                 isSetup,
-                newSeedColor,
+                newSeedColors,
                 contrast,
                 style,
                 childProfiles,
@@ -87,7 +104,7 @@ public record ThemeState(
         return new ThemeState(
                 userId,
                 isSetup,
-                seedColor,
+                seedColors,
                 contrast,
                 newStyle,
                 childProfiles,
@@ -103,7 +120,7 @@ public record ThemeState(
         return new ThemeState(
                 userId,
                 isSetup,
-                seedColor,
+                seedColors,
                 newContrast,
                 style,
                 childProfiles,
@@ -119,7 +136,7 @@ public record ThemeState(
         return new ThemeState(
                 userId,
                 true,
-                seedColor,
+                seedColors,
                 contrast,
                 style,
                 childProfiles,
@@ -138,7 +155,7 @@ public record ThemeState(
         return new ThemeState(
                 userId,
                 isSetup,
-                seedColor,
+                seedColors,
                 contrast,
                 style,
                 Collections.unmodifiableSet(newChildProfiles),
@@ -151,7 +168,7 @@ public record ThemeState(
         return new ThemeState(
                 userId,
                 true,
-                seedColor,
+                seedColors,
                 contrast,
                 style,
                 childProfiles,
@@ -167,13 +184,13 @@ public record ThemeState(
      */
     void dump(PrintWriter pw, String prefix) {
         pw.println(prefix + "isSetup: " + isSetup);
-        pw.println(
-                prefix + "seedColor: #" + Integer.toHexString(seedColor).toUpperCase(Locale.ROOT));
+        String hexColors = seedColors.stream()
+                .map(c -> "#" + Integer.toHexString(c).toUpperCase(Locale.ROOT))
+                .collect(Collectors.joining(", "));
+        pw.println(prefix + "seedColors: [" + hexColors + "]");
         pw.println(prefix + "contrast: " + contrast);
         pw.println(prefix + "style: " + ThemeStyle.toString(style));
         pw.println(prefix + "childProfiles: " + childProfiles);
         pw.println(prefix + "timeStamp: " + timeStamp);
     }
 }
-
-

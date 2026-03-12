@@ -22,6 +22,7 @@ import android.content.theming.ThemeSettings;
 import android.content.theming.ThemeStyle;
 import android.graphics.Color;
 
+import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.pm.RoSystemFeatures;
 
@@ -54,22 +55,18 @@ public record ThemeConfig(
                 /* platform */ RoSystemFeatures.hasFeatureWatch(context)
                         ? Platform.WATCH
                         : Platform.PHONE,
-                /* specVersion */ context.getResources()
-                        .getIdentifier("system_primary_dim_light", "color", "android") != 0
-                        ? SpecVersion.SPEC_2025
-                        : SpecVersion.SPEC_2021,
+                /* specVersion */ SpecVersion.SPEC_2026,
                 /* hardwareColorCode */ reader.get("ro.boot.hardware.color", ""),
                 /* legacyOverlays */context.getResources()
-                        .getStringArray(com.android.internal.R.array.theming_legacy_overlays),
+                        .getStringArray(R.array.theming_legacy_overlays),
                 /* defaultThemeData */context.getResources()
-                        .getStringArray(com.android.internal.R.array.theming_defaults),
+                        .getStringArray(R.array.theming_defaults),
                 /* hardcodedFallback */ new ThemeSettings.Builder()
                         .setThemeStyle(ThemeStyle.TONAL_SPOT)
                         .setColorSource(FieldColorSource.VALUE_PRESET)
-                        .setSystemPalette(Color.valueOf(0xFF1B6EF3))
+                        .setSeedColors(Color.valueOf(0xFF1B6EF3))
                         .build(),
                 /* canSwitchToHeadlessSystemUser */ context.getResources()
-                        .getBoolean(
-                                com.android.internal.R.bool.config_canSwitchToHeadlessSystemUser));
+                        .getBoolean(R.bool.config_canSwitchToHeadlessSystemUser));
     }
 }

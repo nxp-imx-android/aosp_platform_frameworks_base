@@ -42,12 +42,12 @@ public class ThemeSettingsTests {
         ThemeSettings settings = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.TONAL_SPOT)
                 .setColorSource(FieldColorSource.VALUE_HOME_WALLPAPER)
-                .setSystemPalette(Color.valueOf(Color.BLUE))
+                .setSeedColors(Color.valueOf(Color.BLUE))
                 .build();
 
         assertThat(settings.themeStyle()).isEqualTo(ThemeStyle.TONAL_SPOT);
         assertThat(settings.colorSource()).isEqualTo(FieldColorSource.VALUE_HOME_WALLPAPER);
-        assertThat(settings.systemPalette()).isNotNull();
+        assertThat(settings.seedColors().getFirst()).isNotNull();
         assertThat(settings.timeStamp()).isAtLeast(testStart);
     }
 
@@ -59,13 +59,27 @@ public class ThemeSettingsTests {
         ThemeSettings settings = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.TONAL_SPOT)
                 .setColorSource(FieldColorSource.VALUE_PRESET)
-                .setSystemPalette(testColor)
+                .setSeedColors(testColor)
                 .build();
 
         assertThat(settings.themeStyle()).isEqualTo(ThemeStyle.TONAL_SPOT);
         assertThat(settings.colorSource()).isEqualTo(FieldColorSource.VALUE_PRESET);
-        assertThat(settings.systemPalette()).isEqualTo(testColor);
+        assertThat(settings.seedColors().getFirst()).isEqualTo(testColor);
         assertThat(settings.timeStamp()).isAtLeast(testStart);
+    }
+
+    @Test
+    public void testBuilder_multiSeed() {
+        Color color1 = Color.valueOf(Color.RED);
+        Color color2 = Color.valueOf(Color.BLUE);
+        ThemeSettings settings = new ThemeSettings.Builder()
+                .setThemeStyle(ThemeStyle.VIBRANT)
+                .setColorSource(FieldColorSource.VALUE_PRESET)
+                .setSeedColors(color1, color2)
+                .build();
+
+        assertThat(settings.seedColors()).containsExactly(color1, color2).inOrder();
+        assertThat(settings.seedColors().getFirst()).isEqualTo(color1);
     }
 
     @Test
@@ -74,7 +88,7 @@ public class ThemeSettingsTests {
         ThemeSettings originalWallpaper = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.VIBRANT)
                 .setColorSource(FieldColorSource.VALUE_HOME_WALLPAPER)
-                .setSystemPalette(Color.valueOf(Color.RED))
+                .setSeedColors(Color.valueOf(Color.RED))
                 .build();
         Parcel wallpaperParcel = Parcel.obtain();
         originalWallpaper.writeToParcel(wallpaperParcel, 0);
@@ -84,27 +98,23 @@ public class ThemeSettingsTests {
         wallpaperParcel.recycle();
         assertThat(unparceledWallpaper.themeStyle()).isEqualTo(originalWallpaper.themeStyle());
         assertThat(unparceledWallpaper.colorSource()).isEqualTo(originalWallpaper.colorSource());
-        assertThat(unparceledWallpaper.systemPalette())
-                .isEqualTo(originalWallpaper.systemPalette());
+        assertThat(unparceledWallpaper.seedColors())
+                .isEqualTo(originalWallpaper.seedColors());
         assertThat(unparceledWallpaper.timeStamp().toEpochMilli()).isAtLeast(
                 originalWallpaper.timeStamp().toEpochMilli());
 
-        // Test preset
-        ThemeSettings originalPreset = new ThemeSettings.Builder()
+        // Test multi-seed
+        ThemeSettings originalMulti = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.TONAL_SPOT)
                 .setColorSource(FieldColorSource.VALUE_PRESET)
-                .setSystemPalette(Color.valueOf(0xFF1A73E8))
+                .setSeedColors(Color.valueOf(Color.GREEN), Color.valueOf(Color.YELLOW))
                 .build();
-        Parcel presetParcel = Parcel.obtain();
-        originalPreset.writeToParcel(presetParcel, 0);
-        presetParcel.setDataPosition(0);
-        ThemeSettings unparceledPreset = ThemeSettings.CREATOR.createFromParcel(presetParcel);
-        presetParcel.recycle();
-        assertThat(unparceledPreset.themeStyle()).isEqualTo(originalPreset.themeStyle());
-        assertThat(unparceledPreset.colorSource()).isEqualTo(originalPreset.colorSource());
-        assertThat(unparceledPreset.systemPalette()).isEqualTo(originalPreset.systemPalette());
-        assertThat(unparceledPreset.timeStamp().toEpochMilli()).isAtLeast(
-                originalPreset.timeStamp().toEpochMilli());
+        Parcel multiParcel = Parcel.obtain();
+        originalMulti.writeToParcel(multiParcel, 0);
+        multiParcel.setDataPosition(0);
+        ThemeSettings unparceledMulti = ThemeSettings.CREATOR.createFromParcel(multiParcel);
+        multiParcel.recycle();
+        assertThat(unparceledMulti.seedColors()).isEqualTo(originalMulti.seedColors());
     }
 
     @SuppressLint("WrongConstant")
@@ -114,7 +124,7 @@ public class ThemeSettingsTests {
                 () -> new ThemeSettings.Builder()
                         .setThemeStyle(-1)
                         .setColorSource(FieldColorSource.VALUE_PRESET)
-                        .setSystemPalette(Color.valueOf(Color.BLUE))
+                        .setSeedColors(Color.valueOf(Color.BLUE))
                         .build());
     }
 
@@ -124,7 +134,7 @@ public class ThemeSettingsTests {
                 () -> new ThemeSettings.Builder()
                         .setThemeStyle(ThemeStyle.TONAL_SPOT)
                         .setColorSource(FieldColorSource.VALUE_PRESET)
-                        .setSystemPalette(Color.valueOf(Color.TRANSPARENT))
+                        .setSeedColors(Color.valueOf(Color.TRANSPARENT))
                         .build());
     }
 
@@ -135,7 +145,7 @@ public class ThemeSettingsTests {
                 () -> new ThemeSettings.Builder()
                         .setThemeStyle(-1)
                         .setColorSource(FieldColorSource.VALUE_HOME_WALLPAPER)
-                        .setSystemPalette(Color.valueOf(Color.RED))
+                        .setSeedColors(Color.valueOf(Color.RED))
                         .build());
     }
 }

@@ -18,11 +18,15 @@ package android.content.theming;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.Size;
 import android.graphics.Color;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -40,21 +44,27 @@ public final class ThemeSettings implements Parcelable {
     @FieldColorSource.Type
     private final String mColorSource;
     @NonNull
-    private final Color mSystemPalette;
+    @Size(min = 1)
+    private final List<Color> mSeedColors;
 
     private ThemeSettings(Instant appliedTimestamp, @ThemeStyle.Type int themeStyle,
-            @FieldColorSource.Type String colorSource, @NonNull Color systemPalette) {
+            @FieldColorSource.Type String colorSource, @NonNull List<Color> seedColors) {
         this.mAppliedTimestamp = appliedTimestamp;
         this.mThemeStyle = themeStyle;
         this.mColorSource = colorSource;
-        this.mSystemPalette = systemPalette;
+        this.mSeedColors = Collections.unmodifiableList(new ArrayList<>(seedColors));
     }
 
     private ThemeSettings(Parcel in) {
         mAppliedTimestamp = Instant.ofEpochMilli(in.readLong());
         mThemeStyle = in.readInt();
         mColorSource = in.readString8();
-        mSystemPalette = Color.valueOf(in.readInt());
+        int size = in.readInt();
+        List<Color> colors = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            colors.add(Color.valueOf(in.readInt()));
+        }
+        mSeedColors = Collections.unmodifiableList(colors);
     }
 
     /**
@@ -84,13 +94,12 @@ public final class ThemeSettings implements Parcelable {
     }
 
     /**
-     * Returns the system palette color used for Palette generation.
-     *
-     * @return The seed {@link Color}.
+     * Alias for {@link #seedColors()}.
      */
     @NonNull
-    public Color systemPalette() {
-        return mSystemPalette;
+    @Size(min = 1)
+    public List<Color> seedColors() {
+        return mSeedColors;
     }
 
     @Override
@@ -99,14 +108,13 @@ public final class ThemeSettings implements Parcelable {
         if (o == null || getClass() != o.getClass()) return false;
         ThemeSettings that = (ThemeSettings) o;
         return mThemeStyle == that.mThemeStyle
-                && Objects.equals(mAppliedTimestamp, that.mAppliedTimestamp)
                 && Objects.equals(mColorSource, that.mColorSource)
-                && Objects.equals(mSystemPalette, that.mSystemPalette);
+                && mSeedColors.equals(that.mSeedColors);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mAppliedTimestamp, mThemeStyle, mColorSource, mSystemPalette);
+        return Objects.hash(mThemeStyle, mColorSource, mSeedColors);
     }
 
     @Override
@@ -119,7 +127,10 @@ public final class ThemeSettings implements Parcelable {
         dest.writeLong(mAppliedTimestamp.toEpochMilli());
         dest.writeInt(mThemeStyle);
         dest.writeString8(mColorSource);
-        dest.writeInt(mSystemPalette.toArgb());
+        dest.writeInt(mSeedColors.size());
+        for (Color color : mSeedColors) {
+            dest.writeInt(color.toArgb());
+        }
     }
 
     public static final Creator<ThemeSettings> CREATOR = new Creator<ThemeSettings>() {
@@ -141,7 +152,7 @@ public final class ThemeSettings implements Parcelable {
                 + "mAppliedTimestamp=" + mAppliedTimestamp
                 + ", mThemeStyle=" + mThemeStyle
                 + ", mColorSource='" + mColorSource + "'"
-                + ", mSystemPalette=" + mSystemPalette
+                + ", mSeedColors=" + mSeedColors
                 + '}';
     }
 
@@ -152,7 +163,7 @@ public final class ThemeSettings implements Parcelable {
         private Instant mAppliedTimestamp;
         private Integer mThemeStyle;
         private String mColorSource;
-        private Color mSystemPalette;
+        private List<Color> mSeedColors;
 
         public Builder() {
         }
@@ -191,15 +202,27 @@ public final class ThemeSettings implements Parcelable {
             return this;
         }
 
+
         /**
-         * Sets the system palette color.
+         * Sets the seed colors used for Color Palette calculation.
          *
-         * @param systemPalette The system palette color.
+         * @param seedColors The system seed colors in priority order.
          * @return This Builder object to allow for chaining of calls.
          */
-        public Builder setSystemPalette(@NonNull Color systemPalette) {
-            mSystemPalette = systemPalette;
+        public Builder setSeedColors(@NonNull List<Color> seedColors) {
+            mSeedColors = new ArrayList<>(seedColors);
             return this;
+        }
+
+        /**
+         * Sets the seed colors used for Color Palette calculation.
+         *
+         * @param seedColors The system seed colors in priority order.
+         * @return This Builder object to allow for chaining of calls.
+         */
+        public Builder setSeedColors(@NonNull Color... seedColors) {
+            mSeedColors = List.of(seedColors);
+            return  this;
         }
 
         @NonNull
@@ -210,16 +233,19 @@ public final class ThemeSettings implements Parcelable {
             if (mColorSource == null) {
                 throw new IllegalStateException("ColorSource must be set.");
             }
-            if (mSystemPalette == null) {
-                throw new IllegalStateException("SystemPalette must be set.");
+            if (mSeedColors == null || mSeedColors.isEmpty()) {
+                throw new IllegalStateException("At least one seed color must be set.");
             }
 
             if (!new FieldThemeStyle().validate(mThemeStyle)) {
                 throw new IllegalArgumentException("Invalid themeStyle: " + mThemeStyle);
             }
 
-            if (!new FieldColor().validate(mSystemPalette)) {
-                throw new IllegalArgumentException("Invalid systemPalette color.");
+            FieldColor colorHandler = new FieldColor();
+            for (Color color : mSeedColors) {
+                if (!colorHandler.validate(color)) {
+                    throw new IllegalArgumentException("Invalid seed color: " + color);
+                }
             }
 
             if (!new FieldColorSource().validate(mColorSource)) {
@@ -227,7 +253,7 @@ public final class ThemeSettings implements Parcelable {
             }
 
             Instant timestamp = (mAppliedTimestamp != null) ? mAppliedTimestamp : Instant.now();
-            return new ThemeSettings(timestamp, mThemeStyle, mColorSource, mSystemPalette);
+            return new ThemeSettings(timestamp, mThemeStyle, mColorSource, mSeedColors);
         }
     }
 }

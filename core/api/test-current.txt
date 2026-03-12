@@ -1452,6 +1452,7 @@ package android.content.theming {
     method @NonNull public static int[] values();
     field public static final int CLOCK = 8; // 0x8
     field public static final int CLOCK_VIBRANT = 9; // 0x9
+    field public static final int CMF = 10; // 0xa
     field public static final int CONTENT = 6; // 0x6
     field public static final int EXPRESSIVE = 3; // 0x3
     field public static final int FRUIT_SALAD = 5; // 0x5

@@ -65,6 +65,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RunWith(AndroidJUnit4.class)
@@ -165,7 +166,7 @@ public class ThemeManagerImplTests {
             return new ThemeSettings.Builder()
                     .setColorSource(VALUE_PRESET)
                     .setThemeStyle(TEST_STYLE)
-                    .setSystemPalette(Color.valueOf(TEST_SEED_COLOR))
+                    .setSeedColors(Color.valueOf(TEST_SEED_COLOR))
                     .build();
         });
         when(mThemeSettingsManager.getSettings(anyInt(), any())).thenAnswer(invocation -> {
@@ -202,11 +203,12 @@ public class ThemeManagerImplTests {
         mUnderTest.setup(mUserLifecycle);
 
         mStateManager.onServicesReady();
-        startUser(mUserId, true, TEST_SEED_COLOR, TEST_CONTRAST, TEST_STYLE);
+        startUser(mUserId, true, List.of(TEST_SEED_COLOR), TEST_CONTRAST, TEST_STYLE);
     }
 
-    private void startUser(int userId, boolean isSetup, int seedColor, float contrast, int style) {
-        mStateManager.onUserStart(UserHandle.of(userId), isSetup, seedColor, contrast, style);
+    private void startUser(int userId, boolean isSetup, List<Integer> seedColors, float contrast,
+            int style) {
+        mStateManager.onUserStart(UserHandle.of(userId), isSetup, seedColors, contrast, style);
         mSchedulerExecutor.fastForwardTime(ThemeStateManager.DEBOUNCE_MS + 100L);
     }
 
@@ -248,7 +250,7 @@ public class ThemeManagerImplTests {
         final ThemeSettings newPayload = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.VIBRANT)
                 .setColorSource(VALUE_PRESET)
-                .setSystemPalette(testColor)
+                .setSeedColors(testColor)
                 .build();
         final ThemeSettings[] returnedOldSettings = {null};
         final ThemeSettings[] returnedNewSettings = {null};
@@ -276,14 +278,14 @@ public class ThemeManagerImplTests {
         final ThemeSettings oldPayload = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.TONAL_SPOT)
                 .setColorSource(VALUE_PRESET)
-                .setSystemPalette(oldColor)
+                .setSeedColors(oldColor)
                 .build();
 
         final Color newColor = Color.valueOf(Color.RED);
         final ThemeSettings newPayload = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.VIBRANT)
                 .setColorSource(VALUE_PRESET)
-                .setSystemPalette(newColor)
+                .setSeedColors(newColor)
                 .build();
 
         final ThemeSettings[] returnedOldSettings = {null};
@@ -315,7 +317,7 @@ public class ThemeManagerImplTests {
         assertThat(returnedOldPreset.timeStamp().toEpochMilli()).isEqualTo(
                 oldPayload.timeStamp().toEpochMilli());
         assertThat(returnedOldPreset.themeStyle()).isEqualTo(oldPayload.themeStyle());
-        assertThat(returnedOldPreset.systemPalette()).isEqualTo(oldPayload.systemPalette());
+        assertThat(returnedOldPreset.seedColors()).isEqualTo(oldPayload.seedColors());
     }
 
     @Test
@@ -326,7 +328,7 @@ public class ThemeManagerImplTests {
 
     @Test
     public void testThemeChangedCallback_receivesNewValue() {
-        startUser(mUserId, true, TEST_SEED_COLOR, TEST_CONTRAST, TEST_STYLE);
+        startUser(mUserId, true, List.of(TEST_SEED_COLOR), TEST_CONTRAST, TEST_STYLE);
         final ThemeInfo[] returnedValue = {null};
         mUnderTest.registerThemeChangedCallback(mUserId, new IThemeChangedCallback.Stub() {
             @Override
@@ -338,7 +340,7 @@ public class ThemeManagerImplTests {
         mUnderTest.notifyThemeChanged(mUserId);
 
         assertThat(returnedValue[0]).isNotNull();
-        assertThat(returnedValue[0].seedColor.toArgb()).isEqualTo(TEST_SEED_COLOR);
+        assertThat(returnedValue[0].seedColors.getFirst().toArgb()).isEqualTo(TEST_SEED_COLOR);
         assertThat(returnedValue[0].style).isEqualTo(TEST_STYLE);
         assertThat(returnedValue[0].contrast).isEqualTo(TEST_CONTRAST);
         assertThat(returnedValue[0].specVersion).isEqualTo(
@@ -358,7 +360,7 @@ public class ThemeManagerImplTests {
         final ThemeSettings storedSettings = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.VIBRANT)
                 .setColorSource(VALUE_PRESET)
-                .setSystemPalette(testColor)
+                .setSeedColors(testColor)
                 .build();
         mUnderTest.updateThemeSettings(mUserId, storedSettings);
 
@@ -370,7 +372,7 @@ public class ThemeManagerImplTests {
         assertThat(returnedPreset.timeStamp().toEpochMilli()).isEqualTo(
                 storedSettings.timeStamp().toEpochMilli());
         assertThat(returnedPreset.themeStyle()).isEqualTo(storedSettings.themeStyle());
-        assertThat(returnedPreset.systemPalette()).isEqualTo(storedSettings.systemPalette());
+        assertThat(returnedPreset.seedColors()).isEqualTo(storedSettings.seedColors());
     }
 
     @Test
@@ -385,7 +387,7 @@ public class ThemeManagerImplTests {
 
         assertThat(settings.themeStyle()).isEqualTo(expectedDefault.themeStyle());
         assertThat(settings.colorSource()).isEqualTo(expectedDefault.colorSource());
-        assertThat(settings.systemPalette()).isEqualTo(expectedDefault.systemPalette());
+        assertThat(settings.seedColors()).isEqualTo(expectedDefault.seedColors());
         assertThat(settings.timeStamp().toEpochMilli()).isAtLeast(
                 expectedDefault.timeStamp().toEpochMilli());
     }
@@ -396,7 +398,7 @@ public class ThemeManagerImplTests {
         final ThemeSettings storedSettings = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.VIBRANT)
                 .setColorSource(VALUE_PRESET)
-                .setSystemPalette(testColor)
+                .setSeedColors(testColor)
                 .build();
         mUnderTest.updateThemeSettings(mUserId, storedSettings);
 
@@ -408,17 +410,17 @@ public class ThemeManagerImplTests {
         assertThat(returnedPreset.timeStamp().toEpochMilli()).isEqualTo(
                 storedSettings.timeStamp().toEpochMilli());
         assertThat(returnedPreset.themeStyle()).isEqualTo(storedSettings.themeStyle());
-        assertThat(returnedPreset.systemPalette()).isEqualTo(storedSettings.systemPalette());
+        assertThat(returnedPreset.seedColors()).isEqualTo(storedSettings.seedColors());
     }
 
     @Test
     public void getUserThemeInfo_returnsCorrectInfo() {
-        startUser(mUserId, true, TEST_SEED_COLOR, TEST_CONTRAST, TEST_STYLE);
+        startUser(mUserId, true, List.of(TEST_SEED_COLOR), TEST_CONTRAST, TEST_STYLE);
 
         ThemeInfo info = mUnderTest.getUserThemeInfo(mUserId);
 
         assertThat(info).isNotNull();
-        assertThat(info.seedColor.toArgb()).isEqualTo(TEST_SEED_COLOR);
+        assertThat(info.seedColors.getFirst().toArgb()).isEqualTo(TEST_SEED_COLOR);
         assertThat(info.style).isEqualTo(TEST_STYLE);
         assertThat(info.contrast).isEqualTo(TEST_CONTRAST);
         assertThat(info.specVersion).isEqualTo(mEnvironment.getConfig().specVersion().name());
@@ -427,9 +429,9 @@ public class ThemeManagerImplTests {
 
     @Test
     public void generateDynamicColorOverlay_withAllOptions_isNotNull() {
-        startUser(mUserId, true, Color.RED, 0.0f, ThemeStyle.TONAL_SPOT);
+        startUser(mUserId, true, List.of(Color.RED), 0.0f, ThemeStyle.TONAL_SPOT);
         ThemeInfo options = new ThemeInfo.Builder()
-                .setSeedColor(Color.valueOf(Color.GREEN))
+                .setSeedColors(Color.valueOf(Color.GREEN))
                 .setStyle(ThemeStyle.VIBRANT)
                 .setContrast(0.8f)
                 .build();
@@ -450,7 +452,7 @@ public class ThemeManagerImplTests {
 
     @Test
     public void generateDynamicColorOverlay_withNullOptions_isNotNull() {
-        startUser(mUserId, true, Color.RED, 0.0f, ThemeStyle.TONAL_SPOT);
+        startUser(mUserId, true, List.of(Color.RED), 0.0f, ThemeStyle.TONAL_SPOT);
         ThemeInfo options = new ThemeInfo.Builder().build();
 
         // Mock the overlay helper to return a dummy overlay
@@ -469,9 +471,9 @@ public class ThemeManagerImplTests {
 
     @Test
     public void generateDynamicColorOverlay_withMixedOptions_isNotNull() {
-        startUser(mUserId, true, Color.RED, 0.0f, ThemeStyle.TONAL_SPOT);
+        startUser(mUserId, true, List.of(Color.RED), 0.0f, ThemeStyle.TONAL_SPOT);
         ThemeInfo options = new ThemeInfo.Builder()
-                .setSeedColor(Color.valueOf(Color.GREEN))
+                .setSeedColors(Color.valueOf(Color.GREEN))
                 .setContrast(0.8f)
                 .build();
 
@@ -516,7 +518,7 @@ public class ThemeManagerImplTests {
         assertThat(bootingImpl.updateThemeSettings(mUserId, new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.TONAL_SPOT)
                 .setColorSource(VALUE_PRESET)
-                .setSystemPalette(Color.valueOf(Color.BLUE))
+                .setSeedColors(Color.valueOf(Color.BLUE))
                 .build())).isFalse();
 
         // Registration should succeed even during boot
@@ -588,13 +590,13 @@ public class ThemeManagerImplTests {
     @Test
     public void onWallpaperColorsChanged_presetSource_ignored() {
         int userId = 100;
-        startUser(userId, true, Color.BLUE, 0f, ThemeStyle.TONAL_SPOT);
+        startUser(userId, true, List.of(Color.BLUE), 0f, ThemeStyle.TONAL_SPOT);
 
         // Setup: Preset source
         ThemeSettings settings = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.TONAL_SPOT)
                 .setColorSource(VALUE_PRESET)
-                .setSystemPalette(Color.valueOf(Color.BLUE))
+                .setSeedColors(Color.valueOf(Color.BLUE))
                 .build();
         mUnderTest.updateThemeSettings(userId, settings);
 
@@ -611,13 +613,13 @@ public class ThemeManagerImplTests {
     @Test
     public void onWallpaperColorsChanged_wallpaperSource_updatesState() {
         int userId = 101;
-        startUser(userId, true, Color.BLUE, 0f, ThemeStyle.TONAL_SPOT);
+        startUser(userId, true, List.of(Color.BLUE), 0f, ThemeStyle.TONAL_SPOT);
 
         // Setup: Wallpaper source
         ThemeSettings settings = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.TONAL_SPOT)
                 .setColorSource(android.content.theming.FieldColorSource.VALUE_HOME_WALLPAPER)
-                .setSystemPalette(Color.valueOf(Color.BLUE))
+                .setSeedColors(Color.valueOf(Color.BLUE))
                 .build();
         mUnderTest.updateThemeSettings(userId, settings);
 
@@ -644,7 +646,7 @@ public class ThemeManagerImplTests {
         ThemeSettings settings = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.VIBRANT)
                 .setColorSource(VALUE_PRESET)
-                .setSystemPalette(Color.valueOf(Color.GREEN))
+                .setSeedColors(Color.valueOf(Color.GREEN))
                 .build();
         mFakeSettingsMap.put(userId, settings);
 
@@ -660,13 +662,13 @@ public class ThemeManagerImplTests {
     @Test
     public void onThemeSettingsChanged_reloadsAndUpdates() {
         int userId = 103;
-        startUser(userId, true, Color.BLUE, 0f, ThemeStyle.TONAL_SPOT);
+        startUser(userId, true, List.of(Color.BLUE), 0f, ThemeStyle.TONAL_SPOT);
 
         // Setup: Initial state
         ThemeSettings initialSettings = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.TONAL_SPOT)
                 .setColorSource(VALUE_PRESET)
-                .setSystemPalette(Color.valueOf(Color.BLUE))
+                .setSeedColors(Color.valueOf(Color.BLUE))
                 .build();
         mUnderTest.updateThemeSettings(userId, initialSettings);
 
@@ -678,7 +680,7 @@ public class ThemeManagerImplTests {
         ThemeSettings newSettings = new ThemeSettings.Builder()
                 .setThemeStyle(ThemeStyle.EXPRESSIVE)
                 .setColorSource(VALUE_PRESET)
-                .setSystemPalette(Color.valueOf(Color.RED))
+                .setSeedColors(Color.valueOf(Color.RED))
                 .build();
         mFakeSettingsMap.put(userId, newSettings);
 

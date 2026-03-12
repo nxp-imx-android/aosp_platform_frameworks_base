@@ -59,12 +59,13 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.HashMap;
+import java.util.List;
 
 
 @RunWith(AndroidJUnit4.class)
 public class ThemeStateManagerTest {
     private static final int DEFAULT_USER_ID = 11;
-    private static final int DEFAULT_SEED_COLOR = 0xFFFF0000; // RED
+    private static final List<Integer> DEFAULT_SEED_COLORS = List.of(0xFFFF0000); // RED
     private static final float DEFAULT_CONTRAST = 0.0f;
     private static final int DEFAULT_STYLE = ThemeStyle.TONAL_SPOT;
     private static final int PROFILE_ID = 10;
@@ -167,14 +168,14 @@ public class ThemeStateManagerTest {
     @Test
     public void test_startingUserTwice_isIgnored() {
         mThemeStateManager.onUserStart(UserHandle.of(DEFAULT_USER_ID), true,
-                0xFFFF0000 /* RED */, DEFAULT_CONTRAST, DEFAULT_STYLE);
+                List.of(0xFFFF0000 /* RED */), DEFAULT_CONTRAST, DEFAULT_STYLE);
 
         ThemeStatePair firstState = mThemeStateManager.getState(DEFAULT_USER_ID);
         assertThat(firstState.getCurrentState().seedColor()).isEqualTo(0xFFFF0000);
 
         // Try to start duplicate user with BLUE
         mThemeStateManager.onUserStart(UserHandle.of(DEFAULT_USER_ID), true,
-                0xFF0000FF /* BLUE */, DEFAULT_CONTRAST, DEFAULT_STYLE);
+                List.of(0xFF0000FF /* BLUE */), DEFAULT_CONTRAST, DEFAULT_STYLE);
 
         // Verify the state was NOT overwritten
         ThemeStatePair stateAfterDup = mThemeStateManager.getState(DEFAULT_USER_ID);
@@ -188,7 +189,7 @@ public class ThemeStateManagerTest {
         ThemeStatePair pair = startProvisionedUser();
 
         // initialize user that has parent
-        mThemeStateManager.onUserStart(UserHandle.of(PROFILE_ID), true, DEFAULT_SEED_COLOR,
+        mThemeStateManager.onUserStart(UserHandle.of(PROFILE_ID), true, DEFAULT_SEED_COLORS,
                 DEFAULT_CONTRAST, DEFAULT_STYLE);
 
         // fails when trying to get non existing state.
@@ -202,14 +203,14 @@ public class ThemeStateManagerTest {
 
     @Test
     public void test_seedColorChange() {
-        int newSeedColor = 0xFF0000FF;
+        List<Integer> newSeedColors = List.of(0xFF0000FF);
         ThemeStatePair pair = startProvisionedUser();
 
-        mThemeStateManager.onSeedColorChange(DEFAULT_USER_ID, newSeedColor, true);
+        mThemeStateManager.onSeedColorChange(DEFAULT_USER_ID, newSeedColors, true);
 
         // checks state is the same but there is a pending update.
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
-        assertThat(pair.getPendingState().seedColor()).isEqualTo(newSeedColor);
+        assertThat(pair.getPendingState().seedColors()).isEqualTo(newSeedColors);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
         assertThat(pair.shouldUpdate()).isTrue();
 
@@ -217,7 +218,7 @@ public class ThemeStateManagerTest {
 
         // checks new state and there are no pending updates.
         assertThat(pair.getPendingState()).isNull(); // nothing to update
-        assertThat(pair.getCurrentState().seedColor()).isEqualTo(newSeedColor);
+        assertThat(pair.getCurrentState().seedColors()).isEqualTo(newSeedColors);
         assertThat(pair.shouldUpdate()).isFalse();
 
         // Verify that the overlays were actually applied.
@@ -226,20 +227,20 @@ public class ThemeStateManagerTest {
 
     @Test
     public void test_seedColorChange_defersWithUnprovisionedUser() {
-        int newSeedColor = 0xFF0000FF;
+        List<Integer> newSeedColors = List.of(0xFF0000FF);
         ThemeStatePair pair = startUnprovisionedUser();
-        mThemeStateManager.onSeedColorChange(DEFAULT_USER_ID, newSeedColor, true);
+        mThemeStateManager.onSeedColorChange(DEFAULT_USER_ID, newSeedColors, true);
 
         // checks state is the same but there is a pending update that CANNOT be applied yet.
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
-        assertThat(pair.getPendingState().seedColor()).isEqualTo(newSeedColor);
+        assertThat(pair.getPendingState().seedColors()).isEqualTo(newSeedColors);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
         assertThat(pair.shouldUpdate()).isFalse();
 
         waitForThemeUpdate();
 
         // checks state is the same but there is a pending update that CANNOT be applied yet.
-        assertThat(pair.getPendingState().seedColor()).isEqualTo(newSeedColor);
+        assertThat(pair.getPendingState().seedColors()).isEqualTo(newSeedColors);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
         assertThat(pair.shouldUpdate()).isFalse();
 
@@ -248,7 +249,7 @@ public class ThemeStateManagerTest {
 
         // checks new state and there are no pending updates.
         assertThat(pair.getPendingState()).isNull();
-        assertThat(pair.getCurrentState().seedColor()).isEqualTo(newSeedColor);
+        assertThat(pair.getCurrentState().seedColors()).isEqualTo(newSeedColors);
         assertThat(pair.shouldUpdate()).isFalse();
 
         // Verify that the overlays were actually applied.
@@ -425,19 +426,19 @@ public class ThemeStateManagerTest {
     public void test_reevaluateSystemTheme_withUpdates() {
         ThemeStatePair pair = startProvisionedUser();
 
-        int newSeedColor = 0xFF0000FF;
-        mThemeStateManager.onSeedColorChange(DEFAULT_USER_ID, newSeedColor, true);
+        List<Integer> newSeedColors = List.of(0xFF0000FF);
+        mThemeStateManager.onSeedColorChange(DEFAULT_USER_ID, newSeedColors, true);
 
         mThemeStateManager.reevaluateSystemTheme();
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
-        assertThat(pair.getPendingState().seedColor()).isEqualTo(newSeedColor);
+        assertThat(pair.getPendingState().seedColors()).isEqualTo(newSeedColors);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
         assertThat(pair.shouldUpdate()).isTrue();
 
         waitForThemeUpdate();
 
         assertThat(pair.getPendingState()).isNull();
-        assertThat(pair.getCurrentState().seedColor()).isEqualTo(newSeedColor);
+        assertThat(pair.getCurrentState().seedColors()).isEqualTo(newSeedColors);
         assertThat(pair.shouldUpdate()).isFalse();
 
         // Verify that the overlays were actually applied.
@@ -448,8 +449,8 @@ public class ThemeStateManagerTest {
     public void test_reevaluateSystemTheme_withDebouncing() {
         ThemeStatePair pair = startProvisionedUser();
 
-        int newSeedColor = 0xFF0000FF;
-        mThemeStateManager.onSeedColorChange(DEFAULT_USER_ID, newSeedColor, true);
+        List<Integer> newSeedColors = List.of(0xFF0000FF);
+        mThemeStateManager.onSeedColorChange(DEFAULT_USER_ID, newSeedColors, true);
 
         mThemeStateManager.reevaluateSystemTheme();
         mThemeStateManager.reevaluateSystemTheme();
@@ -462,7 +463,7 @@ public class ThemeStateManagerTest {
         waitForThemeUpdate();
 
         assertThat(pair.getPendingState()).isNull();
-        assertThat(pair.getCurrentState().seedColor()).isEqualTo(newSeedColor);
+        assertThat(pair.getCurrentState().seedColors()).isEqualTo(newSeedColors);
         assertThat(pair.shouldUpdate()).isFalse();
     }
 
@@ -471,12 +472,12 @@ public class ThemeStateManagerTest {
         ThemeStatePair pair = startProvisionedUser();
         pair.setDeferUpdatesOnLock(true);
 
-        int newSeedColor = 0xFF0000FF; // Blue
-        mThemeStateManager.onSeedColorChange(DEFAULT_USER_ID, newSeedColor, false);
+        List<Integer> newSeedColors = List.of(0xFF0000FF); // Blue
+        mThemeStateManager.onSeedColorChange(DEFAULT_USER_ID, newSeedColors, false);
 
         // The change is deferred.
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
-        assertThat(pair.getPendingState().seedColor()).isEqualTo(newSeedColor);
+        assertThat(pair.getPendingState().seedColors()).isEqualTo(newSeedColors);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
         assertThat(pair.shouldUpdate()).isFalse();
 
@@ -484,7 +485,7 @@ public class ThemeStateManagerTest {
         waitForThemeUpdate();
 
         // The change is applied immediately.
-        assertThat(pair.getCurrentState().seedColor()).isEqualTo(newSeedColor);
+        assertThat(pair.getCurrentState().seedColors()).isEqualTo(newSeedColors);
         assertThat(pair.shouldUpdate()).isFalse();
         assertThat(pair.getPendingState()).isNull();
 
@@ -497,12 +498,12 @@ public class ThemeStateManagerTest {
         ThemeStatePair pair = startProvisionedUser();
         pair.setDeferUpdatesOnLock(true);
 
-        int newSeedColor = 0xFF0000FF; // Blue
-        mThemeStateManager.onSeedColorChange(DEFAULT_USER_ID, newSeedColor, false);
+        List<Integer> newSeedColors = List.of(0xFF0000FF); // Blue
+        mThemeStateManager.onSeedColorChange(DEFAULT_USER_ID, newSeedColors, false);
 
         // The change is deferred.
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
-        assertThat(pair.getPendingState().seedColor()).isEqualTo(newSeedColor);
+        assertThat(pair.getPendingState().seedColors()).isEqualTo(newSeedColors);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
         assertThat(pair.shouldUpdate()).isFalse();
 
@@ -510,7 +511,7 @@ public class ThemeStateManagerTest {
         waitForThemeUpdate();
 
         // The change is still deferred.
-        assertThat(pair.getPendingState().seedColor()).isEqualTo(newSeedColor);
+        assertThat(pair.getPendingState().seedColors()).isEqualTo(newSeedColors);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
         assertThat(pair.shouldUpdate()).isFalse();
     }
@@ -541,11 +542,11 @@ public class ThemeStateManagerTest {
     public void testOnSeedColorChange_fromBackgroundApp_shouldDeferChange() {
         ThemeStatePair pair = startProvisionedUser();
 
-        int newSeedColor = 0xFF0000FF; // Blue
-        mThemeStateManager.onSeedColorChange(DEFAULT_USER_ID, newSeedColor, false);
+        List<Integer> newSeedColors = List.of(0xFF0000FF); // Blue
+        mThemeStateManager.onSeedColorChange(DEFAULT_USER_ID, newSeedColors, false);
 
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
-        assertThat(pair.getPendingState().seedColor()).isEqualTo(newSeedColor);
+        assertThat(pair.getPendingState().seedColors()).isEqualTo(newSeedColors);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
         assertThat(pair.shouldUpdate()).isFalse(); // Change deferred
     }
@@ -554,11 +555,11 @@ public class ThemeStateManagerTest {
     public void testOnSeedColorChange_fromForegroundApp_shouldNotDeferChange() {
         ThemeStatePair pair = startProvisionedUser();
 
-        int newSeedColor = 0xFF0000FF; // Blue
-        mThemeStateManager.onSeedColorChange(DEFAULT_USER_ID, newSeedColor, true);
+        List<Integer> newSeedColors = List.of(0xFF0000FF); // Blue
+        mThemeStateManager.onSeedColorChange(DEFAULT_USER_ID, newSeedColors, true);
 
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
-        assertThat(pair.getPendingState().seedColor()).isEqualTo(newSeedColor);
+        assertThat(pair.getPendingState().seedColors()).isEqualTo(newSeedColors);
         assertThat(pair.getPendingState()).isNotEqualTo(pair.getCurrentState());
         assertThat(pair.shouldUpdate()).isTrue(); // Change not deferred
     }
@@ -568,8 +569,8 @@ public class ThemeStateManagerTest {
         ThemeStatePair pair = startProvisionedUser();
         pair.setDeferUpdatesOnLock(true);
 
-        int newSeedColor = 0xFF0000FF; // Blue
-        mThemeStateManager.onSeedColorChange(DEFAULT_USER_ID, newSeedColor, false);
+        List<Integer> newSeedColors = List.of(0xFF0000FF); // Blue
+        mThemeStateManager.onSeedColorChange(DEFAULT_USER_ID, newSeedColors, false);
         assertThat(pair.shouldUpdate()).isFalse(); // Change deferred
 
         pair.setDeferUpdatesOnLock(false); // Simulate unlock
@@ -579,7 +580,7 @@ public class ThemeStateManagerTest {
     @Test
     public void testOnBootComplete_colorSchemeApplied_shouldNotForceUpdate() {
         // creates user with seed color same as the default google_blue
-        mThemeStateManager.onUserStart(UserHandle.of(DEFAULT_USER_ID), true, GOOGLE_BLUE,
+        mThemeStateManager.onUserStart(UserHandle.of(DEFAULT_USER_ID), true, List.of(GOOGLE_BLUE),
                 DEFAULT_CONTRAST, DEFAULT_STYLE);
         ThemeStatePair pair = mThemeStateManager.getState(DEFAULT_USER_ID);
 
@@ -609,7 +610,7 @@ public class ThemeStateManagerTest {
     @Test
     public void testOnBootComplete_paletteOutdated_shouldForceUpdate() {
         // creates user with seed color same as the default google_blue
-        mThemeStateManager.onUserStart(UserHandle.of(DEFAULT_USER_ID), true, GOOGLE_BLUE,
+        mThemeStateManager.onUserStart(UserHandle.of(DEFAULT_USER_ID), true, List.of(GOOGLE_BLUE),
                 DEFAULT_CONTRAST, DEFAULT_STYLE);
         ThemeStatePair pair = mThemeStateManager.getState(DEFAULT_USER_ID);
 
@@ -625,13 +626,13 @@ public class ThemeStateManagerTest {
     }
 
     private ThemeStatePair startProvisionedUser() {
-        mThemeStateManager.onUserStart(UserHandle.of(DEFAULT_USER_ID), true, DEFAULT_SEED_COLOR,
+        mThemeStateManager.onUserStart(UserHandle.of(DEFAULT_USER_ID), true, DEFAULT_SEED_COLORS,
                 DEFAULT_CONTRAST, DEFAULT_STYLE);
         return mThemeStateManager.getState(DEFAULT_USER_ID);
     }
 
     private ThemeStatePair startUnprovisionedUser() {
-        mThemeStateManager.onUserStart(UserHandle.of(DEFAULT_USER_ID), false, DEFAULT_SEED_COLOR,
+        mThemeStateManager.onUserStart(UserHandle.of(DEFAULT_USER_ID), false, DEFAULT_SEED_COLORS,
                 DEFAULT_CONTRAST, DEFAULT_STYLE);
         return mThemeStateManager.getState(DEFAULT_USER_ID);
     }
