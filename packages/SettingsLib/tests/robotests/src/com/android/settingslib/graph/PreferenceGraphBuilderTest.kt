@@ -169,6 +169,21 @@ class PreferenceGraphBuilderTest {
         assertThat(result).isEqualTo(ReadWritePermit.DISALLOW)
     }
 
+    @Test
+    fun evalWritePermit_requiresConfirmationSensitivity_returnsDisallow() {
+        // Arrange: Create a preference with REQUIRES_CONFIRMATION sensitivity level.
+        // The build type and global setting should not affect this outcome.
+        ShadowBuild.setType("userdebug")
+        Settings.Global.putInt(context.contentResolver, SETTING_KEY, 1)
+        val preference = TestPreference(SensitivityLevel.REQUIRES_CONFIRMATION)
+
+        // Act: Evaluate the write permit.
+        val result = preference.evalWritePermit(context, 0, 0)
+
+        // Assert: The result should be DISALLOW, as this sensitivity level is strictly disallowed.
+        assertThat(result).isEqualTo(ReadWritePermit.DISALLOW)
+    }
+
     private val screenMetadata = object : PreferenceScreenMetadata {
         override val bindingKey: String = "screen_key"
         override val key: String = "screen_key"
