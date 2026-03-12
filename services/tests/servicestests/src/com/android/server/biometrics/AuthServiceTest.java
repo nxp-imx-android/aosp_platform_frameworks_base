@@ -71,6 +71,7 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.test.TestLooper;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -367,6 +368,7 @@ public class AuthServiceTest {
     }
 
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_BP_COMPUTER_CONTROLLED)
     public void testAuthenticate_callsVirtualDeviceManagerOnAuthenticationPrompt()
             throws Exception {
         mAuthService = new AuthService(mContext, mInjector);

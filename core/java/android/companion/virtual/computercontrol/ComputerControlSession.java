@@ -197,6 +197,12 @@ public final class ComputerControlSession implements AutoCloseable {
      */
     public static final int BLOCK_REASON_CALLER_INITIATED = 3;
 
+    /**
+     * Reason indicating that the session was blocked due to the automation requiring biometric
+     * authentication.
+     */
+    public static final int BLOCK_REASON_AUTHENTICATION_PROMPT_REQUESTED = 4;
+
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(prefix = "BLOCK_REASON_", value = {
@@ -205,6 +211,7 @@ public final class ComputerControlSession implements AutoCloseable {
             BLOCK_REASON_SECURE_CONTENT,
             BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH,
             BLOCK_REASON_CALLER_INITIATED,
+            BLOCK_REASON_AUTHENTICATION_PROMPT_REQUESTED,
     })
     @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
     public @interface SessionBlockReason {

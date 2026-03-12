@@ -64,6 +64,7 @@ public class PromptInfo implements Parcelable {
     private String mClassNameIfItIsConfirmDeviceCredentialActivity = null;
     private boolean mIsSystemCaller = false;
     private int mDisplayId = Display.DEFAULT_DISPLAY;
+    private boolean mNotifyVdmAuthenticationRequested = false;
 
     public PromptInfo() {
     }
@@ -105,6 +106,7 @@ public class PromptInfo implements Parcelable {
         mIdentityCheckInfo = in.readParcelable(IdentityCheckInfo.class.getClassLoader(),
                 IdentityCheckInfo.class);
         mDisplayId = in.readInt();
+        mNotifyVdmAuthenticationRequested = in.readBoolean();
     }
 
     public static final Creator<PromptInfo> CREATOR = new Creator<PromptInfo>() {
@@ -156,6 +158,7 @@ public class PromptInfo implements Parcelable {
         dest.writeBoolean(mIsSystemCaller);
         dest.writeParcelable(mIdentityCheckInfo, 0 /* parcelableFlags */);
         dest.writeInt(mDisplayId);
+        dest.writeBoolean(mNotifyVdmAuthenticationRequested);
     }
 
     // LINT.IfChange
@@ -383,7 +386,15 @@ public class PromptInfo implements Parcelable {
         mDisplayId = displayId;
     }
 
+    public void notifyVdmAuthenticationRequested() {
+        mNotifyVdmAuthenticationRequested = true;
+    }
+
     // Getters
+
+    public boolean shouldNotifyVdmAuthenticationRequested() {
+        return mNotifyVdmAuthenticationRequested;
+    }
 
     /**
      * Returns the logo bitmap either from logo resource or bitmap passed in from the app.

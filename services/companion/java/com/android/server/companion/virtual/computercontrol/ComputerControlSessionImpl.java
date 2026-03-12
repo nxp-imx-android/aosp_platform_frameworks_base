@@ -20,6 +20,7 @@ import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_AUDIO;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_BLOCKED_ACTIVITY;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS;
+import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_AUTHENTICATION_PROMPT_REQUESTED;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_CALLER_INITIATED;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_SESSION_EMPTY;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_SESSION_TIMED_OUT;
@@ -1345,6 +1346,14 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                                     userId);
                         });
             }
+        }
+
+        @Override
+        public void onAuthenticationPrompt(int displayId, String packageName) {
+            mLifecycle.updateLifecycleState(
+                    (config) -> {
+                        config.mAuthenticationPromptPackage = packageName;
+                    });
         }
     }
 

@@ -79,4 +79,12 @@ oneway interface IVirtualDeviceActivityListener {
      * @param userId The user ID associated with the activity whose launch is requested.
      */
     void onActivityLaunchRequested(int displayId, in ComponentName componentName, int userId);
+
+    /**
+     * Called when an activity requests biometric authentication.
+     *
+     * @param displayId The display ID on which the biometric authentication is requested.
+     * @param packageName Package of the calling application.
+     */
+    void onAuthenticationPrompt(int displayId, String packageName);
 }

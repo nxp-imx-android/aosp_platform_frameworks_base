@@ -1867,7 +1867,13 @@ public class BiometricService extends SystemService {
                         mDevicePolicyManager, mSettingObserver, mSensors, userId,
                         promptInfo, opPackageName, promptInfo.isDisallowBiometricsIfPolicyExists(),
                         getContext(), mBiometricCameraManager, mUserManager,
-                        mVirtualDeviceManagerInternal);
+                        mVirtualDeviceManagerInternal, true /* authenticationRequested */);
+
+                if (Flags.bpComputerControlled() && mVirtualDeviceManagerInternal != null
+                        && promptInfo.shouldNotifyVdmAuthenticationRequested()) {
+                    mVirtualDeviceManagerInternal.onAuthenticationPrompt(userId,
+                            promptInfo.getDisplayId(), opPackageName);
+                }
 
                 // Set the default title if necessary.
                 if (promptInfo.isUseDefaultTitle()) {
