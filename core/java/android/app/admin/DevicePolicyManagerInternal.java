@@ -88,15 +88,6 @@ public abstract class DevicePolicyManagerInternal {
     public abstract void notifyCrossProfileProvidersChanged(int userId, List<String> packages);
 
     /**
-     * @param userHandle the handle of the user whose profile owner is being fetched.
-     * @return the configured supervision app if it exists and is the device owner or policy owner.
-     * @deprecated Use {@link android.app.supervision.SupervisionManagerInternal} methods instead.
-     */
-    @Deprecated
-    public abstract @Nullable ComponentName getProfileOwnerOrDeviceOwnerSupervisionComponent(
-            @NonNull UserHandle userHandle);
-
-    /**
      * Checks if an app with given uid is an active device owner of its user.
      *
      * <p>This takes the DPMS lock.  DO NOT call from PM/UM/AM with their lock held.
@@ -115,18 +106,6 @@ public abstract class DevicePolicyManagerInternal {
      * @return true if the uid is an active profile owner.
      */
     public abstract boolean isActiveProfileOwner(int uid);
-
-    /**
-     * Checks if an app with given uid is the active supervision admin.
-     *
-     * <p>This takes the DPMS lock. DO NOT call from PM/UM/AM with their lock held.
-     *
-     * @param uid App uid.
-     * @return true if the uid is the active supervision app.
-     * @deprecated Use {@link android.app.supervision.SupervisionManagerInternal} methods instead.
-     */
-    @Deprecated
-    public abstract boolean isActiveSupervisionApp(int uid);
 
     /**
      * Creates an intent to show the admin support dialog to say that an action is disallowed by
