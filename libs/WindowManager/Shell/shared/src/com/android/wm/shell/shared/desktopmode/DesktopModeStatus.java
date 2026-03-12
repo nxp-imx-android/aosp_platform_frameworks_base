@@ -252,9 +252,6 @@ public class DesktopModeStatus {
         if (DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX.isTrue()) {
             return true;
         }
-        if (!DesktopExperienceFlags.ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS.isTrue()) {
-            return false;
-        }
         return SystemProperties.getBoolean(ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAY_SYS_PROP,
                 context.getResources().getBoolean(
                         R.bool.config_enterDesktopByDefaultOnFreeformDisplay));
