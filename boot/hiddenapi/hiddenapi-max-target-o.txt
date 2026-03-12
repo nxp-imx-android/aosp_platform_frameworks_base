@@ -59158,8 +59158,6 @@ Landroid/view/DisplayEventReceiver;->nativeDispose(J)V
 Landroid/view/DisplayEventReceiver;->nativeInit(Ljava/lang/ref/WeakReference;Landroid/os/MessageQueue;I)J
 Landroid/view/DisplayEventReceiver;->nativeScheduleVsync(J)V
 Landroid/view/DisplayEventReceiver;->TAG:Ljava/lang/String;
-Landroid/view/DisplayEventReceiver;->VSYNC_SOURCE_APP:I
-Landroid/view/DisplayEventReceiver;->VSYNC_SOURCE_SURFACE_FLINGER:I
 Landroid/view/DisplayInfo;-><init>(Landroid/os/Parcel;)V
 Landroid/view/DisplayInfo;-><init>(Landroid/view/DisplayInfo;)V
 Landroid/view/DisplayInfo;->address:Ljava/lang/String;
