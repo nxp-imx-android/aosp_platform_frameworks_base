@@ -174,9 +174,15 @@ public class AutofillInlineRequestHintTest {
         assertThat(viewNode).isEqualTo(mViewNode);
         verify(mAugmentedAutofillManagerClient).getViewNodeParcelable(eq(focusedId));
 
-        Rect rect = outputAutofillHint.getAugmentedAutofillProxy().fetchViewCoordinates(focusedId);
+        final Rect rect =
+                outputAutofillHint.getAugmentedAutofillProxy().fetchViewCoordinates(focusedId);
         assertThat(rect).isEqualTo(VIEW_RECT);
         verify(mAugmentedAutofillManagerClient).getViewCoordinates(eq(focusedId));
+
+        // Verify null values are handled properly.
+        when(mAugmentedAutofillManagerClient.getViewNodeParcelable(any())).thenReturn(null);
+        viewNode = outputAutofillHint.getAugmentedAutofillProxy().fetchFocusedViewNode(focusedId);
+        assertThat(viewNode).isNull();
     }
 
     private static FillEventHistory getFillEventHistory(AutofillId focusedId, int sessionId) {
