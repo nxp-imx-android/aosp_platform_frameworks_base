@@ -174,8 +174,13 @@ void SkiaRecordingCanvas::drawRenderNode(uirenderer::RenderNode* renderNode) {
 
     // draw backdrop filter drawable if needed.
     if (renderNode->stagingProperties().layerProperties().getBackdropImageFilter()) {
-        auto* backdropFilterDrawable =
-                mDisplayList->allocateDrawable<BackdropFilterDrawable>(renderNode, asSkCanvas());
+        auto* backdropFilterDrawable = mDisplayList->allocateDrawable<BackdropFilterDrawable>(
+                renderNode, asSkCanvas(), mCurrentBarrier);
+
+        if (mCurrentBarrier) {
+            // If in a reordering section, link it to the RenderNodeDrawable
+            renderNodeDrawable.setBackdropFilterDrawable(backdropFilterDrawable);
+        }
         drawDrawable(backdropFilterDrawable);
     }
 
