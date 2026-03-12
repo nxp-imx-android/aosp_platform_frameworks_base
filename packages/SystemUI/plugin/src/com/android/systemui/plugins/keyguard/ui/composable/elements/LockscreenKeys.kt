@@ -156,8 +156,6 @@ object LockscreenElementKeys {
     object Clock {
         val Large = MovableElementKey("LargeClock", ContentPicker)
         val Small = MovableElementKey("SmallClock", ContentPicker)
-        // TODO(b/445740687): Remove ShadeClock and reuse SmallClock there
-        val Shade = MovableElementKey("ShadeClock", ContentPicker)
     }
 
     /** Smartspace provided lockscreen elements */
