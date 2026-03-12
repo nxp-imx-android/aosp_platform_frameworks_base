@@ -66,6 +66,7 @@ import com.android.systemui.complication.dagger.ComplicationComponent
 import com.android.systemui.dreams.complication.HideComplicationTouchHandler
 import com.android.systemui.dreams.complication.dagger.DreamComplicationComponent
 import com.android.systemui.dreams.dagger.DreamOverlayComponent
+import com.android.systemui.dreams.domain.interactor.DreamInteractor
 import com.android.systemui.dreams.touch.CommunalTouchHandler
 import com.android.systemui.dreams.touch.DismissTouchHandler
 import com.android.systemui.dreams.touch.DreamSwipeDelegate
@@ -150,6 +151,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
     private val mScrimController = mock<ScrimController>()
     private val mSystemDialogsCloser = mock<SystemDialogsCloser>()
     private val mDreamOverlayCallbackController = mock<DreamOverlayCallbackController>()
+    private val mDreamInteractor = mock<DreamInteractor>()
     private val mDreamSwipeDelegate = mock<DreamSwipeDelegate>()
     private val mDreamOverlayContainerViewModel =
         mock<DreamOverlayContainerViewModel> { on { swipeDelegate } doReturn mDreamSwipeDelegate }
@@ -289,6 +291,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
                     mDreamOverlayCallbackController,
                     keyguardInteractor,
                     mGestureInteractor,
+                    mDreamInteractor,
                     wakeGestureMonitor,
                     powerInteractor,
                     WINDOW_NAME,
@@ -1600,6 +1603,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
     @DisableFlags(FLAG_GLANCEABLE_HUB_V2, FLAG_DREAMS_SWITCHER)
     @Test
     fun testAmbientTouchHandlersRegistration_registerHideComplicationAndCommunal() {
+        whenever(mDreamInteractor.isDreamSwitcherEnabled).thenReturn(false)
         val client = client
 
         // Inform the overlay service of dream starting.
@@ -1623,6 +1627,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
     @Test
     fun testAmbientTouchHandlersRegistration_v2_registerOnlyHideComplication() {
         kosmos.setCommunalV2ConfigEnabled(true)
+        whenever(mDreamInteractor.isDreamSwitcherEnabled).thenReturn(false)
 
         val client = client
 
@@ -1645,6 +1650,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
     @Test
     fun testAmbientTouchHandlersRegistration_dreamsSwitcher() {
         kosmos.setCommunalV2ConfigEnabled(true)
+        whenever(mDreamInteractor.isDreamSwitcherEnabled).thenReturn(true)
 
         val client = client
 

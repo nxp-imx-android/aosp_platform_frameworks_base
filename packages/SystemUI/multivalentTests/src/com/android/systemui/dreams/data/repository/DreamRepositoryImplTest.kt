@@ -25,8 +25,11 @@ import android.content.pm.PackageManager
 import android.content.pm.UserInfo
 import android.os.RemoteException
 import android.os.UserHandle
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.service.dreams.DreamItem
 import android.service.dreams.DreamPlaylist
+import android.service.dreams.Flags.FLAG_DREAMS_SWITCHER
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -102,6 +105,7 @@ class DreamRepositoryImplTest : SysuiTestCase() {
                 userScopedDreamManager = userScopedDreamManager,
                 userContextProvider = userContextProvider,
                 userRepository = userRepository,
+                context = mContext,
             )
         }
 
@@ -227,6 +231,36 @@ class DreamRepositoryImplTest : SysuiTestCase() {
             verify(dreamManager).registerListener(any(), any())
             job.cancel()
         }
+
+    @Test
+    @EnableFlags(FLAG_DREAMS_SWITCHER)
+    fun isDreamSwitcherEnabled_returnsTrue_whenConfigAndFlagAreEnabled() {
+        mContext.orCreateTestableResources.addOverride(
+            com.android.internal.R.bool.config_dreamSwitcherEnabled,
+            true,
+        )
+        assertThat(kosmos.underTest.isDreamSwitcherEnabled).isTrue()
+    }
+
+    @Test
+    @EnableFlags(FLAG_DREAMS_SWITCHER)
+    fun isDreamSwitcherEnabled_returnsFalse_whenConfigIsDisabled() {
+        mContext.orCreateTestableResources.addOverride(
+            com.android.internal.R.bool.config_dreamSwitcherEnabled,
+            false,
+        )
+        assertThat(kosmos.underTest.isDreamSwitcherEnabled).isFalse()
+    }
+
+    @Test
+    @DisableFlags(FLAG_DREAMS_SWITCHER)
+    fun isDreamSwitcherEnabled_returnsFalse_whenFlagIsDisabled() {
+        mContext.orCreateTestableResources.addOverride(
+            com.android.internal.R.bool.config_dreamSwitcherEnabled,
+            true,
+        )
+        assertThat(kosmos.underTest.isDreamSwitcherEnabled).isFalse()
+    }
 
     @Test
     fun dreamSwitcherDialogShowing_defaultsToFalse() =

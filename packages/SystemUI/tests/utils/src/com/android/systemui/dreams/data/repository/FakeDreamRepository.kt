@@ -42,6 +42,11 @@ class FakeDreamRepository(userRepository: UserRepository) : DreamRepository {
     private val _dreamSwitcherDialogShowing = MutableStateFlow(false)
     override val dreamSwitcherDialogShowing = _dreamSwitcherDialogShowing.asStateFlow()
 
+    private var _isDreamSwitcherEnabled: Boolean = false
+
+    override val isDreamSwitcherEnabled: Boolean
+        get() = _isDreamSwitcherEnabled
+
     override val dreamState: Flow<DreamPlaylistModel> =
         userRepository.selectedUser
             .map { it.userInfo.id }
@@ -70,6 +75,10 @@ class FakeDreamRepository(userRepository: UserRepository) : DreamRepository {
 
     override fun setSwitcherDialogShowing(showing: Boolean) {
         _dreamSwitcherDialogShowing.update { showing }
+    }
+
+    fun setDreamSwitcherEnabled(enabled: Boolean) {
+        _isDreamSwitcherEnabled = enabled
     }
 
     fun setDreamState(user: UserHandle, state: DreamPlaylistModel) {

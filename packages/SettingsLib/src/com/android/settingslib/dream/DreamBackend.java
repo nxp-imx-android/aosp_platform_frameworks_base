@@ -15,6 +15,7 @@
  */
 
 package com.android.settingslib.dream;
+
 import static android.service.dreams.Flags.dreamsSwitcher;
 
 import android.annotation.IntDef;
@@ -534,6 +535,13 @@ public class DreamBackend {
         return getBoolean(Settings.Secure.SCREENSAVER_ENABLED, mDreamsEnabledByDefault);
     }
 
+    /** Returns whether the dream switcher is supported and enabled. */
+    public boolean isDreamSwitcherEnabled() {
+        return mContext.getResources()
+                        .getBoolean(com.android.internal.R.bool.config_dreamSwitcherEnabled)
+                && dreamsSwitcher();
+    }
+
     public void setEnabled(boolean value) {
         logd("setEnabled(%s)", value);
         setBoolean(Settings.Secure.SCREENSAVER_ENABLED, value);
@@ -646,7 +654,7 @@ public class DreamBackend {
             }
 
             // If dreamsSwitcher is false, only the first dream is considered active.
-            return dreamsSwitcher() ? Arrays.asList(dreams) : Arrays.asList(dreams[0]);
+            return isDreamSwitcherEnabled() ? Arrays.asList(dreams) : Arrays.asList(dreams[0]);
         } catch (RemoteException e) {
             Log.w(TAG, "Failed to get active dreams", e);
             return new ArrayList<>();
