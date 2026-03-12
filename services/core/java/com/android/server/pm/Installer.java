@@ -438,24 +438,24 @@ public class Installer extends SystemService {
     }
 
     public void moveAppDataPath(String uuid, String fromPath, String toPath, int userId, int appId,
-            String seInfo, int flags, IInstalld.IAppDataOperationCallback callback)
+            String seInfo, int flags, int callerUid, IInstalld.IAppDataOperationCallback callback)
             throws InstallerException {
         if (!checkBeforeRemote()) return;
         try {
             mInstalld.moveAppDataPath(uuid, fromPath, toPath, userId, appId, seInfo, flags,
-                    callback);
+                    callerUid, callback);
         } catch (Exception e) {
             throw InstallerException.from(e);
         }
     }
 
     public void copyAppDataPath(String uuid, String fromPath, String toPath, int userId, int appId,
-            String seInfo, int flags, IInstalld.IAppDataOperationCallback callback)
+            String seInfo, int flags, int callerUid, IInstalld.IAppDataOperationCallback callback)
             throws InstallerException {
         if (!checkBeforeRemote()) return;
         try {
             mInstalld.copyAppDataPath(uuid, fromPath, toPath, userId, appId, seInfo, flags,
-                    callback);
+                    callerUid, callback);
         } catch (Exception e) {
             throw InstallerException.from(e);
         }

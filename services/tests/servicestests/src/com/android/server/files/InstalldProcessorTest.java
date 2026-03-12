@@ -106,6 +106,7 @@ public class InstalldProcessorTest {
                 anyInt(),
                 eq(aInfo.seInfo),
                 anyInt(),
+                anyInt(),
                 any(IInstalld.IAppDataOperationCallback.class));
     }
 
