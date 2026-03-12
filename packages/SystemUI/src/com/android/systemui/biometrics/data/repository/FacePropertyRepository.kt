@@ -31,7 +31,6 @@ import com.android.systemui.biometrics.shared.model.LockoutMode
 import com.android.systemui.biometrics.shared.model.toFaceSensorInfo
 import com.android.systemui.biometrics.shared.model.toLockoutMode
 import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLogging
-import com.android.systemui.common.coroutine.ConflatedCallbackFlow
 import com.android.systemui.common.ui.data.repository.ConfigurationRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -42,6 +41,7 @@ import com.android.systemui.display.shared.model.DisplayRotation
 import com.android.systemui.display.shared.model.toRotation
 import com.android.systemui.keyguard.shared.model.DevicePosture
 import com.android.systemui.res.R
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -101,7 +101,7 @@ constructor(
 ) : FacePropertyRepository {
 
     override val sensorInfo: StateFlow<FaceSensorInfo?> =
-        ConflatedCallbackFlow.conflatedCallbackFlow {
+        conflatedCallbackFlow {
                 val callback =
                     object : IFaceAuthenticatorsRegisteredCallback.Stub() {
                         override fun onAllAuthenticatorsRegistered(
@@ -127,7 +127,7 @@ constructor(
     private var currentPhysicalCameraId: String? = null
 
     override val cameraInfo: StateFlow<CameraInfo?> =
-        ConflatedCallbackFlow.conflatedCallbackFlow {
+        conflatedCallbackFlow {
                 val callback =
                     object : CameraManager.AvailabilityCallback() {
 
