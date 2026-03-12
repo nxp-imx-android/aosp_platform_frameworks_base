@@ -47,4 +47,8 @@ public data class FilterModel(
      * [android.app.NotificationRule.Filter.getIncludedPackageUids].
      */
     public val includedApps: IncludedAppsModel?,
-)
+) {
+    /** Returns true if at least one field in the filter is filled in with content. */
+    val hasContent: Boolean
+        get() = contacts != null || includedApps != null
+}

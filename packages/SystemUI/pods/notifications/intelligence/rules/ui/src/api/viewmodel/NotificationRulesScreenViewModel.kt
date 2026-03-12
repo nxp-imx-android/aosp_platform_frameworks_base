@@ -51,9 +51,6 @@ public interface NotificationRulesScreenViewModel : Activatable {
      */
     suspend fun loadContactBitmapFromUri(uri: Uri, userContext: Context, @Px sizePx: Int): Bitmap?
 
-    /** Creates a new rule and adds it to the list of saved rules. */
-    public fun createRule(newRule: RuleModel)
-
     public interface Factory {
         public fun create(backStack: List<RulesScreenViewState>): NotificationRulesScreenViewModel
     }
