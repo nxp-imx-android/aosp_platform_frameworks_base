@@ -32,7 +32,6 @@ import android.util.ArrayMap;
 import android.util.ArraySet;
 
 import com.android.internal.annotations.GuardedBy;
-import com.android.media.flags.Flags;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -119,11 +118,8 @@ abstract class MediaRoute2Provider {
             return;
         }
 
-        List<MediaRoute2Info> possiblyUpdatedRoutes = null;
-        if (Flags.enableRouteVisibilityControlCompatFixes()) {
-            possiblyUpdatedRoutes =
+        List<MediaRoute2Info> possiblyUpdatedRoutes =
                     getVisibilityUpdatedRoutesIfNeeded(providerInfo.getRoutes(), getSessionInfos());
-        }
 
         if (possiblyUpdatedRoutes != null) {
             setProviderStateWithUpdatedRoutes(providerInfo, possiblyUpdatedRoutes);
@@ -342,9 +338,6 @@ abstract class MediaRoute2Provider {
     }
 
     private void maybeUpdateProviderStateForRouteVisibility() {
-        if (!Flags.enableRouteVisibilityControlCompatFixes()) {
-            return;
-        }
         var providerInfo = mProviderInfo;
         if (providerInfo == null) {
             return;  // no need to update provider state if we don't have any

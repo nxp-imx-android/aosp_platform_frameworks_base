@@ -2598,8 +2598,7 @@ class MediaRouter2ServiceImpl {
         if (!Flags.enableRouteVisibilityControlApi()) {
             return Collections.emptySet();
         }
-        if (Flags.enableRouteVisibilityControlCompatFixes()
-                && route.getTemporaryVisibilityPackages().contains(packageName)) {
+        if (route.getTemporaryVisibilityPackages().contains(packageName)) {
             return Collections.emptySet();
         }
         List<Set<String>> permissionSets = route.getRequiredPermissions();
@@ -2647,9 +2646,6 @@ class MediaRouter2ServiceImpl {
      */
     private boolean permissionAllowedForAppCompat(String permission, int uid,
             Predicate<String> permissionChecker) {
-        if (!Flags.enableRouteVisibilityControlCompatFixes()) {
-            return false;
-        }
         // TODO(b/386260596) - replace this string with a Manifest.permission constant once
         // one is available.
         if (TextUtils.equals(permission, "android.permission.ACCESS_LOCAL_NETWORK")) {

@@ -987,18 +987,16 @@ public final class MediaRouter2 {
         }
         mDiscoveryPreference = newDiscoveryPreference;
         updateFilteredRoutesLocked();
-        if (Flags.enableRouteVisibilityControlCompatFixes()) {
-            mHandler.sendMessage(
-                    obtainMessage(
-                            MediaRouter2::dispatchFilteredRoutesUpdatedOnHandler,
-                            this,
-                            mFilteredRoutes));
-            mHandler.sendMessage(
-                    obtainMessage(
-                            MediaRouter2::dispatchControllerUpdatedIfNeededOnHandler,
-                            this,
-                            new HashMap<>(mRoutes)));
-        }
+        mHandler.sendMessage(
+                obtainMessage(
+                        MediaRouter2::dispatchFilteredRoutesUpdatedOnHandler,
+                        this,
+                        mFilteredRoutes));
+        mHandler.sendMessage(
+                obtainMessage(
+                        MediaRouter2::dispatchControllerUpdatedIfNeededOnHandler,
+                        this,
+                        new HashMap<>(mRoutes)));
         return true;
     }
 
@@ -1469,10 +1467,8 @@ public final class MediaRouter2 {
             }
             updateMissingPermissionsLocked(missingPermissions);
             updateFilteredRoutesLocked();
-            if (Flags.enableRouteVisibilityControlCompatFixes()) {
-                dispatchFilteredRoutesUpdatedOnHandler(mFilteredRoutes);
-                dispatchControllerUpdatedIfNeededOnHandler(mRoutes);
-            }
+            dispatchFilteredRoutesUpdatedOnHandler(mFilteredRoutes);
+            dispatchControllerUpdatedIfNeededOnHandler(mRoutes);
         }
     }
 
@@ -1482,18 +1478,6 @@ public final class MediaRouter2 {
         mFilteredRoutes =
                 Collections.unmodifiableList(
                         filterRoutesWithCompositePreferenceLocked(List.copyOf(mRoutes.values())));
-        if (!Flags.enableRouteVisibilityControlCompatFixes()) {
-            mHandler.sendMessage(
-                    obtainMessage(
-                            MediaRouter2::dispatchFilteredRoutesUpdatedOnHandler,
-                            this,
-                            mFilteredRoutes));
-            mHandler.sendMessage(
-                    obtainMessage(
-                            MediaRouter2::dispatchControllerUpdatedIfNeededOnHandler,
-                            this,
-                            new HashMap<>(mRoutes)));
-        }
     }
 
     @GuardedBy("mLock")
@@ -4055,10 +4039,8 @@ public final class MediaRouter2 {
                 updateFilteredRoutesLocked();
             }
             notifyPreferredFeaturesChanged(preference.getPreferredFeatures());
-            if (Flags.enableRouteVisibilityControlCompatFixes()) {
-                dispatchFilteredRoutesUpdatedOnHandler(mFilteredRoutes);
-                dispatchControllerUpdatedIfNeededOnHandler(mRoutes);
-            }
+            dispatchFilteredRoutesUpdatedOnHandler(mFilteredRoutes);
+            dispatchControllerUpdatedIfNeededOnHandler(mRoutes);
         }
 
         private void onRouteListingPreferenceChangedOnHandler(
