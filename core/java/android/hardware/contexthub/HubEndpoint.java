@@ -146,6 +146,12 @@ public class HubEndpoint {
     }
 
     /**
+     * @return An int array comprised of [majorVersion, minorVersion, patchVersion,
+     *     minimumCompatibleMajorVersion] from the native layer.
+     */
+    private static native int[] native_getSharedDataSupportVersion();
+
+    /**
      * Initializes the native code for this HubEndpoint.
      *
      * @param queue The message queue associated with the endpoint's mLooper object.
@@ -1235,8 +1241,20 @@ public class HubEndpoint {
         /** Build the {@link HubEndpoint} object. */
         @NonNull
         public HubEndpoint build() {
+            int[] versionInfo = native_getSharedDataSupportVersion();
+            android.hardware.contexthub.EndpointInfo.SharedDataSupportVersion sharedDataVersion =
+                    new android.hardware.contexthub.EndpointInfo.SharedDataSupportVersion();
+            sharedDataVersion.version = new android.hardware.contexthub.SharedDataRegion.Version();
+            if (versionInfo != null && versionInfo.length == 4) {
+                sharedDataVersion.version.major = (byte) versionInfo[0];
+                sharedDataVersion.version.minor = (byte) versionInfo[1];
+                sharedDataVersion.version.patch = (char) versionInfo[2];
+                sharedDataVersion.minimumCompatibleMajorVersion = (byte) versionInfo[3];
+            }
+
             return new HubEndpoint(
-                    new HubEndpointInfo(mPackageName, mVersion, mTag, mServiceInfos),
+                    new HubEndpointInfo(
+                            mPackageName, mVersion, mTag, mServiceInfos, sharedDataVersion),
                     mLifecycleCallback,
                     mLifecycleCallbackExecutor != null ? mLifecycleCallbackExecutor : mMainExecutor,
                     mMessageCallback,
