@@ -415,6 +415,20 @@ public class ComputerControlAllowlistControllerTest {
     }
 
     @Test
+    public void isPackageAutomatable_targetIsApprovedAgent_returnsFalse() throws Exception {
+        final String packageName = "com.hello.agent";
+        final Signature signature = generateSignature((byte) 1);
+        final String certificateDigest = preparePackage(packageName, signature);
+
+        mDeviceConfigWriter.allowlistSessionOwner(packageName, certificateDigest);
+        SystemClock.sleep(TIMEOUT_MILLIS);
+
+        assertFalse(
+                mAllowlistController.isPackageAutomatable(
+                        packageName, "com.some.owner", mPackageManager));
+    }
+
+    @Test
     public void isPackageAutomatable_allowlistedApp_returnsTrue() throws Exception {
         final String packageName = "com.hello.good";
         final Signature signature = generateSignature((byte) 1);
