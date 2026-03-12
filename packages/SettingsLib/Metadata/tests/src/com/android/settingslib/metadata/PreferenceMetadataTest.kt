@@ -286,6 +286,7 @@ class PreferenceMetadataTest {
         override val permissions: Permissions? = null
         override val screenPermissions: Permissions? = null
         override val getScreenParameters: () -> ValidatedKeyParameters? = { null }
+        override val supportsWrite = set != null
     }
 
     open class TestPreferencesApiScreen(

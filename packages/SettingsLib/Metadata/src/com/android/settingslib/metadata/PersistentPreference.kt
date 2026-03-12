@@ -107,6 +107,9 @@ interface PersistentPreference<T> : PreferenceMetadata {
     fun getReadPermit(context: Context, callingPid: Int, callingUid: Int): @ReadWritePermit Int =
         PreferenceScreenRegistry.defaultReadPermit
 
+    /** Returns true if the preference supports write in any circumstances. */
+    val supportsWrite: Boolean
+
     /** Returns the required permissions to write preference value. */
     fun getWritePermissions(context: Context): Permissions? = null
 

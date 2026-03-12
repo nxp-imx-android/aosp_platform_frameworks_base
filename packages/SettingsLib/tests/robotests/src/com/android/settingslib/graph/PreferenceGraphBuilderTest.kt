@@ -86,6 +86,8 @@ class PreferenceGraphBuilderTest {
             preconditionsDescription = "set_warning_preconditions_description",
             warningMessage = "set_warning_message"
         )
+
+        override val supportsWrite = true
     }
 
     @After
@@ -117,6 +119,7 @@ class PreferenceGraphBuilderTest {
         override val getScreenParameters: () -> ValidatedKeyParameters? = { null }
         override val getParametersSchema: () -> KeyParametersSchema? = { parametersSchema }
         override val getParameters: () -> ValidatedKeyParameters? = { parameters }
+        override val supportsWrite = set != null
     }
 
     @Test

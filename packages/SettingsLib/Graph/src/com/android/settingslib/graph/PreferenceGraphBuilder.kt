@@ -629,8 +629,10 @@ fun PreferenceMetadata.toProto(
         writable =
             if (metadata is ApiPreference<*>) {
                 metadata.set != null
+            } else if (metadata is PersistentPreference<*>) {
+                metadata.supportsWrite
             } else {
-                false // Legacy preferences are not writable
+                false
             }
 
         if (metadataIcon != 0) icon = metadataIcon
