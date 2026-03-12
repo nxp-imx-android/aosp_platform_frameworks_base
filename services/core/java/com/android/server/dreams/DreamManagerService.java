@@ -273,9 +273,7 @@ public final class DreamManagerService extends SystemService {
                     final DreamUserData userData = getOrCreateUserData(userId);
                     if (userData != null) {
                         userData.mMetadataProvider.invalidateCache();
-                        if (dreamsSwitcher()) {
-                            userData.mResolver.invalidate();
-                        }
+                        userData.mResolver.invalidate();
                     }
                     notifyPlaylistChanged(userId);
                 }
@@ -450,10 +448,15 @@ public final class DreamManagerService extends SystemService {
         }
         DreamMetadataProvider metadataProvider = new DreamMetadataProvider(userContext);
         DreamRepository repository = new DreamRepositoryImpl(userContext, metadataProvider);
-        DreamComponentsResolver resolver = mInjector.getDreamComponentsResolver(userContext,
-                userId,
-                mDozeConfig, LocalServices.getService(UserManagerInternal.class),
-                mDreamsOnlyEnabledForDockUser, repository);
+        DreamValidator dreamValidator = new DreamValidator(userContext);
+        DreamComponentsResolver resolver =
+                mInjector.getDreamComponentsResolver(
+                        dreamValidator,
+                        userId,
+                        mDozeConfig,
+                        LocalServices.getService(UserManagerInternal.class),
+                        mDreamsOnlyEnabledForDockUser,
+                        repository);
         DreamUserData newUserData = new DreamUserData(userContext, resolver, repository,
                 metadataProvider);
 
@@ -657,6 +660,7 @@ public final class DreamManagerService extends SystemService {
                 mDreamPlaylistUpdater.dump(pw);
                 for (int i = 0; i < mUserData.size(); i++) {
                     mUserData.valueAt(i).mResolver.dump(pw);
+                    mUserData.valueAt(i).mMetadataProvider.dump(pw);
                 }
             }
 
@@ -1374,10 +1378,15 @@ public final class DreamManagerService extends SystemService {
         Handler getHandler();
         AmbientDisplayConfiguration getDozeConfig();
         DreamController getDreamController(DreamController.Listener controllerListener);
-        DreamComponentsResolver getDreamComponentsResolver(Context context,
-                int userId, AmbientDisplayConfiguration dozeConfig,
-                UserManagerInternal userManagerInternal, boolean dreamsOnlyEnabledForDockUser,
+
+        DreamComponentsResolver getDreamComponentsResolver(
+                DreamValidator dreamValidator,
+                int userId,
+                AmbientDisplayConfiguration dozeConfig,
+                UserManagerInternal userManagerInternal,
+                boolean dreamsOnlyEnabledForDockUser,
                 DreamRepository dreamRepository);
+
         @UserIdInt int getCurrentUser();
     }
 
@@ -1411,12 +1420,20 @@ public final class DreamManagerService extends SystemService {
         }
 
         @Override
-        public DreamComponentsResolver getDreamComponentsResolver(Context context,
-                int userId, AmbientDisplayConfiguration dozeConfig,
-                UserManagerInternal userManagerInternal, boolean dreamsOnlyEnabledForDockUser,
+        public DreamComponentsResolver getDreamComponentsResolver(
+                DreamValidator dreamValidator,
+                int userId,
+                AmbientDisplayConfiguration dozeConfig,
+                UserManagerInternal userManagerInternal,
+                boolean dreamsOnlyEnabledForDockUser,
                 DreamRepository dreamRepository) {
-            return new DreamComponentsResolver(context, userId, dozeConfig,
-                    userManagerInternal, dreamsOnlyEnabledForDockUser, dreamRepository);
+            return new DreamComponentsResolver(
+                    userId,
+                    dozeConfig,
+                    userManagerInternal,
+                    dreamsOnlyEnabledForDockUser,
+                    dreamRepository,
+                    dreamValidator);
         }
 
         @Override

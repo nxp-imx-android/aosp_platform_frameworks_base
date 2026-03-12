@@ -16,6 +16,7 @@
 
 package android.processor.devicepolicy
 
+import android.annotation.FlaggedApi
 import android.processor.devicepolicy.protos.FullyQualifiedClassName
 import android.processor.devicepolicy.protos.FullyQualifiedFieldName
 import android.processor.devicepolicy.protos.PolicyMetadata
@@ -263,6 +264,7 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
         val affectedResource =
             convertResourceType(element, definition.affectedResource) ?: return null
         val allowedDpcTypes = convertDpcTypes(element, definition.allowedDpcTypes)
+        val flaggedApi = readFlaggedApi(element);
 
         if (documentation.trim().isEmpty()) {
             printError(element, "Missing JavaDoc")
@@ -287,6 +289,9 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
         if (!requiredCrossUserPermission.isEmpty()) {
             validateRequiredCrossUserPermission(element, requiredCrossUserPermission)
             builder.setRequiredCrossUserPermission(requiredCrossUserPermission)
+        }
+        if (flaggedApi!= null) {
+            builder.setFlag(flaggedApi)
         }
 
         return builder.build()
@@ -488,4 +493,11 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
 
                 null
             }
+
+    private fun readFlaggedApi(element: Element): String? {
+        val flaggedApiAnnotation =
+            element.getAnnotation(FlaggedApi::class.java) ?: return null
+
+        return flaggedApiAnnotation.value
+    }
 }

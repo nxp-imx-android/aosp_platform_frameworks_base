@@ -117,7 +117,7 @@ public class BackgroundActivityStartController {
     private static final String DOC_LINK = "go/android-asm";
 
     /** Used to determine which version of the ASM logic was used in logs while we iterate */
-    private static final int ASM_VERSION = 12;
+    private static final int ASM_VERSION = 14;
     private static final int NO_PROCESS_UID = -1;
     private static final int NO_GRACE_PERIOD = -1;
 
@@ -1627,7 +1627,7 @@ public class BackgroundActivityStartController {
         String asmDebugInfo = getDebugInfoForActivitySecurity("Launch", sourceRecord,
                 targetRecord, targetTask, targetTopActivity, realCallingUid, balVerdict,
                 enforceBlock, taskToFront, avoidMoveTaskToFront, allowedByGracePeriod,
-                bas.mActivityOptedIn);
+                bas.mActivityOptedIn, bas.mTopActivityOptedIn, callingUid);
 
         FrameworkStatsLog.write(FrameworkStatsLog.ACTIVITY_ACTION_BLOCKED,
                 /* caller_uid */
@@ -1768,7 +1768,8 @@ public class BackgroundActivityStartController {
             Slog.i(TAG, getDebugInfoForActivitySecurity("Clear Top", sourceRecord, targetRecord,
                     targetTask, targetTaskTop, realCallingUid, balVerdict, shouldBlockActivityStart,
                     /* taskToFront */ true, /* avoidMoveTaskToFront */ false,
-                    /* allowedByAsmGracePeriod */ false, bas.mActivityOptedIn));
+                    /* allowedByAsmGracePeriod */ false, bas.mActivityOptedIn,
+                    bas.mTopActivityOptedIn, callingUid));
         }
     }
 
@@ -2028,7 +2029,7 @@ public class BackgroundActivityStartController {
             int realCallingUid, BalVerdict balVerdict,
             boolean enforceBlock, boolean taskToFront,
             boolean avoidMoveTaskToFront, boolean allowedByGracePeriod,
-            ActivityRecord activityOptedIn) {
+            ActivityRecord activityOptedIn, boolean topActivityOptedIn, int callingUid) {
         final String prefix = "[ASM] ";
         Function<ActivityRecord, String> recordToString = (ar) -> {
             if (ar == null) {
@@ -2048,6 +2049,9 @@ public class BackgroundActivityStartController {
         if (!enforceBlock) {
             joiner.add(prefix + "Restrictions Enabled: " + android.security
                     .Flags.asmRestrictionsV2());
+            joiner.add(prefix + "Top Activity Opted In: " + topActivityOptedIn);
+            joiner.add(prefix + "Compat Change Enabled: " + CompatChanges.isChangeEnabled(
+                    ASM_RESTRICTIONS, callingUid));
         }
         joiner.add(prefix + "ASM Version: " + ASM_VERSION);
         joiner.add(prefix + "System Time: " + SystemClock.uptimeMillis());
@@ -2061,6 +2065,9 @@ public class BackgroundActivityStartController {
             String realCallingPackage = getService().mContext.getPackageManager().getNameForUid(
                     realCallingUid);
             joiner.add(prefix + "Real Calling Uid Package: " + realCallingPackage);
+            String callingPackage = getService().mContext.getPackageManager().getNameForUid(
+                    callingUid);
+            joiner.add(prefix + "Calling Uid Package: " + callingPackage);
         } else {
             joiner.add(prefix + "Source Record: " + recordToString.apply(sourceRecord));
             joiner.add(prefix + "Source Launch Package: " + sourceRecord.launchedFromPackage);
@@ -2372,6 +2379,10 @@ public class BackgroundActivityStartController {
         private ActivityRecord mActivityOptedIn;
 
         BlockActivityStart optedIn(ActivityRecord activity) {
+            if (activity == null) {
+                Slog.wtfStack(TAG, "BlockActivityStart.optedIn called with null activity");
+                return this;
+            }
             mTopActivityOptedIn = true;
             if (mActivityOptedIn == null) {
                 mActivityOptedIn = activity;

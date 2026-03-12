@@ -1214,24 +1214,9 @@ class UserController implements Handler.Callback {
                 .logUserLifecycleEvent(userId, USER_JOURNEY_USER_LOGOUT, EVENT_STATE_NONE);
 
         if (shouldSwitchUser) {
-            boolean signoutMessageSet = false;
-            if (android.multiuser.Flags.userSwitchingDialogSignoutMessage()
-                    && getSwitchingFromUserMessageUnchecked(userId) == null
-                    && getSwitchingToUserMessageUnchecked(UserHandle.USER_SYSTEM) == null) {
-                signoutMessageSet = true;
-                setSwitchingToUserMessage(UserHandle.USER_SYSTEM, mInjector.getContext()
-                        .getResources().getString(R.string.user_logging_out_message));
-            }
-            try {
-                if (!switchUser(UserHandle.USER_SYSTEM)) {
-                    Slogf.e(TAG, "Cannot logout user %d; switch to system user failed", userId);
-                    return false;
-                }
-            } finally {
-                if (android.multiuser.Flags.userSwitchingDialogSignoutMessage()
-                        && signoutMessageSet) {
-                    mUiHandler.post(() -> setSwitchingToUserMessage(UserHandle.USER_SYSTEM, null));
-                }
+            if (!switchUser(UserHandle.USER_SYSTEM)) {
+                Slogf.e(TAG, "Cannot logout user %d; switch to system user failed", userId);
+                return false;
             }
         }
         // Now, userId is not current, so we can simply stop it.

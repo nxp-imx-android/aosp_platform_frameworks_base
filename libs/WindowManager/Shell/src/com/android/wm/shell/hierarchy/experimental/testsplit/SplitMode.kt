@@ -386,6 +386,23 @@ class SplitMode(
         activeContainerCount = 0
     }
 
+    override fun containersRemoved(
+        updateContext: Mode.UpdateContext,
+        leavingContainers: List<Container>,
+        removedContainers: List<Container>,
+        snapshot: HierarchySnapshot,
+        animationPlan: AnimationPlan?
+    ) {
+        if (leavingContainers.isEmpty() && removedContainers.isEmpty()) {
+            Log.d(TAG, "containersRemoved no valid changes")
+            return
+        }
+        Log.d(
+            TAG, "containersRemoved leavingContainers: $leavingContainers\n" +
+                    "removedContainers: $removedContainers"
+        )
+    }
+
     override fun containersChanged(
         updateContext: Mode.UpdateContext,
         enteringContainers: List<Container>,
@@ -405,33 +422,42 @@ class SplitMode(
 
         for (modeContainer in modeContainers) {
             var enteringContainersInRoot =
-                enteringContainers.filter { HierarchyUtils.getModeContainer(it) == modeContainer }
+                enteringContainers.filter { it.parent == splitRoot }
             var changedContainersInRoot =
-                changedContainers.filter { HierarchyUtils.getModeContainer(it) == modeContainer }
-            val splitRootChanges = snapshot.getChanges(modeContainer)
-            val nodeRootChanges = nodeRoots[modeContainer]
-                ?.firstOrNull { !snapshot.getChanges(it).isEmpty }
+                changedContainers.filter { it.parent == splitRoot }
+            var enteringContainersInNodeRoot =
+                enteringContainers.filter { nodeRoots[splitRoot]?.contains(it.parent) == true }
+            var changedContainersInNodeRoot =
+                changedContainers.filter { nodeRoots[splitRoot]?.contains(it.parent) == true }
 
-            if (splitRootChanges.isEmpty && nodeRootChanges == null) {
-                Log.d(TAG, "no valid changes")
+            if (enteringContainersInRoot.isEmpty()
+                && changedContainersInRoot.isEmpty()
+                && enteringContainersInNodeRoot.isEmpty()
+                && changedContainersInNodeRoot.isEmpty()) {
+                Log.d(TAG, "containersChanged no valid changes")
                 return
             }
             Log.d(
-                TAG, "containersChanged container: ${modeContainer.name} " +
-                        "changes: $splitRootChanges " +// buttonLaunch: $buttonLaunch " +
-                        "odeRootChanges: $nodeRootChanges"
+                TAG, "containersChanged ${modeContainer.name} button? $buttonLaunch\n" +
+                        "enteringContainersInRoot: $enteringContainersInRoot\n" +
+                        "changedContainersInRoot: $changedContainersInRoot\n" +
+                        "enteringContainersInNodeRoot: $enteringContainersInNodeRoot\n" +
+                        "changedContainersInNodeRoot: $changedContainersInNodeRoot"
             )
 
-            if (enteringContainersInRoot.isNotEmpty() && !buttonLaunch) {
+            if (enteringContainersInNodeRoot.isNotEmpty() && !buttonLaunch) {
                 // We'll need to modify this in the future for different ways split is entered
                 val currentNodeRoot: Container?
                 var addedNodeRoot: Container? = null
-                for (addedContainer in enteringContainersInRoot) {
+                for (addedContainer in enteringContainersInNodeRoot) {
                     Log.d(
                         TAG,
                         "addedContainer: ${addedContainer.name} parent: ${addedContainer.parent?.name}"
                     )
-                    if (addedContainer.parent != null) {
+                    val isValidContainer = nodeRoots[splitRoot]?.contains(addedContainer) == false
+                            && addedContainer.parent != null
+                    if (isValidContainer) {
+                        Log.d(TAG, "node container? ${nodeRoots[splitRoot]?.contains(addedContainer) == true}")
                         addedNodeRoot = addedContainer.parent
                         break
                     }
@@ -441,7 +467,7 @@ class SplitMode(
                 Log.d(TAG, "currentNodeRoot: $currentNodeRoot addedNodeRoot: $addedNodeRoot")
                 if (currentNodeRoot != null && addedNodeRoot != null && activeContainerCount == 1) {
                     Log.d(TAG, "assuming launch adjacent")
-                    // Def launch adjacent
+                    // Def launch adjacent, only supporting from single fullscreen app for now
                     val wct = WindowContainerTransaction()
                     updateDividers(2, splitRoot.props.bounds.toRect())
                     layoutChildren(
@@ -452,9 +478,6 @@ class SplitMode(
                     hierarchy.update.wm("resize split node roots launchAdj", TRANSIT_CHANGE, wct)
                 }
                 buttonLaunch = false
-            }
-            for (changedContainer in changedContainersInRoot) {
-                Log.d(TAG, "changedContainer: ${changedContainer.name}")
             }
         }
     }

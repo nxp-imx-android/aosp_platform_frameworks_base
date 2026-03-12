@@ -347,7 +347,8 @@ public class AuthService extends SystemService {
             try {
                 VirtualDeviceManagerInternal vdm = getLocalService(
                         VirtualDeviceManagerInternal.class);
-                if (vdm != null) {
+                if (vdm != null && !Flags.bpComputerControlled()) {
+                    //TODO: Remove this API when cleaning up BP_COMPUTER_CONTROLLED flag
                     vdm.onAuthenticationPrompt(callingUid);
                 }
                 return mBiometricService.authenticate(

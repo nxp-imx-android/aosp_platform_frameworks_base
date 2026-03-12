@@ -20,6 +20,7 @@ import android.view.View
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.focusable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -49,7 +50,6 @@ import com.android.systemui.keyguard.ui.viewmodel.LockscreenContentViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenFrontScrimViewModel
 import com.android.systemui.keyguard.ui.viewmodel.ViewStateAccessor
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElement
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementContext
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import kotlin.math.min
@@ -163,7 +163,8 @@ class LockscreenContent(
                         LockscreenElementKeys.Root.currentAlpha()?.let { alpha ->
                             alpha exportAs LockscreenContentMotionTestKeys.Alpha
                         }
-                    },
+                    }
+                    .focusable(),
                 LockscreenElementContext(nonAuthUI = Modifier.nonAuthUI(viewModel)),
             )
         }

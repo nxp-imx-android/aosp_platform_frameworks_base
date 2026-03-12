@@ -82,6 +82,11 @@
         <!--Needed to avoid the installation during the test suite.-->
         <option name="push-file" key="trace_config.textproto" value="/sdcard/sample.textproto"/>
     </target_preparer>
+    <!-- TODO(b/479182156) To prevent regressions of Bubble Anything on Desktop Windowing,
+          disable this flag until it is supported. -->
+    <target_preparer class="com.android.tradefed.targetprep.AFlagsTargetPreparer">
+        <option name="flag-value" value="multitasking/com.android.wm.shell.disable_bubble_anything_desktop_windowing=false" />
+    </target_preparer>
     <test class="com.android.tradefed.testtype.AndroidJUnitTest">
         <option name="package" value="{PACKAGE}"/>
         <!-- TODO(b/396020056): Make the timeout more reasonable. -->

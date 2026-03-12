@@ -22,6 +22,7 @@ import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_ACTIVITY
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_BLOCKED_ACTIVITY;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
+import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_AUTHENTICATION_PROMPT_REQUESTED;
 import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_CALLER_INITIATED;
 import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH;
 import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_SECURE_CONTENT;
@@ -75,6 +76,7 @@ import android.companion.virtual.audio.VirtualAudioDevice;
 import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IComputerControlLifecycleCallback;
+import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
 import android.companion.virtual.computercontrol.IInteractiveMirror;
 import android.content.AttributionSource;
 import android.content.ComponentName;
@@ -254,6 +256,8 @@ public class ComputerControlSessionImplTest {
     private AppInteractionService mAppInteractionService;
     @Mock
     private IApplicationThread mAppThread;
+    @Mock
+    private IComputerControlSessionCallback mCallback;
 
     @Captor
     private ArgumentCaptor<Intent> mIntentArgumentCaptor;
@@ -315,6 +319,8 @@ public class ComputerControlSessionImplTest {
             LocalServices.addService(AppInteractionService.class, mAppInteractionService);
         }
         ViewConfiguration.setInstanceForTesting(mContext, mViewConfiguration);
+
+        when(mCallback.asBinder()).thenReturn(mAppToken);
 
         when(mUserManagerInternal.getMainDisplayAssignedToUser(anyInt()))
                 .thenReturn(MAIN_DISPLAY_ID);
@@ -1112,6 +1118,21 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
+    public void onAuthenticationPrompt_entersBlockedState() throws RemoteException {
+        int displayId = Display.DEFAULT_DISPLAY;
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+
+        mActivityListenerArgumentCaptor.getValue().onAuthenticationPrompt(
+                displayId, BLOCKED_COMPONENT.getPackageName());
+        waitForIdle();
+
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_AUTHENTICATION_PROMPT_REQUESTED,
+                BLOCKED_COMPONENT.getPackageName());
+    }
+
+    @Test
     @DisableFlags(android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_INTERACTION_API)
     public void onActivityLaunchRequested_whenFlagIsDisabled_doesNotCrash()
             throws RemoteException {
@@ -1469,7 +1490,24 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    public void requestScreenshot_alreadyWaiting_returnsFalse() throws RemoteException {
+    public void requestScreenshot_waitingForCallback_returnsFalse() throws RemoteException {
+        createComputerControlSession(mDefaultParams);
+        startAppAndAdoptTask(ALLOWED_TASK_ID);
+
+        when(mWindowManagerInternal.requestHardwareRendererOutputEnabled(anyInt(), anyLong(), any(),
+                any())).thenReturn(true);
+
+        mSession.requestScreenshot();
+        mSession.notifyScreenshotResult();
+        boolean result = mSession.requestScreenshot();
+
+        assertThat(result).isFalse();
+        verify(mWindowManagerInternal, times(1)).requestHardwareRendererOutputEnabled(
+                anyInt(), anyLong(), any(), any());
+    }
+
+    @Test
+    public void requestScreenshot_waitingForClientResult_returnsFalse() throws RemoteException {
         createComputerControlSession(mDefaultParams);
         startAppAndAdoptTask(ALLOWED_TASK_ID);
 
@@ -1479,9 +1517,13 @@ public class ComputerControlSessionImplTest {
         mSession.requestScreenshot();
         boolean result = mSession.requestScreenshot();
 
+        verify(mWindowManagerInternal).requestHardwareRendererOutputEnabled(anyInt(), anyLong(),
+                mWindowsDrawnCallbackCaptor.capture(), any());
+
+        Consumer<Boolean> callback = mWindowsDrawnCallbackCaptor.getValue();
+        callback.accept(true);
+
         assertThat(result).isFalse();
-        verify(mWindowManagerInternal, times(1)).requestHardwareRendererOutputEnabled(
-                anyInt(), anyLong(), any(), any());
     }
 
     @Test
@@ -1499,6 +1541,7 @@ public class ComputerControlSessionImplTest {
 
         Consumer<Boolean> callback = mWindowsDrawnCallbackCaptor.getValue();
         callback.accept(true);
+        mSession.notifyScreenshotResult();
 
         verify(mWindowManagerInternal)
                 .requestHardwareRendererOutputDisabled(eq(VIRTUAL_DISPLAY_ID));
@@ -1527,6 +1570,7 @@ public class ComputerControlSessionImplTest {
 
         Consumer<Boolean> callback = mWindowsDrawnCallbackCaptor.getValue();
         callback.accept(true);
+        mSession.notifyScreenshotResult();
 
         verify(mWindowManagerInternal, never()).requestHardwareRendererOutputDisabled(anyInt());
     }
@@ -1910,11 +1954,13 @@ public class ComputerControlSessionImplTest {
             String referenceDisplayAddress) {
         DisplayManagerGlobal displayManagerGlobal = new DisplayManagerGlobal(mDisplayManager);
         displayManagerGlobal.disableLocalDisplayInfoCaches();
+        var attributionSource = new AttributionSource(
+                UserHandle.getUid(USER_ID, 0), AGENT_PACKAGE, ATTRIBUTION_TAG);
+        var request = ComputerControlSessionRequest.create(
+                mContext, mAppThread, attributionSource, params, mCallback);
         mSession = new ComputerControlSessionImpl(
                 mContext, displayManagerGlobal, mAllowlistController, mViewConfiguration,
-                globalSessionTimeoutDurationMs, () -> mTransaction, mAppToken, params, mAppThread,
-                new AttributionSource(UserHandle.getUid(USER_ID, 0), AGENT_PACKAGE,
-                        ATTRIBUTION_TAG),
+                globalSessionTimeoutDurationMs, () -> mTransaction, request,
                 mVirtualDeviceFactory, mOnClosedListener, Runnable::run, referenceDisplayAddress,
                 mScheduler);
     }

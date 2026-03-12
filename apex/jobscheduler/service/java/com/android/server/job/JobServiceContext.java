@@ -47,6 +47,7 @@ import android.annotation.BytesLong;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
+import android.app.ActivityManager.ProcessState;
 import android.app.ActivityManagerInternal;
 import android.app.Notification;
 import android.app.compat.CompatChanges;
@@ -546,7 +547,7 @@ public final class JobServiceContext implements ServiceConnection {
             mInitialDownloadedBytesFromCalling = TrafficStats.getUidRxBytes(job.getUid());
             mInitialUploadedBytesFromCalling = TrafficStats.getUidTxBytes(job.getUid());
 
-            int procState = mService.getUidProcState(job.getUid());
+            @ProcessState int procState = mService.getUidProcState(job.getUid());
             if (procState > ActivityManager.PROCESS_STATE_TRANSIENT_BACKGROUND) {
                 // Try to get the latest proc state from AMS, there might be some delay
                 // for the proc states worse than TRANSIENT_BACKGROUND.
@@ -1705,7 +1706,7 @@ public final class JobServiceContext implements ServiceConnection {
         mJobPackageTracker.noteInactive(completedJob,
                 loggingInternalStopReason, loggingDebugReason);
         final int sourceUid = completedJob.getSourceUid();
-        int procState = mService.getUidProcState(completedJob.getUid());
+        @ProcessState int procState = mService.getUidProcState(completedJob.getUid());
         if (procState > ActivityManager.PROCESS_STATE_TRANSIENT_BACKGROUND) {
             // Try to get the latest proc state from AMS, there might be some delay
             // for the proc states worse than TRANSIENT_BACKGROUND.
@@ -1829,7 +1830,7 @@ public final class JobServiceContext implements ServiceConnection {
                 reschedulingStopReason, reschedulingInternalStopReason, reschedule);
     }
 
-    private void traceJobStarted(JobStatus job, int procState) {
+    private void traceJobStarted(JobStatus job, @ProcessState int procState) {
         if (!mPerfettoTracer.isTraceEnabled()) {
             return;
         }
@@ -1848,7 +1849,7 @@ public final class JobServiceContext implements ServiceConnection {
                 .emit();
     }
 
-    private void traceJobFinished(JobStatus completedJob, int procState,
+    private void traceJobFinished(JobStatus completedJob, @ProcessState int procState,
             int loggingInternalStopReason, int loggingStopReason) {
         if (!mPerfettoTracer.isTraceEnabled()) {
             return;
@@ -1869,7 +1870,7 @@ public final class JobServiceContext implements ServiceConnection {
     }
 
     private JobPerfettoTracer addCommonTraceFields(JobPerfettoTracer tracer, JobStatus job,
-            int procState) {
+            @ProcessState int procState) {
         return tracer.addField(PERFETTO_TRACE_FIELD_JOB_ID, job.getLoggingJobId())
                 .addField(PERFETTO_TRACE_FIELD_SOURCE_UID, job.getSourceUid())
                 .addField(PERFETTO_TRACE_FIELD_PROXY_UID, job.isProxyJob() ? job.getUid() : -1)

@@ -26,7 +26,6 @@ import static android.view.WindowManager.TRANSIT_SLEEP;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
-import static com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND;
 import static com.android.wm.shell.Flags.FLAG_ADD_ONE_OFF_HANDLER_LEASHES;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_PIP2;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING;
@@ -90,6 +89,7 @@ import com.android.wm.shell.common.TaskStackListenerImpl;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.data.DesktopRepository;
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
+import com.android.wm.shell.recents.RecentsTransitionHandler.RecentsMixedHandler;
 import com.android.wm.shell.shared.R;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.sysui.ShellCommandHandler;
@@ -635,16 +635,6 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         startTransitionAndMergeThenVerifyCanceled(mergeTransitionInfo, true /* useLeashes */);
     }
 
-    @Test
-    public void testMerge_cancelToHome_onUnmergedTransition() throws Exception {
-        ActivityManager.RunningTaskInfo taskInfo = new TestRunningTaskInfoBuilder().setTaskId(
-                123).build();
-        TransitionInfo mergeTransitionInfo = new TransitionInfoBuilder(TRANSIT_CHANGE)
-                .addChange(TRANSIT_CHANGE, taskInfo)
-                .build();
-        startTransitionAndMergeThenVerifyCanceled(mergeTransitionInfo, true /* useLeashes */);
-    }
-
     @EnableFlags(FLAG_ADD_ONE_OFF_HANDLER_LEASHES)
     @Test
     public void testMerge_cancelOnRecentsVisible() throws Exception {
@@ -682,7 +672,6 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     public void testMergeAndFinish_openingTaskInDesk_setsPositionOfChild() {
         ActivityManager.RunningTaskInfo deskRootTask =
                 new TestRunningTaskInfoBuilder()
@@ -719,7 +708,6 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     public void testMergeAndFinish_openingTaskInDeskWithSiblings_reordersAllToTop() {
         ActivityManager.RunningTaskInfo deskRootTask =
                 new TestRunningTaskInfoBuilder()
@@ -776,7 +764,6 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     public void testMerge_openingNewTaskInPausedDesk_usesIdLogicCorrectly() {
         final int deskId = 100;
         final int taskId = 200;
@@ -821,6 +808,38 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         mMainExecutor.flushAll();
 
         verify(mTransitions).startTransition(eq(TRANSIT_END_RECENTS_TRANSITION), any(), any());
+    }
+
+    @Test
+    public void testCancelTransition_disallowFinishingBackToApp() throws Exception {
+        final IResultReceiver finishCallback = mock(IResultReceiver.class);
+        final RecentsMixedHandler handler = mock(RecentsMixedHandler.class);
+        mRecentsTransitionHandler.addMixer(handler);
+
+        // Start the recents transition
+        final IBinder transition = startRecentsTransition(/* synthetic= */ false);
+        mRecentsTransitionHandler.startAnimation(
+                transition, createTransitionInfo(), new StubTransaction(), new StubTransaction(),
+                mock(Transitions.TransitionFinishCallback.class));
+
+        // Simulate a cancel with screenshots (which depends on Launcher to complete the finishing
+        // of the transition)
+        mRecentsTransitionHandler.findController(transition).cancel(true /* toHome */,
+                true /* withScreenshots */, "test");
+        assertNotNull(mRecentsTransitionHandler.findController(transition));
+
+        // Simulate Launcher finishing the transition upon cancel, but with toHome=false
+        // (ie. back to app instead)
+        mRecentsTransitionHandler.findController(transition).finish(false /* toHome */,
+                true /* sendUserLeaveHint */, finishCallback);
+        mMainExecutor.flushAll();
+
+        // Verify we didn't actually finish back to app
+        verify(handler).handleFinishRecents(eq(false), any(), any());
+
+        // Verify we still call Launcher's finish callback
+        verify(finishCallback).send(anyInt(), any());
+        assertNull(mRecentsTransitionHandler.findController(transition));
     }
 
     private void startTransitionAndMergeThenVerifyCanceled(

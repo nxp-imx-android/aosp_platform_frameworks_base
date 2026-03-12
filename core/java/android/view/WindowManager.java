@@ -1358,9 +1358,8 @@ public interface WindowManager extends ViewManager {
      *     android:value="true|false"/&gt;
      * &lt;/application&gt;
      * </pre>
-     *
-     * @hide
      */
+    @FlaggedApi(Flags.FLAG_VIRTUAL_GAMEPAD_DEVELOPER_OPT_OUT)
     String PROPERTY_COMPAT_ALLOW_VIRTUAL_GAMEPAD_OVERRIDE =
             "android.window.PROPERTY_COMPAT_ALLOW_VIRTUAL_GAMEPAD_OVERRIDE";
 

@@ -1144,7 +1144,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         dispatchAttributesChanged();
     }
 
-    void onBondingStateChanged(int bondState, int prevBondState) {
+    void onBondingStateChanged(int bondState, int prevBondState, int pairingContext) {
         if (bondState == BluetoothDevice.BOND_NONE) {
             synchronized (mProfileLock) {
                 mProfiles.clear();
@@ -1156,7 +1156,8 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
             mBondTimestamp = null;
 
             if (Flags.enableBluetoothDiagnosis()) {
-                if (prevBondState == BluetoothDevice.BOND_BONDING) {
+                if (prevBondState == BluetoothDevice.BOND_BONDING
+                        && pairingContext != BluetoothDevice.PAIRING_CONTEXT_REPAIRING) {
                     mBondFailureTimeMillis = SystemClock.elapsedRealtime();
                     Log.d(
                             TAG,

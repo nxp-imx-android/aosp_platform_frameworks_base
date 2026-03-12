@@ -49,6 +49,7 @@ import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
 
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -125,7 +126,9 @@ public class ThemeManagerImpl implements ThemeManagerInternal {
         ThemeInfo baseline = getUserThemeInfo(userId);
         if (baseline == null) return null;
 
-        int newSeed = Optional.ofNullable(options.seedColor).orElse(baseline.seedColor).toArgb();
+        List<Color> newSeeds = Optional.ofNullable(options.seedColors).orElse(baseline.seedColors);
+        List<Integer> newSeedArbg = newSeeds.stream().map(Color::toArgb).toList();
+
         @ThemeStyle.Type int newStyle = Optional.ofNullable(options.style).orElse(baseline.style);
         float newContrast = Optional.ofNullable(options.contrast).orElse(baseline.contrast);
 
@@ -154,9 +157,9 @@ public class ThemeManagerImpl implements ThemeManagerInternal {
             throw new IllegalArgumentException("Invalid Baseline Object", e);
         }
 
-        ColorScheme newDarkScheme = new ColorScheme(newSeed, true, newStyle, newContrast,
+        ColorScheme newDarkScheme = new ColorScheme(newSeedArbg, true, newStyle, newContrast,
                 specVersion, platform);
-        ColorScheme newLightScheme = new ColorScheme(newSeed, false, newStyle, newContrast,
+        ColorScheme newLightScheme = new ColorScheme(newSeedArbg, false, newStyle, newContrast,
                 specVersion, platform);
 
         if (mEnvironment.getConfig().platform() == Platform.WATCH) {
@@ -175,7 +178,8 @@ public class ThemeManagerImpl implements ThemeManagerInternal {
         if (mEnvironment.shouldIgnoreEventForUser(userId, "getUserThemeInfo")) return null;
 
         ThemeState state = mStateManager.getState(userId).getCurrentState();
-        return new ThemeInfo(Color.valueOf(state.seedColor()), state.style(), state.contrast(),
+        List<Color> colors = state.seedColors().stream().map(Color::valueOf).toList();
+        return new ThemeInfo(colors, state.style(), state.contrast(),
                 mEnvironment.getConfig().specVersion().name(),
                 mEnvironment.getConfig().platform().name());
     }
@@ -438,7 +442,7 @@ public class ThemeManagerImpl implements ThemeManagerInternal {
             mThemeSettingsManager.setSettings(userId, resolver, userSettings);
         }
 
-        int seedColor = getEffectiveSeedColor(userSettings, userId);
+        List<Integer> seedColors = getEffectiveSeedColors(userSettings, userId);
 
         boolean isSetup = android.provider.Settings.Secure.getIntForUser(resolver,
                 android.provider.Settings.Secure.USER_SETUP_COMPLETE, 0, userId) == 1;
@@ -446,7 +450,7 @@ public class ThemeManagerImpl implements ThemeManagerInternal {
         UiModeManagerInternal uiModeManager = LocalServices.getService(UiModeManagerInternal.class);
         float contrast = uiModeManager != null ? uiModeManager.getContrast(userId) : 0f;
 
-        mStateManager.onUserStart(UserHandle.of(userId), isSetup, seedColor, contrast,
+        mStateManager.onUserStart(UserHandle.of(userId), isSetup, seedColors, contrast,
                 userSettings.themeStyle());
     }
 
@@ -468,8 +472,8 @@ public class ThemeManagerImpl implements ThemeManagerInternal {
                 Context.CONTEXT_IGNORE_SECURITY).getContentResolver();
         ThemeSettings userSettings = mThemeSettingsManager.getSettingsOrDefault(userId, resolver);
 
-        int newSeed = userSettings.systemPalette().toArgb();
-        mStateManager.onSeedColorChange(userId, newSeed, true);
+        List<Integer> newSeeds = userSettings.seedColors().stream().map(Color::toArgb).toList();
+        mStateManager.onSeedColorChange(userId, newSeeds, true);
         mStateManager.onStyleChange(userId, userSettings.themeStyle());
     }
 
@@ -484,8 +488,8 @@ public class ThemeManagerImpl implements ThemeManagerInternal {
         ThemeSettings settings = mThemeSettingsManager.getSettingsOrDefault(userId, resolver);
         if (android.content.theming.FieldColorSource.VALUE_HOME_WALLPAPER.equals(
                 settings.colorSource())) {
-            int seedColor = com.android.systemui.monet.ColorScheme.getSeedColor(colors);
-            mStateManager.onSeedColorChange(userId, seedColor, fromForegroundApp);
+            List<Integer> seedColors = mWallpaperManager.getSeedColors(colors, true);
+            mStateManager.onSeedColorChange(userId, seedColors, fromForegroundApp);
         }
     }
 
@@ -519,17 +523,15 @@ public class ThemeManagerImpl implements ThemeManagerInternal {
         mStateManager.onUserSwitching(fromUserId, toUserId);
     }
 
-    private int getEffectiveSeedColor(ThemeSettings userSettings, int userId) {
-        int seedColor;
+    private List<Integer> getEffectiveSeedColors(ThemeSettings userSettings, int userId) {
         if (android.content.theming.FieldColorSource.VALUE_PRESET.equals(
                 userSettings.colorSource())) {
-            seedColor = userSettings.systemPalette().toArgb();
+            return userSettings.seedColors().stream().map(Color::toArgb).toList();
         } else {
-            Integer wallpaperSeed = mWallpaperManager.getSeedColor(userId);
-            seedColor = wallpaperSeed != null ? wallpaperSeed
-                    : userSettings.systemPalette().toArgb();
+            List<Integer> wallpaperSeeds = mWallpaperManager.getSeedColors(userId);
+            return !wallpaperSeeds.isEmpty() ? wallpaperSeeds
+                    : userSettings.seedColors().stream().map(Color::toArgb).toList();
         }
-        return seedColor;
     }
 
     private boolean hasPaletteOutdated() {

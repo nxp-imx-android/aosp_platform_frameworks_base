@@ -28,6 +28,8 @@ import androidx.test.runner.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.List;
+
 
 @RunWith(AndroidJUnit4.class)
 public class ThemeInfoTests {
@@ -35,7 +37,8 @@ public class ThemeInfoTests {
     private static final float CONTRAST_MEDIUM = 0.5f;
     private static final float CONTRAST_HIGH = 1.0f;
 
-    private static final Color SEED_COLOR_VALID = Color.valueOf(Color.BLUE);
+    private static final List<Color> SEED_COLORS_VALID = List.of(Color.valueOf(Color.BLUE),
+            Color.valueOf(Color.RED));
     private static final int STYLE_VALID = ThemeStyle.TONAL_SPOT;
     private static final String SPEC_VERSION = "1.0";
     private static final String PLATFORM = "android";
@@ -43,11 +46,11 @@ public class ThemeInfoTests {
     @Test
     public void testBuildWithAllParameters() {
         ThemeInfo themeInfo = new ThemeInfo.Builder()
-                .setSeedColor(SEED_COLOR_VALID)
+                .setSeedColors(SEED_COLORS_VALID)
                 .setStyle(STYLE_VALID)
                 .setContrast(CONTRAST_MEDIUM)
                 .build();
-        assertThat(themeInfo.seedColor).isEqualTo(SEED_COLOR_VALID);
+        assertThat(themeInfo.seedColors).isEqualTo(SEED_COLORS_VALID);
         assertThat(themeInfo.style).isEqualTo(STYLE_VALID);
         assertThat(themeInfo.contrast).isEqualTo(CONTRAST_MEDIUM);
         assertThat(themeInfo.specVersion).isNull();
@@ -57,7 +60,7 @@ public class ThemeInfoTests {
     @Test
     public void testBuildWithNullParameters() {
         ThemeInfo themeInfo = new ThemeInfo.Builder().build();
-        assertThat(themeInfo.seedColor).isNull();
+        assertThat(themeInfo.seedColors).isNull();
         assertThat(themeInfo.style).isNull();
         assertThat(themeInfo.contrast).isNull();
         assertThat(themeInfo.specVersion).isNull();
@@ -67,7 +70,7 @@ public class ThemeInfoTests {
     @Test
     public void testParcelability_allValues() {
         ThemeInfo themeInfo = new ThemeInfo(
-                SEED_COLOR_VALID,
+                SEED_COLORS_VALID,
                 STYLE_VALID,
                 CONTRAST_HIGH,
                 SPEC_VERSION,
@@ -80,7 +83,7 @@ public class ThemeInfoTests {
         ThemeInfo unparceledThemeInfo = ThemeInfo.CREATOR.createFromParcel(parcel);
         parcel.recycle();
 
-        assertThat(unparceledThemeInfo.seedColor).isEqualTo(themeInfo.seedColor);
+        assertThat(unparceledThemeInfo.seedColors).isEqualTo(themeInfo.seedColors);
         assertThat(unparceledThemeInfo.style).isEqualTo(themeInfo.style);
         assertThat(unparceledThemeInfo.contrast).isEqualTo(themeInfo.contrast);
         assertThat(unparceledThemeInfo.specVersion).isEqualTo(themeInfo.specVersion);
@@ -98,7 +101,7 @@ public class ThemeInfoTests {
         ThemeInfo unparceledThemeInfo = ThemeInfo.CREATOR.createFromParcel(parcel);
         parcel.recycle();
 
-        assertThat(unparceledThemeInfo.seedColor).isNull();
+        assertThat(unparceledThemeInfo.seedColors).isNull();
         assertThat(unparceledThemeInfo.style).isNull();
         assertThat(unparceledThemeInfo.contrast).isNull();
         assertThat(unparceledThemeInfo.specVersion).isNull();
@@ -108,7 +111,7 @@ public class ThemeInfoTests {
     @Test
     public void testParcelability_mixedValues() {
         ThemeInfo themeInfo = new ThemeInfo.Builder()
-                .setSeedColor(SEED_COLOR_VALID)
+                .setSeedColors(SEED_COLORS_VALID)
                 .setContrast(CONTRAST_HIGH)
                 .build();
 
@@ -120,7 +123,7 @@ public class ThemeInfoTests {
         ThemeInfo unparceledThemeInfo = ThemeInfo.CREATOR.createFromParcel(parcel);
         parcel.recycle();
 
-        assertThat(unparceledThemeInfo.seedColor).isEqualTo(themeInfo.seedColor);
+        assertThat(unparceledThemeInfo.seedColors).isEqualTo(themeInfo.seedColors);
         assertThat(unparceledThemeInfo.style).isNull();
         assertThat(unparceledThemeInfo.contrast).isEqualTo(themeInfo.contrast);
         assertThat(unparceledThemeInfo.specVersion).isNull();

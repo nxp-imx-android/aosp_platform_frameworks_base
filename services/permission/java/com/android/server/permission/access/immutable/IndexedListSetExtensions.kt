@@ -46,6 +46,9 @@ inline fun <T> IndexedListSet<T>.forEachReversedIndexed(action: (Int, T) -> Unit
     }
 }
 
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T> IndexedListSet<T>.isNotEmpty(): Boolean = !isEmpty()
+
 inline val <T> IndexedListSet<T>.lastIndex: Int
     get() = size - 1
 

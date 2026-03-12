@@ -46,6 +46,7 @@ import com.android.settingslib.graph.proto.PreferenceScreenProto
 import com.android.settingslib.graph.proto.PreferenceValueDescriptorProto
 import com.android.settingslib.graph.proto.TextProto
 import com.android.settingslib.metadata.CatalystFlagProviderFactory
+import com.android.settingslib.metadata.DiscreteIntValue
 import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_ARGS
 import com.android.settingslib.metadata.IntRangeValuePreference
 import com.android.settingslib.metadata.KeyParametersSchema
@@ -69,6 +70,7 @@ import com.android.settingslib.metadata.SensitivityLevel.Companion.DEEP_LINK_ONL
 import com.android.settingslib.metadata.SensitivityLevel.Companion.REQUIRES_CONFIRMATION
 import com.android.settingslib.metadata.SensitivityLevel.Companion.DO_NOT_EXPOSE
 import com.android.settingslib.metadata.ValidatedKeyParameters
+import com.android.settingslib.metadata.ValueDescriptor
 import com.android.settingslib.metadata.getPreferenceIcon
 import com.android.settingslib.metadata.isExposable
 import com.android.settingslib.metadata.isPreferenceIndexable
@@ -479,6 +481,9 @@ private constructor(
         forEachAsync {
             if(it !is PreferenceHierarchy && !it.metadata.isExposable(context))
                 return@forEachAsync
+            if(it.metadata is PreferenceScreenMetadata)
+                return@forEachAsync
+
             addPreferences(
                 preferenceOrGroupProto {
                     if (it is PreferenceHierarchy) {
@@ -618,9 +623,9 @@ fun PreferenceMetadata.toProto(
     key = metadata.key
     if (flags.includeMetadata()) {
         metadata.getTitleTextProto(context, isRoot)?.let { title = it }
-        if (metadata.summary != 0) {
+        if (metadata.summary != 0 && metadata !is PreferenceScreenMetadata) {
             summary = textProto { resourceId = metadata.summary }
-        } else {
+        } else if(metadata !is PreferenceScreenMetadata){
             (metadata as? PreferenceSummaryProvider)?.getSummary(context)?.let {
                 summary = textProto { string = it.toString() }
             }
@@ -629,8 +634,10 @@ fun PreferenceMetadata.toProto(
         writable =
             if (metadata is ApiPreference<*>) {
                 metadata.set != null
+            } else if (metadata is PersistentPreference<*>) {
+                metadata.supportsWrite
             } else {
-                false // Legacy preferences are not writable
+                false
             }
 
         if (metadataIcon != 0) icon = metadataIcon
@@ -723,8 +730,8 @@ fun PreferenceMetadata.toProto(
         }
     }
     persistent = metadata.isPersistent(context)
-    if (metadata !is PersistentPreference<*>) return@preferenceProto
     sensitivityLevel = metadata.sensitivityLevel
+    if (metadata !is PersistentPreference<*> || metadata is PreferenceScreenMetadata) return@preferenceProto
     metadata.getReadPermissions(context)?.let { if (it.size > 0) readPermissions = it.toProto() }
     metadata.getWritePermissions(context)?.let { if (it.size > 0) writePermissions = it.toProto() }
     val readPermit = metadata.evalReadPermit(context, callingPid, callingUid)
@@ -768,6 +775,42 @@ fun PreferenceMetadata.toProto(
                         step = metadata.getIncrementStep(context)
                     }
                 }
+                if (metadata is DiscreteIntValue) {
+                    val values = context.resources.getIntArray(metadata.values)
+                    val descriptions = context.resources.getTextArray(metadata.valuesDescription)
+                    values.zip(descriptions).forEach { (value, desc) ->
+                        addPossibleValues(
+                            possibleValueProto {
+                                this.value = preferenceValueProto { intValue = value }
+                                description = desc.toString()
+                            }
+                        )
+                    }
+                }
+                if (metadata is com.android.settingslib.metadata.DiscreteTextValue) {
+                    val values = context.resources.getTextArray(metadata.values)
+                    val descriptions = context.resources.getTextArray(metadata.valuesDescription)
+                    values.zip(descriptions).forEach { (value, desc) ->
+                        addPossibleValues(
+                            possibleValueProto {
+                                this.value = preferenceValueProto { stringValue = value.toString() }
+                                description = desc.toString()
+                            }
+                        )
+                    }
+                }
+                if (metadata is com.android.settingslib.metadata.DiscreteStringValue) {
+                    val values = context.resources.getStringArray(metadata.values)
+                    val descriptions = context.resources.getTextArray(metadata.valuesDescription)
+                    values.zip(descriptions).forEach { (value, desc) ->
+                        addPossibleValues(
+                            possibleValueProto {
+                                this.value = preferenceValueProto { stringValue = value }
+                                description = desc.toString()
+                            }
+                        )
+                    }
+                }
                 when (metadata.valueType) {
                     Int::class.java,
                     Int::class.javaObjectType -> {
@@ -784,6 +827,11 @@ fun PreferenceMetadata.toProto(
                     String::class.java,
                     String::class.javaObjectType -> stringType = true
                     else -> error("Error: Unsupported type ${metadata.valueType}")
+                }
+                (metadata as? ValueDescriptor)?.getUnitOfMeasurement()?.let {
+                    parameters = keyParametersProto {
+                        putValues("unit", it)
+                    }
                 }
             }
         }

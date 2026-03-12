@@ -3530,10 +3530,7 @@ public class DevicePolicyManagerTest extends DpmTestBase {
             int uid , String configComponentName, String configPackageName) {
         final boolean isAdmin = admin1.flattenToString().equals(configComponentName)
                 || admin1.getPackageName().equals(configPackageName);
-
         final UserHandle user = UserHandle.getUserHandleForUid(uid);
-        final DevicePolicyManagerInternal dpmi =
-                LocalServices.getService(DevicePolicyManagerInternal.class);
 
         when(mServiceContext.resources
                 .getString(R.string.config_defaultSupervisionProfileOwnerComponent))
@@ -3544,12 +3541,10 @@ public class DevicePolicyManagerTest extends DpmTestBase {
                 .thenReturn(configPackageName);
 
         if (isAdmin) {
-            assertThat(dpmi.isActiveSupervisionApp(uid)).isTrue();
             assertThat(dpm.getProfileOwnerOrDeviceOwnerSupervisionComponent(user))
                         .isEqualTo(admin1);
             assertThat(dpm.isSupervisionComponent(admin1)).isTrue();
         } else {
-            assertThat(dpmi.isActiveSupervisionApp(uid)).isFalse();
             assertThat(dpm.getProfileOwnerOrDeviceOwnerSupervisionComponent(user)).isNull();
             assertThat(dpm.isSupervisionComponent(admin1)).isFalse();
         }

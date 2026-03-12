@@ -21,6 +21,8 @@ import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_BINDER_PR
 import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_BINDER_PROXY_TRANSACTION_REPORTED__TRANSACTION_STATUS__STATUS_SUCCESS;
 import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_INPUT_SANITIZATION_REPORTED;
 import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_PERMISSION_CHECK_RESULT;
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_WRITE_TO_AUDIT_LOG;
+
 
 import com.android.os.privatecompute.PrivateComputeAtomsLog;
 
@@ -62,5 +64,13 @@ public class PrivateComputeStatsLogUtil {
      */
     public static void logPccPermissionCheckResult(int result, String permissionName, int uid) {
         PrivateComputeAtomsLog.write(PCC_PERMISSION_CHECK_RESULT, result, permissionName, uid);
+    }
+
+    /** Logs when write to the audit log is performed. */
+    public static void logPccWriteToAuditLog(int writeType) {
+        PrivateComputeAtomsLog.write(
+                PCC_WRITE_TO_AUDIT_LOG,
+                writeType
+        );
     }
 }

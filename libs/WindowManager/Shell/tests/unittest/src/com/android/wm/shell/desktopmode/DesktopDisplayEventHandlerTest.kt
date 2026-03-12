@@ -140,7 +140,6 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testDisplayAdded_registersTdaListener() =
         testScope.runTest {
             onDisplaysChangedListenerCaptor.lastValue.onDisplayAdded(SECOND_DISPLAY)
@@ -149,7 +148,6 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testDisplayRemoved_unregistersTdaListener() =
         testScope.runTest {
             onDisplaysChangedListenerCaptor.lastValue.onDisplayRemoved(SECOND_DISPLAY)
@@ -158,7 +156,6 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testDisplayAreaAppeared_desktopRepositoryInitialized_desktopFirst_createsDesk() =
         testScope.runTest {
             setUpDisplayDesktopSupport(SECOND_DISPLAY, desktopFirst = true)
@@ -172,7 +169,6 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testDisplayAreaAppeared_desktopRepositoryInitialized_touchFirst_warmsUpDesk() =
         testScope.runTest {
             setUpDisplayDesktopSupport(DEFAULT_DISPLAY, desktopFirst = false)
@@ -212,7 +208,6 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_DEFAULT_ACTIVATION_IN_DESKTOP_FIRST_DISPLAYS,
     )
     fun testDisplayAreaAppeared_desktopRepositoryInitialized_desktopFirst_createsAndActivatesDesk() =
@@ -235,7 +230,6 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testDisplayAreaAppeared_desktopRepositoryNotInitialized_doesNotCreateDesk() =
         testScope.runTest {
             setUpDisplayDesktopSupport(DEFAULT_DISPLAY, supportsDesktop = true)
@@ -248,7 +242,6 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testDisplayAreaAppeared_desktopRepositoryInitializedTwice_desktopFirst_createsDeskOnce() =
         testScope.runTest {
             setUpDisplayDesktopSupport(SECOND_DISPLAY, desktopFirst = true)
@@ -263,7 +256,6 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testDisplayAreaAppeared_desktopRepositoryInitializedTwice_touchFirst_warmsUpDeskOnce() =
         testScope.runTest {
             setUpDisplayDesktopSupport(DEFAULT_DISPLAY, desktopFirst = false)
@@ -278,7 +270,6 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testDisplayAreaAppeared_desktopRepositoryInitialized_deskExists_doesNotCreateDeskOrWarmsUp() =
         testScope.runTest {
             setUpDisplayDesktopSupport(DEFAULT_DISPLAY)
@@ -295,7 +286,6 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testDisplayAreaAppeared_desktopNotSupported_doesNotCreateDeskOrWarmsUp() =
         testScope.runTest {
             setUpDisplayDesktopSupport(DEFAULT_DISPLAY, supportsDesktop = false)
@@ -311,7 +301,6 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testDeskRemoved_noDesksRemain_desktopFirst_createsDesk() =
         testScope.runTest {
             setUpDisplayDesktopSupport(SECOND_DISPLAY, desktopFirst = true)
@@ -338,7 +327,6 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testDeskRemoved_hasRemainingDesksInDisplay_desktopFirst_doesNotCreateDesk() =
         testScope.runTest {
             setUpDisplayDesktopSupport(SECOND_DISPLAY, desktopFirst = true)
@@ -365,7 +353,6 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testDeskRemoved_noDesksRemain_touchFirst_warmsUpDesk() =
         testScope.runTest {
             setUpDisplayDesktopSupport(DEFAULT_DISPLAY, desktopFirst = false)
@@ -385,7 +372,6 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_DEFAULT_ACTIVATION_IN_DESKTOP_FIRST_DISPLAYS,
     )
     fun testDeskRemoved_noDesksRemain_desktopFirstDisplay_createsAndActivatesDesk() =
@@ -414,7 +400,6 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testDeskRemoved_desksRemain_doesNotCreateDeskOrWarmsUpDesk() =
         testScope.runTest {
             setUpDisplayDesktopSupport(DEFAULT_DISPLAY, desktopFirst = false)
@@ -435,7 +420,6 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testUserChanged_createsOrWarmsUpDeskWhenNeeded() =
         testScope.runTest {
             val userId = 11

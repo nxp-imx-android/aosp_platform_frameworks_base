@@ -18,6 +18,7 @@ package com.android.wm.shell.flicker.bubbles
 
 import android.os.Build
 import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.RequiresFlagsDisabled
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar.MODE_GESTURAL
 import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
@@ -25,6 +26,7 @@ import android.tools.traces.component.ComponentNameMatcher.Companion.TASK_BAR_OV
 import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.helpers.StaticShortcutsAppHelper
 import com.android.window.flags.Flags.FLAG_TRACK_LAUNCH_ORIGINATOR
+import com.android.wm.shell.Flags.FLAG_DISABLE_BUBBLE_ANYTHING_DESKTOP_WINDOWING
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.Utils.testSetupRule
 import com.android.wm.shell.flicker.bubbles.testcase.AppOpenInFullscreenTestCases
@@ -68,6 +70,8 @@ import org.junit.runners.MethodSorters
  *
  * Note: Relaunching from the taskbar is a special case because it lacks a valid activity token.
  */
+// TODO(b/479182156) Remove this when bubbling is supported in desktop mode.
+@RequiresFlagsDisabled(FLAG_DISABLE_BUBBLE_ANYTHING_DESKTOP_WINDOWING)
 @RequiresFlagsEnabled(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_TRACK_LAUNCH_ORIGINATOR)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

@@ -68,6 +68,7 @@ import android.util.IndentingPrintWriter;
 import android.util.Log;
 import android.util.MathUtils;
 import android.view.DisplayCutout;
+import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -7480,6 +7481,12 @@ public class NotificationStackScrollLayout
 
     private final ExpandHelper.Callback mExpandHelperCallback = new ExpandHelper.Callback() {
         @Override
+        public void playExpandStartHaptic() {
+            // provide haptic feedback when the Notification starts to expand
+            performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+        }
+
+        @Override
         public ExpandableView getChildAtPosition(float touchX, float touchY) {
             return NotificationStackScrollLayout.this.getChildAtPosition(touchX, touchY);
         }
@@ -7553,6 +7560,7 @@ public class NotificationStackScrollLayout
         }
     };
 
+    @NonNull
     @Override
     public ExpandHelper.Callback getExpandHelperCallback() {
         return mExpandHelperCallback;

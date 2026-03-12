@@ -66,6 +66,7 @@ import com.android.systemui.statusbar.notification.row.HybridGroupManager
 import com.android.systemui.util.kotlin.logD
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -135,7 +136,12 @@ constructor(
         }
         logD(TAG) { "Loading media data for $key... / existing job: $existingJob" }
 
-        return loadMediaJob.await()
+        return try {
+            loadMediaJob.await()
+        } catch (exception: CancellationException) {
+            mediaLogger.logLoadingMediaDataCanceled(key)
+            null
+        }
     }
 
     /** Loads media data, should be called from [backgroundScope]. */

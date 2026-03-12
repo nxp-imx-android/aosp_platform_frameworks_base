@@ -453,6 +453,7 @@ public class ComputerControlSessionTest {
         mSession.requestScreenshot(mExecutor, callback, null);
 
         verify(mMockSession).requestScreenshot();
+        verify(mMockSession, never()).notifyScreenshotResult();
         verify(callback, never()).onError(any());
     }
 
@@ -465,6 +466,7 @@ public class ComputerControlSessionTest {
         mSession.requestScreenshot(mExecutor, callback, null);
 
         verify(mMockSession).requestScreenshot();
+        verify(mMockSession, never()).notifyScreenshotResult();
         verify(callback, never()).onError(any());
     }
 
@@ -478,6 +480,7 @@ public class ComputerControlSessionTest {
         mSession.requestScreenshot(mExecutor, callback, null);
 
         verify(mMockSession, never()).requestScreenshot();
+        verify(mMockSession, never()).notifyScreenshotResult();
         verify(callback).onError(withCode(ScreenshotException.ERROR_PROHIBITED));
     }
 
@@ -490,6 +493,7 @@ public class ComputerControlSessionTest {
         mSession.requestScreenshot(mExecutor, callback, null);
 
         verify(mMockSession).requestScreenshot();
+        verify(mMockSession, never()).notifyScreenshotResult();
         verify(callback).onError(withCode(ScreenshotException.ERROR_INTERNAL));
     }
 
@@ -502,6 +506,7 @@ public class ComputerControlSessionTest {
         mSession.requestScreenshot(mExecutor, callback, null);
 
         verify(mMockSession).requestScreenshot();
+        verify(mMockSession, never()).notifyScreenshotResult();
         verifyNoInteractions(callback);
     }
 
@@ -519,6 +524,7 @@ public class ComputerControlSessionTest {
         verifyNoInteractions(callback1);
         verify(callback2).onError(withCode(ScreenshotException.ERROR_DUPLICATE_REQUEST));
         verify(mMockSession, times(1)).requestScreenshot();
+        verify(mMockSession, never()).notifyScreenshotResult();
     }
 
     @Test
@@ -530,6 +536,7 @@ public class ComputerControlSessionTest {
         mSession.requestScreenshot(mExecutor, callback, null);
 
         verify(callback).onError(withCode(ScreenshotException.ERROR_REMOTE));
+        verify(mMockSession, never()).notifyScreenshotResult();
     }
 
     @Test
@@ -543,6 +550,7 @@ public class ComputerControlSessionTest {
         drawFrame(mSurface);
 
         verify(callback, timeout(FRAME_PROCESSING_DELAY_MS)).onResult(notNull());
+        verify(mMockSession).notifyScreenshotResult();
     }
 
     @Test
@@ -559,6 +567,7 @@ public class ComputerControlSessionTest {
         mSession.requestScreenshot(mExecutor, callback, null);
 
         verify(mMockSession).requestScreenshot();
+        verify(mMockSession).notifyScreenshotResult();
         verify(callback).onResult(notNull());
     }
 
@@ -578,6 +587,7 @@ public class ComputerControlSessionTest {
         mSession.requestScreenshot(mExecutor, callback, null);
 
         verify(mMockSession).requestScreenshot();
+        verify(mMockSession, never()).notifyScreenshotResult();
         verify(callback).onResult(notNull());
     }
 
@@ -615,6 +625,7 @@ public class ComputerControlSessionTest {
 
         verify(mMockSession).requestScreenshot();
         verify(callback, timeout(100)).onError(withCode(ScreenshotException.ERROR_CANCELED));
+        verify(mMockSession).notifyScreenshotResult();
     }
 
     @Test
@@ -649,6 +660,7 @@ public class ComputerControlSessionTest {
         drawFrame(mSurface);
 
         verify(mMockSession).requestScreenshot();
+        verify(mMockSession).notifyScreenshotResult();
         verify(callback, timeout(100)).onError(withCode(ScreenshotException.ERROR_CANCELED));
         clearInvocations(callback);
     }

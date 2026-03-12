@@ -15030,13 +15030,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         }
 
         @Override
-        public @Nullable ComponentName getProfileOwnerOrDeviceOwnerSupervisionComponent(
-                @NonNull UserHandle userHandle) {
-            return DevicePolicyManagerService.this.getProfileOwnerOrDeviceOwnerSupervisionComponent(
-                    userHandle);
-        }
-
-        @Override
         public boolean isActiveDeviceOwner(int uid) {
             return mDeviceAdmins.isDefaultDeviceOwner(
                     new CallerIdentity(Process.INVALID_PID, uid, null, null));
@@ -15046,23 +15039,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         public boolean isActiveProfileOwner(int uid) {
             return mDeviceAdmins.isProfileOwner(
                     new CallerIdentity(Process.INVALID_PID, uid, null, null));
-        }
-
-        @Override
-        public boolean isActiveSupervisionApp(int uid) {
-            if (!mDeviceAdmins.isProfileOwner(
-                    new CallerIdentity(Process.INVALID_PID, uid, null, null))) {
-                return false;
-            }
-            synchronized (getLockObject()) {
-                final ActiveAdmin admin =
-                    mDeviceAdmins.getProfileOwnerAdmin(UserHandle.getUserId(uid));
-                if (admin == null) {
-                    return false;
-                }
-
-                return isSupervisionComponentLocked(admin.info.getComponent());
-            }
         }
 
         @Override

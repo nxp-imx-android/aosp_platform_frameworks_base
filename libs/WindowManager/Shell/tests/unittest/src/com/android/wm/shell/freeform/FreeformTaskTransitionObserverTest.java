@@ -145,7 +145,6 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_NO_WINDOW_DECORATION_FOR_DESKS)
     public void desksChange_windowDecorNotCreatedForDesksTask() {
         final TransitionInfo.Change change = createChange(TRANSIT_OPEN, 1, WINDOWING_MODE_FREEFORM);
         final TransitionInfo info =
@@ -163,7 +162,6 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_NO_WINDOW_DECORATION_FOR_DESKS)
     public void desksChange_listenerNotNotifiedOfTaskChange() {
         final TransitionInfo.Change change =
                 createChange(TRANSIT_CHANGE, /* taskId= */ 1, WINDOWING_MODE_FREEFORM);

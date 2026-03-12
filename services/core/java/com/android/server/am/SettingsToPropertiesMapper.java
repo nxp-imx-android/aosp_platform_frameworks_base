@@ -43,8 +43,10 @@ import android.text.TextUtils;
 import android.util.Slog;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
+
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.providers.settings.Flags;
+
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -97,6 +99,9 @@ public class SettingsToPropertiesMapper {
     private static final String NAMESPACE_PIXEL_FACEAUTH =
             "pixel_faceauth";
 
+    private static final String NAMESPACE_MEMORY_MANAGEMENT_NATIVE_BOOT =
+            "memory_management_native_boot";
+
     // All the flags under the listed DeviceConfig scopes will be synced to native level.
     //
     // NOTE: please grant write permission system property prefix
@@ -133,7 +138,8 @@ public class SettingsToPropertiesMapper {
         DeviceConfig.NAMESPACE_MEMORY_SAFETY_NATIVE_BOOT,
         DeviceConfig.NAMESPACE_MEMORY_SAFETY_NATIVE,
         DeviceConfig.NAMESPACE_HDMI_CONTROL,
-        NAMESPACE_TETHERING_U_OR_LATER_NATIVE
+        NAMESPACE_TETHERING_U_OR_LATER_NATIVE,
+        NAMESPACE_MEMORY_MANAGEMENT_NATIVE_BOOT
     };
 
     public static final String NAMESPACE_REBOOT_STAGING = "staged";

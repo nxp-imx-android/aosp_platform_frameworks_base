@@ -22,6 +22,7 @@ import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_LOCATION
 import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_MICROPHONE;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
 import static android.app.ActivityManager.ProcessCapability;
+import static android.app.ActivityManager.ProcessState;
 import static android.app.AppOpsManager.MIN_PRIORITY_UID_STATE;
 import static android.app.AppOpsManager.MODE_ALLOWED;
 import static android.app.AppOpsManager.MODE_FOREGROUND;
@@ -132,7 +133,7 @@ class AppOpsUidStateTrackerImpl implements AppOpsUidStateTracker {
         }
 
         int uidState = getUidState(uid);
-        int uidCapability = getUidCapability(uid);
+        @ProcessCapability int uidCapability = getUidCapability(uid);
         int result = evalModeInternal(uid, code, uidState, uidCapability);
 
         mEventLogger
@@ -215,13 +216,15 @@ class AppOpsUidStateTrackerImpl implements AppOpsUidStateTracker {
     }
 
     @Override
-    public void updateUidProcState(int uid, int procState, int capability) {
+    public void updateUidProcState(int uid, @ProcessState int procState,
+            @ProcessCapability int capability) {
         int uidState = processStateToUidState(procState);
 
         int prevUidState = mUidStates.get(uid, AppOpsManager.UID_STATE_NONEXISTENT);
         int prevCapability = mCapability.get(uid, PROCESS_CAPABILITY_NONE);
         int pendingUidState = mPendingUidStates.get(uid, UID_STATE_NONEXISTENT);
-        int pendingCapability = mPendingCapability.get(uid, PROCESS_CAPABILITY_NONE);
+        @ProcessCapability int pendingCapability = mPendingCapability.get(uid,
+                PROCESS_CAPABILITY_NONE);
         long pendingStateCommitTime = mPendingCommitTime.get(uid, 0);
 
         if ((pendingStateCommitTime == 0
@@ -405,10 +408,11 @@ class AppOpsUidStateTrackerImpl implements AppOpsUidStateTracker {
     private static class ProcStateChangedEvent extends EventLogger.Event {
 
         private int mUid;
-        private int mProcState;
-        private int mCapability;
+        private @ProcessState int mProcState;
+        private @ProcessCapability int mCapability;
 
-        ProcStateChangedEvent(int uid, int procState, int capability) {
+        ProcStateChangedEvent(int uid, @ProcessState int procState,
+                @ProcessCapability int capability) {
             mUid = uid;
             mProcState = procState;
             mCapability = capability;
@@ -431,7 +435,7 @@ class AppOpsUidStateTrackerImpl implements AppOpsUidStateTracker {
 
         private int mUid;
         private int mUidState;
-        private int mCapability;
+        private @ProcessCapability int mCapability;
         private boolean mAppWidgetVisible;
         private boolean mAppWidgetVisibleChanged;
 
@@ -463,11 +467,11 @@ class AppOpsUidStateTrackerImpl implements AppOpsUidStateTracker {
 
         private int mUid;
         private int mUidState;
-        private int mCapability;
+        private @ProcessCapability int mCapability;
         private final int mCode;
         private final int mResult;
 
-        EvalForegroundModeEvent(int uid, int uidState, int capability, int code,
+        EvalForegroundModeEvent(int uid, int uidState, @ProcessCapability int capability, int code,
                 int result) {
             mUid = uid;
             mUidState = uidState;

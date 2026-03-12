@@ -191,6 +191,19 @@ public class AccessibilityTargetAdapter extends Adapter<ViewHolder> {
                 AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_CLICK,
                 clickHint, /* command= */ null);
 
+        ViewCompat.setAccessibilityDelegate(
+                holder.itemView,
+                new androidx.core.view.AccessibilityDelegateCompat() {
+                    @Override
+                    public void onInitializeAccessibilityNodeInfo(
+                            View host, AccessibilityNodeInfoCompat info) {
+                        super.onInitializeAccessibilityNodeInfo(host, info);
+                        if (target instanceof MoreOptionsTarget) {
+                            info.setClassName(android.widget.Button.class.getName());
+                        }
+                    }
+                });
+
         if (com.android.settingslib.flags.Flags.hearingDeviceSetConnectionStatusReport()) {
             final String targetId = target.getId();
             if (targetId != null && ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME.equals(

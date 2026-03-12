@@ -25,6 +25,9 @@
     <!-- Label for the title of request computer control access dialog [CHAR LIMIT=70] -->
     <string name="request_computer_control_access_dialog_title">Allow &lt;strong&gt;<xliff:g id="agent_app_name" example="Example Agent App">%1$s</xliff:g>&lt;/strong&gt; to use screen automation?</string>
 
+    <!-- Label for the title of request computer control access dialog with per-app consent [CHAR LIMIT=70] -->
+    <string name="request_computer_control_access_per_app_consent_dialog_title">Allow &lt;strong&gt;<xliff:g id="agent_app_name" example="Example Agent App">%1$s</xliff:g>&lt;/strong&gt; to use screen automation on &lt;strong&gt;<xliff:g id="automatable_app_name" example="Example Automatable App">%2$s</xliff:g>&lt;/strong&gt;?</string>
+
     <!-- Label for the description of request computer control access dialog [CHAR LIMIT=NONE] -->
     <string name="request_computer_control_access_dialog_description">This app will be able to see and interact with other apps\' screen content to help you complete tasks, even when the apps are in the background</string>
 

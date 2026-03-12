@@ -240,36 +240,37 @@ public final class MessageQueue {
 
     private void decAndTraceMessageCount() {
         mMessageCount.decrementAndGet();
-        if (android.os.Flags.perfettoSdkTracingV3() && PerfettoCategories.MQ_CATEGORY.isEnabled()) {
+        if (PerfettoTrace.isMQCategoryEnabled()) {
             traceMessageCount();
         }
     }
 
     private void incAndTraceMessageCount(Message msg, long when) {
         mMessageCount.incrementAndGet();
-        if (android.os.Flags.perfettoSdkTracingV3() && PerfettoCategories.MQ_CATEGORY.isEnabled()) {
+        if (PerfettoTrace.isMQCategoryEnabled()) {
             msg.sendingThreadName = Thread.currentThread().getName();
-            final long eventId = msg.eventId =
-                    com.android.internal.dev.perfetto.sdk.PerfettoTrace.getFlowId();
+            final long eventId = msg.eventId = PerfettoTrace.getFlowId();
 
             traceMessageCount();
             final long messageDelayMs = Math.max(0L, when - SystemClock.uptimeMillis());
-            com.android.internal.dev.perfetto.sdk.PerfettoTrace
-                    .instant(PerfettoCategories.MQ_CATEGORY, "message_queue_send")
-                    .setFlow(eventId)
-                    .beginProto()
-                    .beginNested(MESSAGE_QUEUE)
-                    .addField(RECEIVING_THREAD_NAME, mThreadName)
-                    .addField(MESSAGE_CODE, msg.what)
-                    .addField(MESSAGE_DELAY_MS, messageDelayMs)
-                    .endNested()
-                    .endProto()
-                    .emit();
+            if (PerfettoTrace.IS_USE_SDK_TRACING_API_V3) {
+                com.android.internal.dev.perfetto.sdk.PerfettoTrace
+                        .instant(PerfettoCategories.MQ_CATEGORY, "message_queue_send")
+                        .setFlow(eventId)
+                        .beginProto()
+                        .beginNested(MESSAGE_QUEUE)
+                        .addField(RECEIVING_THREAD_NAME, mThreadName)
+                        .addField(MESSAGE_CODE, msg.what)
+                        .addField(MESSAGE_DELAY_MS, messageDelayMs)
+                        .endNested()
+                        .endProto()
+                        .emit();
+            }
         }
     }
 
     private void traceMessageCount() {
-        if (android.os.Flags.perfettoSdkTracingV3() && PerfettoCategories.MQ_CATEGORY.isEnabled()) {
+        if (PerfettoTrace.IS_USE_SDK_TRACING_API_V3) {
             com.android.internal.dev.perfetto.sdk.PerfettoTrace
                     .counter(PerfettoCategories.MQ_CATEGORY, mMessageCount.get())
                     .usingThreadCounterTrack(mTid, mThreadName)

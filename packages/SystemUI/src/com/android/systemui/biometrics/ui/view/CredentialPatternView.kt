@@ -50,7 +50,6 @@ fun CredentialPatternView(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        // TODO: Pattern error UX, placing on top now for consistency but was on bottom
         Text(
             text = if (error.isNotEmpty()) error else " ",
             style = MaterialTheme.typography.bodyMedium,

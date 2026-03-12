@@ -34,7 +34,7 @@ internal fun buildEditableRuleText(
     onContactsSaved: (List<ContactModel>) -> Unit,
     resources: Resources,
 ): RuleDisplayModel {
-    val appsText: SingleFieldTextModel? =
+    val appsText: SingleFieldTextModel<AppModel>? =
         viewModel.rule.includedApps?.let {
             createEditableIncludedAppsText(
                 selectedIncludedApps = it,
@@ -45,7 +45,7 @@ internal fun buildEditableRuleText(
             )
         }
 
-    val contactsText: SingleFieldTextModel? =
+    val contactsText: SingleFieldTextModel<ContactModel>? =
         viewModel.rule.contacts?.let {
             createEditableContactsText(
                 selectedContacts = it,
@@ -56,7 +56,7 @@ internal fun buildEditableRuleText(
             )
         }
 
-    return buildRuleText(appsText = appsText, contactsText = contactsText)
+    return buildRuleText(appsText = appsText, contactsText = contactsText, resources = resources)
 }
 
 /** Creates text representation for the included apps filter field. */
@@ -66,7 +66,7 @@ private fun createEditableIncludedAppsText(
     onEnterEditField: (RulesScreenViewState.EditField) -> Unit,
     onAppsSaved: (List<AppModel>) -> Unit,
     resources: Resources,
-): SingleFieldTextModel {
+): SingleFieldTextModel<AppModel> {
     val onClick = {
         onEnterEditField(
             RulesScreenViewState.EditField.Apps(viewModel = viewModel, onAppsSaved = onAppsSaved)
@@ -84,6 +84,7 @@ private fun createEditableIncludedAppsText(
         FieldDataModel(
             currentValue = selectedIncludedApps,
             items = items,
+            id = { it.uniqueId },
             label = { it.label },
             onClick = onClick,
         ),
@@ -98,7 +99,7 @@ private fun createEditableContactsText(
     onEnterEditField: (RulesScreenViewState.EditField) -> Unit,
     onContactsSaved: (List<ContactModel>) -> Unit,
     resources: Resources,
-): SingleFieldTextModel {
+): SingleFieldTextModel<ContactModel> {
     val onClick: () -> Unit = {
         onEnterEditField(
             RulesScreenViewState.EditField.Contacts(
@@ -120,6 +121,7 @@ private fun createEditableContactsText(
             FieldDataModel(
                 currentValue = selectedContacts,
                 items = items,
+                id = { it.id },
                 label = { it.displayLabel },
                 onClick = onClick,
             ),
@@ -131,18 +133,19 @@ private fun createEditableContactsText(
 private fun <T, R> createFieldText(
     fieldData: FieldDataModel<T, R>,
     resources: Resources,
-): SingleFieldTextModel {
+): SingleFieldTextModel<T> {
     return when (fieldData.currentValue) {
         is RuleValue.Specified -> {
-            createMultiItemText(
+            createMultiItemText<T>(
                 items = fieldData.items,
+                id = fieldData.id,
                 label = fieldData.label,
                 onClick = fieldData.onClick,
                 resources = resources,
             )
         }
         is RuleValue.Ambiguous -> {
-            createAmbiguousText(
+            createAmbiguousText<T>(
                 placeholderText = fieldData.currentValue.placeholderText,
                 onClick = fieldData.onClick,
                 resources = resources,
@@ -162,6 +165,7 @@ private fun <T, R> createFieldText(
 private data class FieldDataModel<T, R>(
     val currentValue: RuleValue<R>,
     val items: List<T>,
+    val id: (T) -> String,
     val label: (T) -> String,
     val onClick: () -> Unit,
 )

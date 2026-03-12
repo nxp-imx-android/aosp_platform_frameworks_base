@@ -53,6 +53,7 @@ import static com.android.server.wm.ActivityRecord.State.PAUSED;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityRecord.State.STOPPED;
 import static com.android.server.wm.ActivityRecord.State.STOPPING;
+import static com.android.server.wm.ActivityStarter.Request.DEFAULT_REAL_CALLING_UID;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_RECENTS;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_ROOT_TASK;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_SWITCH;
@@ -1951,17 +1952,11 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         removeRootTasksInWindowingModes(WINDOWING_MODE_PINNED);
         final IntArray visibleRootTasks = new IntArray();
         forAllRootTasks(rootTask -> {
-            final boolean restoreTask;
-            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
-                // If the task is visible, it should have activities that are visible to
-                // the current user, so don't check for task's user id since it is
-                // redundant and might accidentally exclude a non-leaf tasks that
-                // aren't associated with one particular user.
-                restoreTask = rootTask.isVisible();
-            } else {
-                restoreTask = (mCurrentUser == rootTask.mUserId || rootTask.showForAllUsers())
-                        && rootTask.isVisible();
-            }
+            // If the task is visible, it should have activities that are visible to
+            // the current user, so don't check for task's user id since it is
+            // redundant and might accidentally exclude a non-leaf tasks that
+            // aren't associated with one particular user.
+            final boolean restoreTask = rootTask.isVisible();
             if (restoreTask) {
                 visibleRootTasks.add(rootTask.getRootTaskId());
             }
@@ -3096,7 +3091,8 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     Task getOrCreateRootTask(@Nullable ActivityRecord r, @Nullable ActivityOptions options,
             @Nullable Task candidateTask, boolean onTop) {
         return getOrCreateRootTask(r, options, candidateTask, null /* sourceTask */, onTop,
-                null /* launchParams */, 0 /* launchFlags */);
+                null /* launchParams */, 0 /* launchFlags */,
+                DEFAULT_REAL_CALLING_UID /* originalCallerUid */);
     }
 
     /**
@@ -3108,14 +3104,14 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
      * @param sourceTask     The task requesting to start activity. Can be null.
      * @param launchParams   The resolved launch params to use.
      * @param launchFlags    The launch flags for this launch.
-     * @param realCallingPid The pid from {@link ActivityStarter#setRealCallingPid}
-     * @param realCallingUid The uid from {@link ActivityStarter#setRealCallingUid}
+     * @param originalCallerUid The original caller for this launch.
      * @return The root task to use for the launch.
      */
     Task getOrCreateRootTask(@Nullable ActivityRecord r,
             @Nullable ActivityOptions options, @Nullable Task candidateTask,
             @Nullable Task sourceTask, boolean onTop,
-            @Nullable LaunchParamsController.LaunchParams launchParams, int launchFlags) {
+            @Nullable LaunchParamsController.LaunchParams launchParams, int launchFlags,
+            int originalCallerUid) {
         // First preference goes to the launch root task set in the activity options.
         if (options != null) {
             final Task candidateRoot = Task.fromWindowContainerToken(options.getLaunchRootTask());
@@ -3168,7 +3164,8 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         if (taskDisplayArea != null) {
             if (canLaunchOnDisplay(r, taskDisplayArea.getDisplayId())) {
                 return taskDisplayArea.getOrCreateRootTask(r, options, candidateTask,
-                        sourceTask, launchParams, launchFlags, activityType, onTop);
+                        sourceTask, launchParams, launchFlags, activityType, onTop,
+                        originalCallerUid);
             } else {
                 taskDisplayArea = null;
             }
@@ -3210,7 +3207,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             taskDisplayArea = getDefaultTaskDisplayArea();
         }
         return taskDisplayArea.getOrCreateRootTask(r, options, candidateTask, sourceTask,
-                launchParams, launchFlags, activityType, onTop);
+                launchParams, launchFlags, activityType, onTop, originalCallerUid);
     }
 
     private boolean canLaunchOnDisplay(ActivityRecord r, Task task) {

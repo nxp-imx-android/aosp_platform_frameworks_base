@@ -28,7 +28,6 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.graphics.Rect;
 import android.util.ArraySet;
-import android.window.DesktopExperienceFlags;
 
 import com.android.window.flags.Flags;
 
@@ -361,8 +360,6 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
 
     /** The helper to calculate whether a container is opaque. */
     private static class OpaqueContainerHelper implements Predicate<ActivityRecord> {
-        private final boolean mEnableMultipleDesktopsBackend =
-                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue();
         @Nullable
         private ActivityRecord mStarting;
         private boolean mIgnoringInvisibleActivity;
@@ -379,13 +376,7 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
             mIgnoringKeyguard = ignoringKeyguard;
             mIgnoringFinishing = ignoringFinishing || ignoringInvisibleActivity;
 
-            final boolean isOpaque;
-            if (!mEnableMultipleDesktopsBackend) {
-                isOpaque = container.getActivity(this,
-                        true /* traverseTopToBottom */, null /* boundary */) != null;
-            } else {
-                isOpaque = isOpaqueInner(container);
-            }
+            final boolean isOpaque = isOpaqueInner(container);
             mStarting = null;
             return isOpaque;
         }

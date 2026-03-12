@@ -48,6 +48,7 @@ policy_metadata {
   allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
   allowed_dpc_types: DPC_TYPE_UNAFFILIATED_FULL_USER_PROFILE_OWNER
   allowed_dpc_types: DPC_TYPE_AFFILIATED_FULL_USER_PROFILE_OWNER
+  flag: "android.app.admin.flags.policy_streamlining"
 }
 policy_metadata {
   identifier {
@@ -120,6 +121,7 @@ policy_metadata {
   allowed_dpc_types: DPC_TYPE_DEVICE_OWNER
   allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
   allowed_dpc_types: DPC_TYPE_PROFILE_OWNER_ON_USER0
+  flag: "android.app.admin.flags.policy_streamlining_auto_time"
 }
 policy_metadata {
   identifier {
@@ -172,6 +174,7 @@ policy_metadata {
   allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
   allowed_dpc_types: DPC_TYPE_UNAFFILIATED_FULL_USER_PROFILE_OWNER
   allowed_dpc_types: DPC_TYPE_AFFILIATED_FULL_USER_PROFILE_OWNER
+  flag: "android.app.admin.flags.managed_esim_outgoing_transfer_policy"
 }
 policy_metadata {
   identifier {
@@ -244,6 +247,7 @@ policy_metadata {
   allowed_dpc_types: DPC_TYPE_DEVICE_OWNER
   allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
   allowed_dpc_types: DPC_TYPE_PROFILE_OWNER_ON_USER0
+  flag: "android.app.admin.flags.policy_streamlining_auto_time_zone"
 }
 policy_metadata {
   identifier {
@@ -293,6 +297,7 @@ policy_metadata {
   allowed_dpc_types: DPC_TYPE_PROFILE_OWNER_ON_USER0
   allowed_dpc_types: DPC_TYPE_UNAFFILIATED_FULL_USER_PROFILE_OWNER
   allowed_dpc_types: DPC_TYPE_AFFILIATED_FULL_USER_PROFILE_OWNER
+  flag: "android.app.admin.flags.policy_streamlining_easter_eggs"
 }
 policy_metadata {
   identifier {
@@ -341,6 +346,7 @@ policy_metadata {
   allowed_dpc_types: DPC_TYPE_DEVICE_OWNER
   allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
   allowed_dpc_types: DPC_TYPE_PROFILE_OWNER_ON_USER0
+  flag: "android.app.admin.flags.policy_streamlining_disallow_factory_reset"
 }
 policy_metadata {
   identifier {
@@ -363,6 +369,7 @@ policy_metadata {
   required_cross_user_permission: "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS"
   allowed_dpc_types: DPC_TYPE_DEVICE_OWNER
   allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
+  flag: "android.app.admin.flags.policy_streamlining_lockscreen_message"
 }
 policy_metadata {
   identifier {
@@ -390,4 +397,5 @@ policy_metadata {
   required_cross_user_permission: "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL"
   allowed_dpc_types: DPC_TYPE_DEVICE_OWNER
   allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
+  flag: "android.app.admin.flags.policy_streamlining"
 }

@@ -17,6 +17,7 @@
 package com.android.wm.shell.flicker.bubbles
 
 import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.RequiresFlagsDisabled
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
 import androidx.test.filters.FlakyTest
@@ -66,6 +67,8 @@ import org.junit.runners.Parameterized.Parameters
  * - [DismissSingleExpandedBubbleTestCases]
  */
 @FlakyTest(bugId = 468919756)
+// TODO(b/479182156) Remove this when bubbling is supported in desktop mode.
+@RequiresFlagsDisabled(Flags.FLAG_DISABLE_BUBBLE_ANYTHING_DESKTOP_WINDOWING)
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

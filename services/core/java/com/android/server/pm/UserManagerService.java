@@ -9136,7 +9136,7 @@ public class UserManagerService extends IUserManager.Stub {
         }
 
         @Override
-        public void logNotificationShownStatus(StatusBarNotification sbn, @UserIdInt int userId,
+        public void logNotificationPostStatus(StatusBarNotification sbn, @UserIdInt int userId,
                 @AllowlistStatus int status) {
             // TODO(b/414326600): proper implementation once metrics is designed
             if (userId != UserHandle.USER_SYSTEM) {
@@ -9145,13 +9145,11 @@ public class UserManagerService extends IUserManager.Stub {
                         GenericAllowlist.allowlistStatusToString(status));
                 return;
             }
-            if (!GenericAllowlist.isAllowed(status)) {
-                Slogf.w(LOG_TAG, "logNotificationShownStatus(%s, %d, %s): only supported for "
-                        + "allowed statuses", sbn,
-                        userId, GenericAllowlist.allowlistStatusToString(status));
-                return;
+            if (GenericAllowlist.isAllowed(status)) {
+                mNonComplianceLogger.logPostedHsuNotification(sbn);
+            } else {
+                mNonComplianceLogger.logBlockedHsuNotification(sbn);
             }
-            mNonComplianceLogger.logShownHsuNotification(sbn);
         }
 
         @Override

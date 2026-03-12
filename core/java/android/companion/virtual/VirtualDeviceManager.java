@@ -1575,6 +1575,15 @@ public final class VirtualDeviceManager {
         @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
         default void onActivityLaunchRequested(int displayId, @NonNull ComponentName componentName,
                 @UserIdInt int userId) {}
+
+        /**
+         * Called when biometric authentication is requested.
+         *
+         * @param displayId The display ID on which biometric authentication is requested.
+         * @param packageName Package name of the calling application.
+         * @hide
+         */
+        default void onAuthenticationPrompt(int displayId, String packageName) {}
     }
 
     /**

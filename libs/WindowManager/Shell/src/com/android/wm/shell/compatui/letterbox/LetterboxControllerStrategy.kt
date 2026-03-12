@@ -16,7 +16,6 @@
 
 package com.android.wm.shell.compatui.letterbox
 
-import com.android.window.flags.Flags
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy.LetterboxMode.MULTIPLE_SURFACES
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy.LetterboxMode.SINGLE_SURFACE
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEvent
@@ -60,8 +59,7 @@ constructor(private val letterboxConfiguration: LetterboxConfiguration) {
             }
         supportsInputSurface = event.supportsInput
         supportsShellRoundedCorners =
-            Flags.appCompatRefactoringRoundedCornersOnTransparent() &&
-                event.isTranslucent &&
+            event.isTranslucent &&
                 !event.mainWindowHasRoundedCorners &&
                 letterboxConfiguration.isLetterboxActivityCornersRounded()
     }

@@ -56,6 +56,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -241,8 +242,8 @@ public class ThemeManagerServiceTests {
     }
 
     private ThemeStatePair startProvisionedUser() {
-        mThemeStateManager.onUserStart(UserHandle.of(DEFAULT_USER_ID), true, DEFAULT_SEED_COLOR,
-                DEFAULT_CONTRAST, DEFAULT_STYLE);
+        mThemeStateManager.onUserStart(UserHandle.of(DEFAULT_USER_ID), true,
+                List.of(DEFAULT_SEED_COLOR), DEFAULT_CONTRAST, DEFAULT_STYLE);
         return mThemeStateManager.getState(DEFAULT_USER_ID);
     }
 

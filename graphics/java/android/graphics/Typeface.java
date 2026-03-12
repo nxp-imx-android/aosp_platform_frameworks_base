@@ -1829,6 +1829,12 @@ public class Typeface {
         return Arrays.binarySearch(mSupportedAxes, axis) >= 0;
     }
 
+
+    /** @hide */
+    public static boolean setFontRenderingBackend(int type) {
+        return nativeSetFontRenderingBackend(type);
+    }
+
     private static native long nativeCreateFromTypeface(long native_instance, int style);
     private static native long nativeCreateFromTypefaceWithExactStyle(
             long native_instance, int weight, boolean italic);
@@ -1871,4 +1877,7 @@ public class Typeface {
 
     @FastNative
     private static native void nativeRegisterLocaleList(String locales);
+
+    @CriticalNative
+    private static native boolean nativeSetFontRenderingBackend(int type);
 }

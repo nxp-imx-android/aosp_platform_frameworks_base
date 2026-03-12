@@ -48,7 +48,18 @@ public class AppCompatEmbeddingRuleController {
 
     private static boolean sIsVirtualGamepadEnabled;
 
-    private static boolean sIsVirtualGamepadAllowedByApp;
+    @VisibleForTesting
+    static boolean sIsVirtualGamepadAllowedByApp;
+
+    /**
+     * Whether we have seen gamepad user opt-out in the current session.
+     *
+     * If we have ever seen user opt-out in the current session, we consider the gamepad to be
+     * disabled for the entire session. Dynamic re-enablement of the gamepad within the same session
+     * is not supported.
+     */
+    @VisibleForTesting
+    static boolean sIsVirtualGamepadOptOutInSession;
 
     /** Initializes the controller. Must be called before any other functions. */
     public static void init(@NonNull Context context) {
@@ -155,12 +166,17 @@ public class AppCompatEmbeddingRuleController {
         }
     }
 
-    private static boolean isVirtualGamepadEnabled(@NonNull String packageName, int userId) {
+    @VisibleForTesting
+    static boolean isVirtualGamepadEnabled(@NonNull String packageName, int userId) {
         if (!sIsVirtualGamepadAllowedByApp) {
+            return false;
+        }
+        if (sIsVirtualGamepadOptOutInSession) {
             return false;
         }
         int userOption = getVirtualGamepadUserOption(packageName, userId);
         if (userOption == PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_OPT_OUT) {
+            sIsVirtualGamepadOptOutInSession = true;
             return false;
         }
         return CompatChanges.isChangeEnabled(OVERRIDE_ENABLE_VIRTUAL_GAMEPAD);

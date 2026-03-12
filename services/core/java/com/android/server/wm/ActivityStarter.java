@@ -457,13 +457,27 @@ class ActivityStarter {
         boolean allowPendingRemoteAnimationRegistryLookup;
 
         /**
-         * Indicates whether the launch request originated from the home activity (Launcher).
+         * UID of the original caller that initiated this launch request.
          *
-         * <p>This value is determined at the beginning of {@link ActivityStarter#execute} based on
-         * the source record. It is subsequently used by {@link TaskLaunchParamsModifier#calculate}
-         * to adjust launch parameters for transitions originating from home.
+         * <p>This value is determined at the beginning of {@link ActivityStarter#execute} by
+         * {@link LaunchingState#tracksOriginator}. It represents the UID of the first caller in
+         * a potential trampoline chain (e.g. EntryActivity -> DeeplinkActivity -> MainActivity).
+         * This information is propagated down for various launch decisions, such as by
+         * {@link TaskLaunchParamsModifier#calculate} to adjust launch parameters for transitions
+         * originating from home, and distinguishing same-app trampoline launches from external
+         * launches in {@link TaskDisplayArea#getLaunchRootTask}.
+         *
+         * <p>Note: Trampoline tracking relies on the lifecycle of active transitions tracked in
+         * {@link ActivityMetricsLogger#mTransitionInfoList}. Transitions are removed from this list
+         * when they are considered drawn (e.g., {@link ActivityMetricsLogger#notifyWindowsDrawn} or
+         * {@link ActivityMetricsLogger#notifyTransitionStarting} with {@code mIsDrawn} true).
+         * As a result, the tracked UID might no longer resolve to the original caller once the
+         * earlier transition has been cleared. In particular, a home consecutive launch is obscured
+         * by {@link ActivityMetricsLogger#getOriginatorForConsecutiveLaunch}. Therefore,
+         * distinguishing same-app trampolines from external launches is best-effort and only
+         * works when the related launches belong to different transitions.
          */
-        boolean mLaunchOriginatedFromHome;
+        int mOriginalCallerUid = DEFAULT_REAL_CALLING_UID;
 
         /**
          * Indicates whether the activity was allowlisted for the user.
@@ -524,7 +538,7 @@ class ActivityStarter {
             allowBalExemptionForSystemProcess = false;
             freezeScreen = false;
             errorCallbackToken = null;
-            mLaunchOriginatedFromHome = false;
+            mOriginalCallerUid = DEFAULT_REAL_CALLING_UID;
         }
 
         /**
@@ -569,7 +583,7 @@ class ActivityStarter {
             allowBalExemptionForSystemProcess = request.allowBalExemptionForSystemProcess;
             freezeScreen = request.freezeScreen;
             errorCallbackToken = request.errorCallbackToken;
-            mLaunchOriginatedFromHome = request.mLaunchOriginatedFromHome;
+            mOriginalCallerUid = request.mOriginalCallerUid;
         }
 
         /**
@@ -865,9 +879,7 @@ class ActivityStarter {
                     final IntSupplier origUidSupplier = () -> mSupervisor.getActivityMetricsLogger()
                             .getOriginatorForConsecutiveLaunch(caller, mRequest.activityInfo,
                                     callingUid);
-                    final int originalCallerUid = launchingState.tracksOriginator(origUidSupplier);
-                    mRequest.mLaunchOriginatedFromHome = (mService.mHomeProcess != null
-                            && mService.mHomeProcess.mUid == originalCallerUid);
+                    mRequest.mOriginalCallerUid = launchingState.tracksOriginator(origUidSupplier);
                 }
             }
 
@@ -3511,7 +3523,7 @@ class ActivityStarter {
                 (aOptions == null || !aOptions.getAvoidMoveToFront()) && !mLaunchTaskBehind;
         final Task sourceTask = mSourceRecord != null ? mSourceRecord.getTask() : null;
         return mRootWindowContainer.getOrCreateRootTask(r, aOptions, task, sourceTask, onTop,
-                mLaunchParams, launchFlags);
+                mLaunchParams, launchFlags, mRequest.mOriginalCallerUid);
     }
 
     private boolean isLaunchModeOneOf(int mode1, int mode2) {

@@ -86,6 +86,8 @@ class PreferenceGraphBuilderTest {
             preconditionsDescription = "set_warning_preconditions_description",
             warningMessage = "set_warning_message"
         )
+
+        override val supportsWrite = true
     }
 
     @After
@@ -117,6 +119,7 @@ class PreferenceGraphBuilderTest {
         override val getScreenParameters: () -> ValidatedKeyParameters? = { null }
         override val getParametersSchema: () -> KeyParametersSchema? = { parametersSchema }
         override val getParameters: () -> ValidatedKeyParameters? = { parameters }
+        override val supportsWrite = set != null
     }
 
     @Test
@@ -163,6 +166,21 @@ class PreferenceGraphBuilderTest {
 
         val result = preference.evalWritePermit(context, 0, 0)
 
+        assertThat(result).isEqualTo(ReadWritePermit.DISALLOW)
+    }
+
+    @Test
+    fun evalWritePermit_requiresConfirmationSensitivity_returnsDisallow() {
+        // Arrange: Create a preference with REQUIRES_CONFIRMATION sensitivity level.
+        // The build type and global setting should not affect this outcome.
+        ShadowBuild.setType("userdebug")
+        Settings.Global.putInt(context.contentResolver, SETTING_KEY, 1)
+        val preference = TestPreference(SensitivityLevel.REQUIRES_CONFIRMATION)
+
+        // Act: Evaluate the write permit.
+        val result = preference.evalWritePermit(context, 0, 0)
+
+        // Assert: The result should be DISALLOW, as this sensitivity level is strictly disallowed.
         assertThat(result).isEqualTo(ReadWritePermit.DISALLOW)
     }
 
@@ -639,6 +657,111 @@ class PreferenceGraphBuilderTest {
 
         assertThat(proto.setWarning.preconditionsList).containsExactly("set_warning_preconditions_description")
         assertThat(proto.setWarning.warning).isEqualTo("set_warning_message")
+    }
+
+    private class TestDiscreteIntPreference(
+        override val sensitivityLevel: Int = SensitivityLevel.NO_SENSITIVITY,
+    ) : PersistentPreference<Int>, com.android.settingslib.metadata.DiscreteIntValue {
+        override val bindingKey: String = "discrete_int_key"
+        override val valueType: Class<Int> = Int::class.javaObjectType
+        override val key: String = "discrete_int_key"
+        override val purpose: Int = 2737
+        override val values: Int = android.R.array.emailAddressTypes
+        override val valuesDescription: Int = android.R.array.emailAddressTypes
+
+        override fun isPersistent(context: Context): Boolean = true
+        override val supportsWrite: Boolean = true
+
+        override fun getWritePermit(context: Context, callingPid: Int, callingUid: Int): Int? =
+            ReadWritePermit.ALLOW
+
+        override fun getWritePermissions(context: Context): Permissions? = null
+    }
+
+    @Test
+    fun toProto_discreteIntValue_includesValueDescriptor() {
+        val preference = TestDiscreteIntPreference()
+        val proto = preference.toProto(
+            context,
+            0,
+            0,
+            screenMetadata,
+            false,
+            PreferenceGetterFlags.METADATA or PreferenceGetterFlags.VALUE_DESCRIPTOR
+        )
+
+        assertThat(proto.hasValueDescriptor()).isTrue()
+        assertThat(proto.valueDescriptor.possibleValuesList).isNotEmpty()
+    }
+
+    private class TestDiscreteTextPreference(
+        override val sensitivityLevel: Int = SensitivityLevel.NO_SENSITIVITY,
+    ) : PersistentPreference<CharSequence>, com.android.settingslib.metadata.DiscreteTextValue {
+        override val bindingKey: String = "discrete_text_key"
+        override val valueType: Class<CharSequence> = CharSequence::class.javaObjectType
+        override val key: String = "discrete_text_key"
+        override val purpose: Int = 2737
+        override val values: Int = android.R.array.imProtocols
+        override val valuesDescription: Int = android.R.array.imProtocols
+
+        override fun isPersistent(context: Context): Boolean = true
+        override val supportsWrite: Boolean = true
+
+        override fun getWritePermit(context: Context, callingPid: Int, callingUid: Int): Int? =
+            ReadWritePermit.ALLOW
+
+        override fun getWritePermissions(context: Context): Permissions? = null
+    }
+
+    @Test
+    fun toProto_discreteTextValue_includesValueDescriptor() {
+        val preference = TestDiscreteTextPreference()
+        val proto = preference.toProto(
+            context,
+            0,
+            0,
+            screenMetadata,
+            false,
+            PreferenceGetterFlags.METADATA or PreferenceGetterFlags.VALUE_DESCRIPTOR
+        )
+
+        assertThat(proto.hasValueDescriptor()).isTrue()
+        assertThat(proto.valueDescriptor.possibleValuesList).isNotEmpty()
+    }
+
+    private class TestDiscreteStringPreference(
+        override val sensitivityLevel: Int = SensitivityLevel.NO_SENSITIVITY,
+    ) : PersistentPreference<String>, com.android.settingslib.metadata.DiscreteStringValue {
+        override val bindingKey: String = "discrete_string_key"
+        override val valueType: Class<String> = String::class.javaObjectType
+        override val key: String = "discrete_string_key"
+        override val purpose: Int = 2737
+        override val values: Int = android.R.array.imProtocols
+        override val valuesDescription: Int = android.R.array.imProtocols
+
+        override fun isPersistent(context: Context): Boolean = true
+        override val supportsWrite: Boolean = true
+
+        override fun getWritePermit(context: Context, callingPid: Int, callingUid: Int): Int? =
+            ReadWritePermit.ALLOW
+
+        override fun getWritePermissions(context: Context): Permissions? = null
+    }
+
+    @Test
+    fun toProto_discreteStringValue_includesValueDescriptor() {
+        val preference = TestDiscreteStringPreference()
+        val proto = preference.toProto(
+            context,
+            0,
+            0,
+            screenMetadata,
+            false,
+            PreferenceGetterFlags.METADATA or PreferenceGetterFlags.VALUE_DESCRIPTOR
+        )
+
+        assertThat(proto.hasValueDescriptor()).isTrue()
+        assertThat(proto.valueDescriptor.possibleValuesList).isNotEmpty()
     }
 
     companion object {

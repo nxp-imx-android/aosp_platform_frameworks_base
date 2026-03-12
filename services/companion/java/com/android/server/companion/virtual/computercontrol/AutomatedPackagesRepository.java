@@ -88,6 +88,11 @@ public final class AutomatedPackagesRepository {
         mHandler = handler;
     }
 
+    /** Watchdog monitor for deadlocks. */
+    public void monitor() {
+        synchronized (mLock) { /* no-op */ }
+    }
+
     /** Register a listener for automated package changes. */
     public void registerAutomatedPackageListener(IAutomatedPackageListener listener) {
         synchronized (mLock) {

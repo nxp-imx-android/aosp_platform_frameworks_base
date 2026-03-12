@@ -96,9 +96,11 @@ import com.android.modules.expresslog.Counter;
 import com.android.server.LocalServices;
 import com.android.server.LockGuard;
 import com.android.server.SystemService;
+import com.android.server.Watchdog;
 import com.android.server.companion.virtual.VirtualDeviceImpl.PendingTrampoline;
 import com.android.server.companion.virtual.computercontrol.AutomatedPackagesRepository;
 import com.android.server.companion.virtual.computercontrol.ComputerControlSessionProcessor;
+import com.android.server.companion.virtual.computercontrol.ComputerControlSessionRequest;
 import com.android.server.wm.ActivityInterceptorCallback;
 import com.android.server.wm.ActivityTaskManagerInternal;
 
@@ -116,7 +118,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @SuppressLint("LongLogTag")
-public class VirtualDeviceManagerService extends SystemService {
+public class VirtualDeviceManagerService extends SystemService implements Watchdog.Monitor {
 
     private static final String TAG = "VirtualDeviceManagerService";
 
@@ -227,6 +229,7 @@ public class VirtualDeviceManagerService extends SystemService {
                                                 DEVICE_PROFILE_COMPUTER_CONTROL)));
         mComputerControlConsentManager = new ComputerControlConsentManagerImpl();
         mAutomatedPackagesRepository = new AutomatedPackagesRepository(mHandler);
+        Watchdog.getInstance().addMonitor(this);
     }
 
     private final ActivityInterceptorCallback mActivityInterceptorCallback =
@@ -279,6 +282,14 @@ public class VirtualDeviceManagerService extends SystemService {
                     return null;
                 }
             };
+
+    @Override
+    public void monitor() {
+        synchronized (mVirtualDeviceManagerLock) { /* no-op */ }
+        mComputerControlSessionProcessor.monitor();
+        mAutomatedPackagesRepository.monitor();
+        // TODO: b/488023190 - Integrate all VDM locks into this monitor request.
+    }
 
     @Initializer
     @Override
@@ -576,7 +587,8 @@ public class VirtualDeviceManagerService extends SystemService {
             Objects.requireNonNull(callback);
 
             mComputerControlSessionProcessor.processNewSessionRequest(
-                    appThread, attributionSource, params, callback);
+                    ComputerControlSessionRequest.create(
+                            getContext(), appThread, attributionSource, params, callback));
         }
 
         @Override // Binder call
@@ -1117,6 +1129,14 @@ public class VirtualDeviceManagerService extends SystemService {
         }
 
         @Override
+        public void onAuthenticationPrompt(int uid, int displayId, String packageName) {
+            VirtualDeviceImpl device = getVirtualDeviceForDisplayId(displayId);
+            if (device != null) {
+                device.onAuthenticationPrompt(uid, packageName, displayId);
+            }
+        }
+
+        @Override
         public int getBaseVirtualDisplayFlags(IVirtualDevice virtualDevice) {
             return ((VirtualDeviceImpl) virtualDevice).getBaseVirtualDisplayFlags();
         }
@@ -1263,6 +1283,23 @@ public class VirtualDeviceManagerService extends SystemService {
                 @NonNull Consumer<String> persistentDeviceIdRemovedListener) {
             synchronized (mVirtualDeviceManagerLock) {
                 mPersistentDeviceIdRemovedListeners.remove(persistentDeviceIdRemovedListener);
+            }
+        }
+
+        @Nullable
+        private VirtualDeviceImpl getVirtualDeviceForDisplayId(int displayId) {
+            synchronized (mVirtualDeviceManagerLock) {
+                if (displayId == Display.INVALID_DISPLAY || displayId == Display.DEFAULT_DISPLAY) {
+                    return null;
+                }
+                ArrayList<VirtualDeviceImpl> virtualDevicesSnapshot = getVirtualDevicesSnapshot();
+                for (int i = 0; i < virtualDevicesSnapshot.size(); i++) {
+                    VirtualDeviceImpl virtualDevice = virtualDevicesSnapshot.get(i);
+                    if (virtualDevice.isDisplayOwnedByVirtualDevice(displayId)) {
+                        return virtualDevice;
+                    }
+                }
+                return null;
             }
         }
     }

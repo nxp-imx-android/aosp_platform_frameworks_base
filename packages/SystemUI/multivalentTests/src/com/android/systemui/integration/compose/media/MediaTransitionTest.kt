@@ -24,6 +24,7 @@ import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.FlakyTest
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.snapshot.ObserveReadsRoot
@@ -145,6 +146,7 @@ class MediaTransitionTest : SysuiTestCase() {
     }
 
     @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    @FlakyTest(bugId = 491434743)
     @Test
     fun resumableMediaPersistsInQuickSettings() =
         kosmos.runTest {

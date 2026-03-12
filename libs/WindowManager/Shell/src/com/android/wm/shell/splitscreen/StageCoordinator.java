@@ -1137,15 +1137,13 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         if (taskInfo != null && taskInfo.getWindowingMode() == WINDOWING_MODE_FREEFORM) {
             RunningTaskInfo task = mTaskOrganizer.getRunningTaskInfo(taskId);
             prepareTasksForSplitScreen(new int[]{taskId}, wct, outOptions);
-            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
-                // TODO: b/422176395 - Use options#setReparentLeafTaskToTda instead once it can work
-                // with wct#startTask.
-                DesktopRepository currentDesktopRepo = mDesktopUserRepositories.map(
-                        DesktopUserRepositories::getCurrent).orElse(
-                        null);
-                if (currentDesktopRepo != null && currentDesktopRepo.isActiveTask(taskId)) {
-                    wct.reparent(task.getToken(), null, true);
-                }
+            // TODO: b/422176395 - Use options#setReparentLeafTaskToTda instead once it can work
+            // with wct#startTask.
+            DesktopRepository currentDesktopRepo = mDesktopUserRepositories.map(
+                    DesktopUserRepositories::getCurrent).orElse(
+                    null);
+            if (currentDesktopRepo != null && currentDesktopRepo.isActiveTask(taskId)) {
+                wct.reparent(task.getToken(), null, true);
             }
         }
         wct.startTask(taskId, outOptions[0]);
@@ -2324,8 +2322,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         options.setLaunchWindowingMode(targetWindowingMode);
         // We are trying to move to fullscreen, reparent the task to tda to prevent it from being
         // launched in a previously existing root task.
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()
-                && targetWindowingMode == WINDOWING_MODE_FULLSCREEN) {
+        if (targetWindowingMode == WINDOWING_MODE_FULLSCREEN) {
             options.setReparentLeafTaskToTda(true);
         }
         opts.putAll(options.toBundle());

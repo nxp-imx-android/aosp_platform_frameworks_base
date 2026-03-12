@@ -2633,21 +2633,6 @@ class Task extends TaskFragment {
         final int windowingMode = getWindowingMode();
         final boolean isNonStandardOrFullscreen = !isActivityTypeStandardOrUndefined()
                 || windowingMode == WINDOWING_MODE_FULLSCREEN;
-        if (!DesktopExperienceFlags.ENABLE_NESTED_TASKS_WITH_INDEPENDENT_BOUNDS_BUGFIX.isTrue()
-                && !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
-            final Rect bounds;
-            if (hasParentTask && rootTask.isOrganized()) {
-                bounds = null;
-            } else if (isNonStandardOrFullscreen) {
-                bounds = isResizeable() ? rootTask.getRequestedOverrideBounds() : null;
-            } else if (!persistTaskBounds(getWindowConfiguration())) {
-                bounds = rootTask.getRequestedOverrideBounds();
-            } else {
-                bounds = mLastNonFullscreenBounds;
-            }
-            setBounds(bounds);
-            return;
-        }
 
         // Non-standard/fullscreen unresizable tasks should always inherit.
         boolean shouldInheritBounds = isNonStandardOrFullscreen && !isResizeable();
@@ -5392,61 +5377,31 @@ class Task extends TaskFragment {
                     someActivityResumed = resumeTopActivityInnerLocked(prev, options, deferPause);
                 }
             } else {
-                if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
-                    // Find visible tasks top-to-bottom.
-                    final List<Task> tasksToResumeTopToBottom = new ArrayList<>();
-                    for (int i = mChildren.size() - 1; i >= 0; i--) {
-                        final Task child = (Task) getChildAt(i);
-                        if (!child.isTopActivityFocusable()) {
+                // Find visible tasks top-to-bottom.
+                final List<Task> tasksToResumeTopToBottom = new ArrayList<>();
+                for (int i = mChildren.size() - 1; i >= 0; i--) {
+                    final Task child = (Task) getChildAt(i);
+                    if (!child.isTopActivityFocusable()) {
+                        continue;
+                    }
+                    if (child.getVisibility(null /* starting */)
+                            != TASK_FRAGMENT_VISIBILITY_VISIBLE) {
+                        if (child.topRunningActivity() == null) {
+                            // Skip the task if no running activity and continue resuming next
+                            // task.
                             continue;
                         }
-                        if (child.getVisibility(null /* starting */)
-                                != TASK_FRAGMENT_VISIBILITY_VISIBLE) {
-                            if (child.topRunningActivity() == null) {
-                                // Skip the task if no running activity and continue resuming next
-                                // task.
-                                continue;
-                            }
-                            // Otherwise, assuming everything behind this task should also be
-                            // invisible.
-                            break;
-                        }
-                        tasksToResumeTopToBottom.add(child);
+                        // Otherwise, assuming everything behind this task should also be
+                        // invisible.
+                        break;
                     }
-                    // Resume them bottom-to-top, so Z order is preserved.
-                    for (int i = tasksToResumeTopToBottom.size() - 1; i >= 0; i--) {
-                        final Task child = tasksToResumeTopToBottom.get(i);
-                        someActivityResumed |= child.resumeTopActivityUncheckedLocked(prev,
-                                options, deferPause);
-                    }
-                } else {
-                    int idx = mChildren.size() - 1;
-                    while (idx >= 0) {
-                        final Task child = (Task) getChildAt(idx--);
-                        if (!child.isTopActivityFocusable()) {
-                            continue;
-                        }
-                        if (child.getVisibility(null /* starting */)
-                                != TASK_FRAGMENT_VISIBILITY_VISIBLE) {
-                            if (child.topRunningActivity() == null) {
-                                // Skip the task if no running activity and continue resuming next
-                                // task.
-                                continue;
-                            }
-                            // Otherwise, assuming everything behind this task should also be
-                            // invisible.
-                            break;
-                        }
-
-                        someActivityResumed |= child.resumeTopActivityUncheckedLocked(prev, options,
-                                deferPause);
-                        // Doing so in order to prevent IndexOOB since hierarchy might changes while
-                        // resuming activities, for example dismissing split-screen while starting
-                        // non-resizeable activity.
-                        if (idx >= mChildren.size()) {
-                            idx = mChildren.size() - 1;
-                        }
-                    }
+                    tasksToResumeTopToBottom.add(child);
+                }
+                // Resume them bottom-to-top, so Z order is preserved.
+                for (int i = tasksToResumeTopToBottom.size() - 1; i >= 0; i--) {
+                    final Task child = tasksToResumeTopToBottom.get(i);
+                    someActivityResumed |= child.resumeTopActivityUncheckedLocked(prev,
+                            options, deferPause);
                 }
             }
 
@@ -6496,8 +6451,7 @@ class Task extends TaskFragment {
     void onChildPositionChanged(WindowContainer child) {
         if (!mChildren.contains(child)) {
             dispatchTaskInfoChangedIfNeeded(false /* force */);
-            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()
-                    && mCreatedByOrganizer && mChildren.isEmpty() && getDisplayArea() != null
+            if (mCreatedByOrganizer && mChildren.isEmpty() && getDisplayArea() != null
                     && getDisplayArea().mPreferredTopFocusableRootTask == this) {
                 // An empty task cannot be focusable.
                 getDisplayArea().clearPreferredTopFocusableRootTask();

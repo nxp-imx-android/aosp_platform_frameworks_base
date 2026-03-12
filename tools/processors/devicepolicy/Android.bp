@@ -32,6 +32,7 @@ java_library_host {
     static_libs: [
         "libprotobuf-java-full",
         "DevicePolicyAnnotationProcessorProto",
+        "framework-annotations-lib",
     ],
 }
 

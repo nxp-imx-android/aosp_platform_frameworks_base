@@ -21,7 +21,6 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.view.Display.INVALID_DISPLAY;
 
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION;
-import static com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND;
 import static com.android.window.flags.Flags.FLAG_ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS;
 import static com.android.window.flags.Flags.FLAG_SHOW_DESKTOP_WINDOWING_DEV_OPTION;
 
@@ -212,33 +211,6 @@ public final class FreeformTaskListenerTests extends ShellTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    public void visibilityTaskChanged_visible_setLaunchAdjacentDisabled() {
-        ActivityManager.RunningTaskInfo task =
-                new TestRunningTaskInfoBuilder().setWindowingMode(WINDOWING_MODE_FREEFORM).build();
-        task.isVisible = true;
-
-        mFreeformTaskListener.onTaskAppeared(task, mMockSurfaceControl);
-
-        verify(mLaunchAdjacentController).setLaunchAdjacentEnabled(false);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    public void visibilityTaskChanged_notVisible_setLaunchAdjacentEnabled() {
-        ActivityManager.RunningTaskInfo task =
-                new TestRunningTaskInfoBuilder().setWindowingMode(WINDOWING_MODE_FREEFORM).build();
-        task.isVisible = true;
-
-        mFreeformTaskListener.onTaskAppeared(task, mMockSurfaceControl);
-
-        task.isVisible = false;
-        mFreeformTaskListener.onTaskInfoChanged(task);
-
-        verify(mLaunchAdjacentController).setLaunchAdjacentEnabled(true);
-    }
-
-    @Test
     @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION)
     @DisableFlags(FLAG_ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS)
     public void onTaskVanished_minimizedTask_noTransitionObservers_isNotRemoved() {
@@ -304,20 +276,6 @@ public final class FreeformTaskListenerTests extends ShellTestCase {
         mFreeformTaskListener.onTaskVanished(task);
 
         verify(mDesktopModeLoggerTransitionObserver).onTaskVanished(task);
-    }
-
-
-    @Test
-    @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    public void onTaskInfoChanged_withDesktopController_forwards() {
-        ActivityManager.RunningTaskInfo task =
-                new TestRunningTaskInfoBuilder().setWindowingMode(WINDOWING_MODE_FREEFORM).build();
-        task.isVisible = true;
-        mFreeformTaskListener.onTaskAppeared(task, mMockSurfaceControl);
-
-        mFreeformTaskListener.onTaskInfoChanged(task);
-
-        verify(mDesktopTasksController).onTaskInfoChanged(task);
     }
 
     @Test

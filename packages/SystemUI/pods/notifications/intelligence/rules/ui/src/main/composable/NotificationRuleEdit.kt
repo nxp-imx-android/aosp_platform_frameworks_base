@@ -28,16 +28,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
-import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RuleDisplayModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RulesScreenViewState
@@ -69,6 +65,7 @@ fun NotificationRuleEdit(
     var isAddFieldDialogShowing by remember { mutableStateOf(false) }
 
     val textStyles = rememberTextStyles()
+    val textSize = textStyles.defaultStyle.fontSize
     val ruleDisplay: RuleDisplayModel =
         remember(
             viewModel,
@@ -87,6 +84,18 @@ fun NotificationRuleEdit(
     val text =
         remember(ruleDisplay.textChunks, textStyles) {
             buildAnnotatedString(ruleDisplay.textChunks, textStyles)
+        }
+    val inlineTextContent =
+        remember(ruleDisplay.textChunks, textStyles) {
+            buildInlineContentMap(
+                ruleDisplay.textChunks,
+                appIcon = { AppIcon(it) },
+                contactIcon = {
+                    val iconSizeDp = with(LocalDensity.current) { textSize.toDp() }
+                    ContactIcon(it, iconSizeDp, viewModel::loadContactBitmapFromUri)
+                },
+                textSize = textSize,
+            )
         }
 
     BackHandler(enabled = true, onBack = onDismissRuleEditScreen)
@@ -107,7 +116,7 @@ fun NotificationRuleEdit(
                 viewModel.rule = viewModel.rule.copy(action = newAction)
             },
         )
-        Text(text = text, style = MaterialTheme.typography.titleLargeEmphasized)
+        Text(text = text, inlineContent = inlineTextContent, style = textStyles.defaultStyle)
 
         AddButton(
             addFieldOptions = addFieldOptions,
@@ -150,7 +159,7 @@ private fun buildAddFieldOptions(
             add(
                 RulesScreenViewState.EditField.Contacts(
                     onContactsSaved = { newContacts ->
-                        onContactsSaved(newContacts, viewModel, onExitEditField)
+                        viewModel.onContactsSaved(newContacts, onExitEditField)
                     },
                     viewModel = viewModel,
                 )
@@ -160,48 +169,11 @@ private fun buildAddFieldOptions(
             add(
                 RulesScreenViewState.EditField.Apps(
                     viewModel = viewModel,
-                    onAppsSaved = { newApps -> onAppsSaved(newApps, viewModel, onExitEditField) },
+                    onAppsSaved = { newApps -> viewModel.onAppsSaved(newApps, onExitEditField) },
                 )
             )
         }
     }
-}
-
-private fun onContactsSaved(
-    newContacts: List<ContactModel>,
-    viewModel: NotificationRuleEditViewModel,
-    onExitEditField: () -> Unit,
-) {
-    viewModel.rule =
-        viewModel.rule.copy(
-            contacts =
-                if (newContacts.isNotEmpty()) {
-                    RuleValue.Specified(ContactsModel(newContacts))
-                } else {
-                    // Saving with no selected contacts is effectively removing contacts from the
-                    // filter.
-                    null
-                }
-        )
-    onExitEditField()
-}
-
-private fun onAppsSaved(
-    newApps: List<AppModel>,
-    viewModel: NotificationRuleEditViewModel,
-    onExitEditField: () -> Unit,
-) {
-    viewModel.rule =
-        viewModel.rule.copy(
-            includedApps =
-                if (newApps.isNotEmpty()) {
-                    RuleValue.Specified(IncludedAppsModel(newApps))
-                } else {
-                    // Saving with no selected apps is effectively removing apps from the filter.
-                    null
-                }
-        )
-    onExitEditField()
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)

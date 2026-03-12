@@ -20,17 +20,13 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -38,49 +34,42 @@ import androidx.compose.ui.unit.Dp
 import kotlin.math.roundToInt
 
 /**
- * A composable that loads an image from a URI and displays it. Shows a default placeholder if the
+ * A composable that loads an image from a URI and displays it. Shows [placeholderContent] if the
  * [uri] is null or can't be loaded.
  *
  * @param uri the URI of the image
  * @param contentDescription A descriptive text for accessibility
  * @param size the size to render the image at.
+ * @param loadBitmap the function that will be invoked to load the image.
+ * @param placeholderContent content to use while the image is loading or if there was an error when
+ *   loading the image.
  */
 @Composable
 fun AsyncUriImage(
     uri: Uri?,
     contentDescription: String?,
     size: Dp,
-    loadBitmap: suspend (Uri, Context, Int) -> Bitmap?,
+    loadBitmap: suspend (uri: Uri, context: Context, sizePx: Int) -> Bitmap?,
     modifier: Modifier = Modifier,
+    placeholderContent: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
     val sizePx = with(density) { size.toPx().roundToInt() }
     val bitmap: Bitmap? by
-        produceState<Bitmap?>(initialValue = null, uri, loadBitmap, context, sizePx) {
+        produceState(initialValue = null, uri, loadBitmap, context, sizePx) {
             uri?.let { value = loadBitmap(it, context, sizePx) }
         }
-    Box(
-        modifier =
-            modifier
-                .size(size)
-                .clip(CircleShape)
-                .then(
-                    if (bitmap == null) {
-                        // TODO: b/478225883 - Use a better default placeholder, like the first
-                        // letter of the contact.
-                        Modifier.background(MaterialTheme.colorScheme.secondary)
-                    } else {
-                        Modifier
-                    }
-                )
-    ) {
-        bitmap?.let {
+    Box(modifier = modifier.size(size)) {
+        val currentBitmap = bitmap
+        if (currentBitmap != null) {
             Image(
-                bitmap = it.asImageBitmap(),
+                bitmap = currentBitmap.asImageBitmap(),
                 contentDescription = contentDescription,
                 modifier = Modifier.fillMaxSize(),
             )
+        } else {
+            placeholderContent()
         }
     }
 }

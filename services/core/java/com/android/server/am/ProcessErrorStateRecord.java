@@ -39,6 +39,7 @@ import android.content.pm.IncrementalStatesInfo;
 import android.content.pm.PackageManagerInternal;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.PerfettoCategories;
 import android.os.Process;
 import android.os.ServiceManager;
 import android.os.SystemClock;
@@ -424,12 +425,26 @@ class ProcessErrorStateRecord {
 
             if (mService.mTraceErrorLogger != null
                     && mService.mTraceErrorLogger.isAddErrorIdEnabled()) {
-                errorId = mService.mTraceErrorLogger.generateErrorId();
+                if (anrInfo != null) {
+                    errorId = mService.mTraceErrorLogger.getOrCreateErrorId(anrInfo.getAnrId());
+                } else {
+                    errorId = mService.mTraceErrorLogger.generateErrorId();
+                }
                 mService.mTraceErrorLogger.addProcessInfoAndErrorIdToTrace(
                         mApp.processName, pid, errorId);
                 mService.mTraceErrorLogger.addSubjectToTrace(annotation, errorId);
             } else {
                 errorId = null;
+            }
+
+            if (anrInfo != null) {
+                com.android.internal.dev.perfetto.sdk.PerfettoTrace
+                        .instant(PerfettoCategories.ANR_CATEGORY, "ANR Detected")
+                        .addArg("anrId", anrInfo.getAnrId())
+                        .addArg("errorId", errorId.toString())
+                        .addArg("anrTimeoutMs", anrInfo.getTimeoutMillis())
+                        .addArg("pid", mApp.getPid())
+                        .emit();
             }
 
             // This atom is only logged with the purpose of triggering Perfetto and the logging

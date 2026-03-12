@@ -1754,6 +1754,8 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
     @ChangeId
     @Overridable
     @Disabled
+    @FlaggedApi(Flags.FLAG_VIRTUAL_GAMEPAD_DEVELOPER_OPT_OUT)
+    @TestApi
     public static final long OVERRIDE_ENABLE_VIRTUAL_GAMEPAD = 447093535L;
 
     /**

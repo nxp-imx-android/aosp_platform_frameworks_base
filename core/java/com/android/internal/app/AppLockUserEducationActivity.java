@@ -34,6 +34,7 @@ import android.util.Log;
 import android.util.Slog;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.android.internal.R;
@@ -147,6 +148,14 @@ public class AppLockUserEducationActivity extends Activity {
         final TextView titleView = mAppLockLayout.findViewById(R.id.app_lock_edu_dialog_title);
         titleView.setText(getString(R.string.app_lock_edu_dialog_enable_app_lock_title,
                 packageLabel));
+
+        // Show the divider only when content is scrollable.
+        final ScrollView scrollView = mAppLockLayout.findViewById(R.id.app_lock_edu_scrollview);
+        scrollView.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+            final boolean canScroll = scrollView.canScrollVertically(/* direction= */ 1);
+            mAppLockLayout.findViewById(R.id.app_lock_edu_bottom_sheet_divider)
+                    .setVisibility(canScroll ? View.VISIBLE : View.GONE);
+        });
 
         // Customize description based on available authentication methods.
         final TextView descriptionView = mAppLockLayout.findViewById(R.id.app_lock_edu_dialog_desc);

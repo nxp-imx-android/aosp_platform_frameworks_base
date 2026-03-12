@@ -490,6 +490,9 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
         // This stores the pending finish transaction to merge with the actual finish transaction
         private SurfaceControl.Transaction mPendingFinishTransaction;
 
+        // When we have canceled the transition and are waiting for Launcher to handle & report back
+        private boolean mAwaitingCancelCompletion;
+
         RecentsController(IRecentsAnimationRunner listener, int displayId) {
             mInstanceId = System.identityHashCode(this);
             mDisplayId = displayId;
@@ -566,6 +569,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                     ProtoLog.d(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                             "[%d] RecentsController.cancel: waiting for Launcher to finish",
                             mInstanceId);
+                    mAwaitingCancelCompletion = true;
                     setupFinishOnTimeout(mTransition);
                 } else {
                     finishInner(toHome, false /* userLeave */, null /* finishCb */, "cancel");
@@ -661,6 +665,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 mLeashMap = null;
             }
             mFinishTransaction = null;
+            mAwaitingCancelCompletion = false;
             mTaskStates.clear();
             mPausingTasks = null;
             mPausingDeskId = -1;
@@ -1425,9 +1430,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                             // start of the transition, we don't end up going through
                             // TransitionUtil#createLeash(), which normally resets the position of
                             // the task within the leash, so we have to do it manually here
-                            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
-                                startT.setPosition(change.getLeash(), /* x= */ 0, /* y= */ 0);
-                            }
+                            startT.setPosition(change.getLeash(), /* x= */ 0, /* y= */ 0);
                         }
                         final TaskState pausingTask = mPausingTasks.remove(pausingIdx);
                         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
@@ -1463,21 +1466,14 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                             startT.hide(target.leash);
                         }
                         mOpeningTasks.add(updateTaskState(change, target.leash));
-                        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
-                            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                                    "  opening new leaf taskId=%d wasClosing=%b",
-                                    target.taskId, wasClosing);
+                        final boolean childOfOpeningPausedDesk = openingPausedDeskId != -1
+                                && mDesksOrganizer.getDeskAtEnd(change) == openingPausedDeskId;
+                        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                                "  opening new leaf taskId=%d wasClosing=%b "
+                                        + "childOfOpeningPausedDesk=%b",
+                                target.taskId, wasClosing, childOfOpeningPausedDesk);
+                        if (!childOfOpeningPausedDesk) {
                             onlyOpeningPausedTasksOrPausedDesk = false;
-                        } else {
-                            final boolean childOfOpeningPausedDesk = openingPausedDeskId != -1
-                                    && mDesksOrganizer.getDeskAtEnd(change) == openingPausedDeskId;
-                            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                                    "  opening new leaf taskId=%d wasClosing=%b "
-                                            + "childOfOpeningPausedDesk=%b",
-                                    target.taskId, wasClosing, childOfOpeningPausedDesk);
-                            if (!childOfOpeningPausedDesk) {
-                                onlyOpeningPausedTasksOrPausedDesk = false;
-                            }
                         }
                     } else {
                         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
@@ -1510,14 +1506,16 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 Slog.d(TAG, "Got an activity only transition during recents, so apply directly");
                 mergeActivityOnly(info, startT);
             } else if (!didMergeThings) {
-                // Didn't recognize anything in incoming transition so don't merge it, but cancel
-                // the transition so that the queued transition can play (this also prevents
-                // Launcher from finishing the transition back to the app, which can block
-                // indefinitely since we are not merging).
+                // Didn't recognize anything in incoming transition so don't merge it.
                 final boolean recentsChanging = (recentsOpening != null) || foundRecentsClosing;
                 Slog.w(TAG, "Don't know how to merge this transition, recentsChanging="
                         + recentsChanging + " recentsTaskId=" + mRecentsTaskId);
-                refuseMerge(startT, () -> cancel("didn't merge"));
+                refuseMerge(startT, () -> {
+                    if (recentsChanging || mRecentsTaskId < 0) {
+                        mWillFinishToHome = false;
+                        cancel("didn't merge");
+                    }
+                });
                 return;
             }
 
@@ -1654,6 +1652,26 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 return;
             }
 
+            final SurfaceControl.Transaction t = mFinishTransactionSupplier != null
+                    ? mFinishTransactionSupplier.get()
+                    : new SurfaceControl.Transaction();
+
+            if (mAwaitingCancelCompletion) {
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                        "[%d] RecentsController.finishInner: completing cancel", mInstanceId);
+
+                // Notify the mixers of the pending finish
+                final WindowContainerTransaction wct = new WindowContainerTransaction();
+                for (int i = 0; i < mMixers.size(); ++i) {
+                    mMixers.get(i).handleFinishRecents(false, wct, t);
+                }
+
+                mPendingRunnerFinishCb = runnerFinishCb;
+                mPendingFinishTransaction = t;
+                onFinishInner(wct);
+                return;
+            }
+
             if (mFinishCB == null || mPendingFinishTransition != null) {
                 Slog.e(TAG, "Duplicate call to finish");
                 if (runnerFinishCb != null) {
@@ -1681,9 +1699,6 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                     mInstanceId, toHome, sendUserLeaveHint, mWillFinishToHome, mState,
                     mPausingTasks != null, reason);
 
-            final SurfaceControl.Transaction t = mFinishTransactionSupplier != null
-                    ? mFinishTransactionSupplier.get()
-                    : new SurfaceControl.Transaction();
             final WindowContainerTransaction wct = new WindowContainerTransaction();
 
             // The following code must set this if it is changing anything in core that might affect
@@ -1703,14 +1718,12 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 // recents, so end the transition by moving the app(s) back to the top (and also
                 // re-showing their tasks).
                 final List<TaskState> tasksToShowFrontToBack = new ArrayList<>();
-                if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
-                    // Opening tasks can also exist in a |returningToApp| case, such as when
-                    // returning to the desk tile by clicking on one of the exploded view tasks.
-                    // These are really "pausing" tasks that became "opening" because they were
-                    // re-brought to front. They should be on top of pausing tasks, so insert them
-                    // first.
-                    tasksToShowFrontToBack.addAll(mOpeningTasks);
-                }
+                // Opening tasks can also exist in a |returningToApp| case, such as when
+                // returning to the desk tile by clicking on one of the exploded view tasks.
+                // These are really "pausing" tasks that became "opening" because they were
+                // re-brought to front. They should be on top of pausing tasks, so insert them
+                // first.
+                tasksToShowFrontToBack.addAll(mOpeningTasks);
                 // The remaining pausing tasks should also be moved back to top, but below the
                 // opening ones.
                 tasksToShowFrontToBack.addAll(mPausingTasks);

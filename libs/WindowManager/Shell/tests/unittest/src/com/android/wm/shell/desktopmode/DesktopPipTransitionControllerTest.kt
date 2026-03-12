@@ -30,7 +30,7 @@ import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_R
 import androidx.compose.ui.input.key.type
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
-import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
+
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
@@ -50,8 +50,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4
-import platform.test.runner.parameterized.Parameters
+import android.testing.AndroidTestingRunner
 
 /**
  * Tests for [DesktopPipTransitionController].
@@ -59,8 +58,8 @@ import platform.test.runner.parameterized.Parameters
  * Build/Install/Run: atest WMShellUnitTests:DesktopPipTransitionControllerTest
  */
 @SmallTest
-@RunWith(ParameterizedAndroidJunit4::class)
-class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTestCase() {
+@RunWith(AndroidTestingRunner::class)
+class DesktopPipTransitionControllerTest : ShellTestCase() {
     private val mockShellTaskOrganizer = mock<ShellTaskOrganizer>()
     private val mockDesktopTasksController = mock<DesktopTasksController>()
     private val mockDesktopUserRepositories = mock<DesktopUserRepositories>()
@@ -80,10 +79,6 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
         }
     private val freeformParentTask = createFreeformTask()
     private val fullscreenParentTask = createFullscreenTask()
-
-    init {
-        mSetFlagsRule.setFlagsParameterization(flags)
-    }
 
     @Before
     fun setUp() {
@@ -234,7 +229,6 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
         assertThat(wct.changes.isEmpty()).isTrue()
     }
 
-    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     @Test
     fun maybeReparentTaskToDesk_recentsAnimating_noAddMoveToDeskTaskChanges() {
         whenever(mockPipDesktopState.isRecentsAnimating()).thenReturn(true)
@@ -245,7 +239,6 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
             .addMoveToDeskTaskChanges(wct = any(), task = any(), deskId = any())
     }
 
-    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     @Test
     fun maybeReparentTaskToDesk_multiActivity_parentInDesk_addMoveTaskToFrontChanges() {
         val wct = WindowContainerTransaction()
@@ -258,7 +251,6 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
             .addMoveTaskToFrontChanges(wct = wct, deskId = DESK_ID, taskInfo = freeformParentTask)
     }
 
-    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     @Test
     fun maybeReparentTaskToDesk_multiActivity_parentNotInDesk_addMoveToDeskTaskChanges() {
         val wct = WindowContainerTransaction()
@@ -273,7 +265,6 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
         wct.assertReorderAt(index = 0, freeformParentTask.token, toTop = true)
     }
 
-    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     @Test
     fun maybeReparentTaskToDesk_noDeskActive_noAddMoveToDeskTaskChanges() {
         val wct = WindowContainerTransaction()
@@ -285,7 +276,6 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
             .addMoveToDeskTaskChanges(wct = any(), task = any(), deskId = any())
     }
 
-    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     @Test
     fun maybeReparentTaskToDesk_deskActive_addMoveToDeskTaskChanges() {
         val wct = WindowContainerTransaction()
@@ -298,7 +288,6 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
         wct.assertReorderAt(index = 0, taskInfo.token, toTop = true)
     }
 
-    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     @Test
     fun maybeReparentTaskToDesk_noDeskActive_desktopFirstDisplay_addDeskActivationChanges() {
         val wct = WindowContainerTransaction()
@@ -379,10 +368,5 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
     private companion object {
         const val DESK_ID = 1
         const val DISPLAY_ID = 0
-
-        @JvmStatic
-        @Parameters(name = "{0}")
-        fun getParams(): List<FlagsParameterization> =
-            FlagsParameterization.allCombinationsOf(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     }
 }

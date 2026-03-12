@@ -16,9 +16,14 @@
 
 package com.android.server.privatecompute;
 
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_WRITE_TO_AUDIT_LOG__WRITE_TYPE__BATCHED;
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_WRITE_TO_AUDIT_LOG__WRITE_TYPE__DIRECT;
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_WRITE_TO_AUDIT_LOG__WRITE_TYPE__NATIVE;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
+import android.app.AlarmManager;
 import android.app.privatecompute.DataMigrationToPccService;
 import android.app.privatecompute.IDataMigrationToPccService;
 import android.app.privatecompute.IMigrationRequestResultReceiver;
@@ -44,6 +49,7 @@ import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
 import android.os.ShellCommand;
+import android.os.SystemClock;
 import android.os.UserHandle;
 import android.sysprop.PccProperties;
 import android.util.Log;
@@ -68,6 +74,9 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
 
     private static final String TAG = "PccSandboxManagerServiceImpl";
 
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+    static final long AUDIT_LOG_CLEANUP_INTERVAL_MS = 12 * 60 * 60 * 1000L; // 12 hours
+
     private final Context mContext;
     private final PackageManagerInternal mPackageManagerInternal;
     private final Injector mInjector;
@@ -82,6 +91,9 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
     private PccSandboxManagerInternal mInternal;
     private final PccSandboxManagerNativeImpl mNativeImpl = new PccSandboxManagerNativeImpl();
 
+    private final AlarmManager.OnAlarmListener mAuditLogCleanupListener =
+            () -> mExecutorService.execute(this::runAuditLogCleanupTask);
+
     public PccSandboxManagerServiceImpl(Context context) {
         this(context, new Injector());
     }
@@ -91,6 +103,30 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
         mContext = context;
         mPackageManagerInternal = LocalServices.getService(PackageManagerInternal.class);
         mInjector = injector;
+
+        // Run the audit log cleanup task upon booting.
+        mExecutorService.execute(this::runAuditLogCleanupTask);
+    }
+
+    private void runAuditLogCleanupTask() {
+        mInjector.deleteAuditLogFiles();
+        rescheduleAuditLogCleanup();
+    }
+
+    private void rescheduleAuditLogCleanup() {
+        AlarmManager am = mInjector.getAlarmManager(mContext);
+        if (am == null) {
+            return;
+        }
+        // Cancel any existing alarm to avoid duplicate alarms.
+        am.cancel(mAuditLogCleanupListener);
+        long triggerAtMillis = mInjector.getElapsedRealtime() + AUDIT_LOG_CLEANUP_INTERVAL_MS;
+        am.set(
+                AlarmManager.ELAPSED_REALTIME,
+                triggerAtMillis,
+                TAG,
+                mAuditLogCleanupListener,
+                mInjector.getHandler(mInjector.getBackgroundLooper()));
     }
 
     @VisibleForTesting
@@ -105,6 +141,22 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
 
         boolean auditModeEnabled() {
             return PccProperties.audit_mode_enabled().orElse(false);
+        }
+
+        AlarmManager getAlarmManager(Context context) {
+            return context.getSystemService(AlarmManager.class);
+        }
+
+        Looper getBackgroundLooper() {
+            return BackgroundThread.get().getLooper();
+        }
+
+        long getElapsedRealtime() {
+            return SystemClock.elapsedRealtime();
+        }
+
+        void deleteAuditLogFiles() {
+            AuditModeContext.deleteAuditLogFiles();
         }
     }
 
@@ -159,6 +211,8 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
     @RequiresNoPermission
     public void writeToAuditLog(@NonNull PersistableBundle bundle, @NonNull String packageName) {
         try {
+            PrivateComputeStatsLogUtil.logPccWriteToAuditLog(
+                    PCC_WRITE_TO_AUDIT_LOG__WRITE_TYPE__DIRECT);
             writeToAuditLogInternal(bundle, packageName);
         } catch (SecurityException e) {
             Log.e(TAG, "Failed to write to audit log: " + e);
@@ -171,6 +225,8 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
     public void batchWriteToAuditLog(
             @NonNull List<PersistableBundle> data, @NonNull String packageName) {
         try {
+            PrivateComputeStatsLogUtil.logPccWriteToAuditLog(
+                    PCC_WRITE_TO_AUDIT_LOG__WRITE_TYPE__BATCHED);
             writeToAuditLogInternal(data, packageName);
         } catch (SecurityException e) {
             Log.e(TAG, "Failed to batch write to audit log: " + e);
@@ -198,7 +254,7 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
     boolean writeToAuditLogInternal(
             @NonNull List<PersistableBundle> data, @NonNull String packageName)
             throws SecurityException {
-        final int callingUid = Binder.getCallingUid();
+        final int callingUid = mInjector.getCallingUid();
         if (!mPackageManagerInternal.isSameApp(
                 packageName, callingUid, UserHandle.getUserId(callingUid))) {
             // We don't report the security exception to apps, but we log it.
@@ -206,25 +262,18 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
                     "Package name " + packageName + " does not match calling UID " + callingUid);
         }
 
-        // Sanitize before locking.
-        /* TODO: PccBundleSanitizationUtil should accept a PersistableBundle or BaseBundle
-        try {
-            PccBundleSanitizationUtil.sanitizeBundle(bundle);
-        } catch (IllegalArgumentException e) {
-            throw new SecurityException("Failed to sanitize bundle: " + e.getMessage());
-        }
-        */
-
         synchronized (mAuditModeLock) {
             if (!mInjector.auditModeEnabled()) {
                 // If audit mode was toggled off, clean up, including writing pending data to disk.
                 if (mAuditModeContext != null) {
                     mAuditModeContext.stopAuditing();
                     mAuditModeContext = null;
+                    rescheduleAuditLogCleanup();
                 }
                 return false;
             }
             if (mAuditModeContext == null) {
+                runAuditLogCleanupTask();
                 mAuditModeContext = AuditModeContext.create();
             }
             for (PersistableBundle bundle : data) {
@@ -239,6 +288,8 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
         @RequiresNoPermission
         public void writeToAuditLog(@NonNull PersistableBundle bundle) {
             String packageName = mContext.getPackageManager().getNameForUid(Binder.getCallingUid());
+            PrivateComputeStatsLogUtil.logPccWriteToAuditLog(
+                    PCC_WRITE_TO_AUDIT_LOG__WRITE_TYPE__NATIVE);
             writeToAuditLogInternal(bundle, packageName);
         }
     }
@@ -259,7 +310,7 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
             final PrintWriter pw = getOutPrintWriter();
             switch (cmd) {
                 case "add-allowed-package" -> {
-                    final int callingUid = Binder.getCallingUid();
+                    final int callingUid = mInjector.getCallingUid();
                     if (callingUid != Process.ROOT_UID && callingUid != Process.SHELL_UID) {
                         pw.println("Error: must be root or shell to use this command");
                         return -1;
@@ -272,7 +323,7 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
                     return 0;
                 }
                 case "remove-allowed-package" -> {
-                    final int callingUid = Binder.getCallingUid();
+                    final int callingUid = mInjector.getCallingUid();
                     if (callingUid != Process.ROOT_UID && callingUid != Process.SHELL_UID) {
                         pw.println("Error: must be root or shell to use this command");
                         return -1;
@@ -281,6 +332,30 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
                     if (mInternal != null) {
                         mInternal.removeTestAllowedPackage(packageName);
                         pw.println("Removed " + packageName + " from allowed packages");
+                    }
+                    return 0;
+                }
+                case "enable-trust-instrumented-clients" -> {
+                    final int callingUid = mInjector.getCallingUid();
+                    if (callingUid != Process.ROOT_UID && callingUid != Process.SHELL_UID) {
+                        pw.println("Error: must be root or shell to use this command");
+                        return -1;
+                    }
+                    if (mInternal != null) {
+                        mInternal.setTrustInstrumentedClients(true);
+                        pw.println("Enabled trusting instrumented clients");
+                    }
+                    return 0;
+                }
+                case "disable-trust-instrumented-clients" -> {
+                    final int callingUid = mInjector.getCallingUid();
+                    if (callingUid != Process.ROOT_UID && callingUid != Process.SHELL_UID) {
+                        pw.println("Error: must be root or shell to use this command");
+                        return -1;
+                    }
+                    if (mInternal != null) {
+                        mInternal.setTrustInstrumentedClients(false);
+                        pw.println("Disabled trusting instrumented clients");
                     }
                     return 0;
                 }
@@ -300,6 +375,10 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
             pw.println("    Add a package to the list of allowed PCC packages for testing.");
             pw.println("  remove-allowed-package PACKAGE");
             pw.println("    Remove a package from the list of allowed PCC packages for testing.");
+            pw.println("  enable-trust-instrumented-clients");
+            pw.println("    Temporarily consider instrumented clients as trusted.");
+            pw.println("  disable-trust-instrumented-clients");
+            pw.println("    Stop considering instrumented clients as trusted.");
         }
     }
 

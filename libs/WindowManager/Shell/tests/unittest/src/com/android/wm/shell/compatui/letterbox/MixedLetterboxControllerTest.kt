@@ -17,11 +17,8 @@
 package com.android.wm.shell.compatui.letterbox
 
 import android.content.Context
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
-import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy.LetterboxMode
 import com.android.wm.shell.compatui.letterbox.roundedcorners.RoundedCornersLetterboxController
@@ -84,7 +81,6 @@ class MixedLetterboxControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS_ON_TRANSPARENT)
     fun `Corners are created when supported`() {
         runTestScenario { r ->
             r.configureStrategyFor(LetterboxMode.SINGLE_SURFACE)
@@ -96,39 +92,10 @@ class MixedLetterboxControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS_ON_TRANSPARENT)
     fun `Corners are destroyed when not supported`() {
         runTestScenario { r ->
             r.configureStrategyFor(LetterboxMode.SINGLE_SURFACE)
             r.configureStrategyForRoundedCorners(shouldSupportShellRoundedCorners = false)
-            r.sendCreateSurfaceRequest()
-            r.checkCreateInvokedOnRoundedCornersController(times = 0)
-            r.checkDestroyInvokedOnRoundedCornersController(times = 1)
-        }
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS_ON_TRANSPARENT)
-    fun `Corners are created when radius is present`() {
-        runTestScenario { r ->
-            r.configureStrategyFor(LetterboxMode.SINGLE_SURFACE)
-            r.configureStrategyFor { configuration ->
-                configuration.setLetterboxActivityCornersRadius(10)
-            }
-            r.sendCreateSurfaceRequest()
-            r.checkCreateInvokedOnRoundedCornersController(times = 1)
-            r.checkDestroyInvokedOnRoundedCornersController(times = 0)
-        }
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS_ON_TRANSPARENT)
-    fun `Corners are destroyed when not enabled`() {
-        runTestScenario { r ->
-            r.configureStrategyFor(LetterboxMode.SINGLE_SURFACE)
-            r.configureStrategyFor { configuration ->
-                configuration.setLetterboxActivityCornersRadius(0)
-            }
             r.sendCreateSurfaceRequest()
             r.checkCreateInvokedOnRoundedCornersController(times = 0)
             r.checkDestroyInvokedOnRoundedCornersController(times = 1)

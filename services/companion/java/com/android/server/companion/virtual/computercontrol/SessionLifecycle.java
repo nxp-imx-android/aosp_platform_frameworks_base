@@ -63,6 +63,10 @@ final class SessionLifecycle {
         @Nullable
         String mSecureWindowPackage = null;
 
+        /** Package name of the app requesting authentication prompt */
+        @Nullable
+        String mAuthenticationPromptPackage = null;
+
         /** Whether the session was requested to be blocked by the caller. */
         boolean mCallerInitiatedBlock = false;
 
@@ -82,6 +86,11 @@ final class SessionLifecycle {
             if (mSecureWindowPackage != null) {
                 return new Blocked(ComputerControlSession.BLOCK_REASON_SECURE_CONTENT,
                         mSecureWindowPackage);
+            }
+            if (mAuthenticationPromptPackage != null) {
+                return new Blocked(
+                        ComputerControlSession.BLOCK_REASON_AUTHENTICATION_PROMPT_REQUESTED,
+                        mAuthenticationPromptPackage);
             }
             return LifecycleState.ACTIVE;
         }

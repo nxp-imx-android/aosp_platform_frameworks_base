@@ -53,27 +53,6 @@ class ShellCrashHandler(
     }
 
     private fun handleCrashIfNeeded() {
-        // For now only handle crashes when desktop mode is enabled on the device.
-        if (
-            desktopState.canEnterDesktopMode &&
-                !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
-        ) {
-            var freeformTaskExists = false
-            // If there are running tasks at init, WMShell has crashed but WMCore is still alive.
-            for (task in shellTaskOrganizer.getRunningTasks()) {
-                if (task.windowingMode == WindowConfiguration.WINDOWING_MODE_FREEFORM) {
-                    freeformTaskExists = true
-                }
-
-                if (freeformTaskExists) {
-                    shellTaskOrganizer.applyTransaction(
-                        addLaunchHomePendingIntent(WindowContainerTransaction(), DEFAULT_DISPLAY)
-                    )
-                    break
-                }
-            }
-        }
-
         bubbleHelper.ifPresent { handleBubbleTaskCleanup(it) }
         handlePipTaskCleanup()
     }

@@ -16,6 +16,17 @@
 
 package com.android.systemui.notifications.intelligence.rules.data.repository
 
+import android.app.notificationManager
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.kosmos.testDispatcher
 
-val Kosmos.realNotificationRulesRepository by Kosmos.Fixture { NotificationRulesRepositoryImpl() }
+val Kosmos.realNotificationRulesRepository by
+    Kosmos.Fixture {
+        NotificationRulesRepositoryImpl(
+            notificationManager,
+            freeformRuleRepository = realFreeformRuleRepository,
+            applicationScope = applicationCoroutineScope,
+            backgroundDispatcher = testDispatcher,
+        )
+    }

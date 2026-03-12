@@ -598,7 +598,6 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     public void startTasksOnSingleFreeformWindow_ensureWindowingModeClearedAndLaunchFullScreen() {
         mDisplayAreaInfo.configuration.windowConfiguration.setWindowingMode(
                 WINDOWING_MODE_FREEFORM);

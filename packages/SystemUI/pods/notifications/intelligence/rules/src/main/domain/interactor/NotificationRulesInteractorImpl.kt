@@ -20,6 +20,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRulesRepository
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.ResponseModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 import javax.inject.Inject
 
@@ -33,7 +34,7 @@ constructor(private val repository: NotificationRulesRepository) : NotificationR
     override suspend fun createDraftRuleFromFreeformText(
         action: ActionModel,
         text: String,
-    ): DraftRuleModel {
+    ): ResponseModel<DraftRuleModel> {
         return repository.createDraftRuleFromFreeformText(action, text)
     }
 

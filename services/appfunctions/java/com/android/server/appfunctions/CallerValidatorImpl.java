@@ -113,7 +113,6 @@ class CallerValidatorImpl implements CallerValidator {
                     .isAllowlisted(
                             callerPackageName,
                             targetPackageName,
-                            callingUid,
                             targetUser.getIdentifier())
                     .thenCompose(
                             (isAllowlisted) ->

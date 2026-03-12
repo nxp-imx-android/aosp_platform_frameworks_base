@@ -245,7 +245,6 @@ open class DesktopFullscreenRequestHandler(
     /** Whether the given [request] should be handled by this handler. */
     fun shouldHandleRequest(request: TransitionRequestInfo): Boolean {
         if (Flags.delegateRequestFullscreenHandlingToShell()) return false
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return false
         val type = request.type
         if (type != TRANSIT_CHANGE)
             return false.also {

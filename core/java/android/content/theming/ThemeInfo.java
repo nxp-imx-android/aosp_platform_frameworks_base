@@ -19,14 +19,19 @@ package android.content.theming;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.Size;
 import android.graphics.Color;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.android.internal.annotations.VisibleForTesting;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
- * Represents the core information of a user's theme, including the seed color,
+ * Represents the core information of a user's theme, including the seed colors,
  * style, and contrast level.
  *
  * @hide
@@ -34,7 +39,8 @@ import com.android.internal.annotations.VisibleForTesting;
 @FlaggedApi(android.server.Flags.FLAG_ENABLE_THEME_SERVICE)
 public final class ThemeInfo implements Parcelable {
     @Nullable
-    public final Color seedColor;
+    @Size(min = 1)
+    public final List<Color> seedColors;
     @Nullable
     @ThemeStyle.Type
     public final Integer style;
@@ -45,9 +51,9 @@ public final class ThemeInfo implements Parcelable {
     @Nullable
     public final String platform;
 
-    private ThemeInfo(@Nullable Color seedColor, @Nullable Integer style,
+    private ThemeInfo(@Nullable List<Color> seedColors, @Nullable Integer style,
             @Nullable Float contrast) {
-        this.seedColor = seedColor;
+        this.seedColors = seedColors == null ? null : Collections.unmodifiableList(seedColors);
         this.style = style;
         this.contrast = contrast;
         this.specVersion = null;
@@ -58,9 +64,9 @@ public final class ThemeInfo implements Parcelable {
      * @hide
      */
     @VisibleForTesting
-    public ThemeInfo(@NonNull Color seedColor, @NonNull Integer style, @NonNull Float contrast,
-            @NonNull String specVersion, @NonNull String platform) {
-        this.seedColor = seedColor;
+    public ThemeInfo(@NonNull List<Color> seedColors, @NonNull Integer style,
+            @NonNull Float contrast, @NonNull String specVersion, @NonNull String platform) {
+        this.seedColors = Collections.unmodifiableList(new ArrayList<>(seedColors));
         this.style = style;
         this.contrast = contrast;
         this.specVersion = specVersion;
@@ -68,8 +74,16 @@ public final class ThemeInfo implements Parcelable {
     }
 
     private ThemeInfo(Parcel in) {
-        Integer seedArgb = (Integer) in.readValue(Integer.class.getClassLoader());
-        this.seedColor = (seedArgb == null) ? null : Color.valueOf(seedArgb);
+        int size = in.readInt();
+        if (size < 0) {
+            this.seedColors = null;
+        } else {
+            List<Color> colors = new ArrayList<>(size);
+            for (int i = 0; i < size; i++) {
+                colors.add(Color.valueOf(in.readInt()));
+            }
+            this.seedColors = Collections.unmodifiableList(colors);
+        }
         this.style = (Integer) in.readValue(Integer.class.getClassLoader());
         this.contrast = (Float) in.readValue(Float.class.getClassLoader());
         this.specVersion = in.readString8();
@@ -78,7 +92,14 @@ public final class ThemeInfo implements Parcelable {
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeValue(seedColor != null ? seedColor.toArgb() : null);
+        if (seedColors == null) {
+            dest.writeInt(-1);
+        } else {
+            dest.writeInt(seedColors.size());
+            for (Color color : seedColors) {
+                dest.writeInt(color.toArgb());
+            }
+        }
         dest.writeValue(style);
         dest.writeValue(contrast);
         dest.writeString8(specVersion);
@@ -108,7 +129,7 @@ public final class ThemeInfo implements Parcelable {
      * the current system value for that attribute should be used.
      */
     public static class Builder {
-        private Color mSeedColor;
+        private List<Color> mSeedColors;
         private Integer mStyle;
         private Float mContrast;
 
@@ -116,10 +137,18 @@ public final class ThemeInfo implements Parcelable {
         }
 
         /**
-         * Sets the seed color for the theme.
+         * Sets the seed colors for the theme.
          */
-        public Builder setSeedColor(@Nullable Color seedColor) {
-            mSeedColor = seedColor;
+        public Builder setSeedColors(@Nullable List<Color> seedColors) {
+            mSeedColors = seedColors == null ? null : new ArrayList<>(seedColors);
+            return this;
+        }
+
+        /**
+         * Sets the seed colors for the theme.
+         */
+        public Builder setSeedColors(@Nullable Color... seedColors) {
+            mSeedColors = seedColors == null ? null : List.of(seedColors);
             return this;
         }
 
@@ -143,7 +172,7 @@ public final class ThemeInfo implements Parcelable {
          * Builds the {@link ThemeInfo} instance.
          */
         public ThemeInfo build() {
-            return new ThemeInfo(mSeedColor, mStyle, mContrast);
+            return new ThemeInfo(mSeedColors, mStyle, mContrast);
         }
     }
 }

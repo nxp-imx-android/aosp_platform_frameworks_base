@@ -28,6 +28,8 @@ import com.android.systemui.monet.ColorScheme;
 import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 
@@ -81,7 +83,7 @@ public class ThemeStatePair {
      *
      * @param userId      The ID of the user associated with this state pair.
      * @param isSetup     Indicates whether the user has completed setup.
-     * @param seedColor   The initial seed color for the user's theme.
+     * @param seedColors  The initial seed colors for the user's theme.
      * @param contrast    The initial contrast value for the user's theme.
      * @param style       The initial style for the user's theme.
      * @param environment The system-wide theme environment.
@@ -90,7 +92,7 @@ public class ThemeStatePair {
     ThemeStatePair(
             int userId,
             boolean isSetup,
-            int seedColor,
+            List<Integer> seedColors,
             float contrast,
             @ThemeStyle.Type Integer style,
             ThemeEnvironment environment) {
@@ -98,16 +100,27 @@ public class ThemeStatePair {
         this.userId = userId;
         this.mEnvironment = environment;
 
-        ThemeState initialState = new ThemeState(userId, isSetup, seedColor, contrast, style,
+        ThemeState initialState = new ThemeState(userId, isSetup, seedColors, contrast, style,
                 Collections.unmodifiableSet(new HashSet<>()), 0);
 
-        mDarkScheme = new ColorScheme(seedColor, true, style, contrast,
+        mDarkScheme = new ColorScheme(seedColors, true, style, contrast,
                 environment.getConfig().specVersion(), environment.getConfig().platform());
-        mLightScheme = new ColorScheme(seedColor, false, style, contrast,
+        mLightScheme = new ColorScheme(seedColors, false, style, contrast,
                 environment.getConfig().specVersion(), environment.getConfig().platform());
 
         mPending = initialState;
         mCurrent = initialState;
+    }
+
+    /**
+     * Applies a new seed color list to the pending theme state.
+     *
+     * @param newSeedColors The new seed colors to apply.
+     */
+    void applySeedColors(List<Integer> newSeedColors) {
+        synchronized (mLock) {
+            mPending = mPending.withSeedColors(newSeedColors);
+        }
     }
 
     /**
@@ -305,11 +318,11 @@ public class ThemeStatePair {
             stateToCommit = mPending;
         }
 
-        ColorScheme newDarkScheme = new ColorScheme(stateToCommit.seedColor(), true,
+        ColorScheme newDarkScheme = new ColorScheme(stateToCommit.seedColors(), true,
                 stateToCommit.style(), stateToCommit.contrast(),
                 mEnvironment.getConfig().specVersion(),
                 mEnvironment.getConfig().platform());
-        ColorScheme newLightScheme = new ColorScheme(stateToCommit.seedColor(), false,
+        ColorScheme newLightScheme = new ColorScheme(stateToCommit.seedColors(), false,
                 stateToCommit.style(), stateToCommit.contrast(),
                 mEnvironment.getConfig().specVersion(),
                 mEnvironment.getConfig().platform());
@@ -359,7 +372,7 @@ public class ThemeStatePair {
 
         // Checks if ColorScheme related state attributes (contrast, seedColor and Style) are
         // different. Only in this case we must regenerate a new Overlay
-        if (mCurrent.seedColor() == mPending.seedColor()
+        if (Objects.equals(mCurrent.seedColors(), mPending.seedColors())
                 && mCurrent.contrast() == mPending.contrast()
                 && mCurrent.style() == mPending.style()) {
             Slog.d(TAG, "User " + userId + " state updated, but new overlay was not necessary");

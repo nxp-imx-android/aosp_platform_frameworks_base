@@ -18,11 +18,11 @@ package com.android.systemui.notifications.content.ui.composable
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.android.systemui.notifications.content.ui.viewmodel.NotificationViewModel
+import com.android.systemui.notifications.content.ui.viewmodel.NotificationContentViewModel
 
 /** Interface providing a composable notification. */
 public interface NotificationContent {
     /** Displays a notification. */
     @Composable
-    public fun Content(viewModelFactory: NotificationViewModel.Factory, modifier: Modifier)
+    public fun Content(viewModelFactory: NotificationContentViewModel.Factory, modifier: Modifier)
 }

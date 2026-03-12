@@ -97,9 +97,7 @@ class DesktopWallpaperActivity : FragmentActivity() {
         // it to be focusable).
         updateFocusableFlag(focusable = false)
 
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            onBackPressedDispatcher.addCallback(this) { moveTaskToBack(true) }
-        }
+        onBackPressedDispatcher.addCallback(this) { moveTaskToBack(true) }
 
         // Handle wallpaper color changes
         wallpaperManager = getSystemService(WallpaperManager::class.java)
@@ -149,7 +147,6 @@ class DesktopWallpaperActivity : FragmentActivity() {
     }
 
     override fun onTopResumedActivityChanged(isTopResumedActivity: Boolean) {
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
         Log.d(TAG, "onTopResumedActivityChanged: $isTopResumedActivity")
         // Let the activity be focusable when it is top-resumed (e.g. empty desk), otherwise input
         // events will result in an ANR because the focused app would have no focusable window.

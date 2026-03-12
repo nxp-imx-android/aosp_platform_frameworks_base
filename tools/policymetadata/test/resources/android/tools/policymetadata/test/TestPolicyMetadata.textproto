@@ -363,6 +363,25 @@ policy_metadata {
 }
 policy_metadata {
   identifier {
+    field_name: "FLAGGED_POLICY"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Integer"
+    package_name: "java.lang"
+  }
+  documentation: "Test policy that is flagged. "
+  type_specific_metadata {
+    integer_metadata {
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+  flag: "my.flagged.api"
+}
+policy_metadata {
+  identifier {
     field_name: "SIMPLE_LONG_POLICY"
     class_name: "PolicyIdentifier"
     package_name: "android.app.admin"
@@ -435,6 +454,9 @@ policy_metadata {
       string_metadata {
         empty_string_allowed: true
         unprintable_characters_allowed: false
+      }
+      resolution_mechanism {
+        custom: true
       }
     }
   }

@@ -1035,8 +1035,13 @@ public class TaskLaunchParamsModifierTests extends
                 .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
                 .build();
         bubbleTask.getRootTask().mReparentLeafTaskIfRelaunchFromHome = true;
+        final int homeUid = 51121;
+        final Task homeTask = mRootWindowContainer.getDefaultTaskDisplayArea().getRootHomeTask();
+        final ActivityRecord homeActivity = new ActivityBuilder(mAtm).setTask(homeTask).build();
+        mAtm.mHomeProcess = mSystemServicesTestRule.addProcess(homeActivity.packageName,
+                homeActivity.processName, 114514 /* pid */, homeUid);
         final Request request = new Request();
-        request.mLaunchOriginatedFromHome = true;
+        request.mOriginalCallerUid = homeUid;
 
         assertEquals(RESULT_CONTINUE,
                 new CalculateRequestBuilder().setRequest(request)

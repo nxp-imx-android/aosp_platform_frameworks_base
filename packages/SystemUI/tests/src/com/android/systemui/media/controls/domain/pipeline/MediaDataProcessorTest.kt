@@ -127,7 +127,6 @@ class MediaDataProcessorTest() : SysuiTestCase() {
     private lateinit var metadataBuilder: MediaMetadata.Builder
     lateinit var backgroundExecutor: FakeExecutor
     private lateinit var foregroundExecutor: FakeExecutor
-    lateinit var uiExecutor: FakeExecutor
     @Mock lateinit var dumpManager: DumpManager
     @Mock lateinit var broadcastDispatcher: BroadcastDispatcher
     @Mock lateinit var mediaTimeoutListener: MediaTimeoutListener
@@ -171,14 +170,12 @@ class MediaDataProcessorTest() : SysuiTestCase() {
         whenever(UriGrantsManager.getService()).thenReturn(ugm)
         foregroundExecutor = FakeExecutor(clock)
         backgroundExecutor = FakeExecutor(clock)
-        uiExecutor = FakeExecutor(clock)
         mediaDataProcessor =
             MediaDataProcessor(
                 context = context,
                 applicationScope = testScope,
                 backgroundDispatcher = testDispatcher,
                 backgroundExecutor = backgroundExecutor,
-                uiExecutor = uiExecutor,
                 foregroundExecutor = foregroundExecutor,
                 mainDispatcher = testDispatcher,
                 mediaControllerFactory = mediaControllerFactory,

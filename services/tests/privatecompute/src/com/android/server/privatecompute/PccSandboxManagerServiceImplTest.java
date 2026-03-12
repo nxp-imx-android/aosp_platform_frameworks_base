@@ -17,19 +17,24 @@
 package com.android.server.privatecompute;
 
 import static android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT;
-
+import static com.android.server.privatecompute.PccSandboxManagerServiceImpl.AUDIT_LOG_CLEANUP_INTERVAL_MS;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.AlarmManager;
 import android.app.privatecompute.DataMigrationToPccService;
 import android.app.privatecompute.IDataMigrationToPccService;
 import android.app.privatecompute.IMigrationRequestResultReceiver;
@@ -44,6 +49,7 @@ import android.content.pm.PackageManagerInternal;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.UserHandle;
@@ -65,6 +71,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.io.FileDescriptor;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,6 +83,7 @@ public class PccSandboxManagerServiceImplTest {
     private static final String TEST_PACKAGE_NAME = "com.example.foo";
     private static final String ANOTHER_PACKAGE_NAME = "com.example.bar";
     private static final String TEST_SERVICE_CLASS = "com.example.foo.MigrationService";
+    private static final long TEST_ELAPSED_REALTIME = 1000L;
 
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
@@ -90,8 +98,11 @@ public class PccSandboxManagerServiceImplTest {
     private Handler mHandler;
     @Mock
     private IMigrationRequestResultReceiver mCallback;
+    @Mock private AlarmManager mAlarmManager;
+    @Mock private Looper mBackgroundLooper;
 
     @Mock private Injector mInjector;
+    @Mock private PccSandboxManagerInternal mInternal;
 
     private PccSandboxManagerServiceImpl mService;
 
@@ -102,7 +113,83 @@ public class PccSandboxManagerServiceImplTest {
         LocalServices.addService(PackageManagerInternal.class, mPackageManagerInternal);
         when(mInjector.getCallingUid()).thenReturn(TEST_UID);
         when(mInjector.getHandler(any())).thenReturn(mHandler);
+        when(mInjector.getAlarmManager(any())).thenReturn(mAlarmManager);
+        when(mInjector.getBackgroundLooper()).thenReturn(mBackgroundLooper);
+        when(mInjector.getElapsedRealtime()).thenReturn(TEST_ELAPSED_REALTIME);
         mService = new PccSandboxManagerServiceImpl(mContext, mInjector);
+        mService.setPccSandboxManagerInternal(mInternal);
+    }
+
+    @Test
+    public void testEnableTrustInstrumentedClients_shellCommand() {
+        when(mInjector.getCallingUid()).thenReturn(Process.SHELL_UID);
+        mService.onShellCommand(FileDescriptor.in, FileDescriptor.out, FileDescriptor.err,
+                new String[]{"enable-trust-instrumented-clients"}, null, null);
+        verify(mInternal).setTrustInstrumentedClients(true);
+    }
+
+    @Test
+    public void testDisableTrustInstrumentedClients_shellCommand() {
+        when(mInjector.getCallingUid()).thenReturn(Process.SHELL_UID);
+        mService.onShellCommand(FileDescriptor.in, FileDescriptor.out, FileDescriptor.err,
+                new String[]{"disable-trust-instrumented-clients"}, null, null);
+        verify(mInternal).setTrustInstrumentedClients(false);
+    }
+
+    @Test
+    public void testEnableTrustInstrumentedClients_notRootOrShell_denied() {
+        when(mInjector.getCallingUid()).thenReturn(TEST_UID);
+        mService.onShellCommand(FileDescriptor.in, FileDescriptor.out, FileDescriptor.err,
+                new String[]{"enable-trust-instrumented-clients"}, null, null);
+        verify(mInternal, never()).setTrustInstrumentedClients(anyBoolean());
+    }
+
+    @Test
+    public void testConstructor_schedulesPeriodicTask() {
+        // Assert: deleteAuditLogFiles is called in the constructor.
+        verify(mInjector, timeout(1000)).deleteAuditLogFiles();
+
+        // Assert: alarm is scheduled.
+        long expectedTriggerAtMillis = TEST_ELAPSED_REALTIME + AUDIT_LOG_CLEANUP_INTERVAL_MS;
+        verify(mAlarmManager)
+                .set(
+                        eq(AlarmManager.ELAPSED_REALTIME),
+                        eq(expectedTriggerAtMillis),
+                        anyString(),
+                        any(AlarmManager.OnAlarmListener.class),
+                        any(Handler.class));
+    }
+
+    @Test
+    public void testAlarmListener_runsCleanupTaskAndReschedules() {
+        // Wait for the initial run (from the constructor) to complete.
+        verify(mInjector, timeout(1000)).deleteAuditLogFiles();
+
+        // Capture the listener.
+        ArgumentCaptor<AlarmManager.OnAlarmListener> listenerCaptor =
+                ArgumentCaptor.forClass(AlarmManager.OnAlarmListener.class);
+        verify(mAlarmManager)
+                .set(anyInt(), anyLong(), anyString(), listenerCaptor.capture(), any());
+        AlarmManager.OnAlarmListener listener = listenerCaptor.getValue();
+
+        // Clear invocations to verify the next run.
+        clearInvocations(mInjector, mAlarmManager);
+
+        // Trigger the alarm.
+        listener.onAlarm();
+
+        // Verify deleteAuditLogFiles is called again.
+        verify(mInjector, timeout(1000)).deleteAuditLogFiles();
+
+        // Verify alarm is rescheduled.
+        verify(mAlarmManager, timeout(1000)).cancel(any(AlarmManager.OnAlarmListener.class));
+        verify(mAlarmManager)
+                .set(
+                        eq(AlarmManager.ELAPSED_REALTIME),
+                        anyLong(),
+                        anyString(),
+                        eq(listener),
+                        any());
     }
 
     @Test
@@ -182,12 +269,11 @@ public class PccSandboxManagerServiceImplTest {
 
     @Test
     public void testWriteToAuditLogInternal_packageNameDoesNotMatchUid_throwsSecurityException() {
-        int testUid = android.os.Process.myUid();
         when(mPackageManagerInternal.isSameApp(
-                        TEST_PACKAGE_NAME, testUid, UserHandle.getUserId(testUid)))
+                        TEST_PACKAGE_NAME, TEST_UID, UserHandle.getUserId(TEST_UID)))
                 .thenReturn(true);
         when(mPackageManagerInternal.isSameApp(
-                        ANOTHER_PACKAGE_NAME, testUid, UserHandle.getUserId(testUid)))
+                        ANOTHER_PACKAGE_NAME, TEST_UID, UserHandle.getUserId(TEST_UID)))
                 .thenReturn(false);
         List<PersistableBundle> data = new ArrayList<>(1);
         data.add(new PersistableBundle());
@@ -200,12 +286,11 @@ public class PccSandboxManagerServiceImplTest {
 
     @Test
     public void testWriteToAuditLogInternal_packageNameMatchesUid_doesNotThrowSecurityException() {
-        int testUid = android.os.Process.myUid();
         when(mPackageManagerInternal.isSameApp(
-                        TEST_PACKAGE_NAME, testUid, UserHandle.getUserId(testUid)))
+                        TEST_PACKAGE_NAME, TEST_UID, UserHandle.getUserId(TEST_UID)))
                 .thenReturn(true);
         when(mPackageManagerInternal.isSameApp(
-                        ANOTHER_PACKAGE_NAME, testUid, UserHandle.getUserId(testUid)))
+                        ANOTHER_PACKAGE_NAME, TEST_UID, UserHandle.getUserId(TEST_UID)))
                 .thenReturn(false);
         List<PersistableBundle> data = new ArrayList<>(1);
         data.add(new PersistableBundle());
@@ -218,9 +303,8 @@ public class PccSandboxManagerServiceImplTest {
     @Test
     public void testWriteToAuditLogInternal_sysPropDisabled_returnsFalse() {
         when(mInjector.auditModeEnabled()).thenReturn(false);
-        int testUid = android.os.Process.myUid();
         when(mPackageManagerInternal.isSameApp(
-                        TEST_PACKAGE_NAME, testUid, UserHandle.getUserId(testUid)))
+                        TEST_PACKAGE_NAME, TEST_UID, UserHandle.getUserId(TEST_UID)))
                 .thenReturn(true);
         List<PersistableBundle> data = new ArrayList<>(1);
         data.add(new PersistableBundle());
@@ -231,9 +315,8 @@ public class PccSandboxManagerServiceImplTest {
     @Test
     public void testWriteToAuditLogInternal_sysPropEnabled_returnsTrue() {
         when(mInjector.auditModeEnabled()).thenReturn(true);
-        int testUid = android.os.Process.myUid();
         when(mPackageManagerInternal.isSameApp(
-                        TEST_PACKAGE_NAME, testUid, UserHandle.getUserId(testUid)))
+                        TEST_PACKAGE_NAME, TEST_UID, UserHandle.getUserId(TEST_UID)))
                 .thenReturn(true);
         List<PersistableBundle> data = new ArrayList<>(1);
         data.add(new PersistableBundle());

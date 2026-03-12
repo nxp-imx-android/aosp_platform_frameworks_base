@@ -39,6 +39,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -75,7 +76,7 @@ fun CurrentRulesScreen(
         }
 
         viewModel.rules.forEach { rule ->
-            item(rule.toString()) {
+            item(rule.id) {
                 CurrentRule(
                     rule = rule,
                     screenViewModel = viewModel,
@@ -97,10 +98,23 @@ private fun CurrentRule(
     val resources = LocalResources.current
     var isExpanded by remember { mutableStateOf(false) }
 
+    val textSize = textStyles.defaultStyle.fontSize
     val ruleDisplay = remember(rule, resources) { screenViewModel.buildRuleText(rule, resources) }
     val text =
         remember(ruleDisplay.textChunks, textStyles) {
             buildAnnotatedString(ruleDisplay.textChunks, textStyles)
+        }
+    val inlineTextContent =
+        remember(ruleDisplay.textChunks, textStyles) {
+            buildInlineContentMap(
+                ruleDisplay.textChunks,
+                appIcon = { AppIcon(it) },
+                contactIcon = {
+                    val iconSizeDp = with(LocalDensity.current) { textSize.toDp() }
+                    ContactIcon(it, iconSizeDp, screenViewModel::loadContactBitmapFromUri)
+                },
+                textSize = textSize,
+            )
         }
 
     Column(
@@ -116,8 +130,9 @@ private fun CurrentRule(
         ReadOnlyAction(rule.action)
         Text(
             text = text,
+            inlineContent = inlineTextContent,
             color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.bodyMedium,
+            style = textStyles.defaultStyle,
         )
 
         if (isExpanded) {

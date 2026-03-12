@@ -78,7 +78,7 @@ import java.util.concurrent.Future;
  *
  * @hide Only for use within system_server.
  */
-public final class PccSandboxManagerInternal implements OnRoleHoldersChangedListener {
+public class PccSandboxManagerInternal implements OnRoleHoldersChangedListener {
     private static final String TAG = "PccSandboxManagerInternal";
 
     private final PackageManagerInternal mPackageManagerInternal;
@@ -88,6 +88,22 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
     @VisibleForTesting
     @GuardedBy("mLock")
     final Set<String> mPccTrustedPackages = new ArraySet<>();
+
+    /**
+     * If true, clients that are currently being instrumented are considered trusted.
+     */
+    @VisibleForTesting
+    @GuardedBy("mLock")
+    volatile boolean mTrustInstrumentedClients = false;
+
+    /**
+     * Sets whether instrumented clients should be considered trusted.
+     */
+    public void setTrustInstrumentedClients(boolean trust) {
+        synchronized (mLock) {
+            mTrustInstrumentedClients = trust;
+        }
+    }
 
     @VisibleForTesting
     @GuardedBy("mLock")
@@ -546,6 +562,13 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
     private boolean isTrustedClient(int clientUid) {
         if (Process.isPrivateComputeCoreUid(clientUid)) {
             return true;
+        }
+        if (mTrustInstrumentedClients) {
+            android.app.ActivityManagerInternal ami = LocalServices.getService(
+                    android.app.ActivityManagerInternal.class);
+            if (ami != null && ami.getInstrumentationSourceUid(clientUid) != Process.INVALID_UID) {
+                return true;
+            }
         }
         AndroidPackage androidPackage = mPackageManagerInternal.getPackage(clientUid);
         if (androidPackage != null) {

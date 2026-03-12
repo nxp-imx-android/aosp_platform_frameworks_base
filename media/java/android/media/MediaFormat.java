@@ -71,6 +71,9 @@ import java.util.stream.Collectors;
  * <tr><td>{@link #KEY_PIXEL_ASPECT_RATIO_HEIGHT}</td><td>Integer</td><td>optional, the pixel aspect ratio height</td></tr>
  * <tr><td>{@link #KEY_BIT_RATE}</td><td>Integer</td><td><b>encoder-only</b>, desired bitrate in bits/second</td></tr>
  * <tr><td>{@link #KEY_DURATION}</td><td>long</td><td>the duration of the content (in microseconds)</td></tr>
+ * <tr><td>{@link #KEY_I_FRAME_INTERVAL}</td><td>Integer (or Float)</td><td><b>encoder-only</b>,
+ *         optional for audio encoders, time-interval between key frames.
+ *         Float support added in {@link android.os.Build.VERSION_CODES#N_MR1}</td></tr>
  * </table>
  *
  * Video formats have the following keys:
@@ -83,9 +86,6 @@ import java.util.stream.Collectors;
  * <tr><td>{@link #KEY_FRAME_RATE}</td><td>Integer or Float</td><td>required for <b>encoders</b>,
  *         optional for <b>decoders</b></td></tr>
  * <tr><td>{@link #KEY_CAPTURE_RATE}</td><td>Integer</td><td></td></tr>
- * <tr><td>{@link #KEY_I_FRAME_INTERVAL}</td><td>Integer (or Float)</td><td><b>encoder-only</b>,
- *         time-interval between key frames.
- *         Float support added in {@link android.os.Build.VERSION_CODES#N_MR1}</td></tr>
  * <tr><td>{@link #KEY_INTRA_REFRESH_PERIOD}</td><td>Integer</td><td><b>encoder-only</b>, optional</td></tr>
  * <tr><td>{@link #KEY_LATENCY}</td><td>Integer</td><td><b>encoder-only</b>, optional</td></tr>
  * <tr><td>{@link #KEY_MAX_WIDTH}</td><td>Integer</td><td><b>decoder-only</b>, optional, max-resolution width</td></tr>
@@ -148,7 +148,7 @@ import java.util.stream.Collectors;
  * <tr><td>{@link #KEY_BUFFER_BATCH_THRESHOLD_OUTPUT_SIZE}</td><td>Integer</td><td>optional,
  *         used with large audio frame support, specifies threshold output size in bytes.</td></tr>
  * <tr><td>{@link #KEY_AUDIO_PRESENTATION_ID}</td><td>long</td>
- *     <td><b>decoder-only</b>, optional, The ID of an AudioPresentation, MixPresentation,
+ *     <td>optional, The ID of an AudioPresentation, MixPresentation,
  *     or similar audio decoder concept.</td></tr>
  * </table>
  *
@@ -255,6 +255,9 @@ public final class MediaFormat {
     /**
      * MIME type for AAC XHE audio stream. Uses the scheme defined by
      * RFC 6381 with OTI of MPEG-4 (40) and AOT of USAC (42) from ISO/IEC 14496-3.
+     * <p>When encoding xHE-AAC, {@link #KEY_AUDIO_PRESENTATION_ID} can be used for
+     * audio encoders to differentiate between different streams with different encoding settings,
+     * and {@link #KEY_I_FRAME_INTERVAL} can be used to specify key frames.
      */
     public static final String MIMETYPE_AUDIO_AAC_XHE = "audio/mp4a.40.42";
     /**
@@ -752,11 +755,11 @@ public final class MediaFormat {
     /**
      * A key describing the frequency of key frames expressed in seconds between key frames.
      * <p>
-     * This key is used by video encoders.
+     * This key is used by encoders.
      * A negative value means no key frames are requested after the first frame.
      * A zero value means a stream containing all key frames is requested.
      * <p class=note>
-     * Most video encoders will convert this value of the number of non-key-frames between
+     * Most encoders will convert this value of the number of non-key-frames between
      * key-frames, using the {@linkplain #KEY_FRAME_RATE frame rate} information; therefore,
      * if the actual frame rate differs (e.g. input frames are dropped or the frame rate
      * changes), the <strong>time interval</strong> between key frames will not be the

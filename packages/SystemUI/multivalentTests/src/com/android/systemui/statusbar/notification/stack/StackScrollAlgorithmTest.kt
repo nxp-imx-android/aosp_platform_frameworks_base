@@ -2066,6 +2066,8 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         ambientState.isCurrentSceneLockscreen = false
         ambientState.dozeAmount = 0.0f
         ambientState.lockscreenStackFadeInProgress = 0.2f
+        val expectedAlpha = 1.0f
+        notificationRow.viewState.setAlpha(expectedAlpha, "test")
 
         whenever(notificationRow.isHeadsUpState).thenReturn(false)
 
@@ -2073,8 +2075,22 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
 
         stackScrollAlgorithm.resetViewStates(ambientState, /* speedBumpIndex= */ 0)
 
-        assertThat(notificationRow.viewState.alpha)
-            .isEqualTo(ambientState.lockscreenStackFadeInProgress)
+        assertThat(notificationRow.viewState.alpha).isEqualTo(expectedAlpha)
+    }
+
+    @Test
+    @EnableSceneContainer
+    fun resetViewStates_isFullyHidden_notLockscreen() {
+        ambientState.hideAmount = 1.0f // isFullyHidden()
+        ambientState.isCurrentSceneLockscreen = false
+
+        whenever(notificationRow.isHeadsUpState).thenReturn(false)
+
+        stackScrollAlgorithm.initView(context)
+
+        stackScrollAlgorithm.resetViewStates(ambientState, /* speedBumpIndex= */ 0)
+
+        assertThat(notificationRow.viewState.alpha).isEqualTo(0f)
     }
 
     @Test

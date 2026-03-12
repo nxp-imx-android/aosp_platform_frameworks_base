@@ -114,7 +114,6 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
                         taskInfo.configuration.windowConfiguration.getBounds());
             });
         }
-        updateLaunchAdjacentController();
     }
 
     @Override
@@ -147,7 +146,6 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
         // for logging once the logic in the observer is moved.
         mDesktopModeLoggerTransitionObserver.onTaskVanished(taskInfo);
         mWindowDecorationViewModel.onTaskVanished(taskInfo);
-        updateLaunchAdjacentController();
     }
 
     @Override
@@ -156,9 +154,6 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
 
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TASK_ORG, "Freeform Task Info Changed: #%d",
                 taskInfo.taskId);
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
-            mDesktopTasksController.ifPresent(c -> c.onTaskInfoChanged(taskInfo));
-        }
         mWindowDecorationViewModel.onTaskInfoChanged(taskInfo);
         state.mTaskInfo = taskInfo;
         if (mDesktopState.canEnterDesktopMode()) {
@@ -175,22 +170,6 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
                         taskInfo.configuration.windowConfiguration.getBounds());
             }
         }
-        updateLaunchAdjacentController();
-    }
-
-    private void updateLaunchAdjacentController() {
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
-            // With multiple desks, freeform tasks are children of a root task controlled by
-            // DesksOrganizer, so toggling launch-adjacent should be managed there.
-            return;
-        }
-        for (int i = 0; i < mTasks.size(); i++) {
-            if (mTasks.valueAt(i).mTaskInfo.isVisible) {
-                mLaunchAdjacentController.setLaunchAdjacentEnabled(false);
-                return;
-            }
-        }
-        mLaunchAdjacentController.setLaunchAdjacentEnabled(true);
     }
 
     @Override

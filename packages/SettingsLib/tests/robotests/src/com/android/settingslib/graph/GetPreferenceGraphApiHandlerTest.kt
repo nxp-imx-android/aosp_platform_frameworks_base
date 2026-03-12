@@ -349,7 +349,7 @@ class GetPreferenceGraphApiHandlerTest {
     }
 
     @Test
-    fun invoke_onNoSensitivityNestedScreens_includesBothScreens() {
+    fun invoke_onNoSensitivityNestedScreens_includesOnlyOuterScreen() {
         val innerSensitiveScreen = createScreen(
             PreferenceScreenConfig(
                 screenKey = "inner_no_sensitive_screen_key",
@@ -395,8 +395,8 @@ class GetPreferenceGraphApiHandlerTest {
         )
 
         assertThat(responseProto.screensMap["outer_no_sensitivity_screen_key"]?.root?.preference?.key).isEqualTo("outer_no_sensitivity_screen_key")
-        assertThat(responseProto.screensMap["outer_no_sensitivity_screen_key"]?.root?.preferencesList).hasSize(2)
-        assertThat(responseProto.screensMap["outer_no_sensitivity_screen_key"]?.root?.preferencesList[1]?.preference?.key).isEqualTo("inner_no_sensitive_screen_key")
+        assertThat(responseProto.screensMap["outer_no_sensitivity_screen_key"]?.root?.preferencesList).hasSize(1)
+        assertThat(responseProto.screensMap["outer_no_sensitivity_screen_key"]?.root?.preferencesList[0]?.preference?.key).isEqualTo("outer_no_sensitivity_preference")
     }
 
     @Test
@@ -469,6 +469,100 @@ class GetPreferenceGraphApiHandlerTest {
         val innerCategoryProto = outerCategoryProto.preferencesList[1].group
         // SensitivityLevel.DO_NOT_EXPOSE preference is filtered out completely from the list
         assertThat(innerCategoryProto.preferencesList).hasSize(0)
+    }
+
+    @Test
+    fun invoke_onNoSensitivityScreen_hasNoSummary() = runTest {
+        setRegistryFactories(createScreen(
+            PreferenceScreenConfig(
+                screenKey = "screen_key",
+                purpose = R.string.preference_screen_purpose,
+                sensitivityLevel = SensitivityLevel.NO_SENSITIVITY,
+                summary = R.string.preference_screen_summary
+            )
+        ))
+        val responseProto = invokeWithFlags(
+            "screen_key",
+            PreferenceGetterFlags.METADATA
+        )
+        val screenMetadata = responseProto.screensMap["screen_key"]!!.rootOrNull?.preference
+        assertThat(screenMetadata?.summaryOrNull).isNull()
+    }
+
+    @Test
+    fun invoke_onNoSensitivityScreen_hasSensitivityLevel() = runTest {
+        setRegistryFactories(createScreen(
+            PreferenceScreenConfig(
+                screenKey = "screen_key",
+                purpose = R.string.preference_screen_purpose,
+                sensitivityLevel = SensitivityLevel.NO_SENSITIVITY,
+                summary = R.string.preference_screen_summary
+            )
+        ))
+        val responseProto = invokeWithFlags(
+            "screen_key",
+            PreferenceGetterFlags.METADATA
+        )
+        val screenMetadata = responseProto.screensMap["screen_key"]!!.rootOrNull?.preference
+        assertThat(screenMetadata?.sensitivityLevel).isEqualTo(SensitivityLevel.NO_SENSITIVITY)
+    }
+
+    @Test
+    fun invoke_onNoSensitivityPreference_hasSummary() = runTest {
+        setRegistryFactories(createScreen(
+            PreferenceScreenConfig(
+                screenKey = "screen_key",
+                purpose = R.string.preference_screen_purpose,
+                sensitivityLevel = SensitivityLevel.NO_SENSITIVITY,
+                preferences = listOf(
+                    createSimplePreference(
+                        GraphTestUtils.PreferenceConfig(
+                            key = "preference_key",
+                            purpose = R.string.preference_purpose,
+                            summary = (R.string.preference_summary),
+                            sensitivityLevel = SensitivityLevel.NO_SENSITIVITY
+                        )
+                    )
+                )
+            )
+        ))
+
+        val responseProto = invokeWithFlags(
+            "screen_key",
+            PreferenceGetterFlags.METADATA
+        )
+
+        val preferenceProto = responseProto.screensMap["screen_key"]!!.root?.preferencesList[0]?.preference
+        assertThat(preferenceProto?.summary?.resourceId).isEqualTo(R.string.preference_summary)
+    }
+
+    @Test
+    fun invoke_onNoSensitivityPreference_hasSensitivityLevel() = runTest {
+        setRegistryFactories(createScreen(
+            PreferenceScreenConfig(
+                screenKey = "screen_key",
+                purpose = R.string.preference_screen_purpose,
+                sensitivityLevel = SensitivityLevel.NO_SENSITIVITY,
+                preferences = listOf(
+                    createSimplePreference(
+                        GraphTestUtils.PreferenceConfig(
+                            key = "preference_key",
+                            purpose = R.string.preference_purpose,
+                            summary = (R.string.preference_summary),
+                            sensitivityLevel = SensitivityLevel.NO_SENSITIVITY
+                        )
+                    )
+                )
+            )
+        ))
+
+        val responseProto = invokeWithFlags(
+            "screen_key",
+            PreferenceGetterFlags.METADATA
+        )
+
+        val preferenceProto = responseProto.screensMap["screen_key"]!!.root?.preferencesList[0]?.preference
+        assertThat(preferenceProto?.sensitivityLevel).isEqualTo(SensitivityLevel.NO_SENSITIVITY)
     }
 
 

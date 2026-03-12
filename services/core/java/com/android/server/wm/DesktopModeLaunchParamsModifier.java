@@ -25,7 +25,6 @@ import static android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK;
 import static android.content.pm.ActivityInfo.LAUNCH_SINGLE_INSTANCE;
 import static android.content.pm.ActivityInfo.LAUNCH_SINGLE_INSTANCE_PER_TASK;
 import static android.content.pm.ActivityInfo.LAUNCH_SINGLE_TASK;
-import static android.window.DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND;
 
 import static com.android.server.wm.DesktopModeHelper.canEnterDesktopMode;
 import static com.android.server.wm.LaunchParamsUtil.getPreferredLaunchTaskDisplayArea;
@@ -209,7 +208,7 @@ class DesktopModeLaunchParamsModifier extends DefaultLaunchParamsModifier {
         // If task is already launched, check if organizer task matches the target display.
         final boolean inDesktopFirstContainer =
                 suggestedDisplayArea.inFreeformWindowingMode() || (
-                        ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue() && organizerTask != null
+                        organizerTask != null
                                 && organizerTask.inFreeformWindowingMode()
                                 && organizerTask.getDisplayId() == display.getDisplayId());
         // In multiple desks, freeform tasks are always children of a root task controlled

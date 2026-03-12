@@ -189,8 +189,8 @@ public class StackScrollAlgorithm {
                 // alpha to each notification individually in order to allow tracked HUNs to remain
                 // visible.
                 viewState.setAlpha(ambientState.getPlaceholderAlpha(), "placeholder transition");
-            } else if (SceneContainerFlag.isEnabled() && (ambientState.isShowingStackOnLockscreen()
-                    || ambientState.isLockscreenStackFadingIn())) {
+            } else if (SceneContainerFlag.isEnabled()
+                            && ambientState.isShowingStackOnLockscreen()) {
                     // Adjust alpha for wakeup to lockscreen.
                 if (view.isHeadsUpState()) {
                     // Pulsing HUN should be visible on AOD and stay visible during
@@ -199,10 +199,7 @@ public class StackScrollAlgorithm {
                 } else {
                     // Take into account scene container-specific Lockscreen fade-in progress
                     final float alpha;
-                    if (!ambientState.isShowingStackOnLockscreen()
-                            && ambientState.isCurrentSceneLockscreen()) {
-                        alpha = 0f;
-                    } else if (ambientState.isLockscreenStackFadingIn()) {
+                    if (ambientState.isLockscreenStackFadingIn()) {
                         alpha = ambientState.getLockscreenStackFadeInProgress();
                     } else {
                         alpha = 1f - ambientState.getDozeAmount();
@@ -226,6 +223,10 @@ public class StackScrollAlgorithm {
                     viewState.setAlpha(interpolateNotificationContentAlpha(ambientState),
                             "expansionChanging notif");
                 }
+            } else if (SceneContainerFlag.isEnabled() && ambientState.isFullyHidden()
+                        && !ambientState.isCurrentSceneLockscreen()) {
+                // Hide notifications when transitioning to/from AOD/Occluded to avoid glitches.
+                viewState.setAlpha(0, "aod transition");
             }
 
             // On the final call to {@link #resetViewState}, the alpha is set back to 1f but

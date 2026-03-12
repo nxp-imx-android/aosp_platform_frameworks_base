@@ -16,6 +16,7 @@
 package com.android.systemui.statusbar.notification.collection.coordinator
 
 import android.multiuser.Flags
+import android.os.UserManager
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.PipelineDumpable
 import com.android.systemui.statusbar.notification.collection.PipelineDumper
@@ -113,7 +114,7 @@ constructor(
         if (NmHighlights.isEnabled) {
             mCoordinators.add(highlightsCoordinator)
         }
-        if (Flags.hsuDisableNotifications()) {
+        if (Flags.hsuDisableNotifications() && UserManager.isHeadlessSystemUserMode()) {
             mCoordinators.add(hideNotifsForHsuCoordinator)
         }
 

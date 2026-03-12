@@ -86,12 +86,20 @@ public class VisualizerConnection {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            mInjector.executeAction(() -> teardownVisualizer(name, "service disconnected"));
+            mInjector.executeAction(() -> {
+                // Set mBound to false so we don't try to unbind (the service is already unbound).
+                mBound = false;
+                teardownVisualizer(name, "service disconnected");
+            });
         }
 
         @Override
         public void onBindingDied(ComponentName name) {
-            mInjector.executeAction(() -> teardownVisualizer(name, "binding died"));
+            mInjector.executeAction(() -> {
+                // Set mBound to false so we don't try to unbind (the service is already unbound).
+                mBound = false;
+                teardownVisualizer(name, "binding died");
+            });
         }
     };
 
@@ -219,13 +227,15 @@ public class VisualizerConnection {
                             @RequiresNoPermission
                             @Override
                             public void onResult(boolean success) {
-                                callback.accept(success);
-                                if (success) {
-                                    mConnectedClientIds.add(client.getId());
-                                } else {
-                                    maybeTeardownVisualizer(
-                                            mComponentName, "no visualization for client");
-                                }
+                                mInjector.executeAction(() -> {
+                                    callback.accept(success);
+                                    if (success) {
+                                        mConnectedClientIds.add(client.getId());
+                                    } else {
+                                        maybeTeardownVisualizer(
+                                                mComponentName, "no visualization for client");
+                                    }
+                                });
                             }
                         },
                         opCallback);
@@ -314,7 +324,7 @@ public class VisualizerConnection {
                 if (actionsCount >= MAX_PENDING_ACTIONS) {
                     Slog.w(TAG, "Too many deferred actions, evicting oldest actions");
                     mDeferredActions.subList(
-                            0, actionsCount - (actionsCount - MAX_PENDING_ACTIONS) - 1)
+                                    0, actionsCount - (actionsCount - MAX_PENDING_ACTIONS) - 1)
                             .clear();
                 }
                 mDeferredActions.add(action);
@@ -346,7 +356,9 @@ public class VisualizerConnection {
     }
 
     /**
-     * Tear down the connection to the visualizer if there no clients connected to it.
+     * Tear down the connection to the visualizer if there are no clients connected to it. This
+     * method assumes it is being executed using the injector's executeAction() method (i.e. on the
+     * injector's shared thread).
      */
     private void maybeTeardownVisualizer(ComponentName name, String reason) {
         if (mConnectedClientIds.isEmpty()) {

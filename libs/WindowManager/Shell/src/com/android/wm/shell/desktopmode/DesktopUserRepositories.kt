@@ -82,10 +82,8 @@ class DesktopUserRepositories(
     private fun onInit() {
         repositoryInitializer.initialize(this)
         shellController.addUserChangeListener(this)
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            userId = shellController.currentUserId
-            userIdToProfileIdsMap[userId] = shellController.currentUserProfiles.map { it.id }
-        }
+        userId = shellController.currentUserId
+        userIdToProfileIdsMap[userId] = shellController.currentUserProfiles.map { it.id }
     }
 
     /** Returns [DesktopRepository] for the parent user id. */

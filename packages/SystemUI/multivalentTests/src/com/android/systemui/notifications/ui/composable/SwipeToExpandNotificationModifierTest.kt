@@ -34,7 +34,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.IntSize
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.ExpandHelper
+import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.statusbar.notification.row.ExpandableView
@@ -156,6 +156,31 @@ class SwipeToExpandNotificationModifierTest : SysuiTestCase() {
     }
 
     @Test
+    fun testDragDown_playsHapticFeedbackOnce() {
+        val target = FakeExpandableTarget(context, collapsedHeight = 100, expandedHeight = 300)
+        callback.childAtPosition = target
+
+        setTestContent()
+
+        rule.onNodeWithTag(EXPANDABLE_TAG).performTouchInput {
+            down(center)
+            moveBy(Offset(0f, 50f)) // Exceed slop, trigger expansion
+        }
+
+        assertThat(callback.hapticPlayCount).isEqualTo(1)
+
+        rule.onNodeWithTag(EXPANDABLE_TAG).performTouchInput {
+            moveBy(Offset(0f, 50f)) // Continue dragging
+        }
+
+        // Clean up gesture
+        rule.onNodeWithTag(EXPANDABLE_TAG).performTouchInput { up() }
+
+        // Haptic should NOT be played again on subsequent input events
+        assertThat(callback.hapticPlayCount).isEqualTo(1)
+    }
+
+    @Test
     fun testDragUpThenDown_expandsSuccessfully() {
         val target = FakeExpandableTarget(context, collapsedHeight = 100, expandedHeight = 300)
         callback.childAtPosition = target
@@ -171,47 +196,11 @@ class SwipeToExpandNotificationModifierTest : SysuiTestCase() {
             moveBy(Offset(0f, 100f))
         }
 
-        // The old code would have this stuck at false and 100 height.
         assertThat(callback.isExpanding).isTrue()
         assertThat(target.actualHeight).isGreaterThan(100)
 
         // Clean up gesture
         rule.onNodeWithTag(EXPANDABLE_TAG).performTouchInput { up() }
-    }
-
-    @Test
-    fun testDragDownFullyThenUp_latchesExpandedState() {
-        val target = FakeExpandableTarget(context, collapsedHeight = 100, expandedHeight = 300)
-        callback.childAtPosition = target
-
-        setTestContent()
-
-        // Drag down beyond max height to trigger the latch
-        rule.onNodeWithTag(EXPANDABLE_TAG).performTouchInput {
-            down(center)
-            moveBy(Offset(0f, 300f)) // Target height: 100 + 300 = 400. Clamps to 300.
-        }
-
-        // Verify it hit the max height
-        assertThat(callback.isExpanding).isTrue()
-        assertThat(target.actualHeight).isEqualTo(300)
-
-        // Drag back up while still holding the touch
-        rule.onNodeWithTag(EXPANDABLE_TAG).performTouchInput {
-            moveBy(Offset(0f, -150f)) // Attempt to shrink it back down
-        }
-
-        // Verify the latch worked: it ignored the upward drag and stayed at 300
-        assertThat(target.actualHeight).isEqualTo(300)
-
-        // Release the gesture (with remaining velocity)
-        rule.onNodeWithTag(EXPANDABLE_TAG).performTouchInput { up() }
-        rule.waitForIdle()
-
-        // Verify it finished and settled in the expanded state, ignoring the upward release
-        assertThat(target.userExpanded).isTrue()
-        assertThat(target.userSwipingToExpand).isFalse()
-        assertThat(callback.isExpanding).isFalse()
     }
 
     @Test
@@ -248,13 +237,12 @@ class SwipeToExpandNotificationModifierTest : SysuiTestCase() {
                     Modifier.testTag(EXPANDABLE_TAG)
                         .fillMaxSize()
                         .swipeToExpandNotification(
-                            SwipeToExpandNotificationDraggable(
-                                callback = callback,
-                                layoutCoordinatesProvider = { FakeLayoutCoordinates() },
-                                allowStartGesture = gestureEnabled,
-                                velocityThresholdPx = VELOCITY_THRESHOLD,
-                                distanceThresholdPx = DISTANCE_THRESHOLD,
-                            )
+                            callback = callback,
+                            overscrollEffect = rememberOffsetOverscrollEffect(),
+                            layoutCoordinatesProvider = { FakeLayoutCoordinates() },
+                            allowStartGesture = gestureEnabled,
+                            velocityThresholdPx = VELOCITY_THRESHOLD,
+                            distanceThresholdPx = DISTANCE_THRESHOLD,
                         )
             )
         }
@@ -266,16 +254,16 @@ class SwipeToExpandNotificationModifierTest : SysuiTestCase() {
     }
 }
 
-private class FakeExpandHelperCallback : ExpandHelper.Callback {
+private class FakeExpandHelperCallback : SwipeToExpandCallback {
     var childAtPosition: FakeExpandableTarget? = null
     var canChildbeExpanded = true
     var isExpanding = false
+        private set
+
+    var hapticPlayCount = 0
+        private set
 
     override fun getChildAtRawPosition(x: Float, y: Float): ExpandableView? {
-        return childAtPosition
-    }
-
-    override fun getChildAtPosition(x: Float, y: Float): ExpandableView? {
         return childAtPosition
     }
 
@@ -299,14 +287,14 @@ private class FakeExpandHelperCallback : ExpandHelper.Callback {
         this.isExpanding = isExpanding
     }
 
-    override fun getMaxExpandHeight(view: ExpandableView?): Int {
-        return (view as FakeExpandableTarget).maxContentHeight
+    override fun setExpansionCancelled(v: View?) {
+        if (v is FakeExpandableTarget) {
+            v.expansionCancelled = true
+        }
     }
 
-    override fun setExpansionCancelled(view: View?) {
-        if (view is FakeExpandableTarget) {
-            view.expansionCancelled = true
-        }
+    override fun playExpandStartHaptic() {
+        hapticPlayCount++
     }
 }
 

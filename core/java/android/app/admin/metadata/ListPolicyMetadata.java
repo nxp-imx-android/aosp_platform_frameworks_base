@@ -17,27 +17,27 @@
 package android.app.admin.metadata;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.admin.PolicyIdentifier;
 
 import java.util.List;
 
 /**
- * Class that contains static information about a list policy.
- * Even though the annotations can not be generic, the policy metadata is generic for lists.
+ * Class that contains static information about a list policy. Even though the annotations can not
+ * be generic, the policy metadata is generic for lists.
  *
  * @param <T> The type of elements stored in the list.
  * @hide
  */
 public class ListPolicyMetadata<T> extends PolicyMetadata<List<T>> {
-    @NonNull
-    private final PolicyMetadata<T> mElementMetadata;
+    @NonNull private final PolicyMetadata<T> mElementMetadata;
     private final boolean mEmptyListAllowed;
 
     public ListPolicyMetadata(
             @NonNull PolicyIdentifier<List<T>> id,
             @NonNull PolicyMetadata<T> elementMetadata,
-            boolean emptyListAllowed
-    ) {
+            @Nullable ResolutionMechanismMetadata<List<T>> resolutionMechanism,
+            boolean emptyListAllowed) {
         super(
                 id,
                 elementMetadata.getAllowedScopes(),
@@ -45,8 +45,7 @@ public class ListPolicyMetadata<T> extends PolicyMetadata<List<T>> {
                 elementMetadata.getRequiredPermission(),
                 elementMetadata.getRequiredCrossUserPermission(),
                 elementMetadata.getAllowedDpcTypes(),
-                null
-        );
+                resolutionMechanism);
 
         mElementMetadata = elementMetadata;
         mEmptyListAllowed = emptyListAllowed;
@@ -54,7 +53,6 @@ public class ListPolicyMetadata<T> extends PolicyMetadata<List<T>> {
 
     @NonNull
     public PolicyMetadata<T> getElementMetadata() {
-
         return mElementMetadata;
     }
 

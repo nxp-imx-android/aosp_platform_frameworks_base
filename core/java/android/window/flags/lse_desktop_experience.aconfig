@@ -713,13 +713,6 @@ flag {
 }
 
 flag {
-    name: "enable_multiple_desktops_backend"
-    namespace: "lse_desktop_experience"
-    description: "Enable multiple desktop sessions for desktop windowing (backend)."
-    bug: "362720497"
-}
-
-flag {
     name: "enable_multiple_desktops_default_activation_in_desktop_first_displays"
     namespace: "lse_desktop_experience"
     description: "Activate a default desk in desktop-first displays, with multiple desks enabled"
@@ -731,16 +724,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enable no-resize cursors for window drag resizing."
     bug: "444328529"
-}
-
-flag {
-    name: "enable_no_window_decoration_for_desks"
-    namespace: "lse_desktop_experience"
-    description: "Stops the creation of a window decoration for desk tasks."
-    bug: "414449402"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -986,13 +969,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Whether to enable desktop windowing transition handler and observer instead of task listeners."
     bug: "332682201"
-}
-
-flag {
-    name: "enter_desktop_by_default_on_freeform_displays"
-    namespace: "lse_desktop_experience"
-    description: "Allow entering desktop mode by default on freeform displays"
-    bug: "361419732"
 }
 
 flag {
@@ -1249,6 +1225,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Updates the desktop scrim when drag resize is finihsed"
     bug: "484100709"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "update_desktop_scrim_on_fullscreen_launch"
+    namespace: "lse_desktop_experience"
+    description: "Updates the desktop scrim when fullscreen activity launched"
+    bug: "483478809"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

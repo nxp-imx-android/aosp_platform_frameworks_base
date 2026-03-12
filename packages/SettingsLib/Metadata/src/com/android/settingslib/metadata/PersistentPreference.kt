@@ -107,6 +107,9 @@ interface PersistentPreference<T> : PreferenceMetadata {
     fun getReadPermit(context: Context, callingPid: Int, callingUid: Int): @ReadWritePermit Int =
         PreferenceScreenRegistry.defaultReadPermit
 
+    /** Returns true if the preference supports write in any circumstances. */
+    val supportsWrite: Boolean
+
     /** Returns the required permissions to write preference value. */
     fun getWritePermissions(context: Context): Permissions? = null
 
@@ -144,6 +147,9 @@ sealed interface ValueDescriptor {
 
     /** Returns if given value (represented by index) is valid. */
     fun isValidValue(context: Context, index: Int): Boolean
+
+    /** Returns the unit of measurement for the value. E.g. milliseconds, pixels, etc. */
+    fun getUnitOfMeasurement(): String? = null
 }
 
 /** Value falls into a given array. */

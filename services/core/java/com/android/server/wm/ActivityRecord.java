@@ -5563,6 +5563,10 @@ final class ActivityRecord extends WindowToken {
                 mStartingWindow.clearPolicyVisibilityFlag(LEGACY_POLICY_VISIBILITY);
                 mStartingWindow.mLegacyPolicyVisibilityAfterAnim = false;
             }
+        } else if (com.android.window.flags.Flags.removeStartingWindowWhenCommitInvisible()
+                && mStartingData != null) {
+            // Clean up invisible starting window if any.
+            removeStartingWindowAnimation(false /* prepareAnimation */);
         }
         // dispatchTaskInfoChangedIfNeeded() right after ActivityRecord#setVisibility() can report
         // the stale visible state, because the state will be updated after the app transition.
@@ -7129,7 +7133,10 @@ final class ActivityRecord extends WindowToken {
         if (mStartingData != null) {
             // Remove orphaned starting window.
             if (DEBUG_VISIBILITY) Slog.w(TAG_VISIBILITY, "Found orphaned starting window " + this);
-            removeStartingWindowAnimation(false /* prepareAnimation */);
+            if (!com.android.window.flags.Flags.removeStartingWindowWhenCommitInvisible()
+                    || !isVisible()) {
+                removeStartingWindowAnimation(false /* prepareAnimation */);
+            }
         }
         if (!mDisplayContent.mUnknownAppVisibilityController.allResolved()) {
             // Remove the unknown visibility record because an invisible activity shouldn't block

@@ -21,6 +21,7 @@ import android.app.jank.JankTracker;
 import android.app.jank.RelativeFrameTimeHistogram;
 import android.app.jank.StateTracker;
 import android.os.Process;
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.android.compatibility.common.util.SystemUtil;
@@ -151,5 +152,19 @@ public class JankUtils {
         removeDeviceConfigOverride(
                 JankTracker.NAMESPACE_SYSTEM_PERFORMANCE,
                 JankTracker.KEY_JANK_METRIC_COLLECTION_ENABLED);
+    }
+
+    /** Wait until shouldTrack returns true, this indicates JankTracker is fully initialized. */
+    public static void waitForShouldTrackTrue(JankTracker tracker, int maxWaitTimeMs) {
+        int checkIntervalMs = 500;
+        int currentWaitTimeMs = 0;
+        while (currentWaitTimeMs < maxWaitTimeMs) {
+            if (tracker.shouldTrack()) {
+                return;
+            }
+            SystemClock.sleep(checkIntervalMs);
+            currentWaitTimeMs += checkIntervalMs;
+        }
+        throw new RuntimeException("Timeout waiting for shouldTrack to be true");
     }
 }

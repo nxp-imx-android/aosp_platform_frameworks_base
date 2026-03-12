@@ -17,6 +17,7 @@
 package com.android.wm.shell.flicker.bubbles
 
 import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.RequiresFlagsDisabled
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
 import android.tools.device.apphelpers.MessagingAppHelper
@@ -64,6 +65,8 @@ import org.junit.runners.Parameterized.Parameters
  * - [previousApp] becomes invisible, and then becomes visible.
  * - [testApp] becomes visible, and then becomes invisible.
  */
+// TODO(b/479182156) Remove this when bubbling is supported in desktop mode.
+@RequiresFlagsDisabled(Flags.FLAG_DISABLE_BUBBLE_ANYTHING_DESKTOP_WINDOWING)
 @RequiresFlagsEnabled(
     Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
     com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK,

@@ -780,7 +780,6 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun startAnimation_deskToDeskTransition_delegatesToDeskSwitchHandler() {
         val transition = Binder()
         val fromDeskId = 1
@@ -821,7 +820,6 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun startAnimation_clientEnterFullscreenTransition_delegatesToClientFullscreenHandler() {
         val transition = Binder()
         val fromDeskId = 1
@@ -853,7 +851,6 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun startAnimation_clientExitFullscreenTransition_delegatesToClientFullscreenHandler() {
         val transition = Binder()
         val fullscreenTask = createFullscreenTask()

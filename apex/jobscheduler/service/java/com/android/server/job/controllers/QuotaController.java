@@ -34,6 +34,8 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
+import android.app.ActivityManager.ProcessCapability;
+import android.app.ActivityManager.ProcessState;
 import android.app.AlarmManager;
 import android.app.UidObserver;
 import android.app.job.JobInfo;
@@ -421,7 +423,8 @@ public final class QuotaController extends StateController {
 
     private class QcUidObserver extends UidObserver {
         @Override
-        public void onUidStateChanged(int uid, int procState, long procStateSeq, int capability) {
+        public void onUidStateChanged(int uid, @ProcessState int procState, long procStateSeq,
+                @ProcessCapability int capability) {
             mHandler.obtainMessage(MSG_UID_PROCESS_STATE_CHANGED, uid, procState).sendToTarget();
         }
     }
@@ -2699,6 +2702,7 @@ public final class QuotaController extends StateController {
     }
 
     @VisibleForTesting
+    @ProcessState
     int getProcessStateQuotaFreeThreshold(int uid) {
         if (!mPlatformCompat.isChangeEnabledByUid(OVERRIDE_QUOTA_ENFORCEMENT_TO_FGS_JOBS, uid)) {
             return ActivityManager.PROCESS_STATE_BOUND_TOP;
@@ -2826,7 +2830,7 @@ public final class QuotaController extends StateController {
                     }
                     case MSG_UID_PROCESS_STATE_CHANGED: {
                         final int uid = msg.arg1;
-                        final int procState = msg.arg2;
+                        final @ProcessState int procState = msg.arg2;
                         final int userId = UserHandle.getUserId(uid);
                         final long nowElapsed = sElapsedRealtimeClock.millis();
 

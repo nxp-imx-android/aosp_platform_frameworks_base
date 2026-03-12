@@ -47,7 +47,13 @@ abstract class RestartAppInDesktopMode(
         val primaryDisplayDensity =
             wmHelper.currentState.wmState.getDefaultDisplay()?.fullConfiguration?.densityDpi ?: 160
         val targetDensity = if (primaryDisplayDensity == 160) 240 else 160
-        val connectedDisplayId = connectedDisplayRule.setupTestDisplay(density = targetDensity)
+        // Use a larger display size to ensure it's above the 600dp multi-window threshold.
+        val connectedDisplayId =
+            connectedDisplayRule.setupTestDisplay(
+                width = 2560,
+                height = 1600,
+                density = targetDensity,
+            )
         wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(connectedDisplayId).waitForAndVerify()
         testApp.enterDesktopMode(wmHelper, device)
         testApp.moveToNextDisplayViaKeyboard(wmHelper, connectedDisplayId)

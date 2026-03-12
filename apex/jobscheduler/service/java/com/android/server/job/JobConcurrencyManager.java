@@ -26,6 +26,7 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
+import android.app.ActivityManager.ProcessState;
 import android.app.ActivityManagerInternal;
 import android.app.BackgroundStartPrivileges;
 import android.app.UserSwitchObserver;
@@ -1269,7 +1270,8 @@ class JobConcurrencyManager {
                 return false;
             case PRIVILEGED_STATE_UNDEFINED:
             default:
-                final int procState = mActivityManagerInternal.getUidProcessState(uid);
+                final @ProcessState int procState =
+                        mActivityManagerInternal.getUidProcessState(uid);
                 if (procState == ActivityManager.PROCESS_STATE_TOP) {
                     cachedPrivilegedState.put(uid, PRIVILEGED_STATE_TOP);
                     return true;
