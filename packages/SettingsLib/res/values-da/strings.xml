@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"Ethernet er ikke tilsluttet."</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"Ethernet."</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"Opkald er deaktiveret."</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"Fysisk tastatur"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"Vælg tastaturlayout"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"Standard"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"Indstillinger for aktivering af skærm"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"Tillad aktivering af skærmen"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"Tillad, at en app aktiverer skærmen. Hvis du giver denne tilladelse, kan appen til enhver tid aktivere skærmen, uden at du eksplicit har bedt om det."</string>

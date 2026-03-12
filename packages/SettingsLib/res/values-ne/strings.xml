@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"इथरनेट विच्छेद भयो।"</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"इथरनेट।"</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"कल गर्ने सुविधा उपलब्ध छैन।"</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"भौतिक किबोर्ड"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"किबोर्ड लेआउट छान्नुहोस्"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"डिफल्ट"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"स्क्रिन अन गर्नेसम्बन्धी कन्ट्रोल"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"स्क्रिन अन गर्ने अनुमति दिनुहोस्"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"कुनै एपलाई स्क्रिन अन गर्ने अनुमति दिनुहोस्। यो अनुमति दिइएका खण्डमा तपाईंले अन गर्न नखोजेका बेलामा पनि एपले जुनसुकै बेला स्क्रिन अन गर्न सक्छ।"</string>

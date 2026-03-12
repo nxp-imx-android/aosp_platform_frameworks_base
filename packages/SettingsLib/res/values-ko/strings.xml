@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"이더넷에서 연결 해제되었습니다."</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"이더넷에 연결되었습니다."</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"통화 모드가 없습니다."</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"물리적 키보드"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"키보드 레이아웃 선택"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"기본"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"화면 사용 설정 제어"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"화면 켜기 허용"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"앱에서 화면을 켜도록 허용합니다. 권한이 부여된 경우 앱에서 명시적 인텐트 없이 언제든지 화면을 켤 수 있습니다."</string>

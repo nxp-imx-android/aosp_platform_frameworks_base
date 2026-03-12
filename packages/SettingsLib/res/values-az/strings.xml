@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"Ethernet bağlantısı kəsilib."</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"Ethernet."</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"Zəng yoxdur."</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"Fiziki klaviatura"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"Klaviatura düzənini seçin"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"Defolt"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"Ekran yandırma nizamlayıcısı"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"Ekranı aktiv etməyə icazə verin"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"Tətbiqin ekranı aktiv etməsinə icazə verin. İcazə verilərsə, tətbiq istənilən vaxt sizdən soruşmadan ekranı aktiv edə bilər."</string>

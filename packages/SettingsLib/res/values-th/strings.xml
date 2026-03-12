@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"ยกเลิกการเชื่อมต่ออีเทอร์เน็ตแล้ว"</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"อีเทอร์เน็ต"</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"ไม่มีการโทร"</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"แป้นพิมพ์จริง"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"เลือกรูปแบบแป้นพิมพ์"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"ค่าเริ่มต้น"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"การควบคุมการเปิดหน้าจอ"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"อนุญาตให้เปิดหน้าจอ"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"อนุญาตให้แอปเปิดหน้าจอ หากอนุญาต แอปอาจเปิดหน้าจอได้ทุกเมื่อแม้คุณไม่ได้ระบุเจตนาที่ชัดแจ้ง"</string>

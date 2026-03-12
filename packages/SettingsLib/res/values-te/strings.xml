@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"ఈథర్‌నెట్ డిస్‌కనెక్ట్ చేయబడింది."</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"ఈథర్‌నెట్."</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"కాలింగ్ మోడ్ ఆఫ్‌లో ఉంది."</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"ఫిజికల్ కీబోర్డ్"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"కీబోర్డ్ లేఅవుట్‌ను ఎంచుకోండి"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"ఆటోమేటిక్ సెట్టింగ్"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"స్క్రీన్‌ను ఆన్ చేయడానికి సంబంధించిన కంట్రోల్"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"స్క్రీన్‌ను ఆన్ చేయడానికి అనుమతించండి"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"స్క్రీన్‌ను ఆన్ చేయడానికి యాప్‌ను అనుమతించండి. మంజూరు చేయబడితే, మీ స్పష్టమైన ఉద్దేశం లేకుండా యాప్ ఎప్పుడైనా స్క్రీన్‌ను ఆన్ చేయవచ్చు."</string>
