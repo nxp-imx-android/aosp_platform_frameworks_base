@@ -17,6 +17,26 @@
 package com.android.server.job;
 
 import static android.app.job.Flags.FLAG_HANDLE_ABANDONED_JOBS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.BACK_OFF_POLICY_TYPE;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.DEADLINE_MS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.DELAY_MS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.EFFECTIVE_PRIORITY;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.INTERNAL_STOP_REASON;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.JOB_ID;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.JOB_START_LATENCY_MS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.JOB_STATE_FLAGS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.NUM_PREVIOUS_ATTEMPTS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.NUM_RESCHEDULES_DUE_TO_ABANDONMENT;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.NUM_UNCOMPLETED_WORK_ITEMS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.PERIODIC_JOB_FLEX_INTERVAL_MS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.PERIODIC_JOB_INTERVAL_MS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.PROC_STATE;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.PROXY_UID;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.PUBLIC_STOP_REASON;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.REQUESTED_PRIORITY;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.SOURCE_UID;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.STANDBY_BUCKET;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.STATE;
 import static android.text.format.DateUtils.MINUTE_IN_MILLIS;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
@@ -25,26 +45,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.server.job.Flags.FLAG_INCLUDE_JOB_NAME_IN_ANR_MESSAGE;
-import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_BACK_OFF_POLICY_TYPE;
-import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_DEADLINE_MS;
-import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_DELAY_MS;
-import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_EFFECTIVE_PRIORITY;
-import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_INTERNAL_STOP_REASON;
-import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_JOB_ID;
-import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_JOB_START_LATENCY_MS;
-import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_JOB_STATE_FLAGS;
-import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_NUM_PREVIOUS_ATTEMPTS;
-import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_NUM_RESCHEDULES_DUE_TO_ABANDONMENT;
-import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_NUM_UNCOMPLETED_WORK_ITEMS;
-import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_PERIODIC_JOB_FLEX_INTERVAL_MS;
-import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_PERIODIC_JOB_INTERVAL_MS;
-import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_PROC_STATE;
-import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_PROXY_UID;
-import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_PUBLIC_STOP_REASON;
-import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_REQUESTED_PRIORITY;
-import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_SOURCE_UID;
-import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_STANDBY_BUCKET;
-import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_STATE;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -144,7 +144,7 @@ public class JobServiceContextTest {
     private JobPerfettoTracer mMockPerfettoTracer;
     private ComponentName mComponentName;
 
-    private static final int JOB_ID = 456;
+    private static final int TEST_JOB_ID = 456;
     private static final int ABANDONED_JOB_ID = 123;
     @Before
     public void setUp() throws Exception {
@@ -407,7 +407,7 @@ public class JobServiceContextTest {
     @EnableFlags(FLAG_HANDLE_ABANDONED_JOBS)
     public void testJobServiceContext_HandleAbandonedJob_differentJobId() {
         final int jobId = ABANDONED_JOB_ID;
-        final int differentJobId = JOB_ID;
+        final int differentJobId = TEST_JOB_ID;
         mJobServiceContext.setRunningJobLockedForTest(mMockJobStatus);
         mJobServiceContext.setRunningCallbackLockedForTest(mMockJobCallback);
         doReturn(differentJobId).when(mMockJobStatus).getJobId();
@@ -420,7 +420,7 @@ public class JobServiceContextTest {
     @Test
     public void testPerfettoTracing_Execute() throws Exception {
         when(mMockPerfettoTracer.isTraceEnabled()).thenReturn(true);
-        final int jobId = JOB_ID;
+        final int jobId = TEST_JOB_ID;
         final JobInfo job = createJobInfo(jobId, mComponentName).build();
         final JobStatus jobStatus =
                 JobStatus.createFromJobInfo(job, mSourceUid, SOURCE_PACKAGE, 0, TAG, null);
@@ -434,77 +434,77 @@ public class JobServiceContextTest {
 
         // Verify execute trace.
         verify(mMockPerfettoTracer).startEvent(eq(jobStatus.getBatteryName()));
-        verify(mMockPerfettoTracer).addField(eq((long) PERFETTO_TRACE_FIELD_JOB_ID), eq(loggingId));
+        verify(mMockPerfettoTracer).addField(eq((long) JOB_ID), eq(loggingId));
         verify(mMockPerfettoTracer)
-                .addField(eq((long) PERFETTO_TRACE_FIELD_SOURCE_UID), eq((long) mSourceUid));
+                .addField(eq((long) SOURCE_UID), eq((long) mSourceUid));
         verify(mMockPerfettoTracer)
-                .addField(eq((long) PERFETTO_TRACE_FIELD_PROXY_UID), eq((long) mSourceUid));
+                .addField(eq((long) PROXY_UID), eq((long) mSourceUid));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_STATE),
+                        eq((long) STATE),
                         eq((long) FrameworkStatsLog.SCHEDULED_JOB_STATE_CHANGED__STATE__STARTED));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_STANDBY_BUCKET),
+                        eq((long) STANDBY_BUCKET),
                         eq((long) jobStatus.getStandbyBucket()));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_REQUESTED_PRIORITY),
+                        eq((long) REQUESTED_PRIORITY),
                         eq((long) job.getPriority()));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_EFFECTIVE_PRIORITY),
+                        eq((long) EFFECTIVE_PRIORITY),
                         eq((long) jobStatus.getEffectivePriority()));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_NUM_PREVIOUS_ATTEMPTS),
+                        eq((long) NUM_PREVIOUS_ATTEMPTS),
                         eq((long) jobStatus.getNumPreviousAttempts()));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_DEADLINE_MS),
+                        eq((long) DEADLINE_MS),
                         eq(job.getMaxExecutionDelayMillis()));
         verify(mMockPerfettoTracer)
-                .addField(eq((long) PERFETTO_TRACE_FIELD_DELAY_MS), eq(job.getMinLatencyMillis()));
+                .addField(eq((long) DELAY_MS), eq(job.getMinLatencyMillis()));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_JOB_START_LATENCY_MS),
+                        eq((long) JOB_START_LATENCY_MS),
                         eq(jobStartLatencyMs));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_NUM_UNCOMPLETED_WORK_ITEMS),
+                        eq((long) NUM_UNCOMPLETED_WORK_ITEMS),
                         eq((long) jobStatus.getWorkCount()));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_PROC_STATE),
+                        eq((long) PROC_STATE),
                         eq((long) ActivityManager.processStateAmToProto(
                                         ActivityManager.PROCESS_STATE_TOP)));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_PERIODIC_JOB_INTERVAL_MS),
+                        eq((long) PERIODIC_JOB_INTERVAL_MS),
                         eq(job.getIntervalMillis()));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_PERIODIC_JOB_FLEX_INTERVAL_MS),
+                        eq((long) PERIODIC_JOB_FLEX_INTERVAL_MS),
                         eq(job.getFlexMillis()));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_NUM_RESCHEDULES_DUE_TO_ABANDONMENT),
+                        eq((long) NUM_RESCHEDULES_DUE_TO_ABANDONMENT),
                         eq((long) jobStatus.getNumAbandonedFailures()));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_BACK_OFF_POLICY_TYPE),
+                        eq((long) BACK_OFF_POLICY_TYPE),
                         eq((long) job.getBackoffPolicy() + 1L));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_INTERNAL_STOP_REASON),
+                        eq((long) INTERNAL_STOP_REASON),
                         eq((long) JobProtoEnums.INTERNAL_STOP_REASON_UNKNOWN));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_PUBLIC_STOP_REASON),
+                        eq((long) PUBLIC_STOP_REASON),
                         eq((long) JobProtoEnums.STOP_REASON_UNDEFINED));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_JOB_STATE_FLAGS),
+                        eq((long) JOB_STATE_FLAGS),
                         eq(JobStatus.packStatesToBits(jobStatus)));
         verify(mMockPerfettoTracer).emit();
     }
@@ -512,7 +512,7 @@ public class JobServiceContextTest {
     @Test
     public void testPerfettoTracing_Cleanup() throws Exception {
         when(mMockPerfettoTracer.isTraceEnabled()).thenReturn(true);
-        final int jobId = JOB_ID;
+        final int jobId = TEST_JOB_ID;
         final JobInfo job = createJobInfo(jobId, mComponentName).build();
         final JobStatus jobStatus =
                 JobStatus.createFromJobInfo(job, mSourceUid, SOURCE_PACKAGE, 0, TAG, null);
@@ -537,77 +537,77 @@ public class JobServiceContextTest {
         mJobServiceContext.doJobFinished(cb, jobId, false);
 
         verify(mMockPerfettoTracer).startEvent(eq(jobStatus.getBatteryName()));
-        verify(mMockPerfettoTracer).addField(eq((long) PERFETTO_TRACE_FIELD_JOB_ID), eq(loggingId));
+        verify(mMockPerfettoTracer).addField(eq((long) JOB_ID), eq(loggingId));
         verify(mMockPerfettoTracer)
-                .addField(eq((long) PERFETTO_TRACE_FIELD_SOURCE_UID), eq((long) mSourceUid));
+                .addField(eq((long) SOURCE_UID), eq((long) mSourceUid));
         verify(mMockPerfettoTracer)
-                .addField(eq((long) PERFETTO_TRACE_FIELD_PROXY_UID), eq((long) mSourceUid));
+                .addField(eq((long) PROXY_UID), eq((long) mSourceUid));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_STATE),
+                        eq((long) STATE),
                         eq((long) FrameworkStatsLog.SCHEDULED_JOB_STATE_CHANGED__STATE__FINISHED));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_STANDBY_BUCKET),
+                        eq((long) STANDBY_BUCKET),
                         eq((long) jobStatus.getStandbyBucket()));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_REQUESTED_PRIORITY),
+                        eq((long) REQUESTED_PRIORITY),
                         eq((long) job.getPriority()));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_EFFECTIVE_PRIORITY),
+                        eq((long) EFFECTIVE_PRIORITY),
                         eq((long) jobStatus.getEffectivePriority()));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_NUM_PREVIOUS_ATTEMPTS),
+                        eq((long) NUM_PREVIOUS_ATTEMPTS),
                         eq((long) jobStatus.getNumPreviousAttempts()));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_DEADLINE_MS),
+                        eq((long) DEADLINE_MS),
                         eq(job.getMaxExecutionDelayMillis()));
         verify(mMockPerfettoTracer)
-                .addField(eq((long) PERFETTO_TRACE_FIELD_DELAY_MS), eq(job.getMinLatencyMillis()));
+                .addField(eq((long) DELAY_MS), eq(job.getMinLatencyMillis()));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_JOB_START_LATENCY_MS),
+                        eq((long) JOB_START_LATENCY_MS),
                         eq(jobStartLatencyMs));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_NUM_UNCOMPLETED_WORK_ITEMS),
+                        eq((long) NUM_UNCOMPLETED_WORK_ITEMS),
                         eq((long) jobStatus.getWorkCount()));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_PROC_STATE),
+                        eq((long) PROC_STATE),
                         eq((long) ActivityManager.processStateAmToProto(
                                         ActivityManager.PROCESS_STATE_TOP)));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_PERIODIC_JOB_INTERVAL_MS),
+                        eq((long) PERIODIC_JOB_INTERVAL_MS),
                         eq((long) job.getIntervalMillis()));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_PERIODIC_JOB_FLEX_INTERVAL_MS),
+                        eq((long) PERIODIC_JOB_FLEX_INTERVAL_MS),
                         eq(job.getFlexMillis()));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_NUM_RESCHEDULES_DUE_TO_ABANDONMENT),
+                        eq((long) NUM_RESCHEDULES_DUE_TO_ABANDONMENT),
                         eq((long) jobStatus.getNumAbandonedFailures()));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_BACK_OFF_POLICY_TYPE),
+                        eq((long) BACK_OFF_POLICY_TYPE),
                         eq((long) job.getBackoffPolicy() + 1L));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_INTERNAL_STOP_REASON),
+                        eq((long) INTERNAL_STOP_REASON),
                         eq((long) JobProtoEnums.INTERNAL_STOP_REASON_SUCCESSFUL_FINISH));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_PUBLIC_STOP_REASON),
+                        eq((long) PUBLIC_STOP_REASON),
                         eq((long) JobProtoEnums.STOP_REASON_UNDEFINED));
         verify(mMockPerfettoTracer)
                 .addField(
-                        eq((long) PERFETTO_TRACE_FIELD_JOB_STATE_FLAGS),
+                        eq((long) JOB_STATE_FLAGS),
                         eq(JobStatus.packStatesToBits(jobStatus)));
         verify(mMockPerfettoTracer).emit();
     }
@@ -617,7 +617,7 @@ public class JobServiceContextTest {
     @EnableCompatChanges({JobServiceContext.ANR_PRE_UDC_APIS_ON_SLOW_RESPONSES})
     public void testOnSlowAppResponseLocked_anrMessage_flagEnabled() {
         mJobServiceContext.mVerb = JobServiceContext.VERB_STOPPING;
-        final JobInfo job = createJobInfo(JOB_ID, mComponentName).build();
+        final JobInfo job = createJobInfo(TEST_JOB_ID, mComponentName).build();
         final JobStatus jobStatus =
                 JobStatus.createFromJobInfo(job, mSourceUid, SOURCE_PACKAGE, 0, TAG, null);
         jobStatus.serviceProcessName = "some.process";
@@ -639,7 +639,7 @@ public class JobServiceContextTest {
     @EnableCompatChanges({JobServiceContext.ANR_PRE_UDC_APIS_ON_SLOW_RESPONSES})
     public void testOnSlowAppResponseLocked_anrMessage_flagDisabled() {
         mJobServiceContext.mVerb = JobServiceContext.VERB_STOPPING;
-        final JobInfo job = createJobInfo(JOB_ID, mComponentName).build();
+        final JobInfo job = createJobInfo(TEST_JOB_ID, mComponentName).build();
         final JobStatus jobStatus =
                 JobStatus.createFromJobInfo(job, mSourceUid, SOURCE_PACKAGE, 0, TAG, null);
         jobStatus.serviceProcessName = "some.process";
