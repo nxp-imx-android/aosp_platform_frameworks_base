@@ -43,9 +43,7 @@ object FontStyles {
     const val GSF_DISPLAY_LARGE_EMPHASIZED = "variable-display-large-emphasized"
     const val GSF_DISPLAY_MEDIUM_EMPHASIZED = "variable-display-medium-emphasized"
     const val GSF_DISPLAY_SMALL_EMPHASIZED = "variable-display-small-emphasized"
-    const val GSF_DISPLAY_SMALL_EMPHASIZED_NARROW = "variable-display-small-emphasized-narrow"
-    const val GSF_DISPLAY_SMALL_EMPHASIZED_NARROW_LIGHT =
-        "variable-display-small-emphasized-narrow-light"
+    const val GSF_DISPLAY_SMALL_EMPHASIZED_LIGHT = "variable-display-small-emphasized-light"
 
     const val GSF_HEADLINE_LARGE_EMPHASIZED = "variable-headline-large-emphasized"
     const val GSF_HEADLINE_MEDIUM_EMPHASIZED = "variable-headline-medium-emphasized"
