@@ -5479,7 +5479,7 @@ class DesktopTasksController(
             userId = userId,
         )
         desksOrganizer.activateDesk(wct, deskId)
-        desktopScrimController.updateDesktopScrimIfNeeded(displayId, userId)
+        desktopScrimController.updateDesktopScrimIfNeeded(displayId, userId, targetDeskId = deskId)
         val expandedTasksOrderedFrontToBack =
             repository.getExpandedTasksIdsInDeskOrdered(deskId = deskId)
         // If we're adding a new Task we might need to minimize an old one
