@@ -2626,6 +2626,7 @@ java_aconfig_library {
         "com.android.healthfitness",
         "com.android.mediaprovider",
         "com.android.permission",
+        "com.android.bt",
     ],
 }
 
