@@ -76,6 +76,7 @@ import android.companion.virtual.audio.VirtualAudioDevice;
 import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IComputerControlLifecycleCallback;
+import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
 import android.companion.virtual.computercontrol.IInteractiveMirror;
 import android.content.AttributionSource;
 import android.content.ComponentName;
@@ -255,6 +256,8 @@ public class ComputerControlSessionImplTest {
     private AppInteractionService mAppInteractionService;
     @Mock
     private IApplicationThread mAppThread;
+    @Mock
+    private IComputerControlSessionCallback mCallback;
 
     @Captor
     private ArgumentCaptor<Intent> mIntentArgumentCaptor;
@@ -316,6 +319,8 @@ public class ComputerControlSessionImplTest {
             LocalServices.addService(AppInteractionService.class, mAppInteractionService);
         }
         ViewConfiguration.setInstanceForTesting(mContext, mViewConfiguration);
+
+        when(mCallback.asBinder()).thenReturn(mAppToken);
 
         when(mUserManagerInternal.getMainDisplayAssignedToUser(anyInt()))
                 .thenReturn(MAIN_DISPLAY_ID);
@@ -1926,11 +1931,13 @@ public class ComputerControlSessionImplTest {
             String referenceDisplayAddress) {
         DisplayManagerGlobal displayManagerGlobal = new DisplayManagerGlobal(mDisplayManager);
         displayManagerGlobal.disableLocalDisplayInfoCaches();
+        var attributionSource = new AttributionSource(
+                UserHandle.getUid(USER_ID, 0), AGENT_PACKAGE, ATTRIBUTION_TAG);
+        var request = ComputerControlSessionRequest.create(
+                mContext, mAppThread, attributionSource, params, mCallback);
         mSession = new ComputerControlSessionImpl(
                 mContext, displayManagerGlobal, mAllowlistController, mViewConfiguration,
-                globalSessionTimeoutDurationMs, () -> mTransaction, mAppToken, params, mAppThread,
-                new AttributionSource(UserHandle.getUid(USER_ID, 0), AGENT_PACKAGE,
-                        ATTRIBUTION_TAG),
+                globalSessionTimeoutDurationMs, () -> mTransaction, request,
                 mVirtualDeviceFactory, mOnClosedListener, Runnable::run, referenceDisplayAddress,
                 mScheduler);
     }
