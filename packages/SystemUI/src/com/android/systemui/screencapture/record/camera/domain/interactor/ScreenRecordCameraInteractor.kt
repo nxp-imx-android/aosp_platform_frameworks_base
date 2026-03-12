@@ -107,7 +107,7 @@ constructor(
                 SharingStarted.Eagerly,
                 false,
             )
-    val streamConfiguration: StateFlow<StreamConfiguration?> =
+    private val statelessStreamConfiguration: Flow<StreamConfiguration?> =
         combine(repository.isConnected.filter { it }, displayParameters.filterNotNull()) {
                 _,
                 displayParameters ->
@@ -124,12 +124,14 @@ constructor(
                 // null is a valid value here indicating that something went wrong
                 it == null || it.isValid()
             }
-            .stateInTraced(
-                "ScreenRecordCameraInteractor#optimalCameraStreamSize",
-                coroutineScope,
-                SharingStarted.Eagerly,
-                null,
-            )
+
+    val streamConfiguration: StateFlow<StreamConfiguration?> =
+        statelessStreamConfiguration.stateInTraced(
+            "ScreenRecordCameraInteractor#optimalCameraStreamSize",
+            coroutineScope,
+            SharingStarted.Eagerly,
+            null,
+        )
 
     override suspend fun start() {
         // Keep the service connected throughout the recording for faster camera on/off
@@ -144,9 +146,11 @@ constructor(
             .onEach { if (it) repository.setBackgroundColor(cameraBackground.value) }
             .launchIn(coroutineScope)
 
-        combine(surfaceParameters.filterNotNull(), streamConfiguration.filterNotNull()) {
-                params,
-                optimalCameraStreamSize ->
+        combine(
+                surfaceParameters.filterNotNull(),
+                // Observe stateless configuration here to startStream after any prepareStream call
+                statelessStreamConfiguration.filterNotNull(),
+            ) { params, optimalCameraStreamSize ->
                 if (
                     params.surface == null ||
                         params.size != optimalCameraStreamSize.cameraStreamSize
