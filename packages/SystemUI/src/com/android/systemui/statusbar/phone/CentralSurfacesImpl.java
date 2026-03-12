@@ -1904,6 +1904,8 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         mKeyguardStateController.notifyKeyguardDoneFading();
         if (!SceneContainerFlag.isEnabled()) {
             mScrimController.setExpansionAffectsAlpha(true);
+        } else {
+            mKeyguardUpdateMonitor.setKeyguardGoingAway(false);
         }
 
         // If the device was re-locked while unlocking, we might have a pending lock that was
