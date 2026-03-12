@@ -116,6 +116,7 @@
     <string name="maximize_button_text" msgid="8106849394538234709">"<xliff:g id="APP_NAME">%1$s</xliff:g> ஆப்ஸைப் பெரிதாக்கும்"</string>
     <string name="restore_button_text" msgid="5377571986086775288">"<xliff:g id="APP_NAME">%1$s</xliff:g> ஆப்ஸை மீட்டெடுக்கும்"</string>
     <string name="minimize_button_text" msgid="5213953162664451152">"<xliff:g id="APP_NAME">%1$s</xliff:g> ஆப்ஸைச் சிறிதாக்கும்"</string>
+    <string name="exit_fullscreen_button_text" msgid="7970660979589417830">"<xliff:g id="APP_NAME">%1$s</xliff:g> முழுத்திரையை மூடும்"</string>
     <string name="close_button_text" msgid="4544839489310949894">"<xliff:g id="APP_NAME">%1$s</xliff:g> ஆப்ஸை மூடும்"</string>
     <string name="back_button_text" msgid="1469718707134137085">"பின்செல்லும்"</string>
     <string name="handle_text" msgid="4419667835599523257">"ஆப்ஸ் ஹேண்டில்"</string>
@@ -154,6 +155,7 @@
     <string name="desktop_mode_a11y_action_snap_left" msgid="2932955411661734668">"ஆப்ஸ் சாளரத்தின் இடதுபுறத்தில் அளவை மாற்றும்"</string>
     <string name="desktop_mode_a11y_action_snap_right" msgid="4577032451624261787">"ஆப்ஸ் சாளரத்தின் வலதுபுறத்தில் அளவை மாற்றும்"</string>
     <string name="desktop_mode_a11y_action_maximize_restore" msgid="8026037983417986686">"சாளரத்தின் அளவைப் பெரிதாக்கும்/மீட்டெடுக்கும்"</string>
+    <string name="desktop_mode_a11y_action_exit_fullscreen" msgid="1854054435132984004">"முழுத்திரையில் இருந்து வெளியேறும்"</string>
     <string name="app_handle_chip_accessibility_announce" msgid="499881698947450536">"மெனுவைத் திறக்கும்"</string>
     <string name="app_handle_menu_accessibility_announce" msgid="7928858564852785398">"<xliff:g id="WINDOWING_MODE">%1$s</xliff:g> ஐ உள்ளிடும்"</string>
     <string name="layout_menu_talkback_action_snap_left_text" msgid="8141501620544883986">"சாளரத்தை இடதுபுறமாக அளவு மாற்றும்"</string>
@@ -166,6 +168,7 @@
     <string name="app_header_talkback_action_restore_button_text" msgid="2153022340772980863">"சாளரத்தின் அளவை மீட்டெடுக்கும்"</string>
     <string name="app_header_talkback_action_minimize_button_text" msgid="7491054416186901764">"ஆப்ஸ் சாளரத்தைச் சிறிதாக்கும்"</string>
     <string name="app_header_talkback_action_close_button_text" msgid="5159612596378268926">"ஆப்ஸ் சாளரத்தை மூடும்"</string>
+    <string name="fullscreen_header_talkback_action_exit_fullscreen_button_text" msgid="5271884324741706388">"முழுத்திரையில் இருந்து வெளியேறும்"</string>
     <string name="open_by_default_settings_text" msgid="2526548548598185500">"இயல்பாக அமைப்புகளைத் திறக்கும்"</string>
     <string name="open_by_default_dialog_subheader_text" msgid="1729599730664063881">"இணைய இணைப்பைத் திறக்கும் முறையைத் தேர்வுசெய்க"</string>
     <string name="open_by_default_dialog_in_app_text" msgid="6978022419634199806">"ஆப்ஸில்"</string>
