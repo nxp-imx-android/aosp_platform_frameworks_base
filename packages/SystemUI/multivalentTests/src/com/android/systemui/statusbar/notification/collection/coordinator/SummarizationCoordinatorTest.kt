@@ -16,6 +16,9 @@
 package com.android.systemui.statusbar.notification.collection.coordinator
 
 import android.app.Notification.EXTRA_SUMMARIZED_CONTENT
+import android.content.testableContext
+import android.graphics.drawable.AnimatedVectorDrawable
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import android.text.SpannableStringBuilder
@@ -24,16 +27,25 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.RankingBuilder
 import com.android.systemui.statusbar.notification.NmSummarizationAllFlag
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
+import com.android.systemui.statusbar.notification.collection.coordinator.shared.NotificationSummarizationAllowAnimation
 import com.android.systemui.statusbar.notification.collection.makeEntryOfPeopleType
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifCollectionListener
+import com.android.systemui.statusbar.notification.data.model.SummarizationIconViewModel
+import com.android.systemui.statusbar.notification.data.repository.SummarizationAnimationRepository
+import com.android.systemui.statusbar.notification.domain.interactor.SummarizationInteractor
+import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.withArgCaptor
 import com.google.common.truth.Truth.assertThat
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -48,6 +60,10 @@ import org.mockito.kotlin.whenever
 class SummarizationCoordinatorTest : SysuiTestCase() {
     private lateinit var coordinator: SummarizationCoordinator
     private lateinit var notifCollectionListener: NotifCollectionListener
+    private lateinit var repository: SummarizationAnimationRepository
+    private lateinit var decorator: SummarizationDecorator
+    private lateinit var interactor: SummarizationInteractor
+    private lateinit var viewModel: SummarizationIconViewModel
 
     @Mock private lateinit var pipeline: NotifPipeline
     private val kosmos = testKosmos()
@@ -55,7 +71,24 @@ class SummarizationCoordinatorTest : SysuiTestCase() {
     @Before
     fun setUp() {
         initMocks(this)
-        coordinator = SummarizationCoordinator(mContext, kosmos.applicationCoroutineScope, mock())
+        repository = SummarizationAnimationRepository()
+        decorator = SummarizationDecorator(kosmos.testableContext)
+        interactor =
+            SummarizationInteractor(
+                repository,
+                kosmos.shadeInteractor,
+                kosmos.activeNotificationsInteractor,
+            )
+        viewModel = SummarizationIconViewModel(repository, interactor)
+        coordinator =
+            SummarizationCoordinator(
+                mContext,
+                kosmos.applicationCoroutineScope,
+                mock(),
+                decorator,
+                interactor,
+                viewModel,
+            )
         coordinator.attach(pipeline)
         notifCollectionListener = withArgCaptor {
             verify(pipeline).addCollectionListener(capture())
@@ -64,6 +97,7 @@ class SummarizationCoordinatorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(NmSummarizationAllFlag.FLAG_NAME)
+    @DisableFlags(NotificationSummarizationAllowAnimation.FLAG_NAME)
     fun onBeforeRenderList_messagingStyleWithSummarization() {
         val summarization = "hello"
         val entry = kosmos.makeEntryOfPeopleType()
@@ -84,6 +118,62 @@ class SummarizationCoordinatorTest : SysuiTestCase() {
                 )
             )
             .isNotNull()
+
+        // When animation flag is off, we should not populate repository
+        assertThat(repository.drawables[entry.key]).isNull()
+    }
+
+    @Test
+    @EnableFlags(NotificationSummarizationAllowAnimation.FLAG_NAME)
+    fun onBeforeRenderList_messagingStyleWithSummarizationAnimatable() {
+        val summarization = "hello"
+        val entry = kosmos.makeEntryOfPeopleType()
+        entry.setRanking(RankingBuilder(entry.ranking).setSummarization(summarization).build())
+
+        notifCollectionListener.onEntryAdded(entry)
+
+        val processedSummary =
+            entry.sbn.notification.extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT)
+        assertThat(processedSummary.toString()).isEqualTo("   $summarization")
+
+        val checkSpans = SpannableStringBuilder(processedSummary)
+        val drawable =
+            checkSpans
+                .getSpans(/* queryStart= */ 0, /* queryEnd= */ 2, /* kind= */ ImageSpan::class.java)
+                .get(0)
+                .drawable
+        assert(drawable is AnimatedVectorDrawable)
+        assertEquals(repository.drawables[entry.key], drawable as AnimatedVectorDrawable)
+    }
+
+    @Test
+    @EnableFlags(NotificationSummarizationAllowAnimation.FLAG_NAME)
+    fun onBeforeRenderList_messagingStyleWithSummarizationAnimatable_updateReusesDrawable() {
+        val summarization = "hello"
+        val entry = kosmos.makeEntryOfPeopleType()
+        entry.setRanking(RankingBuilder(entry.ranking).setSummarization(summarization).build())
+
+        notifCollectionListener.onEntryAdded(entry)
+
+        val processedSummary =
+            entry.sbn.notification.extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT)
+        assertThat(processedSummary.toString()).isEqualTo("   $summarization")
+
+        val originalDrawable =
+            SpannableStringBuilder(processedSummary)
+                .getSpans(/* queryStart= */ 0, /* queryEnd= */ 2, /* kind= */ ImageSpan::class.java)
+                .get(0)
+                .drawable
+
+        notifCollectionListener.onEntryUpdated(entry)
+
+        val newDrawable =
+            SpannableStringBuilder(processedSummary)
+                .getSpans(/* queryStart= */ 0, /* queryEnd= */ 2, /* kind= */ ImageSpan::class.java)
+                .get(0)
+                .drawable
+
+        assertEquals(originalDrawable, newDrawable)
     }
 
     @Test
@@ -116,12 +206,13 @@ class SummarizationCoordinatorTest : SysuiTestCase() {
         assertThat(processedSummary.toString()).isEqualTo("   $summarization")
         val checkSpans = SpannableStringBuilder(processedSummary)
         assertThat(
-            checkSpans.getSpans(
-                /* queryStart = */ 0,
-                /* queryEnd = */ 2,
-                /* kind = */ ImageSpan::class.java,
+                checkSpans.getSpans(
+                    /* queryStart = */ 0,
+                    /* queryEnd = */ 2,
+                    /* kind = */ ImageSpan::class.java,
+                )
             )
-        ).isNotNull()
+            .isNotNull()
     }
 
     @Test
@@ -146,7 +237,7 @@ class SummarizationCoordinatorTest : SysuiTestCase() {
 
         whenever(pipeline.allNotifs).thenReturn(listOf(entry))
 
-        notifCollectionListener.onRankingApplied();
+        notifCollectionListener.onRankingApplied()
 
         val processedSummary =
             entry.sbn.notification.extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT)
@@ -154,12 +245,25 @@ class SummarizationCoordinatorTest : SysuiTestCase() {
 
         val checkSpans = SpannableStringBuilder(processedSummary)
         assertThat(
-            checkSpans.getSpans(
-                /* queryStart = */ 0,
-                /* queryEnd = */ 2,
-                /* kind = */ ImageSpan::class.java,
+                checkSpans.getSpans(
+                    /* queryStart = */ 0,
+                    /* queryEnd = */ 2,
+                    /* kind = */ ImageSpan::class.java,
+                )
             )
-        )
             .isNotNull()
+    }
+
+    @Test
+    @EnableFlags(NotificationSummarizationAllowAnimation.FLAG_NAME)
+    fun onBeforeRenderList_cleanupSummarizationAnimatable() {
+        val summarization = "hello"
+        val entry = kosmos.makeEntryOfPeopleType()
+        entry.setRanking(RankingBuilder(entry.ranking).setSummarization(summarization).build())
+
+        notifCollectionListener.onEntryAdded(entry)
+        assertNotNull(repository.drawables[entry.key])
+        notifCollectionListener.onEntryCleanUp(entry)
+        assertNull(repository.drawables[entry.key])
     }
 }

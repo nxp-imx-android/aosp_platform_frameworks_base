@@ -34,6 +34,7 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.coordinator.SummarizationDecorator
+import com.android.systemui.statusbar.notification.collection.coordinator.shared.NotificationSummarizationAllowAnimation
 import com.android.systemui.statusbar.notification.collection.inflation.BindEventManager
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifCollectionListener
@@ -73,9 +74,11 @@ constructor(
             messagingStyle.shortcutIcon = launcherApps.getShortcutIcon(shortcutInfo)
             shortcutInfo.label?.let { label -> messagingStyle.conversationTitle = label }
         }
-        if (!NmSummarizationAllFlag.isEnabled) {
+        if (
+            !NmSummarizationAllFlag.isEnabled && !NotificationSummarizationAllowAnimation.isEnabled
+        ) {
             if (!TextUtils.isEmpty(entry.summarization)) {
-                decorator.decorateSummarization(entry)
+                decorator.decorateSummarization(entry, null)
             } else {
                 entry.sbn.notification.extras.putCharSequence(EXTRA_SUMMARIZED_CONTENT, null)
             }
