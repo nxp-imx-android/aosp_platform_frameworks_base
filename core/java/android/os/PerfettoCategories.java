@@ -77,9 +77,14 @@ public final class PerfettoCategories {
             new PerfettoTrace.Category("freezer");
 
     @NonNull
+    public static final PerfettoTrace.Category ANR_CATEGORY =
+            new PerfettoTrace.Category("debug.anr");
+
+    @NonNull
     public static final List<PerfettoTrace.Category> ALL_CATEGORIES =
             Collections.unmodifiableList(Arrays.asList(
                     // go/keep-sorted start
+                    ANR_CATEGORY,
                     BIG_LOCKS_CATEGORY,
                     BROADCASTS_CATEGORY,
                     CC_CATEGORY,

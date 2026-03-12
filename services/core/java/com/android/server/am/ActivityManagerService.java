@@ -21112,7 +21112,8 @@ public class ActivityManagerService extends IActivityManager.Stub
             long consumedTimeMs,
             long timeoutMs,
             String description) {
+        UUID errorId = mTraceErrorLogger.getOrCreateErrorId(anrId);
         mAnrWarningController.notifyAnrWarning(
-                uid, anrId, anrType, consumedTimeMs, timeoutMs, description);
+                uid, anrId, errorId, anrType, consumedTimeMs, timeoutMs, description);
     }
 }

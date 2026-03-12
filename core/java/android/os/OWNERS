@@ -74,6 +74,7 @@ per-file Vintf* = file:/platform/system/libvintf:/OWNERS
 
 # Tracing
 per-file Trace.java = file:/TRACE_OWNERS
+per-file Trace.java = file:/PERFORMANCE_OWNERS
 
 # PatternMatcher
 per-file PatternMatcher* = file:/PACKAGE_MANAGER_OWNERS

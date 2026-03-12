@@ -19,6 +19,7 @@ package com.android.server.am;
 import android.app.AnrWarningResult;
 import android.app.IAnrWarningCallback;
 import android.os.IBinder;
+import android.os.PerfettoCategories;
 import android.os.RemoteException;
 import android.os.Trace;
 import android.util.Log;
@@ -29,6 +30,7 @@ import com.android.internal.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /** Controller for handling ANR warning listeners. */
 final class AnrWarningController {
@@ -89,6 +91,7 @@ final class AnrWarningController {
     void notifyAnrWarning(
             int uid,
             int anrId,
+            UUID errorId,
             int anrType,
             long consumedTimeMs,
             long timeoutMs,
@@ -103,6 +106,14 @@ final class AnrWarningController {
                 return;
             }
 
+            com.android.internal.dev.perfetto.sdk.PerfettoTrace
+                    .instant(PerfettoCategories.ANR_CATEGORY, "AnrWarningDetected")
+                    .addArg("anrId", anrId)
+                    .addArg("errorId", errorId.toString())
+                    .addArg("anrTimeoutMs", timeoutMs)
+                    .addArg("consumedTimeMs", consumedTimeMs)
+                    .emit();
+
             // Iterate through all the listeners registered for the uid and notify the app
             for (IAnrWarningCallback callback : perUidCallbacks) {
                 AnrWarningResult result =
@@ -110,7 +121,7 @@ final class AnrWarningController {
                                 anrId, anrType, consumedTimeMs, timeoutMs, description);
 
                 try {
-                    Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "onAnrImminent");
+                    Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "onAnrWarning");
                     callback.onAnrImminent(result);
                 } catch (RemoteException e) {
                     Log.e(TAG, "Unable to notify pre Anr callback");
