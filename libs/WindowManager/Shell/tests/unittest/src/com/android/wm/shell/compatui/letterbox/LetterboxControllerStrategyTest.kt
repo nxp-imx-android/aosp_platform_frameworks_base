@@ -18,11 +18,8 @@ package com.android.wm.shell.compatui.letterbox
 
 import android.content.Context
 import android.graphics.Rect
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
-import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy.LetterboxMode.MULTIPLE_SURFACES
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy.LetterboxMode.SINGLE_SURFACE
@@ -107,7 +104,6 @@ class LetterboxControllerStrategyTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS_ON_TRANSPARENT)
     fun `Rounded corners support when activity is transparent and radius is not 0`() {
         runTestScenario { r ->
             // Transparent activity and rounded corners enabled but not present already.
@@ -132,19 +128,6 @@ class LetterboxControllerStrategyTest : ShellTestCase() {
             r.configureRoundedCornerRadius(true)
             r.configureLetterboxMode(
                 r.SIMPLE_TEST_EVENT.copy(isTranslucent = true, mainWindowHasRoundedCorners = true)
-            )
-            r.checkShouldRoundedCorners(expected = false)
-        }
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS_ON_TRANSPARENT)
-    fun `Rounded corners when activity is transparent and radius is not 0 for transparent`() {
-        runTestScenario { r ->
-            // Transparent activity and rounded corners enabled but not present already.
-            r.configureRoundedCornerRadius(true)
-            r.configureLetterboxMode(
-                r.SIMPLE_TEST_EVENT.copy(isTranslucent = true, mainWindowHasRoundedCorners = false)
             )
             r.checkShouldRoundedCorners(expected = false)
         }
