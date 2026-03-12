@@ -27,10 +27,12 @@ import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.service.dreams.DreamItem;
 import android.service.dreams.DreamService;
+import android.util.IndentingPrintWriter;
 import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
 
+import java.io.PrintWriter;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -71,6 +73,25 @@ class DreamMetadataProvider {
 
     void invalidateCache() {
         mCache.clear();
+    }
+
+    void dump(@NonNull PrintWriter pw) {
+        IndentingPrintWriter ipw = new IndentingPrintWriter(pw, "  ");
+        ipw.println("DreamMetadataProvider:");
+        ipw.increaseIndent();
+
+        ipw.println("mCache:");
+        ipw.increaseIndent();
+        mCache.forEach(
+                (component, item) -> {
+                    ipw.println(
+                            ComponentName.flattenToShortString(component)
+                                    + ": "
+                                    + item.orElse(null));
+                });
+        ipw.decreaseIndent();
+
+        ipw.decreaseIndent();
     }
 
     private Optional<DreamItem> loadDreamItem(ComponentName component) {

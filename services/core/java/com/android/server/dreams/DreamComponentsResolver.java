@@ -21,7 +21,6 @@ import static android.service.dreams.Flags.dreamsSwitcher;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.ComponentName;
-import android.content.Context;
 import android.hardware.display.AmbientDisplayConfiguration;
 import android.service.dreams.DreamItem;
 import android.service.dreams.DreamPlaylist;
@@ -41,12 +40,12 @@ import java.util.Objects;
 final class DreamComponentsResolver {
     private static final String TAG = "DreamComponentsResolver";
 
-    private final Context mContext;
     private final AmbientDisplayConfiguration mDozeConfig;
     private final UserManagerInternal mUserManagerInternal;
     private final boolean mDreamsOnlyEnabledForDockUser;
     private final int mUserId;
     private final DreamRepository mDreamRepository;
+    private final DreamValidator mDreamValidator;
 
     @GuardedBy("this")
     private DreamPlaylist mCachedPlaylist;
@@ -55,18 +54,18 @@ final class DreamComponentsResolver {
     private ComponentName mCachedSystemDreamComponent;
 
     DreamComponentsResolver(
-            @NonNull Context context,
             int userId,
             @NonNull AmbientDisplayConfiguration dozeConfig,
             @NonNull UserManagerInternal userManagerInternal,
             boolean dreamsOnlyEnabledForDockUser,
-            @NonNull DreamRepository dreamRepository) {
-        mContext = context;
+            @NonNull DreamRepository dreamRepository,
+            @NonNull DreamValidator dreamValidator) {
         mUserId = userId;
         mDozeConfig = dozeConfig;
         mUserManagerInternal = userManagerInternal;
         mDreamsOnlyEnabledForDockUser = dreamsOnlyEnabledForDockUser;
         mDreamRepository = dreamRepository;
+        mDreamValidator = dreamValidator;
     }
 
     /** Clears the cached playlist. */
@@ -230,12 +229,12 @@ final class DreamComponentsResolver {
 
         if (validComponents.isEmpty()) {
             ComponentName defaultDream = getDefaultDreamComponent();
-            if (defaultDream != null && isValid(defaultDream)) {
+            if (isValid(defaultDream)) {
                 Slog.w(TAG, "Falling back to default dream " + defaultDream);
                 validComponents.add(defaultDream);
             }
         }
-        return validComponents.toArray(new ComponentName[validComponents.size()]);
+        return validComponents.toArray(new ComponentName[0]);
     }
 
     @Nullable
@@ -252,11 +251,16 @@ final class DreamComponentsResolver {
         }
     }
 
-    boolean isValid(ComponentName component) {
+    boolean isValid(@Nullable ComponentName component) {
         if (component == null) {
             return false;
         }
-        return mDreamRepository.getDreamItem(component).isPresent();
+
+        if (dreamsSwitcher()) {
+            return mDreamRepository.getDreamItem(component).isPresent();
+        }
+
+        return mDreamValidator.validate(component, mUserId);
     }
 
     private boolean dreamsEnabledForUser(int userId) {
@@ -281,6 +285,10 @@ final class DreamComponentsResolver {
         ipw.println(
                 "getSettingsActiveDream="
                         + mDreamRepository.getActiveDreamComponentForUser(mUserId));
+        ipw.println("mCachedPlaylist=" + mCachedPlaylist);
+        ipw.println(
+                "mCachedSystemDreamComponent="
+                        + ComponentName.flattenToShortString(mCachedSystemDreamComponent));
 
         ipw.decreaseIndent();
     }
