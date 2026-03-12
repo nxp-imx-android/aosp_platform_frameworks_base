@@ -20,9 +20,6 @@ import android.graphics.drawable.Drawable
 
 /** ViewModel representing the content of a notification view. */
 public interface NotificationContentViewModel {
-    /** Whether the notification should show its larger (expanded) content. */
-    public val isExpanded: Boolean
-
     /**
      * The icon associated with the app that posted the notification, shown in a circle at the start
      * of the content.
@@ -31,7 +28,6 @@ public interface NotificationContentViewModel {
     /** The "large icon" shown on the top end of the notification beside the expander. */
     public val largeIcon: Drawable?
 
-    // TODO: b/431222735 - Make this nullable once we implement the top line fields.
     /** The title of the notification, emphasized in the content. */
     public val title: String?
     /** The content text of the notification, shown below the title. */
@@ -47,8 +43,8 @@ public interface NotificationContentViewModel {
     public val headerText: String?
     public val verificationText: String?
 
-    /** How many lines of text can be displayed when the notification is expanded. */
-    public val maxLinesWhenExpanded: Int
+    /** How many lines of text can be displayed for the content [text] */
+    public val maxContentLines: Int
     /** The maximum height of the notification. */
     public val maxHeightDp: Int
     /**

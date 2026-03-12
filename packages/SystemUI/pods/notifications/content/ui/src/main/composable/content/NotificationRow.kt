@@ -16,6 +16,7 @@
 
 package com.android.systemui.notifications.content.ui.composable.content
 
+import android.graphics.drawable.Drawable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,9 +33,28 @@ import com.android.systemui.notifications.content.ui.composable.component.Expand
 import com.android.systemui.notifications.content.ui.composable.component.LargeIcon
 import com.android.systemui.notifications.content.ui.viewmodel.NotificationContentViewModel
 
+/**
+ * Lays out a notification row with a header consisting of a circular (app) icon, two lines
+ * ([firstLine] and optional [secondLine], assumed to be some kind of text composable), an optional
+ * large icon and an optional expand button. The [content], if present, is laid out below this
+ * header.
+ *
+ * The [expanded] field determines the behavior of the expand button:
+ * - if `null`, no expand button is shown
+ * - if `true`, the arrow on the button is pointing up
+ * - if `false`, the arrow on the button is pointing down
+ *
+ * This row should lay things out nicely when any optional element is missing. When there's no large
+ * icon, the [firstLine] must be aligned with the expander. When there's no [secondLine], the
+ * [firstLine] must be vertically centered to the icon(s).
+ *
+ * TODO: b/431222735 - Consider decoupling this further from the notification content. We could pass
+ *   in custom composables for the circular start icon, the square end icon and even the expander.
+ */
 @Composable
 internal fun NotificationRow(
     viewModel: NotificationContentViewModel,
+    expanded: Boolean?,
     firstLine: @Composable () -> Unit,
     secondLine: @Composable () -> Unit,
     modifier: Modifier = Modifier,
@@ -49,9 +69,15 @@ internal fun NotificationRow(
         AppIcon(viewModel.appIcon, Modifier.padding(top = 4.dp, bottom = 4.dp, end = 16.dp))
         Column(Modifier.weight(1f)) {
             if (viewModel.largeIcon != null) {
-                HeaderWithLargeIcon(viewModel, firstLine, secondLine)
+                HeaderWithLargeIcon(
+                    expanded,
+                    viewModel.largeIcon!!,
+                    viewModel.maxLargeIconAspectRatio,
+                    firstLine,
+                    secondLine,
+                )
             } else {
-                HeaderWithoutLargeIcon(viewModel, firstLine, secondLine)
+                HeaderWithoutLargeIcon(expanded, firstLine, secondLine)
             }
             if (content != null) {
                 Box(Modifier.padding(top = 4.dp)) { content() }
@@ -66,7 +92,9 @@ internal fun NotificationRow(
  */
 @Composable
 private fun HeaderWithLargeIcon(
-    viewModel: NotificationContentViewModel,
+    expanded: Boolean?,
+    largeIcon: Drawable,
+    maxAspectRatio: Float,
     firstLine: @Composable () -> Unit,
     secondLine: @Composable () -> Unit,
     modifier: Modifier = Modifier,
@@ -81,13 +109,10 @@ private fun HeaderWithLargeIcon(
             firstLine()
             secondLine()
         }
-        viewModel.largeIcon?.let {
-            LargeIcon(it, Modifier.padding(start = 16.dp), viewModel.maxLargeIconAspectRatio)
+        LargeIcon(largeIcon, Modifier.padding(start = 16.dp), maxAspectRatio)
+        expanded?.let {
+            Expander(expanded = it, modifier = Modifier.padding(top = 4.dp, start = 8.dp))
         }
-        Expander(
-            expanded = viewModel.isExpanded,
-            modifier = Modifier.padding(top = 4.dp, start = 8.dp),
-        )
     }
 }
 
@@ -97,7 +122,7 @@ private fun HeaderWithLargeIcon(
  */
 @Composable
 private fun HeaderWithoutLargeIcon(
-    viewModel: NotificationContentViewModel,
+    expanded: Boolean?,
     firstLine: @Composable () -> Unit,
     secondLine: @Composable () -> Unit,
     modifier: Modifier = Modifier,
@@ -108,9 +133,13 @@ private fun HeaderWithoutLargeIcon(
         modifier.padding(top = 4.dp).fillMaxWidth().heightIn(min = 40.dp),
         verticalArrangement = Arrangement.Center,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.weight(1f)) { firstLine() }
-            Expander(expanded = viewModel.isExpanded, modifier = Modifier.padding(start = 8.dp))
+        if (expanded != null) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.weight(1f)) { firstLine() }
+                Expander(expanded = expanded, modifier = Modifier.padding(start = 8.dp))
+            }
+        } else {
+            firstLine()
         }
         secondLine()
     }
