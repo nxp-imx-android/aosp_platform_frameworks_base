@@ -18,11 +18,13 @@ package com.android.systemui.screencapture.sharescreen.largescreen.ui.compose
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -147,7 +149,7 @@ fun PreShareToolbar(
         modifier = modifier,
         closeButtonDescription = stringResource(R.string.screen_share_a11y_close_button),
     ) {
-        Row {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             RadioButtonGroup(items = shareTargetButtonItems)
 
             Spacer(Modifier.size(16.dp))
@@ -173,7 +175,7 @@ fun PreShareToolbar(
                 text = stringResource(R.string.screen_share_toolbar_share_button),
                 onClick = { shareScreenViewModel.onShareClicked() },
                 enabled = shareButtonEnabled,
-                modifier = Modifier.testTag("ShareButton"),
+                modifier = Modifier.testTag("ShareButton").heightIn(min = 40.dp),
                 contentDescription = shareButtonA11yDescription,
             )
         }
