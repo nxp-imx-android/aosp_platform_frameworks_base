@@ -394,12 +394,7 @@ class DesktopTasksLimiter(
         deskId: Int,
         task: ActivityManager.RunningTaskInfo,
         wct: WindowContainerTransaction,
-    ) =
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            desksOrganizer.minimizeTask(wct, deskId, task)
-        } else {
-            wct.reorder(task.token, /* onTop= */ false)
-        }
+    ) = desksOrganizer.minimizeTask(wct, deskId, task)
 
     /**
      * Add a pending transition to trigger a new minimize transition in case the pending transition

@@ -26,7 +26,6 @@ import static android.view.WindowManager.TRANSIT_SLEEP;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
-import static com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND;
 import static com.android.wm.shell.Flags.FLAG_ADD_ONE_OFF_HANDLER_LEASHES;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_PIP2;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING;
@@ -682,7 +681,6 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     public void testMergeAndFinish_openingTaskInDesk_setsPositionOfChild() {
         ActivityManager.RunningTaskInfo deskRootTask =
                 new TestRunningTaskInfoBuilder()
@@ -719,7 +717,6 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     public void testMergeAndFinish_openingTaskInDeskWithSiblings_reordersAllToTop() {
         ActivityManager.RunningTaskInfo deskRootTask =
                 new TestRunningTaskInfoBuilder()
@@ -776,7 +773,6 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     public void testMerge_openingNewTaskInPausedDesk_usesIdLogicCorrectly() {
         final int deskId = 100;
         final int taskId = 200;

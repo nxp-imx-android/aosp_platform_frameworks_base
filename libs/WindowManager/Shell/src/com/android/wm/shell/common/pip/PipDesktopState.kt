@@ -147,26 +147,14 @@ class PipDesktopState(
         }
 
         // If we are exiting PiP while the device is in Desktop mode, the task should expand to
-        // freeform windowing mode.
-        // 1) If the display windowing mode is freeform or if the ENABLE_MULTIPLE_DESKTOPS_BACKEND
-        //    flag is true, set windowing mode to UNDEFINED so it will resolve the windowing mode to
-        //    the display or root desk's windowing mode (which is always FREEFORM).
-        // 2) Otherwise, set windowing mode to FREEFORM.
+        // desktop mode. Set the windowing mode to UNDEFINED so it will resolve the windowing mode
+        // to the root desk's windowing mode (which is always FREEFORM).
         logD(
             "getOutPipWindowingMode isInDesktop=%b isDisplayInFreeform=%b",
             isInDesktop,
             isDisplayInFreeform(),
         )
-        if (isInDesktop) {
-            return if (
-                isDisplayInFreeform() ||
-                    DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
-            ) {
-                WINDOWING_MODE_UNDEFINED
-            } else {
-                WINDOWING_MODE_FREEFORM
-            }
-        }
+        if (isInDesktop) return WINDOWING_MODE_UNDEFINED
 
         // By default, or if the task is going to fullscreen, reset the windowing mode to undefined.
         return WINDOWING_MODE_UNDEFINED

@@ -37,7 +37,6 @@ import androidx.test.filters.SmallTest
 import com.android.testing.wm.util.StubTransaction
 import com.android.testing.wm.util.TransitionInfoBuilder
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION
-import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.window.flags.Flags.FLAG_ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
@@ -429,26 +428,6 @@ class DesktopTasksLimiterTest : ShellTestCase() {
     }
 
     @Test
-    @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun addAndGetMinimizeTaskChanges_tasksWithinLimit_multiDesksDisabled_noTaskMinimized() {
-        desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
-        desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
-        (1..<MAX_TASK_LIMIT).forEach { _ -> setUpFreeformTask() }
-
-        val wct = WindowContainerTransaction()
-        val minimizedTaskId =
-            desktopTasksLimiter.addAndGetMinimizeTaskChanges(
-                deskId = 0,
-                wct = wct,
-                newFrontTaskId = setUpFreeformTask().taskId,
-            )
-
-        assertThat(minimizedTaskId).isNull()
-        assertThat(wct.hierarchyOps).isEmpty() // No reordering operations added
-    }
-
-    @Test
-    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun addAndGetMinimizeTaskChanges_tasksWithinLimit_multiDesksEnabled_noTaskMinimized() {
         desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
         desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
@@ -467,29 +446,6 @@ class DesktopTasksLimiterTest : ShellTestCase() {
     }
 
     @Test
-    @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun addAndGetMinimizeTaskChanges_tasksAboveLimit_multiDesksDisabled_backTaskMinimized() {
-        desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
-        desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
-        // The following list will be ordered bottom -> top, as the last task is moved to top last.
-        val tasks = (1..MAX_TASK_LIMIT).map { setUpFreeformTask() }
-
-        val wct = WindowContainerTransaction()
-        val minimizedTaskId =
-            desktopTasksLimiter.addAndGetMinimizeTaskChanges(
-                deskId = DEFAULT_DISPLAY,
-                wct = wct,
-                newFrontTaskId = setUpFreeformTask().taskId,
-            )
-
-        assertThat(minimizedTaskId).isEqualTo(tasks.first().taskId)
-        assertThat(wct.hierarchyOps.size).isEqualTo(1)
-        assertThat(wct.hierarchyOps[0].type).isEqualTo(HIERARCHY_OP_TYPE_REORDER)
-        assertThat(wct.hierarchyOps[0].toTop).isFalse() // Reorder to bottom
-    }
-
-    @Test
-    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun addAndGetMinimizeTaskChanges_tasksAboveLimit_multiDesksEnabled_backTaskMinimized() {
         desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
         desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
@@ -509,27 +465,6 @@ class DesktopTasksLimiterTest : ShellTestCase() {
     }
 
     @Test
-    @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun addAndGetMinimizeTaskChanges_nonMinimizedTasksWithinLimit_multiDesksDisabled_noTaskMinimized() {
-        desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
-        desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
-        val tasks = (1..MAX_TASK_LIMIT).map { setUpFreeformTask() }
-        desktopTaskRepo.minimizeTask(displayId = DEFAULT_DISPLAY, taskId = tasks[0].taskId)
-
-        val wct = WindowContainerTransaction()
-        val minimizedTaskId =
-            desktopTasksLimiter.addAndGetMinimizeTaskChanges(
-                deskId = 0,
-                wct = wct,
-                newFrontTaskId = setUpFreeformTask().taskId,
-            )
-
-        assertThat(minimizedTaskId).isNull()
-        assertThat(wct.hierarchyOps).isEmpty() // No reordering operations added
-    }
-
-    @Test
-    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun addAndGetMinimizeTaskChanges_nonMinimizedTasksWithinLimit_multiDesksEnabled_noTaskMinimized() {
         desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
         desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)

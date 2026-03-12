@@ -28,7 +28,6 @@ import android.window.DisplayAreaInfo
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_FREE_FLOATING_PIP
-import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
@@ -160,17 +159,6 @@ class PipDesktopStateTest : ShellTestCase() {
         assertThat(pipDesktopState.isPipInDesktopMode()).isFalse()
     }
 
-    @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    @Test
-    fun isPipInDesktopMode_desktopFirstDisplay_returnsTrue() {
-        defaultTda.configuration.windowConfiguration.windowingMode =
-            DESKTOP_FIRST_DISPLAY_WINDOWING_MODE
-        assertThat(pipDesktopState.isPipInDesktopMode()).isTrue()
-
-        whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(false)
-        assertThat(pipDesktopState.isPipInDesktopMode()).isTrue()
-    }
-
     @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_FREE_FLOATING_PIP)
     @Test
     fun isFreeFloatingPipEnabled_touchFirstDisplay_returnsFalse() {
@@ -193,24 +181,6 @@ class PipDesktopStateTest : ShellTestCase() {
         assertThat(pipDesktopState.getOutPipWindowingMode()).isEqualTo(WINDOWING_MODE_UNDEFINED)
     }
 
-    @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    @Test
-    fun outPipWindowingMode_exitToDesktop_displayFullscreen_returnsFreeform() {
-        setDisplayWindowingMode(WINDOWING_MODE_FULLSCREEN)
-
-        assertThat(pipDesktopState.getOutPipWindowingMode()).isEqualTo(WINDOWING_MODE_FREEFORM)
-    }
-
-    @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    @Test
-    fun outPipWindowingMode_exitToFullscreen_displayFullscreen_returnsUndefined() {
-        whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(false)
-        setDisplayWindowingMode(WINDOWING_MODE_FULLSCREEN)
-
-        assertThat(pipDesktopState.getOutPipWindowingMode()).isEqualTo(WINDOWING_MODE_UNDEFINED)
-    }
-
-    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     @Test
     fun outPipWindowingMode_exitToDesktop_multiDesktopsEnabled_returnsUndefined() {
         whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(true)

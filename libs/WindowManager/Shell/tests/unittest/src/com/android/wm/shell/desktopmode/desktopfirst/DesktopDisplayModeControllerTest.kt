@@ -246,47 +246,8 @@ class DesktopDisplayModeControllerTest(
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING)
-    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun displayWindowingModeSwitch_existingTasksOnConnected_multidesk_disabled() {
-        defaultTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
-        whenever(mockWindowManager.getWindowingMode(anyInt())).thenReturn(WINDOWING_MODE_FULLSCREEN)
-        setExtendedMode(true)
-
-        connectExternalDisplay()
-
-        val arg = argumentCaptor<WindowContainerTransaction>()
-        verify(transitions, times(1)).startTransition(eq(TRANSIT_CHANGE), arg.capture(), isNull())
-        assertThat(arg.firstValue.changes[freeformTask.token.asBinder()]?.windowingMode)
-            .isEqualTo(WINDOWING_MODE_UNDEFINED)
-        assertThat(arg.firstValue.changes[fullscreenTask.token.asBinder()]?.windowingMode)
-            .isEqualTo(WINDOWING_MODE_FULLSCREEN)
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING)
-    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun displayWindowingModeSwitch_existingTasksOnDisconnected_multidesk_disabled() {
-        defaultTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
-        whenever(mockWindowManager.getWindowingMode(anyInt())).thenAnswer {
-            WINDOWING_MODE_FULLSCREEN
-        }
-        setExtendedMode(true)
-
-        disconnectExternalDisplay()
-
-        val arg = argumentCaptor<WindowContainerTransaction>()
-        verify(transitions, times(1)).startTransition(eq(TRANSIT_CHANGE), arg.capture(), isNull())
-        assertThat(arg.firstValue.changes[freeformTask.token.asBinder()]?.windowingMode)
-            .isEqualTo(WINDOWING_MODE_FREEFORM)
-        assertThat(arg.firstValue.changes[fullscreenTask.token.asBinder()]?.windowingMode)
-            .isEqualTo(WINDOWING_MODE_UNDEFINED)
-    }
-
-    @Test
     @EnableFlags(
         Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING,
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
     )
     fun displayWindowingModeSwitch_existingTasksOnConnected() {
         defaultTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
@@ -305,7 +266,6 @@ class DesktopDisplayModeControllerTest(
     @Test
     @EnableFlags(
         Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING,
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
     )
     fun displayWindowingModeSwitch_existingTasksOnDisconnected() {
         defaultTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
@@ -494,7 +454,6 @@ class DesktopDisplayModeControllerTest(
         ): List<FlagsParameterization> {
             return FlagsParameterization.allCombinationsOf(
                 DisplayFlags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT,
-                Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
             )
         }
     }

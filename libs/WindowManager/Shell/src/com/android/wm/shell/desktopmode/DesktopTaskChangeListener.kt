@@ -70,10 +70,7 @@ class DesktopTaskChangeListener(
             isMinimizedTask,
             isTaskPinned,
         )
-        if (
-            !desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId) &&
-                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
-        ) {
+        if (!desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId)) {
             logD(
                 "onTaskOpening for taskId=%d, displayId=%d - desktop not supported",
                 taskInfo.taskId,
@@ -103,10 +100,7 @@ class DesktopTaskChangeListener(
         val isActiveTask = desktopRepository.isActiveTask(taskInfo.taskId)
         val isTaskPinned = isTaskPinned(taskInfo)
         val isDesktopTask = isDesktopTask(taskInfo)
-        if (
-            !desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId) &&
-                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
-        ) {
+        if (!desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId)) {
             logD(
                 "onTaskChanging for taskId=%d, displayId=%d - desktop not supported",
                 taskInfo.taskId,
@@ -203,10 +197,7 @@ class DesktopTaskChangeListener(
     }
 
     override fun onTaskMovingToFront(taskInfo: RunningTaskInfo) {
-        if (
-            !desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId) &&
-                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
-        ) {
+        if (!desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId)) {
             logD(
                 "onTaskMovingToFront for taskId=%d, displayId=%d - desktop not supported",
                 taskInfo.taskId,
@@ -254,10 +245,7 @@ class DesktopTaskChangeListener(
     }
 
     override fun onTaskMovingToBack(taskInfo: RunningTaskInfo) {
-        if (
-            !desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId) &&
-                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
-        ) {
+        if (!desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId)) {
             logD(
                 "onTaskMovingToBack for taskId=%d, displayId=%d - desktop not supported",
                 taskInfo.taskId,
@@ -291,10 +279,7 @@ class DesktopTaskChangeListener(
     }
 
     override fun onTaskClosing(taskInfo: RunningTaskInfo) {
-        if (
-            !desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId) &&
-                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
-        ) {
+        if (!desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId)) {
             logD(
                 "onTaskClosing for taskId=%d, displayId=%d - desktop not supported",
                 taskInfo.taskId,

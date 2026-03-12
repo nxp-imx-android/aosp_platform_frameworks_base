@@ -178,10 +178,9 @@ class DesktopPipTransitionController(
     }
 
     /**
-     * If the ENABLE_MULTIPLE_DESKTOPS_BACKEND flag is enabled and the PiP task is going to freeform
-     * windowing mode, we need to reparent the task to the root desk. In addition, if we are
-     * expanding PiP at Home (as in with a Desktop-first display), we also need to activate the
-     * default desk.
+     * If the PiP task is going to desktop mode, we need to reparent the task to the root
+     * desk. In addition, if we are expanding PiP at Home (as in with a Desktop-first display), we
+     * also need to activate the default desk.
      *
      * @param wct WindowContainerTransaction that will apply these changes
      * @param taskInfo of the task that is exiting PiP (this is the parent task if it is a
@@ -199,8 +198,7 @@ class DesktopPipTransitionController(
         // in the middle of Recents animation from Desktop session, so don't reparent to the Desk.
         if (
             !pipDesktopState.isDesktopWindowingPipEnabled() ||
-                pipDesktopState.isRecentsAnimating() ||
-                !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
+                pipDesktopState.isRecentsAnimating()
         ) {
             return null
         }
@@ -308,10 +306,7 @@ class DesktopPipTransitionController(
 
     private fun getDeskId(repository: DesktopRepository, displayId: Int): Int =
         repository.getActiveDeskId(displayId)
-            ?: if (
-                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue &&
-                    !pipDesktopState.isDisplayDesktopFirst(displayId)
-            ) {
+            ?: if (!pipDesktopState.isDisplayDesktopFirst(displayId)) {
                 logW("getDeskId: Active desk not found for display id %d", displayId)
                 INVALID_DESK_ID
             } else {

@@ -99,8 +99,7 @@ class DesktopStateImpl(context: Context) : DesktopState {
             return isDesktopModeSupported || desktopModeSupportedByDevOptions
         }
 
-    override val enableMultipleDesktops: Boolean =
-        DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue && canEnterDesktopMode
+    override val enableMultipleDesktops: Boolean = canEnterDesktopMode
 
     override fun isDesktopModeSupportedOnDisplay(displayId: Int): Boolean =
         displayManager?.getDisplay(displayId)?.let { isDesktopModeSupportedOnDisplay(it) } ?: false

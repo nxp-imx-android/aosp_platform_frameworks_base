@@ -215,25 +215,14 @@ class DesktopDisplayModeController(
             .getRunningTasks(displayId)
             .filter { it.activityType == ACTIVITY_TYPE_STANDARD }
             .forEach {
-                if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-                    // With multi-desks, display windowing mode doesn't affect the windowing
-                    // mode of freeform tasks but fullscreen tasks which are the direct children
-                    // of TDA.
-                    if (it.windowingMode == WINDOWING_MODE_FULLSCREEN) {
-                        if (targetDisplayWindowingMode == DESKTOP_FIRST_DISPLAY_WINDOWING_MODE) {
-                            wct.setWindowingMode(it.token, WINDOWING_MODE_FULLSCREEN)
-                        } else {
-                            wct.setWindowingMode(it.token, WINDOWING_MODE_UNDEFINED)
-                        }
-                    }
-                } else {
-                    when (it.windowingMode) {
-                        currentDisplayWindowingMode -> {
-                            wct.setWindowingMode(it.token, currentDisplayWindowingMode)
-                        }
-                        targetDisplayWindowingMode -> {
-                            wct.setWindowingMode(it.token, WINDOWING_MODE_UNDEFINED)
-                        }
+                // With multi-desks, display windowing mode doesn't affect the windowing
+                // mode of freeform tasks but fullscreen tasks which are the direct children
+                // of TDA.
+                if (it.windowingMode == WINDOWING_MODE_FULLSCREEN) {
+                    if (targetDisplayWindowingMode == DESKTOP_FIRST_DISPLAY_WINDOWING_MODE) {
+                        wct.setWindowingMode(it.token, WINDOWING_MODE_FULLSCREEN)
+                    } else {
+                        wct.setWindowingMode(it.token, WINDOWING_MODE_UNDEFINED)
                     }
                 }
             }

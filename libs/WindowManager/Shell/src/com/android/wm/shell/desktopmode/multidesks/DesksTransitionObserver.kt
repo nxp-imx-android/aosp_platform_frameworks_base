@@ -70,7 +70,6 @@ class DesksTransitionObserver(
 
     /** Adds a pending desk transition to be tracked. */
     fun addPendingTransition(transition: DeskTransition) {
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
         val transitions = deskTransitions[transition.token] ?: mutableSetOf()
         transitions += transition
         deskTransitions[transition.token] = transitions
@@ -86,7 +85,6 @@ class DesksTransitionObserver(
             traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
             name = "DesksTransitionObserver#onTransitionReady",
         ) {
-            if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
             val readyDeskTransitions = deskTransitions.remove(transition)
             readyDeskTransitions?.forEach { readyDeskTransition ->
                 handleDeskTransition(info, readyDeskTransition)
@@ -105,7 +103,6 @@ class DesksTransitionObserver(
      * tracked by this observer.
      */
     fun onTransitionMerged(merged: IBinder, playing: IBinder) {
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
         deskTransitions.remove(merged)?.let { transitions ->
             val existingTransitions = deskTransitions[playing] ?: mutableSetOf()
             existingTransitions.addAll(
@@ -132,7 +129,6 @@ class DesksTransitionObserver(
      * swipe-to-home recents transition when there is no book-end transition.
      */
     fun onTransitionFinished(transition: IBinder) {
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
         runningDesksTransitions.remove(transition)
         deskTransitions.remove(transition)?.let { finishedDeskTransitions ->
             finishedDeskTransitions.forEach { deskTransition ->

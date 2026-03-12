@@ -222,12 +222,6 @@ class DesksController(
             onResult(null)
             return
         }
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            // In single-desk, the desk reuses the display id.
-            logD("createDesk reusing displayId=%d for single-desk", displayId)
-            onResult(displayId)
-            return
-        }
         if (UserManager.isHeadlessSystemUserMode() && UserHandle.USER_SYSTEM == userId) {
             logW("createDesk ignoring attempt for system user")
             onResult(null)

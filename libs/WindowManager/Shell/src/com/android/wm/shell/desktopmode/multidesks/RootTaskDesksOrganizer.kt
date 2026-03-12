@@ -82,12 +82,10 @@ class RootTaskDesksOrganizer(
     private var backPressedOnDeskListener: ((task: RunningTaskInfo) -> Unit)? = null
 
     init {
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            shellInit.addInitCallback(
-                { shellCommandHandler.addDumpCallback(this::dump, this) },
-                this,
-            )
-        }
+        shellInit.addInitCallback(
+            { shellCommandHandler.addDumpCallback(this::dump, this) },
+            this,
+        )
     }
 
     override fun warmUpDefaultDesk(displayId: Int, userId: Int) {

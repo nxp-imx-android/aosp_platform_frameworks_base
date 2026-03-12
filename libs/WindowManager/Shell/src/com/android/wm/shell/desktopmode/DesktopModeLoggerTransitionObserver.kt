@@ -290,68 +290,17 @@ class DesktopModeLoggerTransitionObserver(
         postTransitionVisibleFreeformTasks: SparseArray<TransitionInfo.Change>,
         newFocusedFreeformTask: TaskInfo?,
     ) {
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            identifyAndLogTaskUpdates(
-                transition,
-                transitionInfo,
-                preTransitionVisibleFreeformTasks,
-                postTransitionVisibleFreeformTasks,
-                newFocusedFreeformTask,
-            )
-            if (transitionInfo?.type == WindowManager.TRANSIT_SLEEP) {
-                desktopModeEventLogger.logScreenOff()
-            }
-
-            visibleFreeformTaskChanges.clear()
-            visibleFreeformTaskChanges.putAll(postTransitionVisibleFreeformTasks)
-            focusedFreeformTask = newFocusedFreeformTask
-            return
+        identifyAndLogTaskUpdates(
+            transition,
+            transitionInfo,
+            preTransitionVisibleFreeformTasks,
+            postTransitionVisibleFreeformTasks,
+            newFocusedFreeformTask,
+        )
+        if (transitionInfo?.type == WindowManager.TRANSIT_SLEEP) {
+            desktopModeEventLogger.logScreenOff()
         }
 
-        if (
-            postTransitionVisibleFreeformTasks.isEmpty() &&
-                preTransitionVisibleFreeformTasks.isNotEmpty() &&
-                isSessionActive
-        ) {
-            // Sessions is finishing, log task updates followed by an exit event
-            identifyAndLogTaskUpdates(
-                transition,
-                transitionInfo,
-                preTransitionVisibleFreeformTasks,
-                postTransitionVisibleFreeformTasks,
-                newFocusedFreeformTask,
-            )
-
-            desktopModeEventLogger.logSessionExit(getExitReason(transitionInfo))
-            isSessionActive = false
-        } else if (
-            postTransitionVisibleFreeformTasks.isNotEmpty() &&
-                preTransitionVisibleFreeformTasks.isEmpty() &&
-                !isSessionActive
-        ) {
-            // Session is starting, log enter event followed by task updates
-            isSessionActive = true
-            desktopModeEventLogger.logSessionEnter(getEnterReason(transitionInfo))
-
-            identifyAndLogTaskUpdates(
-                transition,
-                transitionInfo,
-                preTransitionVisibleFreeformTasks,
-                postTransitionVisibleFreeformTasks,
-                newFocusedFreeformTask,
-            )
-        } else if (isSessionActive) {
-            // Session is neither starting, nor finishing, log task updates if there are any
-            identifyAndLogTaskUpdates(
-                transition,
-                transitionInfo,
-                preTransitionVisibleFreeformTasks,
-                postTransitionVisibleFreeformTasks,
-                newFocusedFreeformTask,
-            )
-        }
-
-        // update the state to the new version
         visibleFreeformTaskChanges.clear()
         visibleFreeformTaskChanges.putAll(postTransitionVisibleFreeformTasks)
         focusedFreeformTask = newFocusedFreeformTask

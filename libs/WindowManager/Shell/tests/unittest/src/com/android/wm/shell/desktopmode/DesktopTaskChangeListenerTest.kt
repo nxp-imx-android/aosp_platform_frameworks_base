@@ -29,7 +29,6 @@ import androidx.test.filters.SmallTest
 import com.android.server.am.Flags.FLAG_PERCEPTIBLE_TASKS
 import com.android.testing.wm.util.MockToken
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION
-import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
@@ -177,7 +176,6 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTaskOpening_desktopModeNotSupportedInDisplay_noOp() {
         val task = createFreeformTask(UNSUPPORTED_DISPLAY_ID)
         whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(false)
@@ -308,7 +306,6 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTaskChanging_desktopModeNotSupportedInDisplay_noOp() {
         val task = createFreeformTask(UNSUPPORTED_DISPLAY_ID)
         whenever(desksOrganizer.getDeskIdFromTaskInfo(task)).thenReturn(null)
@@ -326,7 +323,6 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTaskChanging_taskMovedToUnsupportedDisplay_removesTaskFromRepo() {
         val task = createFullscreenTask()
         whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
@@ -404,7 +400,6 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTaskMovingToFront_desktopModeNotSupportedInDisplay_noOp() {
         val task = createFreeformTask(UNSUPPORTED_DISPLAY_ID).apply { isVisible = true }
         whenever(desksOrganizer.getDeskIdFromTaskInfo(task)).thenReturn(null)
@@ -483,7 +478,6 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTaskMovingToBack_desktopModeNotSupportedInDisplay_noOp() {
         val task = createFreeformTask(UNSUPPORTED_DISPLAY_ID)
         whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
@@ -560,7 +554,6 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     @Test
     @EnableFlags(
         FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION,
-        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
     )
     fun onTaskClosing_desktopModeNotSupportedInDisplay_noOp() {
         val task = createFreeformTask(UNSUPPORTED_DISPLAY_ID).apply { isVisible = true }

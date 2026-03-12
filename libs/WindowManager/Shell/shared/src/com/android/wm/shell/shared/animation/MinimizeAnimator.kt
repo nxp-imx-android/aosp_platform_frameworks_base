@@ -41,17 +41,12 @@ object MinimizeAnimator {
             endOffsetYDp = 12f,
             endScale = 0.97f,
             interpolator = Interpolators.STANDARD_ACCELERATE,
-            animBounds =
-                if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-                    // In some cases, nav-back on the last desktop task may cause it to be
-                    // reparented into a fullscreen TDA before being minimized back into a desk by
-                    // [DesktopBackNavTransitionObserver]. The minimize animation would then occur
-                    // when the task is still fullscreen, which means it should use the start
-                    // bounds for the minimize animation.
-                    AnimationBounds.START
-                } else {
-                    AnimationBounds.END
-                },
+            // In some cases, nav-back on the last desktop task may cause it to be
+            // reparented into a fullscreen TDA before being minimized back into a desk by
+            // [DesktopBackNavTransitionObserver]. The minimize animation would then occur
+            // when the task is still fullscreen, which means it should use the start
+            // bounds for the minimize animation.
+            animBounds = AnimationBounds.START,
         )
 
     /**

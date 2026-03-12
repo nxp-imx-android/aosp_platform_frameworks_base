@@ -990,7 +990,6 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     public void testOpaque_rootTask_translucentFillingChild_isTranslucent() {
         final Task rootTask = new TaskBuilder(mSupervisor).setOnTop(true).build();
         createLeafTaskWithActivity(/* parent */ rootTask,
@@ -1000,7 +999,6 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     public void testOpaque_rootTask_opaqueAndNotFillingChild_isTranslucent() {
         final Task rootTask = new TaskBuilder(mSupervisor).setOnTop(true).build();
         createLeafTaskWithActivity(/* parent */ rootTask,
@@ -1010,7 +1008,6 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     public void testOpaque_rootTask_opaqueAndFillingChild_isOpaque() {
         final Task rootTask = new TaskBuilder(mSupervisor).setOnTop(true).build();
         createLeafTaskWithActivity(/* parent */ rootTask,
@@ -1020,7 +1017,6 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     public void testOpaque_rootTask_nonFillingOpaqueAdjacentChildren_isOpaque() {
         final Task rootTask = new TaskBuilder(mSupervisor).setOnTop(true).build();
         final TaskFragment tf1 = createLeafTaskWithActivity(/* parent */ rootTask,
@@ -1033,7 +1029,6 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     public void testOpaque_rootTask_nonFillingOpaqueAdjacentChildren_multipleAdjacent_isOpaque() {
         final Task rootTask = new TaskBuilder(mSupervisor).setOnTop(true).build();
         final TaskFragment tf1 = createLeafTaskWithActivity(/* parent */ rootTask,

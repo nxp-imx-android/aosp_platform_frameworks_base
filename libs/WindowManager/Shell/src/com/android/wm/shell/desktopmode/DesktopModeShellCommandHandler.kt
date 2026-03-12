@@ -98,11 +98,6 @@ class DesktopModeShellCommandHandler(
             return false
         }
 
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            return controller
-                .get()
-                .moveTaskToDefaultDeskAndActivate(taskId, transitionSource = ADB_COMMAND)
-        }
         if (args.size < 3) {
             pw.println("Error: desk id should be provided as arguments")
             return false
@@ -141,10 +136,6 @@ class DesktopModeShellCommandHandler(
     }
 
     private fun runCreateDesk(args: Array<String>, pw: PrintWriter): Boolean {
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            pw.println("Not supported.")
-            return false
-        }
         if (args.size < 2) {
             // First argument is the action name.
             pw.println("Error: desk id should be provided as arguments")
@@ -162,10 +153,6 @@ class DesktopModeShellCommandHandler(
     }
 
     private fun runActivateDesk(args: Array<String>, pw: PrintWriter): Boolean {
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            pw.println("Not supported.")
-            return false
-        }
         if (args.size < 2) {
             // First argument is the action name.
             pw.println("Error: desk id should be provided as arguments")
@@ -183,10 +170,6 @@ class DesktopModeShellCommandHandler(
     }
 
     private fun runRemoveDesk(args: Array<String>, pw: PrintWriter): Boolean {
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            pw.println("Not supported.")
-            return false
-        }
         if (args.size < 2) {
             // First argument is the action name.
             pw.println("Error: desk id should be provided as arguments")
@@ -211,10 +194,6 @@ class DesktopModeShellCommandHandler(
     }
 
     private fun runRemoveAllDesks(args: Array<String>, pw: PrintWriter): Boolean {
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            pw.println("Not supported.")
-            return false
-        }
         controller
             .get()
             .removeAllDesks(
@@ -226,10 +205,6 @@ class DesktopModeShellCommandHandler(
     }
 
     private fun runMoveTaskToFront(args: Array<String>, pw: PrintWriter): Boolean {
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            pw.println("Not supported.")
-            return false
-        }
         if (args.size < 2) {
             // First argument is the action name.
             pw.println("Error: task id should be provided as arguments")
@@ -253,10 +228,6 @@ class DesktopModeShellCommandHandler(
     }
 
     private fun runMoveTaskOutOfDesk(args: Array<String>, pw: PrintWriter): Boolean {
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            pw.println("Not supported.")
-            return false
-        }
         if (args.size < 2) {
             // First argument is the action name.
             pw.println("Error: task id should be provided as arguments")
@@ -274,10 +245,6 @@ class DesktopModeShellCommandHandler(
     }
 
     private fun runCanCreateDesk(args: Array<String>, pw: PrintWriter): Boolean {
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            pw.println("Not supported.")
-            return false
-        }
         if (args.size < 2) {
             // First argument is the displayId.
             pw.println("Error: displayId should be provided as an argument")
@@ -295,10 +262,6 @@ class DesktopModeShellCommandHandler(
     }
 
     private fun runGetActiveDeskId(args: Array<String>, pw: PrintWriter): Boolean {
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            pw.println("Not supported.")
-            return false
-        }
         if (args.size < 2) {
             // First argument is the action name.
             pw.println("Error: task id should be provided as arguments")
@@ -367,16 +330,6 @@ class DesktopModeShellCommandHandler(
     }
 
     override fun printShellCommandHelp(pw: PrintWriter, prefix: String) {
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            pw.println("$prefix moveTaskToDesk <taskId|0>")
-            pw.println(
-                "$prefix  Move a task with given id to desktop mode. " +
-                    "TaskId 0 means focused task on the default display."
-            )
-            pw.println("$prefix moveToNextDisplay <taskId> ")
-            pw.println("$prefix  Move a task with given id to next display.")
-            return
-        }
         pw.println("$prefix moveTaskToDesk <taskId|0> <deskId>")
         pw.println(
             "$prefix  Move a task with given id to the given desk and activate it. " +
