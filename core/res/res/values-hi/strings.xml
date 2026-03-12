@@ -2114,6 +2114,12 @@
     <string name="notification_metric_label_unit" msgid="309618413505128451">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>)"</string>
     <string name="notification_metric_label_unit_separator" msgid="5631839566551764472">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>):"</string>
     <string name="notification_metric_label_separator" msgid="8416027475779515033">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
+    <!-- no translation found for notification_history_metric_subtext (7408216222655116821) -->
+    <skip />
+    <!-- no translation found for notification_metric_running_timer (1096459900744921213) -->
+    <skip />
+    <!-- no translation found for notification_metric_running_stopwatch (8039546029949295377) -->
+    <skip />
     <string name="call_notification_answer_action" msgid="5999246836247132937">"जवाब दें"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"वीडियो"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"अस्वीकार करें"</string>
@@ -2658,7 +2664,7 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"सैटलाइट से मैसेज भेजने के लिए, Google Messages को डिफ़ॉल्ट मैसेजिंग ऐप्लिकेशन के तौर पर सेट करें"</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"सैटलाइट के ज़रिए मैसेज भेजने की सुविधा उपलब्ध नहीं है"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"जगह की जानकारी की सेटिंग चालू करें. इससे यह देखा जा सकता है कि इस देश या इलाके में सैटलाइट के ज़रिए मैसेज भेजने की सुविधा उपलब्ध है या नहीं"</string>
-    <string name="satellite_indicator" msgid="6846063647532086110">"सैटलाइट"</string>
+    <string name="satellite_indicator" msgid="6846063647532086110">"SAT"</string>
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"फ़िंगरप्रिंट अनलॉक की सुविधा दोबारा सेट अप करें"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"अब <xliff:g id="FINGERPRINT">%s</xliff:g> की पहचान नहीं की जा सकती."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"अब <xliff:g id="FINGERPRINT_0">%1$s</xliff:g> और <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> की पहचान नहीं की जा सकती."</string>
