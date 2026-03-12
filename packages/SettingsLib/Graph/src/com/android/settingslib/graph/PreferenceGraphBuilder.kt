@@ -70,6 +70,7 @@ import com.android.settingslib.metadata.SensitivityLevel.Companion.DEEP_LINK_ONL
 import com.android.settingslib.metadata.SensitivityLevel.Companion.REQUIRES_CONFIRMATION
 import com.android.settingslib.metadata.SensitivityLevel.Companion.DO_NOT_EXPOSE
 import com.android.settingslib.metadata.ValidatedKeyParameters
+import com.android.settingslib.metadata.ValueDescriptor
 import com.android.settingslib.metadata.getPreferenceIcon
 import com.android.settingslib.metadata.isExposable
 import com.android.settingslib.metadata.isPreferenceIndexable
@@ -823,6 +824,11 @@ fun PreferenceMetadata.toProto(
                     String::class.java,
                     String::class.javaObjectType -> stringType = true
                     else -> error("Error: Unsupported type ${metadata.valueType}")
+                }
+                (metadata as? ValueDescriptor)?.getUnitOfMeasurement()?.let {
+                    parameters = keyParametersProto {
+                        putValues("unit", it)
+                    }
                 }
             }
         }

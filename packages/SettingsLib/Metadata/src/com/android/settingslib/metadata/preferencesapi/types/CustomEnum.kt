@@ -77,7 +77,7 @@ class CustomEnum<T, E> constructor (
 
     override fun getDescription(context: Context): String = resolveString(context, descriptionRes, description)
 
-    override fun getKey(): String = "CustomEnum:${enumClass.qualifiedName}:${descriptionRes}:${description}"
+    override fun getKey(): String = "CustomEnum:${enumClass.qualifiedName}"
 }
 
 /**
