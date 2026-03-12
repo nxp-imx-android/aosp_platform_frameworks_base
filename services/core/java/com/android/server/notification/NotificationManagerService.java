@@ -10961,11 +10961,11 @@ public class NotificationManagerService extends SystemService {
                         // Also report to UserManagerService if this notification was shown on HSU
                         // (headless system user)
                         if (shouldLogHsuNotification(r)) {
-                            // TODO(b/412176703): need to get proper AllowlistStatus from
+                            // TODO(b/483110541): need to get proper AllowlistStatus from
                             // mUmInternal itself
-                            mUmInternal.logNotificationShownStatus(r.getSbn(),
+                            mUmInternal.logNotificationPostStatus(r.getSbn(),
                                     UserHandle.USER_SYSTEM,
-                                    GenericAllowlist.STATUS_ALLOWED_INVALID_MODE);
+                                    GenericAllowlist.STATUS_ALLOWED_DISABLED_MODE);
                         }
                     } else {
                         Slog.e(TAG, "Not posting notification without small icon: " + notification);
