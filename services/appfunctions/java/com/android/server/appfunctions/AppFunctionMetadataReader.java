@@ -22,10 +22,8 @@ import static android.app.appfunctions.AppFunctionMetadata.APP_FUNCTION_TYPE_DYN
 import static android.app.appfunctions.AppFunctionMetadata.APP_FUNCTION_TYPE_DYNAMIC_GLOBAL;
 import static android.app.appfunctions.AppFunctionMetadata.APP_FUNCTION_TYPE_STATIC;
 import static android.app.appfunctions.AppFunctionRuntimeMetadata.APP_FUNCTION_RUNTIME_NAMESPACE;
-import static android.app.appfunctions.AppFunctionRuntimeMetadata.PROPERTY_APP_FUNCTION_STATIC_METADATA_QUALIFIED_ID;
 import static android.app.appfunctions.AppFunctionRuntimeMetadata.PROPERTY_ENABLED;
 import static android.app.appfunctions.AppFunctionStaticMetadataHelper.APP_FUNCTION_INDEXER_PACKAGE;
-import static android.app.appfunctions.AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_NAMESPACE;
 
 import static java.util.Objects.requireNonNull;
 
@@ -154,8 +152,7 @@ final class AppFunctionMetadataReader {
      * @return {boolean} Whether app function is dynamic.
      * @throws IllegalArgumentException if the user is not unlocked.
      */
-    public boolean isDynamicFunction(
-            String packageName, String functionIdentifier, UserHandle user)
+    public boolean isDynamicFunction(String packageName, String functionIdentifier, UserHandle user)
             throws IllegalArgumentException {
         if (!Flags.enableDynamicAppFunctions()) {
             return false;
@@ -194,14 +191,14 @@ final class AppFunctionMetadataReader {
     }
 
     /**
-     * Checks if the {@code targetAppFunction} is enabled or not.
+     * Returns the {@link AppFunctionEnabledState} for the given app function.
      *
      * @param futureGlobalSearchSession The session to search AppFunctions.
      * @param targetAppFunction The target AppFunction.
      * @param userId The target user id.
-     * @return True if the function is enabled. False otherwise.
+     * @return The detailed enabled state for the given app function.
      */
-    CompletableFuture<Boolean> isAppFunctionEnabled(
+    CompletableFuture<AppFunctionEnabledState> getAppFunctionEnabledState(
             @NonNull FutureGlobalSearchSession futureGlobalSearchSession,
             @NonNull AppFunctionName targetAppFunction,
             int userId) {
@@ -209,13 +206,16 @@ final class AppFunctionMetadataReader {
                 targetAppFunction.getPackageName(),
                 targetAppFunction.getFunctionIdentifier(),
                 UserHandle.of(userId))) {
-            return AndroidFuture.completedFuture(
+            boolean isRegistered =
                     mMultiUserDynamicAppFunctionRegistry.hasRegistrations(
                             targetAppFunction.getPackageName(),
                             targetAppFunction.getFunctionIdentifier(),
-                            UserHandle.of(userId)));
+                            UserHandle.of(userId));
+            return AndroidFuture.completedFuture(
+                    new AppFunctionEnabledState(
+                            /* isEffectivelyEnabled= */ isRegistered,
+                            /* isEnabledByDefault= */ false));
         }
-
         SearchSpec appFunctionJoinedStaticWithRuntimeSearchSpec =
                 new SearchSpec.Builder()
                         .addFilterDocumentIds(List.of(targetAppFunction.getQualifiedId()))
@@ -255,7 +255,7 @@ final class AppFunctionMetadataReader {
                             GenericDocument runtimeDocument =
                                     joinedResult.getFirst().getGenericDocument();
                             return AndroidFuture.completedFuture(
-                                    calculateEffectiveEnabledState(
+                                    calculateAppFunctionEnabledState(
                                             staticDocument, runtimeDocument, userId));
                         });
     }
@@ -446,7 +446,8 @@ final class AppFunctionMetadataReader {
 
             return new AppFunctionState(
                     appFunctionName,
-                    calculateEffectiveEnabledState(staticDocument, runtimeDocument, userId),
+                    calculateAppFunctionEnabledState(staticDocument, runtimeDocument, userId)
+                            .isEffectivelyEnabled(),
                     getActivityIdInfo(appFunctionName, UserHandle.of(userId)));
         } catch (RuntimeException e) {
             Slog.e(TAG, "Failed to convert SearchResult to AppFunctionState.", e);
@@ -560,12 +561,29 @@ final class AppFunctionMetadataReader {
         }
     }
 
-    private boolean calculateEffectiveEnabledState(
+    // TODO(b/467317154): Take into account AppFunctionService availability for static
+    //  app functions
+    @NonNull
+    private AppFunctionEnabledState calculateAppFunctionEnabledState(
             @NonNull GenericDocument staticDocument,
             @NonNull GenericDocument runtimeDocument,
             int userId) {
         Objects.requireNonNull(staticDocument);
         Objects.requireNonNull(runtimeDocument);
+
+        AppFunctionName appFunctionName = AppFunctionName.fromQualifiedId(staticDocument.getId());
+        String packageName = appFunctionName.getPackageName();
+        String functionId = appFunctionName.getFunctionIdentifier();
+
+        if (mCache.isDynamicFunction(packageName, functionId, UserHandle.of(userId))) {
+            return new AppFunctionEnabledState(
+                    mMultiUserDynamicAppFunctionRegistry.hasRegistrations(
+                            packageName, functionId, UserHandle.of(userId)),
+                    false);
+        }
+
+        boolean isEnabledByDefault =
+                staticDocument.getPropertyBoolean(AppFunctionMetadata.PROPERTY_ENABLED_BY_DEFAULT);
 
         boolean isRuntimeEnabled;
         if (runtimeDocument.getPropertyLong(PROPERTY_ENABLED) == APP_FUNCTION_STATE_DEFAULT) {
@@ -577,18 +595,32 @@ final class AppFunctionMetadataReader {
                     runtimeDocument.getPropertyLong(PROPERTY_ENABLED) == APP_FUNCTION_STATE_ENABLED;
         }
 
-        AppFunctionName appFunctionName = AppFunctionName.fromQualifiedId(staticDocument.getId());
-        String packageName = appFunctionName.getPackageName();
-        String functionId = appFunctionName.getFunctionIdentifier();
+        return new AppFunctionEnabledState(
+                /* isEffectivelyEnabled= */ isRuntimeEnabled,
+                /* isEnabledByDefault= */ isEnabledByDefault);
+    }
 
-        if (mCache.isDynamicFunction(packageName, functionId, UserHandle.of(userId))) {
-            return isRuntimeEnabled
-                    && mMultiUserDynamicAppFunctionRegistry.hasRegistrations(
-                            packageName, functionId, UserHandle.of(userId));
-        } else {
-            // TODO(b/467317154): Take into account AppFunctionService availability for static
-            //  app functions
-            return isRuntimeEnabled;
+    /**
+     * Wraps the comprehensive enabled state of an app function resulting from both the static and
+     * runtime metadata content.
+     */
+    static class AppFunctionEnabledState {
+        private final boolean mIsEnabledByDefault;
+        private final boolean mIsEffectivelyEnabled;
+
+        AppFunctionEnabledState(boolean isEffectivelyEnabled, boolean isEnabledByDefault) {
+            this.mIsEnabledByDefault = isEnabledByDefault;
+            this.mIsEffectivelyEnabled = isEffectivelyEnabled;
+        }
+
+        /** Returns true if the function is effectively enabled. */
+        public boolean isEffectivelyEnabled() {
+            return mIsEffectivelyEnabled;
+        }
+
+        /** Returns the function's default enabled state. */
+        public boolean isEnabledByDefault() {
+            return mIsEnabledByDefault;
         }
     }
 
