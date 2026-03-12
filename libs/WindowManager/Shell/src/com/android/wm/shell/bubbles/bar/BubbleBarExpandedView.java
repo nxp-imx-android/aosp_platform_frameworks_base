@@ -61,6 +61,7 @@ import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 import com.android.wm.shell.taskview.TaskView;
 
 import java.io.PrintWriter;
+import java.util.EnumSet;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
@@ -116,6 +117,14 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
 
     private static final String TAG = BubbleBarExpandedView.class.getSimpleName();
     private static final int INVALID_TASK_ID = -1;
+
+    enum ObscuredFlag {
+        // Obscured due to user education showing
+        USER_EDUCATION_VISIBLE,
+        // Obscured due to handle menu showing
+        HANDLE_MENU_VISIBLE,
+    }
+    private final EnumSet<ObscuredFlag> mObscuredFlags = EnumSet.noneOf(ObscuredFlag.class);
 
     private Bubble mBubble;
     private BubbleExpandedViewManager mManager;
@@ -261,7 +270,7 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
         mMenuViewController.setListener(new BubbleBarMenuViewController.Listener() {
             @Override
             public void onMenuVisibilityChanged(boolean visible) {
-                setObscured(visible);
+                setObscured(visible, ObscuredFlag.HANDLE_MENU_VISIBLE);
                 if (visible) {
                     getHandleView().setFocusable(false);
                     getHandleView().setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
@@ -566,11 +575,18 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
         mListener = listener;
     }
 
-    /** Sets whether the view is obscured by some modal view */
-    void setObscured(boolean obscured) {
+    /** Sets whether the view is obscured by a modal view, and what that view is. */
+    void setObscured(boolean obscured, ObscuredFlag flag) {
         if (mTaskView == null || mLayerBoundsSupplier == null) return;
-        // Updates the obscured touchable region for the task surface.
-        mTaskView.setObscuredTouchRect(obscured ? mLayerBoundsSupplier.get() : null);
+        if (obscured && mObscuredFlags.add(flag)) {
+            // Updates the obscured touchable region for the task surface.
+            mTaskView.setObscuredTouchRect(mLayerBoundsSupplier.get());
+        } else if (!obscured) {
+            mObscuredFlags.remove(flag);
+            if (mObscuredFlags.isEmpty()) {
+                mTaskView.setObscuredTouchRect(null);
+            }
+        }
     }
 
     /** Shows the expanded view for the overflow if it exists. */
