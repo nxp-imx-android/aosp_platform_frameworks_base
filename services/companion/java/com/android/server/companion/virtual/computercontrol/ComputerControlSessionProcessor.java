@@ -645,17 +645,46 @@ public final class ComputerControlSessionProcessor {
     }
 
     /**
+     * Returns the session associated with the provided displayId, or {@code null} if not found.
+     */
+    @GuardedBy("mSessions")
+    @Nullable
+    private ComputerControlSessionImpl findSessionByDisplayIdLocked(int displayId) {
+        for (int i = 0; i < mSessions.size(); i++) {
+            ComputerControlSessionImpl session = mSessions.valueAt(i);
+            if (session.getVirtualDisplayId() == displayId) {
+                return session;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns {@code true}, if any of the ongoing computer control sessions are running on the
-     * provided virtual display id, {@code false} otherwise.
+     * provided virtual display ID, {@code false} otherwise.
      */
     public boolean isComputerControlDisplay(int displayId) {
         synchronized (mSessions) {
-            for (int i = 0; i < mSessions.size(); i++) {
-                if (mSessions.valueAt(i).getVirtualDisplayId() == displayId) {
-                    return true;
-                }
-            }
-            return false;
+            return findSessionByDisplayIdLocked(displayId) != null;
+        }
+    }
+
+    /**
+     * Check if the specified virtual display is currently being actively automated by an agent.
+     *
+     * This is used to enforce security and privacy policies (such as Autofill
+     * restrictions or camera blocking) that apply when an automated agent is in
+     * control, but should be relaxed when a user is interacting with the session via
+     * an interactive mirror.
+     *
+     * @param displayId The ID of the virtual display to check.
+     * @return {@code true} if the display is associated with an active computer control
+     *         automation session; {@code false} otherwise.
+     */
+    public boolean isActiveComputerControlDisplay(int displayId) {
+        synchronized (mSessions) {
+            ComputerControlSessionImpl session = findSessionByDisplayIdLocked(displayId);
+            return session != null && session.isSessionActive();
         }
     }
 
