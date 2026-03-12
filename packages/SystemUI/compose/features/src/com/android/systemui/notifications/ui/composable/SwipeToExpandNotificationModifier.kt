@@ -40,6 +40,7 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.unit.Velocity
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -308,6 +309,8 @@ private suspend fun finishExpansion(
                 ) {
                     view.setFinalActualHeight(value.roundToInt())
                 }
+            } catch (e: CancellationException) {
+                callback.setExpansionCancelled(view)
             } finally {
                 finalizeAnimation(view, callback, shouldExpand)
             }
