@@ -232,6 +232,7 @@ import com.android.wm.shell.windowdecor.VeiledTaskResizer;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer;
 import com.android.wm.shell.windowdecor.common.CaptionVisibilityHelper;
+import com.android.wm.shell.windowdecor.common.DecorThemeUtil;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoaderImpl;
 import com.android.wm.shell.windowdecor.common.viewhost.DefaultWindowDecorViewHostSupplier;
@@ -1374,7 +1375,8 @@ public abstract class WMShellModule {
             FluidTaskResizer fluidTaskResizer,
             VeiledTaskResizer veiledTaskResizer,
             MultiDisplayTaskMover multiDisplayTaskMover,
-            SnapController snapController
+            SnapController snapController,
+            DecorThemeUtil.Factory decorThemeUtilFactory
     ) {
         if (!shelldesktopState.canEnterDesktopModeOrShowAppHandle()) {
             return Optional.empty();
@@ -1397,7 +1399,7 @@ public abstract class WMShellModule {
                 desksOrganizer, shelldesktopState, desktopConfig, userProfileContexts,
                 lockTaskChangeListener, pinnedLayerController.orElse(null),
                 pinnedLayerUiState.orElse(null), fluidTaskResizer, veiledTaskResizer,
-                multiDisplayTaskMover, snapController));
+                multiDisplayTaskMover, snapController, decorThemeUtilFactory));
     }
 
     @WMSingleton

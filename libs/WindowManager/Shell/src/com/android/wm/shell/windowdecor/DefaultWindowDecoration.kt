@@ -165,6 +165,7 @@ constructor(
         FullscreenHeaderViewHolder.DefaultFactory(),
     val pinnedLayerController: PinnedLayerController?,
     private val desktopTasksController: DesktopTasksController,
+    private val decorThemeUtilFactory: DecorThemeUtil.Factory,
 ) :
     WindowDecoration2<WindowDecorLinearLayout>(
         taskInfo,
@@ -225,7 +226,7 @@ constructor(
         get() = captionController?.manageWindowsMenuController
 
     private val appTheme = { taskInfo: RunningTaskInfo ->
-        DecorThemeUtil(context).getAppTheme(taskInfo)
+        decorThemeUtilFactory.create(context).getAppTheme(taskInfo)
     }
 
     init {
@@ -1097,6 +1098,7 @@ constructor(
                     appToWebRepository = appToWebRepository,
                     focusTransitionObserver = focusTransitionObserver,
                     appHeaderViewHolderFactory = appHeaderViewHolderFactory,
+                    decorThemeUtilFactory = decorThemeUtilFactory,
                 )
             }
 
