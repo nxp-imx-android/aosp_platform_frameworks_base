@@ -233,6 +233,7 @@ final class ActivityManagerShellCommand extends ShellCommand {
     private BroadcastOptions mBroadcastOptions;
     private boolean mShowSplashScreen;
     private boolean mDismissKeyguardIfInsecure;
+    private boolean mDebugLink;
 
     final boolean mDumping;
 
@@ -627,6 +628,8 @@ final class ActivityManagerShellCommand extends ShellCommand {
             public boolean handleOption(String opt, ShellCommand cmd) {
                 if (opt.equals("-D")) {
                     mStartFlags |= ActivityManager.START_FLAG_DEBUG;
+                } else if (opt.equals("--debug-link")) {
+                    mDebugLink = true;
                 } else if (opt.equals("--suspend")) {
                     mStartFlags |= ActivityManager.START_FLAG_DEBUG_SUSPEND;
                 } else if (opt.equals("-N")) {
@@ -769,6 +772,12 @@ final class ActivityManagerShellCommand extends ShellCommand {
         }
 
         final String mimeType = intent.resolveType(mInternal.mContext);
+
+        if (mDebugLink && isWebUri(intent)) {
+            pw.println("--- App Link Resolution Debug ---");
+            printAppLinkDebugInfo(pw, intent, mimeType);
+            pw.println("---------------------------------\n");
+        }
 
         do {
             if (mStopOption) {
@@ -985,6 +994,77 @@ final class ActivityManagerShellCommand extends ShellCommand {
             }
         } while (mRepeat > 0);
         return 0;
+    }
+
+    private boolean isWebUri(Intent intent) {
+        if (intent == null || intent.getData() == null) {
+            return false;
+        }
+
+        return ("http".equalsIgnoreCase(intent.getData().getScheme())
+                || "https".equalsIgnoreCase(intent.getData().getScheme()));
+    }
+
+    private void printAppLinkDebugInfo(PrintWriter pw, Intent intent, String mimeType) {
+        pw.println("URI: " + intent.getDataString());
+
+        int userIdForQuery = mInternal.mUserController.handleIncomingUser(
+                Binder.getCallingPid(), Binder.getCallingUid(), mUserId, false,
+                ALLOW_NON_FULL, "ActivityManagerShellCommand", null);
+
+        try {
+            ResolveInfo resolveInfo =
+                    mPm.resolveIntent(
+                            intent, mimeType, PackageManager.GET_RESOLVED_FILTER, userIdForQuery);
+            List<ResolveInfo> candidates =
+                    mPm.queryIntentActivities(
+                            intent, mimeType, PackageManager.GET_RESOLVED_FILTER, userIdForQuery)
+                        .getList();
+
+            if (candidates == null || candidates.isEmpty()) {
+                pw.println("Resolution: Failed to resolve to any component.");
+                pw.println("\nReasons for Non-Resolution:");
+                pw.println("  No app found with a matching intent filter.");
+                return;
+            }
+
+            boolean isResolver = resolveInfo != null
+                    && "android".equals(resolveInfo.activityInfo.packageName)
+                    && getResolverActivityName().equals(resolveInfo.activityInfo.name);
+
+            if (isResolver) {
+                pw.println("Resolution: Ambiguous (Multiple apps or Browser fallback)");
+                pw.println("This usually happens when multiple apps can handle the link and no "
+                        + "default is set.");
+            } else if (resolveInfo != null) {
+                pw.println("Resolution: Resolved to " + resolveInfo.activityInfo.packageName
+                        + "/" + resolveInfo.activityInfo.name);
+            }
+
+            pw.println("\nAll Matching Candidates:");
+            for (ResolveInfo candidate : candidates) {
+                printResolveInfoDetail(pw, candidate);
+            }
+        } catch (RemoteException e) {
+            pw.println("Error resolving intent: " + e);
+        }
+        pw.println("");
+    }
+
+    private void printResolveInfoDetail(PrintWriter pw, ResolveInfo resolveInfo) {
+        pw.println("\nTarget:");
+        pw.println("  Package: " + resolveInfo.activityInfo.packageName);
+        pw.println("  Activity: " + resolveInfo.activityInfo.name);
+    }
+
+    private String getResolverActivityName() {
+        final int resId = Resources.getSystem().getIdentifier(
+                "config_customResolverActivity", "string", "android");
+        String customResolverActivity = mInternal.mContext.getString(resId);
+        if (TextUtils.isEmpty(customResolverActivity)) {
+            return com.android.internal.app.ResolverActivity.class.getName();
+        }
+        return customResolverActivity;
     }
 
     int runStartService(PrintWriter pw, boolean asForeground) throws RemoteException {
