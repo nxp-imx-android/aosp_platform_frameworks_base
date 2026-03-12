@@ -147,6 +147,9 @@ sealed interface ValueDescriptor {
 
     /** Returns if given value (represented by index) is valid. */
     fun isValidValue(context: Context, index: Int): Boolean
+
+    /** Returns the unit of measurement for the value. E.g. milliseconds, pixels, etc. */
+    fun getUnitOfMeasurement(): String? = null
 }
 
 /** Value falls into a given array. */

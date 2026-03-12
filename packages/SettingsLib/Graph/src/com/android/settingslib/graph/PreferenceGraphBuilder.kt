@@ -46,6 +46,7 @@ import com.android.settingslib.graph.proto.PreferenceScreenProto
 import com.android.settingslib.graph.proto.PreferenceValueDescriptorProto
 import com.android.settingslib.graph.proto.TextProto
 import com.android.settingslib.metadata.CatalystFlagProviderFactory
+import com.android.settingslib.metadata.DiscreteIntValue
 import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_ARGS
 import com.android.settingslib.metadata.IntRangeValuePreference
 import com.android.settingslib.metadata.KeyParametersSchema
@@ -69,6 +70,7 @@ import com.android.settingslib.metadata.SensitivityLevel.Companion.DEEP_LINK_ONL
 import com.android.settingslib.metadata.SensitivityLevel.Companion.REQUIRES_CONFIRMATION
 import com.android.settingslib.metadata.SensitivityLevel.Companion.DO_NOT_EXPOSE
 import com.android.settingslib.metadata.ValidatedKeyParameters
+import com.android.settingslib.metadata.ValueDescriptor
 import com.android.settingslib.metadata.getPreferenceIcon
 import com.android.settingslib.metadata.isExposable
 import com.android.settingslib.metadata.isPreferenceIndexable
@@ -773,6 +775,42 @@ fun PreferenceMetadata.toProto(
                         step = metadata.getIncrementStep(context)
                     }
                 }
+                if (metadata is DiscreteIntValue) {
+                    val values = context.resources.getIntArray(metadata.values)
+                    val descriptions = context.resources.getTextArray(metadata.valuesDescription)
+                    values.zip(descriptions).forEach { (value, desc) ->
+                        addPossibleValues(
+                            possibleValueProto {
+                                this.value = preferenceValueProto { intValue = value }
+                                description = desc.toString()
+                            }
+                        )
+                    }
+                }
+                if (metadata is com.android.settingslib.metadata.DiscreteTextValue) {
+                    val values = context.resources.getTextArray(metadata.values)
+                    val descriptions = context.resources.getTextArray(metadata.valuesDescription)
+                    values.zip(descriptions).forEach { (value, desc) ->
+                        addPossibleValues(
+                            possibleValueProto {
+                                this.value = preferenceValueProto { stringValue = value.toString() }
+                                description = desc.toString()
+                            }
+                        )
+                    }
+                }
+                if (metadata is com.android.settingslib.metadata.DiscreteStringValue) {
+                    val values = context.resources.getStringArray(metadata.values)
+                    val descriptions = context.resources.getTextArray(metadata.valuesDescription)
+                    values.zip(descriptions).forEach { (value, desc) ->
+                        addPossibleValues(
+                            possibleValueProto {
+                                this.value = preferenceValueProto { stringValue = value }
+                                description = desc.toString()
+                            }
+                        )
+                    }
+                }
                 when (metadata.valueType) {
                     Int::class.java,
                     Int::class.javaObjectType -> {
@@ -789,6 +827,11 @@ fun PreferenceMetadata.toProto(
                     String::class.java,
                     String::class.javaObjectType -> stringType = true
                     else -> error("Error: Unsupported type ${metadata.valueType}")
+                }
+                (metadata as? ValueDescriptor)?.getUnitOfMeasurement()?.let {
+                    parameters = keyParametersProto {
+                        putValues("unit", it)
+                    }
                 }
             }
         }
