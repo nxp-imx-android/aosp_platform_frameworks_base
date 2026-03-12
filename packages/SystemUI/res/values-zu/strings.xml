@@ -178,6 +178,8 @@
     <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"Bonisa okudlule"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"Amasethingi okuqopha iskrini"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Imakhaphu"</string>
+    <!-- no translation found for screen_record_color_picker (6732567862106107021) -->
+    <skip />
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Ividiyo ilondoloziwe"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Ividiyo isuliwe"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Hlehlisa"</string>
@@ -1463,6 +1465,8 @@
     <string name="controls_media_button_prev" msgid="8126822360056482970">"Ithrekhi yangaphambilini"</string>
     <string name="controls_media_button_next" msgid="6662636627525947610">"Ithrekhi elandelayo"</string>
     <string name="controls_media_button_connecting" msgid="3138354625847598095">"Iyaxhuma"</string>
+    <!-- no translation found for controls_media_output_chip (324952606619594635) -->
+    <skip />
     <string name="media_transfer_undo" msgid="1895606387620728736">"Hlehlisa"</string>
     <string name="media_move_closer_to_start_cast" msgid="2673104707465013176">"Sondeza eduze ukudlala ku-<xliff:g id="DEVICENAME">%1$s</xliff:g>"</string>
     <string name="media_move_closer_to_end_cast" msgid="7302555909119374738">"Ukuze udlale lapha, sondela ku-<xliff:g id="DEVICENAME">%1$s</xliff:g>"</string>
@@ -1492,10 +1496,8 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Amadivayisi atholakalayo okukhipha umsindo."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Ivolumu"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <!-- no translation found for media_output_dialog_missing_permissions_warning (4312830846174995199) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_warning_button_fix (3650735180540135181) -->
-    <skip />
+    <string name="media_output_dialog_missing_permissions_warning" msgid="4312830846174995199">"Ukuze ubone amadivayisi engeziwe, kungase kudingeke uvumele izimvume ze-<xliff:g id="MEDIA_APP_NAME">%1$s</xliff:g>"</string>
+    <string name="media_output_dialog_warning_button_fix" msgid="3650735180540135181">"Vula i-<xliff:g id="MEDIA_APP_NAME">%1$s</xliff:g>"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Izipikha ezixhunyiwe"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Izipikha Neziboniso"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Okuphakanyisiwe"</string>
@@ -1605,8 +1607,7 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"Ukubuka kuqala kwesithombe"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"hlela"</string>
     <string name="add" msgid="81036585205287996">"Faka"</string>
-    <!-- no translation found for remove (7031760447233505700) -->
-    <skip />
+    <string name="remove" msgid="7031760447233505700">"Susa"</string>
     <string name="manage_users" msgid="1823875311934643849">"Phatha abasebenzisi"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"Lesi saziso asikusekeli ukuhudulela ekuhlukaniseni isikrini."</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"Indawo iyasebenza"</string>
@@ -1866,18 +1867,25 @@
     <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"Ukulungiswa kwesithombe"</string>
     <string name="av_mic_label" msgid="5427348054144789879">"Imakrofoni"</string>
     <string name="av_camera_label" msgid="7719772172590702343">"Ikhamera"</string>
-    <string name="av_camera_blur_drill_in_title" msgid="2250600375798981511">"Ukufiphala Kungemuva"</string>
+    <!-- no translation found for av_camera_blur_drill_in_title (3392789469292685354) -->
+    <skip />
     <string name="av_camera_blur_off" msgid="3170334995799202022">"Valiwe"</string>
-    <string name="av_camera_blur_light" msgid="5666055368940059418">"Ukukhanya"</string>
-    <string name="av_camera_blur_full" msgid="3276351992811619332">"Kugcwele"</string>
+    <!-- no translation found for av_camera_blur_light (5105255788203563538) -->
+    <skip />
+    <!-- no translation found for av_camera_blur_full (6493497965254048479) -->
+    <skip />
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"Khanyisa kangcono"</string>
     <string name="av_camera_face_retouch" msgid="45890971969486224">"Ukulungiswa kwesithombe"</string>
-    <string name="av_camera_framing" msgid="5108462267843042492">"Ukuhlela Ifremu Yekhamera"</string>
-    <string name="av_studio_mic" msgid="2614843492629357766">"Imakrofoni Yestudiyo"</string>
-    <string name="av_studio_look" msgid="621893522645557619">"Ukubukeka Kwestudiyo"</string>
+    <!-- no translation found for av_camera_framing (2948988841290208034) -->
+    <skip />
+    <!-- no translation found for av_studio_mic (1815195630183143501) -->
+    <skip />
+    <!-- no translation found for av_studio_look (631085505786989852) -->
+    <skip />
     <string name="av_studio_look_effects" msgid="4105109585851068415">"Imiphumela engu-%d"</string>
     <string name="av_blur" msgid="405131343487260171">"Ukufiphala"</string>
-    <string name="av_live_captions" msgid="7819416886586903077">"Amagama-ncazo Abukhoma"</string>
+    <!-- no translation found for av_live_captions (802763867449401889) -->
+    <skip />
     <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"Emuva"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Ibhethri %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Ibhethri elingu-L %1$s    Ibhethri elingu-R %2$s"</string>
