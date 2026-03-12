@@ -20,6 +20,8 @@ import android.annotation.StringRes;
 import android.app.Activity;
 import android.app.AppOpsManager;
 import android.app.Dialog;
+import android.companion.virtual.VirtualDeviceManager;
+import android.companion.virtual.computercontrol.ComputerControlConsentManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -41,11 +43,16 @@ import androidx.fragment.app.DialogFragment;
 
 /**
  * A VDM consent dialog for starting a computer control session.
+ *
+ * If {@code ARG_TARGET_PACKAGE_NAME} is provided this will show a per-app consent flow dialog.
+ * If not, it will show the legacy global consent flow dialog.
  */
 public class RequestComputerControlAccessFragment extends DialogFragment {
 
     private static final String TAG = "ComputerControlAccess";
+    private static final String ARG_AGENT_UID = "argAgentUid";
     private static final String ARG_AGENT_PACKAGE_NAME = "argAgentPackageName";
+    private static final String ARG_TARGET_PACKAGE_NAME = "argTargetPackageName";
     private static final String ARG_RESULT_RECEIVER = "argResultReceiver";
     private static final String PREF_COMPUTER_CONTROL_ACCESS_COUNTER =
             "computer_control_access_counter";
@@ -58,11 +65,23 @@ public class RequestComputerControlAccessFragment extends DialogFragment {
     private Drawable mAgentAppIcon;
     private int mAgentUid;
 
-    static RequestComputerControlAccessFragment newInstance(
-            @NonNull String agentPackageName, @NonNull ResultReceiver resultReceiver) {
+    @Nullable
+    private String mTargetPackageName;
+    @Nullable
+    private CharSequence mTargetAppLabel;
+
+
+    static RequestComputerControlAccessFragment newInstance(int agentUid,
+            @NonNull String agentPackageName, @Nullable String targetPackageName,
+            @NonNull ResultReceiver resultReceiver) {
+        Log.d("ComputerControl",
+                "RequestComputerControlAccessFragment: new fragment for " + agentPackageName
+                        + " automating " + targetPackageName);
         final var fragment = new RequestComputerControlAccessFragment();
         final Bundle args = new Bundle();
+        args.putInt(ARG_AGENT_UID, agentUid);
         args.putString(ARG_AGENT_PACKAGE_NAME, agentPackageName);
+        args.putString(ARG_TARGET_PACKAGE_NAME, targetPackageName);
         args.putParcelable(ARG_RESULT_RECEIVER, resultReceiver);
         fragment.setArguments(args);
         return fragment;
@@ -72,20 +91,27 @@ public class RequestComputerControlAccessFragment extends DialogFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mAgentPackageName = getArguments().getString(ARG_AGENT_PACKAGE_NAME);
-        mResultReceiver = getArguments().getParcelable(ARG_RESULT_RECEIVER, ResultReceiver.class);
+        Bundle args = getArguments();
+        mAgentUid = args.getInt(ARG_AGENT_UID);
+        mAgentPackageName = args.getString(ARG_AGENT_PACKAGE_NAME);
+        mResultReceiver = args.getParcelable(ARG_RESULT_RECEIVER, ResultReceiver.class);
+        mTargetPackageName = args.getString(ARG_TARGET_PACKAGE_NAME);
 
         PackageManager packageManager = requireActivity().getPackageManager();
         try {
-            final ApplicationInfo appInfo = packageManager.getApplicationInfo(
+            final ApplicationInfo agentAppInfo = packageManager.getApplicationInfo(
                     mAgentPackageName, PackageManager.ApplicationInfoFlags.of(0));
-            mAgentAppLabel = packageManager.getApplicationLabel(appInfo);
-            mAgentAppIcon = packageManager.getApplicationIcon(appInfo);
-            mAgentUid = appInfo.uid;
+            mAgentAppLabel = packageManager.getApplicationLabel(agentAppInfo);
+            mAgentAppIcon = packageManager.getApplicationIcon(agentAppInfo);
+
+            if (mTargetPackageName != null) {
+                final ApplicationInfo targetAppInfo = packageManager.getApplicationInfo(
+                        mTargetPackageName, PackageManager.ApplicationInfoFlags.of(0));
+                mTargetAppLabel = packageManager.getApplicationLabel(targetAppInfo);
+            }
         } catch (PackageManager.NameNotFoundException e) {
-            Log.e(TAG, "Failed to open consent dialog because " + mAgentPackageName
-                    + " was not found");
-            finish(Activity.RESULT_CANCELED);
+            Log.e(TAG, "Failed to open consent dialog because package was not found", e);
+            sendResult(Activity.RESULT_CANCELED);
         }
         checkAppOp();
     }
@@ -102,8 +128,15 @@ public class RequestComputerControlAccessFragment extends DialogFragment {
         view.requireViewById(R.id.always_allow_button).setOnClickListener(this::onAlwaysAllow);
 
         TextView titleView = view.requireViewById(R.id.title);
-        Spanned title = getHtmlFromResources(
-                R.string.request_computer_control_access_dialog_title, mAgentAppLabel);
+        Spanned title;
+        if (isPerAppConsentEnabled()) {
+            title = getHtmlFromResources(
+                    R.string.request_computer_control_access_per_app_consent_dialog_title,
+                    mAgentAppLabel, mTargetAppLabel);
+        } else {
+            title = getHtmlFromResources(
+                    R.string.request_computer_control_access_dialog_title, mAgentAppLabel);
+        }
         titleView.setText(title);
         TextView descriptionView = view.findViewById(R.id.description);
         Spanned description = getHtmlFromResources(
@@ -111,7 +144,11 @@ public class RequestComputerControlAccessFragment extends DialogFragment {
         descriptionView.setText(description);
 
         ImageView iconView = view.findViewById(R.id.agent_icon);
-        iconView.setImageDrawable(mAgentAppIcon);
+        if (isPerAppConsentEnabled()) {
+            iconView.setImageResource(R.drawable.ic_automation);
+        } else {
+            iconView.setImageDrawable(mAgentAppIcon);
+        }
 
         Dialog dialog = new Dialog(activity);
         dialog.setContentView(view);
@@ -126,30 +163,53 @@ public class RequestComputerControlAccessFragment extends DialogFragment {
         if (result == AppOpsManager.MODE_IGNORED || result == AppOpsManager.MODE_ERRORED) {
             Log.w(TAG,
                     mAgentPackageName + " does not have APP_OP permission to open consent dialog");
-            finish(Activity.RESULT_CANCELED);
+            sendResult(Activity.RESULT_CANCELED);
         }
     }
 
-    private void finish(int resultCode) {
-        mResultReceiver.send(resultCode, null);
-        requireActivity().finish();
+    private void sendResult(int resultCode) {
+        if (mResultReceiver != null) {
+            mResultReceiver.send(resultCode, null);
+        }
+        dismissAllowingStateLoss();
     }
 
     @Override
     public void onCancel(@NonNull DialogInterface dialog) {
         super.onCancel(dialog);
-        finish(Activity.RESULT_CANCELED);
+        sendResult(Activity.RESULT_CANCELED);
     }
 
     private void onAllow(View view) {
         resetDenialCount();
-        finish(Activity.RESULT_OK);
+        sendResult(Activity.RESULT_OK);
     }
 
     private void onAlwaysAllow(View view) {
         resetDenialCount();
         setComputerControlOp(AppOpsManager.MODE_ALLOWED);
-        finish(Activity.RESULT_OK);
+
+        if (!isPerAppConsentEnabled()) {
+            sendResult(Activity.RESULT_OK);
+            return;
+        }
+
+        VirtualDeviceManager vdm = requireActivity().getSystemService(VirtualDeviceManager.class);
+        if (vdm == null) {
+            Log.w(TAG, "No VirtualDeviceManager found");
+            sendResult(Activity.RESULT_CANCELED);
+            return;
+        }
+        ComputerControlConsentManager computerControlConsentManager =
+                vdm.getComputerControlConsentManager();
+        if (computerControlConsentManager == null) {
+            Log.w(TAG, "No AllowlistManager found");
+            sendResult(Activity.RESULT_CANCELED);
+            return;
+        }
+        computerControlConsentManager.addAppToAutomatableAppListForAgent(mAgentUid,
+                mAgentPackageName, mTargetPackageName);
+        sendResult(Activity.RESULT_OK);
     }
 
     private void setComputerControlOp(int mode) {
@@ -190,5 +250,9 @@ public class RequestComputerControlAccessFragment extends DialogFragment {
         }
         final String plain = requireActivity().getString(resId, (Object[]) escapedArgs);
         return Html.fromHtml(plain, 0);
+    }
+
+    private boolean isPerAppConsentEnabled() {
+        return mTargetPackageName != null;
     }
 }
