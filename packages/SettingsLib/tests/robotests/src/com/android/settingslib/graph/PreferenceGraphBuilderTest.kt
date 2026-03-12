@@ -644,6 +644,111 @@ class PreferenceGraphBuilderTest {
         assertThat(proto.setWarning.warning).isEqualTo("set_warning_message")
     }
 
+    private class TestDiscreteIntPreference(
+        override val sensitivityLevel: Int = SensitivityLevel.NO_SENSITIVITY,
+    ) : PersistentPreference<Int>, com.android.settingslib.metadata.DiscreteIntValue {
+        override val bindingKey: String = "discrete_int_key"
+        override val valueType: Class<Int> = Int::class.javaObjectType
+        override val key: String = "discrete_int_key"
+        override val purpose: Int = 2737
+        override val values: Int = android.R.array.emailAddressTypes
+        override val valuesDescription: Int = android.R.array.emailAddressTypes
+
+        override fun isPersistent(context: Context): Boolean = true
+        override val supportsWrite: Boolean = true
+
+        override fun getWritePermit(context: Context, callingPid: Int, callingUid: Int): Int? =
+            ReadWritePermit.ALLOW
+
+        override fun getWritePermissions(context: Context): Permissions? = null
+    }
+
+    @Test
+    fun toProto_discreteIntValue_includesValueDescriptor() {
+        val preference = TestDiscreteIntPreference()
+        val proto = preference.toProto(
+            context,
+            0,
+            0,
+            screenMetadata,
+            false,
+            PreferenceGetterFlags.METADATA or PreferenceGetterFlags.VALUE_DESCRIPTOR
+        )
+
+        assertThat(proto.hasValueDescriptor()).isTrue()
+        assertThat(proto.valueDescriptor.possibleValuesList).isNotEmpty()
+    }
+
+    private class TestDiscreteTextPreference(
+        override val sensitivityLevel: Int = SensitivityLevel.NO_SENSITIVITY,
+    ) : PersistentPreference<CharSequence>, com.android.settingslib.metadata.DiscreteTextValue {
+        override val bindingKey: String = "discrete_text_key"
+        override val valueType: Class<CharSequence> = CharSequence::class.javaObjectType
+        override val key: String = "discrete_text_key"
+        override val purpose: Int = 2737
+        override val values: Int = android.R.array.imProtocols
+        override val valuesDescription: Int = android.R.array.imProtocols
+
+        override fun isPersistent(context: Context): Boolean = true
+        override val supportsWrite: Boolean = true
+
+        override fun getWritePermit(context: Context, callingPid: Int, callingUid: Int): Int? =
+            ReadWritePermit.ALLOW
+
+        override fun getWritePermissions(context: Context): Permissions? = null
+    }
+
+    @Test
+    fun toProto_discreteTextValue_includesValueDescriptor() {
+        val preference = TestDiscreteTextPreference()
+        val proto = preference.toProto(
+            context,
+            0,
+            0,
+            screenMetadata,
+            false,
+            PreferenceGetterFlags.METADATA or PreferenceGetterFlags.VALUE_DESCRIPTOR
+        )
+
+        assertThat(proto.hasValueDescriptor()).isTrue()
+        assertThat(proto.valueDescriptor.possibleValuesList).isNotEmpty()
+    }
+
+    private class TestDiscreteStringPreference(
+        override val sensitivityLevel: Int = SensitivityLevel.NO_SENSITIVITY,
+    ) : PersistentPreference<String>, com.android.settingslib.metadata.DiscreteStringValue {
+        override val bindingKey: String = "discrete_string_key"
+        override val valueType: Class<String> = String::class.javaObjectType
+        override val key: String = "discrete_string_key"
+        override val purpose: Int = 2737
+        override val values: Int = android.R.array.imProtocols
+        override val valuesDescription: Int = android.R.array.imProtocols
+
+        override fun isPersistent(context: Context): Boolean = true
+        override val supportsWrite: Boolean = true
+
+        override fun getWritePermit(context: Context, callingPid: Int, callingUid: Int): Int? =
+            ReadWritePermit.ALLOW
+
+        override fun getWritePermissions(context: Context): Permissions? = null
+    }
+
+    @Test
+    fun toProto_discreteStringValue_includesValueDescriptor() {
+        val preference = TestDiscreteStringPreference()
+        val proto = preference.toProto(
+            context,
+            0,
+            0,
+            screenMetadata,
+            false,
+            PreferenceGetterFlags.METADATA or PreferenceGetterFlags.VALUE_DESCRIPTOR
+        )
+
+        assertThat(proto.hasValueDescriptor()).isTrue()
+        assertThat(proto.valueDescriptor.possibleValuesList).isNotEmpty()
+    }
+
     companion object {
         private const val SETTING_KEY = "com.android.settings.UNKNOWN_SENSITIVITY_IS_AVAILABLE"
     }

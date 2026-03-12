@@ -46,6 +46,7 @@ import com.android.settingslib.graph.proto.PreferenceScreenProto
 import com.android.settingslib.graph.proto.PreferenceValueDescriptorProto
 import com.android.settingslib.graph.proto.TextProto
 import com.android.settingslib.metadata.CatalystFlagProviderFactory
+import com.android.settingslib.metadata.DiscreteIntValue
 import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_ARGS
 import com.android.settingslib.metadata.IntRangeValuePreference
 import com.android.settingslib.metadata.KeyParametersSchema
@@ -768,6 +769,42 @@ fun PreferenceMetadata.toProto(
                         min = metadata.getMinValue(context)
                         max = metadata.getMaxValue(context)
                         step = metadata.getIncrementStep(context)
+                    }
+                }
+                if (metadata is DiscreteIntValue) {
+                    val values = context.resources.getIntArray(metadata.values)
+                    val descriptions = context.resources.getTextArray(metadata.valuesDescription)
+                    values.zip(descriptions).forEach { (value, desc) ->
+                        addPossibleValues(
+                            possibleValueProto {
+                                this.value = preferenceValueProto { intValue = value }
+                                description = desc.toString()
+                            }
+                        )
+                    }
+                }
+                if (metadata is com.android.settingslib.metadata.DiscreteTextValue) {
+                    val values = context.resources.getTextArray(metadata.values)
+                    val descriptions = context.resources.getTextArray(metadata.valuesDescription)
+                    values.zip(descriptions).forEach { (value, desc) ->
+                        addPossibleValues(
+                            possibleValueProto {
+                                this.value = preferenceValueProto { stringValue = value.toString() }
+                                description = desc.toString()
+                            }
+                        )
+                    }
+                }
+                if (metadata is com.android.settingslib.metadata.DiscreteStringValue) {
+                    val values = context.resources.getStringArray(metadata.values)
+                    val descriptions = context.resources.getTextArray(metadata.valuesDescription)
+                    values.zip(descriptions).forEach { (value, desc) ->
+                        addPossibleValues(
+                            possibleValueProto {
+                                this.value = preferenceValueProto { stringValue = value }
+                                description = desc.toString()
+                            }
+                        )
                     }
                 }
                 when (metadata.valueType) {
