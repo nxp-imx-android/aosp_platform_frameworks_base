@@ -37,15 +37,15 @@ class FakeBubbleHelper : BubbleHelper {
         return false
     }
 
-    override fun isAppBubbleRootTask(taskInfo: ActivityManager.RunningTaskInfo): Boolean {
+    override fun isAppBubbleRootTask(taskInfo: ActivityManager.RunningTaskInfo?): Boolean {
         return false
     }
 
-    override fun isAppBubbleTask(taskInfo: ActivityManager.RunningTaskInfo): Boolean {
+    override fun isAppBubbleTask(taskInfo: ActivityManager.RunningTaskInfo?): Boolean {
         return false
     }
 
-    override fun isBubbleTask(taskInfo: ActivityManager.RunningTaskInfo): Boolean {
+    override fun isBubbleTask(taskInfo: ActivityManager.RunningTaskInfo?): Boolean {
         return false
     }
 
