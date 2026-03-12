@@ -8009,6 +8009,40 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
+        public NotificationRule updateNotificationRule(@UserIdInt int userId,
+                NotificationRule rule) {
+            assertCallerIsSystemOrSystemUiOrShell();
+            Objects.requireNonNull(rule);
+
+            if (!nmContextualDisplayLaunch()) {
+                return null;
+            }
+
+            if (mNotificationRuleManager.updateNotificationRule(userId, rule)) {
+                handleSaveRulesFile();
+                return mNotificationRuleManager.getNotificationRule(userId, rule.getId());
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public boolean removeNotificationRule(@UserIdInt int userId, int ruleId) {
+            assertCallerIsSystemOrSystemUiOrShell();
+
+            if (!nmContextualDisplayLaunch()) {
+                return false;
+            }
+
+            if (mNotificationRuleManager.removeNotificationRule(userId, ruleId)) {
+                handleSaveRulesFile();
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        @Override
         public ParceledListSlice<NotificationRule> getNotificationRules(
                 INotificationListener token, @UserIdInt int userId) {
             if (token == null) {

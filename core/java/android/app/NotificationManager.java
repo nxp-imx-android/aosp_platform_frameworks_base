@@ -3831,4 +3831,36 @@ public class NotificationManager {
             throw e.rethrowFromSystemServer();
         }
     }
+
+    /**
+     * Returns the updated {@link NotificationRule notification rule} or null if the rule could not
+     * be updated.
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public @Nullable NotificationRule updateNotificationRule(@NonNull NotificationRule rule) {
+        Objects.requireNonNull(rule);
+        final INotificationManager service = service();
+        try {
+            return service.updateNotificationRule(mContext.getUserId(), rule);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Removes the notification rule with the specified rule ID. Returns true if a rule was removed.
+     * @hide
+     */
+    @TestApi
+    @FlaggedApi(Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public boolean removeNotificationRule(int ruleId) {
+        final INotificationManager service = service();
+        try {
+            return service.removeNotificationRule(mContext.getUserId(), ruleId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
 }

@@ -66,6 +66,8 @@ import static android.app.NotificationManager.IMPORTANCE_NONE;
 import static android.app.NotificationManager.Policy.PRIORITY_CATEGORY_CALLS;
 import static android.app.NotificationManager.Policy.PRIORITY_CATEGORY_CONVERSATIONS;
 import static android.app.NotificationManager.VISIBILITY_NO_OVERRIDE;
+import static android.app.NotificationRule.Action.PRIMARY_ACTION_HIGHLIGHT;
+import static android.app.NotificationRule.Action.PRIMARY_ACTION_LOW;
 import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_MUTABLE;
 import static android.app.PendingIntent.FLAG_ONE_SHOT;
@@ -20349,6 +20351,56 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         assertThat(mBinderService.addNotificationRule(mUserId, second, 0)).isEqualTo(second);
         assertThat(mBinderService.getNotificationRules(null, mUserId).getList())
                 .containsAtLeastElementsIn(List.of(first, second));
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void testAddAndUpdateNotificationRules() throws Exception {
+        NotificationRule orig = new NotificationRule.Builder(101,
+                new NotificationRule.Action(PRIMARY_ACTION_HIGHLIGHT)).setEnabled(true).build();
+        NotificationRule second = new NotificationRule.Builder(102,
+                new NotificationRule.Action(PRIMARY_ACTION_HIGHLIGHT)).setEnabled(false).build();
+
+        final Intent intent = new Intent(Intent.ACTION_USER_ADDED);
+        intent.putExtra(Intent.EXTRA_USER_HANDLE, mUser);
+        mUserIntentReceiver.onReceive(mContext, intent);
+
+        // Add original rule and second rule, confirm success
+        assertThat(mBinderService.addNotificationRule(mUserId, orig, 0)).isEqualTo(orig);
+        assertThat(mBinderService.addNotificationRule(mUserId, second, 1)).isEqualTo(second);
+        assertThat(mBinderService.getNotificationRules(null, mUserId).getList())
+                .containsAtLeastElementsIn(List.of(orig, second));
+
+        // Now update the rule: same ID, new action
+        NotificationRule updated = new NotificationRule.Builder(101,
+                new NotificationRule.Action(PRIMARY_ACTION_LOW)).setEnabled(true).build();
+        assertThat(mBinderService.updateNotificationRule(mUserId, updated)).isEqualTo(updated);
+
+        // Confirm that only the updated version now exists in the set of rules, replacing orig;
+        // second rule is unchanged
+        List<NotificationRule> rules = mBinderService.getNotificationRules(null, mUserId).getList();
+        assertThat(rules).containsAtLeastElementsIn(List.of(updated, second));
+        assertThat(rules).doesNotContain(orig);
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void testRemoveNotificationRule() throws Exception {
+        NotificationRule rule = new NotificationRule.Builder(101,
+                new NotificationRule.Action(PRIMARY_ACTION_HIGHLIGHT)).setEnabled(true).build();
+
+        final Intent intent = new Intent(Intent.ACTION_USER_ADDED);
+        intent.putExtra(Intent.EXTRA_USER_HANDLE, mUser);
+        mUserIntentReceiver.onReceive(mContext, intent);
+
+        // add rule & confirm success
+        assertThat(mBinderService.addNotificationRule(mUserId, rule, 0)).isEqualTo(rule);
+        assertThat(mBinderService.getNotificationRules(null, mUserId).getList()).contains(rule);
+
+        // remove rule, confirm it is no longer in the list
+        assertThat(mBinderService.removeNotificationRule(mUserId, 101)).isTrue();
+        assertThat(mBinderService.getNotificationRules(null, mUserId).getList()).doesNotContain(
+                rule);
     }
 
     @Test
