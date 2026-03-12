@@ -19,12 +19,14 @@ package com.android.wm.shell.flicker.bubbles
 import android.os.Build
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDesktopDevice
+import android.platform.test.annotations.RequiresFlagsDisabled
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar.MODE_GESTURAL
 import android.view.Display.DEFAULT_DISPLAY
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.NewTasksAppHelper
 import com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK
+import com.android.wm.shell.Flags.FLAG_DISABLE_BUBBLE_ANYTHING_DESKTOP_WINDOWING
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.Utils.testSetupRule
 import com.android.wm.shell.flicker.bubbles.testcase.BubbleAppBecomesExpandedTestCases
@@ -65,6 +67,8 @@ import org.junit.runners.MethodSorters
  * - [ExpandBubbleTestCases]: Verifies the bubble stack expands and [bubbleApp] becomes visible.
  * - [DesktopAppAlwaysVisibleTestCases]: Verifies [desktopApp] remains visible in desktop mode.
  */
+// TODO(b/479182156) Remove this when bubbling is supported in desktop mode.
+@RequiresFlagsDisabled(FLAG_DISABLE_BUBBLE_ANYTHING_DESKTOP_WINDOWING)
 @RequiresFlagsEnabled(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK)
 @RequiresDesktopDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
