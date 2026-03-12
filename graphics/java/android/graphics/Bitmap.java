@@ -1231,22 +1231,6 @@ public final class Bitmap implements Parcelable {
                 .endProto();
     }
 
-    private static void traceBitmap(android.os.PerfettoTrackEventExtra.Builder builder, Bitmap b) {
-        if (b == null) return;
-        Config config = b.getConfig();
-        builder.beginProto()
-                .beginNested(BITMAP)
-                .addField(SIZE, b.getAllocationByteCount())
-                .addField(WIDTH, b.getWidth())
-                .addField(HEIGHT, b.getHeight())
-                .addField(DENSITY, b.getDensity())
-                .addField(CONFIG, config != null ? config.nativeInt : -1)
-                .addField(MUTABLE_PIXELS, b.isMutable() ? 1 : 0)
-                .addField(ID, b.mId)
-                .endNested()
-                .endProto();
-    }
-
     private static Bitmap transformGainmap(Bitmap source, Bitmap newBase, Matrix m, Paint paint,
             Rect srcR, RectF dstR, RectF deviceR) {
         Canvas canvas;
