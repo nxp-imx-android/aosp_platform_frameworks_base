@@ -56,7 +56,7 @@
         <option name="package" value="android.app.memory.tests"/>
         <option name="runner" value="androidx.test.runner.AndroidJUnitRunner"/>
 
-        <option name="device-listeners" value="android.device.collectors.ProcLoadListener,android.device.collectors.PerfettoListener" />
+        <option name="device-listeners" value="android.device.collectors.ProcLoadListener,android.device.collectors.PerfettoListener,android.device.collectors.ShowmapSnapshotListener" />
 
         <option name="instrumentation-arg" key="procload-collector:per_run" value="true" />
         <option name="instrumentation-arg" key="proc-loadavg-threshold" value="3" />
@@ -64,6 +64,11 @@
 
         <option name="instrumentation-arg" key="perfetto_config_text_proto" value="true" />
         <option name="instrumentation-arg" key="perfetto_config_file" value="trace_config.textproto" />
+
+        <option name="instrumentation-arg" key="showmapsnapshot-collector:drop-cache" value="all"/>
+        <option name="instrumentation-arg" key="showmapsnapshot-collector:gc-precollect" value="true"/>
+        <option name="instrumentation-arg" key="showmapsnapshot-collector:process-names" value="android.app.memory.testhelper"/>
+
     </test>
 
     <metrics_collector class="com.android.tradefed.device.metric.PerfettoPullerMetricCollector">
