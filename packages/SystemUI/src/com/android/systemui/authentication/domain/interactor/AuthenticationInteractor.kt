@@ -38,6 +38,7 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.util.time.SystemClock
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import kotlin.math.max
 import kotlin.time.Duration
@@ -46,13 +47,12 @@ import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -130,12 +130,43 @@ constructor(
     /** Whether the pattern should be visible for the currently-selected user. */
     val isPatternVisible: StateFlow<Boolean> = repository.isPatternVisible
 
-    private val _onAuthenticationResult = MutableSharedFlow<Boolean>()
+    private val onAuthenticationResultListeners =
+        ConcurrentHashMap.newKeySet<OnAuthenticationResultListener>()
+
     /**
      * Emits the outcome (successful or unsuccessful) whenever a PIN/Pattern/Password security
      * challenge is attempted by the user in order to unlock the device.
      */
-    val onAuthenticationResult: SharedFlow<Boolean> = _onAuthenticationResult.asSharedFlow()
+    @Deprecated(
+        replaceWith = ReplaceWith("addOnAuthenticationResultListener"),
+        message = "Flows have performance overhead, prefer adding and removing a listener instead.",
+    )
+    val onAuthenticationResult: Flow<Boolean> = callbackFlow {
+        val listener =
+            object : OnAuthenticationResultListener {
+                override fun onAuthenticationResult(isSuccessful: Boolean) {
+                    trySend(isSuccessful)
+                }
+            }
+        addOnAuthenticationResultListener(listener)
+        awaitClose { removeOnAuthenticationResultListener(listener) }
+    }
+
+    /**
+     * Adds an [OnAuthenticationResultListener] to be notified of future authentication result
+     * events.
+     */
+    fun addOnAuthenticationResultListener(listener: OnAuthenticationResultListener) {
+        onAuthenticationResultListeners.add(listener)
+    }
+
+    /**
+     * Removes a previously-[added][addOnAuthenticationResultListener]
+     * [OnAuthenticationResultListener].
+     */
+    fun removeOnAuthenticationResultListener(listener: OnAuthenticationResultListener) {
+        onAuthenticationResultListeners.remove(listener)
+    }
 
     /** Whether the "enhanced PIN privacy" setting is enabled for the current user. */
     val isPinEnhancedPrivacyEnabled: StateFlow<Boolean> = repository.isPinEnhancedPrivacyEnabled
@@ -235,17 +266,25 @@ constructor(
         latencyTracker.onActionStart(LatencyTracker.ACTION_CHECK_CREDENTIAL)
         latencyTracker.onActionStart(LatencyTracker.ACTION_CHECK_CREDENTIAL_UNLOCKED)
         try {
+            var successEmitted = false
             val authenticationResult =
                 repository.checkCredential(credential) {
                     latencyTracker.onActionEnd(LatencyTracker.ACTION_CHECK_CREDENTIAL)
+                    if (!successEmitted) {
+                        successEmitted = true
+                        notifyOnAuthResultListeners(true)
+                    }
                 }
             credential.zeroize()
 
             if (authenticationResult.isSuccessful) {
                 latencyTracker.onActionEnd(LatencyTracker.ACTION_CHECK_CREDENTIAL_UNLOCKED)
-                latencyTracker.onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK)
                 repository.reportAuthenticationAttempt(AuthenticationResult.SUCCEEDED)
-                _onAuthenticationResult.emit(true)
+                latencyTracker.onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK)
+                if (!successEmitted) {
+                    successEmitted = true
+                    notifyOnAuthResultListeners(true)
+                }
 
                 // Force a garbage collection in an attempt to erase any credentials left in memory.
                 // Do it after a 5-sec delay to avoid making the bouncer dismiss animation janky.
@@ -265,7 +304,7 @@ constructor(
                 repository.reportLockoutStarted(authenticationResult.lockoutDuration)
             }
 
-            _onAuthenticationResult.emit(false)
+            notifyOnAuthResultListeners(false)
             return AuthenticationResult.FAILED
         } catch (ex: CancellationException) {
             // The authentication action has been cancelled, likely due to the user leaving the UI.
@@ -384,6 +423,16 @@ constructor(
             System.runFinalization()
             System.gc()
         }
+    }
+
+    private fun notifyOnAuthResultListeners(isSuccessful: Boolean) {
+        onAuthenticationResultListeners.forEach { it.onAuthenticationResult(isSuccessful) }
+    }
+
+    /** Defines interface for classes that can listen for authentication result events. */
+    interface OnAuthenticationResultListener {
+        /** Notifies that an authentication result event occurred. */
+        fun onAuthenticationResult(isSuccessful: Boolean)
     }
 
     companion object {
