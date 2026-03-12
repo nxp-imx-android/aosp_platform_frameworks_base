@@ -177,7 +177,7 @@ object ShadeHeader {
     }
 }
 
-/** The status bar that appears above the Shade scene on small screens. */
+/** The status bar that appears above the Shade scene */
 @Composable
 fun ContentScope.CollapsedShadeHeader(
     viewModel: ShadeHeaderViewModel,
@@ -212,7 +212,9 @@ fun ContentScope.CollapsedShadeHeader(
                 Clock(
                     onClick = viewModel::onClockClicked,
                     textColor = textColor,
-                    modifier = Modifier.minimumInteractiveComponentSize(),
+                    modifier =
+                        Modifier.sysuiResTag("expanded_header_clock")
+                            .minimumInteractiveComponentSize(),
                 )
                 VariableDayDate(
                     longerDateText = viewModel.longerDateText,
