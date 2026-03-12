@@ -323,6 +323,7 @@ public class Policies {
                 /* emptyStringAllowed= */ true,
                 /* unprintableCharactersAllowed= */ false
             ),
+            /* resolutionMechanism= */ null,
             /* emptyListAllowed= */ false
         ));
         policies.add(new PackagePolicyMetadata(

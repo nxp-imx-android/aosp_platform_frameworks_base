@@ -166,6 +166,7 @@ object ListOfStringPolicy {
                 /* emptyStringAllowed= */ false,
                 /* unprintableCharactersAllowed= */ false,
             ),
+            /* resolutionMechanism= */ null,
             /* emptyListAllowed= */ false,
         )
     val anyTransportValue: PolicyValueTransport =
@@ -207,6 +208,7 @@ fun ListPolicyMetadata<String>.copy(
             /* unprintableCharactersAllowed= */ unprintableCharactersAllowed
                 ?: (this.elementMetadata as StringPolicyMetadata).isUnprintableCharactersAllowed,
         ),
+        /* resolutionMechanism= */ null,
         /* emptyListAllowed= */ emptyListAllowed ?: this.isEmptyListAllowed,
     )
 

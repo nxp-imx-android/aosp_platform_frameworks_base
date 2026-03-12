@@ -21,6 +21,7 @@ import android.processor.devicepolicy.protos.PolicyMetadata
 import android.processor.devicepolicy.protos.PolicyMetadataList
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.EnumPolicyMetadata
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.ListPolicyMetadata
 import android.tools.policymetadata.Generator
 import com.google.common.truth.Truth.assertThat
 import com.squareup.javapoet.JavaFile
@@ -613,7 +614,11 @@ class GeneratorTest {
             )
     }
 
-    private fun listOfStringTestPolicy(name: String): PolicyMetadata.Builder =
+    private fun listOfStringTestPolicy(
+        name: String,
+        resolutionMechanism: ListPolicyMetadata.ResolutionMechanism =
+            ListPolicyMetadata.ResolutionMechanism.newBuilder().setCustom(true).build(),
+    ): PolicyMetadata.Builder =
         PolicyMetadata.newBuilder()
             .setIdentifier(simpleNameToFieldName(name))
             .setTypeSpecificMetadata(
@@ -623,6 +628,7 @@ class GeneratorTest {
                             .setStringMetadata(
                                 TypeSpecificPolicyMetadata.StringPolicyMetadata.newBuilder()
                             )
+                            .setResolutionMechanism(resolutionMechanism)
                     )
             )
 
@@ -649,23 +655,73 @@ class GeneratorTest {
                         listOf("test.package.PolicyContainer.MY_TEST_STRING_LIST_POLICY"),
                     code =
                         """
-                policies.add(new ListPolicyMetadata<String>(
-                    /* id= */ MY_TEST_STRING_LIST_POLICY,
-                    /* elementMetadata= */ new StringPolicyMetadata(
-                        /* id= */ new PolicyIdentifier<String>(MY_TEST_STRING_LIST_POLICY.getId() + "#elements"),
-                        /* allowedScopes= */ Set.of(
-                            2
-                        ),
-                        /* affectedResource= */ 1,
-                        /* requiredPermission= */ null,
-                        /* requiredCrossUserPermission= */ null,
-                        /* allowedDpcTypes= */ Set.of(),
-                        /* emptyStringAllowed= */ false,
-                        /* unprintableCharactersAllowed= */ false
-                    ),
-                    /* emptyListAllowed= */ false
-                ));
-                """,
+                          policies.add(new ListPolicyMetadata<String>(
+                              /* id= */ MY_TEST_STRING_LIST_POLICY,
+                              /* elementMetadata= */ new StringPolicyMetadata(
+                                  /* id= */ new PolicyIdentifier<String>(MY_TEST_STRING_LIST_POLICY.getId() + "#elements"),
+                                  /* allowedScopes= */ Set.of(
+                                      2
+                                  ),
+                                  /* affectedResource= */ 1,
+                                  /* requiredPermission= */ null,
+                                  /* requiredCrossUserPermission= */ null,
+                                  /* allowedDpcTypes= */ Set.of(),
+                                  /* emptyStringAllowed= */ false,
+                                  /* unprintableCharactersAllowed= */ false
+                              ),
+                              /* resolutionMechanism= */ null,
+                              /* emptyListAllowed= */ false
+                          ));
+                        """,
+                )
+            )
+    }
+
+    @Test
+    fun test_listOfStringPolicy_conflictResolutionUnion_outputMatches() {
+        val policyList =
+            PolicyMetadataList.newBuilder()
+                .addPolicyMetadata(
+                    listOfStringTestPolicy(
+                            "test.package.PolicyContainer.MY_TEST_STRING_LIST_POLICY",
+                            resolutionMechanism =
+                                ListPolicyMetadata.ResolutionMechanism.newBuilder()
+                                    .setUnion(true)
+                                    .build(),
+                        )
+                        .addAllAllowedScopes(listOf(PolicyMetadata.PolicyScope.POLICY_SCOPE_DEVICE))
+                        .setAffectedResource(PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE)
+                )
+                .build()
+
+        val javaFile = Generator.generate(policyList)
+
+        assertThat(javaFileToString(javaFile))
+            .isEqualTo(
+                fillInFile(
+                    includes = listOf("android.app.admin.PolicyIdentifier", "java.lang.String"),
+                    staticImports =
+                        listOf("test.package.PolicyContainer.MY_TEST_STRING_LIST_POLICY"),
+                    code =
+                        """
+                          policies.add(new ListPolicyMetadata<String>(
+                              /* id= */ MY_TEST_STRING_LIST_POLICY,
+                              /* elementMetadata= */ new StringPolicyMetadata(
+                                  /* id= */ new PolicyIdentifier<String>(MY_TEST_STRING_LIST_POLICY.getId() + "#elements"),
+                                  /* allowedScopes= */ Set.of(
+                                      2
+                                  ),
+                                  /* affectedResource= */ 1,
+                                  /* requiredPermission= */ null,
+                                  /* requiredCrossUserPermission= */ null,
+                                  /* allowedDpcTypes= */ Set.of(),
+                                  /* emptyStringAllowed= */ false,
+                                  /* unprintableCharactersAllowed= */ false
+                              ),
+                              /* resolutionMechanism= */ new ResolutionMechanismMetadata.ListUnion<List<String>>(),
+                              /* emptyListAllowed= */ false
+                          ));
+                        """,
                 )
             )
     }
@@ -682,6 +738,11 @@ class GeneratorTest {
                         TypeSpecificPolicyMetadata.ListPolicyMetadata.newBuilder()
                             .setIntegerMetadata(
                                 TypeSpecificPolicyMetadata.IntegerPolicyMetadata.newBuilder()
+                            )
+                            .setResolutionMechanism(
+                                ListPolicyMetadata.ResolutionMechanism.newBuilder()
+                                    .setCustom(true)
+                                    .build()
                             )
                             .setEmptyListAllowed(emptyListAllowed)
                     )
@@ -725,6 +786,7 @@ class GeneratorTest {
                         /* minValue= */ Integer.MIN_VALUE,
                         /* maxValue= */ Integer.MAX_VALUE
                     ),
+                    /* resolutionMechanism= */ null,
                     /* emptyListAllowed= */ true
                 ));
                 """,
@@ -753,6 +815,11 @@ class GeneratorTest {
                                             .setCustom(true)
                                             .build()
                                     )
+                            )
+                            .setResolutionMechanism(
+                                ListPolicyMetadata.ResolutionMechanism.newBuilder()
+                                    .setCustom(true)
+                                    .build()
                             )
                     )
             )
@@ -798,6 +865,7 @@ class GeneratorTest {
                           17
                         )
                     ),
+                    /* resolutionMechanism= */ null,
                     /* emptyListAllowed= */ false
                 ));
                 """,

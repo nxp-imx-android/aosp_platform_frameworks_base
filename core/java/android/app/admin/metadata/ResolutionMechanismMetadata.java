@@ -50,4 +50,13 @@ public abstract class ResolutionMechanismMetadata<T> {
             return "MostRestrictive { mMostToLeastRestrictive= " + mMostToLeastRestrictive + " }";
         }
     }
+
+    public static final class ListUnion<T> extends ResolutionMechanismMetadata<T> {
+        public ListUnion() {}
+
+        @Override
+        public String toString() {
+            return "ListUnion {}";
+        }
+    }
 }
