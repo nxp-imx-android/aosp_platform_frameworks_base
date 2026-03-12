@@ -90,6 +90,7 @@ class UserSwitchingDialog extends Dialog {
     private final String mSwitchingToUserMessage;
     protected final Context mContext;
     private final int mTraceCookie;
+    private final Boolean mIsLogout;
 
     UserSwitchingDialog(Context context, UserInfo oldUser, UserInfo newUser, Handler handler,
             @Nullable String switchingFromUserMessage, @Nullable String switchingToUserMessage) {
@@ -104,6 +105,13 @@ class UserSwitchingDialog extends Dialog {
         mDisableAnimations = SystemProperties.getBoolean(
                 "debug.usercontroller.disable_user_switching_dialog_animations", false);
         mTraceCookie = UserHandle.MAX_SECONDARY_USER_ID * oldUser.id + newUser.id;
+
+        mIsLogout =
+                Flags.userSwitchingDialogSignoutMessage()
+                        && UserManager.isHeadlessSystemUserMode()
+                        && mNewUser.id == UserHandle.USER_SYSTEM
+                        && mContext.getResources()
+                                .getBoolean(R.bool.config_userSwitchingMustGoThroughLoginScreen);
 
         inflateContent();
         configureWindow();
@@ -151,7 +159,8 @@ class UserSwitchingDialog extends Dialog {
     }
 
     private Bitmap getUserIconRounded() {
-        final Bitmap bmp = ObjectUtils.getOrElse(BitmapFactory.decodeFile(mNewUser.iconPath),
+        final String iconPath = mIsLogout ? mOldUser.iconPath : mNewUser.iconPath;
+        final Bitmap bmp = ObjectUtils.getOrElse(BitmapFactory.decodeFile(iconPath),
                 defaultUserIcon(mNewUser.id));
         final int w = bmp.getWidth();
         final int h = bmp.getHeight();
@@ -182,6 +191,10 @@ class UserSwitchingDialog extends Dialog {
                 return mSwitchingFromUserMessage + " " + mSwitchingToUserMessage;
             }
             return Objects.requireNonNullElse(mSwitchingFromUserMessage, mSwitchingToUserMessage);
+        }
+
+        if (mIsLogout) {
+            return res.getString(R.string.user_logging_out_message);
         }
 
         return res.getString(R.string.user_switching_message, mNewUser.name);
