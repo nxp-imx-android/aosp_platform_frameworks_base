@@ -26,14 +26,22 @@ import static com.android.server.privatecompute.AuditModeTestUtils.getTestEntry;
 import static com.android.server.privatecompute.AuditModeTestUtils.readAuditLogFileFromFile;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 import android.os.PersistableBundle;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import androidx.test.runner.AndroidJUnit4;
 import com.google.common.collect.ImmutableList;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Rule;
@@ -45,6 +53,14 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 @RequiresFlagsEnabled(FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
 public class AuditLogFileWriterTest {
+
+    // Open file for writing, creating it if it doesn't exist, or truncating it if it does.
+    private static final StandardOpenOption[] OPEN_OPTIONS =
+            new StandardOpenOption[] {
+                StandardOpenOption.CREATE,
+                StandardOpenOption.WRITE,
+                StandardOpenOption.TRUNCATE_EXISTING
+            };
 
     @Rule public TemporaryFolder mTemporaryFolder = new TemporaryFolder();
 
@@ -143,8 +159,7 @@ public class AuditLogFileWriterTest {
     }
 
     @Test
-    public void writeEntries_createsDirectoryIfItDoesNotExist()
-            throws Exception {
+    public void writeEntries_createsDirectoryIfItDoesNotExist() throws Exception {
         File newDir = new File(mTemporaryFolder.getRoot(), "new_dir");
         File file = new File(newDir, "test_log");
         assertThat(newDir.exists()).isFalse();
@@ -156,5 +171,153 @@ public class AuditLogFileWriterTest {
 
         assertThat(newDir.exists()).isTrue();
         assertThat(file.exists()).isTrue();
+    }
+
+    @Test
+    public void readFromStream_emptyStream_throws() throws Exception {
+        DataInputStream stream = new DataInputStream(new ByteArrayInputStream(new byte[0]));
+
+        assertThrows(IOException.class, () -> AuditLogEntry.readFromStream(stream));
+    }
+
+    @Test
+    public void readFromStream_invalidStream_throws() throws Exception {
+        byte[] bytes = {1, 2, 3};
+        DataInputStream stream = new DataInputStream(new ByteArrayInputStream(bytes));
+
+        assertThrows(IOException.class, () -> AuditLogEntry.readFromStream(stream));
+    }
+
+    @Test
+    public void readFromStream_canReadEntry() throws Exception {
+        AuditLogEntry originalEntry = getTestEntry();
+        byte[] bytes = originalEntry.toByteArray();
+        DataInputStream stream = new DataInputStream(new ByteArrayInputStream(bytes));
+
+        AuditLogEntry parsedEntry = AuditLogEntry.readFromStream(stream);
+
+        assertEquals(originalEntry.mTimestamp, parsedEntry.mTimestamp);
+        assertEquals(originalEntry.mCallingPackage, parsedEntry.mCallingPackage);
+        assertEquals(originalEntry.mCallingUid, parsedEntry.mCallingUid);
+        assertEqualsToTestBundle(parsedEntry.mData);
+    }
+
+    @Test
+    public void readFromStream_canReadMultipleEntries() throws Exception {
+        AuditLogEntry entry1 = getTestEntry();
+        PersistableBundle bundle2 = new PersistableBundle();
+        bundle2.putInt("test_key2", 123);
+        AuditLogEntry entry2 = new AuditLogEntry(bundle2, 234L, "other_package", 23);
+        byte[] entry1Bytes = entry1.toByteArray();
+        byte[] entry2Bytes = entry2.toByteArray();
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        output.write(entry1Bytes);
+        output.write(entry2Bytes);
+        byte[] bytes = output.toByteArray();
+        DataInputStream stream = new DataInputStream(new ByteArrayInputStream(bytes));
+
+        AuditLogEntry parsedEntry1 = AuditLogEntry.readFromStream(stream);
+        AuditLogEntry parsedEntry2 = AuditLogEntry.readFromStream(stream);
+
+        assertEquals(entry1.mTimestamp, parsedEntry1.mTimestamp);
+        assertEquals(entry1.mCallingPackage, parsedEntry1.mCallingPackage);
+        assertEquals(entry1.mCallingUid, parsedEntry1.mCallingUid);
+        assertEqualsToTestBundle(parsedEntry1.mData);
+        assertEquals(entry2.mTimestamp, parsedEntry2.mTimestamp);
+        assertEquals(entry2.mCallingPackage, parsedEntry2.mCallingPackage);
+        assertEquals(entry2.mCallingUid, parsedEntry2.mCallingUid);
+        assertThat(parsedEntry2.mData.getInt("test_key2")).isEqualTo(123);
+    }
+
+    @Test
+    public void readAuditLogFile_incorrectVersion_returnsEmpty() throws Exception {
+        File file = mTemporaryFolder.newFile();
+        AuditLogFileWriter writer = new AuditLogFileWriter(file);
+        writer.writeEntries(new ArrayList<>());
+        // Write a stream with an invalid version number.
+        DataOutputStream outputStream =
+                new DataOutputStream(
+                        new BufferedOutputStream(
+                                Files.newOutputStream(file.toPath(), OPEN_OPTIONS)));
+        outputStream.writeInt(12345);
+
+        List<AuditLogEntry> entries = AuditLogFileWriter.readEntries(file);
+
+        // Assert that it does not throw, but simply skips unreadable files.
+        assertThat(entries).isEmpty();
+    }
+
+    @Test
+    public void readAuditLogFile_canReadEntries() throws Exception {
+        File file = mTemporaryFolder.newFile();
+        AuditLogFileWriter writer = new AuditLogFileWriter(file);
+        AuditLogEntry entry1 = getTestEntry();
+        PersistableBundle bundle2 = new PersistableBundle();
+        bundle2.putInt("test_key2", 123);
+        AuditLogEntry entry2 = new AuditLogEntry(bundle2, 234L, "other_package", 23);
+        writer.writeEntries(ImmutableList.of(entry1.toByteArray(), entry2.toByteArray()));
+
+        List<AuditLogEntry> entries = AuditLogFileWriter.readEntries(file);
+
+        assertEquals(2, entries.size());
+        assertEquals(TEST_TIMESTAMP, entries.get(0).mTimestamp);
+        assertEquals(TEST_PACKAGE_NAME, entries.get(0).mCallingPackage);
+        assertEquals(TEST_UID, entries.get(0).mCallingUid);
+        assertEqualsToTestBundle(entries.get(0).mData);
+        assertEquals(234L, entries.get(1).mTimestamp);
+        assertEquals("other_package", entries.get(1).mCallingPackage);
+        assertEquals(23, entries.get(1).mCallingUid);
+        assertThat(entries.get(1).mData.getInt("test_key2")).isEqualTo(123);
+    }
+
+    @Test
+    public void readAuditLogFiles_canReadEntries() throws Exception {
+        File file1 = mTemporaryFolder.newFile();
+        File file2 = mTemporaryFolder.newFile();
+        AuditLogFileWriter writer1 = new AuditLogFileWriter(file1);
+        AuditLogFileWriter writer2 = new AuditLogFileWriter(file2);
+        AuditLogEntry entry1 = getTestEntry();
+        PersistableBundle bundle2 = new PersistableBundle();
+        bundle2.putInt("test_key2", 123);
+        AuditLogEntry entry2 = new AuditLogEntry(bundle2, 234L, "other_package", 23);
+        writer1.writeEntries(ImmutableList.of(entry1.toByteArray()));
+        writer2.writeEntries(ImmutableList.of(entry2.toByteArray()));
+
+        List<AuditLogEntry> entries =
+                AuditLogFileWriter.readEntriesForFiles(ImmutableList.of(file1, file2));
+
+        assertEquals(2, entries.size());
+        assertEquals(TEST_TIMESTAMP, entries.get(0).mTimestamp);
+        assertEquals(TEST_PACKAGE_NAME, entries.get(0).mCallingPackage);
+        assertEquals(TEST_UID, entries.get(0).mCallingUid);
+        assertEqualsToTestBundle(entries.get(0).mData);
+        assertEquals(234L, entries.get(1).mTimestamp);
+        assertEquals("other_package", entries.get(1).mCallingPackage);
+        assertEquals(23, entries.get(1).mCallingUid);
+        assertThat(entries.get(1).mData.getInt("test_key2")).isEqualTo(123);
+    }
+
+    @Test
+    public void readAuditLogFiles_skipsUnreadableFiles() throws Exception {
+        File file1 = mTemporaryFolder.newFile();
+        File file2 = mTemporaryFolder.newFile();
+        AuditLogFileWriter writer1 = new AuditLogFileWriter(file1);
+        AuditLogEntry entry1 = getTestEntry();
+        writer1.writeEntries(ImmutableList.of(entry1.toByteArray()));
+        // Garbled file 2
+        DataOutputStream outputStream =
+                new DataOutputStream(
+                        new BufferedOutputStream(
+                                Files.newOutputStream(file2.toPath(), OPEN_OPTIONS)));
+        outputStream.writeInt(12345);
+
+        List<AuditLogEntry> entries =
+                AuditLogFileWriter.readEntriesForFiles(ImmutableList.of(file1, file2));
+
+        assertEquals(1, entries.size());
+        assertEquals(TEST_TIMESTAMP, entries.get(0).mTimestamp);
+        assertEquals(TEST_PACKAGE_NAME, entries.get(0).mCallingPackage);
+        assertEquals(TEST_UID, entries.get(0).mCallingUid);
+        assertEqualsToTestBundle(entries.get(0).mData);
     }
 }
