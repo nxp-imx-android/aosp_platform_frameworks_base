@@ -6028,11 +6028,15 @@ public final class ActiveServices {
         if (!Flags.deferServiceRestartWhenFrozen()) {
             return;
         }
+        final long now = SystemClock.uptimeMillis();
         for (int i = 0; i < psr.numberOfConnections(); i++) {
             final ConnectionRecord cr = psr.getConnectionAt(i);
             if (cr.hasFlag(Context.BIND_AUTO_CREATE)) {
                 final ServiceRecord sr = cr.getService();
-                if (mRestartingServices.contains(sr)) {
+                // If the service is scheduled for restart, only do it now if the
+                // scheduled time has already passed. Otherwise, let the existing
+                // restart timer handle it to respect the backoff policy.
+                if (now >= sr.nextRestartTime && mRestartingServices.contains(sr)) {
                     performServiceRestartLocked(sr);
                 }
             }
