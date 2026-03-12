@@ -66,6 +66,17 @@ flag {
 }
 
 flag {
+  name: "enable_parent_approval_for_pin_setup"
+  is_exported: false
+  namespace: "supervision"
+  description: "Flag that enables parent approval for pin setup flow"
+  bug: "491931261"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "enable_supervision_pin_ui_updates_bugfix"
   is_exported: false
   namespace: "supervision"
