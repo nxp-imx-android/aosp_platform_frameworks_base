@@ -38,6 +38,7 @@ import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.Andro
 import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.SOURCE_UID;
 import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.STANDBY_BUCKET;
 import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidJobSchedulerJob.STATE;
+import static android.net.Uri.fromParts;
 import static android.text.format.DateUtils.DAY_IN_MILLIS;
 import static android.text.format.DateUtils.HOUR_IN_MILLIS;
 import static android.text.format.DateUtils.MINUTE_IN_MILLIS;
@@ -77,6 +78,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
 import android.app.AppGlobals;
@@ -120,8 +122,6 @@ import android.os.WorkSource;
 import android.os.WorkSource.WorkChain;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
-import android.platform.test.annotations.RequiresFlagsDisabled;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -140,6 +140,7 @@ import com.android.server.job.controllers.QuotaController;
 import com.android.server.job.restrictions.JobRestriction;
 import com.android.server.job.restrictions.ThermalStatusRestriction;
 import com.android.server.pm.UserManagerInternal;
+import com.android.server.pm.pkg.PackageStateInternal;
 import com.android.server.usage.AppStandbyInternal;
 
 import org.junit.After;
@@ -217,6 +218,7 @@ public class JobSchedulerServiceTest {
                 .mockStatic(ServiceManager.class)
                 .mockStatic(AppGlobals.class)
                 .startMocking();
+
 
         when(AppGlobals.getPackageManager()).thenReturn(mIPackageManager);
         // Default to not finding the package to keep sourceUid == callingUid (1234)
@@ -3079,7 +3081,7 @@ public class JobSchedulerServiceTest {
      * UID does not match the service's PCC-aware UID.
      */
     @Test
-    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    @EnableFlags(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
     public void testSchedule_PccServiceCallingUidPccUidDifferentThrowException_FlagEnabled()
             throws Exception {
         final int testAppUid = Process.myUid();
@@ -3103,7 +3105,7 @@ public class JobSchedulerServiceTest {
      * support is enabled and the calling UID matches the service's PCC-aware UID.
      */
     @Test
-    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    @EnableFlags(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
     public void testSchedule_PccServiceCallingUidSameAsPccUidSuccess_FlagEnabled()
             throws Exception {
         final int testAppUid = Process.myUid();
@@ -3126,7 +3128,7 @@ public class JobSchedulerServiceTest {
      * as long as the calling UID matches the base application UID.
      */
     @Test
-    @RequiresFlagsDisabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    @DisableFlags(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
     public void testSchedule_PccService_FlagDisabled() throws Exception {
         final int testAppUid = Process.myUid();
         final int testPccUid = testAppUid + Process.FIRST_PCC_UID - Process.FIRST_APPLICATION_UID;
@@ -3203,6 +3205,223 @@ public class JobSchedulerServiceTest {
                             job.getService().getPackageName(),
                             0, "JSSTest", ""));
         }
+    }
+
+    @Test
+    @EnableFlags(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testUserStopRemovesPendingPccUid() {
+        final String pkgName = "pcc_pkg";
+        final int userId = 0;
+        final int standardAppId = 10001;
+        final int standardUid = UserHandle.getUid(userId, standardAppId);
+        final int pccId = 30001;
+        final int pccUid = UserHandle.getUid(userId, pccId);
+
+        JobInfo.Builder jobInfoBuilder = new JobInfo.Builder(1,
+                new ComponentName(pkgName, "bar"));
+        JobStatus standardJob = createJobStatus("testUserStopRemovesPendingPccUid",
+                jobInfoBuilder, standardUid, pkgName);
+        JobInfo.Builder jobInfoBuilder2 = new JobInfo.Builder(2,
+                new ComponentName(pkgName, "bar"));
+        JobStatus pccJob = createJobStatus("testUserStopRemovesPendingPccUid",
+                jobInfoBuilder2, pccUid, pkgName);
+
+        doReturn(standardUid).when(mPackageManagerInternal)
+                .getPackageUid(eq(pkgName), anyLong(), eq(userId));
+
+        PackageStateInternal mockPackageState = mock(PackageStateInternal.class);
+        doReturn(pccId).when(mockPackageState).getPccId();
+        doReturn(mockPackageState).when(mPackageManagerInternal)
+                .getPackageStateInternal(eq(pkgName));
+
+        mService.getPendingJobQueue().clear();
+        mService.getPendingJobQueue().add(standardJob);
+        mService.getPendingJobQueue().add(pccJob);
+        mService.getJobStore().add(standardJob);
+        mService.getJobStore().add(pccJob);
+
+        mService.notePendingUserRequestedAppStopInternal(pkgName, userId, "test");
+
+        assertEquals(0, mService.getPendingJobQueue().size());
+        assertFalse(mService.getPendingJobQueue().contains(standardJob));
+        assertFalse(mService.getPendingJobQueue().contains(pccJob));
+
+        assertEquals(JobScheduler.PENDING_JOB_REASON_USER,
+                mService.getPendingJobReasons(standardJob)[0]);
+        assertEquals(JobScheduler.PENDING_JOB_REASON_USER,
+                mService.getPendingJobReasons(pccJob)[0]);
+
+        assertTrue((standardJob.getInternalFlags() & JobStatus.INTERNAL_FLAG_DEMOTED_BY_USER) != 0);
+        assertTrue((pccJob.getInternalFlags() & JobStatus.INTERNAL_FLAG_DEMOTED_BY_USER) != 0);
+    }
+
+    @Test
+    @EnableFlags(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testPackageRemovedCancelsPccJobs() {
+        final String pkgName = "pcc_pkg";
+        final int userId = 0;
+        final int standardUid = UserHandle.getUid(userId, 10001);
+        final int pccId = 30001;
+        final int pccUid = UserHandle.getUid(userId, pccId);
+
+        JobInfo.Builder jobInfoBuilder = new JobInfo.Builder(1,
+                new ComponentName(pkgName, "bar"));
+        JobStatus pccJob = createJobStatus("testPackageRemovedCancelsPccJobs",
+                jobInfoBuilder, pccUid, pkgName);
+        mService.getJobStore().add(pccJob);
+
+        // Mock PM returning null because the package is already fully removed.
+        doReturn(null).when(mPackageManagerInternal)
+                .getPackageStateInternal(eq(pkgName));
+
+        // Add to mUidToPackageCache so primary lookup logic (cache) can find it.
+        synchronized (mService.mLock) {
+            mService.mUidToPackageCache.add(pccUid, pkgName);
+        }
+
+        spyOn(mService);
+
+        Intent intent = new Intent(Intent.ACTION_PACKAGE_FULLY_REMOVED);
+        intent.setData(fromParts("package", pkgName, null));
+        intent.putExtra(Intent.EXTRA_UID, standardUid);
+
+        mService.mBroadcastReceiver.onReceive(mContext, intent);
+
+        verify(mService).cancelJobsForPackageAndUidLocked(eq(pkgName), eq(standardUid), eq(pccUid),
+                anyBoolean(), anyBoolean(), anyInt(), anyInt(), anyString());
+    }
+
+    @Test
+    @EnableFlags(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testPackageRemovedCancelsPccJobs_EmptyCache() {
+        final String pkgName = "pcc_pkg_empty_cache";
+        final int userId = 0;
+        final int standardUid = UserHandle.getUid(userId, 10002);
+        final int pccId = 30002;
+        final int pccUid = UserHandle.getUid(userId, pccId);
+
+        JobInfo.Builder jobInfoBuilder = new JobInfo.Builder(1,
+                new ComponentName(pkgName, "bar"));
+        JobStatus pccJob = createJobStatus("testPackageRemovedCancelsPccJobs_EmptyCache",
+                jobInfoBuilder, pccUid, pkgName);
+        mService.getJobStore().add(pccJob);
+
+        // Mock PM returning null because the package is already fully removed.
+        doReturn(null).when(mPackageManagerInternal)
+                .getPackageStateInternal(eq(pkgName));
+
+        // DO NOT add to mUidToPackageCache. This is the condition we want to test.
+
+        spyOn(mService);
+
+        Intent intent = new Intent(Intent.ACTION_PACKAGE_FULLY_REMOVED);
+        intent.setData(fromParts("package", pkgName, null));
+        intent.putExtra(Intent.EXTRA_UID, standardUid);
+
+        mService.mBroadcastReceiver.onReceive(mContext, intent);
+
+        verify(mService).cancelJobsForPackageAndUidLocked(eq(pkgName), eq(standardUid),
+                eq(pccUid), anyBoolean(), anyBoolean(), anyInt(), anyInt(), anyString());
+    }
+
+    @Test
+    @EnableFlags(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testPackageRestartedCancelsPccJobs() {
+        final String pkgName = "pcc_pkg";
+        final int userId = 0;
+        final int standardUid = UserHandle.getUid(userId, 10001);
+        final int pccId = 30001;
+        final int pccUid = UserHandle.getUid(userId, pccId);
+
+        JobInfo.Builder jobInfoBuilder = new JobInfo.Builder(1,
+                new ComponentName(pkgName, "bar"));
+        JobStatus pccJob = createJobStatus("testPackageRestartedCancelsPccJobs",
+                jobInfoBuilder, pccUid, pkgName);
+        mService.getJobStore().add(pccJob);
+
+        PackageStateInternal mockPackageState = mock(PackageStateInternal.class);
+        doReturn(pccId).when(mockPackageState).getPccId();
+        doReturn(mockPackageState).when(mPackageManagerInternal)
+                .getPackageStateInternal(eq(pkgName));
+
+        spyOn(mService);
+
+        Intent intent = new Intent(Intent.ACTION_PACKAGE_RESTARTED);
+        intent.setData(fromParts("package", pkgName, null));
+        intent.putExtra(Intent.EXTRA_UID, standardUid);
+
+        mService.mBroadcastReceiver.onReceive(mContext, intent);
+
+        verify(mService).cancelJobsForPackageAndUidLocked(eq(pkgName), eq(standardUid), eq(pccUid),
+                anyBoolean(), anyBoolean(), anyInt(), anyInt(), anyString());
+    }
+
+    @Test
+    @EnableFlags(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testPackageChangedDisabledCancelsPccJobs() throws Exception {
+        final String pkgName = "pcc_pkg";
+        final int userId = 0;
+        final int standardUid = UserHandle.getUid(userId, 10001);
+        final int pccId = 30001;
+        final int pccUid = UserHandle.getUid(userId, pccId);
+
+        JobInfo.Builder jobInfoBuilder = new JobInfo.Builder(1,
+                new ComponentName(pkgName, "bar"));
+        JobStatus pccJob = createJobStatus("testPackageChangedDisabledCancelsPccJobs",
+                jobInfoBuilder, pccUid, pkgName);
+        mService.getJobStore().add(pccJob);
+
+        PackageStateInternal mockPackageState = mock(PackageStateInternal.class);
+        doReturn(pccId).when(mockPackageState).getPccId();
+        doReturn(mockPackageState).when(mPackageManagerInternal)
+                .getPackageStateInternal(eq(pkgName));
+
+        when(mIPackageManager.getApplicationEnabledSetting(eq(pkgName), eq(userId)))
+                .thenReturn(PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
+
+        spyOn(mService);
+
+        Intent intent = new Intent(Intent.ACTION_PACKAGE_CHANGED);
+        intent.setData(fromParts("package", pkgName, null));
+        intent.putExtra(Intent.EXTRA_UID, standardUid);
+        intent.putExtra(Intent.EXTRA_CHANGED_COMPONENT_NAME_LIST, new String[]{pkgName});
+
+        mService.mBroadcastReceiver.onReceive(mContext, intent);
+
+        verify(mService).cancelJobsForPackageAndUidLocked(eq(pkgName), eq(standardUid), eq(pccUid),
+                anyBoolean(), anyBoolean(), anyInt(), anyInt(), anyString());
+    }
+
+    @Test
+    @EnableFlags(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testQueryPackageRestartReturnsOkForPccJobs() {
+        final String pkgName = "pcc_pkg";
+        final int userId = 0;
+        final int standardUid = UserHandle.getUid(userId, 10001);
+        final int pccId = 30001;
+        final int pccUid = UserHandle.getUid(userId, pccId);
+
+        JobInfo.Builder jobInfoBuilder = new JobInfo.Builder(1,
+                new ComponentName(pkgName, "bar"));
+        JobStatus pccJob = createJobStatus("testQueryPackageRestartReturnsOkForPccJobs",
+                jobInfoBuilder, pccUid, pkgName);
+        mService.getJobStore().add(pccJob);
+
+        PackageStateInternal mockPackageState = mock(PackageStateInternal.class);
+        doReturn(pccId).when(mockPackageState).getPccId();
+        doReturn(mockPackageState).when(mPackageManagerInternal)
+                .getPackageStateInternal(eq(pkgName));
+
+        Intent intent = new Intent(Intent.ACTION_QUERY_PACKAGE_RESTART);
+        intent.setData(fromParts("package", pkgName, null));
+        intent.putExtra(Intent.EXTRA_UID, standardUid);
+
+        spyOn(mService.mBroadcastReceiver);
+        doNothing().when(mService.mBroadcastReceiver).setResultCode(anyInt());
+
+        mService.mBroadcastReceiver.onReceive(mContext, intent);
+
+        verify(mService.mBroadcastReceiver).setResultCode(Activity.RESULT_OK);
     }
 
     String largeString(int length) {

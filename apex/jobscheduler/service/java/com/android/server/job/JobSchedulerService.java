@@ -160,6 +160,7 @@ import com.android.server.job.controllers.TimeController;
 import com.android.server.job.restrictions.JobRestriction;
 import com.android.server.job.restrictions.ThermalStatusRestriction;
 import com.android.server.pm.UserManagerInternal;
+import com.android.server.pm.pkg.PackageStateInternal;
 import com.android.server.usage.AppStandbyInternal;
 import com.android.server.usage.AppStandbyInternal.AppIdleStateChangeListener;
 import com.android.server.utils.quota.Categorizer;
@@ -485,7 +486,8 @@ public class JobSchedulerService extends com.android.server.SystemService
     final ArrayMap<String, Boolean> mDebuggableApps = new ArrayMap<>();
 
     /** Cached mapping of UIDs (for all users) to a list of packages in the UID. */
-    private final SparseSetArray<String> mUidToPackageCache = new SparseSetArray<>();
+    @VisibleForTesting
+    final SparseSetArray<String> mUidToPackageCache = new SparseSetArray<>();
 
     /** List of jobs whose controller state has changed since the last time we evaluated the job. */
     @GuardedBy("mLock")
@@ -1447,7 +1449,8 @@ public class JobSchedulerService extends com.android.server.SystemService
      * Cleans up outstanding jobs when a package is removed. Even if it's being replaced later we
      * still clean up. On reinstall the package will have a new uid.
      */
-    private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+    @VisibleForTesting
+    final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
@@ -1455,16 +1458,32 @@ public class JobSchedulerService extends com.android.server.SystemService
                 Slog.d(TAG, "Receieved: " + action);
             }
             final String pkgName = getPackageName(intent);
-            final int pkgUid = intent.getIntExtra(Intent.EXTRA_UID, -1);
+            final int pkgUid = intent.getIntExtra(Intent.EXTRA_UID, Process.INVALID_UID);
+            int pccUid = Process.INVALID_UID;
+
+            if (enablePccFrameworkSupport() && pkgUid != Process.INVALID_UID) {
+                final int userIdFromPkgUid = UserHandle.getUserId(pkgUid);
+                if (Intent.ACTION_PACKAGE_FULLY_REMOVED.equals(action)) {
+                    pccUid = getPccUidFromCache(pkgName, userIdFromPkgUid);
+                    if (pccUid == Process.INVALID_UID) {
+                        pccUid = getPccUidFromJobStore(pkgName, userIdFromPkgUid);
+                    }
+                } else {
+                    pccUid = getPccUid(pkgName, userIdFromPkgUid);
+                }
+            }
 
             if (Intent.ACTION_PACKAGE_CHANGED.equals(action)) {
                 synchronized (mPermissionCache) {
                     // Something changed. Better clear the cached permission set.
                     mPermissionCache.remove(pkgUid);
+                    if (enablePccFrameworkSupport() && pccUid != Process.INVALID_UID) {
+                        mPermissionCache.remove(pccUid);
+                    }
                 }
                 // Purge the app's jobs if the whole package was just disabled.  When this is
                 // the case the component name will be a bare package name.
-                if (pkgName != null && pkgUid != -1) {
+                if (pkgName != null && pkgUid != Process.INVALID_UID) {
                     final String[] changedComponents = intent.getStringArrayExtra(
                             Intent.EXTRA_CHANGED_COMPONENT_NAME_LIST);
                     if (changedComponents != null) {
@@ -1490,6 +1509,7 @@ public class JobSchedulerService extends com.android.server.SystemService
                                             // a user-initiated action, it should be fine to just
                                             // put USER instead of UNINSTALL or DISABLED.
                                             cancelJobsForPackageAndUidLocked(pkgName, pkgUid,
+                                                    pccUid,
                                                     /* includeSchedulingApp */ true,
                                                     /* includeSourceApp */ true,
                                                     JobParameters.STOP_REASON_USER,
@@ -1499,11 +1519,12 @@ public class JobSchedulerService extends com.android.server.SystemService
                                     }
                                 } catch (RemoteException | IllegalArgumentException e) {
                                     /*
-                                     * IllegalArgumentException means that the package doesn't exist.
-                                     * This arises when PACKAGE_CHANGED broadcast delivery has lagged
-                                     * behind outright uninstall, so by the time we try to act it's gone.
-                                     * We don't need to act on this PACKAGE_CHANGED when this happens;
-                                     * we'll get a PACKAGE_REMOVED later and clean up then.
+                                     * IllegalArgumentException means that the package doesn't
+                                     * exist. This arises when PACKAGE_CHANGED broadcast delivery
+                                     * has lagged behind outright uninstall, so by the time we try
+                                     * to act it's gone. We don't need to act on this
+                                     * PACKAGE_CHANGED when this happens; we'll get a
+                                     * PACKAGE_REMOVED later and clean up then.
                                      *
                                      * RemoteException can't actually happen; the package manager is
                                      * running in this same process.
@@ -1518,7 +1539,11 @@ public class JobSchedulerService extends com.android.server.SystemService
                         }
                         synchronized (mLock) {
                             for (int c = mControllers.size() - 1; c >= 0; --c) {
-                                mControllers.get(c).reevaluateStateLocked(pkgUid);
+                                final StateController stateController = mControllers.get(c);
+                                stateController.reevaluateStateLocked(pkgUid);
+                                if (enablePccFrameworkSupport() && pccUid != Process.INVALID_UID) {
+                                    stateController.reevaluateStateLocked(pccUid);
+                                }
                             }
                         }
                     }
@@ -1529,33 +1554,55 @@ public class JobSchedulerService extends com.android.server.SystemService
                 synchronized (mPermissionCache) {
                     // Something changed. Better clear the cached permission set.
                     mPermissionCache.remove(pkgUid);
+                    if (enablePccFrameworkSupport() && pccUid != Process.INVALID_UID) {
+                        mPermissionCache.remove(pccUid);
+                    }
                 }
                 if (!intent.getBooleanExtra(Intent.EXTRA_REPLACING, false)) {
                     synchronized (mLock) {
                         mUidToPackageCache.remove(pkgUid);
+                        if (enablePccFrameworkSupport() && pccUid != Process.INVALID_UID) {
+                            mUidToPackageCache.remove(pccUid);
+                        }
                     }
                 }
             } else if (Intent.ACTION_PACKAGE_FULLY_REMOVED.equals(action)) {
                 synchronized (mPermissionCache) {
                     mPermissionCache.remove(pkgUid);
+                    if (enablePccFrameworkSupport() && pccUid != Process.INVALID_UID) {
+                        mPermissionCache.remove(pccUid);
+                    }
                 }
                 if (DEBUG) {
                     Slog.d(TAG, "Removing jobs for " + pkgName + " (uid=" + pkgUid + ")");
                 }
                 synchronized (mLock) {
                     mUidToPackageCache.remove(pkgUid);
+                    if (enablePccFrameworkSupport() && pccUid != Process.INVALID_UID) {
+                        mUidToPackageCache.remove(pccUid);
+                        mUidBiasOverride.delete(pccUid);
+                        mUidCapabilities.delete(pccUid);
+                        mUidProcStates.delete(pccUid);
+                    }
                     // There's no guarantee that the process has been stopped by the time we
                     // get here, but since this is generally a user-initiated action, it should
                     // be fine to just put USER instead of UNINSTALL or DISABLED.
-                    cancelJobsForPackageAndUidLocked(pkgName, pkgUid,
+                    cancelJobsForPackageAndUidLocked(pkgName, pkgUid, pccUid,
                             /* includeSchedulingApp */ true, /* includeSourceApp */ true,
                             JobParameters.STOP_REASON_USER,
                             JobParameters.INTERNAL_STOP_REASON_UNINSTALL, "app uninstalled");
                     for (int c = 0; c < mControllers.size(); ++c) {
-                        mControllers.get(c).onAppRemovedLocked(pkgName, pkgUid);
+                        final StateController stateController = mControllers.get(c);
+                        stateController.onAppRemovedLocked(pkgName, pkgUid);
+                        if (enablePccFrameworkSupport() && pccUid != Process.INVALID_UID) {
+                            stateController.onAppRemovedLocked(pkgName, pccUid);
+                        }
                     }
                     mDebuggableApps.remove(pkgName);
                     mConcurrencyManager.onAppRemovedLocked(pkgName, pkgUid);
+                    if (enablePccFrameworkSupport() && pccUid != Process.INVALID_UID) {
+                        mConcurrencyManager.onAppRemovedLocked(pkgName, pccUid);
+                    }
                 }
             } else if (Intent.ACTION_UID_REMOVED.equals(action)) {
                 if (!intent.getBooleanExtra(Intent.EXTRA_REPLACING, false)) {
@@ -1596,16 +1643,20 @@ public class JobSchedulerService extends com.android.server.SystemService
             } else if (Intent.ACTION_QUERY_PACKAGE_RESTART.equals(action)) {
                 // Has this package scheduled any jobs, such that we will take action
                 // if it were to be force-stopped?
-                if (pkgUid != -1) {
-                    ArraySet<JobStatus> jobsForUid;
+                if (pkgUid != Process.INVALID_UID) {
+                    final ArraySet<JobStatus> jobsForUid = new ArraySet<>();
                     synchronized (mLock) {
-                        jobsForUid = mJobs.getJobsByUid(pkgUid);
+                        mJobs.getJobsByUid(pkgUid, jobsForUid);
+                        if (enablePccFrameworkSupport() && pccUid != Process.INVALID_UID) {
+                            mJobs.getJobsByUid(pccUid, jobsForUid);
+                        }
                     }
                     for (int i = jobsForUid.size() - 1; i >= 0; i--) {
                         if (jobsForUid.valueAt(i).getSourcePackageName().equals(pkgName)) {
                             if (DEBUG) {
                                 Slog.d(TAG, "Restart query: package " + pkgName + " at uid "
-                                        + pkgUid + " has jobs");
+                                        + pkgUid + (pccUid != Process.INVALID_UID
+                                                ? " or pcc uid " + pccUid : "") + " has jobs");
                             }
                             setResultCode(Activity.RESULT_OK);
                             break;
@@ -1614,7 +1665,7 @@ public class JobSchedulerService extends com.android.server.SystemService
                 }
             } else if (Intent.ACTION_PACKAGE_RESTARTED.equals(action)) {
                 // possible force-stop
-                if (pkgUid != -1) {
+                if (pkgUid != Process.INVALID_UID) {
                     if (DEBUG) {
                         Slog.d(TAG, "Removing jobs for pkg " + pkgName + " at uid " + pkgUid);
                     }
@@ -1623,7 +1674,7 @@ public class JobSchedulerService extends com.android.server.SystemService
                         // and other job proxy agents may not know to reschedule the job properly
                         // after force stop.
                         // Proxied jobs will not be allowed to run if the source app is stopped.
-                        cancelJobsForPackageAndUidLocked(pkgName, pkgUid,
+                        cancelJobsForPackageAndUidLocked(pkgName, pkgUid, pccUid,
                                 /* includeSchedulingApp */ true, /* includeSourceApp */ false,
                                 JobParameters.STOP_REASON_USER,
                                 JobParameters.INTERNAL_STOP_REASON_CANCELED,
@@ -2265,6 +2316,76 @@ public class JobSchedulerService extends com.android.server.SystemService
         }
     }
 
+    /**
+     * Returns the Private Compute Core UID associated with the given package and user
+     *
+     * @param packageName The package name.
+     * @param userId The user ID.
+     * @return The PCC UID if found, otherwise {@link Process#INVALID_UID}.
+     */
+    private int getPccUid(@Nullable String packageName, @UserIdInt int userId) {
+        if (!enablePccFrameworkSupport() || packageName == null) {
+            return Process.INVALID_UID;
+        }
+        final PackageStateInternal ps = mLocalPM.getPackageStateInternal(packageName);
+        if (ps != null && ps.getPccId() != 0 && ps.getPccId() != Process.INVALID_UID
+                && Process.isPrivateComputeCoreUid(ps.getPccId())) {
+            return UserHandle.getUid(userId, ps.getPccId());
+        }
+        return Process.INVALID_UID;
+    }
+
+    /**
+     * Retrieves the Private Compute Core UID associated with a given package name and user ID
+     * from the cached UID to package map.
+     *
+     * @param pkgName The package name to look up.
+     * @param userId The user ID the package belongs to.
+     * @return The PCC UID if found in the cache, otherwise {@link Process#INVALID_UID}.
+     */
+    private int getPccUidFromCache(@Nullable String pkgName, @UserIdInt int userId) {
+        if (!enablePccFrameworkSupport() || pkgName == null) {
+            return Process.INVALID_UID;
+        }
+        synchronized (mLock) {
+            for (int i = 0; i < mUidToPackageCache.size(); i++) {
+                final int uid = mUidToPackageCache.keyAt(i);
+                if (UserHandle.getUserId(uid) == userId
+                        && Process.isPrivateComputeCoreUid(uid)
+                        && mUidToPackageCache.contains(uid, pkgName)) {
+                    return uid;
+                }
+            }
+        }
+        return Process.INVALID_UID;
+    }
+
+    /**
+     * Retrieves the Private Compute Core UID associated with a given package name and user ID
+     * by searching through the JobStore.
+     *
+     * @param pkgName The package name to look up.
+     * @param userId  The user ID the package belongs to.
+     * @return The PCC UID if found in the JobStore, otherwise {@link Process#INVALID_UID}.
+     */
+    private int getPccUidFromJobStore(@Nullable String pkgName, @UserIdInt int userId) {
+        if (!enablePccFrameworkSupport() || pkgName == null) {
+            return Process.INVALID_UID;
+        }
+        final int[] resultUid = { Process.INVALID_UID };
+        synchronized (mLock) {
+            mJobs.forEachJob(job -> {
+                if (resultUid[0] == Process.INVALID_UID
+                        && UserHandle.getUserId(job.getUid()) == userId
+                        && Process.isPrivateComputeCoreUid(job.getUid())
+                        && pkgName.equals(job.getSourcePackageName())) {
+                    resultUid[0] = job.getUid();
+                }
+            });
+        }
+        return resultUid[0];
+    }
+
     @VisibleForTesting
     void notePendingUserRequestedAppStopInternal(@NonNull String packageName, int userId,
             @Nullable String debugReason) {
@@ -2273,9 +2394,14 @@ public class JobSchedulerService extends com.android.server.SystemService
             Slog.wtf(TAG, "Asked to stop jobs of an unknown package");
             return;
         }
+        final int pccUid = getPccUid(packageName, userId);
         synchronized (mLock) {
             mConcurrencyManager.markJobsForUserStopLocked(userId, packageName, debugReason);
-            final ArraySet<JobStatus> jobs = mJobs.getJobsByUid(packageUid);
+            final ArraySet<JobStatus> jobs = new ArraySet<>();
+            mJobs.getJobsByUid(packageUid, jobs);
+            if (enablePccFrameworkSupport() && pccUid != Process.INVALID_UID) {
+                mJobs.getJobsByUid(pccUid, jobs);
+            }
             for (int i = jobs.size() - 1; i >= 0; i--) {
                 final JobStatus job = jobs.valueAt(i);
 
@@ -2331,7 +2457,8 @@ public class JobSchedulerService extends com.android.server.SystemService
         }
     }
 
-    private void cancelJobsForPackageAndUidLocked(String pkgName, int uid,
+    @VisibleForTesting
+    void cancelJobsForPackageAndUidLocked(String pkgName, int pkgUid, int pccUid,
             boolean includeSchedulingApp, boolean includeSourceApp,
             @JobParameters.StopReason int reason, int internalReasonCode, String debugReason) {
         if (!includeSchedulingApp && !includeSourceApp) {
@@ -2345,10 +2472,16 @@ public class JobSchedulerService extends com.android.server.SystemService
         }
         final ArraySet<JobStatus> jobsForUid = new ArraySet<>();
         if (includeSchedulingApp) {
-            mJobs.getJobsByUid(uid, jobsForUid);
+            mJobs.getJobsByUid(pkgUid, jobsForUid);
+            if (enablePccFrameworkSupport() && pccUid != Process.INVALID_UID) {
+                mJobs.getJobsByUid(pccUid, jobsForUid);
+            }
         }
         if (includeSourceApp) {
-            mJobs.getJobsBySourceUid(uid, jobsForUid);
+            mJobs.getJobsBySourceUid(pkgUid, jobsForUid);
+            if (enablePccFrameworkSupport() && pccUid != Process.INVALID_UID) {
+                mJobs.getJobsBySourceUid(pccUid, jobsForUid);
+            }
         }
         for (int i = jobsForUid.size() - 1; i >= 0; i--) {
             final JobStatus job = jobsForUid.valueAt(i);
