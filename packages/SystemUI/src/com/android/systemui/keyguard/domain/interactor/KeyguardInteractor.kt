@@ -167,8 +167,30 @@ constructor(
      * all.
      */
     val dozeAmount: Flow<Float> =
-        isAodAvailable.flatMapLatest { isAodAvailable ->
-            keyguardTransitionInteractor.transitionValue(if (isAodAvailable) AOD else DOZING)
+        if (SceneContainerFlag.isEnabled) {
+            isAodAvailable.flatMapLatest { isAodAvailable ->
+                combine(
+                    keyguardTransitionInteractor.transitionValue(
+                        if (isAodAvailable) AOD else DOZING
+                    ),
+                    keyguardTransitionInteractor.isInTransition(
+                        edge = Edge.create(from = Scenes.Occluded, to = AOD)
+                    ),
+                    keyguardTransitionInteractor.isInTransition(
+                        edge = Edge.create(from = AOD, to = Scenes.Occluded)
+                    ),
+                ) { dozeAmt, isTransitioningToAod, isTransitioningFromAod ->
+                    if (isTransitioningToAod || isTransitioningFromAod) {
+                        return@combine 1f
+                    } else {
+                        return@combine dozeAmt
+                    }
+                }
+            }
+        } else {
+            isAodAvailable.flatMapLatest { isAodAvailable ->
+                keyguardTransitionInteractor.transitionValue(if (isAodAvailable) AOD else DOZING)
+            }
         }
 
     /** Doze transition information. */
