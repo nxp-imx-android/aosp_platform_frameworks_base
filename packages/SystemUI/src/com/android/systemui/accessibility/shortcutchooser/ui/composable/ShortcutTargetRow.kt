@@ -87,7 +87,7 @@ fun ShortcutMultiSelectRow(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    ShortcutTargetRow(target, RowType.CHECKBOX, modifier, selected = target.isAssigned, onClick)
+    ShortcutTargetRow(target, RowType.CHECKBOX, modifier, target.isAssigned, onClick)
 }
 
 /**
@@ -101,22 +101,22 @@ fun ShortcutToggleRow(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    ShortcutTargetRow(target, RowType.TOGGLE, modifier, selected = target.isAssigned, onClick)
+    ShortcutTargetRow(target, RowType.TOGGLE, modifier, target.isStateOn, onClick)
 }
 
 /**
  * Internal composable for rendering a row representing an accessibility shortcut target.
  *
- * @param selected For [RowType.RADIO] and [RowType.CHECKBOX], this determines the selection state
- *   of the control. For [RowType.TOGGLE], this parameter is ignored and [target.isStateOn] is used
- *   instead to determine the switch state.
+ * @param controlState Determines the on/off state of the control. For [RowType.RADIO],
+ *   [RowType.CHECKBOX], and [RowType.TOGGLE], this is the selected, checked, and toggled state,
+ *   respectively.
  */
 @Composable
 private fun ShortcutTargetRow(
     target: AccessibilityTargetModel,
     rowType: RowType,
     modifier: Modifier = Modifier,
-    selected: Boolean,
+    controlState: Boolean,
     onClick: () -> Unit,
 ) {
     Row(
@@ -127,15 +127,15 @@ private fun ShortcutTargetRow(
                 .clip(RoundedCornerShape(8.dp))
                 .testTag(target.targetName)
                 // Add interactable before padding so the entire row is clickable.
-                .interactable(target, selected, rowType, onClick)
+                .interactable(target, controlState, rowType, onClick)
                 .padding(horizontal = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(space = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (rowType == RowType.CHECKBOX) {
-            Checkbox(checked = selected, onCheckedChange = null)
+            Checkbox(checked = controlState, onCheckedChange = null)
         } else if (rowType == RowType.RADIO) {
-            RadioButton(selected = selected, onClick = null)
+            RadioButton(selected = controlState, onClick = null)
         }
 
         Image(
@@ -160,29 +160,25 @@ private fun ShortcutTargetRow(
         )
 
         if (rowType == RowType.TOGGLE && target.isToggleable) {
-            PickerSwitch(checked = target.isStateOn)
+            PickerSwitch(checked = controlState)
         }
     }
 }
 
 private fun Modifier.interactable(
     target: AccessibilityTargetModel,
-    selected: Boolean,
+    controlState: Boolean,
     rowType: RowType,
     onClick: () -> Unit,
 ): Modifier =
     when (rowType) {
         RowType.RADIO ->
-            selectable(selected = selected, role = Role.RadioButton, onClick = { onClick() })
+            selectable(selected = controlState, role = Role.RadioButton, onClick = { onClick() })
         RowType.CHECKBOX ->
-            toggleable(value = selected, role = Role.Checkbox, onValueChange = { _ -> onClick() })
+            toggleable(value = controlState, role = Role.Checkbox, onValueChange = { onClick() })
         RowType.TOGGLE ->
             if (target.isToggleable) {
-                toggleable(
-                    value = target.isStateOn,
-                    role = Role.Switch,
-                    onValueChange = { _ -> onClick() },
-                )
+                toggleable(value = controlState, role = Role.Switch, onValueChange = { onClick() })
             } else {
                 clickable { onClick() }
             }
