@@ -19,12 +19,16 @@ package com.android.settingslib.graph
 import com.android.settingslib.graph.proto.BundleProto
 import com.android.settingslib.graph.proto.IntentProto
 import com.android.settingslib.graph.proto.KeyParametersProto
+import com.android.settingslib.graph.proto.KeyParametersSchemaProto
+import com.android.settingslib.graph.proto.ParameterDefinitionProto
 import com.android.settingslib.graph.proto.ParameterizedPreferenceScreenProto
 import com.android.settingslib.graph.proto.PreferenceGraphProto
 import com.android.settingslib.graph.proto.PreferenceGroupProto
 import com.android.settingslib.graph.proto.PreferenceOrGroupProto
 import com.android.settingslib.graph.proto.PreferenceProto
 import com.android.settingslib.graph.proto.PreferenceScreenProto
+import com.android.settingslib.graph.proto.PreferenceValueDescriptorProto
+import com.android.settingslib.graph.proto.TextProto
 
 /**
  * Utility to shrink and expand [PreferenceGraphProto] using In-Place Skeleton Parameterization.
@@ -141,6 +145,7 @@ object PreferenceGraphCompressor {
     ): PreferenceScreenProto = screen.toBuilder().apply {
         if (hasRoot()) setRoot(mapStringsInGroup(root, parameters, stringMapper))
         if (hasIntent()) setIntent(mapStringsInIntent(intent, parameters, stringMapper))
+        if (hasParametersSchema()) setParametersSchema(mapStringsInSchema(parametersSchema, parameters, stringMapper))
     }.build()
 
     private fun mapStringsInGroup(
@@ -164,11 +169,16 @@ object PreferenceGraphCompressor {
         stringMapper: (String, Map<String, String>) -> String
     ): PreferenceProto = preference.toBuilder().apply {
         if (hasKey()) setKey(stringMapper(key, parameters))
+        if (hasTitle()) setTitle(mapStringsInText(title, parameters, stringMapper))
+        if (hasSummary()) setSummary(mapStringsInText(summary, parameters, stringMapper))
         if (hasLaunchIntent()) setLaunchIntent(mapStringsInIntent(launchIntent, parameters, stringMapper))
         if (hasActionTarget()) setActionTarget(actionTarget.toBuilder().apply {
             if (hasKey()) setKey(stringMapper(key, parameters))
             if (hasKeyParameters()) setKeyParameters(mapKeyParameterStrings(keyParameters, parameters, stringMapper))
         }.build())
+        if (hasParametersSchema()) setParametersSchema(mapStringsInSchema(parametersSchema, parameters, stringMapper))
+        if (hasKeyParameters()) setKeyParameters(mapKeyParameterStrings(keyParameters, parameters, stringMapper))
+        if (hasValueDescriptor()) setValueDescriptor(mapStringsInDescriptor(valueDescriptor, parameters, stringMapper))
     }.build()
 
     private fun mapStringsInIntent(
@@ -181,6 +191,7 @@ object PreferenceGraphCompressor {
         if (hasPkg()) setPkg(stringMapper(pkg, parameters))
         if (hasComponent()) setComponent(stringMapper(component, parameters))
         if (hasExtras()) setExtras(mapStringsInBundle(extras, parameters, stringMapper))
+        if (hasMimeType()) setMimeType(stringMapper(mimeType, parameters))
     }.build()
 
     private fun mapStringsInBundle(
@@ -195,8 +206,55 @@ object PreferenceGraphCompressor {
             } else if (value.hasBundleValue()) {
                 valueBuilder.setBundleValue(mapStringsInBundle(value.bundleValue, parameters, stringMapper))
             }
-            putValues(key, valueBuilder.build())
+            putValues(stringMapper(key, parameters), valueBuilder.build())
         }
+    }.build()
+
+    private fun mapStringsInText(
+        text: TextProto,
+        parameters: Map<String, String>,
+        stringMapper: (String, Map<String, String>) -> String
+    ): TextProto = if (text.hasString()) {
+        text.toBuilder().setString(stringMapper(text.string, parameters)).build()
+    } else text
+
+    private fun mapStringsInSchema(
+        schema: KeyParametersSchemaProto,
+        parameters: Map<String, String>,
+        stringMapper: (String, Map<String, String>) -> String
+    ): KeyParametersSchemaProto {
+        val builder = schema.toBuilder()
+        for ((name, definition) in schema.parametersMap) {
+            builder.putParameters(name, mapStringsInDefinition(definition, parameters, stringMapper))
+        }
+        return builder.build()
+    }
+
+    private fun mapStringsInDefinition(
+        definition: ParameterDefinitionProto,
+        parameters: Map<String, String>,
+        stringMapper: (String, Map<String, String>) -> String
+    ): ParameterDefinitionProto = definition.toBuilder().apply {
+        if (hasPurpose()) setPurpose(stringMapper(purpose, parameters))
+        if (hasValueDescriptor()) setValueDescriptor(mapStringsInDescriptor(valueDescriptor, parameters, stringMapper))
+    }.build()
+
+    private fun mapStringsInDescriptor(
+        descriptor: PreferenceValueDescriptorProto,
+        parameters: Map<String, String>,
+        stringMapper: (String, Map<String, String>) -> String
+    ): PreferenceValueDescriptorProto = descriptor.toBuilder().apply {
+        if (hasDescription()) setDescription(stringMapper(description, parameters))
+        val mappedPossibleValues = possibleValuesList.map {
+            it.toBuilder().apply {
+                if (hasDescription()) setDescription(stringMapper(description, parameters))
+                if (hasValue() && value.hasStringValue()) {
+                    setValue(value.toBuilder().setStringValue(stringMapper(value.stringValue, parameters)).build())
+                }
+            }.build()
+        }
+        clearPossibleValues().addAllPossibleValues(mappedPossibleValues)
+        if (hasParametersSchema()) setParametersSchema(mapStringsInSchema(parametersSchema, parameters, stringMapper))
     }.build()
 
     private fun mapKeyParameterStrings(
