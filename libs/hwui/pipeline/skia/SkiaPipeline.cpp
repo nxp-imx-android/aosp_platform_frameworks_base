@@ -166,7 +166,7 @@ bool SkiaPipeline::setupMultiFrameCapture() {
         // passing the GrDirectContext to the SerialContext allows us to raster/serialize GPU images
         mSerialContext->setDirectContext(mRenderThread.getGrContext());
         SkSerialProcs procs;
-        procs.fImageProc = SkSharingSerialContext::serializeImage;
+        procs.fImageProc = SkSharingContext::serializeImage;
         procs.fImageCtx = mSerialContext.get();
         procs.fTypefaceProc = [](SkTypeface* tf, void* ctx) -> SkSerialReturnType {
             return tf->serialize(SkTypeface::SerializeBehavior::kDoIncludeData);
