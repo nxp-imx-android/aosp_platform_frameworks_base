@@ -962,6 +962,7 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
     }
 
     @Test
+    @DisableFlags(com.android.internal.telephony.flags.Flags.FLAG_NEW_SATELLITE_ICON)
     fun updateContent_satelliteConnected_showSatelliteUIAndConnected() {
         whenever(internetDetailsContentController.getCurrentSatelliteState())
             .thenReturn(InternetDetailsContentController.SATELLITE_CONNECTED)
@@ -982,6 +983,40 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
             assertThat(mobileSummary.visibility).isEqualTo(View.VISIBLE)
             assertThat(mobileSummary.text)
                 .isEqualTo(mContext.getText(R.string.mobile_data_connection_active))
+        }
+    }
+
+    @Test
+    @EnableFlags(com.android.internal.telephony.flags.Flags.FLAG_NEW_SATELLITE_ICON)
+    fun updateContent_satelliteConnected_showSatelliteUIAndConnectedWithNewString() {
+        whenever(internetDetailsContentController.getCurrentSatelliteState())
+            .thenReturn(InternetDetailsContentController.SATELLITE_CONNECTED)
+        whenever(internetDetailsContentController.hasActiveSubIdOnDds()).thenReturn(true)
+        mobileDataLayout!!.visibility = View.GONE
+
+        internetDetailsContentManager.updateContent(true)
+        bgExecutor.runAllReady()
+
+        internetDetailsContentManager.internetContentData.observe(
+            internetDetailsContentManager.lifecycleOwner!!
+        ) {
+            assertThat(mobileDataLayout!!.visibility).isEqualTo(View.VISIBLE)
+            val mobileTitle = contentView.requireViewById<TextView>(R.id.mobile_title)
+            assertThat(mobileTitle.text)
+                .isEqualTo(mContext.getText(R.string.satellite_network_title_text))
+            val mobileSummary = contentView.requireViewById<TextView>(R.id.mobile_summary)
+            assertThat(mobileSummary.visibility).isEqualTo(View.VISIBLE)
+
+            val strConnected = mContext.getString(R.string.mobile_data_connection_active)
+            val strSat = mContext.getString(com.android.internal.R.string.satellite_indicator)
+            assertThat(mobileSummary.text)
+                .isEqualTo(
+                    mContext.getString(
+                        com.android.settingslib.R.string.preference_summary_default_combination,
+                        strConnected,
+                        strSat,
+                    )
+                )
         }
     }
 
