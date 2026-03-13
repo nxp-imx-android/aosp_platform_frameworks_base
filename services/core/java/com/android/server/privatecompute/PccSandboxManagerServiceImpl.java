@@ -359,6 +359,26 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
                     }
                     return 0;
                 }
+                case "read-intelligence-audit-log" -> {
+                    final int userId = UserHandle.getUserId(Binder.getCallingUid());
+                    List<AuditLogEntry> entries = AuditModeContext.readAuditLogs(userId);
+                    if (entries.isEmpty()) {
+                        pw.println("No audit logs found for user " + userId);
+                        return 0;
+                    }
+                    pw.println("Found " + entries.size() + " log entries:");
+                    for (AuditLogEntry entry : entries) {
+                        pw.println(
+                                "  Entry: timestamp="
+                                        + entry.mTimestamp
+                                        + " uid="
+                                        + entry.mCallingUid
+                                        + " package="
+                                        + entry.mCallingPackage);
+                        pw.println("    Bundle: " + entry.getBundle().toString());
+                    }
+                    return 0;
+                }
                 default -> {
                     return handleDefaultCommands(cmd);
                 }

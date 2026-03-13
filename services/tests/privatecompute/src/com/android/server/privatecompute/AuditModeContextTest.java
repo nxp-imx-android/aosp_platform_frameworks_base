@@ -17,8 +17,12 @@
 package com.android.server.privatecompute;
 
 import static android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT;
+import static com.android.server.privatecompute.AuditModeTestUtils.TEST_PACKAGE_NAME;
+import static com.android.server.privatecompute.AuditModeTestUtils.TEST_TIMESTAMP;
+import static com.android.server.privatecompute.AuditModeTestUtils.TEST_UID;
 import static com.android.server.privatecompute.AuditModeTestUtils.assertEqualsToTestBundle;
 import static com.android.server.privatecompute.AuditModeTestUtils.getTestBundle;
+import static com.android.server.privatecompute.AuditModeTestUtils.getTestEntry;
 import static com.android.server.privatecompute.AuditModeTestUtils.readAuditLogFileFromFile;
 import static com.android.server.privatecompute.AuditModeTestUtils.readAuditLogFileFromStream;
 import static com.google.common.truth.Truth.assertThat;
@@ -28,9 +32,11 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.when;
 
 import android.os.PersistableBundle;
+import android.os.UserHandle;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import androidx.test.runner.AndroidJUnit4;
 import com.android.server.privatecompute.AuditModeContext.Injector;
+import com.google.common.collect.ImmutableList;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -329,6 +335,142 @@ public class AuditModeContextTest {
         File file = mAuditModeContext.getCurrentAuditLogFile();
         List<AuditLogEntry> entries = readAuditLogFileFromFile(file);
         assertEquals(entries.size(), 0);
+    }
+
+    @Test
+    public void testReadAuditLogs_noFiles_returnsEmptyList() throws Exception {
+        File folder = mTemporaryFolder.newFolder();
+
+        List<AuditLogEntry> entries = AuditModeContext.readAuditLogs(folder);
+
+        assertThat(entries).isEmpty();
+    }
+
+    @Test
+    public void testReadAuditLogs_oneFile_canReadEntries() throws Exception {
+        File folder = mTemporaryFolder.newFolder();
+        File file = new File(folder, "audit_log.0.bin");
+        AuditLogFileWriter writer = new AuditLogFileWriter(file);
+        AuditLogEntry entry1 = getTestEntry();
+        PersistableBundle bundle2 = new PersistableBundle();
+        bundle2.putInt("test_key", 123);
+        AuditLogEntry entry2 = new AuditLogEntry(bundle2, TEST_TIMESTAMP + 1L, "other_package", 23);
+        writer.writeEntries(ImmutableList.of(entry1.toByteArray(), entry2.toByteArray()));
+        assertThat(folder.listFiles()).hasLength(1);
+
+        List<AuditLogEntry> entries = AuditModeContext.readAuditLogs(folder);
+
+        assertThat(entries).hasSize(2);
+        assertEquals(entries.get(0).mCallingPackage, TEST_PACKAGE_NAME);
+        assertEquals(entries.get(0).mCallingUid, TEST_UID);
+        assertEquals(entries.get(0).mTimestamp, TEST_TIMESTAMP);
+        assertEqualsToTestBundle(entries.get(0).mData);
+        assertThat(entries.get(1).mCallingPackage).isEqualTo("other_package");
+        assertThat(entries.get(1).mCallingUid).isEqualTo(23);
+        assertEquals(entries.get(1).mTimestamp, TEST_TIMESTAMP + 1L);
+        assertEquals(entries.get(1).mData.getInt("test_key"), 123);
+    }
+
+    @Test
+    public void testReadAuditLogs_twoFiles_canReadEntries() throws Exception {
+        File folder = mTemporaryFolder.newFolder();
+        File file1 = new File(folder, "audit_log.0.bin");
+        File file2 = new File(folder, "audit_log.2.bin");
+        AuditLogFileWriter writer = new AuditLogFileWriter(file1);
+        AuditLogEntry entry1 = getTestEntry();
+        writer.writeEntries(ImmutableList.of(entry1.toByteArray()));
+        PersistableBundle bundle2 = new PersistableBundle();
+        bundle2.putInt("test_key", 123);
+        AuditLogFileWriter writer2 = new AuditLogFileWriter(file2);
+        AuditLogEntry entry2 = new AuditLogEntry(bundle2, TEST_TIMESTAMP + 2L, "other_package", 23);
+        writer2.writeEntries(ImmutableList.of(entry2.toByteArray()));
+        assertThat(folder.listFiles()).hasLength(2);
+
+        List<AuditLogEntry> entries = AuditModeContext.readAuditLogs(folder);
+
+        assertThat(entries).hasSize(2);
+        assertEquals(entries.get(0).mCallingPackage, TEST_PACKAGE_NAME);
+        assertEquals(entries.get(0).mCallingUid, TEST_UID);
+        assertEquals(entries.get(0).mTimestamp, TEST_TIMESTAMP);
+        assertEqualsToTestBundle(entries.get(0).mData);
+        assertThat(entries.get(1).mCallingPackage).isEqualTo("other_package");
+        assertThat(entries.get(1).mCallingUid).isEqualTo(23);
+        assertEquals(entries.get(1).mTimestamp, TEST_TIMESTAMP + 2L);
+        assertEquals(entries.get(1).mData.getInt("test_key"), 123);
+    }
+
+    @Test
+    public void readAuditLogs_userIdButNoLogs_returnsEmptyList() throws Exception {
+        int userId = 10;
+        File folder = mTemporaryFolder.newFolder();
+
+        List<AuditLogEntry> entries = AuditModeContext.readAuditLogs(folder, userId);
+
+        assertThat(entries).hasSize(0);
+    }
+
+    @Test
+    public void readAuditLogs_oneLogWrongUserId_returnsEmptyList() throws Exception {
+        int userId = 9;
+        int logUid = UserHandle.PER_USER_RANGE * 10 + 1;
+        assertThat(UserHandle.getUserId(logUid)).isNotEqualTo(userId);
+        File folder = mTemporaryFolder.newFolder();
+        AuditLogEntry entry =
+                new AuditLogEntry(getTestBundle(), TEST_TIMESTAMP, TEST_PACKAGE_NAME, logUid);
+        AuditLogFileWriter writer = new AuditLogFileWriter(folder);
+        writer.writeEntries(ImmutableList.of(entry.toByteArray()));
+
+        List<AuditLogEntry> entries = AuditModeContext.readAuditLogs(folder, userId);
+
+        assertThat(entries).hasSize(0);
+    }
+
+    public void readAuditLogs_oneLogCorrectUserId_returnsLog() throws Exception {
+        int userId = 10;
+        int logUid = UserHandle.PER_USER_RANGE * userId + 1;
+        assertThat(UserHandle.getUserId(logUid)).isEqualTo(userId);
+        File folder = mTemporaryFolder.newFolder();
+        File file = new File(folder, "audit_log.0.bin");
+        AuditLogEntry entry =
+                new AuditLogEntry(getTestBundle(), TEST_TIMESTAMP, TEST_PACKAGE_NAME, logUid);
+        AuditLogFileWriter writer = new AuditLogFileWriter(file);
+        writer.writeEntries(ImmutableList.of(entry.toByteArray()));
+
+        List<AuditLogEntry> entries = AuditModeContext.readAuditLogs(folder, userId);
+
+        assertThat(entries).hasSize(1);
+        assertEquals(entries.get(0).mCallingPackage, TEST_PACKAGE_NAME);
+        assertEquals(entries.get(0).mCallingUid, logUid);
+        assertEquals(entries.get(0).mTimestamp, TEST_TIMESTAMP);
+        assertEqualsToTestBundle(entries.get(0).mData);
+    }
+
+    @Test
+    public void readAuditLogs_twoLogs_returnsCorrectUid() throws Exception {
+        int userId1 = 0;
+        int userId2 = 10;
+        int logUid1 = UserHandle.PER_USER_RANGE * userId1 + 1;
+        int logUid2 = UserHandle.PER_USER_RANGE * userId2 + 1;
+        assertThat(UserHandle.getUserId(logUid1)).isEqualTo(userId1);
+        assertThat(UserHandle.getUserId(logUid2)).isEqualTo(userId2);
+        File folder = mTemporaryFolder.newFolder();
+        File file = new File(folder, "audit_log.1.bin");
+        AuditLogEntry entry1 =
+                new AuditLogEntry(getTestBundle(), TEST_TIMESTAMP, TEST_PACKAGE_NAME, logUid1);
+        PersistableBundle bundle2 = new PersistableBundle();
+        bundle2.putInt("test_key", 123);
+        AuditLogEntry entry2 =
+                new AuditLogEntry(bundle2, 234L, "other_package", logUid2);
+        AuditLogFileWriter writer = new AuditLogFileWriter(file);
+        writer.writeEntries(ImmutableList.of(entry1.toByteArray(), entry2.toByteArray()));
+
+        List<AuditLogEntry> entries = AuditModeContext.readAuditLogs(folder, userId1);
+
+        assertThat(entries).hasSize(1);
+        assertEquals(entries.get(0).mCallingPackage, TEST_PACKAGE_NAME);
+        assertEquals(entries.get(0).mCallingUid, logUid1);
+        assertEquals(entries.get(0).mTimestamp, TEST_TIMESTAMP);
+        assertEqualsToTestBundle(entries.get(0).mData);
     }
 
     /** Create a nested bundle of depth 101. */
