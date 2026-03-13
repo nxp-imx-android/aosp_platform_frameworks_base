@@ -43,6 +43,8 @@ import android.window.WindowAnimationState
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import androidx.core.graphics.toRect
+import com.android.wm.shell.apptoweb.isBrowserApp
+import com.android.wm.shell.common.ComponentUtils
 import com.android.wm.shell.common.split.SplitScreenUtils
 import com.android.wm.shell.hierarchy.ContainerHierarchy
 import com.android.wm.shell.hierarchy.containers.Container
@@ -50,6 +52,7 @@ import com.android.wm.shell.hierarchy.containers.ViewOverlayContainer
 import com.android.wm.shell.hierarchy.modes.Mode
 import com.android.wm.shell.hierarchy.properties.DisplayContainerProperties
 import com.android.wm.shell.hierarchy.properties.RootContainerProperties
+import com.android.wm.shell.hierarchy.properties.TaskContainerProperties
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot
 import com.android.wm.shell.hierarchy.utils.HierarchyUtils
 import com.android.wm.shell.transition.AnimationPlan
@@ -303,7 +306,12 @@ class SplitMode(
                 val nodeToRemove = nodeRootContainers.removeAt(index)
                 // Close apps in this node
                 for (leafTask in nodeToRemove.children) {
-                    wct.reparent(leafTask.token, tda?.token, false)
+                    if (isBrowserTask(leafTask)) {
+                        Log.d(TAG, "Removing browser task: ${leafTask.name}")
+                        wct.removeTask(leafTask.token)
+                    } else {
+                        wct.reparent(leafTask.token, tda?.token, false)
+                    }
                 }
                 // Remove the node itself
                 wct.removeTask(nodeToRemove.token)
@@ -429,6 +437,14 @@ class SplitMode(
         // Reparent all children outside of node containers to bottom of display
         val wct = WindowContainerTransaction()
         for (nodeRoot in nodeRootContainers) {
+            for (leafTask in nodeRoot.children) {
+                if (isBrowserTask(leafTask)) {
+                    Log.d(TAG, "Removing browser task: ${leafTask.name}")
+                    wct.removeTask(leafTask.token)
+                } else {
+                    Log.d(TAG, "reparenting ${leafTask.name}")
+                }
+            }
             wct.reparentTasks(
                 nodeRoot.token,
                 /*newParent*/ null,
@@ -436,9 +452,6 @@ class SplitMode(
                 /*activityTypes*/ null,
                 /*onTop*/ false,
             )
-            for (leafTask in nodeRoot.children) {
-                Log.d(TAG, "reparenting ${leafTask.name}")
-            }
         }
 
         cleanupDivider()
@@ -460,7 +473,12 @@ class SplitMode(
         for (nodeRoot in nodeRootContainers) {
             for (leafTask in nodeRoot.children) {
                 if (leafTask != excludeContainer) {
-                    wct.reparent(leafTask.token, null, false)
+                    if (isBrowserTask(leafTask)) {
+                        Log.d(TAG, "Removing browser task: ${leafTask.name}")
+                        wct.removeTask(leafTask.token)
+                    } else {
+                        wct.reparent(leafTask.token, null, false)
+                    }
                 }
             }
         }
@@ -682,6 +700,13 @@ class SplitMode(
         layoutChildren(bounds, listOf(firstNodeRoot.token), wct)
 
         return true
+    }
+
+    private fun isBrowserTask(container: Container): Boolean {
+        val taskProperties = container.props as? TaskContainerProperties ?: return false
+        val taskInfo = taskProperties.taskInfo
+        val packageName = ComponentUtils.getPackageName(taskInfo) ?: return false
+        return isBrowserApp(appContext, packageName, taskInfo.userId)
     }
 
     override fun onShellCommand(displayId: Int, args: MutableList<String>, pw: PrintWriter) {
