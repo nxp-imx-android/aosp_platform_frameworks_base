@@ -578,16 +578,43 @@ public class AuthenticationPolicyServiceTest {
 
     @Test
     @EnableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
+    public void testSetAgentAuthorizedByDeviceId_callsAgentAuthService()
+            throws RemoteException {
+        int deviceId = 456;
+        when(mAgentAuthService.setOverrideForDeviceId(PRIMARY_USER_ID, deviceId, true)).thenReturn(true);
+
+        boolean result = mAuthenticationPolicyService.getBinderService()
+                .setAgentAuthorizedByDeviceId(UserHandle.of(PRIMARY_USER_ID), deviceId, true);
+
+        assertThat(result).isTrue();
+        verify(mAgentAuthService).setOverrideForDeviceId(PRIMARY_USER_ID, deviceId, true);
+    }
+
+    @Test
+    @DisableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
+    public void testSetAgentAuthorizedByDeviceId_flagDisabled_returnsFalse()
+            throws RemoteException {
+        int deviceId = 456;
+
+        boolean result = mAuthenticationPolicyService.getBinderService()
+                .setAgentAuthorizedByDeviceId(UserHandle.of(PRIMARY_USER_ID), deviceId, true);
+
+        assertThat(result).isFalse();
+        verify(mAgentAuthService, never()).setOverrideForDeviceId(anyInt(), anyInt(), anyBoolean());
+    }
+
+    @Test
+    @EnableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
     public void testSetAgentAuthorizedByAssociationId_callsAgentAuthService()
             throws RemoteException {
         int associationId = 123;
-        when(mAgentAuthService.setOverride(PRIMARY_USER_ID, associationId, true)).thenReturn(true);
+        when(mAgentAuthService.setOverrideForAssociationId(PRIMARY_USER_ID, associationId, true)).thenReturn(true);
 
         boolean result = mAuthenticationPolicyService.getBinderService()
                 .setAgentAuthorizedByAssociationId(UserHandle.of(PRIMARY_USER_ID), associationId, true);
 
         assertThat(result).isTrue();
-        verify(mAgentAuthService).setOverride(PRIMARY_USER_ID, associationId, true);
+        verify(mAgentAuthService).setOverrideForAssociationId(PRIMARY_USER_ID, associationId, true);
     }
 
     @Test
@@ -600,7 +627,7 @@ public class AuthenticationPolicyServiceTest {
                 .setAgentAuthorizedByAssociationId(UserHandle.of(PRIMARY_USER_ID), associationId, true);
 
         assertThat(result).isFalse();
-        verify(mAgentAuthService, never()).setOverride(anyInt(), anyInt(), anyBoolean());
+        verify(mAgentAuthService, never()).setOverrideForAssociationId(anyInt(), anyInt(), anyBoolean());
     }
 
     private void verifyNotLockDevice(int expectedCntFailedAttempts, int userId) {
@@ -648,6 +675,32 @@ public class AuthenticationPolicyServiceTest {
     private void toggleAdaptiveAuthSettingsOverride(int userId, boolean disable) {
         Settings.Secure.putIntForUser(mContext.getContentResolver(),
                 Settings.Secure.DISABLE_ADAPTIVE_AUTH_LIMIT_LOCK, disable ? 1 : 0, userId);
+    }
+
+    @Test
+    @EnableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
+    public void testIsAgentAuthorizedByDeviceId_callsAgentAuthService() throws RemoteException {
+        int deviceId = 456;
+        when(mAgentAuthService.isAgentAuthorizedByDeviceId(PRIMARY_USER_ID, deviceId))
+                .thenReturn(true);
+
+        boolean result = mAuthenticationPolicyService.getBinderService().isAgentAuthorizedByDeviceId(
+                UserHandle.of(PRIMARY_USER_ID), deviceId);
+
+        assertThat(result).isTrue();
+        verify(mAgentAuthService).isAgentAuthorizedByDeviceId(PRIMARY_USER_ID, deviceId);
+    }
+
+    @Test
+    @DisableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
+    public void testIsAgentAuthorizedByDeviceId_flagDisabled_returnsFalse() throws RemoteException {
+        int deviceId = 456;
+
+        boolean result = mAuthenticationPolicyService.getBinderService().isAgentAuthorizedByDeviceId(
+                UserHandle.of(PRIMARY_USER_ID), deviceId);
+
+        assertThat(result).isFalse();
+        verify(mAgentAuthService, never()).isAgentAuthorizedByDeviceId(anyInt(), anyInt());
     }
 
     @Test

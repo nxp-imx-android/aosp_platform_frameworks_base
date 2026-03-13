@@ -135,3 +135,13 @@ flag {
     description: "Feature flag for internal xdevice agent auth API"
     bug: "474639153"
 }
+
+flag {
+    name: "agent_auth_allow_aap"
+    namespace: "biometrics_framework"
+    description: "Bug fix flag for AAP in agent auth"
+    bug: "474639153"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

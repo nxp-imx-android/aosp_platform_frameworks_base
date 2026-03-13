@@ -692,8 +692,9 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         return mAssociationInfo == null ? mParams.getName() : mAssociationInfo.getDisplayName();
     }
 
+    @Override // Binder call
     @NonNull
-    String getDeviceProfile() {
+    public String getDeviceProfile() {
         return mDeviceProfile;
     }
 

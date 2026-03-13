@@ -63,7 +63,13 @@ interface IAuthenticationPolicyService {
     boolean isAgentAuthorized(in UserHandle user, in int deviceId, in DeviceId companionDeviceId);
 
     @EnforcePermission("USE_BIOMETRIC_INTERNAL")
+    boolean isAgentAuthorizedByDeviceId(in UserHandle user, in int deviceId);
+
+    @EnforcePermission("USE_BIOMETRIC_INTERNAL")
     boolean isAgentAuthorizedByAssociationId(in UserHandle user, in int associationId);
+
+    @EnforcePermission("USE_BIOMETRIC_INTERNAL")
+    boolean setAgentAuthorizedByDeviceId(in UserHandle user, in int deviceId, in boolean authorized);
 
     @EnforcePermission("USE_BIOMETRIC_INTERNAL")
     boolean setAgentAuthorizedByAssociationId(in UserHandle user, in int associationId, in boolean authorized);

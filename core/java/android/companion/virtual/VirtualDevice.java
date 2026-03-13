@@ -115,6 +115,20 @@ public final class VirtualDevice implements Parcelable {
     }
 
     /**
+     * Returns the device profile of the virtual device.
+     *
+     * @hide
+     */
+    @Nullable
+    public String getDeviceProfile() {
+        try {
+            return mVirtualDevice.getDeviceProfile();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Returns the name of the virtual device (optionally) provided during its creation.
      */
     public @Nullable String getName() {
