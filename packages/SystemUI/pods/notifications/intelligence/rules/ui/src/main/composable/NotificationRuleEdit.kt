@@ -124,7 +124,12 @@ fun NotificationRuleEdit(
                 viewModel.rule = viewModel.rule.copyDraft(action = newAction)
             },
         )
-        Text(text = text, inlineContent = inlineTextContent, style = textStyles.defaultStyle)
+        Text(
+            text = text,
+            inlineContent = inlineTextContent,
+            color = MaterialTheme.colorScheme.onSurface,
+            style = textStyles.defaultStyle,
+        )
 
         AddButton(
             addFieldOptions = addFieldOptions,
