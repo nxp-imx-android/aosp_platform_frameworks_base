@@ -30,3 +30,15 @@ val Kosmos.stackedMobileIconViewModelKairos by
             kairos,
         )
     }
+
+val Kosmos.stackedMobileIconViewModelKairosFactory by
+    Kosmos.Fixture {
+        StackedMobileIconViewModel.Factory {
+            StackedMobileIconViewModelKairos(
+                mobileIconsViewModelKairos,
+                testableContext,
+                mobileContextProvider,
+                kairos,
+            )
+        }
+    }

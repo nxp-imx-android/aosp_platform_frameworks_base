@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel
 
+import com.android.systemui.kairos.kairos
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.log.table.logcatTableLogBuffer
@@ -38,9 +39,16 @@ val Kosmos.mobileIconsViewModel: MobileIconsViewModel by
         )
     }
 
-val Kosmos.mobileIconsState: MobileIconsState
-    get() =
-        if (StatusBarMobileIconKairos.isEnabled) mobileIconsStateKairos else mobileIconsStateImpl
-
-val Kosmos.mobileIconsStateImpl: MobileIconsStateImpl by
-    Kosmos.Fixture { MobileIconsStateImpl(viewModel = mobileIconsViewModel) }
+val Kosmos.mobileIconsStateFactory: MobileIconsState.Factory by
+    Kosmos.Fixture {
+        if (StatusBarMobileIconKairos.isEnabled) {
+            MobileIconsState.Factory {
+                MobileIconsStateKairos(
+                    viewModel = mobileIconsViewModelKairos,
+                    kairosNetwork = kairos,
+                )
+            }
+        } else {
+            MobileIconsState.Factory { MobileIconsStateImpl(viewModel = mobileIconsViewModel) }
+        }
+    }
