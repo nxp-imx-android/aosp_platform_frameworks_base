@@ -17,7 +17,9 @@
 package android.companion.virtual.computercontrol;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
+import android.graphics.Insets;
 import android.os.RemoteException;
 import android.view.SurfaceControl;
 
@@ -84,6 +86,18 @@ public final class InteractiveMirror implements AutoCloseable {
 
         try {
             mMirror.resize(width, height);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Propagates insets provided in the mirror's coordinate space to the session display.
+     */
+    @RequiresNoPermission
+    public void updateInsets(@Nullable Insets insets) {
+        try {
+            mMirror.updateInsets(insets);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

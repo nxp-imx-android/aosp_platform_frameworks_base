@@ -16,10 +16,12 @@
 
 package com.android.server.companion.virtual.computercontrol;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
 import android.companion.virtual.computercontrol.IInteractiveMirror;
 import android.companion.virtual.computercontrol.InteractiveMirror;
+import android.graphics.Insets;
 import android.gui.DropInputMode;
 import android.util.Slog;
 import android.view.DisplayInfo;
@@ -52,6 +54,11 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
         void onInteractiveChanged(boolean isInteractive);
 
         /**
+         * Called when the mirror requests insets to be propagated to the display.
+         */
+        void onRequestedInsetsChanged();
+
+        /**
          * Called when the mirror is closed.
          */
         void onClose(InteractiveMirrorImpl mirror);
@@ -75,6 +82,11 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
     @GuardedBy("this")
     @Nullable
     private Boolean mIsInteractive = null;
+    @GuardedBy("this")
+    @Nullable
+    private Insets mRequestedInsets = null;
+    @GuardedBy("this")
+    private float mScale = 1.f;
 
     InteractiveMirrorImpl(WindowManagerInternal.DisplayMirror mirror,
             Supplier<SurfaceControl.Transaction> transactionSupplier, DisplayInfo displayInfo,
@@ -161,10 +173,29 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
 
         final float sx = ((float) mDisplayInfo.logicalWidth) / width;
         final float sy = ((float) mDisplayInfo.logicalHeight) / height;
-        // The overall scale is the max due to letterboxing / pillarboxing
-        // TODO(b/448309877): Figure out if we need a different scale mechanism here.
-        mInputManagerInternal.setAccessibilityPointerIconScaleFactor(mDisplayInfo.displayId,
-                Math.max(sx, sy));
+        synchronized (this) {
+            mScale = Math.max(sx, sy);
+            // The overall scale is the max due to letterboxing / pillarboxing
+            // TODO(b/448309877): Figure out if we need a different scale mechanism here.
+            mInputManagerInternal.setAccessibilityPointerIconScaleFactor(mDisplayInfo.displayId,
+                    mScale);
+        }
+    }
+
+    @RequiresNoPermission
+    @Override
+    public void updateInsets(Insets insets) {
+        synchronized (this) {
+            mRequestedInsets = insets;
+        }
+        mCallback.onRequestedInsetsChanged();
+    }
+
+    @NonNull
+    Insets getRequestedInsets() {
+        synchronized (this) {
+            return mRequestedInsets != null ? Insets.scale(mRequestedInsets, mScale) : Insets.NONE;
+        }
     }
 
     @RequiresNoPermission

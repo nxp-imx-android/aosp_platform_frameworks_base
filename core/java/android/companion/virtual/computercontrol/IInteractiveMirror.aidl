@@ -16,6 +16,7 @@
 
 package android.companion.virtual.computercontrol;
 
+import android.graphics.Insets;
 import android.hardware.input.VirtualTouchEvent;
 
 /**
@@ -32,6 +33,9 @@ oneway interface IInteractiveMirror {
 
     /** Resizes the mirror. */
     void resize(int width, int height);
+
+    /** Propagates insets provided in the mirror's coordinate space to the session display. */
+    void updateInsets(in Insets insets);
 
     /** Closes this mirror display and the associated touchscreen. */
     void close();
