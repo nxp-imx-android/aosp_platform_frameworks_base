@@ -630,7 +630,7 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
     }
 
     @Test
-    public void testVisibility_behindAtLeastOneNonFillingAdjacentTaskFragments_visBehindTrans() {
+    public void testVisibility_behindAtLeastOneNonFillingAdjacentTaskFragments_invisible() {
         // A fullscreen task with an opaque activity.
         final Task bottomTask = createTask(mDisplayContent.getDefaultTaskDisplayArea(),
                 WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD);
@@ -657,8 +657,13 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
         // Make one non-filling.
         topAdjacentTaskFragment1.getTopMostActivity().setOccludesParent(false);
 
-        assertEquals(TASK_FRAGMENT_VISIBILITY_VISIBLE_BEHIND_TRANSLUCENT,
-                bottomTask.getVisibility(null /* starting */));
+        if (Flags.partialTranslucentActivityEmbedding()) {
+            assertEquals(TASK_FRAGMENT_VISIBILITY_INVISIBLE,
+                    bottomTask.getVisibility(null /* starting */));
+        } else {
+            assertEquals(TASK_FRAGMENT_VISIBILITY_VISIBLE_BEHIND_TRANSLUCENT,
+                    bottomTask.getVisibility(null /* starting */));
+        }
     }
 
     @Test
@@ -731,7 +736,7 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
         sandwichTaskFragment.getTopMostActivity().setVisible(true);
         sandwichTaskFragment.getTopMostActivity().visibleIgnoringKeyguard = true;
 
-        // The task behind remains invisible.
+        // The task behind remains invisible because the bottom most adjacent set contains opaque TF
         assertEquals(TASK_FRAGMENT_VISIBILITY_INVISIBLE,
                 bottomTask.getVisibility(null /* starting */));
         // The sandwiched task fragment should be visible behind the translucent task fragment.
@@ -744,12 +749,33 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
         sandwichTaskFragment.getTopMostActivity().setVisible(false);
         sandwichTaskFragment.getTopMostActivity().visibleIgnoringKeyguard = false;
 
-        // The task behind should be invisible.
-        assertEquals(TASK_FRAGMENT_VISIBILITY_VISIBLE_BEHIND_TRANSLUCENT,
-                bottomTask.getVisibility(null /* starting */));
+        // The task behind remains invisible because the bottom most adjacent set contains opaque TF
+        if (Flags.partialTranslucentActivityEmbedding()) {
+            assertEquals(TASK_FRAGMENT_VISIBILITY_INVISIBLE,
+                    bottomTask.getVisibility(null /* starting */));
+        } else {
+            assertEquals(TASK_FRAGMENT_VISIBILITY_VISIBLE_BEHIND_TRANSLUCENT,
+                    bottomTask.getVisibility(null /* starting */));
+        }
         // The sandwiched task fragment should be invisible
         assertEquals(TASK_FRAGMENT_VISIBILITY_INVISIBLE,
                 sandwichTaskFragment.getVisibility(null /* starting */));
+
+        if (Flags.partialTranslucentActivityEmbedding()) {
+            // Makes both adjacent TFs translucent.
+            topAdjacentTaskFragment2.getTopMostActivity().setOccludesParent(true);
+            topAdjacentTaskFragment1.getTopMostActivity().setOccludesParent(true);
+            sandwichTaskFragment.getTopMostActivity().setVisible(true);
+            sandwichTaskFragment.getTopMostActivity().visibleIgnoringKeyguard = true;
+
+            // The task behind remains invisible because the sandwich TF is opaque in between the
+            // bottom most adjacent set
+            assertEquals(TASK_FRAGMENT_VISIBILITY_INVISIBLE,
+                    bottomTask.getVisibility(null /* starting */));
+            // The sandwiched task fragment should be visible behind the translucent task fragment.
+            assertEquals(TASK_FRAGMENT_VISIBILITY_VISIBLE_BEHIND_TRANSLUCENT,
+                    sandwichTaskFragment.getVisibility(null /* starting */));
+        }
     }
 
     @Test
@@ -1168,6 +1194,53 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
         assertIsOpaque(rootTask, false);
         assertIsOpaque(topTask, false);
         assertIsOpaque(bottomTask, false);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_PARTIAL_TRANSLUCENT_ACTIVITY_EMBEDDING)
+    public void testPartialTranslucentAdjTaskFragments_bottomMost_opaque() {
+        final Task rootTask = new TaskBuilder(mSupervisor).setCreatedByOrganizer(true).build();
+        rootTask.setBounds(0, 0, 1000, 1000);
+        final TaskFragment tf1 = createTaskFragmentWithActivity(rootTask);
+        tf1.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        tf1.setBounds(0, 0, 500, 1000);
+        tf1.getTopMostActivity().setOccludesParent(true);
+
+        final TaskFragment tf2 = createTaskFragmentWithActivity(rootTask);
+        tf2.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        tf2.setBounds(500, 0, 1000, 1000);
+        tf2.getTopMostActivity().setOccludesParent(false);
+
+        tf1.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(tf1, tf2));
+
+        // Bottom-most partial translucent adj TF pair should make the Task opaque.
+        assertIsOpaque(rootTask, true);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_PARTIAL_TRANSLUCENT_ACTIVITY_EMBEDDING)
+    public void testPartialTranslucentAdjTaskFragments_notBottomMost_translucent() {
+        final Task rootTask = new TaskBuilder(mSupervisor).setCreatedByOrganizer(true).build();
+        rootTask.setBounds(0, 0, 1000, 1000);
+        final TaskFragment bottomTf = createTaskFragmentWithActivity(rootTask);
+        bottomTf.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        // To test if the adj TF set is treated as opaque, we make the bottom TF translucent.
+        bottomTf.getTopMostActivity().setOccludesParent(false);
+
+        final TaskFragment tf1 = createTaskFragmentWithActivity(rootTask);
+        tf1.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        tf1.setBounds(0, 0, 500, 1000);
+        tf1.getTopMostActivity().setOccludesParent(true);
+
+        final TaskFragment tf2 = createTaskFragmentWithActivity(rootTask);
+        tf2.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        tf2.setBounds(500, 0, 1000, 1000);
+        tf2.getTopMostActivity().setOccludesParent(false);
+
+        tf1.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(tf1, tf2));
+
+        // Not bottom-most (index 1 and 2), so it should NOT trigger the special logic.
+        assertIsOpaque(rootTask, false);
     }
 
     private Task createTaskWithActivityAndOverrideTranslucent(
