@@ -718,7 +718,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
     /**
      * Set the target display to reparent to when display disconnects or becomes unable
      * to host tasks
-     * @param disconnectDisplayId Display ID that is going to be removed or stop hosting tasks
+     * @param disconnectDisplayId  Display ID that is going to be removed or stop hosting tasks
      * @param destinationDisplayId Destination display where the content should be moved to
      */
     void addDisconnectReparentDisplay(int disconnectDisplayId, int destinationDisplayId) {
@@ -2655,7 +2655,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                                 + "there's no ChangeInfo. Did you forget to snapshot it?"
                 );
             }
-            if (change.mIsInteractive != task.isInteractive()) {
+            if (change.mIsInteractive != change.isInteractive()) {
                 // We're past collecting stage, so add to participants manually.
                 mParticipants.add(task);
             }
@@ -3471,6 +3471,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             if (task != null) {
                 final ActivityManager.RunningTaskInfo tinfo = new ActivityManager.RunningTaskInfo();
                 task.fillTaskInfo(tinfo);
+                tinfo.isInteractive &= info.isInteractive();
                 change.setTaskInfo(tinfo);
                 change.setRotationAnimation(getTaskRotationAnimation(task));
                 final ActivityRecord topRunningActivity = task.topRunningActivity();
@@ -4364,10 +4365,13 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         }
 
         /** @see Task#isInteractive */
-        private boolean isInteractive() {
+        public boolean isInteractive() {
             final Task task = mContainer.asTask();
             return Flags.allowDragAndDropWhenInteractiveBugfix()
-                    && task != null && task.isInteractive();
+                    && task != null && task.isInteractive()
+                    // Lie about interactivity when in transient hide, because the task is actually
+                    // not interactive, but it's reported so for the animation's duration.
+                    && (mFlags & ChangeInfo.FLAG_TRANSIENT_HIDE) == 0;
         }
     }
 
