@@ -1258,6 +1258,24 @@ public final class InputManager {
     }
 
     /**
+     * Returns a {@link VirtualMouse} to the caller.
+     * See {@link android.hardware.input.VirtualMouseConfig} for additional configurations
+     * available, e.g. display association, vendor id, product id, device name.
+     *
+     * @param config the mouse configuration
+     * @return VirtualMouse a virtual mouse device
+     *
+     * @hide
+     */
+    @TestApi
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
+    @RequiresPermission(Manifest.permission.INJECT_EVENTS)
+    @NonNull
+    public VirtualMouse createVirtualMouse(@NonNull VirtualMouseConfig config) {
+        return mGlobal.createVirtualMouse(config);
+    }
+
+    /**
      * Injects an input event into the event system on behalf of an application.
      * The synchronization mode determines whether the method blocks while waiting for
      * input injection to proceed.

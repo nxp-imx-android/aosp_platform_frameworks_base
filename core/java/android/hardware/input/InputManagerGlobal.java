@@ -1765,6 +1765,25 @@ public final class InputManagerGlobal {
     }
 
     /**
+     * @see InputManager#createVirtualMouse(VirtualMouseConfig)
+     */
+    @NonNull
+    @RequiresPermission(Manifest.permission.INJECT_EVENTS)
+    public VirtualMouse createVirtualMouse(@NonNull VirtualMouseConfig config) {
+        IVirtualMouse virtualMouse;
+        try {
+            // Pass a token to the server so that the server can be notified when the calling
+            // process has died and therefore clean up the virtual device.
+            final IBinder token = new Binder(
+                    "android.hardware.input.VirtualMouse:" + config.getInputDeviceName());
+            virtualMouse = mIm.createVirtualMouse(token, config);
+            return new VirtualMouse(config, virtualMouse);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * @see InputManager#setPointerIcon(PointerIcon, int, int, int, IBinder)
      */
     public boolean setPointerIcon(PointerIcon icon, int displayId, int deviceId, int pointerId,
