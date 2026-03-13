@@ -426,8 +426,25 @@ public class MediaProjectionPermissionActivity extends Activity {
 
     private void grantMediaProjectionPermissionForLargeScreen() {
         final MediaProjectionConfig config = getMediaProjectionConfig();
+        IMediaProjection projection = null;
+
+        // If the user must review already-granted consent, we must provide the projection
+        // token upfront to ensure the system correctly handles the reuse flow.
+        if (mReviewGrantedConsentRequired) {
+            try {
+                projection = MediaProjectionServiceHelper.createOrReuseProjection(
+                        mUid, mPackageName, mReviewGrantedConsentRequired, getDisplayId());
+            } catch (RemoteException e) {
+                Log.e(TAG, "Error creating projection for large screen review", e);
+                finishAsCancelled();
+                return;
+            }
+        }
 
         final Intent intent = new Intent(this, ShareScreenActivity.class);
+        if (projection != null) {
+            intent.putExtra(MediaProjectionManager.EXTRA_MEDIA_PROJECTION, projection.asBinder());
+        }
         intent.putExtra(ShareScreenActivity.EXTRA_HOST_APP_USER_HANDLE, getHostUserHandle());
         intent.putExtra(ShareScreenActivity.EXTRA_PACKAGE_NAME, mPackageName);
         intent.putExtra(ShareScreenActivity.EXTRA_HOST_APP_UID, getLaunchedFromUid());
