@@ -264,6 +264,16 @@ flag {
 }
 
 flag {
+    name: "launch_bubble_on_main_display"
+    namespace: "multitasking"
+    description: "Ensure bubble task is created on the main display if triggered from a connected display."
+    bug: "457889029"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "consolidate_split_keyboard_shortcut_controllers"
     namespace: "multitasking"
     description: "Consolidate split desktop keyboard shortcuts handling on shell and launcher side"
