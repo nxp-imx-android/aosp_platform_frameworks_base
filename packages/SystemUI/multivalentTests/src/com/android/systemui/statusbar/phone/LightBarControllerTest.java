@@ -20,6 +20,7 @@ import static android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BA
 import static android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON;
 
+import static com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_OPAQUE_LIGHT;
 import static com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_SEMI_TRANSPARENT;
 import static com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_TRANSPARENT;
 
@@ -54,6 +55,7 @@ import com.android.systemui.navigationbar.NavigationModeController;
 import com.android.systemui.statusbar.data.model.StatusBarAppearance;
 import com.android.systemui.statusbar.data.model.StatusBarMode;
 import com.android.systemui.statusbar.data.repository.FakeStatusBarModePerDisplayRepository;
+import com.android.systemui.Flags;
 import com.android.systemui.statusbar.layout.BoundsPair;
 import com.android.systemui.statusbar.policy.BatteryController;
 
@@ -456,6 +458,40 @@ public class LightBarControllerTest extends SysuiTestCase {
         mLightBarController.onNavigationBarModeChanged(MODE_SEMI_TRANSPARENT);
 
         // THEN icons should become light (not dark) because it's no longer a transparent bar
+        verifyNavBarIconsDark(false, /* didFireEvent= */ true);
+    }
+
+    @Test
+    public void testOnNavigationBarModeChanged_opaqueLightMode_flagEnabled_updatesIcons() {
+        mSetFlagsRule.enableFlags(Flags.FLAG_OPAQUE_STATUS_BAR);
+        mLightBarController.onNavigationBarAppearanceChanged(
+                APPEARANCE_LIGHT_NAVIGATION_BARS, /* nbModeChanged= */ true,
+                MODE_TRANSPARENT, /* navbarColorManagedByIme= */ false);
+        mLightBarController.setNavigationBar(mNavBarController);
+        verifyNavBarIconsDark(true, /* didFireEvent= */ true);
+
+        // WHEN the bar mode changes to opaque light
+        mLightBarController.onNavigationBarModeChanged(MODE_OPAQUE_LIGHT);
+
+        // THEN icons should be dark because opaque light is considered a light background.
+        // didFireEvent is false because the icons were already dark, so no new event was fired.
+        verifyNavBarIconsDark(true, /* didFireEvent= */ false);
+    }
+
+    @Test
+    public void testOnNavigationBarModeChanged_opaqueLightMode_flagDisabled_doesNotUpdateIcons() {
+        mSetFlagsRule.disableFlags(Flags.FLAG_OPAQUE_STATUS_BAR);
+        mLightBarController.onNavigationBarAppearanceChanged(
+                APPEARANCE_LIGHT_NAVIGATION_BARS, /* nbModeChanged= */ true,
+                MODE_TRANSPARENT, /* navbarColorManagedByIme= */ false);
+        mLightBarController.setNavigationBar(mNavBarController);
+        verifyNavBarIconsDark(true, /* didFireEvent= */ true);
+
+        // WHEN the bar mode changes to opaque light
+        mLightBarController.onNavigationBarModeChanged(MODE_OPAQUE_LIGHT);
+
+        // THEN icons should become light because opaque light is NOT considered a light background
+        // when flag disabled.
         verifyNavBarIconsDark(false, /* didFireEvent= */ true);
     }
 

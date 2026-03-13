@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.data.repository
 
+import android.content.res.Configuration
 import android.graphics.Rect
 import android.view.InsetsFlags
 import android.view.ViewDebug
@@ -28,6 +29,9 @@ import android.view.WindowInsetsController.Appearance
 import com.android.internal.statusbar.LetterboxDetails
 import com.android.internal.view.AppearanceRegion
 import com.android.systemui.Dumpable
+import com.android.systemui.Flags
+import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
@@ -41,14 +45,21 @@ import com.android.systemui.statusbar.layout.BoundsPair
 import com.android.systemui.statusbar.layout.LetterboxAppearanceCalculator
 import com.android.systemui.statusbar.layout.StatusBarBoundsProvider
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
+import com.android.systemui.util.kotlin.combine
+import com.android.wm.shell.desktopmode.api.DesktopMode
 import java.io.PrintWriter
+import java.util.Optional
+import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
@@ -122,7 +133,49 @@ constructor(
     private val commandQueue: CommandQueue,
     private val letterboxAppearanceCalculator: LetterboxAppearanceCalculator,
     private val dumpManager: DumpManager,
+    private val desktopMode: Optional<DesktopMode>,
+    @Background private val bgExecutor: Executor,
+    @DisplayAware private val configurationInteractor: ConfigurationInteractor,
 ) : StatusBarModePerDisplayRepository, SystemUIDisplaySubcomponent.LifecycleListener, Dumpable {
+
+    private val useOpaqueBackground =
+        if (Flags.opaqueStatusBar()) {
+            callbackFlow {
+                    val desktopScrimListener = { displayId: Int, applyLightOutEffect: Boolean ->
+                        if (displayId == thisDisplayId) {
+                            trySend(applyLightOutEffect)
+                        }
+                    }
+
+                    desktopMode.ifPresent {
+                        it.addDesktopScrimListener(desktopScrimListener, bgExecutor)
+                    }
+
+                    awaitClose {
+                        desktopMode.ifPresent {
+                            it.removeDesktopScrimListener(desktopScrimListener)
+                        }
+                    }
+                }
+                .stateIn(scope, SharingStarted.WhileSubscribed(), initialValue = false)
+        } else {
+            flowOf(false)
+        }
+
+    // When the opaque status bar flag is disabled, isNightMode is not used to calculate the
+    // status bar mode. By returning a constant false value, we avoid subscribing to and
+    // collecting configuration changes unnecessarily.
+    private val isNightMode =
+        if (Flags.opaqueStatusBar()) {
+            configurationInteractor.configurationValues
+                .map {
+                    it.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
+                        Configuration.UI_MODE_NIGHT_YES
+                }
+                .stateIn(scope, SharingStarted.WhileSubscribed(), initialValue = false)
+        } else {
+            flowOf(false)
+        }
 
     private val commandQueueCallback =
         object : CommandQueue.Callbacks {
@@ -275,7 +328,15 @@ constructor(
                 isTransientShown,
                 isInFullscreenMode,
                 _ongoingProcessRequiresStatusBarVisible,
-            ) { modifiedAttributes, isTransientShown, isInFullscreenMode, hasOngoingCall ->
+                useOpaqueBackground,
+                isNightMode,
+            ) {
+                modifiedAttributes,
+                isTransientShown,
+                isInFullscreenMode,
+                hasOngoingCall,
+                useOpaqueBackground,
+                isNightMode ->
                 if (modifiedAttributes == null) {
                     null
                 } else {
@@ -285,6 +346,8 @@ constructor(
                             isTransientShown,
                             isInFullscreenMode,
                             hasOngoingCall,
+                            useOpaqueBackground,
+                            isNightMode,
                         )
                     StatusBarAppearance(
                         statusBarMode,
@@ -306,8 +369,16 @@ constructor(
         isTransientShown: Boolean,
         isInFullscreenMode: Boolean,
         hasOngoingCall: Boolean,
+        useOpaqueBackground: Boolean,
+        isNightMode: Boolean,
     ): StatusBarMode {
         return when {
+            Flags.opaqueStatusBar() && useOpaqueBackground ->
+                if (isNightMode) {
+                    StatusBarMode.OPAQUE_DARK
+                } else {
+                    StatusBarMode.OPAQUE_LIGHT
+                }
             hasOngoingCall && isInFullscreenMode -> StatusBarMode.SEMI_TRANSPARENT
             isTransientShown -> StatusBarMode.SEMI_TRANSPARENT
             else -> appearance.toBarMode()
@@ -320,7 +391,7 @@ constructor(
         return when {
             this and lightsOutOpaque == lightsOutOpaque -> StatusBarMode.LIGHTS_OUT
             this and APPEARANCE_LOW_PROFILE_BARS != 0 -> StatusBarMode.LIGHTS_OUT_TRANSPARENT
-            this and APPEARANCE_OPAQUE_STATUS_BARS != 0 -> StatusBarMode.OPAQUE
+            this and APPEARANCE_OPAQUE_STATUS_BARS != 0 -> StatusBarMode.OPAQUE_DARK
             this and APPEARANCE_SEMI_TRANSPARENT_STATUS_BARS != 0 -> StatusBarMode.SEMI_TRANSPARENT
             else -> StatusBarMode.TRANSPARENT
         }
