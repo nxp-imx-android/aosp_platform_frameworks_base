@@ -19,9 +19,7 @@ package com.android.server.privatecompute;
 import android.annotation.NonNull;
 import android.os.PersistableBundle;
 import com.android.internal.annotations.VisibleForTesting;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -88,22 +86,5 @@ class AuditLogEntry {
         stream.write(bundleBytes);
 
         return output.toByteArray();
-    }
-
-    static AuditLogEntry readFromStream(DataInputStream input) throws IOException {
-        long timestamp = input.readLong();
-        int uid = input.readInt();
-        int pkgLen = input.readInt();
-        byte[] pkgBytes = new byte[pkgLen];
-        input.readFully(pkgBytes);
-        String pkg = new String(pkgBytes, StandardCharsets.UTF_8);
-
-        int bundleLen = input.readInt();
-        byte[] bundleBytes = new byte[bundleLen];
-        input.readFully(bundleBytes);
-        PersistableBundle bundle =
-                PersistableBundle.readFromStream(new ByteArrayInputStream(bundleBytes));
-
-        return new AuditLogEntry(bundle, timestamp, pkg, uid);
     }
 }

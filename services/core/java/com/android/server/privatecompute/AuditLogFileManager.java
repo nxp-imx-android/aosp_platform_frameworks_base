@@ -33,8 +33,8 @@ import java.io.File;
 class AuditLogFileManager {
     private static final String TAG = "PccSandboxManagerServiceAuditMode.AuditLogWriter";
 
-    static final String AUDIT_LOG_FILE_PREFIX = "audit_log";
-    static final String AUDIT_LOG_FILE_SUFFIX = ".bin";
+    private static final String AUDIT_LOG_FILE_PREFIX = "audit_log";
+    private static final String AUDIT_LOG_FILE_SUFFIX = ".bin";
 
     private final File mFolder;
     private final Object mLock = new Object();
