@@ -40,7 +40,9 @@ constructor(private val activityTaskManager: ActivityTaskManager) {
                 it.isVisible &&
                 it.displayId == displayId &&
                 it.configuration.windowConfiguration.activityType ==
-                    WindowConfiguration.ACTIVITY_TYPE_STANDARD
+                    WindowConfiguration.ACTIVITY_TYPE_STANDARD &&
+                it.topActivity?.packageName != "com.android.systemui" &&
+                it.numActivities > 0
         }
     }
 }

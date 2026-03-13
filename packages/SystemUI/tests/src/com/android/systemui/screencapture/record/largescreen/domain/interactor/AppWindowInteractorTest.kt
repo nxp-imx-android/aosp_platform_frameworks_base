@@ -114,18 +114,49 @@ class AppWindowInteractorTest : SysuiTestCase() {
             assertThat(result).containsExactly(task1, task2, task3).inOrder()
         }
 
+    @Test
+    fun getAppWindowTasks_filtersSystemUITasks() =
+        kosmos.runTest {
+            val systemUITask =
+                createRunningTaskInfo(taskId = 1, packageName = "com.android.systemui")
+            val otherTask = createRunningTaskInfo(taskId = 2, packageName = "com.other.pkg")
+            val runningTasks = listOf(systemUITask, otherTask)
+            whenever(activityTaskManager.getTasks(any())).thenReturn(runningTasks)
+
+            val result = appWindowInteractor.getAppWindowTasks(displayId)
+
+            assertThat(result).containsExactly(otherTask)
+        }
+
+    @Test
+    fun getAppWindowTasks_filtersTasksWithNoActivities() =
+        kosmos.runTest {
+            val withActivities = createRunningTaskInfo(taskId = 1, numActivities = 1)
+            val withoutActivities = createRunningTaskInfo(taskId = 2, numActivities = 0)
+            val runningTasks = listOf(withActivities, withoutActivities)
+            whenever(activityTaskManager.getTasks(any())).thenReturn(runningTasks)
+
+            val result = appWindowInteractor.getAppWindowTasks(displayId)
+
+            assertThat(result).containsExactly(withActivities)
+        }
+
     private fun createRunningTaskInfo(
         taskId: Int,
         displayId: Int = this.displayId,
         isVisible: Boolean = true,
         activityType: Int = WindowConfiguration.ACTIVITY_TYPE_STANDARD,
         hasTopActivity: Boolean = true,
+        packageName: String = "test.pkg",
+        numActivities: Int = 1,
     ): ActivityManager.RunningTaskInfo {
         return ActivityManager.RunningTaskInfo().apply {
             this.taskId = taskId
             this.isVisible = isVisible
             this.displayId = displayId
-            this.topActivity = if (hasTopActivity) ComponentName("test.pkg", "test.class") else null
+            this.numActivities = numActivities
+            this.topActivity =
+                if (hasTopActivity) ComponentName(packageName, "test.class") else null
             this.configuration.windowConfiguration.apply {
                 setBounds(Rect(0, 0, 100, 100))
                 this.activityType = activityType
