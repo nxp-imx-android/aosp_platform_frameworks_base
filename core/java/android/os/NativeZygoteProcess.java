@@ -82,7 +82,8 @@ public class NativeZygoteProcess implements IZygoteProcess {
 
     private static native int nativeStartNativeProcess(
             FileDescriptor fd, int uid, int gid, long startSeq, String packageName, String niceName,
-            int targetSdkVersion, boolean startChildZygote, int runtimeFlags, String seInfo)
+            int targetSdkVersion, boolean startChildZygote, int runtimeFlags, String seInfo,
+            boolean isTopApp)
             throws IOException;
 
     private static native int nativeStartNativeChildZygote(
@@ -123,7 +124,7 @@ public class NativeZygoteProcess implements IZygoteProcess {
             connectToZygote();
             pid = nativeStartNativeProcess(mSocket.getFileDescriptor(), uid, gid, startSeq,
                     packageName, niceName, targetSdkVersion, /*startChildZygote=*/false,
-                    runtimeFlags, seInfo);
+                    runtimeFlags, seInfo, isTopApp);
             if (pid == -1) {
                 throw new RuntimeException("Failed to fork a native process");
             }
