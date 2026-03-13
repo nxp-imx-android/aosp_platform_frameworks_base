@@ -313,6 +313,16 @@ public class PipController implements ConfigurationChangeListener,
                             imeListener.insetsChanged(insetsState);
                             navBarsListener.insetsChanged(insetsState);
                         }
+
+                        if (displayId == mPipDisplayLayoutState.getDisplayId()) {
+                            mMainExecutor.execute(() -> {
+                                DisplayLayout pendingLayout = mDisplayController
+                                        .getDisplayLayout(displayId);
+                                if (pendingLayout != null) {
+                                    mPipDisplayLayoutState.setDisplayLayout(pendingLayout);
+                                }
+                            });
+                        }
                     }
                 });
 
