@@ -3013,7 +3013,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         host.widgets.remove(widget);
         pruneHostLocked(host);
 
-        removeWidgetLocked(widget);
+        removeWidgetLocked(widget, true);
 
         Provider provider = widget.provider;
         if (provider != null) {
@@ -3657,7 +3657,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                 updateAppWidgetInstanceLocked(widget, null, false);
                 // clear out references to this appWidgetId
                 widget.host.widgets.remove(widget);
-                removeWidgetLocked(widget);
+                removeWidgetLocked(widget, true);
                 widget.provider = null;
                 pruneHostLocked(widget.host);
                 widget.host = null;
@@ -4409,13 +4409,15 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
      * If there are other widgets with the same package, leaves it in the cache, otherwise it
      * removes the associated package from the cache.
      */
-    void removeWidgetLocked(Widget widget) {
+    void removeWidgetLocked(Widget widget, boolean notifyHost) {
         if (DEBUG) {
             Slog.i(TAG, "removeWidgetLocked() " + widget);
         }
         mWidgets.remove(widget);
         onWidgetRemovedLocked(widget);
-        scheduleNotifyAppWidgetRemovedLocked(widget);
+        if (notifyHost) {
+            scheduleNotifyAppWidgetRemovedLocked(widget);
+        }
     }
 
     private void onWidgetRemovedLocked(Widget widget) {
@@ -4869,7 +4871,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                 // as we do not want to make host callbacks and provider broadcasts
                 // as the host and the provider will be killed.
                 if (hostInUser && (!hasProvider || providerInUser)) {
-                    removeWidgetLocked(widget);
+                    removeWidgetLocked(widget, false);
                     widget.host.widgets.remove(widget);
                     widget.host = null;
                     if (hasProvider) {
@@ -7512,7 +7514,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                         // Check if we need to destroy any services (if no other app widgets are
                         // referencing the same service)
                         decrementAppWidgetServiceRefCount(widget);
-                        removeWidgetLocked(widget);
+                        removeWidgetLocked(widget, true);
                     }
                 }
                 prunedApps.add(pkg);
