@@ -434,6 +434,16 @@ flag {
 }
 
 flag {
+    name: "fix_taskbar_scrim_view_on_home"
+    namespace: "multitasking"
+    description: "Fixes taskbar scrim view when bubbles are expanded on Launcher home screen"
+    bug: "492048302"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "fix_bubbles_stashing_on_home"
     namespace: "multitasking"
     description: "Fixes a bug where bubbles could be stashed on launcher home"
