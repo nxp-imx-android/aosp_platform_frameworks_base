@@ -23,8 +23,6 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
-import android.companion.virtual.VirtualDeviceManager;
-import android.companion.virtual.VirtualDeviceParams;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.ContentObserver;
@@ -47,9 +45,6 @@ import android.view.InputDevice;
 import android.view.KeyEvent;
 
 import androidx.annotation.VisibleForTesting;
-
-import com.android.server.LocalServices;
-import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -162,8 +157,6 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
     private final SparseArray<SparseArray<MouseKeyEvent>> mDeviceKeyCodeMap =
             new SparseArray<>();
 
-    VirtualDeviceManager.VirtualDevice mVirtualDevice = null;
-
     private VirtualMouse mVirtualMouse = null;
 
     /**
@@ -209,8 +202,8 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
     /** Provides a source for obtaining uptime, used for precise timing calculations. */
     private final TimeSource mTimeSource;
 
-    /** Used to ensure that the names used when creating virtual devices are unique. */
-    private static int sNextVirtualDeviceId = 0;
+    /** Used to ensure that the names used when creating virtual mouse devices are unique. */
+    private static int sNextVirtualMouseId = 0;
 
     /**
      * Enum representing different types of mouse key events, each associated with a specific
@@ -357,7 +350,7 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
      * @param looper Looper to use for callbacks and messages
      * @param displayId Display ID to send mouse events to
      */
-    @RequiresPermission(android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
+    @RequiresPermission(android.Manifest.permission.INJECT_EVENTS)
     public MouseKeysInterceptor(
             AccessibilityManagerService service,
             @NonNull Context context,
@@ -369,10 +362,10 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
         mAms = service;
         mHandler = new Handler(looper, this);
         mTimeSource = timeSource;
-        // Create the virtual mouse on a separate thread since virtual device creation
+        // Create the virtual mouse on a separate thread since virtual input device creation
         // should happen on an auxiliary thread, and not from the handler's thread.
         // This is because the handler thread is the same as the main thread,
-        // and the main thread will be blocked waiting for the virtual device to be created.
+        // and the main thread will be blocked waiting for the virtual mouse to be created.
         mCreateVirtualMouseThread = new Thread(() -> {
             mVirtualMouse = createVirtualMouse(displayId);
         });
@@ -427,7 +420,6 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
         }
     }
 
-    @RequiresPermission(android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
     private void sendVirtualMouseRelativeEvent(float x, float y) {
         waitForVirtualMouseCreation();
         mVirtualMouse.sendRelativeEvent(new VirtualMouseRelativeEvent.Builder()
@@ -437,7 +429,6 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
         );
     }
 
-    @RequiresPermission(android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
     private void sendVirtualMouseButtonEvent(int buttonCode, int actionCode) {
         waitForVirtualMouseCreation();
         mVirtualMouse.sendButtonEvent(new VirtualMouseButtonEvent.Builder()
@@ -447,7 +438,6 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
         );
     }
 
-    @RequiresPermission(android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
     private void sendVirtualMouseScrollEvent(float x, float y) {
         waitForVirtualMouseCreation();
         mVirtualMouse.sendScrollEvent(new VirtualMouseScrollEvent.Builder()
@@ -470,7 +460,6 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
      *                  <li>{@link MouseKeysInterceptor.MouseKeyEvent#DOWN_MOVE_OR_SCROLL}
      *                </ul>
      */
-    @RequiresPermission(android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
     private void performMouseScrollAction(int keyCode) {
         MouseKeyEvent mouseKeyEvent = MouseKeyEvent.from(
                 keyCode, mActiveInputDeviceId, mDeviceKeyCodeMap);
@@ -521,7 +510,6 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
      *                  Button)
      *                </ul>
      */
-    @RequiresPermission(android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
     private void performMouseButtonAction(int keyCode) {
         MouseKeyEvent mouseKeyEvent = MouseKeyEvent.from(
                 keyCode, mActiveInputDeviceId, mDeviceKeyCodeMap);
@@ -574,7 +562,6 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
      *                  <li>{@link MouseKeysInterceptor.MouseKeyEvent#DIAGONAL_UP_RIGHT_MOVE}
      *                </ul>
      */
-    @RequiresPermission(android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
     private void performMousePointerAction(int keyCode) {
         float x = 0f;
         float y = 0f;
@@ -657,28 +644,21 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
     }
 
     /**
-     * Create a virtual mouse using the VirtualDeviceManagerInternal.
+     * Create a virtual mouse using the InputManager.
      *
      * @return The created VirtualMouse.
      */
-    @RequiresPermission(android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
+    @RequiresPermission(android.Manifest.permission.INJECT_EVENTS)
     private VirtualMouse createVirtualMouse(int displayId) {
-        final VirtualDeviceManagerInternal localVdm =
-                LocalServices.getService(VirtualDeviceManagerInternal.class);
-        // Virtual device names are expected to be unique, and since virtual device operations are
-        // asynchronous it is possible to create a new virtual device before the old virtual device
-        // is cleaned up. To avoid using the same name for two virtual devices we generate names
-        // using with an integer that is incremented each time a virtual device is created.
-        final String virtualDeviceName = "Mouse Keys Virtual Device (" + sNextVirtualDeviceId++
-                + ")";
-        mVirtualDevice = localVdm.createVirtualDevice(
-                new VirtualDeviceParams.Builder().setName(virtualDeviceName).build());
-        VirtualMouse virtualMouse = mVirtualDevice.createVirtualMouse(
-                new VirtualMouseConfig.Builder()
-                .setInputDeviceName(virtualDeviceName)
+        // Virtual input device names are expected to be unique, and since these operations are
+        // asynchronous it is possible to create a new virtual mouse before the old virtual mouse
+        // is cleaned up. To avoid using the same name for two virtual mouse devices we generate
+        // names using with an integer that is incremented each time a virtual mouse is created.
+        final String virtualMouseName = "Mouse Keys Virtual Device (" + sNextVirtualMouseId++ + ")";
+        return mInputManager.createVirtualMouse(new VirtualMouseConfig.Builder()
+                .setInputDeviceName(virtualMouseName)
                 .setAssociatedDisplayId(displayId)
                 .build());
-        return virtualMouse;
     }
 
     /**
@@ -687,7 +667,6 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
      * @param event The key event to handle.
      * @param policyFlags The policy flags associated with the key event.
      */
-    @RequiresPermission(android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
     @Override
     public void onKeyEvent(KeyEvent event, int policyFlags) {
         if (mAms.getTraceManager().isA11yTracingEnabledForTypes(FLAGS_INPUT_FILTER)) {
@@ -710,7 +689,6 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
         });
     }
 
-    @RequiresPermission(android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
     private void onKeyEventInternal(KeyEvent event, int policyFlags) {
         final boolean isDown = event.getAction() == KeyEvent.ACTION_DOWN;
         final int keyCode = event.getKeyCode();
@@ -840,7 +818,6 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
      * @param msg The message to handle.
      * @return True if the message was handled, false otherwise.
      */
-    @RequiresPermission(android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
     @Override
     public boolean handleMessage(Message msg) {
         long currentProcessingTime = msg.getWhen();
@@ -895,7 +872,6 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
      *                      <li>{@link #MESSAGE_SCROLL_MOUSE_POINTER} - for scrolling mouse pointer.
      *                    </ul>
      */
-    @RequiresPermission(android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
     public void handleMouseMessage(long currentTime, int activeKey, int messageType) {
         int delayMillis = INTERVAL_MILLIS;
 
@@ -924,7 +900,6 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
         }
     }
 
-    @RequiresPermission(android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
     @Override
     public void onDestroy() {
         mHandler.post(() -> {
@@ -936,8 +911,8 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
         });
 
         mHandler.removeCallbacksAndMessages(null);
-        if (mVirtualDevice != null) {
-            mVirtualDevice.close();
+        if (mVirtualMouse != null) {
+            mVirtualMouse.close();
         }
         if (mMouseKeysSettingsObserver != null) {
             mMouseKeysSettingsObserver.stop();

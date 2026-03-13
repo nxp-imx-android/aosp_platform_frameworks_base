@@ -21,8 +21,7 @@ import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.VirtualDevice;
-import android.companion.virtual.VirtualDeviceManager;
-import android.companion.virtual.VirtualDeviceParams;
+import android.companion.virtual.VirtualDeviceManager.VirtualDeviceListener;
 import android.companion.virtual.sensor.VirtualSensor;
 import android.content.Context;
 import android.content.Intent;
@@ -152,8 +151,7 @@ public abstract class VirtualDeviceManagerInternal {
      * If an app is on multiple virtual devices, the locale of the virtual device created the
      * earliest will be returned.
      *
-     * See {@link android.hardware.input.VirtualKeyboardConfig#setLanguageTag() for how the locale
-     * is specified for virtual keyboard.
+     * @see android.hardware.input.VirtualKeyboardConfig.Builder#setLanguageTag(String)
      */
     @Nullable
     public abstract LocaleList getPreferredLocaleListForUid(int uid);
@@ -215,16 +213,6 @@ public abstract class VirtualDeviceManagerInternal {
      * exists, as long as one may have existed or can be created.
      */
     public abstract @NonNull Set<String> getAllPersistentDeviceIds();
-
-    /**
-     * Creates a virtual device where applications can launch and receive input events injected by
-     * the creator.
-     *
-     * <p>A Companion Device Manager association is not required. Only the system may create such
-     * virtual devices.</p>
-     */
-    public abstract @NonNull VirtualDeviceManager.VirtualDevice createVirtualDevice(
-            @NonNull VirtualDeviceParams params);
 
     /**
      * Returns the details of the virtual device with the given ID, if any.
