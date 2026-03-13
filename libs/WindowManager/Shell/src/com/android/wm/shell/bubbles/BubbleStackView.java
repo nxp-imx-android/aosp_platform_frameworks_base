@@ -3369,6 +3369,10 @@ public class BubbleStackView extends FrameLayout
         }
     }
 
+    void cancelClipAnimation() {
+        mExpandedViewAnimationController.cancelClipAnimation();
+    }
+
     /**
      * Updates the stack based for IME changes. When collapsed it'll move the stack if it
      * overlaps where they IME would be. When expanded it'll shift the expanded bubbles
