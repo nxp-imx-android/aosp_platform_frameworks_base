@@ -16,6 +16,8 @@
 
 package com.android.server.privatecompute;
 
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_BACKUP_AGENT_STARTED;
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_BACKUP_AGENT_STARTED__BACKUP_AGENT_PROCESS_TYPE__TYPE_PCC_PROCESS;
 import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_BINDER_PROXY_TRANSACTION_REPORTED;
 import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_BINDER_PROXY_TRANSACTION_REPORTED__TRANSACTION_STATUS__STATUS_FAILED;
 import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_BINDER_PROXY_TRANSACTION_REPORTED__TRANSACTION_STATUS__STATUS_SUCCESS;
@@ -106,5 +108,15 @@ public class PrivateComputeStatsLogUtil {
      */
     public static void logPccDataMigrationStateChanged(int state, int source, int target) {
         PrivateComputeAtomsLog.write(PCC_DATA_MIGRATION_STATE_CHANGED, state, source, target);
+    }
+
+    /**
+     * Logs that a PCC backup agent has started.
+     */
+    public static void logPccBackupAgentStarted() {
+        PrivateComputeAtomsLog.write(
+                PCC_BACKUP_AGENT_STARTED,
+                PCC_BACKUP_AGENT_STARTED__BACKUP_AGENT_PROCESS_TYPE__TYPE_PCC_PROCESS
+        );
     }
 }
