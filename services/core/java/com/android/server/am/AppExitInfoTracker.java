@@ -60,6 +60,7 @@ import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.AtomicFile;
+import android.util.IndentingPrintWriter;
 import android.util.Pair;
 import android.util.Pools.SynchronizedPool;
 import android.util.Slog;
@@ -889,33 +890,38 @@ public final class AppExitInfoTracker {
     void dumpHistoryProcessExitInfo(PrintWriter pw, String packageName) {
         pw.println("ACTIVITY MANAGER PROCESS EXIT INFO (dumpsys activity exit-info)");
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        IndentingPrintWriter iPw = new IndentingPrintWriter(pw, "  ");
         synchronized (mLock) {
             pw.println("Last Timestamp of Persistence Into Persistent Storage: "
                     + sdf.format(new Date(mLastAppExitInfoPersistTimestamp)));
+            iPw.increaseIndent();
             if (TextUtils.isEmpty(packageName)) {
                 forEachPackageLocked((name, records) -> {
-                    dumpHistoryProcessExitInfoLocked(pw, "  ", name, records, sdf);
+                    dumpHistoryProcessExitInfoLocked(iPw, name, records, sdf);
                     return AppExitInfoTracker.FOREACH_ACTION_NONE;
                 });
             } else {
                 SparseArray<AppExitInfoContainer> array = mData.getMap().get(packageName);
                 if (array != null) {
-                    dumpHistoryProcessExitInfoLocked(pw, "  ", packageName, array, sdf);
+                    dumpHistoryProcessExitInfoLocked(iPw, packageName, array, sdf);
                 }
             }
+            iPw.decreaseIndent();
         }
     }
 
     @GuardedBy("mLock")
-    private void dumpHistoryProcessExitInfoLocked(PrintWriter pw, String prefix,
+    private void dumpHistoryProcessExitInfoLocked(IndentingPrintWriter pw,
             String packageName, SparseArray<AppExitInfoContainer> array,
             SimpleDateFormat sdf) {
-        pw.println(prefix + "package: " + packageName);
+        pw.println("package: " + packageName);
         int size = array.size();
+        pw.increaseIndent();
         for (int i = 0; i < size; i++) {
-            pw.println(prefix + "  Historical Process Exit for uid=" + array.keyAt(i));
-            array.valueAt(i).dumpLocked(pw, prefix + "    ", sdf);
+            pw.println("Historical Process Exit for uid=" + array.keyAt(i));
+            array.valueAt(i).dumpLocked(pw, sdf);
         }
+        pw.decreaseIndent();
     }
 
     @GuardedBy("mLock")
@@ -1556,12 +1562,14 @@ public final class AppExitInfoTracker {
         }
 
         @GuardedBy("mLock")
-        void dumpLocked(PrintWriter pw, String prefix, SimpleDateFormat sdf) {
+        void dumpLocked(IndentingPrintWriter pw, SimpleDateFormat sdf) {
             mTmpInfoList.clear();
             getExitInfosLocked(/* filterPid */ 0, /* maxNum */ 0, mTmpInfoList);
+            pw.increaseIndent();
             for (int i = 0, size = mTmpInfoList.size(); i < size; i++) {
-                mTmpInfoList.get(i).dump(pw, prefix + "  ", "#" + i, sdf);
+                mTmpInfoList.get(i).dump(pw, "#" + i, sdf);
             }
+            pw.decreaseIndent();
             mTmpInfoList.clear();
         }
 
