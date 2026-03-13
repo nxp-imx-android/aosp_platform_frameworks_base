@@ -16,6 +16,7 @@
 
 package com.android.systemui.dreams;
 
+import static android.service.dreams.Flags.dreamsSwitcherEdgeSwipeEnabled;
 import static android.service.dreams.Flags.dreamsSwitcherLongPressEnabled;
 import static android.service.dreams.Flags.dreamWakeRedirect;
 import static android.service.dreams.Flags.dreamsSwitcher;
@@ -598,7 +599,9 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
             if (dreamsSwitcherLongPressEnabled()) {
                 touchHandlers.add(dreamOverlayComponent.getLongPressTouchHandler());
             }
-            touchHandlers.add(dreamOverlayComponent.getEdgeSwipeTouchHandler());
+            if (dreamsSwitcherEdgeSwipeEnabled()) {
+                touchHandlers.add(dreamOverlayComponent.getEdgeSwipeTouchHandler());
+            }
         }
 
         final AmbientTouchComponent ambientTouchComponent = mAmbientTouchComponentFactory.create(
