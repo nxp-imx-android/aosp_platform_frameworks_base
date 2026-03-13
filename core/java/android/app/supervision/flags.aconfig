@@ -170,17 +170,6 @@ flag {
 }
 
 flag {
-    name: "enable_supervision_manager_cache"
-    is_exported: false
-    namespace: "supervision"
-    description: "Enables caching in SupervisionManager"
-    bug: "446219688"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "verify_supervision_role_holders_before_destroying_escrow_token"
     is_exported: false
     namespace: "supervision"

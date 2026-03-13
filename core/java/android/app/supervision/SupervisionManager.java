@@ -454,28 +454,16 @@ public class SupervisionManager {
     @RequiresPermission(MANAGE_SUPERVISION)
     @NonNull
     public List<Policy> getPolicies() {
-        if (Flags.enableSupervisionManagerCache()) {
-            List<Policy> policies = mGetPoliciesCache.query(mContext.getUserId());
-            if (policies != null) {
-                return policies;
-            }
-        } else {
-            if (mService != null) {
-                try {
-                    return mService.getPolicies(mContext.getUserId());
-                } catch (RemoteException e) {
-                    throw e.rethrowFromSystemServer();
-                }
-            }
+        List<Policy> policies = mGetPoliciesCache.query(mContext.getUserId());
+        if (policies != null) {
+            return policies;
         }
         return new ArrayList<>();
     }
 
     /** @hide */
     public static void invalidateGetPoliciesCache() {
-        if (Flags.enableSupervisionManagerCache()) {
-            sSupervisionManagerCache.invalidateCache();
-        }
+        sSupervisionManagerCache.invalidateCache();
     }
 
     /**
