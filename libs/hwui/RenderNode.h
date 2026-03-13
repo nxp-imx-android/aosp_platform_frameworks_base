@@ -194,6 +194,8 @@ public:
         mPositionListenerDirty = true;
     }
 
+    uint32_t getParentCount() const { return mParentCount; }
+
     // This is only modified in MODE_FULL, so it can be safely accessed
     // on the UI thread.
     bool hasParents() { return mParentCount; }
