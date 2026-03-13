@@ -678,6 +678,14 @@ flag {
 }
 
 flag {
+  name: "policy_streamlining_app_install"
+  namespace: "enterprise"
+  description: "Redirect app install policy to the generic set/getPolicy APIs"
+  bug: "444381314"
+  is_exported: true
+}
+
+flag {
   name: "policy_streamlining_easter_eggs"
   namespace: "enterprise"
   description: "Redirect addUserRestriction/getUserRestriction for DISALLOW_FUN to the generic set/getPolicy APIs."

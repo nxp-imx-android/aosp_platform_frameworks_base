@@ -182,6 +182,14 @@ public class PolicyDefinitionFactory {
                             .build();
                 });
         addFactory(
+                PolicyIdentifier.APP_INSTALL,
+                builder -> {
+                    // This (pre-existing) enum policy is stored as a boolean inside DPE, so return
+                    // null here and pass the pre-existing PolicyDefinition into the constructor
+                    // of `EnumStoredAsBooleanPolicyHandler`.
+                    return null;
+                });
+        addFactory(
                 PolicyIdentifier.EASTER_EGGS,
                 builder -> {
                     // This (pre-existing) enum policy is stored as a boolean inside DPE, so return

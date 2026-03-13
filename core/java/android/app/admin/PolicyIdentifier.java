@@ -21,6 +21,7 @@ import static android.Manifest.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_CONTENT_RESTRICTION_APPS;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_FACTORY_RESET;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_FUN;
+import static android.Manifest.permission.MANAGE_DEVICE_POLICY_APPS_CONTROL;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCKSCREEN_MESSAGE;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_SCREEN_CAPTURE;
@@ -35,6 +36,7 @@ import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_AUTO_TIME;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_AUTO_TIME_ZONE;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_DISALLOW_FACTORY_RESET;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_EASTER_EGGS;
+import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_APP_INSTALL;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_LOCKSCREEN_MESSAGE;
 import static android.processor.devicepolicy.AllowedDpcTypes.ALLOWED;
 import static android.processor.devicepolicy.AllowedDpcTypes.DISALLOWED;
@@ -438,6 +440,56 @@ public final class PolicyIdentifier<T> {
             resolutionMechanism = @EnumResolutionMechanism(custom = true))
     public static final PolicyIdentifier<Integer> AUTO_TIME_ZONE =
             new PolicyIdentifier<>("AUTO_TIME_ZONE");
+
+    /**
+     * Installing Apps is allowed.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING_APP_INSTALL)
+    public static final int APP_INSTALL_ALLOWED = 1;
+
+    /** Installing Apps is disallowed. */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING_APP_INSTALL)
+    public static final int APP_INSTALL_DISALLOWED = 2;
+
+    /**
+     * Possible values {@link APP_INSTALL}
+     *
+     * @hide
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(
+            prefix = {"APP_INSTALL_"},
+            value = {
+                    APP_INSTALL_ALLOWED,
+                    APP_INSTALL_DISALLOWED,
+            })
+    public @interface AppInstallValue {}
+
+    /**
+     * Policy that controls whether app installation is allowed or disallowed.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING_APP_INSTALL)
+    @NonNull
+    @EnumPolicyDefinition(
+            base =
+            @PolicyDefinition(
+                    allowedScopes = {POLICY_SCOPE_USER},
+                    affectedResource = RESOURCE_PER_USER,
+                    requiredPermission = MANAGE_DEVICE_POLICY_APPS_CONTROL,
+                    requiredCrossUserPermission = MANAGE_DEVICE_POLICY_ACROSS_USERS,
+                    allowedDpcTypes =
+                    @AllowedDpcTypes(
+                            deviceOwner = ALLOWED,
+                            managedProfileOwnerOfOrganizationOwnedDevice = ALLOWED,
+                            managedProfileOwnerOfPersonalOwnedDevice = ALLOWED,
+                            unaffiliatedFullUserProfileOwner = ALLOWED,
+                            financedDeviceOwner = ALLOWED,
+                            profileOwnerOnUser0 = ALLOWED)),
+            intDef = AppInstallValue.class,
+            defaultValue = APP_INSTALL_ALLOWED,
+            resolutionMechanism = @EnumResolutionMechanism(custom = true))
+    public static final PolicyIdentifier<Integer> APP_INSTALL =
+            new PolicyIdentifier<>("APP_INSTALL");
 
     /** Easter eggs are disallowed. */
     @FlaggedApi(FLAG_POLICY_STREAMLINING_EASTER_EGGS)
