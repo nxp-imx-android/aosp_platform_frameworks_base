@@ -22,6 +22,7 @@ import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DEFAULT;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
 import static android.content.pm.PackageManager.INSTALL_FAILED_INSUFFICIENT_STORAGE;
+import static android.content.pm.PackageManager.INSTALL_FAILED_INTERNAL_ERROR;
 import static android.content.pm.PackageManager.INSTALL_FAILED_UID_CHANGED;
 import static android.content.pm.PackageManager.MATCH_DEFAULT_ONLY;
 import static android.content.pm.PackageManager.UNINSTALL_REASON_UNKNOWN;
@@ -30,6 +31,10 @@ import static android.os.Process.INVALID_UID;
 import static android.os.Process.PACKAGE_INFO_GID;
 import static android.os.Process.SYSTEM_UID;
 
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_UID_ASSIGNMENT_REPORTED__ASSIGNMENT_STATUS__FAILURE_HAS_SHARED_USER;
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_UID_ASSIGNMENT_REPORTED__ASSIGNMENT_STATUS__FAILURE_INTERNAL_ERROR;
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_UID_ASSIGNMENT_REPORTED__ASSIGNMENT_STATUS__SUCCESS_EXISTING;
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_UID_ASSIGNMENT_REPORTED__ASSIGNMENT_STATUS__SUCCESS_NEW;
 import static com.android.server.pm.PackageManagerService.PLATFORM_PACKAGE_NAME;
 import static com.android.server.pm.PackageManagerService.WRITE_USER_PACKAGE_RESTRICTIONS;
 import static com.android.server.pm.SharedUidMigration.BEST_EFFORT;
@@ -130,6 +135,7 @@ import com.android.server.pm.verify.developer.DeveloperVerificationStatusInterna
 import com.android.server.pm.verify.domain.DomainVerificationLegacySettings;
 import com.android.server.pm.verify.domain.DomainVerificationManagerInternal;
 import com.android.server.pm.verify.domain.DomainVerificationPersistence;
+import com.android.server.privatecompute.PrivateComputeStatsLogUtil;
 import com.android.server.utils.Slogf;
 import com.android.server.utils.Snappable;
 import com.android.server.utils.SnapshotCache;
@@ -1396,7 +1402,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         if (p.getAppId() < 0) {
             PackageManagerService.reportSettingsProblem(Log.WARN,
                     "Package " + p.getPackageName() + " could not be assigned a valid UID");
-            throw new PackageManagerException(INSTALL_FAILED_INSUFFICIENT_STORAGE,
+            throw new PackageManagerException(INSTALL_FAILED_INTERNAL_ERROR,
                     "Package " + p.getPackageName() + " could not be assigned a valid UID");
         }
         return createdNew;
@@ -1417,6 +1423,9 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         }
         if (p.hasSharedUser()) {
             Slog.w(TAG, "Not assigning a PCC UID to a package with a shared userId.");
+            PrivateComputeStatsLogUtil.logPccUidAssignment(
+                    PCC_UID_ASSIGNMENT_REPORTED__ASSIGNMENT_STATUS__FAILURE_HAS_SHARED_USER);
+
             return false;
         }
         if (p.getPccId() == Process.INVALID_UID) {
@@ -1430,8 +1439,17 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         if (p.getPccId() < 0) {
             PackageManagerService.reportSettingsProblem(Log.WARN,
                     "Package " + p.getPackageName() + " could not be assigned a valid PCC UID");
-            throw new PackageManagerException(INSTALL_FAILED_INSUFFICIENT_STORAGE,
+            PrivateComputeStatsLogUtil.logPccUidAssignment(
+                    PCC_UID_ASSIGNMENT_REPORTED__ASSIGNMENT_STATUS__FAILURE_INTERNAL_ERROR);
+            throw new PackageManagerException(INSTALL_FAILED_INTERNAL_ERROR,
                     "Package " + p.getPackageName() + " could not be assigned a valid PCC UID");
+        }
+        if (createdNew) {
+            PrivateComputeStatsLogUtil.logPccUidAssignment(
+                    PCC_UID_ASSIGNMENT_REPORTED__ASSIGNMENT_STATUS__SUCCESS_NEW);
+        } else {
+            PrivateComputeStatsLogUtil.logPccUidAssignment(
+                    PCC_UID_ASSIGNMENT_REPORTED__ASSIGNMENT_STATUS__SUCCESS_EXISTING);
         }
         return createdNew;
     }
