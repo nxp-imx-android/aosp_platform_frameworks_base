@@ -20,6 +20,7 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.fakeContactsInteractor
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.fakeInstalledAppsInteractor
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
+import com.android.systemui.notifications.intelligence.rules.shared.notificationRulesLogBuffer
 
 val Kosmos.notificationRuleEditViewModelFactory by
     Kosmos.Fixture {
@@ -29,6 +30,7 @@ val Kosmos.notificationRuleEditViewModelFactory by
                     rule,
                     fakeContactsInteractor,
                     fakeInstalledAppsInteractor,
+                    notificationRulesLogBuffer,
                 )
             }
         }

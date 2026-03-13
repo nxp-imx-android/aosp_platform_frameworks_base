@@ -17,6 +17,7 @@
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
 import android.content.res.Resources
+import com.android.systemui.log.core.Logger
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
@@ -33,6 +34,7 @@ internal fun buildEditableRuleText(
     onAppsSaved: (List<AppModel>) -> Unit,
     onContactsSaved: (List<ContactModel>) -> Unit,
     resources: Resources,
+    logger: Logger,
 ): RuleDisplayModel {
     val appsText: SingleFieldTextModel<AppModel>? =
         viewModel.rule.includedApps?.let {
@@ -42,6 +44,7 @@ internal fun buildEditableRuleText(
                 onEnterEditField = onEnterEditField,
                 onAppsSaved = onAppsSaved,
                 resources = resources,
+                logger = logger,
             )
         }
 
@@ -53,6 +56,7 @@ internal fun buildEditableRuleText(
                 onEnterEditField = onEnterEditField,
                 onContactsSaved = onContactsSaved,
                 resources = resources,
+                logger = logger,
             )
         }
 
@@ -66,6 +70,7 @@ private fun createEditableIncludedAppsText(
     onEnterEditField: (RulesScreenViewState.EditField) -> Unit,
     onAppsSaved: (List<AppModel>) -> Unit,
     resources: Resources,
+    logger: Logger,
 ): SingleFieldTextModel<AppModel> {
     val onClick = {
         onEnterEditField(
@@ -89,6 +94,7 @@ private fun createEditableIncludedAppsText(
             onClick = onClick,
         ),
         resources = resources,
+        logger = logger,
     )
 }
 
@@ -99,6 +105,7 @@ private fun createEditableContactsText(
     onEnterEditField: (RulesScreenViewState.EditField) -> Unit,
     onContactsSaved: (List<ContactModel>) -> Unit,
     resources: Resources,
+    logger: Logger,
 ): SingleFieldTextModel<ContactModel> {
     val onClick: () -> Unit = {
         onEnterEditField(
@@ -126,6 +133,7 @@ private fun createEditableContactsText(
                 onClick = onClick,
             ),
         resources = resources,
+        logger = logger,
     )
 }
 
@@ -133,6 +141,7 @@ private fun createEditableContactsText(
 private fun <T, R> createFieldText(
     fieldData: FieldDataModel<T, R>,
     resources: Resources,
+    logger: Logger,
 ): SingleFieldTextModel<T> {
     return when (fieldData.currentValue) {
         is RuleValue.Specified -> {
@@ -142,6 +151,7 @@ private fun <T, R> createFieldText(
                 label = fieldData.label,
                 onClick = fieldData.onClick,
                 resources = resources,
+                logger = logger,
             )
         }
         is RuleValue.Ambiguous -> {
@@ -149,6 +159,7 @@ private fun <T, R> createFieldText(
                 placeholderText = fieldData.currentValue.placeholderText,
                 onClick = fieldData.onClick,
                 resources = resources,
+                logger = logger,
             )
         }
     }
