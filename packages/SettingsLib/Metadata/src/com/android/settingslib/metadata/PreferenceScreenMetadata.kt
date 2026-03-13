@@ -152,9 +152,11 @@ interface PreferenceScreenMetadata : PreferenceGroup {
             CatalystFlagProviderFactory.catalystUseKeyParameters() && keyParameters != null -> {
                 makeLaunchpadIntent(context, key, keyParameters!!, highlightKey)
             }
+
             arguments != null -> {
                 makeLaunchpadIntent(context, key, arguments!!, highlightKey)
             }
+
             else -> {
                 makeLaunchpadIntent(context, key, highlightKey)
             }
@@ -202,8 +204,7 @@ interface PreferenceScreenMetadata : PreferenceGroup {
         }
 
     companion object {
-        internal const val LAUNCH_SETTINGS_PAGES_ACTION =
-            "com.android.settings.action.LAUNCH_SETTINGS_PAGES"
+        const val LAUNCH_SETTINGS_PAGES_ACTION = "com.android.settings.action.LAUNCH_SETTINGS_PAGES"
         const val EXTRA_SCREEN_KEY = "screen_key"
         const val EXTRA_SCREEN_ARGS = "screen_args"
         internal const val EXTRA_FRAGMENT_ARG_KEY = ":settings:fragment_args_key"
