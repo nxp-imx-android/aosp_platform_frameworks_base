@@ -163,21 +163,18 @@ public class PolicyDefinitionFactory {
                 PolicyIdentifier.MANAGED_ESIM_OUTGOING_TRANSFER_POLICY,
                 builder -> {
                     return builder.setResolutionMechanism(
-                            new MostRestrictive<>(
-                                    List.of(
-                                           new IntegerPolicyValue(
-                                                   MANAGED_ESIM_OUTGOING_TRANSFER_DISALLOWED),
-                                           new IntegerPolicyValue(
-                                                   MANAGED_ESIM_OUTGOING_TRANSFER_ALLOWED)
-                                    )
-                            )
-                    ).build();
+                                    new MostRestrictive<>(
+                                            List.of(
+                                                    new IntegerPolicyValue(
+                                                            MANAGED_ESIM_OUTGOING_TRANSFER_DISALLOWED),
+                                                    new IntegerPolicyValue(
+                                                            MANAGED_ESIM_OUTGOING_TRANSFER_ALLOWED))))
+                            .build();
                 });
         addFactory(
                 PolicyIdentifier.CONTENT_RESTRICTION_APPS,
                 builder -> {
-                    return builder
-                            .setResolutionMechanism(new PackageListUnion())
+                    return builder.setResolutionMechanism(new PackageListUnion())
                             .setEnforcerCallback(PolicyEnforcerCallbacks::setContentRestrictionApps)
                             .build();
                 });

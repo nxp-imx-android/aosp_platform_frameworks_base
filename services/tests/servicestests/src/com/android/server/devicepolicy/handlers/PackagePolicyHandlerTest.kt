@@ -69,9 +69,7 @@ class PackagePolicyHandlerTest {
         handler.setPolicyUnchecked(
             anyCaller,
             anyScope,
-            PolicyValueTransport.packageField(
-                packageIdentifier.createTransport()
-            ),
+            PolicyValueTransport.packageField(packageIdentifier.createTransport()),
         )
 
         verify(mockDelegate)
@@ -93,9 +91,7 @@ class PackagePolicyHandlerTest {
                 handler.setPolicyUnchecked(
                     anyCaller,
                     anyScope,
-                    PolicyValueTransport.packageField(
-                        packageIdentifier.createTransport(),
-                    ),
+                    PolicyValueTransport.packageField(packageIdentifier.createTransport()),
                 )
             }
 
@@ -113,9 +109,7 @@ class PackagePolicyHandlerTest {
                 handler.setPolicyUnchecked(
                     anyCaller,
                     anyScope,
-                    PolicyValueTransport.packageField(
-                        packageIdentifier.createTransport(),
-                    ),
+                    PolicyValueTransport.packageField(packageIdentifier.createTransport()),
                 )
             }
 

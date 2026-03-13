@@ -33,10 +33,10 @@ import android.app.admin.metadata.ResolutionMechanismMetadata
 import android.app.admin.metadata.StringPolicyMetadata
 import com.android.server.devicepolicy.CallerIdentity
 import com.android.server.devicepolicy.IntegerPolicySerializer
-import com.android.server.devicepolicy.PackagePolicySerializer
 import com.android.server.devicepolicy.ListOfStringPolicySerializer
 import com.android.server.devicepolicy.LongPolicySerializer
 import com.android.server.devicepolicy.MostRecent
+import com.android.server.devicepolicy.PackagePolicySerializer
 import com.android.server.devicepolicy.PolicyDefinition
 import com.android.server.devicepolicy.PolicyEnforcerCallbacks
 import com.android.server.devicepolicy.StringPolicySerializer
@@ -303,9 +303,7 @@ object PackagePolicy {
             /*allowedDpcTypes=*/ setOf(),
         )
     val anyTransportValue: PolicyValueTransport =
-        PolicyValueTransport.packageField(
-            PackageIdentifier("com.example.app").createTransport(),
-        )
+        PolicyValueTransport.packageField(PackageIdentifier("com.example.app").createTransport())
 
     val definition =
         PolicyDefinition<PackageIdentifier>(
@@ -315,4 +313,3 @@ object PackagePolicy {
             PackagePolicySerializer(),
         )
 }
-

@@ -27,7 +27,6 @@ import android.app.admin.metadata.PackagePolicyMetadata;
 import android.app.admin.metadata.PolicyMetadata;
 import android.app.admin.metadata.StringPolicyMetadata;
 
-import java.lang.Character;
 import java.util.List;
 
 /**
@@ -111,10 +110,9 @@ public abstract class PolicyValidator<T> {
                                 "Unprintable characters are not allowed for policy "
                                         + policy.getId()
                                         + ", the first unprintable character is "
-                                        + value
-                                            .codePoints()
-                                            .filter(Character::isISOControl)
-                                            .findFirst());
+                                        + value.codePoints()
+                                                .filter(Character::isISOControl)
+                                                .findFirst());
                     }
                 }
             };
