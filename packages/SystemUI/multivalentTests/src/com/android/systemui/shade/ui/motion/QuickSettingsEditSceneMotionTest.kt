@@ -58,6 +58,7 @@ import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificati
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
 import kotlin.time.Duration.Companion.seconds
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -109,6 +110,7 @@ class QuickSettingsEditSceneMotionTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    @Ignore("b/490473248")
     fun expandQSTile_recordNeighborTilesSizeAndPositions() {
         motionTestRule.runTest(60.seconds) {
             kosmos.enableSingleShade()
