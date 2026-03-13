@@ -18,6 +18,7 @@ package com.android.wm.shell.bubbles
 
 import android.content.ComponentName
 import android.content.Context
+import android.graphics.Rect
 import android.platform.test.annotations.EnableFlags
 import android.view.View
 import android.window.WindowContainerToken
@@ -36,6 +37,7 @@ import com.android.wm.shell.taskview.TaskViewController
 import com.android.wm.shell.taskview.TaskViewTaskController
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors.directExecutor
+import java.io.PrintWriter
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -205,6 +207,38 @@ class BubbleExpandedViewTest {
         )
 
         assertThat(localTaskView.visibility).isEqualTo(View.VISIBLE)
+    }
+
+    @Test
+    fun initialize_taskViewHasClipBounds_clipBoundsSetToNull() {
+        val localTaskView = TaskView(context, taskViewController, taskViewTaskController)
+        localTaskView.clipBounds = Rect(0, 0, 100, 100)
+        val localBubbleTv = BubbleTaskView(localTaskView, directExecutor(), bubbleController)
+
+        val localExpandedView = TestableBubbleExpandedView(context)
+        localExpandedView.addView(createPointerView())
+        localExpandedView.onFinishInflate()
+
+        localExpandedView.initialize(
+            bubbleExpandedViewManager,
+            mock<BubbleStackView>(),
+            mock<BubblePositioner>(),
+            false /* isOverflow */,
+            localBubbleTv,
+        )
+
+        assertThat(localTaskView.clipBounds).isNull()
+    }
+
+    @Test
+    fun cleanUpExpandedState_taskViewNotNull_taskViewVisibilityGoneAndNull() {
+        assertThat(expandedView.taskView).isNotNull()
+        assertThat(taskView.visibility).isEqualTo(View.VISIBLE)
+
+        expandedView.cleanUpExpandedState()
+
+        assertThat(expandedView.taskView).isNull()
+        assertThat(taskView.visibility).isEqualTo(View.GONE)
     }
 
     private fun createPointerView(): View = View(context).apply { id = R.id.pointer_view }
