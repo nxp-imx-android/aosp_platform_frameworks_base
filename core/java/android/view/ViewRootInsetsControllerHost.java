@@ -16,8 +16,6 @@
 
 package android.view;
 
-import static android.view.InsetsController.DEBUG;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
@@ -97,15 +95,8 @@ public class ViewRootInsetsControllerHost implements InsetsController.Host {
             @NonNull WindowInsetsAnimation animation,
             @NonNull WindowInsetsAnimation.Bounds bounds, boolean isUserAnimation,
             boolean isResizeAnimation, boolean hasAnimationCallback) {
-        if (mViewRoot.mView == null) {
-            return null;
-        }
-        if (DEBUG) Log.d(TAG, "windowInsetsAnimation started");
-        if (com.android.window.flags.Flags.syncedInsetsAnimation()
-                && !isUserAnimation && !isResizeAnimation && !hasAnimationCallback) {
-            return null;
-        }
-        return mViewRoot.mView.dispatchWindowInsetsAnimationStart(animation, bounds);
+        return mViewRoot.dispatchWindowInsetsAnimationStart(animation, bounds, isUserAnimation,
+                isResizeAnimation, hasAnimationCallback);
     }
 
     @Nullable
@@ -121,16 +112,8 @@ public class ViewRootInsetsControllerHost implements InsetsController.Host {
     @Override
     public void dispatchWindowInsetsAnimationEnd(@NonNull WindowInsetsAnimation animation,
             boolean isUserAnimation, boolean isResizeAnimation, boolean hasAnimationCallback) {
-        if (DEBUG) Log.d(TAG, "windowInsetsAnimation ended");
-        if (mViewRoot.mView == null) {
-            // The view has already detached from window.
-            return;
-        }
-        if (com.android.window.flags.Flags.syncedInsetsAnimation()
-                && !isUserAnimation && !isResizeAnimation && !hasAnimationCallback) {
-            return;
-        }
-        mViewRoot.mView.dispatchWindowInsetsAnimationEnd(animation);
+        mViewRoot.dispatchWindowInsetsAnimationEnd(animation, isUserAnimation, isResizeAnimation,
+                hasAnimationCallback);
     }
 
     @Override
@@ -195,8 +178,18 @@ public class ViewRootInsetsControllerHost implements InsetsController.Host {
     }
 
     @Override
-    public boolean allowsSyncedInsetsAnimation() {
+    public boolean allowsAdditionalSyncedAnimation() {
         return true;
+    }
+
+    @Override
+    public void updateWindowInsetsInfo() {
+        final var config = mViewRoot.mContext.getResources().getConfiguration();
+        final var attributes = mViewRoot.mWindowAttributes;
+        mViewRoot.getInsetsController().setWindowInsetsInfo(config.isScreenRound(),
+                attributes.type, config.windowConfiguration.getActivityType(),
+                attributes.softInputMode, attributes.flags,
+                (attributes.systemUiVisibility | attributes.subtreeSystemUiVisibility));
     }
 
     @Override

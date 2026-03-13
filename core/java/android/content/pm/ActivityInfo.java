@@ -1636,6 +1636,20 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
     private static final long CHECK_MIN_WIDTH_HEIGHT_FOR_MULTI_WINDOW = 197654537L;
 
     /**
+     * This change will enable synchronizing the system insets animation (e.g. showing IME) with
+     * the app content, if applicable. This means that the insets are applied per frame and the
+     * app needs to redraw. In case
+     * {@link android.view.WindowManager.LayoutParams#SOFT_INPUT_ADJUST_PAN} was set, this will
+     * synchronize the scrolling with the IME animation.
+     *
+     * @hide
+     */
+    @ChangeId
+    @Disabled
+    @Overridable
+    public static final long ENABLE_SYNCHRONIZED_INSETS_ANIMATION = 463899193L;
+
+    /**
      * The activity is targeting a SDK version that should receive the changed behavior of
      * configuration insets decouple.
      *
