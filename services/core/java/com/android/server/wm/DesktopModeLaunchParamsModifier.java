@@ -426,7 +426,8 @@ class DesktopModeLaunchParamsModifier extends DefaultLaunchParamsModifier {
                 if (rootActivity != null
                         && mDesktopModeCompatPolicy.isPartOfDefaultHomePackageOrNoHomeAvailable(
                                 rootActivity.mActivityComponent.getPackageName(),
-                                rootActivity.mUserId)) {
+                                rootActivity.mUserId,
+                                rootActivity.mActivityComponent.getClassName())) {
                     appendLog("desktop-first-but-fullscreen-relaunch-from-home");
                     return WINDOWING_MODE_FULLSCREEN;
                 }

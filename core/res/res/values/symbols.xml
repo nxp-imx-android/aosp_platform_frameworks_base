@@ -6298,6 +6298,9 @@
   <!-- List of packages which should be excluded from transparency based desktop exemptions. -->
   <java-symbol type="array" name="config_desktopTransparentExemptionIgnoreList" />
 
+  <!-- List of activities in the home package which should be allowed in desktop mode. -->
+  <java-symbol type="array" name="config_desktopHomePackageFreeformActivities" />
+
   <!-- Frame rate compatibility value for Wallpaper -->
   <java-symbol type="integer" name="config_wallpaperFrameRateCompatibility" />
 

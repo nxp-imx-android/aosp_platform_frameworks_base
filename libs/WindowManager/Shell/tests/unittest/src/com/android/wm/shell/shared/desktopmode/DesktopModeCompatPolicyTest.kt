@@ -86,6 +86,9 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     private val configExemptPackageList = arrayOf(configExemptActivity.packageName)
     private val configIgnoreActivity = ComponentName("com.test.configIgnorePackage", /* class */ "")
     private val configIgnorePackageList = arrayOf(configIgnoreActivity.packageName)
+    private val configHomeFreeformActivity =
+        ComponentName(HOME_LAUNCHER_PACKAGE_NAME, "HomeFreeformActivity")
+    private val configHomeFreeformActivityList = arrayOf(configHomeFreeformActivity.className)
 
     @Before
     fun setUp() {
@@ -103,6 +106,9 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
         doReturn(configIgnorePackageList)
             .`when`(resources)
             .getStringArray(R.array.config_desktopTransparentExemptionIgnoreList)
+        doReturn(configHomeFreeformActivityList)
+            .`when`(resources)
+            .getStringArray(R.array.config_desktopHomePackageFreeformActivities)
         doReturn(resources).`when`(mockContext).resources
         desktopModeCompatPolicy = spy(DesktopModeCompatPolicy(mockContext))
         mContext.addMockSystemService(RoleManager::class.java, roleManager)
@@ -443,6 +449,30 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     }
 
     @Test
+    fun testIsTopActivityExemptFromDesktopWindowing_defaultHomePackage_exemptActivity() {
+        assertFalse(
+            desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
+                createFreeformTask().apply {
+                    baseActivity = configHomeFreeformActivity
+                    isTopActivityNoDisplay = false
+                }
+            )
+        )
+    }
+
+    @Test
+    fun testIsTopActivityExemptFromDesktopWindowing_defaultHomePackage_nonExemptActivity() {
+        assertTrue(
+            desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
+                createFreeformTask().apply {
+                    baseActivity = homeActivities
+                    isTopActivityNoDisplay = false
+                }
+            )
+        )
+    }
+
+    @Test
     fun testIsTopActivityExemptFromDesktopWindowing_packageInConfigExemptionList() {
         assertTrue(
             desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
@@ -550,6 +580,30 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
         assertTrue(
             desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(
                 createFreeformTask().apply { baseActivity = baseComponent }
+            )
+        )
+    }
+
+    @Test
+    fun testShouldDisableDesktopEntryPoints_defaultHomePackage_exemptActivity() {
+        assertFalse(
+            desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(
+                createFreeformTask().apply {
+                    baseActivity = configHomeFreeformActivity
+                    isTopActivityNoDisplay = false
+                }
+            )
+        )
+    }
+
+    @Test
+    fun testShouldDisableDesktopEntryPoints_defaultHomePackage_nonExemptActivity() {
+        assertTrue(
+            desktopModeCompatPolicy.shouldDisableDesktopEntryPoints(
+                createFreeformTask().apply {
+                    baseActivity = homeActivities
+                    isTopActivityNoDisplay = false
+                }
             )
         )
     }
