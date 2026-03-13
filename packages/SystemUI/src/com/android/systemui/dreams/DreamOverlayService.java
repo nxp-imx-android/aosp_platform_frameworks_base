@@ -16,6 +16,7 @@
 
 package com.android.systemui.dreams;
 
+import static android.service.dreams.Flags.dreamsSwitcherLongPressEnabled;
 import static android.service.dreams.Flags.dreamWakeRedirect;
 import static android.service.dreams.Flags.dreamsSwitcher;
 import static android.service.dreams.Flags.dreamsV2;
@@ -594,7 +595,9 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
         final boolean isDreamSwitcherSupported = mDreamInteractor.isDreamSwitcherEnabled();
 
         if (isDreamSwitcherSupported) {
-            touchHandlers.add(dreamOverlayComponent.getLongPressTouchHandler());
+            if (dreamsSwitcherLongPressEnabled()) {
+                touchHandlers.add(dreamOverlayComponent.getLongPressTouchHandler());
+            }
             touchHandlers.add(dreamOverlayComponent.getEdgeSwipeTouchHandler());
         }
 

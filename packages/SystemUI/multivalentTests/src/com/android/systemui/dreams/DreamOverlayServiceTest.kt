@@ -24,6 +24,7 @@ import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.service.dreams.Flags
 import android.service.dreams.Flags.FLAG_DREAMS_SWITCHER
+import android.service.dreams.Flags.FLAG_DREAMS_SWITCHER_LONG_PRESS_ENABLED
 import android.service.dreams.IDreamOverlay
 import android.service.dreams.IDreamOverlayCallback
 import android.service.dreams.IDreamOverlayClient
@@ -1646,7 +1647,11 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         assertThat(mTouchHandlersCaptor.firstValue).containsExactly(mHideComplicationTouchHandler)
     }
 
-    @EnableFlags(FLAG_GLANCEABLE_HUB_V2, FLAG_DREAMS_SWITCHER)
+    @EnableFlags(
+        FLAG_GLANCEABLE_HUB_V2,
+        FLAG_DREAMS_SWITCHER,
+        FLAG_DREAMS_SWITCHER_LONG_PRESS_ENABLED,
+    )
     @Test
     fun testAmbientTouchHandlersRegistration_dreamsSwitcher() {
         kosmos.setCommunalV2ConfigEnabled(true)
@@ -1672,6 +1677,31 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
                 mLongPressTouchHandler,
                 mEdgeSwipeTouchHandler,
             )
+    }
+
+    @EnableFlags(FLAG_GLANCEABLE_HUB_V2, FLAG_DREAMS_SWITCHER)
+    @DisableFlags(FLAG_DREAMS_SWITCHER_LONG_PRESS_ENABLED)
+    @Test
+    fun testAmbientTouchHandlersRegistration_dreamsSwitcher_longPressDisabled() {
+        kosmos.setCommunalV2ConfigEnabled(true)
+        whenever(mDreamInteractor.isDreamSwitcherEnabled).thenReturn(true)
+
+        val client = client
+
+        // Inform the overlay service of dream starting.
+        client.startDream(
+            mWindowParams,
+            mDreamOverlayCallback,
+            DREAM_COMPONENT,
+            false /*isPreview*/,
+            false, /*shouldShowComplication*/
+        )
+        mMainExecutor.runAllReady()
+
+        verify(mAmbientTouchComponentFactory)
+            .create(any(), mTouchHandlersCaptor.capture(), any(), any())
+        assertThat(mTouchHandlersCaptor.firstValue)
+            .containsExactly(mHideComplicationTouchHandler, mEdgeSwipeTouchHandler)
     }
 
     @Test
