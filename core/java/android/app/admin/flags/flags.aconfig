@@ -644,6 +644,16 @@ flag {
 }
 
 flag {
+  name: "add_user_info_in_profile_off_deadline_alarm"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+  namespace: "enterprise"
+  description: "Attach user info to the profile off deadline alarm, to avoid relying on the main user setting."
+  bug: "470176722"
+}
+
+flag {
   name: "policy_streamlining_auto_time_zone"
   namespace: "enterprise"
   description: "Redirect set/getAutoTimeZoneEnabled to the generic set/getPolicy APIs."

@@ -1303,7 +1303,14 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 }
             } else if (ACTION_PROFILE_OFF_DEADLINE.equals(action)) {
                 Slogf.i(LOG_TAG, "Profile off deadline alarm was triggered");
-                final int userId = getManagedUserId(getMainUserId());
+
+                int userId;
+                if (Flags.addUserInfoInProfileOffDeadlineAlarm()) {
+                    userId = intent.getIntExtra(Intent.EXTRA_USER_HANDLE, -1);
+                } else {
+                    userId = getManagedUserId(getMainUserId());
+                }
+
                 if (userId >= 0) {
                     updatePersonalAppsSuspension(userId);
                 } else {
@@ -20494,6 +20501,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
         final AlarmManager am = mInjector.getAlarmManager();
         final Intent intent = new Intent(ACTION_PROFILE_OFF_DEADLINE);
+        if (Flags.addUserInfoInProfileOffDeadlineAlarm()) {
+            intent.putExtra(Intent.EXTRA_USER_HANDLE, profileUserId);
+        }
         intent.setPackage(mContext.getPackageName());
         // Broadcast alarms sent by system are immutable
         final PendingIntent pi = mInjector.pendingIntentGetBroadcast(
