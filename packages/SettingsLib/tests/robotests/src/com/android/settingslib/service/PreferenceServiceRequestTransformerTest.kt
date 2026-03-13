@@ -36,6 +36,7 @@ import com.android.settingslib.flags.Flags.FLAG_SETTINGS_CATALYST
 import com.android.settingslib.graph.PreferenceGetterErrorCode
 import com.android.settingslib.graph.PreferenceGetterFlags
 import com.android.settingslib.graph.PreferenceGetterResponse
+import com.android.settingslib.graph.PreferenceSetterResponse
 import com.android.settingslib.graph.PreferenceSetterResult
 import com.android.settingslib.graph.preferenceGroupProto
 import com.android.settingslib.graph.preferenceOrGroupProto
@@ -441,44 +442,35 @@ class PreferenceServiceRequestTransformerTest {
 
     @Test
     fun transformCatalystSetValueResponse_returnsValidFrameworkResponse() {
-        assertThat(transformCatalystSetValueResponse(PreferenceSetterResult.OK).resultCode)
-            .isEqualTo(SetValueResult.RESULT_OK)
-
-        assertThat(transformCatalystSetValueResponse(PreferenceSetterResult.UNAVAILABLE).resultCode)
-            .isEqualTo(SetValueResult.RESULT_UNAVAILABLE)
-
-        assertThat(transformCatalystSetValueResponse(PreferenceSetterResult.DISABLED).resultCode)
-            .isEqualTo(SetValueResult.RESULT_DISABLED)
-
-        assertThat(transformCatalystSetValueResponse(PreferenceSetterResult.UNSUPPORTED).resultCode)
-            .isEqualTo(SetValueResult.RESULT_UNSUPPORTED)
-
-        assertThat(transformCatalystSetValueResponse(PreferenceSetterResult.DISALLOW).resultCode)
-            .isEqualTo(SetValueResult.RESULT_DISALLOW)
-
-        assertThat(
-            transformCatalystSetValueResponse(PreferenceSetterResult.REQUIRE_APP_PERMISSION)
-                .resultCode
+        assertThat(transformCatalystSetValueResponse(PreferenceSetterResponse(errorCode = PreferenceSetterResult.OK)).resultCode).isEqualTo(
+            SetValueResult.RESULT_OK
         )
-            .isEqualTo(SetValueResult.RESULT_REQUIRE_APP_PERMISSION)
-
-        assertThat(
-            transformCatalystSetValueResponse(PreferenceSetterResult.REQUIRE_USER_AGREEMENT)
-                .resultCode
+        assertThat(transformCatalystSetValueResponse(PreferenceSetterResponse(errorCode = PreferenceSetterResult.UNAVAILABLE)).resultCode).isEqualTo(
+            SetValueResult.RESULT_UNAVAILABLE
         )
-            .isEqualTo(SetValueResult.RESULT_REQUIRE_USER_CONSENT)
-
-        assertThat(transformCatalystSetValueResponse(PreferenceSetterResult.RESTRICTED).resultCode)
-            .isEqualTo(SetValueResult.RESULT_RESTRICTED)
-
-        assertThat(
-            transformCatalystSetValueResponse(PreferenceSetterResult.INVALID_REQUEST).resultCode
+        assertThat(transformCatalystSetValueResponse(PreferenceSetterResponse(errorCode = PreferenceSetterResult.DISABLED)).resultCode).isEqualTo(
+            SetValueResult.RESULT_DISABLED
         )
-            .isEqualTo(SetValueResult.RESULT_INVALID_REQUEST)
-
-        assertThat(
-            transformCatalystSetValueResponse(PreferenceSetterResult.INTERNAL_ERROR).resultCode
+        assertThat(transformCatalystSetValueResponse(PreferenceSetterResponse(errorCode = PreferenceSetterResult.UNSUPPORTED)).resultCode).isEqualTo(
+            SetValueResult.RESULT_UNSUPPORTED
         )
-            .isEqualTo(SetValueResult.RESULT_INTERNAL_ERROR)
+        assertThat(transformCatalystSetValueResponse(PreferenceSetterResponse(errorCode = PreferenceSetterResult.DISALLOW)).resultCode).isEqualTo(
+            SetValueResult.RESULT_DISALLOW
+        )
+        assertThat(transformCatalystSetValueResponse(PreferenceSetterResponse(errorCode = PreferenceSetterResult.REQUIRE_APP_PERMISSION)).resultCode).isEqualTo(
+            SetValueResult.RESULT_REQUIRE_APP_PERMISSION
+        )
+        assertThat(transformCatalystSetValueResponse(PreferenceSetterResponse(errorCode = PreferenceSetterResult.REQUIRE_USER_AGREEMENT)).resultCode).isEqualTo(
+            SetValueResult.RESULT_REQUIRE_USER_CONSENT
+        )
+        assertThat(transformCatalystSetValueResponse(PreferenceSetterResponse(errorCode = PreferenceSetterResult.RESTRICTED)).resultCode).isEqualTo(
+            SetValueResult.RESULT_RESTRICTED
+        )
+        assertThat(transformCatalystSetValueResponse(PreferenceSetterResponse(errorCode = PreferenceSetterResult.INVALID_REQUEST)).resultCode).isEqualTo(
+            SetValueResult.RESULT_INVALID_REQUEST
+        )
+        assertThat(transformCatalystSetValueResponse(PreferenceSetterResponse(errorCode = PreferenceSetterResult.INTERNAL_ERROR)).resultCode).isEqualTo(
+            SetValueResult.RESULT_INTERNAL_ERROR
+        )
     }
 }
