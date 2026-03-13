@@ -72,3 +72,13 @@ flag {
     description: "Deprecate wificond APIs since functionality is moving to the Wi-Fi mainline module."
     bug: "447652144"
 }
+
+flag {
+    name: "shared_connectivity_manager_offload_to_background_thread"
+    namespace: "wifi"
+    description: "Offload SharedConnectivityManager binding and unbinding to a background thread."
+    bug: "495182371"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
