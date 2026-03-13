@@ -235,6 +235,16 @@ flag {
 }
 
 flag {
+    name: "remove_local_network_access_compat_flag_check"
+    namespace: "media_better_together"
+    description: "Remove checks of the RESTRICT_LOCAL_NETWORK appcompat flag in media router code"
+    bug: "492280649"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_share_cast_in_media_chooser_dialog"
     namespace: "media_better_together"
     description: "Feature flag for Share Cast in Media Chooser Dialog"
