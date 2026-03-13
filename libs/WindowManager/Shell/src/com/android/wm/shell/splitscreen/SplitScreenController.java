@@ -1349,8 +1349,12 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
                             Rect taskBounds, boolean startRecents,
                             @Nullable WindowContainerTransaction withRecentsWct) {
                         AtomicBoolean result = new AtomicBoolean(false);
-                        mSelectListener.call(l -> result.set(l.onRequestSplitSelect(taskInfo,
-                                splitPosition, taskBounds, startRecents, withRecentsWct)));
+                        mSelectListener.call(l -> {
+                            l.onRequestSplitSelect(taskInfo, splitPosition, taskBounds,
+                                    startRecents, withRecentsWct);
+                            // Set to true only if the request got executed
+                            result.set(true);
+                        });
                         return result.get();
                     }
                 };
