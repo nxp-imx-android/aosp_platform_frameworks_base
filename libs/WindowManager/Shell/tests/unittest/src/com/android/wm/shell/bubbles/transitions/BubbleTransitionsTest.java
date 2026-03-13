@@ -1587,6 +1587,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         verify(finishT).reparent(taskLeash, taskViewSurface);
         verify(finishT).setPosition(taskLeash, 0, 0);
         verify(finishT).setWindowCrop(taskLeash, 50, 100);
+        verify(bev).setContentVisibility(true);
 
         TaskViewRepository.TaskViewState state = mRepository.byTaskView(mTaskViewTaskController);
         assertThat(state).isNotNull();
