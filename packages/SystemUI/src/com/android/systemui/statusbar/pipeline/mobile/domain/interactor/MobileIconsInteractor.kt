@@ -366,12 +366,12 @@ constructor(
 
     override val alwaysShowDataRatIcon: StateFlow<Boolean> =
         mobileConnectionsRepo.defaultDataSubRatConfig
-            .mapDirect { it.alwaysShowDataRatIcon }
+            .mapDirect { it?.alwaysShowDataRatIcon ?: false }
             .stateIn(scope, SharingStarted.WhileSubscribed(), false)
 
     override val alwaysUseCdmaLevel: StateFlow<Boolean> =
         mobileConnectionsRepo.defaultDataSubRatConfig
-            .mapDirect { it.alwaysShowCdmaRssi }
+            .mapDirect { it?.alwaysShowCdmaRssi ?: false }
             .stateIn(scope, SharingStarted.WhileSubscribed(), false)
 
     override val isSingleCarrier: StateFlow<Boolean> =

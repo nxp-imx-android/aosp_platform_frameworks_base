@@ -134,7 +134,7 @@ constructor(
     override val activeSubChangedInGroupEvent: Flow<Unit> =
         activeRepo.flatMapLatest { it.activeSubChangedInGroupEvent }
 
-    override val defaultDataSubRatConfig: StateFlow<MobileMappings.Config> =
+    override val defaultDataSubRatConfig: StateFlow<MobileMappings.Config?> =
         activeRepo
             .flatMapLatest { it.defaultDataSubRatConfig }
             .stateIn(

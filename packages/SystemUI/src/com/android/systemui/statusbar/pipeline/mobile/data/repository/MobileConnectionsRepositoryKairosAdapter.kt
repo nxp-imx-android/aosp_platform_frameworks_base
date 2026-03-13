@@ -148,7 +148,7 @@ constructor(
     override fun getRepoForSubId(subId: Int): MobileConnectionRepository =
         reposBySubId.value[subId] ?: error("Unknown subscription id: $subId")
 
-    override val defaultDataSubRatConfig: StateFlow<MobileMappings.Config> =
+    override val defaultDataSubRatConfig: StateFlow<MobileMappings.Config?> =
         kairosRepo.defaultDataSubRatConfig
             .toColdConflatedFlow(
                 kairosNetwork,
@@ -157,7 +157,7 @@ constructor(
             .stateIn(
                 scope,
                 SharingStarted.WhileSubscribed(),
-                MobileMappings.Config.readConfig(context),
+                null,
             )
 
     override val defaultMobileIconMapping: Flow<Map<String, SignalIcon.MobileIconGroup>> =
