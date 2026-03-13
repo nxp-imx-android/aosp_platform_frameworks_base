@@ -16,6 +16,8 @@
 
 package com.android.systemui.keyguard.domain.interactor
 
+import android.app.ActivityManager
+import android.app.WindowConfiguration
 import android.os.PowerManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -37,8 +39,10 @@ import com.android.systemui.communal.domain.interactor.setCommunalAvailable
 import com.android.systemui.communal.domain.interactor.setCommunalV2ConfigEnabled
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.flags.DisableSceneContainer
+import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepositorySpy
+import com.android.systemui.keyguard.data.repository.keyguardOcclusionRepository
 import com.android.systemui.keyguard.data.repository.keyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.BiometricUnlockMode
 import com.android.systemui.keyguard.shared.model.DozeStateModel
@@ -128,6 +132,28 @@ class FromDozingTransitionInteractorTest(flags: FlagsParameterization?) : SysuiT
             powerInteractor.setAwakeForTest()
 
             // Under default conditions, we should transition to LOCKSCREEN when waking up.
+            assertThat(transitionRepository)
+                .startedTransition(from = KeyguardState.DOZING, to = KeyguardState.LOCKSCREEN)
+        }
+
+    @Test
+    @EnableSceneContainer
+    @EnableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    fun testTransitionToLockscreen_onWake_whenOccludedByDream() =
+        kosmos.runTest {
+            val taskInfo =
+                ActivityManager.RunningTaskInfo().apply {
+                    topActivityType = WindowConfiguration.ACTIVITY_TYPE_DREAM
+                }
+            kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(
+                onTop = true,
+                taskInfo = taskInfo,
+            )
+
+            powerInteractor.setAwakeForTest()
+
+            // We should still transition to LOCKSCREEN (not OCCLUDED) when waking up
+            // from DOZING while a dream is stopping.
             assertThat(transitionRepository)
                 .startedTransition(from = KeyguardState.DOZING, to = KeyguardState.LOCKSCREEN)
         }
