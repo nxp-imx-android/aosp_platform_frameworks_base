@@ -246,6 +246,7 @@ import android.os.image.DynamicSystemManager;
 import android.os.image.IDynamicSystemService;
 import android.os.incremental.IIncrementalService;
 import android.os.incremental.IncrementalManager;
+import android.os.multisensory.MultisensoryManager;
 import android.os.profiling.anomaly.AnomalyDetectorFrameworkInitializer;
 import android.os.storage.FileManager;
 import android.os.storage.IFileService;
@@ -943,6 +944,18 @@ public final class SystemServiceRegistry {
                     public VibratorManager createService(ContextImpl ctx) {
                         return new SystemVibratorManager(ctx);
                     }});
+
+        if (android.os.multisensory.Flags.enableMultisensoryFeedback()) {
+            registerService(
+                    Context.MULTISENSORY_MANAGER_SERVICE,
+                    MultisensoryManager.class,
+                    new CachedServiceFetcher<>() {
+                        @Override
+                        public MultisensoryManager createService(ContextImpl ctx) {
+                            return new MultisensoryManager();
+                        }
+                    });
+        }
 
         registerService(Context.VIBRATOR_SERVICE, Vibrator.class,
                 new CachedServiceFetcher<Vibrator>() {
