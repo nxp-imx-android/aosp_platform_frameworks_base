@@ -7470,7 +7470,9 @@ public class Notification implements Parcelable
                 candidates.set(i, new ActionButton(updated.build(), candidate.originalIndex));
             }
 
-            boolean emphasizedEdgeToEdge = isPromotedOngoing || isPseudoFsi || isCallStyle;
+            boolean emphasizedEdgeToEdge =
+                    Flags.notifsAllUsePillButtons()
+                            || isPromotedOngoing || isPseudoFsi || isCallStyle;
             boolean supportCustomColors = isPseudoFsi || isCallStyle; // but not other RONs.
             return new ActionButtons(candidates, emphasizedEdgeToEdge, emphasizedEdgeToEdge,
                     supportCustomColors);
