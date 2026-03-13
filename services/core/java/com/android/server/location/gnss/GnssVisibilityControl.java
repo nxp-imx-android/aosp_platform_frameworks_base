@@ -627,26 +627,6 @@ class GnssVisibilityControl {
     }
 
     private static Notification createEmergencyLocationUserNotification(Context context) {
-        if (!Flags.emergencyLocationNewNotification()) {
-            // NOTE: Do not reuse the returned notification object as it will not reflect
-            //       changes to notification text when the system language is changed.
-            final String firstLineText = context.getString(R.string.gpsNotifTitle);
-            final String secondLineText = context.getString(R.string.global_action_emergency);
-            final String accessibilityServicesText = firstLineText + " (" + secondLineText + ")";
-            return new Notification.Builder(context, SystemNotificationChannels.NETWORK_STATUS)
-                    .setSmallIcon(com.android.internal.R.drawable.stat_sys_gps_on)
-                    .setWhen(0)
-                    .setOngoing(false)
-                    .setAutoCancel(true)
-                    .setColor(
-                            context.getColor(
-                                    com.android.internal.R.color.system_notification_accent_color))
-                    .setDefaults(0)
-                    .setTicker(accessibilityServicesText)
-                    .setContentTitle(firstLineText)
-                    .setContentText(secondLineText)
-                    .build();
-        }
         // NOTE: Do not reuse the returned notification object as it will not reflect
         //       changes to notification text when the system language is changed.
         final String firstLineText =
