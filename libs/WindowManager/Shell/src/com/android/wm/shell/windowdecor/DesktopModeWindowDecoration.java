@@ -1511,7 +1511,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mLayoutMenu = mLayoutMenuFactory.create(mSyncQueue, mRootTaskDisplayAreaOrganizer,
                 mDisplayController, mWindowDecorationActions, mTaskInfo, mDecorWindowContext,
                 (width, height) -> calculateLayoutMenuPosition(width, height),
-                mSurfaceControlTransactionSupplier, mDesktopModeUiEventLogger);
+                mSurfaceControlTransactionSupplier, mDesktopModeUiEventLogger,
+                mSplitScreenController);
 
         mLayoutMenu.show(
                 /* isTaskInImmersiveMode= */

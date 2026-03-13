@@ -322,6 +322,7 @@ class FullscreenHeaderController(
                     },
                     transactionSupplier = surfaceControlTransactionSupplier,
                     desktopModeUiEventLogger = desktopModeUiEventLogger,
+                    splitScreenController = splitScreenController,
                 )
                 .apply {
                     show(

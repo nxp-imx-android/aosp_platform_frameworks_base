@@ -216,6 +216,7 @@ private constructor(
                     shouldShowDesktopModeButton = shouldShowDesktopModeButton,
                     shouldShowRestartButton = shouldShowRestartButton,
                     appToWebData = appToWebData,
+                    splitScreenController = splitScreenController,
                 )
                 .apply {
                     bind(taskInfo, shouldShowMoreActionsPill)
@@ -549,6 +550,7 @@ private constructor(
         private val shouldShowDesktopModeButton: Boolean,
         private val shouldShowRestartButton: Boolean,
         private val appToWebData: AppToWebData?,
+        private val splitScreenController: SplitScreenController,
     ) : OnClickListener {
         val rootView =
             LayoutInflater.from(context)
@@ -722,7 +724,8 @@ private constructor(
             bindAppInfoPill(style)
             windowingPillView.isGone = !shouldShowWindowingPill
             if (shouldShowWindowingPill) {
-                windowingPillView.bind(taskInfo)
+                val isInSplitScreen = splitScreenController.isTaskInSplitScreen(taskInfo.taskId)
+                windowingPillView.bind(taskInfo, isInSplitScreen)
             }
             moreActionsPill.isGone = !shouldShowMoreActionsPill
             if (shouldShowMoreActionsPill) {
