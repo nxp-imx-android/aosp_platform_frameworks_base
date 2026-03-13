@@ -18,6 +18,7 @@
 
 package com.android.systemui.bouncer.ui.composable
 
+import android.view.View
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -51,6 +52,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onInterceptKeyBeforeSoftKeyboard
 import androidx.compose.ui.platform.InterceptPlatformTextInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -61,6 +63,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.PlatformIconButton
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.systemui.Flags
 import com.android.systemui.bouncer.ui.viewmodel.PasswordBouncerViewModel
 import com.android.systemui.common.ui.compose.SelectedUserAwareInputConnection
 import com.android.systemui.common.ui.compose.SelectedUserAwareLocalContext
@@ -78,6 +81,20 @@ internal fun ContentScope.PasswordBouncer(
     val focusRequester = remember { FocusRequester() }
 
     RequestFocus(focusRequester = focusRequester, viewModel = viewModel)
+
+    if (Flags.fixMainThreadBlockingOnFirstUnlock()) {
+        // Disable OS-level autofill for the password bouncer to prevent the framework
+        // from trying to scrape or provide autofill suggestions on the lockscreen.
+        //
+        // DisposableEffect safely applies this View mutation and ensures the original state is
+        // restored when the bouncer is removed.
+        val view = LocalView.current
+        DisposableEffect(view) {
+            val previousImportantForAutofill = view.importantForAutofill
+            view.importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+            onDispose { view.importantForAutofill = previousImportantForAutofill }
+        }
+    }
 
     val isInputEnabled: Boolean by viewModel.isInputEnabled.collectAsStateWithLifecycle()
     val animateFailure: Boolean by viewModel.animateFailure.collectAsStateWithLifecycle()
