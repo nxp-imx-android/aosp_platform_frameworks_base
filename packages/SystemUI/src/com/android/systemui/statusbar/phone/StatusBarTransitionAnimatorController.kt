@@ -25,6 +25,10 @@ class StatusBarTransitionAnimatorController(
     @DisplayId private val displayId: Int,
     private val isLaunchForActivity: Boolean = true,
 ) : ActivityTransitionAnimator.Controller by delegate {
+    // After cancellation, this controller won't receive any more animation-related calls. However,
+    // [onIntentStarted()] will still be called if the cancellation happens before it. The behavior
+    // needs to change accordingly.
+    private var cancelled = false
     private var hideIconsDuringLaunchAnimation: Boolean = true
 
     // Always sync the opening window with the shade, given that we draw a hole punch in the shade
@@ -34,7 +38,7 @@ class StatusBarTransitionAnimatorController(
 
     override fun onIntentStarted(willAnimate: Boolean) {
         delegate.onIntentStarted(willAnimate)
-        if (willAnimate) {
+        if (willAnimate && !cancelled) {
             shadeAnimationInteractor.setIsLaunchingActivity(
                 true,
                 "StatusBarTransitionAnimatorController.onIntentStarted",
@@ -93,6 +97,7 @@ class StatusBarTransitionAnimatorController(
 
     override fun onTransitionAnimationCancelled(newKeyguardOccludedState: Boolean?) {
         delegate.onTransitionAnimationCancelled()
+        cancelled = true
         shadeAnimationInteractor.setIsLaunchingActivity(
             false,
             "StatusBarTransitionAnimatorController.onTransitionAnimationCancelled",
