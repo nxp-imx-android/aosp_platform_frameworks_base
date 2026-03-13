@@ -158,6 +158,19 @@ public class PatternMatcher implements Parcelable {
     }
 
     /** @hide */
+    public String toPrettyString() {
+        String type = "";
+        switch (mType) {
+            case PatternMatcher.PATTERN_LITERAL -> type = "android:path";
+            case PatternMatcher.PATTERN_PREFIX -> type = "android:pathPrefix";
+            case PatternMatcher.PATTERN_SIMPLE_GLOB -> type = "android:pathPattern";
+            case PatternMatcher.PATTERN_ADVANCED_GLOB -> type = "android:pathAdvancedPattern";
+            case PatternMatcher.PATTERN_SUFFIX -> type = "android:pathSuffix";
+        }
+        return type + "=\"" + getPath() + "\"";
+    }
+
+    /** @hide */
     public void dumpDebug(ProtoOutputStream proto, long fieldId) {
         long token = proto.start(fieldId);
         proto.write(PatternMatcherProto.PATTERN, mPattern);
