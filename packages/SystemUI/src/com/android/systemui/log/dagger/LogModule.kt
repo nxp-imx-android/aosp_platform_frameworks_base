@@ -612,6 +612,14 @@ abstract class LogModule {
             return factory.create("NavbarOrientationTrackingLog", 50)
         }
 
+        /** Provides a [LogBuffer] for device entry related logs. */
+        @Provides
+        @SysUISingleton
+        @DeviceEntryLog
+        fun provideDeviceEntryBuffer(factory: LogBufferFactory): LogBuffer {
+            return factory.create("DeviceEntryLog", 30)
+        }
+
         /** Provides a [LogBuffer] for use by the DeviceEntryIcon and related classes. */
         @Provides
         @SysUISingleton
