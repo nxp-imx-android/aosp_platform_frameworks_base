@@ -20,10 +20,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -50,13 +47,7 @@ fun CredentialPatternView(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text(
-            text = if (error.isNotEmpty()) error else " ",
-            style = MaterialTheme.typography.bodyMedium,
-            color =
-                MaterialTheme.colorScheme.error.copy(alpha = if (error.isNotEmpty()) 1f else 0f),
-            modifier = Modifier.padding(bottom = 16.dp),
-        )
+        PromptErrorText(error = error)
 
         // TODO: Existing bouncer pattern is not easily used here, using AndroidView for now
         AndroidView(

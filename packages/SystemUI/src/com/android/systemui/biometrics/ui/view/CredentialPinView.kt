@@ -20,8 +20,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -102,13 +100,7 @@ fun CredentialPinView(
                     false
                 },
     ) {
-        Text(
-            text = if (error.isNotEmpty()) error else " ",
-            style = MaterialTheme.typography.bodyMedium,
-            color =
-                MaterialTheme.colorScheme.error.copy(alpha = if (error.isNotEmpty()) 1f else 0f),
-            modifier = Modifier.padding(bottom = 16.dp),
-        )
+        PromptErrorText(error = error)
 
         PinDisplay(pinText = pinText, modifier = Modifier.padding(bottom = 16.dp))
 

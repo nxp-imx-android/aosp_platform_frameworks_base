@@ -19,7 +19,6 @@ package com.android.systemui.biometrics.ui.view
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -29,7 +28,6 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedSecureTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -88,13 +86,7 @@ fun CredentialPasswordView(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text(
-            text = if (error.isNotEmpty()) error else " ",
-            style = MaterialTheme.typography.bodyMedium,
-            color =
-                MaterialTheme.colorScheme.error.copy(alpha = if (error.isNotEmpty()) 1f else 0f),
-            modifier = Modifier.padding(bottom = 16.dp),
-        )
+        PromptErrorText(error = error)
 
         val color = MaterialTheme.colorScheme.onSurfaceVariant
         SelectedUserAwareInputConnection(selectedUserId = userId) {
