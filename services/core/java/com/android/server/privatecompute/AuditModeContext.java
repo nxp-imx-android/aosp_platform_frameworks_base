@@ -16,25 +16,38 @@
 
 package com.android.server.privatecompute;
 
-import android.annotation.NonNull;
+import static android.os.UserHandle.USER_SYSTEM;
+
 import android.os.Binder;
+import android.os.SystemClock;
+import com.android.internal.annotations.GuardedBy;
+
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.os.Environment;
 import android.os.PersistableBundle;
-import android.os.SystemClock;
-import android.os.UserHandle;
-import android.sysprop.PccProperties;
 import android.util.Log;
-import com.android.internal.annotations.GuardedBy;
+import android.sysprop.PccProperties;
 import com.android.internal.annotations.VisibleForTesting;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.io.BufferedOutputStream;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /* Current Audit Mode limitations (tracked in b/461406944):
@@ -53,7 +66,7 @@ import java.util.concurrent.TimeUnit;
 class AuditModeContext {
     private static final String TAG = "PccSandboxManagerServiceAuditMode";
 
-    static final String AUDIT_LOG_FILES_DIRNAME = "audit_logs";
+    private static final String AUDIT_LOG_FILES_DIRNAME = "audit_logs";
 
     // Max number of audit log files to keep on disk. When this limit is reached, old files will be
     // overwritten. Overridden by the system property `persist.pcc.audit_mode.max_log_files` if set.
@@ -119,7 +132,7 @@ class AuditModeContext {
      * returns null if an error occurred.
      */
     public static @NonNull AuditModeContext create() {
-        File folder = getAuditLogFilesDirectory();
+        File folder = new File(Environment.getDataSystemCeDirectory(), AUDIT_LOG_FILES_DIRNAME);
         return new AuditModeContext(
                 getBundleSerializerExecutorService(),
                 getDiskWriterExecutorService(),
@@ -244,47 +257,5 @@ class AuditModeContext {
         synchronized (mLock) {
             return mAuditLogInMemoryBuffer.mAuditLogFile;
         }
-    }
-
-    private static File getAuditLogFilesDirectory() {
-        return new File(Environment.getDataSystemCeDirectory(), AUDIT_LOG_FILES_DIRNAME);
-    }
-
-    /**
-     * Returns all logs on disk for the given user. Logs are sorted by increasing timestamp. Skips
-     * unreadable logs, if any.
-     */
-    public static List<AuditLogEntry> readAuditLogs(int userId) {
-        return readAuditLogs(getAuditLogFilesDirectory(), userId);
-    }
-
-    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
-    public static List<AuditLogEntry> readAuditLogs(File folder, int userId) {
-        List<AuditLogEntry> entries = readAuditLogs(folder);
-        List<AuditLogEntry> filteredEntries = new ArrayList<>();
-        for (AuditLogEntry entry : entries) {
-            if (UserHandle.getUserId(entry.mCallingUid) == userId) {
-                filteredEntries.add(entry);
-            }
-        }
-        return filteredEntries;
-    }
-
-    /**
-     * Reads all logs on disk for the given folder. Results are sorted by increasing timestamp.
-     * Skips unreadable logs, if any.
-     */
-    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
-    static List<AuditLogEntry> readAuditLogs(File folder) {
-        String prefix = AuditLogFileManager.AUDIT_LOG_FILE_PREFIX;
-        String suffix = AuditLogFileManager.AUDIT_LOG_FILE_SUFFIX;
-        File[] files =
-                folder.listFiles((dir, name) -> name.startsWith(prefix) && name.endsWith(suffix));
-        if (files == null || files.length == 0) {
-            return new ArrayList<>();
-        }
-        List<AuditLogEntry> entries = AuditLogFileWriter.readEntriesForFiles(Arrays.asList(files));
-        entries.sort(Comparator.comparingLong(entry -> entry.mTimestamp));
-        return entries;
     }
 }
