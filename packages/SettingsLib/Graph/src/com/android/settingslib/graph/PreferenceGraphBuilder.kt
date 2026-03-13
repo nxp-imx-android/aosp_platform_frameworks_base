@@ -637,13 +637,6 @@ fun PreferenceMetadata.toProto(
     key = metadata.key
     if (flags.includeMetadata()) {
         metadata.getTitleTextProto(context, isRoot)?.let { title = it }
-        if (metadata.summary != 0 && metadata !is PreferenceScreenMetadata) {
-            summary = textProto { resourceId = metadata.summary }
-        } else if(metadata !is PreferenceScreenMetadata){
-            (metadata as? PreferenceSummaryProvider)?.getSummary(context)?.let {
-                summary = textProto { string = it.toString() }
-            }
-        }
         val metadataIcon = metadata.getPreferenceIcon(context)
         writable =
             if (metadata is ApiPreference<*, *>) {
@@ -745,6 +738,7 @@ fun PreferenceMetadata.toProto(
             }
         }
     }
+    // always true for preferences
     persistent = metadata.isPersistent(context)
     sensitivityLevel = metadata.sensitivityLevel
     if (metadata !is PersistentPreference<*> || metadata is PreferenceScreenMetadata) return@preferenceProto
