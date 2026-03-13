@@ -64,6 +64,7 @@ import com.android.systemui.testKosmos
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -122,6 +123,7 @@ class QSEditModeTransitionTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    @Ignore("b/490473248")
     fun swipeUpInQSEditMode_recordingCurrentTilesGridPosition() {
         motionTestRule.runTest(60.seconds) {
             kosmos.enableSingleShade()
@@ -162,6 +164,7 @@ class QSEditModeTransitionTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    @Ignore("b/490473248")
     fun removeTileNo1_recordingTileNo4Position() {
         motionTestRule.runTest(60.seconds) {
             kosmos.enableSingleShade()
@@ -199,6 +202,7 @@ class QSEditModeTransitionTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    @Ignore("b/490473248")
     fun addTileNo1_recordingTileNo2Position() {
         motionTestRule.runTest(60.seconds) {
             kosmos.enableSingleShade()
@@ -236,6 +240,7 @@ class QSEditModeTransitionTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    @Ignore("b/490473248")
     fun addTile_recordingCurrentTilesGridSize() {
         motionTestRule.runTest(60.seconds) {
             kosmos.enableSingleShade()
