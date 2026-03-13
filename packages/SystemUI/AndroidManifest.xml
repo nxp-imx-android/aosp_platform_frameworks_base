@@ -853,6 +853,13 @@
             android:theme="@android:style/Theme.NoDisplay">
         </activity >
 
+        <!-- Data Attribution for Android Context Engine use cases -->
+        <activity android:name=".personalcontext.attribution.AttributionActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.SystemUI.Dialog.Alert">
+        </activity >
+
         <!-- People Space Widget -->
         <receiver
             android:name=".people.widget.PeopleSpaceWidgetProvider"
