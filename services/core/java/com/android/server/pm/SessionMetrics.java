@@ -109,6 +109,11 @@ final class SessionMetrics {
     private boolean mDeveloperVerificationCancelled;
     private int mUidOfPackageInstalled = INVALID_UID;
     private long mFsVerityEnabledApksSizeBytes = 0;
+    private boolean mInstallerHasInstallPackagesPermission = false;
+    private boolean mInstallerHasRequestInstallPackagesPermission = false;
+    private boolean mInstallerHasInstallPackageUpdatesPermission = false;
+    private boolean mInstallerHasInstallSelfUpdatesPermission = false;
+    private boolean mInstallerHasUpdatePackagesWithoutUserActionPermission = false;
 
     SessionMetrics(Handler handler,
             int sessionId, int userId, int installerUid,
@@ -284,6 +289,26 @@ final class SessionMetrics {
         mFsVerityEnabledApksSizeBytes = fsVerityEnabledApksSizeBytes;
     }
 
+    public void onInstallerHasInstallPackagesPermission(boolean hasPermission) {
+        mInstallerHasInstallPackagesPermission = hasPermission;
+    }
+
+    public void onInstallerHasRequestInstallPackagesPermission(boolean hasPermission) {
+        mInstallerHasRequestInstallPackagesPermission = hasPermission;
+    }
+
+    public void onInstallerHasInstallPackageUpdatesPermission(boolean hasPermission) {
+        mInstallerHasInstallPackageUpdatesPermission = hasPermission;
+    }
+
+    public void onInstallerHasInstallSelfUpdatesPermission(boolean hasPermission) {
+        mInstallerHasInstallSelfUpdatesPermission = hasPermission;
+    }
+
+    public void onInstallerHasUpdatePackagesWithoutUserActionPermission(boolean hasPermission) {
+        mInstallerHasUpdatePackagesWithoutUserActionPermission = hasPermission;
+    }
+
     private void reportStats() {
         final long sessionIdleDurationMillis = mCommittedMillis - mCreatedMillis;
         final long sessionCommitDurationMillis = mFinishedMillis - mCommittedMillis;
@@ -368,7 +393,12 @@ final class SessionMetrics {
                         mWasUserResponseReceived, // 55
                         mWasDeveloperVerificationUserResponseReceived, // 56
                         mUidOfPackageInstalled, // 57
-                        mFsVerityEnabledApksSizeBytes // 58
+                        mFsVerityEnabledApksSizeBytes, // 58
+                        mInstallerHasInstallPackagesPermission, // 59
+                        mInstallerHasRequestInstallPackagesPermission, // 60
+                        mInstallerHasInstallPackageUpdatesPermission, // 61
+                        mInstallerHasInstallSelfUpdatesPermission, // 62
+                        mInstallerHasUpdatePackagesWithoutUserActionPermission // 63
                         )
         );
     }
