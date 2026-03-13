@@ -21958,6 +21958,117 @@ public final class Settings {
              */
             public static final String WEAR_BUG_REPORT_WARNING_VISIBILITY_STATE =
                     "wear_bug_report_warning_visibility_state";
+
+            /**
+             * Whether Raise-to-Talk is enabled by the user
+             *
+             * @hide
+             */
+            @Readable
+            public static final String RAISE_TO_TALK_ENABLED = "raise_to_talk_enabled";
+
+
+            /**
+             * Whether Raise-to-Talk is actually enabled based on both the user setting and the
+             * device's mode.
+             *
+             * @hide
+             */
+            @Readable
+            public static final String RAISE_TO_TALK_MEDIATED_ENABLED =
+                    "raise_to_talk_mediated_enabled";
+
+            /**
+             * Whether the Raise-to-Talk visual indicator is enabled
+             */
+            @Readable
+            public static final String RAISE_TO_TALK_VISUAL_INDICATOR_ENABLED =
+                    "raise_to_talk_visual_indicator_enabled";
+
+            /**
+             * Raise-to-Talk gesture sensitivity setting, which can be one of the following:
+             * - {@link #RAISE_TO_TALK_GESTURE_SENSITIVITY_LOW}
+             * - {@link #RAISE_TO_TALK_GESTURE_SENSITIVITY_MEDIUM}
+             * - {@link #RAISE_TO_TALK_GESTURE_SENSITIVITY_HIGH}
+             */
+            @Readable
+            public static final String RAISE_TO_TALK_GESTURE_SENSITIVITY =
+                    "raise_to_talk_gesture_sensitivity";
+
+            /**
+             * Indicates that the gesture sensitivity for Raise-to-Talk is set to low.
+             * A more pronounced raise gesture is required to trigger.
+             *
+             * @hide
+             */
+            public static final int RAISE_TO_TALK_GESTURE_SENSITIVITY_LOW = 0;
+
+            /**
+             * Indicates that the gesture sensitivity for Raise-to-Talk is set to medium.
+             *
+             * @hide
+             */
+            public static final int RAISE_TO_TALK_GESTURE_SENSITIVITY_MEDIUM = 1;
+
+            /**
+             * Indicates that the gesture sensitivity for Raise-to-Talk is set to high.
+             * A less pronounced raise gesture is sufficient to trigger.
+             *
+             * @hide
+             */
+            public static final int RAISE_TO_TALK_GESTURE_SENSITIVITY_HIGH = 2;
+
+
+            /**
+             * Raise-to-Talk voice sensitivity setting, which can be one of the following:
+             * - {@link #RAISE_TO_TALK_VOICE_SENSITIVITY_VERY_LOW}
+             * - {@link #RAISE_TO_TALK_VOICE_SENSITIVITY_LOW}
+             * - {@link #RAISE_TO_TALK_VOICE_SENSITIVITY_MEDIUM}
+             * - {@link #RAISE_TO_TALK_VOICE_SENSITIVITY_HIGH}
+             * - {@link #RAISE_TO_TALK_VOICE_SENSITIVITY_VERY_HIGH}
+             */
+            @Readable
+            public static final String RAISE_TO_TALK_VOICE_SENSITIVITY =
+                    "raise_to_talk_voice_sensitivity";
+
+            /**
+             * Indicates that the voice sensitivity for Raise-to-Talk is set to very low.
+             * A higher speaking volume is required to trigger.
+             *
+             * @hide
+             */
+            public static final int RAISE_TO_TALK_VOICE_SENSITIVITY_VERY_LOW = 0;
+
+            /**
+             * Indicates that the voice sensitivity for Raise-to-Talk is set to low.
+             * A higher speaking volume is required to trigger.
+             *
+             * @hide
+             */
+            public static final int RAISE_TO_TALK_VOICE_SENSITIVITY_LOW = 1;
+
+            /**
+             * Indicates that the voice sensitivity for Raise-to-Talk is set to medium.
+             *
+             * @hide
+             */
+            public static final int RAISE_TO_TALK_VOICE_SENSITIVITY_MEDIUM = 2;
+
+            /**
+             * Indicates that the voice sensitivity for Raise-to-Talk is set to high.
+             * A lower speaking volume is sufficient to trigger.
+             *
+             * @hide
+             */
+            public static final int RAISE_TO_TALK_VOICE_SENSITIVITY_HIGH = 3;
+
+            /**
+             * Indicates that the voice sensitivity for Raise-to-Talk is set to very high.
+             * A lower speaking volume is sufficient to trigger.
+             *
+             * @hide
+             */
+            public static final int RAISE_TO_TALK_VOICE_SENSITIVITY_VERY_HIGH = 4;
         }
     }
 
