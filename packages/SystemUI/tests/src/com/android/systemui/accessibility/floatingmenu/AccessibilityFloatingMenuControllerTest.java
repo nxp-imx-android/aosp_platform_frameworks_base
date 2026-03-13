@@ -36,7 +36,6 @@ import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
-import android.provider.Settings;
 import android.testing.TestableLooper;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
@@ -149,12 +148,9 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
         mTestableLooper = TestableLooper.get(this);
 
         when(mTargetsObserver.getCurrentAccessibilityButtonTargets())
-                .thenReturn(Settings.Secure.getStringForUser(mContextWrapper.getContentResolver(),
-                        Settings.Secure.ACCESSIBILITY_BUTTON_TARGETS, UserHandle.USER_CURRENT));
-
+                .thenReturn("");
         when(mModeObserver.getCurrentAccessibilityButtonMode())
-                .thenReturn(Settings.Secure.getIntForUser(mContextWrapper.getContentResolver(),
-                        Settings.Secure.ACCESSIBILITY_BUTTON_MODE, UserHandle.USER_CURRENT));
+                .thenReturn(ACCESSIBILITY_BUTTON_MODE_FLOATING_MENU, UserHandle.USER_CURRENT);
 
         when(mHeadlessSystemUserMode.isHeadlessSystemUserMode()).thenReturn(false);
     }
