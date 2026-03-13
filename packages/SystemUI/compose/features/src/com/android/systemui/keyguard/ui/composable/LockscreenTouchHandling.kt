@@ -69,7 +69,7 @@ fun LockscreenTouchHandling(
                         onDoubleTap = { viewModel.onDoubleClick() },
                         onLongPress = {
                             if (viewModel.isLongPressHandlingEnabled) {
-                                viewModel.onLongPress(isA11yAction = false)
+                                viewModel.onLongPress()
                             }
                         },
                     )

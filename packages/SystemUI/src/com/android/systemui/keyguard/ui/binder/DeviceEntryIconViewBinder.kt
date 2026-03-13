@@ -80,11 +80,8 @@ object DeviceEntryIconViewBinder {
                     view: View,
                     x: Int,
                     y: Int,
-                    isA11yAction: Boolean,
                 ) {
-                    if (
-                        !isA11yAction && falsingManager.isFalseLongTap(FalsingManager.LOW_PENALTY)
-                    ) {
+                    if (falsingManager.isFalseLongTap(FalsingManager.LOW_PENALTY)) {
                         Log.d(
                             TAG,
                             "Long press rejected because it is not a11yAction " +
