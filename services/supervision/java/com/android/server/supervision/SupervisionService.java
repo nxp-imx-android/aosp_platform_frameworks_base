@@ -134,9 +134,6 @@ public class SupervisionService extends ISupervisionManager.Stub {
     // TODO(b/362756788): Does this need to be a LockGuard lock?
     private final Object mLockDoNoUseDirectly = new Object();
 
-    @GuardedBy("getLockObject()")
-    private final SparseArray<SupervisionUserData> mUserData = new SparseArray<>();
-
     private final Injector mInjector;
     private final RoleObserver mRoleObserver;
     final SupervisionManagerInternal mInternal = new SupervisionManagerInternalImpl();
@@ -193,14 +190,6 @@ public class SupervisionService extends ISupervisionManager.Stub {
             enforcePermission(INTERACT_ACROSS_USERS);
         }
         setSupervisionEnabledForUserInternal(userId, enabled, getSystemSupervisionPackage());
-    }
-
-    // TODO(b/444411638): Remove this after enable_app_service_connection_callbacks rollout
-    private List<AppServiceConnection> getSupervisionAppServiceConnections(@UserIdInt int userId) {
-        AppBindingService abs = mInjector.getAppBindingService();
-        return abs != null
-                ? abs.getAppServiceConnectionsBlocking(SupervisionAppServiceFinder.class, userId)
-                : new ArrayList<>();
     }
 
     private void registerStatsPullAtomCallback() {
@@ -712,10 +701,6 @@ public class SupervisionService extends ISupervisionManager.Stub {
         return users.stream().filter(user -> !user.isForTesting()).count() > numOfDefaultUsers;
     }
 
-    private static boolean isSystemUser(UserInfo userInfo) {
-        return (userInfo.flags & UserInfo.FLAG_SYSTEM) == UserInfo.FLAG_SYSTEM;
-    }
-
     @Override
     public void onShellCommand(
             @Nullable FileDescriptor in,
@@ -841,7 +826,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
     }
 
     private void onSupervisionEnabled(@UserIdInt int userId) {
-        executeOnSupervisionEnabled(
+        Binder.withCleanCallingIdentity(
                 () -> {
                     updateWebContentFilters(userId, true);
                     dispatchSupervisionEvent(
@@ -851,7 +836,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
     }
 
     private void onSupervisionDisabled(@UserIdInt int userId) {
-        executeOnSupervisionEnabled(
+        Binder.withCleanCallingIdentity(
                 () -> {
                     updateWebContentFilters(userId, false);
                     dispatchSupervisionEvent(
@@ -870,57 +855,13 @@ public class SupervisionService extends ISupervisionManager.Stub {
         mServiceThreadHandler.post(runnable);
     }
 
-    private void executeOnSupervisionEnabled(Runnable runnable) {
-        if (Flags.enableAppServiceConnectionCallbacks()) {
-            Binder.withCleanCallingIdentity(runnable::run);
-        } else {
-            executeOnServiceThread(runnable);
-        }
-    }
-
-    @NonNull
-    // TODO(b/444411638): Remove this after enable_app_service_connection_callbacks rollout
-    private List<ISupervisionListener> getSupervisionAppServiceListeners(
-            @UserIdInt int userId,
-            @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
-        ArrayList<ISupervisionListener> listeners = new ArrayList<>();
-        if (Flags.enableAppServiceConnectionCallbacks()) {
-            return listeners;
-        }
-
-        List<AppServiceConnection> connections = getSupervisionAppServiceConnections(userId);
-        for (AppServiceConnection conn : connections) {
-            String targetPackage = conn.getPackageName();
-            ISupervisionListener binder = null;
-            try {
-                binder = (ISupervisionListener) conn.getServiceBinder();
-            } catch (Exception e) {
-                Slogf.e(SupervisionLog.TAG, "Error getting binder: " + e.getMessage(), e);
-            }
-
-            if (binder == null) {
-                Slogf.d(
-                        SupervisionLog.TAG,
-                        "Failed to bind to SupervisionAppService for %s",
-                        targetPackage);
-                continue;
-            }
-
-            listeners.add(binder);
-        }
-
-        return listeners;
-    }
-
     private void dispatchSupervisionEvent(
             @UserIdInt int userId,
             @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
-        if (Flags.enableAppServiceConnectionCallbacks()) {
-            dispatchSupervisionAppServiceEvent(userId, action);
-        }
-        // Add SupervisionAppServices listeners before the platform listeners.
-        ArrayList<ISupervisionListener> listeners =
-                new ArrayList<>(getSupervisionAppServiceListeners(userId, action));
+
+        dispatchSupervisionAppServiceEvent(userId, action);
+
+        ArrayList<ISupervisionListener> listeners = new ArrayList<>();
 
         synchronized (getLockObject()) {
             mSupervisionListeners.forEach(
