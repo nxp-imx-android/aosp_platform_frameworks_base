@@ -21,6 +21,7 @@ import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_BINDER_PR
 import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_BINDER_PROXY_TRANSACTION_REPORTED__TRANSACTION_STATUS__STATUS_SUCCESS;
 import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_INPUT_SANITIZATION_REPORTED;
 import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_PERMISSION_CHECK_RESULT;
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_UID_ASSIGNMENT_REPORTED;
 import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_WRITE_TO_AUDIT_LOG;
 
 
@@ -72,5 +73,13 @@ public class PrivateComputeStatsLogUtil {
                 PCC_WRITE_TO_AUDIT_LOG,
                 writeType
         );
+    }
+
+
+    /**
+     * Logs the status of a PCC UID assignment.
+     */
+    public static void logPccUidAssignment(int status) {
+        PrivateComputeAtomsLog.write(PCC_UID_ASSIGNMENT_REPORTED, status);
     }
 }
