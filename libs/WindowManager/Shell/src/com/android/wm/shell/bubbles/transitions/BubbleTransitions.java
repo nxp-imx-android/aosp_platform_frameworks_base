@@ -1355,7 +1355,8 @@ public class BubbleTransitions {
             mFinishCb = finishCallback;
 
             mPlayConvertTaskAnimation = false;
-            boolean found = processChangesFindMatching(info, startTransaction) != null;
+            boolean found =
+                    processChangesFindMatching(info, startTransaction, finishTransaction) != null;
             if (!found) {
                 Slog.w(TAG, "Expected a TaskView conversion in this transition but didn't get "
                         + "one, cleaning up the task view");
@@ -1502,7 +1503,8 @@ public class BubbleTransitions {
         @Nullable
         private TransitionInfo.Change processChangesFindMatching(
                 @NonNull TransitionInfo transitionInfo,
-                @NonNull SurfaceControl.Transaction startTransaction) {
+                @NonNull SurfaceControl.Transaction startTransaction,
+                @NonNull SurfaceControl.Transaction finishTransaction) {
             TransitionInfo.Change change = null;
             // Identify the task that we are converting or launching. Note, we iterate back to front
             // so that we can adjust alpha for revealed surfaces as needed.
@@ -1517,6 +1519,7 @@ public class BubbleTransitions {
                     mFinishWct = new WindowContainerTransaction();
                     mTaskInfo = chg.getTaskInfo();
                     mTaskLeash = chg.getLeash();
+                    mFinishT = finishTransaction;
                     mSnapshot = chg.getSnapshot();
                     mPlayConvertTaskAnimation = !isOpeningMode(chg.getMode()) && mSnapshot != null;
                     if (change != null) {
@@ -1549,8 +1552,9 @@ public class BubbleTransitions {
                 @NonNull SurfaceControl.Transaction startTransaction) {
             BubbleLog.d("LaunchOrConvertToBubble.plan() bubble=%s", mBubble.getKey());
             mPlayConvertTaskAnimation = false;
+            SurfaceControl.Transaction finishTransaction = new SurfaceControl.Transaction();
             TransitionInfo.Change change =
-                    processChangesFindMatching(plannableInfo, startTransaction);
+                    processChangesFindMatching(plannableInfo, startTransaction, finishTransaction);
             WindowContainerToken token = null;
             if (change != null) {
                 token = change.getContainer();
@@ -1566,7 +1570,6 @@ public class BubbleTransitions {
             // Now update state (and talk to launcher) in parallel with snapshot stuff
             mBubbleData.notificationEntryUpdated(mBubble, /* suppressFlyout= */ true,
                     /* showInShade= */ false, mBubbleBarLocation);
-            mFinishT = new SurfaceControl.Transaction();
             final int left = mStartBounds.left - plannableInfo.getRoot(0).getOffset().x;
             final int top = mStartBounds.top - plannableInfo.getRoot(0).getOffset().y;
 
@@ -1616,7 +1619,7 @@ public class BubbleTransitions {
                                 @NonNull IFinishedCallback onFinished) {
                             BubbleLog.w("ITransitionAnimation.start()");
                             // TODO(b/483107404) use from for the animation
-                            mAnimationFinishCb = () -> onFinished.onFinished(mFinishT);
+                            mAnimationFinishCb = () -> onFinished.onFinished(finishTransaction);
                             startExpandAnim();
                         }
 
