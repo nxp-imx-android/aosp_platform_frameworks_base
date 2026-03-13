@@ -4086,6 +4086,9 @@ public class NotificationStackScrollLayout
                     // This is the ONLY place mSendingTouchesToSceneFramework can become true.
                     mSendingTouchesToSceneFramework = handled;
                     mGestureReachedScroller = false;
+
+                    // Side Effect: set initial guts state when a gesture starts
+                    updateIsCurrentGestureInGuts(ev);
                 }
                 case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     // Gesture ended: route the final event accordingly.
@@ -4096,6 +4099,12 @@ public class NotificationStackScrollLayout
                         // Claim this gesture from the SceneFramework with a final ACTION_CANCEL.
                         claimTouchFromSceneFramework(ev);
                     }
+
+                    // Side Effect (The Workaround): Re-evaluate isTouchInGuts on the UP/CANCEL
+                    // event and leave the state exactly as it was requested by downstream.
+                    // Prevent SceneContainer from closing the guts, it the touch finished inside.
+                    updateIsCurrentGestureInGuts(ev);
+
                     mSendingTouchesToSceneFramework = false;
                     mGestureReachedScroller = false;
                     setIsBeingDragged(false);
@@ -4201,6 +4210,15 @@ public class NotificationStackScrollLayout
         syntheticCancel.setLocation(ev.getRawX(), ev.getRawY());
         mController.sendTouchToSceneFramework(syntheticCancel);
         syntheticCancel.recycle();
+    }
+
+    /**
+     * Sets {@link ScrollViewFields#sendCurrentGestureInGuts} with {@code true} when the given
+     * {@link MotionEvent} is inside the notification guts, and {@code false} otherwise.
+     */
+    private void updateIsCurrentGestureInGuts(MotionEvent event) {
+        final boolean isTouchInGuts = mController.isTouchInGutsView(event);
+        mScrollViewFields.sendCurrentGestureInGuts(isTouchInGuts);
     }
 
     void dispatchDownEventToScroller(MotionEvent ev) {
