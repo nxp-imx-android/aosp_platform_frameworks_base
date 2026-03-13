@@ -22,13 +22,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
-val dragHandle: ImageVector
+val DragHandle: ImageVector
     get() {
-        if (_dragHandle != null) return _dragHandle!!
+        if (_DragHandle != null) return _DragHandle!!
 
-        _dragHandle =
+        _DragHandle =
             ImageVector.Builder(
-                    name = "dragHandle",
+                    name = "DragHandle",
                     defaultWidth = 24.dp,
                     defaultHeight = 24.dp,
                     viewportWidth = 960f,
@@ -64,7 +64,7 @@ val dragHandle: ImageVector
                 }
                 .build()
 
-        return _dragHandle!!
+        return _DragHandle!!
     }
 
-private var _dragHandle: ImageVector? = null
+private var _DragHandle: ImageVector? = null

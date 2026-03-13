@@ -22,13 +22,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
-val dashboard: ImageVector
+val Dashboard: ImageVector
     get() {
-        if (_dashboard != null) return _dashboard!!
+        if (_Dashboard != null) return _Dashboard!!
 
-        _dashboard =
+        _Dashboard =
             ImageVector.Builder(
-                    name = "dashboard",
+                    name = "Dashboard",
                     defaultWidth = 24.dp,
                     defaultHeight = 24.dp,
                     viewportWidth = 960f,
@@ -96,7 +96,7 @@ val dashboard: ImageVector
                 }
                 .build()
 
-        return _dashboard!!
+        return _Dashboard!!
     }
 
-private var _dashboard: ImageVector? = null
+private var _Dashboard: ImageVector? = null
