@@ -26,8 +26,10 @@ import com.android.wm.shell.hierarchy.experimental.MultiContainerMode
 import com.android.wm.shell.hierarchy.experimental.testsplit.PipMode
 import com.android.wm.shell.hierarchy.experimental.testsplit.SplitMode
 import com.android.wm.shell.hierarchy.modes.FormFactorModes
+import com.android.wm.shell.hierarchy.modes.handheld.HandheldModeRequester
 import com.android.wm.shell.hierarchy.modes.handheld.HandheldModes
 import com.android.wm.shell.sysui.ShellInit
+import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 
@@ -41,21 +43,87 @@ import dagger.Provides
         ]
 )
 class HandheldContainersModule {
+
+    @WMSingleton
+    @Provides
+    fun provideHandheldRootMode(): HandheldRootMode {
+        return HandheldRootMode()
+    }
+
+    @WMSingleton
+    @Provides
+    fun provideAlwaysOnTopMode(
+        context: Context,
+        hierarchy: ContainerHierarchy,
+        modeRequester: HandheldModeRequester
+    ): AlwaysOnTopMode {
+        return AlwaysOnTopMode(context, hierarchy, modeRequester)
+    }
+
+    @WMSingleton
+    @Provides
+    fun provideMultiContainerMode(
+        context: Context,
+        hierarchy: ContainerHierarchy,
+        modeRequester: HandheldModeRequester
+    ): MultiContainerMode {
+        return MultiContainerMode(context, hierarchy, modeRequester)
+    }
+
+    @WMSingleton
+    @Provides
+    fun providePipMode(
+        context: Context,
+        hierarchy: ContainerHierarchy,
+        modeRequester: HandheldModeRequester
+    ): PipMode {
+        return PipMode(context, hierarchy, modeRequester)
+    }
+
+    @WMSingleton
+    @Provides
+    fun provideSplitMode(
+        context: Context,
+        hierarchy: ContainerHierarchy,
+        modeRequester: HandheldModeRequester
+    ): SplitMode {
+        return SplitMode(context, hierarchy, modeRequester)
+    }
+
+    @WMSingleton
+    @Provides
+    fun provideHandheldModeRequester(
+        alwaysOnTopModeLazy: Lazy<AlwaysOnTopMode>,
+        multiContainerModeLazy: Lazy<MultiContainerMode>,
+        splitModeLazy: Lazy<SplitMode>,
+        pipModeLazy: Lazy<PipMode>
+    ): HandheldModeRequester {
+        return HandheldModeRequester(
+            alwaysOnTopModeLazy,
+            multiContainerModeLazy,
+            splitModeLazy,
+            pipModeLazy
+        )
+    }
+
     // This provides the override FormFactorModes in ContainerHierarchyModule
     @WMSingleton
     @Provides
     fun provideOverrideFormFactorModes(
-        context: Context,
         hierarchy: ContainerHierarchy,
+        rootMode: HandheldRootMode,
+        alwaysOnTopMode: AlwaysOnTopMode,
+        multiContainerMode: MultiContainerMode,
+        splitMode: SplitMode,
+        pipMode: PipMode,
         shellInit: ShellInit,
     ): FormFactorModes {
-        val pipMode = PipMode(context, hierarchy)
         return HandheldModes(
             hierarchy,
-            HandheldRootMode(),
-            AlwaysOnTopMode(context, hierarchy),
-            MultiContainerMode(context, hierarchy),
-            SplitMode(context, hierarchy, pipMode),
+            rootMode,
+            alwaysOnTopMode,
+            multiContainerMode,
+            splitMode,
             pipMode,
             shellInit,
         )

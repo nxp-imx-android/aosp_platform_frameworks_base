@@ -48,6 +48,7 @@ import com.android.wm.shell.hierarchy.ContainerHierarchy
 import com.android.wm.shell.hierarchy.containers.Container
 import com.android.wm.shell.hierarchy.containers.ViewOverlayContainer
 import com.android.wm.shell.hierarchy.modes.Mode
+import com.android.wm.shell.hierarchy.modes.handheld.HandheldModeRequester
 import com.android.wm.shell.hierarchy.properties.DisplayContainerProperties
 import com.android.wm.shell.hierarchy.properties.RootContainerProperties
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot
@@ -61,7 +62,7 @@ import java.io.PrintWriter
 class SplitMode(
     private val appContext: Context,
     private val hierarchy: ContainerHierarchy,
-    private val pipMode: PipMode,
+    private val modeRequester: HandheldModeRequester,
 ) : Mode {
     // Flag for enabling/disabling transitions.
     private val mUseTransitions = true
@@ -84,17 +85,6 @@ class SplitMode(
     private lateinit var splitDividerController: SplitDividerController
 
     private var activeContainerCount = 0
-
-    init {
-        pipMode.onBackToSplit = { displayId, task ->
-            Log.d(TAG, "onBackToSplit: $task")
-            val wct = WindowContainerTransaction()
-            val request = Mode.EnterRequestContext(displayId)
-            if (requestEnterMode(task, request, wct)) {
-                hierarchy.update.wm("PIP back to split", TRANSIT_CHANGE, wct)
-            }
-        }
-    }
 
     /** @see Mode.prepareForDisplay */
     override fun prepareForDisplay(updateContext: Mode.UpdateContext, display: Container) {
@@ -356,11 +346,11 @@ class SplitMode(
         }
 
         if (taskToPip != null) {
-            val wct = WindowContainerTransaction()
             val request = Mode.EnterRequestContext(displayId)
-            if (pipMode.requestEnterMode(taskToPip, request, wct)) {
-                cleanupSplitContent(displayId, wct, excludeContainer = taskToPip)
-                hierarchy.update.wm("Enter PIP", TRANSIT_CHANGE, wct)
+            val wct = modeRequester.requestEnterPipMode(taskToPip, request)
+            wct?.let {
+                cleanupSplitContent(displayId, it, excludeContainer = taskToPip)
+                hierarchy.update.wm("Enter PIP", TRANSIT_CHANGE, it)
             }
         } else {
             Log.w(TAG, "No task available for PIP")

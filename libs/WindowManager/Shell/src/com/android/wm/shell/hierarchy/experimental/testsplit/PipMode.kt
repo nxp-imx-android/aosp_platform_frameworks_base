@@ -40,6 +40,7 @@ import com.android.wm.shell.hierarchy.ContainerHierarchy
 import com.android.wm.shell.hierarchy.containers.Container
 import com.android.wm.shell.hierarchy.containers.ViewOverlayContainer
 import com.android.wm.shell.hierarchy.modes.Mode
+import com.android.wm.shell.hierarchy.modes.handheld.HandheldModeRequester
 import com.android.wm.shell.hierarchy.properties.DisplayContainerProperties
 import com.android.wm.shell.hierarchy.properties.TaskContainerProperties
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot
@@ -53,15 +54,17 @@ import java.io.PrintWriter
  * A Simple mode to simulate PIP.
  * Draws a small window in bottom right corner with overlay buttons to exit the mode.
  */
-class PipMode(private val appContext: Context, private val hierarchy: ContainerHierarchy) : Mode {
+class PipMode(
+    private val appContext: Context,
+    private val hierarchy: ContainerHierarchy,
+    private val modeRequester: HandheldModeRequester,
+) : Mode {
     private val TAG = PipMode::class.simpleName
 
     private val rootsPerDisplay = mutableMapOf<Int, Container>()
     private val overlays = mutableMapOf<WindowContainerToken, ViewOverlayContainer>()
 
     private var activeContainer: Container? = null
-
-    var onBackToSplit: ((Int, Container) -> Unit)? = null
 
     override fun prepareForDisplay(updateContext: Mode.UpdateContext, display: Container) {
         val displayId = display.props<DisplayContainerProperties>().displayId
@@ -118,8 +121,13 @@ class PipMode(private val appContext: Context, private val hierarchy: ContainerH
                 createOverlayButton(context, "SplitMode", Color.argb(200, 0, 0, 255)) {
                     val child = activeContainer
                     if (child != null) {
-                        val displayId = root.props<TaskContainerProperties>().taskInfo.displayId
-                        onBackToSplit?.invoke(displayId, child)
+                        val display = HierarchyUtils.getAncestorDisplay(child)
+                        val wct = modeRequester.requestEnterSplitMode(child,
+                            Mode.EnterRequestContext(display!!.displayProps().displayId)
+                        )
+                        wct?.let {
+                            hierarchy.update.wm("PIP back to split", TRANSIT_CHANGE, it)
+                        }
                         activeContainer = null
                     }
                 },
