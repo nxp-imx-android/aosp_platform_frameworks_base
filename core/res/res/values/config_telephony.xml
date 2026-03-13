@@ -620,4 +620,8 @@
     -->
     <string-array name="config_messaging_read_restriction_allowlist" translatable="false"></string-array>
     <java-symbol type="array" name="config_messaging_read_restriction_allowlist" />
+
+    <!-- These values are the base defaults and are intended to be overridden by device-specific overlays in device/<oem>/<device>/overlay/frameworks/base/core/res/res/values/config_telephony.xml -->
+    <bool name="config_satellite_enabled_reason_user_default">true</bool>
+    <java-symbol type="bool" name="config_satellite_enabled_reason_user_default" />
 </resources>
