@@ -52,6 +52,7 @@ aconfig_declarations_group {
         "android.crashrecovery.flags-aconfig-java",
         "android.credentials.flags-aconfig-java",
         "android.database.sqlite-aconfig-java",
+        "android.graphics.egl.flags-aconfig-java",
         "android.hardware.biometrics.flags-aconfig-java",
         "android.hardware.devicestate.feature.flags-aconfig-java",
         "android.hardware.flags-aconfig-java",
@@ -2671,5 +2672,11 @@ aconfig_declarations {
 java_aconfig_library {
     name: "android.print.flags-aconfig-java",
     aconfig_declarations: "android.print.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+java_aconfig_library {
+    name: "android.graphics.egl.flags-aconfig-java",
+    aconfig_declarations: "egl_flags",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
