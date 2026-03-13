@@ -338,6 +338,26 @@ class BubbleBarExpandedViewTest {
     }
 
     @Test
+    fun initialize_resetsTaskViewClipBounds() {
+        val expandedView =
+            LayoutInflater.from(context)
+                .inflate(R.layout.bubble_bar_expanded_view, null, false /* attachToRoot */)
+                as BubbleBarExpandedView
+        val taskView = bubbleTaskViewFactory.create()
+        taskView.taskView.clipBounds = Rect(0, 0, 100, 100)
+
+        expandedView.initialize(
+            expandedViewManager,
+            positioner,
+            false /* isOverflow */,
+            bubble,
+            taskView,
+        )
+
+        assertThat(taskView.taskView.clipBounds).isNull()
+    }
+
+    @Test
     fun onTaskInfoChanged_invalidTask_collapseStack() {
         val taskInfo = RunningTaskInfo()
         taskInfo.supportsMultiWindow = false
