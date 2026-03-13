@@ -3044,6 +3044,10 @@ public class JobSchedulerService extends com.android.server.SystemService
             for (int i = mJobRestrictions.size() - 1; i >= 0; i--) {
                 mJobRestrictions.get(i).onSystemServicesReady();
             }
+
+            if (Flags.enforceProxiedJobsLimit()) {
+                initializeProxiedJobCountsAtBoot();
+            }
         } else if (phase == PHASE_THIRD_PARTY_APPS_CAN_START) {
             synchronized (mLock) {
                 // Let's go!
@@ -6240,6 +6244,20 @@ public class JobSchedulerService extends com.android.server.SystemService
 
     private static boolean isSystemProxiedJob(JobStatus job) {
         return job.getUid() == Process.SYSTEM_UID && job.getUid() != job.getSourceUid();
+    }
+
+    private void initializeProxiedJobCountsAtBoot() {
+        // Initialize the proxied job counts with the jobs loaded from disk.
+        // We don't need to persist mProxiedJobsCounts to disk, because we can
+        // rebuild it on boot from the persisted jobs.
+        synchronized (mLock) {
+            mJobs.forEachJob((job) -> {
+                if (isSystemProxiedJob(job)) {
+                    incrementProxiedJobCountLocked(
+                            job.getSourceUid(), job.getSourcePackageName());
+                }
+            });
+        }
     }
 
     @NeverCompile // Avoid size overhead of debugging code.
