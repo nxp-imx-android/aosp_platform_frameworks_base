@@ -29,7 +29,7 @@ fun Kosmos.screenCaptureRecordContent(transition: Transition<Boolean>): ScreenCa
         smallScreenCaptureRecordContent = {
             SmallScreenCaptureRecordContent(
                 window = null,
-                transition = transition,
+                visibilityTransition = transition,
                 viewModelFactory = smallScreenCaptureRecordViewModelFactory,
             )
         },

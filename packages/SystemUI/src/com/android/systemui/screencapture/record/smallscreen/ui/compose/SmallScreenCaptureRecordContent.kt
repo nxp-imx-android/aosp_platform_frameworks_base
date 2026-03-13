@@ -31,8 +31,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -82,10 +80,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -112,7 +110,7 @@ import kotlin.math.roundToInt
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
-private val scaleTransformOrigin = TransformOrigin(pivotFractionX = 0.5f, pivotFractionY = 0f)
+private val toolbarHeight = 64.dp
 
 @ScreenCaptureUiScope
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -120,7 +118,7 @@ class SmallScreenCaptureRecordContent
 @Inject
 constructor(
     @ScreenCaptureUi private val window: Window?,
-    @ScreenCaptureUi private val transition: Transition<Boolean>,
+    @ScreenCaptureUi private val visibilityTransition: Transition<Boolean>,
     private val viewModelFactory: SmallScreenCaptureRecordViewModel.Factory,
 ) : ScreenCaptureContent {
 
@@ -148,216 +146,237 @@ constructor(
             }
         }
 
-        transition.AnimatedVisibility(
-            visible = { it },
-            enter = scaleIn(transformOrigin = scaleTransformOrigin) + slideInVertically(),
-            exit = scaleOut(transformOrigin = scaleTransformOrigin) + slideOutVertically(),
+        Box(
+            contentAlignment = Alignment.TopCenter,
+            modifier =
+                Modifier.dim(
+                    isVisible = visibilityTransition.targetState && viewModel.shouldShowDim,
+                    region = dimBounds,
+                    onClick = { viewModel.dismiss() },
+                ),
         ) {
-            BackgroundDim(
-                isVisible = viewModel.shouldShowDim,
-                region = dimBounds,
-                onClick = { viewModel.dismiss() },
-            )
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier =
-                    Modifier.fillMaxSize()
-                        .windowInsetsPadding(
-                            WindowInsets.safeContent.only(
-                                WindowInsetsSides.Top + WindowInsetsSides.Horizontal
-                            )
-                        )
-                        .padding(horizontal = 16.dp),
+            val toolbarYAnimationOffset =
+                with(LocalDensity.current) {
+                    toolbarHeight.roundToPx() + WindowInsets.safeContent.getTop(this)
+                }
+            visibilityTransition.AnimatedVisibility(
+                visible = { it },
+                enter =
+                    slideInVertically(
+                        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+                        initialOffsetY = { -toolbarYAnimationOffset },
+                    ),
+                exit =
+                    slideOutVertically(
+                        targetOffsetY = { -toolbarYAnimationOffset },
+                        animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+                    ),
             ) {
-                TransientSurface(
-                    transient = viewModel.isTransient,
-                    shape = FloatingToolbarDefaults.ContainerShape,
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
                     modifier =
-                        Modifier.fillBoundsInWindowIf(
-                            region = toolbarBounds,
-                            condition = viewTreeObserver != null,
-                        ),
+                        Modifier.fillMaxSize()
+                            .windowInsetsPadding(
+                                WindowInsets.safeContent.only(
+                                    WindowInsetsSides.Top + WindowInsetsSides.Horizontal
+                                )
+                            )
+                            .padding(horizontal = 16.dp),
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                    TransientSurface(
+                        transient = viewModel.isTransient,
+                        shape = FloatingToolbarDefaults.ContainerShape,
                         modifier =
-                            Modifier.height(64.dp)
-                                .padding(horizontal = 12.dp)
-                                .horizontalScroll(state = rememberScrollState()),
+                            Modifier.fillBoundsInWindowIf(
+                                region = toolbarBounds,
+                                condition = viewTreeObserver != null,
+                            ),
                     ) {
-                        PlatformIconButton(
-                            onClick = { viewModel.dismiss() },
-                            contentDescription =
-                                stringResource(
-                                    id = R.string.underlay_close_button_content_description
-                                ),
-                            colors =
-                                IconButtonDefaults.iconButtonColors(
-                                    containerColor =
-                                        MaterialTheme.colorScheme.surfaceContainerHighest
-                                ),
-                            iconResource = R.drawable.ic_close,
-                        )
-                        ToggleToolbarButton(
-                            visible = viewModel.shouldShowSettingsButton,
-                            checked = viewModel.detailsPopup == RecordDetailsPopupType.Settings,
-                            onCheckedChange = {
-                                if (it) {
-                                    viewModel.showSettings()
-                                } else {
-                                    viewModel.resetDetailsPopup()
-                                }
-                            },
-                            icon = {
-                                LoadingIcon(
-                                    icon =
-                                        loadIcon(
-                                                viewModel = viewModel,
-                                                resId = R.drawable.ic_settings,
-                                                contentDescription =
-                                                    ContentDescription.Resource(
-                                                        R.string.screen_record_settings
-                                                    ),
-                                            )
-                                            .value,
-                                    modifier = Modifier.size(24.dp),
-                                )
-                            },
-                        )
-                        ToggleToolbarButton(
-                            visible = viewModel.shouldShowMarkupButton,
-                            checked = viewModel.markupEnabled == true,
-                            onCheckedChange = { viewModel.setMarkupEnabled(it) },
-                            icon = {
-                                LoadingIcon(
-                                    icon =
-                                        loadIcon(
-                                                viewModel = viewModel,
-                                                resId = R.drawable.ic_markup,
-                                                contentDescription =
-                                                    ContentDescription.Resource(
-                                                        R.string.screen_record_markup
-                                                    ),
-                                            )
-                                            .value,
-                                    modifier = Modifier.size(24.dp),
-                                )
-                            },
-                        )
-                        ToggleToolbarButton(
-                            visible = viewModel.shouldShowColorPickerButton,
-                            checked =
-                                viewModel.detailsPopup == RecordDetailsPopupType.ColorSelector,
-                            onCheckedChange = {
-                                if (it) {
-                                    viewModel.showCameraColorSelector()
-                                } else {
-                                    viewModel.resetDetailsPopup()
-                                }
-                            },
-                            icon = {
-                                val colorInt =
-                                    viewModel.recordDetailsColorPickerViewModel.cameraColor
-                                if (colorInt == android.graphics.Color.TRANSPARENT) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier =
+                                Modifier.height(toolbarHeight)
+                                    .padding(horizontal = 12.dp)
+                                    .horizontalScroll(state = rememberScrollState()),
+                        ) {
+                            PlatformIconButton(
+                                onClick = { viewModel.dismiss() },
+                                contentDescription =
+                                    stringResource(
+                                        id = R.string.underlay_close_button_content_description
+                                    ),
+                                colors =
+                                    IconButtonDefaults.iconButtonColors(
+                                        containerColor =
+                                            MaterialTheme.colorScheme.surfaceContainerHighest
+                                    ),
+                                iconResource = R.drawable.ic_close,
+                            )
+                            ToggleToolbarButton(
+                                visible = viewModel.shouldShowSettingsButton,
+                                checked = viewModel.detailsPopup == RecordDetailsPopupType.Settings,
+                                onCheckedChange = {
+                                    if (it) {
+                                        viewModel.showSettings()
+                                    } else {
+                                        viewModel.resetDetailsPopup()
+                                    }
+                                },
+                                icon = {
                                     LoadingIcon(
                                         icon =
                                             loadIcon(
                                                     viewModel = viewModel,
-                                                    resId = R.drawable.ic_palette,
+                                                    resId = R.drawable.ic_settings,
                                                     contentDescription =
                                                         ContentDescription.Resource(
-                                                            R.string.screen_record_color_picker
+                                                            R.string.screen_record_settings
                                                         ),
                                                 )
                                                 .value,
                                         modifier = Modifier.size(24.dp),
                                     )
-                                } else {
-                                    RecordDetailsColorItem(
-                                        color = Color(colorInt),
-                                        selected = false,
-                                        modifier = Modifier.size(20.dp),
+                                },
+                            )
+                            ToggleToolbarButton(
+                                visible = viewModel.shouldShowMarkupButton,
+                                checked = viewModel.markupEnabled == true,
+                                onCheckedChange = { viewModel.setMarkupEnabled(it) },
+                                icon = {
+                                    LoadingIcon(
+                                        icon =
+                                            loadIcon(
+                                                    viewModel = viewModel,
+                                                    resId = R.drawable.ic_markup,
+                                                    contentDescription =
+                                                        ContentDescription.Resource(
+                                                            R.string.screen_record_markup
+                                                        ),
+                                                )
+                                                .value,
+                                        modifier = Modifier.size(24.dp),
                                     )
-                                }
-                            },
-                        )
+                                },
+                            )
+                            ToggleToolbarButton(
+                                visible = viewModel.shouldShowColorPickerButton,
+                                checked =
+                                    viewModel.detailsPopup == RecordDetailsPopupType.ColorSelector,
+                                onCheckedChange = {
+                                    if (it) {
+                                        viewModel.showCameraColorSelector()
+                                    } else {
+                                        viewModel.resetDetailsPopup()
+                                    }
+                                },
+                                icon = {
+                                    val colorInt =
+                                        viewModel.recordDetailsColorPickerViewModel.cameraColor
+                                    if (colorInt == android.graphics.Color.TRANSPARENT) {
+                                        LoadingIcon(
+                                            icon =
+                                                loadIcon(
+                                                        viewModel = viewModel,
+                                                        resId = R.drawable.ic_palette,
+                                                        contentDescription =
+                                                            ContentDescription.Resource(
+                                                                R.string.screen_record_color_picker
+                                                            ),
+                                                    )
+                                                    .value,
+                                            modifier = Modifier.size(24.dp),
+                                        )
+                                    } else {
+                                        RecordDetailsColorItem(
+                                            color = Color(colorInt),
+                                            selected = false,
+                                            modifier = Modifier.size(20.dp),
+                                        )
+                                    }
+                                },
+                            )
 
-                        Spacer(Modifier.width(12.dp))
+                            Spacer(Modifier.width(12.dp))
 
-                        val coroutineScope = rememberCoroutineScope()
-                        var buttonJob: Job? by remember { mutableStateOf(null) }
-                        ToolbarPrimaryButton(
-                            recording = viewModel.isRecording,
-                            onClick = {
-                                if (buttonJob == null) {
-                                    buttonJob =
-                                        coroutineScope.launch {
-                                            viewModel.onPrimaryButtonTapped()
-                                            buttonJob = null
-                                        }
-                                }
-                            },
-                            viewModel = viewModel,
-                            modifier = Modifier.height(40.dp),
-                        )
+                            val coroutineScope = rememberCoroutineScope()
+                            var buttonJob: Job? by remember { mutableStateOf(null) }
+                            ToolbarPrimaryButton(
+                                recording = viewModel.isRecording,
+                                onClick = {
+                                    if (buttonJob == null) {
+                                        buttonJob =
+                                            coroutineScope.launch {
+                                                viewModel.onPrimaryButtonTapped()
+                                                buttonJob = null
+                                            }
+                                    }
+                                },
+                                viewModel = viewModel,
+                                modifier = Modifier.height(40.dp),
+                            )
+                        }
                     }
-                }
 
-                AnimatedVisibility(
-                    visible = viewModel.detailsPopup != RecordDetailsPopupType.Invisible,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                ) {
-                    TransientSurface(
-                        transient = viewModel.isTransient,
-                        shape = RoundedCornerShape(28.dp),
-                        modifier =
-                            Modifier.fillBoundsInWindowIf(
-                                region = settingsBounds,
-                                condition = viewTreeObserver != null,
-                            ),
+                    AnimatedVisibility(
+                        visible =
+                            visibilityTransition.targetState &&
+                                viewModel.detailsPopup != RecordDetailsPopupType.Invisible,
+                        enter = fadeIn(MaterialTheme.motionScheme.fastEffectsSpec()),
+                        exit = fadeOut(MaterialTheme.motionScheme.fastEffectsSpec()),
                     ) {
-                        AnimatedContent(
-                            targetState = viewModel.detailsPopup,
-                            contentAlignment = Alignment.Center,
-                            transitionSpec = { fadeIn() togetherWith fadeOut() },
-                            modifier = Modifier.widthIn(max = 352.dp),
-                        ) { currentPopup ->
-                            val contentModifier = Modifier.fillMaxWidth()
-                            when (currentPopup) {
-                                RecordDetailsPopupType.Settings -> {
-                                    RecordDetailsSettings(
-                                        parametersViewModel =
-                                            viewModel.recordDetailsParametersViewModel,
-                                        targetViewModel = viewModel.recordDetailsTargetViewModel,
-                                        drawableLoaderViewModel = viewModel,
-                                        onAppSelectorClicked = { viewModel.showAppSelector() },
-                                        modifier = contentModifier,
-                                    )
-                                }
+                        TransientSurface(
+                            transient = viewModel.isTransient,
+                            shape = RoundedCornerShape(28.dp),
+                            modifier =
+                                Modifier.fillBoundsInWindowIf(
+                                    region = settingsBounds,
+                                    condition = viewTreeObserver != null,
+                                ),
+                        ) {
+                            AnimatedContent(
+                                targetState = viewModel.detailsPopup,
+                                contentAlignment = Alignment.Center,
+                                transitionSpec = { fadeIn() togetherWith fadeOut() },
+                                modifier = Modifier.widthIn(max = 352.dp),
+                            ) { currentPopup ->
+                                val contentModifier = Modifier.fillMaxWidth()
+                                when (currentPopup) {
+                                    RecordDetailsPopupType.Settings -> {
+                                        RecordDetailsSettings(
+                                            parametersViewModel =
+                                                viewModel.recordDetailsParametersViewModel,
+                                            targetViewModel =
+                                                viewModel.recordDetailsTargetViewModel,
+                                            drawableLoaderViewModel = viewModel,
+                                            onAppSelectorClicked = { viewModel.showAppSelector() },
+                                            modifier = contentModifier,
+                                        )
+                                    }
 
-                                RecordDetailsPopupType.AppSelector -> {
-                                    RecordDetailsAppSelector(
-                                        viewModel = viewModel.recordDetailsAppSelectorViewModel,
-                                        onBackPressed = { viewModel.showSettings() },
-                                        onTaskSelected = {
-                                            viewModel.recordDetailsTargetViewModel.selectTask(it)
-                                            viewModel.showSettings()
-                                        },
-                                        modifier = contentModifier,
-                                    )
-                                }
+                                    RecordDetailsPopupType.AppSelector -> {
+                                        RecordDetailsAppSelector(
+                                            viewModel = viewModel.recordDetailsAppSelectorViewModel,
+                                            onBackPressed = { viewModel.showSettings() },
+                                            onTaskSelected = {
+                                                viewModel.recordDetailsTargetViewModel.selectTask(
+                                                    it
+                                                )
+                                                viewModel.showSettings()
+                                            },
+                                            modifier = contentModifier,
+                                        )
+                                    }
 
-                                RecordDetailsPopupType.ColorSelector ->
-                                    RecordDetailsColorPicker(
-                                        viewModel = viewModel.recordDetailsColorPickerViewModel,
-                                        modifier = contentModifier,
-                                    )
+                                    RecordDetailsPopupType.ColorSelector ->
+                                        RecordDetailsColorPicker(
+                                            viewModel = viewModel.recordDetailsColorPickerViewModel,
+                                            modifier = contentModifier,
+                                        )
 
-                                RecordDetailsPopupType.Invisible -> {
-                                    /* do nothing */
+                                    RecordDetailsPopupType.Invisible -> {
+                                        /* do nothing */
+                                    }
                                 }
                             }
                         }
@@ -508,28 +527,18 @@ private fun TransientSurface(
 }
 
 @Composable
-private fun BackgroundDim(
-    isVisible: Boolean,
-    onClick: () -> Unit,
-    region: Region,
-    modifier: Modifier = Modifier,
-) {
+private fun Modifier.dim(isVisible: Boolean, onClick: () -> Unit, region: Region): Modifier {
     val backgroundScrim = MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f)
     val backgroundOpacity by animateFloatAsState(if (isVisible) 1f else 0f)
-    Spacer(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .animatedBackground(color = { backgroundScrim }, alpha = { backgroundOpacity })
-                .clearAndSetSemantics {}
-                .clickable(
-                    enabled = isVisible,
-                    interactionSource = null,
-                    indication = null,
-                    onClick = onClick,
-                )
-                .fillBoundsInWindowIf(region = region, condition = isVisible)
-    )
+    return animatedBackground(color = { backgroundScrim }, alpha = { backgroundOpacity })
+        .clearAndSetSemantics {}
+        .clickable(
+            enabled = isVisible,
+            interactionSource = null,
+            indication = null,
+            onClick = onClick,
+        )
+        .fillBoundsInWindowIf(region = region, condition = isVisible)
 }
 
 @Composable
