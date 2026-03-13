@@ -105,7 +105,7 @@ class PackagePolicyHandlerTest {
     @Test
     fun setPolicyUnchecked_shouldRejectPackageNameTooLong() {
         val handler = createHandler()
-        val packageNameTooLong = "a".repeat(256)
+        val packageNameTooLong = "com.example.app." + "a".repeat(256)
         val packageIdentifier = PackageIdentifier(packageNameTooLong)
 
         val exception =
@@ -120,5 +120,68 @@ class PackagePolicyHandlerTest {
             }
 
         assertThat(exception.message).contains("Package name too long")
+    }
+
+    @Test
+    fun setPolicyUnchecked_shouldRejectInvalidPackageNameContainsInvalidCharacters() {
+        val handler = createHandler()
+        val packageIdentifier = PackageIdentifier("invalid.app.package&name")
+
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                handler.setPolicyUnchecked(
+                    anyCaller,
+                    anyScope,
+                    PolicyValueTransport.packageField(
+                        packageIdentifier.createTransport(),
+                    ),
+                )
+            }
+
+        assertThat(exception.message).contains(
+            "Package name invalid.app.package&name is not valid",
+        )
+    }
+
+    @Test
+    fun setPolicyUnchecked_shouldRejectPackageNameWithSingleSegment() {
+        val handler = createHandler()
+        val packageIdentifier = PackageIdentifier("invalidapppackage")
+
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                handler.setPolicyUnchecked(
+                    anyCaller,
+                    anyScope,
+                    PolicyValueTransport.packageField(
+                        packageIdentifier.createTransport(),
+                    ),
+                )
+            }
+
+        assertThat(exception.message).contains(
+            "Package name invalidapppackage is not valid for policy",
+        )
+    }
+
+    @Test
+    fun setPolicyUnchecked_shouldRejectPackageNameStartingWithNumber() {
+        val handler = createHandler()
+        val packageIdentifier = PackageIdentifier("1invalid.app.package")
+
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                handler.setPolicyUnchecked(
+                    anyCaller,
+                    anyScope,
+                    PolicyValueTransport.packageField(
+                        packageIdentifier.createTransport(),
+                    ),
+                )
+            }
+
+        assertThat(exception.message).contains(
+            "Package name 1invalid.app.package is not valid for policy",
+        )
     }
 }
