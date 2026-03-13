@@ -891,6 +891,7 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
     }
 
     private void resetMode() {
+        mBiometricUnlockInteractor.setBiometricUnlockState(MODE_NONE, null);
         mMode = MODE_NONE;
         mBiometricType = null;
         mNotificationShadeWindowController.setForceDozeBrightness(false);
@@ -906,7 +907,6 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
             new WakefulnessLifecycle.Observer() {
                 @Override
                 public void onStartedGoingToSleep() {
-                    mBiometricUnlockInteractor.setBiometricUnlockState(MODE_NONE, null);
                     resetMode();
                     mFadedAwayAfterWakeAndUnlock = false;
                     mPendingAuthenticated = null;
