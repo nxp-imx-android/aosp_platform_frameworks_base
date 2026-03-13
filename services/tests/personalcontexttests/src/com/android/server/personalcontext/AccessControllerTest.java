@@ -107,6 +107,24 @@ public class AccessControllerTest {
     }
 
     @Test
+    public void testsRegisterVisualizerPackage() {
+        final String allowedPackage = "com.foo.baz";
+        final String deniedPackage = "com.foo.bar";
+
+        final AccessController controller = new AccessControllerBuilder()
+                .setAllowedVisualizerRegistrars(Set.of(allowedPackage))
+                .build();
+
+        assertThat(
+                controller.hasAccess(allowedPackage, AccessController.ACCESS_REGISTER_VISUALIZER))
+                .isTrue();
+
+        assertThat(
+                controller.hasAccess(deniedPackage, AccessController.ACCESS_REGISTER_VISUALIZER))
+                .isFalse();
+    }
+
+    @Test
     public void testMultipleAllowedPackage() {
         final String allowedPackage = "com.foo.baz";
 
@@ -138,6 +156,7 @@ public class AccessControllerTest {
             setAllowedHintReceivers(Collections.emptySet());
             setAllowedInsightPublishers(Collections.emptySet());
             setAllowedInsightReceivers(Collections.emptySet());
+            setAllowedVisualizerRegistrars(Collections.emptySet());
         }
 
         private void setStringsToResource(Set<String> strings, int resourceId) {
@@ -170,6 +189,13 @@ public class AccessControllerTest {
         public AccessControllerBuilder setAllowedInsightReceivers(Set<String> receivers) {
             setStringsToResource(receivers,
                     R.array.config_allowlistPersonalContextInsightReceiving);
+
+            return this;
+        }
+
+        public AccessControllerBuilder setAllowedVisualizerRegistrars(Set<String> receivers) {
+            setStringsToResource(receivers,
+                    R.array.config_allowlistPersonalContextVisualizers);
 
             return this;
         }

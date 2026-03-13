@@ -157,7 +157,9 @@ public class PersonalContextManagerServiceTest {
         mContext.addMockSystemService(Context.PERMISSION_ENFORCER_SERVICE, mFakePermissionEnforcer);
 
         mService = spy(new PersonalContextManagerService(
-                mContext, mAccessController, (userContext, executor) -> mEmbeddedInsightRenderer));
+                mContext,
+                mAccessController,
+                (userContext, mAccessController, executor) -> mEmbeddedInsightRenderer));
         mLocalService = mService.new LocalService();
 
         mBinderService =
