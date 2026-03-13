@@ -49,6 +49,20 @@ class DreamInteractorTest : SysuiTestCase() {
     }
 
     @Test
+    fun isDreamSwitcherEnabled_true() =
+        kosmos.runTest {
+            dreamRepository.fake.setDreamSwitcherEnabled(true)
+            assertThat(underTest.isDreamSwitcherEnabled).isTrue()
+        }
+
+    @Test
+    fun isDreamSwitcherEnabled_false() =
+        kosmos.runTest {
+            dreamRepository.fake.setDreamSwitcherEnabled(false)
+            assertThat(underTest.isDreamSwitcherEnabled).isFalse()
+        }
+
+    @Test
     fun testDreamPlaylistIsExposed() =
         kosmos.runTest {
             val dreamPlaylist =

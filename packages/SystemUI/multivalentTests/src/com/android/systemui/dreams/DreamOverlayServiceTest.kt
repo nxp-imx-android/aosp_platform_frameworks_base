@@ -24,6 +24,8 @@ import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.service.dreams.Flags
 import android.service.dreams.Flags.FLAG_DREAMS_SWITCHER
+import android.service.dreams.Flags.FLAG_DREAMS_SWITCHER_EDGE_SWIPE_ENABLED
+import android.service.dreams.Flags.FLAG_DREAMS_SWITCHER_LONG_PRESS_ENABLED
 import android.service.dreams.IDreamOverlay
 import android.service.dreams.IDreamOverlayCallback
 import android.service.dreams.IDreamOverlayClient
@@ -66,6 +68,7 @@ import com.android.systemui.complication.dagger.ComplicationComponent
 import com.android.systemui.dreams.complication.HideComplicationTouchHandler
 import com.android.systemui.dreams.complication.dagger.DreamComplicationComponent
 import com.android.systemui.dreams.dagger.DreamOverlayComponent
+import com.android.systemui.dreams.domain.interactor.DreamInteractor
 import com.android.systemui.dreams.touch.CommunalTouchHandler
 import com.android.systemui.dreams.touch.DismissTouchHandler
 import com.android.systemui.dreams.touch.DreamSwipeDelegate
@@ -150,6 +153,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
     private val mScrimController = mock<ScrimController>()
     private val mSystemDialogsCloser = mock<SystemDialogsCloser>()
     private val mDreamOverlayCallbackController = mock<DreamOverlayCallbackController>()
+    private val mDreamInteractor = mock<DreamInteractor>()
     private val mDreamSwipeDelegate = mock<DreamSwipeDelegate>()
     private val mDreamOverlayContainerViewModel =
         mock<DreamOverlayContainerViewModel> { on { swipeDelegate } doReturn mDreamSwipeDelegate }
@@ -289,6 +293,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
                     mDreamOverlayCallbackController,
                     keyguardInteractor,
                     mGestureInteractor,
+                    mDreamInteractor,
                     wakeGestureMonitor,
                     powerInteractor,
                     WINDOW_NAME,
@@ -1600,6 +1605,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
     @DisableFlags(FLAG_GLANCEABLE_HUB_V2, FLAG_DREAMS_SWITCHER)
     @Test
     fun testAmbientTouchHandlersRegistration_registerHideComplicationAndCommunal() {
+        whenever(mDreamInteractor.isDreamSwitcherEnabled).thenReturn(false)
         val client = client
 
         // Inform the overlay service of dream starting.
@@ -1623,6 +1629,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
     @Test
     fun testAmbientTouchHandlersRegistration_v2_registerOnlyHideComplication() {
         kosmos.setCommunalV2ConfigEnabled(true)
+        whenever(mDreamInteractor.isDreamSwitcherEnabled).thenReturn(false)
 
         val client = client
 
@@ -1641,10 +1648,16 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         assertThat(mTouchHandlersCaptor.firstValue).containsExactly(mHideComplicationTouchHandler)
     }
 
-    @EnableFlags(FLAG_GLANCEABLE_HUB_V2, FLAG_DREAMS_SWITCHER)
+    @EnableFlags(
+        FLAG_GLANCEABLE_HUB_V2,
+        FLAG_DREAMS_SWITCHER,
+        FLAG_DREAMS_SWITCHER_LONG_PRESS_ENABLED,
+        FLAG_DREAMS_SWITCHER_EDGE_SWIPE_ENABLED,
+    )
     @Test
     fun testAmbientTouchHandlersRegistration_dreamsSwitcher() {
         kosmos.setCommunalV2ConfigEnabled(true)
+        whenever(mDreamInteractor.isDreamSwitcherEnabled).thenReturn(true)
 
         val client = client
 
@@ -1666,6 +1679,64 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
                 mLongPressTouchHandler,
                 mEdgeSwipeTouchHandler,
             )
+    }
+
+    @EnableFlags(
+        FLAG_GLANCEABLE_HUB_V2,
+        FLAG_DREAMS_SWITCHER,
+        FLAG_DREAMS_SWITCHER_EDGE_SWIPE_ENABLED,
+    )
+    @DisableFlags(FLAG_DREAMS_SWITCHER_LONG_PRESS_ENABLED)
+    @Test
+    fun testAmbientTouchHandlersRegistration_dreamsSwitcher_longPressDisabled() {
+        kosmos.setCommunalV2ConfigEnabled(true)
+        whenever(mDreamInteractor.isDreamSwitcherEnabled).thenReturn(true)
+
+        val client = client
+
+        // Inform the overlay service of dream starting.
+        client.startDream(
+            mWindowParams,
+            mDreamOverlayCallback,
+            DREAM_COMPONENT,
+            false /*isPreview*/,
+            false, /*shouldShowComplication*/
+        )
+        mMainExecutor.runAllReady()
+
+        verify(mAmbientTouchComponentFactory)
+            .create(any(), mTouchHandlersCaptor.capture(), any(), any())
+        assertThat(mTouchHandlersCaptor.firstValue)
+            .containsExactly(mHideComplicationTouchHandler, mEdgeSwipeTouchHandler)
+    }
+
+    @EnableFlags(
+        FLAG_GLANCEABLE_HUB_V2,
+        FLAG_DREAMS_SWITCHER,
+        FLAG_DREAMS_SWITCHER_LONG_PRESS_ENABLED,
+    )
+    @DisableFlags(FLAG_DREAMS_SWITCHER_EDGE_SWIPE_ENABLED)
+    @Test
+    fun testAmbientTouchHandlersRegistration_dreamsSwitcher_edgeSwipeDisabled() {
+        kosmos.setCommunalV2ConfigEnabled(true)
+        whenever(mDreamInteractor.isDreamSwitcherEnabled).thenReturn(true)
+
+        val client = client
+
+        // Inform the overlay service of dream starting.
+        client.startDream(
+            mWindowParams,
+            mDreamOverlayCallback,
+            DREAM_COMPONENT,
+            false /*isPreview*/,
+            false, /*shouldShowComplication*/
+        )
+        mMainExecutor.runAllReady()
+
+        verify(mAmbientTouchComponentFactory)
+            .create(any(), mTouchHandlersCaptor.capture(), any(), any())
+        assertThat(mTouchHandlersCaptor.firstValue)
+            .containsExactly(mHideComplicationTouchHandler, mLongPressTouchHandler)
     }
 
     @Test

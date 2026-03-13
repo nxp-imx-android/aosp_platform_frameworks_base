@@ -32,6 +32,9 @@ interface DreamRepository {
     /** Whether the dream switcher dialog is currently showing. */
     val dreamSwitcherDialogShowing: StateFlow<Boolean>
 
+    /** Whether the dream switcher feature is supported and enabled. */
+    val isDreamSwitcherEnabled: Boolean
+
     /**
      * Sets the active dream to the component identified by [componentName].
      *

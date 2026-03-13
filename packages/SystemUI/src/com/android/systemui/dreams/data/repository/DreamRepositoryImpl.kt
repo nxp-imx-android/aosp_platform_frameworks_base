@@ -18,10 +18,12 @@ package com.android.systemui.dreams.data.repository
 
 import android.app.DreamManager
 import android.content.ComponentName
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.RemoteException
 import android.os.UserHandle
 import android.service.dreams.DreamPlaylist
+import android.service.dreams.Flags.dreamsSwitcher
 import android.util.Log
 import com.android.app.tracing.FlowTracing.tracedAwaitClose
 import com.android.app.tracing.FlowTracing.tracedConflatedCallbackFlow
@@ -63,6 +65,7 @@ constructor(
     private val userScopedDreamManager: UserScopedService<DreamManager>,
     private val userContextProvider: UserContextProvider,
     userRepository: UserRepository,
+    private val context: Context,
 ) : DreamRepository {
     private val userHandle: Flow<UserHandle> =
         userRepository.selectedUser.map { it.userInfo.userHandle }.distinctUntilChanged()
@@ -71,6 +74,13 @@ constructor(
 
     private val _dreamSwitcherDialogShowing = MutableStateFlow(false)
     override val dreamSwitcherDialogShowing = _dreamSwitcherDialogShowing.asStateFlow()
+
+    override val isDreamSwitcherEnabled: Boolean
+        get() =
+            dreamsSwitcher() &&
+                context.resources.getBoolean(
+                    com.android.internal.R.bool.config_dreamSwitcherEnabled
+                )
 
     override val dreamState: Flow<DreamPlaylistModel> =
         dreamManager

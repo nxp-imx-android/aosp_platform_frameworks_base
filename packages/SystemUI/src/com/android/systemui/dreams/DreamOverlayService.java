@@ -16,6 +16,8 @@
 
 package com.android.systemui.dreams;
 
+import static android.service.dreams.Flags.dreamsSwitcherEdgeSwipeEnabled;
+import static android.service.dreams.Flags.dreamsSwitcherLongPressEnabled;
 import static android.service.dreams.Flags.dreamWakeRedirect;
 import static android.service.dreams.Flags.dreamsSwitcher;
 import static android.service.dreams.Flags.dreamsV2;
@@ -72,6 +74,7 @@ import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dreams.complication.dagger.DreamComplicationComponent;
 import com.android.systemui.dreams.dagger.DreamModule;
 import com.android.systemui.dreams.dagger.DreamOverlayComponent;
+import com.android.systemui.dreams.domain.interactor.DreamInteractor;
 import com.android.systemui.dreams.touch.DismissTouchHandler;
 import com.android.systemui.dreams.ui.binder.DreamOverlayContainerViewBinder;
 import com.android.systemui.dreams.ui.viewmodel.DreamOverlayContainerViewModel;
@@ -400,6 +403,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
     private final DreamOverlayStateController mStateController;
 
     private final GestureInteractor mGestureInteractor;
+    private final DreamInteractor mDreamInteractor;
 
     @VisibleForTesting
     public enum DreamOverlayEvent implements UiEventLogger.UiEventEnum {
@@ -441,12 +445,13 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
             UiEventLogger uiEventLogger,
             @Named(DREAM_TOUCH_INSET_MANAGER) TouchInsetManager touchInsetManager,
             @Nullable @Named(DreamModule.LOW_LIGHT_DREAM_SERVICE)
-            ComponentName lowLightDreamComponent,
+                    ComponentName lowLightDreamComponent,
             @Nullable @Named(HOME_CONTROL_PANEL_DREAM_COMPONENT)
-            ComponentName homeControlPanelDreamComponent,
+                    ComponentName homeControlPanelDreamComponent,
             DreamOverlayCallbackController dreamOverlayCallbackController,
             KeyguardInteractor keyguardInteractor,
             GestureInteractor gestureInteractor,
+            DreamInteractor dreamInteractor,
             WakeGestureMonitor wakeGestureMonitor,
             PowerInteractor powerInteractor,
             @Named(DREAM_OVERLAY_WINDOW_TITLE) String windowTitle,
@@ -470,6 +475,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
         mSceneInteractor = sceneInteractor;
         mSystemDialogsCloser = systemDialogsCloser;
         mGestureInteractor = gestureInteractor;
+        mDreamInteractor = dreamInteractor;
         mDreamOverlayComponentFactory = dreamOverlayComponentFactory;
         mAmbientTouchComponentFactory = ambientTouchComponentFactory;
         mTouchInsetManager = touchInsetManager;
@@ -587,9 +593,15 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
             }));
         }
 
-        if (dreamsSwitcher()) {
-            touchHandlers.add(dreamOverlayComponent.getLongPressTouchHandler());
-            touchHandlers.add(dreamOverlayComponent.getEdgeSwipeTouchHandler());
+        final boolean isDreamSwitcherSupported = mDreamInteractor.isDreamSwitcherEnabled();
+
+        if (isDreamSwitcherSupported) {
+            if (dreamsSwitcherLongPressEnabled()) {
+                touchHandlers.add(dreamOverlayComponent.getLongPressTouchHandler());
+            }
+            if (dreamsSwitcherEdgeSwipeEnabled()) {
+                touchHandlers.add(dreamOverlayComponent.getEdgeSwipeTouchHandler());
+            }
         }
 
         final AmbientTouchComponent ambientTouchComponent = mAmbientTouchComponentFactory.create(
@@ -612,7 +624,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
         mDreamOverlayContainerViewController =
                 dreamOverlayComponent.getDreamOverlayContainerViewController();
 
-        if (dreamsSwitcher()) {
+        if (isDreamSwitcherSupported) {
             DreamOverlayContainerViewBinder.INSTANCE.bind(
                     mDreamOverlayContainerViewController.getContainerView(),
                     viewModel,
