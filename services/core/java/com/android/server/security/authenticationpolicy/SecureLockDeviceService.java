@@ -58,7 +58,6 @@ import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemClock;
 import android.os.UserHandle;
-import android.provider.Settings;
 import android.security.authenticationpolicy.AuthenticationPolicyManager;
 import android.security.authenticationpolicy.AuthenticationPolicyManager.DisableSecureLockDeviceRequestStatus;
 import android.security.authenticationpolicy.AuthenticationPolicyManager.EnableSecureLockDeviceRequestStatus;
@@ -458,7 +457,7 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
     @Override
     @GetSecureLockDeviceAvailabilityRequestStatus
     public int getSecureLockDeviceAvailability(UserHandle user) {
-        if (!secureLockDevice() || isSceneContainerFlagEnabled()) {
+        if (!secureLockDevice()) {
             return ERROR_UNSUPPORTED;
         }
 
@@ -480,12 +479,6 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
         } else {
             return SUCCESS;
         }
-    }
-
-    //TODO (b/427071498): Remove check when SLD implemented for Flexiglass
-    private boolean isSceneContainerFlagEnabled() {
-        return Settings.Global.getInt(mContext.getContentResolver(),
-                Settings.Global.SCENE_CONTAINER_ENABLED, 0) == 1;
     }
 
     private boolean hasStrongBiometricSensor() {

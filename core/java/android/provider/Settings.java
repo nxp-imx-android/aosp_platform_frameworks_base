@@ -20704,22 +20704,12 @@ public final class Settings {
         public static final String MINMODE_ACTIVE = "minmode_active";
 
         /**
-         * Indicates if watch ranging is available for the device.
+          * Indicates if watch ranging is available for the device.
          *
          * @hide
          */
         public static final String WATCH_RANGING_AVAILABLE =
                 "watch_ranging_available";
-
-        /**
-         * Indicates if scene container flag is enabled. This is only a temporary addition that will
-         * be removed for Android 17.1 release.
-         *
-         * TODO (b/427071498): Remove this once SLD is integrated with Flexiglass
-         *
-         * @hide
-         */
-        public static final String SCENE_CONTAINER_ENABLED = "scene_container_enabled";
 
         /**
          * Settings migrated from Wear OS settings provider.
