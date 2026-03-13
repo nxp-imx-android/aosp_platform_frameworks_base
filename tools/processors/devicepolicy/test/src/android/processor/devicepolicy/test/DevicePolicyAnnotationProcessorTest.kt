@@ -539,7 +539,8 @@ class DevicePolicyAnnotationProcessorTest {
         compileExpectError(
             policyIdentifier,
             expectedError =
-                "In @EnumResolutionMechanism, either `custom` or `mostRestrictive` must be set",
+                "In @EnumResolutionMechanism, a resolution mechanism must " +
+                "be set.",
         )
     }
 
@@ -587,8 +588,8 @@ class DevicePolicyAnnotationProcessorTest {
         compileExpectError(
             policyIdentifier,
             expectedError =
-                "In @EnumResolutionMechanism, `custom` and `mostRestrictive` " +
-                    "can not be set together.",
+                "In @EnumResolutionMechanism, a single resolution mechanism " +
+                "can be selected.",
         )
     }
 
@@ -917,7 +918,10 @@ class DevicePolicyAnnotationProcessorTest {
                 """
             )
 
-        compileExpectError(policyIdentifier, expectedError = "Resolution mechanism can not be empty")
+        compileExpectError(
+            policyIdentifier,
+            expectedError = "Resolution mechanism can not be empty",
+        )
     }
 
     @Test
