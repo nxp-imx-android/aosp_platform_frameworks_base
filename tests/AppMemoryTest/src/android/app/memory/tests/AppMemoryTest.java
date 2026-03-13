@@ -29,6 +29,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -96,6 +97,10 @@ public class AppMemoryTest {
         // TODO: b/445722486 - runShellCommand doesn't work with empty string
         // Set to 0 for now, but ideally want a true reset
         runShellCommandWithResult("setprop " + STACK_DEPTH_PROP + " 0");
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
         runShellCommandWithResult("am force-stop " + HELPER);
         uninstallHelper();
     }
