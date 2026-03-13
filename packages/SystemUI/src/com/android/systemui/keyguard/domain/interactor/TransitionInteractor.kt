@@ -122,7 +122,7 @@ sealed class TransitionInteractor(
             }
 
             return true
-        } else if (keyguardOcclusionInteractor.showWhenLockedActivityInfo.value.isOnTop) {
+        } else if (isOccluded()) {
             // A SHOW_WHEN_LOCKED activity is on top of the task stack. Transition to OCCLUDED so
             // it's visible.
             // TODO(b/307976454) - Centralize transition to DREAMING here.
@@ -133,6 +133,15 @@ sealed class TransitionInteractor(
         } else {
             // No transition needed, let the interactor figure out where to go.
             return false
+        }
+    }
+
+    /**
+     * Whether we are occluded by an activity. In flexiglass, we don't consider dreams as occluding.
+     */
+    private fun isOccluded(): Boolean {
+        return keyguardOcclusionInteractor.showWhenLockedActivityInfo.value.let { activityInfo ->
+            activityInfo.isOnTop && (!SceneContainerFlag.isEnabled || !activityInfo.isDream())
         }
     }
 
