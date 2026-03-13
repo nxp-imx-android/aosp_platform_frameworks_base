@@ -3280,8 +3280,66 @@ public class InputManagerService extends IInputManager.Stub
 
     @EnforcePermission(Manifest.permission.CONTROLLER_REMAPPING)
     @Override // Binder call
-    public void remapControllerAxis(@UserIdInt int userId,
-            @NonNull InputDeviceIdentifier identifier, @MotionEvent.Axis int fromAxis,
+    public void remapControllerButtonToAxis(
+            @UserIdInt int userId,
+            @NonNull InputDeviceIdentifier identifier,
+            @InputManager.ControllerButton int fromButton,
+            @MotionEvent.Axis int toAxis) {
+        super.remapControllerButtonToAxis_enforcePermission();
+        if (!com.android.hardware.input.Flags.controllerRemapping()) {
+            return;
+        }
+        if (!isControllerButton(fromButton)) {
+            throw new IllegalArgumentException(
+                    "fromButton "
+                            + KeyEvent.keyCodeToString(fromButton)
+                            + " is not a valid controller button");
+        }
+        if (!isControllerAxis(toAxis)) {
+            throw new IllegalArgumentException(
+                    "toAxis "
+                            + MotionEvent.axisToString(toAxis)
+                            + " is not a valid controller axis");
+        }
+        mInputDeviceRemapper.remapKeyToAxis(userId, identifier, fromButton, toAxis);
+    }
+
+    @EnforcePermission(Manifest.permission.CONTROLLER_REMAPPING)
+    @Override // Binder call
+    public void removeControllerButtonToAxisRemapping(
+            @UserIdInt int userId,
+            @NonNull InputDeviceIdentifier identifier,
+            @InputManager.ControllerButton int fromButton) {
+        super.removeControllerButtonToAxisRemapping_enforcePermission();
+        if (!com.android.hardware.input.Flags.controllerRemapping()) {
+            return;
+        }
+        if (!isControllerButton(fromButton)) {
+            throw new IllegalArgumentException(
+                    "fromButton "
+                            + KeyEvent.keyCodeToString(fromButton)
+                            + " is not a valid controller button");
+        }
+        mInputDeviceRemapper.removeKeyToAxisRemapping(userId, identifier, fromButton);
+    }
+
+    @EnforcePermission(Manifest.permission.CONTROLLER_REMAPPING)
+    @Override // Binder call
+    public void clearAllControllerButtonToAxisRemappings(
+            @UserIdInt int userId, @NonNull InputDeviceIdentifier identifier) {
+        super.clearAllControllerButtonToAxisRemappings_enforcePermission();
+        if (!com.android.hardware.input.Flags.controllerRemapping()) {
+            return;
+        }
+        mInputDeviceRemapper.clearAllKeyToAxisRemappings(userId, identifier);
+    }
+
+    @EnforcePermission(Manifest.permission.CONTROLLER_REMAPPING)
+    @Override // Binder call
+    public void remapControllerAxis(
+            @UserIdInt int userId,
+            @NonNull InputDeviceIdentifier identifier,
+            @MotionEvent.Axis int fromAxis,
             @MotionEvent.Axis int toAxis) {
         super.remapControllerAxis_enforcePermission();
         if (!com.android.hardware.input.Flags.controllerRemapping()) {

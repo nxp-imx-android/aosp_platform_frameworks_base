@@ -43,6 +43,7 @@ final class InputDeviceRemappingPersistedData extends PersistedData<InputDeviceR
     private static final String TAG_ROOT = "input-device-remappings";
     private static final String TAG_DEVICE_REMAP = "device-remapping";
     private static final String TAG_BUTTON_REMAPS = "button-remappings";
+    private static final String TAG_BUTTON_TO_AXIS_REMAPS = "button-to-axis-remappings";
     private static final String TAG_AXIS_REMAPS = "axis-remappings";
     private static final String TAG_REMAP = "remap";
 
@@ -113,6 +114,7 @@ final class InputDeviceRemappingPersistedData extends PersistedData<InputDeviceR
                 productId);
 
         Map<Integer, Integer> buttonRemapping = new ArrayMap<>();
+        Map<Integer, Integer> buttonToAxisRemapping = new ArrayMap<>();
         Map<Integer, Integer> axisRemapping = new ArrayMap<>();
 
         final int outerDepth = parser.getDepth();
@@ -125,11 +127,14 @@ final class InputDeviceRemappingPersistedData extends PersistedData<InputDeviceR
             String tagName = parser.getName();
             if (TAG_BUTTON_REMAPS.equals(tagName)) {
                 readRemapMapFromXml(parser, buttonRemapping);
+            } else if (TAG_BUTTON_TO_AXIS_REMAPS.equals(tagName)) {
+                readRemapMapFromXml(parser, buttonToAxisRemapping);
             } else if (TAG_AXIS_REMAPS.equals(tagName)) {
                 readRemapMapFromXml(parser, axisRemapping);
             }
         }
-        return new InputDeviceRemappingData(identifier, buttonRemapping, axisRemapping);
+        return new InputDeviceRemappingData(
+                identifier, buttonRemapping, buttonToAxisRemapping, axisRemapping);
     }
 
     private void readRemapMapFromXml(TypedXmlPullParser parser, Map<Integer, Integer> remapMap)
@@ -163,6 +168,14 @@ final class InputDeviceRemappingPersistedData extends PersistedData<InputDeviceR
                 writeRemapTag(serializer, entry.getKey(), entry.getValue());
             }
             serializer.endTag(null, TAG_BUTTON_REMAPS);
+        }
+
+        if (!data.buttonToAxisRemappingMap().isEmpty()) {
+            serializer.startTag(null, TAG_BUTTON_TO_AXIS_REMAPS);
+            for (Map.Entry<Integer, Integer> entry : data.buttonToAxisRemappingMap().entrySet()) {
+                writeRemapTag(serializer, entry.getKey(), entry.getValue());
+            }
+            serializer.endTag(null, TAG_BUTTON_TO_AXIS_REMAPS);
         }
 
         if (!data.axisRemappingMap().isEmpty()) {
