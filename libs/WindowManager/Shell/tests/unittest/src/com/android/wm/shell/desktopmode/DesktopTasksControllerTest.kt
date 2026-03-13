@@ -1413,6 +1413,27 @@ class DesktopTasksControllerTest : ShellTestCase() {
     }
 
     @Test
+    fun handleFreeformTaskPlacement_isTargetDeskActive_bringTaskToFront_activatesDesk() {
+        val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
+        val activeDeskId = taskRepository.getActiveDeskId(DEFAULT_DISPLAY)
+        assertThat(activeDeskId).isNotNull()
+
+        controller.handleFreeformTaskPlacement(
+            task = task,
+            transition = Binder(),
+            targetDisplayId = DEFAULT_DISPLAY,
+            suggestedTargetDeskId = activeDeskId!!,
+            requestedTaskBounds = null, // triggers bringTaskToFront = true
+            requestType = TRANSIT_TO_FRONT,
+            enterReason = EnterReason.TASK_LAUNCH,
+        )
+
+        // Verify that even though the desk was already active, we call activateDesk to ensure
+        // it's brought to the front.
+        verify(desksOrganizer).activateDesk(any(), eq(activeDeskId!!), anyBoolean())
+    }
+
+    @Test
     fun handleRequest_freeformTaskAlreadyExistsInDesktopMode_cascadeNotApplied() {
         setUpLandscapeDisplay()
         val stableBounds =

@@ -4595,6 +4595,11 @@ class DesktopTasksController(
                 displayId = targetDisplayId,
                 userId = userId,
             )
+            if (bringTaskToFront) {
+                // Empty desks may sometimes be considered active despite not being in front
+                // because WM Core brings to front the DesktopWallpaperActivity or Home task.
+                desksOrganizer.activateDesk(wct, targetDeskId)
+            }
         }
 
         if (desktopConfig.useDesktopOverrideDensity) {
