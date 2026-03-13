@@ -29,6 +29,9 @@ import com.android.systemui.shade.domain.interactor.ShadeStatusBarComponentsInte
 import com.android.systemui.statusbar.domain.interactor.KeyguardStatusBarInteractor
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.Idle
+import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
+import com.android.systemui.statusbar.phone.domain.interactor.ShadeDarkIconInteractor
+import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarIconBlockListInteractor
 import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombinedVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import dagger.assisted.AssistedFactory
@@ -60,6 +63,8 @@ constructor(
     keyguardInteractor: KeyguardInteractor,
     keyguardStatusBarInteractor: KeyguardStatusBarInteractor,
     shadeStatusBarComponentsInteractor: ShadeStatusBarComponentsInteractor,
+    darkIconInteractor: ShadeDarkIconInteractor,
+    val statusBarIconBlockListInteractor: HomeStatusBarIconBlockListInteractor,
 ) : HydratedActivatable(enableEnqueuedActivations = true) {
     /** True if this view should be visible and false otherwise. */
     val isVisible: StateFlow<Boolean> =
@@ -77,6 +82,12 @@ constructor(
                     !isDozing
             }
             .stateIn(scope, SharingStarted.WhileSubscribed(), false)
+
+    val isAreaDark: IsAreaDark by
+        darkIconInteractor.isShadeAreaDark.hydratedStateOf(
+            traceName = "areaDark",
+            initialValue = IsAreaDark { true },
+        )
 
     private val systemEventAnimationState: Flow<SystemEventAnimationState> =
         shadeStatusBarComponentsInteractor.systemStatusEventAnimationInteractor.flatMapLatest {
