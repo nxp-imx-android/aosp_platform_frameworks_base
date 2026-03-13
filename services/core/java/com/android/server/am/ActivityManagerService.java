@@ -20316,12 +20316,13 @@ public class ActivityManagerService extends IActivityManager.Stub
         public void onProcStateUpdated(ProcessRecordInternal appInternal,
                 @ActivityManager.ProcessState int oldProcState,
                 @ActivityManager.ProcessState int newProcState,
+                @OomAdjust int newOomAdj,
                 long now, long nowElapsed, boolean forceUpdatePssTime, boolean doingAll,
                 boolean reportDebugMsgs) {
             final ProcessRecord app = (ProcessRecord) appInternal;
 
             synchronized (mAppProfiler.mProfilerLock) {
-                app.mProfile.updateProcState(app, newProcState);
+                app.mProfile.updateProcState(app, newProcState, newOomAdj);
                 mAppProfiler.updateNextPssTimeLPf(newProcState, app.mProfile, now,
                         forceUpdatePssTime);
             }
