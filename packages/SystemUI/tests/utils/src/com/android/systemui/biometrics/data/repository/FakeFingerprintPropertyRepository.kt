@@ -18,6 +18,7 @@ package com.android.systemui.biometrics.data.repository
 
 import android.hardware.biometrics.SensorLocationInternal
 import com.android.systemui.biometrics.shared.model.FingerprintSensorType
+import com.android.systemui.biometrics.shared.model.PeripheralFingerprintSensorLocation
 import com.android.systemui.biometrics.shared.model.SensorStrength
 import com.android.systemui.dagger.SysUISingleton
 import dagger.Binds
@@ -45,16 +46,23 @@ class FakeFingerprintPropertyRepository @Inject constructor() : FingerprintPrope
         MutableStateFlow(mapOf("" to SensorLocationInternal.DEFAULT))
     override val sensorLocations = _sensorLocations.asStateFlow()
 
+    private val _peripheralSensorLocation: MutableStateFlow<PeripheralFingerprintSensorLocation> =
+        MutableStateFlow(PeripheralFingerprintSensorLocation.UNKNOWN)
+    override val peripheralSensorLocation = _peripheralSensorLocation.asStateFlow()
+
     fun setProperties(
         sensorId: Int,
         strength: SensorStrength,
         sensorType: FingerprintSensorType,
         sensorLocations: Map<String, SensorLocationInternal>,
+        peripheralSensorLocation: PeripheralFingerprintSensorLocation =
+            PeripheralFingerprintSensorLocation.UNKNOWN,
     ) {
         _sensorId.value = sensorId
         _strength.value = strength
         _sensorType.value = sensorType
         _sensorLocations.value = sensorLocations
+        _peripheralSensorLocation.value = peripheralSensorLocation
         propertiesInitialized.value = true
     }
 
