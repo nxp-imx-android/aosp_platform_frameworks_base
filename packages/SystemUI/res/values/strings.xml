@@ -4903,6 +4903,9 @@
     <!-- Accessibility text for the click action of the Box embedding full-screen overlays. When clicked, it will close the overlay. This will be used following "Double-tap to..." [CHAR LIMIT=NONE] -->
     <string name="accessibility_close_overlay_action">go back</string>
 
+    <!-- Content description for the Box embedding full-screen overlays which, when clicked, will close the overlay. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_close_overlay_box_description">back</string>
+
     <!-- Description for the Ambient Cue accessibility action label for autofilling. [CHAR LIMIT=NONE] -->
     <string name="ambient_cue_autofill_action">autofill</string>
 
