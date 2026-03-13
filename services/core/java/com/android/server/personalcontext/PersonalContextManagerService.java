@@ -190,20 +190,6 @@ public class PersonalContextManagerService extends SystemService {
         mAccessController = controller;
     }
 
-    private boolean isEnabled() {
-        // TODO(b/477958468): check top-level setting
-        return true;
-    }
-
-    private boolean checkAndLogEnabledState(String stage) {
-        final boolean enabled = isEnabled();
-        if (!enabled) {
-            Slog.i(TAG, "PersonalContext[" + stage + "]: not enabled.");
-        }
-
-        return enabled;
-    }
-
     private void checkUidAccess(int uid, @AccessController.Access int access) {
         if (!mAccessController.hasAccess(uid, access)) {
             throw new SecurityException(
@@ -223,10 +209,6 @@ public class PersonalContextManagerService extends SystemService {
 
     @Override
     public void onUserStarting(@NonNull TargetUser user) {
-        if (!checkAndLogEnabledState("onUserStarting")) {
-            return;
-        }
-
         final int userId = user.getUserIdentifier();
         synchronized (mUserStates) {
             final UserState oldState = mUserStates.get(userId);
@@ -285,10 +267,6 @@ public class PersonalContextManagerService extends SystemService {
 
     @Override
     public void onUserUnlocked(@NonNull TargetUser user) {
-        if (!checkAndLogEnabledState("onUserUnlocked")) {
-            return;
-        }
-
         final int userId = user.getUserIdentifier();
         Slog.i(TAG, "Unlocking user " + userId);
 
@@ -340,10 +318,6 @@ public class PersonalContextManagerService extends SystemService {
 
     @Override
     public void onUserStopping(@NonNull TargetUser user) {
-        if (!checkAndLogEnabledState("onUserStopping")) {
-            return;
-        }
-
         final int userId = user.getUserIdentifier();
         Slog.i(TAG, "Stopping user " + userId);
         synchronized (mUserStates) {
@@ -906,8 +880,6 @@ public class PersonalContextManagerService extends SystemService {
             if (!DumpUtils.checkDumpPermission(service.getContext(), TAG, fout)) {
                 return;
             }
-
-            fout.println("Enabled:" + service.isEnabled());
 
             synchronized (service.mUserStates) {
                 for (int i = 0; i < service.mUserStates.size(); i++) {
