@@ -132,7 +132,7 @@ constructor(
     override val activeSubChangedInGroupEvent: Events<Unit> =
         activeRepo.map { it.activeSubChangedInGroupEvent }.switchEvents()
 
-    override val defaultDataSubRatConfig: State<MobileMappings.Config> =
+    override val defaultDataSubRatConfig: State<MobileMappings.Config?> =
         activeRepo.flatMap { it.defaultDataSubRatConfig }
 
     override val defaultMobileIconMapping: State<Map<String, SignalIcon.MobileIconGroup>> =
