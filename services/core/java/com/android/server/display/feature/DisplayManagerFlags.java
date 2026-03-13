@@ -76,11 +76,6 @@ public class DisplayManagerFlags {
             Flags::blockAutobrightnessChangesOnStylusUsage
     );
 
-    private final FlagState mEnableBatteryStatsForAllDisplays = new FlagState(
-            Flags.FLAG_ENABLE_BATTERY_STATS_FOR_ALL_DISPLAYS,
-            Flags::enableBatteryStatsForAllDisplays
-    );
-
     private final FlagState mHasArrSupport = new FlagState(
             Flags.FLAG_ENABLE_HAS_ARR_SUPPORT,
             Flags::enableHasArrSupport
@@ -180,14 +175,6 @@ public class DisplayManagerFlags {
     public boolean isNormalBrightnessForDozeParameterEnabled(Context context) {
         return mNormalBrightnessForDozeParameter.isEnabled() && context.getResources().getBoolean(
                 com.android.internal.R.bool.config_allowNormalBrightnessForDozePolicy);
-    }
-
-    /**
-      * @return {@code true} if battery stats is enabled for all displays, not just the primary
-      * display.
-      */
-    public boolean isBatteryStatsEnabledForAllDisplays() {
-        return mEnableBatteryStatsForAllDisplays.isEnabled();
     }
 
     /**
@@ -301,7 +288,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mSensorBasedBrightnessThrottling);
         pw.println(" " + mUseFusionProxSensor);
         pw.println(" " + mNormalBrightnessForDozeParameter);
-        pw.println(" " + mEnableBatteryStatsForAllDisplays);
         pw.println(" " + mBlockAutobrightnessChangesOnStylusUsage);
         pw.println(" " + mHasArrSupport);
         pw.println(" " + mGetSupportedRefreshRatesFlagState);
