@@ -20,7 +20,6 @@ import android.app.TaskInfo
 import android.content.Context
 import android.os.SystemProperties
 import android.util.IndentingPrintWriter
-import android.window.DesktopExperienceFlags
 import com.android.internal.R
 import com.android.internal.annotations.VisibleForTesting
 import com.android.wm.shell.shared.desktopmode.DesktopConfigImpl.Companion.WINDOW_DECOR_PRE_WARM_SIZE
@@ -34,7 +33,6 @@ class DesktopConfigImpl(private val context: Context, private val desktopState: 
 
     override val shouldMaximizeWhenDragToTopEdge: Boolean
         get() {
-            if (!DesktopExperienceFlags.ENABLE_DRAG_TO_MAXIMIZE.isTrue) return false
             return SystemProperties.getBoolean(
                 ENABLE_DRAG_TO_MAXIMIZE_SYS_PROP,
                 context.getResources().getBoolean(R.bool.config_dragToMaximizeInDesktopMode),
