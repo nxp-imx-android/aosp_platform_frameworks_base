@@ -100,6 +100,9 @@ public class AuthenticationStatsCollector {
                         mUserAuthenticationStatsMap.get(userId);
                 Slog.d(TAG, "Update enroll time for user: " + userId);
                 authenticationStats.updateLastEnrollmentTime(mClock.millis());
+                if (Flags.frrDialogEnrollTime()) {
+                    persistDataIfNeeded(userId, true);
+                }
             }
         }
     };
@@ -172,9 +175,13 @@ public class AuthenticationStatsCollector {
 
         authenticationStats.authenticate(authenticated);
 
-        sendNotificationIfNeeded(userId);
+        boolean sent = sendNotificationIfNeeded(userId);
 
-        persistDataIfNeeded(userId);
+        if (Flags.frrDialogEnrollTime()) {
+            persistDataIfNeeded(userId, sent);
+        } else {
+            persistDataIfNeeded(userId);
+        }
     }
 
     private void updateAuthenticationStatsMapIfNeeded(int userId) {
@@ -190,11 +197,16 @@ public class AuthenticationStatsCollector {
         }
     }
 
-    /** Check if a notification should be sent after a calculation cycle. */
-    private void sendNotificationIfNeeded(int userId) {
+    /**
+     * Check if a notification should be sent after a calculation cycle.
+     *
+     * @param userId The user ID.
+     * @return true if a notification was sent, false otherwise.
+     */
+    private boolean sendNotificationIfNeeded(int userId) {
         AuthenticationStats authenticationStats = mUserAuthenticationStatsMap.get(userId);
         if (authenticationStats.getTotalAttempts() < MINIMUM_ATTEMPTS) {
-            return;
+            return false;
         }
 
         long lastFrrOrEnrollTime = Math.max(authenticationStats.getLastEnrollmentTime(),
@@ -207,7 +219,7 @@ public class AuthenticationStatsCollector {
         // Don't send notification if FRR below the threshold.
         if (!showFrr) {
             authenticationStats.resetData();
-            return;
+            return false;
         }
 
         authenticationStats.resetData();
@@ -217,7 +229,7 @@ public class AuthenticationStatsCollector {
             if (sent) {
                 authenticationStats.updateLastFrrNotificationTime(mClock.millis());
                 authenticationStats.updateNotificationCounter();
-                return;
+                return true;
             }
         }
 
@@ -228,11 +240,14 @@ public class AuthenticationStatsCollector {
             mBiometricNotification.sendFpEnrollNotification(mContext);
             authenticationStats.updateLastFrrNotificationTime(mClock.millis());
             authenticationStats.updateNotificationCounter();
+            return true;
         } else if (!hasEnrolledFace && hasEnrolledFingerprint) {
             mBiometricNotification.sendFaceEnrollNotification(mContext);
             authenticationStats.updateLastFrrNotificationTime(mClock.millis());
             authenticationStats.updateNotificationCounter();
+            return true;
         }
+        return false;
     }
 
     private boolean isFrrMinimalDurationPassed(long previousMillis) {
@@ -254,9 +269,33 @@ public class AuthenticationStatsCollector {
         return false;
     }
 
+    @Deprecated
     private void persistDataIfNeeded(int userId) {
+        if (Flags.frrDialogEnrollTime()) {
+            Slog.wtf(TAG, "wrong persistDataIfNeeded()");
+            return;
+        }
         AuthenticationStats authenticationStats = mUserAuthenticationStatsMap.get(userId);
         if (authenticationStats.getTotalAttempts() % AUTHENTICATION_UPLOAD_INTERVAL == 0) {
+            mAuthenticationStatsPersister.persistFrrStats(authenticationStats.getUserId(),
+                    authenticationStats.getTotalAttempts(),
+                    authenticationStats.getRejectedAttempts(),
+                    authenticationStats.getEnrollmentNotifications(),
+                    authenticationStats.getLastEnrollmentTime(),
+                    authenticationStats.getLastFrrNotificationTime(),
+                    authenticationStats.getModality());
+        }
+    }
+
+    private void persistDataIfNeeded(int userId, boolean forceUpdate) {
+        if (!Flags.frrDialogEnrollTime()) {
+            Slog.e(TAG, "new persistDataIfNeeded() feature flag not enabled");
+            return;
+        }
+        AuthenticationStats authenticationStats = mUserAuthenticationStatsMap.get(userId);
+        if (forceUpdate
+                || authenticationStats.getTotalAttempts() % AUTHENTICATION_UPLOAD_INTERVAL
+                == 0) {
             mAuthenticationStatsPersister.persistFrrStats(authenticationStats.getUserId(),
                     authenticationStats.getTotalAttempts(),
                     authenticationStats.getRejectedAttempts(),
