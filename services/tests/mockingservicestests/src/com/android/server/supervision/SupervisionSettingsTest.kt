@@ -39,7 +39,6 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.time.Duration
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -248,7 +247,6 @@ class SupervisionSettingsTest {
     }
 
     @Test
-    @Ignore("b/469747226") // TODO(b/469747226): Fix and re-enable.
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     fun loadUserData_withMixedPolicyIdentifiers_loadsKnownPoliciesCorrectly() {
         writeSupervisionSettingsFrom(R.xml.supervision_user_data_v0)
@@ -256,18 +254,25 @@ class SupervisionSettingsTest {
         mSupervisionSettings.loadUserData()
 
         val userData = mSupervisionSettings.getUserData(1)
-        assertThat(userData.policies.values).containsExactly(TEST_PACKAGE_POLICY)
+        assertThat(userData.policies.getPolicies()).containsExactly(TEST_PACKAGE_POLICY)
     }
 
     @Test
-    @Ignore("b/469747226") // TODO(b/469747226): Fix and re-enable.
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     fun loadUserData_withUnknownTag_skipsTagAndLoadsCorrectly() {
         writeSupervisionSettingsFrom(R.xml.supervision_user_data_malformed_v0)
 
         mSupervisionSettings.loadUserData()
 
-        mSupervisionSettings.getUserData(1).checkUserData(true, "package1", true, BUNDLE_1, true)
+        mSupervisionSettings
+            .getUserData(1)
+            .checkUserData(
+                /* enabled= */ true,
+                /* appPackage= */ "package1",
+                /* lockScreenEnabled= */ true,
+                /* lockScreenOptions= */ BUNDLE_1,
+                /* escrowTokenRequired= */ false,
+            )
     }
 
     private fun writeSupervisionSettingsFrom(@XmlRes resId: Int) {

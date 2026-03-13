@@ -351,14 +351,12 @@ public class SupervisionSettings {
         data.supervisionAppPackage = "".equals(appPackage) ? null : appPackage;
         data.supervisionLockScreenEnabled =
                 parser.getAttributeBoolean(null, KEY_LOCK_SCREEN_ENABLED);
-        data.escrowTokenRequired = parser.getAttributeBoolean(null, KEY_ESCROW_TOKEN_REQUIRED);
+        data.escrowTokenRequired =
+                parser.getAttributeBoolean(null, KEY_ESCROW_TOKEN_REQUIRED, false);
 
-        final int depth = parser.getDepth();
-        while (XmlUtils.nextElementWithin(parser, depth)) {
+        final int outerDepth = parser.getDepth();
+        while (XmlUtils.nextElementWithin(parser, outerDepth)) {
             final String tagName = parser.getName();
-            if (tagName == null) {
-                continue;
-            }
             switch (tagName) {
                 case KEY_LOCK_SCREEN_OPTIONS ->
                         data.supervisionLockScreenOptions =
@@ -369,6 +367,14 @@ public class SupervisionSettings {
                         parsePolicies(parser, data);
                     }
                 }
+                default -> {
+                    if (Flags.enableSupervisionManagerPolicyApis()) {
+                        Slog.w(
+                                SupervisionLog.TAG,
+                                "Skipping unknown tag in supervision settings: " + tagName);
+                        XmlUtils.skipCurrentTag(parser);
+                    }
+                }
             }
         }
     }
@@ -377,10 +383,21 @@ public class SupervisionSettings {
             throws IOException, XmlPullParserException {
         final int roleHoldersDepth = parser.getDepth();
         while (XmlUtils.nextElementWithin(parser, roleHoldersDepth)) {
-            if (KEY_ROLE_HOLDER.equals(parser.getName())) {
-                final String roleHolder = parser.getAttributeValue(null, "package");
-                if (roleHolder != null) {
-                    data.supervisionRoleHolders.add(roleHolder);
+            final String tagName = parser.getName();
+            switch (tagName) {
+                case KEY_ROLE_HOLDER -> {
+                    final String roleHolder = parser.getAttributeValue(null, "package");
+                    if (roleHolder != null) {
+                        data.supervisionRoleHolders.add(roleHolder);
+                    }
+                }
+                default -> {
+                    if (Flags.enableSupervisionManagerPolicyApis()) {
+                        Slog.w(
+                                SupervisionLog.TAG,
+                                "Skipping unknown tag in role holders list: " + tagName);
+                        XmlUtils.skipCurrentTag(parser);
+                    }
                 }
             }
         }
@@ -434,13 +451,20 @@ public class SupervisionSettings {
     }
 
     private void parsePolicies(TypedXmlPullParser parser, SupervisionUserData data)
-            throws XmlPullParserException, IOException {
+            throws IOException, XmlPullParserException {
         final int policiesDepth = parser.getDepth();
         while (XmlUtils.nextElementWithin(parser, policiesDepth)) {
-            if (parser.getName().equals(KEY_POLICY_HOLDER)) {
-                Policy policy = restorePolicyFromXml(parser);
-                if (policy != null) {
-                    data.policies.add(policy);
+            final String tagName = parser.getName();
+            switch (tagName) {
+                case KEY_POLICY_HOLDER -> {
+                    Policy policy = restorePolicyFromXml(parser);
+                    if (policy != null) {
+                        data.policies.add(policy);
+                    }
+                }
+                default -> {
+                    Slog.w(SupervisionLog.TAG, "Skipping unknown tag in policies list: " + tagName);
+                    XmlUtils.skipCurrentTag(parser);
                 }
             }
         }

@@ -24,10 +24,10 @@
         <unknown_tag>some value</unknown_tag>
         <supervision_lockscreen_options>
             <string name="id">id</string>
-            <number name="key1" value="1" />
+            <int name="key1" value="1" />
             <boolean name="key2" value="true" />
             <string name="key3">value</string>
-            <number name="key4" value="4" />
+            <int name="key4" value="4" />
         </supervision_lockscreen_options>
     </supervision_user_data>
 </supervision_data>
