@@ -216,3 +216,10 @@ flag {
   description: "Guards View#setEnforceThreadChecks"
   bug: "464275874"
 }
+
+flag {
+  name: "no_more_resync"
+  namespace: "window_surfaces"
+  description: "Control whether Choreographer no longer resyncs animnation time."
+  bug: "470321586"
+}
