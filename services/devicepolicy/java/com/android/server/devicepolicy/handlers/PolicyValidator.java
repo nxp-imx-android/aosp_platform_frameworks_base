@@ -26,8 +26,8 @@ import android.app.admin.metadata.LongPolicyMetadata;
 import android.app.admin.metadata.PackagePolicyMetadata;
 import android.app.admin.metadata.PolicyMetadata;
 import android.app.admin.metadata.StringPolicyMetadata;
+import android.content.pm.PackageParser;
 
-import java.lang.Character;
 import java.util.List;
 
 /**
@@ -111,10 +111,9 @@ public abstract class PolicyValidator<T> {
                                 "Unprintable characters are not allowed for policy "
                                         + policy.getId()
                                         + ", the first unprintable character is "
-                                        + value
-                                            .codePoints()
-                                            .filter(Character::isISOControl)
-                                            .findFirst());
+                                        + value.codePoints()
+                                                .filter(Character::isISOControl)
+                                                .findFirst());
                     }
                 }
             };
@@ -133,7 +132,21 @@ public abstract class PolicyValidator<T> {
 
                     PolicySizeVerifier.enforceMaxPackageNameLength(packageName);
 
-                    // TODO(b/475749429): Add package name pattern validation.
+                    String validationError =
+                            PackageParser.validateName(
+                                    packageName,
+                                    /* requireSeparator= */ true,
+                                    /* requireFilename= */ false);
+
+                    if (validationError != null) {
+                        throw new IllegalArgumentException(
+                                "Package name "
+                                        + packageName
+                                        + " is not valid for policy "
+                                        + policy.getId()
+                                        + ", error: "
+                                        + validationError);
+                    }
                 }
             };
 
