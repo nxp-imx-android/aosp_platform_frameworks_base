@@ -145,6 +145,32 @@ public class HubEndpoint {
         void onNotificationCallback(long hubId, int dataFlowId, boolean waking);
     }
 
+    /** Wrapper around DataFlowId that is mappable. */
+    private static final class DataFlowIdWrapper {
+        private final DataFlowId id;
+
+        DataFlowIdWrapper(DataFlowId id) {
+            this.id = id;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof DataFlowIdWrapper)) {
+                return false;
+            }
+            DataFlowIdWrapper that = (DataFlowIdWrapper) o;
+            return id.hubId == that.id.hubId && id.id == that.id.id;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(id.hubId, id.id);
+        }
+    }
+
     /**
      * @return An int array comprised of [majorVersion, minorVersion, patchVersion,
      *     minimumCompatibleMajorVersion] from the native layer.
@@ -408,7 +434,7 @@ public class HubEndpoint {
                         DataFlowId fullDataFlowId = new DataFlowId();
                         fullDataFlowId.hubId = hubId;
                         fullDataFlowId.id = dataFlowId;
-                        DataFlowSink sink = mSinks.get(fullDataFlowId);
+                        DataFlowSink sink = mSinks.get(new DataFlowIdWrapper(fullDataFlowId));
                         if (sink != null) {
                             if (!sink.onNotificationCallback(
                                     DataFlowCallback.SINK_EVENT_READABLE)) {
@@ -429,7 +455,7 @@ public class HubEndpoint {
     private final Map<Integer, DataFlowSource> mSources = new HashMap<>();
 
     /** The sinks associated with this endpoint. */
-    private final Map<DataFlowId, DataFlowSink> mSinks = new HashMap<>();
+    private final Map<DataFlowIdWrapper, DataFlowSink> mSinks = new HashMap<>();
 
     private final IContextHubEndpointCallback mServiceCallback =
             new IContextHubEndpointCallback.Stub() {
@@ -555,7 +581,7 @@ public class HubEndpoint {
                     DataFlowDataConfig config =
                             enableHostSinkFromContext(context, source.getIdentifier());
                     DataFlowSink sink = createDataFlowSink(config, context);
-                    mSinks.put(context.id, sink);
+                    mSinks.put(new DataFlowIdWrapper(context.id), sink);
 
                     Log.d(TAG, "onDataFlowHostSinkRegistered: sink = " + sink);
 
@@ -628,7 +654,7 @@ public class HubEndpoint {
                                     });
                         }
                     } else {
-                        DataFlowSink sink = mSinks.get(dataFlowId);
+                        DataFlowSink sink = mSinks.get(new DataFlowIdWrapper(dataFlowId));
                         if (sink == null) {
                             Log.w(
                                     TAG,
@@ -1481,7 +1507,7 @@ public class HubEndpoint {
     /** @hide */
     void removeSink(DataFlowSinkContext context) {
         native_removeHostSink(mNativeHandle, context.id.hubId, context.id.id);
-        mSinks.remove(context.id);
+        mSinks.remove(new DataFlowIdWrapper(context.id));
     }
 
     private DataFlowDataConfig enableHostSinkFromContext(

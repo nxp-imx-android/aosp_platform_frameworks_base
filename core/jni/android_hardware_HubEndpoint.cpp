@@ -95,7 +95,7 @@ public:
             mNotificationDataHandle(other.mNotificationDataHandle) {}
 
     std::variant<UntypedProducer, VariableDataProducer>& getProducer() {
-        return mProducer;
+        return *mProducer;
     }
 
     AllocatorRegion* getAllocator() {
@@ -121,8 +121,12 @@ public:
         mOffloadSinks.erase(endpointId);
     }
 
+    void reset() {
+        mProducer.reset();
+    }
+
 private:
-    std::variant<UntypedProducer, VariableDataProducer> mProducer;
+    std::optional<std::variant<UntypedProducer, VariableDataProducer>> mProducer;
     AllocatorRegion mAllocator;
     NotificationManager::NotificationDataHandle mNotificationDataHandle;
     std::optional<DataFlowId> mDataFlowId;
@@ -135,7 +139,10 @@ public:
     SinkWrapper(std::variant<UntypedConsumer, VariableDataConsumer>&& consumer,
                 DataFlowId dataFlowId, EndpointId sourceId)
           : mConsumer(std::move(consumer)), mDataFlowId(dataFlowId), mSourceId(sourceId) {}
-    SinkWrapper(SinkWrapper&& other) : mConsumer(std::move(other.mConsumer)) {}
+    SinkWrapper(SinkWrapper&& other)
+          : mConsumer(std::move(other.mConsumer)),
+            mDataFlowId(other.mDataFlowId),
+            mSourceId(other.mSourceId) {}
 
     std::variant<UntypedConsumer, VariableDataConsumer>& getConsumer() {
         return mConsumer;
@@ -270,21 +277,35 @@ public:
         }
 
         auto dataFlowId = sourceWrapper->getDataFlowId();
+        size_t regionRefCnt = 0;
         if (dataFlowId.has_value()) {
             pw::Status status =
                     mNotificationManager->removeHostProducerDataFlow(dataFlowId.value().id);
             if (!status.ok()) {
                 ALOGE("removeHostProducerDataFlow: status=%s", status.str());
             }
+            // Destroy the producer to ensure that any resources are released (including sink
+            // descriptors) before any shared memory region allocators are destroyed and the regions
+            // are unmapped.
+            // NOTE: We could ideally call stop() on the producer, then wait for the consumers to
+            // gracefully exist, however that is not strictly necessary.
+            sourceWrapper->reset();
+            auto result = mRegionManager.unlinkHostProducerDataFlow(dataFlowId.value().id);
+            if (!result.ok()) {
+                ALOGE("unlinkHostProducerDataFlow: status=%s", status.str());
+            }
+            regionRefCnt = result.value();
         }
 
         if (doErase) {
             mRegionIdToSource.erase(regionId);
         }
 
-        pw::Status status = mRegionManager.unmapHostProducerRegion(regionId);
-        if (!status.ok()) {
-            ALOGE("unmapHostProducerRegion: regionId=%d, status=%s", regionId, status.str());
+        if (regionRefCnt == 0) {
+            pw::Status status = mRegionManager.unmapHostProducerRegion(regionId);
+            if (!status.ok()) {
+                ALOGE("unmapHostProducerRegion: regionId=%d, status=%s", regionId, status.str());
+            }
         }
     }
 
@@ -325,6 +346,10 @@ public:
             ALOGE("disableHostConsumer: dataFlowId.hubId=%" PRId64 ", dataFlowId.id=%d, status=%s",
                   dataFlowId.hubId, dataFlowId.id, status.str());
         }
+
+        // Disable the consumer instance to ensure that it doesn't access shared memory after it
+        // is unmapped.
+        std::visit([](auto& consumer) { consumer.disable(); }, sinkWrapper->getConsumer());
 
         if (doErase) {
             // NOTE: This points into mDataFlowIdToSink, so erase it first.
