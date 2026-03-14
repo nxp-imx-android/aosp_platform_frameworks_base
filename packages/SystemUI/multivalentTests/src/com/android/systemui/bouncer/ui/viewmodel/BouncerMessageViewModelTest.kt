@@ -28,6 +28,7 @@ import androidx.test.filters.SmallTest
 import com.android.internal.widget.LockPatternUtils
 import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE
 import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE
+import com.android.systemui.Flags.FLAG_STRONG_AUTH_REQUIRED_AFTER_SIGN_OUT_MESSAGE_FIX
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.data.repository.fakeAccessibilityRepository
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
@@ -73,6 +74,7 @@ import com.android.systemui.res.R
 import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDeviceRepository
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
+import com.android.systemui.user.data.repository.userSwitcherRepository
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import kotlin.time.Duration
@@ -109,6 +111,7 @@ data class Params(
     val deviceUpdatedString: String,
     val tooManyAttemptsString: String,
     val afterRestartString: String,
+    val afterSignOutString: String,
     val afterTimeoutString: String,
     val afterLockoutString: String,
     val unattendedUpdateString: String,
@@ -131,6 +134,7 @@ private val paramsByMethod =
                 deviceUpdatedString = "Device updated. Enter PIN to continue.",
                 tooManyAttemptsString = "PIN is required after too many attempts",
                 afterRestartString = "PIN is required after device restarts",
+                afterSignOutString = "PIN is required to sign in",
                 afterTimeoutString = "Added security required. PIN not used for a while.",
                 afterLockoutString = "PIN is required after lockdown",
                 unattendedUpdateString = "PIN required for additional security",
@@ -150,6 +154,7 @@ private val paramsByMethod =
                 deviceUpdatedString = "Device updated. Draw pattern to continue.",
                 tooManyAttemptsString = "Pattern is required after too many attempts",
                 afterRestartString = "Pattern is required after device restarts",
+                afterSignOutString = "Pattern is required to sign in",
                 afterTimeoutString = "Added security required. Pattern not used for a while.",
                 afterLockoutString = "Pattern is required after lockdown",
                 unattendedUpdateString = "Pattern required for additional security",
@@ -167,6 +172,7 @@ private val paramsByMethod =
                 deviceUpdatedString = "Device updated. Enter password to continue.",
                 tooManyAttemptsString = "Password is required after too many attempts",
                 afterRestartString = "Password is required after device restarts",
+                afterSignOutString = "Password is required to sign in",
                 afterTimeoutString = "Added security required. Password not used for a while.",
                 afterLockoutString = "Password is required after lockdown",
                 unattendedUpdateString = "Password required for additional security",
@@ -220,6 +226,9 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
 
     private val afterRestartString
         get() = params.afterRestartString
+
+    private val afterSignOutString
+        get() = params.afterSignOutString
 
     private val afterTimeoutString
         get() = params.afterTimeoutString
@@ -416,6 +425,25 @@ class BouncerMessageViewModelTest : SysuiTestCase() {
                         fpOrCredString,
                         "Added security required. Device wasn’t unlocked for a while.",
                     ),
+            )
+        }
+
+    @EnableFlags(FLAG_STRONG_AUTH_REQUIRED_AFTER_SIGN_OUT_MESSAGE_FIX)
+    @Test
+    fun defaultMessage_mapsToDeviceEntryRestrictionReason_whenUserNotUnlockedSinceSignOut() =
+        testScope.runTest {
+            kosmos.fakeUserRepository.setSelectedUserInfo(PRIMARY_USER)
+            kosmos.userSwitcherRepository.isUserSwitchingMustGoThroughLoginScreen = true
+            kosmos.fakeFingerprintPropertyRepository.supportsSideFps()
+            kosmos.fakeBiometricSettingsRepository.setIsFingerprintAuthEnrolledAndEnabled(true)
+            kosmos.fakeBiometricSettingsRepository.setIsFingerprintAuthCurrentlyAllowed(true)
+            kosmos.fakeTrustRepository.setCurrentUserTrustManaged(false)
+            kosmos.fakeBiometricSettingsRepository.setIsFaceAuthEnrolledAndEnabled(false)
+            runCurrent()
+
+            verifyMessagesForAuthFlags(
+                LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_BOOT to
+                    Pair(enterCredString, afterSignOutString)
             )
         }
 

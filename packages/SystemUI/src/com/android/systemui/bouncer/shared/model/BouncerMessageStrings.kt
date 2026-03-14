@@ -189,6 +189,16 @@ object BouncerMessageStrings {
         }
     }
 
+    fun authRequiredToSignIn(securityMode: AuthenticationMethodModel): BouncerMessagePair {
+        return when (securityMode) {
+            Pattern -> Pair(patternDefaultMessage(false), R.string.kg_prompt_reason_signin_pattern)
+            Password ->
+                Pair(passwordDefaultMessage(false), R.string.kg_prompt_reason_signin_password)
+            Pin -> Pair(pinDefaultMessage(false), R.string.kg_prompt_reason_signin_pin)
+            else -> EmptyMessage
+        }
+    }
+
     fun authRequiredAfterAdminLockdown(
         securityMode: AuthenticationMethodModel
     ): BouncerMessagePair {
