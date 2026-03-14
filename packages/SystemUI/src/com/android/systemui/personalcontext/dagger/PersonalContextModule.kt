@@ -19,6 +19,8 @@ package com.android.systemui.personalcontext.dagger
 import android.app.Service
 import android.content.Context
 import android.service.personalcontext.PersonalContextManager
+import com.android.systemui.CoreStartable
+import com.android.systemui.personalcontext.AutofillAttributionStartable
 import com.android.systemui.personalcontext.AutofillRendererService
 import com.android.systemui.personalcontext.ComposeViewFactory
 import com.android.systemui.personalcontext.ComposeViewFactoryImpl
@@ -46,6 +48,15 @@ interface PersonalContextModule {
     @IntoMap
     @ClassKey(AutofillRendererService::class)
     fun bindAutofillRenderService(service: AutofillRendererService): Service
+
+    /**
+     * Binds the {@link CoreStartable} that listens to the autofill attribution broadcast and calls
+     * into {@link PersonalContextManager}.
+     */
+    @Binds
+    @IntoMap
+    @ClassKey(AutofillAttributionStartable::class)
+    fun bindAutofillAttributionStartable(impl: AutofillAttributionStartable): CoreStartable
 
     companion object {
         @Provides
