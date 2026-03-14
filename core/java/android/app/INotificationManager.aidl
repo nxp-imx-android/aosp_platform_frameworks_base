@@ -283,6 +283,8 @@ interface INotificationManager
     oneway void requestSystemAdjustments(in List<Adjustment> adjustments);
 
     NotificationRule addNotificationRule(int userId, in NotificationRule rule, int position);
+    NotificationRule updateNotificationRule(int userId, in NotificationRule rule);
+    boolean removeNotificationRule(int userId, int ruleId);
     ParceledListSlice getNotificationRules(in INotificationListener token, int userId);
     NotificationRule getNotificationRule(int userId, int ruleId);
 }

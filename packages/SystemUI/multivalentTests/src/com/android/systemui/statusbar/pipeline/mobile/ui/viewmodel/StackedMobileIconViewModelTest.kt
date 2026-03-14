@@ -64,7 +64,7 @@ class StackedMobileIconViewModelTest : SysuiTestCase() {
         }
 
     private val Kosmos.underTest: StackedMobileIconViewModelImpl by Fixture {
-        stackedMobileIconViewModelImpl
+        stackedMobileIconViewModelFactoryImpl.create()
     }
 
     @Before

@@ -17,6 +17,7 @@
 package com.android.settingslib.metadata
 
 import android.content.Context
+import android.content.Intent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -32,7 +33,7 @@ fun PreferenceScreenMetadata.getPreferenceScreenTitle(context: Context): CharSeq
 
 
 /** Returns the preference purpose */
-fun PreferenceMetadata.getPreferencePurpose(context: Context) : CharSequence? =
+fun PreferenceMetadata.getPreferencePurpose(context: Context): CharSequence? =
     context.getString(purpose)
 
 /** Returns the preference title. */
@@ -98,4 +99,42 @@ suspend fun <T> usePreferenceHierarchyScope(block: suspend CoroutineScope.() -> 
     } finally {
         scope.cancel()
     }
+}
+
+/**
+ * Returns a safe launch intent for the given metadata.
+ *
+ * If the screenMetadata provides a custom intent, this function wraps it in the
+ * Settings trampoline to ensure it can be launched by external callers
+ * without requiring internal platform permissions.
+ */
+fun PreferenceScreenMetadata.getTrampolinedLaunchIntent(
+    context: Context,
+    metadata: PreferenceMetadata?
+): Intent? {
+    val launchTarget = if (this != metadata) metadata else null
+    val screenLaunchIntent = this.getLaunchIntent(context, launchTarget)
+
+    if (screenLaunchIntent != null &&
+        screenLaunchIntent.action != PreferenceScreenMetadata.LAUNCH_SETTINGS_PAGES_ACTION
+    ) {
+
+        return Intent(PreferenceScreenMetadata.LAUNCH_SETTINGS_PAGES_ACTION).apply {
+            setPackage("com.android.settings")
+            putExtra(PreferenceScreenMetadata.EXTRA_SCREEN_KEY, this@getTrampolinedLaunchIntent.key)
+            if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
+                putExtra(
+                    PreferenceScreenMetadata.EXTRA_SCREEN_ARGS,
+                    this@getTrampolinedLaunchIntent.keyParameters?.toBundle()
+                )
+            } else {
+                putExtra(
+                    PreferenceScreenMetadata.EXTRA_SCREEN_ARGS,
+                    this@getTrampolinedLaunchIntent.arguments
+                )
+            }
+        }
+    }
+
+    return screenLaunchIntent
 }

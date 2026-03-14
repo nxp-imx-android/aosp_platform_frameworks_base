@@ -33,7 +33,17 @@ public interface AgentAuthServiceInternal {
     boolean isAgentAuthorized(@UserIdInt int userId, int deviceId, DeviceId companionDeviceId);
 
     /**
-     * Checks if the agent can perform automation at this time using the local
+     * Checks if the local agent can perform automation at this time using the local
+     * associationId.
+     *
+     * @param userId user id
+     * @param deviceId VMD device id of the agent connection
+     * @return current status
+     */
+    boolean isAgentAuthorizedByDeviceId(@UserIdInt int userId, int deviceId);
+
+    /**
+     * Checks if the remote agent can perform automation at this time using the local
      * associationId.
      *
      * @param userId user id
@@ -43,7 +53,7 @@ public interface AgentAuthServiceInternal {
     boolean isAgentAuthorizedByAssociationId(@UserIdInt int userId, int associationId);
 
     /**
-     * Directly set the authorization status of an existing session.
+     * Directly set the authorization status of an existing remote session.
      *
      * This will always return false and perform no action unless the build is debuggable.
      *
@@ -52,5 +62,18 @@ public interface AgentAuthServiceInternal {
      * @param authorized override value
      * @return current status
      */
-    boolean setOverride(@UserIdInt int userId, int associationId, boolean authorized);
+    boolean setOverrideForAssociationId(@UserIdInt int userId,
+            int associationId, boolean authorized);
+    /**
+     * Directly set the authorization status of an existing local session.
+     *
+     * This will always return false and perform no action unless the build is debuggable.
+     *
+     * @param userId user id
+     * @param deviceId VDM device id of the agent connection
+     * @param authorized override value
+     * @return current status
+     */
+    boolean setOverrideForDeviceId(@UserIdInt int userId,
+            int deviceId, boolean authorized);
 }

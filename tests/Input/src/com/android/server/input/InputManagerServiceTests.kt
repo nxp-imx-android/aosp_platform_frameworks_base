@@ -32,6 +32,7 @@ import android.os.PermissionEnforcer
 import android.os.SystemClock
 import android.os.test.FakePermissionEnforcer
 import android.os.test.TestLooper
+import android.platform.test.annotations.DisabledOnRavenwood
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.Presubmit
 import android.platform.test.flag.junit.SetFlagsRule
@@ -76,6 +77,7 @@ import org.mockito.stubbing.OngoingStubbing
  * Build/Install/Run: atest InputTests:InputManagerServiceTests
  */
 @Presubmit
+@DisabledOnRavenwood(reason = "Static mocking in bivalent tests is tricky", bug = 310268946)
 class InputManagerServiceTests {
 
     companion object {

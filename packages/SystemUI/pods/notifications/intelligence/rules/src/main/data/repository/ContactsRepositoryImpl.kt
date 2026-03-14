@@ -21,6 +21,9 @@ import android.provider.ContactsContract
 import androidx.core.net.toUri
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.log.LogBuffer
+import com.android.systemui.log.core.Logger
+import com.android.systemui.notifications.intelligence.rules.shared.NotificationRulesLog
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -29,8 +32,12 @@ import kotlinx.coroutines.withContext
 @SysUISingleton
 class ContactsRepositoryImpl
 @Inject
-constructor(@Background private val backgroundDispatcher: CoroutineDispatcher) :
-    ContactsRepository {
+constructor(
+    @Background private val backgroundDispatcher: CoroutineDispatcher,
+    @NotificationRulesLog logBuffer: LogBuffer,
+) : ContactsRepository {
+    private val logger = Logger(logBuffer, "ContactsRepository")
+
     override suspend fun fetchContacts(
         searchQuery: String,
         contentResolver: ContentResolver,
@@ -78,7 +85,7 @@ constructor(@Background private val backgroundDispatcher: CoroutineDispatcher) :
                         }
                     }
             } catch (e: Throwable) {
-                // TODO: b/478225883 - Error logging.
+                logger.e("Unable to fetch contacts", e)
             }
 
             foundContacts.toList()

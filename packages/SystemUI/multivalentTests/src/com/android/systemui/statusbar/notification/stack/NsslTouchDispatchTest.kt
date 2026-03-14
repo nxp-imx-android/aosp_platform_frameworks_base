@@ -356,6 +356,67 @@ class NsslTouchDispatchTest : SysuiTestCase() {
             assertThat(receivedEvents).hasSize(2)
         }
 
+    // region Side effect tests
+
+    @Test
+    @EnableFlags(FLAG_NSSL_TOUCH_DISPATCH_FIX)
+    fun verticalSwipe_insideGuts() {
+        var isTouchInsideGuts = false
+        underTest.setCurrentGestureInGutsConsumer { isTouchInsideGuts = it }
+
+        // When: the touch falls inside an open guts View
+        controller.areTouchesInsideGuts = true
+
+        onDownEvent(pointerId = 0, x = 100f, y = 100f)
+        assertThat(isTouchInsideGuts).isTrue()
+
+        onMoveEvent(pointerId = 0, x = 100f, y = 200f)
+        assertThat(isTouchInsideGuts).isTrue()
+
+        onUpEvent()
+        assertThat(isTouchInsideGuts).isTrue()
+    }
+
+    @Test
+    @EnableFlags(FLAG_NSSL_TOUCH_DISPATCH_FIX)
+    fun verticalSwipe_touchStartsInsideGutsThenLeaves() {
+        var isTouchInsideGuts = false
+        underTest.setCurrentGestureInGutsConsumer { isTouchInsideGuts = it }
+
+        controller.areTouchesInsideGuts = true
+
+        onDownEvent(pointerId = 0, x = 100f, y = 100f)
+        assertThat(isTouchInsideGuts).isTrue()
+
+        controller.areTouchesInsideGuts = false
+
+        onMoveEvent(pointerId = 0, x = 100f, y = 200f)
+        assertThat(isTouchInsideGuts).isTrue()
+
+        onUpEvent()
+        assertThat(isTouchInsideGuts).isFalse()
+    }
+
+    @Test
+    @EnableFlags(FLAG_NSSL_TOUCH_DISPATCH_FIX)
+    fun verticalSwipe_touchOutsideGuts() {
+        var isTouchInsideGuts = false
+        underTest.setCurrentGestureInGutsConsumer { isTouchInsideGuts = it }
+
+        onDownEvent(pointerId = 0, x = 100f, y = 100f)
+        assertThat(isTouchInsideGuts).isFalse()
+
+        controller.areTouchesInsideGuts = false
+
+        onMoveEvent(pointerId = 0, x = 100f, y = 200f)
+        assertThat(isTouchInsideGuts).isFalse()
+
+        onUpEvent()
+        assertThat(isTouchInsideGuts).isFalse()
+    }
+
+    // endregion
+
     private fun injectTestDependencies() {
         // Migrate these to Kosmos one day.
         mDependency.injectMockDependency(ShadeController::class.java)
@@ -548,8 +609,9 @@ private fun collectDispatchEvents(
 }
 
 /**
- * An instance of [NotificationStackScrollLayoutController] that overrides dispatching touches to
- * the provided sibling.
+ * An instance of [NotificationStackScrollLayoutController] that changes some behavior for testing:
+ * - overrides dispatching touches to the provided sibling
+ * - creates a convenience method to fake the responses if [isTouchInGutsView]
  */
 private class TestController(nssl: NotificationStackScrollLayout, private val sibling: ViewGroup) :
     NotificationStackScrollLayoutController(
@@ -604,12 +666,18 @@ private class TestController(nssl: NotificationStackScrollLayout, private val si
     ) {
     val capturedEvents = ArrayList<MotionEvent>()
 
+    var areTouchesInsideGuts = false
+
     override fun sendTouchToSceneFramework(ev: MotionEvent?) {
         // Make a deep copy, because MotionEvents are mutable and recycled by the NSSL.
         val copy = MotionEvent.obtain(ev)
         capturedEvents.add(copy)
         // don't call super
         sibling.dispatchTouchEvent(copy)
+    }
+
+    override fun isTouchInGutsView(event: MotionEvent?): Boolean {
+        return areTouchesInsideGuts
     }
 }
 

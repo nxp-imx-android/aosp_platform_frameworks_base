@@ -21,6 +21,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.Slog;
 
 import libcore.util.NativeAllocationRegistry;
@@ -41,6 +42,7 @@ import libcore.util.NativeAllocationRegistry;
  * If in doubt, consult with the Android Framework Input team about your InputChannel usage.
  * @hide
  */
+@RavenwoodKeepWholeClass
 public final class InputChannel implements Parcelable {
     private static final String TAG = "InputChannel";
 

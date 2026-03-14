@@ -466,4 +466,26 @@ easier.
         <item name="android:windowDisablePreview">true</item>
         <item name="android:windowAnimationStyle">@android:style/Animation.Activity</item>
     </style>
+
+    <!-- App Lock font styles -->
+    <style name="TextAppearance.DeviceDefault.AppLock.Title" parent="TextAppearance.DeviceDefault.Headline">
+        <item name="fontFamily">variable-headline-small</item>
+        <item name="textSize">@dimen/app_lock_font_size_large</item>
+    </style>
+
+    <style name="TextAppearance.DeviceDefault.AppLock.Body" parent="TextAppearance.DeviceDefault">
+        <item name="fontFamily">variable-body-medium</item>
+        <item name="textSize">@dimen/app_lock_font_size_medium</item>
+    </style>
+
+    <style name="TextAppearance.DeviceDefault.AppLock.InfoHeader" parent="TextAppearance.DeviceDefault">
+        <item name="fontFamily">variable-label-large-emphasized</item>
+        <item name="textSize">@dimen/app_lock_font_size_medium</item>
+    </style>
+
+    <style name="TextAppearance.DeviceDefault.AppLock.ItemText" parent="TextAppearance.DeviceDefault">
+        <item name="fontFamily">variable-title-small</item>
+        <item name="textFontWeight">@integer/app_lock_font_weight_medium</item>
+        <item name="textSize">@dimen/app_lock_font_size_medium</item>
+    </style>
 </resources>

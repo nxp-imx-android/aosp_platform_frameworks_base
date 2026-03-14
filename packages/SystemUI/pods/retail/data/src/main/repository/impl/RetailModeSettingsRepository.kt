@@ -18,12 +18,12 @@ package com.android.systemui.retail.data.repository.impl
 
 import android.database.ContentObserver
 import android.provider.Settings
-import com.android.systemui.common.coroutine.ConflatedCallbackFlow.conflatedCallbackFlow
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.retail.data.repository.RetailModeRepository
 import com.android.systemui.util.settings.GlobalSettings
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope

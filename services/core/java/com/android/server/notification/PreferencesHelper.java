@@ -222,6 +222,7 @@ public class PreferencesHelper implements RankingConfig {
     private final AppOpsManager mAppOps;
     private final ManagedServices.UserProfiles mUserProfiles;
     private final UriGrantsManagerInternal mUgmInternal;
+    private NotificationManagerPrivate mNmPrivate;
 
     private SparseBooleanArray mBadgingEnabled;
     private SparseBooleanArray mBubblesEnabled;
@@ -241,7 +242,8 @@ public class PreferencesHelper implements RankingConfig {
             NotificationChannelLogger notificationChannelLogger,
             AppOpsManager appOpsManager, ManagedServices.UserProfiles userProfiles,
             UriGrantsManagerInternal ugmInternal,
-            boolean showReviewPermissionsNotification, Clock clock) {
+            boolean showReviewPermissionsNotification, Clock clock,
+            NotificationManagerPrivate nmPrivate) {
         mContext = context;
         mZenModeHelper = zenHelper;
         mRankingHandler = rankingHandler;
@@ -256,6 +258,7 @@ public class PreferencesHelper implements RankingConfig {
         mIsMediaNotificationFilteringEnabled = context.getResources()
                 .getBoolean(R.bool.config_quickSettingsShowMediaPlayer);
         mClock = clock;
+        mNmPrivate = nmPrivate;
         XML_VERSION = 4;
 
         updateBadgingEnabled();
@@ -693,11 +696,15 @@ public class PreferencesHelper implements RankingConfig {
     }
 
     @GuardedBy("mLock")
-    private NotificationChannel addReservedChannelLocked(PackagePreferences p, String channelId,
-            String label) {
+    private @NonNull NotificationChannel addReservedChannelLocked(PackagePreferences p,
+            String channelId, String label, String emoji) {
         NotificationChannel channel = new NotificationChannel(channelId, label, IMPORTANCE_LOW);
         if (android.app.Flags.nmContextualDisplay()) {
             channel.setIsBundleChannel(true);
+        }
+        if (android.app.Flags.nmContextualDisplayLaunch()) {
+            channel.setIsBundleChannel(true);
+            channel.setEmoji(emoji);
         }
         p.channels.put(channelId, channel);
         invalidateNotificationChannelCache();
@@ -1276,6 +1283,13 @@ public class PreferencesHelper implements RankingConfig {
             //only settable on creation
             updatedChannel.setIsBundleChannel(channel.isBundleChannel());
 
+            if (android.app.Flags.nmContextualDisplayLaunch()) {
+                // Only the OS/user can update bundle channel settings
+                if (!fromSystemOrSystemUi && channel.isBundleChannel()) {
+                    return;
+                }
+            }
+
             if (updatedChannel.getLockscreenVisibility() == Notification.VISIBILITY_PUBLIC) {
                 updatedChannel.setLockscreenVisibility(
                         NotificationListenerService.Ranking.VISIBILITY_NO_OVERRIDE);
@@ -1453,7 +1467,18 @@ public class PreferencesHelper implements RankingConfig {
             if (channelId == null) {
                 return null;
             }
-            return addReservedChannelLocked(r, channelId, label);
+            return addReservedChannelLocked(r, channelId, label, null);
+        }
+    }
+
+    public @NonNull NotificationChannel createReservedChannel(String pkg, int uid, String channelId,
+            String label, String emoji) {
+        Objects.requireNonNull(pkg);
+        synchronized (mLock) {
+            PackagePreferences r = getOrCreatePackagePreferencesLocked(pkg, uid);
+            NotificationChannel channel = addReservedChannelLocked(r, channelId, label, emoji);
+            mNmPrivate.triggerPolicyFileWrite();
+            return channel;
         }
     }
 
@@ -2904,7 +2929,6 @@ public class PreferencesHelper implements RankingConfig {
                                         R.string.default_notification_channel_label));
                         updated = true;
                     }
-                    // TODO (b/346396459): Localize all reserved channels
                 }
             }
             if (updated) {

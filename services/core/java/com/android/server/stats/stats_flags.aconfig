@@ -57,6 +57,13 @@ flag {
 }
 
 flag {
+    name: "add_keystore_per_uid_puller"
+    namespace: "statsd"
+    description: "Adds keystore per-UID pullers"
+    bug: "440046237"
+}
+
+flag {
     name: "add_webview_pin_quota_puller"
     namespace: "webview"
     description: "Adds webview_pin_quota atom logging"

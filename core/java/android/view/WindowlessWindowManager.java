@@ -108,6 +108,7 @@ public class WindowlessWindowManager implements IWindowSession {
 
     public void setConfiguration(Configuration configuration) {
         mConfiguration.setTo(configuration);
+        dispatchStateToClients();
     }
 
     InputTransferToken getInputTransferToken(IBinder window) {
@@ -713,20 +714,7 @@ public class WindowlessWindowManager implements IWindowSession {
 
     public void setInsetsState(InsetsState state) {
         mInsetsState = state;
-        for (State s : mStateForWindow.values()) {
-            try {
-                mTmpFrames.frame.set(0, 0, s.mParams.width, s.mParams.height);
-                mTmpFrames.displayFrame.set(mTmpFrames.frame);
-                mTmpConfig.setConfiguration(mConfiguration, mConfiguration);
-                final WindowRelayoutResult layout = new WindowRelayoutResult(mTmpFrames, mTmpConfig,
-                        state, null);
-                layout.syncSeqId = Integer.MAX_VALUE;
-                s.mClient.resized(layout, false /* reportDraw */, false /* forceLayout */,
-                        s.mDisplayId, false /* syncWithBuffers */, false /* dragResizing */);
-            } catch (RemoteException e) {
-                // Too bad
-            }
-        }
+        dispatchStateToClients();
     }
 
     @Override
@@ -791,6 +779,33 @@ public class WindowlessWindowManager implements IWindowSession {
             try {
                 mParentInterface.updateParams(params);
             } catch (RemoteException e) {
+            }
+        }
+    }
+
+    /** Notifies clients of changes to {@code mConfiguration} and {@code mInsetsState}. */
+    private void dispatchStateToClients() {
+        if (mInsetsState == null) {
+            return;
+        }
+
+        for (State s : mStateForWindow.values()) {
+            try {
+                mTmpFrames.frame.set(0, 0, s.mParams.width, s.mParams.height);
+                mTmpFrames.displayFrame.set(mTmpFrames.frame);
+                mTmpConfig.setConfiguration(mConfiguration, mConfiguration);
+                final WindowRelayoutResult layout =
+                        new WindowRelayoutResult(mTmpFrames, mTmpConfig, mInsetsState, null);
+                layout.syncSeqId = Integer.MAX_VALUE;
+                s.mClient.resized(
+                        layout,
+                        false /* reportDraw */,
+                        false /* forceLayout */,
+                        s.mDisplayId,
+                        false /* syncWithBuffers */,
+                        false /* dragResizing */);
+            } catch (RemoteException e) {
+                // Too bad
             }
         }
     }

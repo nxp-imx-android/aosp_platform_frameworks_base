@@ -76,6 +76,7 @@ per-file *NativeApplication* = file:/libs/native_activity_thread/OWNERS
 
 # Aconfig Flags
 per-file flags.aconfig = file:/ACTIVITY_MANAGER_OWNERS
+per-file performance_flags.aconfig = file:/PERFORMANCE_OWNERS
 
 # Londoners
 michaelwr@google.com #{LAST_RESORT_SUGGESTION}

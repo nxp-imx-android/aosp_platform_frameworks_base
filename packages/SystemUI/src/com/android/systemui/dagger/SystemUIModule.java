@@ -29,6 +29,7 @@ import com.android.app.displaylib.PerDisplayRepository;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.keyguard.dagger.ClockRegistryModule;
 import com.android.keyguard.dagger.KeyguardBouncerComponent;
+import com.android.personalcontext.ace.visualizer.PersonalContextModule;
 import com.android.systemui.BootCompleteCache;
 import com.android.systemui.BootCompleteCacheImpl;
 import com.android.systemui.CameraProtectionModule;
@@ -101,7 +102,7 @@ import com.android.systemui.notetask.NoteTaskModule;
 import com.android.systemui.people.PeopleModule;
 import com.android.systemui.personalcontext.AutofillRendererService;
 import com.android.systemui.personalcontext.SysuiVisualizerService;
-import com.android.systemui.personalcontext.dagger.PersonalContextModule;
+import com.android.systemui.personalcontext.dagger.PersonalContextModuleCompat;
 import com.android.systemui.plugins.BcSmartspaceConfigPlugin;
 import com.android.systemui.plugins.BcSmartspaceDataPlugin;
 import com.android.systemui.privacy.PrivacyModule;
@@ -266,6 +267,7 @@ import javax.inject.Named;
         PeopleHubModule.class,
         PeopleModule.class,
         PersonalContextModule.class,
+        PersonalContextModuleCompat.class,
         PluginModule.class,
         PolicyModule.class,
         PrivacyModule.class,

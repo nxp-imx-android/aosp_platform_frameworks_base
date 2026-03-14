@@ -181,13 +181,13 @@ public class InstalldProcessor implements FileOperationProcessor {
                 case FileOperationRequest.OPERATION_MOVE -> {
                     mInstaller.moveAppDataPath(aInfo.volumeUuid, sourcePath.getPath(),
                             destPath.getPath(), userId, appId, aInfo.seInfo, 0,
-                            installdCallback);
+                            ctx.initiatorUid(), installdCallback);
 
                 }
                 case FileOperationRequest.OPERATION_COPY -> {
                     mInstaller.copyAppDataPath(aInfo.volumeUuid, sourcePath.getPath(),
                             destPath.getPath(), userId, appId, aInfo.seInfo, 0,
-                            installdCallback);
+                            ctx.initiatorUid(), installdCallback);
                 }
                 default -> {
                     result.setStatus(FileOperationResult.STATUS_UNKNOWN);

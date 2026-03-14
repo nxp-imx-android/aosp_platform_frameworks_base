@@ -62,7 +62,6 @@ public enum DesktopModeFlags {
     ENABLE_RESIZING_METRICS(Flags::enableResizingMetrics, true),
     ENABLE_TASKBAR_OVERFLOW(Flags::enableTaskbarOverflow, false),
     ENABLE_TASK_STACK_OBSERVER_IN_SHELL(Flags::enableTaskStackObserverInShell, true),
-    ENABLE_WINDOWING_EDGE_DRAG_RESIZE(Flags::enableWindowingEdgeDragResize, true),
     // go/keep-sorted end
     ;
 

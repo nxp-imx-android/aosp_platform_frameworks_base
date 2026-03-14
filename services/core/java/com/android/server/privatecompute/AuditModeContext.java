@@ -136,7 +136,7 @@ class AuditModeContext {
      * returns null if an error occurred.
      */
     public static @NonNull AuditModeContext create() {
-        File folder = getAuditLogFilesDirectory();
+        File folder = new File(Environment.getDataSystemCeDirectory(), AUDIT_LOG_FILES_DIRNAME);
         return new AuditModeContext(
                 getBundleSerializerExecutorService(),
                 getDiskWriterExecutorService(),

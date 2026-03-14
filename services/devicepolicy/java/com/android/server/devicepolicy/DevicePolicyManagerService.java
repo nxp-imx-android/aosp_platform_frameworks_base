@@ -884,6 +884,15 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     ){
         List<PolicyHandler<?>> handlers = new ArrayList<PolicyHandler<?>>();
 
+        // DISALLOW_INSTALL_APPS user restriction
+        handlers.add(
+                new EnumStoredAsBooleanPolicyHandler(
+                        PolicyIdentifier.APP_INSTALL,
+                        dpms.getPolicyDefinitionForUserRestriction(
+                                UserManager.DISALLOW_INSTALL_APPS),
+                        /* trueValue= */ PolicyIdentifier.APP_INSTALL_DISALLOWED,
+                        /* falseValue= */ PolicyIdentifier.APP_INSTALL_ALLOWED));
+
         // EASTER_EGGS is mapped to the DISALLOW_FUN user restriction which expects inverted values
         // (DISALLOW_FUN = false is equal to EASTER_EGGS_ALLOWED and vice versa); that's why
         // DISALLOWED is the `true` value here.
@@ -1337,7 +1346,14 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 }
             } else if (ACTION_PROFILE_OFF_DEADLINE.equals(action)) {
                 Slogf.i(LOG_TAG, "Profile off deadline alarm was triggered");
-                final int userId = getManagedUserId(getMainUserId());
+
+                int userId;
+                if (Flags.addUserInfoInProfileOffDeadlineAlarm()) {
+                    userId = intent.getIntExtra(Intent.EXTRA_USER_HANDLE, -1);
+                } else {
+                    userId = getManagedUserId(getMainUserId());
+                }
+
                 if (userId >= 0) {
                     updatePersonalAppsSuspension(userId);
                 } else {
@@ -20609,6 +20625,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
         final AlarmManager am = mInjector.getAlarmManager();
         final Intent intent = new Intent(ACTION_PROFILE_OFF_DEADLINE);
+        if (Flags.addUserInfoInProfileOffDeadlineAlarm()) {
+            intent.putExtra(Intent.EXTRA_USER_HANDLE, profileUserId);
+        }
         intent.setPackage(mContext.getPackageName());
         // Broadcast alarms sent by system are immutable
         final PendingIntent pi = mInjector.pendingIntentGetBroadcast(

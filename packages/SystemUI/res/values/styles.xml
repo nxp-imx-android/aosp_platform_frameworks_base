@@ -1742,4 +1742,10 @@
         <item name="android:textAppearance">@style/TextAppearance.TileDetailsEntrySubTitle.Active</item>
         <item name="android:textColor">@color/materialColorOnPrimary</item>
     </style>
+
+    <style name="Theme.AttributionDialog" parent="Theme.MaterialComponents.DayNight.Dialog">
+        <item name="android:dialogCornerRadius">28dp</item>
+        <item name="android:windowMinWidthMajor">60%</item>
+        <item name="android:windowMinWidthMinor">100%</item>
+    </style>
 </resources>

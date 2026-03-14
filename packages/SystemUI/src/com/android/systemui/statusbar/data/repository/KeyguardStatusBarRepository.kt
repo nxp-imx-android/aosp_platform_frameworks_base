@@ -18,10 +18,10 @@ package com.android.systemui.statusbar.data.repository
 
 import android.content.Context
 import com.android.internal.R
-import com.android.systemui.common.coroutine.ConflatedCallbackFlow
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.user.data.repository.UserSwitcherRepository
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import dagger.Binds
 import dagger.Module
 import javax.inject.Inject
@@ -49,7 +49,7 @@ constructor(
     userSwitcherRepository: UserSwitcherRepository,
 ) : KeyguardStatusBarRepository {
     private val relevantConfigChanges: Flow<Unit> =
-        ConflatedCallbackFlow.conflatedCallbackFlow {
+        conflatedCallbackFlow {
             val callback =
                 object : ConfigurationController.ConfigurationListener {
                     override fun onSmallestScreenWidthChanged() {

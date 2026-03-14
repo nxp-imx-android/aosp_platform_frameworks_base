@@ -49,6 +49,7 @@ import android.os.InputEventInjectionSync;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.Vibrator;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.Log;
 import android.view.Display;
 import android.view.InputDevice;
@@ -76,6 +77,11 @@ import java.util.concurrent.Executor;
  * Provides information about input devices and available key layouts.
  */
 @SystemService(Context.INPUT_SERVICE)
+@RavenwoodKeepWholeClass(conditional = true, comment = """
+        Need to provide an implementation of IInputManager and initialize with
+        InputManagerGlobal#createTestSession before using any of its methods.
+        The behavior of this class fully depends on the provided IInputManager.
+        """)
 public final class InputManager {
     private static final String TAG = "InputManager";
     // To enable these logs, run: 'adb shell setprop log.tag.InputManager DEBUG' (requires restart)
@@ -1249,6 +1255,24 @@ public final class InputManager {
     @NonNull
     public VirtualGamepad createVirtualGamepad(@NonNull VirtualGamepadConfig config) {
         return mGlobal.createVirtualGamepad(config);
+    }
+
+    /**
+     * Returns a {@link VirtualMouse} to the caller.
+     * See {@link android.hardware.input.VirtualMouseConfig} for additional configurations
+     * available, e.g. display association, vendor id, product id, device name.
+     *
+     * @param config the mouse configuration
+     * @return VirtualMouse a virtual mouse device
+     *
+     * @hide
+     */
+    @TestApi
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
+    @RequiresPermission(Manifest.permission.INJECT_EVENTS)
+    @NonNull
+    public VirtualMouse createVirtualMouse(@NonNull VirtualMouseConfig config) {
+        return mGlobal.createVirtualMouse(config);
     }
 
     /**

@@ -4944,6 +4944,7 @@
   <java-symbol type="dimen" name="importance_ring_anim_max_stroke_width" />
   <java-symbol type="dimen" name="importance_ring_size" />
   <java-symbol type="dimen" name="notification_2025_conversation_icon_badge_size" />
+  <java-symbol type="dimen" name="notification_2025_icon_circle_padding" />
 
   <!-- Intent resolver and share sheet -->
   <java-symbol type="string" name="resolver_personal_tab" />
@@ -6297,6 +6298,9 @@
   <!-- List of packages which should be excluded from transparency based desktop exemptions. -->
   <java-symbol type="array" name="config_desktopTransparentExemptionIgnoreList" />
 
+  <!-- List of activities in the home package which should be allowed in desktop mode. -->
+  <java-symbol type="array" name="config_desktopHomePackageFreeformActivities" />
+
   <!-- Frame rate compatibility value for Wallpaper -->
   <java-symbol type="integer" name="config_wallpaperFrameRateCompatibility" />
 
@@ -6596,4 +6600,7 @@
 
   <!-- Whether the Wear-specific charging experience is enabled -->
   <java-symbol type="bool" name="config_wearChargingExperienceEnabled" />
+
+  <!-- ART Service configuration -->
+  <java-symbol type="array" name="config_pr_dexopt_sync_forced_packages" />
 </resources>

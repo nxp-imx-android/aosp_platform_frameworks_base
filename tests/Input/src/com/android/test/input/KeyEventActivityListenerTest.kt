@@ -16,7 +16,9 @@
 package com.android.test.input
 
 import android.Manifest
+import android.app.Activity
 import android.hardware.input.InputManager
+import android.platform.test.annotations.DisabledOnRavenwood
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.CheckFlagsRule
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
@@ -41,6 +43,10 @@ import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.`when`
 
 @RequiresFlagsEnabled(com.android.hardware.input.Flags.FLAG_KEY_EVENT_ACTIVITY_DETECTION)
+@DisabledOnRavenwood(
+    blockedBy = [Activity::class],
+    reason = "Launching activities with ActivityScenarioRule is unsupported",
+)
 class KeyEventActivityListenerTest {
     private lateinit var inputManager: InputManager
     private lateinit var listener: InputManager.KeyEventActivityListener

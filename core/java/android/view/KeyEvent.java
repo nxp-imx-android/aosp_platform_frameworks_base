@@ -29,6 +29,7 @@ import android.os.Build;
 import android.os.IInputConstants;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.text.method.MetaKeyKeyListener;
 import android.util.Log;
 import android.util.SparseIntArray;
@@ -94,6 +95,7 @@ import java.util.concurrent.TimeUnit;
  * input devices and sources represent keys and buttons.
  * </p>
  */
+@RavenwoodKeepWholeClass
 public class KeyEvent extends InputEvent implements Parcelable {
     /** Key code constant: Unknown key code. */
     public static final int KEYCODE_UNKNOWN         = 0;

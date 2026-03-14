@@ -27,3 +27,13 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "frr_dialog_enroll_time"
+  namespace: "biometrics_framework"
+  description: "This flag is to address the timing of saving into shared preference"
+  bug: "483582188"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}

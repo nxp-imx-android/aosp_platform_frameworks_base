@@ -259,6 +259,7 @@ public class LockTaskController {
      */
     boolean activityBlockedFromFinish(ActivityRecord activity) {
         final Task task = activity.getTask();
+        // Launchable priv-apps can finish.
         if (task.mLockTaskAuth == LOCK_TASK_AUTH_LAUNCHABLE_PRIV || !isRootTask(task)) {
             return false;
         }

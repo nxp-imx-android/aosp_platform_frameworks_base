@@ -92,6 +92,7 @@ import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel.DesktopModeKeyguardChangeListener
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel.DesktopModeOnInsetsChangedListener
 import com.android.wm.shell.windowdecor.common.CaptionVisibilityHelper
+import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
@@ -196,6 +197,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
 
     private val transactionFactory =
         Supplier<SurfaceControl.Transaction> { SurfaceControl.Transaction() }
+    private val decorThemeUtilFactory = DecorThemeUtil.Factory()
     protected val windowDecorByTaskIdSpy = spy(SparseArray<WindowDecorationWrapper>())
 
     protected lateinit var mockitoSession: StaticMockitoSession
@@ -304,6 +306,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
                 mockVeiledTaskResizer,
                 mockMultiDisplayTaskMover,
                 snapController,
+                decorThemeUtilFactory,
             )
         desktopModeWindowDecorViewModel.setSplitScreenController(mockSplitScreenController)
         desktopModeWindowDecorViewModel.setFreeformTaskTransitionStarter(

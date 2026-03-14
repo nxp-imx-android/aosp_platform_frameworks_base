@@ -221,3 +221,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "windowing_sdk"
+    name: "partial_translucent_activity_embedding"
+    description: "Make the bottom most partial translucent ae pair opaque"
+    bug: "491678669"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

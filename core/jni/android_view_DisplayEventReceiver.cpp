@@ -17,7 +17,7 @@
 
 #define LOG_TAG "DisplayEventReceiver"
 
-//#define LOG_NDEBUG 0
+// #define LOG_NDEBUG 0
 
 #include <android_runtime/AndroidRuntime.h>
 #include <android_runtime/Log.h>
@@ -105,8 +105,8 @@ jfloatArray getSupportedRefreshRates(const std::vector<SupportedRefreshRate>& su
 class NativeDisplayEventReceiver : public DisplayEventDispatcher {
 public:
     NativeDisplayEventReceiver(JNIEnv* env, jobject receiverWeak, jobject vsyncEventDataWeak,
-                               const sp<MessageQueue>& messageQueue, jint vsyncSource,
-                               jint eventRegistration, jlong layerHandle);
+                               const sp<MessageQueue>& messageQueue, jint eventRegistration,
+                               jlong layerHandle);
 
     void dispose();
 
@@ -136,10 +136,8 @@ private:
 NativeDisplayEventReceiver::NativeDisplayEventReceiver(JNIEnv* env, jobject receiverWeak,
                                                        jobject vsyncEventDataWeak,
                                                        const sp<MessageQueue>& messageQueue,
-                                                       jint vsyncSource, jint eventRegistration,
-                                                       jlong layerHandle)
+                                                       jint eventRegistration, jlong layerHandle)
       : DisplayEventDispatcher(messageQueue->getLooper(),
-                               static_cast<gui::ISurfaceComposer::VsyncSource>(vsyncSource),
                                static_cast<gui::ISurfaceComposer::EventRegistration>(
                                        eventRegistration),
                                layerHandle != 0 ? sp<IBinder>::fromExisting(
@@ -342,8 +340,7 @@ void NativeDisplayEventReceiver::dispatchHdcpLevelsChanged(PhysicalDisplayId dis
 }
 
 static jlong nativeInit(JNIEnv* env, jclass clazz, jobject receiverWeak, jobject vsyncEventDataWeak,
-                        jobject messageQueueObj, jint vsyncSource, jint eventRegistration,
-                        jlong layerHandle) {
+                        jobject messageQueueObj, jint eventRegistration, jlong layerHandle) {
     sp<MessageQueue> messageQueue = android_os_MessageQueue_getMessageQueue(env, messageQueueObj);
     if (messageQueue == NULL) {
         jniThrowRuntimeException(env, "MessageQueue is not initialized.");
@@ -352,7 +349,7 @@ static jlong nativeInit(JNIEnv* env, jclass clazz, jobject receiverWeak, jobject
 
     sp<NativeDisplayEventReceiver> receiver =
             new NativeDisplayEventReceiver(env, receiverWeak, vsyncEventDataWeak, messageQueue,
-                                           vsyncSource, eventRegistration, layerHandle);
+                                           eventRegistration, layerHandle);
     status_t status = receiver->initialize();
     if (status) {
         String8 message;
@@ -401,7 +398,7 @@ static const JNINativeMethod gMethods[] = {
         /* name, signature, funcPtr */
         {"nativeInit",
          "(Ljava/lang/ref/WeakReference;Ljava/lang/ref/WeakReference;Landroid/os/"
-         "MessageQueue;IIJ)J",
+         "MessageQueue;IJ)J",
          (void*)nativeInit},
         {"nativeGetDisplayEventReceiverFinalizer", "()J",
          (void*)nativeGetDisplayEventReceiverFinalizer},

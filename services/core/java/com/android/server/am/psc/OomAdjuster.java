@@ -449,6 +449,7 @@ public abstract class OomAdjuster {
          * @param app The process that was updated.
          * @param oldProcState The process's state before the update.
          * @param newProcState The process's state after the update.
+         * @param newOomAdj The process's OOM adjustment after the update.
          * @param now Current uptime.
          * @param nowElapsed Current elapsed time.
          * @param forceUpdatePssTime Whether to force a PSS update.
@@ -456,7 +457,7 @@ public abstract class OomAdjuster {
          * @param reportDebugMsgs Whether to report debug messages.
          */
         void onProcStateUpdated(ProcessRecordInternal app, @ProcessState int oldProcState,
-                @ProcessState int newProcState, long now, long nowElapsed,
+                @ProcessState int newProcState, @OomAdjust int newOomAdj, long now, long nowElapsed,
                 boolean forceUpdatePssTime, boolean doingAll, boolean reportDebugMsgs);
 
         /** Notifies when the process group for an application process has been updated. */
@@ -2435,7 +2436,7 @@ public abstract class OomAdjuster {
             }
         }
         mCallback.onProcStateUpdated(state, state.getSetProcState(), state.getCurProcState(),
-                now, nowElapsed, forceUpdatePssTime, doingAll, reportDebugMsgs);
+                state.getCurAdj(), now, nowElapsed, forceUpdatePssTime, doingAll, reportDebugMsgs);
 
         int oldProcState = state.getSetProcState();
         if (state.getSetProcState() != state.getCurProcState()) {

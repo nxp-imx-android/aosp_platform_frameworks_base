@@ -73,6 +73,7 @@ import android.security.authenticationpolicy.AuthenticationPolicyManager;
 import android.security.authenticationpolicy.IAuthenticationPolicyService;
 import android.view.Display;
 import android.view.Surface;
+import android.view.WindowManager;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -142,6 +143,8 @@ public class ComputerControlSessionProcessorTest {
     @Mock
     private ActivityTaskManagerInternal mActivityTaskManagerInternal;
     @Mock
+    private WindowManager mWindowManager;
+    @Mock
     private WindowManagerInternal mWindowManagerInternal;
     @Mock
     private UserManagerInternal mUserManagerInternal;
@@ -210,6 +213,11 @@ public class ComputerControlSessionProcessorTest {
         Context context = spy(new ContextWrapper(
                 InstrumentationRegistry.getInstrumentation().getTargetContext()));
         doReturn(context).when(context).createContextAsUser(any(UserHandle.class), anyInt());
+
+        final Context displayContext = spy(new ContextWrapper(
+                InstrumentationRegistry.getInstrumentation().getTargetContext()));
+        doReturn(displayContext).when(context).createDisplayContext(any());
+        doReturn(mWindowManager).when(displayContext).getSystemService(WindowManager.class);
 
         when(context.getSystemService(Context.KEYGUARD_SERVICE)).thenReturn(mKeyguardManager);
         when(context.getSystemService(Context.AUTHENTICATION_POLICY_SERVICE))

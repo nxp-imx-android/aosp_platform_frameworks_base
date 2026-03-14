@@ -35,7 +35,7 @@ import com.android.systemui.shade.mockShadeSurface
 import com.android.systemui.statusbar.data.model.StatusBarMode
 import com.android.systemui.statusbar.data.model.StatusBarMode.LIGHTS_OUT
 import com.android.systemui.statusbar.data.model.StatusBarMode.LIGHTS_OUT_TRANSPARENT
-import com.android.systemui.statusbar.data.model.StatusBarMode.OPAQUE
+import com.android.systemui.statusbar.data.model.StatusBarMode.OPAQUE_DARK
 import com.android.systemui.statusbar.data.model.StatusBarMode.SEMI_TRANSPARENT
 import com.android.systemui.statusbar.data.model.StatusBarMode.TRANSPARENT
 import com.android.systemui.statusbar.data.repository.fakeStatusBarModePerDisplayRepository
@@ -156,7 +156,7 @@ class StatusBarOrchestratorTest : SysuiTestCase() {
             verify(mockAutoHideController).touchAutoHide()
 
             reset(mockAutoHideController)
-            setStatusBarMode(OPAQUE)
+            setStatusBarMode(OPAQUE_DARK)
 
             verify(mockAutoHideController).touchAutoHide()
         }
@@ -276,9 +276,9 @@ class StatusBarOrchestratorTest : SysuiTestCase() {
             verify(fakeStatusBarInitializer.statusBarTransitions)
                 .transitionTo(TRANSPARENT.toTransitionModeInt(), /* animate= */ true)
 
-            setStatusBarMode(OPAQUE)
+            setStatusBarMode(OPAQUE_DARK)
             verify(fakeStatusBarInitializer.statusBarTransitions)
-                .transitionTo(OPAQUE.toTransitionModeInt(), /* animate= */ true)
+                .transitionTo(OPAQUE_DARK.toTransitionModeInt(), /* animate= */ true)
 
             setStatusBarMode(LIGHTS_OUT)
             verify(fakeStatusBarInitializer.statusBarTransitions)

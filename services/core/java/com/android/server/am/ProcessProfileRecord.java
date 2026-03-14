@@ -35,6 +35,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.app.procstats.ProcessState;
 import com.android.internal.app.procstats.ProcessStats;
 import com.android.server.am.ProcessList.ProcStateMemTracker;
+import com.android.server.am.psc.Constants.OomAdjust;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.power.stats.BatteryStatsImpl;
 
@@ -198,7 +199,7 @@ final class ProcessProfileRecord implements ProcessRecordInternal.StartedService
     private int mSetProcState;
 
     @GuardedBy("mProfilerLock")
-    private int mSetAdj;
+    private @OomAdjust int mSetAdj;
 
     @GuardedBy("mProfilerLock")
     private int mCurRawAdj;
@@ -618,7 +619,7 @@ final class ProcessProfileRecord implements ProcessRecordInternal.StartedService
     }
 
     @GuardedBy("mProfilerLock")
-    int getSetAdj() {
+    @OomAdjust int getSetAdj() {
         return mSetAdj;
     }
 
@@ -632,12 +633,19 @@ final class ProcessProfileRecord implements ProcessRecordInternal.StartedService
         return mLastStateTime;
     }
 
+    /**
+     * Updates the process state and OOM adjustment values from the given state.
+     *
+     * @param state The process record state.
+     * @param newProcState The new process state.
+     * @param newOomAdj The new OOM adjustment value.
+     */
     @GuardedBy({"mService", "mProfilerLock"})
     void updateProcState(ProcessRecordInternal state,
-            @ActivityManager.ProcessState int newProcState) {
+            @ActivityManager.ProcessState int newProcState, @OomAdjust int newOomAdj) {
         // TODO: b/489196673 - Switch to update the state from the state listener of the PSC.
         mSetProcState = newProcState;
-        mSetAdj = state.getCurAdj();
+        mSetAdj = newOomAdj;
         mCurRawAdj = state.getCurRawAdj();
         mLastStateTime = state.getLastStateTime();
     }

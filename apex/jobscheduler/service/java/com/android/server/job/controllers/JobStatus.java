@@ -27,7 +27,6 @@ import static com.android.server.job.JobSchedulerService.sElapsedRealtimeClock;
 import static com.android.server.job.controllers.FlexibilityController.SYSTEM_WIDE_FLEXIBLE_CONSTRAINTS;
 
 import android.annotation.ElapsedRealtimeLong;
-import android.annotation.IntDef;
 import android.annotation.LongDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -110,55 +109,6 @@ import java.util.regex.Pattern;
  * @hide
  */
 public final class JobStatus {
-    /**
-     * Field numbers for the job_trace event in perfetto.
-     */
-    @IntDef(prefix = "PERFETTO_TRACE_FIELD_", value = {
-            PERFETTO_TRACE_FIELD_JOB_ID,
-            PERFETTO_TRACE_FIELD_SOURCE_UID,
-            PERFETTO_TRACE_FIELD_PROXY_UID,
-            PERFETTO_TRACE_FIELD_STATE,
-            PERFETTO_TRACE_FIELD_STANDBY_BUCKET,
-            PERFETTO_TRACE_FIELD_REQUESTED_PRIORITY,
-            PERFETTO_TRACE_FIELD_EFFECTIVE_PRIORITY,
-            PERFETTO_TRACE_FIELD_NUM_PREVIOUS_ATTEMPTS,
-            PERFETTO_TRACE_FIELD_DEADLINE_MS,
-            PERFETTO_TRACE_FIELD_DELAY_MS,
-            PERFETTO_TRACE_FIELD_JOB_START_LATENCY_MS,
-            PERFETTO_TRACE_FIELD_NUM_UNCOMPLETED_WORK_ITEMS,
-            PERFETTO_TRACE_FIELD_PROC_STATE,
-            PERFETTO_TRACE_FIELD_PERIODIC_JOB_INTERVAL_MS,
-            PERFETTO_TRACE_FIELD_PERIODIC_JOB_FLEX_INTERVAL_MS,
-            PERFETTO_TRACE_FIELD_NUM_RESCHEDULES_DUE_TO_ABANDONMENT,
-            PERFETTO_TRACE_FIELD_BACK_OFF_POLICY_TYPE,
-            PERFETTO_TRACE_FIELD_INTERNAL_STOP_REASON,
-            PERFETTO_TRACE_FIELD_PUBLIC_STOP_REASON,
-            PERFETTO_TRACE_FIELD_JOB_STATE_FLAGS,
-    })
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface PerfettoTraceField {}
-
-    public static final int PERFETTO_TRACE_FIELD_JOB_ID = 1;
-    public static final int PERFETTO_TRACE_FIELD_SOURCE_UID = 2;
-    public static final int PERFETTO_TRACE_FIELD_PROXY_UID = 3;
-    public static final int PERFETTO_TRACE_FIELD_STATE = 4;
-    public static final int PERFETTO_TRACE_FIELD_STANDBY_BUCKET = 5;
-    public static final int PERFETTO_TRACE_FIELD_REQUESTED_PRIORITY = 6;
-    public static final int PERFETTO_TRACE_FIELD_EFFECTIVE_PRIORITY = 7;
-    public static final int PERFETTO_TRACE_FIELD_NUM_PREVIOUS_ATTEMPTS = 8;
-    public static final int PERFETTO_TRACE_FIELD_DEADLINE_MS = 9;
-    public static final int PERFETTO_TRACE_FIELD_DELAY_MS = 10;
-    public static final int PERFETTO_TRACE_FIELD_JOB_START_LATENCY_MS = 11;
-    public static final int PERFETTO_TRACE_FIELD_NUM_UNCOMPLETED_WORK_ITEMS = 12;
-    public static final int PERFETTO_TRACE_FIELD_PROC_STATE = 13;
-    public static final int PERFETTO_TRACE_FIELD_PERIODIC_JOB_INTERVAL_MS = 14;
-    public static final int PERFETTO_TRACE_FIELD_PERIODIC_JOB_FLEX_INTERVAL_MS = 15;
-    public static final int PERFETTO_TRACE_FIELD_NUM_RESCHEDULES_DUE_TO_ABANDONMENT = 16;
-    public static final int PERFETTO_TRACE_FIELD_BACK_OFF_POLICY_TYPE = 17;
-    public static final int PERFETTO_TRACE_FIELD_INTERNAL_STOP_REASON = 18;
-    public static final int PERFETTO_TRACE_FIELD_PUBLIC_STOP_REASON = 19;
-    public static final int PERFETTO_TRACE_FIELD_JOB_STATE_FLAGS = 20;
-
     private static final String TAG = "JobScheduler.JobStatus";
     static final boolean DEBUG = JobSchedulerService.DEBUG;
 

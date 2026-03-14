@@ -42,18 +42,7 @@ internal fun Title(title: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-internal fun CollapsedText(content: String, modifier: Modifier = Modifier) {
-    Text(
-        content,
-        modifier,
-        style = MaterialTheme.typography.bodyMediumEmphasized,
-        maxLines = 1,
-        overflow = Ellipsis,
-    )
-}
-
-@Composable
-internal fun ExpandedText(content: String, maxLines: Int, modifier: Modifier = Modifier) {
+internal fun TextContent(content: String, maxLines: Int, modifier: Modifier = Modifier) {
     Text(
         content,
         modifier,

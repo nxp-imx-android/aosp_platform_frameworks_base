@@ -17,7 +17,9 @@
 package android.hardware.input
 
 import android.Manifest
+import android.app.Activity
 import android.os.SystemClock
+import android.platform.test.annotations.DisabledOnRavenwood
 import android.view.InputDevice
 import android.view.InputDevice.SOURCE_GAMEPAD
 import android.view.InputDevice.SOURCE_KEYBOARD
@@ -43,6 +45,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
+@DisabledOnRavenwood(
+    blockedBy = [Activity::class],
+    reason = "Launching activities with ActivityScenarioRule is unsupported",
+)
 class VirtualGamepadTest {
 
     @get:Rule val activityScenarioRule = ActivityScenarioRule(CaptureEventActivity::class.java)

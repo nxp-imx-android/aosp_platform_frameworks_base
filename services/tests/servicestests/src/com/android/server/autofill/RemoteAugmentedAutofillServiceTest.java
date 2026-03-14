@@ -26,6 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -38,6 +39,7 @@ import android.content.ComponentName;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Bundle;
+import android.os.DeadObjectException;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.platform.test.annotations.DisableFlags;
@@ -636,6 +638,37 @@ public class RemoteAugmentedAutofillServiceTest {
         assertThat(autofillHint.getFocusedId()).isEqualTo(focusedId);
         assertThat(autofillHint.getAutofillValue()).isEqualTo(AUTOFILL_VALUE);
         assertThat(autofillHint.getInlineSuggestionsRequest()).isEqualTo(inlineSuggestionsRequest);
+    }
+
+    @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    @Test
+    public void onRequestAutofillLocked_failsToGetAugmentedAutofillClient_doesNotSendRequests()
+            throws Exception {
+        doThrow(new DeadObjectException()).when(mClient).getAugmentedAutofillClient(any());
+
+        final int sessionId = 1234;
+        final int taskId = 4567;
+        AutofillId focusedId = new AutofillId(3);
+        final InlineSuggestionsRequest inlineSuggestionsRequest =
+                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
+                        .build();
+        // Request for augmented autofill does not fail.
+        mService.onRequestAutofillLocked(
+                sessionId,
+                mClient,
+                taskId,
+                ACTIVITY_COMPONENT_NAME,
+                mActivityToken,
+                focusedId,
+                AUTOFILL_VALUE, // focusedValue
+                inlineSuggestionsRequest,
+                mInlineSuggestionsCallback,
+                () -> {}, // onErrorCallback
+                mRemoteInlineSuggestionRenderService, // render service?
+                USER_ID);
+
+        // No requests to augmented autofill or personal context are sent.
+        assertThat(mAutofillResponseFutures).isEmpty();
     }
 
     private IFillCallback triggerAugmentedAutofillRequest(

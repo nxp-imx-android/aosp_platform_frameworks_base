@@ -21,16 +21,9 @@ import android.service.personalcontext.RenderToken
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo
 import android.service.personalcontext.embedded.InsightSurfaceVisualizerService
 import android.service.personalcontext.insight.PublishedContextInsight
-import android.util.Log
 import android.view.View
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.platform.ComposeView
-import com.android.internal.annotations.VisibleForTesting
-import com.android.systemui.personalcontext.visualizer.session.VisualizerSession
-import com.android.systemui.personalcontext.visualizer.session.VisualizerSessionFactory
-import com.android.systemui.personalcontext.visualizer.templates.LocalInsightSurfaceClientInfo
-import com.android.systemui.personalcontext.visualizer.templates.VisualizerTemplateFactory
-import java.util.UUID
+import com.android.personalcontext.ace.common.wrappers.wrap
+import com.android.personalcontext.ace.visualizer.connector.VisualizerServiceConnector
 import javax.inject.Inject
 
 /**
@@ -39,25 +32,10 @@ import javax.inject.Inject
  */
 class SysuiVisualizerService
 @Inject
-constructor(
-    private val templateFactory: VisualizerTemplateFactory,
-    private val sessionFactory: VisualizerSessionFactory,
-    private val composeViewFactory: ComposeViewFactory,
-) : InsightSurfaceVisualizerService() {
-
-    @VisibleForTesting val sessions = mutableMapOf<UUID, VisualizerSession>()
-    private val viewsAwaitingClientConnection = mutableMapOf<UUID, ComposeView>()
+constructor(private val connector: VisualizerServiceConnector) : InsightSurfaceVisualizerService() {
 
     override fun onClientConnected(info: InsightSurfaceClientInfo) {
-        Log.d(TAG, "onClientConnected: ${info.id}")
-
-        val view = viewsAwaitingClientConnection.remove(info.id)
-        if (view == null) {
-            Log.e(TAG, "No view for connected client")
-            return
-        }
-
-        sessions[info.id] = sessionFactory.createSession(info.id, view)
+        connector.onClientConnected(info)
     }
 
     override fun onCreateEmbeddedView(
@@ -66,39 +44,22 @@ constructor(
         renderToken: RenderToken?,
         info: InsightSurfaceClientInfo,
     ): View? {
-        Log.d(TAG, "onCreateEmbeddedView: ${info.id}")
+        return connector.onCreateEmbeddedView(
+            context,
+            publishedInsight.wrap(),
+            renderToken?.wrap(),
+            info.wrap(),
+        )
+    }
 
-        if (sessions[info.id] != null) {
-            Log.e(TAG, "Session already exists for client: ${info.id}")
-            return null
-        }
-
-        val insight = publishedInsight.insight
-        val template = templateFactory.createTemplate(insight, info) ?: return null
-
-        return composeViewFactory.createComposeView(context).apply {
-            viewsAwaitingClientConnection[info.id] = this
-            setContent {
-                CompositionLocalProvider(LocalInsightSurfaceClientInfo provides info) {
-                    template.Content(insight)
-                }
-            }
-        }
+    override fun onClientUpdated(
+        oldClientInfo: InsightSurfaceClientInfo,
+        newClientInfo: InsightSurfaceClientInfo,
+    ): Boolean {
+        return connector.onClientUpdated(oldClientInfo.wrap(), newClientInfo.wrap())
     }
 
     override fun onClientDisconnected(info: InsightSurfaceClientInfo) {
-        Log.d(TAG, "onClientDisconnected: ${info.id}")
-
-        val session = sessions.remove(info.id)
-        if (session == null) {
-            Log.e(TAG, "Session not found: ${info.id}")
-            return
-        }
-
-        session.destroy()
-    }
-
-    companion object {
-        const val TAG = "SysuiVisualizerService"
+        connector.onClientDisconnected(info.wrap())
     }
 }

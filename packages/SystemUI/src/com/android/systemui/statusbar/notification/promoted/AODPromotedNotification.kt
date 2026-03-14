@@ -341,7 +341,10 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 
     private val marginPx: Int =
         root.context.resources.getDimensionPixelSize(R.dimen.notification_2025_margin)
-
+    private val iconPaddingPx: Int =
+        root.context.resources.getDimensionPixelSize(R.dimen.notification_2025_icon_circle_padding)
+    private val iconBackgroundDrawable: Drawable =
+        root.context.resources.getDrawable(R.drawable.notification_icon_circle, root.context.theme)
     private val progressStyleProgressThickness: Float =
         root.context.resources.getDimension(
             systemuiR.dimen.notification_aod_progress_style_progress_thickness
@@ -741,6 +744,17 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     }
 
     private fun updateConversationIcon(content: PromotedNotificationContentModel) {
+        // Unlike other templates, CallStyle icon rendering differs from standard
+        // notification icons. This unifies the appearance of the conversation
+        // icon for use small_icon case, guaranteeing that the small icon is
+        // rendered in the same way.
+        if (content.skeletonNotifIcon is PromotedNotificationContentModel.NotifIcon.SmallIcon) {
+            conversationIcon?.background = iconBackgroundDrawable
+            conversationIcon?.setPadding(iconPaddingPx, iconPaddingPx, iconPaddingPx, iconPaddingPx)
+
+            // For rendering performance:
+            conversationIcon?.clipToOutline = false
+        }
         updateNotifIcon(conversationIcon, content.skeletonNotifIcon, content.iconLevel)
         (conversationIcon?.layoutParams as? MarginLayoutParams)?.let {
             it.bottomMargin = marginPx

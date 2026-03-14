@@ -309,7 +309,7 @@ class KeyguardQuickAffordancesCombinedViewModelTest : SysuiTestCase() {
                         appContext = mContext,
                         accessibilityInteractor = kosmos.accessibilityInteractor,
                         sceneInteractor = { kosmos.sceneInteractor },
-                        msdlPlayer = kosmos.msdlPlayer,
+                        msdlPlayer = { kosmos.msdlPlayer },
                     ),
                 keyguardInteractor = keyguardInteractor,
                 shadeInteractor = shadeInteractor,

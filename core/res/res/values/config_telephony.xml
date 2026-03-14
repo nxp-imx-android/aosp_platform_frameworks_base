@@ -610,4 +610,14 @@
     <!-- Default maximum search time in seconds for upsell network scan -->
     <integer name="config_upsell_network_scan_max_search_time_sec">60</integer>
     <java-symbol type="integer" name="config_upsell_network_scan_max_search_time_sec" />
+
+    <!-- Configures the packages that are allowed to access the restricted
+         messages in the Telephony database (mmsmsms.db).
+         READ_RESTRICTED_MESSAGES app-op is granted to the packages listed in
+         this configuration at boot time.
+
+         Each element in the array should be a preinstalled package name.
+    -->
+    <string-array name="config_messaging_read_restriction_allowlist" translatable="false"></string-array>
+    <java-symbol type="array" name="config_messaging_read_restriction_allowlist" />
 </resources>

@@ -16,47 +16,17 @@
 
 package com.android.server.devicepolicy.handlers;
 
-import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE;
-import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_PARENT_USER;
-import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER;
-import static android.app.role.RoleManager.ROLE_SYSTEM_FINANCED_DEVICE_CONTROLLER;
-import static android.app.role.RoleManager.ROLE_SYSTEM_SUPERVISION;
-import static com.android.server.devicepolicy.PolicyDefinition.POLICY_FLAG_GLOBAL_ONLY_POLICY;
-import static android.app.admin.DevicePolicyManager.RESOURCE_DEVICE_WIDE;
-import static android.app.admin.DevicePolicyManager.RESOURCE_PER_USER;
-
-import android.Manifest.permission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.annotation.UserIdInt;
 import android.app.admin.BooleanPolicyValue;
-import android.app.admin.DevicePolicyManager.DpcType;
-import android.app.admin.DevicePolicyManager.PolicyScope;
-import android.app.admin.NoArgsPolicyKey;
 import android.app.admin.PolicyIdentifier;
-import android.app.admin.PolicyValue;
-import android.app.admin.PolicyValueTransport;
 import android.app.admin.metadata.EnumPolicyMetadata;
-import android.app.admin.metadata.GeneratedPolicyMetadata;
 import android.app.admin.metadata.PolicyMetadata;
-import android.app.admin.metadata.PolicyTransportValueConvertor;
-import android.app.admin.DevicePolicyIdentifiers;
 
 import com.android.server.devicepolicy.CallerIdentity;
-import com.android.server.devicepolicy.DevicePolicyManagerService;
-import com.android.server.devicepolicy.EnforcingAdmin;
-import com.android.server.devicepolicy.IPermissionChecker;
-import com.android.server.devicepolicy.MostRecent;
 import com.android.server.devicepolicy.PolicyDefinition;
-import com.android.server.devicepolicy.PolicyEnforcerCallbacks;
-import com.android.server.devicepolicy.TopPriority;
 
-import com.android.server.utils.Slogf;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * PolicyHandler for a policy that is modeled as an enum in the policy annotations but which is

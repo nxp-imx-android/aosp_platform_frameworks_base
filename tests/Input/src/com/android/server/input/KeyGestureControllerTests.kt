@@ -37,6 +37,7 @@ import android.os.UserHandle
 import android.os.UserManager
 import android.os.test.TestLooper
 import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.DisabledOnRavenwood
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.Presubmit
 import android.platform.test.flag.junit.SetFlagsRule
@@ -109,6 +110,7 @@ import org.mockito.kotlin.times
     com.android.hardware.input.Flags.FLAG_ENABLE_CONTEXTUAL_INPUT_TRIGGER,
     com.android.hardware.input.Flags.FLAG_ENABLE_CONTEXTUAL_CURSOR_DESKTOP_ENTRYPOINTS,
 )
+@DisabledOnRavenwood(reason = "Static mocking in bivalent tests is tricky", bug = 310268946)
 class KeyGestureControllerTests {
 
     companion object {

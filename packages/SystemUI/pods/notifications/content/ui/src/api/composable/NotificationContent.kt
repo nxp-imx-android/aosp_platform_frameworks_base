@@ -22,7 +22,18 @@ import com.android.systemui.notifications.content.ui.viewmodel.NotificationConte
 
 /** Interface providing a composable notification. */
 public interface NotificationContent {
-    /** Displays a notification. */
+    /** The content of an expanded notification. */
     @Composable
-    public fun Content(viewModelFactory: NotificationContentViewModel.Factory, modifier: Modifier)
+    public fun Expanded(viewModelFactory: NotificationContentViewModel.Factory, modifier: Modifier)
+
+    /** The content of a collapsed notification. */
+    @Composable
+    public fun Collapsed(viewModelFactory: NotificationContentViewModel.Factory, modifier: Modifier)
+
+    /**
+     * The content of a notification preview. This is a non-interactive version of the collapsed
+     * notification, that doesn't have an expand button and cannot be tapped.
+     */
+    @Composable
+    public fun Preview(viewModelFactory: NotificationContentViewModel.Factory, modifier: Modifier)
 }

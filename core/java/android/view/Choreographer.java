@@ -19,8 +19,6 @@ package android.view;
 import static android.view.flags.Flags.bufferStuffingMultiRecovery;
 import static android.view.flags.Flags.bufferStuffingRecoveryThreshold;
 import static android.view.flags.Flags.FLAG_EXPECTED_PRESENTATION_TIME_API;
-import static android.view.DisplayEventReceiver.VSYNC_SOURCE_APP;
-import static android.view.DisplayEventReceiver.VSYNC_SOURCE_SURFACE_FLINGER;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
@@ -128,21 +126,19 @@ public final class Choreographer {
     // Thread local storage for the choreographer.
     private static final ThreadLocal<Choreographer> sThreadInstance =
             new ThreadLocal<Choreographer>() {
-        @Override
-        protected Choreographer initialValue() {
-            Looper looper = Looper.myLooper();
-            if (looper == null) {
-                throw new IllegalStateException("The current thread must have a looper!");
-            }
-            Choreographer choreographer = new Choreographer(looper, VSYNC_SOURCE_APP);
-            if (looper == Looper.getMainLooper()) {
-                mMainInstance = choreographer;
-            }
-            return choreographer;
-        }
-    };
-
-    private static volatile Choreographer mMainInstance;
+                @Override
+                protected Choreographer initialValue() {
+                    Looper looper = Looper.myLooper();
+                    if (looper == null) {
+                        throw new IllegalStateException("The current thread must have a looper!");
+                    }
+                    Choreographer choreographer = new Choreographer(looper);
+                    if (looper == Looper.getMainLooper()) {
+                        sMainInstance = choreographer;
+                    }
+                    return choreographer;
+                }
+            };
 
     // Thread local storage for the SF choreographer.
     private static final ThreadLocal<Choreographer> sSfThreadInstance =
@@ -153,9 +149,11 @@ public final class Choreographer {
                     if (looper == null) {
                         throw new IllegalStateException("The current thread must have a looper!");
                     }
-                    return new Choreographer(looper, VSYNC_SOURCE_SURFACE_FLINGER);
+                    return new Choreographer(looper);
                 }
             };
+
+    private static volatile Choreographer sMainInstance;
 
     // Enable/disable vsync for animations and drawing.
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 123769497)
@@ -366,15 +364,15 @@ public final class Choreographer {
 
     private static final int CALLBACK_LAST = CALLBACK_COMMIT;
 
-    private Choreographer(Looper looper, int vsyncSource) {
-        this(looper, vsyncSource, /* layerHandle */ 0L);
+    private Choreographer(Looper looper) {
+        this(looper, /* layerHandle */ 0L);
     }
 
-    private Choreographer(Looper looper, int vsyncSource, long layerHandle) {
+    private Choreographer(Looper looper, long layerHandle) {
         mLooper = looper;
         mHandler = new FrameHandler(looper);
         mDisplayEventReceiver = USE_VSYNC
-                ? new FrameDisplayEventReceiver(looper, vsyncSource, layerHandle)
+                ? new FrameDisplayEventReceiver(looper, layerHandle)
                 : null;
         mLastFrameTimeNanos = Long.MIN_VALUE;
 
@@ -439,7 +437,7 @@ public final class Choreographer {
         if (looper == null) {
             throw new IllegalStateException("The current thread must have a looper!");
         }
-        return new Choreographer(looper, VSYNC_SOURCE_APP, layerHandle);
+        return new Choreographer(looper, layerHandle);
     }
 
     /**
@@ -447,7 +445,7 @@ public final class Choreographer {
      * @hide
      */
     public static Choreographer getMainThreadInstance() {
-        return mMainInstance;
+        return sMainInstance;
     }
 
     /** Destroys the calling thread's choreographer
@@ -959,8 +957,8 @@ public final class Choreographer {
      */
     public long getVsyncId() {
         if (!mInDoFrameCallback && Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
-            String message = String.format(Locale.getDefault(), "unsync-vsync-id=%d isSfChoreo=%s",
-                    mLastVsyncEventData.preferredFrameTimeline().vsyncId, this == getSfInstance());
+            String message = String.format(Locale.getDefault(), "unsync-vsync-id=%d",
+                    mLastVsyncEventData.preferredFrameTimeline().vsyncId);
             Trace.instant(Trace.TRACE_TAG_VIEW, message);
         }
         return mLastVsyncEventData.preferredFrameTimeline().vsyncId;
@@ -1585,8 +1583,8 @@ public final class Choreographer {
         private int mFrame;
         private final VsyncEventData mLastVsyncEventData = new VsyncEventData();
 
-        FrameDisplayEventReceiver(Looper looper, int vsyncSource, long layerHandle) {
-            super(looper, vsyncSource, /* eventRegistration */ 0, layerHandle);
+        FrameDisplayEventReceiver(Looper looper, long layerHandle) {
+            super(looper, /* eventRegistration */ 0, layerHandle);
         }
 
         // TODO(b/116025192): physicalDisplayId is ignored because SF only emits VSYNC events for

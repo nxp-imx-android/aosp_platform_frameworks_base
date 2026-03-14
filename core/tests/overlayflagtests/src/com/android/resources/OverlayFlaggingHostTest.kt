@@ -15,6 +15,8 @@
  */
 package com.android.resources
 
+import android.platform.test.annotations.RequiresReadWriteFeatureFlags
+
 import com.android.tradefed.device.DeviceNotAvailableException
 import com.android.tradefed.testtype.DeviceJUnit4ClassRunner
 import com.android.tradefed.testtype.junit4.BaseHostJUnit4Test
@@ -53,12 +55,14 @@ class OverlayFlaggingHostTest : BaseHostJUnit4Test() {
     }
 
     @Test
+    @RequiresReadWriteFeatureFlags
     @kotlin.Throws(Exception::class)
     fun testWithOverlaysXmlFlagDisabled() {
         assertTrue(runDeviceOverlaysTest(WITH_OVERLAYS_PACKAGE, "testWithOverlaysNotOverlaid"))
     }
 
     @Test
+    @RequiresReadWriteFeatureFlags
     @kotlin.Throws(Exception::class)
     fun testWithOverlaysXmlFlagEnabled() {
         setFlag(true)
@@ -66,12 +70,14 @@ class OverlayFlaggingHostTest : BaseHostJUnit4Test() {
     }
 
     @Test
+    @RequiresReadWriteFeatureFlags
     @kotlin.Throws(Exception::class)
     fun testWithoutOverlaysXmlFlagDisabled() {
         assertTrue(runDeviceOverlaysTest(WITHOUT_OVERLAYS_PACKAGE, "testWithoutOverlaysNotOverlaid"))
     }
 
     @Test
+    @RequiresReadWriteFeatureFlags
     @kotlin.Throws(Exception::class)
     fun testWithoutOverlaysXmlFlagEnabled() {
         setFlag(true)

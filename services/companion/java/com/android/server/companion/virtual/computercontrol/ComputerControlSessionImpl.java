@@ -50,6 +50,8 @@ import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.ResolveInfoFlags;
 import android.content.pm.ResolveInfo;
+import android.graphics.Insets;
+import android.graphics.PixelFormat;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.VirtualDisplay;
@@ -73,7 +75,9 @@ import android.view.DisplayInfo;
 import android.view.KeyEvent;
 import android.view.Surface;
 import android.view.SurfaceControl;
+import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 
@@ -83,6 +87,7 @@ import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
 import com.android.internal.inputmethod.InputConnectionCommandHeader;
 import com.android.server.FgThread;
 import com.android.server.LocalServices;
+import com.android.server.UiThread;
 import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.inputmethod.InputMethodManagerInternal;
@@ -301,6 +306,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @GuardedBy("mWindowDrawLock")
     private boolean mIsWaitingForScreenshotResult = false;
 
+    private final Context mDisplayUiContext;
+    @GuardedBy("mInsetsProviderView")
+    private final View mInsetsProviderView;
+    @GuardedBy("mInsetsProviderView")
+    @NonNull
+    private Insets mAppliedInsets = Insets.NONE;
+
     private final InteractiveMirrorImpl.InteractiveMirrorImplCallback mInteractiveMirrorCallback =
             new InteractiveMirrorImpl.InteractiveMirrorImplCallback() {
                 @Override
@@ -319,6 +331,11 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                         }
                     }
                     mStatsController.onMirrorViewInteractive(isInteractive);
+                }
+
+                @Override
+                public void onRequestedInsetsChanged() {
+                    updateInsets();
                 }
 
                 @Override
@@ -420,11 +437,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mWindowManagerInternal.setAnimationsDisabledForDisplay(
                     mVirtualDisplay.getDisplay().getDisplayId(), true);
             mVirtualDisplayId = mVirtualDisplay.getDisplay().getDisplayId();
+            mDisplayUiContext = context.createDisplayContext(mVirtualDisplay.getDisplay());
             mWindowManagerInternal.enablePowerOptimizations(mVirtualDisplayId, /* enable = */ true);
             mWindowManagerInternal.enableClientRenderingLimitationsOnDisplay(
                     mVirtualDisplayId, /* enable = */true);
             mWindowManagerInternal.setCanStealTopFocusForDisplay(
                     mVirtualDisplayId, /* canStealTopFocus= */ false);
+            mInsetsProviderView = new View(mDisplayUiContext);
 
             mVirtualDevice.setDisplayImePolicy(
                     mVirtualDisplayId, WindowManager.DISPLAY_IME_POLICY_HIDE);
@@ -811,6 +830,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             interactiveMirror.closeWithTransaction(transaction);
             transaction.apply();
         }
+        updateInsets();
         if (foregroundMirroringStopped) {
             mStatsController.onMirroringStopped();
         }
@@ -1263,6 +1283,68 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         final var action = mDisplayEmptyScheduledAction;
         if (action != null) {
             action.cancel(false);
+        }
+    }
+
+    private void updateInsets() {
+        synchronized (mInteractiveMirrors) {
+            var insets = Insets.NONE;
+            for (int i = 0; i < mInteractiveMirrors.size(); i++) {
+                insets = Insets.max(insets, mInteractiveMirrors.get(i).getRequestedInsets());
+            }
+            final var finalInsets = insets;
+            UiThread.getHandler().post(() -> handleInsetsUpdate(finalInsets));
+        }
+    }
+
+    // Propagates the insets provided by the interactive mirrors to the virtual display.
+    // Currently, MirrorView will only send its systemBars() and ime() insets, and we propagate it
+    // to the virtual display as systemOverlays().
+    @android.annotation.UiThread
+    private void handleInsetsUpdate(@NonNull Insets insets) {
+        synchronized (mInsetsProviderView) {
+            if (Objects.equals(mAppliedInsets, insets)) {
+                return;
+            }
+
+            Slog.d(TAG,
+                    "handleInsetsUpdate: Updating insets from old: " + mAppliedInsets + ", to new: "
+                            + insets);
+
+            final var wm = mDisplayUiContext.getSystemService(WindowManager.class);
+            if (!Insets.NONE.equals(mAppliedInsets)) {
+                wm.removeView(mInsetsProviderView);
+            }
+            mAppliedInsets = insets;
+            if (!Insets.NONE.equals(mAppliedInsets)) {
+                final var lp = new WindowManager.LayoutParams(
+                        WindowManager.LayoutParams.MATCH_PARENT,
+                        WindowManager.LayoutParams.MATCH_PARENT,
+                        WindowManager.LayoutParams.TYPE_STATUS_BAR,
+                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                                | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                                | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                                | WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
+                        PixelFormat.TRANSPARENT);
+                lp.setTitle("InsetsProviderView");
+                lp.layoutInDisplayCutoutMode =
+                        WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+                lp.setInsetsParams(
+                        List.of(new WindowManager.InsetsParams(
+                                        WindowInsets.Type.systemOverlays())
+                                        .setInsetsSize(Insets.of(insets.left, 0, 0, 0)),
+                                new WindowManager.InsetsParams(
+                                        WindowInsets.Type.systemOverlays())
+                                        .setInsetsSize(Insets.of(0, insets.top, 0, 0)),
+                                new WindowManager.InsetsParams(
+                                        WindowInsets.Type.systemOverlays())
+                                        .setInsetsSize(Insets.of(0, 0, insets.right, 0)),
+                                new WindowManager.InsetsParams(
+                                        WindowInsets.Type.systemOverlays())
+                                        .setInsetsSize(Insets.of(0, 0, 0, insets.bottom))
+                        ));
+                wm.addView(mInsetsProviderView, lp);
+            }
         }
     }
 

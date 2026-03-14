@@ -57,6 +57,9 @@ class android.text.ClipboardManager keep  # no-pta
 # AIDL generated parcel
 class com.android.media.permission.UidPackageState keepclass  # no-pta
 
+# Outer class does not have any annotations
+class android.hardware.display.DisplayManagerInternal$AmbientLightSensorData keepclass  # no-pta
+
 #####################
 # Experimental APIs
 #####################

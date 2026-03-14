@@ -751,8 +751,11 @@ public class NotificationChannelTest {
         original.setImportantConversation(true);
         original.setDeletedTimeMs(100);
         original.setImportanceLockedByCriticalDeviceFunction(false);
-        if (Flags.nmContextualDisplay()) {
+        if (Flags.nmContextualDisplay() || Flags.nmContextualDisplayLaunch()) {
             original.setIsBundleChannel(true);
+        }
+        if (Flags.nmContextualDisplayLaunch()) {
+            original.setEmoji("\uD83D\uDC80");
         }
 
         NotificationChannel parcelCopy = writeToAndReadFromParcel(original);

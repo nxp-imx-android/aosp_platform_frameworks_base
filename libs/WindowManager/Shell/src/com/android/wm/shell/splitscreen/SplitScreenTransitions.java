@@ -212,7 +212,8 @@ class SplitScreenTransitions {
             } else if (isDismiss && mPendingDismiss.mReason == EXIT_REASON_DRAG_DIVIDER) {
                 // TODO(b/280020345): need to refine animation for this but just skip anim now.
                 continue;
-            } else if (isDismiss && com.android.window.flags.Flags.enableSplitDismissAnimation()) {
+            } else if (isDismiss
+                    && com.android.window.flags.Flags.enableSplitDismissAnimationV2()) {
                 startDismissAnimation(change, t);
                 continue;
             }

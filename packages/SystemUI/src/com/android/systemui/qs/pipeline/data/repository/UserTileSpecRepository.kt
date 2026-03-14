@@ -5,7 +5,6 @@ import android.database.ContentObserver
 import android.provider.Settings
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.Flags.hsuQsChanges
-import com.android.systemui.common.coroutine.ConflatedCallbackFlow
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.qs.panels.data.repository.QSPreferencesRepository
@@ -17,6 +16,7 @@ import com.android.systemui.qs.pipeline.shared.logging.QSPipelineLogger
 import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
 import com.android.systemui.util.settings.SecureSettings
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -122,7 +122,7 @@ constructor(
                 // user, we don't want anyone to change the underlying setting. Therefore, if there
                 // are any changes that don't match with the source of truth (this class), we
                 // overwrite them with the current value.
-                ConflatedCallbackFlow.conflatedCallbackFlow {
+                conflatedCallbackFlow {
                         val observer =
                             object : ContentObserver(null) {
                                 override fun onChange(selfChange: Boolean) {

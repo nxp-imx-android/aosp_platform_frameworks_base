@@ -1184,13 +1184,21 @@
     <dimen name="taskbar_stashed_size">24dp</dimen>
 
     <!-- App Lock -->
+    <dimen name="app_lock_button_padding">10dp</dimen>
+     <!-- Max Width of App Lock dialog -->
+    <dimen name="app_lock_dialog_max_width">640dp</dimen>
     <dimen name="app_lock_edu_button_min_height">48dp</dimen>
     <!-- A large value to prevent the education dialog from collapsing. -->
     <dimen name="app_lock_edu_dialog_max_collapsed_height">2000dp</dimen>
+    <dimen name="app_lock_font_size_large">24sp</dimen>
+    <dimen name="app_lock_font_size_medium">14sp</dimen>
     <dimen name="app_lock_icon_size_small">24dp</dimen>
     <dimen name="app_lock_item_icon_size">42dp</dimen>
     <dimen name="app_lock_item_margin">12dp</dimen>
-    <dimen name="app_lock_line_height_small">20dp</dimen>
+    <dimen name="app_lock_item_margin_small">8dp</dimen>
+    <dimen name="app_lock_line_height_small">20sp</dimen>
+    <dimen name="app_lock_line_height_medium">24sp</dimen>
+    <dimen name="app_lock_line_height_large">32sp</dimen>
     <dimen name="app_lock_margin">16dp</dimen>
     <dimen name="app_lock_padding_extra_small">8dp</dimen>
     <dimen name="app_lock_padding_small">16dp</dimen>
@@ -1198,4 +1206,5 @@
     <dimen name="app_lock_padding_extra_large">40dp</dimen>
     <dimen name="app_lock_permission_review_app_list_expanded_height">320dp</dimen>
     <dimen name="app_lock_pill_radius">100dp</dimen>
+    <dimen name="app_lock_top_margin">24sp</dimen>
 </resources>

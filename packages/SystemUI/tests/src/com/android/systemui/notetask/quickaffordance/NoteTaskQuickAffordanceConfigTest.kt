@@ -115,7 +115,7 @@ internal class NoteTaskQuickAffordanceConfigTest : SysuiTestCase() {
         NoteTaskQuickAffordanceConfig(
             context = spiedContext,
             controller = controller,
-            stylusManager = stylusManager,
+            stylusManager = { stylusManager },
             userManager = userManager,
             keyguardMonitor = mock(),
             lazyRepository = { repository },

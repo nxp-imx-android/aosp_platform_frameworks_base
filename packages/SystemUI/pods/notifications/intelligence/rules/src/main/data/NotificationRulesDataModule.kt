@@ -18,6 +18,8 @@ package com.android.systemui.notifications.intelligence.rules.data
 
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.log.LogBuffer
+import com.android.systemui.log.LogBufferFactory
 import com.android.systemui.notifications.intelligence.rules.data.repository.ContactsRepository
 import com.android.systemui.notifications.intelligence.rules.data.repository.ContactsRepositoryImpl
 import com.android.systemui.notifications.intelligence.rules.data.repository.FreeformRuleRepository
@@ -27,6 +29,7 @@ import com.android.systemui.notifications.intelligence.rules.data.repository.Ins
 import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRulesRepository
 import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRulesRepositoryImpl
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayTestConfig
+import com.android.systemui.notifications.intelligence.rules.shared.NotificationRulesLog
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -56,6 +59,13 @@ interface NotificationRulesDataModule {
     public fun bindRepoAsCoreStartable(impl: NotificationRulesRepositoryImpl): CoreStartable
 
     companion object {
+        @Provides
+        @SysUISingleton
+        @NotificationRulesLog
+        fun providesRulesLogBuffer(factory: LogBufferFactory): LogBuffer {
+            return factory.create("NotificationRules", 100)
+        }
+
         @Provides
         @SysUISingleton
         fun provideTestConfig(): NmContextualDisplayTestConfig {

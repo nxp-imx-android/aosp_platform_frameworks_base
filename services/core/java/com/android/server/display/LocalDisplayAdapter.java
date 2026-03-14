@@ -1690,7 +1690,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
     public static final class ProxyDisplayEventReceiver extends DisplayEventReceiver {
         private final DisplayEventListener mListener;
         ProxyDisplayEventReceiver(Looper looper, DisplayEventListener listener) {
-            super(looper, VSYNC_SOURCE_APP,
+            super(looper,
                     EVENT_REGISTRATION_MODE_CHANGED_FLAG
                             | EVENT_REGISTRATION_FRAME_RATE_OVERRIDE_FLAG
                             | EVENT_REGISTRATION_MODE_REJECTED_FLAG);

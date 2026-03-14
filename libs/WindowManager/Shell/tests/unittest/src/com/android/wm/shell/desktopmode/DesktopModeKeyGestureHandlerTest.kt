@@ -75,6 +75,7 @@ import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -174,6 +175,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
                 displayController,
                 desktopState,
                 accessibilityManager,
+                shellController,
             )
     }
 
@@ -516,6 +518,27 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
                 displayId = displayId,
                 userId = repository.userId,
                 transitionSource = DesktopModeTransitionSource.KEYBOARD_SHORTCUT,
+            )
+    }
+
+    @Test
+    fun keyGesture_overviewVisible_doesNotHandleGesture() {
+        val displayId = 2
+        whenever(focusTransitionObserver.globallyFocusedDisplayId).thenReturn(displayId)
+        whenever(shellController.isOverviewVisible(displayId)).thenReturn(true)
+        val event =
+            KeyGestureEvent.Builder()
+                .setKeyGestureType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_FULLSCREEN)
+                .build()
+
+        keyGestureEventHandler.handleKeyGestureEvent(event, null)
+        testExecutor.flushAll()
+
+        verify(desktopTasksController, never())
+            .toggleFocusedTaskFullscreenState(
+                displayId = any(),
+                userId = any(),
+                transitionSource = any(),
             )
     }
 

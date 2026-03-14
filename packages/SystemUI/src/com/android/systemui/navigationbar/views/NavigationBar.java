@@ -39,7 +39,7 @@ import static com.android.systemui.LauncherProxyService.LauncherProxyListener;
 import static com.android.systemui.navigationbar.NavBarHelper.transitionMode;
 import static com.android.systemui.shared.recents.utilities.Utilities.isLargeScreen;
 import static com.android.systemui.shared.rotation.RotationButtonController.DEBUG_ROTATION;
-import static com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_OPAQUE;
+import static com.android.systemui.shared.statusbar.phone.BarTransitions.MODE_OPAQUE_DARK;
 import static com.android.systemui.shared.statusbar.phone.BarTransitions.TransitionMode;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_A11Y_BUTTON_CLICKABLE;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_A11Y_BUTTON_LONG_CLICKABLE;
@@ -2060,7 +2060,7 @@ public class NavigationBar extends ViewController<NavigationBarView> implements 
     }
 
     void onBarTransition(int newMode) {
-        if (newMode == MODE_OPAQUE) {
+        if (newMode == MODE_OPAQUE_DARK) {
             // If the nav bar background is opaque, stop auto tinting since we know the icons are
             // showing over a dark background
             mRegionSamplingHelper.stop();

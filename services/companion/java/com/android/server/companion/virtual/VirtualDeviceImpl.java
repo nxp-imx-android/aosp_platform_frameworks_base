@@ -692,8 +692,9 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         return mAssociationInfo == null ? mParams.getName() : mAssociationInfo.getDisplayName();
     }
 
+    @Override // Binder call
     @NonNull
-    String getDeviceProfile() {
+    public String getDeviceProfile() {
         return mDeviceProfile;
     }
 
@@ -1956,19 +1957,21 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         }
     }
 
-    void onAuthenticationPrompt(int uid, String packageName, int displayId) {
+    void onAuthenticationPrompt(int displayId, String packageName) {
         try {
-            if (DEVICE_PROFILE_COMPUTER_CONTROL.equals(mDeviceProfile)) {
-                mActivityListener.onAuthenticationPrompt(displayId, packageName);
-            } else {
-                //TODO (b/481273047): Use display ID to show toast
-                showToastWhereUidIsRunning(uid,
-                        R.string.app_streaming_blocked_message_for_fingerprint_dialog,
-                        Toast.LENGTH_LONG, Looper.getMainLooper());
-            }
+            mActivityListener.onAuthenticationPrompt(displayId, packageName);
         } catch (RemoteException e) {
-            Slog.w(TAG, "Unable to call onAuthenticationPrompt for package: "
-                    + packageName);
+            Slog.w(TAG, "Unable to invoke activity listener", e);
+        }
+        if (!DEVICE_PROFILE_COMPUTER_CONTROL.equals(mDeviceProfile)) {
+            DisplayManager displayManager = mContext.getSystemService(DisplayManager.class);
+            Display display = displayManager.getDisplay(displayId);
+            if (display != null && display.isValid()) {
+                Toast.makeText(mContext.createDisplayContext(display), Looper.getMainLooper(),
+                        mContext.getString(
+                                R.string.app_streaming_blocked_message_for_fingerprint_dialog),
+                        Toast.LENGTH_LONG).show();
+            }
         }
     }
 

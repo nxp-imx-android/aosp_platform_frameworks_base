@@ -21,6 +21,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.MessageQueue;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.Log;
 import android.util.SparseIntArray;
 
@@ -34,6 +35,7 @@ import java.lang.ref.WeakReference;
  * Provides a low-level mechanism for an application to receive input events.
  * @hide
  */
+@RavenwoodKeepWholeClass
 public abstract class InputEventReceiver {
     private static final String TAG = "InputEventReceiver";
 

@@ -395,6 +395,7 @@ class PreAuthInfo {
         Pair<BiometricSensor, Integer> sensorLockout = null;
         Pair<BiometricSensor, Integer> hardwareNotDetected = null;
         Pair<BiometricSensor, Integer> biometricAppNotAllowed = null;
+        Pair<BiometricSensor, Integer> biometricComputerControlled = null;
         for (Pair<BiometricSensor, Integer> pair : ineligibleSensors) {
             final int status = pair.second;
             if (status == BIOMETRIC_LOCKOUT_TIMED || status == BIOMETRIC_LOCKOUT_PERMANENT) {
@@ -409,6 +410,14 @@ class PreAuthInfo {
             if (status == BIOMETRIC_NOT_ENABLED_FOR_APPS) {
                 biometricAppNotAllowed = pair;
             }
+            if (status == BIOMETRIC_COMPUTER_CONTROLLED) {
+                biometricComputerControlled = pair;
+            }
+        }
+
+        if (com.android.server.biometrics.Flags.bpComputerControlled()
+                && biometricComputerControlled != null) {
+            return biometricComputerControlled;
         }
 
         // If there is a sensor locked out, prioritize lockout over other sensor's error.

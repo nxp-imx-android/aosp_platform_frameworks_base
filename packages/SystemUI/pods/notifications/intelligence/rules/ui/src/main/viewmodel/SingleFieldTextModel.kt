@@ -20,6 +20,7 @@ import android.content.res.Resources
 import android.text.Annotation
 import android.text.Spanned
 import android.text.TextUtils
+import com.android.systemui.log.core.Logger
 import com.android.systemui.res.R
 
 /** Represents a single field as text. */
@@ -48,6 +49,7 @@ internal fun <T> createMultiItemText(
     label: (T) -> String,
     onClick: (() -> Unit)?,
     resources: Resources,
+    logger: Logger,
 ): SingleFieldTextModel<T> {
     check(items.isNotEmpty()) { "Items must be non-empty" }
     val first = items[0]
@@ -68,6 +70,7 @@ internal fun <T> createMultiItemText(
         firstItemIconId = id(first),
         onClick = onClick,
         isAmbiguous = false,
+        logger = logger,
     )
 }
 
@@ -79,6 +82,7 @@ internal fun <T> createAmbiguousText(
     placeholderText: String,
     onClick: () -> Unit,
     resources: Resources,
+    logger: Logger,
 ): SingleFieldTextModel<T> {
     val template = resources.getText(R.string.notification_rules_from_single_item)
     val spanned = TextUtils.expandTemplate(template, placeholderText) as Spanned
@@ -88,6 +92,7 @@ internal fun <T> createAmbiguousText(
         firstItemIconId = null,
         onClick = onClick,
         isAmbiguous = true,
+        logger = logger,
     )
 }
 
@@ -97,6 +102,7 @@ private fun <T> createFieldText(
     firstItemIconId: String?,
     onClick: (() -> Unit)?,
     isAmbiguous: Boolean,
+    logger: Logger,
 ): SingleFieldTextModel<T> {
     val annotations: Array<Annotation> = spanned.getSpans(0, spanned.length, Annotation::class.java)
 
@@ -106,7 +112,9 @@ private fun <T> createFieldText(
                 annotation.key == "valueField" && annotation.value.toBoolean()
             }
             ?.let { spanned.getSpanStart(it) until spanned.getSpanEnd(it) }
-    // TODO: b/478225883 - Log if value field range wasn't found in string.
+    if (valueFieldRange == null) {
+        logger.w({ "No valueField annotation for $str1" }) { str1 = spanned.toString() }
+    }
 
     return SingleFieldTextModel(
         text = spanned.toString(),

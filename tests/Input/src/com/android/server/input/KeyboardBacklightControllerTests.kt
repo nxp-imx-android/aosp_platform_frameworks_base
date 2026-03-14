@@ -27,6 +27,7 @@ import android.hardware.input.InputManager
 import android.hardware.lights.Light
 import android.os.SystemProperties
 import android.os.test.TestLooper
+import android.platform.test.annotations.DisabledOnRavenwood
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.Presubmit
 import android.platform.test.flag.junit.SetFlagsRule
@@ -86,6 +87,7 @@ private fun createLight(lightId: Int, lightType: Int, suggestedBrightnessLevels:
  */
 @Presubmit
 @EnableFlags(com.android.hardware.input.Flags.FLAG_KEYBOARD_BACKLIGHT_SHORTCUTS)
+@DisabledOnRavenwood(reason = "Static mocking in bivalent tests is tricky", bug = 310268946)
 class KeyboardBacklightControllerTests {
     @get:Rule val mSetFlagsRule = SetFlagsRule()
 

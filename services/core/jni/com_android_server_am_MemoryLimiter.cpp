@@ -674,26 +674,33 @@ bool writeString(std::string text, std::string& path) {
     return android::base::WriteStringToFile(text, path);
 }
 
-// A process is being configured with a memory.high limit.  A negative limit means "max".
-void configureLimit(JNIEnv*, jclass, jlong service, jint pid, jint uid, jlong limit) {
+// A small wrapper to write a limit.  The function converts a negative input to "max".  It does
+// nothing if the limit is zero.  It complains on error.
+void writeLimit(char const* attribute, int uid, int pid, long limit) {
+    if (limit == 0) return;
+
+    std::string path;
+    if (!CgroupGetAttributePathForProcess(attribute, uid, pid, path)) return;
+
+    if (!writeString((limit < 0) ? "max" : std::to_string(limit), path)) {
+        // Only report the failure if the error is not path-not-found.  The path will not be
+        // found if the process has already exited or if the process has not been moved into
+        // its cgroup yet.
+        ALOGE_IF(errno != ENOENT, "failed to write %s (%s): %s", attribute, path.c_str(),
+                 strerror(errno));
+    }
+}
+
+// A process is being configured with memory and swap limits.  See writeLimit() for special
+// handling of non-positive limits.
+void configureLimit(JNIEnv*, jclass, jlong service, jint pid, jint uid, jlong mem, jlong swap) {
     Monitor* m = getMonitor(service);
 
     // Start watching for over-limit events, if possible.  The call is idempotent.  Once it
     // succeeds further invocations do nothing.
     m->watch(pid, uid);
-
-    std::string name = "MemHigh";
-    std::string path;
-    if (!CgroupGetAttributePathForProcess(name, uid, pid, path)) {
-        return;
-    }
-    if (!writeString((limit < 0) ? "max" : std::to_string(limit), path)) {
-        // Only report the failure if the error is not path-not-found.  The path will
-        // not be found if the process has already exited or if the process has not been
-        // moved into its cgroup yet.
-        ALOGE_IF(errno != ENOENT, "failed to write memory.high (%s): %s", path.c_str(),
-                 strerror(errno));
-    }
+    writeLimit("MemHigh", uid, pid, mem);
+    writeLimit("SwapMax", uid, pid, swap);
 }
 
 // Return the statistics for the memory limiter.  If the limiter is invalid, null is returned.
@@ -708,7 +715,7 @@ const JNINativeMethod sMethods[] = {
          (void*)initLimiter},
         {"closeLimiter", "(J)V", (void*)closeLimiter},
         {"onProcessStarted", "(JII)V", (void*)startProcess},
-        {"configureLimit", "(JIIJ)V", (void*)configureLimit},
+        {"configureLimit", "(JIIJJ)V", (void*)configureLimit},
         {"getStatistics", "(J)Ljava/lang/String;", (void*)getStatistics},
 };
 

@@ -358,6 +358,14 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
             return false;
         }
 
+        if (mSessionOwnerAllowlist.anyMatch(targetPackage, targetPackageSigningDetails)) {
+            Slog.i(
+                    TAG,
+                    "isPackageAutomatable: Cannot automate an approved agent application: "
+                            + targetPackage);
+            return false;
+        }
+
         // Check if the app is denylisted first.
         if (mAutomatableAppDenylist.anyMatch(targetPackage, targetPackageSigningDetails)) {
             Slog.i(TAG, "isPackageAutomatable: Found denylist entry for " + targetPackage);

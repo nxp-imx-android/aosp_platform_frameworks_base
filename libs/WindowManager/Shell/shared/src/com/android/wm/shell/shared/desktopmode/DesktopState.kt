@@ -91,6 +91,9 @@ interface DesktopState {
     /** Whether the home screen should be shown behind freeform tasks in the desktop. */
     val shouldShowHomeBehindDesktop: Boolean
 
+    /** Clean's up any registered listeners */
+    fun destroy() {}
+
     companion object {
         /** Creates a new [DesktopState] from a context. */
         @JvmStatic fun fromContext(context: Context): DesktopState = DesktopStateImpl(context)

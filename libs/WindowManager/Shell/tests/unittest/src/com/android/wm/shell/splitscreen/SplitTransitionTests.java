@@ -698,7 +698,7 @@ public class SplitTransitionTests extends ShellTestCase {
 
     @Test
     @UiThreadTest
-    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_SPLIT_DISMISS_ANIMATION)
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_SPLIT_DISMISS_ANIMATION_V2)
     public void testPlayDismissAnimation_invoked() {
         enterSplit();
 

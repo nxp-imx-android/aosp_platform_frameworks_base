@@ -146,6 +146,7 @@ import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.common.CaptionVisibilityHelper;
+import com.android.wm.shell.windowdecor.common.DecorThemeUtil;
 import com.android.wm.shell.windowdecor.common.ExclusionRegionListener;
 import com.android.wm.shell.windowdecor.common.InputPilfererImpl;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader;
@@ -219,6 +220,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private final ShellDesktopState mShellDesktopState;
     private final DesktopConfig mDesktopConfig;
     private final @Nullable PinnedLayerController mPinnedLayerController;
+    private final DecorThemeUtil.Factory mDecorThemeUtilFactory;
     private final @Nullable PinnedLayerUiState mPinnedLayerUiState;
     private final FluidTaskResizer mFluidTaskResizer;
     private final VeiledTaskResizer mVeiledTaskResizer;
@@ -338,7 +340,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             FluidTaskResizer fluidTaskResizer,
             VeiledTaskResizer veiledTaskResizer,
             MultiDisplayTaskMover multiDisplayTaskMover,
-            SnapController snapController) {
+            SnapController snapController,
+            DecorThemeUtil.Factory decorThemeUtilFactory) {
         this(
                 context,
                 shellExecutor,
@@ -398,7 +401,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 fluidTaskResizer,
                 veiledTaskResizer,
                 multiDisplayTaskMover,
-                snapController);
+                snapController,
+                decorThemeUtilFactory);
     }
 
     @VisibleForTesting
@@ -461,7 +465,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             FluidTaskResizer fluidTaskResizer,
             VeiledTaskResizer veiledTaskResizer,
             MultiDisplayTaskMover multiDisplayTaskMover,
-            SnapController snapController) {
+            SnapController snapController,
+            DecorThemeUtil.Factory decorThemeUtilFactory) {
         mContext = context;
         mMainExecutor = shellExecutor;
         mMainHandler = mainHandler;
@@ -558,6 +563,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mLockTaskChangeListener = lockTaskChangeListener;
         mPinnedLayerController = pinnedLayerController;
         mPinnedLayerUiState = pinnedLayerUiState;
+        mDecorThemeUtilFactory = decorThemeUtilFactory;
         mFluidTaskResizer = fluidTaskResizer;
         mVeiledTaskResizer = veiledTaskResizer;
         mMultiDisplayTaskMover = multiDisplayTaskMover;
@@ -1822,7 +1828,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     mRecentsTransitionStateListener,
                     mLockTaskChangeListener,
                     mPinnedLayerController,
-                    mDesktopTasksController);
+                    mDesktopTasksController,
+                    mDecorThemeUtilFactory);
             windowDecoration =
                     mWindowDecoratioWrapperFactory.fromDefaultDecoration(defaultWindowDecoration);
         } else {
@@ -1862,7 +1869,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             mLockTaskChangeListener,
                             mFocusTransitionObserver,
                             mPinnedLayerController,
-                            mDesktopTasksController);
+                            mDesktopTasksController,
+                            mDecorThemeUtilFactory);
             windowDecoration = mWindowDecoratioWrapperFactory
                     .fromDesktopDecoration(desktopModeWindowDecoration);
         }

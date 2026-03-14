@@ -163,23 +163,28 @@ public class PolicyDefinitionFactory {
                 PolicyIdentifier.MANAGED_ESIM_OUTGOING_TRANSFER_POLICY,
                 builder -> {
                     return builder.setResolutionMechanism(
-                            new MostRestrictive<>(
-                                    List.of(
-                                           new IntegerPolicyValue(
-                                                   MANAGED_ESIM_OUTGOING_TRANSFER_DISALLOWED),
-                                           new IntegerPolicyValue(
-                                                   MANAGED_ESIM_OUTGOING_TRANSFER_ALLOWED)
-                                    )
-                            )
-                    ).build();
+                                    new MostRestrictive<>(
+                                            List.of(
+                                                    new IntegerPolicyValue(
+                                                            MANAGED_ESIM_OUTGOING_TRANSFER_DISALLOWED),
+                                                    new IntegerPolicyValue(
+                                                            MANAGED_ESIM_OUTGOING_TRANSFER_ALLOWED))))
+                            .build();
                 });
         addFactory(
                 PolicyIdentifier.CONTENT_RESTRICTION_APPS,
                 builder -> {
-                    return builder
-                            .setResolutionMechanism(new PackageListUnion())
+                    return builder.setResolutionMechanism(new PackageListUnion())
                             .setEnforcerCallback(PolicyEnforcerCallbacks::setContentRestrictionApps)
                             .build();
+                });
+        addFactory(
+                PolicyIdentifier.APP_INSTALL,
+                builder -> {
+                    // This (pre-existing) enum policy is stored as a boolean inside DPE, so return
+                    // null here and pass the pre-existing PolicyDefinition into the constructor
+                    // of `EnumStoredAsBooleanPolicyHandler`.
+                    return null;
                 });
         addFactory(
                 PolicyIdentifier.EASTER_EGGS,

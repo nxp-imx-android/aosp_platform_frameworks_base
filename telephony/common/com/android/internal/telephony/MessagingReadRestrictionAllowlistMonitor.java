@@ -16,6 +16,7 @@
 
 package com.android.internal.telephony;
 
+import android.annotation.ArrayRes;
 import android.annotation.SuppressLint;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -27,6 +28,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.SigningDetails;
 import android.content.pm.SignedPackage;
+import android.content.res.Resources.NotFoundException;
 import android.util.AtomicFile;
 import android.util.Log;
 import android.util.Slog;
@@ -41,14 +43,18 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.android.internal.os.BackgroundThread;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.R;
 
 /**
  * A class that monitors the DeviceConfig key for the read restriction allowlist and grants the
@@ -66,7 +72,10 @@ public class MessagingReadRestrictionAllowlistMonitor
     private static final String TELEPHONY_DIR = "telephony";
 
     private final Executor mBackgroundExecutor;
-    private DeviceConfigAllowlist mDeviceConfigAllowlist;
+    private final List<AllowlistProvider> mAllowlistProviders;
+    private final ValueStorage mStorage;
+    private final Context mContext;
+    private Allowlist mAllowlist = null;
 
     public MessagingReadRestrictionAllowlistMonitor(Context context) {
         this(context, new File(new File(Environment.getDataSystemDirectory(), TELEPHONY_DIR),
@@ -76,14 +85,82 @@ public class MessagingReadRestrictionAllowlistMonitor
     @VisibleForTesting
     public MessagingReadRestrictionAllowlistMonitor(Context context, File allowlistFile,
             Executor executor) {
+        mContext = context;
         mBackgroundExecutor = executor;
-        mDeviceConfigAllowlist
-            = new DeviceConfigAllowlist(context, allowlistFile, KEY_READ_RESTRICTION_ALLOWLIST);
+        mStorage = new ValueStorage(allowlistFile);
+        mAllowlistProviders = List.of(
+            new StaticResourcesAllowlist(context,
+                R.array.config_messaging_read_restriction_allowlist),
+            new DeviceConfigAllowlist(context, KEY_READ_RESTRICTION_ALLOWLIST));
     }
 
+    /**
+     * Interface for providing an allowlist of packages that should be granted with {@link
+     * AppOpsManager#OP_READ_RESTRICTED_MESSAGES} app op.
+     */
+    interface AllowlistProvider {
+        Set<AllowlistedPackage> getAllowlistedPackages();
+    }
+
+    /**
+     * Updates the allowlist by gathering all allowlisted packages from all declared {@link
+     * AllowlistProvider} instances, merging them into a single allowlist and updating the AppOps
+     * modes for the packages in the allowlist.
+     *
+     * This method is synchronized to prevent concurrent updates.
+     */
+    private synchronized void refreshAllowlistAndApplyAppOps() {
+        if (mAllowlist == null) {
+            initializeAllowlistFromStorage();
+        }
+        final Allowlist updatedAllowlist = computeAllowlistLocked();
+        if (!updateAppOps(mContext, mAllowlist, updatedAllowlist)) {
+            Slog.v(TAG, "No AppOps modes were updated. Skipping storage update.");
+            return;
+        }
+        mStorage.writeValue(updatedAllowlist.getEncodedValue());
+        mAllowlist = updatedAllowlist;
+    }
+
+    /**
+     * Initializes the allowlist by reading the allowlist from the storage and updating the AppOps
+     * modes for the packages in the allowlist. If the storage is empty or the read operation fails,
+     * it will be initialized with an empty allowlist.
+     *
+     * This method is called only once at the initialization time.
+     */
+    private void initializeAllowlistFromStorage() {
+        Allowlist storedAllowlist = mStorage.readPersistedValue();
+        if (storedAllowlist == null) {
+            Slog.w(TAG, "Failed to read allowlist from storage. Fallback to empty allowlist.");
+            mAllowlist = Allowlist.EMPTY_ALLOWLIST;
+            return;
+        }
+        updateAppOps(mContext, Allowlist.EMPTY_ALLOWLIST, storedAllowlist);
+        mAllowlist = storedAllowlist;
+    }
+
+
+    /**
+     * Gathers all allowlisted packages from all declared {@link AllowlistProvider}, merges them
+     * into a single allowlist and returns the result.
+     *
+     * This method is not thread-safe and the access to it should be synchronized by the caller.
+     */
+    public Allowlist computeAllowlistLocked() {
+        Set<AllowlistedPackage> mergedPackages = mAllowlistProviders.stream()
+                .flatMap(provider -> provider.getAllowlistedPackages().stream())
+                .collect(Collectors.toSet());
+        return new Allowlist(mergedPackages);
+    }
+
+    /**
+     * Initializes the allowlist providers and updates the AppOps modes for the packages in the
+     * allowlist.
+     */
     public void initialize() {
         mBackgroundExecutor.execute(() -> {
-            mDeviceConfigAllowlist.update();
+            refreshAllowlistAndApplyAppOps();
         });
 
         DeviceConfig.addOnPropertiesChangedListener(DeviceConfig.NAMESPACE_TELEPHONY,
@@ -95,101 +172,104 @@ public class MessagingReadRestrictionAllowlistMonitor
         if (!properties.getKeyset().contains(KEY_READ_RESTRICTION_ALLOWLIST)) {
             return;
         }
-        mDeviceConfigAllowlist.update();
+        refreshAllowlistAndApplyAppOps();
     }
 
     /**
-     * Class that represents a remote allowlist. It handles reading and writing the allowlist to
-     * persistent storage and updating the AppOps modes for the packages in the allowlist.
+     * Class that represents a static allowlist retrieved from the {@link Context} resources.
+     * It handles reading the allowlist from the resources using provided {@param mResourceId} key.
+     * The static allowlist contains only package names, and accepts any certificate.
+     *
+     * This allowlist is static and is not updated at runtime.
      */
-    private static final class DeviceConfigAllowlist {
+    private static final class StaticResourcesAllowlist implements AllowlistProvider {
         private final Context mContext;
-        private final ValueStorage mStorage;
-        private final String mDeviceConfigKey;
-        private Allowlist mAllowlist = Allowlist.EMPTY_ALLOWLIST;
+        private final int mResourceId;
+        private Allowlist mAllowlist = null;
 
-        DeviceConfigAllowlist(@NonNull Context context, @NonNull File file,
-                @NonNull String deviceConfigKey) {
+        StaticResourcesAllowlist(@NonNull Context context, @ArrayRes int resourceId) {
             mContext = context;
-            mStorage = new ValueStorage(file);
+            mResourceId = resourceId;
+        }
+
+        @Override
+        public Set<AllowlistedPackage> getAllowlistedPackages() {
+            if (mAllowlist == null) {
+                mAllowlist = readFromResources();
+            }
+            return mAllowlist.packages();
+        }
+
+        private @NonNull Allowlist readFromResources() {
+            if (mResourceId <= 0) {
+                Slog.w(TAG, "Invalid resource ID for allowlist.");
+                return Allowlist.EMPTY_ALLOWLIST;
+            }
+            List<String> allowlistedPackages = null;
+            try {
+                allowlistedPackages = Arrays.asList(
+                    mContext.getResources().getStringArray(mResourceId));
+            } catch (NotFoundException e) {
+                Slog.e(TAG, "Failed to read allowlist from resources.");
+                return Allowlist.EMPTY_ALLOWLIST;
+            }
+            return new Allowlist(allowlistedPackages.stream()
+                .map(packageName ->
+                    new AllowlistedPackage(packageName, AllowlistedPackage.ANY_CERTIFICATE))
+                .collect(Collectors.toSet()));
+        }
+    }
+
+    /**
+     * Class that represents a remote allowlist. It handles reading the current state of the
+     * allowlist from DeviceConfig.
+     */
+    private static final class DeviceConfigAllowlist implements AllowlistProvider {
+        private final Context mContext;
+        private final String mDeviceConfigKey;
+
+        DeviceConfigAllowlist(@NonNull Context context, @NonNull String deviceConfigKey) {
+            mContext = context;
             mDeviceConfigKey = deviceConfigKey;
         }
 
-        private synchronized void update() {
-            if(mAllowlist == null) {
-                final Allowlist storedAllowlist = mStorage.readPersistedValue();
-                if (storedAllowlist == null) {
-                    Slog.w(TAG, "Failed to initialize allowlist from storage.");
-                    setAllowlist(Allowlist.EMPTY_ALLOWLIST);
-                } else {
-                    Slog.v(TAG, "Initialized allowlist from storage. Updating AppOps.");
-                    updateAppOps(mContext, Allowlist.EMPTY_ALLOWLIST, storedAllowlist);
-                    setAllowlist(storedAllowlist);
-                }
-            }
-
-            final Allowlist deviceConfigAllowlist = readDeviceConfig();
-            if (deviceConfigAllowlist == null) {
-                Slog.w(TAG, "Failed to read allowlist from DeviceConfig.");
-                return;
-            }
-            Slog.v(TAG, "Reading allowlist from DeviceConfig.");
-            if (isSameAllowlistObject(deviceConfigAllowlist)) {
-                Slog.v(TAG, "DeviceConfig allowlist is the same as the current allowlist.");
-                return;
-            }
-            updateAppOps(mContext, mAllowlist, deviceConfigAllowlist);
-            Slog.v(TAG, "Updated AppOps for DeviceConfig allowlist.");
-            setAllowlist(deviceConfigAllowlist);
-            Slog.v(TAG, "Wrote updated DeviceConfig allowlist to memory.");
-            mStorage.writeValue(deviceConfigAllowlist.getStringValue());
-            Slog.v(TAG, "Wrote updated DeviceConfig allowlist to storage.");
+        @Override
+        public Set<AllowlistedPackage> getAllowlistedPackages() {
+            return readDeviceConfig().packages();
         }
 
         @SuppressLint("MissingPermission")
-        @Nullable
-        private Allowlist readDeviceConfig() {
+        private @NonNull Allowlist readDeviceConfig() {
             try {
                 final String value = DeviceConfig.getString(DeviceConfig.NAMESPACE_TELEPHONY,
                         mDeviceConfigKey, null /* defaultValue */);
                 Slog.v(TAG, "Value retrieved from DeviceConfig: for key " + mDeviceConfigKey);
                 if (value == null) {
-                    return null;
+                    Slog.w(TAG, "No value found in DeviceConfig for key " + mDeviceConfigKey);
+                    return Allowlist.EMPTY_ALLOWLIST;
                 }
                 return Allowlist.parse(value);
             } catch (Exception e) {
                 Slog.e(TAG, "Failed to parse value from DeviceConfig for key "
                         + mDeviceConfigKey);
             }
-            return null;
-        }
-
-        /**
-         * Updates the cached allowlist in memory.
-         *
-         * @param allowlist The new allowlist to be cached.
-         */
-        void setAllowlist(Allowlist allowlist) {
-            mAllowlist = allowlist;
-        }
-
-        /**
-         * Checks if the given allowlist is the same object as the current allowlist.
-         *
-         * @param allowlist The allowlist to be compared with the current allowlist
-         */
-        boolean isSameAllowlistObject(@NonNull Allowlist allowlist) {
-            return Objects.equals(allowlist, mAllowlist);
+            return Allowlist.EMPTY_ALLOWLIST;
         }
     }
 
-    private static void updateAppOps(Context context, Allowlist storedAllowlist,
+    /**
+     * Updates the AppOps modes for the packages that have changed between the two allowlists.
+     *
+     * @return True if any AppOps modes were updated, false otherwise.
+     */
+    private static boolean updateAppOps(Context context, Allowlist storedAllowlist,
             Allowlist updatedAllowlist) {
         final PackageManager packageManager = context.getPackageManager();
         final AppOpsManager appOpsManager = context.getSystemService(AppOpsManager.class);
 
-        storedAllowlist.getAppOpChanges(updatedAllowlist)
-            .forEach(change -> change.apply(packageManager, appOpsManager));
+        List<AppOpChange> changes = storedAllowlist.getAppOpChanges(updatedAllowlist);
+        changes.forEach(change -> change.apply(packageManager, appOpsManager));
+        return !changes.isEmpty();
     }
 
     private static void setAppOpMode(AppOpsManager appOpsManager, @NonNull String packageName,
@@ -329,7 +409,7 @@ public class MessagingReadRestrictionAllowlistMonitor
                     .collect(Collectors.toSet()));
         }
 
-        String getStringValue() {
+        String getEncodedValue() {
             return packages.stream().map(AllowlistedPackage::toString)
                     .collect(Collectors.joining(SIGNED_PACKAGE_SEPARATOR));
         }
@@ -355,7 +435,16 @@ public class MessagingReadRestrictionAllowlistMonitor
         }
     }
 
+    /**
+     * Class that represents a package that is allowlisted for reading restricted messages.
+     * It contains the package name and the sha256 hash of the signature certificate.
+     *
+     * The wildcard certificate "*" indicates that any certificate is allowed. Using the wildcard
+     * certificate is only allowed for system (preinstalled) apps.
+     */
     record AllowlistedPackage(String packageName, String sha256Certificate) {
+        static final String ANY_CERTIFICATE = "*";
+
         static AllowlistedPackage parse(String input) {
             String[] parts = input.split(CERTIFICATE_SEPARATOR);
             if (parts.length != 2) {
@@ -388,13 +477,14 @@ public class MessagingReadRestrictionAllowlistMonitor
                 final int uid = applicationInfo.uid;
                 SigningDetails signingDetails = getSigningDetails(packageEntry.packageName(),
                         packageManager);
-                if (signingDetails == null || !isPreInstalledApp(applicationInfo)) {
-                    Slog.v(TAG, "signingDetails is null or package is not preinstalled");
+
+                if (signingDetails == null) {
+                    Slog.v(TAG, "signingDetails are not available.");
                     return;
                 }
 
-                if (packageSignatureMatches(packageEntry.packageName(), signingDetails,
-                        packageEntry)) {
+                if (packageSignatureMatches(packageEntry, signingDetails,
+                        isPreInstalledApp(applicationInfo))) {
                     Slog.v(TAG, "Setting AppOp mode to allowed for " + packageEntry.packageName());
                     setAppOpMode(appOpsManager, packageEntry.packageName(), uid, mode);
                 }
@@ -402,14 +492,15 @@ public class MessagingReadRestrictionAllowlistMonitor
         }
     }
 
-    private static boolean packageSignatureMatches(@NonNull String packageName,
-            @NonNull SigningDetails signingDetails, @NonNull AllowlistedPackage entry) {
-        if (!Objects.equals(packageName, entry.packageName())) {
-            return false;
+    private static boolean packageSignatureMatches(
+            @NonNull AllowlistedPackage entry,
+            @NonNull SigningDetails signingDetails,
+            boolean isPreInstalledApp) {
+        // Wildcard certificate is allowed only for preinstalled apps.
+        if (Objects.equals(entry.sha256Certificate(), AllowlistedPackage.ANY_CERTIFICATE)) {
+            return isPreInstalledApp;
         }
-
-        return signingDetails.hasAncestorOrSelfWithDigest(
-                Set.of(entry.sha256Certificate()));
+        return signingDetails.hasAncestorOrSelfWithDigest(Set.of(entry.sha256Certificate()));
     }
 
     private static boolean isPreInstalledApp(@Nullable ApplicationInfo applicationInfo) {

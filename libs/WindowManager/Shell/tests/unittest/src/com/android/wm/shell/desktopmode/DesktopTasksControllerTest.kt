@@ -160,7 +160,6 @@ import com.android.wm.shell.draganddrop.DragAndDropController
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter
 import com.android.wm.shell.fullscreen.FullscreenDisconnectHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
-import com.android.wm.shell.pip2.phone.PipDisplayDisconnectHandler
 import com.android.wm.shell.pip2.phone.PipScheduler
 import com.android.wm.shell.pip2.phone.PipTransitionState
 import com.android.wm.shell.recents.RecentTasksController
@@ -9817,11 +9816,20 @@ class DesktopTasksControllerTest : ShellTestCase() {
     @EnableFlags(
         Flags.FLAG_BETTER_DESK_DEACTIVATION_IN_RECENTS_TRANSITION,
     )
+    @DisableFlags(Flags.FLAG_HANDLE_OVERVIEW_DESKTOP_SCRIM_BUGFIX)
     fun onRecentsInDesktopAnimationFinishing_returningToApp_noDeskDeactivation() {
         val overviewVisibilityListenerCaptor = argumentCaptor<OverviewVisibilityChangeListener>()
         whenever(shellController.isOverviewVisible(DEFAULT_DISPLAY)).thenReturn(true)
         whenever(displayController.getDisplay(DEFAULT_DISPLAY))
             .thenReturn(mock(Display::class.java))
+        // TODO (b/489936769): Run this test with the overview scrim bug fix flag enabled. With the
+        //  scrim controller depending on the task controller, and the scrim controller also
+        //  register an overview listener, the verification of the only one listener added is not
+        //  valid. Disable the flag to ensure the test still covers the unit test part of the task
+        //  controller. Refactor to make the scrim controller isolated from the task controller and
+        //  to mock the scrim controller in test properly before removing the flag to make the test
+        //  covers the desired cases always. The same thing for all other tests with the flag
+        //  disabled.
         verify(shellController)
             .addOverviewVisibilityChangeListener(overviewVisibilityListenerCaptor.capture())
         overviewVisibilityListenerCaptor.lastValue.onOverviewShown(DEFAULT_DISPLAY)
@@ -9848,6 +9856,7 @@ class DesktopTasksControllerTest : ShellTestCase() {
     @EnableFlags(
         Flags.FLAG_BETTER_DESK_DEACTIVATION_IN_RECENTS_TRANSITION,
     )
+    @DisableFlags(Flags.FLAG_HANDLE_OVERVIEW_DESKTOP_SCRIM_BUGFIX)
     fun onRecentsInDesktopAnimationFinishing_displayInvalid_noDeskDeactivation() {
         val overviewVisibilityListenerCaptor = argumentCaptor<OverviewVisibilityChangeListener>()
         whenever(shellController.isOverviewVisible(SECONDARY_DISPLAY_ID)).thenReturn(true)
@@ -9920,6 +9929,7 @@ class DesktopTasksControllerTest : ShellTestCase() {
     @EnableFlags(
         Flags.FLAG_BETTER_DESK_DEACTIVATION_IN_RECENTS_TRANSITION,
     )
+    @DisableFlags(Flags.FLAG_HANDLE_OVERVIEW_DESKTOP_SCRIM_BUGFIX)
     fun onRecentsInDesktopAnimationFinishing_deskNoLongerActive_noDeskDeactivation() {
         val overviewVisibilityListenerCaptor = argumentCaptor<OverviewVisibilityChangeListener>()
         whenever(shellController.isOverviewVisible(DEFAULT_DISPLAY)).thenReturn(true)
@@ -9982,6 +9992,7 @@ class DesktopTasksControllerTest : ShellTestCase() {
     @EnableFlags(
         Flags.FLAG_BETTER_DESK_DEACTIVATION_IN_RECENTS_TRANSITION,
     )
+    @DisableFlags(Flags.FLAG_HANDLE_OVERVIEW_DESKTOP_SCRIM_BUGFIX)
     fun onRecentsInDesktopAnimationFinishing_deskStillActive_notReturningToDesk_deactivatesDesk() {
         val overviewVisibilityListenerCaptor = argumentCaptor<OverviewVisibilityChangeListener>()
         whenever(shellController.isOverviewVisible(DEFAULT_DISPLAY)).thenReturn(true)
@@ -10044,6 +10055,7 @@ class DesktopTasksControllerTest : ShellTestCase() {
     @EnableFlags(
         Flags.FLAG_BETTER_DESK_DEACTIVATION_IN_RECENTS_TRANSITION,
     )
+    @DisableFlags(Flags.FLAG_HANDLE_OVERVIEW_DESKTOP_SCRIM_BUGFIX)
     fun onRecentsInDesktopAnimationFinishing_deskStillActive_notReturningToDesk_doesNotBringUpWallpaperOrHome() {
         val overviewVisibilityListenerCaptor = argumentCaptor<OverviewVisibilityChangeListener>()
         whenever(shellController.isOverviewVisible(DEFAULT_DISPLAY)).thenReturn(true)

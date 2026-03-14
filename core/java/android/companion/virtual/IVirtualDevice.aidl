@@ -75,6 +75,11 @@ interface IVirtualDevice {
     String getPersistentDeviceId();
 
     /**
+     * Returns the profile of this virtual device.
+     */
+    String getDeviceProfile();
+
+    /**
      * Returns the IDs of all virtual displays of this device.
      */
     int[] getDisplayIds();

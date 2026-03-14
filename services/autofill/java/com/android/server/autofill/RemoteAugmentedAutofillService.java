@@ -181,6 +181,14 @@ final class RemoteAugmentedAutofillService {
         getAugmentedAutofillClient(client)
                 .thenComposeAsync(
                         augmentedAutofillClient -> {
+                            if (augmentedAutofillClient == null) {
+                                Slog.e(
+                                        TAG,
+                                        "onRequestAutofillLocked: Unable to fetch "
+                                                + "augmentedAutofillClient, not sending requests");
+                                return null;
+                            }
+
                             CompletableFuture<AugmentedAutofillInlineSuggestionsResponseData>
                                     personalContextFuture =
                                             sendRequestToPersonalContext(
@@ -291,8 +299,8 @@ final class RemoteAugmentedAutofillService {
                         }
                     });
         } catch (RemoteException e) {
-            clientFuture.complete(null);
-            throw new RuntimeException(e);
+            Slog.e(TAG, "getAugmentedAutofillClient: failed due to RemoteException", e);
+            clientFuture.completeExceptionally(e);
         }
         return clientFuture;
     }

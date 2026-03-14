@@ -122,8 +122,8 @@ class DesktopStateImpl(context: Context) : DesktopState {
             } ?: false
 
     override val overridesShowAppHandle: Boolean =
-        (Flags.showAppHandleLargeScreens() ||
-            BubbleFlagHelper.enableBubbleToFullscreen()) && deviceHasLargeScreen
+        (Flags.showAppHandleLargeScreens() || BubbleFlagHelper.enableBubbleToFullscreen()) &&
+            deviceHasLargeScreen
 
     private val hasFreeformFeature =
         context.getPackageManager().hasSystemFeature(FEATURE_FREEFORM_WINDOW_MANAGEMENT)
@@ -141,6 +141,11 @@ class DesktopStateImpl(context: Context) : DesktopState {
                 SHOW_HOME_BEHIND_DESKTOP_SYS_PROP,
                 context.resources.getBoolean(R.bool.config_showHomeBehindDesktop),
             )
+
+    /** Clean's up any registered listeners */
+    override fun destroy() {
+        projectedModeState.destroy()
+    }
 
     companion object {
         @VisibleForTesting

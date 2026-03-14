@@ -238,11 +238,17 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         }
 
         /**
-         * @return {@code true} if the synchronized insets animation is allowed for this host,
-         *         {@code false} otherwise.
+         * @return {@code true} if the default synchronized insets animation is allowed for this
+         *         host, {@code false} otherwise.
          */
-        default boolean allowsSyncedInsetsAnimation() {
+        default boolean allowsAdditionalSyncedAnimation() {
             return false;
+        }
+
+        /**
+         * Updates the parameters for calculating insets.
+         */
+        default void updateWindowInsetsInfo() {
         }
 
         /** @see ViewRootImpl#isHandlingPointerEvent */
@@ -704,12 +710,12 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
 
     @LayoutParams.WindowType
     private int mWindowType;
-    private int mLastLegacySoftInputMode;
-    private int mLastLegacyWindowFlags;
-    private int mLastLegacySystemUiFlags;
-    private boolean mLastScreenRound;
+    private int mLegacySoftInputMode;
+    private int mLegacyWindowFlags;
+    private int mLegacySystemUiFlags;
+    private boolean mScreenRound;
     @WindowConfiguration.ActivityType
-    private int mLastActivityType;
+    private int mActivityType;
     private boolean mStartingAnimation;
     private int mImeCaptionBarInsetsHeight = 0;
     private boolean mAnimationsDisabled;
@@ -899,9 +905,9 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             }
 
             final WindowInsets insets = state.calculateInsets(mFrame,
-                    mBounds, mState /* ignoringVisibilityState */, mLastScreenRound,
-                    mLastLegacySoftInputMode, mLastLegacyWindowFlags, mLastLegacySystemUiFlags,
-                    mWindowType, mLastActivityType, null /* idSideMap */);
+                    mBounds, mState /* ignoringVisibilityState */, mScreenRound,
+                    mLegacySoftInputMode, mLegacyWindowFlags, mLegacySystemUiFlags,
+                    mWindowType, mActivityType, null /* idSideMap */);
             mHost.dispatchWindowInsetsAnimationProgress(insets, state,
                     Collections.unmodifiableList(runningAnimations), hasUserAnimation,
                     hasResizeAnimation, hasAnimationCallback, hidingTypes);
@@ -1031,6 +1037,22 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     }
 
     /**
+     * Updates the parameters for calculating insets.
+     * @see #calculateInsets
+     */
+    @VisibleForTesting(visibility = PACKAGE)
+    public void setWindowInsetsInfo(boolean isScreenRound, @LayoutParams.WindowType int windowType,
+            @WindowConfiguration.ActivityType int activityType, int legacySoftInputMode,
+            int legacyWindowFlags, int legacySystemUiFlags) {
+        mScreenRound = isScreenRound;
+        mWindowType = windowType;
+        mActivityType = activityType;
+        mLegacySoftInputMode = legacySoftInputMode;
+        mLegacyWindowFlags = legacyWindowFlags;
+        mLegacySystemUiFlags = legacySystemUiFlags;
+    }
+
+    /**
      * @see InsetsState#calculateInsets(Rect, Rect, InsetsState, boolean, int, int, int, int, int,
      * android.util.SparseIntArray)
      */
@@ -1040,12 +1062,8 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             @LayoutParams.WindowType int windowType,
             @WindowConfiguration.ActivityType int activityType,
             int legacySoftInputMode, int legacyWindowFlags, int legacySystemUiFlags) {
-        mWindowType = windowType;
-        mLastActivityType = activityType;
-        mLastLegacySoftInputMode = legacySoftInputMode;
-        mLastLegacyWindowFlags = legacyWindowFlags;
-        mLastLegacySystemUiFlags = legacySystemUiFlags;
-        mLastScreenRound = isScreenRound;
+        setWindowInsetsInfo(isScreenRound, windowType, activityType, legacySoftInputMode,
+                legacyWindowFlags, legacySystemUiFlags);
         return mState.calculateInsets(mFrame, mBounds, null /* ignoringVisibilityState */,
                 isScreenRound, legacySoftInputMode, legacyWindowFlags,
                 legacySystemUiFlags, windowType, activityType, null /* idSideMap */);
@@ -1586,6 +1604,15 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             Trace.asyncTraceBegin(TRACE_TAG_VIEW, "IC.pendingAnim", 0);
         }
 
+        if (com.android.window.flags.Flags.syncedInsetsAnimation()) {
+            // For the first frame, ensure that parameters like the soft input mode are up to date.
+            // We also run the animation callback to initialize the animation progress insets for
+            // system-run animations, or to clear the animationProgress when a user-controlled
+            // animation starts.
+            mHost.updateWindowInsetsInfo();
+            mAnimCallback.run();
+        }
+
         onAnimationStateChanged(types, true /* running */);
 
         if (animationType == ANIMATION_TYPE_HIDE) {
@@ -1996,7 +2023,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         final boolean hasAnimationCallbacks = mHost.hasAnimationCallbacks();
         final boolean useInsetsAnimationThread =
                 (!hasAnimationCallbacks && (!com.android.window.flags.Flags.syncedInsetsAnimation()
-                        || !mHost.allowsSyncedInsetsAnimation())) || skipsCallbacks;
+                        || !mHost.allowsAdditionalSyncedAnimation())) || skipsCallbacks;
 
         Handler handler = null;
         if (Flags.fixJankTrackerImeAnimationDelay() && useInsetsAnimationThread) {

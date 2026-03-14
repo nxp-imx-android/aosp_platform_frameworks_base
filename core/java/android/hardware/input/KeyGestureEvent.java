@@ -21,6 +21,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.role.RoleManager;
 import android.content.Intent;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.view.Display;
 import android.view.KeyCharacterMap;
 
@@ -35,6 +36,7 @@ import java.util.Objects;
  *
  * @hide
  */
+@RavenwoodKeepWholeClass
 public final class KeyGestureEvent {
 
     @NonNull

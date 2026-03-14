@@ -16,19 +16,16 @@
 
 package com.android.server.appfunctions;
 
-import static android.app.appfunctions.AppFunctionException.ERROR_SYSTEM_ERROR;
 import static android.app.appfunctions.AppFunctionException.ERROR_FUNCTION_NOT_FOUND;
+import static android.app.appfunctions.AppFunctionException.ERROR_SYSTEM_ERROR;
 import static android.app.appfunctions.AppFunctionManager.ACCESS_REQUEST_STATE_UNREQUESTABLE;
 import static android.app.appfunctions.AppFunctionManager.ACTION_REQUEST_APP_FUNCTION_ACCESS;
 import static android.app.appfunctions.AppFunctionManager.APP_FUNCTION_STATE_DEFAULT;
 import static android.app.appfunctions.AppFunctionManager.APP_FUNCTION_STATE_ENABLED;
 import static android.app.appfunctions.AppFunctionRuntimeMetadata.APP_FUNCTION_RUNTIME_METADATA_DB;
 import static android.app.appfunctions.AppFunctionRuntimeMetadata.APP_FUNCTION_RUNTIME_NAMESPACE;
-import static android.app.appfunctions.AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_METADATA_DB;
-import static android.app.appfunctions.AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_NAMESPACE;
 
 import static com.android.server.appfunctions.AppFunctionExecutors.THREAD_POOL_EXECUTOR;
-import static com.android.server.appfunctions.CallerValidator.CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION;
 import static com.android.server.appfunctions.CallerValidator.CAN_EXECUTE_APP_FUNCTIONS_DENIED;
 
 import android.annotation.NonNull;
@@ -134,6 +131,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 /** Implementation of the AppFunctionManagerService. */
@@ -265,7 +263,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 /* shouldSetRuntimeMetadataSchemaUnconditionally= */ android.app.appfunctions.flags
                         .Flags.enableAppFunctionPermissionV2());
         PackageMonitor pkgMonitorForUser =
-                AppFunctionPackageMonitor.registerPackageMonitorForUser(mContext, user);
+                AppFunctionPackageMonitor.registerPackageMonitorForUser(
+                        mContext, user, mAppFunctionMetadataObserver);
         mPackageMonitors.append(user.getUserIdentifier(), pkgMonitorForUser);
 
         File appFunctionsLogDir =
@@ -1149,7 +1148,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         return future;
     }
 
-    // TODO(b/438413081): Consider caching runtime enabled states for all app functions
+    // TODO(b/478850386): Consider caching runtime enabled states for all app functions
     //  for quick lookup
     private CompletableFuture<Boolean> isAppFunctionEnabledInternal2(
             @NonNull String functionIdentifier,
@@ -1159,10 +1158,11 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         FutureGlobalSearchSession futureSession =
                 new FutureGlobalSearchSession(appSearchManager, Runnable::run);
         return mAppFunctionMetadataReader
-                .isAppFunctionEnabled(
+                .getAppFunctionEnabledState(
                         futureSession,
                         new AppFunctionName(targetPackage, functionIdentifier),
                         userId)
+                .thenApply(AppFunctionMetadataReader.AppFunctionEnabledState::isEffectivelyEnabled)
                 .whenComplete(
                         (isEnabled, exception) -> {
                             futureSession.close();
@@ -1535,30 +1535,31 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                         perUserAppSearchManager,
                         THREAD_POOL_EXECUTOR,
                         runtimeMetadataSearchContext)) {
-            AppFunctionRuntimeMetadata existingMetadata =
-                    new AppFunctionRuntimeMetadata(
-                            getRuntimeMetadataGenericDocument(
-                                    callingPackage,
-                                    functionIdentifier,
-                                    runtimeMetadataSearchSession));
+
+            AppFunctionMetadataReader.AppFunctionEnabledState existingEnabledState =
+                    getAppFunctionEnabledState(
+                            new AppFunctionName(callingPackage, functionIdentifier),
+                            perUserAppSearchManager,
+                            userHandle.getIdentifier());
+
+            boolean requestedEffectiveEnabledState =
+                    requestedRuntimeState == APP_FUNCTION_STATE_DEFAULT
+                            ? existingEnabledState.isEnabledByDefault()
+                            : requestedRuntimeState == APP_FUNCTION_STATE_ENABLED;
 
             // No need to overwrite metadata if the runtime enabled state value isn't changing.
-            if (requestedRuntimeState == existingMetadata.getEnabled()) {
+            if (existingEnabledState.isEffectivelyEnabled() == requestedEffectiveEnabledState) {
                 return;
             }
 
-            // TODO(b/438413081): Optimize this function to call app search only once to retrieve
-            //  both the runtime metadata and the effective enabled state.
-            final boolean isExistingMetadataEffectivelyEnabled =
-                    isAppFunctionEnabledInternal2(
-                                    existingMetadata,
-                                    perUserAppSearchManager,
-                                    userHandle.getIdentifier())
-                            .get();
+            int runtimeStateToWrite = requestedRuntimeState;
+            if (requestedEffectiveEnabledState == existingEnabledState.isEnabledByDefault()) {
+                runtimeStateToWrite = APP_FUNCTION_STATE_DEFAULT;
+            }
 
             AppFunctionRuntimeMetadata newMetadata =
-                    new AppFunctionRuntimeMetadata.Builder(existingMetadata)
-                            .setEnabled(requestedRuntimeState)
+                    new AppFunctionRuntimeMetadata.Builder(callingPackage, functionIdentifier)
+                            .setEnabled(runtimeStateToWrite)
                             .build();
             AppSearchBatchResult<String, Void> putDocumentBatchResult =
                     runtimeMetadataSearchSession
@@ -1572,46 +1573,40 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                         "Failed writing updated doc to AppSearch due to " + putDocumentBatchResult);
             }
 
-            boolean isNewMetadataEffectivelyEnabled =
-                    isAppFunctionEnabledInternal2(
-                                    newMetadata,
-                                    perUserAppSearchManager,
-                                    userHandle.getIdentifier())
-                            .get();
-
             try {
-                if (isExistingMetadataEffectivelyEnabled != isNewMetadataEffectivelyEnabled) {
-                    mAppFunctionMetadataObserver.onEnabledStatesChanged(
-                            userHandle,
-                            Set.of(new AppFunctionName(callingPackage, functionIdentifier)));
-                }
+                mAppFunctionMetadataObserver.onEnabledStatesChanged(
+                        userHandle,
+                        Set.of(new AppFunctionName(callingPackage, functionIdentifier)));
             } catch (Exception e) {
                 Slog.w(TAG, "Failed to report enabled state change.", e);
             }
         }
     }
 
-    /**
-     * Returns true if the given {@link AppFunctionRuntimeMetadata} is enabled.
-     *
-     * <p>This function makes use of an already obtained {@link AppFunctionRuntimeMetadata} to
-     * optimize {@link #isAppFunctionEnabledInternal2}. If the runtimeMetadata has a non-default
-     * enabled state, it returns it. Otherwise, it routes to {@link #isAppFunctionEnabledInternal2}.
-     */
-    private CompletableFuture<Boolean> isAppFunctionEnabledInternal2(
-            @NonNull AppFunctionRuntimeMetadata runtimeMetadata,
+    @NonNull
+    private AppFunctionMetadataReader.AppFunctionEnabledState getAppFunctionEnabledState(
+            @NonNull AppFunctionName appFunctionName,
             @NonNull AppSearchManager appSearchManager,
-            int userId)
-            throws Exception {
-        if (runtimeMetadata.getEnabled() == APP_FUNCTION_STATE_DEFAULT) {
-            return isAppFunctionEnabledInternal2(
-                    runtimeMetadata.getFunctionId(),
-                    runtimeMetadata.getPackageName(),
-                    appSearchManager,
-                    userId);
-        } else {
-            return AndroidFuture.completedFuture(
-                    runtimeMetadata.getEnabled() == APP_FUNCTION_STATE_ENABLED);
+            int userId) {
+        FutureGlobalSearchSession futureSession =
+                new FutureGlobalSearchSession(appSearchManager, Runnable::run);
+
+        CompletableFuture<AppFunctionMetadataReader.AppFunctionEnabledState> futureState =
+                mAppFunctionMetadataReader
+                        .getAppFunctionEnabledState(futureSession, appFunctionName, userId)
+                        .whenComplete(
+                                (isEnabled, exception) -> {
+                                    futureSession.close();
+                                });
+
+        try {
+            return futureState.get();
+        } catch (ExecutionException | InterruptedException e) {
+            if (e.getCause() instanceof AppFunctionNotFoundException) {
+                throw new IllegalArgumentException(
+                        "Function " + appFunctionName.getFunctionIdentifier() + " does not exist");
+            }
+            throw new RuntimeException(e);
         }
     }
 

@@ -96,6 +96,7 @@ class AppHeaderViewHolder(
     private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
     private val dimensions: HeaderDimensions,
     private val focusTransitionObserver: FocusTransitionObserver,
+    private val decorThemeUtilFactory: DecorThemeUtil.Factory,
 ) : WindowDecorationViewHolder<AppHeaderViewHolder.HeaderData>() {
 
     data class HeaderData(
@@ -107,7 +108,7 @@ class AppHeaderViewHolder(
         val isCaptionVisible: Boolean,
     ) : Data()
 
-    private val decorThemeUtil = DecorThemeUtil(context)
+    private val decorThemeUtil = decorThemeUtilFactory.create(context)
     private val lightColors = dynamicLightColorScheme(context)
     private val darkColors = dynamicDarkColorScheme(context)
 
@@ -1002,6 +1003,7 @@ class AppHeaderViewHolder(
             desktopModeUiEventLogger: DesktopModeUiEventLogger,
             dimensions: HeaderDimensions,
             focusTransitionObserver: FocusTransitionObserver,
+            decorThemeUtilFactory: DecorThemeUtil.Factory,
         ): AppHeaderViewHolder
     }
 
@@ -1018,6 +1020,7 @@ class AppHeaderViewHolder(
             desktopModeUiEventLogger: DesktopModeUiEventLogger,
             dimensions: HeaderDimensions,
             focusTransitionObserver: FocusTransitionObserver,
+            decorThemeUtilFactory: DecorThemeUtil.Factory,
         ): AppHeaderViewHolder =
             AppHeaderViewHolder(
                 rootView,
@@ -1030,6 +1033,7 @@ class AppHeaderViewHolder(
                 desktopModeUiEventLogger,
                 dimensions,
                 focusTransitionObserver,
+                decorThemeUtilFactory,
             )
     }
 }

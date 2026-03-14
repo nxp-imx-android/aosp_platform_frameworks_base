@@ -16,31 +16,29 @@
 package com.android.wm.shell.dagger.hierarchy
 
 import android.content.Context
-import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.dagger.WMShellConcurrencyModule
 import com.android.wm.shell.dagger.WMShellCoroutinesModule
 import com.android.wm.shell.dagger.WMSingleton
 import com.android.wm.shell.hierarchy.ContainerHierarchy
-import com.android.wm.shell.hierarchy.modes.FormFactorModes
 import com.android.wm.shell.hierarchy.experimental.AlwaysOnTopMode
-import com.android.wm.shell.hierarchy.modes.handheld.HandheldModes
 import com.android.wm.shell.hierarchy.experimental.HandheldRootMode
 import com.android.wm.shell.hierarchy.experimental.MultiContainerMode
+import com.android.wm.shell.hierarchy.experimental.testsplit.PipMode
 import com.android.wm.shell.hierarchy.experimental.testsplit.SplitMode
-import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.hierarchy.modes.FormFactorModes
+import com.android.wm.shell.hierarchy.modes.handheld.HandheldModes
 import com.android.wm.shell.sysui.ShellInit
 import dagger.Module
 import dagger.Provides
 
-/**
- * Provides basic dependencies from {@link com.android.wm.shell.hierarchy} for handheld devices.
- */
+/** Provides basic dependencies from {@link com.android.wm.shell.hierarchy} for handheld devices. */
 @Module(
-    includes = [
-        WMShellConcurrencyModule::class,
-        WMShellCoroutinesModule::class,
-        ContainerHierarchyModule::class,
-    ]
+    includes =
+        [
+            WMShellConcurrencyModule::class,
+            WMShellCoroutinesModule::class,
+            ContainerHierarchyModule::class,
+        ]
 )
 class HandheldContainersModule {
     // This provides the override FormFactorModes in ContainerHierarchyModule
@@ -51,12 +49,14 @@ class HandheldContainersModule {
         hierarchy: ContainerHierarchy,
         shellInit: ShellInit,
     ): FormFactorModes {
+        val pipMode = PipMode(context, hierarchy)
         return HandheldModes(
             hierarchy,
             HandheldRootMode(),
             AlwaysOnTopMode(context, hierarchy),
             MultiContainerMode(context, hierarchy),
-            SplitMode(context, hierarchy),
+            SplitMode(context, hierarchy, pipMode),
+            pipMode,
             shellInit,
         )
     }

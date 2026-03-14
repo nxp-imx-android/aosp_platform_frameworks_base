@@ -46,6 +46,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -172,6 +175,10 @@ private fun ContentScope.Scrim(
     onClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val closeOverlayActionLabel = stringResource(R.string.accessibility_close_overlay_action)
+    val closeOverlayBoundingBoxDescription =
+        stringResource(R.string.accessibility_close_overlay_box_description)
+
     val scrimBackgroundColor = Colors.ScrimBackground
     Spacer(
         modifier =
@@ -184,7 +191,13 @@ private fun ContentScope.Scrim(
                 }
                 .fillMaxSize()
                 .thenIf(showBackgroundColor) { Modifier.background(scrimBackgroundColor) }
-                .clickable(onClick = onClicked, interactionSource = null, indication = null)
+                .clickable(
+                    onClick = onClicked,
+                    interactionSource = null,
+                    indication = null,
+                    onClickLabel = closeOverlayActionLabel,
+                )
+                .semantics { contentDescription = closeOverlayBoundingBoxDescription }
     )
 }
 

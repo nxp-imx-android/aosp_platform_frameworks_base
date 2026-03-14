@@ -43,11 +43,9 @@ val Kosmos.lockscreenAlphaViewModelFactory by Fixture {
                 dozingToLockscreenTransitionViewModel = dozingToLockscreenTransitionViewModel,
                 dozingToOccludedTransitionViewModel = dozingToOccludedTransitionViewModel,
                 lockscreenToAodTransitionViewModel = lockscreenToAodTransitionViewModel,
-                lockscreenToOccludedTransitionViewModel = lockscreenToOccludedTransitionViewModel,
                 occludedToAlternateBouncerTransitionViewModel =
                     occludedToAlternateBouncerTransitionViewModel,
                 occludedToAodTransitionViewModel = occludedToAodTransitionViewModel,
-                occludedToLockscreenTransitionViewModel = occludedToLockscreenTransitionViewModel,
                 offToLockscreenTransitionViewModel = offToLockscreenTransitionViewModel,
                 keyguardInteractor = keyguardInteractor,
                 dozingTransitionFlows = dozingTransitionFlows,

@@ -39,6 +39,7 @@ import android.hardware.lights.LightState;
 import android.hardware.lights.LightsManager;
 import android.hardware.lights.LightsRequest;
 import android.os.IBinder;
+import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.Presubmit;
 import android.util.ArrayMap;
 import android.view.InputDevice;
@@ -66,6 +67,7 @@ import java.util.List;
  */
 @Presubmit
 @RunWith(MockitoJUnitRunner.class)
+@DisabledOnRavenwood(blockedBy = InputDeviceLightsManager.class)
 public class InputDeviceLightsManagerTest {
     private static final String TAG = "InputDeviceLightsManagerTest";
 

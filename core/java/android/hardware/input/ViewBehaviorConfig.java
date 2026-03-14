@@ -22,6 +22,7 @@ import android.annotation.SystemApi;
 import android.companion.virtualdevice.flags.Flags;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 
@@ -34,6 +35,7 @@ import java.util.Objects;
  */
 @SystemApi
 @FlaggedApi(Flags.FLAG_VIRTUAL_INPUT_VIEW_BEHAVIOR)
+@RavenwoodKeepWholeClass
 public final class ViewBehaviorConfig implements Parcelable {
 
     private final int mPrimaryDirectionalMotionAxis;

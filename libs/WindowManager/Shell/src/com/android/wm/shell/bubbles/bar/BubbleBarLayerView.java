@@ -44,6 +44,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.protolog.ProtoLog;
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.bubbles.Bubble;
 import com.android.wm.shell.bubbles.BubbleController;
@@ -139,7 +140,8 @@ public class BubbleBarLayerView extends FrameLayout
         mAnimationHelper = new BubbleBarAnimationHelper(context, mPositioner, mainExecutor);
         mEducationViewController = new BubbleEducationViewController(context, (boolean visible) -> {
             if (mExpandedView == null) return;
-            mExpandedView.setObscured(visible);
+            mExpandedView.setObscured(visible,
+                    BubbleBarExpandedView.ObscuredFlag.USER_EDUCATION_VISIBLE);
         });
 
         mScrimView = new View(getContext());
@@ -416,6 +418,17 @@ public class BubbleBarLayerView extends FrameLayout
                 @Override
                 public void onBackPressed() {
                     hideModalOrCollapse();
+                }
+
+                @Override
+                public void onHandleMenuOpened() {
+                    if (Flags.fixBubblesHandleUserEducation()
+                            && mEducationViewController != null
+                            && mEducationViewController.isEducationVisible()) {
+                        // If we were showing user education for the handle menu and it gets
+                        // opened, dismiss the user education
+                        mEducationViewController.hideEducation(true /* animated */);
+                    }
                 }
             });
 

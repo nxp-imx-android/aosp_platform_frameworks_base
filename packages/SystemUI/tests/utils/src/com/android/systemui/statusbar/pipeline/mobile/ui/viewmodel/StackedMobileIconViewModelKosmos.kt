@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel
 
 import android.content.testableContext
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.statusbar.connectivity.ui.mobileContextProvider
 import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
@@ -25,7 +26,7 @@ import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
 val Kosmos.stackedMobileIconViewModelFactory: StackedMobileIconViewModel.Factory
     get() =
         if (StatusBarMobileIconKairos.isEnabled) {
-            StackedMobileIconViewModel.Factory { stackedMobileIconViewModelKairos }
+            stackedMobileIconViewModelKairosFactory
         } else {
             stackedMobileIconViewModelFactoryImpl
         }
@@ -33,19 +34,15 @@ val Kosmos.stackedMobileIconViewModelFactory: StackedMobileIconViewModel.Factory
 val Kosmos.stackedMobileIconViewModelFactoryImpl: StackedMobileIconViewModelImpl.Factory by
     Kosmos.Fixture {
         object : StackedMobileIconViewModelImpl.Factory {
-            override fun create(): StackedMobileIconViewModelImpl = stackedMobileIconViewModelImpl
+            override fun create(): StackedMobileIconViewModelImpl =
+                StackedMobileIconViewModelImpl(
+                    mobileIconsViewModel,
+                    tableLogBuffer,
+                    testableContext,
+                    mobileContextProvider,
+                )
         }
     }
 
-var Kosmos.stackedMobileIconViewModel: StackedMobileIconViewModel by
-    Kosmos.Fixture { stackedMobileIconViewModelImpl }
-
-val Kosmos.stackedMobileIconViewModelImpl by
-    Kosmos.Fixture {
-        StackedMobileIconViewModelImpl(
-            mobileIconsViewModel,
-            logcatTableLogBuffer(this, "stackedMobileIconTableLogger"),
-            testableContext,
-            mobileContextProvider,
-        )
-    }
+private val Kosmos.tableLogBuffer: TableLogBuffer by
+    Kosmos.Fixture { logcatTableLogBuffer(this, "stackedMobileIconTableLogger") }

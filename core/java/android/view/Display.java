@@ -730,11 +730,13 @@ public final class Display {
      *
      * @hide
      */
+    @android.ravenwood.annotation.RavenwoodKeep
     public Display(DisplayManagerGlobal global, int displayId, /*@NotNull*/ DisplayInfo displayInfo,
             Resources res) {
         this(global, displayId, displayInfo, null /*daj*/, res);
     }
 
+    @android.ravenwood.annotation.RavenwoodKeep
     private Display(DisplayManagerGlobal global, int displayId,
             /*@NotNull*/ DisplayInfo displayInfo, DisplayAdjustments daj, Resources res) {
         mGlobal = global;
@@ -759,6 +761,7 @@ public final class Display {
      * The default display has id {@link #DEFAULT_DISPLAY}.
      * </p>
      */
+    @android.ravenwood.annotation.RavenwoodKeep
     public int getDisplayId() {
         return mDisplayId;
     }

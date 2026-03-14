@@ -4903,6 +4903,9 @@
     <!-- Accessibility text for the click action of the Box embedding full-screen overlays. When clicked, it will close the overlay. This will be used following "Double-tap to..." [CHAR LIMIT=NONE] -->
     <string name="accessibility_close_overlay_action">go back</string>
 
+    <!-- Content description for the Box embedding full-screen overlays which, when clicked, will close the overlay. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_close_overlay_box_description">back</string>
+
     <!-- Description for the Ambient Cue accessibility action label for autofilling. [CHAR LIMIT=NONE] -->
     <string name="ambient_cue_autofill_action">autofill</string>
 
@@ -5008,4 +5011,21 @@
     <string name="dream_setup_button_not_now">Not now</string>
     <!-- Label for the "Set up" button in the dream contextual setup bottom sheet. [CHAR LIMIT=20] -->
     <string name="dream_setup_button_setup">Set up</string>
+
+    <!-- Android Context Engine Usecases -->
+    <!-- Label for the settings button on data attribution dialog. [CHAR LIMIT=30] -->
+    <string name="ace_attribution_dialog_settings_label">Settings</string>
+    <!-- Label for the title of the data attribution dialog. [CHAR LIMIT=50] -->
+    <string name="ace_attribution_dialog_title">Magic Cue Suggestions</string>
+    <!-- Label for the attribution description shown prior to the Attributions. [CHAR_LIMIT=50] -->
+    <string name="ace_attribution_dialog_description">Items considered in this suggestion</string>
+    <!-- Accessibility label for the attribution header icon. [CHAR_LIMIT=NONE] -->
+    <string name="ace_attribution_header_icon_accessibility_description">Android Device Intelligence icon</string>
+    <!-- Accessibility label for the settings button on attribution dialog. [CHAR_LIMIT=NONE] -->
+    <string name="ace_attribution_settings_button_accessibility_description">Settings button</string>
+    <!-- Accessibility label for the thumbs up button on attribution dialog. [CHAR_LIMIT=NONE] -->
+    <string name="ace_attribution_thumbs_up_button_accessibility_description">Thumbs up feedback button</string>
+    <!-- Accessibility label for the thumbs down button on attribution dialog. [CHAR_LIMIT=NONE] -->
+    <string name="ace_attribution_thumbs_down_button_accessibility_description">Thumbs down feedback button</string>
+
 </resources>

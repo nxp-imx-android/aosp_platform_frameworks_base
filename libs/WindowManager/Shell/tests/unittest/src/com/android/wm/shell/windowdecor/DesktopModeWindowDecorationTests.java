@@ -124,6 +124,7 @@ import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.WindowDecoration.RelayoutParams;
 import com.android.wm.shell.windowdecor.caption.OccludingElement;
+import com.android.wm.shell.windowdecor.common.DecorThemeUtil;
 import com.android.wm.shell.windowdecor.common.ExclusionRegionListener;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
@@ -278,6 +279,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     private PinnedLayerController mPinnedLayerController;
     @Mock
     private DesktopTasksController mDesktopTasksController;
+    private DecorThemeUtil.Factory mDecorThemeUtilFactory = new DecorThemeUtil.Factory();
     private final TestHandler mTestHandler = new TestHandler(Looper.getMainLooper());
     @Captor
     private ArgumentCaptor<Function1<Boolean, Unit>> mOnMaxMenuHoverChangeListener;
@@ -337,7 +339,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 .thenReturn(false);
         when(mMockAppHeaderViewHolderFactory
                 .create(any(), any(), any(), any(), any(), any(),
-                        any(), any(), any(), any()))
+                        any(), any(), any(), any(), any()))
                 .thenReturn(mMockAppHeaderViewHolder);
         when(mMockAppHandleViewHolderFactory
                 .create(any(), any(), any(), any(), any(), any(),
@@ -1857,7 +1859,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mMockMultiInstanceHelper, mMockCaptionHandleRepository, mDesktopModeEventLogger,
                 mDesktopModeUiEventLogger, mDesktopModeCompatPolicy, mDesktopState,
                 mDesktopConfig, mMockWindowDecorationActions, mLockTaskChangeListener,
-                mFocusTransitionObserver, mPinnedLayerController, mDesktopTasksController);
+                mFocusTransitionObserver, mPinnedLayerController, mDesktopTasksController,
+                mDecorThemeUtilFactory);
         windowDecor.setCaptionListeners(mMockTouchEventListener,
                 mMockTouchEventListener, mMockTouchEventListener);
         windowDecor.setExclusionRegionListener(mMockExclusionRegionListener);

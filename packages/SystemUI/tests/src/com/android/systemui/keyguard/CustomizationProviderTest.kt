@@ -211,7 +211,7 @@ class CustomizationProviderTest : SysuiTestCase() {
                 appContext = mContext,
                 accessibilityInteractor = kosmos.accessibilityInteractor,
                 sceneInteractor = { kosmos.sceneInteractor },
-                msdlPlayer = kosmos.msdlPlayer,
+                msdlPlayer = { kosmos.msdlPlayer },
             )
         underTest.previewManager =
             KeyguardRemotePreviewManager(
