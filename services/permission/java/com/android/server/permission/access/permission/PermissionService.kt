@@ -2601,22 +2601,51 @@ class PermissionService(private val service: AccessCheckingService) :
         bpfMap.setUidsPermissionBits(uidsPermissionBits)
     }
 
-    private fun getBpfMapUidsPermissionBits(permissionNames: List<String>): SparseIntArray =
+    private fun getBpfMapUidsPermissionBits(permissionNames: List<String>) =
         service.getState {
             SparseIntArray().apply {
-                val allGrantedPermissionsBits = getAllGrantedPermissionsBits(permissionNames)
-                state.userStates.forEachIndexed { _, userId, userState ->
-                    userState.appIdPermissionFlags.forEachIndexed { _, appId, _ ->
-                        val permissionBits = getBpfMapPermissionBits(appId, userId, permissionNames)
-                        if (permissionBits != 0) {
-                            val uid = UserHandle.getUid(userId, appId)
-                            this[uid] = permissionBits
-                        }
-                    }
-                    this[UserHandle.getUid(userId, Process.ROOT_UID)] = allGrantedPermissionsBits
-                    this[UserHandle.getUid(userId, Process.SYSTEM_UID)] = allGrantedPermissionsBits
+                state.userStates.forEachIndexed { _, userId, _ ->
+                    getBpfMapUidsPermissionBitsForUser(userId, permissionNames, true, this)
                 }
             }
+        }
+
+    private fun getBpfMapNonAppUidsPermissionBitsForUser(
+        userId: Int,
+        permissionNames: List<String>,
+    ) =
+        SparseIntArray().apply {
+            getBpfMapUidsPermissionBitsForUser(userId, permissionNames, false, this)
+        }
+
+    private fun getBpfMapUidsPermissionBitsForUser(
+        userId: Int,
+        permissionNames: List<String>,
+        includeAppUids: Boolean,
+        uidsPermissionBits: SparseIntArray,
+    ): SparseIntArray =
+        service.getState {
+            val appIds = MutableIntSet()
+            if (includeAppUids) {
+                state.userStates[userId]!!.appIdPermissionFlags.forEachIndexed { _, appId, _ ->
+                    appIds += appId
+                }
+            }
+            systemConfig.systemPermissions.forEachIndexed { _, appId, _ -> appIds += appId }
+            appIds.forEachIndexed { _, appId ->
+                val permissionBits = getBpfMapPermissionBits(appId, userId, permissionNames)
+                if (permissionBits != 0) {
+                    val uid = UserHandle.getUid(userId, appId)
+                    uidsPermissionBits[uid] = permissionBits
+                }
+            }
+            val allGrantedPermissionsBits = getAllGrantedPermissionsBits(permissionNames)
+            uidsPermissionBits[UserHandle.getUid(userId, Process.ROOT_UID)] =
+                allGrantedPermissionsBits
+            uidsPermissionBits[UserHandle.getUid(userId, Process.SYSTEM_UID)] =
+                allGrantedPermissionsBits
+
+            uidsPermissionBits
         }
 
     private fun GetStateScope.getBpfMapPermissionBits(
@@ -2627,10 +2656,17 @@ class PermissionService(private val service: AccessCheckingService) :
         if (isRootOrSystemAppId(appId)) {
             return getAllGrantedPermissionsBits(permissionNames)
         }
+        val hasAnyPackage = state.externalState.appIdPackageNames[appId]?.isNotEmpty() ?: false
         var permissionBits = 0
         permissionNames.forEachIndexed { index, permissionName ->
-            val flags = with(policy) { getPermissionFlags(appId, userId, permissionName) }
-            if (PermissionFlags.isAppOpGranted(flags)) {
+            val isGranted =
+                if (hasAnyPackage) {
+                    val flags = with(policy) { getPermissionFlags(appId, userId, permissionName) }
+                    PermissionFlags.isAppOpGranted(flags)
+                } else {
+                    isSystemUidPermissionGranted(appId, permissionName)
+                }
+            if (isGranted) {
                 permissionBits = permissionBits or (1 shl index)
             }
         }
@@ -2750,6 +2786,7 @@ class PermissionService(private val service: AccessCheckingService) :
         private val runtimePermissionRevokedUids = SparseBooleanArray()
         private val gidsChangedUids = MutableIntSet()
         private val permissionChangedBpfMapUids = ArrayMap<PermissionBpfMap, MutableIntSet>()
+        private val addedUserIds = MutableIntSet()
         private val removedUserIds = MutableIntSet()
         private val removedAppIds = MutableIntSet()
 
@@ -2829,14 +2866,7 @@ class PermissionService(private val service: AccessCheckingService) :
         }
 
         override fun onUserAdded(userId: Int) {
-            bpfMapPermissionNames.forEachIndexed { _, bpfMap, _ ->
-                permissionChangedBpfMapUids
-                    .getOrPut(bpfMap) { MutableIntSet() }
-                    .apply {
-                        this += UserHandle.getUid(userId, Process.ROOT_UID)
-                        this += UserHandle.getUid(userId, Process.SYSTEM_UID)
-                    }
-            }
+            addedUserIds += userId
         }
 
         override fun onUserRemoved(userId: Int) {
@@ -2855,8 +2885,17 @@ class PermissionService(private val service: AccessCheckingService) :
                 isPermissionFlagsChanged = false
             }
 
-            // Perform a synchronous call to update the BPF map. This ensures the new permission
+            // Perform synchronous calls to update the BPF map. This ensures the new permission
             // state is reflected in the map before clients are notified via onPermissionsChanged.
+            addedUserIds.forEachIndexed { _, userId ->
+                bpfMapPermissionNames.forEachIndexed { _, bpfMap, permissionNames ->
+                    val uidsPermissionBits =
+                        getBpfMapNonAppUidsPermissionBitsForUser(userId, permissionNames)
+                    bpfMap.setUidsPermissionBits(uidsPermissionBits)
+                }
+            }
+            addedUserIds.clear()
+
             permissionChangedBpfMapUids.forEachIndexed { _, bpfMap, uids ->
                 val permissionNames = bpfMapPermissionNames[bpfMap]!!
                 val uidsPermissionBits =
@@ -2873,15 +2912,11 @@ class PermissionService(private val service: AccessCheckingService) :
             }
             permissionChangedBpfMapUids.clear()
 
-            // Update BPF maps for removed user IDs before notifying clients via
-            // onPermissionsChanged.
             removedUserIds.forEachIndexed { _, userId ->
                 bpfMapPermissionNames.forEachIndexed { _, bpfMap, _ -> bpfMap.removeUser(userId) }
             }
             removedUserIds.clear()
 
-            // Update BPF maps for removed app IDs before notifying clients via
-            // onPermissionsChanged.
             removedAppIds.forEachIndexed { _, appId ->
                 bpfMapPermissionNames.forEachIndexed { _, bpfMap, _ -> bpfMap.removeAppId(appId) }
             }
