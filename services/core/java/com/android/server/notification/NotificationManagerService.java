@@ -4763,7 +4763,7 @@ public class NotificationManagerService extends SystemService {
 
         @Override
         public void setBubblesAllowed(String pkg, int uid, int bubblePreference) {
-            assertCallerIsSystemOrSystemUiOrShell("Caller not system or sysui or shell");
+            assertCallerIsSystemOrSystemUiOrShell();
             mPreferencesHelper.setBubblesAllowed(pkg, uid, bubblePreference);
             handleSavePolicyFile();
         }
@@ -5565,14 +5565,14 @@ public class NotificationManagerService extends SystemService {
         @Override
         public void updateNotificationChannelForPackage(String pkg, int uid,
                 NotificationChannel channel) {
-            assertCallerIsSystemOrSystemUiOrShell("Caller not system or sysui or shell");
+            assertCallerIsSystemOrSystemUiOrShell();
             Objects.requireNonNull(channel);
             updateNotificationChannelInt(pkg, uid, channel, false);
         }
 
         @Override
         public void unlockNotificationChannel(String pkg, int uid, String channelId) {
-            assertCallerIsSystemOrSystemUiOrShell("Caller not system or sysui or shell");
+            assertCallerIsSystemOrSystemUiOrShell();
             mPreferencesHelper.unlockNotificationChannelImportance(pkg, uid, channelId);
             handleSavePolicyFile();
         }
@@ -8088,11 +8088,7 @@ public class NotificationManagerService extends SystemService {
         @Override
         @EnforcePermission(android.Manifest.permission.STATUS_BAR_SERVICE)
         public void logHsuNotificationPostStatus(StatusBarNotification sbn, int status) {
-            if (!isCallerSystemOrSystemUi()) {
-                getContext().enforceCallingPermission(
-                        android.Manifest.permission.STATUS_BAR_SERVICE,
-                        "logNotificationPostStatus");
-            }
+            checkCallerIsSystemOrSystemUi();
             mUmInternal.logNotificationPostStatus(sbn, UserHandle.USER_SYSTEM, status);
         }
     }
@@ -12899,10 +12895,6 @@ public class NotificationManagerService extends SystemService {
     }
 
     private void assertCallerIsSystemOrSystemUiOrShell() {
-        assertCallerIsSystemOrSystemUiOrShell(null);
-    }
-
-    private void assertCallerIsSystemOrSystemUiOrShell(String message) {
         int callingUid = Binder.getCallingUid();
         if (callingUid == Process.SHELL_UID || callingUid == Process.ROOT_UID) {
             return;
@@ -12911,7 +12903,7 @@ public class NotificationManagerService extends SystemService {
             return;
         }
         getContext().enforceCallingPermission(STATUS_BAR_SERVICE,
-                message);
+                "Caller not system or sysui or shell");
     }
 
     private void checkCallerIsSystemOrSameApp(String pkg) {
