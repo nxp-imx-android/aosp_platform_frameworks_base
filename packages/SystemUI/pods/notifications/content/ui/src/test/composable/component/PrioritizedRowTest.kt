@@ -47,6 +47,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
+import org.junit.Assume
+import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
@@ -69,6 +71,12 @@ class PrioritizedRowTest : SysuiTestCase() {
 
     private val reducedWidth = 50.dp
     private val hideWidth = 20.dp
+
+    @Before
+    fun assumeOnDevice() {
+        // The widths aren't correct under robolectric
+        Assume.assumeFalse(isRobolectricTest())
+    }
 
     @Ignore("b/439930983")
     @Test

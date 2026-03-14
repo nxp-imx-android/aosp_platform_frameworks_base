@@ -2004,7 +2004,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 @NonNull Function2<? super Integer,? super Integer,? extends Point>
                     positionSupplier,
                 @NonNull Supplier<SurfaceControl.Transaction> transactionSupplier,
-                @NonNull DesktopModeUiEventLogger desktopModeUiEventLogger) {
+                @NonNull DesktopModeUiEventLogger desktopModeUiEventLogger,
+                @NonNull SplitScreenController splitScreenController) {
             return mLayoutMenu;
         }
     }

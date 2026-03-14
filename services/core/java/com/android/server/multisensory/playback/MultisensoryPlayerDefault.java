@@ -53,9 +53,14 @@ public final class MultisensoryPlayerDefault {
             @NonNull VibrationEffect effect,
             @NonNull VibrationAttributes attributes) {
         if (android.os.vibrator.Flags.enableTrustedCallers() && mLocalService != null) {
-            String reason = "haptic effect for multisensory token " + tokenConstant;
-            mLocalService.vibrateWithoutPermissionCheck(
-                    mVibratorId, effect, attributes, reason, mBinderToken);
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                String reason = "haptic effect for multisensory token " + tokenConstant;
+                mLocalService.vibrateWithoutPermissionCheck(
+                        mVibratorId, effect, attributes, reason, mBinderToken);
+            } finally {
+                Binder.restoreCallingIdentity(identity);
+            }
         } else {
             Slog.d(TAG, "Unable to play effect for " + tokenConstant);
         }
@@ -68,7 +73,12 @@ public final class MultisensoryPlayerDefault {
     public void cancel() {
         int usageFilter = getMultisensoryVibrationUsageFilter();
         if (android.os.vibrator.Flags.enableTrustedCallers() && mLocalService != null) {
-            mLocalService.cancelVibrateWithoutPermissionCheck(usageFilter, mBinderToken);
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                mLocalService.cancelVibrateWithoutPermissionCheck(usageFilter, mBinderToken);
+            } finally {
+                Binder.restoreCallingIdentity(identity);
+            }
         } else {
             Slog.d(TAG, "Unable to cancel vibrations with usage filter" + usageFilter);
         }

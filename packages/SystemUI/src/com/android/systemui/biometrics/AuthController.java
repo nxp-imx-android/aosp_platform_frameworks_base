@@ -58,6 +58,7 @@ import android.os.Handler;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.util.RotationUtils;
 import android.util.SparseBooleanArray;
@@ -90,6 +91,7 @@ import com.android.systemui.doze.DozeReceiver;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
 import com.android.systemui.keyguard.data.repository.BiometricType;
 import com.android.systemui.log.core.LogLevel;
+import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.VibratorHelper;
 import com.android.systemui.statusbar.policy.ConfigurationController;
@@ -881,6 +883,10 @@ public class AuthController implements
         if (mContextPlugins != null) {
             mContextPlugins.activate();
         }
+
+        Settings.Global.putInt(mContext.getContentResolver(),
+                Settings.Global.SCENE_CONTAINER_ENABLED,
+                SceneContainerFlag.isEnabled() ? 1 : 0);
     }
 
     @Override

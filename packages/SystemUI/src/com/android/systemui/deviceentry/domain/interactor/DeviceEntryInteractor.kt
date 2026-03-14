@@ -16,14 +16,13 @@
 
 package com.android.systemui.deviceentry.domain.interactor
 
-import android.util.Log
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.TransitionKey
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.internal.logging.UiEventLogger
 import com.android.internal.policy.IKeyguardDismissCallback
-import com.android.keyguard.KeyguardConstants
+import com.android.keyguard.logging.DeviceEntryLogger
 import com.android.systemui.authentication.domain.interactor.AuthenticationInteractor
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor
@@ -38,8 +37,10 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardDismissActionInte
 import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.shared.model.BiometricUnlockMode
+import com.android.systemui.keyguard.shared.model.BiometricUnlockModel
 import com.android.systemui.keyguard.shared.model.KeyguardTransitionKeys.AodToGoneTransition
 import com.android.systemui.keyguard.shared.model.KeyguardTransitionKeys.WithAnimationOverLockscreen
+import com.android.systemui.keyguard.shared.model.toDeviceUnlockSource
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.scene.data.model.asIterable
@@ -62,8 +63,11 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.dropWhile
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -94,6 +98,7 @@ constructor(
     private val keyguardInteractor: KeyguardInteractor,
     private val shadeInteractor: Lazy<ShadeInteractor>,
     private val shadeModeInteractor: ShadeModeInteractor,
+    private val deviceEntryLogger: DeviceEntryLogger,
 ) {
     /**
      * Whether the device is unlocked.
@@ -381,6 +386,52 @@ constructor(
     }
 
     /**
+     * Handles scene transitions when the device is already in a stale biometric unlocked state from
+     * a previous device entry. If the device wasn't already in a biometric-unlocked state that's
+     * being re-triggered to enter the device, [handleDeviceUnlockStatusChange] will handle the
+     * device entry.
+     */
+    fun handleDeviceEntryFromBiometricWhenAlreadyUnlocked() {
+        applicationScope.launch {
+            deviceUnlockedInteractor
+                .get()
+                .deviceUnlockStatus
+                .flatMapLatest { unlockStatus ->
+                    // If we unlocked:
+                    if (unlockStatus.isUnlocked) {
+                        // Wait until the biometric unlock state source is null
+                        keyguardInteractor.biometricUnlockState
+                            .dropWhile { it.source != null }
+                            .map { unlockStatus to it }
+                    } else {
+                        emptyFlow()
+                    }
+                }
+                .filter { (unlockStatus, biometricState) ->
+                    // When a subsequent unlock from a biometric occurs that should
+                    // dismiss the keyguard while unlockStatus's source is already the
+                    // same source
+                    BiometricUnlockMode.dismissesKeyguard(biometricState.mode) &&
+                        unlockStatus.deviceUnlockSource != null &&
+                        isSameUnlockSource(biometricState, unlockStatus.deviceUnlockSource)
+                }
+                .collect { (unlockStatus, _) ->
+                    // THEN enter the device
+                    val state = captureCurrentState(unlockStatus)
+                    deviceEntryLogger.d("handleDeviceEntryFromBiometricWhenAlreadyUnlocked $state")
+                    handleDeviceEntry(state)
+                }
+        }
+    }
+
+    private fun isSameUnlockSource(
+        biometricUnlockModel: BiometricUnlockModel,
+        deviceUnlockSource: DeviceUnlockSource,
+    ): Boolean {
+        return biometricUnlockModel.toDeviceUnlockSource() == deviceUnlockSource
+    }
+
+    /**
      * Handles scene transitions whenever the unlocked state changes. On unlock state changes:
      * 1. Captures the latest [DeviceEntryState]
      * 2. Handles scene, overlay and backstack based on the latest [DeviceEntryState]
@@ -391,23 +442,12 @@ constructor(
                 // Capture the latest DeviceEntryState
                 val state = captureCurrentState(unlockStatus)
 
-                if (KeyguardConstants.DEBUG) {
-                    Log.d("DeviceEntryInteractor", "$unlockStatus $state")
-                }
+                deviceEntryLogger.d("handleDeviceUnlockStatusChange $state")
 
                 // Handle scene, overlay, and backstack changes based on latest DeviceEntryState
                 if (state.unlockStatus.isUnlocked) {
                     // UNLOCKED
-                    when {
-                        state.isAlternateBouncerVisible -> handleUnlockOnAlternateBouncer(state)
-                        state.isOnPrimaryBouncer -> handleUnlockOnPrimaryBouncer(state)
-                        state.isOnCommunalOrLockscreen -> handleUnlockOnLockscreenOrCommunal(state)
-                        state.isOnSingleOrSplitShade -> handleUnlockOnShadeScene(state)
-                        else ->
-                            attemptToEnterDeviceByReplacingLockscreenOnBackStack(
-                                "unlocked on other scene"
-                            )
-                    }
+                    handleDeviceEntry(state)
                 } else {
                     // LOCKED
                     if (
@@ -425,6 +465,16 @@ constructor(
                     }
                 }
             }
+        }
+    }
+
+    private fun handleDeviceEntry(state: DeviceEntryState) {
+        when {
+            state.isAlternateBouncerVisible -> handleUnlockOnAlternateBouncer(state)
+            state.isOnPrimaryBouncer -> handleUnlockOnPrimaryBouncer(state)
+            state.isOnCommunalOrLockscreen -> handleUnlockOnLockscreenOrCommunal(state)
+            state.isOnSingleOrSplitShade -> handleUnlockOnShadeScene(state)
+            else -> attemptToEnterDeviceByReplacingLockscreenOnBackStack("unlocked on other scene")
         }
     }
 
@@ -519,10 +569,7 @@ constructor(
                 // unwanted overlap.
                 sceneInteractor
                     .get()
-                    .instantlyHideOverlay(
-                        Overlays.Bouncer,
-                        "Instant hide bouncer for animation",
-                    )
+                    .instantlyHideOverlay(Overlays.Bouncer, "Instant hide bouncer for animation")
                 switchToScene(
                     targetSceneKey = Scenes.Gone,
                     transitionKey =
@@ -775,7 +822,7 @@ constructor(
         }
     }
 
-    private data class DeviceEntryState(
+    data class DeviceEntryState(
         val unlockStatus: DeviceUnlockStatus,
         val renderedScenes: List<SceneKey>,
         val renderedOverlays: Set<OverlayKey>,

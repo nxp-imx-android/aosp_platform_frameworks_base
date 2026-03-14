@@ -41,7 +41,6 @@ class QuickActionChipsRepositoryImplTest : SysuiTestCase() {
     private val panelModel =
         QuickActionPanelModel(
             chipId = QuickActionChipId.MediaControl,
-            displayId = 0,
             anchorBounds = Rect(),
             panelContentViewModelFactory = kosmos.mediaControlPopupViewModelFactory,
         )

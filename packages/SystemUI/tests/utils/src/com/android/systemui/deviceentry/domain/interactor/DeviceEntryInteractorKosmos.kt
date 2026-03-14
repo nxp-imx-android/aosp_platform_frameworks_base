@@ -17,6 +17,7 @@
 package com.android.systemui.deviceentry.domain.interactor
 
 import com.android.internal.logging.uiEventLogger
+import com.android.keyguard.logging.DeviceEntryLogger
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
 import com.android.systemui.bouncer.domain.interactor.alternateBouncerInteractor
 import com.android.systemui.deviceentry.data.repository.deviceEntryRepository
@@ -32,6 +33,7 @@ import com.android.systemui.scene.domain.interactor.sceneBackInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
+import com.android.systemui.util.mockito.mock
 
 val Kosmos.deviceEntryInteractor by
     Kosmos.Fixture {
@@ -52,5 +54,6 @@ val Kosmos.deviceEntryInteractor by
             keyguardInteractor = keyguardInteractor,
             shadeInteractor = { shadeInteractor },
             shadeModeInteractor = shadeModeInteractor,
+            deviceEntryLogger = mock<DeviceEntryLogger>(),
         )
     }

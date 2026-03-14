@@ -688,14 +688,16 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
 
         if (!mUserManager.isUserUnlockingOrUnlocked(userId)) {
             onDeviceLocked(associationId, userId, EVENT_BT_DISCONNECTED, /* ParcelUuid */ null);
+            // Restart BLE scanning when the device is disconnected.
+            mBleDeviceProcessor.restartScan();
             return;
         }
 
         onDevicePresenceEvent(mConnectedBtDevices, associationId,
                 new DevicePresenceEvent(associationId, EVENT_BT_DISCONNECTED, null));
 
-        // Start BLE scanning when the device is disconnected.
-        mBleDeviceProcessor.startScan();
+        // Restart BLE scanning when the device is disconnected.
+        mBleDeviceProcessor.restartScan();
 
         // If current device is BLE present but BT is disconnected , means it will be
         // potentially out of range later. Schedule BLE disappeared callback.

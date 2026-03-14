@@ -861,9 +861,11 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
                 /* clearDismissAction= */ false);
         if (mKeyguardStateController.isShowing() && !isBouncerShowing()) {
             if (SceneContainerFlag.isEnabled()) {
-                mSceneInteractorLazy.get().showOverlay(
-                        Overlays.Bouncer,
-                        "SBKVM.showPrimaryBouncer, reason: " + reason
+                mDeviceEntryInteractorLazy.get().attemptDeviceEntry(
+                        /* loggingReason */ "SBKVM.showPrimaryBouncer, reason: " + reason,
+                        /* callback */ null,
+                        /* skipShowingAlternateBouncer */ true
+
                 );
             } else {
                 mPrimaryBouncerInteractor.show(scrimmed, reason);

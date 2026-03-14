@@ -83,6 +83,7 @@ import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction.Ambiguo
 import com.android.wm.shell.desktopmode.isTaskMaximized
 import com.android.wm.shell.shared.animation.Interpolators.EMPHASIZED_DECELERATE
 import com.android.wm.shell.shared.animation.Interpolators.FAST_OUT_LINEAR_IN
+import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalViewHostViewContainer
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.OPACITY_12
@@ -106,6 +107,7 @@ class LayoutMenu(
     private val positionSupplier: (Int, Int) -> Point,
     private val transactionSupplier: Supplier<Transaction> = Supplier { Transaction() },
     private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
+    private val splitScreenController: SplitScreenController,
 ) {
     private var layoutMenu: AdditionalViewHostViewContainer? = null
     private var layoutMenuView: LayoutMenuView? = null
@@ -211,6 +213,7 @@ class LayoutMenu(
                         },
                     showSnapOptions = showSnapOptions,
                     menuPadding = menuPadding,
+                    splitScreenController = splitScreenController,
                 )
                 .also { menuView ->
                     menuView.bind(taskInfo)
@@ -286,6 +289,7 @@ class LayoutMenu(
         immersiveConfig: ImmersiveConfig,
         showSnapOptions: Boolean,
         private val menuPadding: Int,
+        private val splitScreenController: SplitScreenController,
     ) : OnClickListener, OnTouchListener {
         val rootView =
             LayoutInflater.from(context)
@@ -687,7 +691,8 @@ class LayoutMenu(
             updateSplitSnapSelection(SnapToHalfSelection.NONE)
 
             if (Flags.enableConsolidatedWindowOptions()) {
-                requireWindowingPillView().bind(taskInfo)
+                val isInSplitScreen = splitScreenController.isTaskInSplitScreen(taskInfo.taskId)
+                requireWindowingPillView().bind(taskInfo, isInSplitScreen)
                 requireWindowingPillView().background.setTint(style.backgroundColor)
             }
         }
@@ -1267,6 +1272,7 @@ interface LayoutMenuFactory {
         positionSupplier: (Int, Int) -> Point,
         transactionSupplier: Supplier<Transaction>,
         desktopModeUiEventLogger: DesktopModeUiEventLogger,
+        splitScreenController: SplitScreenController,
     ): LayoutMenu
 }
 
@@ -1282,6 +1288,7 @@ object DefaultLayoutMenuFactory : LayoutMenuFactory {
         positionSupplier: (Int, Int) -> Point,
         transactionSupplier: Supplier<Transaction>,
         desktopModeUiEventLogger: DesktopModeUiEventLogger,
+        splitScreenController: SplitScreenController,
     ): LayoutMenu {
         return LayoutMenu(
             syncQueue,
@@ -1293,6 +1300,7 @@ object DefaultLayoutMenuFactory : LayoutMenuFactory {
             positionSupplier,
             transactionSupplier,
             desktopModeUiEventLogger,
+            splitScreenController,
         )
     }
 }

@@ -253,9 +253,7 @@ public class ExpandedViewAnimationControllerImpl implements ExpandedViewAnimatio
     @Override
     public void animateForImeVisibilityChange(boolean visible) {
         if (mExpandedView != null) {
-            if (mBottomClipAnim != null) {
-                mBottomClipAnim.cancel();
-            }
+            cancelClipAnimation();
             // IME state may change before the animation starts, check if positioner is visible.
             if (Flags.fixBubbleImeClipping() && visible && !mPositioner.isImeVisible()) {
                 return;
@@ -275,6 +273,13 @@ public class ExpandedViewAnimationControllerImpl implements ExpandedViewAnimatio
                 }
             });
             mBottomClipAnim.start();
+        }
+    }
+
+    @Override
+    public void cancelClipAnimation() {
+        if (mBottomClipAnim != null) {
+            mBottomClipAnim.cancel();
         }
     }
 

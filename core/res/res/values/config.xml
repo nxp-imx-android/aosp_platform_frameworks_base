@@ -2865,6 +2865,9 @@
          will prevent the system from entering a low power state until the dream ends. -->
     <bool name="config_dreamsSupported">true</bool>
 
+    <!-- Specifies whether the dream switcher should be enabled. -->
+    <bool name="config_dreamSwitcherEnabled">false</bool>
+
     <!-- If supported, are dreams enabled? (by default) -->
     <bool name="config_dreamsEnabledByDefault">true</bool>
     <!-- If supported and enabled, are dreams activated when docked? (by default) -->

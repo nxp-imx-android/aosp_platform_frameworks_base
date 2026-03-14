@@ -363,10 +363,10 @@ constructor(
         get() = mobileConnectionsRepo.defaultMobileIconMapping
 
     override val alwaysShowDataRatIcon: State<Boolean> =
-        mobileConnectionsRepo.defaultDataSubRatConfig.map { it.alwaysShowDataRatIcon }
+        mobileConnectionsRepo.defaultDataSubRatConfig.map { it?.alwaysShowDataRatIcon ?: false }
 
     override val alwaysUseCdmaLevel: State<Boolean> =
-        mobileConnectionsRepo.defaultDataSubRatConfig.map { it.alwaysShowCdmaRssi }
+        mobileConnectionsRepo.defaultDataSubRatConfig.map { it?.alwaysShowCdmaRssi ?: false }
 
     override val isSingleCarrier: State<Boolean> =
         filteredSubscriptions

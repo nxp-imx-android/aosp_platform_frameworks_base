@@ -93,6 +93,20 @@ flag {
 }
 
 flag {
+    name: "dreams_switcher_long_press_enabled"
+    namespace: "systemui"
+    description: "Whether the long-press gesture to open the dream switcher is enabled."
+    bug: "487613819"
+}
+
+flag {
+    name: "dreams_switcher_edge_swipe_enabled"
+    namespace: "systemui"
+    description: "Whether the edge swipe gesture to open the dream switcher is enabled."
+    bug: "487613819"
+}
+
+flag {
     name: "dreams_query_application_info"
     namespace: "systemui"
     description: "Query updated application info when starting a dream"

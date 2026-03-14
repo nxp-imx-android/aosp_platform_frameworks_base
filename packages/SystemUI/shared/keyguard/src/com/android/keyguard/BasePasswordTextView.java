@@ -25,8 +25,8 @@ import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
-import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import com.android.systemui.Flags;
 
@@ -230,7 +230,7 @@ public abstract class BasePasswordTextView extends FrameLayout {
     public void onInitializeAccessibilityEvent(AccessibilityEvent event) {
         super.onInitializeAccessibilityEvent(event);
 
-        event.setClassName(EditText.class.getName());
+        event.setClassName(TextView.class.getName());
         event.setPassword(true);
     }
 
@@ -238,11 +238,11 @@ public abstract class BasePasswordTextView extends FrameLayout {
     public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
         super.onInitializeAccessibilityNodeInfo(info);
 
-        info.setClassName(EditText.class.getName());
+        info.setClassName(TextView.class.getName());
         info.setPassword(true);
         info.setText(getTransformedText());
         info.setSelected(false);
-        info.setEditable(true);
+        info.setEditable(false);
 
         info.setInputType(InputType.TYPE_NUMBER_VARIATION_PASSWORD);
     }

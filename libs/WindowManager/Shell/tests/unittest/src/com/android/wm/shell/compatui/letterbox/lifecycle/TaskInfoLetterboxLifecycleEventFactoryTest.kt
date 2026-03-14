@@ -145,7 +145,7 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
                     runningTaskInfo { ti ->
                         ti.taskId = 10
                         ti.token = inputToken
-                        ti.appCompatTaskInfo.isTopActivityLetterboxed = false
+                        ti.appCompatTaskInfo.isTopActivityLetterboxRunning = false
                         ti.appCompatTaskInfo.setIsLeafTask(true)
                     }
                     endAbsBounds = Rect(0, 0, 500, 1000)
@@ -170,7 +170,7 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
                     runningTaskInfo { ti ->
                         ti.taskId = 10
                         ti.token = inputToken
-                        ti.appCompatTaskInfo.isTopActivityLetterboxed = true
+                        ti.appCompatTaskInfo.isTopActivityLetterboxRunning = true
                         ti.appCompatTaskInfo.topActivityLetterboxBounds = Rect(300, 200, 2300, 1200)
                         ti.appCompatTaskInfo.setIsLeafTask(true)
                     }

@@ -19,4 +19,5 @@ package com.android.systemui.statusbar.quickactions.data.repository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.statusbar.quickactions.data.repository.impl.QuickActionChipsRepositoryImpl
 
+val Kosmos.quickActionChipsRepository by Kosmos.Fixture { FakeQuickActionChipsRepository() }
 val Kosmos.realQuickActionChipsRepository by Kosmos.Fixture { QuickActionChipsRepositoryImpl() }

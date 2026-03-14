@@ -41,6 +41,7 @@ import static android.security.authenticationpolicy.AuthenticationPolicyManager.
 import static android.security.authenticationpolicy.AuthenticationPolicyManager.ERROR_NOT_AUTHORIZED;
 import static android.security.authenticationpolicy.AuthenticationPolicyManager.ERROR_NO_BIOMETRICS_ENROLLED;
 import static android.security.authenticationpolicy.AuthenticationPolicyManager.ERROR_UNKNOWN;
+import static android.security.authenticationpolicy.AuthenticationPolicyManager.ERROR_UNSUPPORTED;
 import static android.security.authenticationpolicy.AuthenticationPolicyManager.SUCCESS;
 
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE;
@@ -285,6 +286,7 @@ public class SecureLockDeviceServiceTest {
         mTestContext.addMockSystemService(DevicePolicyManager.class, mDevicePolicyManager);
         mTestContext.addMockSystemService((FaceManager.class), mFaceManager);
         mTestContext.addMockSystemService((FingerprintManager.class), mFingerprintManager);
+        disableSceneContainer();
 
         when(mActivityManager.isProfileForeground(eq(mUser))).thenReturn(true);
         doAnswer(
@@ -618,6 +620,24 @@ public class SecureLockDeviceServiceTest {
 
         assertThat(secureLockDeviceAvailability).isEqualTo(ERROR_NO_BIOMETRICS_ENROLLED);
         assertThat(enableSecureLockDeviceRequestStatus).isEqualTo(ERROR_NO_BIOMETRICS_ENROLLED);
+    }
+
+    @Test
+    public void getSecureLockDeviceAvailability_whenSceneContainerEnabled() throws RemoteException {
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                true, /* primaryUserHasStrongBiometricEnrollment */
+                false, /* otherUserHasStrongBiometricEnrollment */
+                false /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                false /* otherUserHasEnabledBiometricsOnKeyguard */
+        );
+        enableSceneContainer();
+        int secureLockDeviceAvailability =
+                mSecureLockDeviceService.getSecureLockDeviceAvailability(mUser);
+        int enableSecureLockDeviceRequestStatus = enableSecureLockDevice(mUser);
+
+        assertThat(secureLockDeviceAvailability).isEqualTo(ERROR_UNSUPPORTED);
+        assertThat(enableSecureLockDeviceRequestStatus).isEqualTo(ERROR_UNSUPPORTED);
     }
 
     @Test
@@ -1079,6 +1099,16 @@ public class SecureLockDeviceServiceTest {
             bundle.putBoolean(restriction, true);
         }
         return bundle;
+    }
+
+    private void enableSceneContainer() {
+        Settings.Global.putInt(mTestContext.getContentResolver(),
+                Settings.Global.SCENE_CONTAINER_ENABLED, 1);
+    }
+
+    private void disableSceneContainer() {
+        Settings.Global.putInt(mTestContext.getContentResolver(),
+                Settings.Global.SCENE_CONTAINER_ENABLED, 0);
     }
 
     private class SecureLockDeviceContext extends TestableContext {

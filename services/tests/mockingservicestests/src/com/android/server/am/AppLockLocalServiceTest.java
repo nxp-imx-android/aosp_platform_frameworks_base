@@ -908,6 +908,7 @@ public class AppLockLocalServiceTest {
         info.uid = TEST_UID;
         final ProcessRecord appRec = new ProcessRecord(mAms, info, info.processName, TEST_UID);
         MockUtils.setCurProcState(appRec, processState);
+        MockUtils.setSetProcState(appRec, processState);
         final UidRecord record = new UidRecord(TEST_UID, mAms);
         mAms.mProcessStateController.setUidCurProcState(record, processState);
         record.addProcess(appRec);

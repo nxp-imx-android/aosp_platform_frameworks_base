@@ -371,6 +371,7 @@ public class BubbleExpandedView extends LinearLayout {
             if (mTaskView.getParent() != null) {
                 ((ViewGroup) mTaskView.getParent()).removeView(mTaskView);
             }
+            mTaskView.setClipBounds(null);
             mExpandedViewContainer.addView(mTaskView, lp);
             bringChildToFront(mTaskView);
         }
@@ -1048,6 +1049,7 @@ public class BubbleExpandedView extends LinearLayout {
     public void cleanUpExpandedState() {
         if (mTaskView != null) {
             mTaskView.setVisibility(GONE);
+            mTaskView = null;
         }
     }
 
@@ -1063,9 +1065,17 @@ public class BubbleExpandedView extends LinearLayout {
         if (mTaskView != null) {
             pw.print(prefix); pw.print("  tv-alpha: "); pw.println(mTaskView.getAlpha());
             pw.print(prefix); pw.print("  tv-viewVis: "); pw.println(mTaskView.getVisibility());
+            pw.print(prefix); pw.print("  tv-clipBounds: "); pw.println(mTaskView.getClipBounds());
+            pw.print(prefix);
+            pw.print("  tv-cornerRadius: ");
+            pw.println(mTaskView.getCornerRadius());
+            pw.print(prefix);
+            pw.print("  tv-zOrderedOnTop: ");
+            pw.println(mTaskView.isZOrderedOnTop());
         }
         pw.print(prefix); pw.print("  v-alpha: "); pw.println(getAlpha());
         pw.print(prefix); pw.print("  v-viewVis: "); pw.println(getVisibility());
+        pw.print(prefix); pw.print("  v-cornerRadius: "); pw.println(mCornerRadius);
         pw.print(prefix); pw.print("  isClipping: "); pw.println(mIsClipping);
         pw.print(prefix); pw.println(String.format("  clip: left=%d, top=%d, right=%d, bottom=%d",
                 mLeftClip, mTopClip, mRightClip, mBottomClip));

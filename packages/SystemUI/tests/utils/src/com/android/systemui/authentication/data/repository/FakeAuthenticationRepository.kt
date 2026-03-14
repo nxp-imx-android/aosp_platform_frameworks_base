@@ -36,6 +36,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.ZERO
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -139,6 +140,8 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
     private var _isDuplicateAttempt = MutableStateFlow(false)
     override val isDuplicateAttempt: StateFlow<Boolean> = _isDuplicateAttempt.asStateFlow()
 
+    private var deferred: CompletableDeferred<Unit>? = null
+
     override suspend fun reportLockoutStarted(duration: Duration) {
         _lockoutEndTime = (currentTime + duration).takeIf { duration.isPositive() }
         hasLockoutOccurred.value = true
@@ -159,6 +162,10 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
 
     fun setAutoConfirmFeatureEnabled(isEnabled: Boolean) {
         _isAutoConfirmFeatureEnabled.value = isEnabled
+    }
+
+    fun deferFullSuccessResult(): CompletableDeferred<Unit> {
+        return CompletableDeferred<Unit>().also { deferred = it }
     }
 
     override suspend fun checkCredential(
@@ -194,6 +201,10 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
 
             if (isSuccessful) {
                 onEarlyMatched()
+                deferred?.let {
+                    it.await()
+                    deferred = null
+                }
             } else {
                 previousAttempts += credential.duplicate()
                 lockoutOverride?.let {

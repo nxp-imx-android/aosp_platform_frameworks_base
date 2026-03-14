@@ -213,6 +213,7 @@ class AppHeaderControllerTests : ShellTestCase() {
                     any(),
                     any(),
                     any(),
+                    any(),
                 )
             )
             .thenReturn(mockLayoutMenu)

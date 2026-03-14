@@ -628,7 +628,7 @@ private fun TaskInfo.hasPortraitTopActivity(screenOrientation: Int?): Boolean {
         appBounds != null -> appBounds.height() > appBounds.width()
 
         // Otherwise just take the orientation of the task
-        else -> isFixedOrientationPortrait(configuration.orientation)
+        else -> configuration.orientation == ORIENTATION_PORTRAIT
     }
 }
 

@@ -184,6 +184,8 @@ void OoprNode::registerSnapshot(const sk_sp<SkImage>& image) {
 
     if (!oopr->isEnabled()) return;
 
+    ATRACE_CALL();
+
     if (!image) return;
 
     if (mLastImage && mLastImage->uniqueID() == image->uniqueID()) {
@@ -202,7 +204,6 @@ void OoprNode::registerSnapshot(const sk_sp<SkImage>& image) {
         oopr->deregisterBuffer(oldImage);
     }
     oopr->registerBuffer(mBuffer, image);
-    ATRACE_FORMAT("registerBuffer bufferId=%llu imageId=%u", mBuffer->getId(), image->uniqueID());
 }
 
 bool OoprClient::isEnabled() {
@@ -238,9 +239,9 @@ void OoprClient::registerBuffer(const sp<GraphicBuffer>& buffer, const sk_sp<SkI
     ATRACE_FORMAT("registerBuffer bufferId=%llu imageId=%u", buffer->getId(), image->uniqueID());
 
     IPCClientBitmap clientBitmap;
-    clientBitmap.id = image->uniqueID();
+    clientBitmap.id = buffer->getId();
     clientBitmap.buffer = buffer;
-    mCache->bitmaps.emplace(clientBitmap.id, clientBitmap);
+    mCache->bitmaps.emplace(image->uniqueID(), clientBitmap);
 
     Registration r;
     r.buffer = buffer;
@@ -276,17 +277,11 @@ void OoprClient::sendPendingBitmapRegistrations(RenderCommandBuffer* cmds) {
     registerInfo.renderResourceToken = mToken;
     unregisterInfo.renderResourceToken = mToken;
 
-    // We need to iterate and possibly remove elements, so use iterator
-
     for (const auto& reg : mRegistrations) {
-        IPCClientBitmap clientBitmap;
-        clientBitmap.id = reg.image->uniqueID();
         if (reg.buffer) {
-            clientBitmap.buffer = reg.buffer;
             registerInfo.buffers.push_back(reg.buffer);
         } else {
-            clientBitmap.bitmap = reg.bitmap;
-            UploadBitmap_Create(cmds, clientBitmap.id, reg.bitmap);
+            UploadBitmap::Create(cmds->mRegion.get(), reg.image->uniqueID(), reg.bitmap);
         }
     }
     mRegistrations.clear();
@@ -295,7 +290,7 @@ void OoprClient::sendPendingBitmapRegistrations(RenderCommandBuffer* cmds) {
         if (dereg.bufferId) {
             unregisterInfo.bufferIds.push_back(dereg.bufferId);
         } else {
-            FreeBitmap_Create(cmds, dereg.imageId);
+            FreeBitmap::Create(cmds->mRegion.get(), dereg.imageId);
         }
     }
     mDeregistrations.clear();

@@ -313,6 +313,59 @@ public class AutomatedPackagesRepositoryTest {
         assertThat(mTestLooperManager.poll()).isNull();
     }
 
+    @Test
+    public void validateAutomatedAppLaunchWarningIntent_packageIsAutomated_returnsTrue() {
+        // Set up an automated package.
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER, new ArraySet<>(List.of(UID_USER1_PACKAGE1)));
+
+        // Create an intent for the automated package.
+        Intent intent = new Intent()
+                .putExtra(Intent.EXTRA_PACKAGE_NAME, PACKAGE1)
+                .putExtra(Intent.EXTRA_USER_ID, USER1.getIdentifier());
+
+        // The intent should be considered valid.
+        assertThat(mRepo.validateAutomatedAppLaunchWarningIntent(intent)).isTrue();
+    }
+
+    @Test
+    public void validateAutomatedAppLaunchWarningIntent_packageNotAutomated_returnsFalse() {
+        // Set up an automated package.
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER, new ArraySet<>(List.of(UID_USER1_PACKAGE1)));
+
+        // Create an intent for a different package.
+        Intent intent = new Intent()
+                .putExtra(Intent.EXTRA_PACKAGE_NAME, PACKAGE2)
+                .putExtra(Intent.EXTRA_USER_ID, USER1.getIdentifier());
+
+        // The intent should not be considered valid.
+        assertThat(mRepo.validateAutomatedAppLaunchWarningIntent(intent)).isFalse();
+    }
+
+    @Test
+    public void validateAutomatedAppLaunchWarningIntent_userNotAutomated_returnsFalse() {
+        // Set up an automated package for USER1.
+        mRepo.update(DEVICE_ID1, DEVICE_OWNER, new ArraySet<>(List.of(UID_USER1_PACKAGE1)));
+
+        // Create an intent for the same package but for USER2.
+        Intent intent = new Intent()
+                .putExtra(Intent.EXTRA_PACKAGE_NAME, PACKAGE1)
+                .putExtra(Intent.EXTRA_USER_ID, USER2.getIdentifier());
+
+        // The intent should not be considered valid.
+        assertThat(mRepo.validateAutomatedAppLaunchWarningIntent(intent)).isFalse();
+    }
+
+    @Test
+    public void validateAutomatedAppLaunchWarningIntent_noPackagesAutomated_returnsFalse() {
+        // No packages are automated.
+        Intent intent = new Intent()
+                .putExtra(Intent.EXTRA_PACKAGE_NAME, PACKAGE1)
+                .putExtra(Intent.EXTRA_USER_ID, USER1.getIdentifier());
+
+        // The intent should not be considered valid.
+        assertThat(mRepo.validateAutomatedAppLaunchWarningIntent(intent)).isFalse();
+    }
+
     private void assertListenerReceived(List<String> packages, UserHandle user) throws Exception {
         processOneHandlerMessage();
         verify(mListener).onAutomatedPackagesChanged(

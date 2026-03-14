@@ -23,7 +23,7 @@
         supervision_lockscreen_enabled="false">
         <policies_list>
             <policy_holder
-                policy_type="package_usage"
+                policy_type="package"
                 policy_version="1"
                 package_name="test.package"
                 package_type="1" />

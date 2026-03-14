@@ -72,7 +72,12 @@ var Kosmos.sceneNavigationDistances by Fixture {
 val Kosmos.initialSceneKey by Fixture { Scenes.Lockscreen }
 
 var Kosmos.overlayKeys by Fixture {
-    listOf(Overlays.NotificationsShade, Overlays.QuickSettingsShade, Overlays.Bouncer)
+    listOf(
+        Overlays.NotificationsShade,
+        Overlays.QuickSettingsShade,
+        Overlays.Bouncer,
+        Overlays.QuickActions,
+    )
 }
 
 val Kosmos.fakeOverlaysByKeys by Fixture { overlayKeys.associateWith { FakeOverlay(it) } }

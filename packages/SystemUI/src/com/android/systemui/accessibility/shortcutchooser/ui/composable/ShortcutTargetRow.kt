@@ -63,6 +63,7 @@ private enum class RowType {
     CHECKBOX,
     RADIO,
     TOGGLE,
+    CLICK,
 }
 
 /**
@@ -101,7 +102,11 @@ fun ShortcutToggleRow(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    ShortcutTargetRow(target, RowType.TOGGLE, modifier, target.isStateOn, onClick)
+    if (target.isToggleable) {
+        ShortcutTargetRow(target, RowType.TOGGLE, modifier, target.isStateOn, onClick)
+    } else {
+        ShortcutTargetRow(target, RowType.CLICK, modifier, false, onClick)
+    }
 }
 
 /**
@@ -109,7 +114,7 @@ fun ShortcutToggleRow(
  *
  * @param controlState Determines the on/off state of the control. For [RowType.RADIO],
  *   [RowType.CHECKBOX], and [RowType.TOGGLE], this is the selected, checked, and toggled state,
- *   respectively.
+ *   respectively. Not used for [RowType.CLICK].
  */
 @Composable
 private fun ShortcutTargetRow(
@@ -159,7 +164,7 @@ private fun ShortcutTargetRow(
                 ),
         )
 
-        if (rowType == RowType.TOGGLE && target.isToggleable) {
+        if (rowType == RowType.TOGGLE) {
             PickerSwitch(checked = controlState)
         }
     }
@@ -177,11 +182,8 @@ private fun Modifier.interactable(
         RowType.CHECKBOX ->
             toggleable(value = controlState, role = Role.Checkbox, onValueChange = { onClick() })
         RowType.TOGGLE ->
-            if (target.isToggleable) {
-                toggleable(value = controlState, role = Role.Switch, onValueChange = { onClick() })
-            } else {
-                clickable { onClick() }
-            }
+            toggleable(value = controlState, role = Role.Switch, onValueChange = { onClick() })
+        RowType.CLICK -> clickable { onClick() }
     }
 
 @Composable

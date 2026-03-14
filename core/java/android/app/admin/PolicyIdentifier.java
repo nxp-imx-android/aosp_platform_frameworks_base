@@ -45,6 +45,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.app.admin.flags.Flags;
+import android.app.admin.DevicePolicyManager;
 import android.processor.devicepolicy.AllowedDpcTypes;
 import android.processor.devicepolicy.EnumPolicyDefinition;
 import android.processor.devicepolicy.EnumResolutionMechanism;
@@ -179,21 +180,22 @@ public final class PolicyIdentifier<T> {
 
     /** The user can choose whether the time is automatically obtained from the network or not. */
     @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME)
-    public static final int AUTO_TIME_USER_CHOICE = 0;
+    public static final int AUTO_TIME_USER_CHOICE =
+            DevicePolicyManager.AUTO_TIME_NOT_CONTROLLED_BY_POLICY;
 
     /**
      * The admin has disabled the time to be automatically obtained from the network. This is not
      * enforced and the user can still enable it.
      */
     @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME)
-    public static final int AUTO_TIME_DISABLED_UNENFORCED = 1;
+    public static final int AUTO_TIME_DISABLED_UNENFORCED = DevicePolicyManager.AUTO_TIME_DISABLED;
 
     /**
      * The admin has enabled the time to be automatically obtained from the network. This is not
      * enforced and the user can still disable it.
      */
     @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME)
-    public static final int AUTO_TIME_ENABLED_UNENFORCED = 2;
+    public static final int AUTO_TIME_ENABLED_UNENFORCED = DevicePolicyManager.AUTO_TIME_ENABLED;
 
     /**
      * The admin has disabled the time to be automatically obtained from the network. This is
@@ -367,14 +369,16 @@ public final class PolicyIdentifier<T> {
 
     /** The user can choose whether the device's time zone is set automatically or not. */
     @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME_ZONE)
-    public static final int AUTO_TIME_ZONE_USER_CHOICE = 0;
+    public static final int AUTO_TIME_ZONE_USER_CHOICE =
+            DevicePolicyManager.AUTO_TIME_ZONE_NOT_CONTROLLED_BY_POLICY;
 
     /**
      * The admin has disabled automatic time zone detection. This is not enforced and the user can
      * still enable it. Use {@link UserManager#DISALLOW_CONFIG_DATE_TIME} to enforce the policy.
      */
     @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME_ZONE)
-    public static final int AUTO_TIME_ZONE_DISABLED_UNENFORCED = 1;
+    public static final int AUTO_TIME_ZONE_DISABLED_UNENFORCED =
+            DevicePolicyManager.AUTO_TIME_ZONE_DISABLED;
 
     /**
      * The admin has enabled the time zone to be automatically obtained from the network. This is
@@ -382,7 +386,8 @@ public final class PolicyIdentifier<T> {
      * UserManager#DISALLOW_CONFIG_DATE_TIME} to enforce the policy.
      */
     @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME_ZONE)
-    public static final int AUTO_TIME_ZONE_ENABLED_UNENFORCED = 2;
+    public static final int AUTO_TIME_ZONE_ENABLED_UNENFORCED =
+            DevicePolicyManager.AUTO_TIME_ZONE_ENABLED;
 
     /**
      * The admin has disabled automatic time zone detection. This is enforced and the user cannot

@@ -134,7 +134,7 @@ class MobileIconsInteractorKairosAdapterTest : MobileIconsInteractorTestBase() {
         override val defaultConnectionIsValidated: State<Boolean> = buildState {
             unwrapped.defaultConnectionIsValidated.toState()
         }
-        override val defaultDataSubRatConfig: State<MobileMappings.Config> = buildState {
+        override val defaultDataSubRatConfig: State<MobileMappings.Config?> = buildState {
             unwrapped.defaultDataSubRatConfig.toState()
         }
         override val defaultMobileIconMapping: State<Map<String, SignalIcon.MobileIconGroup>> =

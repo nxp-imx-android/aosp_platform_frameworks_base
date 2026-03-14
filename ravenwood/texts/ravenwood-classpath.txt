@@ -10,7 +10,7 @@ mockito-ravenwood-prebuilt.jar
 framework-minus-apex.ravenwood.jar
 kxml2-android.jar
 json-prebuilt.jar
-ext-ravenwood.jar
+ext.jar
 
 # Note, when we include other services.* jars, we'll need to add
 # platform_compat_config for that module too.

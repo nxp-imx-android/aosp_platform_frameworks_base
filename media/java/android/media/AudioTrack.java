@@ -4519,8 +4519,10 @@ public class AudioTrack extends PlayerBase
                 for (StreamEventCbInfo cbi : cbInfoList) {
                     switch (msg.what) {
                         case NATIVE_EVENT_CAN_WRITE_MORE_DATA:
+                            final int sizeInFrames = msg.arg1;
                             cbi.mStreamEventExec.execute(() ->
-                                    cbi.mStreamEventCb.onDataRequest(AudioTrack.this, msg.arg1));
+                                    cbi.mStreamEventCb.onDataRequest(AudioTrack.this,
+                                                                     sizeInFrames));
                             break;
                         case NATIVE_EVENT_NEW_IAUDIOTRACK:
                             // TODO also release track as it's not longer usable

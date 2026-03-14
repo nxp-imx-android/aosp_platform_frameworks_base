@@ -90,8 +90,13 @@ class AutofillRendererServiceTest : SysuiTestCase() {
                         Binder(),
                     )
                     .build()
+
+            val title = "test title"
+            val subtitle = "test subtitle"
             underTest.onRender(
-                DisplayInsight.Builder(InsightDisplayDetails.Builder("title").build())
+                DisplayInsight.Builder(
+                        InsightDisplayDetails.Builder(title).setSubtitle(subtitle).build()
+                    )
                     .addOriginHint(
                         PublishedContextHint.Builder(originHint, generateSignedHintKey()).build()
                     )
@@ -103,7 +108,22 @@ class AutofillRendererServiceTest : SysuiTestCase() {
             val datasetCaptor = argumentCaptor<MutableList<Dataset>>()
             verify(autofillManager)
                 .notifySystemInlineSuggestions(eq(sessionId), datasetCaptor.capture())
-            assertThat(datasetCaptor.firstValue).hasSize(1)
+            val datasets = datasetCaptor.firstValue
+            assertThat(datasets).hasSize(1)
+
+            // Title and subtitle are included in the generated dataset.
+            assertThat(
+                    datasets.first().getFieldInlinePresentation(0)!!.slice.items.stream().anyMatch {
+                        it.text.toString() == title
+                    }
+                )
+                .isTrue()
+            assertThat(
+                    datasets.first().getFieldInlinePresentation(0)!!.slice.items.stream().anyMatch {
+                        it.text.toString() == subtitle
+                    }
+                )
+                .isTrue()
         }
 
     @Test

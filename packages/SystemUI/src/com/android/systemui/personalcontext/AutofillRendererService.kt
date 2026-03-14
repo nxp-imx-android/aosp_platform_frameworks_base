@@ -236,10 +236,10 @@ constructor(private val context: Context, private val autofillManager: AutofillM
                 .setHints(suggestionDetails.inlineSuggestionHints)
                 .setTitle(displayDetails.title ?: return null)
 
+        displayDetails.subtitle?.let { inlineSuggestionUiBuilder.setSubtitle(it) }
         displayDetails.contentDescription?.let {
             inlineSuggestionUiBuilder.setContentDescription(it)
         }
-
         displayDetails.icon?.let { inlineSuggestionUiBuilder.setStartIcon(it) }
 
         return inlineSuggestionUiBuilder.build().slice

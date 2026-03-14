@@ -386,7 +386,37 @@ public final class DreamBackendTest {
 
     @Test
     @EnableFlags(FLAG_DREAMS_SWITCHER)
+    public void testIsDreamSwitcherEnabled_returnsTrueWhenConfigAndFlagAreEnabled() {
+        when(mContext.getResources()
+                        .getBoolean(com.android.internal.R.bool.config_dreamSwitcherEnabled))
+                .thenReturn(true);
+        assertThat(mBackend.isDreamSwitcherEnabled()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(FLAG_DREAMS_SWITCHER)
+    public void testIsDreamSwitcherEnabled_returnsFalseWhenConfigIsDisabled() {
+        when(mContext.getResources()
+                        .getBoolean(com.android.internal.R.bool.config_dreamSwitcherEnabled))
+                .thenReturn(false);
+        assertThat(mBackend.isDreamSwitcherEnabled()).isFalse();
+    }
+
+    @Test
+    @DisableFlags(FLAG_DREAMS_SWITCHER)
+    public void testIsDreamSwitcherEnabled_returnsFalseWhenFlagIsDisabled() {
+        when(mContext.getResources()
+                        .getBoolean(com.android.internal.R.bool.config_dreamSwitcherEnabled))
+                .thenReturn(true);
+        assertThat(mBackend.isDreamSwitcherEnabled()).isFalse();
+    }
+
+    @Test
+    @EnableFlags(FLAG_DREAMS_SWITCHER)
     public void testGetActiveDreams_withDreamSwitcher_returnsAllDreams() throws RemoteException {
+        when(mContext.getResources()
+                        .getBoolean(com.android.internal.R.bool.config_dreamSwitcherEnabled))
+                .thenReturn(true);
         ComponentName[] dreams = {
             new ComponentName(mContext, "Dream1"), new ComponentName(mContext, "Dream2")
         };
@@ -400,6 +430,9 @@ public final class DreamBackendTest {
     @Test
     @EnableFlags(FLAG_DREAMS_SWITCHER)
     public void testGetDreamInfos_withDreamSwitcher_setsOrderAndActive() throws RemoteException {
+        when(mContext.getResources()
+                        .getBoolean(com.android.internal.R.bool.config_dreamSwitcherEnabled))
+                .thenReturn(true);
         // Arrange
         ComponentName activeDream1 = new ComponentName("package", "name1");
         ComponentName activeDream2 = new ComponentName("package", "name2");

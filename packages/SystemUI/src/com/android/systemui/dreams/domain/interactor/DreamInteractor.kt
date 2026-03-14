@@ -35,6 +35,9 @@ class DreamInteractor @Inject constructor(private val repository: DreamRepositor
     /** The current dream playlist. */
     val dreamState: Flow<DreamPlaylistModel> = repository.dreamState
 
+    /** Whether the dream switcher feature is supported and enabled. */
+    val isDreamSwitcherEnabled: Boolean = repository.isDreamSwitcherEnabled
+
     /** Emits whether the user can switch between dreams. */
     val canSwitchDreams: Flow<Boolean> =
         dreamState

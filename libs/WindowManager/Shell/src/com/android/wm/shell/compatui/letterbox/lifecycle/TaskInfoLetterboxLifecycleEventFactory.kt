@@ -38,7 +38,7 @@ class TaskInfoLetterboxLifecycleEventFactory(
 
     override fun createLifecycleEvent(change: Change): LetterboxLifecycleEvent? {
         change.taskInfo?.let { ti ->
-            val isLetterboxed = ti.appCompatTaskInfo?.isTopActivityLetterboxed ?: false
+            val isLetterboxed = ti.appCompatTaskInfo?.isTopActivityLetterboxRunning ?: false
             val taskBoundsAbs = change.endAbsBounds
             // The bounds are absolute to the screen but we need them relative to the Task.
             val taskBounds =

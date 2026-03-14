@@ -26,7 +26,7 @@ import org.robolectric.RobolectricTestRunner
 class PreferenceGraphCompressorTest {
 
     private val ORIGINAL_PROTO_SIZE = 1676126
-    private val SHRUNKEN_PROTO_SIZE = 1454882
+    private val SHRUNKEN_PROTO_SIZE = 830875
 
     @Test
     fun shrinkAndExpand_withBinaryFile_returnsOriginalProto() {
