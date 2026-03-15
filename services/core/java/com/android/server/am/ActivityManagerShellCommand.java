@@ -4742,11 +4742,13 @@ final class ActivityManagerShellCommand extends ShellCommand {
 
     private static void showMemoryLimiterHelp(PrintWriter pw) {
         pw.println("  memory-limiter <SUBCOMMAND>");
-        pw.println("         ignore <UID> do not configure limits for the UID.");
-        pw.println("         ignore none  resume normal operation for all UIDs.");
-        pw.println("         ignore all   ignore all processes, for testing.");
-        pw.println("         manual <PID> <PERCENT|none> set a manual limit for the given PID.");
-        pw.println("         status       report the status of the limiter.");
+        pw.println("      status: report the status of the limiter.");
+        pw.println("      ignore <UID|none|all>: do not configure limits for the UID.");
+        pw.println("          none: resume normal operation for all UIDs.");
+        pw.println("          all: ignore all processes (disable limiting globally).");
+        pw.println("      manual <PID> <PERCENT|none>: set a manual memory limit for a process.");
+        pw.println("          PERCENT: percentage of total RAM (1-99).");
+        pw.println("          none: remove the manual limit override.");
     }
 
     private Resources getResources(PrintWriter pw) throws RemoteException {
