@@ -59,7 +59,6 @@ import android.compat.annotation.EnabledAfter;
 import android.content.AttributionSource;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.hardware.display.DisplayManagerInternal;
 import android.hardware.display.IVirtualDisplayCallback;
 import android.os.Binder;
@@ -125,7 +124,6 @@ public class VirtualDeviceManagerService extends SystemService implements Watchd
     private static final String VIRTUAL_DEVICE_NATIVE_SERVICE = "virtualdevice_native";
 
     static final String DEVICE_PROFILE_UNKNOWN = "DEVICE_PROFILE_UNKNOWN";
-    static final String DEVICE_PROFILE_SYSTEM = "DEVICE_PROFILE_SYSTEM";
     static final String DEVICE_PROFILE_SHELL = "DEVICE_PROFILE_SHELL";
     static final String DEVICE_PROFILE_COMPUTER_CONTROL = "DEVICE_PROFILE_COMPUTER_CONTROL";
 
@@ -1030,30 +1028,6 @@ public class VirtualDeviceManagerService extends SystemService implements Watchd
     }
 
     private final class LocalService extends VirtualDeviceManagerInternal {
-
-        @Override
-        public @NonNull VirtualDeviceManager.VirtualDevice createVirtualDevice(
-                @NonNull VirtualDeviceParams params) {
-            if (getContext().checkCallingOrSelfPermission(
-                    android.Manifest.permission.CREATE_VIRTUAL_DEVICE)
-                    != PackageManager.PERMISSION_GRANTED) {
-                throw new SecurityException("Missing CREATE_VIRTUAL_DEVICE permission");
-            }
-
-            Objects.requireNonNull(params, "params must not be null");
-            Objects.requireNonNull(params.getName(), "virtual device name must not be null");
-            IVirtualDeviceActivityListener stubActivityListener =
-                    new IVirtualDeviceActivityListener.Default();
-            IVirtualDevice virtualDevice = mImpl.createVirtualDevice(
-                    new Binder(),
-                    getContext().getAttributionSource(),
-                    /* associationInfo= */ null,
-                    params,
-                    /* activityListener= */ stubActivityListener,
-                    /* soundEffectListener= */ null,
-                    DEVICE_PROFILE_SYSTEM);
-            return new VirtualDeviceManager.VirtualDevice(getContext(), virtualDevice);
-        }
 
         @Override
         public int getDeviceOwnerUid(int deviceId) {

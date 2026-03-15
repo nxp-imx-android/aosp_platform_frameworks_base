@@ -17,17 +17,16 @@
 package com.android.server.accessibility
 
 import android.Manifest
-import android.companion.virtual.VirtualDeviceManager
-import android.companion.virtual.VirtualDeviceParams
 import android.content.Context
 import android.hardware.input.IInputManager
+import android.hardware.input.IVirtualMouse
 import android.hardware.input.InputManager
 import android.hardware.input.InputManagerGlobal
-import android.hardware.input.VirtualMouse
 import android.hardware.input.VirtualMouseButtonEvent
 import android.hardware.input.VirtualMouseConfig
 import android.hardware.input.VirtualMouseRelativeEvent
 import android.hardware.input.VirtualMouseScrollEvent
+import android.os.IBinder
 import android.os.RemoteException
 import android.os.test.TestLooper
 import android.platform.test.annotations.Presubmit
@@ -37,16 +36,13 @@ import android.platform.test.flag.junit.CheckFlagsRule
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.provider.Settings
 import android.testing.TestableContext
-import android.util.ArraySet
 import android.util.MathUtils.sqrt
 import android.view.InputDevice
 import android.view.KeyEvent
 import androidx.annotation.RequiresPermission
 import androidx.test.core.app.ApplicationProvider
-import com.android.server.LocalServices
 import com.android.server.accessibility.MouseKeysInterceptor.FAKE_DEVICE_GENERATION_ID
 import com.android.server.accessibility.MouseKeysInterceptor.FAKE_NUMPAD_DEVICE_GENERATION_ID
-import com.android.server.companion.virtual.VirtualDeviceManagerInternal
 import com.android.server.testutils.OffsettableClock
 import com.google.common.truth.Truth.assertThat
 import java.util.LinkedList
@@ -58,6 +54,9 @@ import org.junit.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.Mock
 import org.mockito.Mockito
+import org.mockito.Mockito.any
+import org.mockito.Mockito.never
+import org.mockito.Mockito.reset
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
@@ -121,9 +120,7 @@ class MouseKeysInterceptorTest {
     private lateinit var testSession: InputManagerGlobal.TestSession
     private lateinit var mockInputManager: InputManager
 
-    @Mock private lateinit var mockVirtualDeviceManagerInternal: VirtualDeviceManagerInternal
-    @Mock private lateinit var mockVirtualDevice: VirtualDeviceManager.VirtualDevice
-    @Mock private lateinit var mockVirtualMouse: VirtualMouse
+    @Mock private lateinit var mockVirtualMouse: IVirtualMouse
 
     @Mock private lateinit var mockTraceManager: AccessibilityTraceManager
 
@@ -141,6 +138,7 @@ class MouseKeysInterceptorTest {
 
         testSession = InputManagerGlobal.createTestSession(iInputManager)
         mockInputManager = InputManager(testableContext)
+        testableContext.addMockSystemService(InputManager::class.java, mockInputManager)
 
         inputDevice = createInputDevice(DEVICE_ID, /* isVirtual= */ false)
         virtualInputDevice = createInputDevice(VIRTUAL_DEVICE_ID, /* isVirtual */ true)
@@ -155,22 +153,10 @@ class MouseKeysInterceptorTest {
             .thenReturn(virtualInputDevice)
         Mockito.`when`(iInputManager.getInputDevice(NUMPAD_DEVICE_ID)).thenReturn(numpadInputDevice)
 
-        Mockito.`when`(mockVirtualDeviceManagerInternal.getDeviceIdsForUid(Mockito.anyInt()))
-            .thenReturn(ArraySet(setOf(DEVICE_ID)))
-        LocalServices.removeServiceForTest(VirtualDeviceManagerInternal::class.java)
-        LocalServices.addService<VirtualDeviceManagerInternal>(
-            VirtualDeviceManagerInternal::class.java,
-            mockVirtualDeviceManagerInternal,
-        )
-
         Mockito.`when`(
-                mockVirtualDeviceManagerInternal.createVirtualDevice(
-                    Mockito.any(VirtualDeviceParams::class.java)
-                )
-            )
-            .thenReturn(mockVirtualDevice)
-        Mockito.`when`(
-                mockVirtualDevice.createVirtualMouse(Mockito.any(VirtualMouseConfig::class.java))
+            iInputManager.createVirtualMouse(
+                any(IBinder::class.java),
+                any(VirtualMouseConfig::class.java))
             )
             .thenReturn(mockVirtualMouse)
 
@@ -194,7 +180,7 @@ class MouseKeysInterceptorTest {
      * mouseKeysInterceptor.onKeyEvent() is called. This will ensure the test is run with the
      * correct primary keys setting. This function should be called at the beginning of each test.
      */
-    @RequiresPermission(Manifest.permission.CREATE_VIRTUAL_DEVICE)
+    @RequiresPermission(Manifest.permission.INJECT_EVENTS)
     private fun setupMouseKeysInterceptor(usePrimaryKeys: Boolean) {
         val setting = if (usePrimaryKeys) 1 else 0
         Settings.Secure.putIntForUser(
@@ -269,7 +255,7 @@ class MouseKeysInterceptorTest {
         mouseKeysInterceptor.onKeyEvent(downEvent, 0)
         testLooper.dispatchAll()
 
-        // Verify the sendRelativeEvent method is called once and capture the arguments
+        // Verify the sendMouseRelativeEvent method is called once and capture the arguments
         verifyRelativeEvents(
             expectedX =
                 floatArrayOf(-MouseKeysInterceptor.MOUSE_POINTER_MOVEMENT_STEP / sqrt(2.0f)),
@@ -947,8 +933,8 @@ class MouseKeysInterceptorTest {
 
         val captor = ArgumentCaptor.forClass(VirtualMouseRelativeEvent::class.java)
         val expectedTotalEvents = 1 + subsequentMovementsToObserve
-        Mockito.verify(mockVirtualMouse, Mockito.times(expectedTotalEvents))
-            .sendRelativeEvent(captor.capture())
+        verify(mockVirtualMouse, times(expectedTotalEvents))
+            .sendMouseRelativeEvent(captor.capture())
 
         val allCapturedEvents = captor.allValues
         assertThat(allCapturedEvents).hasSize(expectedTotalEvents)
@@ -985,8 +971,8 @@ class MouseKeysInterceptorTest {
         }
 
         val captor = ArgumentCaptor.forClass(VirtualMouseRelativeEvent::class.java)
-        Mockito.verify(mockVirtualMouse, Mockito.times(numIntervals + 1))
-            .sendRelativeEvent(captor.capture())
+        verify(mockVirtualMouse, times(numIntervals + 1))
+            .sendMouseRelativeEvent(captor.capture())
 
         val allEvents = captor.allValues
         val lastCapturedEvent = allEvents.last()
@@ -1028,7 +1014,7 @@ class MouseKeysInterceptorTest {
 
         // Clear previous interactions with mockVirtualMouse before the second press
         // to only capture events from the second press sequence.
-        Mockito.reset(mockVirtualMouse)
+        reset(mockVirtualMouse)
 
         // Second Press
         clock.fastForward(100L)
@@ -1041,7 +1027,7 @@ class MouseKeysInterceptorTest {
         // Calculate expected first step for a new press
         val expectedFirstStepAfterReset =
             INITIAL_STEP_BEFORE_ACCEL * (1 + mouseKeysInterceptor.mAcceleration)
-        // Verify the sendRelativeEvent method is called once and capture the arguments
+        // Verify the sendMouseRelativeEvent method is called once and capture the arguments
         verifyRelativeEvents(
             expectedX = floatArrayOf(0f),
             expectedY = floatArrayOf(expectedFirstStepAfterReset),
@@ -1072,7 +1058,7 @@ class MouseKeysInterceptorTest {
 
         // Verify the corresponding primary key is ignored.
         assertThat(nextInterceptor.events).hasSize(1)
-        Mockito.verify(mockVirtualMouse, Mockito.never()).sendRelativeEvent(Mockito.any())
+        verify(mockVirtualMouse, never()).sendMouseRelativeEvent(any())
 
         // Verify that the received event is the same as the primary key that was pressed.
         verifyKeyEventsEqual(primaryKeyDownEvent, nextInterceptor.events.poll()!!)
@@ -1102,7 +1088,7 @@ class MouseKeysInterceptorTest {
 
         // Verify the corresponding numpad key is ignored.
         assertThat(nextInterceptor.events).hasSize(1)
-        Mockito.verify(mockVirtualMouse, Mockito.never()).sendRelativeEvent(Mockito.any())
+        verify(mockVirtualMouse, never()).sendMouseRelativeEvent(any())
 
         // Verify that the received event is the same as the numpad key that was pressed.
         verifyKeyEventsEqual(numpadKeyDownEvent, nextInterceptor.events.poll()!!)
@@ -1132,7 +1118,7 @@ class MouseKeysInterceptorTest {
 
         // Verify the corresponding numpad key is ignored.
         assertThat(nextInterceptor.events).hasSize(1)
-        Mockito.verify(mockVirtualMouse, Mockito.never()).sendRelativeEvent(Mockito.any())
+        verify(mockVirtualMouse, never()).sendMouseRelativeEvent(any())
 
         // Verify that the received event is the same as the numpad key that was pressed.
         verifyKeyEventsEqual(numpadKeyDownEvent, nextInterceptor.events.poll()!!)
@@ -1165,24 +1151,20 @@ class MouseKeysInterceptorTest {
 
     @Test
     fun whenMultipleInterceptorsCreated_virtualDeviceNamesAreUnique() {
-        val vdpCaptor = ArgumentCaptor.forClass(VirtualDeviceParams::class.java)
         val vmcCaptor = ArgumentCaptor.forClass(VirtualMouseConfig::class.java)
 
         setupMouseKeysInterceptor(usePrimaryKeys = true)
         setupMouseKeysInterceptor(usePrimaryKeys = true)
 
-        verify(mockVirtualDeviceManagerInternal, times(2)).createVirtualDevice(vdpCaptor.capture())
-        verify(mockVirtualDevice, times(2)).createVirtualMouse(vmcCaptor.capture())
+        verify(iInputManager, times(2)).createVirtualMouse(
+            any(IBinder::class.java),
+            vmcCaptor.capture())
 
         val mouseKeysVirtualDevicePrefix = "Mouse Keys Virtual Device ("
-        val firstName = vdpCaptor.allValues[0].name
-        val firstInputName = vmcCaptor.allValues[0].inputDeviceName
-        assertThat(firstName).isEqualTo(firstInputName)
+        val firstName = vmcCaptor.allValues[0].inputDeviceName
         assertThat(firstName).startsWith(mouseKeysVirtualDevicePrefix)
 
-        val secondName = vdpCaptor.allValues[1].name
-        val secondInputName = vmcCaptor.allValues[1].inputDeviceName
-        assertThat(secondName).isEqualTo(secondInputName)
+        val secondName = vmcCaptor.allValues[1].inputDeviceName
         assertThat(secondName).startsWith(mouseKeysVirtualDevicePrefix)
 
         assertThat(firstName).isNotEqualTo(secondName)
@@ -1215,7 +1197,7 @@ class MouseKeysInterceptorTest {
         testLooper.dispatchAll()
 
         // Verify that the virtual mouse didn't get a second event after the map was cleared
-        Mockito.verify(mockVirtualMouse, times(1)).sendRelativeEvent(Mockito.any())
+        verify(mockVirtualMouse, times(1)).sendMouseRelativeEvent(any())
     }
 
     private fun testDirectionalKey(
@@ -1241,7 +1223,7 @@ class MouseKeysInterceptorTest {
             KeyEvent(downTime, clock.now(), KeyEvent.ACTION_UP, keyCode, 0, metaState, deviceId, 0)
         mouseKeysInterceptor.onKeyEvent(upEvent, 0)
         testLooper.dispatchAll()
-        Mockito.reset(mockVirtualMouse)
+        reset(mockVirtualMouse)
     }
 
     private fun testScrollKey(
@@ -1310,7 +1292,7 @@ class MouseKeysInterceptorTest {
             )
         mouseKeysInterceptor.onKeyEvent(scrollToggleOffEvent, 0)
         testLooper.dispatchAll()
-        Mockito.reset(mockVirtualMouse)
+        reset(mockVirtualMouse)
     }
 
     private fun testClickKey(keyCode: Int, deviceId: Int, metaState: Int, expectedButton: Int) {
@@ -1327,7 +1309,7 @@ class MouseKeysInterceptorTest {
             )
         val buttons = intArrayOf(expectedButton, expectedButton)
         verifyButtonEvents(actions = actions, buttons = buttons)
-        Mockito.reset(mockVirtualMouse)
+        reset(mockVirtualMouse)
     }
 
     private fun testButtonEvent(
@@ -1347,7 +1329,7 @@ class MouseKeysInterceptorTest {
             actions = intArrayOf(expectedAction),
             buttons = intArrayOf(expectedButton),
         )
-        Mockito.reset(mockVirtualMouse)
+        reset(mockVirtualMouse)
     }
 
     private fun verifyRelativeEvents(expectedX: FloatArray, expectedY: FloatArray) {
@@ -1355,8 +1337,8 @@ class MouseKeysInterceptorTest {
         val expectedSize = expectedX.size
 
         val captor = ArgumentCaptor.forClass(VirtualMouseRelativeEvent::class.java)
-        Mockito.verify(mockVirtualMouse, Mockito.times(expectedSize))
-            .sendRelativeEvent(captor.capture())
+        verify(mockVirtualMouse, times(expectedSize))
+            .sendMouseRelativeEvent(captor.capture())
 
         val actualEvents = captor.allValues
         assertThat(actualEvents).hasSize(expectedSize)
@@ -1378,8 +1360,8 @@ class MouseKeysInterceptorTest {
         val expectedSize = actions.size
 
         val captor = ArgumentCaptor.forClass(VirtualMouseButtonEvent::class.java)
-        Mockito.verify(mockVirtualMouse, Mockito.times(actions.size))
-            .sendButtonEvent(captor.capture())
+        verify(mockVirtualMouse, times(actions.size))
+            .sendMouseButtonEvent(captor.capture())
 
         val actualEvents = captor.allValues
         assertThat(actualEvents).hasSize(expectedSize)
@@ -1396,8 +1378,8 @@ class MouseKeysInterceptorTest {
         val expectedSize = xAxisMovements.size
 
         val captor = ArgumentCaptor.forClass(VirtualMouseScrollEvent::class.java)
-        Mockito.verify(mockVirtualMouse, Mockito.times(expectedSize))
-            .sendScrollEvent(captor.capture())
+        verify(mockVirtualMouse, times(expectedSize))
+            .sendMouseScrollEvent(captor.capture())
 
         val actualEvents = captor.allValues
         assertThat(actualEvents).hasSize(expectedSize)
