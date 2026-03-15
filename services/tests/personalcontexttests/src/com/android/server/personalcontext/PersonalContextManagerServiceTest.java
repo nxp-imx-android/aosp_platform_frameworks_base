@@ -71,6 +71,7 @@ import androidx.test.filters.SmallTest;
 import com.android.internal.util.test.LocalServiceKeeperRule;
 import com.android.server.SystemService;
 import com.android.server.contentcapture.ContentCaptureManagerInternal;
+import com.android.server.personalcontext.embedded.EmbeddedInsightRenderer;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -113,6 +114,7 @@ public class PersonalContextManagerServiceTest {
     @Mock private ContentCaptureManagerInternal mContentCaptureManagerInternal;
     @Mock private RoleManager mRoleManager;
     @Mock private AccessController mAccessController;
+    @Mock private EmbeddedInsightRenderer mEmbeddedInsightRenderer;
     private FakePermissionEnforcer mFakePermissionEnforcer;
 
     private PersonalContextManagerService mService;
@@ -144,6 +146,8 @@ public class PersonalContextManagerServiceTest {
         mContext.getTestablePermissions()
                 .setPermission(Manifest.permission.INTERACT_ACROSS_USERS, PERMISSION_GRANTED);
         mFakePermissionEnforcer = new FakePermissionEnforcer();
+        mFakePermissionEnforcer.grant(Manifest.permission.INTERACT_ACROSS_USERS);
+        mFakePermissionEnforcer.grant(Manifest.permission.INTERACT_ACROSS_USERS_FULL);
         mFakePermissionEnforcer.grant(Manifest.permission.CHANGE_PERSONAL_CONTEXT_MODE);
         mFakePermissionEnforcer.grant(Manifest.permission.PERSONAL_CONTEXT_HOST_INSIGHT_SURFACE);
         mFakePermissionEnforcer.grant(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS);
@@ -152,7 +156,8 @@ public class PersonalContextManagerServiceTest {
         mFakePermissionEnforcer.grant(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS);
         mContext.addMockSystemService(Context.PERMISSION_ENFORCER_SERVICE, mFakePermissionEnforcer);
 
-        mService = spy(new PersonalContextManagerService(mContext, mAccessController));
+        mService = spy(new PersonalContextManagerService(
+                mContext, mAccessController, (userContext, executor) -> mEmbeddedInsightRenderer));
         mLocalService = mService.new LocalService();
 
         mBinderService =
@@ -161,6 +166,9 @@ public class PersonalContextManagerServiceTest {
         mUser1 = new SystemService.TargetUser(USER_INFO_1);
         mUser2 = new SystemService.TargetUser(USER_INFO_2);
         mSystemUser = new SystemService.TargetUser(SYSTEM_USER_INFO);
+
+        mBinderService.setEnabled(USER_ID_1, true);
+        mBinderService.setEnabled(USER_ID_2, true);
     }
 
     @Test
@@ -255,6 +263,49 @@ public class PersonalContextManagerServiceTest {
 
         assertThat(mService.getComponentManagerForUser(USER_ID_1)).isNull();
         assertThat(mService.getComponentManagerForUser(USER_ID_2)).isNull();
+    }
+
+    @Test
+    public void testNotEnabled_doesNotRegisterClients() {
+        mService.onUserStarting(mUser1);
+        mService.onUserUnlocked(mUser1);
+        mBinderService.setEnabled(USER_ID_1, false);
+
+        final InsightSurfaceClientInfo clientInfo = mock(InsightSurfaceClientInfo.class);
+        mBinderService.registerInsightSurfaceClient(clientInfo, USER_ID_1);
+
+        verify(mEmbeddedInsightRenderer, never()).registerInsightSurfaceClient(clientInfo);
+    }
+
+    @Test
+    public void testBecomesEnabled_allowsRegisteringClients() {
+        mService.onUserStarting(mUser1);
+        mService.onUserUnlocked(mUser1);
+        mBinderService.setEnabled(USER_ID_1, false);
+
+        final InsightSurfaceClientInfo clientInfo = mock(InsightSurfaceClientInfo.class);
+        mBinderService.registerInsightSurfaceClient(clientInfo, USER_ID_1);
+        verify(mEmbeddedInsightRenderer, never()).registerInsightSurfaceClient(clientInfo);
+
+        mBinderService.setEnabled(USER_ID_1, true);
+        mBinderService.registerInsightSurfaceClient(clientInfo, USER_ID_1);
+        verify(mEmbeddedInsightRenderer).registerInsightSurfaceClient(clientInfo);
+
+    }
+
+    @Test
+    public void testSetDisabled_unregistersComponents() {
+        mService.onUserStarting(mUser1);
+        mService.onUserUnlocked(mUser1);
+        final ContextComponentManager componentManager =
+                mService.getComponentManagerForUser(USER_ID_1);
+        assertThat(componentManager).isNotNull();
+        assertThat(componentManager.getRenderers()).isNotEmpty();
+
+        mBinderService.setEnabled(USER_ID_1, false);
+        mService.handleIsEnabledSettingChanged(USER_ID_1);
+
+        assertThat(componentManager.getRenderers()).isEmpty();
     }
 
     @Test

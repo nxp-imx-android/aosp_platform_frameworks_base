@@ -122,10 +122,16 @@ public class PersonalContextManagerService extends SystemService {
 
     private static class SettingObserver extends ContentObserver {
         private final Context mContext;
+        private final Runnable mEnabledChangedAction;
 
-        SettingObserver(@NonNull Context context, @Nullable Executor executor, int unused) {
+        SettingObserver(
+                @NonNull Context context,
+                @Nullable Executor executor,
+                @NonNull Runnable enabledChangedAction,
+                int unused) {
             super(executor, unused);
             mContext = context;
+            mEnabledChangedAction = enabledChangedAction;
         }
 
         @Override
@@ -134,6 +140,7 @@ public class PersonalContextManagerService extends SystemService {
                     new Intent(PersonalContextManager.ACTION_PERSONAL_CONTEXT_ENABLED_CHANGED)
                             .addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY),
                     UserHandle.ALL);
+            mEnabledChangedAction.run();
         }
 
         public void register() {
@@ -163,6 +170,20 @@ public class PersonalContextManagerService extends SystemService {
         }
     }
 
+    /**
+     * Factory interface for creating {@link EmbeddedInsightRenderer} instances.
+     */
+    public interface EmbeddedInsightRendererFactory {
+        /**
+         * Create an {@link EmbeddedInsightRenderer} instance.
+         * @param userContext the context for the user
+         * @param executor the executor to use to execute embedded renderer tasks
+         * @return A new {@link EmbeddedInsightRenderer} instance.
+         */
+        EmbeddedInsightRenderer createEmbeddedInsightRenderer(
+                Context userContext, Executor executor);
+    }
+
     // TODO(b/454430085): Inject these fields.
     private final ScheduledExecutorService mExecutor = Executors.newSingleThreadScheduledExecutor();
     private final SparseArray<UserState> mUserStates = new SparseArray<>();
@@ -172,15 +193,19 @@ public class PersonalContextManagerService extends SystemService {
     private final ActivityManagerInternal mActivityManager;
     private final PackageManagerInternal mPackageManager;
     private final ContentCaptureManagerInternal mContentCaptureManagerInternal;
+    private final EmbeddedInsightRendererFactory mEmbeddedInsightRendererFactory;
 
     private final AccessController mAccessController;
     private final PersonalContextManagerInternal mInternalService = new LocalService();
 
     public PersonalContextManagerService(Context context) {
-        this(context, new AccessController(context));
+        this(context, new AccessController(context), EmbeddedInsightRenderer::new);
     }
 
-    protected PersonalContextManagerService(Context context, AccessController controller) {
+    protected PersonalContextManagerService(
+            Context context,
+            AccessController controller,
+            EmbeddedInsightRendererFactory embeddedInsightRendererFactory) {
         super(context);
 
         mRoleManager = context.getSystemService(RoleManager.class);
@@ -188,6 +213,7 @@ public class PersonalContextManagerService extends SystemService {
         mPackageManager = getLocalService(PackageManagerInternal.class);
         mContentCaptureManagerInternal = getLocalService(ContentCaptureManagerInternal.class);
         mAccessController = controller;
+        mEmbeddedInsightRendererFactory = embeddedInsightRendererFactory;
     }
 
     private void checkUidAccess(int uid, @AccessController.Access int access) {
@@ -227,7 +253,8 @@ public class PersonalContextManagerService extends SystemService {
                     new HintInvalidationUnderstander(
                             (insight, componentId) ->
                                     startInsightWorkflow(userId, componentId, Set.of(insight)));
-            final SettingObserver observer = new SettingObserver(userContext, mExecutor, 0);
+            final SettingObserver observer = new SettingObserver(userContext, mExecutor,
+                    () -> handleIsEnabledSettingChanged(userId), 0);
             final NotificationActionRenderer notificationActionRenderer =
                     new NotificationActionRenderer(
                             getLocalService(NotificationManagerInternal.class),
@@ -235,8 +262,9 @@ public class PersonalContextManagerService extends SystemService {
                                     userContext,
                                     userContext.getPackageManager(),
                                     new ContextActionResolver(userContext)));
-            final EmbeddedInsightRenderer embeddedInsightRenderer = new EmbeddedInsightRenderer(
-                    userContext, Executors.newSingleThreadExecutor());
+            final EmbeddedInsightRenderer embeddedInsightRenderer =
+                    mEmbeddedInsightRendererFactory.createEmbeddedInsightRenderer(
+                            userContext, Executors.newSingleThreadExecutor());
 
             TextClassificationActionRenderer textClassificationActionRenderer;
             PersonalContextBridge tcPersonalContextBridge =
@@ -280,6 +308,53 @@ public class PersonalContextManagerService extends SystemService {
             }
         }
 
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Slog.d(TAG, "Registering setting observer for user " + userId);
+        }
+        userState.observer().register();
+
+
+        if (!isEnabledForUser(userId)) {
+            // Personal context isn't enabled for this user, so don't register any components.
+            return;
+        }
+
+        registerComponentsForCurrentUser(userId, "user unlocked");
+    }
+
+    @Override
+    public void onUserStopping(@NonNull TargetUser user) {
+        final int userId = user.getUserIdentifier();
+        Slog.i(TAG, "Stopping user " + userId);
+        synchronized (mUserStates) {
+            final UserState userState = mUserStates.get(userId);
+            if (userState != null) {
+                userState.cleanup();
+            }
+            mUserStates.remove(userId);
+        }
+    }
+
+    @VisibleForTesting
+    void handleIsEnabledSettingChanged(int userId) {
+        if (isEnabledForUser(userId)) {
+            registerComponentsForCurrentUser(userId, "personal context enabled");
+        } else {
+            unregisterComponentsForCurrentUser(userId, "personal context disabled");
+        }
+    }
+
+    private void registerComponentsForCurrentUser(int userId, String reason) {
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Slog.d(TAG, "Registering components for user " + userId + ", reason: " + reason);
+        }
+
+        UserState userState = getUserStateSynchronized(userId);
+        if (userState == null) {
+            Slog.e(TAG, "Unknown user id when registering components: " + userId);
+            return;
+        }
+
         final ContextComponentManager componentManager = userState.componentManager();
 
         if (Log.isLoggable(TAG, Log.DEBUG)) {
@@ -302,31 +377,31 @@ public class PersonalContextManagerService extends SystemService {
         if (Log.isLoggable(TAG, Log.DEBUG)) {
             Slog.d(TAG, "Starting package monitor for user " + userId);
         }
+        final UserHandle userHandle = UserHandle.getUserHandleForUid(userId);
         userState
                 .monitor()
                 .register(
-                        getContext().createContextAsUser(user.getUserHandle(), 0),
+                        getContext().createContextAsUser(userHandle, 0),
                         /* looper= */ null,
-                        user.getUserHandle(),
+                        userHandle,
                         /* externalStorage= */ false);
-
-        if (Log.isLoggable(TAG, Log.DEBUG)) {
-            Slog.d(TAG, "Registering setting observer for user " + userId);
-        }
-        userState.observer().register();
     }
 
-    @Override
-    public void onUserStopping(@NonNull TargetUser user) {
-        final int userId = user.getUserIdentifier();
-        Slog.i(TAG, "Stopping user " + userId);
-        synchronized (mUserStates) {
-            final UserState userState = mUserStates.get(userId);
-            if (userState != null) {
-                userState.cleanup();
-            }
-            mUserStates.remove(userId);
+    private void unregisterComponentsForCurrentUser(int userId, String reason) {
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Slog.d(TAG, "Unregistering all components for user " + userId);
         }
+
+        UserState userState = getUserStateSynchronized(userId);
+        if (userState == null) {
+            Slog.e(TAG, "Unknown user id when unregistering components: " + userId);
+            return;
+        }
+
+        final ContextComponentManager componentManager = userState.componentManager();
+        userState.monitor().unregister();
+        componentManager.unregisterAllComponents(reason);
+        userState.embeddedInsightRenderer().onUnregistered();
     }
 
     @Nullable
@@ -346,6 +421,11 @@ public class PersonalContextManagerService extends SystemService {
             Set<ContextHint> hints,
             Set<RenderToken> renderTokens,
             Set<ContextHint> attributionHints) {
+        if (!isEnabledForUser(userId)) {
+            Slog.w(TAG, "Can't start refiner workflow because personal context is not enabled.");
+            return;
+        }
+
         final ContextComponentManager componentManager = getComponentManagerForUser(userId);
         if (componentManager == null) {
             Slog.w(TAG, "Cannot start refiner workflow, no component manager for user " + userId);
@@ -382,6 +462,11 @@ public class PersonalContextManagerService extends SystemService {
     @VisibleForTesting
     void startInsightWorkflow(@UserIdInt int userId, UUID componentId,
             Set<ContextInsight> insights) {
+        if (!isEnabledForUser(userId)) {
+            Slog.w(TAG, "Can't start insight workflow because personal context is not enabled.");
+            return;
+        }
+
         final HashSet<PublishedContextInsight> publishedInsights = new HashSet<>();
         for (ContextInsight insight : insights) {
             publishedInsights.add(new PublishedContextInsight(insight, componentId));
@@ -410,9 +495,23 @@ public class PersonalContextManagerService extends SystemService {
         return userState != null ? userState.componentManager() : null;
     }
 
+    /** Returns the embedded renderer for the given user, for testing purposes. */
+    @VisibleForTesting
+    @Nullable
+    EmbeddedInsightRenderer getEmbeddedRendererForUser(@UserIdInt int userId) {
+        final UserState userState = getUserStateSynchronized(userId);
+        return userState != null ? userState.embeddedInsightRenderer() : null;
+    }
+
     private void registerInsightSurfaceClient(
             int userId,
             InsightSurfaceClientInfo clientInfo) {
+        if (!isEnabledForUser(userId)) {
+            Slog.w(TAG, "Can't register insight surface client because personal context is not "
+                    + "enabled.");
+            return;
+        }
+
         final UserState userState = getUserStateSynchronized(userId);
         if (userState == null) {
             return;
@@ -434,6 +533,12 @@ public class PersonalContextManagerService extends SystemService {
             int callingUid,
             Set<ContextHint> hints,
             InsightSurfaceClientInfo clientInfo) {
+        if (!isEnabledForUser(userId)) {
+            Slog.w(TAG,
+                    "Can't publish insight surface hints because personal context is not enabled.");
+            return;
+        }
+
         final UserState userState = getUserStateSynchronized(userId);
         if (userState == null) {
             Slog.e(TAG, "No user state when publishing insight surface hints");
@@ -538,6 +643,8 @@ public class PersonalContextManagerService extends SystemService {
         userState.embeddedInsightRenderer().updateClientInfo(oldClientInfo, newClientInfo);
     }
 
+    // TODO(b/492179930): Remove this synchronized block and replace it with a better thread-safe
+    // way to access mUserStates.
     private UserState getUserStateSynchronized(int userId) {
         synchronized (mUserStates) {
             return mUserStates.get(userId);
@@ -555,6 +662,14 @@ public class PersonalContextManagerService extends SystemService {
                 .addRenderTokens(renderTokens)
                 .addAttributionHints(attributionHints)
                 .build();
+    }
+
+    private boolean isEnabledForUser(int userId) {
+        // TODO(b/477958468): Make the default "disabled".
+        return Settings.Secure.getIntForUser(
+                getContext().getContentResolver(),
+                Settings.Secure.PERSONAL_CONTEXT_ENABLED,
+                1, userId) == 1;
     }
 
     @VisibleForTesting
@@ -643,15 +758,7 @@ public class PersonalContextManagerService extends SystemService {
             verifyUser(userId);
             return Boolean.TRUE.equals(
                     Binder.withCleanCallingIdentity(
-                            () -> {
-                                // TODO(b/477958468): Correctly handle enabling/disabling the
-                                //  service and then make the default "disabled".
-                                final Context context = getService().getContext();
-                                return Settings.Secure.getIntForUser(
-                                        context.getContentResolver(),
-                                        Settings.Secure.PERSONAL_CONTEXT_ENABLED,
-                                        1, userId) == 1;
-                            }));
+                            () -> getService().isEnabledForUser(userId)));
         }
 
         // Suppressing warning as enforcement is currently behind a flag
@@ -885,6 +992,7 @@ public class PersonalContextManagerService extends SystemService {
                 for (int i = 0; i < service.mUserStates.size(); i++) {
                     int userId = service.mUserStates.keyAt(i);
                     fout.println("User " + userId + ":");
+                    fout.println("isEnabled=" + service.isEnabledForUser(userId));
                     UserState userState = service.mUserStates.valueAt(i);
                     userState.componentManager().dump(fout);
                     userState.embeddedInsightRenderer().dump(fout);

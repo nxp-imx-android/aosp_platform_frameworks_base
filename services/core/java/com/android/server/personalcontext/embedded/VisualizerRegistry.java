@@ -111,6 +111,11 @@ public class VisualizerRegistry {
         void registerPackageMonitor(PackageMonitor monitor);
 
         /**
+         * Unregister the {@link PackageMonitor}.
+         */
+        void unregisterPackageMonitor(PackageMonitor monitor);
+
+        /**
          * Queue the given {@link Runnable} action to be performed on a shared thread.
          */
         void queueAction(Runnable action);
@@ -159,6 +164,11 @@ public class VisualizerRegistry {
         }
 
         @Override
+        public void unregisterPackageMonitor(PackageMonitor monitor) {
+            monitor.unregister();
+        }
+
+        @Override
         public void queueAction(Runnable action) {
             mExecutor.execute(action);
         }
@@ -190,6 +200,13 @@ public class VisualizerRegistry {
             registerVisualizers(null);
             mInjector.registerPackageMonitor(mMonitor);
         });
+    }
+
+    /**
+     * Stop monitoring package changes in order to add new visualizer services.
+     */
+    public void stopMonitoringPackagesForVisualizers() {
+        mInjector.queueAction(() -> mInjector.unregisterPackageMonitor(mMonitor));
     }
 
     /** Perform the given action on all visualizers. */

@@ -155,6 +155,17 @@ class ContextComponentManager
         }
     }
 
+    public void unregisterAllComponents(String reason) {
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Slog.d(TAG, "Unregistering all components, reason: " + reason);
+        }
+
+        mRefiners.clear();
+        mRefinersByPackage.clear();
+        mRenderers.clear();
+        mRenderersByPackage.clear();
+    }
+
     /** Unregisters all components provided by a given package installed on the device. */
     public void unregisterComponentsForPackage(String packageName) {
         unregisterComponentsForPackage(packageName, mRefiners, mRefinersByPackage);
