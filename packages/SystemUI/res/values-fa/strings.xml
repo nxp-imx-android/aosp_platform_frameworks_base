@@ -147,7 +147,7 @@
     <string name="screenrecord_continue" msgid="4055347133700593164">"شروع"</string>
     <string name="screenrecord_ongoing_screen_only" msgid="4459670242451527727">"درحال ضبط صفحه‌نمایش"</string>
     <string name="screenrecord_ongoing_screen_and_audio" msgid="5351133763125180920">"درحال ضبط صفحه‌نمایش و صدا"</string>
-    <string name="screenrecord_taps_label" msgid="1595690528298857649">"نمایش نقاط لمس روی صفحه‌نمایش"</string>
+    <string name="screenrecord_taps_label" msgid="1595690528298857649">"نشان دادن نقاط لمس روی صفحه‌نمایش"</string>
     <string name="screenrecord_stop_label" msgid="72699670052087989">"ایست"</string>
     <string name="screenrecord_stop_description" msgid="4656717003438764637">"توقف ضبط"</string>
     <string name="screenrecord_start_description" msgid="8173864933793754995">"شروع کردن ضبط"</string>
@@ -168,12 +168,14 @@
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"ضبط میکروفون"</string>
     <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"تغییر تنظیمات صدا حین ضبط ممکن نیست"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"نشان دادن دوربین سلفی"</string>
-    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"نمایش نقاط لمس"</string>
+    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"نشان دادن نقاط لمس"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"برنامه‌ای را برای ضبط کردن انتخاب کنید"</string>
     <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"نمایش بعدی"</string>
     <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"نمایش قبلی"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"تنظیمات ضبط صفحه‌نمایش"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"نشانه‌گذاری"</string>
+    <!-- no translation found for screen_record_color_picker (6732567862106107021) -->
+    <skip />
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ویدیو ذخیره شد"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"ویدیو حذف شد"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"واگرد"</string>
@@ -887,11 +889,11 @@
     <string name="stream_media_unavailable" msgid="6823020894438959853">"دردسترس نیست زیرا «مزاحم نشوید» روشن است"</string>
     <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"دردسترس نیست زیرا <xliff:g id="MODE">%s</xliff:g> روشن است"</string>
     <string name="stream_unavailable_by_unknown" msgid="6908434629318171588">"دردسترس نیست"</string>
-    <string name="volume_stream_content_description_unmute" msgid="7729576371406792977">"‏%1$s. برای صدادار کردن تک‌ضرب بزنید."</string>
+    <string name="volume_stream_content_description_unmute" msgid="7729576371406792977">"‏%1$s. برای صدادار کردن، تک‌ضرب بزنید."</string>
     <string name="volume_stream_content_description_vibrate" msgid="4858111994183089761">"‏%1$s. برای تنظیم روی لرزش تک‌ضرب بزنید. ممکن است سرویس‌های دسترس‌پذیری بی‌صدا شوند."</string>
-    <string name="volume_stream_content_description_mute" msgid="4079046784917920984">"‏%1$s. برای صامت کردن تک‌ضرب بزنید. ممکن است سرویس‌های دسترس‌پذیری صامت شود."</string>
+    <string name="volume_stream_content_description_mute" msgid="4079046784917920984">"‏%1$s. برای صامت کردن، تک‌ضرب بزنید. ممکن است سرویس‌های دسترس‌پذیری صامت شوند."</string>
     <string name="volume_stream_content_description_vibrate_a11y" msgid="2742330052979397471">"‏%1$s. برای تنظیم روی لرزش، تک‌ضرب بزنید."</string>
-    <string name="volume_stream_content_description_mute_a11y" msgid="5743548478357238156">"‏%1$s. برای صامت کردن تک‌ضرب بزنید."</string>
+    <string name="volume_stream_content_description_mute_a11y" msgid="5743548478357238156">"‏%1$s. برای صامت کردن، تک‌ضرب بزنید."</string>
     <string name="volume_panel_noise_control_title" msgid="7413949943872304474">"کنترل نوفه زمینه"</string>
     <string name="volume_panel_mic_noise_cancellation_title" msgid="2324838199042895036">"حذف نوفه زمینه میکروفون"</string>
     <string name="volume_panel_spatial_audio_title" msgid="3367048857932040660">"صدای فضایی"</string>
@@ -1459,6 +1461,8 @@
     <string name="controls_media_button_prev" msgid="8126822360056482970">"آهنگ قبلی"</string>
     <string name="controls_media_button_next" msgid="6662636627525947610">"آهنگ بعدی"</string>
     <string name="controls_media_button_connecting" msgid="3138354625847598095">"درحال اتصال"</string>
+    <!-- no translation found for controls_media_output_chip (324952606619594635) -->
+    <skip />
     <string name="media_transfer_undo" msgid="1895606387620728736">"واگرد"</string>
     <string name="media_move_closer_to_start_cast" msgid="2673104707465013176">"برای پخش در <xliff:g id="DEVICENAME">%1$s</xliff:g> به دستگاه نزدیک‌تر شوید"</string>
     <string name="media_move_closer_to_end_cast" msgid="7302555909119374738">"برای پخش در اینجا، به <xliff:g id="DEVICENAME">%1$s</xliff:g> نزدیک‌تر شوید"</string>
@@ -1488,10 +1492,8 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"دستگاه‌های دردسترس برای خروجی صوتی."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"میزان صدا"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"‎%%<xliff:g id="PERCENTAGE">%1$d</xliff:g>"</string>
-    <!-- no translation found for media_output_dialog_missing_permissions_warning (4312830846174995199) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_warning_button_fix (3650735180540135181) -->
-    <skip />
+    <string name="media_output_dialog_missing_permissions_warning" msgid="4312830846174995199">"برای دیدن دستگاه‌های بیشتر، شاید لازم باشد اجازه‌های <xliff:g id="MEDIA_APP_NAME">%1$s</xliff:g> را مجاز کنید"</string>
+    <string name="media_output_dialog_warning_button_fix" msgid="3650735180540135181">"باز کردن <xliff:g id="MEDIA_APP_NAME">%1$s</xliff:g>"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"بلندگوهای متصل‌شده"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"بلندگوها و نمایشگرها"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"پیشنهادی"</string>
@@ -1601,8 +1603,7 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"پیش‌نمای تصویر"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"ویرایش کردن"</string>
     <string name="add" msgid="81036585205287996">"افزودن"</string>
-    <!-- no translation found for remove (7031760447233505700) -->
-    <skip />
+    <string name="remove" msgid="7031760447233505700">"برداشتن"</string>
     <string name="manage_users" msgid="1823875311934643849">"مدیریت کاربران"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"این اعلان از عملکرد کشیدن به صفحهٔ دونیمه پشتیبانی نمی‌کند"</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"مکان فعال است"</string>
@@ -1862,18 +1863,25 @@
     <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"رتوش چهره"</string>
     <string name="av_mic_label" msgid="5427348054144789879">"میکروفون"</string>
     <string name="av_camera_label" msgid="7719772172590702343">"دوربین"</string>
-    <string name="av_camera_blur_drill_in_title" msgid="2250600375798981511">"پس‌زمینه محو"</string>
+    <!-- no translation found for av_camera_blur_drill_in_title (3392789469292685354) -->
+    <skip />
     <string name="av_camera_blur_off" msgid="3170334995799202022">"خاموش"</string>
-    <string name="av_camera_blur_light" msgid="5666055368940059418">"روشن"</string>
-    <string name="av_camera_blur_full" msgid="3276351992811619332">"کامل"</string>
+    <!-- no translation found for av_camera_blur_light (5105255788203563538) -->
+    <skip />
+    <!-- no translation found for av_camera_blur_full (6493497965254048479) -->
+    <skip />
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"بهبود نورپردازی"</string>
     <string name="av_camera_face_retouch" msgid="45890971969486224">"رتوش چهره"</string>
-    <string name="av_camera_framing" msgid="5108462267843042492">"قاب‌بندی دوربین."</string>
-    <string name="av_studio_mic" msgid="2614843492629357766">"میکروفون استودیویی"</string>
-    <string name="av_studio_look" msgid="621893522645557619">"ظاهر استودیویی"</string>
+    <!-- no translation found for av_camera_framing (2948988841290208034) -->
+    <skip />
+    <!-- no translation found for av_studio_mic (1815195630183143501) -->
+    <skip />
+    <!-- no translation found for av_studio_look (631085505786989852) -->
+    <skip />
     <string name="av_studio_look_effects" msgid="4105109585851068415">"‏‫%d جلوه"</string>
     <string name="av_blur" msgid="405131343487260171">"محو کردن"</string>
-    <string name="av_live_captions" msgid="7819416886586903077">"زیرنویس زنده"</string>
+    <!-- no translation found for av_live_captions (802763867449401889) -->
+    <skip />
     <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"برگشتن"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"‏باتری %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"‏باتری چپ %1$s    باتری راست %2$s"</string>
