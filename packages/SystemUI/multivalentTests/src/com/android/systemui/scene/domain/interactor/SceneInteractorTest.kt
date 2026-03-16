@@ -43,6 +43,7 @@ import com.android.systemui.scene.data.repository.Transition
 import com.android.systemui.scene.data.repository.sceneContainerRepository
 import com.android.systemui.scene.data.repository.setSceneTransition
 import com.android.systemui.scene.data.repository.unlockDevice
+import com.android.systemui.scene.domain.interactor.SceneInteractor.HideOverlayCommand
 import com.android.systemui.scene.domain.resolver.homeSceneFamilyResolver
 import com.android.systemui.scene.overlayKeys
 import com.android.systemui.scene.sceneContainerConfig
@@ -141,7 +142,11 @@ class SceneInteractorTest : SysuiTestCase() {
             assertThat(underTest.transitionState.currentOverlays)
                 .containsExactly(Overlays.NotificationsShade)
 
-            underTest.changeScene(Scenes.Lockscreen, "reason", hideAllOverlays = false)
+            underTest.changeScene(
+                Scenes.Lockscreen,
+                "reason",
+                hideOverlays = HideOverlayCommand.HideNone,
+            )
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
             assertThat(underTest.transitionState.currentOverlays)
                 .containsExactly(Overlays.NotificationsShade)
@@ -272,7 +277,11 @@ class SceneInteractorTest : SysuiTestCase() {
             assertThat(underTest.transitionState.currentOverlays)
                 .containsExactly(Overlays.NotificationsShade)
 
-            underTest.snapToScene(Scenes.Lockscreen, "reason", hideAllOverlays = false)
+            underTest.snapToScene(
+                Scenes.Lockscreen,
+                "reason",
+                hideOverlays = HideOverlayCommand.HideNone,
+            )
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
             assertThat(underTest.transitionState.currentOverlays)
                 .containsExactly(Overlays.NotificationsShade)
@@ -918,7 +927,11 @@ class SceneInteractorTest : SysuiTestCase() {
 
             assertThat(topmostContent).isEqualTo(Overlays.NotificationsShade)
 
-            underTest.changeScene(Scenes.Gone, loggingReason = "reason", hideAllOverlays = false)
+            underTest.changeScene(
+                Scenes.Gone,
+                loggingReason = "reason",
+                hideOverlays = HideOverlayCommand.HideNone,
+            )
 
             assertThat(topmostContent).isEqualTo(Overlays.NotificationsShade)
         }
