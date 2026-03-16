@@ -16,7 +16,12 @@
 
 package com.android.server.display;
 
+import static android.view.Display.Mode.INVALID_MODE_ID;
+
+import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.view.Display;
@@ -25,6 +30,8 @@ import android.view.DisplayInfo;
 import com.android.graphics.surfaceflinger.flags.Flags;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+
+import java.util.ArrayList;
 
 /**
  * Manages the state of display mode change requests as they propagate through the system.
@@ -48,18 +55,54 @@ public class ModeRequestManager {
     @GuardedBy("mLock")
     private final SparseArray<Display.Mode> mModes = new SparseArray<>();
 
+    // Store modes requested per displayId
+    @GuardedBy("mLock")
+    private final SparseArray<Boolean> mStoreModes = new SparseArray<>();
+
+    @GuardedBy("mLock")
+    private SparseArray<DisplayInfo> mCachedDisplayInfos = new SparseArray<>();
+
+    private final HandlerWrapper mHandlerWrapper;
+    private static final long MODE_REQUEST_TIMEOUT_MS = 5000;
+
     private final boolean mEnabled = Flags.modesetMultiDisplay();
 
     /**
-     * Stores the initial statuses for the requests, their displayIds, and requested modes
+     * Interface for the action to be taken when a mode request times out.
+     */
+    @FunctionalInterface
+    public interface RollbackListener {
+        /**
+         * Called when the mode request times out or is manually rolled back.
+         * @param originalData The data needed to rollback the changes.
+         */
+        void rollback(UserPreferredModeRequest[] originalData);
+    }
+
+    ModeRequestManager(Looper looper, RollbackListener rollbackAction) {
+        mHandlerWrapper = new HandlerWrapper(new Handler(looper), rollbackAction);
+    }
+
+    @VisibleForTesting
+    ModeRequestManager(Handler dmsHandler, RollbackListener rollbackAction) {
+        mHandlerWrapper = new HandlerWrapper(dmsHandler, rollbackAction);
+    }
+
+    /**
+     * Stores the initial statuses for the requests, their displayIds, requested modes, and original
+     * infos
      * @param requests The requests to store and follow the status of
+     * @param displays The logical displays os the LogicalDisplayMapper - used to retrieve original
+     *                 infos
      * @return true if all the requests were successfully stored, false otherwise
      */
-    public boolean onUserPreferredModesRequestedLocked(UserPreferredModeRequest[] requests) {
+    public boolean onUserPreferredModesRequestedLocked(UserPreferredModeRequest[] requests,
+                                                    SparseArray<LogicalDisplay> displays) {
         if (isDisabled()) {
             return false;
         }
         synchronized (mLock) {
+            SparseArray<DisplayInfo> originalInfos = new SparseArray<>();
             for (UserPreferredModeRequest request : requests) {
                 if (request.mDisplayId == Display.INVALID_DISPLAY) {
                     throw new IllegalArgumentException("Global display mode is not supported.");
@@ -69,9 +112,15 @@ public class ModeRequestManager {
                             + request.mDisplayId);
                     return false;
                 }
+                LogicalDisplay display = displays.get(request.mDisplayId);
+                originalInfos.put(request.mDisplayId, display != null
+                                ? display.getDisplayInfoLocked() : null);
                 mStates.put(request.mDisplayId, RequestStatus.IDLE);
                 mModes.put(request.mDisplayId, request.mMode);
+                mStoreModes.put(request.mDisplayId, request.mStoreMode);
             }
+            mHandlerWrapper.scheduleTimeout(MODE_REQUEST_TIMEOUT_MS);
+            mCachedDisplayInfos = originalInfos.clone();
             return true;
         }
     }
@@ -86,17 +135,67 @@ public class ModeRequestManager {
         synchronized (mLock) {
             mStates.clear();
             mModes.clear();
+            mCachedDisplayInfos.clear();
+            mStoreModes.clear();
+            mHandlerWrapper.cancelTimeout();
         }
+    }
+
+    /**
+     * Removes a display from the batch (e.g. if it was unplugged).
+     */
+    public void onDisplayRemoved(int displayId) {
+        synchronized (mLock) {
+            mStates.remove(displayId);
+            mModes.remove(displayId);
+            mCachedDisplayInfos.remove(displayId);
+            mStoreModes.remove(displayId);
+        }
+    }
+
+    /**
+     * Returns the array of requests which would revert any potential changes made. Clears all
+     * requests.
+     */
+    public UserPreferredModeRequest[] getRollbackData() {
+        synchronized (mLock) {
+            ArrayList<UserPreferredModeRequest> requests = new ArrayList<>();
+            for (int i = 0; i < mStates.size(); i++) {
+                if (mStates.valueAt(i).ordinal() >= RequestStatus.DEVICE_INFO_CREATED.ordinal()) {
+                    int displayId = mStates.keyAt(i);
+                    DisplayInfo originalInfo = mCachedDisplayInfos.get(displayId);
+                    Display.Mode originalMode = findMode(originalInfo);
+                    requests.add(new UserPreferredModeRequest(displayId,
+                            originalMode, mStoreModes.get(displayId)));
+                }
+            }
+            return requests.toArray(UserPreferredModeRequest[]::new);
+        }
+    }
+
+    private Display.Mode findMode(@NonNull DisplayInfo info) {
+        int modeId = info.userPreferredModeId;
+        if (modeId == INVALID_MODE_ID) {
+            return null;
+        }
+        for (var mode : info.supportedModes) {
+            if (mode.getModeId() == modeId) {
+                return mode;
+            }
+        }
+        return null;
     }
 
     /**
      * Updates the status of a display mode request after the device info creation.
      * @param displayId The displayId of the request
      * @param displayInfo The display info containing the userPreferredModeId
+     * @return true if the id in info matches the one requested and we can continue with the
+     * process. Will break the flow otherwise.
      */
-    public void infoUpdated(int displayId, DisplayInfo displayInfo) {
+    public boolean infoUpdated(int displayId, DisplayInfo displayInfo) {
         if (isDisabled()) {
-            return;
+            return false;
         }
         synchronized (mLock) {
             Display.Mode requestedMode = mModes.get(displayId);
@@ -104,9 +203,11 @@ public class ModeRequestManager {
                     : requestedMode.getModeId();
             if (displayInfo != null && requestedModeId == displayInfo.userPreferredModeId) {
                 updateStatus(displayId, RequestStatus.DEVICE_INFO_CREATED);
+                return true;
             } else {
                 Slog.w(TAG, "Mismatch between info and expected mode id. Clearing the"
                         + " requests");
+                return false;
             }
         }
     }
@@ -209,7 +310,7 @@ public class ModeRequestManager {
             return false;
         }
         synchronized (mLock) {
-            return getStatus(displayId) != RequestStatus.IDLE;
+            return mStates.indexOfKey(displayId) >= 0;
         }
     }
 
@@ -246,11 +347,65 @@ public class ModeRequestManager {
         return true;
     }
 
+    DisplayInfo getDisplayInfo(int displayId, DisplayInfo defaultDisplayInfo) {
+        synchronized (mLock) {
+            RequestStatus currentStatus = mStates.get(displayId);
+            if (currentStatus == null || currentStatus == RequestStatus.IDLE) {
+                return defaultDisplayInfo;
+            } else {
+                return mCachedDisplayInfos.get(displayId);
+            }
+        }
+    }
+
+    void cancelAndRollback() {
+        synchronized (mLock) {
+            if (!hasActiveRequests()) {
+                return;
+            }
+            mHandlerWrapper.cancelTimeout();
+            mHandlerWrapper.rollbackNow();
+        }
+    }
+
     boolean isDisabled() {
         return !mEnabled;
     }
 
-    static class UserPreferredModeRequest{
+    private class HandlerWrapper {
+        private final Handler mDmsHandler;
+        private final RollbackListener mRollbackAction;
+        private static final Object TIMEOUT_TOKEN = new Object();
+
+        // Executes the onTimeoutAction provided by DMS.
+        private final Runnable mTimeoutRunner;
+
+        HandlerWrapper(Handler dmsHandler, RollbackListener rollbackAction) {
+            mDmsHandler = dmsHandler;
+            mRollbackAction = rollbackAction;
+            mTimeoutRunner = () -> {
+                Slog.i(TAG, "DmsHandlerWrapper: Timeout triggered, executing onTimeoutAction.");
+                mRollbackAction.rollback(getRollbackData());
+            };
+        }
+
+        void scheduleTimeout(long delayMillis) {
+            mDmsHandler.removeCallbacks(mTimeoutRunner, TIMEOUT_TOKEN);
+            mDmsHandler.postDelayed(mTimeoutRunner, TIMEOUT_TOKEN, delayMillis);
+        }
+
+        void cancelTimeout() {
+            mDmsHandler.removeCallbacks(mTimeoutRunner, TIMEOUT_TOKEN);
+        }
+
+        void rollbackNow() {
+            Slog.i(TAG, "DmsHandlerWrapper: Manually running onTimeoutAction now.");
+            mRollbackAction.rollback(getRollbackData());
+        }
+    }
+
+
+    static class UserPreferredModeRequest {
         int mDisplayId;
         @Nullable Display.Mode mMode;
         boolean mStoreMode;

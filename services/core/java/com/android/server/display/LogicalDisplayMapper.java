@@ -185,6 +185,7 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
     private final LogicalDisplayMapperHandler mHandler;
     private final FoldSettingProvider mFoldSettingProvider;
     private final PowerManager mPowerManager;
+    private final ModeRequestManager mModeRequestManager;
 
     /**
      * Has an entry for every logical display that the rest of the system has been notified about.
@@ -238,22 +239,25 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
             @NonNull Listener listener, @NonNull DisplayManagerService.SyncRoot syncRoot,
             @NonNull Handler handler, DisplayManagerFlags flags,
             Predicate<DisplayInfo> isDisplayAllowedInTopology, boolean stableEdidsFlag,
-            CopyOnWriteSparseArray<LogicalDisplay.CachedDisplayInfo> displayInfoCache) {
+            CopyOnWriteSparseArray<LogicalDisplay.CachedDisplayInfo> displayInfoCache,
+            ModeRequestManager modeRequestManager) {
         this(context, foldSettingProvider, repo, listener, syncRoot, handler,
                 new DeviceStateToLayoutMap(
                         (isDefault) -> isDefault ? DEFAULT_DISPLAY
                                 : sNextNonDefaultDisplayId++, stableEdidsFlag),
                 flags, new DisplayGroupAllocator(context),
-                isDisplayAllowedInTopology, displayInfoCache);
+                isDisplayAllowedInTopology, displayInfoCache, modeRequestManager);
     }
 
     LogicalDisplayMapper(@NonNull Context context, FoldSettingProvider foldSettingProvider,
-            @NonNull DisplayDeviceRepository repo,
-            @NonNull Listener listener, @NonNull DisplayManagerService.SyncRoot syncRoot,
-            @NonNull Handler handler, @NonNull DeviceStateToLayoutMap deviceStateToLayoutMap,
-            DisplayManagerFlags flags, DisplayGroupAllocator displayGroupAllocator,
-            Predicate<DisplayInfo> isDisplayAllowedInTopology,
-            CopyOnWriteSparseArray<LogicalDisplay.CachedDisplayInfo> displayInfoCache) {
+                         @NonNull DisplayDeviceRepository repo, @NonNull Listener listener,
+                         @NonNull DisplayManagerService.SyncRoot syncRoot,
+                         @NonNull Handler handler,
+                         @NonNull DeviceStateToLayoutMap deviceStateToLayoutMap,
+                         DisplayManagerFlags flags, DisplayGroupAllocator displayGroupAllocator,
+                         Predicate<DisplayInfo> isDisplayAllowedInTopology,
+                         CopyOnWriteSparseArray<LogicalDisplay.CachedDisplayInfo> displayInfoCache,
+                         ModeRequestManager modeRequestManager) {
         mSyncRoot = syncRoot;
         mContext = context;
         mPowerManager = context.getSystemService(PowerManager.class);
@@ -276,6 +280,7 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
         mDisplayGroupAllocator = displayGroupAllocator;
         mIsDisplayAllowedInTopology = isDisplayAllowedInTopology;
         mDisplayInfoCache = displayInfoCache;
+        mModeRequestManager = modeRequestManager;
     }
 
     @Override
@@ -476,6 +481,11 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
         DisplayInfo displayInfo = new DisplayInfo(logicalDisplay.getDisplayInfoLocked());
         displayInfo.displayId = displayId;
         return displayInfo;
+    }
+
+    public boolean onUserPreferredModesRequestedLocked(
+            @NonNull ModeRequestManager.UserPreferredModeRequest[] requests) {
+        return mModeRequestManager.onUserPreferredModesRequestedLocked(requests, mLogicalDisplays);
     }
 
     public void dumpLocked(PrintWriter pw) {
@@ -848,6 +858,10 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
     }
 
     private void handleDisplayDeviceRemovedLocked(DisplayDevice device) {
+        LogicalDisplay display = getDisplayLocked(device, true);
+        if (display != null) {
+            mModeRequestManager.onDisplayRemoved(display.getDisplayIdLocked());
+        }
         // Remove any virtual device mapping which exists for the display.
         mVirtualDeviceDisplayMapping.remove(device.getUniqueId());
 
