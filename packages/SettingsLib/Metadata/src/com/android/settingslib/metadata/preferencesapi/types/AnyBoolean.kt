@@ -20,7 +20,7 @@ import android.content.Context
 import com.android.settingslib.metadata.R
 
 /** A boolean value. */
-object AnyBoolean : FiniteOptionsType<Boolean>
+object AnyBoolean : DirectFiniteOptionsType<Boolean>
 {
     override fun getType(): Class<Boolean> = Boolean::class.java
     override fun getDescription(context: Context): String =

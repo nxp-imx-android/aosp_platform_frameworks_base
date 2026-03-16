@@ -21,7 +21,7 @@ import androidx.annotation.StringRes
 import com.android.settingslib.metadata.R
 
 /** A date value of the form YYYY-MM-DD. */
-object Date: ApiType<String> {
+object Date:  DirectApiType<String> {
   override fun getType(): Class<String> = String::class.java
   override fun getDescription(context: Context): String = "A date in the form YYYY-MM-DD"
   override fun getKey(): String = "Date"

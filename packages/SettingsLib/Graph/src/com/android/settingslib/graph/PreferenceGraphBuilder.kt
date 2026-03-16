@@ -644,7 +644,7 @@ fun PreferenceMetadata.toProto(
         }
         val metadataIcon = metadata.getPreferenceIcon(context)
         writable =
-            if (metadata is ApiPreference<*>) {
+            if (metadata is ApiPreference<*, *>) {
                 metadata.set != null
             } else if (metadata is PersistentPreference<*>) {
                 metadata.supportsWrite
@@ -683,7 +683,7 @@ fun PreferenceMetadata.toProto(
                     parametersSchema = it.toProto(context, valueDescriptors)
                 }
                 metadata.keyParameters?.let { keyParameters = it.toProto() }
-            } else if (metadata is ApiPreference<*>) {
+            } else if (metadata is ApiPreference<*, *>) {
                 metadata.getParametersSchema()?.let {
                     parametersSchema = it.toProto(context, valueDescriptors)
                 }
@@ -705,7 +705,7 @@ fun PreferenceMetadata.toProto(
         for (tag in metadata.tags(context)) addTags(tag)
     }
     purpose = metadata.purpose
-    if (metadata is ApiPreference<*>) {
+    if (metadata is ApiPreference<*, *>) {
         metadata.screenPreconditions?.getDescription(context)?.let { addGetPreconditions(it) }
         metadata.preconditions?.getDescription(context)?.let { addGetPreconditions(it) }
         metadata.get.preconditions?.getDescription(context)?.let { addGetPreconditions(it) }
@@ -774,16 +774,18 @@ fun PreferenceMetadata.toProto(
 
                 Long::class.java,
                 Long::class.javaObjectType -> storage.getLong(key)?.let { longValue = it }
+                CharSequence::class.java,
+                CharSequence::class.javaObjectType,
 
                 String::class.java,
-                String::class.javaObjectType -> storage.getString(key)?.let { stringValue = it }
+                String::class.javaObjectType -> storage.getString(key)?.let { stringValue = it.toString() }
 
                 else -> error("Error: Unsupported type ${metadata.valueType}")
             }
         }
     }
     if (flags.includeValueDescriptor()) {
-        if (metadata is ApiPreference<*>) {
+        if (metadata is ApiPreference<*, *>) {
             valueDescriptor = metadata.type.toProto(context, valueDescriptors)
         } else {
             valueDescriptor = preferenceValueDescriptorProto {
@@ -846,6 +848,8 @@ fun PreferenceMetadata.toProto(
 
                     Long::class.java,
                     Long::class.javaObjectType -> longType = true
+                    CharSequence::class.java,
+                    CharSequence::class.javaObjectType,
 
                     String::class.java,
                     String::class.javaObjectType -> stringType = true
@@ -959,7 +963,7 @@ private fun KeyParametersSchema.toProto(
     return builder.build()
 }
 
-private fun ApiType<*>.toProto(
+private fun ApiType<*, *>.toProto(
     context: Context,
     valueDescriptors: MutableMap<String, PreferenceValueDescriptorProto>?,
 ): PreferenceValueDescriptorProto {
@@ -1007,7 +1011,7 @@ private fun ApiType<*>.toProto(
 
         setType()
 
-        if (this@toProto is FiniteOptionsType<*>) {
+        if (this@toProto is FiniteOptionsType<*, *>) {
             runBlocking {
                 this@toProto.getOptions(context).forEach {
                     addPossibleValues(

@@ -303,7 +303,7 @@ class ApiPreferenceTest {
             null
         }
         var executedValue: Boolean? = null
-        val preference = ApiPreferenceConfigBuilder<Boolean>(
+        val preference = ApiPreferenceConfigBuilder<Boolean, Boolean>(
             KEY,
             R.string.preference_purpose1,
             AnyBoolean,

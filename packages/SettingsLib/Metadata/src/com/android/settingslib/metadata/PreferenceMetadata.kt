@@ -298,7 +298,7 @@ const val MUSTPASS_SET = "mustpass_set"
 /** Returns a string describing the preconditions for accessing the preference. */
 fun PreferenceMetadata.accessPreconditionsAsString(context: Context): String? {
     val preconditions =
-        if (this is ApiPreference<*>) {
+        if (this is ApiPreference<*, *>) {
             listOfNotNull(
                     screenPreconditions?.getDescription(context),
                     preconditions?.getDescription(context),
@@ -315,14 +315,14 @@ fun PreferenceMetadata.accessPreconditionsAsString(context: Context): String? {
 
 /** Returns a string describing the preconditions for reading the preference. */
 fun PreferenceMetadata.getPreconditionsAsString(context: Context): String? {
-    return (this as? ApiPreference<*>)?.get?.preconditions?.getDescription(context)?.let {
+    return (this as? ApiPreference<*, *>)?.get?.preconditions?.getDescription(context)?.let {
         "Preconditions to reading: $it."
     }
 }
 
 /** Returns a string describing the preconditions for writing the preference. */
 fun PreferenceMetadata.setPreconditionsAsString(context: Context): String? {
-    return (this as? ApiPreference<*>)?.set?.preconditions?.getDescription(context)?.let {
+    return (this as? ApiPreference<*, *>)?.set?.preconditions?.getDescription(context)?.let {
         "Preconditions to writing: $it."
     }
 }
@@ -330,7 +330,7 @@ fun PreferenceMetadata.setPreconditionsAsString(context: Context): String? {
 /** Returns a string describing the warning for writing the preference. */
 fun PreferenceMetadata.setWarningAsString(context: Context): String? {
     val warningInfo = when (this) {
-        is ApiPreference<*> -> {
+        is ApiPreference<*, *> -> {
             this.set?.warning?.let { warningConfig ->
                 val warningMessage = warningConfig.getWarning(context)
 

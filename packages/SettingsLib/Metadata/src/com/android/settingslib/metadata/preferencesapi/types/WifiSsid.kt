@@ -23,7 +23,7 @@ import com.android.settingslib.metadata.R
  * The Ssid of a network which is either currently connected, able to be connected to, or saved to
  * the device.
  */
-class WifiSsid : ApiType<String> {
+class WifiSsid : DirectApiType<String> {
 
     override fun getType(): Class<String> = String::class.java
 
