@@ -98,6 +98,7 @@ constructor(
         setContentView(constraintLayoutRootView)
         setFullscreen()
         setClock(constraintLayoutRootView, clockRegistry.createCurrentClock(context))
+        window?.addFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
     }
 
     private fun setShowWallpaperFlagOnWindow() {
