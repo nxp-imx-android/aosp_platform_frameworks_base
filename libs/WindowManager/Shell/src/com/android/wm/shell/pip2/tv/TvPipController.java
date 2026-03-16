@@ -22,6 +22,9 @@ import static android.content.pm.PackageManager.FEATURE_PICTURE_IN_PICTURE;
 import static android.view.KeyEvent.KEYCODE_DPAD_LEFT;
 import static android.view.KeyEvent.KEYCODE_DPAD_RIGHT;
 
+import static com.android.wm.shell.pip2.tv.TvPipTransition.ANIMATING_BOUNDS_CHANGE_DURATION;
+import static com.android.wm.shell.pip2.tv.TvPipTransition.PIP_DESTINATION_BOUNDS;
+
 import android.app.ActivityManager;
 import android.app.ActivityTaskManager;
 import android.app.RemoteAction;
@@ -71,7 +74,6 @@ import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.sysui.UserChangeListener;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -388,10 +390,8 @@ public class TvPipController implements PipTransitionState.PipTransitionStateCha
     public void onKeepClearAreasChanged(int displayId, Set<Rect> restricted,
             Set<Rect> unrestricted) {
         if (mPipDisplayLayoutState.getDisplayId() == displayId) {
-            boolean unrestrictedAreasChanged = !Objects.equals(unrestricted,
-                    mTvPipBoundsState.getUnrestrictedKeepClearAreas());
             mTvPipBoundsState.setKeepClearAreas(restricted, unrestricted);
-            updatePinnedStackBounds(mResizeAnimationDuration, unrestrictedAreasChanged);
+            updatePinnedStackBounds(mResizeAnimationDuration, /* immediate= */ false);
         }
     }
 
@@ -418,8 +418,13 @@ public class TvPipController implements PipTransitionState.PipTransitionStateCha
             // Do not schedule a move animation while we're still transitioning into/out of PiP
             return;
         }
-        mTvPipScheduler.scheduleAnimateResizePip(targetBounds, animationDuration);
-        mTvPipMenuController.onPipTransitionToTargetBoundsStarted(targetBounds);
+        mPipTransitionState.setOnIdlePipTransitionStateRunnable(() -> {
+            Bundle extra = new Bundle();
+            extra.putParcelable(PIP_DESTINATION_BOUNDS, targetBounds);
+            extra.putInt(ANIMATING_BOUNDS_CHANGE_DURATION, animationDuration);
+
+            mPipTransitionState.setState(PipTransitionState.SCHEDULED_BOUNDS_CHANGE, extra);
+        });
     }
 
     /**
@@ -498,6 +503,14 @@ public class TvPipController implements PipTransitionState.PipTransitionStateCha
                 mTvPipActionsProvider.reset();
                 mTvPipBoundsState.resetTvPipState();
                 mTvPipBoundsController.reset();
+                break;
+            case PipTransitionState.SCHEDULED_BOUNDS_CHANGE:
+                Rect toBounds = extra.getParcelable(PIP_DESTINATION_BOUNDS, Rect.class);
+                int duration = extra.getInt(ANIMATING_BOUNDS_CHANGE_DURATION);
+                if (toBounds != null) {
+                    mTvPipScheduler.scheduleAnimateResizePip(toBounds, duration);
+                    mTvPipMenuController.onPipTransitionToTargetBoundsStarted(toBounds);
+                }
                 break;
         }
     }
