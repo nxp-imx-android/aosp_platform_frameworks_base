@@ -180,14 +180,6 @@ public class BluetoothControllerImpl implements BluetoothController, BluetoothCa
     }
 
     @Override
-    public List<Integer> getSupportedProfiles() {
-        if (mAdapter == null) {
-            return Collections.emptyList();
-        }
-        return mAdapter.getSupportedProfiles();
-    }
-
-    @Override
     public void addCallback(@NonNull Callback cb) {
         mHandler.obtainMessage(H.MSG_ADD_CALLBACK, cb).sendToTarget();
         mHandler.sendEmptyMessage(H.MSG_STATE_CHANGED);
