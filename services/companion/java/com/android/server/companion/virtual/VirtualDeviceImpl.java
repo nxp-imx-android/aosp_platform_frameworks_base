@@ -257,7 +257,9 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     @Nullable
     private IVirtualDeviceSoundEffectListener mSoundEffectListener;
     @NonNull
-    private final DisplayManagerGlobal mDisplayManager;
+    private final DisplayManager mDisplayManager;
+    @NonNull
+    private final DisplayManagerGlobal mDisplayManagerGlobal;
     @NonNull
     private final DisplayManagerInternal mDisplayManagerInternal;
     @NonNull
@@ -537,7 +539,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
             @NonNull IVirtualDeviceActivityListener activityListener,
             @Nullable IVirtualDeviceSoundEffectListener soundEffectListener,
             @NonNull VirtualDeviceParams params,
-            @NonNull DisplayManagerGlobal displayManager,
+            @NonNull DisplayManagerGlobal displayManagerGlobal,
             @NonNull IWindowManager windowManager,
             @Nullable VirtualCameraController virtualCameraController,
             @Nullable ViewConfigurationController viewConfigurationController) {
@@ -560,12 +562,13 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         mAppToken = token;
         mParams = params;
         mDevicePolicies = params.getDevicePolicies();
-        mDisplayManager = displayManager;
+        mDisplayManagerGlobal = displayManagerGlobal;
         mWindowManager = windowManager;
         mDisplayManagerInternal = LocalServices.getService(DisplayManagerInternal.class);
         mUiModeManagerInternal = LocalServices.getService(UiModeManagerInternal.class);
         mPowerManager = Objects.requireNonNull(context.getSystemService(PowerManager.class));
         mAudioManager = context.getSystemService(AudioManager.class);
+        mDisplayManager = Objects.requireNonNull(context.getSystemService(DisplayManager.class));
 
         if (mDevicePolicies.get(POLICY_TYPE_CLIPBOARD, DEVICE_POLICY_DEFAULT)
                 != DEVICE_POLICY_DEFAULT) {
@@ -968,7 +971,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
             }
             // Destroy the display outside locked section.
             for (VirtualDisplayWrapper virtualDisplayWrapper : virtualDisplaysToBeReleased) {
-                mDisplayManager.releaseVirtualDisplay(virtualDisplayWrapper.getToken(),
+                mDisplayManagerGlobal.releaseVirtualDisplay(virtualDisplayWrapper.getToken(),
                         virtualDisplayWrapper.getDisplayId());
                 // The releaseVirtualDisplay call above won't trigger
                 // VirtualDeviceImpl.onVirtualDisplayRemoved callback because we already removed the
@@ -1911,16 +1914,16 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     void showToastWhereUidIsRunning(int uid, String text, @Toast.Duration int duration,
             Looper looper) {
         IntArray displayIdsForUid = getDisplayIdsWhereUidIsRunning(uid);
-        if (displayIdsForUid.size() == 0) {
-            return;
-        }
-        DisplayManager displayManager = mContext.getSystemService(DisplayManager.class);
         for (int i = 0; i < displayIdsForUid.size(); i++) {
-            Display display = displayManager.getDisplay(displayIdsForUid.get(i));
-            if (display != null && display.isValid()) {
-                Toast.makeText(mContext.createDisplayContext(display), looper, text,
-                        duration).show();
-            }
+            showToastOnDisplay(displayIdsForUid.get(i), text, duration, looper);
+        }
+    }
+
+    private void showToastOnDisplay(int displayId, String text, @Toast.Duration int duration,
+            Looper looper) {
+        Display display = mDisplayManager.getDisplay(displayId);
+        if (display != null && display.isValid()) {
+            Toast.makeText(mContext.createDisplayContext(display), looper, text, duration).show();
         }
     }
 
@@ -1964,14 +1967,10 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
             Slog.w(TAG, "Unable to invoke activity listener", e);
         }
         if (!DEVICE_PROFILE_COMPUTER_CONTROL.equals(mDeviceProfile)) {
-            DisplayManager displayManager = mContext.getSystemService(DisplayManager.class);
-            Display display = displayManager.getDisplay(displayId);
-            if (display != null && display.isValid()) {
-                Toast.makeText(mContext.createDisplayContext(display), Looper.getMainLooper(),
-                        mContext.getString(
-                                R.string.app_streaming_blocked_message_for_fingerprint_dialog),
-                        Toast.LENGTH_LONG).show();
-            }
+            showToastOnDisplay(displayId,
+                    mContext.getString(
+                            R.string.app_streaming_blocked_message_for_fingerprint_dialog),
+                    Toast.LENGTH_LONG, Looper.getMainLooper());
         }
     }
 
