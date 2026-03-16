@@ -20,6 +20,7 @@ import android.content.Context
 import android.content.Context.INPUT_SERVICE
 import android.content.applicationContext
 import android.hardware.input.fakeInputManager
+import android.view.WindowManager
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -91,6 +92,7 @@ class ShortcutHelperDialogStarterTest : SysuiTestCase() {
                 viewModel,
                 shortcutCustomizationDialogStarterFactory,
                 dialogFactory,
+                userTracker,
                 activityStarter,
                 testDispatcher,
             )
@@ -117,6 +119,18 @@ class ShortcutHelperDialogStarterTest : SysuiTestCase() {
         runOnMainThreadAndWaitForIdleSync { testHelper.toggle(deviceId = 456) }
 
         assertThat(starter.dialog?.isShowing).isTrue()
+    }
+
+    @Test
+    fun start_onToggle_dialogHasNoAltFocusableImFlag() = runTestAndDismiss {
+        starter.start()
+
+        runOnMainThreadAndWaitForIdleSync { testHelper.toggle(deviceId = 456) }
+
+        val windowFlags = starter.dialog?.window?.attributes?.flags ?: 0
+        assertThat(windowFlags and WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM).isEqualTo(0)
+        assertThat(starter.dialog?.window?.attributes?.type)
+            .isEqualTo(WindowManager.LayoutParams.TYPE_STATUS_BAR_SUB_PANEL)
     }
 
     @Test

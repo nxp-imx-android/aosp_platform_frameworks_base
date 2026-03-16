@@ -23,6 +23,8 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.UserHandle
 import android.provider.Settings
+import android.util.Log
+import android.view.WindowManager
 import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.width
@@ -42,7 +44,9 @@ import com.android.systemui.keyboard.shortcut.ui.composable.hasExpandedWindowHei
 import com.android.systemui.keyboard.shortcut.ui.viewmodel.ShortcutHelperViewModel
 import com.android.systemui.lifecycle.rememberActivated
 import com.android.systemui.plugins.ActivityStarter
+import com.android.systemui.common.ui.compose.SelectedUserAwareInputConnection
 import com.android.systemui.res.R
+import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
 import com.android.systemui.statusbar.phone.createBottomSheet
 import javax.inject.Inject
@@ -62,6 +66,7 @@ constructor(
     private val shortcutCustomizationDialogStarterFactory:
         ShortcutCustomizationDialogStarter.Factory,
     private val dialogFactory: SystemUIDialogFactory,
+    private val userTracker: UserTracker,
     private val activityStarter: ActivityStarter,
     @Main private val mainDispatcher: CoroutineDispatcher,
 ) : LifecycleListener {
@@ -91,27 +96,32 @@ constructor(
                     rememberActivated(traceName = "shortcutCustomizationDialogStarter") {
                         shortcutCustomizationDialogStarterFactory.create(displayContext)
                     }
-                ShortcutHelper(
-                    modifier =
-                        Modifier.width(getWidth()).thenIf(hasExpandedWindowHeight()) {
-                            Modifier.fillMaxHeight(0.72f)
+                SelectedUserAwareInputConnection(selectedUserId = userTracker.userId) {
+                    ShortcutHelper(
+                        modifier =
+                            Modifier.width(getWidth()).thenIf(hasExpandedWindowHeight()) {
+                                Modifier.fillMaxHeight(0.72f)
+                            },
+                        shortcutsUiState = shortcutsUiState,
+                        onKeyboardSettingsClicked = { onKeyboardSettingsClicked(dialog) },
+                        onSearchQueryChanged = { shortcutHelperViewModel.onSearchQueryChanged(it) },
+                        onShortcutCustomizationRequested = {
+                            shortcutCustomizationDialogStarter.onShortcutCustomizationRequested(it)
                         },
-                    shortcutsUiState = shortcutsUiState,
-                    onKeyboardSettingsClicked = { onKeyboardSettingsClicked(dialog) },
-                    onSearchQueryChanged = { shortcutHelperViewModel.onSearchQueryChanged(it) },
-                    onShortcutCustomizationRequested = {
-                        shortcutCustomizationDialogStarter.onShortcutCustomizationRequested(it)
-                    },
-                    onCustomizationModeToggled = { isCustomizing ->
-                        shortcutHelperViewModel.toggleCustomizationMode(isCustomizing)
-                    },
-                )
+                        onCustomizationModeToggled = { isCustomizing ->
+                            shortcutHelperViewModel.toggleCustomizationMode(isCustomizing)
+                        },
+                    )
+                }
                 dialog.setOnDismissListener { shortcutHelperViewModel.onViewClosed() }
                 dialog.setTitle(stringResource(R.string.shortcut_helper_title))
             },
             maxWidth = ShortcutHelperBottomSheet.LargeScreenWidthLandscape,
             context = displayContext,
-        )
+        ).apply {
+            val window = window ?: return@apply
+            window.clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
+        }
     }
 
     private fun onKeyboardSettingsClicked(dialog: Dialog) {
