@@ -20,7 +20,6 @@ import android.graphics.PointF
 import android.graphics.Rect
 import android.util.Log
 import com.android.systemui.Flags
-import com.android.systemui.biometrics.data.repository.FingerprintPropertyRepository
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.shade.ShadeDisplayAware
@@ -35,19 +34,13 @@ class PeripheralFpsInteractor
 @Inject
 constructor(
     @ShadeDisplayAware val configurationInteractor: ConfigurationInteractor,
-    val fingerprintPropertyRepository: FingerprintPropertyRepository,
+    val fingerprintPropertyInteractor: FingerprintPropertyInteractor,
 ) {
     /** Whether fingerprint sensor location is peripheral, i.e. does not have display location. */
     val isSupported: Flow<Boolean>
         get() =
             if (Flags.standaloneFingerprintLockScreenUxFix()) {
-                combine(
-                    fingerprintPropertyRepository.sensorType,
-                    fingerprintPropertyRepository.peripheralSensorLocation,
-                ) { sensorType, peripheralSensorLocation ->
-                    sensorType.isStandalone() ||
-                        (sensorType.isPowerButton() && !peripheralSensorLocation.isUnknown())
-                }
+                fingerprintPropertyInteractor.isPeripheralFps
             } else {
                 flowOf(false)
             }

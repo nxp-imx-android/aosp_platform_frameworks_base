@@ -24,9 +24,14 @@ import androidx.test.filters.SmallTest
 import com.android.internal.logging.InstanceId.fakeInstanceId
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.logging.uiEventLogger
+import com.android.systemui.Flags.FLAG_STANDALONE_FINGERPRINT_LOCK_SCREEN_UX_FIX
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
+import com.android.systemui.biometrics.data.repository.fingerprintPropertyRepository
+import com.android.systemui.biometrics.shared.model.FingerprintSensorType
+import com.android.systemui.biometrics.shared.model.PeripheralFingerprintSensorLocation
+import com.android.systemui.biometrics.shared.model.SensorStrength
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
 import com.android.systemui.bouncer.shared.logging.BouncerUiEvent
@@ -69,6 +74,55 @@ class AlternateBouncerInteractorTest : SysuiTestCase() {
     fun setup() {
         underTest = kosmos.alternateBouncerInteractor
     }
+
+    @Test
+    fun alternateBouncerSupported_udfps_true() =
+        kosmos.testScope.runTest {
+            val alternateBouncerSupported by collectLastValue(underTest.alternateBouncerSupported)
+
+            kosmos.fingerprintPropertyRepository.setProperties(
+                sensorId = 0,
+                strength = SensorStrength.STRONG,
+                sensorType = FingerprintSensorType.UDFPS_OPTICAL,
+                sensorLocations = emptyMap(),
+            )
+            runCurrent()
+            assertThat(alternateBouncerSupported).isTrue()
+        }
+
+    @Test
+    @EnableFlags(FLAG_STANDALONE_FINGERPRINT_LOCK_SCREEN_UX_FIX)
+    fun alternateBouncerSupported_sideFps_true() =
+        kosmos.testScope.runTest {
+            val alternateBouncerSupported by collectLastValue(underTest.alternateBouncerSupported)
+
+            kosmos.fingerprintPropertyRepository.setProperties(
+                sensorId = 0,
+                strength = SensorStrength.STRONG,
+                sensorType = FingerprintSensorType.POWER_BUTTON,
+                sensorLocations = emptyMap(),
+            )
+            runCurrent()
+            assertThat(alternateBouncerSupported).isTrue()
+        }
+
+    @Test
+    @EnableFlags(FLAG_STANDALONE_FINGERPRINT_LOCK_SCREEN_UX_FIX)
+    fun alternateBouncerSupported_powerButtonFps_withPeripheralLocation_false() =
+        kosmos.testScope.runTest {
+            val alternateBouncerSupported by collectLastValue(underTest.alternateBouncerSupported)
+
+            kosmos.fingerprintPropertyRepository.setProperties(
+                sensorId = 0,
+                strength = SensorStrength.STRONG,
+                sensorType = FingerprintSensorType.POWER_BUTTON,
+                sensorLocations = emptyMap(),
+                peripheralSensorLocation =
+                    PeripheralFingerprintSensorLocation.POWER_BUTTON_TOP_RIGHT_KEY,
+            )
+            runCurrent()
+            assertThat(alternateBouncerSupported).isFalse()
+        }
 
     @Test
     @DisableSceneContainer

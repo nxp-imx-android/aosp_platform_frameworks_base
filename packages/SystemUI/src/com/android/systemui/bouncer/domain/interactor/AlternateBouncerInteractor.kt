@@ -19,7 +19,7 @@ package com.android.systemui.bouncer.domain.interactor
 import android.app.StatusBarManager
 import android.util.Log
 import com.android.internal.logging.UiEventLogger
-import com.android.systemui.biometrics.data.repository.FingerprintPropertyRepository
+import com.android.systemui.biometrics.domain.interactor.FingerprintPropertyInteractor
 import com.android.systemui.bouncer.data.repository.KeyguardBouncerRepository
 import com.android.systemui.bouncer.shared.logging.BouncerUiEvent
 import com.android.systemui.dagger.SysUISingleton
@@ -58,7 +58,7 @@ class AlternateBouncerInteractor
 @Inject
 constructor(
     private val bouncerRepository: KeyguardBouncerRepository,
-    fingerprintPropertyRepository: FingerprintPropertyRepository,
+    fingerprintPropertyInteractor: FingerprintPropertyInteractor,
     private val deviceEntryBiometricsAllowedInteractor:
         Lazy<DeviceEntryBiometricsAllowedInteractor>,
     private val keyguardInteractor: Lazy<KeyguardInteractor>,
@@ -75,8 +75,11 @@ constructor(
     val isVisible: StateFlow<Boolean> = bouncerRepository.alternateBouncerVisible
 
     val alternateBouncerSupported: StateFlow<Boolean> =
-        fingerprintPropertyRepository.sensorType
-            .map { sensorType -> sensorType.isUdfps() || sensorType.isPowerButton() }
+        combine(fingerprintPropertyInteractor.isUdfps, fingerprintPropertyInteractor.isSideFps) {
+                isUdfps,
+                isSideFps ->
+                isUdfps || isSideFps
+            }
             .stateIn(scope = scope, started = SharingStarted.Eagerly, initialValue = false)
 
     private val isDozingOrAod: Flow<Boolean> =
@@ -91,9 +94,9 @@ constructor(
             .distinctUntilChanged()
 
     private val currentDisplayModeSupported: Flow<Boolean> =
-        fingerprintPropertyRepository.sensorType.flatMapLatest {
+        fingerprintPropertyInteractor.isSideFps.flatMapLatest { isSideFps ->
             // SideFPS doesn't support AlternateBouncer in rear display mode
-            if (it.isPowerButton()) {
+            if (isSideFps) {
                 displayStateInteractor.get().isInRearDisplayMode.map { inRearDisplayMode ->
                     !inRearDisplayMode
                 }

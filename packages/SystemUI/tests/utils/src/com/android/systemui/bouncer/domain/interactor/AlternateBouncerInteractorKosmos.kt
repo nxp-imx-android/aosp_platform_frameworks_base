@@ -18,6 +18,7 @@ package com.android.systemui.bouncer.domain.interactor
 
 import com.android.internal.logging.uiEventLogger
 import com.android.systemui.biometrics.data.repository.fingerprintPropertyRepository
+import com.android.systemui.biometrics.domain.interactor.fingerprintPropertyInteractor
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryBiometricsAllowedInteractor
 import com.android.systemui.display.domain.interactor.displayStateInteractor
@@ -33,7 +34,7 @@ val Kosmos.alternateBouncerInteractor: AlternateBouncerInteractor by
     Kosmos.Fixture {
         AlternateBouncerInteractor(
             bouncerRepository = keyguardBouncerRepository,
-            fingerprintPropertyRepository = fingerprintPropertyRepository,
+            fingerprintPropertyInteractor = fingerprintPropertyInteractor,
             deviceEntryBiometricsAllowedInteractor = { deviceEntryBiometricsAllowedInteractor },
             keyguardInteractor = { keyguardInteractor },
             keyguardTransitionInteractor = { keyguardTransitionInteractor },

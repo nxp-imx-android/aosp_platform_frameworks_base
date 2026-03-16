@@ -18,6 +18,7 @@ package com.android.systemui.biometrics.domain.interactor
 
 import android.content.Context
 import android.hardware.biometrics.SensorLocationInternal
+import com.android.systemui.Flags
 import com.android.systemui.biometrics.data.repository.FingerprintPropertyRepository
 import com.android.systemui.biometrics.shared.model.FingerprintSensorInfo
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
@@ -56,6 +57,30 @@ constructor(
                 started = SharingStarted.Eagerly,
                 initialValue = repository.sensorType.value.isUdfps(),
             )
+
+    /** Side FPS is a power-button sensor on the side of the display. */
+    val isSideFps: Flow<Boolean> =
+        combine(repository.sensorType, repository.peripheralSensorLocation) {
+            sensorType,
+            peripheralSensorLocation ->
+            sensorType.isPowerButton() &&
+                (!Flags.standaloneFingerprintLockScreenUxFix() ||
+                    peripheralSensorLocation.isUnknown())
+        }
+
+    /**
+     * Peripheral FPS is either a standalone sensor or a power-button sensor with peripheral
+     * location.
+     */
+    val isPeripheralFps: Flow<Boolean> =
+        combine(repository.sensorType, repository.peripheralSensorLocation) {
+            sensorType,
+            peripheralSensorLocation ->
+            sensorType.isStandalone() ||
+                (Flags.standaloneFingerprintLockScreenUxFix() &&
+                    sensorType.isPowerButton() &&
+                    !peripheralSensorLocation.isUnknown())
+        }
 
     /**
      * Devices with multiple physical displays use unique display ids to determine which sensor is
@@ -98,6 +123,9 @@ constructor(
                 SharingStarted.WhileSubscribed(),
                 FingerprintSensorInfo(repository.sensorType.value, repository.strength.value),
             )
+
+    /** The sensor locations relative to each physical display. */
+    val sensorLocations: StateFlow<Map<String, SensorLocationInternal>> = repository.sensorLocations
 
     /**
      * Sensor location for the:
