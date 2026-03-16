@@ -29,7 +29,7 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.multisensory.IMultisensoryPlayer;
 import android.os.multisensory.IMultisensoryPlayerLoadCallback;
-import android.os.multisensory.MultisensoryToken;
+import android.os.multisensory.MultisensoryManager;
 import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
@@ -152,7 +152,8 @@ public class MultisensoryServiceScope {
     }
 
     private void loadTokensInRemotePlayer(long remotePlayerId) {
-        for (int tokenConstant : MultisensoryRepository.MULTISENSORY_TOKENS) {
+        int[] tokens = MultisensoryManager.getMultisensoryTokens();
+        for (int tokenConstant : tokens) {
             VibrationEffect singleEffect =
                     mRepository.getHapticEffect(tokenConstant).createSingleVibrationEffect();
             String audioEffect = mRepository.getSoundEffect(tokenConstant);
@@ -174,7 +175,7 @@ public class MultisensoryServiceScope {
     }
 
     /**
-     * Play audio-haptic feedback for a given {@link MultisensoryToken}. This method is
+     * Play audio-haptic feedback for a given {@link MultisensoryManager}. This method is
      * synchronized.
      *
      * <p>If a remote {@link IMultisensoryPlayer} has been registered, playback is delegated to the
@@ -182,9 +183,9 @@ public class MultisensoryServiceScope {
      * In any other case, playback results in haptics-only feedback via the {@link
      * MultisensoryPlayerDefault}.
      *
-     * @param tokenConstant Token to play. One of {@link MultisensoryToken}.
+     * @param tokenConstant Token to play. One of {@link MultisensoryManager}.
      */
-    public void playToken(@MultisensoryToken.Token int tokenConstant) {
+    public void playToken(@MultisensoryManager.Token int tokenConstant) {
         VibrationAttributes vibrationAttributes = getVibrationAttributesForToken(tokenConstant);
         AudioAttributes audioAttributes = getAudioAttributesForToken(tokenConstant);
 
@@ -219,13 +220,14 @@ public class MultisensoryServiceScope {
     /**
      * Get the {@link VibrationAttributes} to play haptics for a given token constant.
      *
-     * @param tokenConstant One of {@link MultisensoryToken}
+     * @param tokenConstant One of {@link MultisensoryManager}
      * @return the {@link VibrationAttributes} for the token.
      */
     public @NonNull VibrationAttributes getVibrationAttributesForToken(
-            @MultisensoryToken.Token int tokenConstant) {
+            @MultisensoryManager.Token int tokenConstant) {
         return switch (tokenConstant) {
-            case MultisensoryToken.UNLOCK, MultisensoryToken.LOCK -> sHardwareVibrationAttributes;
+            case MultisensoryManager.TOKEN_UNLOCK, MultisensoryManager.TOKEN_LOCK ->
+                    sHardwareVibrationAttributes;
             default -> sTouchVibrationAttributes;
         };
     }
@@ -233,18 +235,18 @@ public class MultisensoryServiceScope {
     /**
      * Get the {@link AudioAttributes} to play audio for a given token constant.
      *
-     * @param tokenConstant One of {@link MultisensoryToken}
+     * @param tokenConstant One of {@link MultisensoryManager}
      * @return the {@link AudioAttributes} for the token, or null if the token did not specify any
      *     audio effect to begin with.
      */
     public @Nullable AudioAttributes getAudioAttributesForToken(
-            @MultisensoryToken.Token int tokenConstant) {
+            @MultisensoryManager.Token int tokenConstant) {
         String audioEffect = mRepository.getSoundEffect(tokenConstant);
         return audioEffect != null ? mSonificationAudioAttributes : null;
     }
 
     private void playTokenInDefaultPlayer(
-            @MultisensoryToken.Token int tokenConstant,
+            @MultisensoryManager.Token int tokenConstant,
             @NonNull VibrationAttributes vibrationAttributes) {
         VibrationEffect vibrationEffect =
                 mRepository.getHapticEffect(tokenConstant).createSingleVibrationEffect();

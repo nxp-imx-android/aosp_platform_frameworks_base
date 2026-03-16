@@ -37,8 +37,8 @@ import java.lang.annotation.RetentionPolicy;
  * #TARGET_PARAMETER_INTENSITY}, or the "sharpness" of the effect ({@link
  * #TARGET_PARAMETER_SHARPNESS}).
  *
- * <p>These modifications only apply to effects created by a {@link MultisensoryToken} that can
- * generate a continuous feedback effect.
+ * <p>These modifications only apply to effects created by a multisensory token constant defined in
+ * {@link MultisensoryManager} that can generate a continuous feedback effect.
  */
 @FlaggedApi(android.os.multisensory.Flags.FLAG_ENABLE_MULTISENSORY_FEEDBACK)
 public final class MultisensoryContinuousEffectModifier implements Parcelable {
