@@ -40,7 +40,7 @@ class FluidTaskResizer(
         }
     }
 
-    override fun onResizeUpdate(session: DragSession, x: Float, y: Float) {
+    override fun onResizeUpdate(session: DragSession, x: Float, y: Float): Boolean {
         val wct = WindowContainerTransaction()
         DragPositioningCallbackUtility.changeBounds(
             session.ctrlType,
@@ -77,6 +77,7 @@ class FluidTaskResizer(
             wct.setBounds(session.windowDecoration.taskInfo.token, session.repositionTaskBounds)
             taskOrganizer.applyTransaction(wct)
         }
+        return changeBoundsResult.violatingSizeConstraints
     }
 
     override fun onResizeEnd(

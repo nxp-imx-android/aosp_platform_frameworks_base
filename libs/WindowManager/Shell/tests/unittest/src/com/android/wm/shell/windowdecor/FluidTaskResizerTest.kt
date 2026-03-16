@@ -190,6 +190,28 @@ class FluidTaskResizerTest : ShellTestCase() {
         verify(mockDesktopRepository, never()).removeBoundsBeforeSnapOrMaximize(any())
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_NO_RESIZE_CURSOR)
+    fun testResize_returnsViolatingSizeConstraints() {
+        whenever(mockWindowDecoration.taskInfo)
+            .thenReturn(
+                ActivityManager.RunningTaskInfo().apply {
+                    taskId = TASK_ID
+                    configuration.windowConfiguration.setBounds(STARTING_BOUNDS)
+                    token = mockTaskToken
+                    minWidth = 100
+                    minHeight = 100
+                }
+            )
+
+        // Resize below the minimum width.
+        // STARTING_BOUNDS width is 100, moving left side coordinate from 100 to 110 makes width to
+        // be 90.
+        val violatingSizeConstraints = taskResizer.onResizeUpdate(dragSession, 110f, 100f)
+
+        Assert.assertTrue(violatingSizeConstraints)
+    }
+
     companion object {
         private const val TASK_ID = 5
         private val STARTING_BOUNDS = Rect(100, 100, 200, 200)
