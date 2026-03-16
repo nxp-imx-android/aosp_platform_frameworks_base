@@ -403,14 +403,18 @@ constructor(
         if (!secureLockDevice()) return
 
         _pendingFaceAuthConfirmationInSecureLockDevice.value = isShowingConfirmButton
-        repository.cancel()
+        if (isShowingConfirmButton) {
+            repository.cancel()
+        }
     }
 
     override fun onSecureLockDeviceTryAgainButtonShowingChanged(isShowingTryAgainButton: Boolean) {
         if (!secureLockDevice()) return
 
         _pendingRetryBiometricAuthInSecureLockDevice.value = isShowingTryAgainButton
-        repository.cancel()
+        if (isShowingTryAgainButton) {
+            repository.cancel()
+        }
     }
 
     private val faceAuthenticationStatusOverride = MutableStateFlow<FaceAuthenticationStatus?>(null)

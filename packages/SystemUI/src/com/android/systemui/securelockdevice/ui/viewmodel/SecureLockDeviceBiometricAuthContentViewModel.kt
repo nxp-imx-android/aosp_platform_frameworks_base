@@ -435,8 +435,9 @@ constructor(
      * lock device.
      */
     fun onTryAgainButtonClicked() {
+        // Update state when try again is clicked and then request for authentication
+        secureLockDeviceInteractor.onUserRequestedRetry()
         showAuthenticating(isRetry = true)
-        secureLockDeviceInteractor.onRetryBiometricAuth()
     }
 
     /**
