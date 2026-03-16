@@ -51,7 +51,13 @@ interface ApiType<InternalType, ExternalType> {
      * stable through multiple executions as long as we don't update the app.
      */
     fun getKey(): String
+
+    fun convertInternalToExternal(internalValue: InternalType): ExternalType
+    fun convertExternalToInternal(externalValue: ExternalType): InternalType
 }
 
-interface DirectApiType<InternalType> : ApiType<InternalType, InternalType> {
+/** ApiType for types which have the same internal and external type. */
+interface DirectApiType<ExternalType> : ApiType<ExternalType, ExternalType> {
+    override fun convertInternalToExternal(internalValue: ExternalType): ExternalType = internalValue
+    override fun convertExternalToInternal(externalValue: ExternalType): ExternalType = externalValue
 }

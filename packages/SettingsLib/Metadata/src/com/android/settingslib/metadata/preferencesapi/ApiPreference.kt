@@ -190,7 +190,7 @@ class SetConfig<V : Any>(
  * @property flagConfig Flag configuration for the preference.
  * @property appliesTo The [PreferenceTarget] to which the preference applies.
  */
-abstract class ApiPreference<ExternalType : Any>(
+abstract class ApiPreference<InternalType: Any, ExternalType : Any>(
     val flagConfig: FlagConfig?,
     val appliesTo: PreferenceTarget
 ) : PersistentPreference<ExternalType> {
@@ -392,7 +392,7 @@ abstract class ApiPreference<ExternalType : Any>(
 
     /** The type of this preference. This defines both the raw type (e.g. String, Int) and also
      * which options are acceptable, both programmatically and in a human-readable way. */
-    abstract val type: ApiType<ExternalType, ExternalType> // Todo: support different internal types
+    abstract val type: ApiType<InternalType, ExternalType>
 }
 
 /**
@@ -549,7 +549,7 @@ internal annotation class ApiPreferenceDsl
  * ```
  */
 @ApiPreferenceDsl
-class GetConfigBuilder<ExternalType : Any>(private val type: ApiType<ExternalType, ExternalType>) { // Todo: support internal type
+class GetConfigBuilder<InternalType: Any, ExternalType : Any>(private val type: ApiType<InternalType, ExternalType>) {
     private var permissionsConfig: Permissions? = null
     private var preconditionsConfig: PreconditionsConfig? = null
     private var executeBlock: (suspend ApiOperationContext.() -> ExternalType)? = null
@@ -619,30 +619,14 @@ class GetConfigBuilder<ExternalType : Any>(private val type: ApiType<ExternalTyp
     }
 
     /** Declare the execute block of the get. */
-    fun execute(lambda: suspend ApiOperationContext.() -> ExternalType) {
+    fun execute(lambda: suspend ApiOperationContext.() -> InternalType) {
         if (executeBlock != null) {
             error(getExceptionMessageMultipleDefines("execute"))
         }
 
-        executeBlock = lambda
-    }
-
-    /**
-     * Declare the execute block of the get.
-     *
-     *
-     * This is used for enum types as an alternative to the `execute` block.
-     */
-    fun executeEnum(lambda: suspend ApiOperationContext.() -> EnumApi<ExternalType>) {
-        if (executeBlock != null) {
-            error(getExceptionMessageMultipleDefines("executeEnum"))
+        executeBlock = {
+            type.convertInternalToExternal(lambda())
         }
-
-        if (type !is CustomEnum<ExternalType, *>) {
-            error("executeEnum is only supported for CustomEnum types")
-        }
-
-        executeBlock = { lambda().asApiValue }
     }
 
     internal fun build(): GetConfig<ExternalType> {
@@ -667,7 +651,7 @@ class GetConfigBuilder<ExternalType : Any>(private val type: ApiType<ExternalTyp
  * ```
  */
 @ApiPreferenceDsl
-class SetConfigBuilder<ExternalType : Any>(private val type: ApiType<ExternalType, ExternalType>) {
+class SetConfigBuilder<InternalType: Any, ExternalType : Any>(private val type: ApiType<InternalType, ExternalType>) {
     private var permissionsConfig: Permissions? = null
     private var preconditionsConfig: PreconditionsConfig? = null
     private var valuePreconditionsConfig: ValuePreconditionsConfig<ExternalType>? = null
@@ -785,29 +769,12 @@ class SetConfigBuilder<ExternalType : Any>(private val type: ApiType<ExternalTyp
     }
 
     /** Declare the execute block of the set. */
-    fun execute(lambda: suspend ApiOperationContext.(ExternalType) -> Unit) {
+    fun execute(lambda: suspend ApiOperationContext.(InternalType) -> Unit) {
         if (executeBlock != null) {
             error(getExceptionMessageMultipleDefines("execute"))
         }
 
-        executeBlock = lambda
-    }
-
-    /**
-     * Declare the execute block of the set.
-     *
-     * This is used for enum types as an alternative to the `execute` block.
-     */
-    fun executeEnum(lambda: suspend ApiOperationContext.(EnumApi<ExternalType>) -> Unit) {
-        if (executeBlock != null) {
-            error(getExceptionMessageMultipleDefines("execute"))
-        }
-        if (type !is CustomEnum<ExternalType, *>) {
-            error("executeEnum is only supported for CustomEnum types")
-        }
-
-        executeBlock =
-            { value -> lambda(type.fromApiValue(value) ?: error("Invalid enum value: $value")) }
+        executeBlock = { value -> lambda(type.convertExternalToInternal(value)) }
     }
 
     internal fun build(): SetConfig<ExternalType> {
@@ -838,10 +805,10 @@ fun shouldSkipFlagCheck(context: Context): Boolean {
 
 /** Configuration builder for an [ApiPreference]. */
 @ApiPreferenceDsl
-class ApiPreferenceConfigBuilder<ExternalType : Any>(
+class ApiPreferenceConfigBuilder<InternalType : Any, ExternalType : Any>(
     val key: String,
     @StringRes val purpose: Int,
-    val type: ApiType<ExternalType, ExternalType>, // todo: support internal type
+    val type: ApiType<InternalType, ExternalType>,
     val appliesTo: PreferenceTarget,
     val screenPermissions: Permissions?,
     val screenPreconditions: PreconditionsConfig?,
@@ -968,7 +935,7 @@ class ApiPreferenceConfigBuilder<ExternalType : Any>(
     /**
      * Build the [GetConfig] from the given [GetConfigBuilder] block.
      */
-    fun get(lambda: GetConfigBuilder<ExternalType>.() -> Unit) {
+    fun get(lambda: GetConfigBuilder<InternalType, ExternalType>.() -> Unit) {
         if (getConfig != null) {
             error(getExceptionMessageMultipleDefines("get"))
         }
@@ -977,7 +944,7 @@ class ApiPreferenceConfigBuilder<ExternalType : Any>(
             error(getExceptionMessageWrongOrder("get"))
         }
 
-        val builder = GetConfigBuilder<ExternalType>(type)
+        val builder = GetConfigBuilder<InternalType, ExternalType>(type)
         builder.lambda()
         getConfig = builder.build()
     }
@@ -985,18 +952,18 @@ class ApiPreferenceConfigBuilder<ExternalType : Any>(
     /**
      * Build the [SetConfig] from the given [SetConfigBuilder] block.
      */
-    fun set(lambda: SetConfigBuilder<ExternalType>.() -> Unit) {
+    fun set(lambda: SetConfigBuilder<InternalType, ExternalType>.() -> Unit) {
         if (setConfig != null) {
             error(getExceptionMessageMultipleDefines("set"))
         }
 
-        val builder = SetConfigBuilder<ExternalType>(type)
+        val builder = SetConfigBuilder<InternalType, ExternalType>(type)
         builder.lambda()
         setConfig = builder.build()
     }
 
     /** Create an instance of [ApiPreference] from its configuration. */
-    fun build() = object : ApiPreference<ExternalType>(flagConfig, appliesTo) {
+    fun build() = object : ApiPreference<InternalType, ExternalType>(flagConfig, appliesTo) {
         override val sensitivityLevel: Int =
             this@ApiPreferenceConfigBuilder.sensitivityLevelValue ?: super.sensitivityLevel
         override val screenPermissions = this@ApiPreferenceConfigBuilder.screenPermissions
@@ -1009,7 +976,7 @@ class ApiPreferenceConfigBuilder<ExternalType : Any>(
         override val get: GetConfig<ExternalType> = getConfig ?: error("'get' block is required")
         override val set: SetConfig<ExternalType>? = setConfig
         override val supportsWrite: Boolean = setConfig != null
-        override val type: ApiType<ExternalType, ExternalType> = this@ApiPreferenceConfigBuilder.type // todo: support internal type
+        override val type: ApiType<InternalType, ExternalType> = this@ApiPreferenceConfigBuilder.type
         override val valueType: Class<ExternalType> = this@ApiPreferenceConfigBuilder.valueType
         override val key: String = this@ApiPreferenceConfigBuilder.key
         override val purpose: Int = this@ApiPreferenceConfigBuilder.purpose

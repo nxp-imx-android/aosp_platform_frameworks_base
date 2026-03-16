@@ -78,13 +78,13 @@ inline fun GeneratedParameterType(
  * Instead, use the inline functions [GeneratedType] which provide a more convenient syntax and
  * automatically infer the type.
  */
-class GeneratedType<T : Any> constructor(
-    private val keyType: Class<T>,
+class GeneratedType<ExternalType : Any> constructor(
+    private val keyType: Class<ExternalType>,
     @field:StringRes val descriptionRes: Int?,
     val description: String?,
-    private val lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<T>>,
+    private val lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<ExternalType>>,
     private val unit: String? = null,
-) : FiniteOptionsType<T> {
+) : DirectFiniteOptionsType<ExternalType> {
     init {
         require(descriptionRes != null || description != null)
     }
@@ -97,7 +97,7 @@ class GeneratedType<T : Any> constructor(
         unit?.let { put("unit", it) }
     })
 
-    override fun getType(): Class<T> = keyType
+    override fun getType(): Class<ExternalType> = keyType
 
     /** Get the description as a string using the provided context. */
     override fun getDescription(context: Context): String =
@@ -107,5 +107,5 @@ class GeneratedType<T : Any> constructor(
         it.value to it.description
     }
 
-    override fun getKey(): String = "GeneratedType:${keyType.name}:${descriptionRes}:${description}"
+    override fun getKey(): String = "GeneratedType:${System.identityHashCode(lambda)}"
 }

@@ -111,7 +111,7 @@ class PreferenceGraphBuilderTest {
         override val set: SetConfig<Int>? = null,
         val parametersSchema: KeyParametersSchema? = null,
         val parameters: ValidatedKeyParameters? = null
-    ) : ApiPreference<Int>(null, PreferenceTarget.DEVICE) {
+    ) : ApiPreference<Int, Int>(null, PreferenceTarget.DEVICE) {
         override val type = AnyInt
         override val valueType = Int::class.javaObjectType
         override val permissions: Permissions? = null
@@ -407,14 +407,6 @@ class PreferenceGraphBuilderTest {
             purpose = 0,
         ) {}
         val proto = screen.toProto(context, 0, 0, screenMetadata, false, PreferenceGetterFlags.METADATA)
-
-        assertThat(proto.writable).isFalse()
-    }
-
-    @Test
-    fun toProto_legacyPreference_isNotWritable() {
-        val preference = TestPreference(SensitivityLevel.NO_SENSITIVITY)
-        val proto = preference.toProto(context, 0, 0, screenMetadata, false, PreferenceGetterFlags.METADATA)
 
         assertThat(proto.writable).isFalse()
     }

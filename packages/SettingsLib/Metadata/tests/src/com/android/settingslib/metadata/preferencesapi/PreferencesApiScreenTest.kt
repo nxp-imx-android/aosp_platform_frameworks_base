@@ -126,10 +126,10 @@ class PreferencesApiScreenTest {
         assertThat(preferenceScreen.preferences.size).isEqualTo(2)
 
         // Check preference order is correct
-        val firstPreference = preferenceScreen.preferences[0] as ApiPreference<Boolean>
+        val firstPreference = preferenceScreen.preferences[0] as ApiPreference<Boolean, Boolean>
         assertThat(firstPreference.key).isEqualTo(preferenceKey1)
 
-        val secondPreference = preferenceScreen.preferences[1] as ApiPreference<Int>
+        val secondPreference = preferenceScreen.preferences[1] as ApiPreference<Int, Int>
         assertThat(secondPreference.key).isEqualTo(preferenceKey2)
     }
 
@@ -264,7 +264,7 @@ class PreferencesApiScreenTest {
         val apiOperationContext =
             ApiOperationContext(context = context, parameters = ValidatedKeyParameters.EMPTY)
 
-        val preference = preferenceScreen.preferences[0] as ApiPreference<Int>
+        val preference = preferenceScreen.preferences[0] as ApiPreference<Int, Int>
         assertThat(preference.key).isEqualTo("ApiPreference")
         runBlocking {
             assertThat(preference.preconditions?.check?.invoke(apiOperationContext) is EnterpriseRestriction).isTrue()
@@ -309,11 +309,11 @@ class PreferencesApiScreenTest {
         assertThat(preferenceScreen.preferences.size).isEqualTo(2)
 
         // Check that getters return the correct value
-        val firstPreference = preferenceScreen.preferences[0] as ApiPreference<Boolean>
+        val firstPreference = preferenceScreen.preferences[0] as ApiPreference<Boolean, Boolean>
         assertThat(firstPreference.storage(context).getValue(preferenceKey1, Boolean::class.java))
             .isEqualTo(preferenceValue1)
 
-        val secondPreference = preferenceScreen.preferences[1] as ApiPreference<Int>
+        val secondPreference = preferenceScreen.preferences[1] as ApiPreference<Int, Int>
         assertThat(secondPreference.key).isEqualTo("ApiPreference2")
         assertThat(secondPreference.storage(context).getValue(preferenceKey2, Int::class.java))
             .isEqualTo(preferenceValue2)
@@ -360,14 +360,14 @@ class PreferencesApiScreenTest {
         assertThat(preferenceScreen.preferences.size).isEqualTo(2)
 
         // First preference doesn't have a setter, so the getter should return the same value
-        val firstPreference = preferenceScreen.preferences[0] as ApiPreference<Boolean>
+        val firstPreference = preferenceScreen.preferences[0] as ApiPreference<Boolean, Boolean>
         assertThat(firstPreference.key).isEqualTo(preferenceKey1)
         firstPreference.storage(context).setValue(preferenceKey1, Boolean::class.java, true)
         assertThat(firstPreference.storage(context).getValue(preferenceKey1, Boolean::class.java))
             .isEqualTo(preferenceValue1)
 
         // Value of the second preference should be changed by setter
-        val secondPreference = preferenceScreen.preferences[1] as ApiPreference<Int>
+        val secondPreference = preferenceScreen.preferences[1] as ApiPreference<Int, Int>
         assertThat(secondPreference.key).isEqualTo(preferenceKey2)
         secondPreference
             .storage(context)
@@ -432,7 +432,7 @@ class PreferencesApiScreenTest {
         assertThat(preferenceScreen.preferences.size).isEqualTo(1)
 
         // Check get preconditions description message
-        val preference = preferenceScreen.preferences[0] as ApiPreference<Boolean>
+        val preference = preferenceScreen.preferences[0] as ApiPreference<Boolean, Boolean>
         assertThat(preference.get.preconditions?.getDescription(context))
             .isEqualTo(context.getString(R.string.preconditions_description1))
 
@@ -564,7 +564,7 @@ class PreferencesApiScreenTest {
         assertThat(preferenceScreen.preferences.size).isEqualTo(1)
 
         // Check get preconditions description message
-        val preference = preferenceScreen.preferences[0] as ApiPreference<Boolean>
+        val preference = preferenceScreen.preferences[0] as ApiPreference<Boolean, Boolean>
         assertThat(preference.get.preconditions?.getDescription(context))
             .isEqualTo(preconditionDescription)
 
@@ -674,7 +674,7 @@ class PreferencesApiScreenTest {
         assertThat(preferenceScreen.preferences.size).isEqualTo(1)
 
         // Trying to set a wrong value throws exception and value stays the same
-        val preference = preferenceScreen.preferences[0] as ApiPreference<Int>
+        val preference = preferenceScreen.preferences[0] as ApiPreference<Int, Int>
         assertThat(preference.key).isEqualTo(preferenceKey)
         val exception =
             assertThrows(IllegalStateException::class.java) {
@@ -1477,8 +1477,9 @@ class PreferencesApiScreenTest {
         assertThat(preferenceScreen.preferences.size).isEqualTo(1)
 
         // Check preference's set operation has the correct warning message
-        val preference = preferenceScreen.preferences[0] as ApiPreference<Boolean>
-        assertThat(preference.set?.warning?.getWarning(context)).isEqualTo(context.getString(R.string.warning_message1))
+        val preference = preferenceScreen.preferences[0] as ApiPreference<Boolean, Boolean>
+        assertThat(preference.set?.warning?.getWarning(context))
+            .isEqualTo(context.getString(R.string.warning_message1))
     }
 
     @Test
