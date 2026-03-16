@@ -69,8 +69,6 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.LayoutCoordinates
-import androidx.compose.ui.layout.Measurable
-import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -683,36 +681,24 @@ fun ContentScope.NestedScrollingNotificationPanel(
                                 modifier = Modifier.padding(top = stackTopPadding),
                             )
                         }
+                        if (NmContextualDisplayLaunch.isEnabled) {
+                            // Entry point for the notifications rules page (UX not final)
+                            NotificationRulesEntryPoint(
+                                notificationRulesParentViewModel = notificationRulesParentViewModel,
+                                modifier =
+                                    Modifier.fillMaxWidth().align(alignment = Alignment.BottomStart),
+                            )
+                        }
                     }
-                },
-                {
-                    // Entry point for the notifications rules page (UX not final)
-                    NotificationRulesEntryPoint(
-                        notificationRulesParentViewModel = notificationRulesParentViewModel,
-                        modifier = Modifier.fillMaxSize(),
-                    )
                 },
             ),
         measurePolicy = { measurables, constraints ->
-            check(measurables.size == 3)
+            check(measurables.size == 2)
             check(measurables[0].size == 1) { "background should have one composable" }
             check(measurables[1].size == 1) { "content should have one composable" }
-            if (NmContextualDisplayLaunch.isEnabled) {
-                check(measurables[2].size == 1) { "rules entry point should have one composable" }
-            } else {
-                check(measurables[2].isEmpty()) {
-                    "rules entry point should have NO composable because flag is disabled"
-                }
-            }
 
             val backgroundMeasurable = measurables[0][0]
             val contentMeasurable = measurables[1][0]
-            val rulesEntryPointMeasurable: Measurable? =
-                if (NmContextualDisplayLaunch.isEnabled) {
-                    measurables[2][0]
-                } else {
-                    null
-                }
 
             if (shouldScrimBackgroundFillMaxHeight) {
                 // Fill the entire available space with the content, and force the background to
@@ -724,17 +710,6 @@ fun ContentScope.NestedScrollingNotificationPanel(
                             height = constraints.maxHeight,
                         )
                     )
-                val rulesEntryPoint: Placeable? =
-                    if (NmContextualDisplayLaunch.isEnabled && rulesEntryPointMeasurable != null) {
-                        rulesEntryPointMeasurable.measure(
-                            Constraints.fixed(
-                                width = constraints.maxWidth,
-                                height = constraints.maxHeight,
-                            )
-                        )
-                    } else {
-                        null
-                    }
 
                 val background =
                     backgroundMeasurable.measure(
@@ -747,7 +722,6 @@ fun ContentScope.NestedScrollingNotificationPanel(
                 layout(width = content.width, height = content.height) {
                     content.place(IntOffset.Zero)
                     background.place(IntOffset.Zero)
-                    rulesEntryPoint?.place(IntOffset.Zero)
                 }
             } else {
                 // Make the background size match the content size.
@@ -757,18 +731,11 @@ fun ContentScope.NestedScrollingNotificationPanel(
 
                 val content = contentMeasurable.measure(constraints)
                 val backgroundConstraints = Constraints.fixed(content.width, content.height)
-                val rulesEntryPoint: Placeable? =
-                    if (NmContextualDisplayLaunch.isEnabled && rulesEntryPointMeasurable != null) {
-                        rulesEntryPointMeasurable.measure(backgroundConstraints)
-                    } else {
-                        null
-                    }
                 val background = backgroundMeasurable.measure(backgroundConstraints)
 
                 layout(width = content.width, height = content.height) {
                     background.place(IntOffset.Zero)
                     content.place(IntOffset.Zero)
-                    rulesEntryPoint?.place(IntOffset.Zero)
                 }
             }
         },
@@ -785,7 +752,7 @@ private fun NotificationRulesEntryPoint(
     if (!NmContextualDisplayLaunch.isEnabled || notificationRulesParentViewModel == null) {
         return
     }
-    Box(modifier = modifier, contentAlignment = Alignment.BottomStart) {
+    Box(modifier = modifier) {
         Button(
             onClick = { notificationRulesParentViewModel.launchNotificationRulesActivity(context) }
         ) {
