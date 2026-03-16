@@ -3285,6 +3285,11 @@ public class ParsingPackageUtils {
         final int listSize = mSplitPermissionInfos.size();
         for (int is = 0; is < listSize; is++) {
             final PermissionManager.SplitPermissionInfo spi = mSplitPermissionInfos.get(is);
+            String featureFlag = spi.getFeatureFlag();
+            if (featureFlag != null && AconfigFlags.getInstance().skip(pkg, featureFlag,
+                    spi.isFeatureFlagNegated())) {
+                continue;
+            }
             Set<String> requestedPermissions = pkg.getRequestedPermissions();
             if (pkg.getTargetSdkVersion() >= spi.getTargetSdk()
                     || !requestedPermissions.contains(spi.getSplitPermission())) {
