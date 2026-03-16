@@ -1890,7 +1890,7 @@ class PreferencesApiScreenTest {
     }
 
     @Test
-    fun createPreferencesApiScreen_screenPreconditionsFail_launchIntentIsNull() {
+    fun createPreferencesApiScreen_screenPreconditionsFail_launchIntentIsNotNull() {
         val preferenceScreen =
             object :
                 PreferencesApiScreen(
@@ -1906,7 +1906,7 @@ class PreferencesApiScreenTest {
                 }
             }
 
-        assertThat(preferenceScreen.getLaunchIntent(context, null)).isNull()
+        assertThat(preferenceScreen.getLaunchIntent(context, null)).isNotNull()
     }
 
     @Test
