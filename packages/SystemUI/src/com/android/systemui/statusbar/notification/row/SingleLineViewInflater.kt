@@ -494,7 +494,6 @@ object SingleLineViewInflater {
             )
         }
         // If name is null, create default avatar with background color
-        // TODO(b/319829062): Investigate caching default icon for color
         return peopleHelper.createAvatarSymbol(/* name= */ "", /* symbol= */ "", layoutColor)
     }
 
