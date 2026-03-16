@@ -58,7 +58,6 @@ import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChip
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
 import com.android.systemui.statusbar.domain.interactor.ScrollToTopInteractor
-import com.android.systemui.statusbar.systemstatusicons.domain.interactor.SystemStatusIconBlocklistInteractor
 import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.Idle
 import com.android.systemui.statusbar.layout.ui.viewmodel.AppHandlesViewModel
@@ -80,6 +79,7 @@ import com.android.systemui.statusbar.policy.domain.interactor.DeviceProvisionin
 import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipsViewModel
 import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipModel
+import com.android.systemui.statusbar.systemstatusicons.domain.interactor.SystemStatusIconBlocklistInteractor
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
 import com.android.systemui.user.domain.interactor.UserLogoutInteractor
 import dagger.assisted.AssistedFactory
@@ -375,16 +375,22 @@ constructor(
         )
 
     override val isQuickSettingsChipHighlighted: Boolean by
-        shadeInteractor.isQsExpanded.hydratedStateOf(
-            traceName = "isQsChipHighlighted",
-            initialValue = false,
-        )
+        combine(
+                shadeInteractor.isQsExpanded,
+                statusBarVisibilityInteractor.isShadeVisibleOnThisDisplay,
+            ) { isQsExpanded, isShadeOnThisDisplay ->
+                isQsExpanded && isShadeOnThisDisplay
+            }
+            .hydratedStateOf(traceName = "isQsChipHighlighted", initialValue = false)
 
     override val isNotificationsChipHighlighted: Boolean by
-        shadeInteractor.isNotificationsExpanded.hydratedStateOf(
-            traceName = "isNotificationsChipHighlighted",
-            initialValue = false,
-        )
+        combine(
+                shadeInteractor.isNotificationsExpanded,
+                statusBarVisibilityInteractor.isShadeVisibleOnThisDisplay,
+            ) { isNotificationsExpanded, isShadeOnThisDisplay ->
+                isNotificationsExpanded && isShadeOnThisDisplay
+            }
+            .hydratedStateOf(traceName = "isNotificationsChipHighlighted", initialValue = false)
 
     override val hasStatusBarNotifications: Boolean by
         statusBarNotificationIconsInteractor.hasStatusBarNotifications.hydratedStateOf(
