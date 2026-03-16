@@ -22,6 +22,7 @@ import com.android.systemui.biometrics.domain.interactor.fingerprintPropertyInte
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryBiometricsAllowedInteractor
 import com.android.systemui.display.domain.interactor.displayStateInteractor
+import com.android.systemui.display.domain.interactor.shadeDisplayTypeInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.kosmos.Kosmos
@@ -42,6 +43,7 @@ val Kosmos.alternateBouncerInteractor: AlternateBouncerInteractor by
             sceneInteractor = { sceneInteractor },
             displayStateInteractor = { displayStateInteractor },
             secureLockDeviceInteractor = { secureLockDeviceInteractor },
+            displayTypeInteractor = shadeDisplayTypeInteractor,
             uiEventLogger = uiEventLogger,
             sessionTracker = sessionTracker,
         )

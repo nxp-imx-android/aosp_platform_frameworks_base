@@ -19,6 +19,7 @@ package com.android.systemui.bouncer.domain.interactor
 import android.app.StatusBarManager.SESSION_KEYGUARD
 import android.platform.test.annotations.EnableFlags
 import android.security.Flags.FLAG_SECURE_LOCK_DEVICE
+import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.InstanceId.fakeInstanceId
@@ -36,7 +37,9 @@ import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepositor
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
 import com.android.systemui.bouncer.shared.logging.BouncerUiEvent
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.deviceentry.domain.interactor.allowFingerprint
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
+import com.android.systemui.display.data.repository.setDisplayType
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
@@ -74,6 +77,26 @@ class AlternateBouncerInteractorTest : SysuiTestCase() {
     fun setup() {
         underTest = kosmos.alternateBouncerInteractor
     }
+
+    @Test
+    @EnableFlags(FLAG_STANDALONE_FINGERPRINT_LOCK_SCREEN_UX_FIX)
+    fun canShowAlternateBouncer_sideFps_lockScreenOnExternalDisplay_false() =
+        kosmos.testScope.runTest {
+            kosmos.fingerprintPropertyRepository.supportsSideFps()
+            kosmos.allowFingerprint()
+
+            val canShowAlternateBouncer by collectLastValue(underTest.canShowAlternateBouncer)
+
+            // Shade on internal display
+            kosmos.setDisplayType(Display.DEFAULT_DISPLAY, Display.TYPE_INTERNAL)
+            runCurrent()
+            assertThat(canShowAlternateBouncer).isTrue()
+
+            // Change shade display to external
+            kosmos.setDisplayType(Display.DEFAULT_DISPLAY, Display.TYPE_EXTERNAL)
+            runCurrent()
+            assertThat(canShowAlternateBouncer).isFalse()
+        }
 
     @Test
     fun alternateBouncerSupported_udfps_true() =
