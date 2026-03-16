@@ -1742,12 +1742,11 @@ public class AdbDebuggingManager {
                 mFingerprints);
 
         try {
-            File userKeys = new File("/data/misc/adb/adb_keys");
-            if (userKeys.exists()) {
+            if (mUserKeyFile != null && mUserKeyFile.exists()) {
                 dump.write(
                         "user_keys",
                         AdbDebuggingManagerProto.USER_KEYS,
-                        FileUtils.readTextFile(userKeys, 0, null));
+                        FileUtils.readTextFile(mUserKeyFile, 0, null));
             } else {
                 Slog.i(TAG, "No user keys on this device");
             }
@@ -1756,19 +1755,28 @@ public class AdbDebuggingManager {
         }
 
         try {
-            dump.write(
-                    "system_keys",
-                    AdbDebuggingManagerProto.SYSTEM_KEYS,
-                    FileUtils.readTextFile(new File("/adb_keys"), 0, null));
+            File systemKeys = new File("/adb_keys");
+            if (systemKeys.exists()) {
+                dump.write(
+                        "system_keys",
+                        AdbDebuggingManagerProto.SYSTEM_KEYS,
+                        FileUtils.readTextFile(systemKeys, 0, null));
+            } else {
+                Slog.i(TAG, "No system keys on this device");
+            }
         } catch (IOException e) {
             Slog.i(TAG, "Cannot read system keys", e);
         }
 
         try {
-            dump.write(
-                    "keystore",
-                    AdbDebuggingManagerProto.KEYSTORE,
-                    FileUtils.readTextFile(mTempKeysFile, 0, null));
+            if (mTempKeysFile != null && mTempKeysFile.exists()) {
+                dump.write(
+                        "keystore",
+                        AdbDebuggingManagerProto.KEYSTORE,
+                        FileUtils.readTextFile(mTempKeysFile, 0, null));
+            } else {
+                Slog.i(TAG, "No keystore on this device");
+            }
         } catch (IOException e) {
             Slog.i(TAG, "Cannot read keystore: ", e);
         }
