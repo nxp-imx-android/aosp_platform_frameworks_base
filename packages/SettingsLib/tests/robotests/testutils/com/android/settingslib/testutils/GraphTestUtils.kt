@@ -161,7 +161,10 @@ object GraphTestUtils {
             coroutineScope: CoroutineScope
         ): PreferenceHierarchy = preferenceHierarchy(context) {
             for (preference in screenConfig.preferences) {
-                +preference
+                // use string syntax for screens since that is the common one
+                if(preference is PreferenceScreenMetadata)
+                    +(preference.key)
+                else +preference
             }
             addCategories(screenConfig.preferencesInCategories, screenConfig.purpose)
         }
@@ -183,7 +186,9 @@ object GraphTestUtils {
         for (category in categories) {
             +PreferenceCategory(category.key, purpose, 0) += {
                 for (preference in category.preferences) {
-                    +preference
+                    if(preference is PreferenceScreenMetadata)
+                        +(preference.key)
+                    else +preference
                 }
                 addCategories(category.innerCategories, purpose)
             }

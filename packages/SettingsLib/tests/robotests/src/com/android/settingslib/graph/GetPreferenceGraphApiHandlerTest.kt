@@ -336,7 +336,7 @@ class GetPreferenceGraphApiHandlerTest {
                 sensitivityLevel = SensitivityLevel.NO_SENSITIVITY
             )
         )
-        setRegistryFactories(outerNoSensitivityScreen)
+        setRegistryFactories(innerSensitiveScreen, outerNoSensitivityScreen)
 
         val responseProto = invokeWithFlags(
             "outer_no_sensitivity_screen_key",
@@ -387,7 +387,7 @@ class GetPreferenceGraphApiHandlerTest {
                 sensitivityLevel = SensitivityLevel.NO_SENSITIVITY
             )
         )
-        setRegistryFactories(outerNoSensitivityScreen)
+        setRegistryFactories(innerSensitiveScreen, outerNoSensitivityScreen)
 
         val responseProto = invokeWithFlags(
             "outer_no_sensitivity_screen_key",
@@ -508,7 +508,7 @@ class GetPreferenceGraphApiHandlerTest {
     }
 
     @Test
-    fun invoke_onNoSensitivityPreference_hasSummary() = runTest {
+    fun invoke_onNoSensitivityPreference_hasNoSummary() = runTest {
         setRegistryFactories(createScreen(
             PreferenceScreenConfig(
                 screenKey = "screen_key",
@@ -533,7 +533,7 @@ class GetPreferenceGraphApiHandlerTest {
         )
 
         val preferenceProto = responseProto.screensMap["screen_key"]!!.root?.preferencesList[0]?.preference
-        assertThat(preferenceProto?.summary?.resourceId).isEqualTo(R.string.preference_summary)
+        assertThat(preferenceProto?.summaryOrNull).isEqualTo(null)
     }
 
     @Test
