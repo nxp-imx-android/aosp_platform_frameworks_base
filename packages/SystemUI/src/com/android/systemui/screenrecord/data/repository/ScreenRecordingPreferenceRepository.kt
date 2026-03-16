@@ -19,6 +19,7 @@ package com.android.systemui.screenrecord.data.repository
 import android.annotation.SuppressLint
 import android.app.Service.MODE_PRIVATE
 import android.content.Context
+import android.content.SharedPreferences
 import android.provider.Settings
 import androidx.core.content.edit
 import com.android.systemui.statusbar.policy.Clock
@@ -27,7 +28,7 @@ import com.android.systemui.statusbar.policy.Clock
 // dagger graph.
 @SuppressLint("StaticSettingsProvider")
 class ScreenRecordingPreferenceRepository(
-    context: Context,
+    private val getSharedPreferences: () -> SharedPreferences,
     private val secureSettingsPutInt: (String, Int) -> Unit,
     private val secureSettingsGetInt: (String) -> Int,
     private val systemSettingsPutInt: (String, Int) -> Unit,
@@ -37,7 +38,9 @@ class ScreenRecordingPreferenceRepository(
     constructor(
         context: Context
     ) : this(
-        context = context,
+        getSharedPreferences = {
+            context.getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE)
+        },
         secureSettingsPutInt = { name, value ->
             Settings.Secure.putInt(context.contentResolver, name, value)
         },
@@ -48,9 +51,7 @@ class ScreenRecordingPreferenceRepository(
         systemSettingsGetInt = { name -> Settings.System.getInt(context.contentResolver, name, 0) },
     )
 
-    private val sharedPreferences by lazy {
-        context.getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE)
-    }
+    private val sharedPreferences by lazy { getSharedPreferences() }
 
     fun setShouldShowTaps(showTaps: Boolean) {
         val originalShowTapsSetting = getShowTaps()
