@@ -1985,8 +1985,7 @@ public class WindowManagerService extends IWindowManager.Stub
             // screenshot windows, we could miss the chance to set correct z-orders on layers
             // without any synchronization (b/476223353).
             final boolean isScreenshotWindow =
-                    Flags.useTransitionForScreenshotWindowAdditions()
-                            && win.mAttrs.type == WindowManager.LayoutParams.TYPE_SCREENSHOT;
+                            win.mAttrs.type == WindowManager.LayoutParams.TYPE_SCREENSHOT;
             if (isPresentationWindow || isScreenshotWindow) {
                 final ActionChain chain = mAtmService.mChainTracker.startTransit("addWin");
                 final boolean wasTransitionOnDisplay = chain.isCollectingOnDisplay(displayContent);
