@@ -483,7 +483,7 @@ interface ITelephony {
     /**
      * Returns the voice network type of a subId
      * @param subId user preferred subId.
-     * @param callingPackage package making the call.getLteOnCdmaMode
+     * @param callingPackage package making the call.
      * @param callingFeatureId The feature in the package.
      * Returns the network type
      */
