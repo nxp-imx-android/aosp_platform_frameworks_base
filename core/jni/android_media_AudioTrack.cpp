@@ -107,7 +107,7 @@ class AudioTrackCallbackImpl : public AudioTrack::IAudioTrackCallback {
           LOG_FATAL("Received canWrite callback for non-offload track");
           return 0;
       }
-      const size_t availableForWrite = buffer.size();
+      const size_t availableForWrite = buffer.frameCount;
       const int arg = availableForWrite > INT32_MAX ? INT32_MAX : (int) availableForWrite;
       postEvent(EVENT_CAN_WRITE_MORE_DATA, arg);
       return 0;
