@@ -145,7 +145,6 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -3114,12 +3113,10 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             try {
                 Context context = mContext.createPackageContextAsUser(
                         callingPackage, 0, UserHandle.SYSTEM);
-                try (InputStream is = WallpaperManager.openRawDefaultWallpaper(context, which)) {
-                    if (is != null) {
-                        // TODO: b/491138113 - Implement cropping.
-                        FileUtils.copyToFile(is, cropFile);
-                    }
-                }
+                Slog.i(TAG, "getCroppedDefaultWallpaper: cropping for resolution "
+                        + maxSide + "x" + maxSide);
+                mWallpaperCropper.generateDefaultWallpaperCrop(context, cropFile, which,
+                        maxSide, maxSide);
                 SELinux.restorecon(cropFile);
 
                 return ParcelFileDescriptor.open(cropFile, MODE_READ_ONLY);
