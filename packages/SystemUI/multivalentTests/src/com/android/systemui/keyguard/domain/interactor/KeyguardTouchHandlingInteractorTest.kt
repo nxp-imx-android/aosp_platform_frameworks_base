@@ -18,6 +18,7 @@
 package com.android.systemui.keyguard.domain.interactor
 
 import android.content.Intent
+import android.graphics.Point
 import android.os.PowerManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -40,6 +41,8 @@ import com.android.systemui.keyguard.data.repository.KeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
+import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.res.R
@@ -433,6 +436,21 @@ class KeyguardTouchHandlingInteractorTest : SysuiTestCase() {
             verify(powerManager, never()).goToSleep(anyLong())
         }
     }
+
+    @Test
+    @EnableSceneContainer
+    fun onClick_setsLastRootViewTapPosition() =
+        kosmos.runTest {
+            val lastRootViewTapPosition by
+                collectLastValue(keyguardRepository.lastRootViewTapPosition)
+            assertThat(lastRootViewTapPosition).isNull()
+
+            underTest.onClick(100f, 100f)
+            assertThat(lastRootViewTapPosition).isEqualTo(Point(100, 100))
+
+            underTest.onClick(200f, 100f)
+            assertThat(lastRootViewTapPosition).isEqualTo(Point(200, 100))
+        }
 
     private suspend fun createUnderTest(isRevampedWppFeatureEnabled: Boolean = true) {
         // This needs to be re-created for each test outside of kosmos since the flag values are
