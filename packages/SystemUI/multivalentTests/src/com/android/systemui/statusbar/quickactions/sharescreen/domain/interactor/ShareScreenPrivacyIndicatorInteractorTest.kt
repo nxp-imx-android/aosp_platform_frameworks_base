@@ -188,6 +188,24 @@ class ShareScreenPrivacyIndicatorInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    fun isChipVisible_systemUIHostPackage_false() =
+        kosmos.runTest {
+            val isChipVisible by collectLastValue(underTest.isChipVisible)
+
+            // Simulate media projection starting where SystemUI is the host (e.g. recording)
+            kosmos.fakeMediaProjectionRepository.mediaProjectionState.value =
+                MediaProjectionState.Projecting.EntireScreen(
+                    hostPackage = context.packageName,
+                    hostDeviceName = null,
+                )
+
+            // Even if recording state is DoingNothing (the "ghost" state),
+            // the chip should be hidden because it's hosted by SystemUI.
+            kosmos.screenRecordRepository.screenRecordState.value = ScreenRecordModel.DoingNothing
+            assertThat(isChipVisible).isFalse()
+        }
+
+    @Test
     fun isChipVisible_whileCasting_false() =
         kosmos.runTest {
             val isChipVisible by collectLastValue(underTest.isChipVisible)

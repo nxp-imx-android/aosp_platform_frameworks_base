@@ -73,15 +73,25 @@ constructor(
                 mediaProjectionRepository.mediaProjectionState,
                 screenRecordRepository.screenRecordState,
             ) { projectionState, recordState ->
+                if (projectionState !is MediaProjectionState.Projecting) {
+                    return@combine false
+                }
+
                 val isRecording = recordState is ScreenRecordModel.Recording
-                // We identify "sharing" by excluding "recording" and "casting" from general
-                // media projection.
-                (projectionState is MediaProjectionState.Projecting) &&
-                    !isRecording &&
-                    !MediaProjectionUtils.packageHasCastingCapabilities(
-                        packageManager,
-                        projectionState.hostPackage,
-                    )
+                // TODO(b/493642399) Thinking about remove this once the race condition being
+                // resolved at [ScreenRecordingService].
+                val hostPackage = projectionState.hostPackage
+                // The Screen Recorder (SystemUI) manages its own indicators and UX.
+                // We explicitly exclude any projection hosted by SystemUI to prevent the
+                // generic "Share Screen" indicator from appearing during or after a
+                // recording session, avoiding "ghost" indicators during teardown.
+                val isSystemUIProjection = hostPackage == context.packageName
+
+                // We identify "sharing" by excluding "recording", "casting", and
+                // any system-internal projections.
+                !isRecording &&
+                    !isSystemUIProjection &&
+                    !MediaProjectionUtils.packageHasCastingCapabilities(packageManager, hostPackage)
             }
             .stateIn(
                 scope = scope,

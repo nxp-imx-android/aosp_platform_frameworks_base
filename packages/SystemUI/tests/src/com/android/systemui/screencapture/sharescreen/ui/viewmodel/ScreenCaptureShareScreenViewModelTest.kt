@@ -564,7 +564,7 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
 
             kosmos.fakeMediaProjectionRepository.mediaProjectionState.value =
                 MediaProjectionState.Projecting.SingleTask(
-                    hostPackage = context.packageName,
+                    hostPackage = "FakeBasePackage",
                     hostDeviceName = null,
                     task = mock(),
                 )
