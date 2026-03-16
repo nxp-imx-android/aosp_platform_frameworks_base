@@ -20,6 +20,7 @@ import android.content.Context
 import androidx.annotation.StringRes
 import com.android.settingslib.metadata.preferencesapi.resolveString
 import kotlin.reflect.KClass
+import com.android.settingslib.metadata.preferencesapi.safe
 
 inline fun <reified T, E> CustomEnum(
     enumClass: KClass<E>,
@@ -72,7 +73,7 @@ class CustomEnum<EnumType, ExternalType> constructor (
             // This case is unreachable because of the init block check
             else -> error("Enum entry does not implement EnumApiWithString or EnumApiWithRes.")
         }
-        entry.asApiValue to purposeString
+        entry.asApiValue.safe() to purposeString.safe()
     }.toList()
 
     override fun getDescription(context: Context): String = resolveString(context, descriptionRes, description)
