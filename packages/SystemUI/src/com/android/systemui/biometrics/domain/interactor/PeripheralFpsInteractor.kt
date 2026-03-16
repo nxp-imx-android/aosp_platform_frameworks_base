@@ -22,6 +22,7 @@ import android.util.Log
 import com.android.systemui.Flags
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.display.domain.interactor.DisplayTypeInteractor
 import com.android.systemui.shade.ShadeDisplayAware
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -35,12 +36,23 @@ class PeripheralFpsInteractor
 constructor(
     @ShadeDisplayAware val configurationInteractor: ConfigurationInteractor,
     val fingerprintPropertyInteractor: FingerprintPropertyInteractor,
+    @ShadeDisplayAware val displayTypeInteractor: DisplayTypeInteractor,
 ) {
-    /** Whether fingerprint sensor location is peripheral, i.e. does not have display location. */
+    /**
+     * Whether fingerprint sensor location is peripheral, i.e. does not have display location. This
+     * includes cases when:
+     * - Sensor is of peripheral type.
+     * - Lock screen is showing on non-internal display (for any sensor type).
+     */
     val isSupported: Flow<Boolean>
         get() =
             if (Flags.standaloneFingerprintLockScreenUxFix()) {
-                fingerprintPropertyInteractor.isPeripheralFps
+                combine(
+                    fingerprintPropertyInteractor.isPeripheralFps,
+                    displayTypeInteractor.isInternalDisplay,
+                ) { isPeripheralFps, isInternalDisplay ->
+                    isPeripheralFps || !isInternalDisplay
+                }
             } else {
                 flowOf(false)
             }

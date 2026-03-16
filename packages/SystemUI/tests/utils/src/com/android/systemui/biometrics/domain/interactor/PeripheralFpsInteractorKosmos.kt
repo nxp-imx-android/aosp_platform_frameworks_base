@@ -17,6 +17,7 @@
 package com.android.systemui.biometrics.domain.interactor
 
 import com.android.systemui.common.ui.domain.interactor.configurationInteractor
+import com.android.systemui.display.domain.interactor.shadeDisplayTypeInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 
@@ -24,5 +25,6 @@ val Kosmos.peripheralFpsInteractor by Fixture {
     PeripheralFpsInteractor(
         configurationInteractor = configurationInteractor,
         fingerprintPropertyInteractor = fingerprintPropertyInteractor,
+        displayTypeInteractor = shadeDisplayTypeInteractor,
     )
 }
