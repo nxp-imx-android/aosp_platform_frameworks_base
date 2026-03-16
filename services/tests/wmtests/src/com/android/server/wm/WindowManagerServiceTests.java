@@ -777,7 +777,6 @@ public class WindowManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_USE_TRANSITION_FOR_SCREENSHOT_WINDOW_ADDITIONS)
     public void testScreenshotOverlayIsBehindAccessibilityOverlay_AddedWhenPlayingTransition() {
         TestTransitionPlayer player = registerTestTransitionPlayer();
 

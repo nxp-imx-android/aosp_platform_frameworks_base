@@ -446,16 +446,6 @@ flag {
 }
 
 flag {
-    name: "use_transition_for_screenshot_window_additions"
-    namespace: "web_apps_on_chromeos_and_android"
-    description: "Use shell transitions to synchronize screenshot window additions."
-    bug: "476223353"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "send_new_insets_state_with_rotation"
     namespace: "windowing_frontend"
     description: "Send the new InsetsState to the shell when the display rotates"
