@@ -466,7 +466,7 @@ constructor(
     }
 
     override fun onStatusBarLongPressed() {
-        shadeInteractor.expandQuickSettingsShade(
+        shadeInteractor.expandNotificationsShade(
             loggingReason = "HomeStatusBarViewModel.onStatusBarLongPressed"
         )
     }

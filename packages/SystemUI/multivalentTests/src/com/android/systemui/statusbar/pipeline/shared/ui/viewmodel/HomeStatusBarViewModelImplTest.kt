@@ -1413,11 +1413,11 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
             enableDualShade()
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
 
-            assertThat(currentOverlays).doesNotContain(Overlays.QuickSettingsShade)
+            assertThat(currentOverlays).doesNotContain(Overlays.NotificationsShade)
 
             underTest.onStatusBarLongPressed()
 
-            assertThat(currentOverlays).contains(Overlays.QuickSettingsShade)
+            assertThat(currentOverlays).contains(Overlays.NotificationsShade)
         }
 
     @Test
