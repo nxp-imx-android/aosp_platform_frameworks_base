@@ -179,6 +179,90 @@ object GraphTestUtils {
         override val sensitivityLevel = screenConfig.sensitivityLevel
     }
 
+    /**
+     * Creates a screen that is also a PersistentPreference.
+     */
+    fun <T : Any> createMagicScreen(
+        persistentPreferenceConfig: PersistentPreferenceConfig,
+        preferences: List<PreferenceMetadata>
+    ) : PreferenceScreenMetadata = object : PreferenceScreenMetadata, PersistentPreference<T>,
+        PreferenceAvailabilityProvider, PreferenceRestrictionProvider {
+
+        override fun fragmentClass(): Class<out Fragment>? = null
+        override fun getPreferenceHierarchy(
+            context: Context,
+            coroutineScope: CoroutineScope
+        ): PreferenceHierarchy = preferenceHierarchy(context) {
+            for (preference in preferences) {
+                if(preference is PreferenceScreenMetadata)
+                    +(preference.key)
+                else +preference
+            }
+        }
+
+        override val key: String
+            get() = persistentPreferenceConfig.preferenceConfig.key
+
+        override val purpose: Int
+            get() = persistentPreferenceConfig.preferenceConfig.purpose
+
+        @Suppress("UNCHECKED_CAST")
+        override val valueType: Class<T>
+            get() = persistentPreferenceConfig.valueType as Class<T>
+
+        override val summary: Int
+            get() = persistentPreferenceConfig.preferenceConfig.summary
+
+        override fun storage(context: Context) = persistentPreferenceConfig.storage
+
+        override val sensitivityLevel = persistentPreferenceConfig.preferenceConfig.sensitivityLevel
+
+        override fun getReadPermit(
+            context: Context,
+            callingPid: Int,
+            callingUid: Int
+        ): @ReadWritePermit Int =
+            persistentPreferenceConfig.readPermit
+
+        override fun getReadPermissions(context: Context): Permissions? =
+            persistentPreferenceConfig.readPermission?.let {
+                Permissions.allOf(it)
+            }
+
+        override fun getWritePermit(
+            context: Context,
+            callingPid: Int,
+            callingUid: Int
+        ): @ReadWritePermit Int? =
+            if (!persistentPreferenceConfig.throwsError)
+                persistentPreferenceConfig.writePermit
+            else error("Write permit failed")
+
+        override val supportsWrite = true
+
+        override fun getWritePermissions(context: Context) =
+            persistentPreferenceConfig.writePermission?.let {
+                Permissions.allOf(it)
+            }
+
+        override val availabilityDescription: String = "availability description"
+
+        override fun isAvailable(context: Context): Boolean =
+            persistentPreferenceConfig.preferenceConfig.isAvailable
+
+        override fun isRestricted(context: Context): Boolean =
+            persistentPreferenceConfig.preferenceConfig.isRestricted
+
+        override fun isEnabled(context: Context): Boolean =
+            persistentPreferenceConfig.preferenceConfig.isEnabled
+
+        override fun tags(context: Context): Array<String> =
+            if (persistentPreferenceConfig.preferenceConfig.isUiOnly)
+                arrayOf(UI_ONLY_PREFERENCE)
+            else arrayOf()
+    }
+
+
     private fun PreferenceHierarchy.addCategories(
         categories: List<PreferenceCategoryConfig>,
         purpose: Int,
