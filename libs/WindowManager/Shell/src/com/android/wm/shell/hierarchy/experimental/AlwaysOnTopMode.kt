@@ -18,7 +18,6 @@ package com.android.wm.shell.hierarchy.experimental
 
 import android.app.ActivityOptions
 import android.app.WindowConfiguration
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
@@ -37,6 +36,8 @@ import com.android.wm.shell.hierarchy.utils.HierarchyUtils
 import java.io.PrintWriter
 import kotlin.collections.set
 
+import com.android.wm.shell.hierarchy.modes.handheld.HandheldModeRequester
+
 /**
  * An example mode implementation for a non-trivial windowing feature.
  *
@@ -45,6 +46,7 @@ import kotlin.collections.set
 class AlwaysOnTopMode(
     private val appContext: Context,
     private val hierarchy: ContainerHierarchy,
+    private val modeRequester: HandheldModeRequester,
 ) : Mode {
     private val rootsPerDisplay = mutableMapOf<Int, Container>()
     private val overlays = mutableMapOf<WindowContainerToken, ViewOverlayContainer>()

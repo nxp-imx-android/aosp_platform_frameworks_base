@@ -18,15 +18,12 @@ package com.android.wm.shell.hierarchy.experimental
 
 import android.app.ActivityOptions
 import android.app.WindowConfiguration
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.RectF
-import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.view.WindowManager.LayoutParams.TYPE_APPLICATION
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.widget.FrameLayout
 import android.window.TaskCreationParams
@@ -42,6 +39,8 @@ import com.android.wm.shell.hierarchy.properties.RootContainerProperties
 import com.android.wm.shell.hierarchy.utils.HierarchyUtils
 import java.io.PrintWriter
 
+import com.android.wm.shell.hierarchy.modes.handheld.HandheldModeRequester
+
 /**
  * An example mode implementation for a non-trivial windowing feature.
  *
@@ -51,6 +50,7 @@ import java.io.PrintWriter
 class MultiContainerMode(
     private val appContext: Context,
     private val hierarchy: ContainerHierarchy,
+    private val modeRequester: HandheldModeRequester,
 ) : Mode {
     private val rootsPerDisplay = mutableMapOf<Int, Container>()
     private val rootChildren = mutableMapOf<Container, MutableList<Container>>()
