@@ -27,7 +27,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
-import com.android.systemui.Flags
 import com.android.systemui.statusbar.chips.ui.model.Chronometer
 import com.android.systemui.util.time.SystemClock
 import java.time.Duration
@@ -60,8 +59,6 @@ class ChronometerState(
     private val formatter: Formatter = Formatter.Chronometer,
     val chronometer: Chronometer,
 ) {
-    private val areChronometerFixesEnabled = Flags.statusBarChronometerFixes()
-
     /** "Current" value of [SystemClock.elapsedRealtime]. Updated by [run]. */
     private var elapsedRealtimeMillis by mutableLongStateOf(timeSource.elapsedRealtime())
 
@@ -82,20 +79,16 @@ class ChronometerState(
             null
         } else {
             // LINT.IfChange
-            if (areChronometerFixesEnabled) {
-                // This should exactly match the implementation in the framework Chronometer.java.
-                val adjustedMillis =
-                    if (chronometer.isCountdown) {
-                        // Ensure countdown chronometers round down. (e.g. 999ms shows 00:00).
-                        elapsedTimeMillis - 499
-                    } else {
-                        elapsedTimeMillis
-                    }
-                val seconds = (adjustedMillis / 1000f).roundToLong()
-                formatter.format(Duration.ofSeconds(seconds))
-            } else {
-                formatter.format(Duration.ofSeconds(elapsedTimeMillis / 1000))
-            }
+            // This should exactly match the implementation in the framework Chronometer.java.
+            val adjustedMillis =
+                if (chronometer.isCountdown) {
+                    // Ensure countdown chronometers round down. (e.g. 999ms shows 00:00).
+                    elapsedTimeMillis - 499
+                } else {
+                    elapsedTimeMillis
+                }
+            val seconds = (adjustedMillis / 1000f).roundToLong()
+            formatter.format(Duration.ofSeconds(seconds))
             // LINT.ThenChange(/core/java/android/widget/Chronometer.java)
         }
     }
@@ -111,28 +104,23 @@ class ChronometerState(
             elapsedRealtimeMillis = timeSource.elapsedRealtime()
             val currentValue = currentValue()
 
-            if (areChronometerFixesEnabled) {
-                // This should exactly match the implementation in the framework Chronometer.java.
-                val periodInMillis = formatter.updatePeriod(currentValue).toMillis()
-                val delayMillis =
-                    if (chronometer.isCountdown) {
-                        val delay = currentValue.toMillis() % periodInMillis
-                        if (delay <= 0) {
-                            delay + periodInMillis
-                        } else {
-                            delay
-                        }
+            // This should exactly match the implementation in the framework Chronometer.java.
+            val periodInMillis = formatter.updatePeriod(currentValue).toMillis()
+            val delayMillis =
+                if (chronometer.isCountdown) {
+                    val delay = currentValue.toMillis() % periodInMillis
+                    if (delay <= 0) {
+                        delay + periodInMillis
                     } else {
-                        periodInMillis - (currentValue.toMillis().absoluteValue % periodInMillis)
+                        delay
                     }
+                } else {
+                    periodInMillis - (currentValue.toMillis().absoluteValue % periodInMillis)
+                }
 
-                // Aim for 3 milliseconds into the next second so we don't update exactly on the
-                // second.
-                delay(delayMillis + 3)
-            } else {
-                val delaySkewMillis = currentValue.toMillis().absoluteValue % 1000L
-                delay(1000L - delaySkewMillis)
-            }
+            // Aim for 3 milliseconds into the next second so we don't update exactly on the
+            // second.
+            delay(delayMillis + 3)
         }
         // LINT.ThenChange(/core/java/android/widget/Chronometer.java)
     }
