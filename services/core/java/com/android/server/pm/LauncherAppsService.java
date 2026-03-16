@@ -2428,6 +2428,14 @@ public class LauncherAppsService extends SystemService {
             }
         }
 
+        @VisibleForTesting
+        void unregisterSettingsObserver() {
+            if (mSecureSettingsObserver != null) {
+                mSecureSettingsObserver.unregister();
+                mSecureSettingsObserver = null;
+            }
+        }
+
         public static class ShortcutChangeHandler implements LauncherApps.ShortcutChangeCallback {
             private final UserManagerInternal mUserManagerInternal;
 
