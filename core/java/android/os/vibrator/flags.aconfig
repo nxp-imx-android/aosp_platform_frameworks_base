@@ -85,3 +85,13 @@ flag {
         purpose: PURPOSE_FEATURE
     }
 }
+
+flag {
+    namespace: "haptics"
+    name: "keyboard_intensity_slider_enabled"
+    description: "Enables keyboard vibration intensity slider."
+    bug: "475731062"
+    metadata {
+        purpose: PURPOSE_FEATURE
+    }
+}
