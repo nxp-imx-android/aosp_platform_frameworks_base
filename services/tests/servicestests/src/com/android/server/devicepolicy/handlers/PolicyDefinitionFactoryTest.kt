@@ -132,4 +132,19 @@ open class PolicyDefinitionFactoryTest {
                 "}"
         assertThat(policyDefinition.getResolutionMechanism().toString()).isEqualTo(expected)
     }
+
+    @Test
+    fun getPolicyDefinition_resolutionMechanism_notCoexistable() {
+        val metadata =
+            EnumPolicy.metadata.copy(
+                resolutionMechanism =
+                    ResolutionMechanismMetadata.NotCoexistable(),
+            )
+
+        val policyDefinition = createPolicyDefinition(metadata)
+
+        val expected =
+            "LeastRecent {}"
+        assertThat(policyDefinition.getResolutionMechanism().toString()).isEqualTo(expected)
+    }
 }

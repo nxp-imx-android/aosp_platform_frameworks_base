@@ -47,6 +47,7 @@ import androidx.annotation.VisibleForTesting;
 
 import com.android.server.devicepolicy.EnforcingAdmin;
 import com.android.server.devicepolicy.IntegerPolicySerializer;
+import com.android.server.devicepolicy.LeastRecent;
 import com.android.server.devicepolicy.ListOfStringPolicySerializer;
 import com.android.server.devicepolicy.MostRecent;
 import com.android.server.devicepolicy.MostRestrictive;
@@ -290,6 +291,7 @@ public class PolicyDefinitionFactory {
             return switch (input) {
                 case ResolutionMechanismMetadata.MostRestrictive m ->
                         new MostRestrictive<T>(convertValues(m.getMostToLeastRestrictiveValues()));
+                case ResolutionMechanismMetadata.NotCoexistable n -> new LeastRecent<T>();
                 default ->
                         throw new UnsupportedOperationException(
                                 "Unsupported resolution mechanism: " + input.getClass());

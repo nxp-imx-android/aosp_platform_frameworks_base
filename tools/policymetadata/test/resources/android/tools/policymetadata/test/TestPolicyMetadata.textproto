@@ -481,3 +481,56 @@ policy_metadata {
   allowed_scopes: POLICY_SCOPE_USER
   affected_resource: RESOURCE_DEVICE_WIDE
 }
+policy_metadata {
+  identifier {
+    field_name: "NOT_COEXISTANT_ENUM_POLICY"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Integer"
+    package_name: "java.lang"
+  }
+  documentation: "Enum policy with notCoexistable resolution mechanism. "
+  type_specific_metadata {
+    enum_metadata {
+      default_value: 1
+      int_def_name: "android.app.admin.PolicyIdentifier.SimpleEnumPolicyEnum"
+      documentation: "Enum for {@link SIMPLE_ENUM_POLICY}\n\n@hide"
+      values {
+        field_name {
+          field_name: "ENUM_ENTRY_1"
+          class_name: "PolicyIdentifier"
+          package_name: "android.app.admin"
+        }
+        documentation: "First entry "
+      }
+      values {
+        field_name {
+          field_name: "ENUM_ENTRY_2"
+          class_name: "PolicyIdentifier"
+          package_name: "android.app.admin"
+        }
+        int_value: 1
+        documentation: "Second entry "
+      }
+      values {
+        field_name {
+          field_name: "ENUM_ENTRY_3"
+          class_name: "PolicyIdentifier"
+          package_name: "android.app.admin"
+        }
+        int_value: 2
+        documentation: "Third entry "
+      }
+      resolution_mechanism {
+        not_coexistable: true
+      }
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_DEVICE
+  allowed_scopes: POLICY_SCOPE_PARENT_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+  required_permission: "android.permission.MANAGE_POLICY_SIMPLE_ENUM"
+  required_cross_user_permission: "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS"
+}
