@@ -528,7 +528,7 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
             DesktopModeVisualIndicator.useSmallTabletRegions(
                 fakeDesktopState,
                 displayController,
-                taskInfo.displayId,
+                taskInfo,
             )
         )
     }
@@ -543,7 +543,7 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
             DesktopModeVisualIndicator.useSmallTabletRegions(
                 fakeDesktopState,
                 displayController,
-                taskInfo.displayId,
+                taskInfo,
             )
         )
     }
@@ -558,7 +558,7 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
             DesktopModeVisualIndicator.useSmallTabletRegions(
                 fakeDesktopState,
                 displayController,
-                taskInfo.displayId,
+                taskInfo,
             )
         )
     }
@@ -583,7 +583,6 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
                 snapEventHandler,
                 isSmallTablet,
                 isLeftRightSplit,
-                taskInfo.displayId,
             )
     }
 

@@ -6194,16 +6194,11 @@ class DesktopTasksController(
         snapController.removeTaskIfTiled(taskInfo.displayId, taskInfo.taskId)
 
         val indicator =
-            getOrCreateVisualIndicator(
-                taskInfo,
-                taskSurface,
-                displayId,
-                DragStartState.FROM_FREEFORM,
-            )
+            getOrCreateVisualIndicator(taskInfo, taskSurface, DragStartState.FROM_FREEFORM)
         val indicatorType =
             indicator.calculateIndicatorType(displayId, PointF(inputX, taskBounds.top.toFloat()))
         visualIndicatorUpdateScheduler.schedule(
-            displayId,
+            taskInfo.displayId,
             indicatorType,
             inputX,
             inputY,
@@ -6220,7 +6215,7 @@ class DesktopTasksController(
         taskTop: Float,
         dragStartState: DragStartState,
     ): IndicatorType {
-        return getOrCreateVisualIndicator(taskInfo, taskSurface, displayId, dragStartState)
+        return getOrCreateVisualIndicator(taskInfo, taskSurface, dragStartState)
             .updateIndicatorType(displayId, PointF(inputX, taskTop))
     }
 
@@ -6232,7 +6227,6 @@ class DesktopTasksController(
     fun getOrCreateVisualIndicator(
         taskInfo: RunningTaskInfo,
         taskSurface: SurfaceControl?,
-        displayId: Int,
         dragStartState: DragStartState,
     ): DesktopModeVisualIndicator {
         // If the visual indicator has the wrong start state, it was never cleared from a previous
@@ -6251,7 +6245,7 @@ class DesktopTasksController(
                     taskInfo,
                     displayController,
                     if (ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY.isTrue) {
-                        displayController.getDisplayContext(displayId)
+                        displayController.getDisplayContext(taskInfo.displayId)
                     } else {
                         context
                     },
@@ -6260,7 +6254,6 @@ class DesktopTasksController(
                     dragStartState,
                     bubbleController.getOrNull()?.bubbleDropTargetBoundsProvider,
                     snapController,
-                    displayId,
                 )
         if (visualIndicator == null) visualIndicator = indicator
         return indicator

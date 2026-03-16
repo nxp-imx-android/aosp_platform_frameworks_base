@@ -155,8 +155,6 @@ constructor(
             val t = SurfaceControl.Transaction()
             t.show(indicatorLeash)
             // We want this indicator to be behind the dragged task, but in front of all others.
-            // TODO(411292927): If the indicator is on a different display, this relative layer
-            // might not work as expected, but we'll address that in the functional CL.
             t.setRelativeLayer(indicatorLeash, taskSurface, -1)
             syncQueue.runInSync { transaction: SurfaceControl.Transaction ->
                 transaction.merge(t)
@@ -176,31 +174,31 @@ constructor(
      */
     @ShellMainThread
     fun transitionIndicator(
-        displayId: Int,
+        taskInfo: ActivityManager.RunningTaskInfo,
         displayController: DisplayController,
         currentType: IndicatorType,
         newType: IndicatorType,
     ) {
         if (currentType == newType || isReleased) return
         desktopExecutor.execute {
-            val layout = displayController.getDisplayLayout(displayId)
+            val layout = displayController.getDisplayLayout(taskInfo.displayId)
             if (layout == null) {
                 ProtoLog.w(
                     WM_SHELL_DESKTOP_MODE,
-                    "%s: null display layout for displayId=%d",
+                    "%s: null display layout for task=%d",
                     TAG,
-                    displayId,
+                    taskInfo.taskId,
                 )
                 return@execute
             }
             if (currentType == IndicatorType.NO_INDICATOR) {
-                fadeInIndicatorInternal(layout, newType, displayId, snapEventHandler)
+                fadeInIndicatorInternal(layout, newType, taskInfo.displayId, snapEventHandler)
             } else if (newType == IndicatorType.NO_INDICATOR) {
                 fadeOutIndicator(
                     layout,
                     currentType,
                     /* finishCallback= */ null,
-                    displayId,
+                    taskInfo.displayId,
                     snapEventHandler,
                 )
             } else {
@@ -213,7 +211,7 @@ constructor(
                         animStartType,
                         newType,
                         bubbleBoundsProvider,
-                        displayId,
+                        taskInfo.displayId,
                         snapEventHandler,
                     )
                 if (BubbleFlagHelper.enableBubbleToFullscreen()) {
@@ -577,6 +575,7 @@ constructor(
                         desktopStableBounds.right -= padding
                         return desktopStableBounds
                     }
+
                     IndicatorType.TO_DESKTOP_INDICATOR -> {
                         val adjustmentPercentage = (1f - DESKTOP_MODE_INITIAL_BOUNDS_SCALE)
                         return Rect(
@@ -590,6 +589,7 @@ constructor(
                                 .toInt(),
                         )
                     }
+
                     IndicatorType.TO_SPLIT_LEFT_INDICATOR -> {
                         val currentLeftBounds = snapEventHandler.getLeftSnapBoundsIfTiled(displayId)
                         return Rect(
@@ -617,7 +617,6 @@ constructor(
                         return bubbleBoundsProvider?.getBubbleBarExpandedViewDropTargetBounds(
                             /* onLeft= */ false
                         ) ?: Rect()
-
                     else -> throw IllegalArgumentException("Invalid indicator type provided.")
                 }
             }
