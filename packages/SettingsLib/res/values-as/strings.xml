@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"ইথাৰনেট সংযোগ বিচ্ছিন্ন হৈছে।"</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"ইথাৰনেট।"</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"কল কৰা নহয়"</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"কায়িক কীব’ৰ্ড"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"কীব\'ৰ্ডৰ চানেকি বাছক"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"ডিফ’ল্ট"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"স্ক্ৰীন অন কৰাৰ নিয়ন্ত্ৰণ"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"স্ক্ৰীনখন অন কৰিবলৈ অনুমতি দিয়ক"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"এপ্‌টোক স্ক্ৰীনখন অন কৰিবলৈ অনুমতি দিয়ক। যদি অনুমতি দিয়া হয়, এপ্‌টোৱে আপোনাৰ স্পষ্ট উদ্দেশ্য অবিহনেও যিকোনো সময়তে স্ক্ৰীনখন অন কৰিব পাৰে।"</string>

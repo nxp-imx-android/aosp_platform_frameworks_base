@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"Desconectouse a Ethernet."</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"Ethernet."</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"Sen chamadas."</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"Teclado físico"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"Seleccionar deseño do teclado"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"Predeterminado"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"Control de activación da pantalla"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"Permitir activación da pantalla"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"Permite que unha aplicación active a pantalla. Se lle dás permiso, a aplicación poderá activar a pantalla en calquera momento sen que llo pidas."</string>

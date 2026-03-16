@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"ଇଥରନେଟ୍‍ ବିଚ୍ଛିନ୍ନ ହୋଇଛି।"</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"ଇଥରନେଟ୍।"</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"କୌଣସି କଲିଂ ନାହିଁ।"</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"ଫିଜିକାଲ କୀବୋର୍ଡ"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"କୀବୋର୍ଡ ଲେଆଉଟ ବାଛନ୍ତୁ"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"ଡିଫଲ୍ଟ"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"ସ୍କ୍ରିନ ଚାଲୁ କରିବା ପାଇଁ ନିୟନ୍ତ୍ରଣ"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"ସ୍କ୍ରିନକୁ ଚାଲୁ କରିବା ପାଇଁ ଅନୁମତି ଦିଅନ୍ତୁ"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"ସ୍କ୍ରିନକୁ ଚାଲୁ କରିବା ପାଇଁ ଏକ ଆପକୁ ଅନୁମତି ଦିଅନ୍ତୁ। ଯଦି ଅନୁମତି ଦିଆଯାଏ, ତେବେ ଆପଟି ଆପଣଙ୍କ ଏକ୍ସପ୍ଲିସିଟ ଇଣ୍ଟେଣ୍ଟ ବିନା ଯେ କୌଣସି ସମୟରେ ସ୍କ୍ରିନକୁ ଚାଲୁ କରିପାରେ।"</string>

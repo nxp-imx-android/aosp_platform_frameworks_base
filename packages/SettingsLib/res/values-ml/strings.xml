@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"ഇതർനെറ്റ് വിച്ഛേദിച്ചു."</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"ഇതർനെറ്റ്."</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"വോയ്‌സ് കോൾ ലഭ്യമല്ല."</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"ഫിസിക്കൽ കീബോർഡ്"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"കീബോർഡ് ലേഔട്ട് തിരഞ്ഞെടുക്കുക"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"ഡിഫോൾട്ട്"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"സ്‌ക്രീൻ ഓണാക്കാനുള്ള നിയന്ത്രണം"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"സ്ക്രീൻ ഓണാക്കാൻ അനുവദിക്കുക"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"സ്ക്രീൻ ഓണാക്കാൻ ആപ്പിനെ അനുവദിക്കുക. അനുവദിക്കുകയാണെങ്കിൽ, നിങ്ങളുടെ താൽപ്പര്യം കൂടാതെ ഏതുസമയത്തും സ്ക്രീൻ ഓണാക്കാൻ ആപ്പിന് കഴിയും."</string>

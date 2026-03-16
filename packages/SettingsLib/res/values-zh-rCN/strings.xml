@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"以太网已断开连接。"</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"以太网。"</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"不启用通话。"</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"实体键盘"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"选择键盘布局"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"默认"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"屏幕唤醒设置"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"允许唤醒屏幕"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"允许应用唤醒屏幕。如获授权，该应用便可在您未明确表达意愿的情况下随时唤醒屏幕。"</string>

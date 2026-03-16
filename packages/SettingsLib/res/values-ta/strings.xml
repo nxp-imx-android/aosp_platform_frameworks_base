@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"ஈத்தர்நெட் துண்டிக்கப்பட்டது."</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"ஈதர்நெட்."</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"அழைப்பை மேற்கொள்ள முடியவில்லை."</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"கீபோர்டு"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"கீபோர்டு தளவமைப்பைத் தேர்வுசெய்தல்"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"இயல்பு"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"திரையை இயக்குவதற்கான கட்டுப்பாடு"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"திரையை ஆன் செய்வதை அனுமதி"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"திரையை ஆன் செய்ய ஓர் ஆப்ஸை அனுமதிக்கவும். அனுமதித்தால், உங்கள் தலையீடு இல்லாமலே ஆப்ஸ் எப்போது வேண்டுமானாலும் திரையை ஆன் செய்யக்கூடும்."</string>

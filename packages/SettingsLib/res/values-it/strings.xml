@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"Connessione Ethernet annullata."</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"Ethernet."</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"Chiamate non disponibili."</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"Tastiera fisica"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"Scegli layout tastiera"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"Predefinito"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"Controllo di attivazione dello schermo"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"Consenti l\'attivazione dello schermo"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"Consenti a un\'app di attivare lo schermo. Se la autorizzi, l\'app può attivare lo schermo in qualsiasi momento senza la tua autorizzazione esplicita."</string>

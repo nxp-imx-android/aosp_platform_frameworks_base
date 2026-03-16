@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"Lidhja e eternetit u shkëput."</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"Eternet."</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"Telefonatat nuk ofrohen"</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"Tastiera fizike"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"Zgjidh strukturën e tastierës"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"Parazgjedhja"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"Kontrolli i aktivizimit të ekranit"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"Lejo ndezjen e ekranit"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"Lejo një aplikacion që të ndezë ekranin. Nëse lejohet, aplikacioni mund ta ndezë ekranin në çdo kohë pa synimin tënd të shprehur."</string>

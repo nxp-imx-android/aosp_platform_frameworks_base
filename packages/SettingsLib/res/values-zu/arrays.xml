@@ -223,16 +223,16 @@
   <string-array name="overlay_display_devices_entries">
     <item msgid="4497393944195787240">"Akunalutho"</item>
     <item msgid="8461943978957133391">"480p"</item>
-    <item msgid="6923083594932909205">"480p (kuphephile)"</item>
+    <item msgid="7951013832222751703">"480p (wangaphandle, uvikelekile)"</item>
     <item msgid="1226941831391497335">"720p"</item>
-    <item msgid="7051983425968643928">"720p (kuphephile)"</item>
+    <item msgid="7753610443869941984">"720p (yangaphandle, evikelekile)"</item>
     <item msgid="7765795608738980305">"1080p"</item>
-    <item msgid="8084293856795803592">"1080p (kuphephile)"</item>
+    <item msgid="780227292936715856">"1080p (ngaphandle, kuvikelekile)"</item>
     <item msgid="938784192903353277">"4K"</item>
-    <item msgid="8612549335720461635">"4K (kuphephile)"</item>
+    <item msgid="3210535805151556703">"4K (evikelekile, yangaphandle)"</item>
     <item msgid="7322156123728520872">"4K (isikali esiphezulu)"</item>
-    <item msgid="7735692090314849188">"4K (isikali esiphezulu, kuphephile)"</item>
-    <item msgid="7346816300608639624">"720p, 1080p (isikrini esihamba ngokubili)"</item>
+    <item msgid="7117474422501223109">"4K (isikali esiphezulu, sangaphandle, esivikelekile)"</item>
+    <item msgid="6450685034481873043">"720p, 1080p (isikrini esihamba ngokubili, sangaphandle, esivikelekile)"</item>
   </string-array>
   <string-array name="enable_opengl_traces_entries">
     <item msgid="4433736508877934305">"Akunalutho"</item>

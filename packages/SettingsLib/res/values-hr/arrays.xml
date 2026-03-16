@@ -223,16 +223,16 @@
   <string-array name="overlay_display_devices_entries">
     <item msgid="4497393944195787240">"Ništa"</item>
     <item msgid="8461943978957133391">"480 p"</item>
-    <item msgid="6923083594932909205">"480 p (sigurno)"</item>
+    <item msgid="7951013832222751703">"480p (vanjski, sigurno)"</item>
     <item msgid="1226941831391497335">"720 p"</item>
-    <item msgid="7051983425968643928">"720 p (sigurno)"</item>
+    <item msgid="7753610443869941984">"720p (vanjski, sigurno)"</item>
     <item msgid="7765795608738980305">"1080 p"</item>
-    <item msgid="8084293856795803592">"1080 p (sigurno)"</item>
+    <item msgid="780227292936715856">"1080p (vanjski, sigurno)"</item>
     <item msgid="938784192903353277">"4000"</item>
-    <item msgid="8612549335720461635">"4000 (sigurno)"</item>
+    <item msgid="3210535805151556703">"4K (sigurno, vanjski)"</item>
     <item msgid="7322156123728520872">"4000 (povećanje razlučivosti)"</item>
-    <item msgid="7735692090314849188">"4000 (poveć. razlučiv., sigurno)"</item>
-    <item msgid="7346816300608639624">"720 p, 1080 p (dvostruki zaslon)"</item>
+    <item msgid="7117474422501223109">"4K (povećana razlučivost, vanjski, sigurno)"</item>
+    <item msgid="6450685034481873043">"720p, 1080p (dvostruki zaslon, vanjski, sigurno)"</item>
   </string-array>
   <string-array name="enable_opengl_traces_entries">
     <item msgid="4433736508877934305">"Ništa"</item>
