@@ -81,8 +81,8 @@ public final class BundleInsight extends ContextInsight {
 
     /** @hide */
     @Override
-    public void accept(@NonNull InsightVisitor visitor) {
-        visitor.visit(this);
+    public void accept(@NonNull InsightVisitor visitor, int index) {
+        visitor.visit(this, index);
     }
 
     /** Returns the insight's data {@link Bundle}. */

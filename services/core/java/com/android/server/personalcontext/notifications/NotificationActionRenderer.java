@@ -291,7 +291,7 @@ public class NotificationActionRenderer implements Renderer {
         }
 
         @Override
-        public void visit(@NonNull ActionableInsight insight) {
+        public void visit(@NonNull ActionableInsight insight, int index) {
             final AdjustmentInfo info = getAdjustmentInfo(insight);
             if (info == null || info.isActionLimitReached()) {
                 return;
@@ -306,7 +306,7 @@ public class NotificationActionRenderer implements Renderer {
         }
 
         @Override
-        public void visit(@NonNull DisplayInsight insight) {
+        public void visit(@NonNull DisplayInsight insight, int index) {
             final AdjustmentInfo info = getAdjustmentInfo(insight);
             if (info == null || info.isReplyLimitReached()) {
                 return;
