@@ -125,7 +125,7 @@ public class DesktopModeVisualIndicator {
 
     private final Context mContext;
     private final DisplayController mDisplayController;
-    private final ActivityManager.RunningTaskInfo mTaskInfo;
+    private final int mDisplayId;
 
     private IndicatorType mCurrentType;
     private final DragStartState mDragStartState;
@@ -149,12 +149,12 @@ public class DesktopModeVisualIndicator {
             RootTaskDisplayAreaOrganizer taskDisplayAreaOrganizer,
             DragStartState dragStartState,
             @Nullable BubbleDropTargetBoundsProvider bubbleBoundsProvider,
-            SnapEventHandler snapEventHandler) {
+            SnapEventHandler snapEventHandler, int displayId) {
         this(desktopExecutor, mainExecutor, syncQueue, taskInfo, displayController, context,
                 taskSurface, taskDisplayAreaOrganizer, dragStartState, bubbleBoundsProvider,
                 snapEventHandler, useSmallTabletRegions(
-                        DesktopState.fromContext(context), displayController, taskInfo),
-                isLeftRightSplit(context, displayController, taskInfo));
+                        DesktopState.fromContext(context), displayController, displayId),
+                isLeftRightSplit(context, displayController, displayId), displayId);
     }
 
     @VisibleForTesting
@@ -168,36 +168,36 @@ public class DesktopModeVisualIndicator {
             @Nullable BubbleDropTargetBoundsProvider bubbleBoundsProvider,
             SnapEventHandler snapEventHandler,
             boolean useSmallTabletRegions,
-            boolean isLeftRightSplit) {
+            boolean isLeftRightSplit, int displayId) {
         SurfaceControl.Builder builder = new SurfaceControl.Builder();
         if (!DragStartState.isDragToDesktopStartState(dragStartState)) {
             // In the DragToDesktop transition we attach the indicator to the transition root once
             // that is available - for all other cases attach the indicator here.
-            taskDisplayAreaOrganizer.attachToDisplayArea(taskInfo.displayId, builder);
+            taskDisplayAreaOrganizer.attachToDisplayArea(displayId, builder);
         }
         mVisualIndicatorViewContainer = new VisualIndicatorViewContainer(
                 desktopExecutor,
                 mainExecutor, builder, syncQueue, bubbleBoundsProvider, snapEventHandler);
-        mTaskInfo = taskInfo;
+        mDisplayId = displayId;
         mDisplayController = displayController;
         mContext = context;
         mCurrentType = NO_INDICATOR;
         mDragStartState = dragStartState;
         mSnapEventHandler = snapEventHandler;
-        Display display = mDisplayController.getDisplay(mTaskInfo.displayId);
-        DisplayLayout displayLayout = mDisplayController.getDisplayLayout(mTaskInfo.displayId);
+        Display display = mDisplayController.getDisplay(mDisplayId);
+        DisplayLayout displayLayout = mDisplayController.getDisplayLayout(mDisplayId);
         mVisualIndicatorViewContainer.createView(
                 mContext,
                 display,
                 displayLayout,
-                mTaskInfo,
+                taskInfo,
                 taskSurface
         );
 
         mUseSmallTabletRegions = useSmallTabletRegions;
 
         if (useSmallTabletRegions) {
-            mSortedRegions = initSmallTabletRegions(displayLayout, isLeftRightSplit);
+            mSortedRegions = initSmallTabletRegions(displayLayout, isLeftRightSplit, mDisplayId);
         } else {
             // TODO(b/401596837): add support for initializing regions for large tablets
             mSortedRegions = Collections.emptyList();
@@ -206,33 +206,33 @@ public class DesktopModeVisualIndicator {
 
     @VisibleForTesting
     static boolean useSmallTabletRegions(DesktopState desktopState,
-            DisplayController displayController, ActivityManager.RunningTaskInfo taskInfo) {
+            DisplayController displayController, int displayId) {
         if (!desktopState.overridesShowAppHandle()) {
             // Small tablet regions can only be enabled only when app handle is shown
             return false;
         }
-        Display display = displayController.getDisplay(taskInfo.displayId);
-        DisplayLayout displayLayout = displayController.getDisplayLayout(taskInfo.displayId);
+        Display display = displayController.getDisplay(displayId);
+        DisplayLayout displayLayout = displayController.getDisplayLayout(displayId);
         if (displayLayout == null) return false;
         return displayLayout.pxToDp(display.getMaximumSizeDimension()) < SMALL_TABLET_MAX_EDGE_DP;
     }
 
     private static boolean isLeftRightSplit(Context context, DisplayController displayController,
-            ActivityManager.RunningTaskInfo taskInfo) {
-        DisplayLayout layout = displayController.getDisplayLayout(taskInfo.displayId);
+            int displayId) {
+        DisplayLayout layout = displayController.getDisplayLayout(displayId);
         boolean landscape = layout != null && layout.isLandscape();
         boolean leftRightSplitInPortrait = SplitScreenUtils.allowLeftRightSplitInPortrait(
                 context.getResources());
         return SplitScreenUtils.isLeftRightSplit(leftRightSplitInPortrait,
-                /* isLargeScreen= */ true, landscape, taskInfo.displayId);
+                /* isLargeScreen= */ true, landscape, displayId);
     }
 
     /** Start the fade out animation, running the callback on the main thread once it is done. */
     public void fadeOutIndicator(
             @NonNull Runnable callback) {
         mVisualIndicatorViewContainer.fadeOutIndicator(
-                mDisplayController.getDisplayLayout(mTaskInfo.displayId), mCurrentType, callback,
-                mTaskInfo.displayId, mSnapEventHandler
+                mDisplayController.getDisplayLayout(mDisplayId), mCurrentType, callback,
+                mDisplayId, mSnapEventHandler
         );
     }
 
@@ -251,8 +251,8 @@ public class DesktopModeVisualIndicator {
     void fadeInIndicator() {
         if (mCurrentType == NO_INDICATOR) return;
         mVisualIndicatorViewContainer.fadeInIndicator(
-                mDisplayController.getDisplayLayout(mTaskInfo.displayId), mCurrentType,
-                mTaskInfo.displayId);
+                mDisplayController.getDisplayLayout(mDisplayId), mCurrentType,
+                mDisplayId);
     }
 
     /**
@@ -262,7 +262,7 @@ public class DesktopModeVisualIndicator {
     @NonNull
     IndicatorType updateIndicatorType(int displayId, PointF inputCoordinates) {
         final IndicatorType result = calculateIndicatorType(displayId, inputCoordinates);
-        updateIndicatorWithType(result);
+        updateIndicatorWithType(displayId, result);
         return result;
     }
 
@@ -272,7 +272,7 @@ public class DesktopModeVisualIndicator {
      */
     @NonNull
     IndicatorType calculateIndicatorType(int displayId, PointF inputCoordinates) {
-        if (mTaskInfo.displayId != displayId) {
+        if (mDisplayId != displayId) {
             // TODO(b/411292927): Allow indicator to show on the target display (`displayId`)
             // even if it differs from the task's original display.
             return NO_INDICATOR;
@@ -281,7 +281,7 @@ public class DesktopModeVisualIndicator {
         if (mUseSmallTabletRegions) {
             result = getIndicatorSmallTablet(inputCoordinates);
         } else {
-            result = getIndicatorLargeTablet(inputCoordinates);
+            result = getIndicatorLargeTablet(displayId, inputCoordinates);
         }
         return result;
     }
@@ -290,19 +290,19 @@ public class DesktopModeVisualIndicator {
      * Update the indicator based on IndicatorType.
      */
     @NonNull
-    void updateIndicatorWithType(IndicatorType type) {
+    void updateIndicatorWithType(int displayId, IndicatorType type) {
         if (!mIsReleased && mDragStartState != DragStartState.DRAGGED_INTENT) {
             mVisualIndicatorViewContainer.transitionIndicator(
-                    mTaskInfo, mDisplayController, mCurrentType, type
+                    displayId, mDisplayController, mCurrentType, type
             );
             mCurrentType = type;
         }
     }
 
     @NonNull
-    private IndicatorType getIndicatorLargeTablet(PointF inputCoordinates) {
+    private IndicatorType getIndicatorLargeTablet(int displayId, PointF inputCoordinates) {
         // TODO(b/401596837): cache the regions to avoid recalculating on each motion event
-        final DisplayLayout layout = mDisplayController.getDisplayLayout(mTaskInfo.displayId);
+        final DisplayLayout layout = mDisplayController.getDisplayLayout(displayId);
         // If we are in freeform, we don't want a visible indicator in the "freeform" drag zone.
         // In drags not originating on a freeform caption, we should default to a TO_DESKTOP
         // indicator.
@@ -315,7 +315,7 @@ public class DesktopModeVisualIndicator {
         // account for the possibility of the task going off the top of the screen by captionHeight
         final int captionHeight = getDesktopViewAppHeaderHeightPx(mContext);
         final int transitionAreaTop = getTransitionAreaTop(captionHeight);
-        if (isSplitAllowedOnDisplay()) {
+        if (isSplitAllowedOnDisplay(displayId)) {
             // For task in DEFAULT_DISPLAY, or when NON_DEFAULT_DISPLAY_SPLIT_BUGFIX is enabled,
             // Perform a quick check first: any input off the left edge of the display should be
             // split left, and split right for the right edge. This is universal across all drag
@@ -337,19 +337,19 @@ public class DesktopModeVisualIndicator {
         if (fullscreenRegion.contains(x, y)) {
             result = TO_FULLSCREEN_INDICATOR;
         }
-        if (isSplitAllowedOnDisplay()) {
+        if (isSplitAllowedOnDisplay(displayId)) {
             if (splitLeftRegion.contains(x, y)) {
-                result = IndicatorType.TO_SPLIT_LEFT_INDICATOR;
+                result = TO_SPLIT_LEFT_INDICATOR;
             }
             if (splitRightRegion.contains(x, y)) {
-                result = IndicatorType.TO_SPLIT_RIGHT_INDICATOR;
+                result = TO_SPLIT_RIGHT_INDICATOR;
             }
         }
 
         if (BubbleFlagHelper.enableBubbleToFullscreen()
                 && mDragStartState == DragStartState.FROM_FULLSCREEN) {
             if (calculateBubbleLeftRegion(layout).contains(x, y)) {
-                result = IndicatorType.TO_BUBBLE_LEFT_INDICATOR;
+                result = TO_BUBBLE_LEFT_INDICATOR;
             } else if (calculateBubbleRightRegion(layout).contains(x, y)) {
                 result = TO_BUBBLE_RIGHT_INDICATOR;
             }
@@ -373,6 +373,13 @@ public class DesktopModeVisualIndicator {
      */
     DragStartState getDragStartState() {
         return mDragStartState;
+    }
+
+    /**
+     * Returns the target display ID of the visual indicator.
+     */
+    int getDisplayId() {
+        return mDisplayId;
     }
 
     @VisibleForTesting
@@ -448,24 +455,27 @@ public class DesktopModeVisualIndicator {
     }
 
     private List<Pair<Rect, IndicatorType>> initSmallTabletRegions(DisplayLayout layout,
-            boolean isLeftRightSplit) {
+            boolean isLeftRightSplit, int displayId) {
         return switch (mDragStartState) {
-            case FROM_FULLSCREEN -> initSmallTabletRegionsFromFullscreen(layout, isLeftRightSplit);
+            case FROM_FULLSCREEN -> initSmallTabletRegionsFromFullscreen(layout, isLeftRightSplit,
+                    displayId);
             case FROM_SPLIT -> initSmallTabletRegionsFromSplit(layout, isLeftRightSplit);
             default -> Collections.emptyList();
         };
     }
 
     private List<Pair<Rect, IndicatorType>> initSmallTabletRegionsFromFullscreen(
-            DisplayLayout layout, boolean isLeftRightSplit) {
+            DisplayLayout layout, boolean isLeftRightSplit, int displayId) {
 
         List<Pair<Rect, IndicatorType>> result = new ArrayList<>();
         if (BubbleFlagHelper.enableBubbleToFullscreen()) {
-            result.add(new Pair<>(calculateBubbleLeftRegion(layout), TO_BUBBLE_LEFT_INDICATOR));
-            result.add(new Pair<>(calculateBubbleRightRegion(layout), TO_BUBBLE_RIGHT_INDICATOR));
+            result.add(new Pair<>(calculateBubbleLeftRegion(layout),
+                    TO_BUBBLE_LEFT_INDICATOR));
+            result.add(new Pair<>(calculateBubbleRightRegion(layout),
+                    TO_BUBBLE_RIGHT_INDICATOR));
         }
 
-        if (isSplitAllowedOnDisplay() && isLeftRightSplit) {
+        if (isSplitAllowedOnDisplay(displayId) && isLeftRightSplit) {
             int splitRegionWidth = mContext.getResources().getDimensionPixelSize(
                     com.android.wm.shell.shared.R.dimen.drag_zone_h_split_from_app_width_fold);
             result.add(new Pair<>(calculateSplitLeftRegion(layout, splitRegionWidth,
@@ -489,8 +499,10 @@ public class DesktopModeVisualIndicator {
 
         List<Pair<Rect, IndicatorType>> result = new ArrayList<>();
         if (BubbleFlagHelper.enableBubbleAnything()) {
-            result.add(new Pair<>(calculateBubbleLeftRegion(layout), TO_BUBBLE_LEFT_INDICATOR));
-            result.add(new Pair<>(calculateBubbleRightRegion(layout), TO_BUBBLE_RIGHT_INDICATOR));
+            result.add(new Pair<>(calculateBubbleLeftRegion(layout),
+                    TO_BUBBLE_LEFT_INDICATOR));
+            result.add(new Pair<>(calculateBubbleRightRegion(layout),
+                    TO_BUBBLE_RIGHT_INDICATOR));
         }
 
         int splitRegionWidth = mContext.getResources().getDimensionPixelSize(
@@ -523,9 +535,9 @@ public class DesktopModeVisualIndicator {
      * @return {@code true} if split-screen is allowed on the task's current display,
      *         {@code false} otherwise.
      */
-    private boolean isSplitAllowedOnDisplay() {
-        if (mTaskInfo.getWindowingMode() == WINDOWING_MODE_FULLSCREEN) {
-            return mTaskInfo.displayId == DEFAULT_DISPLAY
+    private boolean isSplitAllowedOnDisplay(int displayId) {
+        if (mDragStartState == DragStartState.FROM_FULLSCREEN) {
+            return displayId == DEFAULT_DISPLAY
                     || DesktopExperienceFlags.ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX.isTrue();
         }
         return true;
