@@ -36,6 +36,7 @@ java_library {
         "com.android.systemui.common.shared.model_api",
         "com.android.systemui.common.ui.compose_api",
         "com.android.systemui.headline.ui_api",
+        "com.android.systemui.lifecycle_api",
         "PlatformComposeCore",
         "PlatformComposeSceneTransitionLayout",
         "androidx.compose.material3_material3",

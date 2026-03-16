@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -47,6 +48,7 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.approachLayout
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.constrain
 import androidx.compose.ui.unit.dp
 import com.android.compose.animation.scene.ContentScope
@@ -65,14 +67,16 @@ import com.android.systemui.headline.ui.viewmodel.HeadlineItemContent
 import com.android.systemui.headline.ui.viewmodel.HeadlineViewModel
 import com.android.systemui.headline.ui.viewmodel.HeadlineViewModel.Companion.GoneScene
 import com.android.systemui.headline.ui.viewmodel.toHeadlineItemKey
+import com.android.systemui.lifecycle.rememberViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 
 /** Implementation of the [Headline] composer. */
 public class HeadlineImpl @Inject constructor() : Headline {
     @Composable
-    override fun Content(viewModel: HeadlineViewModel, modifier: Modifier) {
-        Headline(viewModel, modifier)
+    override fun Content(viewModelFactory: HeadlineViewModel.Factory, modifier: Modifier) {
+        val viewModel = rememberViewModel("HeadlineImpl") { viewModelFactory.create() }
+        Headline(viewModel, modifier = modifier.height(HeadlineHeight))
     }
 }
 
@@ -350,5 +354,6 @@ private fun Modifier.noResizeContentDuringTransitions(
     }
 }
 
+private val HeadlineHeight: Dp = 36.dp
 private val DotIndicatorSize = 8.dp
 private val DotIndicatorOffset = DotIndicatorSize * 1.5f
