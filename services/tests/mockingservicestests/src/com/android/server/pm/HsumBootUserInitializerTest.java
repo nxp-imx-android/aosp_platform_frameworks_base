@@ -79,8 +79,8 @@ public final class HsumBootUserInitializerTest {
     @Captor
     private ArgumentCaptor<ContentObserver> mCaptorContentObserver;
 
-    // NOTE: not used, hence always false
-    private final boolean mIsManagedDevice = false;
+    // NOTE: not used, hence always true
+    private final boolean mRequiresAdmin = true;
 
     // NOTE: not mocking yet, but need a real one because of resources
     private final Context mRealContext =
@@ -96,7 +96,7 @@ public final class HsumBootUserInitializerTest {
                 // value of args below don't matter
                 /* shouldDesignateMainUser= */ false,
                 /* shouldCreateInitialUser= */ false,
-                mIsManagedDevice, mMockContext);
+                mRequiresAdmin, mMockContext);
     }
 
     @Test
@@ -104,7 +104,7 @@ public final class HsumBootUserInitializerTest {
         mockIsHsum(true);
 
         var instance = HsumBootUserInitializer.createInstance(mMockUms, mMockAms, mMockPms,
-                mIsManagedDevice, mRealContext);
+                mRequiresAdmin, mRealContext);
 
         expect.withMessage("result of createInstance()").that(instance).isNotNull();
     }
@@ -113,7 +113,7 @@ public final class HsumBootUserInitializerTest {
         mockIsHsum(false);
 
         var instance = HsumBootUserInitializer.createInstance(mMockUms, mMockAms, mMockPms,
-                mIsManagedDevice, mRealContext);
+                mRequiresAdmin, mRealContext);
 
         expect.withMessage("result of createInstance()").that(instance).isNull();
     }

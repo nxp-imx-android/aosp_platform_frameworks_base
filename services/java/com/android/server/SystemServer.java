@@ -3179,7 +3179,7 @@ public final class SystemServer implements Dumpable {
                 HsumBootUserInitializer.createInstance(mUserManagerService, mActivityManagerService,
                         // NOTE: there is no need to pass the whole dpms because it just need to
                         // to check if the device is managed (at boot time).
-                        mPackageManagerService, dpms.isDeviceManaged(), mSystemContext);
+                        mPackageManagerService, !dpms.isDeviceManaged(), mSystemContext);
         if (hsumBootUserInitializer != null) {
             t.traceBegin("HsumBootUserInitializer.init");
             hsumBootUserInitializer.init(t);
