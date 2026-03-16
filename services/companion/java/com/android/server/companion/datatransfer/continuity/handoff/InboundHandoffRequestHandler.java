@@ -105,10 +105,11 @@ public class InboundHandoffRequestHandler extends IHandoffTaskDataReceiver.Stub 
                 List<Integer> associationIds = new ArrayList<>();
                 associationIds.add(associationId);
                 mPendingHandoffRequests.put(handoffRequestMessage.taskId(), associationIds);
-                Slog.i(TAG, "Requesting handoff data for task " + handoffRequestMessage.taskId());
-                mActivityTaskManagerInternal.requestHandoffTaskData(
-                        handoffRequestMessage.taskId(), this);
             }
+
+            Slog.i(TAG, "Requesting handoff data for task " + handoffRequestMessage.taskId());
+            mActivityTaskManagerInternal.requestHandoffTaskData(
+                    handoffRequestMessage.taskId(), this);
         }
     }
 
