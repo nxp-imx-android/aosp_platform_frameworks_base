@@ -51,13 +51,12 @@ android {
 dependencies {
     api(project(":SettingsLib:Color"))
     api("androidx.appcompat:appcompat:1.7.1")
-    api("androidx.compose.foundation:foundation:1.8.0-alpha01")
-    api("androidx.compose.material3:material3:1.5.0-alpha11")
+    api("androidx.compose.material3:material3:1.5.0-alpha15")
     api("androidx.compose.material:material-icons-extended:1.7.8")
     api("androidx.compose.ui:ui-tooling-preview:$jetpackComposeVersion")
     api("androidx.graphics:graphics-shapes-android:1.1.0")
     api("androidx.lifecycle:lifecycle-runtime-compose")
-    api("androidx.navigation:navigation-compose:2.9.6")
+    api("androidx.navigation:navigation-compose:2.9.7")
     api("androidx.window:window:1.5.1")
     api("com.github.PhilJay:MPAndroidChart:v3.1.0-alpha") // external/MPAndroidChart
     api("com.google.android.material:material:1.14.0-alpha02") // prebuilts/sdk/current/extras/material-design-x
