@@ -98,17 +98,15 @@ constructor(
                 MediaProjectionConfig::class.java,
             )
 
-        if (
-            uid == -1 || hostUserHandle == null || packageName == null || projectionBinder == null
-        ) {
+        if (uid == -1 || hostUserHandle == null || packageName == null) {
             Log.d(
                 TAG,
-                "Invalid intent extras: uid=$uid, hostUserHandle=$hostUserHandle, packageName=$packageName, projectionBinder=$projectionBinder",
+                "Invalid intent extras: uid=$uid, hostUserHandle=$hostUserHandle, packageName=$packageName",
             )
             finish()
             return
         }
-        val projection = IMediaProjection.Stub.asInterface(projectionBinder)
+        val projection = projectionBinder?.let { IMediaProjection.Stub.asInterface(it) }
 
         val parameters = ScreenCaptureUiParameters.ShareScreen(hostAppUserHandle = hostUserHandle)
         val component = builder.setScope(lifecycleScope).setParameters(parameters).build()
