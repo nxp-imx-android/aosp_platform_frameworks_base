@@ -28,59 +28,60 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
 import kotlinx.coroutines.launch
 
 /**
  * A custom modifier that handles click gestures without making the component focusable.
  *
- * This is a low-level replacement for the standard `clickable` modifier, used
- * specifically when you need to capture a tap event but want to prevent the
- * component from gaining focus, which is the default behavior of `clickable`.
+ * This is a low-level replacement for the standard `clickable` modifier, used specifically when you
+ * need to capture a tap event but want to prevent the component from gaining focus, which is the
+ * default behavior of `clickable`.
  *
- * @param interactionSource The [MutableInteractionSource] that will be used to
- * observe press state.
- * @param indication The [Indication] to show when the component is pressed.
- * Pass `null` to disable the indication. Defaults to [LocalIndication].
+ * Note: While this modifier prevents hardware focus, it still provides accessibility semantics so
+ * that accessibility services (like TalkBack) can interact with the component.
+ *
+ * @param interactionSource The [MutableInteractionSource] that will be used to observe press state.
+ * @param indication The [Indication] to show when the component is pressed. Pass `null` to disable
+ *   the indication. Defaults to [LocalIndication].
  * @param onClick The lambda to be executed when a tap gesture is detected.
  */
 @Composable
 fun Modifier.clickableWithoutFocus(
     interactionSource: MutableInteractionSource? = null,
     indication: Indication? = LocalIndication.current,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ): Modifier {
     val internalInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
     val scope = rememberCoroutineScope()
 
-    return this
-        .hoverable(interactionSource = internalInteractionSource)
-        .indication(
-            interactionSource = internalInteractionSource,
-            indication = indication
-        )
+    return this.hoverable(interactionSource = internalInteractionSource)
+        .indication(interactionSource = internalInteractionSource, indication = indication)
         .pointerInput(onClick) {
             detectTapGestures(
                 onPress = { offset ->
                     val press = PressInteraction.Press(offset)
-                    scope.launch {
-                        internalInteractionSource.emit(press)
-                    }
+                    scope.launch { internalInteractionSource.emit(press) }
 
                     val success = tryAwaitRelease()
 
-                    val release = if (success) {
-                        PressInteraction.Release(press)
-                    } else {
-                        PressInteraction.Cancel(press)
-                    }
+                    val release =
+                        if (success) {
+                            PressInteraction.Release(press)
+                        } else {
+                            PressInteraction.Cancel(press)
+                        }
 
-                    scope.launch {
-                        internalInteractionSource.emit(release)
-                    }
+                    scope.launch { internalInteractionSource.emit(release) }
                 },
-                onTap = {
-                    onClick()
-                }
+                onTap = { onClick() },
             )
+        }
+        .semantics {
+            onClick {
+                onClick()
+                true
+            }
         }
 }
