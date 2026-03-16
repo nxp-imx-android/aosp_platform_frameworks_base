@@ -811,7 +811,9 @@ private constructor(
 
         /** Update the split screen button (horizontal vs. vertical split) orientation. */
         fun updateSplitScreenButtonOrientation(configuration: Configuration) {
-            windowingPillView.updateSplitScreenButtonOrientation(configuration)
+            if (shouldShowWindowingPill) {
+                windowingPillView.updateSplitScreenButtonOrientation(configuration)
+            }
         }
 
         private fun bindMoreActionsPill(style: MenuStyle) {

@@ -174,6 +174,7 @@
     <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"Show previous"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"Screen recording settings"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Markup"</string>
+    <string name="screen_record_color_picker" msgid="6732567862106107021">"Color picker"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video saved"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Video deleted"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Undo"</string>
@@ -1459,6 +1460,7 @@
     <string name="controls_media_button_prev" msgid="8126822360056482970">"Previous track"</string>
     <string name="controls_media_button_next" msgid="6662636627525947610">"Next track"</string>
     <string name="controls_media_button_connecting" msgid="3138354625847598095">"Connecting"</string>
+    <string name="controls_media_output_chip" msgid="324952606619594635">"Open output settings"</string>
     <string name="media_transfer_undo" msgid="1895606387620728736">"Undo"</string>
     <string name="media_move_closer_to_start_cast" msgid="2673104707465013176">"Move closer to play on <xliff:g id="DEVICENAME">%1$s</xliff:g>"</string>
     <string name="media_move_closer_to_end_cast" msgid="7302555909119374738">"To play here, move closer to <xliff:g id="DEVICENAME">%1$s</xliff:g>"</string>
@@ -1859,18 +1861,18 @@
     <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"Portrait touch-up"</string>
     <string name="av_mic_label" msgid="5427348054144789879">"Microphone"</string>
     <string name="av_camera_label" msgid="7719772172590702343">"Camera"</string>
-    <string name="av_camera_blur_drill_in_title" msgid="2250600375798981511">"Background Blur"</string>
+    <string name="av_camera_blur_drill_in_title" msgid="3392789469292685354">"Background blur"</string>
     <string name="av_camera_blur_off" msgid="3170334995799202022">"Off"</string>
-    <string name="av_camera_blur_light" msgid="5666055368940059418">"Light"</string>
-    <string name="av_camera_blur_full" msgid="3276351992811619332">"Full"</string>
+    <string name="av_camera_blur_light" msgid="5105255788203563538">"Light blur"</string>
+    <string name="av_camera_blur_full" msgid="6493497965254048479">"Heavy blur"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"Improve lighting"</string>
     <string name="av_camera_face_retouch" msgid="45890971969486224">"Portrait touch-up"</string>
-    <string name="av_camera_framing" msgid="5108462267843042492">"Camera Framing"</string>
-    <string name="av_studio_mic" msgid="2614843492629357766">"Studio Mic"</string>
-    <string name="av_studio_look" msgid="621893522645557619">"Studio Look"</string>
+    <string name="av_camera_framing" msgid="2948988841290208034">"Camera framing"</string>
+    <string name="av_studio_mic" msgid="1815195630183143501">"Studio mic"</string>
+    <string name="av_studio_look" msgid="631085505786989852">"Studio look"</string>
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d effects"</string>
     <string name="av_blur" msgid="405131343487260171">"Blur"</string>
-    <string name="av_live_captions" msgid="7819416886586903077">"Live Captions"</string>
+    <string name="av_live_captions" msgid="802763867449401889">"Live captions"</string>
     <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"Back"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Battery %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"L battery %1$s    R battery %2$s"</string>

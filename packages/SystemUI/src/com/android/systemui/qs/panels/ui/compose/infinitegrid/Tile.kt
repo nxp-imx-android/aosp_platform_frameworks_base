@@ -36,15 +36,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyGridScope
-import androidx.compose.foundation.lazy.grid.LazyGridState
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -73,7 +67,6 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.toggleableState
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.trace
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.Expandable
@@ -115,25 +108,6 @@ import com.android.systemui.res.R
 import kotlinx.coroutines.CoroutineScope
 import platform.test.motion.compose.values.MotionTestValueKey
 import platform.test.motion.compose.values.motionTestValues
-
-@Composable
-fun TileLazyGrid(
-    columns: GridCells,
-    modifier: Modifier = Modifier,
-    state: LazyGridState = rememberLazyGridState(),
-    contentPadding: PaddingValues = PaddingValues(0.dp),
-    content: LazyGridScope.() -> Unit,
-) {
-    LazyVerticalGrid(
-        state = state,
-        columns = columns,
-        verticalArrangement = spacedBy(CommonTileDefaults.TileArrangementPadding),
-        horizontalArrangement = spacedBy(CommonTileDefaults.TileArrangementPadding),
-        contentPadding = contentPadding,
-        modifier = modifier,
-        content = content,
-    )
-}
 
 private val TileViewModel.traceName
     get() = spec.toString().takeLast(Trace.MAX_SECTION_NAME_LEN)

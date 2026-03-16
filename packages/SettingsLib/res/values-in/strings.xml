@@ -266,7 +266,7 @@
     <string name="vpn_settings_not_available" msgid="2894137119965668920">"Setelan VPN tidak tersedia untuk pengguna ini"</string>
     <string name="tethering_settings_not_available" msgid="266821736434699780">"Setelan Penambatan tidak tersedia untuk pengguna ini"</string>
     <string name="apn_settings_not_available" msgid="1147111671403342300">"Setelan Nama Titik Akses tidak tersedia untuk pengguna ini"</string>
-    <string name="enable_adb" msgid="8072776357237289039">"Proses debug USB"</string>
+    <string name="enable_adb" msgid="8072776357237289039">"Mode debug USB"</string>
     <string name="enable_adb_summary" msgid="3711526030096574316">"Mode debug ketika USB terhubung"</string>
     <string name="clear_adb_keys" msgid="2696065439790970581">"Cabut otorisasi debug adb"</string>
     <string name="enable_adb_wireless" msgid="6973226350963971018">"Proses debug nirkabel"</string>
@@ -364,8 +364,8 @@
     <string name="debug_view_attributes" msgid="3539609843984208216">"Aktifkan inspeksi atribut tampilan"</string>
     <string name="mobile_data_always_on_summary" msgid="1112156365594371019">"Selalu aktifkan data seluler, meskipun Wi-Fi aktif (agar jaringan beralih dengan cepat)"</string>
     <string name="tethering_hardware_offload_summary" msgid="7801345335142803029">"Gunakan akselerasi hardware tethering jika tersedia"</string>
-    <string name="adb_warning_title" msgid="7708653449506485728">"Izinkan melakukan debug USB?"</string>
-    <string name="adb_warning_message" msgid="8145270656419669221">"Debugging USB dimaksudkan untuk tujuan pengembangan saja. Gunakan untuk menyalin data antara komputer dan perangkat Anda, memasang apl pada perangkat tanpa notifikasi, dan membaca data log."</string>
+    <string name="adb_warning_title" msgid="7708653449506485728">"Izinkan mode debug USB?"</string>
+    <string name="adb_warning_message" msgid="8145270656419669221">"Mode debug USB dimaksudkan untuk tujuan pengembangan saja. Gunakan untuk menyalin data antara komputer dan perangkat Anda, memasang apl pada perangkat tanpa notifikasi, dan membaca data log."</string>
     <string name="adbwifi_warning_title" msgid="727104571653031865">"Izinkan proses debug nirkabel?"</string>
     <string name="adbwifi_warning_message" msgid="8005936574322702388">"Proses debug nirkabel dimaksudkan untuk tujuan pengembangan saja. Gunakan untuk menyalin data antara komputer dan perangkat Anda, menginstal aplikasi pada perangkat tanpa notifikasi, dan membaca data log."</string>
     <string name="adb_keys_warning_message" msgid="7827514623080777814">"Cabut akses ke proses debug adb dari semua komputer dan jaringan yang telah Anda otorisasi sebelumnya?"</string>
@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"Ethernet terputus."</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"Ethernet."</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"Tidak ada panggilan."</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"Keyboard fisik"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"Pilih tata letak keyboard"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"Default"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"Kontrol pengaktifan layar"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"Izinkan pengaktifan layar"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"Mengizinkan aplikasi mengaktifkan layar. Jika diizinkan, aplikasi dapat mengaktifkan layar kapan saja tanpa izin Anda."</string>

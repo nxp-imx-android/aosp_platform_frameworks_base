@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNull;
 
 import android.content.Context;
 import android.os.VibratorManager;
+import android.os.multisensory.MultisensoryManager;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -56,7 +57,8 @@ public class MultisensoryRepositoryTest {
 
     @Test
     public void getHapticEffect_forAllTokens_getsEffectForAll() {
-        for (int tokenConstant : MultisensoryRepository.MULTISENSORY_TOKENS) {
+        int[] tokens = MultisensoryManager.getMultisensoryTokens();
+        for (int tokenConstant : tokens) {
             assertNotNull(mUnderTest.getHapticEffect(tokenConstant));
         }
     }
@@ -78,17 +80,18 @@ public class MultisensoryRepositoryTest {
     }
 
     private List<Integer> filterTokensBySoundDefinition(boolean shouldSoundNameExist) {
-        ArrayList<Integer> tokens = new ArrayList<>();
-        for (int tokenConstant : MultisensoryRepository.MULTISENSORY_TOKENS) {
+        ArrayList<Integer> filteredTokens = new ArrayList<>();
+        int[] tokens = MultisensoryManager.getMultisensoryTokens();
+        for (int tokenConstant : tokens) {
             boolean isSoundNameSpecified =
                     MultisensorySoundData.TOKEN_SOUND_NAMES.get(tokenConstant) != null;
             boolean add =
                     (isSoundNameSpecified && shouldSoundNameExist)
                             || (!isSoundNameSpecified && !shouldSoundNameExist);
             if (add) {
-                tokens.add(tokenConstant);
+                filteredTokens.add(tokenConstant);
             }
         }
-        return tokens;
+        return filteredTokens;
     }
 }

@@ -83,15 +83,19 @@ public class DragPositioningCallbackUtility {
      * @param delta                 difference between start input and current input in x/y
      *                              coordinates
      * @param windowDecoration      window decoration of the task being dragged
-     * @return whether this method changed repositionTaskBounds
+     * @param result                the result of the change bounds calculation, including whether
+     *                              this method changed repositionTaskBounds, and whether the bounds
+     *                              is violating the size constraints
      */
-    static boolean changeBounds(int ctrlType, Rect repositionTaskBounds, Rect taskBoundsAtDragStart,
+    static void changeBounds(int ctrlType, Rect repositionTaskBounds, Rect taskBoundsAtDragStart,
             Rect stableBounds, PointF delta, DisplayController displayController,
-            WindowDecorationWrapper windowDecoration, boolean canEnterDesktopMode) {
+            WindowDecorationWrapper windowDecoration, boolean canEnterDesktopMode,
+            ChangeBoundsResult result) {
+        result.reset();
         // If task is being dragged rather than resized, return since this method only handles
         // with resizing
         if (ctrlType == CTRL_TYPE_UNDEFINED) {
-            return false;
+            return;
         }
 
         final int oldLeft = repositionTaskBounds.left;
@@ -152,6 +156,7 @@ public class DragPositioningCallbackUtility {
             repositionTaskBounds.right = oldRight;
             repositionTaskBounds.left = oldLeft;
             isAspectRatioMaintained = false;
+            result.violatingSizeConstraints = Flags.enableNoResizeCursor();
         }
         if (isViolatingHeightConstraints(repositionTaskBounds.height(),
                 /* startingHeight= */oldBottom - oldTop, stableBounds, displayController,
@@ -159,6 +164,7 @@ public class DragPositioningCallbackUtility {
             repositionTaskBounds.top = oldTop;
             repositionTaskBounds.bottom = oldBottom;
             isAspectRatioMaintained = false;
+            result.violatingSizeConstraints = Flags.enableNoResizeCursor();
         }
 
         int taskId = windowDecoration.getTaskInfo().taskId;
@@ -189,8 +195,9 @@ public class DragPositioningCallbackUtility {
         }
 
         // If there are no changes to the bounds after checking new bounds against minimum and
-        // maximum width and height, do not set bounds and return false
-        return oldLeft != repositionTaskBounds.left || oldTop != repositionTaskBounds.top
+        // maximum width and height, do not set bounds and set result.boundsChanged to false
+        result.boundsChanged = oldLeft != repositionTaskBounds.left
+                || oldTop != repositionTaskBounds.top
                 || oldRight != repositionTaskBounds.right
                 || oldBottom != repositionTaskBounds.bottom;
     }
@@ -406,5 +413,26 @@ public class DragPositioningCallbackUtility {
          */
         default void onDragResizeEnded(int taskId, @NonNull ResizeTrigger resizeTrigger,
                 @NonNull InputMethod inputMethod, @NonNull Rect endTaskBounds) {}
+    }
+
+    /**
+     * The result of a change bounds calculation.
+     */
+    public static class ChangeBoundsResult {
+        /**
+         * Whether the bounds have changed as a result of the calculation.
+         */
+        public boolean boundsChanged;
+
+        /**
+         * Whether the new bounds violate any size constraints (e.g. maximum or minimum
+         * width/height).
+         */
+        public boolean violatingSizeConstraints;
+
+        public void reset() {
+            boundsChanged = false;
+            violatingSizeConstraints = false;
+        }
     }
 }

@@ -48,6 +48,7 @@ import org.mockito.junit.MockitoJUnitRunner
 import org.mockito.kotlin.any
 import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
+import org.mockito.kotlin.verifyNoInteractions
 
 /**
  * Tests for {@link InputDeviceRemapper}.
@@ -560,7 +561,317 @@ class InputDeviceRemapperTests {
     }
 
     @Test
-    fun testRemappingsCorrectlyRestored_onBackupAndRestore() {
+    fun remapKeyToAxis_appliesToCorrectDevice() {
+        val inputDeviceRemapper = setupControllerRemapper()
+        val deviceId = 1
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_JOYSTICK or InputDevice.SOURCE_KEYBOARD,
+            )
+        addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
+        reset(native)
+
+        inputDeviceRemapper.remapKeyToAxis(
+            USER_ID,
+            device.identifier,
+            KeyEvent.KEYCODE_BUTTON_A,
+            MotionEvent.AXIS_X,
+        )
+
+        verify(native)
+            .setKeyToAxisRemappingForDevice(
+                eq(deviceId),
+                eq(intArrayOf(KeyEvent.KEYCODE_BUTTON_A)),
+                eq(intArrayOf(MotionEvent.AXIS_X)),
+            )
+    }
+
+    @Test
+    fun remapKeyToAxis_doesNotApplyToKeyboardOnly() {
+        val inputDeviceRemapper = setupControllerRemapper()
+        val deviceId = 1
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_KEYBOARD,
+            )
+        addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
+        reset(native)
+
+        inputDeviceRemapper.remapKeyToAxis(
+            USER_ID,
+            device.identifier,
+            KeyEvent.KEYCODE_BUTTON_A,
+            MotionEvent.AXIS_X,
+        )
+
+        verify(native, never()).setKeyToAxisRemappingForDevice(eq(deviceId), any(), any())
+    }
+
+    @Test
+    fun remapKeyToAxis_doesNotApplyToJoystickOnly() {
+        val inputDeviceRemapper = setupControllerRemapper()
+        val deviceId = 1
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_JOYSTICK,
+            )
+        addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
+        reset(native)
+
+        inputDeviceRemapper.remapKeyToAxis(
+            USER_ID,
+            device.identifier,
+            KeyEvent.KEYCODE_BUTTON_A,
+            MotionEvent.AXIS_X,
+        )
+
+        verify(native, never()).setKeyToAxisRemappingForDevice(eq(deviceId), any(), any())
+    }
+
+    @Test
+    fun removeKeyToAxisRemapping_removesOnlySpecifiedKey() {
+        val inputDeviceRemapper = setupControllerRemapper()
+        val deviceId = 1
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_JOYSTICK or InputDevice.SOURCE_KEYBOARD,
+            )
+        inputDeviceRemapper.remapKeyToAxis(
+            USER_ID,
+            device.identifier,
+            KeyEvent.KEYCODE_BUTTON_A,
+            MotionEvent.AXIS_X,
+        )
+        inputDeviceRemapper.remapKeyToAxis(
+            USER_ID,
+            device.identifier,
+            KeyEvent.KEYCODE_BUTTON_B,
+            MotionEvent.AXIS_Y,
+        )
+        addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
+        reset(native)
+
+        inputDeviceRemapper.removeKeyToAxisRemapping(
+            USER_ID,
+            device.identifier,
+            KeyEvent.KEYCODE_BUTTON_A,
+        )
+
+        verify(native)
+            .setKeyToAxisRemappingForDevice(
+                eq(deviceId),
+                eq(intArrayOf(KeyEvent.KEYCODE_BUTTON_B)),
+                eq(intArrayOf(MotionEvent.AXIS_Y)),
+            )
+    }
+
+    @Test
+    fun clearAllKeyToAxisRemappings_removesAll() {
+        val inputDeviceRemapper = setupControllerRemapper()
+        val deviceId = 1
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_JOYSTICK or InputDevice.SOURCE_KEYBOARD,
+            )
+        inputDeviceRemapper.remapKeyToAxis(
+            USER_ID,
+            device.identifier,
+            KeyEvent.KEYCODE_BUTTON_A,
+            MotionEvent.AXIS_X,
+        )
+        inputDeviceRemapper.remapKeyToAxis(
+            USER_ID,
+            device.identifier,
+            KeyEvent.KEYCODE_BUTTON_B,
+            MotionEvent.AXIS_Y,
+        )
+        addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
+        reset(native)
+
+        inputDeviceRemapper.clearAllKeyToAxisRemappings(USER_ID, device.identifier)
+
+        verify(native)
+            .setKeyToAxisRemappingForDevice(eq(deviceId), eq(intArrayOf()), eq(intArrayOf()))
+    }
+
+    @Test
+    fun testDeviceRemoved_removesKeyToAxisRemappings() {
+        val inputDeviceRemapper = setupControllerRemapper()
+        val deviceId = 1
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_JOYSTICK or InputDevice.SOURCE_KEYBOARD,
+            )
+        inputDeviceRemapper.remapKeyToAxis(
+            USER_ID,
+            device.identifier,
+            KeyEvent.KEYCODE_BUTTON_A,
+            MotionEvent.AXIS_X,
+        )
+        addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
+        reset(native)
+
+        removeInputDevice(deviceId, device.descriptor)
+        inputDeviceRemapper.onInputDeviceRemoved(deviceId)
+
+        verify(native)
+            .setKeyToAxisRemappingForDevice(eq(deviceId), eq(intArrayOf()), eq(intArrayOf()))
+    }
+
+    @Test
+    fun setCurrentUser_appliesAllRemappings() {
+        val inputDeviceRemapper = setupControllerRemapper(userId = USER_ID)
+        val deviceId = 1
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_JOYSTICK or InputDevice.SOURCE_KEYBOARD,
+            )
+        inputDeviceRemapper.remapKey(
+            USER_ID,
+            device.identifier,
+            KeyEvent.KEYCODE_BUTTON_X,
+            KeyEvent.KEYCODE_BUTTON_Y,
+        )
+        inputDeviceRemapper.remapKeyToAxis(
+            USER_ID,
+            device.identifier,
+            KeyEvent.KEYCODE_BUTTON_A,
+            MotionEvent.AXIS_X,
+        )
+        inputDeviceRemapper.remapAxis(
+            USER_ID,
+            device.identifier,
+            MotionEvent.AXIS_LTRIGGER,
+            MotionEvent.AXIS_RTRIGGER,
+        )
+        addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
+        reset(native)
+
+        // Switch to a different user with no remapping
+        inputDeviceRemapper.setCurrentUserId(SECOND_USER_ID)
+        TestUtils.flushLoopers(mainLooperManager)
+        verify(native).setKeyRemappingForDevice(eq(deviceId), eq(intArrayOf()), eq(intArrayOf()))
+        verify(native)
+            .setKeyToAxisRemappingForDevice(eq(deviceId), eq(intArrayOf()), eq(intArrayOf()))
+        verify(native)
+            .setAxisRemappingForDevice(eq(deviceId), eq(intArrayOf()), eq(intArrayOf()))
+
+        // Switch back to the user with remapping
+        inputDeviceRemapper.setCurrentUserId(USER_ID)
+        TestUtils.flushLoopers(mainLooperManager)
+        verify(native)
+            .setKeyRemappingForDevice(
+                eq(deviceId),
+                eq(intArrayOf(KeyEvent.KEYCODE_BUTTON_X)),
+                eq(intArrayOf(KeyEvent.KEYCODE_BUTTON_Y)),
+            )
+        verify(native)
+            .setKeyToAxisRemappingForDevice(
+                eq(deviceId),
+                eq(intArrayOf(KeyEvent.KEYCODE_BUTTON_A)),
+                eq(intArrayOf(MotionEvent.AXIS_X)),
+            )
+        verify(native)
+            .setAxisRemappingForDevice(
+                eq(deviceId),
+                eq(intArrayOf(MotionEvent.AXIS_LTRIGGER)),
+                eq(intArrayOf(MotionEvent.AXIS_RTRIGGER)),
+            )
+    }
+
+    @Test
+    fun onServiceRecreation_appliesAllRemappings() {
+        val inputDeviceRemapper = setupControllerRemapper()
+        val deviceId = 1
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_JOYSTICK or InputDevice.SOURCE_KEYBOARD,
+            )
+        inputDeviceRemapper.remapKey(
+            USER_ID,
+            device.identifier,
+            KeyEvent.KEYCODE_BUTTON_X,
+            KeyEvent.KEYCODE_BUTTON_Y,
+        )
+        inputDeviceRemapper.remapKeyToAxis(
+            USER_ID,
+            device.identifier,
+            KeyEvent.KEYCODE_BUTTON_A,
+            MotionEvent.AXIS_Z,
+        )
+        inputDeviceRemapper.remapAxis(
+            USER_ID,
+            device.identifier,
+            MotionEvent.AXIS_LTRIGGER,
+            MotionEvent.AXIS_RTRIGGER,
+        )
+        TestUtils.flushLoopers(mainLooperManager)
+
+        val recreatedInputDeviceRemapper = setupControllerRemapper()
+        addInputDevice(deviceId, device.descriptor, device)
+        recreatedInputDeviceRemapper.onInputDeviceAdded(deviceId)
+
+        verify(native)
+            .setKeyRemappingForDevice(
+                eq(deviceId),
+                eq(intArrayOf(KeyEvent.KEYCODE_BUTTON_X)),
+                eq(intArrayOf(KeyEvent.KEYCODE_BUTTON_Y)),
+            )
+        verify(native)
+            .setKeyToAxisRemappingForDevice(
+                eq(deviceId),
+                eq(intArrayOf(KeyEvent.KEYCODE_BUTTON_A)),
+                eq(intArrayOf(MotionEvent.AXIS_Z)),
+            )
+        verify(native)
+            .setAxisRemappingForDevice(
+                eq(deviceId),
+                eq(intArrayOf(MotionEvent.AXIS_LTRIGGER)),
+                eq(intArrayOf(MotionEvent.AXIS_RTRIGGER)),
+            )
+        assertEquals(
+            recreatedInputDeviceRemapper.getKeyRemappings(USER_ID, device.identifier),
+            mapOf(KeyEvent.KEYCODE_BUTTON_X to KeyEvent.KEYCODE_BUTTON_Y),
+        )
+        assertEquals(
+            recreatedInputDeviceRemapper.getAxisRemappings(USER_ID, device.identifier),
+            mapOf(MotionEvent.AXIS_LTRIGGER to MotionEvent.AXIS_RTRIGGER),
+        )
+    }
+
+    @Test
+    fun onBackupAndRestore_allRemappingsRestored() {
         val inputDeviceRemapper = setupControllerRemapper()
         val joystickDevice =
             createDevice(
@@ -580,7 +891,7 @@ class InputDeviceRemapperTests {
                 /* deviceId */ 2,
                 vendorId = 123,
                 productId = 456,
-                sources = InputDevice.SOURCE_JOYSTICK,
+                sources = InputDevice.SOURCE_KEYBOARD,
             )
         inputDeviceRemapper.remapKey(
             USER_ID,
@@ -588,14 +899,27 @@ class InputDeviceRemapperTests {
             KeyEvent.KEYCODE_1,
             KeyEvent.KEYCODE_2,
         )
+        val keyboardAndJoystickDevice =
+            createDevice(
+                /* deviceId */ 3,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_KEYBOARD or InputDevice.SOURCE_JOYSTICK,
+            )
+        inputDeviceRemapper.remapKeyToAxis(
+            USER_ID,
+            keyboardAndJoystickDevice.identifier,
+            KeyEvent.KEYCODE_BUTTON_C,
+            MotionEvent.AXIS_Z,
+        )
         TestUtils.flushLoopers(mainLooperManager)
+        reset(native)
 
         val backupData = inputDeviceRemapper.getInputDeviceRemappingBackupPayload(USER_ID)
         // Clear data and create new instance of remapper to simulate fresh install of device */
         testDataStore.clear()
         val recreatedInputDeviceRemapper = setupControllerRemapper()
         recreatedInputDeviceRemapper.applyInputDeviceRemappingBackupPayload(backupData, USER_ID)
-        TestUtils.flushLoopers(mainLooperManager)
 
         assertEquals(
             recreatedInputDeviceRemapper.getAxisRemappings(USER_ID, joystickDevice.identifier),
@@ -605,6 +929,35 @@ class InputDeviceRemapperTests {
             recreatedInputDeviceRemapper.getKeyRemappings(USER_ID, keyboardDevice.identifier),
             mapOf(KeyEvent.KEYCODE_1 to KeyEvent.KEYCODE_2),
         )
+        addInputDevice(joystickDevice.id, joystickDevice.descriptor, joystickDevice)
+        addInputDevice(keyboardDevice.id, keyboardDevice.descriptor, keyboardDevice)
+        addInputDevice(
+            keyboardAndJoystickDevice.id,
+            keyboardAndJoystickDevice.descriptor,
+            keyboardAndJoystickDevice,
+        )
+        recreatedInputDeviceRemapper.onInputDeviceAdded(joystickDevice.id)
+        recreatedInputDeviceRemapper.onInputDeviceAdded(keyboardDevice.id)
+        recreatedInputDeviceRemapper.onInputDeviceAdded(keyboardAndJoystickDevice.id)
+        TestUtils.flushLoopers(mainLooperManager)
+        verify(native)
+            .setKeyRemappingForDevice(
+                eq(keyboardDevice.id),
+                eq(intArrayOf(KeyEvent.KEYCODE_1)),
+                eq(intArrayOf(KeyEvent.KEYCODE_2)),
+            )
+        verify(native)
+            .setKeyToAxisRemappingForDevice(
+                eq(keyboardAndJoystickDevice.id),
+                eq(intArrayOf(KeyEvent.KEYCODE_BUTTON_C)),
+                eq(intArrayOf(MotionEvent.AXIS_Z)),
+            )
+        verify(native)
+            .setAxisRemappingForDevice(
+                eq(joystickDevice.id),
+                eq(intArrayOf(MotionEvent.AXIS_X)),
+                eq(intArrayOf(MotionEvent.AXIS_Y)),
+            )
     }
 
     @Test
@@ -650,6 +1003,73 @@ class InputDeviceRemapperTests {
                 eq(deviceId),
                 eq(intArrayOf(KeyEvent.KEYCODE_1)),
                 eq(intArrayOf(KeyEvent.KEYCODE_2)),
+            )
+    }
+
+    @Test
+    fun deviceTypeChanged_appliesAllRemappings() {
+        val inputDeviceRemapper = setupControllerRemapper()
+        val deviceId = 1
+        // Device starts with a non-keyboard source
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_MOUSE,
+            )
+        addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
+        // This should not be applied yet
+        inputDeviceRemapper.remapKey(
+            USER_ID,
+            device.identifier,
+            KeyEvent.KEYCODE_BUTTON_A,
+            KeyEvent.KEYCODE_BUTTON_B,
+        )
+        inputDeviceRemapper.remapKeyToAxis(
+            USER_ID,
+            device.identifier,
+            KeyEvent.KEYCODE_BUTTON_X,
+            MotionEvent.AXIS_LTRIGGER,
+        )
+        inputDeviceRemapper.remapAxis(
+            USER_ID,
+            device.identifier,
+            MotionEvent.AXIS_LTRIGGER,
+            MotionEvent.AXIS_RTRIGGER,
+        )
+        verifyNoInteractions(native)
+
+        // Device changes to both joystick and keyboard source
+        val updatedDevice =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_JOYSTICK or InputDevice.SOURCE_KEYBOARD,
+            )
+        changeInputDevice(deviceId, device.descriptor, updatedDevice)
+        inputDeviceRemapper.onInputDeviceChanged(deviceId)
+        TestUtils.flushLoopers(mainLooperManager)
+
+        verify(native)
+            .setKeyRemappingForDevice(
+                eq(deviceId),
+                eq(intArrayOf(KeyEvent.KEYCODE_BUTTON_A)),
+                eq(intArrayOf(KeyEvent.KEYCODE_BUTTON_B)),
+            )
+        verify(native)
+            .setKeyToAxisRemappingForDevice(
+                eq(deviceId),
+                eq(intArrayOf(KeyEvent.KEYCODE_BUTTON_X)),
+                eq(intArrayOf(MotionEvent.AXIS_LTRIGGER)),
+            )
+        verify(native)
+            .setAxisRemappingForDevice(
+                eq(deviceId),
+                eq(intArrayOf(MotionEvent.AXIS_LTRIGGER)),
+                eq(intArrayOf(MotionEvent.AXIS_RTRIGGER)),
             )
     }
 

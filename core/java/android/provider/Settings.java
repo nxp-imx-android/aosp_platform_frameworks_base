@@ -5728,6 +5728,24 @@ public final class Settings {
                 "hardware_haptic_feedback_intensity";
 
         /**
+         * The intensity of keyboard vibrations, if configurable.
+         *
+         * Not all devices are capable of changing their feedback intensity; on these devices
+         * there will likely be no difference between the various vibration intensities except for
+         * intensity 0 (off) and the rest.
+         *
+         * <b>Values:</b><br/>
+         * 0 - Vibration is disabled<br/>
+         * 1 - Weak vibrations<br/>
+         * 2 - Medium vibrations<br/>
+         * 3 - Strong vibrations
+         * @hide
+         */
+        @Readable
+        public static final String KEYBOARD_VIBRATION_INTENSITY =
+                "keyboard_vibration_intensity";
+
+        /**
          * The intensity of gesture input vibrations if configurable. See {@link
          * android.os.VibrationAttributes#USAGE_GESTURE_INPUT} for details about gesture input
          * vibrations.

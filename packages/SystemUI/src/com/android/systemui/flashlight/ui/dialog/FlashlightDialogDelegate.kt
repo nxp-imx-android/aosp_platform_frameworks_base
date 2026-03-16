@@ -16,10 +16,8 @@
 
 package com.android.systemui.flashlight.ui.dialog
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -31,9 +29,7 @@ import androidx.lifecycle.LifecycleOwner
 import com.android.compose.PlatformButton
 import com.android.compose.PlatformOutlinedButton
 import com.android.compose.dialog.AlertDialogContent
-import com.android.compose.theme.PlatformTheme
 import com.android.internal.jank.InteractionJankMonitor
-import com.android.systemui.Flags
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
@@ -106,50 +102,39 @@ constructor(
 
     @Composable
     private fun FlashlightDialogContent(dialog: SystemUIDialog) {
-        // TODO(b/369376884): The composable does correctly update when the theme changes
-        //  while the dialog is open, but the background (which we don't control here)
-        //  doesn't, which causes us to show things like white text on a white background.
-        //  as a workaround, we remember the original theme and keep it on recomposition.
-        val isCurrentlyInDarkTheme = isSystemInDarkTheme()
-        val cachedDarkTheme = remember { isCurrentlyInDarkTheme }
-        // TODO(b/474600479): Remove remember val and PlatformTheme wrapper once flag is advanced.
-        val isDarkTheme =
-            if (Flags.dialogBackgroundRefresh()) isCurrentlyInDarkTheme else cachedDarkTheme
         val flashlightSliderViewModel =
             rememberViewModel("FlashlightSliderViewModel") { viewModelFactory.create() }
-        PlatformTheme(isDarkTheme = isDarkTheme) {
-            AlertDialogContent(
-                modifier = Modifier.semantics { testTagsAsResourceId = true },
-                title = {
-                    Text(
-                        modifier = Modifier.testTag(FLASHLIGHT_TITLE_TAG),
-                        text = stringResource(R.string.flashlight_dialog_title),
-                    )
-                },
-                content = { FlashlightSliderContainer(viewModel = flashlightSliderViewModel) },
-                positiveButton = {
-                    PlatformButton(
-                        modifier = Modifier.testTag(FLASHLIGHT_DONE_TAG),
-                        onClick = { dialog.dismiss() },
-                    ) {
-                        Text(stringResource(R.string.quick_settings_done))
-                    }
-                },
-                neutralButton = {
-                    PlatformOutlinedButton(
-                        modifier = Modifier.testTag(FLASHLIGHT_OFF_TAG),
-                        onClick = {
-                            flashlightSliderViewModel.setFlashlightLevel(0)
-                            dialog.dismiss()
-                        },
-                    ) {
-                        Text(stringResource(R.string.flashlight_dialog_turn_off))
-                    }
-                },
-                contentTopPadding = 12.dp,
-                contentBottomPadding = 8.dp,
-            )
-        }
+        AlertDialogContent(
+            modifier = Modifier.semantics { testTagsAsResourceId = true },
+            title = {
+                Text(
+                    modifier = Modifier.testTag(FLASHLIGHT_TITLE_TAG),
+                    text = stringResource(R.string.flashlight_dialog_title),
+                )
+            },
+            content = { FlashlightSliderContainer(viewModel = flashlightSliderViewModel) },
+            positiveButton = {
+                PlatformButton(
+                    modifier = Modifier.testTag(FLASHLIGHT_DONE_TAG),
+                    onClick = { dialog.dismiss() },
+                ) {
+                    Text(stringResource(R.string.quick_settings_done))
+                }
+            },
+            neutralButton = {
+                PlatformOutlinedButton(
+                    modifier = Modifier.testTag(FLASHLIGHT_OFF_TAG),
+                    onClick = {
+                        flashlightSliderViewModel.setFlashlightLevel(0)
+                        dialog.dismiss()
+                    },
+                ) {
+                    Text(stringResource(R.string.flashlight_dialog_turn_off))
+                }
+            },
+            contentTopPadding = 12.dp,
+            contentBottomPadding = 8.dp,
+        )
     }
 
     /** Runs on @Main CoroutineContext */

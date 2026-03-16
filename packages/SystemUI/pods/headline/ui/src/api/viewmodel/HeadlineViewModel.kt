@@ -55,6 +55,10 @@ public interface HeadlineViewModel {
         public val GoneScene: SceneKey =
             HeadlineItemKey.None.toSceneKey(debugName = "HeadlineViewModel.GoneScene")
     }
+
+    interface Factory {
+        fun create(): HeadlineViewModel
+    }
 }
 
 /** A single item in the Headline. */

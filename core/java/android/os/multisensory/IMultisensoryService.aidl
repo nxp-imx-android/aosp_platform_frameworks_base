@@ -30,7 +30,7 @@ import android.os.multisensory.MultisensoryContinuousEffectModifier;
 oneway interface IMultisensoryService {
 
     /**
-    * Play feedback for a given MultisensoryToken constant
+    * Play feedback for a given multisensory token constant
     */
     void playToken(in int tokenConstant) = 1;
 

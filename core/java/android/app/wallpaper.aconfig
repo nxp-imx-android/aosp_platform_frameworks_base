@@ -46,3 +46,13 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "optimize_default_wallpaper"
+  namespace: "systemui"
+  description: "Optimize the default wallpaper image by scaling it to the display's resolution."
+  bug: "443948180"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}

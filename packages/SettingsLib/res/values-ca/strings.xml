@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"S\'ha desconnectat l\'Ethernet."</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"Ethernet."</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"Sense trucades."</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"Teclat físic"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"Tria una disposició de teclat"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"Predeterminat"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"Control d\'activació de la pantalla"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"Permet que activi la pantalla"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"Permet que una aplicació activi la pantalla. Si concedeixes aquest permís, pot ser que l\'aplicació activi la pantalla en qualsevol moment sense la teva intenció explícita."</string>

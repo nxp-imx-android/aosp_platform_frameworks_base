@@ -31,6 +31,7 @@ import android.annotation.SystemService;
 import android.annotation.TestApi;
 import android.app.ActivityManager;
 import android.app.ActivityManager.ProcessCapability;
+import android.app.ActivityManager.ProcessState;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
 import android.content.Intent;
@@ -804,7 +805,7 @@ public class NetworkPolicyManager {
      * @hide
      */
     @RavenwoodKeep
-    public static int getDefaultProcessNetworkCapabilities(int procState) {
+    public static int getDefaultProcessNetworkCapabilities(@ProcessState int procState) {
         switch (procState) {
             case ActivityManager.PROCESS_STATE_PERSISTENT:
             case ActivityManager.PROCESS_STATE_PERSISTENT_UI:
@@ -833,7 +834,7 @@ public class NetworkPolicyManager {
 
     /** @hide */
     public static boolean isProcStateAllowedWhileIdleOrPowerSaveMode(
-            int procState, @ProcessCapability int capability) {
+            @ProcessState int procState, @ProcessCapability int capability) {
         if (procState == PROCESS_STATE_UNKNOWN) {
             return false;
         }
@@ -877,7 +878,7 @@ public class NetworkPolicyManager {
     }
 
     /** @hide */
-    public static boolean isProcStateAllowedWhileOnRestrictBackground(int procState,
+    public static boolean isProcStateAllowedWhileOnRestrictBackground(@ProcessState int procState,
             @ProcessCapability int capabilities) {
         if (procState == PROCESS_STATE_UNKNOWN) {
             return false;
@@ -893,11 +894,12 @@ public class NetworkPolicyManager {
     /** @hide */
     public static final class UidState {
         public int uid;
-        public int procState;
+        public @ProcessState int procState;
         public long procStateSeq;
-        public int capability;
+        public @ProcessCapability int capability;
 
-        public UidState(int uid, int procState, long procStateSeq, int capability) {
+        public UidState(int uid, @ProcessState int procState,
+                long procStateSeq, @ProcessCapability int capability) {
             this.uid = uid;
             this.procState = procState;
             this.procStateSeq = procStateSeq;

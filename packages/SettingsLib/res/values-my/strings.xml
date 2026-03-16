@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"Ethernet နှင့်ချိတ်ဆက်မှုပြတ်တောက်"</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"အီသာနက်။"</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"ခေါ်ဆိုမှု မရှိပါ။"</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"ပကတိ ကီးဘုတ်"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"လက်ကွက်အပြင်အဆင်ရွေးချယ်ခြင်း"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"မူရင်း"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"ဖန်သားပြင်ဖွင့်ခြင်း စီမံရန်"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"ဖန်သားပြင် ဖွင့်ခွင့်ပြုရန်"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"အက်ပ်ကို ဖန်သားပြင် ဖွင့်ခွင့်ပြုနိုင်သည်။ ခွင့်ပြုထားပါက သင်က တစ်စုံတစ်ခု လုပ်ဆောင်ရန် မရည်ရွယ်သော်လည်း အက်ပ်သည် ဖန်သားပြင်ကို အချိန်မရွေး ဖွင့်နိုင်မည်။"</string>

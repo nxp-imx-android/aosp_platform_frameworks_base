@@ -47,6 +47,8 @@
     <string name="summary_virtual_device" msgid="1062189396947962635">"<xliff:g id="APP_NAME">%2$s</xliff:g> va primi următoarele permisiuni:"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"dispozitiv"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Aplicația va putea să sincronizeze informații, cum ar fi numele unui apelant, între telefonul tău și dispozitivul ales"</string>
+    <!-- no translation found for summary_generic_with_remote_ai_capability (5053633566439056634) -->
+    <skip />
     <string name="consent_yes" msgid="8344487259618762872">"Permite"</string>
     <string name="consent_no" msgid="2640796915611404382">"Nu permite"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Anulează"</string>

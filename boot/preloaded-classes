@@ -96,9 +96,9 @@ android.aconfig.nano.Aconfig$flag_values
 android.aconfig.nano.Aconfig$parsed_flag
 android.aconfig.nano.Aconfig$parsed_flags
 android.aconfig.nano.Aconfig$tracepoint
+android.aiseal.AiSealManager
 android.animation.AnimationHandler$$ExternalSyntheticLambda0
 android.animation.AnimationHandler$1
-android.animation.AnimationHandler$2
 android.animation.AnimationHandler$AnimationFrameCallback
 android.animation.AnimationHandler$AnimationFrameCallbackProvider
 android.animation.AnimationHandler$MyFrameCallbackProvider
@@ -273,6 +273,7 @@ android.app.ActivityThread$$ExternalSyntheticLambda2
 android.app.ActivityThread$$ExternalSyntheticLambda3
 android.app.ActivityThread$$ExternalSyntheticLambda4
 android.app.ActivityThread$$ExternalSyntheticLambda5
+android.app.ActivityThread$$ExternalSyntheticLambda9
 android.app.ActivityThread$1$$ExternalSyntheticLambda0
 android.app.ActivityThread$1
 android.app.ActivityThread$2
@@ -894,8 +895,13 @@ android.app.SystemServiceRegistry$159
 android.app.SystemServiceRegistry$15
 android.app.SystemServiceRegistry$160
 android.app.SystemServiceRegistry$161
+android.app.SystemServiceRegistry$162
 android.app.SystemServiceRegistry$163
 android.app.SystemServiceRegistry$164
+android.app.SystemServiceRegistry$165
+android.app.SystemServiceRegistry$166
+android.app.SystemServiceRegistry$167
+android.app.SystemServiceRegistry$168
 android.app.SystemServiceRegistry$16
 android.app.SystemServiceRegistry$17
 android.app.SystemServiceRegistry$18
@@ -1145,6 +1151,7 @@ android.app.backup.BackupRestoreEventLogger
 android.app.backup.BackupTransport$TransportImpl
 android.app.backup.BackupTransport
 android.app.backup.BlobBackupHelper
+android.app.backup.DelayedRestoreRequest
 android.app.backup.FileBackupHelper
 android.app.backup.FileBackupHelperBase
 android.app.backup.FullBackup
@@ -1187,6 +1194,7 @@ android.app.compat.ChangeIdStateCache
 android.app.compat.ChangeIdStateQuery
 android.app.compat.CompatChanges
 android.app.contentrestriction.ContentRestrictionManager
+android.app.contentsafety.ContentSafetyManager
 android.app.contentsuggestions.ClassificationsRequest$1
 android.app.contentsuggestions.ClassificationsRequest
 android.app.contentsuggestions.ContentSelection$1
@@ -1241,6 +1249,7 @@ android.app.job.JobServiceEngine$JobInterface
 android.app.job.JobServiceEngine
 android.app.job.JobWorkItem$1
 android.app.job.JobWorkItem
+android.app.modes.ContextualModeManager
 android.app.people.IPeopleManager$Stub$Proxy
 android.app.people.IPeopleManager$Stub
 android.app.people.IPeopleManager
@@ -1270,6 +1279,7 @@ android.app.prediction.IPredictionCallback
 android.app.prediction.IPredictionManager$Stub$Proxy
 android.app.prediction.IPredictionManager$Stub
 android.app.prediction.IPredictionManager
+android.app.privatecompute.PccSandboxManager
 android.app.search.SearchUiManager
 android.app.servertransaction.ActivityConfigurationChangeItem$1
 android.app.servertransaction.ActivityConfigurationChangeItem-IA
@@ -1323,7 +1333,7 @@ android.app.servertransaction.WindowStateInsetsControlChangeItem-IA
 android.app.servertransaction.WindowStateInsetsControlChangeItem
 android.app.servertransaction.WindowStateResizeItem$1
 android.app.servertransaction.WindowStateResizeItem
-android.app.servertransaction.WindowStateTransactionItem$TransactionListener
+android.app.servertransaction.WindowStateTransactionItem$$ExternalSyntheticLambda0
 android.app.servertransaction.WindowStateTransactionItem
 android.app.slice.ISliceManager$Stub$Proxy
 android.app.slice.ISliceManager$Stub
@@ -1458,6 +1468,7 @@ android.app.usage.UsageEvents
 android.app.usage.UsageStats$1
 android.app.usage.UsageStats
 android.app.usage.UsageStatsManager
+android.app.voiceinteraction.VoiceInteractionManager
 android.app.wallpapereffectsgeneration.WallpaperEffectsGenerationManager
 android.app.wearable.WearableSensingManager
 android.apphibernation.AppHibernationManager
@@ -1490,6 +1501,7 @@ android.companion.CompanionDeviceManager
 android.companion.ICompanionDeviceManager$Stub$Proxy
 android.companion.ICompanionDeviceManager$Stub
 android.companion.ICompanionDeviceManager
+android.companion.datatransfer.continuity.TaskContinuityManager
 android.companion.virtual.IVirtualDevice$Stub$Proxy
 android.companion.virtual.IVirtualDevice$Stub
 android.companion.virtual.IVirtualDevice
@@ -1554,6 +1566,7 @@ android.content.ContentProvider
 android.content.ContentProviderClient$$ExternalSyntheticLambda12
 android.content.ContentProviderClient$$ExternalSyntheticLambda14
 android.content.ContentProviderClient$$ExternalSyntheticLambda16
+android.content.ContentProviderClient$$ExternalSyntheticLambda4
 android.content.ContentProviderClient$$ExternalSyntheticLambda5
 android.content.ContentProviderClient$CancellableRemoteCall
 android.content.ContentProviderClient$CursorWrapperInner
@@ -1948,7 +1961,6 @@ android.content.pm.PackagePartitions
 android.content.pm.PackageStats$1
 android.content.pm.PackageStats
 android.content.pm.ParceledListSlice$1
-android.content.pm.ParceledListSlice-IA
 android.content.pm.ParceledListSlice
 android.content.pm.PathPermission$1
 android.content.pm.PathPermission
@@ -3509,6 +3521,7 @@ android.hardware.security.keymint.KeyParameterValue-IA
 android.hardware.security.keymint.KeyParameterValue
 android.hardware.sensor.ISensorClientListener$Stub
 android.hardware.sensor.ISensorClientListener
+android.hardware.serial.SerialManager
 android.hardware.sidekick.SidekickInternal
 android.hardware.soundtrigger.ConversionUtil
 android.hardware.soundtrigger.IRecognitionStatusCallback$Stub$Proxy
@@ -5185,6 +5198,8 @@ android.media.AudioFocusRequest-IA
 android.media.AudioFocusRequest
 android.media.AudioFormat$1
 android.media.AudioFormat$Builder
+android.media.AudioFormat$ChannelMasks
+android.media.AudioFormat$ChannelMasksArray
 android.media.AudioFormat-IA
 android.media.AudioFormat
 android.media.AudioGain
@@ -5241,6 +5256,7 @@ android.media.AudioPlaybackConfiguration$IPlayerShell
 android.media.AudioPlaybackConfiguration$PlayerDeathMonitor
 android.media.AudioPlaybackConfiguration
 android.media.AudioPort$$ExternalSyntheticLambda0
+android.media.AudioPort$$ExternalSyntheticLambda1
 android.media.AudioPort
 android.media.AudioPortConfig
 android.media.AudioPortEventHandler$1
@@ -5392,6 +5408,7 @@ android.media.MediaCodec$PersistentSurface
 android.media.MediaCodec$QueueRequest
 android.media.MediaCodec-IA
 android.media.MediaCodec
+android.media.MediaCodecInfo$$ExternalSyntheticLambda0
 android.media.MediaCodecInfo$AudioCapabilities$AudioCapsIntf
 android.media.MediaCodecInfo$AudioCapabilities$AudioCapsNativeImpl
 android.media.MediaCodecInfo$AudioCapabilities
@@ -5411,6 +5428,7 @@ android.media.MediaCodecInfo$VideoCapabilities$VideoCapsLegacyImpl
 android.media.MediaCodecInfo$VideoCapabilities$VideoCapsNativeImpl
 android.media.MediaCodecInfo$VideoCapabilities
 android.media.MediaCodecInfo
+android.media.MediaCodecList$$ExternalSyntheticLambda0
 android.media.MediaCodecList
 android.media.MediaCrypto
 android.media.MediaCryptoException
@@ -5658,6 +5676,7 @@ android.media.browse.MediaBrowser$SubscriptionCallback
 android.media.browse.MediaBrowser-IA
 android.media.browse.MediaBrowser
 android.media.browse.MediaBrowserUtils
+android.media.metrics.BaseSession
 android.media.metrics.Event
 android.media.metrics.IMediaMetricsManager$Stub$Proxy
 android.media.metrics.IMediaMetricsManager$Stub
@@ -6054,7 +6073,6 @@ android.nfc.cardemulation.ApduServiceInfo$1
 android.nfc.cardemulation.ApduServiceInfo
 android.nfc.cardemulation.NfcFServiceInfo$1
 android.nfc.cardemulation.NfcFServiceInfo
-android.npumanager.NpuManagerFrameworkInitializer
 android.opengl.EGL14
 android.opengl.EGL15
 android.opengl.EGLConfig
@@ -6469,6 +6487,36 @@ android.os.ParcelableParcel$1
 android.os.ParcelableParcel
 android.os.PatternMatcher$1
 android.os.PatternMatcher
+android.os.PerfettoTrace$Category
+android.os.PerfettoTrace
+android.os.PerfettoTrackEventExtra$$ExternalSyntheticLambda0
+android.os.PerfettoTrackEventExtra$$ExternalSyntheticLambda1
+android.os.PerfettoTrackEventExtra$$ExternalSyntheticLambda2
+android.os.PerfettoTrackEventExtra$$ExternalSyntheticLambda3
+android.os.PerfettoTrackEventExtra$$ExternalSyntheticLambda4
+android.os.PerfettoTrackEventExtra$$ExternalSyntheticLambda5
+android.os.PerfettoTrackEventExtra$$ExternalSyntheticLambda6
+android.os.PerfettoTrackEventExtra$ArgBool
+android.os.PerfettoTrackEventExtra$ArgDouble
+android.os.PerfettoTrackEventExtra$ArgInt64
+android.os.PerfettoTrackEventExtra$ArgString
+android.os.PerfettoTrackEventExtra$Builder
+android.os.PerfettoTrackEventExtra$CounterDouble
+android.os.PerfettoTrackEventExtra$CounterInt64
+android.os.PerfettoTrackEventExtra$CounterTrack
+android.os.PerfettoTrackEventExtra$FieldContainer
+android.os.PerfettoTrackEventExtra$FieldDouble
+android.os.PerfettoTrackEventExtra$FieldInt64
+android.os.PerfettoTrackEventExtra$FieldNested
+android.os.PerfettoTrackEventExtra$FieldString
+android.os.PerfettoTrackEventExtra$Flow
+android.os.PerfettoTrackEventExtra$NamedTrack
+android.os.PerfettoTrackEventExtra$PerfettoPointer
+android.os.PerfettoTrackEventExtra$Pool
+android.os.PerfettoTrackEventExtra$Proto
+android.os.PerfettoTrackEventExtra$RingBuffer
+android.os.PerfettoTrackEventExtra-IA
+android.os.PerfettoTrackEventExtra
 android.os.PerformanceHintManager$Session
 android.os.PerformanceHintManager
 android.os.PermissionEnforcer
@@ -6705,9 +6753,9 @@ android.os.instrumentation.IOffsetCallback$Stub
 android.os.instrumentation.IOffsetCallback
 android.os.instrumentation.MethodDescriptor$1
 android.os.instrumentation.MethodDescriptor
-android.os.profiling.anomaly.AnomalyDetectorFrameworkInitializer
 android.os.storage.DiskInfo$1
 android.os.storage.DiskInfo
+android.os.storage.FileManager
 android.os.storage.IObbActionListener$Stub$Proxy
 android.os.storage.IObbActionListener$Stub
 android.os.storage.IObbActionListener
@@ -7158,7 +7206,6 @@ android.security.keystore2.AndroidKeyStoreRSAPublicKey
 android.security.keystore2.AndroidKeyStoreSecretKey
 android.security.keystore2.AndroidKeyStoreSignatureSpiBase
 android.security.keystore2.AndroidKeyStoreSpi
-android.security.keystore2.KeyStore2MakeEnumTag
 android.security.keystore2.KeyStore2ParameterUtils
 android.security.keystore2.KeyStoreCryptoOperationChunkedStreamer$MainDataStream
 android.security.keystore2.KeyStoreCryptoOperationChunkedStreamer$Stream
@@ -8404,6 +8451,7 @@ android.text.method.ReplacementTransformationMethod$SpannedReplacementCharSequen
 android.text.method.ReplacementTransformationMethod
 android.text.method.ScrollingMovementMethod
 android.text.method.SingleLineTransformationMethod
+android.text.method.TextKeyListener$$ExternalSyntheticLambda0
 android.text.method.TextKeyListener$Capitalize
 android.text.method.TextKeyListener$NullKeyListener
 android.text.method.TextKeyListener$SettingsObserver
@@ -8578,6 +8626,7 @@ android.transition.Visibility-IA
 android.transition.Visibility
 android.transition.VisibilityPropagation
 android.transparency.BinaryTransparencyManager
+android.uilatencystats.EventType
 android.updatabledriver.UpdatableDriverProto$1
 android.updatabledriver.UpdatableDriverProto$Denylist
 android.updatabledriver.UpdatableDriverProto$DenylistOrBuilder
@@ -8794,7 +8843,6 @@ android.view.AppTransitionAnimationSpec
 android.view.AttachedSurfaceControl$OnBufferTransformHintChangedListener
 android.view.AttachedSurfaceControl
 android.view.BatchedInputEventReceiver$1
-android.view.BatchedInputEventReceiver$BatchedInputRunnable
 android.view.BatchedInputEventReceiver
 android.view.Choreographer$1
 android.view.Choreographer$2
@@ -9011,6 +9059,7 @@ android.view.InsetsAnimationThreadControlRunner$1$$ExternalSyntheticLambda0
 android.view.InsetsAnimationThreadControlRunner$1$$ExternalSyntheticLambda1
 android.view.InsetsAnimationThreadControlRunner$1
 android.view.InsetsAnimationThreadControlRunner
+android.view.InsetsBoundingRect$1
 android.view.InsetsBoundingRect
 android.view.InsetsController$$ExternalSyntheticLambda0
 android.view.InsetsController$$ExternalSyntheticLambda1
@@ -9337,6 +9386,7 @@ android.view.ViewRootImpl$$ExternalSyntheticLambda21
 android.view.ViewRootImpl$$ExternalSyntheticLambda22
 android.view.ViewRootImpl$$ExternalSyntheticLambda23
 android.view.ViewRootImpl$$ExternalSyntheticLambda24
+android.view.ViewRootImpl$$ExternalSyntheticLambda25
 android.view.ViewRootImpl$$ExternalSyntheticLambda2
 android.view.ViewRootImpl$$ExternalSyntheticLambda3
 android.view.ViewRootImpl$$ExternalSyntheticLambda4
@@ -9350,6 +9400,7 @@ android.view.ViewRootImpl$11$$ExternalSyntheticLambda2
 android.view.ViewRootImpl$11$$ExternalSyntheticLambda3
 android.view.ViewRootImpl$11
 android.view.ViewRootImpl$1
+android.view.ViewRootImpl$2$$ExternalSyntheticLambda0
 android.view.ViewRootImpl$2
 android.view.ViewRootImpl$3
 android.view.ViewRootImpl$4
@@ -9365,8 +9416,8 @@ android.view.ViewRootImpl$ActivityConfigCallback
 android.view.ViewRootImpl$AsyncInputStage
 android.view.ViewRootImpl$CalledFromWrongThreadException
 android.view.ViewRootImpl$ConfigChangedCallback
+android.view.ViewRootImpl$ConsumeBatchedInputCallback
 android.view.ViewRootImpl$ConsumeBatchedInputImmediatelyRunnable
-android.view.ViewRootImpl$ConsumeBatchedInputRunnable
 android.view.ViewRootImpl$CornerRadii
 android.view.ViewRootImpl$EarlyPostImeInputStage
 android.view.ViewRootImpl$GfxInfo
@@ -9389,7 +9440,7 @@ android.view.ViewRootImpl$SyntheticTrackballHandler
 android.view.ViewRootImpl$SystemUiVisibilityInfo
 android.view.ViewRootImpl$TakenSurfaceHolder
 android.view.ViewRootImpl$TrackballAxis
-android.view.ViewRootImpl$TraversalRunnable
+android.view.ViewRootImpl$TraversalCallback
 android.view.ViewRootImpl$UnhandledKeyManager
 android.view.ViewRootImpl$ViewPostImeInputStage
 android.view.ViewRootImpl$ViewPreImeInputStage
@@ -9508,6 +9559,7 @@ android.view.accessibility.AccessibilityRequestPreparer
 android.view.accessibility.AccessibilityWindowAttributes$1
 android.view.accessibility.AccessibilityWindowAttributes
 android.view.accessibility.CaptioningManager$1
+android.view.accessibility.CaptioningManager$2
 android.view.accessibility.CaptioningManager$CaptionStyle
 android.view.accessibility.CaptioningManager$CaptioningChangeListener
 android.view.accessibility.CaptioningManager$MyContentObserver
@@ -10512,25 +10564,8 @@ android.window.DesktopExperienceFlags$$ExternalSyntheticLambda53
 android.window.DesktopExperienceFlags$$ExternalSyntheticLambda54
 android.window.DesktopExperienceFlags$$ExternalSyntheticLambda55
 android.window.DesktopExperienceFlags$$ExternalSyntheticLambda56
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda57
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda58
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda59
 android.window.DesktopExperienceFlags$$ExternalSyntheticLambda5
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda60
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda61
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda62
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda63
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda64
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda65
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda66
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda67
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda68
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda69
 android.window.DesktopExperienceFlags$$ExternalSyntheticLambda6
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda70
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda71
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda72
-android.window.DesktopExperienceFlags$$ExternalSyntheticLambda73
 android.window.DesktopExperienceFlags$$ExternalSyntheticLambda7
 android.window.DesktopExperienceFlags$$ExternalSyntheticLambda8
 android.window.DesktopExperienceFlags$$ExternalSyntheticLambda9
@@ -10544,17 +10579,7 @@ android.window.DesktopModeFlags$$ExternalSyntheticLambda14
 android.window.DesktopModeFlags$$ExternalSyntheticLambda15
 android.window.DesktopModeFlags$$ExternalSyntheticLambda16
 android.window.DesktopModeFlags$$ExternalSyntheticLambda17
-android.window.DesktopModeFlags$$ExternalSyntheticLambda18
-android.window.DesktopModeFlags$$ExternalSyntheticLambda19
 android.window.DesktopModeFlags$$ExternalSyntheticLambda1
-android.window.DesktopModeFlags$$ExternalSyntheticLambda20
-android.window.DesktopModeFlags$$ExternalSyntheticLambda21
-android.window.DesktopModeFlags$$ExternalSyntheticLambda22
-android.window.DesktopModeFlags$$ExternalSyntheticLambda23
-android.window.DesktopModeFlags$$ExternalSyntheticLambda24
-android.window.DesktopModeFlags$$ExternalSyntheticLambda25
-android.window.DesktopModeFlags$$ExternalSyntheticLambda26
-android.window.DesktopModeFlags$$ExternalSyntheticLambda27
 android.window.DesktopModeFlags$$ExternalSyntheticLambda2
 android.window.DesktopModeFlags$$ExternalSyntheticLambda3
 android.window.DesktopModeFlags$$ExternalSyntheticLambda4
@@ -10687,6 +10712,7 @@ android.window.TransitionFilter
 android.window.TransitionInfo$1
 android.window.TransitionInfo
 android.window.WindowContainerToken$1
+android.window.WindowContainerToken$2
 android.window.WindowContainerToken-IA
 android.window.WindowContainerToken
 android.window.WindowContainerTransaction$1
@@ -10917,6 +10943,9 @@ com.android.i18n.timezone.internal.MemoryMappedFile
 com.android.i18n.timezone.internal.NioBufferIterator
 com.android.i18n.util.ATrace
 com.android.i18n.util.Log
+com.android.icu.FeatureFlags
+com.android.icu.FeatureFlagsImpl
+com.android.icu.Flags
 com.android.icu.charset.CharsetDecoderICU
 com.android.icu.charset.CharsetEncoderICU
 com.android.icu.charset.CharsetFactory
@@ -11566,6 +11595,9 @@ com.android.internal.hidden_from_bootclasspath.android.app.appfunctions.flags.Fl
 com.android.internal.hidden_from_bootclasspath.android.app.assist.flags.FeatureFlags
 com.android.internal.hidden_from_bootclasspath.android.app.assist.flags.FeatureFlagsImpl
 com.android.internal.hidden_from_bootclasspath.android.app.assist.flags.Flags
+com.android.internal.hidden_from_bootclasspath.android.app.contentsafety.flags.FeatureFlags
+com.android.internal.hidden_from_bootclasspath.android.app.contentsafety.flags.FeatureFlagsImpl
+com.android.internal.hidden_from_bootclasspath.android.app.contentsafety.flags.Flags
 com.android.internal.hidden_from_bootclasspath.android.app.jank.FeatureFlags
 com.android.internal.hidden_from_bootclasspath.android.app.jank.FeatureFlagsImpl
 com.android.internal.hidden_from_bootclasspath.android.app.jank.Flags
@@ -11704,6 +11736,9 @@ com.android.internal.hidden_from_bootclasspath.com.android.graphics.surfacefling
 com.android.internal.hidden_from_bootclasspath.com.android.hardware.input.FeatureFlags
 com.android.internal.hidden_from_bootclasspath.com.android.hardware.input.FeatureFlagsImpl
 com.android.internal.hidden_from_bootclasspath.com.android.hardware.input.Flags
+com.android.internal.hidden_from_bootclasspath.com.android.input.flags.FeatureFlags
+com.android.internal.hidden_from_bootclasspath.com.android.input.flags.FeatureFlagsImpl
+com.android.internal.hidden_from_bootclasspath.com.android.input.flags.Flags
 com.android.internal.hidden_from_bootclasspath.com.android.internal.camera.flags.FeatureFlags
 com.android.internal.hidden_from_bootclasspath.com.android.internal.camera.flags.FeatureFlagsImpl
 com.android.internal.hidden_from_bootclasspath.com.android.internal.camera.flags.Flags
@@ -12171,6 +12206,7 @@ com.android.internal.protolog.ProtoLogDataSource-IA
 com.android.internal.protolog.ProtoLogDataSource
 com.android.internal.protolog.ProtoLogGroup
 com.android.internal.protolog.ProtoLogImpl
+com.android.internal.protolog.ProtoLogNative$$ExternalSyntheticLambda0
 com.android.internal.protolog.ProtoLogNative
 com.android.internal.protolog.ProtoLogViewerConfigReader
 com.android.internal.protolog.UnprocessedPerfettoProtoLogImpl$$ExternalSyntheticLambda0
@@ -13249,17 +13285,6 @@ com.android.internal.telephony.nano.StoredPinProto$PlatformManagedPin
 com.android.internal.telephony.nano.StoredPinProto$PlatformManagedPins
 com.android.internal.telephony.nano.StoredPinProto$StoredPin$PinStatus
 com.android.internal.telephony.nano.StoredPinProto$StoredPin
-com.android.internal.telephony.nano.TelephonyConfigData$CarrierRoamingConfigProto
-com.android.internal.telephony.nano.TelephonyConfigData$CarrierSupportedSatelliteServicesProto
-com.android.internal.telephony.nano.TelephonyConfigData$ConnectionCapabilityConfig
-com.android.internal.telephony.nano.TelephonyConfigData$ConnectionCapabilityMap
-com.android.internal.telephony.nano.TelephonyConfigData$DataConfigProto
-com.android.internal.telephony.nano.TelephonyConfigData$MeteredCapabilities
-com.android.internal.telephony.nano.TelephonyConfigData$MeteredCapabilityConfig
-com.android.internal.telephony.nano.TelephonyConfigData$SatelliteConfigProto
-com.android.internal.telephony.nano.TelephonyConfigData$SatelliteProviderCapabilityProto
-com.android.internal.telephony.nano.TelephonyConfigData$SatelliteRegionProto
-com.android.internal.telephony.nano.TelephonyConfigData$TelephonyConfigProto
 com.android.internal.telephony.nano.TelephonyProto$ActiveSubscriptionInfo
 com.android.internal.telephony.nano.TelephonyProto$BandwidthEstimatorStats$PerLevel
 com.android.internal.telephony.nano.TelephonyProto$BandwidthEstimatorStats$PerRat
@@ -13424,6 +13449,7 @@ com.android.internal.telephony.phonenumbers.prefixmapper.PhonePrefixMapStorageSt
 com.android.internal.telephony.phonenumbers.prefixmapper.PrefixFileReader
 com.android.internal.telephony.phonenumbers.prefixmapper.PrefixTimeZonesMap
 com.android.internal.telephony.protobuf.GeneratedMessageLite$SerializedForm
+com.android.internal.telephony.protobuf.InvalidProtocolBufferException
 com.android.internal.telephony.protobuf.nano.CodedInputByteBufferNano
 com.android.internal.telephony.protobuf.nano.CodedOutputByteBufferNano$OutOfSpaceException
 com.android.internal.telephony.protobuf.nano.CodedOutputByteBufferNano
@@ -13761,6 +13787,7 @@ com.android.internal.util.XmlUtils$ForcedTypedXmlPullParser
 com.android.internal.util.XmlUtils$ForcedTypedXmlSerializer
 com.android.internal.util.XmlUtils$ReadMapCallback
 com.android.internal.util.XmlUtils$WriteMapCallback
+com.android.internal.util.XmlUtils-IA
 com.android.internal.util.XmlUtils
 com.android.internal.util.dump.DualDumpOutputStream$DumpField
 com.android.internal.util.dump.DualDumpOutputStream$DumpObject
@@ -13833,6 +13860,7 @@ com.android.internal.view.RotationPolicy
 com.android.internal.view.SurfaceCallbackHelper$1
 com.android.internal.view.SurfaceCallbackHelper
 com.android.internal.view.TooltipPopup
+com.android.internal.view.WindowClientTransactionHandler
 com.android.internal.view.WindowManagerPolicyThread
 com.android.internal.view.menu.ActionMenuItem
 com.android.internal.view.menu.ActionMenuItemView$ActionMenuItemForwardingListener

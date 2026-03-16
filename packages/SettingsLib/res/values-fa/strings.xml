@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"اترنت قطع شد."</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"اترنت."</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"تماس گرفته نشود."</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"صفحه‌کلید فیزیکی"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"انتخاب جانمایی صفحه‌کلید"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"پیش‌فرض"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"کنترل روشن شدن صفحه‌نمایش"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"اجازه روشن کردن صفحه‌نمایش"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"به برنامه اجازه می‌دهد صفحه‌نمایش را روشن کند. اگر این اجازه داده شود، ممکن است این برنامه در هر زمانی بدون توجه به منظور صریح شما صفحه‌نمایش را روشن کند."</string>

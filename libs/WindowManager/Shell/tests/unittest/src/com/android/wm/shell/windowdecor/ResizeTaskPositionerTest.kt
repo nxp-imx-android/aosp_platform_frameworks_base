@@ -132,7 +132,7 @@ class ResizeTaskPositionerTest : ShellTestCase() {
         // First Move, simulate a bounds change in the mock.
         doAnswer { invocation ->
                 val session = invocation.getArgument<DragSession>(0)
-                session.repositionTaskBounds.set(mock<Rect>())
+                session.repositionTaskBounds.set(mock<Rect>()); false
             }
             .whenever(mockTaskResizer)
             .onResizeUpdate(any(), any(), any())
@@ -179,7 +179,7 @@ class ResizeTaskPositionerTest : ShellTestCase() {
         // First Move, simulate a bounds change in the mock.
         doAnswer { invocation ->
                 val session = invocation.getArgument<DragSession>(0)
-                session.repositionTaskBounds.set(mock<Rect>())
+                session.repositionTaskBounds.set(mock<Rect>()); false
             }
             .whenever(mockTaskResizer)
             .onResizeUpdate(any(), any(), any())

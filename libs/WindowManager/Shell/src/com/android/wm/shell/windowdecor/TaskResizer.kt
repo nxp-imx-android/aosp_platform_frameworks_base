@@ -33,8 +33,9 @@ interface TaskResizer {
      * @param session The drag session for the current drag operation.
      * @param x The new x coordinate of the drag point.
      * @param y The new y coordinate of the drag point.
+     * @return whether the current resize operation is violating size constraints.
      */
-    fun onResizeUpdate(session: DragSession, x: Float, y: Float)
+    fun onResizeUpdate(session: DragSession, x: Float, y: Float): Boolean
 
     /**
      * Called when a drag resize ends.

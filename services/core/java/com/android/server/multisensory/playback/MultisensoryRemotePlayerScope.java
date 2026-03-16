@@ -27,7 +27,7 @@ import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.multisensory.IMultisensoryPlayer;
 import android.os.multisensory.IMultisensoryPlayerLoadCallback;
-import android.os.multisensory.MultisensoryToken;
+import android.os.multisensory.MultisensoryManager;
 import android.util.ArraySet;
 import android.util.Slog;
 import android.util.SparseIntArray;
@@ -93,7 +93,9 @@ public final class MultisensoryRemotePlayerScope {
 
     /** Sets the load result for a given multisensory token. */
     public void setLoadResultForToken(
-            long playerId, @MultisensoryToken.Token int tokenConstant, @LoadResult int loadResult) {
+            long playerId,
+            @MultisensoryManager.Token int tokenConstant,
+            @LoadResult int loadResult) {
         if (playerId == mCurrentPlayerId) {
             mTokenLoadResults.put(tokenConstant, loadResult);
         } else {
@@ -110,7 +112,7 @@ public final class MultisensoryRemotePlayerScope {
     }
 
     /** Returns the load result for a given multisensory token. */
-    public @LoadResult int getLoadResultForToken(@MultisensoryToken.Token int tokenConstant) {
+    public @LoadResult int getLoadResultForToken(@MultisensoryManager.Token int tokenConstant) {
         return mTokenLoadResults.get(tokenConstant, LOAD_RESULT_UNKNOWN);
     }
 
@@ -131,13 +133,13 @@ public final class MultisensoryRemotePlayerScope {
      * the registered player is dropped, the installed {@link RemotePlayerListener} will be
      * notified. This method must be synchronized by the caller.
      *
-     * @param tokenConstant Token to play. One of {@link MultisensoryToken}.
+     * @param tokenConstant Token to play. One of {@link MultisensoryManager}.
      * @param vibrationAttributes Attributes for the haptics part of the feedback.
      * @param audioAttributes Attributes for the audio part of the feedback.
      * @return true if the registered play was used to play the feedback, false in case of failure.
      */
     public boolean play(
-            @MultisensoryToken.Token int tokenConstant,
+            @MultisensoryManager.Token int tokenConstant,
             @NonNull VibrationAttributes vibrationAttributes,
             @Nullable AudioAttributes audioAttributes) {
         try {
@@ -163,7 +165,7 @@ public final class MultisensoryRemotePlayerScope {
      * registered player is dropped, the installed {@link RemotePlayerListener} will be notified.
      * This method must be synchronized by the caller.
      *
-     * @param tokenConstant Token to load. One of {@link MultisensoryToken}.
+     * @param tokenConstant Token to load. One of {@link MultisensoryManager}.
      * @param vibrationEffect The haptic effect for the token.
      * @param audioEffect The audio effect for the token.
      * @param loadCallback The {@link IMultisensoryPlayerLoadCallback} for the remote player to
@@ -171,7 +173,7 @@ public final class MultisensoryRemotePlayerScope {
      * @return true if the load operation was successful, false otherwise.
      */
     public boolean load(
-            @MultisensoryToken.Token int tokenConstant,
+            @MultisensoryManager.Token int tokenConstant,
             VibrationEffect vibrationEffect,
             String audioEffect,
             IMultisensoryPlayerLoadCallback loadCallback) {

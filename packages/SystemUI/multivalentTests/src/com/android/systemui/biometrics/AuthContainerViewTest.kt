@@ -469,7 +469,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_LARGE_SCREEN_BP)
-    fun testWearDeviceUsesLegacyCredentialView() {
+    fun testWearDeviceUsesLegacyCredentialPatternView() {
         whenever(packageManager.hasSystemFeature(
             android.content.pm.PackageManager.FEATURE_WATCH)
         ).thenReturn(true)
@@ -486,6 +486,57 @@ open class AuthContainerViewTest : SysuiTestCase() {
         )
 
         assertThat(container.hasCredentialPatternView()).isTrue()
+    }
+    @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_BP)
+    fun testWearDeviceUsesLegacyCredentialViewPinView() {
+        // GIVEN a watch device
+        whenever(packageManager.hasSystemFeature(
+            android.content.pm.PackageManager.FEATURE_WATCH)
+        ).thenReturn(true)
+
+        whenever(userManager.getCredentialOwnerProfile(anyInt())).thenReturn(20)
+        whenever(lockPatternUtils.getCredentialTypeForUser(eq(20)))
+            .thenReturn(CREDENTIAL_TYPE_PIN)
+
+        // initializeFingerprintContainer handles boilerplate of creating the Config object, but we
+        // override authenticators with DEVICE_CREDENTIAL (non biometric) to end up with
+        // CREDENTIAL_TYPE_PIN
+        val container = initializeFingerprintContainer(
+            authenticators = BiometricManager.Authenticators.DEVICE_CREDENTIAL
+        )
+
+        // legacy PIN view is shown (checked via lockPassword ID)
+        assertThat(container.hasCredentialPasswordView()).isTrue()
+        // compose view is not visible
+        assertThat(container.findViewById<View>(R.id.compose_credential_view)?.visibility)
+            .isNotEqualTo(View.VISIBLE)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_BP)
+    fun testWearDevicePanelNotConstrainedToComposeView() {
+        whenever(packageManager.hasSystemFeature(
+            android.content.pm.PackageManager.FEATURE_WATCH)
+        ).thenReturn(true)
+        whenever(userManager.getCredentialOwnerProfile(anyInt())).thenReturn(20)
+        whenever(lockPatternUtils.getCredentialTypeForUser(eq(20)))
+            .thenReturn(CREDENTIAL_TYPE_PIN)
+
+        val container = initializeFingerprintContainer(
+            authenticators = BiometricManager.Authenticators.DEVICE_CREDENTIAL
+        )
+        waitForIdleSync()
+
+        val panel = container.findViewById<View>(R.id.panel)
+        val params = panel.layoutParams as ConstraintLayout.LayoutParams
+        val composeViewId = R.id.compose_credential_view
+
+        // The panel should NOT be constrained to the compose view.
+        assertThat(params.topToTop).isNotEqualTo(composeViewId)
+        assertThat(params.bottomToBottom).isNotEqualTo(composeViewId)
+        assertThat(params.startToStart).isNotEqualTo(composeViewId)
+        assertThat(params.endToEnd).isNotEqualTo(composeViewId)
     }
 
     @Test

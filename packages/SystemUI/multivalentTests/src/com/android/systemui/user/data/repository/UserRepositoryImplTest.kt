@@ -23,7 +23,6 @@ import android.app.admin.devicePolicyManager
 import android.content.Intent
 import android.content.applicationContext
 import android.content.pm.UserInfo
-import android.internal.statusbar.fakeStatusBarService
 import android.os.UserHandle
 import android.os.UserManager
 import android.platform.test.flag.junit.FlagsParameterization
@@ -70,7 +69,6 @@ class UserRepositoryImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     private val globalSettings = kosmos.fakeGlobalSettings
     private val broadcastDispatcher = kosmos.broadcastDispatcher
     private val devicePolicyManager = kosmos.devicePolicyManager
-    private val statusBarService = kosmos.fakeStatusBarService
     private val activityManager = kosmos.activityManager
 
     @Mock private lateinit var manager: UserManager
@@ -549,7 +547,6 @@ class UserRepositoryImplTest(flags: FlagsParameterization) : SysuiTestCase() {
             broadcastDispatcher = broadcastDispatcher,
             devicePolicyManager = devicePolicyManager,
             resources = context.resources,
-            statusBarService = statusBarService,
             activityManager = activityManager,
             userIconProvider = kosmos.userIconProvider,
         )

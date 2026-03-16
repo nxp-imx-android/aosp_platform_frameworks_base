@@ -20,7 +20,7 @@ import android.content.Context
 import com.android.settingslib.metadata.R
 
 /** A valid sim slot ID. */
-class SimSlotId: ApiType<String> {
+class SimSlotId: DirectApiType<String> {
 
     override fun getType(): Class<String> = String::class.java
 

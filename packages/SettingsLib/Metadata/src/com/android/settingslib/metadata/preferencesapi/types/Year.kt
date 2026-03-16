@@ -20,9 +20,12 @@ import android.content.Context
 import androidx.annotation.StringRes
 import com.android.settingslib.metadata.R
 
-/** A year of the form YYYY-MM-DD. */
-object Year: ApiType<String> {
+/** A year of the form YYYY. */
+object Year: DirectApiType<String> {
   override fun getType(): Class<String> = String::class.java
   override fun getDescription(context: Context): String = "A year in the form YYYY"
   override fun getKey(): String = "Year"
+
+  override fun convertInternalToExternal(internal: String): String = if (internal.length == 4 && internal.all { it.isDigit() }) internal else error("Invalid year: $internal")
+  override fun convertExternalToInternal(external: String): String = if (external.length == 4 && external.all { it.isDigit() }) external else error("Invalid year: $external")
 }

@@ -820,6 +820,107 @@ public final class InputManager {
     }
 
     /**
+     * Remaps a controller button to an axis.
+     *
+     * <p>This makes pressing the button produce motion events with the specified axis value of
+     * either 0 or 1.
+     *
+     * <p>Only physical controller devices with {@link InputDevice#getSources()} containing both
+     * {@link InputDevice#SOURCE_CLASS_JOYSTICK} and {@link InputDevice#SOURCE_CLASS_BUTTON} can be
+     * remapped. Virtual controller devices are not supported.
+     *
+     * <p>Only <i>controller</i> buttons can be remapped. Attempt to remap non-controller buttons
+     * such as keyboard or mouse buttons will fail.
+     *
+     * <p>If the button is not supported by the device the operation is a no-op.
+     *
+     * <p>If the axis is not supported by the device it starts behaving as if it is supported, i.e.
+     * reported by {@link InputDevice#getMotionRange(int)} and {@link
+     * InputDevice#getAxisValue(int)}.
+     *
+     * <p>If the button is already mapped to an axis, the existing mapping gets replaced.
+     *
+     * <p>The existing button to button or axis to axis remappings are both not affected by this
+     * operation and in return don't affect this operation, i.e. the button will start producing
+     * both key and motion events.
+     *
+     * <p>The mappings are <i>not</i> transitive:
+     *
+     * <ul>
+     *   <li>If the button is mapped to axis A, and the axis A is mapped to axis B, pressing the
+     *       button will produce motion events for the axis A, but not for B.
+     *   <li>If button A is mapped to button B, and button B is mapped to an axis, pressing the
+     *       button A will produce key events for B, but not produce any motion events for the axis.
+     * </ul>
+     *
+     * @param identifier The unique identifier for the device.
+     * @param fromButton The controller button getting remapped. This represents the positional code
+     *     for the key.
+     * @param toAxis The axis that it is mapped to.
+     * @hide
+     */
+    @TestApi // Effectively hidden, useful for being tested in isolation.
+    @SuppressWarnings("UnflaggedApi")
+    @RequiresPermission(Manifest.permission.CONTROLLER_REMAPPING)
+    public void remapControllerButtonToAxis(
+            @NonNull InputDeviceIdentifier identifier,
+            @ControllerButton int fromButton,
+            @MotionEvent.Axis int toAxis) {
+        try {
+            mIm.remapControllerButtonToAxis(mContext.getUserId(), identifier, fromButton, toAxis);
+        } catch (RemoteException ex) {
+            throw ex.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Removes a controller button to axis remapping.
+     *
+     * <p>Stops the button from producing motion events. If the button is not mapped to an axis, the
+     * operation is a no-op.
+     *
+     * <p>The existing button to button or axis to axis remappings are not affected.
+     *
+     * @param identifier The unique identifier for the device.
+     * @param fromButton The controller button getting remapped. This represents the positional code
+     *     for the button.
+     * @throws IllegalArgumentException if the provided fromButton is not a valid controller button
+     * @hide
+     */
+    @TestApi // Effectively hidden, useful for being tested in isolation.
+    @SuppressWarnings("UnflaggedApi")
+    @RequiresPermission(Manifest.permission.CONTROLLER_REMAPPING)
+    public void removeControllerButtonToAxisRemapping(
+            @NonNull InputDeviceIdentifier identifier, @ControllerButton int fromButton) {
+        try {
+            mIm.removeControllerButtonToAxisRemapping(mContext.getUserId(), identifier, fromButton);
+        } catch (RemoteException ex) {
+            throw ex.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Clears all existing controller button to axis remappings for a given device.
+     *
+     * <p>Semantically equivalent to calling {@link #removeControllerButtonToAxisRemapping} for all
+     * possible controller buttons.
+     *
+     * @param identifier The unique identifier for the device.
+     * @hide
+     */
+    @TestApi // Effectively hidden, useful for being tested in isolation.
+    @SuppressWarnings("UnflaggedApi")
+    @RequiresPermission(Manifest.permission.CONTROLLER_REMAPPING)
+    public void clearAllControllerButtonToAxisRemappings(
+            @NonNull InputDeviceIdentifier identifier) {
+        try {
+            mIm.clearAllControllerButtonToAxisRemappings(mContext.getUserId(), identifier);
+        } catch (RemoteException ex) {
+            throw ex.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Remaps a controller axis.
      *
      * @param identifier The unique identifier for the device.

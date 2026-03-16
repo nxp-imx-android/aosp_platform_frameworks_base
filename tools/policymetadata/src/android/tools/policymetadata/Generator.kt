@@ -465,6 +465,8 @@ object Generator {
                     proto.mostRestrictive.mostToLeastRestrictiveList
                 )
             EnumResolutionMechanismProto.MechanismCase.CUSTOM -> CodeBlock.of("null")
+            EnumResolutionMechanismProto.MechanismCase.NOT_COEXISTABLE ->
+                CodeBlock.of("new \$T()", notCoexistableType)
             EnumResolutionMechanismProto.MechanismCase.MECHANISM_NOT_SET ->
                 throw IllegalArgumentException("Resolution mechanism not set")
         }
@@ -535,4 +537,6 @@ object Generator {
         )
     private val listUnionType =
         ClassName.get("android.app.admin.metadata", "ResolutionMechanismMetadata", "ListUnion")
+    private val notCoexistableType =
+        ClassName.get("android.app.admin.metadata", "ResolutionMechanismMetadata", "NotCoexistable")
 }

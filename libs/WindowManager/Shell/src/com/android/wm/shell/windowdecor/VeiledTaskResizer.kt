@@ -27,6 +27,8 @@ class VeiledTaskResizer(
     private val displayController: DisplayController,
     private val desktopState: DesktopState,
 ) : TaskResizer {
+    private val changeBoundsResult = DragPositioningCallbackUtility.ChangeBoundsResult()
+
     override fun onResizeStart(session: DragSession) {
         for (listener in session.resizeEventListeners) {
             listener.onDragResizeStarted(
@@ -38,19 +40,19 @@ class VeiledTaskResizer(
         }
     }
 
-    override fun onResizeUpdate(session: DragSession, x: Float, y: Float) {
-        if (
-            DragPositioningCallbackUtility.changeBounds(
-                session.ctrlType,
-                session.repositionTaskBounds,
-                session.taskBoundsAtDragStart,
-                session.stableBounds,
-                DragPositioningCallbackUtility.calculateDelta(x, y, session.repositionStartPoint),
-                displayController,
-                session.windowDecoration,
-                desktopState.canEnterDesktopMode,
-            )
-        ) {
+    override fun onResizeUpdate(session: DragSession, x: Float, y: Float): Boolean {
+        DragPositioningCallbackUtility.changeBounds(
+            session.ctrlType,
+            session.repositionTaskBounds,
+            session.taskBoundsAtDragStart,
+            session.stableBounds,
+            DragPositioningCallbackUtility.calculateDelta(x, y, session.repositionStartPoint),
+            displayController,
+            session.windowDecoration,
+            desktopState.canEnterDesktopMode,
+            changeBoundsResult,
+        )
+        if (changeBoundsResult.boundsChanged) {
             if (!session.isResizingOrAnimatingResize) {
                 for (listener in session.resizeEventListeners) {
                     listener.onDragMove(session.windowDecoration.taskInfo.taskId)
@@ -68,6 +70,7 @@ class VeiledTaskResizer(
                 session.windowDecoration.updateResizeVeil(session.repositionTaskBounds)
             }
         }
+        return changeBoundsResult.violatingSizeConstraints
     }
 
     override fun onResizeEnd(
@@ -92,6 +95,7 @@ class VeiledTaskResizer(
             displayController,
             session.windowDecoration,
             desktopState.canEnterDesktopMode,
+            changeBoundsResult,
         )
 
         session.windowDecoration.updateResizeVeil(session.repositionTaskBounds)

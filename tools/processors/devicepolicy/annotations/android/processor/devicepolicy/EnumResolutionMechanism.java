@@ -36,8 +36,8 @@ public @interface EnumResolutionMechanism {
     boolean custom() default false;
 
     /**
-     * An ordered list that contains all possible enum values for this policy, used to implement
-     * the 'Most Restrictive' conflict resolution mechanism.
+     * An ordered list that contains all possible enum values for this policy, used to implement the
+     * 'Most Restrictive' conflict resolution mechanism.
      *
      * <p>The position in the list dictates precedence: elements at lower indices (earlier in the
      * list) are considered more restrictive and will override elements at higher indices (later in
@@ -47,4 +47,15 @@ public @interface EnumResolutionMechanism {
      * this {@code mostRestrictive} list will be the one that takes effect.
      */
     int[] mostRestrictive() default {};
+
+    /**
+     * Indicates that the enum policy is not coexistable with other values.
+     *
+     * <p>Use this option only if setting the policy by multiple admins is not meaningful, not
+     * supported and not expected to happen.
+     *
+     * <p>When multiple values are set, the least recently set value takes effect. This will be
+     * monitored to ensure that not coexistable are not set by multiple admins.
+     */
+    boolean notCoexistable() default false;
 }

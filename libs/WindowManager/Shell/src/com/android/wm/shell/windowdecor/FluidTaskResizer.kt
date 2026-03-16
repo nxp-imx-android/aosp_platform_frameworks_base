@@ -27,6 +27,8 @@ class FluidTaskResizer(
     private val displayController: DisplayController,
     private val desktopState: DesktopState,
 ) : TaskResizer {
+    private val changeBoundsResult = DragPositioningCallbackUtility.ChangeBoundsResult()
+
     override fun onResizeStart(session: DragSession) {
         for (listener in session.resizeEventListeners) {
             listener.onDragResizeStarted(
@@ -38,20 +40,20 @@ class FluidTaskResizer(
         }
     }
 
-    override fun onResizeUpdate(session: DragSession, x: Float, y: Float) {
+    override fun onResizeUpdate(session: DragSession, x: Float, y: Float): Boolean {
         val wct = WindowContainerTransaction()
-        if (
-            DragPositioningCallbackUtility.changeBounds(
-                session.ctrlType,
-                session.repositionTaskBounds,
-                session.taskBoundsAtDragStart,
-                session.stableBounds,
-                DragPositioningCallbackUtility.calculateDelta(x, y, session.repositionStartPoint),
-                displayController,
-                session.windowDecoration,
-                desktopState.canEnterDesktopMode,
-            )
-        ) {
+        DragPositioningCallbackUtility.changeBounds(
+            session.ctrlType,
+            session.repositionTaskBounds,
+            session.taskBoundsAtDragStart,
+            session.stableBounds,
+            DragPositioningCallbackUtility.calculateDelta(x, y, session.repositionStartPoint),
+            displayController,
+            session.windowDecoration,
+            desktopState.canEnterDesktopMode,
+            changeBoundsResult,
+        )
+        if (changeBoundsResult.boundsChanged) {
             if (!session.isResizingOrAnimatingResize) {
                 // This is the first bounds change since drag resize operation started.
                 wct.setDragResizing(
@@ -75,6 +77,7 @@ class FluidTaskResizer(
             wct.setBounds(session.windowDecoration.taskInfo.token, session.repositionTaskBounds)
             taskOrganizer.applyTransaction(wct)
         }
+        return changeBoundsResult.violatingSizeConstraints
     }
 
     override fun onResizeEnd(
@@ -90,27 +93,27 @@ class FluidTaskResizer(
                 session.repositionTaskBounds,
             )
         }
-        val boundsChangedBetweenUpdateAndEnd =
-            DragPositioningCallbackUtility.changeBounds(
-                session.ctrlType,
-                session.repositionTaskBounds,
-                session.taskBoundsAtDragStart,
-                session.stableBounds,
-                DragPositioningCallbackUtility.calculateDelta(x, y, session.repositionStartPoint),
-                displayController,
-                session.windowDecoration,
-                desktopState.canEnterDesktopMode,
-            )
+        DragPositioningCallbackUtility.changeBounds(
+            session.ctrlType,
+            session.repositionTaskBounds,
+            session.taskBoundsAtDragStart,
+            session.stableBounds,
+            DragPositioningCallbackUtility.calculateDelta(x, y, session.repositionStartPoint),
+            displayController,
+            session.windowDecoration,
+            desktopState.canEnterDesktopMode,
+            changeBoundsResult,
+        )
 
         logD(
             TAG,
             session.windowDecoration.taskInfo.taskId,
             "onResizeEnd: isResizingOrAnimatingResize=%b, boundsChanged=%b, bounds=%s",
             session.isResizingOrAnimatingResize,
-            boundsChangedBetweenUpdateAndEnd,
+            changeBoundsResult.boundsChanged,
             session.repositionTaskBounds,
         )
-        if (!session.isResizingOrAnimatingResize && !boundsChangedBetweenUpdateAndEnd) {
+        if (!session.isResizingOrAnimatingResize && !changeBoundsResult.boundsChanged) {
             return null
         }
 
@@ -118,7 +121,7 @@ class FluidTaskResizer(
             if (session.isResizingOrAnimatingResize) {
                 setDragResizing(session.windowDecoration.taskInfo.token, false /* dragResizing */)
             }
-            if (boundsChangedBetweenUpdateAndEnd) {
+            if (changeBoundsResult.boundsChanged) {
                 setBounds(session.windowDecoration.taskInfo.token, session.repositionTaskBounds)
             }
         }

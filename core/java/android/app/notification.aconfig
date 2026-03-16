@@ -161,6 +161,13 @@ flag {
   }
 }
 
+flag {
+  name: "status_bar_headline"
+  namespace: "notifications"
+  description: "[prototype] Replaces ongoing activity chips with Headline."
+  bug: "486143387"
+}
+
 # Start: exported flags that cannot be removed
 
 flag {

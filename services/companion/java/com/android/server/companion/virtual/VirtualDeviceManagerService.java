@@ -524,6 +524,21 @@ public class VirtualDeviceManagerService extends SystemService implements Watchd
         return null;
     }
 
+    @Nullable
+    private VirtualDeviceImpl getVirtualDeviceForDisplayId(int displayId) {
+        if (displayId == Display.INVALID_DISPLAY || displayId == Display.DEFAULT_DISPLAY) {
+            return null;
+        }
+        ArrayList<VirtualDeviceImpl> virtualDevicesSnapshot = getVirtualDevicesSnapshot();
+        for (int i = 0; i < virtualDevicesSnapshot.size(); i++) {
+            VirtualDeviceImpl virtualDevice = virtualDevicesSnapshot.get(i);
+            if (virtualDevice.isDisplayOwnedByVirtualDevice(displayId)) {
+                return virtualDevice;
+            }
+        }
+        return null;
+    }
+
     // TODO(b/442624418): Replace this explicit role holder check with a new role permission.
     private void checkCallerIsRecentsOrHomeRoleHolder() {
         final int callingUid = Binder.getCallingUid();
@@ -761,11 +776,7 @@ public class VirtualDeviceManagerService extends SystemService implements Watchd
         @VirtualDeviceParams.DevicePolicy
         public int getDevicePolicyForDisplayId(int displayId,
             @VirtualDeviceParams.PolicyType int policyType) {
-            final int deviceId = getDeviceIdForDisplayId(displayId);
-            if (deviceId == Context.DEVICE_ID_DEFAULT) {
-                return DEVICE_POLICY_DEFAULT;
-            }
-            VirtualDeviceImpl virtualDevice = getVirtualDeviceForId(deviceId);
+            VirtualDeviceImpl virtualDevice = getVirtualDeviceForDisplayId(displayId);
             // Do not return DEVICE_POLICY_INVALID here, because the display may exist but not
             // owned by any virtual device, just like the default display.
             if (virtualDevice == null) {
@@ -776,17 +787,8 @@ public class VirtualDeviceManagerService extends SystemService implements Watchd
 
         @Override // Binder call
         public int getDeviceIdForDisplayId(int displayId) {
-            if (displayId == Display.INVALID_DISPLAY || displayId == Display.DEFAULT_DISPLAY) {
-                return Context.DEVICE_ID_DEFAULT;
-            }
-            ArrayList<VirtualDeviceImpl> virtualDevicesSnapshot = getVirtualDevicesSnapshot();
-            for (int i = 0; i < virtualDevicesSnapshot.size(); i++) {
-                VirtualDeviceImpl virtualDevice = virtualDevicesSnapshot.get(i);
-                if (virtualDevice.isDisplayOwnedByVirtualDevice(displayId)) {
-                    return virtualDevice.getDeviceId();
-                }
-            }
-            return Context.DEVICE_ID_DEFAULT;
+            VirtualDeviceImpl virtualDevice = getVirtualDeviceForDisplayId(displayId);
+            return virtualDevice == null ? Context.DEVICE_ID_DEFAULT : virtualDevice.getDeviceId();
         }
 
         @Override // Binder call
@@ -1257,23 +1259,6 @@ public class VirtualDeviceManagerService extends SystemService implements Watchd
                 @NonNull Consumer<String> persistentDeviceIdRemovedListener) {
             synchronized (mVirtualDeviceManagerLock) {
                 mPersistentDeviceIdRemovedListeners.remove(persistentDeviceIdRemovedListener);
-            }
-        }
-
-        @Nullable
-        private VirtualDeviceImpl getVirtualDeviceForDisplayId(int displayId) {
-            synchronized (mVirtualDeviceManagerLock) {
-                if (displayId == Display.INVALID_DISPLAY || displayId == Display.DEFAULT_DISPLAY) {
-                    return null;
-                }
-                ArrayList<VirtualDeviceImpl> virtualDevicesSnapshot = getVirtualDevicesSnapshot();
-                for (int i = 0; i < virtualDevicesSnapshot.size(); i++) {
-                    VirtualDeviceImpl virtualDevice = virtualDevicesSnapshot.get(i);
-                    if (virtualDevice.isDisplayOwnedByVirtualDevice(displayId)) {
-                        return virtualDevice;
-                    }
-                }
-                return null;
             }
         }
     }

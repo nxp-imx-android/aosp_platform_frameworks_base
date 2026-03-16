@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"इथरनेट डिस्कनेक्ट केले."</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"इथरनेट."</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"कॉलिंग उपलब्ध नाही."</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"प्रत्यक्ष कीबोर्ड"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"किबोर्ड लेआउट निवडा"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"डीफॉल्ट"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"स्क्रीन सुरू करण्यासंबंधित नियंत्रण"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"स्क्रीन सुरू करण्यासाठी अनुमती द्या"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"स्क्रीन सुरू करण्यासाठी ॲपला अनुमती द्या. अनुमती दिल्यास, ॲप तुमच्या स्पष्ट हेतूशिवाय कधीही स्क्रीन सुरू करू शकते."</string>

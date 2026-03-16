@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"Nadiskonekta ang Ethernet."</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"Ethernet."</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"Hindi makakatawag."</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"Pisikal na keyboard"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"Pumili ng layout ng keyboard"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"Default"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"Kontrol ng pag-on sa screen"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"Payagan ang pag-on sa screen"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"Nagpapahintulot sa app na i-on ang screen. Kung papayagan, puwedeng i-on ng app ang screen anumang oras nang wala ng iyong malinaw na intent."</string>

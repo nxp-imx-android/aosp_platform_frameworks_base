@@ -74,6 +74,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
@@ -666,6 +667,26 @@ private fun CurrentTilesGrid(
             }
         }
     }
+}
+
+@Composable
+private fun TileLazyGrid(
+    columns: GridCells,
+    modifier: Modifier = Modifier,
+    state: LazyGridState = rememberLazyGridState(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    content: LazyGridScope.() -> Unit,
+) {
+    LazyVerticalGrid(
+        state = state,
+        columns = columns,
+        verticalArrangement = spacedBy(TileArrangementPadding),
+        horizontalArrangement = spacedBy(TileArrangementPadding),
+        contentPadding = contentPadding,
+        userScrollEnabled = false,
+        modifier = modifier,
+        content = content,
+    )
 }
 
 @Composable

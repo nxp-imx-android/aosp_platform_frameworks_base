@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"ইথারনেটের সংযোগ বিচ্ছিন্ন হয়েছে৷"</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"ইথারনেট।"</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"কল করবেন না।"</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"ফিজিক্যাল কীবোর্ড"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"কীবোর্ড লেআউট বেছে নিন"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"ডিফল্ট"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"স্ক্রিন চালু করার কন্ট্রোল"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"স্ক্রিন চালু করার অনুমতি দিন"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"অ্যাপকে স্ক্রিন চালু করার অনুমতি দিন। অনুমতি দেওয়া হলে, অ্যাপ আপনার এক্সপ্লিসিট ইনটেন্ট ছাড়াই যেকোনও সময় স্ক্রিন চালু করতে পারবে।"</string>

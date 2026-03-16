@@ -35,6 +35,7 @@ import static com.android.server.pm.GenericAllowlist.STATUS_ALLOWED_DISABLED_MOD
 import static com.android.server.pm.GenericAllowlist.STATUS_ALLOWED_INVALID_MODE;
 import static com.android.server.pm.GenericAllowlist.STATUS_ALLOWED_PERMANENT_LIST_EMPTY;
 import static com.android.server.pm.GenericAllowlist.STATUS_ALLOWED_TEMPORARY_LIST_EMPTY;
+import static com.android.server.pm.GenericAllowlist.STATUS_DISALLOWED_FEATURE_DISABLED;
 import static com.android.server.pm.GenericAllowlist.STATUS_DISALLOWED_NOT_IN_PERMANENT_LIST;
 import static com.android.server.pm.GenericAllowlist.STATUS_DISALLOWED_NOT_IN_TEMPORARY_LIST;
 import static com.android.server.pm.GenericAllowlist.STATUS_UNKNOWN;
@@ -741,6 +742,11 @@ abstract class GenericAllowlistTestCase<A extends GenericAllowlist<E>, E>
                         .that(allowlistStatusToString(
                                 STATUS_ALLOWED_ALLOWLISTING_DISABLED_WHILE_DEVICE_IS_PROVISIONING))
                         .isEqualTo("ALLOWED_ALLOWLISTING_DISABLED_WHILE_DEVICE_IS_PROVISIONING");
+        expectWithMessage("allowlistStatusToString("
+                + "STATUS_DISALLOWED_FEATURE_DISABLED)")
+                        .that(allowlistStatusToString(
+                                STATUS_DISALLOWED_FEATURE_DISABLED))
+                        .isEqualTo("DISALLOWED_FEATURE_DISABLED");
         expectWithMessage("allowlistStatusToString(666)")
                 .that(allowlistStatusToString(666))
                 .isEqualTo("STATUS_666");

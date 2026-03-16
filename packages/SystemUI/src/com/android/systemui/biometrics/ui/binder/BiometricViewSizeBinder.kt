@@ -18,9 +18,12 @@ package com.android.systemui.biometrics.ui.binder
 
 import android.animation.Animator
 import android.animation.AnimatorSet
+import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Outline
 import android.transition.AutoTransition
 import android.transition.TransitionManager
+import android.util.Log
 import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
@@ -58,6 +61,24 @@ object BiometricViewSizeBinder {
 
     // TODO(b/201510778): make private when related misuse is fixed
     const val ANIMATE_MEDIUM_TO_LARGE_DURATION_MS = 450
+
+    private var isWatchGlobal: Boolean? = null
+
+    /*
+     * Helper function to check if we should use the large screen layout.
+     * AuthContainerView uses the legacy path for watches even if largeScreenBp is enabled.
+     * We must mirror that logic here to ensure we don't collapse the legacy container.
+     */
+    private fun useLargeScreen(context: Context): Boolean {
+        if (!Flags.largeScreenBp()) {
+            return false
+        }
+        val isWatch = isWatchGlobal
+            ?: context.packageManager.hasSystemFeature(PackageManager.FEATURE_WATCH).also { watch ->
+                isWatchGlobal = watch
+            }
+        return !isWatch
+    }
 
     /** Resizes [BiometricPromptLayout] and the [panelViewController] via the [PromptViewModel]. */
     fun bind(
@@ -99,7 +120,9 @@ object BiometricViewSizeBinder {
         panelView.outlineProvider =
             object : ViewOutlineProvider() {
                 override fun getOutline(view: View, outline: Outline) {
-                    if (!Flags.largeScreenBp() && currentView == BiometricPromptView.CREDENTIAL) {
+                    if (!useLargeScreen(view.context) &&
+                        currentView == BiometricPromptView.CREDENTIAL
+                    ) {
                         outline.setRect(0, 0, view.width, view.height)
                         return
                     }
@@ -226,7 +249,7 @@ object BiometricViewSizeBinder {
                     val isBiometric = currentState.activeView == BiometricPromptView.BIOMETRIC
 
                     // Handle center positioning for large screen
-                    if (currentState.position.isCenter && Flags.largeScreenBp()) {
+                    if (currentState.position.isCenter && useLargeScreen(view.context)) {
                         val activeViewId =
                             when {
                                 isFallback -> R.id.fallback_view
@@ -327,7 +350,7 @@ object BiometricViewSizeBinder {
                     viewsToHideWhenSmall.forEach { view -> view.showContentOrHide(isSmall) }
 
                     // Handle fullscreen credential
-                    if (!Flags.largeScreenBp() && isCredential) {
+                    if (!useLargeScreen(view.context) && isCredential) {
                         nextConstraintSet.constrainMaxWidth(R.id.panel, 0)
                         nextConstraintSet.setGuidelineBegin(R.id.leftGuideline, 0)
                         nextConstraintSet.setGuidelineBegin(R.id.topGuideline, 0)
@@ -335,7 +358,7 @@ object BiometricViewSizeBinder {
                     }
 
                     // Handle fallback max width
-                    if (isFallback || (isCredential && Flags.largeScreenBp())) {
+                    if (isFallback || (isCredential && useLargeScreen(view.context))) {
                         nextConstraintSet.constrainMaxWidth(
                             R.id.panel,
                             view.resources.getDimensionPixelSize(
@@ -346,7 +369,7 @@ object BiometricViewSizeBinder {
 
                     // Handle current active view
                     nextConstraintSet.setVisibility(
-                        if (Flags.largeScreenBp()) {
+                        if (useLargeScreen(view.context)) {
                             R.id.compose_credential_view
                         } else {
                             R.id.credential_view

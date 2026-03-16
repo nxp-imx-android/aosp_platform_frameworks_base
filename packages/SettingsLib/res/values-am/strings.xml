@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"ኤተርኔት ተነቅሏል።"</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"ኢተርኔት።"</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"መደወል የለም።"</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"አካላዊ ቁልፍ ሰሌዳ"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"የቁልፍ ሰሌዳ አቀማመጥን ይምረጡ"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"ነባሪ"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"የማያ ገጽ ማብሪያ መቆጣጠሪያ"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"ማያ ገጹን ማብራት ይፍቀዱ"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"አንድ መተግበሪያ ማያ ገጹን እንዲያበራ ይፍቀዱለት። ከተሰጠ፣ መተግበሪያው ያለእርስዎ ግልፅ ሐሳብ በማንኛውም ጊዜ ማያ ገጹን ሊያበራ ይችላል።"</string>

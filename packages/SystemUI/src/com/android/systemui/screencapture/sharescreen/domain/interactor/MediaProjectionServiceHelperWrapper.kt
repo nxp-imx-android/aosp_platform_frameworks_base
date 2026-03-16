@@ -33,7 +33,7 @@ interface MediaProjectionServiceHelperWrapper {
     fun setReviewedConsentIfNeeded(
         @ReviewGrantedConsentResult result: Int,
         reviewGrantedConsentRequired: Boolean,
-        projection: IMediaProjection,
+        projection: IMediaProjection?,
     )
 }
 
@@ -57,7 +57,7 @@ class MediaProjectionServiceHelperWrapperImpl @Inject constructor() :
     override fun setReviewedConsentIfNeeded(
         result: Int,
         reviewGrantedConsentRequired: Boolean,
-        projection: IMediaProjection,
+        projection: IMediaProjection?,
     ) {
         MediaProjectionServiceHelper.setReviewedConsentIfNeeded(
             result,

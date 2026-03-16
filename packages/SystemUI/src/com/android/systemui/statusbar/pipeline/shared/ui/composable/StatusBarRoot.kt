@@ -63,6 +63,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.android.compose.modifiers.thenIf
 import com.android.compose.theme.PlatformTheme
 import com.android.compose.theme.colorAttr
@@ -77,6 +78,9 @@ import com.android.systemui.compose.modifiers.sysUiResTagContainer
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
+import com.android.systemui.headline.ui.compose.Headline
+import com.android.systemui.headline.ui.viewmodel.HeadlineViewModel
+import com.android.systemui.initOnBackPressedDispatcherOwner
 import com.android.systemui.lifecycle.WindowLifecycleState
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
@@ -96,6 +100,7 @@ import com.android.systemui.statusbar.layout.ui.viewmodel.AppHandlesViewModel
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.ConnectedDisplaysStatusBarNotificationIconViewStore
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerStatusBarViewBinder
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder
+import com.android.systemui.statusbar.notification.shared.StatusBarHeadline
 import com.android.systemui.statusbar.phone.NotificationIconContainer
 import com.android.systemui.statusbar.phone.PhoneStatusBarView
 import com.android.systemui.statusbar.phone.StatusBarLocation
@@ -133,11 +138,13 @@ constructor(
     private val clockViewModelFactory: ClockViewModel.Factory,
     private val darkIconManagerFactory: DarkIconManager.Factory,
     private val tintedIconManagerFactory: TintedIconManager.Factory,
+    private val headlineComposer: Headline,
     private val iconController: StatusBarIconController,
     @DisplayAware private val eventAnimationInteractor: SystemStatusEventAnimationInteractor,
     @DisplayAware private val darkIconDispatcher: DarkIconDispatcher,
     @DisplayAware private val homeStatusBarViewBinder: HomeStatusBarViewBinder,
     @DisplayAware private val homeStatusBarViewModelFactory: HomeStatusBarViewModelFactory,
+    @DisplayAware private val headlineViewModelFactory: HeadlineViewModel.Factory,
     private val statusBarRegionSamplingViewModelFactory: StatusBarRegionSamplingViewModel.Factory,
     private val shadeWindowRootView: WindowRootView,
 ) {
@@ -156,6 +163,8 @@ constructor(
                         clockViewModelFactory = clockViewModelFactory,
                         darkIconManagerFactory = darkIconManagerFactory,
                         tintedIconManagerFactory = tintedIconManagerFactory,
+                        headlineViewModelFactory = headlineViewModelFactory,
+                        headlineComposer = headlineComposer,
                         iconController = iconController,
                         darkIconDispatcher = darkIconDispatcher,
                         eventAnimationInteractor = eventAnimationInteractor,
@@ -193,6 +202,8 @@ fun StatusBarRoot(
     clockViewModelFactory: ClockViewModel.Factory,
     darkIconManagerFactory: DarkIconManager.Factory,
     tintedIconManagerFactory: TintedIconManager.Factory,
+    headlineViewModelFactory: HeadlineViewModel.Factory,
+    headlineComposer: Headline,
     iconController: StatusBarIconController,
     darkIconDispatcher: DarkIconDispatcher,
     eventAnimationInteractor: SystemStatusEventAnimationInteractor,
@@ -235,7 +246,7 @@ fun StatusBarRoot(
         return
     }
 
-    Box { // TODO(b/433578931): Remove this Box once the full solution for b/433578931 is settled.
+    Box {
         AndroidView(
             factory = { context ->
                 val inflater = LayoutInflater.from(context)
@@ -353,6 +364,15 @@ fun StatusBarRoot(
                 },
             onRelease = { touchableExclusionRegionDisposableHandle?.dispose() },
         )
+
+        if (StatusBarHeadline.isEnabled) {
+            val lifecycle = LocalLifecycleOwner.current.lifecycle
+            parent.initOnBackPressedDispatcherOwner(lifecycle, force = true)
+            headlineComposer.Content(
+                headlineViewModelFactory,
+                modifier = Modifier.align(Alignment.Center),
+            )
+        }
     }
 }
 

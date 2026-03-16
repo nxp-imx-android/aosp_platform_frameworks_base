@@ -47,6 +47,8 @@
     <string name="summary_virtual_device" msgid="1062189396947962635">"<xliff:g id="APP_NAME">%2$s</xliff:g> ஆப்ஸுக்குப் பின்வரும் அனுமதிகள் வழங்கப்படும்:"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"சாதனம்"</string>
     <string name="summary_generic" msgid="1761976003668044801">"அழைப்பவரின் பெயர் போன்ற தகவலை உங்கள் மொபைல் மற்றும் தேர்வுசெய்த சாதனத்திற்கு இடையில் இந்த ஆப்ஸால் ஒத்திசைக்க முடியும்"</string>
+    <!-- no translation found for summary_generic_with_remote_ai_capability (5053633566439056634) -->
+    <skip />
     <string name="consent_yes" msgid="8344487259618762872">"அனுமதி"</string>
     <string name="consent_no" msgid="2640796915611404382">"அனுமதிக்க வேண்டாம்"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"ரத்துசெய்"</string>

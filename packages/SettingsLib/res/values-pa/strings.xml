@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"ਈਥਰਨੈੱਟ ਡਿਸਕਨੈਕਟ ਹੋ ਗਿਆ।"</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"ਈਥਰਨੈੱਟ।"</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"ਕਾਲਿੰਗ ਸੇਵਾ ਉਪਲਬਧ ਨਹੀਂ ਹੈ।"</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"ਭੌਤਿਕ ਕੀ-ਬੋਰਡ"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"ਕੀ-ਬੋਰਡ ਖਾਕਾ ਚੁਣੋ"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"ਪੂਰਵ-ਨਿਰਧਾਰਿਤ"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"ਸਕ੍ਰੀਨ ਨੂੰ ਚਾਲੂ ਕਰਨ ਵਾਲੀ ਸੈਟਿੰਗ ਸੰਬੰਧੀ ਕੰਟਰੋਲ"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"ਸਕ੍ਰੀਨ ਚਾਲੂ ਕਰਨ ਦਿਓ"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"ਐਪ ਨੂੰ ਸਕ੍ਰੀਨ ਚਾਲੂ ਕਰਨ ਦਿਓ। ਇਜਾਜ਼ਤ ਦਿੱਤੇ ਜਾਣ \'ਤੇ, ਇਹ ਐਪ ਤੁਹਾਡੇ ਇਰਾਦੇ ਦੇ ਬਿਨਾਂ ਕਿਸੇ ਵੇਲੇ ਵੀ ਸਕ੍ਰੀਨ ਨੂੰ ਚਾਲੂ ਕਰ ਸਕਦੀ ਹੈ।"</string>

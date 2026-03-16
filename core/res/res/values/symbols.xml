@@ -2258,6 +2258,7 @@
   <java-symbol type="dimen" name="config_hapticChannelMaxVibrationAmplitude" />
   <java-symbol type="dimen" name="config_keyboardHapticFeedbackFixedAmplitude" />
   <java-symbol type="bool" name="config_keyboardVibrationSettingsSupported" />
+  <java-symbol type="bool" name="config_keyboardVibrationSettingsIntensitySupported" />
   <java-symbol type="bool" name="config_ringtoneVibrationSettingsSupported" />
   <java-symbol type="array" name="config_ringtoneVibrationPatternToMetricIdMapping" />
   <java-symbol type="array" name="config_notificationVibrationPatternToMetricIdMapping" />
@@ -2377,6 +2378,7 @@
   <java-symbol type="string" name="image_wallpaper_component" />
   <java-symbol type="string" name="fallback_wallpaper_component" />
   <java-symbol type="bool" name="config_isLiveWallpaperSupportedInDesktopExperience" />
+  <java-symbol type="bool" name="config_optimizeDefaultWallpaper" />
   <java-symbol type="string" name="input_method_binding_label" />
   <java-symbol type="string" name="input_method_language_settings" />
   <java-symbol type="string" name="input_method_switcher_settings_button" />

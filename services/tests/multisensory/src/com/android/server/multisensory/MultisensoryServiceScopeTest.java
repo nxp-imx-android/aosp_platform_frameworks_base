@@ -32,7 +32,7 @@ import android.content.Context;
 import android.os.RemoteException;
 import android.os.VibrationEffect;
 import android.os.VibratorManager;
-import android.os.multisensory.MultisensoryToken;
+import android.os.multisensory.MultisensoryManager;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -80,7 +80,7 @@ public class MultisensoryServiceScopeTest {
 
     @Test
     public void registerRemotePlayer_tokensAreLoaded() throws RemoteException {
-        int token = MultisensoryToken.UNLOCK;
+        int token = MultisensoryManager.TOKEN_UNLOCK;
 
         mUnderTest.registerRemotePlayer(mRemotePlayer);
 
@@ -90,7 +90,7 @@ public class MultisensoryServiceScopeTest {
     @Test
     public void registerRemotePlayer_whenRemotePlayerIsDropped_unlinkToDeathIsCalled()
             throws RemoteException {
-        int token = MultisensoryToken.UNLOCK;
+        int token = MultisensoryManager.TOKEN_UNLOCK;
         mRemotePlayer.setLoadResultForToken(
                 token, MultisensoryRemotePlayerScope.LOAD_RESULT_SUCCESS);
 
@@ -107,7 +107,7 @@ public class MultisensoryServiceScopeTest {
             throws RemoteException {
         // Two players expected to successfully load the UNLOCK token
         FakeMultisensoryPlayer backupPlayer = new FakeMultisensoryPlayer();
-        int token = MultisensoryToken.UNLOCK;
+        int token = MultisensoryManager.TOKEN_UNLOCK;
         mRemotePlayer.setLoadResultForToken(
                 token, MultisensoryRemotePlayerScope.LOAD_RESULT_SUCCESS);
         backupPlayer.setLoadResultForToken(
@@ -168,7 +168,7 @@ public class MultisensoryServiceScopeTest {
 
     @Test
     public void registerRemotePlayer_onRemoteException_loadStatusIndicatesException() {
-        int token = MultisensoryToken.UNLOCK;
+        int token = MultisensoryManager.TOKEN_UNLOCK;
         mRemotePlayer.setLoadResultForToken(
                 token, MultisensoryRemotePlayerScope.LOAD_RESULT_REMOTE_EXCEPTION);
 
@@ -193,7 +193,7 @@ public class MultisensoryServiceScopeTest {
 
     @Test
     public void playToken_withoutRemotePlayer_playsWithDefaultPlayer() {
-        int token = MultisensoryToken.UNLOCK;
+        int token = MultisensoryManager.TOKEN_UNLOCK;
         playToken(token);
 
         assertVibrationCall(token, MultisensoryPlaybackRecord.PlayerType.DEFAULT);
@@ -201,7 +201,7 @@ public class MultisensoryServiceScopeTest {
 
     @Test
     public void playToken_withCrashedRemotePlayer_playsWithDefaultPlayer() throws RemoteException {
-        int token = MultisensoryToken.UNLOCK;
+        int token = MultisensoryManager.TOKEN_UNLOCK;
         int loadResultForToken = MultisensoryRemotePlayerScope.LOAD_RESULT_SUCCESS;
         mRemotePlayer.setLoadResultForToken(token, loadResultForToken);
 
@@ -218,7 +218,7 @@ public class MultisensoryServiceScopeTest {
     @Test
     public void playToken_withRemotePlayerAndSuccessfulLoad_playsWithRemotePlayer()
             throws RemoteException {
-        int token = MultisensoryToken.UNLOCK;
+        int token = MultisensoryManager.TOKEN_UNLOCK;
         mRemotePlayer.setLoadResultForToken(
                 token, MultisensoryRemotePlayerScope.LOAD_RESULT_SUCCESS);
         mUnderTest.registerRemotePlayer(mRemotePlayer);
@@ -232,7 +232,7 @@ public class MultisensoryServiceScopeTest {
     @Test
     public void playToken_withRemotePlayerAndFailedLoad_playsWithDefaultPlayer()
             throws RemoteException {
-        int token = MultisensoryToken.UNLOCK;
+        int token = MultisensoryManager.TOKEN_UNLOCK;
         mRemotePlayer.setLoadResultForToken(
                 token, MultisensoryRemotePlayerScope.LOAD_RESULT_UNKNOWN_ERROR);
         mUnderTest.registerRemotePlayer(mRemotePlayer);
@@ -246,7 +246,7 @@ public class MultisensoryServiceScopeTest {
     @Test
     public void playToken_withRemotePlayerAndRemoteException_playsWithDefaultPlayer()
             throws RemoteException {
-        int token = MultisensoryToken.UNLOCK;
+        int token = MultisensoryManager.TOKEN_UNLOCK;
         mRemotePlayer.setLoadResultForToken(
                 token, MultisensoryRemotePlayerScope.LOAD_RESULT_REMOTE_EXCEPTION);
         mUnderTest.registerRemotePlayer(mRemotePlayer);

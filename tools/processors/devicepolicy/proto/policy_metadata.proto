@@ -107,6 +107,7 @@ message TypeSpecificPolicyMetadata {
       oneof mechanism {
         bool custom = 1;
         MostRestrictive most_restrictive = 2;
+        bool not_coexistable = 3;
       }
     }
 

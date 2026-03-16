@@ -98,8 +98,8 @@ public class InboundHandoffRequestHandlerTest extends TaskContinuityTest {
                 firstAssociationId, new HandoffRequestMessage(taskId));
         mInboundHandoffRequestHandler.onHandoffRequestMessageReceived(
                 secondAssociationId, new HandoffRequestMessage(taskId));
-        // requestHandoffTaskData should only be called once for the task
-        verify(mMockActivityTaskManagerInternal, times(1))
+        // requestHandoffTaskData should be called each time a request is received.
+        verify(mMockActivityTaskManagerInternal, times(2))
                 .requestHandoffTaskData(eq(taskId), any());
 
         HandoffActivityData handoffActivityData =

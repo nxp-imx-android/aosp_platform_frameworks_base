@@ -179,6 +179,23 @@ interface IInputManager {
     @EnforcePermission("CONTROLLER_REMAPPING")
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
             + "android.Manifest.permission.CONTROLLER_REMAPPING)")
+    void remapControllerButtonToAxis(int userId, in InputDeviceIdentifier identifier,
+            int fromButton, int toAxis);
+
+    @EnforcePermission("CONTROLLER_REMAPPING")
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
+            + "android.Manifest.permission.CONTROLLER_REMAPPING)")
+    void removeControllerButtonToAxisRemapping(int userId, in InputDeviceIdentifier identifier,
+            int fromButton);
+
+    @EnforcePermission("CONTROLLER_REMAPPING")
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
+            + "android.Manifest.permission.CONTROLLER_REMAPPING)")
+    void clearAllControllerButtonToAxisRemappings(int userId, in InputDeviceIdentifier identifier);
+
+    @EnforcePermission("CONTROLLER_REMAPPING")
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
+            + "android.Manifest.permission.CONTROLLER_REMAPPING)")
     void remapControllerAxis(int userId, in InputDeviceIdentifier identifier, int fromAxis,
             int toAxis);
 

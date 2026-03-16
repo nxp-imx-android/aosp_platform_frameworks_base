@@ -32,7 +32,7 @@ val androidTop: String = file("../../../../..").canonicalPath
 
 allprojects {
     extra["androidTop"] = androidTop
-    extra["jetpackComposeVersion"] = "1.11.0-alpha02"
+    extra["jetpackComposeVersion"] = "1.11.0-beta01"
 }
 
 allprojects {

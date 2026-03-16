@@ -2115,6 +2115,12 @@
     <string name="notification_metric_label_unit" msgid="309618413505128451">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>)"</string>
     <string name="notification_metric_label_unit_separator" msgid="5631839566551764472">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>):"</string>
     <string name="notification_metric_label_separator" msgid="8416027475779515033">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
+    <!-- no translation found for notification_history_metric_subtext (7408216222655116821) -->
+    <skip />
+    <!-- no translation found for notification_metric_running_timer (1096459900744921213) -->
+    <skip />
+    <!-- no translation found for notification_metric_running_stopwatch (8039546029949295377) -->
+    <skip />
     <string name="call_notification_answer_action" msgid="5999246836247132937">"Odgovori"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"Video"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"Odbaci"</string>
@@ -2259,7 +2265,7 @@
     <string name="autofill_save_title" msgid="7719802414283739775">"Sačuvati u "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b>"?"</string>
     <string name="autofill_save_title_expressive" msgid="2665408870424848558">"Sačuvajte informacije u "<b>"<xliff:g id="LABEL">%1$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_type" msgid="3002460014579799605">"Sačuvati <xliff:g id="TYPE">%1$s</xliff:g> u "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b>"?"</string>
-    <string name="autofill_save_title_with_type_expressive" msgid="6063660551496235255">"Sačuvajte <xliff:g id="TYPE">%1$s</xliff:g> u "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b></string>
+    <string name="autofill_save_title_with_type_expressive" msgid="6063660551496235255">"Sačuvajte stavku <xliff:g id="TYPE">%1$s</xliff:g> u "<b>"<xliff:g id="LABEL">%2$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_2types" msgid="3783270967447869241">"Sačuvati <xliff:g id="TYPE_0">%1$s</xliff:g> i <xliff:g id="TYPE_1">%2$s</xliff:g> u "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b>"?"</string>
     <string name="autofill_save_title_with_2types_expressive" msgid="2996687022212666293">"Sačuvajte <xliff:g id="TYPE_0">%1$s</xliff:g> i <xliff:g id="TYPE_1">%2$s</xliff:g> u "<b>"<xliff:g id="LABEL">%3$s</xliff:g>"</b></string>
     <string name="autofill_save_title_with_3types" msgid="6598228952100102578">"Sačuvati <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g> i <xliff:g id="TYPE_2">%3$s</xliff:g> u "<b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>"?"</string>

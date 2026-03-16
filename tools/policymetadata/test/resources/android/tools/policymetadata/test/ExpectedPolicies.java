@@ -18,6 +18,7 @@ package android.app.admin.metadata;
 
 import static android.app.admin.PolicyIdentifier.FLAGGED_POLICY;
 import static android.app.admin.PolicyIdentifier.MOST_RESTRICTIVE_ENUM_POLICY;
+import static android.app.admin.PolicyIdentifier.NOT_COEXISTANT_ENUM_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_BOOLEAN_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_ENUM_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_INTEGER_POLICY;
@@ -348,6 +349,23 @@ public class Policies {
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of()
+        ));
+        policies.add(new EnumPolicyMetadata(
+            /* id= */ NOT_COEXISTANT_ENUM_POLICY,
+            /* allowedScopes= */ Set.of(
+                2,
+                3
+            ),
+            /* affectedResource= */ 1,
+            /* requiredPermission= */ "android.permission.MANAGE_POLICY_SIMPLE_ENUM",
+            /* requiredCrossUserPermission= */ "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS",
+            /* allowedDpcTypes= */ Set.of(),
+            /* resolutionMechanism= */ new ResolutionMechanismMetadata.NotCoexistable(),
+            /* allowedValues= */ Set.of(
+                0,
+                1,
+                2
+            )
         ));
         return policies;
     }

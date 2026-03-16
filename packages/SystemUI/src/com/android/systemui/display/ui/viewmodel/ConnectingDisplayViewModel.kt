@@ -32,6 +32,7 @@ import com.android.app.displaylib.ExternalDisplayConnectionType.MIRROR
 import com.android.app.displaylib.ExternalDisplayConnectionType.NOT_SPECIFIED
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.CoreStartable
+import com.android.systemui.Flags
 import com.android.systemui.biometrics.Utils.getInsetsOf
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -40,11 +41,14 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.display.data.repository.KioskModeRepository
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor.PendingDisplay
+import com.android.systemui.display.ui.view.ExternalDisplayConnectionContent
 import com.android.systemui.display.ui.view.ExternalDisplayConnectionDialogDelegate
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.SystemUIBottomSheetDialog
 import com.android.systemui.statusbar.phone.SystemUIBottomSheetDialog.WindowLayout
 import com.android.systemui.statusbar.phone.SystemUIDialog
+import com.android.systemui.statusbar.phone.SystemUIDialogFactory
+import com.android.systemui.statusbar.phone.createBottomSheet
 import com.android.systemui.statusbar.policy.AccessibilityManagerWrapper
 import com.android.systemui.util.settings.SecureSettings
 import com.android.wm.shell.shared.desktopmode.DesktopState
@@ -82,8 +86,9 @@ constructor(
     @Background private val bgDispatcher: CoroutineDispatcher,
     private val accessibilityManagerWrapper: AccessibilityManagerWrapper,
     private val delegateFactory: ExternalDisplayConnectionDialogDelegate.Factory,
-    private val dialogFactory: SystemUIBottomSheetDialog.Factory,
+    private val bottomSheetDialogFactory: SystemUIBottomSheetDialog.Factory,
     private val externalDisplayDialogWindowLayout: WindowLayout.ExternalDisplayDialogWindowLayout,
+    private val dialogFactory: SystemUIDialogFactory,
 ) : CoreStartable {
 
     private var dialog: Dialog? = null
@@ -136,29 +141,57 @@ constructor(
         var saveChoice = false
         dismissDialog()
 
-        val delegate =
-            delegateFactory.create(
-                rememberChoiceCheckBoxListener = { _, isChecked -> saveChoice = isChecked },
-                onStartDesktopClickListener = {
-                    enableFor(DESKTOP, saveChoice = saveChoice)
-                    handleA11y(isConnected = true)
-                },
-                onStartMirroringClickListener = { enableFor(MIRROR, saveChoice = saveChoice) },
-                onCancelClickListener = {
-                    scope.launch(context = bgDispatcher) { ignore() }
-                    dismissDialog()
-                },
-                insetsProvider = { getInsetsOf(context, displayCutout() or navigationBars()) },
-                showConcurrentDisplayInfo = showConcurrentDisplayInfo,
-                isDesktopModeSupported = isDesktopModeSupported,
-                isInKioskMode = isInKioskMode,
-            )
+        if (Flags.enableComposeExternalDisplayDialog()) {
+            dialog =
+                dialogFactory
+                    .createBottomSheet(
+                        content = {
+                            ExternalDisplayConnectionContent(
+                                showConcurrentDisplayInfo = showConcurrentDisplayInfo,
+                                isDesktopModeSupported = isDesktopModeSupported,
+                                isInKioskMode = isInKioskMode,
+                                onSaveChoiceChanged = { isChecked -> saveChoice = isChecked },
+                                onStartDesktopMode = {
+                                    enableFor(DESKTOP, saveChoice = saveChoice)
+                                    handleA11y(isConnected = true)
+                                },
+                                onStartMirroring = { enableFor(MIRROR, saveChoice = saveChoice) },
+                                onCancel = {
+                                    scope.launch(context = bgDispatcher) { ignore() }
+                                    dismissDialog()
+                                },
+                            )
+                        }
+                    )
+                    .also {
+                        SystemUIDialog.registerDismissListener(it)
+                        it.show()
+                    }
+        } else {
+            val delegate =
+                delegateFactory.create(
+                    rememberChoiceCheckBoxListener = { _, isChecked -> saveChoice = isChecked },
+                    onStartDesktopClickListener = {
+                        enableFor(DESKTOP, saveChoice = saveChoice)
+                        handleA11y(isConnected = true)
+                    },
+                    onStartMirroringClickListener = { enableFor(MIRROR, saveChoice = saveChoice) },
+                    onCancelClickListener = {
+                        scope.launch(context = bgDispatcher) { ignore() }
+                        dismissDialog()
+                    },
+                    insetsProvider = { getInsetsOf(context, displayCutout() or navigationBars()) },
+                    showConcurrentDisplayInfo = showConcurrentDisplayInfo,
+                    isDesktopModeSupported = isDesktopModeSupported,
+                    isInKioskMode = isInKioskMode,
+                )
 
-        dialog =
-            dialogFactory.create(delegate, externalDisplayDialogWindowLayout).also {
-                SystemUIDialog.registerDismissListener(it)
-                it.show()
-            }
+            dialog =
+                bottomSheetDialogFactory.create(delegate, externalDisplayDialogWindowLayout).also {
+                    SystemUIDialog.registerDismissListener(it)
+                    it.show()
+                }
+        }
     }
 
     private suspend fun handleNewPendingDisplay(

@@ -47,6 +47,8 @@
     <string name="summary_virtual_device" msgid="1062189396947962635">"<xliff:g id="APP_NAME">%2$s</xliff:g> akan diberi kebenaran yang berikut:"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"peranti"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Apl ini akan dapat menyegerakkan maklumat seperti nama individu yang memanggil, antara telefon anda dengan peranti yang dipilih"</string>
+    <!-- no translation found for summary_generic_with_remote_ai_capability (5053633566439056634) -->
+    <skip />
     <string name="consent_yes" msgid="8344487259618762872">"Benarkan"</string>
     <string name="consent_no" msgid="2640796915611404382">"Jangan benarkan"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Batal"</string>

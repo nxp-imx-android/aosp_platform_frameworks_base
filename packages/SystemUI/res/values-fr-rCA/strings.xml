@@ -167,13 +167,15 @@
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Enregistrer le son de l\'appareil"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Enregistrer le microphone"</string>
     <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"Modif. imposs. (audio, enregistr.)"</string>
-    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Afficher l\'appareil photo avant"</string>
-    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Afficher les éléments sélectionnés"</string>
+    <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Afficher l\'appareil photo pour égoportrait"</string>
+    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Afficher les éléments sélect."</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Choisissez une appli à enregistrer"</string>
     <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"Afficher l\'appli suivante"</string>
     <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"Afficher l\'appli précédente"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"Paramètres d\'enregistrement d\'écran"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Élément à ajouter"</string>
+    <!-- no translation found for screen_record_color_picker (6732567862106107021) -->
+    <skip />
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Vidéo enregistrée"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Vidéo supprimée"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Annuler"</string>
@@ -187,7 +189,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"Désactiver le son"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Réactiver le son"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> de <xliff:g id="DURATION">%2$s</xliff:g>"</string>
-    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"Pincez, faites glisser et touchez l\'égoportrait pour l\'ajuster"</string>
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"Pincez, faites glisser et touchez l\'égoportrait pour ajuster sa position"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"La capture d\'écran est bloquée par votre administrateur informatique"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Prendre une capture d\'écran de l\'écran entier"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Enregistrer l\'écran entier"</string>
@@ -1459,6 +1461,8 @@
     <string name="controls_media_button_prev" msgid="8126822360056482970">"Chanson précédente"</string>
     <string name="controls_media_button_next" msgid="6662636627525947610">"Chanson suivante"</string>
     <string name="controls_media_button_connecting" msgid="3138354625847598095">"Connexion en cours…"</string>
+    <!-- no translation found for controls_media_output_chip (324952606619594635) -->
+    <skip />
     <string name="media_transfer_undo" msgid="1895606387620728736">"Annuler"</string>
     <string name="media_move_closer_to_start_cast" msgid="2673104707465013176">"Rapprochez-vous pour faire jouer le contenu sur <xliff:g id="DEVICENAME">%1$s</xliff:g>"</string>
     <string name="media_move_closer_to_end_cast" msgid="7302555909119374738">"Pour faire jouer le contenu ici, rapprochez-vous de <xliff:g id="DEVICENAME">%1$s</xliff:g>"</string>
@@ -1488,10 +1492,8 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Appareils disponibles pour la sortie audio."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Volume"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g> %%"</string>
-    <!-- no translation found for media_output_dialog_missing_permissions_warning (4312830846174995199) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_warning_button_fix (3650735180540135181) -->
-    <skip />
+    <string name="media_output_dialog_missing_permissions_warning" msgid="4312830846174995199">"Pour afficher plus d\'appareils, vous devrez peut-être autoriser les autorisations pour <xliff:g id="MEDIA_APP_NAME">%1$s</xliff:g>"</string>
+    <string name="media_output_dialog_warning_button_fix" msgid="3650735180540135181">"Ouvrir <xliff:g id="MEDIA_APP_NAME">%1$s</xliff:g>"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Haut-parleurs connectés"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Haut-parleurs et écrans"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Suggestions"</string>
@@ -1601,8 +1603,7 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"Aperçu de l\'image"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"modifier"</string>
     <string name="add" msgid="81036585205287996">"Ajouter"</string>
-    <!-- no translation found for remove (7031760447233505700) -->
-    <skip />
+    <string name="remove" msgid="7031760447233505700">"Retirer"</string>
     <string name="manage_users" msgid="1823875311934643849">"Gérer utilisateurs"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"Cette notification ne prend pas en charge l\'écran partagé par glissement"</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"Position active"</string>
@@ -1862,18 +1863,25 @@
     <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"Retouche de portrait"</string>
     <string name="av_mic_label" msgid="5427348054144789879">"Microphone"</string>
     <string name="av_camera_label" msgid="7719772172590702343">"Caméra"</string>
-    <string name="av_camera_blur_drill_in_title" msgid="2250600375798981511">"Flou d\'arrière-plan"</string>
+    <!-- no translation found for av_camera_blur_drill_in_title (3392789469292685354) -->
+    <skip />
     <string name="av_camera_blur_off" msgid="3170334995799202022">"Désactivé"</string>
-    <string name="av_camera_blur_light" msgid="5666055368940059418">"Léger"</string>
-    <string name="av_camera_blur_full" msgid="3276351992811619332">"Complet"</string>
+    <!-- no translation found for av_camera_blur_light (5105255788203563538) -->
+    <skip />
+    <!-- no translation found for av_camera_blur_full (6493497965254048479) -->
+    <skip />
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"Améliorer l\'éclairage"</string>
     <string name="av_camera_face_retouch" msgid="45890971969486224">"Retouche de portrait"</string>
-    <string name="av_camera_framing" msgid="5108462267843042492">"Cadrage de la caméra"</string>
-    <string name="av_studio_mic" msgid="2614843492629357766">"Micro de studio"</string>
-    <string name="av_studio_look" msgid="621893522645557619">"Style studio"</string>
+    <!-- no translation found for av_camera_framing (2948988841290208034) -->
+    <skip />
+    <!-- no translation found for av_studio_mic (1815195630183143501) -->
+    <skip />
+    <!-- no translation found for av_studio_look (631085505786989852) -->
+    <skip />
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d effets"</string>
     <string name="av_blur" msgid="405131343487260171">"Flouter"</string>
-    <string name="av_live_captions" msgid="7819416886586903077">"Sous-titres instantanés"</string>
+    <!-- no translation found for av_live_captions (802763867449401889) -->
+    <skip />
     <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"Retour"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Pile %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Pile G %1$s    Pile D %2$s"</string>

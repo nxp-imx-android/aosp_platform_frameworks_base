@@ -18,7 +18,6 @@ package com.android.systemui.inputmethod.ui.composable
 
 import android.content.Context
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -34,7 +33,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -45,9 +43,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.android.compose.theme.PlatformTheme
 import com.android.internal.R
-import com.android.systemui.Flags
 import com.android.systemui.inputmethod.ui.viewmodel.ImeSwitcherMenuViewModel
 import com.android.systemui.lifecycle.rememberActivated
 
@@ -72,52 +68,39 @@ fun LargeScreenImeSwitcherMenuContent(
             viewModelFactory.invoke(context)
         }
 
-    // TODO(b/369376884): The composable does correctly update when the theme changes
-    //  while the dialog is open, but the background (which we don't control here)
-    //  doesn't, which causes us to show things like white text on a white background.
-    //  as a workaround, we remember the original theme and keep it on recomposition.
-    val isCurrentlyInDarkTheme = isSystemInDarkTheme()
-    val cachedDarkTheme = remember { isCurrentlyInDarkTheme }
-    // TODO(b/474600479): Remove remember val and PlatformTheme wrapper once flag is advanced.
-    val isDarkTheme =
-        if (Flags.dialogBackgroundRefresh()) isCurrentlyInDarkTheme else cachedDarkTheme
     val paneTitleDescription = stringResource(R.string.select_input_method)
-
-    PlatformTheme(isDarkTheme = isDarkTheme) {
+    Column(
+        modifier =
+            Modifier.fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                .padding(MenuDimensions.InternalPadding)
+                .semantics {
+                    paneTitle = paneTitleDescription
+                    testTagsAsResourceId = true
+                }
+                .testTag("container"),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Header(
+            settingsButtonAction =
+                viewModel.settingsButtonAction.value?.let { action ->
+                    {
+                        action()
+                        dismissAction()
+                    }
+                }
+        )
+        Spacer(modifier = Modifier.size(MenuDimensions.AfterHeaderSpace))
         Column(
             modifier =
-                Modifier.fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                    .padding(MenuDimensions.InternalPadding)
-                    .semantics {
-                        paneTitle = paneTitleDescription
-                        testTagsAsResourceId = true
-                    }
-                    .testTag("container"),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                Modifier.weight(weight = 1f, fill = false).testTag("large_screen_ime_switcher_menu")
         ) {
-            Header(
-                settingsButtonAction =
-                    viewModel.settingsButtonAction.value?.let { action ->
-                        {
-                            action()
-                            dismissAction()
-                        }
-                    }
+            ImeSwitcherMenuList(
+                viewModel.menuItems.toList(),
+                viewModel,
+                dismissAction,
+                useLargeScreenLayout = true,
             )
-            Spacer(modifier = Modifier.size(MenuDimensions.AfterHeaderSpace))
-            Column(
-                modifier =
-                    Modifier.weight(weight = 1f, fill = false)
-                        .testTag("large_screen_ime_switcher_menu")
-            ) {
-                ImeSwitcherMenuList(
-                    viewModel.menuItems.toList(),
-                    viewModel,
-                    dismissAction,
-                    useLargeScreenLayout = true,
-                )
-            }
         }
     }
 }

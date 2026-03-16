@@ -280,7 +280,7 @@ class PreferenceMetadataTest {
         override val set: SetConfig<String>? = null,
         override val getParameters: () -> ValidatedKeyParameters? = { null },
         override val getParametersSchema: () -> KeyParametersSchema? = { null },
-    ) : ApiPreference<String>(null, PreferenceTarget.DEVICE) {
+    ) : ApiPreference<String, String>(null, PreferenceTarget.DEVICE) {
         override val type = AnyString
         override val valueType = String::class.java
         override val permissions: Permissions? = null

@@ -1584,10 +1584,10 @@ public class StatsPullAtomService extends SystemService {
                             statsExt.subInfo.mcc, statsExt.subInfo.mnc, statsExt.subInfo.carrierId,
                             subInfoisOpportunistic(statsExt.subInfo), isNR));
                 }
-                case SATELLITE_BYTES_TRANSFER, ETHERNET_BYTES_TRANSFER -> {
+                case ETHERNET_BYTES_TRANSFER -> {
                     if (!isTransportTypeSupported()) {
                         Log.wtf(TAG,
-                                "addNetworkStats for Satellite/Ethernet without flag enabled!");
+                                "addNetworkStats for Ethernet without flag enabled!");
                         return;
                     }
                     if (UserHandle.isIsolated(entry.getUid())) {
@@ -1599,6 +1599,28 @@ public class StatsPullAtomService extends SystemService {
                             entry.getTag(), entry.getMetered() == NetworkStats.METERED_YES,
                             entry.getSet() == NetworkStats.SET_FOREGROUND, entry.getRxBytes(),
                             entry.getRxPackets(), entry.getTxBytes(), entry.getTxPackets()));
+                }
+                case SATELLITE_BYTES_TRANSFER -> {
+                    if (!isTransportTypeSupported()) {
+                        Log.wtf(TAG,
+                                "addNetworkStats for Satellite without flag enabled!");
+                        return;
+                    }
+                    if (UserHandle.isIsolated(entry.getUid())) {
+                        // Skip individual isolated uids because they are recycled and quickly
+                        // removed from the underlying data source.
+                        continue;
+                    }
+                    String packageName = "";
+                    PackageManager pm = mContext.getPackageManager();
+                    if (pm != null) {
+                        packageName = pm.getNameForUid(entry.getUid());
+                    }
+                    pulledData.add(FrameworkStatsLog.buildStatsEvent(atomTag, entry.getUid(),
+                            entry.getTag(), entry.getMetered() == NetworkStats.METERED_YES,
+                            entry.getSet() == NetworkStats.SET_FOREGROUND, entry.getRxBytes(),
+                            entry.getRxPackets(), entry.getTxBytes(), entry.getTxPackets(),
+                            packageName));
                 }
                 case FrameworkStatsLog.MOBILE_BYTES_TRANSFER_BY_FG_BG,
                         FrameworkStatsLog.WIFI_BYTES_TRANSFER_BY_FG_BG,

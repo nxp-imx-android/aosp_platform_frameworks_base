@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.common.ui.compose
+package com.android.systemui.statusbar.pipeline.shared.ui.viewmodel
 
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
-import com.android.systemui.screencapture.record.ui.compose.screenCaptureRecordContent
 
-var Kosmos.screenCaptureContents: Map<ScreenCaptureType, ScreenCaptureContent> by
-    Kosmos.Fixture { mapOf(ScreenCaptureType.RECORD to screenCaptureRecordContent) }
+val Kosmos.headlineViewModelImpl: HeadlineViewModelImpl by
+    Kosmos.Fixture { HeadlineViewModelImpl(headlineItemsAdapter) }
+
+val Kosmos.headlineViewModelImplFactory: HeadlineViewModelImpl.Factory by
+    Kosmos.Fixture {
+        object : HeadlineViewModelImpl.Factory {
+            override fun create(): HeadlineViewModelImpl = headlineViewModelImpl
+        }
+    }

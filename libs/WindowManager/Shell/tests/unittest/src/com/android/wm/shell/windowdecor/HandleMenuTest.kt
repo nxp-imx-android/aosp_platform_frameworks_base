@@ -312,6 +312,20 @@ class HandleMenuTest : ShellTestCase() {
         assertThat(windowingPill.visibility).isEqualTo(View.GONE)
     }
 
+    @Test
+    fun relayout_shouldShowWindowingPillFalse_doesNotCrash() = runTest {
+        createTaskInfo(WINDOWING_MODE_FREEFORM)
+        handleMenu = createAndShowHandleMenu(shouldShowWindowingPill = false)
+
+        // Relayout should not crash even if shouldShowWindowingPill is false
+        handleMenu.relayout(
+            SurfaceControl.Transaction(),
+            mContext.resources.configuration,
+            captionX = 0,
+            captionY = 0,
+        )
+    }
+
     private suspend fun createTaskInfo(
         windowingMode: Int,
         splitPosition: Int? = null,

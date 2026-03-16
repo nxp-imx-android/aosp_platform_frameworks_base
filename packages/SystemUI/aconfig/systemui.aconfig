@@ -280,16 +280,6 @@ flag {
 }
 
 flag {
-    name: "dialog_background_refresh"
-    namespace: "systemui"
-    description: "Enable refreshing the background of SystemUIDialogs when the theme changes between light and dark mode"
-    bug: "474600479"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
    name: "disable_contextual_tips_frequency_check"
    description: "Disables frequency capping check for contextual tips."
    namespace: "systemui"
@@ -1365,16 +1355,6 @@ flag {
     namespace: "systemui"
     description: "Enables the multi-user WiFi configuration UI in Interent detailed tiles. This flag depends on qs_tile_detailed_view flag"
     bug: "402214828"
-}
-
-flag {
-    name: "remove_launch_display_id_override"
-    namespace: "systemui"
-    description: "Remove the launchDisplayId override when launching pending intents, allowing launches on secondary displays"
-    bug: "467894356"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {

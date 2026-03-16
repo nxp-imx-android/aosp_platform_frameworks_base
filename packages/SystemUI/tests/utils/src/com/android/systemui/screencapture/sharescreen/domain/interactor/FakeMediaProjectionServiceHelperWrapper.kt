@@ -44,7 +44,7 @@ class FakeMediaProjectionServiceHelperWrapper : MediaProjectionServiceHelperWrap
     override fun setReviewedConsentIfNeeded(
         result: Int,
         reviewGrantedConsentRequired: Boolean,
-        projection: IMediaProjection,
+        projection: IMediaProjection?,
     ) {
         setReviewedConsentIfNeededCallCount++
         lastSetReviewedConsentResult = result

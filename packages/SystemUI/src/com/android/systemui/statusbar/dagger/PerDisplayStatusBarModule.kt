@@ -29,6 +29,8 @@ import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAwareStatusBar
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
+import com.android.systemui.headline.ui.viewmodel.HeadlineItemsAdapter
+import com.android.systemui.headline.ui.viewmodel.HeadlineViewModel
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
@@ -54,6 +56,8 @@ import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarContentInsets
 import com.android.systemui.statusbar.phone.ConfigurationControllerImpl
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarInteractor
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.StatusBarVisibilityInteractor
+import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HeadlineItemsAdapterImpl
+import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HeadlineViewModelImpl
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractor
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractorImpl
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.NoOpAvControlsChipInteractor
@@ -122,6 +126,14 @@ interface PerDisplayStatusBarModule {
     fun ongoingActivityChipsViewModel(
         impl: OngoingActivityChipsViewModel
     ): OngoingActivityChipsViewModel
+
+    @Binds
+    @DisplayAware
+    fun headlineItemsAdapter(impl: HeadlineItemsAdapterImpl): HeadlineItemsAdapter
+
+    @Binds
+    @DisplayAware
+    fun headlineViewModelFactory(impl: HeadlineViewModelImpl.Factory): HeadlineViewModel.Factory
 
     @Binds
     @PerDisplaySingleton

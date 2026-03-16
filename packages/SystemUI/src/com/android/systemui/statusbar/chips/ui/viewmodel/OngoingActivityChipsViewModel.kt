@@ -32,6 +32,7 @@ import com.android.systemui.statusbar.chips.screenrecord.ui.viewmodel.ScreenReco
 import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.ShareToAppChipViewModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
+import com.android.systemui.statusbar.notification.shared.StatusBarHeadline
 import com.android.systemui.util.kotlin.filterValuesNotNull
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -182,12 +183,17 @@ constructor(
             incomingChipBundle.map { bundle -> rankChips(bundle) },
             displayStateInteractor.isWideScreen,
         ) { rankedChips, isWideScreen ->
-            if (!isWideScreen && rankedChips.active.filter { !it.isHidden }.size >= 2) {
+            if (
+                !StatusBarHeadline.isEnabled &&
+                    !isWideScreen &&
+                    rankedChips.active.filter { !it.isHidden }.size >= 2
+            ) {
                 // If we have at least two showing chips and we don't have a ton of room
                 // (!isWideScreen), then we want to make both of them as small as possible
                 // so that we have the highest chance of showing both chips (as opposed to
                 // showing the first chip with a lot of text and completely hiding the other
                 // chips).
+                // With Headline, there's no need to squish chips.
                 val squishedActiveChips =
                     rankedChips.active.map {
                         if (!it.isHidden && it.shouldSquish()) {

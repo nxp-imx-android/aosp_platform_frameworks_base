@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.record.smallscreen.ui.compose
+package com.android.systemui.statusbar.pipeline.shared.ui.viewmodel
 
-import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.screencapture.record.smallscreen.ui.viewmodel.smallScreenCaptureRecordViewModelFactory
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import com.android.systemui.headline.ui.viewmodel.HeadlineItem
+import com.android.systemui.headline.ui.viewmodel.HeadlineItemsAdapter
+import kotlinx.coroutines.flow.MutableStateFlow
 
-val Kosmos.smallScreenCaptureRecordContent by
-    Kosmos.Fixture {
-        SmallScreenCaptureRecordContent(
-            window = null,
-            viewModelFactory = smallScreenCaptureRecordViewModelFactory,
-        )
-    }
+class FakeHeadlineItemsAdapter : HeadlineItemsAdapter {
+    override var headlineItems: MutableStateFlow<List<HeadlineItem>> = MutableStateFlow(emptyList())
+}

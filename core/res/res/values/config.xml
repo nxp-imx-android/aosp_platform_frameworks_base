@@ -2056,6 +2056,9 @@
     <!-- True if live wallpapers can be supported in the deskop experience -->
     <bool name="config_isLiveWallpaperSupportedInDesktopExperience">false</bool>
 
+     <!-- Whether to create scaled versions of the default wallpaper image to match the display size -->
+    <bool name="config_optimizeDefaultWallpaper">false</bool>
+
     <!-- Specifies priority of automatic time sources. Suggestions from higher entries in the list
          take precedence over lower ones.
          See com.android.server.timedetector.TimeDetectorStrategy for available sources. -->
@@ -4568,6 +4571,9 @@
 
     <!-- Indicating if keyboard vibration settings supported or not. -->
     <bool name="config_keyboardVibrationSettingsSupported">false</bool>
+
+    <!-- Indicating if keyboard vibration intensity settings are supported or not. Only valid if config_keyboardVibrationSettingsSupported is true. -->
+    <bool name="config_keyboardVibrationSettingsIntensitySupported">false</bool>
 
     <!-- Indicating if ringtone vibration settings supported or not. -->
     <bool name="config_ringtoneVibrationSettingsSupported">false</bool>

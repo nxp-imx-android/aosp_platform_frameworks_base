@@ -267,6 +267,8 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) :
         val builder = EnumResolutionMechanismProto.newBuilder()
         if (annotationValue.custom) {
             builder.setCustom(true)
+        } else if (annotationValue.notCoexistable) {
+            builder.setNotCoexistable(true)
         } else {
             builder.setMostRestrictive(
                 MostRestrictiveProto.newBuilder()
@@ -283,21 +285,25 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) :
         element: Element,
     ): Boolean {
         val isCustom = annotation.custom
+        val isNotCoexistable = annotation.notCoexistable
         val isMostRestrictive = annotation.mostRestrictive.isNotEmpty()
 
-        if (isCustom && isMostRestrictive) {
+        val count = listOf(isCustom, isNotCoexistable, isMostRestrictive).count { it }
+
+        if (count > 1) {
             printError(
                 element,
-                "In @EnumResolutionMechanism, `custom` and `mostRestrictive` " +
-                    "can not be set together.",
+                "In @EnumResolutionMechanism, a single resolution mechanism " +
+                "can be selected.",
             )
             return false
         }
 
-        if (!isCustom && !isMostRestrictive) {
+        if (count == 0) {
             printError(
                 element,
-                "In @EnumResolutionMechanism, either `custom` or `mostRestrictive` must be set.",
+                "In @EnumResolutionMechanism, a resolution mechanism must " +
+                "be set.",
             )
             return false
         }
@@ -305,6 +311,7 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) :
         if (isMostRestrictive) {
             return verifyMostRestrictive(annotation.mostRestrictive.toList(), allValues, element)
         }
+
         return true
     }
 

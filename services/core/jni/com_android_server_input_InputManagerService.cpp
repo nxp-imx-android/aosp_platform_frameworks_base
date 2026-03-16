@@ -412,6 +412,8 @@ public:
     void setKeyRemapping(const std::unordered_map<int32_t, int32_t>& keyRemapping);
     void setKeyRemappingForDevice(int32_t deviceId,
                                   const std::unordered_map<int32_t, int32_t>& keyRemapping);
+    void setKeyToAxisRemappingForDevice(DeviceId deviceId,
+                                        std::map<KeyCode, MotionEventAxis>&& keyToAxisRemapping);
     void setAxisRemappingForDevice(int32_t deviceId,
                                    const std::unordered_map<int32_t, int32_t>& axisRemapping);
     void setInteractionProviderService(jobject interactionProviderService);
@@ -610,6 +612,10 @@ private:
         std::unordered_map<int32_t /* deviceId */,
                            std::unordered_map<int32_t /* fromKeyCode */, int32_t /* toKeyCode */>>
                 keyRemappingPerDevice{};
+
+        // Keycodes to be remapped to axes for device.
+        std::map<DeviceId, std::map</* from */ KeyCode, /* to */ MotionEventAxis>>
+                keyToAxisRemappingPerDevice{};
 
         // Axes to be remapped for device.
         std::unordered_map<
@@ -948,6 +954,7 @@ void NativeInputManager::getReaderConfiguration(InputReaderConfiguration* outCon
 
         outConfig->keyRemapping = mLocked.keyRemapping;
         outConfig->keyRemappingPerDevice = mLocked.keyRemappingPerDevice;
+        outConfig->keyToAxisRemappingPerDevice = mLocked.keyToAxisRemappingPerDevice;
         outConfig->axisRemappingPerDevice = mLocked.axisRemappingPerDevice;
     } // release lock
 }
@@ -2368,6 +2375,36 @@ void NativeInputManager::setKeyRemappingForDevice(
     }
 }
 
+void NativeInputManager::setKeyToAxisRemappingForDevice(
+        DeviceId deviceId, std::map<KeyCode, MotionEventAxis>&& keyToAxisRemapping) {
+    bool needsRefresh = false;
+    { // acquire lock
+        std::scoped_lock _l(mLock);
+        auto it = mLocked.keyToAxisRemappingPerDevice.find(deviceId);
+        if (it == mLocked.keyToAxisRemappingPerDevice.end()) {
+            if (!keyToAxisRemapping.empty()) {
+                mLocked.keyToAxisRemappingPerDevice.emplace(deviceId,
+                                                            std::move(keyToAxisRemapping));
+                needsRefresh = true;
+            }
+        } else {
+            if (it->second != keyToAxisRemapping) {
+                if (keyToAxisRemapping.empty()) {
+                    mLocked.keyToAxisRemappingPerDevice.erase(it);
+                } else {
+                    it->second = std::move(keyToAxisRemapping);
+                }
+                needsRefresh = true;
+            }
+        }
+    } // release lock
+
+    if (needsRefresh) {
+        mInputManager->getReader().requestRefreshConfiguration(
+                InputReaderConfiguration::Change::AXIS_REMAPPING);
+    }
+}
+
 void NativeInputManager::setAxisRemappingForDevice(
         int32_t deviceId, const std::unordered_map<int32_t, int32_t>& axisRemapping) {
     bool needsRefresh = false;
@@ -2514,6 +2551,21 @@ static void nativeSetKeyRemappingForDevice(JNIEnv* env, jobject nativeImplObj, j
         keyRemapping.insert_or_assign(fromKeyCodes[i], toKeycodes[i]);
     }
     im->setKeyRemappingForDevice(deviceId, keyRemapping);
+}
+
+static void nativeSetKeyToAxisRemappingForDevice(JNIEnv* env, jobject nativeImplObj, jint deviceId,
+                                                 jintArray fromKeyCodesArr, jintArray toAxisArr) {
+    const std::vector<int32_t> fromKeyCodes = getIntArray(env, fromKeyCodesArr);
+    const std::vector<int32_t> toAxis = getIntArray(env, toAxisArr);
+    if (fromKeyCodes.size() != toAxis.size()) {
+        jniThrowRuntimeException(env, "FromKeycodes and toAxis sizes don't match.");
+    }
+    NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
+    std::map<KeyCode, MotionEventAxis> keyToAxisRemapping;
+    for (int i = 0; i < fromKeyCodes.size(); i++) {
+        keyToAxisRemapping.insert_or_assign(KeyCode(fromKeyCodes[i]), MotionEventAxis(toAxis[i]));
+    }
+    im->setKeyToAxisRemappingForDevice(deviceId, std::move(keyToAxisRemapping));
 }
 
 static void nativeSetAxisRemappingForDevice(JNIEnv* env, jobject nativeImplObj, jint deviceId,
@@ -3608,6 +3660,7 @@ static const JNINativeMethod gInputManagerMethods[] = {
         {"getSwitchState", "(III)I", (void*)nativeGetSwitchState},
         {"setKeyRemapping", "([I[I)V", (void*)nativeSetKeyRemapping},
         {"setKeyRemappingForDevice", "(I[I[I)V", (void*)nativeSetKeyRemappingForDevice},
+        {"setKeyToAxisRemappingForDevice", "(I[I[I)V", (void*)nativeSetKeyToAxisRemappingForDevice},
         {"setAxisRemappingForDevice", "(I[I[I)V", (void*)nativeSetAxisRemappingForDevice},
         {"hasKeys", "(II[I[Z)Z", (void*)nativeHasKeys},
         {"getKeyCodeForKeyLocation", "(II)I", (void*)nativeGetKeyCodeForKeyLocation},

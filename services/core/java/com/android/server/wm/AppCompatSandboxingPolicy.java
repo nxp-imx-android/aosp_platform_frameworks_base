@@ -54,6 +54,9 @@ class AppCompatSandboxingPolicy {
     @NonNull
     private final ConfigOverrideHint mResolveConfigHint;
 
+    @NonNull
+    private final Rect mTmpRect = new Rect();
+
     AppCompatSandboxingPolicy(@NonNull ActivityRecord activityRecord,
             @NonNull AppCompatConfiguration appCompatConfiguration) {
         mActivityRecord = activityRecord;
@@ -169,7 +172,8 @@ class AppCompatSandboxingPolicy {
         final int captionHeight = getDesktopViewAppHeaderHeightPx(displayContext);
         final int topOffset = containerAppBounds.top - containerBounds.top;
         if (captionHeight > topOffset) {
-            final Rect sandboxedAppBounds = new Rect(containerAppBounds);
+            mTmpRect.set(containerAppBounds);
+            final Rect sandboxedAppBounds = mTmpRect;
             sandboxedAppBounds.top += captionHeight - topOffset;
             return sandboxedAppBounds;
         }

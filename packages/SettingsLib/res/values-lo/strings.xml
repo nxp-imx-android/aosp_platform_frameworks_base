@@ -760,9 +760,6 @@
     <string name="accessibility_ethernet_disconnected" msgid="2832501530856497489">"ອີ​ເທີ​ເນັດ​ຕັດ​ເຊື່ອມ​ຕໍ່​ແລ້ວ."</string>
     <string name="accessibility_ethernet_connected" msgid="6175942685957461563">"ອີເທີເນັດ."</string>
     <string name="accessibility_no_calling" msgid="3540827068323895748">"ບໍ່ສາມາດໂທສຽງໄດ້."</string>
-    <string name="physical_keyboard_title" msgid="4811935435315835220">"ແປ້ນພິມພາຍນອກ"</string>
-    <string name="keyboard_layout_dialog_title" msgid="3927180147005616290">"ເລືອກຮູບແບບແປ້ນພິມ"</string>
-    <string name="keyboard_layout_default_label" msgid="1997292217218546957">"ຄ່າເລີ່ມຕົ້ນ"</string>
     <string name="turn_screen_on_title" msgid="2662312432042116026">"ການຄວບຄຸມການເປີດໜ້າຈໍ"</string>
     <string name="allow_turn_screen_on" msgid="6194845766392742639">"ອະນຸຍາດໃຫ້ເປີດໜ້າຈໍ"</string>
     <string name="allow_turn_screen_on_description" msgid="43834403291575164">"ອະນຸຍາດໃຫ້ແອັບເປີດໜ້າຈໍໄດ້. ຫາກອະນຸມັດ, ແອັບຈະສາມາດເປີດໜ້າຈໍຕອນໃດກໍໄດ້ໂດຍທີ່ທ່ານບໍ່ຕ້ອງມີເຈດຕະນາຢ່າງຈະແຈ້ງ."</string>

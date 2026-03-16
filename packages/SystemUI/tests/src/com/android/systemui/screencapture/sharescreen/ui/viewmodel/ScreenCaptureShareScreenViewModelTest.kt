@@ -128,7 +128,7 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
 
     private fun setupViewModel(config: MediaProjectionConfig) {
         kosmos.shareScreenUiInteractor.initialize(
-            projection = mock(),
+            projection = null,
             reviewGrantedConsentRequired = true,
             hostUserHandle = UserHandle.CURRENT,
             uid = 100,

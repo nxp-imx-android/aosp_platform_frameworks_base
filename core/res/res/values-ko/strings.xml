@@ -2114,6 +2114,12 @@
     <string name="notification_metric_label_unit" msgid="309618413505128451">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>(<xliff:g id="METRIC_UNIT">%2$s</xliff:g>)"</string>
     <string name="notification_metric_label_unit_separator" msgid="5631839566551764472">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>(<xliff:g id="METRIC_UNIT">%2$s</xliff:g>):"</string>
     <string name="notification_metric_label_separator" msgid="8416027475779515033">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
+    <!-- no translation found for notification_history_metric_subtext (7408216222655116821) -->
+    <skip />
+    <!-- no translation found for notification_metric_running_timer (1096459900744921213) -->
+    <skip />
+    <!-- no translation found for notification_metric_running_stopwatch (8039546029949295377) -->
+    <skip />
     <string name="call_notification_answer_action" msgid="5999246836247132937">"통화"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"동영상"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"거절"</string>
@@ -2272,7 +2278,7 @@
     <string name="autofill_update_title_with_3types" msgid="8285767070604652626"><b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>"에서 <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g>, <xliff:g id="TYPE_2">%3$s</xliff:g> 항목을 업데이트하시겠습니까?"</string>
     <string name="autofill_update_title_with_3types_expressive" msgid="6040725201378429027"><b>"<xliff:g id="LABEL">%4$s</xliff:g>"</b>"에서 <xliff:g id="TYPE_0">%1$s</xliff:g>, <xliff:g id="TYPE_1">%2$s</xliff:g>, <xliff:g id="TYPE_2">%3$s</xliff:g> 항목 업데이트"</string>
     <string name="autofill_save_yes" msgid="8035743017382012850">"저장"</string>
-    <string name="autofill_save_no" msgid="9212826374207023544">"사용 안함"</string>
+    <string name="autofill_save_no" msgid="9212826374207023544">"저장 안함"</string>
     <string name="autofill_save_notnow" msgid="2853932672029024195">"나중에"</string>
     <string name="autofill_save_never" msgid="6821841919831402526">"사용 안함"</string>
     <string name="autofill_update_yes" msgid="4608662968996874445">"업데이트"</string>
@@ -2658,7 +2664,7 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"위성으로 메시지를 보내려면 Google 메시지를 기본 메시지 앱으로 설정하세요."</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"위성 메시지를 사용할 수 없음"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"이 국가 또는 지역에서 위성 메시지를 사용할 수 있는지 확인하려면 위치 설정을 사용 설정하세요."</string>
-    <string name="satellite_indicator" msgid="6846063647532086110">"SAT"</string>
+    <string name="satellite_indicator" msgid="6846063647532086110">"위성"</string>
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"지문 잠금 해제 다시 설정"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> 지문을 더 이상 인식할 수 없습니다."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> 및 <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> 지문을 더 이상 인식할 수 없습니다."</string>

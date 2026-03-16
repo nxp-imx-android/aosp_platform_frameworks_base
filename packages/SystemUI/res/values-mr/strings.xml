@@ -174,6 +174,7 @@
     <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"मागील दाखवा"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"स्क्रीन रेकॉर्डिंगसंबंधित सेटिंग्ज"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"मार्कअप"</string>
+    <string name="screen_record_color_picker" msgid="6732567862106107021">"कलर पिकर"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"व्हिडिओ सेव्ह केला आहे"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"व्हिडिओ हटवला"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"पहिल्यासारखे करा"</string>
@@ -1459,6 +1460,7 @@
     <string name="controls_media_button_prev" msgid="8126822360056482970">"मागील गाणे"</string>
     <string name="controls_media_button_next" msgid="6662636627525947610">"पुढील गाणे"</string>
     <string name="controls_media_button_connecting" msgid="3138354625847598095">"कनेक्ट करत आहे"</string>
+    <string name="controls_media_output_chip" msgid="324952606619594635">"आउटपुट सेटिंग्ज उघडा"</string>
     <string name="media_transfer_undo" msgid="1895606387620728736">"पहिल्यासारखे करा"</string>
     <string name="media_move_closer_to_start_cast" msgid="2673104707465013176">"<xliff:g id="DEVICENAME">%1$s</xliff:g> वर प्ले करण्यासाठी जवळ जा"</string>
     <string name="media_move_closer_to_end_cast" msgid="7302555909119374738">"येथे प्ले करण्यासाठी, <xliff:g id="DEVICENAME">%1$s</xliff:g> च्या जवळ जा"</string>
@@ -1488,10 +1490,8 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"ऑडिओ आउटपुटसाठी उपलब्ध डिव्हाइस."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"व्हॉल्यूम"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <!-- no translation found for media_output_dialog_missing_permissions_warning (4312830846174995199) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_warning_button_fix (3650735180540135181) -->
-    <skip />
+    <string name="media_output_dialog_missing_permissions_warning" msgid="4312830846174995199">"आणखी डिव्हाइस पाहण्यासाठी, तुम्हाला <xliff:g id="MEDIA_APP_NAME">%1$s</xliff:g> साठी परवानग्या द्याव्या लागू शकतात"</string>
+    <string name="media_output_dialog_warning_button_fix" msgid="3650735180540135181">"<xliff:g id="MEDIA_APP_NAME">%1$s</xliff:g> उघडा"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"कनेक्ट केलेले स्पीकर"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"स्पीकर आणि डिस्प्ले"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"सुचवलेले"</string>
@@ -1861,18 +1861,18 @@
     <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"पोर्ट्रेट टच-अप"</string>
     <string name="av_mic_label" msgid="5427348054144789879">"मायक्रोफोन"</string>
     <string name="av_camera_label" msgid="7719772172590702343">"कॅमेरा"</string>
-    <string name="av_camera_blur_drill_in_title" msgid="2250600375798981511">"बॅकग्राउंड ब्लर"</string>
+    <string name="av_camera_blur_drill_in_title" msgid="3392789469292685354">"बॅकग्राउंड ब्लर"</string>
     <string name="av_camera_blur_off" msgid="3170334995799202022">"बंद आहे"</string>
-    <string name="av_camera_blur_light" msgid="5666055368940059418">"फिकट"</string>
-    <string name="av_camera_blur_full" msgid="3276351992811619332">"संपूर्ण"</string>
+    <string name="av_camera_blur_light" msgid="5105255788203563538">"सौम्‍य ब्‍लर"</string>
+    <string name="av_camera_blur_full" msgid="6493497965254048479">"जास्‍त ब्लर"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"लायटिंगमध्ये सुधारणा करा"</string>
     <string name="av_camera_face_retouch" msgid="45890971969486224">"पोर्ट्रेट टच-अप"</string>
-    <string name="av_camera_framing" msgid="5108462267843042492">"कॅमेरा फ्रेमिंग"</string>
-    <string name="av_studio_mic" msgid="2614843492629357766">"स्टुडिओ माइक"</string>
-    <string name="av_studio_look" msgid="621893522645557619">"स्टुडिओ लुक"</string>
+    <string name="av_camera_framing" msgid="2948988841290208034">"कॅमेरा फ्रेमिंग"</string>
+    <string name="av_studio_mic" msgid="1815195630183143501">"स्टुडिओ माइक"</string>
+    <string name="av_studio_look" msgid="631085505786989852">"स्टुडिओ लुक"</string>
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d इफेक्ट"</string>
     <string name="av_blur" msgid="405131343487260171">"ब्लर करा"</string>
-    <string name="av_live_captions" msgid="7819416886586903077">"लाइव्ह कॅप्शन"</string>
+    <string name="av_live_captions" msgid="802763867449401889">"लाइव्ह कॅप्शन"</string>
     <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"मागे जा"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"बॅटरी %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"डावीकडील बॅटरी %1$s    उजवीकडील बॅटरी %2$s"</string>

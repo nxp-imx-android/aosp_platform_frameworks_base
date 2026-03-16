@@ -76,7 +76,6 @@ import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.compose.theme.PlatformTheme
 import com.android.internal.graphics.ColorUtils
 import com.android.internal.graphics.drawable.BackgroundBlurDrawable
-import com.android.systemui.Flags
 import com.android.systemui.keyboard.shortcut.ui.composable.hasCompactWindowSize
 import com.android.systemui.res.R
 import com.android.systemui.shared.system.BlurUtils.isVolumeAndPowerBlurEnabled
@@ -113,7 +112,7 @@ import kotlin.math.roundToInt
 fun SystemUIDialogFactory.create(
     context: Context = this.applicationContext,
     theme: Int = SystemUIDialog.DEFAULT_THEME,
-    refreshBackgroundOnThemeChange: Boolean = Flags.dialogBackgroundRefresh(),
+    refreshBackgroundOnThemeChange: Boolean = true,
     dismissOnDeviceLock: Boolean = SystemUIDialog.DEFAULT_DISMISS_ON_DEVICE_LOCK,
     @GravityInt dialogGravity: Int? = null,
     dialogDelegate: DialogDelegate<SystemUIDialog> =
@@ -295,11 +294,8 @@ fun SystemUIDialogFactory.createBottomSheet(
     )
 }
 
-private fun createBackgroundBlurDrawable(dialog: Dialog) : BackgroundBlurDrawable {
-    val blurDrawable = dialog.window!!
-        .decorView
-        .getViewRootImpl()
-        .createBackgroundBlurDrawable()
+private fun createBackgroundBlurDrawable(dialog: Dialog): BackgroundBlurDrawable {
+    val blurDrawable = dialog.window!!.decorView.getViewRootImpl().createBackgroundBlurDrawable()
     blurDrawable.setBlurRadius(0)
     return blurDrawable
 }

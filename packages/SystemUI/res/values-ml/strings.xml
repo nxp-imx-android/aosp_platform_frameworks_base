@@ -174,6 +174,7 @@
     <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"മുമ്പത്തേത് കാണിക്കുക"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"സ്ക്രീൻ റെക്കോർഡിംഗ് ക്രമീകരണം"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"മാർക്കപ്പ്"</string>
+    <string name="screen_record_color_picker" msgid="6732567862106107021">"വർണ്ണ പിക്കർ"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"വീഡിയോ സംരക്ഷിച്ചു"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"വീഡിയോ ഇല്ലാതാക്കി"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"പഴയപടിയാക്കുക"</string>
@@ -1459,6 +1460,7 @@
     <string name="controls_media_button_prev" msgid="8126822360056482970">"മുമ്പത്തെ ട്രാക്ക്"</string>
     <string name="controls_media_button_next" msgid="6662636627525947610">"അടുത്ത ട്രാക്ക്"</string>
     <string name="controls_media_button_connecting" msgid="3138354625847598095">"കണക്റ്റ് ചെയ്യുന്നു"</string>
+    <string name="controls_media_output_chip" msgid="324952606619594635">"ഔട്ട്പുട്ട് ക്രമീകരണം തുറക്കുക"</string>
     <string name="media_transfer_undo" msgid="1895606387620728736">"പഴയപടിയാക്കുക"</string>
     <string name="media_move_closer_to_start_cast" msgid="2673104707465013176">"<xliff:g id="DEVICENAME">%1$s</xliff:g> എന്നതിൽ പ്ലേ ചെയ്യാൻ അടുത്തേക്ക് നീക്കുക"</string>
     <string name="media_move_closer_to_end_cast" msgid="7302555909119374738">"ഇവിടെ പ്ലേ ചെയ്യാൻ <xliff:g id="DEVICENAME">%1$s</xliff:g> എന്നതിനടുത്തേക്ക് നീക്കുക"</string>
@@ -1488,10 +1490,8 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"ഓഡിയോ ഔട്ട്‌പുട്ടിന് ലഭ്യമായ ഉപകരണങ്ങൾ."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"വോളിയം"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <!-- no translation found for media_output_dialog_missing_permissions_warning (4312830846174995199) -->
-    <skip />
-    <!-- no translation found for media_output_dialog_warning_button_fix (3650735180540135181) -->
-    <skip />
+    <string name="media_output_dialog_missing_permissions_warning" msgid="4312830846174995199">"കൂടുതൽ ഉപകരണങ്ങൾ കാണാൻ, <xliff:g id="MEDIA_APP_NAME">%1$s</xliff:g> എന്നതിനുള്ള അനുമതികൾ നിങ്ങൾ അനുവദിക്കേണ്ടി വന്നേക്കാം"</string>
+    <string name="media_output_dialog_warning_button_fix" msgid="3650735180540135181">"<xliff:g id="MEDIA_APP_NAME">%1$s</xliff:g> തുറക്കുക"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"കണക്റ്റ് ചെയ്ത സ്‌പീക്കറുകൾ"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"സ്‌പീക്കറുകളും ഡിസ്പ്ലേകളും"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"നിർദ്ദേശിക്കുന്നത്"</string>
@@ -1861,18 +1861,18 @@
     <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"പോർട്രെയ്‌റ്റ് ടച്ചപ്പ്"</string>
     <string name="av_mic_label" msgid="5427348054144789879">"മൈക്രോഫോൺ"</string>
     <string name="av_camera_label" msgid="7719772172590702343">"ക്യാമറ"</string>
-    <string name="av_camera_blur_drill_in_title" msgid="2250600375798981511">"പശ്ചാത്തലം മങ്ങിക്കൽ"</string>
+    <string name="av_camera_blur_drill_in_title" msgid="3392789469292685354">"പശ്ചാത്തലം മങ്ങിക്കൽ"</string>
     <string name="av_camera_blur_off" msgid="3170334995799202022">"ഓഫാണ്"</string>
-    <string name="av_camera_blur_light" msgid="5666055368940059418">"ലൈറ്റ്"</string>
-    <string name="av_camera_blur_full" msgid="3276351992811619332">"ഫുൾ"</string>
+    <string name="av_camera_blur_light" msgid="5105255788203563538">"ചെറുതായി മങ്ങിക്കൽ"</string>
+    <string name="av_camera_blur_full" msgid="6493497965254048479">"കടുത്ത മങ്ങിക്കൽ"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"ലൈറ്റിംഗ് മെച്ചപ്പെടുത്തുക"</string>
     <string name="av_camera_face_retouch" msgid="45890971969486224">"പോർട്രെയ്‌റ്റ് ടച്ച് അപ്പ്"</string>
-    <string name="av_camera_framing" msgid="5108462267843042492">"ക്യാമറാ ഫ്രെയിമിംഗ്"</string>
-    <string name="av_studio_mic" msgid="2614843492629357766">"Studio മൈക്ക്"</string>
-    <string name="av_studio_look" msgid="621893522645557619">"സ്റ്റുഡിയോ ലുക്ക്"</string>
+    <string name="av_camera_framing" msgid="2948988841290208034">"ക്യാമറാ ഫ്രെയിമിംഗ്"</string>
+    <string name="av_studio_mic" msgid="1815195630183143501">"Studio മൈക്ക്"</string>
+    <string name="av_studio_look" msgid="631085505786989852">"സ്റ്റുഡിയോ ലുക്ക്"</string>
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d ഇഫക്റ്റുകൾ"</string>
     <string name="av_blur" msgid="405131343487260171">"മങ്ങിക്കൽ"</string>
-    <string name="av_live_captions" msgid="7819416886586903077">"തത്സമയ ക്യാപ്ഷനുകൾ"</string>
+    <string name="av_live_captions" msgid="802763867449401889">"ലൈവ് ക്യാപ്ഷനുകൾ"</string>
     <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"മടങ്ങുക"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"ബാറ്ററി %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"L ബാറ്ററി %1$s    R ബാറ്ററി %2$s"</string>

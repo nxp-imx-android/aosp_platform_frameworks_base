@@ -1495,7 +1495,7 @@
     <string name="no_permissions" msgid="5729199278862516390">"No es necesario ningún permiso"</string>
     <string name="perm_costs_money" msgid="749054595022779685">"es posible que esto te cueste dinero"</string>
     <string name="dlg_ok" msgid="5103447663504839312">"Aceptar"</string>
-    <string name="usb_charging_notification_title" msgid="1674124518282666955">"Cargando dispositivo por USB"</string>
+    <string name="usb_charging_notification_title" msgid="1674124518282666955">"Cargando por USB"</string>
     <string name="usb_supplying_notification_title" msgid="5378546632408101811">"Cargando dispositivo conectado por USB"</string>
     <string name="usb_mtp_notification_title" msgid="1065989144124499810">"Modo de transferencia de archivos por USB activado"</string>
     <string name="usb_ptp_notification_title" msgid="5043437571863443281">"Modo PTP por USB activado"</string>
@@ -2115,6 +2115,12 @@
     <string name="notification_metric_label_unit" msgid="309618413505128451">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>)"</string>
     <string name="notification_metric_label_unit_separator" msgid="5631839566551764472">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>):"</string>
     <string name="notification_metric_label_separator" msgid="8416027475779515033">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
+    <!-- no translation found for notification_history_metric_subtext (7408216222655116821) -->
+    <skip />
+    <!-- no translation found for notification_metric_running_timer (1096459900744921213) -->
+    <skip />
+    <!-- no translation found for notification_metric_running_stopwatch (8039546029949295377) -->
+    <skip />
     <string name="call_notification_answer_action" msgid="5999246836247132937">"Responder"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"Vídeo"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"Rechazar"</string>

@@ -65,6 +65,7 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
 import android.service.adb.AdbDebuggingManagerProto;
+import android.service.adb.AdbWifiProto;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Slog;
@@ -1741,12 +1742,11 @@ public class AdbDebuggingManager {
                 mFingerprints);
 
         try {
-            File userKeys = new File("/data/misc/adb/adb_keys");
-            if (userKeys.exists()) {
+            if (mUserKeyFile != null && mUserKeyFile.exists()) {
                 dump.write(
                         "user_keys",
                         AdbDebuggingManagerProto.USER_KEYS,
-                        FileUtils.readTextFile(userKeys, 0, null));
+                        FileUtils.readTextFile(mUserKeyFile, 0, null));
             } else {
                 Slog.i(TAG, "No user keys on this device");
             }
@@ -1755,22 +1755,43 @@ public class AdbDebuggingManager {
         }
 
         try {
-            dump.write(
-                    "system_keys",
-                    AdbDebuggingManagerProto.SYSTEM_KEYS,
-                    FileUtils.readTextFile(new File("/adb_keys"), 0, null));
+            File systemKeys = new File("/adb_keys");
+            if (systemKeys.exists()) {
+                dump.write(
+                        "system_keys",
+                        AdbDebuggingManagerProto.SYSTEM_KEYS,
+                        FileUtils.readTextFile(systemKeys, 0, null));
+            } else {
+                Slog.i(TAG, "No system keys on this device");
+            }
         } catch (IOException e) {
             Slog.i(TAG, "Cannot read system keys", e);
         }
 
         try {
-            dump.write(
-                    "keystore",
-                    AdbDebuggingManagerProto.KEYSTORE,
-                    FileUtils.readTextFile(mTempKeysFile, 0, null));
+            if (mTempKeysFile != null && mTempKeysFile.exists()) {
+                dump.write(
+                        "keystore",
+                        AdbDebuggingManagerProto.KEYSTORE,
+                        FileUtils.readTextFile(mTempKeysFile, 0, null));
+            } else {
+                Slog.i(TAG, "No keystore on this device");
+            }
         } catch (IOException e) {
             Slog.i(TAG, "Cannot read keystore: ", e);
         }
+
+        long adbWifiToken = dump.start("adb_wifi", AdbDebuggingManagerProto.ADB_WIFI);
+        dump.write("enabled", AdbWifiProto.ENABLED, mAdbWifiEnabled);
+        dump.write("network_bssid", AdbWifiProto.NETWORK_BSSID, mAdbConnectionInfo.getBSSID());
+        dump.write("network_ssid", AdbWifiProto.NETWORK_SSID, mAdbConnectionInfo.getSSID());
+        dump.write(
+                "is_trusted_network",
+                AdbWifiProto.IS_TRUSTED_NETWORK,
+                mHandler.mAdbKeyStore.isTrustedNetwork(
+                        mAdbConnectionInfo.getBSSID(), mAdbConnectionInfo.getSSID()));
+        dump.write("tls_port", AdbWifiProto.TLS_PORT, mAdbWirelessInfo.port());
+        dump.end(adbWifiToken);
 
         dump.end(token);
     }

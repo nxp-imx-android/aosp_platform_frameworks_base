@@ -20,6 +20,7 @@ import static com.android.server.net.NetworkPolicyManagerService.UidBlockedState
 import static com.android.server.net.NetworkPolicyManagerService.UidBlockedState.getEffectiveBlockedReasons;
 
 import android.annotation.Nullable;
+import android.app.ActivityManager.ProcessState;
 import android.net.Network;
 import android.os.PowerExemptionManager.ReasonCode;
 import android.telephony.SubscriptionPlan;
@@ -101,7 +102,8 @@ public abstract class NetworkPolicyManagerInternal {
     public abstract void setLowPowerStandbyAllowlist(int[] uids);
 
     /** Update the {@code blockedReasons} taking into account the {@code procState} of the uid */
-    public static int updateBlockedReasonsWithProcState(int blockedReasons, int procState) {
+    public static int updateBlockedReasonsWithProcState(int blockedReasons,
+            @ProcessState int procState) {
         final int allowedReasons = getAllowedReasonsForProcState(procState);
         return getEffectiveBlockedReasons(blockedReasons, allowedReasons);
     }

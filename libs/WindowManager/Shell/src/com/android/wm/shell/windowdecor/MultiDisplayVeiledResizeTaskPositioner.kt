@@ -83,6 +83,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
     private val taskBoundsAtDragStart = Rect()
     private val repositionStartPoint = PointF()
     private val repositionTaskBounds = Rect()
+    private val changeBoundsResult = DragPositioningCallbackUtility.ChangeBoundsResult()
     private val isResizing: Boolean
         get() =
             (ctrlType and DragPositioningCallback.CTRL_TYPE_TOP) != 0 ||
@@ -241,19 +242,18 @@ class MultiDisplayVeiledResizeTaskPositioner(
             return taskBoundsAtDragStart
         }
         val delta = DragPositioningCallbackUtility.calculateDelta(x, y, repositionStartPoint)
-        if (
-            isResizing &&
-                DragPositioningCallbackUtility.changeBounds(
-                    ctrlType,
-                    repositionTaskBounds,
-                    taskBoundsAtDragStart,
-                    stableBounds,
-                    delta,
-                    displayController,
-                    windowDecoration,
-                    desktopState.canEnterDesktopMode,
-                )
-        ) {
+        DragPositioningCallbackUtility.changeBounds(
+            ctrlType,
+            repositionTaskBounds,
+            taskBoundsAtDragStart,
+            stableBounds,
+            delta,
+            displayController,
+            windowDecoration,
+            desktopState.canEnterDesktopMode,
+            changeBoundsResult,
+        )
+        if (isResizing && changeBoundsResult.boundsChanged) {
             if (!isResizingOrAnimatingResize) {
                 for (dragEventListener in dragEventListeners) {
                     dragEventListener.onDragMove(windowDecoration.taskInfo.taskId)
@@ -420,6 +420,7 @@ class MultiDisplayVeiledResizeTaskPositioner(
                     displayController,
                     windowDecoration,
                     desktopState.canEnterDesktopMode,
+                    changeBoundsResult,
                 )
                 for (dragEventListener in dragEventListeners) {
                     dragEventListener.onDragResizeEnded(
