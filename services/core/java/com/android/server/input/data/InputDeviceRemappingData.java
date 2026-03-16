@@ -28,9 +28,11 @@ import java.util.Map;
  *
  * @hide
  */
-public record InputDeviceRemappingData(InputDeviceIdentifier deviceIdentifier,
-                                       Map<Integer, Integer> buttonRemappingMap,
-                                       Map<Integer, Integer> axisRemappingMap) {
+public record InputDeviceRemappingData(
+        InputDeviceIdentifier deviceIdentifier,
+        Map<Integer, Integer> buttonRemappingMap,
+        Map<Integer, Integer> buttonToAxisRemappingMap,
+        Map<Integer, Integer> axisRemappingMap) {
     /**
      * A copy constructor to create a deep copy of an {@link InputDeviceRemappingData} object.
      *
@@ -44,6 +46,7 @@ public record InputDeviceRemappingData(InputDeviceIdentifier deviceIdentifier,
                         original.deviceIdentifier().getProductId()
                 ),
                 deepCopy(original.buttonRemappingMap()),
+                deepCopy(original.buttonToAxisRemappingMap()),
                 deepCopy(original.axisRemappingMap()));
     }
 
