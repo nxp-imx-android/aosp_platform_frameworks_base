@@ -2013,12 +2013,17 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
     @Override
     @FlaggedApi(FLAG_SCROLL_TO_TOP)
     public boolean dispatchScrollToTop(int x) {
+        // 1. Parent First: Give the ViewGroup itself a chance to consume the event.
+        if (super.dispatchScrollToTop(x)) {
+            return true;
+        }
+
         final int count = mChildrenCount;
         if (count == 0) {
             return false;
         }
 
-        // 1. Establish baseline order: Z-order (low to high)
+        // 2. Establish baseline order: Z-order (low to high)
         ArrayList<View> list = buildTouchDispatchChildList();
 
         if (list == null) {
@@ -2041,10 +2046,10 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
         }
 
         try {
-            // 2. Sort by "Scroll to Top" heuristics
+            // 3. Sort by "Scroll to Top" heuristics
             list.sort(getScrollToTopComparator(x));
 
-            // 3. Dispatch backwards: Best candidates (Intersecting, Top Y, High Z) are at the end
+            // 4. Dispatch backwards: Best candidates (Intersecting, Top Y, High Z) are at the end
             for (int i = list.size() - 1; i >= 0; i--) {
                 final View child = list.get(i);
 

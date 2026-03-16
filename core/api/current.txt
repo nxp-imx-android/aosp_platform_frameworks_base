@@ -55101,6 +55101,7 @@ package android.view {
     method public void onScreenStateChanged(int);
     method public void onScrollCaptureSearch(@NonNull android.graphics.Rect, @NonNull android.graphics.Point, @NonNull java.util.function.Consumer<android.view.ScrollCaptureTarget>);
     method protected void onScrollChanged(int, int, int, int);
+    method @FlaggedApi("android.view.flags.scroll_to_top") public boolean onScrollToTop(int);
     method protected boolean onSetAlpha(int);
     method protected void onSizeChanged(int, int, int, int);
     method public void onStartTemporaryDetach();
