@@ -164,6 +164,15 @@ flag {
     is_exported: true
 }
 
+
+flag {
+    name: "public_device_profile"
+    namespace: "virtual_devices"
+    description: "API for getting the profile of a virtual device"
+    bug: "493126008"
+    is_exported: true
+}
+
 flag {
     name: "audio_focus_environments"
     namespace: "virtual_devices"

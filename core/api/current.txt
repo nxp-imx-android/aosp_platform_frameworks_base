@@ -11112,6 +11112,7 @@ package android.companion.virtual {
   public final class VirtualDevice implements android.os.Parcelable {
     method public int describeContents();
     method public int getDeviceId();
+    method @FlaggedApi("android.companion.virtualdevice.flags.public_device_profile") public int getDeviceProfile();
     method @NonNull public int[] getDisplayIds();
     method @Nullable public CharSequence getDisplayName();
     method @Nullable public String getName();
@@ -11119,6 +11120,13 @@ package android.companion.virtual {
     method public boolean hasCustomSensorSupport();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.companion.virtual.VirtualDevice> CREATOR;
+    field @FlaggedApi("android.companion.virtualdevice.flags.public_device_profile") public static final int DEVICE_PROFILE_APP_STREAMING = 102; // 0x66
+    field @FlaggedApi("android.companion.virtualdevice.flags.public_device_profile") public static final int DEVICE_PROFILE_AUTOMOTIVE_PROJECTION = 101; // 0x65
+    field @FlaggedApi("android.companion.virtualdevice.flags.public_device_profile") public static final int DEVICE_PROFILE_COMPUTER_CONTROL = 1; // 0x1
+    field @FlaggedApi("android.companion.virtualdevice.flags.public_device_profile") public static final int DEVICE_PROFILE_NEARBY_DEVICE_STREAMING = 103; // 0x67
+    field @FlaggedApi("android.companion.virtualdevice.flags.public_device_profile") public static final int DEVICE_PROFILE_SHELL = 0; // 0x0
+    field @FlaggedApi("android.companion.virtualdevice.flags.public_device_profile") public static final int DEVICE_PROFILE_UNKNOWN = -1; // 0xffffffff
+    field @FlaggedApi("android.companion.virtualdevice.flags.enable_limited_vdm_role") public static final int DEVICE_PROFILE_VIRTUAL_DEVICE = 104; // 0x68
   }
 
   @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public final class VirtualDeviceManager {

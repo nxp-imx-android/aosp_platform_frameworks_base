@@ -20,10 +20,12 @@ import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_CAMERA;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_SENSORS;
 
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemApi;
+import android.companion.virtualdevice.flags.Flags;
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -56,34 +58,44 @@ public final class VirtualDevice implements Parcelable {
     @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
     public @interface DeviceProfile {}
 
-    /** @hide */
+    /**
+     * An unknown virtual device profile, indicating an error.
+     */
+    @FlaggedApi(Flags.FLAG_PUBLIC_DEVICE_PROFILE)
     public static final int DEVICE_PROFILE_UNKNOWN = -1;
 
-    /** @hide */
+    /**
+     * A virtual device that has been created by Shell, typically for development / testing.
+     */
+    @FlaggedApi(Flags.FLAG_PUBLIC_DEVICE_PROFILE)
     public static final int DEVICE_PROFILE_SHELL = 0;
 
-    /** @hide */
+    /**
+     * A virtual device that is used for app automation.
+     */
+    // TODO(b/493126008): Link to some public doc once available.
+    @FlaggedApi(Flags.FLAG_PUBLIC_DEVICE_PROFILE)
     public static final int DEVICE_PROFILE_COMPUTER_CONTROL = 1;
 
     /**
-     * @see android.companion.AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION
-     * @hide
+     * @see android.companion.AssociationRequest#DEVICE_PROFILE_AUTOMOTIVE_PROJECTION
      */
+    @FlaggedApi(Flags.FLAG_PUBLIC_DEVICE_PROFILE)
     public static final int DEVICE_PROFILE_AUTOMOTIVE_PROJECTION = 101;
     /**
-     * @see android.companion.AssociationRequest.DEVICE_PROFILE_APP_STREAMING
-     * @hide
+     * @see android.companion.AssociationRequest#DEVICE_PROFILE_APP_STREAMING
      */
+    @FlaggedApi(Flags.FLAG_PUBLIC_DEVICE_PROFILE)
     public static final int DEVICE_PROFILE_APP_STREAMING = 102;
     /**
-     * @see android.companion.AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_STREAMING
-     * @hide
+     * @see android.companion.AssociationRequest#DEVICE_PROFILE_NEARBY_DEVICE_STREAMING
      */
+    @FlaggedApi(Flags.FLAG_PUBLIC_DEVICE_PROFILE)
     public static final int DEVICE_PROFILE_NEARBY_DEVICE_STREAMING = 103;
     /**
-     * @see android.companion.AssociationRequest.DEVICE_PROFILE_VIRTUAL_DEVICE
-     * @hide
+     * @see android.companion.AssociationRequest#DEVICE_PROFILE_VIRTUAL_DEVICE
      */
+    @FlaggedApi(Flags.FLAG_ENABLE_LIMITED_VDM_ROLE)
     public static final int DEVICE_PROFILE_VIRTUAL_DEVICE = 104;
 
     private final @NonNull IVirtualDevice mVirtualDevice;
@@ -158,8 +170,9 @@ public final class VirtualDevice implements Parcelable {
     /**
      * Returns the device profile of the virtual device.
      *
-     * @hide
+     * <p>The device profile indicates the intended use and capabilities of the device.</p>
      */
+    @FlaggedApi(Flags.FLAG_PUBLIC_DEVICE_PROFILE)
     @DeviceProfile
     public int getDeviceProfile() {
         return mProfile;
