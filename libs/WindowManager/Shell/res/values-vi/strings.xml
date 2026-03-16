@@ -116,6 +116,7 @@
     <string name="maximize_button_text" msgid="8106849394538234709">"Phóng to <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="restore_button_text" msgid="5377571986086775288">"Khôi phục <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="minimize_button_text" msgid="5213953162664451152">"Thu nhỏ <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="exit_fullscreen_button_text" msgid="7970660979589417830">"Thoát khỏi chế độ toàn màn hình cho <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="close_button_text" msgid="4544839489310949894">"Đóng <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="back_button_text" msgid="1469718707134137085">"Quay lại"</string>
     <string name="handle_text" msgid="4419667835599523257">"Ô điều khiển ứng dụng"</string>
@@ -154,6 +155,7 @@
     <string name="desktop_mode_a11y_action_snap_left" msgid="2932955411661734668">"Đổi kích thước và chuyển cửa sổ ứng dụng sang trái"</string>
     <string name="desktop_mode_a11y_action_snap_right" msgid="4577032451624261787">"Đổi kích thước và chuyển cửa sổ ứng dụng sang phải"</string>
     <string name="desktop_mode_a11y_action_maximize_restore" msgid="8026037983417986686">"Phóng to hoặc khôi phục kích thước cửa sổ"</string>
+    <string name="desktop_mode_a11y_action_exit_fullscreen" msgid="1854054435132984004">"Thoát khỏi chế độ toàn màn hình"</string>
     <string name="app_handle_chip_accessibility_announce" msgid="499881698947450536">"Mở Trình đơn"</string>
     <string name="app_handle_menu_accessibility_announce" msgid="7928858564852785398">"Nhập <xliff:g id="WINDOWING_MODE">%1$s</xliff:g>"</string>
     <string name="layout_menu_talkback_action_snap_left_text" msgid="8141501620544883986">"Đổi kích thước và sắp xếp cửa sổ sang trái"</string>
@@ -166,6 +168,7 @@
     <string name="app_header_talkback_action_restore_button_text" msgid="2153022340772980863">"Khôi phục kích thước cửa sổ"</string>
     <string name="app_header_talkback_action_minimize_button_text" msgid="7491054416186901764">"Thu nhỏ cửa sổ ứng dụng"</string>
     <string name="app_header_talkback_action_close_button_text" msgid="5159612596378268926">"Đóng cửa sổ ứng dụng"</string>
+    <string name="fullscreen_header_talkback_action_exit_fullscreen_button_text" msgid="5271884324741706388">"Thoát khỏi chế độ toàn màn hình"</string>
     <string name="open_by_default_settings_text" msgid="2526548548598185500">"Mở các chế độ cài đặt theo mặc định"</string>
     <string name="open_by_default_dialog_subheader_text" msgid="1729599730664063881">"Chọn cách mở đường liên kết trang web cho ứng dụng này"</string>
     <string name="open_by_default_dialog_in_app_text" msgid="6978022419634199806">"Trong ứng dụng"</string>

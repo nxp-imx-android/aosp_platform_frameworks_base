@@ -116,6 +116,7 @@
     <string name="maximize_button_text" msgid="8106849394538234709">"Agrandir <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="restore_button_text" msgid="5377571986086775288">"Restaurer <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="minimize_button_text" msgid="5213953162664451152">"Réduire <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="exit_fullscreen_button_text" msgid="7970660979589417830">"Quitter le mode Plein écran pour <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="close_button_text" msgid="4544839489310949894">"Fermer <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="back_button_text" msgid="1469718707134137085">"Retour"</string>
     <string name="handle_text" msgid="4419667835599523257">"Poignée de l\'appli"</string>
@@ -154,6 +155,7 @@
     <string name="desktop_mode_a11y_action_snap_left" msgid="2932955411661734668">"Redimensionner la fenêtre de l\'appli à gauche"</string>
     <string name="desktop_mode_a11y_action_snap_right" msgid="4577032451624261787">"Redimensionner la fenêtre de l\'appli à droite"</string>
     <string name="desktop_mode_a11y_action_maximize_restore" msgid="8026037983417986686">"Agrandir ou restaurer la taille de la fenêtre"</string>
+    <string name="desktop_mode_a11y_action_exit_fullscreen" msgid="1854054435132984004">"Quitter le mode Plein écran"</string>
     <string name="app_handle_chip_accessibility_announce" msgid="499881698947450536">"Ouvrir le menu"</string>
     <string name="app_handle_menu_accessibility_announce" msgid="7928858564852785398">"Entrez <xliff:g id="WINDOWING_MODE">%1$s</xliff:g>"</string>
     <string name="layout_menu_talkback_action_snap_left_text" msgid="8141501620544883986">"Redimensionner la fenêtre vers la gauche"</string>
@@ -166,6 +168,7 @@
     <string name="app_header_talkback_action_restore_button_text" msgid="2153022340772980863">"Restaurer la taille de la fenêtre"</string>
     <string name="app_header_talkback_action_minimize_button_text" msgid="7491054416186901764">"Réduire la fenêtre de l\'appli"</string>
     <string name="app_header_talkback_action_close_button_text" msgid="5159612596378268926">"Fermer la fenêtre de l\'appli"</string>
+    <string name="fullscreen_header_talkback_action_exit_fullscreen_button_text" msgid="5271884324741706388">"Quitter le mode Plein écran"</string>
     <string name="open_by_default_settings_text" msgid="2526548548598185500">"Ouvrir les paramètres par défaut"</string>
     <string name="open_by_default_dialog_subheader_text" msgid="1729599730664063881">"Choisissez comment ouvrir les liens Web pour cette appli"</string>
     <string name="open_by_default_dialog_in_app_text" msgid="6978022419634199806">"Dans l\'appli"</string>
