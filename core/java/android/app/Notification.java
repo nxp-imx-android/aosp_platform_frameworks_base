@@ -8802,6 +8802,10 @@ public class Notification implements Parcelable
                 }
             }
         }
+
+        if (publicVersion != null) {
+            publicVersion.reduceImageSizes(context);
+        }
         extras.putBoolean(EXTRA_REDUCED_IMAGES, true);
     }
 
