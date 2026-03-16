@@ -944,6 +944,30 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
             assertThat(faceAuthRepository.runningAuthRequest.value).isNull()
         }
 
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    fun faceAuthRequestedWhenNotPendingConfirmation_inSecureLockDeviceMode() =
+        kosmos.runTest {
+            underTest.onSecureLockDeviceConfirmButtonShowingChanged(false)
+            underTest.start()
+            underTest.onSwipeUpOnBouncer()
+
+            runCurrent()
+            assertThat(faceAuthRepository.runningAuthRequest.value).isNotNull()
+        }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    fun faceAuthIsRequestedWhenNotPendingRetryBiometricAuth_inSecureLockDeviceMode() =
+        kosmos.runTest {
+            underTest.onSecureLockDeviceTryAgainButtonShowingChanged(false)
+            underTest.start()
+            underTest.onSwipeUpOnBouncer()
+
+            runCurrent()
+            assertThat(faceAuthRepository.runningAuthRequest.value).isNotNull()
+        }
+
     @Test
     fun lockedOut_providesSameValueFromRepository() =
         kosmos.runTest {

@@ -190,6 +190,26 @@ class SecureLockDeviceInteractorTest : SysuiTestCase() {
     }
 
     @Test
+    fun showsTryAgainWhenRetryAvailable() {
+        testScope.runTest {
+            val showingTryAgainButton by collectLastValue(underTest.showTryAgainButton)
+
+            underTest.onBiometricAuthRequested()
+            runCurrent()
+            assertThat(showingTryAgainButton).isFalse()
+
+            underTest.onRetryAvailableChanged(true)
+            runCurrent()
+            assertThat(showingTryAgainButton).isTrue()
+
+            underTest.onUserRequestedRetry()
+            runCurrent()
+
+            assertThat(showingTryAgainButton).isFalse()
+        }
+    }
+
+    @Test
     fun stopsListeningForBiometricAuth_whileConfirmButtonIsShown() {
         testScope.runTest {
             val shouldListenForBiometricAuth by

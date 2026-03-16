@@ -314,12 +314,14 @@ constructor(
     }
 
     /** Called when the user clicks the try again button to resume authentication. */
-    fun onRetryBiometricAuth() {
-        logBuffer.log(TAG, LogLevel.DEBUG, "onRetryBiometricAuth")
+    fun onUserRequestedRetry() {
+        logBuffer.log(TAG, LogLevel.DEBUG, "onUserRequestedRetry")
         secureLockDeviceRepository.suppressBouncerMessageUpdates.value = false
         _showTryAgainButton.value = false
         _showingError.value = false
-        deviceEntryFaceAuthInteractor.onSecureLockDeviceBiometricAuthRequested()
+        deviceEntryFaceAuthInteractor.onSecureLockDeviceTryAgainButtonShowingChanged(
+            isShowingTryAgainButton = false
+        )
     }
 
     /**
