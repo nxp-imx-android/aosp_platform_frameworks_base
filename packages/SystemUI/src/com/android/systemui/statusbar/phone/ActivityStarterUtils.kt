@@ -23,7 +23,6 @@ import android.os.IBinder
 import android.view.RemoteAnimationAdapter
 import android.window.RemoteTransition
 import android.window.SplashScreen
-import com.android.systemui.Flags
 import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.animation.DelegateTransitionAnimatorController
 import com.android.systemui.animation.RemoteAnimationRunnerCompat
@@ -41,9 +40,6 @@ import com.android.systemui.animation.RemoteAnimationRunnerCompat
 fun createActivityOptions(displayId: Int, transition: RemoteTransition?, cookie: IBinder?): Bundle {
     return createDefaultActivityOptions(transition, cookie)
         .apply {
-            if (!Flags.removeLaunchDisplayIdOverride()) {
-                launchDisplayId = displayId
-            }
             callerDisplayId = displayId
             isPendingIntentBackgroundActivityLaunchAllowed = true
         }
@@ -80,9 +76,6 @@ fun createActivityOptions(
                 },
                 eventTime,
             )
-            if (!Flags.removeLaunchDisplayIdOverride()) {
-                launchDisplayId = displayId
-            }
             callerDisplayId = displayId
             isPendingIntentBackgroundActivityLaunchAllowed = true
         }
@@ -120,9 +113,6 @@ private fun createDefaultActivityOptions(
 fun createActivityOptions(displayId: Int, animationAdapter: RemoteAnimationAdapter?): Bundle {
     return createDefaultActivityOptions(animationAdapter)
         .apply {
-            if (!Flags.removeLaunchDisplayIdOverride()) {
-                launchDisplayId = displayId
-            }
             callerDisplayId = displayId
             isPendingIntentBackgroundActivityLaunchAllowed = true
         }
@@ -161,9 +151,6 @@ fun createActivityOptions(
                 },
                 eventTime,
             )
-            if (!Flags.removeLaunchDisplayIdOverride()) {
-                launchDisplayId = displayId
-            }
             callerDisplayId = displayId
             isPendingIntentBackgroundActivityLaunchAllowed = true
         }
