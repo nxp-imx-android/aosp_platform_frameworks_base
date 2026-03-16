@@ -213,4 +213,31 @@ public class PipControllerTest extends ShellTestCase {
                 any()
         );
     }
+
+    @Test
+    public void insetsChanged_sendNewInsetsStateWithRotation_updatesDisplayLayout() {
+        // Capture the global insets listener
+        ArgumentCaptor<DisplayInsetsController.OnInsetsChangedListener> captor =
+                ArgumentCaptor.forClass(DisplayInsetsController.OnInsetsChangedListener.class);
+        verify(mMockDisplayInsetsController).addGlobalInsetsChangedListener(captor.capture());
+        DisplayInsetsController.OnInsetsChangedListener globalListener = captor.getValue();
+
+        // Setup mock layout
+        DisplayLayout mockLayout = new DisplayLayout();
+        when(mMockDisplayController.getDisplayLayout(DISPLAY_ID_MAIN)).thenReturn(mockLayout);
+
+        // Simulate insets change
+        android.view.InsetsState insetsState = new android.view.InsetsState();
+        globalListener.insetsChanged(DISPLAY_ID_MAIN, insetsState);
+
+        // Capture the runnable posted to MainExecutor
+        ArgumentCaptor<Runnable> runnableCaptor = ArgumentCaptor.forClass(Runnable.class);
+        verify(mMockMainExecutor).execute(runnableCaptor.capture());
+
+        // Run the async update
+        runnableCaptor.getValue().run();
+
+        // Verify that setDisplayLayout was called with the mock layout
+        verify(mMockPipDisplayLayoutState).setDisplayLayout(mockLayout);
+    }
 }
