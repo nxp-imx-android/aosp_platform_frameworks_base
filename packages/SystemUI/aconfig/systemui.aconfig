@@ -1374,16 +1374,6 @@ flag {
 }
 
 flag {
-    name: "remove_launch_display_id_override"
-    namespace: "systemui"
-    description: "Remove the launchDisplayId override when launching pending intents, allowing launches on secondary displays"
-    bug: "467894356"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "remove_nearby_share_tile_animation"
     namespace: "systemui"
     description: "Removing Activity Transition animation for nearby share tile as Activity's view is a bottomsheet"
