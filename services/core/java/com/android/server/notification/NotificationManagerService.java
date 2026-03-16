@@ -426,7 +426,6 @@ import com.android.server.notification.toast.CustomToastRecord;
 import com.android.server.notification.toast.TextToastRecord;
 import com.android.server.notification.toast.ToastRecord;
 import com.android.server.personalcontext.PersonalContextManagerInternal;
-import com.android.server.pm.GenericAllowlist;
 import com.android.server.pm.PackageManagerService;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.policy.PermissionPolicyInternal;
@@ -2161,21 +2160,6 @@ public class NotificationManagerService extends SystemService {
             }
         }
         return false;
-    }
-
-    private boolean shouldLogHsuNotification(NotificationRecord r) {
-        if (!android.multiuser.Flags.hsuAllowlistNotifications()
-                || !UserManager.isHeadlessSystemUserMode()) {
-            return false;
-        }
-        UserHandle user = r.getUser();
-        if (user.isSystem()) {
-            return true;
-        }
-        if (user.getIdentifier() != UserHandle.USER_ALL) {
-            return false;
-        }
-        return mAmi.getCurrentUserId() == UserHandle.USER_SYSTEM;
     }
 
     @VisibleForTesting
@@ -11028,15 +11012,6 @@ public class NotificationManagerService extends SystemService {
                                         getGroupInstanceId(r.getSbn().getGroupKey()));
                         notifyListenersPostedAndLogLocked(r, old, mTracker, maybeReport);
                         posted = true;
-                        // Also report to UserManagerService if this notification was shown on HSU
-                        // (headless system user)
-                        if (shouldLogHsuNotification(r)) {
-                            // TODO(b/483110541): need to get proper AllowlistStatus from
-                            // mUmInternal itself
-                            mUmInternal.logNotificationPostStatus(r.getSbn(),
-                                    UserHandle.USER_SYSTEM,
-                                    GenericAllowlist.STATUS_ALLOWED_DISABLED_MODE);
-                        }
                     } else {
                         Slog.e(TAG, "Not posting notification without small icon: " + notification);
                         if (old != null && !old.isCanceled) {
