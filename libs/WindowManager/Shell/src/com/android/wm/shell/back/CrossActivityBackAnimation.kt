@@ -34,6 +34,7 @@ import android.view.IRemoteAnimationFinishedCallback
 import android.view.IRemoteAnimationRunner
 import android.view.RemoteAnimationTarget
 import android.view.SurfaceControl
+import android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.Interpolator
 import android.view.animation.Transformation
@@ -52,10 +53,12 @@ import com.android.internal.jank.Cuj
 import com.android.internal.policy.ScreenDecorationsUtils
 import com.android.internal.policy.SystemBarUtils
 import com.android.internal.protolog.ProtoLog
+import com.android.systemui.Flags as SysuiFlags
 import com.android.window.flags.Flags.fixCrossActivityBackAnimationInBubbles
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.bubbles.BubbleController
+import com.android.wm.shell.common.split.SplitScreenUtils
 import com.android.wm.shell.protolog.ShellProtoLogGroup
 import com.android.wm.shell.shared.animation.Interpolators
 import com.android.wm.shell.shared.annotations.ShellMainThread
@@ -202,6 +205,19 @@ abstract class CrossActivityBackAnimation(
         }
         // Offset start rectangle to align task bounds.
         backAnimRect.offsetTo(0, 0)
+
+        val isGestureNav =
+            context.resources.getInteger(
+                com.android.internal.R.integer.config_navBarInteractionMode
+            ) == NAV_BAR_MODE_GESTURAL
+        val isLargeScreen = SplitScreenUtils.isLargeScreen(context.resources)
+
+        if (SysuiFlags.fixPredictiveBackClipping()) {
+            if (isGestureNav || isLargeScreen) {
+                backAnimRect.inset(0, 0, 0, closingTarget!!.contentInsets.bottom)
+            }
+        }
+
         screenSpaceBounds.set(closingTarget!!.screenSpaceBounds)
 
         if (fixCrossActivityBackAnimationInBubbles()) {
@@ -218,8 +234,7 @@ abstract class CrossActivityBackAnimation(
                                     .desktop_windowing_freeform_rounded_corner_radius
                             )
                             .toFloat()
-                    else ->
-                        ScreenDecorationsUtils.getWindowCornerRadius(context)
+                    else -> ScreenDecorationsUtils.getWindowCornerRadius(context)
                 }
         }
 
