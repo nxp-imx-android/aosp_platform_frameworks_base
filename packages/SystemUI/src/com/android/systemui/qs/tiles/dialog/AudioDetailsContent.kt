@@ -34,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -198,7 +199,8 @@ private fun SectionTitle(textId: Int, modifier: Modifier = Modifier) {
                 .padding(
                     horizontal = dimensionResource(TILE_DETAILS_SECTION_TITLE_HORIZONTAL_PADDING),
                     vertical = dimensionResource(TILE_DETAILS_SECTION_TITLE_VERTICAL_PADDING),
-                ),
+                )
+                .semantics { heading() },
         text = stringResource(textId),
         style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.onSurface,
