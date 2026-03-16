@@ -153,8 +153,12 @@ constructor(
                 .filterRelevantKeyguardStateAnd { wakefulness ->
                     wakefulness.isAwakeForAnimations()
                 }
-                .sample(communalInteractor.isCommunalAvailable, ::Pair)
-                .collect { (_, isCommunalAvailable) ->
+                .sampleCombine(
+                    communalInteractor.isCommunalAvailable,
+                    keyguardInteractor.primaryBouncerShowing,
+                    keyguardInteractor.isKeyguardOccluded,
+                )
+                .collect { (_, isCommunalAvailable, primaryBouncerShowing, isKeyguardOccluded) ->
                     val biometricUnlockState = keyguardInteractor.biometricUnlockState.value
 
                     // Do not transition to LOCKSCREEN if we are waking and dismissing.
@@ -166,8 +170,7 @@ constructor(
                         return@collect
                     }
 
-                    val primaryBouncerShowing = keyguardInteractor.primaryBouncerShowing.value
-                    val isKeyguardOccludedLegacy = keyguardInteractor.isKeyguardOccluded.value
+                    val isKeyguardOccludedLegacy = isKeyguardOccluded
 
                     if (
                         !keyguardEnabledInteractor.isKeyguardEnabled.value && canDismissLockscreen()

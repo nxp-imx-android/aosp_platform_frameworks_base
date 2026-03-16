@@ -86,14 +86,21 @@ private constructor(
         modeOnCanceled: TransitionModeOnCanceled? = null,
         verificationMode: VerificationMode = times(1),
     ) {
-        withArgCaptor<TransitionInfo> { verify(repository, verificationMode).startTransition(capture()) }
-            .also { transitionInfo ->
-                assertEquals(to, transitionInfo.to)
-                animatorAssertion.invoke(Truth.assertThat(transitionInfo.animator))
-                from?.let { assertEquals(it, transitionInfo.from) }
-                ownerName?.let { assertEquals(it, transitionInfo.ownerName) }
-                modeOnCanceled?.let { assertEquals(it, transitionInfo.modeOnCanceled) }
-            }
+        val captor = argumentCaptor<TransitionInfo>()
+        verify(repository, verificationMode).startTransition(captor.capture())
+        val matchingTransitions = captor.allValues.filter { info ->
+            info.to == to &&
+            (from == null || info.from == from) &&
+            (ownerName == null || info.ownerName == ownerName) &&
+            (modeOnCanceled == null || info.modeOnCanceled == modeOnCanceled)
+        }
+
+        if (matchingTransitions.isEmpty()) {
+             fail("No transition found matching (from=$from, to=$to, owner=$ownerName). " +
+                  "Actual transitions were: ${captor.allValues}")
+        }
+
+        animatorAssertion.invoke(Truth.assertThat(matchingTransitions.last().animator))
     }
 
     /**
