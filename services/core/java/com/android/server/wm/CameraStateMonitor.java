@@ -31,6 +31,7 @@ import android.util.Slog;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -130,6 +131,13 @@ class CameraStateMonitor {
     @VisibleForTesting
     boolean isListeningToCameraState() {
         return mIsListeningToCameraState;
+    }
+
+    void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
+        pw.println(prefix + "CameraStateMonitor:");
+        pw.println(prefix + "  activeCameraConnections=" + mAppCompatCameraStateStrategy);
+        pw.println(prefix + "  mAvailableRotateAndCropModesForCamera="
+                + mAvailableRotateAndCropModesForCamera);
     }
 
     private void notifyCameraOpenedWithDelay(@NonNull String cameraId,

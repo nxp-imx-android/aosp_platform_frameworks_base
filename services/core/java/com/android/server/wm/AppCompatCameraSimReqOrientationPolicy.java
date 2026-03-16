@@ -46,6 +46,8 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.window.flags.Flags;
 
+import java.io.PrintWriter;
+
 /**
  * Policy for camera compatibility simulate requested orientation treatment.
  *
@@ -55,6 +57,8 @@ import com.android.window.flags.Flags;
  * device in that orientation (for example, on a standard phone).
  */
 final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraStatePolicy {
+    @NonNull
+    private final DisplayContent mDisplayContent;
     @NonNull
     private final ActivityTaskManagerService mAtmService;
     @NonNull
@@ -86,6 +90,7 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
             @NonNull CameraStateMonitor cameraStateMonitor,
             @NonNull AppCompatCameraStateSource cameraStateNotifier,
             @NonNull ActivityRefresher activityRefresher) {
+        mDisplayContent = displayContent;
         mAtmService = displayContent.mAtmService;
         mCameraStateMonitor = cameraStateMonitor;
         mCameraStateNotifier = cameraStateNotifier;
@@ -526,6 +531,16 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
                 && isOrientationEligibleForTreatment(activity, checkOrientation)
                 // TODO(b/332665280): investigate whether we can support activity embedding.
                 && !activity.isEmbedded();
+    }
+
+    void dump(@NonNull ActivityRecord activity, @NonNull PrintWriter pw, @NonNull String prefix) {
+        pw.println(prefix + "AppCompatCameraSimReqOrientationPolicy:");
+        for (int i = 0; i < mActiveCameraCompat.size(); i++) {
+            final int taskId = mActiveCameraCompat.keyAt(i);
+            if (activity.getTask() != null && activity.getTask().mTaskId == taskId) {
+                pw.println(prefix + " cameraCompatibilityInfo=" + mActiveCameraCompat.valueAt(i));
+            }
+        }
     }
 
     private boolean isTreatmentAllowedViaConfig(@NonNull ActivityRecord activity) {

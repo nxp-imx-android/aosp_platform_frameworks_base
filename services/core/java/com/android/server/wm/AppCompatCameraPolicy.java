@@ -31,6 +31,8 @@ import android.widget.Toast;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.window.flags.Flags;
 
+import java.io.PrintWriter;
+
 /**
  * Encapsulate policy logic related to app compat display rotation.
  */
@@ -274,6 +276,23 @@ class AppCompatCameraPolicy {
                 || (cameraPolicy.mSimReqOrientationPolicy != null
                         && cameraPolicy.mSimReqOrientationPolicy
                                 .isCameraRunningAndWindowingModeEligible(activity));
+    }
+
+    static void dump(@NonNull ActivityRecord activity, @NonNull PrintWriter pw,
+            @NonNull String prefix) {
+        final AppCompatCameraPolicy cameraPolicy = getAppCompatCameraPolicy(activity);
+        if (cameraPolicy == null) {
+            return;
+        }
+        if (cameraPolicy.mDisplayRotationPolicy != null) {
+            cameraPolicy.mDisplayRotationPolicy.dump(activity, pw, prefix);
+        }
+        if (cameraPolicy.mSimReqOrientationPolicy != null) {
+            cameraPolicy.mSimReqOrientationPolicy.dump(activity, pw, prefix);
+        }
+        if (cameraPolicy.mCameraStateMonitor != null) {
+            cameraPolicy.mCameraStateMonitor.dump(pw, prefix);
+        }
     }
 
     @Nullable

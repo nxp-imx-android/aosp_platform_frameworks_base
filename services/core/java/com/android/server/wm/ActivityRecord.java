@@ -1206,6 +1206,8 @@ final class ActivityRecord extends WindowToken {
         }
 
         mAppCompatController.dump(pw, prefix);
+
+        AppCompatCameraPolicy.dump(this, pw, prefix);
     }
 
     static boolean dumpActivity(FileDescriptor fd, PrintWriter pw, int index, ActivityRecord r,
