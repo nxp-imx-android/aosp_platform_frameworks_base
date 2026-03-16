@@ -528,6 +528,26 @@ public class RescuePartyTest {
                 any(Executor.class), any(OnPropertiesChangedListener.class)), times(0));
     }
 
+    @Test
+    public void testLevels_factoryResetDisabled() {
+        doReturn(true).when(RescueParty::isFactoryResetDisabled);
+        RescuePartyObserver observer = RescuePartyObserver.getInstance(mMockContext);
+
+        // App crash impact levels
+        // For app crashes, modularized RescueParty starts at WARM_REBOOT (50)
+        assertEquals(PackageHealthObserverImpact.USER_IMPACT_LEVEL_50,
+                observer.onHealthCheckFailed(sFailingPackage,
+                        PackageWatchdog.FAILURE_REASON_APP_CRASH, 1));
+        // And stays at WARM_REBOOT (50) if factory reset is disabled
+        assertEquals(PackageHealthObserverImpact.USER_IMPACT_LEVEL_50,
+                observer.onHealthCheckFailed(sFailingPackage,
+                        PackageWatchdog.FAILURE_REASON_APP_CRASH, 2));
+
+        // Verify boot loop impact levels
+        assertEquals(PackageHealthObserverImpact.USER_IMPACT_LEVEL_50, observer.onBootLoop(2));
+        assertEquals(PackageHealthObserverImpact.USER_IMPACT_LEVEL_50, observer.onBootLoop(3));
+    }
+
     private void noteBoot(int mitigationCount) {
         RescuePartyObserver.getInstance(mMockContext).onExecuteBootLoopMitigation(mitigationCount);
     }
