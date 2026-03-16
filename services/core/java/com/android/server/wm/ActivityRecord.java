@@ -2736,6 +2736,20 @@ final class ActivityRecord extends WindowToken {
     }
 
     void removeStartingWindow() {
+        if (com.android.window.flags.Flags.consolidateRemoveStartingWindowFromTask()) {
+            // Remove starting window directly if is in a pure task. Otherwise if it is associated
+            // with a task (e.g. nested task fragment), then remove only if all visible windows in
+            // the task are drawn.
+            final Task associatedTask = task.mSharedStartingData != null ? task : null;
+            if (associatedTask != null) {
+                final ActivityRecord r = getSharedStartingWindowOwnerIfTaskDrawn();
+                if (r != null && r != this) {
+                    r.removeStartingWindow();
+                    return;
+                }
+            }
+        }
+
         final AppCompatLetterboxPolicy letterboxPolicy = mAppCompatController.getLetterboxPolicy();
         boolean prevEligibleForLetterboxEducation =
                 letterboxPolicy.isEligibleForLetterboxEducation();
@@ -5375,9 +5389,13 @@ final class ActivityRecord extends WindowToken {
                     && mDisplayContent.getImeWindow().isVisible();
             finishOrAbortReplacingWindow();
             if (!firstWindowDrawn && task != null && task.mSharedStartingData != null) {
-                final ActivityRecord r = getSharedStartingWindowOwnerIfTaskDrawn();
-                if (r != null) {
-                    r.removeStartingWindow();
+                if (com.android.window.flags.Flags.consolidateRemoveStartingWindowFromTask()) {
+                    removeStartingWindow();
+                } else {
+                    final ActivityRecord r = getSharedStartingWindowOwnerIfTaskDrawn();
+                    if (r != null) {
+                        r.removeStartingWindow();
+                    }
                 }
             }
         }
@@ -6513,15 +6531,20 @@ final class ActivityRecord extends WindowToken {
         // Remove starting window directly if is in a pure task. Otherwise if it is associated with
         // a task (e.g. nested task fragment), then remove only if all visible windows in the task
         // are drawn.
-        final Task associatedTask = task.mSharedStartingData != null ? task : null;
-        if (associatedTask == null) {
+        if (com.android.window.flags.Flags.consolidateRemoveStartingWindowFromTask()) {
             removeStartingWindow();
         } else {
-            final ActivityRecord r = getSharedStartingWindowOwnerIfTaskDrawn();
-            if (r != null) {
-                r.removeStartingWindow();
+            final Task associatedTask = task.mSharedStartingData != null ? task : null;
+            if (associatedTask == null) {
+                removeStartingWindow();
+            } else {
+                final ActivityRecord r = getSharedStartingWindowOwnerIfTaskDrawn();
+                if (r != null) {
+                    r.removeStartingWindow();
+                }
             }
         }
+
         updateReportedVisibilityLocked();
     }
 

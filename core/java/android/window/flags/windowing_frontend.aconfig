@@ -518,3 +518,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "consolidate_remove_starting_window_from_task"
+    namespace: "windowing_frontend"
+    description: "Ensure a starting window being removed when condition met for all activities."
+    bug: "477134239"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
