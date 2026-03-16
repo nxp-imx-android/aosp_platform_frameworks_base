@@ -17,6 +17,7 @@
 package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
+import android.platform.test.annotations.WithDesktopTest
 import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
@@ -35,6 +36,7 @@ import org.junit.Test
  * minimize buttons.
  */
 @Ignore("Test Base Class")
+@WithDesktopTest
 abstract class MinimizeAppWindows
 constructor(
     private val rotation: Rotation = Rotation.ROTATION_0,
