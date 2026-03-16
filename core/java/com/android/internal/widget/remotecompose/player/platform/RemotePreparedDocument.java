@@ -123,6 +123,7 @@ public class RemotePreparedDocument implements RemoteComposePlayer.PreparedDocum
                 @Override
                 public void hapticEffect(int type) {}
 
+                @SuppressWarnings("deprecation") // usage of new URL()
                 @Override
                 public void loadBitmap(
                         int imageId,

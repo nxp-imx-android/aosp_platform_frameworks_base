@@ -25,6 +25,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 
 import com.android.internal.widget.remotecompose.core.CoreDocument;
+import com.android.internal.widget.remotecompose.core.Limits;
 import com.android.internal.widget.remotecompose.core.Operation;
 import com.android.internal.widget.remotecompose.core.Operations;
 import com.android.internal.widget.remotecompose.core.RemoteComposeOperation;
@@ -48,7 +49,6 @@ public class Header extends Operation implements RemoteComposeOperation {
     private static final int OP_CODE = Operations.HEADER;
     private static final String CLASS_NAME = "Header";
     private static final int MAGIC_NUMBER = 0x048C0000; // to uniquely identify the protocol
-    private static final int MAX_TABLE_SIZE = 1000;
 
     int mMajorVersion;
     int mMinorVersion;
@@ -115,7 +115,7 @@ public class Header extends Operation implements RemoteComposeOperation {
     public static final short FEATURE_TOUCH_VERSION = 18;
 
     /** Test capture at time in ms since epoch */
-    public static final short TEST_TIME =  19;
+    public static final short TEST_TIME = 19;
 
     /** Test capture after this seconds float time in seconds */
     public static final short TEST_AFTER = 20;
@@ -576,7 +576,7 @@ public class Header extends Operation implements RemoteComposeOperation {
         } else {
             majorVersion &= 0xFFFF;
             int length = buffer.readInt();
-            if (length > MAX_TABLE_SIZE) {
+            if (length > Limits.MAX_TABLE_SIZE) {
                 throw new RuntimeException("Invalid table size " + length);
             }
             short[] types = new short[length];

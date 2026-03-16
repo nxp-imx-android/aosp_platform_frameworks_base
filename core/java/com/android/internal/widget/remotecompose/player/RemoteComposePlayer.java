@@ -23,8 +23,11 @@ import android.annotation.Nullable;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
@@ -33,6 +36,7 @@ import android.widget.ScrollView;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.widget.remotecompose.core.CoreDocument;
 import com.android.internal.widget.remotecompose.core.CoreDocument.ShaderControl;
+import com.android.internal.widget.remotecompose.core.Limits;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.RemoteContextActions;
 import com.android.internal.widget.remotecompose.core.operations.NamedVariable;
@@ -94,6 +98,51 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
             @NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context, attrs, defStyleAttr);
+    }
+
+    /**
+     * Sets the maximum number of operations that can be executed in a single frame.
+     *
+     * @param maxOpCount the maximum number of operations
+     */
+    public void setMaxOpCount(int maxOpCount) {
+        Limits.MAX_OP_COUNT = maxOpCount;
+    }
+
+    /**
+     * Sets the maximum dimension (width or height) of an image that can be loaded.
+     *
+     * @param maxImageDimension the maximum dimension
+     */
+    public void setMaxImageDimension(int maxImageDimension) {
+        Limits.MAX_IMAGE_DIMENSION = maxImageDimension;
+    }
+
+    /**
+     * Sets the maximum bitmap memory allowed for a single player instance.
+     *
+     * @param maxBitmapMemory the maximum memory in bytes
+     */
+    public void setMaxBitmapMemory(int maxBitmapMemory) {
+        Limits.MAX_BITMAP_MEMORY = maxBitmapMemory;
+    }
+
+    /**
+     * Sets the default maximum frames per second for the player.
+     *
+     * @param defaultMaxFps the default maximum fps
+     */
+    public void setDefaultMaxFps(int defaultMaxFps) {
+        Limits.DEFAULT_MAX_FPS = defaultMaxFps;
+    }
+
+    /**
+     * Sets the absolute maximum frames per second for the player.
+     *
+     * @param maxFps the absolute maximum fps
+     */
+    public void setMaxFps(int maxFps) {
+        Limits.MAX_FPS = maxFps;
     }
 
     private @NonNull RemoteContext getRemoteContext() {
@@ -279,6 +328,26 @@ public class RemoteComposePlayer extends FrameLayout implements RemoteContextAct
         mSensorsSupport.setupSensors(getContext().getApplicationContext(), mInner);
         mHapticSupport.setupHaptics(mInner);
         mInner.checkShaders(mShaderControl);
+    }
+
+    @Override
+    public boolean dispatchHoverEvent(MotionEvent event) {
+        return RemoteComposeTouchHelper.REGISTRAR.dispatchHoverEvent(this, event)
+                || super.dispatchHoverEvent(event);
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        return RemoteComposeTouchHelper.REGISTRAR.dispatchKeyEvent(this, event)
+                || super.dispatchKeyEvent(event);
+    }
+
+    @Override
+    public void onFocusChanged(
+            boolean gainFocus, int direction, @Nullable Rect previouslyFocusedRect) {
+        super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
+        RemoteComposeTouchHelper.REGISTRAR.onFocusChanged(
+                this, gainFocus, direction, previouslyFocusedRect);
     }
 
     /**
