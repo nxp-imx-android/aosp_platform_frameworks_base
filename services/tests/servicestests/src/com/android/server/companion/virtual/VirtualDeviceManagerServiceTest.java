@@ -62,6 +62,7 @@ import android.companion.virtual.IVirtualDeviceActivityListener;
 import android.companion.virtual.IVirtualDeviceIntentInterceptor;
 import android.companion.virtual.IVirtualDeviceSoundEffectListener;
 import android.companion.virtual.ViewConfigurationParams;
+import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.audio.IAudioConfigChangedCallback;
@@ -1640,7 +1641,7 @@ public class VirtualDeviceManagerServiceTest {
                         new AttributionSource(
                                 ownerUid, VIRTUAL_DEVICE_OWNER_PACKAGE, "virtualdevice"),
                         virtualDeviceId,
-                        "DEVICE_PROFILE_TEST",
+                        VirtualDevice.DEVICE_PROFILE_APP_STREAMING,
                         mInputController,
                         mCameraAccessController,
                         mPendingTrampolineCallback,

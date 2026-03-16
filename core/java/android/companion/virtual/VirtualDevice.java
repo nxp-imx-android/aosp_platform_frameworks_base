@@ -20,6 +20,7 @@ import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_CAMERA;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_SENSORS;
 
+import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemApi;
@@ -27,6 +28,11 @@ import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.RemoteException;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Details of a particular virtual device.
@@ -37,22 +43,55 @@ import android.os.RemoteException;
  */
 public final class VirtualDevice implements Parcelable {
 
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = "DEVICE_PROFILE_", value = {
+            DEVICE_PROFILE_UNKNOWN,
+            DEVICE_PROFILE_SHELL,
+            DEVICE_PROFILE_COMPUTER_CONTROL,
+            DEVICE_PROFILE_AUTOMOTIVE_PROJECTION,
+            DEVICE_PROFILE_APP_STREAMING,
+            DEVICE_PROFILE_NEARBY_DEVICE_STREAMING,
+            DEVICE_PROFILE_VIRTUAL_DEVICE})
+    @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+    public @interface DeviceProfile {}
+
+    /** @hide */
+    public static final int DEVICE_PROFILE_UNKNOWN = -1;
+
+    /** @hide */
+    public static final int DEVICE_PROFILE_SHELL = 0;
+
+    /** @hide */
+    public static final int DEVICE_PROFILE_COMPUTER_CONTROL = 1;
+
+    /**
+     * @see android.companion.AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION
+     * @hide
+     */
+    public static final int DEVICE_PROFILE_AUTOMOTIVE_PROJECTION = 101;
+    /**
+     * @see android.companion.AssociationRequest.DEVICE_PROFILE_APP_STREAMING
+     * @hide
+     */
+    public static final int DEVICE_PROFILE_APP_STREAMING = 102;
+    /**
+     * @see android.companion.AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_STREAMING
+     * @hide
+     */
+    public static final int DEVICE_PROFILE_NEARBY_DEVICE_STREAMING = 103;
+    /**
+     * @see android.companion.AssociationRequest.DEVICE_PROFILE_VIRTUAL_DEVICE
+     * @hide
+     */
+    public static final int DEVICE_PROFILE_VIRTUAL_DEVICE = 104;
+
     private final @NonNull IVirtualDevice mVirtualDevice;
     private final int mId;
+    private final @DeviceProfile int mProfile;
     private final @Nullable String mPersistentId;
     private final @Nullable String mName;
     private final @Nullable CharSequence mDisplayName;
-
-    /**
-     * Creates a new instance of {@link VirtualDevice}.
-     * Only to be used by the VirtualDeviceManagerService.
-     *
-     * @hide
-     */
-    public VirtualDevice(@NonNull IVirtualDevice virtualDevice, int id,
-            @Nullable String persistentId, @Nullable String name) {
-        this(virtualDevice, id, persistentId, name, null);
-    }
 
     /**
      * Creates a new instance of {@link VirtualDevice}. Only to be used by the
@@ -60,7 +99,7 @@ public final class VirtualDevice implements Parcelable {
      *
      * @hide
      */
-    public VirtualDevice(@NonNull IVirtualDevice virtualDevice, int id,
+    public VirtualDevice(@NonNull IVirtualDevice virtualDevice, int id, @DeviceProfile int profile,
             @Nullable String persistentId, @Nullable String name,
             @Nullable CharSequence displayName) {
         if (id <= Context.DEVICE_ID_DEFAULT) {
@@ -69,6 +108,7 @@ public final class VirtualDevice implements Parcelable {
         }
         mVirtualDevice = virtualDevice;
         mId = id;
+        mProfile = profile;
         mPersistentId = persistentId;
         mName = name;
         mDisplayName = displayName;
@@ -77,6 +117,7 @@ public final class VirtualDevice implements Parcelable {
     private VirtualDevice(@NonNull Parcel parcel) {
         mVirtualDevice = IVirtualDevice.Stub.asInterface(parcel.readStrongBinder());
         mId = parcel.readInt();
+        mProfile = parcel.readInt();
         mPersistentId = parcel.readString8();
         mName = parcel.readString8();
         mDisplayName = parcel.readCharSequence();
@@ -119,13 +160,9 @@ public final class VirtualDevice implements Parcelable {
      *
      * @hide
      */
-    @Nullable
-    public String getDeviceProfile() {
-        try {
-            return mVirtualDevice.getDeviceProfile();
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
-        }
+    @DeviceProfile
+    public int getDeviceProfile() {
+        return mProfile;
     }
 
     /**
@@ -219,6 +256,7 @@ public final class VirtualDevice implements Parcelable {
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeStrongBinder(mVirtualDevice.asBinder());
         dest.writeInt(mId);
+        dest.writeInt(mProfile);
         dest.writeString8(mPersistentId);
         dest.writeString8(mName);
         dest.writeCharSequence(mDisplayName);
@@ -229,6 +267,7 @@ public final class VirtualDevice implements Parcelable {
     public String toString() {
         return "VirtualDevice("
                 + " mId=" + mId
+                + " mProfile=" + mProfile
                 + " mPersistentId=" + mPersistentId
                 + " mName=" + mName
                 + " mDisplayName=" + mDisplayName
