@@ -75,6 +75,8 @@ class FluidResizeTaskPositioner implements TaskPositioner, Transitions.Transitio
     private final Rect mTaskBoundsAtDragStart = new Rect();
     private final PointF mRepositionStartPoint = new PointF();
     private final Rect mRepositionTaskBounds = new Rect();
+    private final DragPositioningCallbackUtility.ChangeBoundsResult mChangeBoundsResult =
+            new DragPositioningCallbackUtility.ChangeBoundsResult();
     private final DesktopState mDesktopState;
     private boolean mHasDragResized;
     private boolean mIsResizingOrAnimatingResize;
@@ -136,10 +138,10 @@ class FluidResizeTaskPositioner implements TaskPositioner, Transitions.Transitio
     public Rect onDragPositioningMove(int displayId, float x, float y) {
         final WindowContainerTransaction wct = new WindowContainerTransaction();
         PointF delta = DragPositioningCallbackUtility.calculateDelta(x, y, mRepositionStartPoint);
-        if (isResizing() && DragPositioningCallbackUtility.changeBounds(mCtrlType,
-                mRepositionTaskBounds, mTaskBoundsAtDragStart, mStableBounds, delta,
-                mDisplayController, mWindowDecoration,
-                mDesktopState.canEnterDesktopMode())) {
+        DragPositioningCallbackUtility.changeBounds(mCtrlType, mRepositionTaskBounds,
+                mTaskBoundsAtDragStart, mStableBounds, delta, mDisplayController, mWindowDecoration,
+                mDesktopState.canEnterDesktopMode(), mChangeBoundsResult);
+        if (isResizing() && mChangeBoundsResult.boundsChanged) {
             // The task is being resized, send the |dragResizing| hint to core with the first
             // bounds-change wct.
             if (!mHasDragResized) {
@@ -175,9 +177,10 @@ class FluidResizeTaskPositioner implements TaskPositioner, Transitions.Transitio
             wct.setDragResizing(mWindowDecoration.getTaskInfo().token, false /* dragResizing */);
             PointF delta = DragPositioningCallbackUtility.calculateDelta(x, y,
                     mRepositionStartPoint);
-            if (DragPositioningCallbackUtility.changeBounds(mCtrlType, mRepositionTaskBounds,
+            DragPositioningCallbackUtility.changeBounds(mCtrlType, mRepositionTaskBounds,
                     mTaskBoundsAtDragStart, mStableBounds, delta, mDisplayController,
-                    mWindowDecoration, mDesktopState.canEnterDesktopMode())) {
+                    mWindowDecoration, mDesktopState.canEnterDesktopMode(), mChangeBoundsResult);
+            if (mChangeBoundsResult.boundsChanged) {
                 wct.setBounds(mWindowDecoration.getTaskInfo().token, mRepositionTaskBounds);
             }
             mDragResizeEndTransition = mTransitions.startTransition(TRANSIT_CHANGE, wct, this);
