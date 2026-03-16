@@ -231,3 +231,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "windowing_sdk"
+    name: "add_bg_color_for_transparent_bubbles"
+    description: "Adds a background color to bubbles to prevent transparent layer issues"
+    bug: "457312170"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

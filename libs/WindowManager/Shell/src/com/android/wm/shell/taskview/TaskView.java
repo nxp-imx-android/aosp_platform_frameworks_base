@@ -108,7 +108,18 @@ public class TaskView extends SurfaceView implements SurfaceHolder.Callback,
      */
     public TaskView(Context context, TaskViewController taskViewController,
             TaskViewTaskController taskViewTaskController, Handler handler) {
-        super(context, null, 0, 0, true /* disableBackgroundLayer */);
+        this(context, taskViewController, taskViewTaskController, handler, true);
+    }
+
+    /**
+     * Create a new instance of TaskView with the given handler for running ui operations on.
+     * <p>
+     * TaskView should be attached to a ViewRoot that is using the given handler.
+     */
+    public TaskView(Context context, TaskViewController taskViewController,
+            TaskViewTaskController taskViewTaskController, Handler handler,
+            boolean disableBackgroundLayer) {
+        super(context, null, 0, 0, disableBackgroundLayer);
         mTaskViewController = taskViewController;
         mTaskViewTaskController = taskViewTaskController;
         // TODO(b/266736992): Think about a better way to set the TaskViewBase on the
