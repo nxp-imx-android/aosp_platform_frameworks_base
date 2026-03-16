@@ -52,6 +52,7 @@ fun <T : AppRecord> AppListPage(
     noItemMessage: String? = null,
     moreOptions: @Composable MoreOptionsScope.() -> Unit = {},
     header: @Composable () -> Unit = {},
+    footer: @Composable () -> Unit = {},
     appList: @Composable AppListInput<T>.() -> Unit = { AppList() },
 ) {
     var showSystem by rememberSaveable { mutableStateOf(showSystemAppsInitially) }
@@ -88,6 +89,7 @@ fun <T : AppRecord> AppListPage(
                     searchQuery = searchQuery,
                 ),
                 header = header,
+                footer = footer,
                 bottomPadding = bottomPadding,
                 noItemMessage = noItemMessage,
             )
