@@ -698,7 +698,7 @@ fun PreferenceMetadata.toProto(
             }
         }
 
-        screenMetadata.getTrampolinedLaunchIntent(context, metadata)?.let {
+        screenMetadata.getTrampolinedLaunchIntent(metadata).let {
             launchIntent = it.toProto()
         }
 
