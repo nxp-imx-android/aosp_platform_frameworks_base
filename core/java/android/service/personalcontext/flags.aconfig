@@ -72,3 +72,11 @@ flag {
     }
 }
 
+
+flag {
+    namespace: "communal"
+    name: "enable_personal_context_attribution_support"
+    description: "Enables attribution flow to work in personal context CUJs"
+    bug: "493270152"
+}
+
