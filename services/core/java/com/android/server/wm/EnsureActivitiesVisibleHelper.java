@@ -146,14 +146,9 @@ class EnsureActivitiesVisibleHelper {
         // Visibility should be updated by now, so let's update resumed state too.
         if (Flags.allowDragAndDropWhenInteractiveBugfix() && mTaskFragment.asTask() != null) {
             final Task task = mTaskFragment.asTask();
-            // The task should 1) be visible; 2) lie about resumed state when container
-            // participates in the transient hide transition because as soon as animation finishes
-            // the container will be hidden.
+            // The task should 1) be visible; 2) an activity would resume if put into the task.
+            final boolean isTaskResumed = canTopActivityResume && task.isVisibleRequested();
             final Transition collecting = task.mTransitionController.getCollectingTransition();
-            final boolean isTransientHide = collecting != null
-                    && collecting.isInTransientHide(task);
-            final boolean isTaskResumed = canTopActivityResume && task.isVisibleRequested()
-                    && !isTransientHide;
             task.mTransitionController.recordLifecycle(task);
             task.setInteractive(isTaskResumed);
         }

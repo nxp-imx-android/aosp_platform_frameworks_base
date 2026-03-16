@@ -3844,6 +3844,56 @@ public class TransitionTests extends WindowTestsBase {
         player.finish();
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ALLOW_DRAG_AND_DROP_WHEN_INTERACTIVE_BUGFIX)
+    public void testTransientHideInteractivity() {
+        final TransitionController controller = mDisplayContent.mTransitionController;
+        final TestTransitionPlayer player = registerTestTransitionPlayer();
+        final Transition transition = createTestTransition(TRANSIT_TO_FRONT, controller);
+
+        final Task taskA = createTask(mDisplayContent);
+        final Task taskHome = createTask(mDisplayContent);
+        final ActivityRecord activityHome = createActivityRecord(taskHome);
+
+        // Current state: A is interactive and visible.
+        taskA.setInteractive(true);
+        taskA.setVisibleRequested(true);
+        activityHome.setVisibleRequested(false);
+
+        // Run transition
+        controller.moveToCollecting(transition);
+
+        // Transient launch home activity, effectively transient-hiding taskA
+        transition.setTransientLaunch(activityHome, taskA);
+
+        // Force ready to trigger onTransactionReady
+        controller.requestStartTransition(transition, taskA, null /* remote */, null /* display */);
+
+        // Make a transition ready manually with a test condition. This will force
+        // TransitionController to collect order changes.
+        final Transition.ReadyCondition testCondition = new Transition.ReadyCondition("test");
+        transition.mReadyTracker.add(testCondition);
+        transition.mReadyTracker.meet(testCondition);
+        player.start();
+
+        final TransitionInfo info = player.mLastReady;
+        assertNotNull(info);
+
+        final TransitionInfo.Change changeA =
+                info.getChange(taskA.mRemoteToken.toWindowContainerToken());
+        assertNotNull("Task A should have a change.", changeA);
+
+        final TaskInfo taskAInfo = changeA.getTaskInfo();
+        assertNotNull(taskAInfo);
+
+        // Core state must remain unchanged.
+        assertTrue("Core state of taskA must remain interactive.", taskA.isInteractive());
+        // Changes should lie about the current Core state.
+        assertFalse("Shell state of taskA must be non-interactive.", taskAInfo.isInteractive);
+
+        player.finish();
+    }
+
     private void tryFinishTransitionSyncSet(Transition transition) {
         transition.setAllReady();
         transition.start();
