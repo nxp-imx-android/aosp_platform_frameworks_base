@@ -87,14 +87,18 @@ public class SecurityStateTest {
     private static final String[] SECURITY_STATE_PACKAGES =
             new String[]{DEFAULT_SECURITY_STATE_PACKAGE};
     private static final String[] EXPECTED_SYSTEM_CVES =
-            new String[]{"CVE-2023-12345", "CVE-2024-54321"};
+            new String[]{"CVE-2023-12345", "CVE-2024-54321", "CVE-2025-67890"};
     private static final String[] EXPECTED_VENDOR_CVES =
-            new String[]{"CVE-2022-00000", "CVE-2023-11111"};
+            new String[]{"CVE-2022-00000", "CVE-2023-11111", "CVE-2026-09876"};
 
-    private static final String TEST_SYSTEM_FILE_PATH =
-            "/data/local/tmp/test_supplemental_security_patches.xml";
-    private static final String TEST_VENDOR_FILE_PATH =
-            "/data/local/tmp/test_vendor_supplemental_security_patches.xml";
+    private static final String[] TEST_SYSTEM_FILE_PATHS = {
+        "/data/local/tmp/test_system_supplemental_security_patches.xml",
+        "/data/local/tmp/test_product_supplemental_security_patches.xml"
+    };
+    private static final String[] TEST_VENDOR_FILE_PATHS = {
+        "/data/local/tmp/test_vendor_supplemental_security_patches.xml",
+        "/data/local/tmp/test_odm_supplemental_security_patches.xml"
+    };
 
     @Before
     public void setUp() throws Exception {
@@ -122,8 +126,8 @@ public class SecurityStateTest {
         SecurityStateManagerService securityState =
                 new SecurityStateManagerService(
                         mMockContext,
-                        TEST_SYSTEM_FILE_PATH,
-                        TEST_VENDOR_FILE_PATH);
+                        TEST_SYSTEM_FILE_PATHS,
+                        TEST_VENDOR_FILE_PATHS);
 
         Bundle bundle = securityState.getGlobalSecurityState();
 

@@ -47,9 +47,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -61,11 +64,16 @@ public class SecurityStateManagerService extends ISecurityStateManager.Stub {
     static final String VENDOR_SECURITY_PATCH_PROPERTY_KEY = "ro.vendor.build.security_patch";
     static final Pattern KERNEL_RELEASE_PATTERN = Pattern.compile("(\\d+\\.\\d+\\.\\d+)(.*)");
 
-    static final String SYSTEM_SUPPLEMENTAL_PATCH_CONFIG_FILE =
-            "/system/etc/security/supplemental_security_patches.xml";
+    static final String[] SYSTEM_SUPPLEMENTAL_PATCH_CONFIG_FILES = {
+            "/system/etc/security/supplemental_security_patches.xml",
+            "/system_ext/etc/security/supplemental_security_patches.xml",
+            "/product/etc/security/supplemental_security_patches.xml"
+    };
 
-    static final String VENDOR_SUPPLEMENTAL_PATCH_CONFIG_FILE =
-            "/vendor/etc/security/supplemental_security_patches.xml";
+    static final String[] VENDOR_SUPPLEMENTAL_PATCH_CONFIG_FILES = {
+            "/vendor/etc/security/supplemental_security_patches.xml",
+            "/odm/etc/security/supplemental_security_patches.xml"
+    };
 
     private Map<String, String[]> mPartitionToCve = new HashMap<>();
     private SecurityPatches mSecurityPatches;
@@ -76,33 +84,42 @@ public class SecurityStateManagerService extends ISecurityStateManager.Stub {
     public SecurityStateManagerService(Context context) {
         this(
                 context,
-                SYSTEM_SUPPLEMENTAL_PATCH_CONFIG_FILE,
-                VENDOR_SUPPLEMENTAL_PATCH_CONFIG_FILE);
+                SYSTEM_SUPPLEMENTAL_PATCH_CONFIG_FILES,
+                VENDOR_SUPPLEMENTAL_PATCH_CONFIG_FILES);
     }
 
     @VisibleForTesting
     SecurityStateManagerService(
             Context context,
-            String systemSupplementalPatchConfigPath,
-            String vendorSupplementalPatchConfigPath) {
+            String[] systemSupplementalPatchConfigPaths,
+            String[] vendorSupplementalPatchConfigPaths) {
         mContext = context;
         mPackageManager = context.getPackageManager();
         if (Flags.supplementalSecurityPatches()) {
             mPartitionToCve.put(
                     KEY_SYSTEM_SUPPLEMENTAL_PATCHES,
-                    loadCvePatches(systemSupplementalPatchConfigPath));
+                    loadCvePatches(systemSupplementalPatchConfigPaths));
             mPartitionToCve.put(
                     KEY_VENDOR_SUPPLEMENTAL_PATCHES,
-                    loadCvePatches(vendorSupplementalPatchConfigPath));
+                    loadCvePatches(vendorSupplementalPatchConfigPaths));
         }
     }
 
-    private String[] loadCvePatches(String configFilePath) {
+    private String[] loadCvePatches(String[] filePaths) {
+        Set<String> mergedCves = new HashSet<>();
+        for (String path : filePaths) {
+            mergedCves.addAll(Arrays.asList(loadCvePatchesFromFile(path)));
+        }
+        return mergedCves.toArray(new String[0]);
+    }
+
+
+    private String[] loadCvePatchesFromFile(String configFilePath) {
         File configFile = new File(configFilePath);
 
         // Return if file does not exist
         if (!configFile.exists()) {
-            Slog.e(TAG, "CVE patches configuration file not found.");
+            Slog.d(TAG, "CVE patches configuration file not found: " + configFilePath);
             return new String[0];
         }
 
@@ -111,10 +128,10 @@ public class SecurityStateManagerService extends ISecurityStateManager.Stub {
                 mSecurityPatches = XmlParser.read(in);
                 Slog.i(TAG, "Successfully loaded security patches from config file.");
             } catch (Exception e) {
-                Slog.e(TAG, "Error parsing security patches configuration.", e);
+                Slog.e(TAG, "Error parsing supplemental security patch file: " + configFilePath, e);
             }
         } catch (IOException e) {
-            Slog.e(TAG, "Error opening security patches configuration file.", e);
+            Slog.e(TAG, "Error reading supplemental security patch file: " + configFilePath, e);
         }
 
         String[] cveIdArrayList = new String[0];
