@@ -1054,6 +1054,14 @@ public final class TimeZoneDetectorStrategyImpl
         ipw.increaseIndent(); // level 2
         mChangeTracker.dump(ipw);
         ipw.decreaseIndent(); // level 2
+
+        if (ExperimentHelper.isTimeZoneOffsetChangeNotificationEnabled()) {
+            ipw.println("Time zone offset change notifier:");
+            ipw.increaseIndent(); // level 2
+            mTimeZoneOffsetChangeListener.dump(ipw);
+            ipw.decreaseIndent(); // level 2
+        }
+
         ipw.decreaseIndent(); // level 1
     }
 

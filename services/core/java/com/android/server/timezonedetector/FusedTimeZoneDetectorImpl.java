@@ -22,6 +22,7 @@ import static com.android.server.timezonedetector.TimeZoneDetectorStrategy.ORIGI
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.app.ActivityManager;
 import android.app.timezonedetector.TelephonySignal;
 import android.content.Context;
 import android.os.Handler;
@@ -34,7 +35,6 @@ import android.util.IndentingPrintWriter;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.server.timezonedetector.ftzd.AirplaneModeEvent;
 import com.android.server.timezonedetector.ftzd.FusedSignals;
 
 import java.time.Duration;
@@ -83,8 +83,8 @@ import java.util.TimeZone;
  */
 public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
 
-    private static final int MAX_HISTORY_SIZE_DEFAULT = 20;
-    private static final int MAX_HISTORY_SIZE_LOW = 10;
+    private static final int MAX_HISTORY_SIZE_DEFAULT = 100;
+    private static final int MAX_HISTORY_SIZE_LOW_RAM = 10;
     private static final String SOURCE_TELEPHONY = "telephony";
     private static final String SOURCE_LOCATION = "location";
 
@@ -106,6 +106,7 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
     private final ServiceConfigAccessor mServiceConfigAccessor;
     private final Handler mHandler;
     private final Duration mAirplaneModeResetDelay;
+    private final int mMaxHistorySize;
     private final TimeZoneDetectorTelemetry mTelemetry;
 
     @GuardedBy("this")
@@ -149,15 +150,7 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
     private QualifiedTelephonyTimeZoneSuggestion mLastTelephonySuggestion;
 
     @GuardedBy("this")
-    private final ReferenceWithHistory<FusedSignals> mTimeZoneHistory =
-            new ReferenceWithHistory<>(MAX_HISTORY_SIZE_DEFAULT);
-
-    @GuardedBy("this")
-    private final ReferenceWithHistory<AirplaneModeEvent> mAirplaneModeEventHistory =
-            new ReferenceWithHistory<>(MAX_HISTORY_SIZE_LOW);
-
-    @GuardedBy("this")
-    private AirplaneModeEvent mLastAirplaneModeEvent;
+    private final List<FusedSignals> mTimeZoneHistory;
 
     @GuardedBy("this")
     private boolean mIsAirplaneModeOn;
@@ -235,6 +228,9 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
         mDeviceActivityMonitor = Objects.requireNonNull(deviceActivityMonitor);
         mHandler = handler;
         mAirplaneModeResetDelay = airplaneModeResetDelay;
+        mMaxHistorySize =
+                isLowRamDevice(context) ? MAX_HISTORY_SIZE_LOW_RAM : MAX_HISTORY_SIZE_DEFAULT;
+        mTimeZoneHistory = new ArrayList<>(mMaxHistorySize);
         mTelemetry = telemetry;
 
         synchronized (this) {
@@ -645,17 +641,15 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
 
     @GuardedBy("this")
     private void addTimeZoneToHistory(FusedSignals fusedSignals) {
-        mTimeZoneHistory.set(fusedSignals);
+        if (mTimeZoneHistory.size() >= mMaxHistorySize) {
+            mTimeZoneHistory.remove(0);
+        }
+        mTimeZoneHistory.add(fusedSignals);
     }
 
     private void setupAirplaneModeListener() {
         synchronized (this) {
             mIsAirplaneModeOn = isAirplaneModeOn();
-
-            if (mIsAirplaneModeOn) {
-                // The device has rebooted while Airplane Mode is on.
-                mLastAirplaneModeEvent = new AirplaneModeEvent(/* startTimeMillis= */ 0L);
-            }
         }
 
         mDeviceActivityMonitor.addListener(
@@ -664,7 +658,6 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
                     public void onFlightStart() {
                         synchronized (FusedTimeZoneDetectorImpl.this) {
                             mIsAirplaneModeOn = true;
-                            mLastAirplaneModeEvent = new AirplaneModeEvent();
                             mHandler.postDelayed(
                                     mAirplaneModeTimeoutRunnable,
                                     mAirplaneModeResetDelay.toMillis());
@@ -675,11 +668,6 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
                     public void onFlightComplete() {
                         synchronized (FusedTimeZoneDetectorImpl.this) {
                             mIsAirplaneModeOn = false;
-
-                            mLastAirplaneModeEvent.recordEndTime();
-                            mAirplaneModeEventHistory.set(mLastAirplaneModeEvent);
-                            mLastAirplaneModeEvent = null;
-
                             mHandler.removeCallbacks(mAirplaneModeTimeoutRunnable);
                         }
                     }
@@ -754,24 +742,14 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
         ipw.decreaseIndent(); // level 3
 
         ipw.println("isTelephonySupported=" + isTelephonyTimeZoneDetectionSupported());
-        ipw.println(
-                "mIsAirplaneModeOn="
-                        + mIsAirplaneModeOn
-                        + (mIsAirplaneModeOn && mLastAirplaneModeEvent != null
-                                ? " (" + mLastAirplaneModeEvent.getStartTimeToString() + ")"
-                                : ""));
+        ipw.println("mIsAirplaneModeOn=" + mIsAirplaneModeOn);
         ipw.println("mIsLocationOnlyTzDetection=" + mIsLocationOnlyTzDetection);
         ipw.println("mCurrentFusedSignals=" + mCurrentFusedSignals);
         ipw.decreaseIndent(); // level 1
 
-        ipw.println("Time zone history:");
+        ipw.println("TimeZoneHistory:");
         ipw.increaseIndent(); // level 2
-        mTimeZoneHistory.dump(ipw);
-        ipw.decreaseIndent(); // level 1
-
-        ipw.println("Airplane mode history:");
-        ipw.increaseIndent(); // level 2
-        mAirplaneModeEventHistory.dump(ipw);
+        printListItems(ipw, mTimeZoneHistory);
         ipw.decreaseIndent(); // level 1
 
         ipw.println("Usage stats:");
@@ -810,5 +788,16 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
 
         ipw.decreaseIndent(); // level 1
         ipw.decreaseIndent(); // level 0
+    }
+
+    private static boolean isLowRamDevice(@NonNull Context context) {
+        try {
+            ActivityManager activityManager = context.getSystemService(ActivityManager.class);
+            return activityManager.isLowRamDevice();
+        } catch (Exception e) {
+            // Catch all exceptions for robustness, as this is not critical and should not crash the
+            // service. Default to false (not a low-RAM device).
+            return false;
+        }
     }
 }
