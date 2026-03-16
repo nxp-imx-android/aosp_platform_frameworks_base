@@ -18,7 +18,6 @@ package com.android.server.appwidget;
 
 import static android.appwidget.AppWidgetProviderInfo.WIDGET_FEATURE_CONFIGURATION_OPTIONAL;
 import static android.appwidget.flags.Flags.appLockWidgetRemoval;
-import static android.appwidget.flags.Flags.limitIconMemory;
 import static android.appwidget.flags.Flags.remoteAdapterConversion;
 import static android.appwidget.flags.Flags.remoteViewsProto;
 import static android.appwidget.flags.Flags.securityPolicyInteractAcrossUsers;
@@ -3157,7 +3156,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         long totalMemoryUsage = bitmapCacheMemoryUsage + widget.views.estimateIconMemoryUsage();
         int targetSdk = getWidgetTargetSdkLocked(widget);
         long memoryUsage =
-                (targetSdk > 37 && limitIconMemory()) ? totalMemoryUsage : bitmapCacheMemoryUsage;
+                (targetSdk > 37) ? totalMemoryUsage : bitmapCacheMemoryUsage;
         if (memoryUsage > mMaxWidgetBitmapMemory) {
             widget.views = null;
             throw new IllegalArgumentException("RemoteViews for widget update exceeds"

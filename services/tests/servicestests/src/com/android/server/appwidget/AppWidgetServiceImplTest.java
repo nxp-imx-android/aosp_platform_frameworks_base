@@ -705,7 +705,6 @@ public class AppWidgetServiceImplTest {
         });
     }
 
-    @EnableFlags(Flags.FLAG_LIMIT_ICON_MEMORY)
     @Test
     public void testWidgetViewsMemoryLimit_post38_icon() {
         RemoteViews viewsWithIconOverLimit = new RemoteViews(mTestContext.getPackageName(),
