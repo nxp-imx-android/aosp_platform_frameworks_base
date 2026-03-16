@@ -25,8 +25,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
-import com.android.systemui.statusbar.notification.collection.coordinator.HideNotifsForHsuCoordinator.Companion.STATUS_ALLOWED_DISABLED_MODE
-import com.android.systemui.statusbar.notification.collection.coordinator.HideNotifsForHsuCoordinator.Companion.STATUS_DISALLOWED_FEATURE_DISABLED
+import com.android.systemui.statusbar.notification.collection.coordinator.HsuCoordinator.Companion.STATUS_ALLOWED_DISABLED_MODE
+import com.android.systemui.statusbar.notification.collection.coordinator.HsuCoordinator.Companion.STATUS_DISALLOWED_FEATURE_DISABLED
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifFilter
 import com.android.systemui.statusbar.notification.collection.notifPipeline
 import com.android.systemui.testKosmos
@@ -53,7 +53,7 @@ import org.mockito.kotlin.whenever
 // the status), it will be worth to refactor it.
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-class HideNotifsForHsuCoordinatorTest : SysuiTestCase() {
+class HsuCoordinatorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
     private val pipeline = kosmos.notifPipeline
@@ -67,7 +67,7 @@ class HideNotifsForHsuCoordinatorTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
-        val coordinator = HideNotifsForHsuCoordinator(selectedUserInteractor, notificationManager)
+        val coordinator = HsuCoordinator(selectedUserInteractor, notificationManager)
         coordinator.attach(pipeline)
         filter = withArgCaptor { verify(pipeline).addPreGroupFilter(capture()) }
     }
