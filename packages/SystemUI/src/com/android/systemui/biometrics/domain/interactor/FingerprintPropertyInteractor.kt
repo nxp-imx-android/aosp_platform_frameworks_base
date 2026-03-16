@@ -21,6 +21,7 @@ import android.hardware.biometrics.SensorLocationInternal
 import com.android.systemui.Flags
 import com.android.systemui.biometrics.data.repository.FingerprintPropertyRepository
 import com.android.systemui.biometrics.shared.model.FingerprintSensorInfo
+import com.android.systemui.biometrics.shared.model.PeripheralFingerprintSensorLocation
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -82,6 +83,10 @@ constructor(
                     !peripheralSensorLocation.isUnknown())
         }
 
+    /** The sensor peripheral location. */
+    val peripheralSensorLocation: StateFlow<PeripheralFingerprintSensorLocation> =
+        repository.peripheralSensorLocation
+
     /**
      * Devices with multiple physical displays use unique display ids to determine which sensor is
      * on the active physical display. This value represents a unique physical display id.
@@ -124,14 +129,20 @@ constructor(
                 FingerprintSensorInfo(repository.sensorType.value, repository.strength.value),
             )
 
-    /** The sensor locations relative to each physical display. */
+    /**
+     * The sensor display locations relative to each physical display.
+     *
+     * For peripheral location use [peripheralSensorLocation].
+     */
     val sensorLocations: StateFlow<Map<String, SensorLocationInternal>> = repository.sensorLocations
 
     /**
-     * Sensor location for the:
+     * The sensor display location relative to the display for the:
      * - current physical display
      * - current screen resolution
      * - device's natural orientation
+     *
+     * For peripheral location use [peripheralSensorLocation]
      */
     val sensorLocation: StateFlow<SensorLocation> =
         combineStates(
