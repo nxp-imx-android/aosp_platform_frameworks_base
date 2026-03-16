@@ -129,6 +129,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
     private LayoutParams mLp;
     private boolean mHasTopUi;
     private float mScreenBrightnessDoze;
+    private float mScreenBrightness = LayoutParams.BRIGHTNESS_OVERRIDE_NONE;
     private final NotificationShadeWindowState mCurrentState = new NotificationShadeWindowState();
     private OtherwisedCollapsedListener mListener;
     private ForcePluginOpenListener mForcePluginOpenListener;
@@ -409,6 +410,11 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
         mScreenBrightnessDoze = value;
     }
 
+    @Override
+    public void setScreenBrightnessOverride(float value) {
+        mScreenBrightness = value;
+        apply(mCurrentState);
+    }
     private void setKeyguardDark(boolean dark) {
         int vis = mWindowRootView.getSystemUiVisibility();
         if (dark) {
@@ -739,7 +745,9 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
     }
 
     private void applyBrightness(NotificationShadeWindowState state) {
-        if (state.forceDozeBrightness) {
+        if (mScreenBrightness != LayoutParams.BRIGHTNESS_OVERRIDE_NONE) {
+            mLpChanged.screenBrightness = mScreenBrightness;
+        } else if (state.forceDozeBrightness) {
             mLpChanged.screenBrightness = mScreenBrightnessDoze;
         } else {
             mLpChanged.screenBrightness = LayoutParams.BRIGHTNESS_OVERRIDE_NONE;

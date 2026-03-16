@@ -20,6 +20,7 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.ViewStub
+import android.widget.FrameLayout
 import androidx.constraintlayout.motion.widget.MotionLayout
 import com.android.compose.animation.scene.SceneKey
 import com.android.keyguard.logging.ScrimLogger
@@ -70,6 +71,7 @@ abstract class ShadeViewProviderModule {
 
     companion object {
         const val SHADE_HEADER = "large_screen_shade_header"
+        const val LOW_LIGHT_CONTAINER = "low_light_animation_container"
 
         @SuppressLint("InflateParams") // Root views don't have parents.
         @Provides
@@ -174,6 +176,15 @@ abstract class ShadeViewProviderModule {
             notificationShadeWindowView: NotificationShadeWindowView
         ): SharedNotificationContainer {
             return notificationShadeWindowView.requireViewById(R.id.shared_notification_container)
+        }
+
+        @Provides
+        @Named(LOW_LIGHT_CONTAINER)
+        @SysUISingleton
+        fun providesLowLightAnimationContainer(
+            notificationShadeWindowView: NotificationShadeWindowView
+        ): FrameLayout {
+            return notificationShadeWindowView.requireViewById(R.id.low_light_animation_container)
         }
 
         // TODO(b/277762009): Only allow this view's controller to inject the view. See above.
