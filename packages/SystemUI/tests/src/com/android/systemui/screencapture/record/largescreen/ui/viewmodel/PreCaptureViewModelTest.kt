@@ -43,6 +43,7 @@ import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
+import com.android.systemui.res.R
 import com.android.systemui.screencapture.ScreenCaptureEvent
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters.Record.LargeScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiState
@@ -185,6 +186,42 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             assertThat(largeScreenCaptureParametersInteractor.getSelectedCaptureType())
                 .isEqualTo(ScreenCaptureType.RECORDING)
             assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.RECORDING)
+        }
+
+    @Test
+    fun disclaimer_shownWhenRecordingSelected() =
+        kosmos.runTest {
+            setupViewModel()
+            assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.SCREENSHOT)
+            assertThat(viewModel.snackbarHostState.currentSnackbarData).isNull()
+
+            viewModel.updateCaptureType(ScreenCaptureType.RECORDING)
+            runCurrent()
+
+            assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.RECORDING)
+            assertThat(viewModel.snackbarHostState.currentSnackbarData).isNotNull()
+            assertThat(viewModel.snackbarHostState.currentSnackbarData?.visuals?.message)
+                .isEqualTo(
+                    context.getString(R.string.screenrecord_permission_dialog_warning_entire_screen)
+                )
+
+            viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT)
+            runCurrent()
+
+            assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.SCREENSHOT)
+            assertThat(viewModel.snackbarHostState.currentSnackbarData).isNull()
+        }
+
+    @Test
+    fun disclaimer_shownOnStartWhenRecordingDefault() =
+        kosmos.runTest {
+            setupViewModel(
+                LargeScreenCaptureUiParameters(defaultCaptureType = ScreenCaptureType.RECORDING)
+            )
+            runCurrent()
+
+            assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.RECORDING)
+            assertThat(viewModel.snackbarHostState.currentSnackbarData).isNotNull()
         }
 
     @Test
