@@ -384,7 +384,7 @@ public final class PolicyDefinition<V> {
     static final PolicyDefinition<List<String>> CONTENT_RESTRICTION_APPS =
             new PolicyDefinition<>(
                     new NoArgsPolicyKey(DevicePolicyIdentifiers.CONTENT_RESTRICTION_APPS_POLICY),
-                    new PackageListUnion(),
+                    ListUnion.PACKAGE,
                     POLICY_FLAG_LOCAL_ONLY_POLICY,
                     PolicyEnforcerCallbacks::setContentRestrictionApps,
                     new ListOfStringPolicySerializer());

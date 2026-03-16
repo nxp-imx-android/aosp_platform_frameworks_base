@@ -49,9 +49,9 @@ import com.android.server.devicepolicy.EnforcingAdmin;
 import com.android.server.devicepolicy.IntegerPolicySerializer;
 import com.android.server.devicepolicy.LeastRecent;
 import com.android.server.devicepolicy.ListOfStringPolicySerializer;
+import com.android.server.devicepolicy.ListUnion;
 import com.android.server.devicepolicy.MostRecent;
 import com.android.server.devicepolicy.MostRestrictive;
-import com.android.server.devicepolicy.PackageListUnion;
 import com.android.server.devicepolicy.PolicyDefinition;
 import com.android.server.devicepolicy.PolicyEnforcerCallbacks;
 import com.android.server.devicepolicy.PolicySerializer;
@@ -175,7 +175,8 @@ public class PolicyDefinitionFactory {
         addFactory(
                 PolicyIdentifier.CONTENT_RESTRICTION_APPS,
                 builder -> {
-                    return builder.setResolutionMechanism(new PackageListUnion())
+                    return builder
+                            .setResolutionMechanism(ListUnion.PACKAGE)
                             .setEnforcerCallback(PolicyEnforcerCallbacks::setContentRestrictionApps)
                             .build();
                 });
