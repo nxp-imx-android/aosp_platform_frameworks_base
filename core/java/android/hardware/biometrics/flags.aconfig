@@ -137,9 +137,9 @@ flag {
 }
 
 flag {
-    name: "agent_auth_allow_aap"
+    name: "agent_auth_allow_auto_projected"
     namespace: "biometrics_framework"
-    description: "Bug fix flag for AAP in agent auth"
+    description: "Bug fix flag for auto projected role in agent auth"
     bug: "474639153"
     metadata {
         purpose: PURPOSE_BUGFIX

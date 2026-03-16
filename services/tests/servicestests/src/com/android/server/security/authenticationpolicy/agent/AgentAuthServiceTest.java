@@ -369,7 +369,7 @@ public class AgentAuthServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AGENT_AUTH_ALLOW_AAP)
+    @EnableFlags(Flags.FLAG_AGENT_AUTH_ALLOW_AUTO_PROJECTED)
     public void testIsAgentAuthorizedByDeviceId_localAgent_returnsStatus() throws RemoteException {
         int deviceId = 456;
         mockVirtualDevice(deviceId, VirtualDevice.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION);
@@ -392,7 +392,7 @@ public class AgentAuthServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AGENT_AUTH_ALLOW_AAP)
+    @EnableFlags(Flags.FLAG_AGENT_AUTH_ALLOW_AUTO_PROJECTED)
     public void testSetOverride_ForDeviceId_updatesSession() throws RemoteException {
         int deviceId = 456;
         mockVirtualDevice(deviceId, VirtualDevice.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION);
@@ -494,8 +494,8 @@ public class AgentAuthServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AGENT_AUTH_ALLOW_AAP)
-    public void testOnVirtualDeviceCreated_AAP_flagEnabled_hostLocked_noRecentAuth_isUnauthorized() throws RemoteException {
+    @EnableFlags(Flags.FLAG_AGENT_AUTH_ALLOW_AUTO_PROJECTED)
+    public void testOnVirtualDeviceCreated_AutoProjected_flagEnabled_hostLocked_noRecentAuth_isUnauthorized() throws RemoteException {
         int deviceId = 789;
         mockVirtualDevice(deviceId, VirtualDevice.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION);
 
@@ -514,8 +514,8 @@ public class AgentAuthServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AGENT_AUTH_ALLOW_AAP)
-    public void testOnVirtualDeviceCreated_AAP_flagEnabled_hostLocked_withRecentAuth_isAuthorized() throws RemoteException {
+    @EnableFlags(Flags.FLAG_AGENT_AUTH_ALLOW_AUTO_PROJECTED)
+    public void testOnVirtualDeviceCreated_AutoProjected_flagEnabled_hostLocked_withRecentAuth_isAuthorized() throws RemoteException {
         int deviceId = 789;
         mockVirtualDevice(deviceId, VirtualDevice.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION);
 
@@ -535,8 +535,8 @@ public class AgentAuthServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AGENT_AUTH_ALLOW_AAP)
-    public void testOnVirtualDeviceCreated_AAP_flagEnabled_hostUnlocked_isAuthorized() throws RemoteException {
+    @EnableFlags(Flags.FLAG_AGENT_AUTH_ALLOW_AUTO_PROJECTED)
+    public void testOnVirtualDeviceCreated_AutoProjected_flagEnabled_hostUnlocked_isAuthorized() throws RemoteException {
         int deviceId = 789;
         mockVirtualDevice(deviceId, VirtualDevice.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION);
 
@@ -553,8 +553,8 @@ public class AgentAuthServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AGENT_AUTH_ALLOW_AAP)
-    public void testOnVirtualDeviceCreated_AAP_flagEnabled_virtualDeviceLocked_isUnauthorized() throws RemoteException {
+    @EnableFlags(Flags.FLAG_AGENT_AUTH_ALLOW_AUTO_PROJECTED)
+    public void testOnVirtualDeviceCreated_AutoProjected_flagEnabled_virtualDeviceLocked_isUnauthorized() throws RemoteException {
         int deviceId = 89;
         mockVirtualDevice(deviceId, VirtualDevice.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION);
 
@@ -572,8 +572,8 @@ public class AgentAuthServiceTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_AGENT_AUTH_ALLOW_AAP)
-    public void testOnVirtualDeviceCreated_AAP_flagDisabled_usesHostLockState_isAuthorized() throws RemoteException {
+    @DisableFlags(Flags.FLAG_AGENT_AUTH_ALLOW_AUTO_PROJECTED)
+    public void testOnVirtualDeviceCreated_AutoProjected_flagDisabled_usesHostLockState_isAuthorized() throws RemoteException {
         int deviceId = 789;
         mockVirtualDevice(deviceId, VirtualDevice.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION);
 
@@ -596,8 +596,8 @@ public class AgentAuthServiceTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_AGENT_AUTH_ALLOW_AAP)
-    public void testOnVirtualDeviceCreated_AAP_flagDisabled_usesHostLockState_isUnauthorized() throws RemoteException {
+    @DisableFlags(Flags.FLAG_AGENT_AUTH_ALLOW_AUTO_PROJECTED)
+    public void testOnVirtualDeviceCreated_AutoProjected_flagDisabled_usesHostLockState_isUnauthorized() throws RemoteException {
         int deviceId = 78;
         mockVirtualDevice(deviceId, VirtualDevice.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION);
 
