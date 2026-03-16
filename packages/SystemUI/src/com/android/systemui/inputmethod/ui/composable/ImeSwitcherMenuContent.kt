@@ -19,7 +19,6 @@ package com.android.systemui.inputmethod.ui.composable
 import android.content.Context
 import android.view.inputmethod.Flags as InputMethodFlags
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,7 +32,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -46,9 +44,7 @@ import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import com.android.compose.PlatformButton
 import com.android.compose.PlatformOutlinedButton
-import com.android.compose.theme.PlatformTheme
 import com.android.internal.R
-import com.android.systemui.Flags
 import com.android.systemui.inputmethod.ui.viewmodel.ImeSwitcherMenuViewModel
 import com.android.systemui.lifecycle.rememberActivated
 
@@ -73,15 +69,6 @@ fun ImeSwitcherMenuContent(
             viewModelFactory.invoke(context)
         }
 
-    // TODO(b/369376884): The composable does correctly update when the theme changes
-    //  while the dialog is open, but the background (which we don't control here)
-    //  doesn't, which causes us to show things like white text on a white background.
-    //  as a workaround, we remember the original theme and keep it on recomposition.
-    val isCurrentlyInDarkTheme = isSystemInDarkTheme()
-    val cachedDarkTheme = remember { isCurrentlyInDarkTheme }
-    // TODO(b/474600479): Remove remember val and PlatformTheme wrapper once flag is advanced.
-    val isDarkTheme =
-        if (Flags.dialogBackgroundRefresh()) isCurrentlyInDarkTheme else cachedDarkTheme
     val paneTitleDescription = stringResource(R.string.select_input_method)
 
     var containerModifier =
@@ -98,28 +85,26 @@ fun ImeSwitcherMenuContent(
                 .padding(vertical = 24.dp)
     }
 
-    PlatformTheme(isDarkTheme = isDarkTheme) {
-        Column(modifier = containerModifier, horizontalAlignment = Alignment.CenterHorizontally) {
-            Column(modifier = Modifier.weight(weight = 1f, fill = false)) {
-                ImeSwitcherMenuList(
-                    viewModel.menuItems.toList(),
-                    viewModel,
-                    dismissAction,
-                    useLargeScreenLayout = false,
-                )
+    Column(modifier = containerModifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(modifier = Modifier.weight(weight = 1f, fill = false)) {
+            ImeSwitcherMenuList(
+                viewModel.menuItems.toList(),
+                viewModel,
+                dismissAction,
+                useLargeScreenLayout = false,
+            )
+        }
+        viewModel.settingsButtonAction.value?.let { action ->
+            if (InputMethodFlags.imeSwitcherMenuSystemuiStyleUpdate()) {
+                Spacer(modifier = Modifier.height(32.dp))
             }
-            viewModel.settingsButtonAction.value?.let { action ->
-                if (InputMethodFlags.imeSwitcherMenuSystemuiStyleUpdate()) {
-                    Spacer(modifier = Modifier.height(32.dp))
-                }
 
-                SettingsFooter(
-                    settingsButtonAction = {
-                        action.invoke()
-                        dismissAction.invoke()
-                    }
-                )
-            }
+            SettingsFooter(
+                settingsButtonAction = {
+                    action.invoke()
+                    dismissAction.invoke()
+                }
+            )
         }
     }
 }

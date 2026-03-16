@@ -280,16 +280,6 @@ flag {
 }
 
 flag {
-    name: "dialog_background_refresh"
-    namespace: "systemui"
-    description: "Enable refreshing the background of SystemUIDialogs when the theme changes between light and dark mode"
-    bug: "474600479"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
    name: "disable_contextual_tips_frequency_check"
    description: "Disables frequency capping check for contextual tips."
    namespace: "systemui"

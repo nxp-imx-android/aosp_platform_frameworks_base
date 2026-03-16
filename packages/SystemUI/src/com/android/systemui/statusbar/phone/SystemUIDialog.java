@@ -42,7 +42,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StyleRes;
 
 import com.android.systemui.Dependency;
-import com.android.systemui.Flags;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.dagger.qualifiers.Application;
@@ -296,10 +295,8 @@ public class SystemUIDialog extends AlertDialog {
         WindowManager.LayoutParams attrs = getWindow().getAttributes();
         attrs.setTitle(getClass().getSimpleName());
         getWindow().setAttributes(attrs);
-        if (Flags.dialogBackgroundRefresh()) {
-            mLastNightMode = context.getResources().getConfiguration().uiMode
-                    & Configuration.UI_MODE_NIGHT_MASK;
-        }
+        mLastNightMode = context.getResources().getConfiguration().uiMode
+                & Configuration.UI_MODE_NIGHT_MASK;
 
         mDismissReceiver = dismissOnDeviceLock ? new DismissReceiver(this, broadcastDispatcher,
                 dialogTransitionAnimator, shouldAcsdDismissDialog) : null;
@@ -370,14 +367,12 @@ public class SystemUIDialog extends AlertDialog {
 
             updateWindowSize(window);
         }
-        if (Flags.dialogBackgroundRefresh()) {
-            int nightMode = configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK;
-            if (mLastNightMode != nightMode) {
-                mLastNightMode = nightMode;
+        int nightMode = configuration.uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        if (mLastNightMode != nightMode) {
+            mLastNightMode = nightMode;
 
-                if (mRefreshBackgroundOnThemeChange) {
-                    refreshBackground(window);
-                }
+            if (mRefreshBackgroundOnThemeChange) {
+                refreshBackground(window);
             }
         }
 
