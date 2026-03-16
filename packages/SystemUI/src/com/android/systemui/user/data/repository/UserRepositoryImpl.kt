@@ -33,7 +33,6 @@ import android.provider.Settings
 import androidx.annotation.VisibleForTesting
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking
-import com.android.internal.statusbar.IStatusBarService
 import com.android.systemui.Flags
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLogging
@@ -84,7 +83,6 @@ constructor(
     private val tracker: UserTracker,
     private val devicePolicyManager: DevicePolicyManager,
     private val broadcastDispatcher: BroadcastDispatcher,
-    private val statusBarService: IStatusBarService,
     private val activityManager: ActivityManager,
     private val userIconProvider: UserIconProvider,
 ) : UserRepository {
@@ -358,13 +356,6 @@ constructor(
                     isUserSwitcherEnabled = isUserSwitcherEnabled,
                 )
             }
-        }
-    }
-
-    private suspend fun SelectedUserModel.isEligibleForLogout(): Boolean {
-        return withContext(backgroundDispatcher) {
-            selectionStatus == SelectionStatus.SELECTION_COMPLETE &&
-                devicePolicyManager.logoutUser != null
         }
     }
 
