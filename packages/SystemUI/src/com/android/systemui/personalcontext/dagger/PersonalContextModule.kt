@@ -16,18 +16,37 @@
 
 package com.android.systemui.personalcontext.dagger
 
+import android.app.Service
+import android.content.Context
+import android.service.personalcontext.PersonalContextManager
+import com.android.systemui.personalcontext.AutofillRendererService
 import com.android.systemui.personalcontext.ComposeViewFactory
 import com.android.systemui.personalcontext.ComposeViewFactoryImpl
+import com.android.systemui.personalcontext.SysuiVisualizerService
 import com.android.systemui.personalcontext.visualizer.session.VisualizerSessionFactory
 import com.android.systemui.personalcontext.visualizer.session.VisualizerSessionFactoryImpl
 import com.android.systemui.personalcontext.visualizer.templates.VisualizerTemplateFactory
 import com.android.systemui.personalcontext.visualizer.templates.VisualizerTemplateFactoryImpl
+import dagger.Binds
 import dagger.Lazy
 import dagger.Module
 import dagger.Provides
+import dagger.multibindings.ClassKey
+import dagger.multibindings.IntoMap
 
 @Module
 interface PersonalContextModule {
+    @Binds
+    @IntoMap
+    @ClassKey(SysuiVisualizerService::class)
+    fun bindSysuiVisualizerService(service: SysuiVisualizerService): Service
+
+    /** Binds the renderer service that converts personal context insights to inline autofill UI. */
+    @Binds
+    @IntoMap
+    @ClassKey(AutofillRendererService::class)
+    fun bindAutofillRenderService(service: AutofillRendererService): Service
+
     companion object {
         @Provides
         fun provideVisualizerTemplateFactory(
@@ -46,6 +65,12 @@ interface PersonalContextModule {
         @Provides
         fun provideComposeViewFactory(impl: Lazy<ComposeViewFactoryImpl>): ComposeViewFactory {
             return impl.get()
+        }
+
+        // TODO(b/493245945): move into FrameworkServicesModule
+        @Provides
+        fun providePersonalContextManager(context: Context): PersonalContextManager? {
+            return context.getSystemService(PersonalContextManager::class.java)
         }
     }
 }
