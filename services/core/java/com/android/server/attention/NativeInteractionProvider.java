@@ -40,4 +40,7 @@ public class NativeInteractionProvider implements InteractionProvider {
 
     @Override
     public native List<InteractionState> getSourceInteractions();
+
+    @Override
+    public native void requestWakeupCallback(InteractionWakeupCallback callback);
 }

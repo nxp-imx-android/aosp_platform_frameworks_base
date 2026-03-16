@@ -44,6 +44,11 @@ static struct {
 
 static struct {
     jclass clazz;
+    jmethodID onInteractionsAvailable;
+} gInteractionCallbackClassInfo;
+
+static struct {
+    jclass clazz;
     jmethodID constructor;
     jfieldID interactionTypes;
     jfieldID interactionTimeMillis;
@@ -135,9 +140,27 @@ static jobject getSourceInteractions(JNIEnv* env, jobject thiz) {
     return jInteractions;
 }
 
+static void requestWakeupCallback(JNIEnv* env, jobject thiz, jobject jCallback) {
+    LOG_ALWAYS_FATAL_IF(jCallback == nullptr, "requestWakeupCallback: callback must not be null");
+
+    attention::InteractionProvider* interactionProvider =
+            reinterpret_cast<attention::InteractionProvider*>(
+                    env->GetLongField(thiz, gNativeInteractionProviderClassInfo.mNativePtr));
+
+    jobject globalCallback = env->NewGlobalRef(jCallback);
+    interactionProvider->requestWakeupCallback([globalCallback]() {
+        // New env is required for the lambda.
+        JNIEnv* env = AndroidRuntime::getJNIEnv();
+        env->CallVoidMethod(globalCallback, gInteractionCallbackClassInfo.onInteractionsAvailable);
+        env->DeleteGlobalRef(globalCallback);
+    });
+}
+
 static const JNINativeMethod gNativeInteractionProviderMethods[] = {
         /* name, signature, funcPtr */
         {"getSourceInteractions", "()Ljava/util/List;", (void*)getSourceInteractions},
+        {"requestWakeupCallback", "(Lcom/android/server/attention/InteractionWakeupCallback;)V",
+         (void*)requestWakeupCallback},
 };
 
 static void registerInteractionProviderMethods(JNIEnv* env) {
@@ -167,6 +190,12 @@ int register_com_android_server_attention_InteractionProviderServiceInternal(JNI
     gServiceClassInfo.unregisterInteractionProvider =
             GetMethodIDOrDie(env, clazz, "unregisterInteractionProvider",
                              "(Lcom/android/server/attention/InteractionProvider;)Z");
+
+    // InteractionWakeupCallback
+    clazz = FindClassOrDie(env, "com/android/server/attention/InteractionWakeupCallback");
+    gInteractionCallbackClassInfo.clazz = reinterpret_cast<jclass>(env->NewGlobalRef(clazz));
+    gInteractionCallbackClassInfo.onInteractionsAvailable =
+            GetMethodIDOrDie(env, clazz, "onInteractionsAvailable", "()V");
 
     // NativeInteractionProvider
     clazz = FindClassOrDie(env, "com/android/server/attention/NativeInteractionProvider");
