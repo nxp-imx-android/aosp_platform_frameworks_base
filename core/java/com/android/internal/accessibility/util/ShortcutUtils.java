@@ -426,12 +426,15 @@ public final class ShortcutUtils {
      * Returns the string label for the given key code. The key code must be for the single key
      * for one of the keyboard shortcuts that toggles an assistive technology, i.e.
      * one of: Magnification, Screen reader, Select to Speak, or Voice Access.
+     * @param context Context
      * @param keyCode integer key code for a keyboard shortcut to toggle an assistive technology
      * @return the string label for the key code
      */
-    public static String getLabelFromKeyCode(int keyCode) {
+    public static String getLabelFromKeyCode(Context context, int keyCode) {
+        String language =
+            context.getResources().getConfiguration().getLocales().get(0).getLanguage();
         return switch (keyCode) {
-            case KeyEvent.KEYCODE_I -> "I";
+            case KeyEvent.KEYCODE_I -> "tr".equals(language) ? "\u0130" : "I";
             case KeyEvent.KEYCODE_M -> "M";
             case KeyEvent.KEYCODE_S -> "S";
             case KeyEvent.KEYCODE_T -> "T";
@@ -448,7 +451,7 @@ public final class ShortcutUtils {
      * @return the key code label as a string
      */
     public static String getKeyCodeLabelFromTarget(Context context, String targetName) {
-        return getLabelFromKeyCode(getKeyCodeFromTarget(context, targetName));
+        return getLabelFromKeyCode(context, getKeyCodeFromTarget(context, targetName));
     }
 
     /**
