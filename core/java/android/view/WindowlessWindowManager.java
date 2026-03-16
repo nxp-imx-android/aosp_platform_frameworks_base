@@ -173,10 +173,16 @@ public class WindowlessWindowManager implements IWindowSession {
             }
             if (state.mInputChannelToken != null) {
                 try {
-                    mRealWm.updateInputChannel(state.mInputChannelToken, mHostInputTransferToken,
-                            state.mDisplayId, state.mSurfaceControl, state.mParams.flags,
-                            state.mParams.privateFlags, state.mParams.inputFeatures,
-                            state.mInputRegion);
+                    final WindowInputChannelParams params = new WindowInputChannelParams();
+                    params.displayId = state.mDisplayId;
+                    params.channelToken = state.mInputChannelToken;
+                    params.hostInputTransferToken = mHostInputTransferToken;
+                    params.surface = state.mSurfaceControl;
+                    params.flags = state.mParams.flags;
+                    params.privateFlags = state.mParams.privateFlags;
+                    params.inputFeatures = state.mParams.inputFeatures;
+                    params.region = state.mInputRegion;
+                    mRealWm.updateInputChannel(params);
                 } catch (RemoteException e) {
                     Log.e(TAG, "Failed to update surface input channel: ", e);
                 }
@@ -243,19 +249,25 @@ public class WindowlessWindowManager implements IWindowSession {
         if (((attrs.inputFeatures &
                 WindowManager.LayoutParams.INPUT_FEATURE_NO_INPUT_CHANNEL) == 0)) {
             try {
+                final WindowInputChannelParams params = new WindowInputChannelParams();
+                params.displayId = displayId;
+                params.clientToken = window.asBinder();
+                params.hostInputTransferToken = mHostInputTransferToken;
+                params.inputTransferToken = state.mInputTransferToken;
+                params.windowToken = attrs.token;
+                params.type = attrs.type;
+                params.flags = attrs.flags;
+                params.privateFlags = attrs.privateFlags;
+                params.inputFeatures = attrs.inputFeatures;
+                params.inputHandleName = attrs.getTitle().toString();
+
                 if (mRealWm instanceof IWindowSession.Stub) {
-                    InputChannel inputChannel = mRealWm.grantInputChannel(
-                            displayId,
-                            new SurfaceControl(sc, "WindowlessWindowManager.addToDisplay"),
-                            window.asBinder(), mHostInputTransferToken, attrs.flags,
-                            attrs.privateFlags, attrs.inputFeatures, attrs.type, attrs.token,
-                            state.mInputTransferToken, attrs.getTitle().toString());
+                    params.surface = new SurfaceControl(sc, "WindowlessWindowManager.addToDisplay");
+                    InputChannel inputChannel = mRealWm.grantInputChannel(params);
                     inputChannel.copyTo(outInputChannel);
                 } else {
-                    InputChannel inputChannel = mRealWm.grantInputChannel(displayId, sc,
-                            window.asBinder(), mHostInputTransferToken, attrs.flags,
-                            attrs.privateFlags, attrs.inputFeatures, attrs.type, attrs.token,
-                            state.mInputTransferToken, attrs.getTitle().toString());
+                    params.surface = sc;
+                    InputChannel inputChannel = mRealWm.grantInputChannel(params);
                     inputChannel.copyTo(outInputChannel);
                 }
                 state.mInputChannelToken =
@@ -467,16 +479,21 @@ public class WindowlessWindowManager implements IWindowSession {
                 | WindowManager.LayoutParams.INPUT_FEATURES_CHANGED;
         if ((attrChanges & inputChangeMask) != 0 && state.mInputChannelToken != null) {
             try {
+                final WindowInputChannelParams params = new WindowInputChannelParams();
+                params.displayId = state.mDisplayId;
+                params.channelToken = state.mInputChannelToken;
+                params.hostInputTransferToken = mHostInputTransferToken;
+                params.flags = attrs.flags;
+                params.privateFlags = attrs.privateFlags;
+                params.inputFeatures = attrs.inputFeatures;
+                params.region = state.mInputRegion;
+
                 if (mRealWm instanceof IWindowSession.Stub) {
-                    mRealWm.updateInputChannel(state.mInputChannelToken, mHostInputTransferToken,
-                            state.mDisplayId,
-                            new SurfaceControl(sc, "WindowlessWindowManager.relayout"),
-                            attrs.flags, attrs.privateFlags, attrs.inputFeatures,
-                            state.mInputRegion);
+                    params.surface = new SurfaceControl(sc, "WindowlessWindowManager.relayout");
+                    mRealWm.updateInputChannel(params);
                 } else {
-                    mRealWm.updateInputChannel(state.mInputChannelToken, mHostInputTransferToken,
-                            state.mDisplayId, sc, attrs.flags, attrs.privateFlags,
-                            attrs.inputFeatures, state.mInputRegion);
+                    params.surface = sc;
+                    mRealWm.updateInputChannel(params);
                 }
             } catch (RemoteException e) {
                 Log.e(TAG, "Failed to update surface input channel: ", e);
@@ -656,18 +673,12 @@ public class WindowlessWindowManager implements IWindowSession {
             List<Rect> unrestrictedRects) {}
 
     @Override
-    public InputChannel grantInputChannel(int displayId, SurfaceControl surface,
-            IBinder clientToken, InputTransferToken hostInputToken, int flags, int privateFlags,
-            int inputFeatures, int type, IBinder windowToken,
-            InputTransferToken embeddedInputTransferToken, String inputHandleName) {
+    public InputChannel grantInputChannel(@NonNull WindowInputChannelParams params) {
         return null;
     }
 
     @Override
-    public void updateInputChannel(IBinder channelToken, InputTransferToken hostInputToken,
-            int displayId, SurfaceControl surface, int flags, int privateFlags, int inputFeatures,
-            Region region) {
-    }
+    public void updateInputChannel(@NonNull WindowInputChannelParams params) {}
 
     @Override
     public android.os.IBinder asBinder() {

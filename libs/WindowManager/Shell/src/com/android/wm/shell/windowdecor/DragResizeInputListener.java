@@ -56,6 +56,7 @@ import android.view.PointerIcon;
 import android.view.SurfaceControl;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.WindowInputChannelParams;
 import android.window.InputTransferToken;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -240,18 +241,16 @@ class DragResizeInputListener implements AutoCloseable {
         InputChannel inputChannel = null;
         final InputTransferToken inputTransferToken = new InputTransferToken();
         try {
-            inputChannel = windowSession.grantInputChannel(
-                    displayId,
-                    decorationSurface,
-                    clientToken,
-                    null /* hostInputToken */,
-                    FLAG_NOT_FOCUSABLE,
-                    PRIVATE_FLAG_TRUSTED_OVERLAY,
-                    0 /* inputFeatures */,
-                    TYPE_APPLICATION,
-                    null /* windowToken */,
-                    inputTransferToken,
-                    TAG + " of " + decorationSurface);
+            final WindowInputChannelParams params = new WindowInputChannelParams();
+            params.displayId = displayId;
+            params.surface = decorationSurface;
+            params.clientToken = clientToken;
+            params.inputTransferToken = inputTransferToken;
+            params.type = TYPE_APPLICATION;
+            params.flags = FLAG_NOT_FOCUSABLE;
+            params.privateFlags = PRIVATE_FLAG_TRUSTED_OVERLAY;
+            params.inputHandleName = TAG + " of " + decorationSurface;
+            inputChannel = windowSession.grantInputChannel(params);
         } catch (RemoteException e) {
             e.rethrowFromSystemServer();
         }
@@ -269,18 +268,16 @@ class DragResizeInputListener implements AutoCloseable {
 
         InputChannel sinkInputChannel = null;
         try {
-            sinkInputChannel = windowSession.grantInputChannel(
-                    displayId,
-                    inputSinkSurface,
-                    sinkClientToken,
-                    null /* hostInputToken */,
-                    FLAG_NOT_FOCUSABLE,
-                    0 /* privateFlags */,
-                    INPUT_FEATURE_NO_INPUT_CHANNEL,
-                    TYPE_INPUT_CONSUMER,
-                    null /* windowToken */,
-                    inputTransferToken,
-                    "TaskInputSink of " + decorationSurface);
+            final WindowInputChannelParams params = new WindowInputChannelParams();
+            params.displayId = displayId;
+            params.surface = inputSinkSurface;
+            params.clientToken = sinkClientToken;
+            params.inputTransferToken = inputTransferToken;
+            params.type = TYPE_INPUT_CONSUMER;
+            params.flags = FLAG_NOT_FOCUSABLE;
+            params.inputFeatures = INPUT_FEATURE_NO_INPUT_CHANNEL;
+            params.inputHandleName = "TaskInputSink of " + decorationSurface;
+            sinkInputChannel = windowSession.grantInputChannel(params);
         } catch (RemoteException e) {
             e.rethrowFromSystemServer();
         }
@@ -313,15 +310,14 @@ class DragResizeInputListener implements AutoCloseable {
         mInputEventReceiver.setTouchRegion(mTouchRegion);
 
         try {
-            mWindowSession.updateInputChannel(
-                    mInputEventReceiver.getToken(),
-                    null /* hostInputToken */,
-                    mDisplayId,
-                    mDecorationSurface,
-                    FLAG_NOT_FOCUSABLE,
-                    PRIVATE_FLAG_TRUSTED_OVERLAY,
-                    0 /* inputFeatures */,
-                    mTouchRegion);
+            final WindowInputChannelParams params = new WindowInputChannelParams();
+            params.displayId = mDisplayId;
+            params.channelToken = mInputEventReceiver.getToken();
+            params.surface = mDecorationSurface;
+            params.flags = FLAG_NOT_FOCUSABLE;
+            params.privateFlags = PRIVATE_FLAG_TRUSTED_OVERLAY;
+            params.region = mTouchRegion;
+            mWindowSession.updateInputChannel(params);
         } catch (RemoteException e) {
             e.rethrowFromSystemServer();
         }
@@ -355,15 +351,14 @@ class DragResizeInputListener implements AutoCloseable {
 
     private void updateSinkInputChannel(Region region) {
         try {
-            mWindowSession.updateInputChannel(
-                    mSinkInputChannel.getToken(),
-                    null /* hostInputToken */,
-                    mDisplayId,
-                    mInputSinkSurface,
-                    FLAG_NOT_FOCUSABLE,
-                    0 /* privateFlags */,
-                    INPUT_FEATURE_NO_INPUT_CHANNEL,
-                    region);
+            final WindowInputChannelParams params = new WindowInputChannelParams();
+            params.displayId = mDisplayId;
+            params.channelToken = mSinkInputChannel.getToken();
+            params.surface = mInputSinkSurface;
+            params.flags = FLAG_NOT_FOCUSABLE;
+            params.inputFeatures = INPUT_FEATURE_NO_INPUT_CHANNEL;
+            params.region = region;
+            mWindowSession.updateInputChannel(params);
         } catch (RemoteException ex) {
             ex.rethrowFromSystemServer();
         }
