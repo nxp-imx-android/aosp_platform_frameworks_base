@@ -17,6 +17,8 @@
 package com.android.systemui.screencapture.ui.viewmodel
 
 import android.view.MotionEvent
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.TransitionState
 import androidx.compose.runtime.getValue
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureOverlayStateInteractor
@@ -48,12 +50,31 @@ constructor(
                 }
             }
             .hydratedStateOf("ScreenCaptureUiDialogViewModel#cancelOnTouchOutside", false)
+    var isDismissed: Boolean = false
+        private set
+
+    private val _visibleTransitionState = MutableTransitionState(false)
+    val visibleTransitionState: TransitionState<Boolean> = _visibleTransitionState
 
     fun onTouchEvent(dialog: SystemUIDialog, motionEvent: MotionEvent): Boolean {
         if (motionEvent.action != MotionEvent.ACTION_OUTSIDE) return false
         if (!cancelOnTouchOutside) return false
         dialog.dismiss()
         return true
+    }
+
+    fun dismiss() {
+        _visibleTransitionState.targetState = false
+        isDismissed = true
+    }
+
+    fun show() {
+        isDismissed = false
+        _visibleTransitionState.targetState = true
+    }
+
+    fun setupDismiss(dialog: SystemUIDialog) {
+        dialog.setDismissOverride {}
     }
 
     @AssistedFactory
