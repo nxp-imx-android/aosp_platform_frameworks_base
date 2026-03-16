@@ -40,7 +40,7 @@ class BubbleBarExpandedViewDragController(
     private val animationHelper: BubbleBarAnimationHelper,
     private val bubblePositioner: BubblePositioner,
     private val dropTargetManager: DropTargetManager,
-    private val dragZoneFactory: DragZoneFactory,
+    var dragZoneFactory: DragZoneFactory,
     @get:VisibleForTesting val dragListener: DragListener,
 ) {
 
