@@ -94,7 +94,7 @@ class SliderHapticFeedbackProvider(
             )
         val bookendScaleRange = config.upperBookendScale - config.lowerBookendScale
         val bookendsHitScale = bookendScaleRange * velocityInterpolated + config.lowerBookendScale
-        return bookendsHitScale.pow(config.exponent)
+        return bookendsHitScale.pow(config.exponent).coerceIn(minimumValue = 0f, maximumValue = 1f)
     }
 
     /**
@@ -203,7 +203,7 @@ class SliderHapticFeedbackProvider(
 
         // Total scale
         val scale = positionBasedScale + velocityBasedScale
-        return scale.pow(config.exponent)
+        return scale.pow(config.exponent).coerceIn(minimumValue = 0f, maximumValue = 1f)
     }
 
     override fun onHandleAcquiredByTouch() {}
