@@ -634,30 +634,6 @@ public final class NotifyingTimeZoneChangeListener implements TimeZoneChangeList
 
     @Override
     public void dump(IndentingPrintWriter pw) {
-        synchronized (mConfigurationLock) {
-            pw.println("currentUserId=" + mConfigurationInternal.getUserId());
-            pw.println(
-                    "notificationsEnabledBehavior="
-                            + mConfigurationInternal.getNotificationsEnabledBehavior());
-            pw.println(
-                    "notificationTrackingSupported="
-                            + mConfigurationInternal.isNotificationTrackingSupported());
-            pw.println(
-                    "manualChangeTrackingSupported="
-                            + mConfigurationInternal.isManualChangeTrackingSupported());
-        }
-
-        pw.println("mAcceptedFusedChanges=" + mAcceptedFusedChanges);
-        pw.println("mAcceptedLocationChanges=" + mAcceptedLocationChanges);
-        pw.println("mAcceptedManualChanges=" + mAcceptedManualChanges);
-        pw.println("mAcceptedTelephonyChanges=" + mAcceptedTelephonyChanges);
-        pw.println("mAcceptedUnknownChanges=" + mAcceptedUnknownChanges);
-        pw.println("mRejectedFusedChanges=" + mRejectedFusedChanges);
-        pw.println("mRejectedLocationChanges=" + mRejectedLocationChanges);
-        pw.println("mRejectedTelephonyChanges=" + mRejectedTelephonyChanges);
-        pw.println("mRejectedUnknownChanges=" + mRejectedUnknownChanges);
-        pw.println("mNextChangeEventId=" + mNextChangeEventId);
-
         pw.println("mTimeZoneChangeRecord:");
         pw.increaseIndent();
         synchronized (mTimeZoneChangeRecord) {
