@@ -150,11 +150,25 @@ public class VibratorInfoTest {
     public void testAreEnvelopeEffectsSupported() {
         VibratorInfo noCapabilities = new VibratorInfo.Builder(TEST_VIBRATOR_ID).build();
         assertFalse(noCapabilities.areEnvelopeEffectsSupported());
-        VibratorInfo envelopeEffectCapability = new VibratorInfo.Builder(TEST_VIBRATOR_ID)
+
+        VibratorInfo oneCapability = new VibratorInfo.Builder(TEST_VIBRATOR_ID)
+                .setCapabilities(IVibrator.CAP_FREQUENCY_CONTROL)
+                .build();
+        assertFalse(oneCapability.areEnvelopeEffectsSupported());
+
+        VibratorInfo twoCapabilities = new VibratorInfo.Builder(TEST_VIBRATOR_ID)
                 .setCapabilities(
                         IVibrator.CAP_FREQUENCY_CONTROL | IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2)
                 .build();
-        assertTrue(envelopeEffectCapability.areEnvelopeEffectsSupported());
+        assertFalse(twoCapabilities.areEnvelopeEffectsSupported());
+
+        VibratorInfo allCapabilities = new VibratorInfo.Builder(TEST_VIBRATOR_ID)
+                .setCapabilities(
+                        IVibrator.CAP_FREQUENCY_CONTROL
+                                | IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2
+                                | IVibrator.CAP_GET_RESONANT_FREQUENCY)
+                .build();
+        assertTrue(allCapabilities.areEnvelopeEffectsSupported());
     }
 
     @Test
