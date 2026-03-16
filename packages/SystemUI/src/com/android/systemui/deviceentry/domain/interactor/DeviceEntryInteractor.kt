@@ -587,7 +587,7 @@ constructor(
                     .snapToScene(
                         toScene = Scenes.Gone,
                         loggingReason = loggingReason,
-                        hideAllOverlays = false,
+                        hideOverlays = SceneInteractor.HideOverlayCommand.HideNone,
                     )
                 sceneInteractor.get().hideOverlay(Overlays.Bouncer, loggingReason)
             }
@@ -725,7 +725,7 @@ constructor(
                     loggingReason = loggingReason,
                     transitionKey =
                         WithAnimationOverLockscreen.takeIf { willAnimateDismissActionOnLockscreen },
-                    hideAllOverlays = false,
+                    hideOverlays = SceneInteractor.HideOverlayCommand.HideNone,
                 )
         } else {
             // For SingleShade or SplitShade:
@@ -748,7 +748,9 @@ constructor(
                             WithAnimationOverLockscreen.takeIf {
                                 willAnimateDismissActionOnLockscreen
                             },
-                        hideAllOverlays = true, // hides bouncer overlay if showing
+                        hideOverlays =
+                            SceneInteractor.HideOverlayCommand
+                                .HideAll, // hides bouncer overlay if showing
                     )
             }
         }

@@ -90,7 +90,7 @@ constructor(
                         sceneInteractor.snapToScene(
                             toScene = Scenes.Dream,
                             loggingReason = "Snap to dream behind bouncer",
-                            hideAllOverlays = false,
+                            hideOverlays = SceneInteractor.HideOverlayCommand.HideNone,
                         )
                         sceneInteractor.hideOverlay(
                             overlay = Overlays.Bouncer,
@@ -120,13 +120,18 @@ constructor(
                         sceneInteractor.snapToScene(
                             toScene = SceneFamilies.Home,
                             loggingReason = "Snap to home behind bouncer",
-                            hideAllOverlays = false,
+                            hideOverlays = SceneInteractor.HideOverlayCommand.HideNone,
                         )
                     } else {
                         sceneInteractor.changeScene(
                             toScene = SceneFamilies.Home,
                             loggingReason = "Dream stopped",
-                            hideAllOverlays = !keyguardInteractor.isKeyguardShowing.value,
+                            hideOverlays =
+                                if (!keyguardInteractor.isKeyguardShowing.value) {
+                                    SceneInteractor.HideOverlayCommand.HideAll
+                                } else {
+                                    SceneInteractor.HideOverlayCommand.HideNone
+                                },
                         )
                     }
                 }
