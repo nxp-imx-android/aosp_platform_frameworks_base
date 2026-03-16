@@ -21,7 +21,7 @@ import android.content.Context
 /**
  * Specialized type that describes the subset of `ApiType`s which have a finite set of values.
  */
-interface FiniteOptionsType<V> : ApiType<V> {
+interface FiniteOptionsType<V> : DirectApiType<V> {
 
     /**
      * Returns all the values a preference with this type could have, together with their

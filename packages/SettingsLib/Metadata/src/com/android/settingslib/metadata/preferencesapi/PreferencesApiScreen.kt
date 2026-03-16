@@ -376,12 +376,12 @@ abstract class PreferencesApiScreen private constructor(
      * }
      * ```
      */
-    protected fun <V : Any> preference(
+    protected fun <ExternalType : Any> preference(
         key: String,
         purpose: Int,
-        type: ApiType<V>,
+        type: ApiType<ExternalType, ExternalType>, // todo: support internal type
         appliesTo: PreferenceTarget = USER(canManage = OWN_USER),
-        lambda: ApiPreferenceConfigBuilder<V>.() -> Unit
+        lambda: ApiPreferenceConfigBuilder<ExternalType>.() -> Unit
     ) {
         val builder = ApiPreferenceConfigBuilder(
             key,

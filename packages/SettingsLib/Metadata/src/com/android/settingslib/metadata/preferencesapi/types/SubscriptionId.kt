@@ -20,7 +20,7 @@ import android.content.Context
 import androidx.annotation.StringRes
 import com.android.settingslib.metadata.R
 
-class SubscriptionId : ApiType<Int> {
+class SubscriptionId : DirectApiType<Int> {
 
     override fun getType(): Class<Int> = Int::class.java
 

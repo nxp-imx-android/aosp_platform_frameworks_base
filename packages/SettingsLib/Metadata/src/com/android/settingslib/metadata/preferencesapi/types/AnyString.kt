@@ -21,7 +21,7 @@ import androidx.annotation.StringRes
 import com.android.settingslib.metadata.R
 
 /** Any string value. */
-object AnyString: ApiType<String> {
+object AnyString: DirectApiType<String> {
 override fun getType(): Class<String> = String::class.java
     override fun getDescription(context: Context): String =
         context.getString(R.string.any_string_type_description)

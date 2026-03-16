@@ -20,17 +20,38 @@ import android.content.Context
 import com.android.settingslib.metadata.KeyParametersSchema
 import com.android.settingslib.metadata.ValidatedKeyParameters
 
-interface ApiType<V> {
+/**
+ * A type that can be used to define the type of a preference or parameter.
+ */
+interface ApiType<InternalType, ExternalType> {
 
+    /**
+     * Returns the schema for the parameters of the type.
+     *
+     * This allows us to specify, for example, the range of allowed values for
+     * an integer, or filters that must be applied to possible values.
+     */
     fun getParametersSchema(): KeyParametersSchema? = null
     fun getParameters(): ValidatedKeyParameters? = null
 
-    fun getType(): Class<V>
+    /**
+     * Returns the type of the preference.
+     */
+    fun getType(): Class<ExternalType>
+
+    /**
+     * Returns the description of the type.
+     *
+     * This must describe what the type is and what values are allowed.
+     */
     fun getDescription(context: Context): String
 
     /**
-     * Returns a globally unique key which refers to this type. It must be stable through multiple
-     * executions as long as we don't update the app.
+     * Returns a globally unique key which refers to this type. It must be
+     * stable through multiple executions as long as we don't update the app.
      */
     fun getKey(): String
+}
+
+interface DirectApiType<InternalType> : ApiType<InternalType, InternalType> {
 }

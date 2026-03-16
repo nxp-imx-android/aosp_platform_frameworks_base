@@ -959,7 +959,7 @@ private fun KeyParametersSchema.toProto(
     return builder.build()
 }
 
-private fun ApiType<*>.toProto(
+private fun ApiType<*, *>.toProto(
     context: Context,
     valueDescriptors: MutableMap<String, PreferenceValueDescriptorProto>?,
 ): PreferenceValueDescriptorProto {
