@@ -6296,9 +6296,7 @@ class DesktopTasksController(
         when (indicatorType) {
             IndicatorType.TO_FULLSCREEN_INDICATOR -> {
                 val shouldMaximizeWhenDragToTopEdge =
-                    if (DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_BASED_DRAG_TO_MAXIMIZE.isTrue)
-                        rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(motionEvent.displayId)
-                    else desktopConfig.shouldMaximizeWhenDragToTopEdge
+                    rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(motionEvent.displayId)
                 if (shouldMaximizeWhenDragToTopEdge) {
                     dragToMaximizeDesktopTask(taskInfo, taskSurface, currentDragBounds, motionEvent)
                 } else {

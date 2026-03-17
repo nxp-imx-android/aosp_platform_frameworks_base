@@ -7306,7 +7306,6 @@ class DesktopTasksControllerTest : ShellTestCase() {
         whenever(mockDisplayLayout.getStableBounds(any())).thenAnswer { i ->
             (i.arguments.first() as Rect).set(STABLE_BOUNDS)
         }
-        desktopConfig.shouldMaximizeWhenDragToTopEdge = false
         whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
         whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
             .thenReturn(DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR)
@@ -7340,130 +7339,6 @@ class DesktopTasksControllerTest : ShellTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_BASED_DRAG_TO_MAXIMIZE)
-    fun onDesktopDragEnd_fullscreenIndicator_dragToMaximize_desktopFirstDisabled() {
-        val task = setUpFreeformTask(bounds = Rect(0, 0, 100, 100))
-        val spyController = spy(controller)
-        val mockSurface = mock(SurfaceControl::class.java)
-        val mockDisplayLayout = mock(DisplayLayout::class.java)
-        val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
-        tda.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
-        whenever(displayController.getDisplayLayout(task.displayId)).thenReturn(mockDisplayLayout)
-        whenever(mockDisplayLayout.stableInsets()).thenReturn(Rect(0, 100, 2000, 2000))
-        whenever(mockDisplayLayout.getStableBounds(any())).thenAnswer { i ->
-            (i.arguments.first() as Rect).set(STABLE_BOUNDS)
-        }
-        desktopConfig.shouldMaximizeWhenDragToTopEdge = true
-        whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
-            .thenReturn(DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR)
-
-        // Drag move the task to the top edge
-        val currentDragBounds = Rect(100, 50, 500, 1000)
-        spyController.onDragPositioningMove(
-            task,
-            mockSurface,
-            DEFAULT_DISPLAY,
-            200f,
-            10f,
-            Rect(100, 200, 500, 1000),
-        )
-        spyController.onDragPositioningEnd(
-            task,
-            mockSurface,
-            inputCoordinate = PointF(200f, 300f),
-            currentDragBounds,
-            validDragArea = Rect(0, 50, 2000, 2000),
-            dragStartBounds = Rect(),
-            motionEvent,
-        )
-
-        // Assert bounds set to stable bounds
-        val wct = getLatestToggleResizeDesktopTaskWct(currentDragBounds)
-        assertThat(findBoundsChange(wct, task)).isEqualTo(STABLE_BOUNDS)
-        // Assert event is properly logged
-        verify(desktopModeEventLogger, times(1))
-            .logTaskResizingStarted(
-                resizeTrigger = ResizeTrigger.DRAG_TO_TOP_RESIZE_TRIGGER,
-                inputMethod = InputMethod.UNKNOWN_INPUT_METHOD,
-                taskInfo = task,
-                taskWidth = task.configuration.windowConfiguration.bounds.width(),
-                taskHeight = task.configuration.windowConfiguration.bounds.height(),
-                displayController = displayController,
-                deskId = 0,
-            )
-        verify(desktopModeEventLogger, times(1))
-            .logTaskResizingEnded(
-                resizeTrigger = ResizeTrigger.DRAG_TO_TOP_RESIZE_TRIGGER,
-                inputMethod = InputMethod.UNKNOWN_INPUT_METHOD,
-                taskInfo = task,
-                taskWidth = STABLE_BOUNDS.width(),
-                taskHeight = STABLE_BOUNDS.height(),
-                displayController = displayController,
-                deskId = 0,
-            )
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_BASED_DRAG_TO_MAXIMIZE)
-    fun onDesktopDragEnd_fullscreenIndicator_dragToMaximize_alreadyMaximized_noBoundsChange_desktopFirstDisabled() {
-        val task = setUpFreeformTask(bounds = STABLE_BOUNDS)
-        val spyController = spy(controller)
-        val mockSurface = mock(SurfaceControl::class.java)
-        val mockDisplayLayout = mock(DisplayLayout::class.java)
-        val tda = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
-        tda.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
-        whenever(displayController.getDisplayLayout(task.displayId)).thenReturn(mockDisplayLayout)
-        whenever(mockDisplayLayout.stableInsets()).thenReturn(Rect(0, 100, 2000, 2000))
-        whenever(mockDisplayLayout.getStableBounds(any())).thenAnswer { i ->
-            (i.arguments.first() as Rect).set(STABLE_BOUNDS)
-        }
-        desktopConfig.shouldMaximizeWhenDragToTopEdge = true
-        whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
-        whenever(desktopModeVisualIndicator.updateIndicatorType(any(), anyOrNull()))
-            .thenReturn(DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR)
-
-        // Drag move the task to the top edge
-        val currentDragBounds = Rect(100, 50, 500, 1000)
-        spyController.onDragPositioningMove(
-            task,
-            mockSurface,
-            DEFAULT_DISPLAY,
-            200f,
-            10f,
-            Rect(100, 200, 500, 1000),
-        )
-        spyController.onDragPositioningEnd(
-            task,
-            mockSurface,
-            inputCoordinate = PointF(200f, 300f),
-            currentDragBounds = currentDragBounds,
-            validDragArea = Rect(0, 50, 2000, 2000),
-            dragStartBounds = Rect(),
-            motionEvent,
-        )
-
-        // Assert that task is NOT updated via WCT
-        verify(toggleResizeDesktopTaskTransitionHandler, never())
-            .startTransition(any(), any(), any(), any())
-        // Assert that task leash is updated via Surface Animations
-        verify(mReturnToDragStartAnimator)
-            .start(
-                eq(task.taskId),
-                eq(mockSurface),
-                eq(currentDragBounds),
-                eq(STABLE_BOUNDS),
-                anyOrNull(),
-            )
-        // Assert no event is logged
-        verify(desktopModeEventLogger, never())
-            .logTaskResizingStarted(any(), any(), any(), any(), any(), any(), any())
-        verify(desktopModeEventLogger, never())
-            .logTaskResizingEnded(any(), any(), any(), any(), any(), any(), any())
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_BASED_DRAG_TO_MAXIMIZE)
     fun onDesktopDragEnd_fullscreenIndicator_dragToMaximize() {
         val task = setUpFreeformTask(bounds = Rect(0, 0, 100, 100))
         val spyController = spy(controller)
@@ -7528,7 +7403,6 @@ class DesktopTasksControllerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_BASED_DRAG_TO_MAXIMIZE)
     fun onDesktopDragEnd_fullscreenIndicator_dragToMaximize_alreadyMaximized_noBoundsChange() {
         val task = setUpFreeformTask(bounds = STABLE_BOUNDS)
         val spyController = spy(controller)

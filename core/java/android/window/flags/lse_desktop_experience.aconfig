@@ -315,13 +315,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_first_based_drag_to_maximize"
-    namespace: "lse_desktop_experience"
-    description: "Enables the drag-to-maximize capability triggered by desktop-first state."
-    bug: "404626572"
-}
-
-flag {
     name: "enable_desktop_first_exempted_source_bugfix"
     namespace: "lse_desktop_experience"
     description: "Fixes desktop-first policy for the case where the source task is fullscreen but exempted from desktop."

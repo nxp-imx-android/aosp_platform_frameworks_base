@@ -40,7 +40,6 @@ import platform.test.desktop.SimulatedConnectedDisplayTestRule
 @RequiresFlagsEnabled(
     Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
     Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING,
-    Flags.FLAG_ENABLE_DESKTOP_FIRST_BASED_DRAG_TO_MAXIMIZE,
 )
 abstract class MaximizeAppWindowWithDragToTopDragZoneInDesktopFirst(
     rotation: Rotation = Rotation.ROTATION_0

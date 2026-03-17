@@ -31,14 +31,6 @@ class DesktopConfigImpl(private val context: Context, private val desktopState: 
 
     constructor(context: Context) : this(context, DesktopState.fromContext(context))
 
-    override val shouldMaximizeWhenDragToTopEdge: Boolean
-        get() {
-            return SystemProperties.getBoolean(
-                ENABLE_DRAG_TO_MAXIMIZE_SYS_PROP,
-                context.getResources().getBoolean(R.bool.config_dragToMaximizeInDesktopMode),
-            )
-        }
-
     override val useDesktopOverrideDensity: Boolean =
         DESKTOP_DENSITY_OVERRIDE_ENABLED && isValidDesktopDensityOverrideSet()
 
@@ -149,14 +141,6 @@ class DesktopConfigImpl(private val context: Context, private val desktopState: 
          * The limit does NOT affect desks created by connecting additional displays.
          */
         private const val MAX_DESK_LIMIT_SYS_PROP = "persist.wm.debug.desktop_max_desk_limit"
-
-        /**
-         * Sysprop declaring whether to enable drag-to-maximize for desktop windows.
-         *
-         * If it is not defined, then `R.integer.config_dragToMaximizeInDesktopMode` is used.
-         */
-        private const val ENABLE_DRAG_TO_MAXIMIZE_SYS_PROP =
-            "persist.wm.debug.enable_drag_to_maximize"
 
         /** Flag to indicate whether to apply shadows to windows in desktop mode. */
         private val USE_WINDOW_SHADOWS =
