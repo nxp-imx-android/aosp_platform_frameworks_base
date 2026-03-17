@@ -160,8 +160,12 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         boolean isUsbDataProtectionSupported =
                 SystemProperties.getBoolean(
                         "ro.usb.data_protection.disable_when_locked.supported", false);
-        if (canAddHook(FEATURE_ID_DISALLOW_USB, /* featureFlagEnabled= */ true)
-                || isUsbDataProtectionSupported) {
+        Boolean forcedUsbState = mStore.retrieveFeatureAdbProvisioned(FEATURE_ID_DISALLOW_USB);
+        boolean enableUsb =
+                forcedUsbState != null
+                        ? forcedUsbState
+                        : isUsbDataProtectionSupported;
+        if (enableUsb) {
             try {
                 mHooks.add(new UsbDataAdvancedProtectionHook(mContext, enabled, this));
             } catch (Exception e) {
@@ -416,7 +420,7 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         mStore.removeFeatureAdbProvisioning(featureId);
     }
 
-    public boolean retrieveFeatureAdbProvisioned(int featureId) {
+    public Boolean retrieveFeatureAdbProvisioned(int featureId) {
         return mStore.retrieveFeatureAdbProvisioned(featureId);
     }
 
