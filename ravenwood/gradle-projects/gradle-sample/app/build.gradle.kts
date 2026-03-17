@@ -33,6 +33,12 @@ plugins {
 val enableRavenwood = project.findProperty("enableRavenwood")?.toString()?.toBoolean() ?: false
 logger.lifecycle("Ravenwood: enableRavenwood=$enableRavenwood")
 
+/**
+ * If true, use Robolectric instead of Ravenwood. [enableRobolectric] and [enableRavenwood] must
+ * be mutually exclusive.
+ */
+val enableRobolectric = !enableRavenwood
+
 
 // Do not use the following `config*` Paths directly, use the functions below so that we can easily
 // change how we set them later.
@@ -262,6 +268,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.monitor)
+    implementation(libs.androidx.junit.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -273,6 +280,10 @@ dependencies {
     // Build the test classes with ravenwood-utils.jar.
     // We need to do it even if enableRavenwood is false because the test source code uses them.
     testCompileOnly(files(ravenwoodUtilsJars().map {"${ravenwoodUtilsPath()}/$it"}))
+
+    if (enableRobolectric) {
+        testImplementation("org.robolectric:robolectric:4.16.1")
+    }
 }
 
 /** Register ravenizer task if enableRavenwood is true. */
