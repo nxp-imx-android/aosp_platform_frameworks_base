@@ -1645,7 +1645,7 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
      * @hide
      */
     @ChangeId
-    @Disabled
+    @EnabledSince(targetSdkVersion = Build.VERSION_CODES.BAKLAVA)
     @Overridable
     public static final long ENABLE_SYNCHRONIZED_INSETS_ANIMATION = 463899193L;
 
