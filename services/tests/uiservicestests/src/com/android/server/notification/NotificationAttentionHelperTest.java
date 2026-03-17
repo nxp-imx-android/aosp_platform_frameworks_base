@@ -1692,6 +1692,7 @@ public class NotificationAttentionHelperTest extends UiServiceTestCase {
                 com.android.internal.R.bool.config_intrusiveNotificationLed)).thenReturn(false);
         when(getContext().getResources()).thenReturn(resources);
         initAttentionHelper(mTestFlagResolver);
+        mAttentionHelper.setPriorityNotificationLight(null);
 
         NotificationRecord r = getLightsNotification();
         mAttentionHelper.buzzBeepBlinkLocked(r, DEFAULT_SIGNALS);

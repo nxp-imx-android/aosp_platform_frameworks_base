@@ -2061,6 +2061,11 @@ public final class NotificationAttentionHelper {
     }
 
     @VisibleForTesting
+    void setPriorityNotificationLight(LogicalLight priorityNotificationLight) {
+        mPriorityNotificationLight = priorityNotificationLight;
+    }
+
+    @VisibleForTesting
     void setAudioManager(AudioManager audioManager) {
         mAudioManager = audioManager;
     }
