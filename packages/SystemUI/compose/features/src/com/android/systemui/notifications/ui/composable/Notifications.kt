@@ -485,25 +485,6 @@ fun ContentScope.NestedScrollingNotificationPanel(
                         .overscroll(shortContentOverscrollEffect) // Short/Empty content swipes
                         .overscroll(expansionOverscrollEffect) // Child swipe-to-expand gesture
                 }
-                // Use onPlaced/onUnplaced instead of onGloballyPositioned to avoid
-                // receiving 0x0 bounds when the element is detached/unplaced but still composed.
-                .onPlaced { coordinates ->
-                    val boundsInWindow = coordinates.boundsInWindow()
-                    debugLog(viewModel) {
-                        "$tag.SCRIM onGloballyPositioned:" +
-                            " size=${coordinates.size}" +
-                            " bounds=$boundsInWindow"
-                    }
-                    viewModel.onScrimBoundsChanged(
-                        ShadeScrimBounds(
-                            left = boundsInWindow.left,
-                            top = boundsInWindow.top,
-                            right = boundsInWindow.right,
-                            bottom = boundsInWindow.bottom,
-                        )
-                    )
-                }
-                .onUnplaced { viewModel.onScrimBoundsChanged(null) }
                 .thenIf(onEmptySpaceClick != null) {
                     Modifier.clickable(
                         interactionSource = interactionSource,
@@ -632,7 +613,30 @@ fun ContentScope.NestedScrollingNotificationPanel(
             // NotificationPanel background
             Box(
                 modifier =
-                    Modifier.graphicsLayer {
+                    // Use onPlaced/onUnplaced instead of onGloballyPositioned to avoid
+                    // receiving 0x0 bounds when the element is detached/unplaced but still
+                    // composed.
+                    // Use the ScrimBounds from the component that draws this element, and is being
+                    // sized correctly to cover any holes during Scene transition.
+                    Modifier.onPlaced { coordinates ->
+                            val boundsInWindow = coordinates.boundsInWindow()
+                            val rawBoundsInWindow = coordinates.rawBoundsInWindow()
+                            debugLog(viewModel) {
+                                "$tag.SCRIM onGloballyPositioned:" +
+                                    " size=${coordinates.size}" +
+                                    " bounds=$boundsInWindow"
+                            }
+                            viewModel.onScrimBoundsChanged(
+                                ShadeScrimBounds(
+                                    left = boundsInWindow.left,
+                                    top = rawBoundsInWindow.top,
+                                    right = boundsInWindow.right,
+                                    bottom = rawBoundsInWindow.bottom,
+                                )
+                            )
+                        }
+                        .onUnplaced { viewModel.onScrimBoundsChanged(null) }
+                        .graphicsLayer {
                             shape =
                                 calculateCornerRadius(
                                         scrimCornerRadius,
