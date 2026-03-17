@@ -4163,6 +4163,7 @@ package android.companion.virtual {
     method public void removeActivityPolicyExemption(@NonNull android.content.ComponentName);
     method public void removeActivityPolicyExemption(@NonNull android.companion.virtual.ActivityPolicyExemption);
     method public void removeSoundEffectListener(@NonNull android.companion.virtual.VirtualDeviceManager.SoundEffectListener);
+    method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_thermal_status") public void setCurrentThermalStatus(int);
     method public void setDevicePolicy(int, int);
     method public void setDevicePolicy(int, int, int);
     method public void setDisplayImePolicy(int, int);
@@ -4211,6 +4212,7 @@ package android.companion.virtual {
     field @FlaggedApi("android.companion.virtualdevice.flags.default_device_camera_access_policy") public static final int POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS = 7; // 0x7
     field public static final int POLICY_TYPE_RECENTS = 2; // 0x2
     field public static final int POLICY_TYPE_SENSORS = 0; // 0x0
+    field @FlaggedApi("android.companion.virtualdevice.flags.device_aware_thermal_status") public static final int POLICY_TYPE_THERMAL = 8; // 0x8
   }
 
   public static final class VirtualDeviceParams.Builder {

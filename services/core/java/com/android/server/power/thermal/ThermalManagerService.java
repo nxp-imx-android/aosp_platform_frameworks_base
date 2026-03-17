@@ -70,6 +70,7 @@ import android.util.ArrayMap;
 import android.util.EventLog;
 import android.util.Slog;
 import android.util.SparseArray;
+import android.util.SparseIntArray;
 import android.util.StatsEvent;
 
 import com.android.internal.annotations.GuardedBy;
@@ -79,6 +80,7 @@ import com.android.internal.util.DumpUtils;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.server.EventLogTags;
 import com.android.server.FgThread;
+import com.android.server.LocalServices;
 import com.android.server.SystemService;
 
 import java.io.FileDescriptor;
@@ -138,6 +140,11 @@ public class ThermalManagerService extends SystemService {
     private final RemoteCallbackList<IThermalStatusListener> mThermalStatusListeners =
             new RemoteCallbackList<>();
 
+    /** Registered observers of the thermal status per device. */
+    @GuardedBy("mLock")
+    private final SparseArray<RemoteCallbackList<IThermalStatusListener>>
+            mThermalStatusListenersPerDevice = new SparseArray<>();
+
     /** Registered observers of the thermal headroom. */
     @GuardedBy("mLock")
     private final RemoteCallbackList<IThermalHeadroomListener> mThermalHeadroomListeners =
@@ -150,6 +157,10 @@ public class ThermalManagerService extends SystemService {
     /** Current thermal status */
     @GuardedBy("mLock")
     private int mStatus;
+
+    /** Current virtual device thermal status keyed by deviceId */
+    @GuardedBy("mLock")
+    private final SparseIntArray mThermalStatusPerDevice = new SparseIntArray();
 
     /** If override status takes effect */
     @GuardedBy("mLock")
@@ -237,6 +248,7 @@ public class ThermalManagerService extends SystemService {
     @Override
     public void onStart() {
         publishBinderService(Context.THERMAL_SERVICE, mService);
+        publishLocalService(ThermalManagerInternal.class, mLocalService);
     }
 
     @Override
@@ -301,10 +313,10 @@ public class ThermalManagerService extends SystemService {
     }
 
     @GuardedBy("mLock")
-    private void postStatusListenerLocked(IThermalStatusListener listener) {
+    private void postStatusListenerLocked(IThermalStatusListener listener, int status) {
         final boolean thermalCallbackQueued = FgThread.getHandler().post(() -> {
             try {
-                listener.onStatusChange(mStatus);
+                listener.onStatusChange(status);
             } catch (RemoteException | RuntimeException e) {
                 Slog.e(TAG, "Thermal status callback failed to call", e);
             }
@@ -315,16 +327,16 @@ public class ThermalManagerService extends SystemService {
     }
 
     @GuardedBy("mLock")
-    private void notifyStatusListenersLocked() {
-        final int length = mThermalStatusListeners.beginBroadcast();
+    private void notifyStatusListenersLocked(
+            RemoteCallbackList<IThermalStatusListener> thermalStatusListeners, int status) {
+        final int length = thermalStatusListeners.beginBroadcast();
         try {
             for (int i = 0; i < length; i++) {
-                final IThermalStatusListener listener =
-                        mThermalStatusListeners.getBroadcastItem(i);
-                postStatusListenerLocked(listener);
+                final IThermalStatusListener listener = thermalStatusListeners.getBroadcastItem(i);
+                postStatusListenerLocked(listener, status);
             }
         } finally {
-            mThermalStatusListeners.finishBroadcast();
+            thermalStatusListeners.finishBroadcast();
         }
     }
 
@@ -402,7 +414,7 @@ public class ThermalManagerService extends SystemService {
         if (newStatus != mStatus) {
             Trace.traceCounter(Trace.TRACE_TAG_POWER, "ThermalManagerService.status", newStatus);
             mStatus = newStatus;
-            notifyStatusListenersLocked();
+            notifyStatusListenersLocked(mThermalStatusListeners, mStatus);
         }
     }
 
@@ -645,7 +657,36 @@ public class ThermalManagerService extends SystemService {
                         return false;
                     }
                     // Notify its callback after new client registered.
-                    postStatusListenerLocked(listener);
+                    postStatusListenerLocked(listener, mStatus);
+                    return true;
+                } finally {
+                    Binder.restoreCallingIdentity(token);
+                }
+            }
+        }
+
+        @Override
+        public boolean registerThermalStatusListenerForDevice(
+                int deviceId, IThermalStatusListener listener) {
+            if (!android.companion.virtualdevice.flags.Flags.deviceAwareThermalStatus()) {
+                throw new UnsupportedOperationException("Required flag not enabled");
+            }
+            synchronized (mLock) {
+                int status = getCurrentThermalStatusForDevice(deviceId);
+                RemoteCallbackList<IThermalStatusListener> listeners =
+                        mThermalStatusListenersPerDevice.get(deviceId);
+                if (listeners == null) {
+                    listeners = new RemoteCallbackList<>();
+                    mThermalStatusListenersPerDevice.put(deviceId, listeners);
+                }
+                // Notify its callback after new client registered.
+                final long token = Binder.clearCallingIdentity();
+                try {
+                    if (!listeners.register(listener)) {
+                        return false;
+                    }
+                    // Notify its callback after new client registered.
+                    postStatusListenerLocked(listener, status);
                     return true;
                 } finally {
                     Binder.restoreCallingIdentity(token);
@@ -658,7 +699,20 @@ public class ThermalManagerService extends SystemService {
             synchronized (mLock) {
                 final long token = Binder.clearCallingIdentity();
                 try {
-                    return mThermalStatusListeners.unregister(listener);
+                    if (mThermalStatusListeners.unregister(listener)) {
+                        return true;
+                    }
+                    for (int i = 0; i < mThermalStatusListenersPerDevice.size(); ++i) {
+                        RemoteCallbackList<IThermalStatusListener> listeners =
+                                mThermalStatusListenersPerDevice.valueAt(i);
+                        if (listeners.unregister(listener)) {
+                            if (listeners.getRegisteredCallbackCount() == 0) {
+                                mThermalStatusListenersPerDevice.removeAt(i);
+                            }
+                            return true;
+                        }
+                    }
+                    return false;
                 } finally {
                     Binder.restoreCallingIdentity(token);
                 }
@@ -680,6 +734,20 @@ public class ThermalManagerService extends SystemService {
                 } finally {
                     Binder.restoreCallingIdentity(token);
                 }
+            }
+        }
+
+        @Override
+        public int getCurrentThermalStatusForDevice(int deviceId) {
+            if (!android.companion.virtualdevice.flags.Flags.deviceAwareThermalStatus()) {
+                throw new UnsupportedOperationException("Required flag not enabled");
+            }
+            if (deviceId == Context.DEVICE_ID_DEFAULT || deviceId == Context.DEVICE_ID_INVALID) {
+                throw new IllegalArgumentException(
+                        "Not a valid virtual device with custom thermal status: " + deviceId);
+            }
+            synchronized (mLock) {
+                return mThermalStatusPerDevice.get(deviceId, PowerManager.THERMAL_STATUS_NONE);
             }
         }
 
@@ -843,6 +911,28 @@ public class ThermalManagerService extends SystemService {
 
     };
 
+    final ThermalManagerInternal mLocalService = new ThermalManagerInternal() {
+        @Override
+        public void notifyDeviceThermalStatusChanged(
+                int deviceId, @PowerManager.ThermalStatus int status) {
+            synchronized (mLock) {
+                if (status == PowerManager.THERMAL_STATUS_INVALID) {
+                    mThermalStatusPerDevice.delete(deviceId);
+                } else if (Temperature.isValidStatus(status)) {
+                    if (status != mThermalStatusPerDevice.get(
+                            deviceId, PowerManager.THERMAL_STATUS_INVALID)) {
+                        mThermalStatusPerDevice.put(deviceId, status);
+                        RemoteCallbackList<IThermalStatusListener> listeners =
+                                mThermalStatusListenersPerDevice.get(deviceId);
+                        if (listeners != null) {
+                            notifyStatusListenersLocked(listeners, status);
+                        }
+                    }
+                }
+            }
+        }
+    };
+
     private static int thermalSeverityToStatsdStatus(int severity) {
         switch (severity) {
             case PowerManager.THERMAL_STATUS_NONE:
@@ -897,7 +987,16 @@ public class ThermalManagerService extends SystemService {
                 mThermalEventListeners.dump(pw, "\t");
                 pw.println("ThermalStatusListeners:");
                 mThermalStatusListeners.dump(pw, "\t");
+                for (int i = 0; i < mThermalStatusListenersPerDevice.size(); ++i) {
+                    pw.println("ThermalStatusListenersPerDevice (DeviceId="
+                            + mThermalStatusListenersPerDevice.keyAt(i) + "):");
+                    mThermalStatusListenersPerDevice.valueAt(i).dump(pw, "\t");
+                }
                 pw.println("Thermal Status: " + mStatus);
+                for (int i = 0; i < mThermalStatusPerDevice.size(); ++i) {
+                    pw.println("Thermal Status (DeviceId=" + mThermalStatusPerDevice.keyAt(i)
+                            + "): " + mThermalStatusPerDevice.valueAt(i));
+                }
                 pw.println("Cached temperatures:");
                 dumpItemsLocked(pw, "\t", mTemperatureMap.values());
             }

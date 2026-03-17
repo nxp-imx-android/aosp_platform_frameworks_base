@@ -157,6 +157,14 @@ flag {
 }
 
 flag {
+    name: "device_aware_thermal_status"
+    namespace: "virtual_devices"
+    description: "API for exposing the virtual device's thermal status"
+    bug: "444259414"
+    is_exported: true
+}
+
+flag {
     name: "virtual_input_view_behavior"
     namespace: "virtual_devices"
     description: "API for setting the view behavior for virtual input devices"
