@@ -16,9 +16,13 @@
 
 package android.service.personalcontext.insight;
 
-import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,7 +30,6 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -45,7 +48,7 @@ public class InsightTraverserTest {
     public void testTraverse_singleNode() {
         ContextInsight node = new BundleInsight.Builder().build();
         InsightTraverser.traverse(node, mMockVisitor);
-        mInOrder.verify(mMockVisitor).visit((BundleInsight) node);
+        mInOrder.verify(mMockVisitor).visit((BundleInsight) node, /*index=*/ 0);
         mInOrder.verifyNoMoreInteractions();
     }
 
@@ -57,7 +60,7 @@ public class InsightTraverserTest {
                         .addInsight(new BundleInsight.Builder().build())
                         .build();
         InsightTraverser.traverse(emptyCollection, mMockVisitor);
-        mInOrder.verify(mMockVisitor).visit(emptyCollection);
+        mInOrder.verify(mMockVisitor).visit(emptyCollection, /*index=*/ 0);
     }
 
     @Test
@@ -81,11 +84,11 @@ public class InsightTraverserTest {
 
         InsightTraverser.traverse(root, mMockVisitor);
 
-        mInOrder.verify(mMockVisitor).visit(root);
-        mInOrder.verify(mMockVisitor).visit(child1);
-        mInOrder.verify(mMockVisitor).visit(child2);
-        mInOrder.verify(mMockVisitor).visit(grandchild1);
-        mInOrder.verify(mMockVisitor).visit(child3);
+        mInOrder.verify(mMockVisitor).visit(root, /*index=*/ 0);
+        mInOrder.verify(mMockVisitor).visit(child1, /*index=*/ 0);
+        mInOrder.verify(mMockVisitor).visit(child2, /*index=*/ 1);
+        mInOrder.verify(mMockVisitor).visit(grandchild1, /*index=*/ 1);
+        mInOrder.verify(mMockVisitor).visit(child3, /*index=*/ 2);
         mInOrder.verifyNoMoreInteractions();
     }
 
@@ -99,10 +102,10 @@ public class InsightTraverserTest {
         InsightTraverser.traverse(root, mMockVisitor, 2);
 
         // Grandchild should not be visited.
-        mInOrder.verify(mMockVisitor).visit(root);
-        mInOrder.verify(mMockVisitor).visit(child);
+        mInOrder.verify(mMockVisitor).visit(root, /*index=*/ 0);
+        mInOrder.verify(mMockVisitor).visit(child, /*index=*/ 0);
         mInOrder.verifyNoMoreInteractions();
-        Mockito.verify(mMockVisitor, Mockito.never()).visit(grandchild);
+        Mockito.verify(mMockVisitor, Mockito.never()).visit(eq(grandchild), anyInt());
     }
 
     @Test
@@ -113,9 +116,9 @@ public class InsightTraverserTest {
 
         InsightTraverser.traverse(root, mMockVisitor, 3);
 
-        mInOrder.verify(mMockVisitor).visit(root);
-        mInOrder.verify(mMockVisitor).visit(child);
-        mInOrder.verify(mMockVisitor).visit(grandchild);
+        mInOrder.verify(mMockVisitor).visit(root, /*index=*/ 0);
+        mInOrder.verify(mMockVisitor).visit(child, /*index=*/ 0);
+        mInOrder.verify(mMockVisitor).visit(grandchild, /*index=*/ 0);
         mInOrder.verifyNoMoreInteractions();
     }
 }

@@ -142,8 +142,8 @@ public final class InsightCollection extends ContextInsight implements Iterable<
 
     /** @hide */
     @Override
-    public void accept(@NonNull InsightVisitor visitor) {
-        visitor.visit(this);
+    public void accept(@NonNull InsightVisitor visitor, int index) {
+        visitor.visit(this, index);
     }
 
     /** @hide */

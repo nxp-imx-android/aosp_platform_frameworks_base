@@ -26,6 +26,9 @@ import android.util.Slog;
  * applying a stateless {@link InsightVisitor} to each node. It handles the recursion and enforces a
  * maximum depth to prevent stack overflows.
  *
+ * <p>Visitors are provided an index indicating the order in which they were traversed, excluding
+ * {@link InsightCollection} nodes.
+ *
  * @hide
  */
 public final class InsightTraverser {
@@ -41,7 +44,7 @@ public final class InsightTraverser {
      * @param visitor The {@link InsightVisitor} to apply to each visited node.
      */
     public static void traverse(@NonNull ContextInsight root, @NonNull InsightVisitor visitor) {
-        traverseInternal(root, visitor, 0, DEFAULT_MAX_DEPTH);
+        traverseInternal(root, visitor, 0, DEFAULT_MAX_DEPTH, /*index=*/ 0);
     }
 
     /**
@@ -54,14 +57,15 @@ public final class InsightTraverser {
      */
     public static void traverse(
             @NonNull ContextInsight root, @NonNull InsightVisitor visitor, int maxDepth) {
-        traverseInternal(root, visitor, 0, maxDepth);
+        traverseInternal(root, visitor, 0, maxDepth, /*index=*/ 0);
     }
 
     private static void traverseInternal(
             @NonNull ContextInsight node,
             @NonNull InsightVisitor visitor,
             int currentDepth,
-            int maxDepth) {
+            int maxDepth,
+            int index) {
         if (currentDepth >= maxDepth) {
             Slog.w(
                     TAG,
@@ -72,10 +76,14 @@ public final class InsightTraverser {
             return;
         }
 
-        node.accept(visitor);
+        node.accept(visitor, index);
 
+        // Index for child starts at the current node's index plus one, unless this node is an
+        // insight collection, in which case it should be excluded from the count.
+        var i = node instanceof InsightCollection ? 0 : 1;
         for (ContextInsight child : node.getChildren()) {
-            traverseInternal(child, visitor, currentDepth + 1, maxDepth);
+            traverseInternal(child, visitor, currentDepth + 1, maxDepth, index + i);
+            i++;
         }
     }
 }

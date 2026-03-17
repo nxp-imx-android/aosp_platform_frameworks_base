@@ -132,8 +132,8 @@ public abstract class ContextInsight {
         }
 
         @Override
-        public void accept(@NonNull InsightVisitor visitor) {
-            visitor.visitUnknown(this);
+        public void accept(@NonNull InsightVisitor visitor, int index) {
+            visitor.visitUnknown(this, index);
         }
     };
 
@@ -181,7 +181,7 @@ public abstract class ContextInsight {
      *
      * @hide
      */
-    public abstract void accept(@NonNull InsightVisitor visitor);
+    public abstract void accept(@NonNull InsightVisitor visitor, int index);
 
     /**
      * Returns the children of this insight.
