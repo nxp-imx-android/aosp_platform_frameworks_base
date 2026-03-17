@@ -253,6 +253,8 @@ class PreCaptureToolbarTest : SysuiTestCase() {
                 )
             }
 
+            composeTestRule.waitForIdle()
+
             val buttonDescription =
                 context.getString(R.string.screen_capture_toolbar_region_button_record_a11y)
             composeTestRule.onNodeWithContentDescription(buttonDescription).assertIsNotDisplayed()
