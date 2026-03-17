@@ -53,6 +53,34 @@ public class ViewGroupScrollToTopTest {
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Test
+    public void testDispatchScrollToTop_callsOnScrollToTop() {
+        final Context context = getInstrumentation().getContext();
+        final TestView view = spy(new TestView(context, 0, 0, 100, 100));
+        doReturn(true).when(view).onScrollToTop(anyInt());
+
+        assertTrue(view.dispatchScrollToTop(50));
+        verify(view).onScrollToTop(anyInt());
+    }
+
+    @Test
+    public void testDispatchScrollToTop_parentHandlesBeforeChildren() {
+        final Context context = getInstrumentation().getContext();
+        final TestViewGroup root = spy(new TestViewGroup(context, 0, 0, 100, 100));
+        final TestView child = spy(new TestView(context, 0, 0, 100, 100));
+        root.addView(child);
+
+        // Both want to handle it
+        doReturn(true).when(child).onScrollToTop(anyInt());
+        doReturn(true).when(root).onScrollToTop(anyInt());
+
+        assertTrue(root.dispatchScrollToTop(50));
+
+        // Parent handles it first, child is never called
+        verify(root).onScrollToTop(anyInt());
+        verify(child, never()).onScrollToTop(anyInt());
+    }
+
+    @Test
     public void testDispatchScrollToTop_intersectingGetsEvent() {
         final Context context = getInstrumentation().getContext();
         final TestViewGroup root = new TestViewGroup(context, 0, 0, 100, 100);
@@ -60,7 +88,7 @@ public class ViewGroupScrollToTopTest {
         // Child range: [10, 40]. Tap: 20.
         final TestView child = spy(new TestView(context, 10, 0, 30, 100));
         root.addView(child);
-        doReturn(true).when(child).dispatchScrollToTop(anyInt());
+        doReturn(true).when(child).onScrollToTop(anyInt());
 
         assertTrue(root.dispatchScrollToTop(20));
 

@@ -791,6 +791,9 @@ public class BubbleBarLayerView extends FrameLayout
             updateExpandedView();
         }
         setupDragZoneFactory();
+        if (mDragController != null) {
+            mDragController.setDragZoneFactory(mDragZoneFactory);
+        }
     }
 
     /** Ensures that only the expanded bubble is added at the end of all animations. */

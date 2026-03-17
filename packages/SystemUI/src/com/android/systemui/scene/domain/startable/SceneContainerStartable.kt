@@ -22,7 +22,6 @@ import android.view.SurfaceControl
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.snapshotFlow
 import com.android.compose.animation.scene.ObservableTransitionState
-import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.TransitionKey
 import com.android.keyguard.AuthInteractionProperties
@@ -43,7 +42,6 @@ import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInt
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryHapticsInteractor
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor
-import com.android.systemui.kairos.internal.util.fastForEach
 import com.android.systemui.keyguard.DismissCallbackRegistry
 import com.android.systemui.keyguard.WindowManagerLockscreenVisibilityManager
 import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
@@ -71,7 +69,7 @@ import com.android.systemui.scene.domain.interactor.DisabledContentInteractor
 import com.android.systemui.scene.domain.interactor.OnBootTransitionInteractor
 import com.android.systemui.scene.domain.interactor.SceneBackInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
-import com.android.systemui.scene.domain.startable.SceneContainerStartable.HideOverlayCommand.HideSome
+import com.android.systemui.scene.domain.interactor.SceneInteractor.HideOverlayCommand
 import com.android.systemui.scene.session.shared.SessionStorage
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.logger.SceneLogger
@@ -376,7 +374,7 @@ constructor(
                             targetSceneKey = Scenes.Lockscreen,
                             loggingReason = "SIM unlock required",
                             hideOverlays =
-                                HideSome(
+                                HideOverlayCommand.HideSome(
                                     overlays =
                                         listOf(
                                             Overlays.NotificationsShade,
@@ -870,12 +868,6 @@ constructor(
         instantlySnapScenes: Boolean = false,
         forDoubleTapPowerGesture: Boolean = false,
     ) {
-        if (hideOverlays is HideSome) {
-            hideOverlays.overlays.fastForEach { overlay ->
-                sceneInteractor.hideOverlay(overlay, loggingReason)
-            }
-        }
-
         if (instantlySnapScenes) {
             if (forDoubleTapPowerGesture) {
                 // Special case to skip validation, since unlock flows may not emit by the time the
@@ -883,14 +875,14 @@ constructor(
                 sceneInteractor.snapToGoneForUnlockedPowerLaunchGesture(
                     keyguardState = keyguardState,
                     loggingReason = loggingReason,
-                    hideAllOverlays = hideOverlays == HideOverlayCommand.HideAll,
+                    hideOverlays = hideOverlays,
                 )
             } else {
                 sceneInteractor.snapToScene(
                     toScene = targetSceneKey,
                     keyguardState = keyguardState,
                     loggingReason = loggingReason,
-                    hideAllOverlays = hideOverlays == HideOverlayCommand.HideAll,
+                    hideOverlays = hideOverlays,
                 )
             }
         } else {
@@ -900,7 +892,7 @@ constructor(
                 transitionKey = transitionKey,
                 keyguardState = keyguardState,
                 forceSettleToTargetScene = freezeAndAnimateToCurrentState,
-                hideAllOverlays = hideOverlays == HideOverlayCommand.HideAll,
+                hideOverlays = hideOverlays,
             )
         }
     }
@@ -1119,16 +1111,6 @@ constructor(
             val instantlySnapScenes: Boolean = false,
             val transitionKey: TransitionKey? = null,
         ) : SwitchSceneCommand
-    }
-
-    sealed interface HideOverlayCommand {
-        data object HideAll : HideOverlayCommand
-
-        data object HideNone : HideOverlayCommand
-
-        class HideSome(val overlays: List<OverlayKey>) : HideOverlayCommand {
-            constructor(overlay: OverlayKey) : this(listOf(overlay))
-        }
     }
 
     companion object {

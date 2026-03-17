@@ -22,6 +22,7 @@ import static com.android.internal.widget.remotecompose.core.documentation.Docum
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
+import com.android.internal.widget.remotecompose.core.Limits;
 import com.android.internal.widget.remotecompose.core.Operation;
 import com.android.internal.widget.remotecompose.core.Operations;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
@@ -67,9 +68,6 @@ public class TouchExpression extends Operation
     private float mLastChange = Float.NaN;
     private float mLastCalculatedValue = Float.NaN;
     AnimatedFloatExpression mExp = new AnimatedFloatExpression();
-
-    /** The maximum number of floats in the expression */
-    public static final int MAX_EXPRESSION_SIZE = 32;
 
     private VelocityEasing mEasyTouch = new VelocityEasing();
     private boolean mEasingToStop = false;
@@ -695,7 +693,7 @@ public class TouchExpression extends Operation
         int touchEffects = buffer.readInt();
         int len = buffer.readInt();
         int valueLen = len & 0xFFFF;
-        if (valueLen > MAX_EXPRESSION_SIZE) {
+        if (valueLen > Limits.MAX_EXPRESSION_SIZE) {
             throw new RuntimeException("Float expression to long");
         }
         float[] exp = new float[valueLen];

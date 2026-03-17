@@ -94,7 +94,7 @@ class SliderHapticFeedbackProvider(
             )
         val bookendScaleRange = config.upperBookendScale - config.lowerBookendScale
         val bookendsHitScale = bookendScaleRange * velocityInterpolated + config.lowerBookendScale
-        return bookendsHitScale.pow(config.exponent)
+        return bookendsHitScale.pow(config.exponent).coerceIn(minimumValue = 0f, maximumValue = 1f)
     }
 
     /**
@@ -108,31 +108,45 @@ class SliderHapticFeedbackProvider(
         absoluteVelocity: Float,
         @FloatRange(from = 0.0, to = 1.0) normalizedSliderProgress: Float,
     ) {
-        // Check if its time to vibrate
+        // Check if it is time to vibrate
         val currentTime = clock.elapsedRealtime()
-        val elapsedSinceLastDrag = currentTime - dragTextureLastTime
-        if (elapsedSinceLastDrag < thresholdUntilNextDragCallMillis) return
-
-        val deltaProgress = abs(normalizedSliderProgress - dragTextureLastProgress)
-        if (deltaProgress < config.deltaProgressForDragThreshold) return
-
-        // Check if the progress is a discrete step so haptics can be delivered
-        if (
-            config.sliderStepSize > 0 &&
-                !normalizedSliderProgress.isDiscreteStep(config.sliderStepSize)
-        ) {
-            return
-        }
-
-        val powerScale = scaleOnDragTexture(absoluteVelocity, normalizedSliderProgress)
+        val canVibrate = canVibrateOnDragTexture(currentTime, normalizedSliderProgress)
+        if (!canVibrate) return
 
         // Deliver haptic feedback
+        val powerScale = scaleOnDragTexture(absoluteVelocity, normalizedSliderProgress)
         when {
             config.sliderStepSize == 0f -> performContinuousSliderDragVibration(powerScale)
             config.sliderStepSize > 0f -> performDiscreteSliderDragVibration(powerScale)
         }
         dragTextureLastTime = currentTime
         dragTextureLastProgress = normalizedSliderProgress
+    }
+
+    private fun canVibrateOnDragTexture(
+        currentTime: Long,
+        @FloatRange(from = 0.0, to = 1.0) normalizedSliderProgress: Float,
+    ): Boolean {
+        val isComingFromBookend = hasVibratedAtUpperBookend || hasVibratedAtLowerBookend
+
+        // Drag threshold conditions
+        val timeThresholdPassed =
+            currentTime - dragTextureLastTime >= thresholdUntilNextDragCallMillis
+        val progressThresholdPassed =
+            abs(normalizedSliderProgress - dragTextureLastProgress) >=
+                config.deltaProgressForDragThreshold
+
+        // Slider step conditions
+        val discreteStepPassed =
+            config.sliderStepSize > 0 &&
+                normalizedSliderProgress.isDiscreteStep(config.sliderStepSize)
+        val shouldStepVibrate = config.sliderStepSize == 0f || discreteStepPassed
+
+        return if (isComingFromBookend) {
+            shouldStepVibrate
+        } else {
+            timeThresholdPassed && progressThresholdPassed && shouldStepVibrate
+        }
     }
 
     private fun Float.isDiscreteStep(stepSize: Float, epsilon: Float = 0.001f): Boolean {
@@ -189,7 +203,7 @@ class SliderHapticFeedbackProvider(
 
         // Total scale
         val scale = positionBasedScale + velocityBasedScale
-        return scale.pow(config.exponent)
+        return scale.pow(config.exponent).coerceIn(minimumValue = 0f, maximumValue = 1f)
     }
 
     override fun onHandleAcquiredByTouch() {}

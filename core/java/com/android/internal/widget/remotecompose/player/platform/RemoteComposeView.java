@@ -35,6 +35,7 @@ import android.widget.FrameLayout;
 
 import com.android.internal.widget.remotecompose.core.CoreDocument;
 import com.android.internal.widget.remotecompose.core.LayoutCallback;
+import com.android.internal.widget.remotecompose.core.Limits;
 import com.android.internal.widget.remotecompose.core.RemoteClock;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.SystemClock;
@@ -60,9 +61,7 @@ public class RemoteComposeView extends FrameLayout
         implements View.OnAttachStateChangeListener, LayoutCallback {
 
     static final boolean USE_VIEW_AREA_CLICK = true; // Use views to represent click areas
-    static final float DEFAULT_FRAME_RATE = 60f;
     static final float POST_TO_NEXT_FRAME_THRESHOLD = 60f;
-    private static final int MAX_BITMAP_MEMORY = 20 * 1024 * 1024;
     private String mErrorMessage = "";
 
     RemoteClock mClock;
@@ -82,7 +81,7 @@ public class RemoteComposeView extends FrameLayout
     long mStart;
 
     long mLastFrameDelay = 1;
-    float mMaxFrameRate = DEFAULT_FRAME_RATE; // frames per seconds
+    float mMaxFrameRate = Limits.DEFAULT_MAX_FPS; // frames per seconds
     long mMaxFrameDelay = (long) (1000 / mMaxFrameRate);
 
     long mLastFrameCall;
@@ -234,10 +233,10 @@ public class RemoteComposeView extends FrameLayout
         }
 
         mDocument = value;
-        mMaxFrameRate = DEFAULT_FRAME_RATE;
+        mMaxFrameRate = Limits.DEFAULT_MAX_FPS;
         mDocument.initializeContext(mARContext, mResolvedData);
         mDisable = false;
-        if (mDocument.getDocument().bitmapMemory() > MAX_BITMAP_MEMORY) {
+        if (mDocument.getDocument().bitmapMemory() > Limits.MAX_BITMAP_MEMORY) {
             mDisable = true;
             mErrorMessage =
                     "Bitmap memory "
@@ -276,7 +275,7 @@ public class RemoteComposeView extends FrameLayout
         }
         Integer fps = (Integer) mDocument.getDocument().getProperty(Header.DOC_DESIRED_FPS);
         if (fps != null && fps > 0) {
-            mMaxFrameRate = fps;
+            mMaxFrameRate = Math.min(fps, Limits.MAX_FPS);
             mMaxFrameDelay = (long) (1000 / mMaxFrameRate);
         }
     }

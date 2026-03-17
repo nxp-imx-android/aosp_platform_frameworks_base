@@ -44,12 +44,10 @@ import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.media.controls.shared.model.MediaButton
-import com.android.systemui.media.remedia.data.repository.fakeActiveMedia
-import com.android.systemui.media.remedia.data.repository.fakePausedMediaWithCustomActions
+import com.android.systemui.media.remedia.data.repository.fakeActiveMediaData
+import com.android.systemui.media.remedia.data.repository.fakePausedMediaDataWithCustomActions
 import com.android.systemui.media.remedia.data.repository.mediaPlayActionButton
-import com.android.systemui.media.remedia.data.repository.setFakeCurrentMedia
-import com.android.systemui.media.remedia.data.repository.setHasMedia
-import com.android.systemui.media.remedia.shared.model.MediaSessionState
+import com.android.systemui.media.remedia.data.repository.setFakeCurrentMediaData
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.notificationRulesParentViewModelFactory
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.scene.session.shared.SessionStorage
@@ -108,10 +106,9 @@ class MediaInShadeTest : SysuiTestCase() {
     @Test
     fun umoInSingleShade() =
         kosmos.runTest {
-            setFakeCurrentMedia(listOf(fakeActiveMedia))
+            setFakeCurrentMediaData(listOf(fakeActiveMediaData))
             usingMediaInComposeFragment = true
             enableSingleShade()
-            setHasMedia(true)
 
             // Set the shade content.
             composeTestRule.setContent {
@@ -136,10 +133,9 @@ class MediaInShadeTest : SysuiTestCase() {
     @Test
     fun umoInSplitShade() =
         kosmos.runTest {
-            setFakeCurrentMedia(listOf(fakeActiveMedia))
+            setFakeCurrentMediaData(listOf(fakeActiveMediaData))
             usingMediaInComposeFragment = true
             enableSplitShade()
-            setHasMedia(true)
 
             // Set the shade content.
             composeTestRule.setContent {
@@ -167,10 +163,11 @@ class MediaInShadeTest : SysuiTestCase() {
     fun multipleMediaInSingleShade() =
         kosmos.runTest {
             // Add a new media object to current media list.
-            setFakeCurrentMedia(listOf(fakeActiveMedia, fakePausedMediaWithCustomActions))
+            setFakeCurrentMediaData(
+                listOf(fakeActiveMediaData, fakePausedMediaDataWithCustomActions)
+            )
             usingMediaInComposeFragment = true
             enableSingleShade()
-            setHasMedia(true)
 
             // Set the shade content.
             composeTestRule.setContent {
@@ -209,10 +206,9 @@ class MediaInShadeTest : SysuiTestCase() {
     fun testUpdateMedia() =
         kosmos.runTest {
             // Add a media object to current media list.
-            setFakeCurrentMedia(mutableStateListOf(fakeActiveMedia))
+            setFakeCurrentMediaData(mutableStateListOf(fakeActiveMediaData))
             usingMediaInComposeFragment = true
             enableSingleShade()
-            setHasMedia(true)
 
             // Set the shade content.
             composeTestRule.setContent {
@@ -236,16 +232,14 @@ class MediaInShadeTest : SysuiTestCase() {
                 .onNodeWithContentDescription(PAUSE_BUTTON_CONTENT_DESC)
                 .assertIsDisplayed()
 
-            val updatedFakeMedia =
-                fakeActiveMedia.copy(
-                    playbackStateActions = MediaButton(playOrPause = mediaPlayActionButton),
-                    state = MediaSessionState.Paused,
+            val updatedFakeMediaData =
+                fakeActiveMediaData.copy(
+                    semanticActions = MediaButton(playOrPause = mediaPlayActionButton),
+                    isPlaying = false,
                 )
 
             // Update media.
-            setFakeCurrentMedia(mutableStateListOf(updatedFakeMedia))
-
-            runCurrent()
+            setFakeCurrentMediaData(mutableStateListOf(updatedFakeMediaData))
             composeTestRule.waitForIdle()
 
             // Verify that the play button is now displayed.
@@ -258,10 +252,9 @@ class MediaInShadeTest : SysuiTestCase() {
     @Test
     fun openGutsOnNonDismissibleMedia() =
         kosmos.runTest {
-            setFakeCurrentMedia(listOf(fakeActiveMedia))
+            setFakeCurrentMediaData(listOf(fakeActiveMediaData.copy(isClearable = false)))
             usingMediaInComposeFragment = true
             enableSingleShade()
-            setHasMedia(true)
 
             // Set the shade content.
             composeTestRule.setContent {
@@ -303,10 +296,9 @@ class MediaInShadeTest : SysuiTestCase() {
     @Test
     fun openGutsOnDismissibleMedia() =
         kosmos.runTest {
-            setFakeCurrentMedia(listOf(fakePausedMediaWithCustomActions))
+            setFakeCurrentMediaData(listOf(fakePausedMediaDataWithCustomActions))
             usingMediaInComposeFragment = true
             enableSingleShade()
-            setHasMedia(true)
 
             // Set the shade content.
             composeTestRule.setContent {

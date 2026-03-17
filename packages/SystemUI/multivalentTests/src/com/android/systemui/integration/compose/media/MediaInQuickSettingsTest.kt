@@ -35,9 +35,8 @@ import com.android.systemui.integration.SystemUiIntegrationTest
 import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
-import com.android.systemui.media.remedia.data.repository.fakeActiveMedia
-import com.android.systemui.media.remedia.data.repository.setFakeCurrentMedia
-import com.android.systemui.media.remedia.data.repository.setHasMedia
+import com.android.systemui.media.remedia.data.repository.fakeActiveMediaData
+import com.android.systemui.media.remedia.data.repository.setFakeCurrentMediaData
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.notificationRulesParentViewModelFactory
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.qs.ui.composable.QuickSettingsScene
@@ -109,7 +108,7 @@ class MediaInQuickSettingsTest : SysuiTestCase() {
 
     @Before
     fun setup() {
-        kosmos.setFakeCurrentMedia(listOf(kosmos.fakeActiveMedia))
+        kosmos.setFakeCurrentMediaData(listOf(kosmos.fakeActiveMediaData))
     }
 
     @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
@@ -118,7 +117,6 @@ class MediaInQuickSettingsTest : SysuiTestCase() {
         kosmos.runTest {
             usingMediaInComposeFragment = true
             enableSingleShade()
-            setHasMedia(true)
 
             // Set the quick settings content.
             composeTestRule.setContent {
@@ -147,7 +145,6 @@ class MediaInQuickSettingsTest : SysuiTestCase() {
         kosmos.runTest {
             usingMediaInComposeFragment = true
             enableDualShade()
-            setHasMedia(true)
 
             // Set the quick settings overlay content.
             composeTestRule.setContent {

@@ -20,6 +20,8 @@ import android.content.Context
 import androidx.annotation.StringRes
 import com.android.settingslib.metadata.KeyParametersSchema
 import com.android.settingslib.metadata.preferencesapi.resolveString
+import com.android.settingslib.metadata.preferencesapi.safe
+import com.android.settingslib.metadata.preferencesapi.SafetyAnnotated
 
 /**
  * The context for a GeneratedType, providing access to the [Context] and any necessary
@@ -43,8 +45,8 @@ class GeneratedTypeContext(val context: Context)
  * @property description A human-readable description of this specific value.
  */
 data class GeneratedValue<T>(
-    val value: T,
-    val description: String,
+    val value: SafetyAnnotated<T>,
+    val description: SafetyAnnotated<String>,
 )
 
 inline fun <reified T : Any> GeneratedType(

@@ -25,24 +25,27 @@ import android.annotation.NonNull;
  * InsightTraverser} to walk the insight tree and apply the visitor. Because this interface is
  * stateless, implementations can be safely reused and shared.
  *
+ * <p>The index argument is the order in which the insight was traversed during the pre-order
+ * traversal, excluding {@link InsightCollection} nodes.
+ *
  * @hide
  */
 public interface InsightVisitor {
     /** Visits an {@link InsightCollection}. */
-    default void visit(@NonNull InsightCollection collection) {}
+    default void visit(@NonNull InsightCollection collection, int index) {}
 
     /** Visits an {@link ActionableInsight}. */
-    default void visit(@NonNull ActionableInsight insight) {}
+    default void visit(@NonNull ActionableInsight insight, int index) {}
 
     /** Visits a {@link DisplayInsight}. */
-    default void visit(@NonNull DisplayInsight insight) {}
+    default void visit(@NonNull DisplayInsight insight, int index) {}
 
     /** Visits a {@link BundleInsight}. */
-    default void visit(@NonNull BundleInsight insight) {}
+    default void visit(@NonNull BundleInsight insight, int index) {}
 
     /** Visits a {@link HintInvalidationInsight}. */
-    default void visit(@NonNull HintInvalidationInsight insight) {}
+    default void visit(@NonNull HintInvalidationInsight insight, int index) {}
 
     /** Visits an unknown {@link ContextInsight}. */
-    default void visitUnknown(@NonNull ContextInsight insight) {}
+    default void visitUnknown(@NonNull ContextInsight insight, int index) {}
 }

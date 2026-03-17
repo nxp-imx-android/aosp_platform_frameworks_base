@@ -446,7 +446,27 @@ public class SystemConfig {
     }
 
     public ArrayList<SplitPermissionInfo> getSplitPermissions() {
-        return mSplitPermissions;
+        return getSplitPermissions(false);
+    }
+
+    /**
+     * @param includeDisabled if true, include split permissions that are disabled by feature flags.
+     * @return All split permissions.
+     */
+    public ArrayList<SplitPermissionInfo> getSplitPermissions(boolean includeDisabled) {
+        if (includeDisabled) {
+            return mSplitPermissions;
+        }
+        ArrayList<SplitPermissionInfo> filteredSplitPermissions = new ArrayList<>();
+        for (int i = 0; i < mSplitPermissions.size(); i++) {
+            SplitPermissionInfo info = mSplitPermissions.get(i);
+            String featureFlag = info.getFeatureFlag();
+            if (featureFlag == null || !AconfigFlags.getInstance().skip(
+                    /* pkg= */ null, featureFlag, info.isFeatureFlagNegated())) {
+                filteredSplitPermissions.add(info);
+            }
+        }
+        return filteredSplitPermissions;
     }
 
     public ArrayMap<String, SharedLibraryEntry> getSharedLibraries() {
@@ -2319,11 +2339,18 @@ public class SystemConfig {
 
     private void readSplitPermission(XmlPullParser parser, File permFile)
             throws IOException, XmlPullParserException {
-        // If trunkstable feature flag disabled for this split permission, skip this tag.
-        if (AconfigFlags.getInstance()
-            .skipCurrentElement(/* pkg= */ null, parser, /* allowNoNamespace= */ true)) {
-            XmlUtils.skipCurrentTag(parser);
-            return;
+        String featureFlag = parser.getAttributeValue(
+                "http://schemas.android.com/apk/res/android", "featureFlag");
+        if (featureFlag == null) {
+            featureFlag = parser.getAttributeValue(null, "featureFlag");
+        }
+        boolean isFeatureFlagNegated = false;
+        if (featureFlag != null) {
+            featureFlag = featureFlag.strip();
+            if (featureFlag.startsWith("!")) {
+                isFeatureFlagNegated = true;
+                featureFlag = featureFlag.substring(1).strip();
+            }
         }
 
         String splitPerm = parser.getAttributeValue(null, "name");
@@ -2362,7 +2389,8 @@ public class SystemConfig {
             }
         }
         if (!newPermissions.isEmpty()) {
-            mSplitPermissions.add(new SplitPermissionInfo(splitPerm, newPermissions, targetSdk));
+            mSplitPermissions.add(new SplitPermissionInfo(splitPerm, newPermissions, targetSdk,
+                    featureFlag, isFeatureFlagNegated));
         }
     }
 

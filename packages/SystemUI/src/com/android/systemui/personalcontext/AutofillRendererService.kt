@@ -19,7 +19,6 @@ package com.android.systemui.personalcontext
 import android.app.PendingIntent
 import android.app.slice.Slice
 import android.content.Context
-import android.content.Intent
 import android.service.autofill.Dataset
 import android.service.autofill.Field
 import android.service.autofill.InlinePresentation
@@ -97,7 +96,7 @@ constructor(private val context: Context, private val autofillManager: AutofillM
         InsightTraverser.traverse(
             publishedContextInsight.insight,
             object : InsightVisitor {
-                override fun visit(insight: ActionableInsight) {
+                override fun visit(insight: ActionableInsight, index: Int) {
                     findAutofillHint(insight)?.let { autofillHint ->
                         inlineSuggestionDetails.add(
                             InlineSuggestionDetails(
@@ -106,12 +105,15 @@ constructor(private val context: Context, private val autofillManager: AutofillM
                                 insight.actionDetails,
                                 autofillHint,
                                 findInlineSuggestionsHints(insight),
+                                publishedContextInsight,
+                                renderToken,
+                                index,
                             )
                         )
                     }
                 }
 
-                override fun visit(insight: DisplayInsight) {
+                override fun visit(insight: DisplayInsight, index: Int) {
                     findAutofillHint(insight)?.let { autofillHint ->
                         inlineSuggestionDetails.add(
                             InlineSuggestionDetails(
@@ -120,6 +122,9 @@ constructor(private val context: Context, private val autofillManager: AutofillM
                                 null,
                                 autofillHint,
                                 findInlineSuggestionsHints(insight),
+                                publishedContextInsight,
+                                renderToken,
+                                index,
                             )
                         )
                     }
@@ -228,9 +233,18 @@ constructor(private val context: Context, private val autofillManager: AutofillM
     /** Creates the UI [Slice] to be displayed in the inline autofill results. */
     fun createInlineSuggestionSlice(suggestionDetails: InlineSuggestionDetails): Slice? {
         val displayDetails = suggestionDetails.displayDetails
-        // TODO(b/458508340): implement attribution
         val attributionAction =
-            PendingIntent.getActivity(context, 0, Intent(), PendingIntent.FLAG_IMMUTABLE)
+            PendingIntent.getBroadcast(
+                context,
+                0,
+                AutofillAttributionStartable.getAttributionIntent(
+                    this.applicationContext,
+                    suggestionDetails.insight,
+                    suggestionDetails.renderToken,
+                    suggestionDetails.index,
+                ),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            )
         val inlineSuggestionUiBuilder =
             InlineSuggestionUi.newContentBuilder(attributionAction)
                 .setHints(suggestionDetails.inlineSuggestionHints)
@@ -269,6 +283,15 @@ constructor(private val context: Context, private val autofillManager: AutofillM
         val actionDetails: InsightActionDetails?,
         val autofillHint: AutofillInlineRequestHint,
         val inlineSuggestionHints: List<String>,
+
+        // Used for attribution.
+        val insight: PublishedContextInsight,
+        val renderToken: RenderToken,
+        /**
+         * Index of the insight inside the InsightCollection. Will be 0 if a single insight not in a
+         * collection was provided.
+         */
+        val index: Int,
     )
 
     companion object {

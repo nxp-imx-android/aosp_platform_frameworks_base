@@ -112,7 +112,7 @@ public class SmartReplyView extends ViewGroup {
         super(context, attrs);
 
         mHeightUpperLimit = NotificationUtils.getFontScaledHeight(mContext,
-            R.dimen.smart_reply_button_max_height);
+                R.dimen.smart_reply_button_max_height);
 
         // The default color is white, as it helps us ensure ideal contrast. However, the actual
         // color will be based on the notification background (set in setBackgroundTintColor).
@@ -171,7 +171,7 @@ public class SmartReplyView extends ViewGroup {
      * invoked before onMeasure, so it doesn't do any analysis on the contents of the buttons.
      */
     public int getHeightUpperLimit() {
-       return mHeightUpperLimit;
+        return mHeightUpperLimit;
     }
 
     private void reallocateCandidateButtonQueueForSqueezing() {
@@ -487,8 +487,8 @@ public class SmartReplyView extends ViewGroup {
         pw.decreaseIndent();
     }
 
-  @VisibleForTesting
-  void setSmartReplyLogger(SmartReplyLogger smartReplyLogger) {
+    @VisibleForTesting
+    void setSmartReplyLogger(SmartReplyLogger smartReplyLogger) {
         mSmartReplyLogger = smartReplyLogger;
     }
 
@@ -685,7 +685,7 @@ public class SmartReplyView extends ViewGroup {
         clearLayoutLineCount(button);
         final int widthMeasureSpec = MeasureSpec.makeMeasureSpec(
                 button.getPaddingStart() + button.getPaddingEnd() + textWidth
-                      + getStartCompoundDrawableWidthWithPadding(button), MeasureSpec.AT_MOST);
+                        + getStartCompoundDrawableWidthWithPadding(button), MeasureSpec.AT_MOST);
         button.measure(widthMeasureSpec, heightMeasureSpec);
         if (button.getLayout() == null) {
             Log.wtf(TAG, "Button layout is null after measure.");
@@ -800,7 +800,7 @@ public class SmartReplyView extends ViewGroup {
     public void setBackgroundTintColor(int backgroundColor, boolean colorized) {
         if (backgroundColor == mCurrentBackgroundColor && colorized == mCurrentColorized) {
             // Same color ignoring.
-           return;
+            return;
         }
         mCurrentBackgroundColor = backgroundColor;
         mCurrentColorized = colorized;
@@ -821,6 +821,11 @@ public class SmartReplyView extends ViewGroup {
     }
 
     private void setButtonColors(Button button) {
+        // Check if this is a phishing animated button that manages its own colors.
+        if (Boolean.TRUE.equals(button.getTag(R.id.is_phishing_animated_action))) {
+            return; // Skip the dynamic override
+        }
+
         Drawable drawable = button.getBackground();
         if (drawable instanceof RippleDrawable) {
             // Mutate in case other notifications are using this drawable.

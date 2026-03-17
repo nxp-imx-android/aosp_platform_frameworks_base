@@ -7125,6 +7125,7 @@ class DesktopTasksControllerTest : ShellTestCase() {
             .getOrCreateVisualIndicator(
                 eq(task),
                 eq(mockSurface),
+                eq(DEFAULT_DISPLAY),
                 eq(DesktopModeVisualIndicator.DragStartState.FROM_FREEFORM),
             )
         whenever(
@@ -7146,7 +7147,7 @@ class DesktopTasksControllerTest : ShellTestCase() {
 
         verify(visualIndicatorUpdateScheduler)
             .schedule(
-                eq(task.displayId),
+                eq(DEFAULT_DISPLAY),
                 eq(indicatorType),
                 eq(inputX),
                 eq(inputY),
@@ -8762,6 +8763,13 @@ class DesktopTasksControllerTest : ShellTestCase() {
         controller.createDesk(DEFAULT_DISPLAY, UserHandle.USER_SYSTEM)
 
         verify(desksOrganizer, never()).createDesk(any(), any(), any())
+    }
+
+    @Test
+    fun onDisplayDisconnect_notifiesFocusReset() {
+        val transition = Binder()
+        controller.onDisplayDisconnect(SECOND_DISPLAY, DEFAULT_DISPLAY, transition)
+        verify(focusTransitionObserver).onDisplayDisconnected(SECOND_DISPLAY, DEFAULT_DISPLAY)
     }
 
     @Test

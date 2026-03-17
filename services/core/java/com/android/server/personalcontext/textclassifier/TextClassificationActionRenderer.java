@@ -109,7 +109,7 @@ public class TextClassificationActionRenderer implements Renderer {
         }
 
         @Override
-        public void visit(@NonNull ActionableInsight insight) {
+        public void visit(@NonNull ActionableInsight insight, int index) {
             final TextClassificationHint textClassificationHint =
                     getFirstTextClassificationHintIfPresent(insight);
             if (textClassificationHint == null) {

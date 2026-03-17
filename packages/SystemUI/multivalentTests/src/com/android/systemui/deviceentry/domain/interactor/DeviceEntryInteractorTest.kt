@@ -1098,6 +1098,52 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
         }
 
+    @Test
+    fun handleDeviceUnlockStatusChangeFromBiometric() =
+        kosmos.runTest {
+            val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
+            switchToScene(Scenes.Lockscreen)
+            fakeAuthenticationRepository.setAuthenticationMethod(Pin)
+            assertThat(currentSceneKey).isEqualTo(Scenes.Lockscreen)
+
+            // Authenticate using a biometric that should dismiss the keyguard.
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_WAKE_AND_DISMISS,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+            assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
+        }
+
+    @Test
+    fun handleDeviceEntryFromBiometricWhenAlreadyUnlocked() =
+        kosmos.runTest {
+            val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
+            fakeAuthenticationRepository.setAuthenticationMethod(Pin)
+
+            // Authenticate using a biometric that should dismiss the keyguard.
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_WAKE_AND_DISMISS,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+            // WHEN on the lockscreen in an unlocked state
+            switchToScene(Scenes.Lockscreen)
+            assertThat(currentSceneKey).isEqualTo(Scenes.Lockscreen)
+            // and biometric unlock state is reset
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_NONE,
+                biometricUnlockSource = null,
+            )
+
+            // WHEN authenticate using the same biometric that should dismiss the keyguard again
+            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_WAKE_AND_DISMISS,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+
+            // THEN device will transition to Gone
+            assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
+        }
+
     private fun Kosmos.setupSwipeDeviceEntryMethod() {
         fakeAuthenticationRepository.setAuthenticationMethod(None)
         fakeKeyguardRepository.setKeyguardEnabled(true)

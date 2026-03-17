@@ -151,8 +151,20 @@ public class Utils {
         }
     }
 
+    /** Returns whether the given user is the Headless System User. */
+    private static boolean isHeadlessSystemUser(UserInfo info) {
+        return info != null
+                && info.id == UserHandle.USER_SYSTEM
+                && UserManager.isHeadlessSystemUserMode();
+    }
+
     /** Returns a label for the user, in the form of "User: user name" or "Work profile". */
     public static String getUserLabel(Context context, UserInfo info) {
+        // Headless System User (User 0) should be branded as "System User" instead of using the
+        // generic "User: " prefix.
+        if (android.multiuser.Flags.hsuAppManagement() && isHeadlessSystemUser(info)) {
+            return context.getString(com.android.internal.R.string.headless_system_user_name);
+        }
         String name = info != null ? info.name : null;
         if (info.isManagedProfile()) {
             // We use predefined values for managed profiles
@@ -184,6 +196,12 @@ public class Utils {
         final int iconSize = UserIconDrawable.getDefaultSize(context);
         if (user.isManagedProfile()) {
             Drawable drawable = UserIconDrawable.getManagedUserDrawable(context);
+            drawable.setBounds(0, 0, iconSize, iconSize);
+            return drawable;
+        }
+        // Headless System User (User 0) should be visually distinguished with a specific icon.
+        if (android.multiuser.Flags.hsuAppManagement() && isHeadlessSystemUser(user)) {
+            Drawable drawable = UserIconDrawable.getHeadlessSystemUserDrawable(context);
             drawable.setBounds(0, 0, iconSize, iconSize);
             return drawable;
         }

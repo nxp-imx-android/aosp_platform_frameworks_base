@@ -15,19 +15,21 @@
  */
 package com.android.internal.widget.remotecompose.player.accessibility.platform;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.graphics.Rect;
 import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 
-import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 import com.android.internal.widget.remotecompose.core.operations.RootContentBehavior;
+import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 import com.android.internal.widget.remotecompose.core.semantics.ScrollableComponent;
 import com.android.internal.widget.remotecompose.player.accessibility.BaseSemanticNodeApplier;
 
 import java.util.List;
 
+@SuppressWarnings("NullableProblems")
 public class AndroidPlatformSemanticNodeApplier
         extends BaseSemanticNodeApplier<AccessibilityNodeInfo> {
 
@@ -89,10 +91,11 @@ public class AndroidPlatformSemanticNodeApplier
         nodeInfo.setContentDescription(description);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     protected void setBoundsInParentOrScreen(
-            AccessibilityNodeInfo nodeInfo,
-            Component component,
+            @NonNull AccessibilityNodeInfo nodeInfo,
+            @NonNull Component component,
             @Nullable Integer parentId) {
         int[] bounds = new int[4];
 
@@ -138,7 +141,7 @@ public class AndroidPlatformSemanticNodeApplier
                 nodeInfo.addAction(AccessibilityAction.ACTION_SCROLL_UP);
                 nodeInfo.addAction(AccessibilityAction.ACTION_PAGE_UP);
             } else if (scrollDirection == RootContentBehavior.SCROLL_HORIZONTAL) {
-                // TODO handle RTL
+                // TODO handle RTL.
                 nodeInfo.addAction(AccessibilityAction.ACTION_SCROLL_LEFT);
                 nodeInfo.addAction(AccessibilityAction.ACTION_PAGE_LEFT);
             }

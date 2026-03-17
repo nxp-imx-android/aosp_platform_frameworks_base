@@ -46,9 +46,6 @@ public class RavenwoodSystemProperties {
     /** This is the actual build.prop we use to build the device (contents depends on lunch). */
     private static final String DEVICE_BUILD_PROP = "ravenwood-data/build.prop";
 
-    /** Property files from each test. Optional. This is relative to the current directory. */
-    private static final String PER_TEST_PROP = "ravenwood.prop";
-
     /** The default values. */
     static final Map<String, String> sDefaultValues = new HashMap<>();
 
@@ -104,7 +101,8 @@ public class RavenwoodSystemProperties {
 
         // TODO(b/450069205): Use of "exists" is a bad recipe for incremental builds... Make sure
         // ravenwood.go empties it if not specified.
-        var testProps = Files.exists(Path.of(PER_TEST_PROP)) ? readProperties(PER_TEST_PROP)
+        final var perTestPropFle = RavenwoodEnvironment.getInstance().perTestPropFile();
+        var testProps = Files.exists(Path.of(perTestPropFle)) ? readProperties(perTestPropFle)
                 : new HashMap<String, String>();
 
         Log.i(TAG, "Default system properties:");

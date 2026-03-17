@@ -210,7 +210,7 @@ constructor(
         // TODO: b/419026315 - Update the secondary modifier key label.
         val secondaryModifierLabel =
             ShortcutHelperKeys.modifierLabels[MODIFIER_KEY xor metaState] ?: return null
-        val keyCodeLabel = ShortcutUtils.getLabelFromKeyCode(keyCode) ?: return null
+        val keyCodeLabel = ShortcutUtils.getLabelFromKeyCode(context, keyCode) ?: return null
 
         val actionKeyLabel = resources.getText(R.string.shortcut_helper_customizer_action_key_text)
         when (keyGestureType) {

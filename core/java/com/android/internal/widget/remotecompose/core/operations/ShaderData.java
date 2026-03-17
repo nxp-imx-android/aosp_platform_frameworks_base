@@ -23,6 +23,7 @@ import static com.android.internal.widget.remotecompose.core.documentation.Docum
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
+import com.android.internal.widget.remotecompose.core.Limits;
 import com.android.internal.widget.remotecompose.core.Operation;
 import com.android.internal.widget.remotecompose.core.Operations;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
@@ -45,7 +46,6 @@ import java.util.List;
 public class ShaderData extends Operation implements VariableSupport, Serializable {
     private static final int OP_CODE = Operations.DATA_SHADER;
     private static final String CLASS_NAME = "ShaderData";
-    private static final int MAX_FLOAT_LEN = 200;
     int mShaderTextId; // the actual text of a shader
     int mShaderID; // allows shaders to be referenced by number
     @Nullable
@@ -320,7 +320,7 @@ public class ShaderData extends Operation implements VariableSupport, Serializab
             for (int i = 0; i < floatMapSize; i++) {
                 String name = buffer.readUTF8();
                 int len = buffer.readInt();
-                if (len > MAX_FLOAT_LEN) {
+                if (len > Limits.MAX_SHADER_FLOAT_COUNT) {
                     throw new RuntimeException("Float array too long");
                 }
                 float[] val = new float[len];
@@ -340,7 +340,7 @@ public class ShaderData extends Operation implements VariableSupport, Serializab
             for (int i = 0; i < intMapSize; i++) {
                 String name = buffer.readUTF8();
                 int len = buffer.readInt();
-                if (len > MAX_FLOAT_LEN) {
+                if (len > Limits.MAX_SHADER_FLOAT_COUNT) {
                     throw new RuntimeException("int array too long");
                 }
                 int[] val = new int[len];

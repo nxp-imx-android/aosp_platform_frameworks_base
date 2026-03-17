@@ -45,6 +45,7 @@ import android.companion.virtual.IVirtualDeviceListener;
 import android.companion.virtual.IVirtualDeviceManager;
 import android.companion.virtual.IVirtualDeviceSoundEffectListener;
 import android.companion.virtual.VirtualDevice;
+import android.companion.virtual.VirtualDevice.DeviceProfile;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
@@ -122,10 +123,6 @@ public class VirtualDeviceManagerService extends SystemService implements Watchd
     private static final String TAG = "VirtualDeviceManagerService";
 
     private static final String VIRTUAL_DEVICE_NATIVE_SERVICE = "virtualdevice_native";
-
-    static final String DEVICE_PROFILE_UNKNOWN = "DEVICE_PROFILE_UNKNOWN";
-    static final String DEVICE_PROFILE_SHELL = "DEVICE_PROFILE_SHELL";
-    static final String DEVICE_PROFILE_COMPUTER_CONTROL = "DEVICE_PROFILE_COMPUTER_CONTROL";
 
     private static final List<String> VIRTUAL_DEVICE_COMPANION_DEVICE_PROFILES = Arrays.asList(
             AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION,
@@ -224,7 +221,7 @@ public class VirtualDeviceManagerService extends SystemService implements Watchd
                                 new VirtualDeviceManager.VirtualDevice(context,
                                         mImpl.createLocalVirtualDevice(
                                                 token, attributionSource, params,
-                                                DEVICE_PROFILE_COMPUTER_CONTROL)));
+                                                VirtualDevice.DEVICE_PROFILE_COMPUTER_CONTROL)));
         mComputerControlConsentManager = new ComputerControlConsentManagerImpl();
         mAutomatedPackagesRepository = new AutomatedPackagesRepository(mHandler);
         Watchdog.getInstance().addMonitor(this);
@@ -506,7 +503,7 @@ public class VirtualDeviceManagerService extends SystemService implements Watchd
     IVirtualDevice createShellVirtualDevice(
             IBinder token, AttributionSource attributionSource, VirtualDeviceParams params) {
         return mImpl.createLocalVirtualDevice(
-                token, attributionSource, params, DEVICE_PROFILE_SHELL);
+                token, attributionSource, params, VirtualDevice.DEVICE_PROFILE_SHELL);
     }
 
     @Nullable
@@ -637,14 +634,14 @@ public class VirtualDeviceManagerService extends SystemService implements Watchd
                 }
             }
             return createVirtualDevice(token, attributionSource, associationInfo, params,
-                    activityListener, soundEffectListener, /* deviceProfile= */ null);
+                    activityListener, soundEffectListener, getDeviceProfile(associationInfo));
         }
 
         private IVirtualDevice createLocalVirtualDevice(
                 IBinder token,
                 AttributionSource attributionSource,
                 @NonNull VirtualDeviceParams params,
-                @NonNull String deviceProfile) {
+                @DeviceProfile int deviceProfile) {
             IVirtualDeviceActivityListener stubActivityListener =
                     new IVirtualDeviceActivityListener.Default();
             return createVirtualDevice(token, attributionSource, /* associationInfo= */ null,
@@ -659,7 +656,7 @@ public class VirtualDeviceManagerService extends SystemService implements Watchd
                 @NonNull VirtualDeviceParams params,
                 @NonNull IVirtualDeviceActivityListener activityListener,
                 @Nullable IVirtualDeviceSoundEffectListener soundEffectListener,
-                @Nullable String deviceProfile) {
+                @DeviceProfile int deviceProfile) {
             attributionSource.enforceCallingUid();
 
             final String packageName = attributionSource.getPackageName();
@@ -669,16 +666,18 @@ public class VirtualDeviceManagerService extends SystemService implements Watchd
                                 + getCallingUid());
             }
             Objects.requireNonNull(params);
+            if (deviceProfile == VirtualDevice.DEVICE_PROFILE_UNKNOWN) {
+                throw new IllegalArgumentException("Device profile must be specified");
+            }
 
             final UserHandle userHandle = getCallingUserHandle();
             final CameraAccessController cameraAccessController =
                     getCameraAccessController(userHandle, params,
                             attributionSource.getPackageName());
             final int deviceId = sNextUniqueIndex.getAndIncrement();
-            final String profile = computeDeviceProfile(associationInfo, deviceProfile);
             VirtualDeviceImpl virtualDevice = new VirtualDeviceImpl(getContext(), associationInfo,
                     VirtualDeviceManagerService.this, mVirtualDeviceLog, token, attributionSource,
-                    deviceId, profile, cameraAccessController, mPendingTrampolineCallback,
+                    deviceId, deviceProfile, cameraAccessController, mPendingTrampolineCallback,
                     activityListener,
                     soundEffectListener, params);
             Counter.logIncrement("virtual_devices.value_virtual_devices_created_count");
@@ -998,17 +997,19 @@ public class VirtualDeviceManagerService extends SystemService implements Watchd
         }
     }
 
-    private String computeDeviceProfile(@Nullable AssociationInfo associationInfo,
-            @Nullable String deviceProfile) {
-        if (deviceProfile != null) {
-            return deviceProfile;
-        }
-
-        if (associationInfo != null) {
-            return associationInfo.getDeviceProfile();
-        }
-
-        return DEVICE_PROFILE_UNKNOWN;
+    @DeviceProfile
+    private static int getDeviceProfile(@NonNull AssociationInfo associationInfo) {
+        return switch (associationInfo.getDeviceProfile()) {
+            case AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION ->
+                    VirtualDevice.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION;
+            case AssociationRequest.DEVICE_PROFILE_APP_STREAMING ->
+                    VirtualDevice.DEVICE_PROFILE_APP_STREAMING;
+            case AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_STREAMING ->
+                    VirtualDevice.DEVICE_PROFILE_NEARBY_DEVICE_STREAMING;
+            case AssociationRequest.DEVICE_PROFILE_VIRTUAL_DEVICE ->
+                    VirtualDevice.DEVICE_PROFILE_VIRTUAL_DEVICE;
+            default -> VirtualDevice.DEVICE_PROFILE_UNKNOWN;
+        };
     }
 
     final class VirtualDeviceManagerNativeImpl extends IVirtualDeviceManagerNative.Stub {

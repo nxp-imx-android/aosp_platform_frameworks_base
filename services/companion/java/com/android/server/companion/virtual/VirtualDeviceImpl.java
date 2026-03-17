@@ -35,8 +35,6 @@ import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_CLIPBOAR
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
 import static android.media.AudioManager.AUDIO_SESSION_ID_GENERATE;
 
-import static com.android.server.companion.virtual.VirtualDeviceManagerService.DEVICE_PROFILE_COMPUTER_CONTROL;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.StringRes;
@@ -55,6 +53,7 @@ import android.companion.virtual.IVirtualDeviceIntentInterceptor;
 import android.companion.virtual.IVirtualDeviceSoundEffectListener;
 import android.companion.virtual.ViewConfigurationParams;
 import android.companion.virtual.VirtualDevice;
+import android.companion.virtual.VirtualDevice.DeviceProfile;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.audio.IAudioConfigChangedCallback;
@@ -180,8 +179,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
 
     private static final String PERSISTENT_ID_PREFIX_CDM_ASSOCIATION = "companion:";
 
-    private static final List<String> DEVICE_PROFILES_ALLOWING_MIRROR_DISPLAYS = List.of(
-            AssociationRequest.DEVICE_PROFILE_APP_STREAMING);
+    private static final List<Integer> DEVICE_PROFILES_ALLOWING_MIRROR_DISPLAYS = List.of(
+            VirtualDevice.DEVICE_PROFILE_APP_STREAMING);
 
     /**
      * Timeout until {@link #launchPendingIntent} stops waiting for an activity to be launched.
@@ -219,8 +218,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     @NonNull
     private final AttributionSource mAttributionSource;
     private final int mDeviceId;
-    @NonNull
-    private final String mDeviceProfile;
+    @DeviceProfile
+    private final int mDeviceProfile;
     @Nullable
     private final String mPersistentDeviceId;
     @NonNull
@@ -491,7 +490,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
             @NonNull IBinder token,
             @NonNull AttributionSource attributionSource,
             int deviceId,
-            String deviceProfile,
+            @DeviceProfile int deviceProfile,
             @Nullable CameraAccessController cameraAccessController,
             @NonNull PendingTrampolineCallback pendingTrampolineCallback,
             @NonNull IVirtualDeviceActivityListener activityListener,
@@ -532,7 +531,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
             @NonNull IBinder token,
             @NonNull AttributionSource attributionSource,
             int deviceId,
-            String deviceProfile,
+            @DeviceProfile int deviceProfile,
             @Nullable InputController inputController,
             @Nullable CameraAccessController cameraAccessController,
             @NonNull PendingTrampolineCallback pendingTrampolineCallback,
@@ -617,7 +616,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         mVirtualDeviceLog.logCreated(deviceId, mOwnerUid, mDeviceProfile);
 
         mPublicVirtualDeviceObject = new VirtualDevice(
-                this, getDeviceId(), getPersistentDeviceId(), mParams.getName(), getDisplayName());
+                this, getDeviceId(), getDeviceProfile(), getPersistentDeviceId(),
+                mParams.getName(), getDisplayName());
 
         mActivityPolicyExemptions = new ArraySet<>(
                 mParams.getDevicePolicy(POLICY_TYPE_ACTIVITY) == DEVICE_POLICY_DEFAULT
@@ -695,9 +695,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         return mAssociationInfo == null ? mParams.getName() : mAssociationInfo.getDisplayName();
     }
 
-    @Override // Binder call
-    @NonNull
-    public String getDeviceProfile() {
+    @DeviceProfile
+    public int getDeviceProfile() {
         return mDeviceProfile;
     }
 
@@ -1275,8 +1274,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     public void setDisplayUiMode(int displayId, int uiMode) {
         checkCallerIsDeviceOwner();
         if ((uiMode & Configuration.UI_MODE_TYPE_MASK) == Configuration.UI_MODE_TYPE_CAR
-                && !AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION.equals(
-                        mDeviceProfile)) {
+                && mDeviceProfile != VirtualDevice.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION) {
             throw new SecurityException("Setting car UI mode requires "
                     + AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION);
         }
@@ -1504,7 +1502,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         fout.println("  VirtualDevice: ");
         fout.println(indent + "mDeviceId: " + mDeviceId);
         fout.println(indent + "mAssociationId: " + getAssociationId());
-        fout.println(indent + "mDeviceProfile: " + mDeviceProfile);
+        fout.println(indent + "mDeviceProfile: "
+                + VirtualDeviceLog.deviceProfileToString(mDeviceProfile));
         fout.println(indent + "mOwnerPackageName: " + mOwnerPackageName);
         fout.println(indent + "mParams: ");
         mParams.dump(fout, indent + indent);
@@ -1966,7 +1965,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         } catch (RemoteException e) {
             Slog.w(TAG, "Unable to invoke activity listener", e);
         }
-        if (!DEVICE_PROFILE_COMPUTER_CONTROL.equals(mDeviceProfile)) {
+        if (mDeviceProfile != VirtualDevice.DEVICE_PROFILE_COMPUTER_CONTROL) {
             showToastOnDisplay(displayId,
                     mContext.getString(
                             R.string.app_streaming_blocked_message_for_fingerprint_dialog),

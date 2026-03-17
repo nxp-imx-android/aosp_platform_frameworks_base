@@ -44,7 +44,6 @@ import android.os.RemoteException;
 import android.platform.test.annotations.EnableFlags;
 import android.view.SurfaceControl;
 import android.window.TransitionInfo;
-import android.window.TransitionInfo.ChangeFlags;
 import android.window.TransitionInfo.TransitionMode;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -64,7 +63,6 @@ import org.mockito.ArgumentMatcher;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.mockito.ArgumentMatchers;
 
 /**
  * Tests for the focus transition observer.
@@ -368,6 +366,38 @@ public class FocusTransitionObserverTest extends ShellTestCase {
         verify(newListener, never()).onFocusedTaskChanged(any(), anyBoolean(), anyBoolean());
         clearInvocations(mListener);
         changes.clear();
+    }
+
+    @Test
+    @EnableFlags(com.android.wm.shell.Flags.FLAG_ENABLE_FOCUS_RESET_ON_DISPLAY_REMOVAL)
+    public void testOnDisplayDisconnected_focused_resetsFocus() throws RemoteException {
+        // First, move focus to a secondary display.
+        TransitionInfo info = mock(TransitionInfo.class);
+        final List<TransitionInfo.Change> changes = new ArrayList<>();
+        setupDisplayToTopChange(changes, SECONDARY_DISPLAY_ID);
+        when(info.getChanges()).thenReturn(changes);
+        mFocusTransitionObserver.updateFocusState(info);
+        mShellExecutor.flushAll();
+        verify(mListener, times(1)).onFocusedDisplayChanged(SECONDARY_DISPLAY_ID);
+        clearInvocations(mListener);
+
+        // Manually trigger display disconnect.
+        mFocusTransitionObserver.onDisplayDisconnected(SECONDARY_DISPLAY_ID, DEFAULT_DISPLAY);
+        mShellExecutor.flushAll();
+
+        // Verify that focus is reset to DEFAULT_DISPLAY.
+        verify(mListener, times(1)).onFocusedDisplayChanged(DEFAULT_DISPLAY);
+    }
+
+    @Test
+    @EnableFlags(com.android.wm.shell.Flags.FLAG_ENABLE_FOCUS_RESET_ON_DISPLAY_REMOVAL)
+    public void testOnDisplayDisconnected_notFocused_doesNotResetFocus() throws RemoteException {
+        // Focus is initially on DEFAULT_DISPLAY, disconnect on different display does not reset
+        // focus.
+        mFocusTransitionObserver.onDisplayDisconnected(SECONDARY_DISPLAY_ID, DEFAULT_DISPLAY);
+        mShellExecutor.flushAll();
+
+        verify(mListener, never()).onFocusedDisplayChanged(anyInt());
     }
 
     @Test

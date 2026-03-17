@@ -102,6 +102,7 @@ public class ShortcutUtilsTest {
     private TestableContext mContext;
     @UserIdInt
     private int mDefaultUserId;
+    private Resources mMockResources;
 
     @Before
     public void setUp() throws RemoteException {
@@ -109,6 +110,7 @@ public class ShortcutUtilsTest {
         mContext =
                 spy(new TestableContext(InstrumentationRegistry.getInstrumentation().getContext()));
         mDefaultUserId = mContext.getContentResolver().getUserId();
+        mMockResources = mock(Resources.class);
 
         AccessibilityManager accessibilityManager =
                 new AccessibilityManager(
@@ -400,25 +402,48 @@ public class ShortcutUtilsTest {
 
     @Test
     public void getLabelFromKeyCode_validKeyCode_returnsCorrectLabel() {
-        assertThat(ShortcutUtils.getLabelFromKeyCode(KeyEvent.KEYCODE_M)).isEqualTo("M");
-        assertThat(ShortcutUtils.getLabelFromKeyCode(KeyEvent.KEYCODE_S)).isEqualTo("S");
-        assertThat(ShortcutUtils.getLabelFromKeyCode(KeyEvent.KEYCODE_T)).isEqualTo("T");
-        assertThat(ShortcutUtils.getLabelFromKeyCode(KeyEvent.KEYCODE_V)).isEqualTo("V");
+        assertThat(ShortcutUtils.getLabelFromKeyCode(mContext, KeyEvent.KEYCODE_M)).isEqualTo("M");
+        assertThat(ShortcutUtils.getLabelFromKeyCode(mContext, KeyEvent.KEYCODE_S)).isEqualTo("S");
+        assertThat(ShortcutUtils.getLabelFromKeyCode(mContext, KeyEvent.KEYCODE_T)).isEqualTo("T");
+        assertThat(ShortcutUtils.getLabelFromKeyCode(mContext, KeyEvent.KEYCODE_V)).isEqualTo("V");
     }
 
     @Test
     public void getLabelFromKeyCode_invalidKeyCode_returnsNull() {
-        assertThat(ShortcutUtils.getLabelFromKeyCode(KeyEvent.KEYCODE_A)).isNull();
+        assertThat(ShortcutUtils.getLabelFromKeyCode(mContext, KeyEvent.KEYCODE_A)).isNull();
+    }
+
+    @Test
+    public void getLabelFromKeyCode_keyCodeI_turkishLanguage_returnsCorrectLabel() {
+        setupMockedLanguage("tr");
+        assertThat(ShortcutUtils.getLabelFromKeyCode(mContext,
+                KeyEvent.KEYCODE_I)).isEqualTo("\u0130");
+    }
+
+    @Test
+    public void getLabelFromKeyCode_keyCodeI_notTurkishLanguage_returnsCorrectLabel() {
+        setupMockedLanguage("en");
+        assertThat(ShortcutUtils.getLabelFromKeyCode(mContext, KeyEvent.KEYCODE_I)).isEqualTo("I");
     }
 
     @Test
     public void getKeyCodeLabelFromTarget_magnification_returnsCorrectLabel() {
+        setupMockedLanguage("en");
         assertThat(ShortcutUtils.getKeyCodeLabelFromTarget(mContext,
                 AccessibilityShortcutController.MAGNIFICATION_CONTROLLER_NAME)).isEqualTo("M");
     }
 
     @Test
+    public void getKeyCodeLabelFromTarget_colorInversion_turkishLanguage_returnsCorrectLabel() {
+        setupMockedLanguage("tr");
+        assertThat(ShortcutUtils.getKeyCodeLabelFromTarget(mContext,
+                AccessibilityShortcutController.COLOR_INVERSION_COMPONENT_NAME.flattenToString()))
+                .isEqualTo("\u0130");
+    }
+
+    @Test
     public void getKeyCodeLabelFromTarget_screenReader_returnsCorrectLabel() {
+        setupMockedLanguage("en");
         setupMockedConfigString(
                 com.android.internal.R.string.config_defaultAccessibilityService,
                 FAKE_SCREEN_READER_TARGET_NAME);
@@ -429,6 +454,7 @@ public class ShortcutUtilsTest {
 
     @Test
     public void getKeyCodeLabelFromTarget_screenReaderComponentName_returnsCorrectLabel() {
+        setupMockedLanguage("en");
         setupMockedConfigString(
                 com.android.internal.R.string.config_defaultAccessibilityService,
                 FAKE_SCREEN_READER_TARGET_NAME);
@@ -443,6 +469,7 @@ public class ShortcutUtilsTest {
 
     @Test
     public void getKeyCodeLabelFromTarget_selectToSpeak_returnsCorrectLabel() {
+        setupMockedLanguage("en");
         setupMockedConfigString(
                 com.android.internal.R.string.config_defaultSelectToSpeakService,
                 FAKE_SELECT_TO_SPEAK_TARGET_NAME);
@@ -453,6 +480,7 @@ public class ShortcutUtilsTest {
 
     @Test
     public void getKeyCodeLabelFromTarget_voiceAccess_returnsCorrectLabel() {
+        setupMockedLanguage("en");
         setupMockedConfigString(
                 com.android.internal.R.string.config_defaultVoiceAccessService,
                 FAKE_VOICE_ACCESS_TARGET_NAME);
@@ -683,8 +711,15 @@ public class ShortcutUtilsTest {
     }
 
     private void setupMockedConfigString(int resId, String value) {
-        final Resources mockResources = mock(Resources.class);
-        doReturn(mockResources).when(mContext).getResources();
-        when(mockResources.getString(eq(resId))).thenReturn(value);
+        doReturn(mMockResources).when(mContext).getResources();
+        when(mMockResources.getString(eq(resId))).thenReturn(value);
+    }
+
+    private void setupMockedLanguage(String language) {
+        final android.content.res.Configuration mockConfig =
+                new android.content.res.Configuration();
+        mockConfig.setLocales(android.os.LocaleList.forLanguageTags(language));
+        doReturn(mMockResources).when(mContext).getResources();
+        when(mMockResources.getConfiguration()).thenReturn(mockConfig);
     }
 }

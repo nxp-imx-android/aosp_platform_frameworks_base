@@ -1206,6 +1206,8 @@ final class ActivityRecord extends WindowToken {
         }
 
         mAppCompatController.dump(pw, prefix);
+
+        AppCompatCameraPolicy.dump(this, pw, prefix);
     }
 
     static boolean dumpActivity(FileDescriptor fd, PrintWriter pw, int index, ActivityRecord r,
@@ -6237,6 +6239,29 @@ final class ActivityRecord extends WindowToken {
 
         r.mDisplayContent.handleActivitySizeCompatModeIfNeeded(r);
         r.mDisplayContent.mUnknownAppVisibilityController.notifyAppResumedFinished(r);
+        if (com.android.window.flags.Flags.reportMissedEnterAnimOnResume()) {
+            r.scheduleEnterAnimationCompleteIfNeeded();
+        }
+    }
+
+    void scheduleEnterAnimationCompleteIfNeeded() {
+        if (!mEnteringAnimation) {
+            // Note that mEnteringAnimation is only set to true when an app transition finishes
+            // or when the activity becomes visible without a transition. This ensures that
+            // calling this from activityResumedLocked won't notify completion prematurely while
+            // the transition for this activity is still active.
+            return;
+        }
+        final IApplicationThread client = app == null ? null : app.getThread();
+        if (client == null) {
+            return;
+        }
+        mEnteringAnimation = false;
+        try {
+            client.scheduleEnterAnimationComplete(token);
+        } catch (RemoteException e) {
+            Slog.i(TAG, "scheduleEnterAnimationComplete failed for " + this + " e=" + e);
+        }
     }
 
     static void activityRefreshedLocked(IBinder token) {

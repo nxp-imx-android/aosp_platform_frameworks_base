@@ -19,6 +19,7 @@ import static android.app.Flags.FLAG_NOTIFICATION_ANIMATED_ACTION_CONTENT_DESCRI
 import static android.view.View.MeasureSpec;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
+import static com.android.systemui.Flags.FLAG_NOTIFICATION_ANIMATED_ACTION_STYLE_2026;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -69,6 +70,7 @@ import com.android.systemui.statusbar.SysuiStatusBarStateController;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
+import com.android.systemui.statusbar.notification.row.AnimatableActionBackground;
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil;
 
 import kotlin.sequences.Sequence;
@@ -138,7 +140,8 @@ public class SmartReplyViewTest extends SysuiTestCase {
     private KeyguardStateController mKeyguardStateController;
     @Mock
     private SysuiStatusBarStateController mStatusBarStateController;
-    @Mock private SmartReplyLogger mSmartReplyLogger;
+    @Mock
+    private SmartReplyLogger mSmartReplyLogger;
 
     @Before
     public void setUp() {
@@ -825,6 +828,7 @@ public class SmartReplyViewTest extends SysuiTestCase {
         assertEquals("Button " + index + " should be of type ANIMATED_ACTION",
                 SmartReplyView.SmartButtonType.ANIMATED_ACTION, params.mButtonType);
     }
+
     private static void assertReplyButtonShown(View view) {
         assertTrue(((SmartReplyView.LayoutParams) view.getLayoutParams()).isShown());
     }
@@ -1734,5 +1738,49 @@ public class SmartReplyViewTest extends SysuiTestCase {
         int end = ((Spanned) actionText1).getSpanEnd(spans[0]);
         assertEquals(start, title.length());
         assertEquals(end, actionText1.toString().length());
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_ANIMATED_ACTION_STYLE_2026)
+    public void testInflateActionButton_phishingAnimatedActionPropertiesSet() {
+        String title = "Likely Scam";
+        Notification.Action phishingAction = createPhishingAction(title);
+
+        // Create an action list containing the phishing action.
+        SmartReplyView.SmartActions smartActions = new SmartReplyView.SmartActions(
+                List.of(phishingAction), /* fromAssistant= */true);
+
+        // Inflate the action button using the inflater
+        Button button = mSmartActionInflater.inflateActionButton(
+                mView,
+                mEntry,
+                smartActions,
+                /* actionIndex= */0,
+                phishingAction,
+                /* delayOnClickListener= */true,
+                mContext);
+
+        // 1. Verify the text is correct
+        assertEquals(title, button.getText().toString());
+
+        // 2. Verify the special phishing tag is set (used by SmartReplyView to identify it)
+        assertTrue(Boolean.TRUE.equals(button.getTag(R.id.is_phishing_animated_action)));
+
+        // 3. Verify the background is set to the shader drawable.
+        assertTrue(button.getBackground() instanceof AnimatableActionBackground);
+    }
+
+    private Notification.Action createPhishingAction(String title) {
+        Bundle extras = new Bundle();
+        extras.putBoolean("android.scamdetection.EXTRA_PHISHING_ANIMATED_SMARTACTION", true);
+        PendingIntent pendingIntent =
+                PendingIntent.getBroadcast(mContext, 0,
+                        new Intent(TEST_ACTION).setPackage(mContext.getPackageName()),
+                        PendingIntent.FLAG_MUTABLE);
+        return new Notification.Action.Builder(null, title, pendingIntent)
+                .setContextual(true)
+                .setSemanticAction(Notification.Action.SEMANTIC_ACTION_CONVERSATION_IS_PHISHING)
+                .addExtras(extras)
+                .build();
     }
 }

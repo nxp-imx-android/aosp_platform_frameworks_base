@@ -29,7 +29,6 @@ import com.android.systemui.inputdevice.tutorial.ui.composable.TutorialActionSta
 import com.android.systemui.inputdevice.tutorial.ui.composable.TutorialActionState.Error
 import com.android.systemui.inputdevice.tutorial.ui.composable.TutorialActionState.Finished
 import com.android.systemui.inputdevice.tutorial.ui.composable.TutorialActionState.InProgress
-import com.android.systemui.inputdevice.tutorial.ui.composable.TutorialActionState.PartialSuccess
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
@@ -106,15 +105,19 @@ class HomeGestureScreenViewModelTest : SysuiTestCase() {
         }
 
     private fun performHomeGesture() {
-        ThreeFingerGesture.swipeUp().forEach { viewModel.handleEvent(it) }
+        // The Home gesture requires two three-finger swipe ups. Complete the first swipe up fully,
+        // then perform a second swipe up to assess the state.
+        val firstGesture =
+            ThreeFingerGesture.eventsForFullGesture { move(deltaY = -SWIPE_DISTANCE) }
+        firstGesture.forEach { viewModel.handleEvent(it) }
+
+        ThreeFingerGesture.swipeUp(SWIPE_DISTANCE).forEach { viewModel.handleEvent(it) }
     }
 
     @Test
     fun gestureRecognitionTakesLatestDistanceThresholdIntoAccount() =
         kosmos.runTest {
             val state by collectLastValue(viewModel.tutorialState)
-            performHomeGesture()
-            assertThat(state).isInstanceOf(PartialSuccess::class.java)
             performHomeGesture()
             assertThat(state).isInstanceOf(Finished::class.java)
 
@@ -128,8 +131,6 @@ class HomeGestureScreenViewModelTest : SysuiTestCase() {
     fun gestureRecognitionTakesLatestVelocityThresholdIntoAccount() =
         kosmos.runTest {
             val state by collectLastValue(viewModel.tutorialState)
-            performHomeGesture()
-            assertThat(state).isInstanceOf(PartialSuccess::class.java)
             performHomeGesture()
             assertThat(state).isInstanceOf(Finished::class.java)
 

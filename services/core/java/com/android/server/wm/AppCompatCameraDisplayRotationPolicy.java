@@ -50,6 +50,8 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.server.UiThread;
 import com.android.window.flags.Flags;
 
+import java.io.PrintWriter;
+
 /**
  * Controls camera compatibility treatment that handles orientation mismatch between camera
  * buffers and an app window for a particular display that can lead to camera issues like sideways
@@ -204,6 +206,18 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
             return;
         }
         showToast(R.string.display_rotation_camera_compat_toast_after_rotation);
+    }
+
+    void dump(@NonNull ActivityRecord activity, @NonNull PrintWriter pw, @NonNull String prefix) {
+        pw.println(prefix + "AppCompatCameraDisplayRotationPolicy:");
+        final boolean isTreatmentEnabledForDisplay = isTreatmentEnabledForDisplay();
+        pw.println(prefix + "  isTreatmentEnabledForDisplay=" + isTreatmentEnabledForDisplay);
+        if (isTreatmentEnabledForDisplay) {
+            pw.println(prefix + "  mLastReportedOrientation="
+                    + screenOrientationToString(mLastReportedOrientation));
+            pw.println(prefix + " isTreatmentEnabledForActivity="
+                    + isTreatmentEnabledForActivity(activity));
+        }
     }
 
     String getSummaryForDisplayRotationHistoryRecord() {

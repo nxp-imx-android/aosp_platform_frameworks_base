@@ -676,9 +676,11 @@ public final class FusedTimeZoneDetectorImpl implements FusedTimeZoneDetector {
                         synchronized (FusedTimeZoneDetectorImpl.this) {
                             mIsAirplaneModeOn = false;
 
-                            mLastAirplaneModeEvent.recordEndTime();
-                            mAirplaneModeEventHistory.set(mLastAirplaneModeEvent);
-                            mLastAirplaneModeEvent = null;
+                            if (mLastAirplaneModeEvent != null) {
+                                mLastAirplaneModeEvent.recordEndTime();
+                                mAirplaneModeEventHistory.set(mLastAirplaneModeEvent);
+                                mLastAirplaneModeEvent = null;
+                            }
 
                             mHandler.removeCallbacks(mAirplaneModeTimeoutRunnable);
                         }

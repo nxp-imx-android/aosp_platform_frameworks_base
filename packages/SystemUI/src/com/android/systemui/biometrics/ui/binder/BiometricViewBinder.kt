@@ -222,7 +222,7 @@ object BiometricViewBinder {
             BiometricCustomizedViewBinder.bind(
                 customizedViewContainer,
                 viewModel.contentView.first(),
-                legacyCallback,
+                legacyCallback::onContentViewMoreOptionsButtonPressed,
             )
 
             // set button listeners

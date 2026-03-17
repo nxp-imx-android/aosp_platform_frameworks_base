@@ -18,15 +18,19 @@ package com.android.systemui.media.remedia.data.repository
 
 import android.content.applicationContext
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.compose.runtime.snapshots.Snapshot
 import com.android.internal.logging.InstanceId
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.media.controls.shared.model.MediaAction
 import com.android.systemui.media.controls.shared.model.MediaButton
+import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.controls.util.fakeMediaControllerFactory
 import com.android.systemui.media.remedia.data.model.MediaDataModel
+import com.android.systemui.media.remedia.domain.interactor.mediaInteractor
 import com.android.systemui.media.remedia.shared.model.MediaSessionState
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.notification.collection.provider.visualStabilityProvider
@@ -94,21 +98,46 @@ val Kosmos.fakeActiveMedia by
         )
     }
 
-val Kosmos.fakePausedMediaWithCustomActions by
+val Kosmos.fakeActiveMediaData by
     Kosmos.Fixture {
-        MediaDataModel(
-            instanceId = InstanceId.fakeInstanceId(2),
-            appUid = 2,
-            packageName = "com.fake.audio.app",
-            appName = "Fake_Audio_Player",
-            appIcon = Icon.Resource(resId = R.drawable.cactus1, contentDescription = null),
-            background = null,
-            title = "Fake title 1",
-            subtitle = "Fake subtitle 1",
-            colorScheme = null,
-            notificationActions = emptyList(),
-            notificationActionsCompressed = listOf(0),
-            playbackStateActions =
+        MediaData(
+            userId = 0,
+            app = "Fake_Music_Player",
+            artist = "Fake artist",
+            song = "Fake song",
+            artwork = null,
+            semanticActions =
+                MediaButton(
+                    playOrPause = mediaPauseActionButton,
+                    nextOrCustom = mediaNextActionButton,
+                    prevOrCustom = mediaPrevActionButton,
+                ),
+            packageName = applicationContext.packageName,
+            clickIntent = null,
+            device = null,
+            active = true,
+            resumeAction = null,
+            playbackLocation = 0,
+            resumption = false,
+            notificationKey = "fake_notification_key_1",
+            hasCheckedForResume = false,
+            isPlaying = true,
+            isClearable = true,
+            instanceId = InstanceId.fakeInstanceId(1),
+            appUid = 1,
+        )
+    }
+
+val Kosmos.fakePausedMediaDataWithCustomActions by
+    Kosmos.Fixture {
+        MediaData(
+            userId = 0,
+            app = "Fake_Audio_Player",
+            artist = "Fake artist",
+            song = "Fake song",
+            artwork = null,
+            packageName = applicationContext.packageName,
+            semanticActions =
                 MediaButton(
                     playOrPause = mediaPlayActionButton,
                     nextOrCustom = mediaNextActionButton,
@@ -138,59 +167,31 @@ val Kosmos.fakePausedMediaWithCustomActions by
                             rebindId = 5,
                         ),
                 ),
-            outputDevice = null,
-            clickIntent = null,
-            state = MediaSessionState.Paused,
-            durationMs = 60_000,
-            positionMs = 20_000,
-            canShowSeekbar = true,
-            canBeScrubbed = true,
-            canBeDismissed = true,
-            isActive = true,
-            isResume = false,
-            resumeAction = null,
-            isExplicit = true,
-            suggestionData = null,
-            token = null,
-            needsImmediateRemoval = false,
+            notificationKey = "fake_notification_key_2",
+            isPlaying = false,
+            instanceId = InstanceId.fakeInstanceId(2),
+            appUid = 2,
         )
     }
 
-val Kosmos.fakeResumableMedia by
+val Kosmos.fakeResumableMediaData by
     Kosmos.Fixture {
-        MediaDataModel(
-            instanceId = InstanceId.fakeInstanceId(3),
-            appUid = 3,
-            packageName = "com.fake.podcast.app",
-            appName = "Fake_Podcast_Player",
-            appIcon = Icon.Resource(resId = R.drawable.ic_cast, contentDescription = null),
-            background = null,
-            title = "Fake Pinned Title",
-            subtitle = "Fake Pinned Subtitle",
-            colorScheme = null,
-            notificationActions = emptyList(),
-            notificationActionsCompressed = listOf(0),
-            playbackStateActions =
-                MediaButton(
-                    playOrPause = mediaPlayActionButton,
-                    nextOrCustom = null,
-                    prevOrCustom = null,
-                ),
-            outputDevice = null,
-            clickIntent = null,
-            state = MediaSessionState.Paused,
-            durationMs = 0,
-            positionMs = 0,
-            canShowSeekbar = false,
-            canBeScrubbed = false,
-            canBeDismissed = true,
-            isActive = false,
-            isResume = true,
+        MediaData(
+            userId = 0,
+            app = "Fake_Podcast_Player",
+            artist = "Fake artist",
+            song = "Fake song",
+            packageName = applicationContext.packageName,
+            semanticActions = MediaButton(playOrPause = mediaPlayActionButton),
+            notificationKey = "fake_notification_key_3",
             resumeAction = {},
-            isExplicit = false,
-            suggestionData = null,
-            token = null,
-            needsImmediateRemoval = false,
+            resumption = true,
+            hasCheckedForResume = true,
+            isPlaying = false,
+            isClearable = true,
+            instanceId = InstanceId.fakeInstanceId(3),
+            active = false,
+            appUid = 3,
         )
     }
 
@@ -252,4 +253,12 @@ val Kosmos.mediaPrevActionButton: MediaAction
 
 fun Kosmos.setFakeCurrentMedia(mediaList: List<MediaDataModel>) {
     fakeMediaRepository.setFakeCurrentMedia(mediaList)
+}
+
+fun Kosmos.setFakeCurrentMediaData(mediaDataList: List<MediaData>) {
+    Snapshot.withMutableSnapshot {
+        mediaDataList.forEach { data -> mediaRepository.addCurrentUserMediaEntry(data) }
+        mediaInteractor.reorderMedia()
+        runCurrent()
+    }
 }

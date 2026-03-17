@@ -18,12 +18,17 @@ package com.android.server.privatecompute;
 
 import android.util.Log;
 import com.android.internal.annotations.VisibleForTesting;
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -59,8 +64,8 @@ class AuditLogFileWriter {
      * an ExecutorService to stop all of its threads somewhat gracefully.
      *
      * @param entries The list of AuditLogEntry to write.
-     * @throws IOException If the parent directory cannot be created, or if there's an error
-     *     writing to the file.
+     * @throws IOException If the parent directory cannot be created, or if there's an error writing
+     *     to the file.
      */
     void writeEntries(List<byte[]> entries) throws IOException {
         File parent = mFile.getParentFile();
@@ -86,5 +91,44 @@ class AuditLogFileWriter {
         } catch (IOException e) {
             Log.e(TAG, "Failed to write audit log to disk", e);
         }
+    }
+
+    /** Reads all entries from an audit log file. Only version 0 is supported at the moment. */
+    static List<AuditLogEntry> readEntries(File file) throws IOException {
+        List<AuditLogEntry> entries = new ArrayList<>();
+        try (DataInputStream input =
+                new DataInputStream(new BufferedInputStream(new FileInputStream(file)))) {
+            try {
+                int version = input.readInt();
+                if (version != AUDIT_FILE_FORMAT_VERSION) {
+                    Log.w(TAG, "Unknown version: " + version);
+                    return entries;
+                }
+            } catch (EOFException e) {
+                return entries;
+            }
+
+            while (true) {
+                try {
+                    entries.add(AuditLogEntry.readFromStream(input));
+                } catch (EOFException e) {
+                    break;
+                }
+            }
+        }
+        return entries;
+    }
+
+    /** Reads all entries from a list of audit log files, skipping any files that cannot be read. */
+    static List<AuditLogEntry> readEntriesForFiles(List<File> files) {
+        List<AuditLogEntry> entries = new ArrayList<>();
+        for (File file : files) {
+            try {
+                entries.addAll(readEntries(file));
+            } catch (IOException e) {
+                Log.e(TAG, "Failed to read audit log from file: " + file.getName(), e);
+            }
+        }
+        return entries;
     }
 }

@@ -94,6 +94,15 @@ public final class TaskCreationParams implements Parcelable {
     private IBinder mLaunchCookie = new Binder();
 
     /**
+     * Whether the Task goes to the top or bottom of the parent.
+     * When {@code true}, the child goes to the top of parent; otherwise it goes to
+     * the bottom.
+     *
+     * @hide
+     */
+    private boolean mOnTop = false;
+
+    /**
      * The initial {@link TaskPropertiesRequest}.
      * @hide
      */
@@ -134,6 +143,7 @@ public final class TaskCreationParams implements Parcelable {
             @WindowingMode int windowingMode,
             boolean visibilityBarrier,
             @NonNull IBinder launchCookie,
+            boolean onTop,
             @NonNull TaskPropertiesRequest taskPropertiesRequest) {
         this.mName = name;
         this.mDisplayId = displayId;
@@ -145,6 +155,7 @@ public final class TaskCreationParams implements Parcelable {
         this.mLaunchCookie = launchCookie;
         com.android.internal.util.AnnotationValidations.validate(
                 NonNull.class, null, mLaunchCookie);
+        this.mOnTop = onTop;
         this.mTaskPropertiesRequest = taskPropertiesRequest;
         com.android.internal.util.AnnotationValidations.validate(
                 NonNull.class, null, mTaskPropertiesRequest);
@@ -223,6 +234,18 @@ public final class TaskCreationParams implements Parcelable {
     }
 
     /**
+     * Whether the Task goes to the top or bottom of the parent.
+     * When {@code true}, the child goes to the top of parent; otherwise it goes to
+     * the bottom.
+     *
+     * @hide
+     */
+    @DataClass.Generated.Member
+    public boolean isOnTop() {
+        return mOnTop;
+    }
+
+    /**
      * The initial {@link TaskPropertiesRequest}.
      *
      * @hide
@@ -245,6 +268,7 @@ public final class TaskCreationParams implements Parcelable {
                 "windowingMode = " + mWindowingMode + ", " +
                 "visibilityBarrier = " + mVisibilityBarrier + ", " +
                 "launchCookie = " + mLaunchCookie + ", " +
+                "onTop = " + mOnTop + ", " +
                 "taskPropertiesRequest = " + mTaskPropertiesRequest +
         " }";
     }
@@ -268,6 +292,7 @@ public final class TaskCreationParams implements Parcelable {
                 && mWindowingMode == that.mWindowingMode
                 && mVisibilityBarrier == that.mVisibilityBarrier
                 && Objects.equals(mLaunchCookie, that.mLaunchCookie)
+                && mOnTop == that.mOnTop
                 && Objects.equals(mTaskPropertiesRequest, that.mTaskPropertiesRequest);
     }
 
@@ -284,6 +309,7 @@ public final class TaskCreationParams implements Parcelable {
         _hash = 31 * _hash + mWindowingMode;
         _hash = 31 * _hash + Boolean.hashCode(mVisibilityBarrier);
         _hash = 31 * _hash + Objects.hashCode(mLaunchCookie);
+        _hash = 31 * _hash + Boolean.hashCode(mOnTop);
         _hash = 31 * _hash + Objects.hashCode(mTaskPropertiesRequest);
         return _hash;
     }
@@ -294,11 +320,12 @@ public final class TaskCreationParams implements Parcelable {
         // You can override field parcelling by defining methods like:
         // void parcelFieldName(Parcel dest, int flags) { ... }
 
-        byte flg = 0;
+        int flg = 0;
         if (mVisibilityBarrier) flg |= 0x10;
+        if (mOnTop) flg |= 0x40;
         if (mName != null) flg |= 0x1;
         if (mParentContainer != null) flg |= 0x4;
-        dest.writeByte(flg);
+        dest.writeInt(flg);
         if (mName != null) dest.writeString(mName);
         dest.writeInt(mDisplayId);
         if (mParentContainer != null) dest.writeTypedObject(mParentContainer, flags);
@@ -318,8 +345,9 @@ public final class TaskCreationParams implements Parcelable {
         // You can override field unparcelling by defining methods like:
         // static FieldType unparcelFieldName(Parcel in) { ... }
 
-        byte flg = in.readByte();
+        int flg = in.readInt();
         boolean visibilityBarrier = (flg & 0x10) != 0;
+        boolean onTop = (flg & 0x40) != 0;
         String name = (flg & 0x1) == 0 ? null : in.readString();
         int displayId = in.readInt();
         WindowContainerToken parentContainer = (flg & 0x4) == 0 ? null : (WindowContainerToken) in.readTypedObject(WindowContainerToken.CREATOR);
@@ -337,6 +365,7 @@ public final class TaskCreationParams implements Parcelable {
         this.mLaunchCookie = launchCookie;
         com.android.internal.util.AnnotationValidations.validate(
                 NonNull.class, null, mLaunchCookie);
+        this.mOnTop = onTop;
         this.mTaskPropertiesRequest = taskPropertiesRequest;
         com.android.internal.util.AnnotationValidations.validate(
                 NonNull.class, null, mTaskPropertiesRequest);
@@ -371,6 +400,7 @@ public final class TaskCreationParams implements Parcelable {
         private @WindowingMode int mWindowingMode;
         private boolean mVisibilityBarrier;
         private @NonNull IBinder mLaunchCookie;
+        private boolean mOnTop;
         private @NonNull TaskPropertiesRequest mTaskPropertiesRequest;
 
         private long mBuilderFieldsSet = 0L;
@@ -468,6 +498,21 @@ public final class TaskCreationParams implements Parcelable {
         }
 
         /**
+         * Whether the Task goes to the top or bottom of the parent.
+         * When {@code true}, the child goes to the top of parent; otherwise it goes to
+         * the bottom.
+         *
+         * @hide
+         */
+        @DataClass.Generated.Member
+        public @NonNull Builder setOnTop(boolean value) {
+            checkNotUsed();
+            mBuilderFieldsSet |= 0x40;
+            mOnTop = value;
+            return this;
+        }
+
+        /**
          * The initial {@link TaskPropertiesRequest}.
          *
          * @hide
@@ -475,7 +520,7 @@ public final class TaskCreationParams implements Parcelable {
         @DataClass.Generated.Member
         public @NonNull Builder setTaskPropertiesRequest(@NonNull TaskPropertiesRequest value) {
             checkNotUsed();
-            mBuilderFieldsSet |= 0x40;
+            mBuilderFieldsSet |= 0x80;
             mTaskPropertiesRequest = value;
             return this;
         }
@@ -483,7 +528,7 @@ public final class TaskCreationParams implements Parcelable {
         /** Builds the instance. This builder should not be touched after calling this! */
         public @NonNull TaskCreationParams build() {
             checkNotUsed();
-            mBuilderFieldsSet |= 0x80; // Mark builder used
+            mBuilderFieldsSet |= 0x100; // Mark builder used
 
             if ((mBuilderFieldsSet & 0x1) == 0) {
                 mName = null;
@@ -504,6 +549,9 @@ public final class TaskCreationParams implements Parcelable {
                 mLaunchCookie = new Binder();
             }
             if ((mBuilderFieldsSet & 0x40) == 0) {
+                mOnTop = false;
+            }
+            if ((mBuilderFieldsSet & 0x80) == 0) {
                 mTaskPropertiesRequest = new TaskPropertiesRequest();
             }
             TaskCreationParams o = new TaskCreationParams(
@@ -513,12 +561,13 @@ public final class TaskCreationParams implements Parcelable {
                     mWindowingMode,
                     mVisibilityBarrier,
                     mLaunchCookie,
+                    mOnTop,
                     mTaskPropertiesRequest);
             return o;
         }
 
         private void checkNotUsed() {
-            if ((mBuilderFieldsSet & 0x80) != 0) {
+            if ((mBuilderFieldsSet & 0x100) != 0) {
                 throw new IllegalStateException(
                         "This Builder should not be reused. Use a new Builder instance instead");
             }
@@ -526,10 +575,10 @@ public final class TaskCreationParams implements Parcelable {
     }
 
     @DataClass.Generated(
-            time = 1767928981582L,
+            time = 1773285572032L,
             codegenVersion = "1.0.23",
             sourceFile = "frameworks/base/core/java/android/window/TaskCreationParams.java",
-            inputSignatures = "private @android.annotation.Nullable java.lang.String mName\nprivate  int mDisplayId\nprivate @android.annotation.Nullable android.window.WindowContainerToken mParentContainer\nprivate @android.app.WindowConfiguration.WindowingMode int mWindowingMode\nprivate  boolean mVisibilityBarrier\nprivate @android.annotation.NonNull android.os.IBinder mLaunchCookie\nprivate @android.annotation.NonNull android.window.TaskPropertiesRequest mTaskPropertiesRequest\nclass TaskCreationParams extends java.lang.Object implements [android.os.Parcelable]\nabstract  android.window.TaskCreationParams.Builder setLaunchCookie(android.os.IBinder)\nclass BaseBuilder extends java.lang.Object implements []\n@com.android.internal.util.DataClass(genEqualsHashCode=true, genParcelable=true, genToString=true, genBuilder=true)\nabstract  android.window.TaskCreationParams.Builder setLaunchCookie(android.os.IBinder)\nclass BaseBuilder extends java.lang.Object implements []")
+            inputSignatures = "private @android.annotation.Nullable java.lang.String mName\nprivate  int mDisplayId\nprivate @android.annotation.Nullable android.window.WindowContainerToken mParentContainer\nprivate @android.app.WindowConfiguration.WindowingMode int mWindowingMode\nprivate  boolean mVisibilityBarrier\nprivate @android.annotation.NonNull android.os.IBinder mLaunchCookie\nprivate  boolean mOnTop\nprivate @android.annotation.NonNull android.window.TaskPropertiesRequest mTaskPropertiesRequest\nclass TaskCreationParams extends java.lang.Object implements [android.os.Parcelable]\nabstract  android.window.TaskCreationParams.Builder setLaunchCookie(android.os.IBinder)\nclass BaseBuilder extends java.lang.Object implements []\n@com.android.internal.util.DataClass(genEqualsHashCode=true, genParcelable=true, genToString=true, genBuilder=true)\nabstract  android.window.TaskCreationParams.Builder setLaunchCookie(android.os.IBinder)\nclass BaseBuilder extends java.lang.Object implements []")
     @Deprecated
     private void __metadata() {}
 

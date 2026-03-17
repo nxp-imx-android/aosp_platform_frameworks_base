@@ -224,6 +224,7 @@ public class TvPipTransition extends PipTransitionController implements
     private WindowContainerTransaction getEnterPipTransaction(
             @NonNull TransitionRequestInfo.PipChange pipChange) {
         final ActivityManager.RunningTaskInfo pipTask = pipChange.getTaskInfo();
+        mPipTransitionState.setPipCandidateTaskInfo(pipTask);
 
         final TvPipBoundsState tvPipBoundsState = (TvPipBoundsState) mPipBoundsState;
         PictureInPictureParams pipParams = pipTask.pictureInPictureParams;
@@ -384,6 +385,11 @@ public class TvPipTransition extends PipTransitionController implements
             @NonNull Transitions.TransitionFinishCallback finishCallback) {
         TransitionInfo.Change pipChange = getPipChange(info);
         if (pipChange == null) {
+            Log.wtf(TAG, String.format("""
+                        TvPipTransition did not find a PiP change despite waiting for a scheduled
+                        bounds change PiP transition.
+                        callers=%s""", Debug.getCallers(4)));
+            onTransitionAborted();
             return false;
         }
         mFinishCallback = finishCallback;
@@ -473,6 +479,15 @@ public class TvPipTransition extends PipTransitionController implements
                     "%s: starting PiP enter animation", TAG);
             mEnterTransition = null; // Clear the cached token.
             TransitionInfo.Change pipChange = getPipChange(info);
+
+            if (pipChange == null) {
+                Log.wtf(TAG, String.format("""
+                        TvPipTransition did not find a PiP change despite waiting for a scheduled
+                        enter PiP transition.
+                        callers=%s""", Debug.getCallers(4)));
+                onTransitionAborted();
+                return false;
+            }
 
             Bundle extra = new Bundle();
             extra.putParcelable(PIP_TASK_LEASH, pipChange.getLeash());
@@ -587,6 +602,60 @@ public class TvPipTransition extends PipTransitionController implements
             mFinishCallback = null;
             finishCallback.onTransitionFinished(null /* finishWct */);
         }
+    }
+
+    @Override
+    public void onTransitionConsumed(@NonNull IBinder transition, boolean aborted,
+            @Nullable SurfaceControl.Transaction finishT) {
+        if (!aborted) return;
+
+        if (transition == mRemoveTransition) {
+            mRemoveTransition = null;
+            mPendingRemoveWithFadeout = false;
+            mPipTransitionState.setState(PipTransitionState.EXITED_PIP);
+        } else if (transition == mBoundsChangeTransition
+                || mPipTransitionState.getState() == PipTransitionState.SCHEDULED_ENTER_PIP) {
+            onTransitionAborted();
+        }
+    }
+
+    @Override
+    public void onTransitionAborted() {
+        final int currentState = mPipTransitionState.getState();
+        int nextState = PipTransitionState.UNDEFINED;
+        switch (currentState) {
+            case PipTransitionState.SCHEDULED_BOUNDS_CHANGE:
+                nextState = PipTransitionState.CHANGED_PIP_BOUNDS;
+                break;
+            case PipTransitionState.SCHEDULED_ENTER_PIP:
+                if (mPipTransitionState.getPipTaskToken() != null) {
+                    nextState = PipTransitionState.ENTERED_PIP;
+                } else {
+                    removePipCandidateTaskIfNeeded();
+                    nextState = PipTransitionState.EXITED_PIP;
+                }
+                break;
+        }
+
+        if (nextState == PipTransitionState.UNDEFINED) {
+            Log.wtf(TAG, String.format("""
+                        PipTransitionState resolved to an undefined state in abortTransition().
+                        callers=%s""", Debug.getCallers(4)));
+        }
+
+        mPipTransitionState.setState(nextState);
+    }
+
+    private void removePipCandidateTaskIfNeeded() {
+        if (mPipTransitionState.getState() != PipTransitionState.SCHEDULED_ENTER_PIP
+                || mPipTransitionState.getPipCandidateTaskInfo() == null
+                || mPipTransitionState.getPipCandidateTaskInfo().getToken() == null) {
+            return;
+        }
+
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.removeTask(mPipTransitionState.getPipCandidateTaskInfo().getToken());
+        mTransitions.startTransition(TRANSIT_CLOSE, wct, null);
     }
 
     @Override

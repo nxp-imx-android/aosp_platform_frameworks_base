@@ -68,6 +68,9 @@ object CredentialViewBinder {
                     onFallbackSelected = { option ->
                         legacyCallback.onFallbackOptionPressed(option)
                     },
+                    onContentViewMoreOptionsButtonPressed = {
+                        legacyCallback.onContentViewMoreOptionsButtonPressed()
+                    },
                 )
             }
         }
@@ -132,7 +135,7 @@ object CredentialViewBinder {
                         BiometricCustomizedViewBinder.bind(
                             customizedViewContainer,
                             header.contentView,
-                            legacyCallback,
+                            legacyCallback::onContentViewMoreOptionsButtonPressed,
                         )
 
                         iconView?.setImageDrawable(header.icon)

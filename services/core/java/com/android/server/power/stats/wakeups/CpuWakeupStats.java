@@ -27,6 +27,7 @@ import static android.os.BatteryStatsInternal.CPU_WAKEUP_SUBSYSTEM_WIFI;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.content.Context;
+import android.os.BatteryStatsInternal.CpuWakeupSubsystem;
 import android.os.Handler;
 import android.os.HandlerExecutor;
 import android.os.Trace;
@@ -37,7 +38,6 @@ import android.util.IntArray;
 import android.util.LongSparseArray;
 import android.util.Slog;
 import android.util.SparseArray;
-import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
 import android.util.SparseLongArray;
 import android.util.TimeUtils;
@@ -51,6 +51,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.IntConsumer;
 import java.util.function.LongSupplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -233,7 +234,8 @@ public class CpuWakeupStats {
     }
 
     /** Notes a waking activity that could have potentially woken up the CPU. */
-    public synchronized void noteWakingActivity(int subsystem, long elapsedRealtime, int... uids) {
+    public synchronized void noteWakingActivity(@CpuWakeupSubsystem int subsystem,
+            long elapsedRealtime, int... uids) {
         if (uids == null) {
             return;
         }
@@ -249,31 +251,30 @@ public class CpuWakeupStats {
     }
 
     private synchronized void attemptAttributionFor(Wakeup wakeup) {
-        final SparseBooleanArray subsystems = wakeup.mResponsibleSubsystems;
-
-        SparseArray<SparseIntArray> attribution = mWakeupAttribution.get(wakeup.mElapsedMillis);
-        if (attribution == null) {
+        final SparseArray<SparseIntArray> attribution;
+        final int idx = mWakeupAttribution.indexOfKey(wakeup.mElapsedMillis);
+        if (idx < 0) {
             attribution = new SparseArray<>();
             mWakeupAttribution.put(wakeup.mElapsedMillis, attribution);
+        } else {
+            attribution = mWakeupAttribution.valueAt(idx);
         }
+
         final long matchingWindowMillis = mConfig.WAKEUP_MATCHING_WINDOW_MS;
+        final long startTime = wakeup.mElapsedMillis - matchingWindowMillis;
+        final long endTime = wakeup.mElapsedMillis + matchingWindowMillis;
 
-        for (int subsystemIdx = 0; subsystemIdx < subsystems.size(); subsystemIdx++) {
-            final int subsystem = subsystems.keyAt(subsystemIdx);
-
-            // Blame all activity that happened matchingWindowMillis before or after
-            // the wakeup from each responsible subsystem.
-            final long startTime = wakeup.mElapsedMillis - matchingWindowMillis;
-            final long endTime = wakeup.mElapsedMillis + matchingWindowMillis;
-
+        // Blame all activity that happened matchingWindowMillis before or after
+        // the wakeup from each responsible subsystem.
+        wakeup.forEachResponsibleSubsystem(subsystem -> {
             final SparseIntArray uidsToBlame = mRecentWakingActivity.removeBetween(subsystem,
                     startTime, endTime);
             attribution.put(subsystem, uidsToBlame);
-        }
+        });
     }
 
-    private synchronized boolean attemptAttributionWith(int subsystem, long activityElapsed,
-            SparseIntArray uidProcStates) {
+    private synchronized boolean attemptAttributionWith(@CpuWakeupSubsystem int subsystem,
+            long activityElapsed, SparseIntArray uidProcStates) {
         final long matchingWindowMillis = mConfig.WAKEUP_MATCHING_WINDOW_MS;
 
         final int startIdx = mWakeupEvents.firstIndexOnOrAfter(
@@ -283,8 +284,7 @@ public class CpuWakeupStats {
 
         for (int wakeupIdx = startIdx; wakeupIdx <= endIdx; wakeupIdx++) {
             final Wakeup wakeup = mWakeupEvents.valueAt(wakeupIdx);
-            final SparseBooleanArray subsystems = wakeup.mResponsibleSubsystems;
-            if (subsystems.get(subsystem)) {
+            if (wakeup.isCausedBy(subsystem)) {
                 // We don't expect more than one wakeup to be found within such a short window, so
                 // just attribute this one and exit
                 SparseArray<SparseIntArray> attribution = mWakeupAttribution.get(
@@ -406,6 +406,7 @@ public class CpuWakeupStats {
     @VisibleForTesting
     static final class WakingActivityHistory {
         private LongSupplier mRetentionSupplier;
+        /** Maps subsystem -> {timestamp  -> {uid -> procState}} */
         @VisibleForTesting
         final SparseArray<LongSparseArray<SparseIntArray>> mWakingActivity = new SparseArray<>();
 
@@ -413,7 +414,8 @@ public class CpuWakeupStats {
             mRetentionSupplier = retentionSupplier;
         }
 
-        void recordActivity(int subsystem, long elapsedRealtime, SparseIntArray uidProcStates) {
+        void recordActivity(@CpuWakeupSubsystem int subsystem, long elapsedRealtime,
+                SparseIntArray uidProcStates) {
             if (uidProcStates == null) {
                 return;
             }
@@ -503,7 +505,7 @@ public class CpuWakeupStats {
         }
     }
 
-    static int stringToKnownSubsystem(String rawSubsystem) {
+    static @CpuWakeupSubsystem int stringToKnownSubsystem(String rawSubsystem) {
         switch (rawSubsystem) {
             case SUBSYSTEM_ALARM_STRING:
                 return CPU_WAKEUP_SUBSYSTEM_ALARM;
@@ -563,10 +565,10 @@ public class CpuWakeupStats {
         final long mElapsedMillis;
         final long mUptimeMillis;
         final int[] mIrqLines;
-        final SparseBooleanArray mResponsibleSubsystems;
+        final int mResponsibleSubsystems;
 
         private Wakeup(int type, int[] irqLines, long elapsedMillis, long uptimeMillis,
-                SparseBooleanArray responsibleSubsystems) {
+                int responsibleSubsystems) {
             mType = type;
             mIrqLines = irqLines;
             mElapsedMillis = elapsedMillis;
@@ -584,7 +586,7 @@ public class CpuWakeupStats {
 
             int type = TYPE_IRQ;
             final IntArray parsedIrqLines = new IntArray(components.length);
-            final SparseBooleanArray responsibleSubsystems = new SparseBooleanArray();
+            int responsibleSubsystems = 0;
 
             for (String component : components) {
                 final Matcher matcher = sIrqPattern.matcher(component.trim());
@@ -609,30 +611,45 @@ public class CpuWakeupStats {
                     boolean anyKnownSubsystem = false;
                     if (rawSubsystems != null) {
                         for (int i = 0; i < rawSubsystems.size(); i++) {
-                            final int subsystem = stringToKnownSubsystem(rawSubsystems.get(i));
+                            final @CpuWakeupSubsystem int subsystem = stringToKnownSubsystem(
+                                    rawSubsystems.get(i));
                             if (subsystem != CPU_WAKEUP_SUBSYSTEM_UNKNOWN) {
                                 // Just in case the xml had arbitrary subsystem names, we want to
                                 // make sure that we only put the known ones into our map.
-                                responsibleSubsystems.put(subsystem, true);
+                                responsibleSubsystems |= subsystem;
                                 anyKnownSubsystem = true;
                             }
                         }
                     }
                     if (!anyKnownSubsystem) {
-                        responsibleSubsystems.put(CPU_WAKEUP_SUBSYSTEM_UNKNOWN, true);
+                        // This is meaningful when other components may map to known subsystems.
+                        responsibleSubsystems |= CPU_WAKEUP_SUBSYSTEM_UNKNOWN;
                     }
                 }
             }
             if (parsedIrqLines.size() == 0) {
                 return null;
             }
-            if (responsibleSubsystems.size() == 1 && responsibleSubsystems.get(
-                    CPU_WAKEUP_SUBSYSTEM_UNKNOWN, false)) {
+            // Note that responsibleSubsystems cannot be empty (0) here.
+            if (responsibleSubsystems == CPU_WAKEUP_SUBSYSTEM_UNKNOWN) {
                 // There is no attributable subsystem here, so we do not support it.
                 return null;
             }
             return new Wakeup(type, parsedIrqLines.toArray(), elapsedMillis, uptimeMillis,
                     responsibleSubsystems);
+        }
+
+        void forEachResponsibleSubsystem(IntConsumer consumer) {
+            int remainingSubsystems = mResponsibleSubsystems;
+            while (remainingSubsystems > 0) {
+                final int subsystem = Integer.lowestOneBit(remainingSubsystems);
+                consumer.accept(subsystem);
+                remainingSubsystems &= ~subsystem;
+            }
+        }
+
+        boolean isCausedBy(int subsystem) {
+            return (mResponsibleSubsystems & subsystem) == subsystem;
         }
 
         @Override
@@ -642,7 +659,7 @@ public class CpuWakeupStats {
                     + ", mElapsedMillis=" + mElapsedMillis
                     + ", mUptimeMillis=" + mUptimeMillis
                     + ", mIrqLines=" + Arrays.toString(mIrqLines)
-                    + ", mResponsibleSubsystems=" + mResponsibleSubsystems
+                    + ", mResponsibleSubsystems=0x" + Integer.toHexString(mResponsibleSubsystems)
                     + '}';
         }
     }

@@ -35,7 +35,6 @@ import android.hardware.input.InputManagerGlobal;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.RemoteException;
-import android.os.StrictMode;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
@@ -476,13 +475,13 @@ public class ViewConfiguration {
     }
 
     /**
-     * Creates a new configuration for the specified visual {@link Context}. The configuration
+     * Creates a new configuration for the specified {@link Context}. The configuration
      * depends on various parameters of the {@link Context}, like the dimension of the display or
      * the density of the display.
      *
-     * @param context A visual {@link Context} used to initialize the view configuration. It must
-     *                be {@link Activity} or other {@link Context} created with
-     *                {@link Context#createWindowContext(int, Bundle)}.
+     * @param context A visual {@link Context} is preferred to initialize the view configuration. It
+     *                should ideally be an {@link Activity} or other {@link Context} created with
+     *                {@link Context#createWindowContext(int, Bundle)}, but is not required to be.
      *
      * @see #get(android.content.Context)
      * @see android.util.DisplayMetrics
@@ -619,18 +618,15 @@ public class ViewConfiguration {
     }
 
     /**
-     * Returns a configuration for the specified visual {@link Context}. The configuration depends
+     * Returns a configuration for the specified {@link Context}. The configuration depends
      * on various parameters of the {@link Context}, like the dimension of the display or the
      * density of the display.
      *
-     * @param context A visual {@link Context} used to initialize the view configuration. It must
-     *                be {@link Activity} or other {@link Context} created with
-     *                {@link Context#createWindowContext(int, Bundle)}.
+     * @param context A visual {@link Context} is preferred to initialize the view configuration. It
+     *                should ideally be an {@link Activity} or other {@link Context} created with
+     *                {@link Context#createWindowContext(int, Bundle)}, but is not required to be.
      */
-    // TODO(b/182007470): Use @ConfigurationContext instead
     public static ViewConfiguration get(@NonNull @UiContext Context context) {
-        StrictMode.assertConfigurationContext(context, "ViewConfiguration");
-
         final long key = createKey(context);
         ViewConfiguration configuration = sConfigurations.get(key);
         if (configuration == null) {

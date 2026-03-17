@@ -115,7 +115,7 @@ constructor(
             isShadeExpandedEnough
         }
 
-    private val isShadeVisibleOnThisDisplay: Flow<Boolean> =
+    val isShadeVisibleOnThisDisplay: Flow<Boolean> =
         combine(isShadeWindowOnThisDisplay, isShadeVisibleOnAnyDisplay) {
             hasShade,
             isShadeVisibleOnAnyDisplay ->

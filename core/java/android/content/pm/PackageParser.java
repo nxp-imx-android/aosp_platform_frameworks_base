@@ -2432,7 +2432,7 @@ public class PackageParser {
         List<SplitPermissionInfoParcelable> splitPermissionParcelables;
         try {
             splitPermissionParcelables = ActivityThread.getPermissionManager()
-                    .getSplitPermissions();
+                    .getSplitPermissions(false);
         } catch (RemoteException e) {
             splitPermissionParcelables = Collections.emptyList();
         }
@@ -2446,7 +2446,9 @@ public class PackageParser {
             splitPermissions.add(new PermissionManager.SplitPermissionInfo(
                     splitPermissionParcelable.getSplitPermission(),
                     splitPermissionParcelable.getNewPermissions(),
-                    splitPermissionParcelable.getTargetSdk()
+                    splitPermissionParcelable.getTargetSdk(),
+                    splitPermissionParcelable.getFeatureFlag(),
+                    splitPermissionParcelable.isFeatureFlagNegated()
             ));
         }
 
@@ -2622,6 +2624,13 @@ public class PackageParser {
             return Build.VERSION_CODES.CUR_DEVELOPMENT;
         }
 
+        // STOPSHIP: hack for the pre-release SDK
+        if (platformSdkCodenames.length == 0 && "CinnamonBun".equals(targetCode)) {
+            Slog.w(TAG, "Package requires development platform " + targetCode
+                    + ", returning current version " + Build.VERSION.SDK_INT);
+            return Build.VERSION.SDK_INT;
+        }
+
         // Otherwise, we're looking at an incompatible pre-release SDK.
         if (platformSdkCodenames.length > 0) {
             outError[0] = "Requires development platform " + targetCode
@@ -2691,6 +2700,13 @@ public class PackageParser {
         // definitely meet the minimum SDK requirement.
         if (matchTargetCode(platformSdkCodenames, minCode)) {
             return Build.VERSION_CODES.CUR_DEVELOPMENT;
+        }
+
+        // STOPSHIP: hack for the pre-release SDK
+        if (platformSdkCodenames.length == 0 && "CinnamonBun".equals(minCode)) {
+            Slog.w(TAG, "Package requires min development platform " + minCode
+                    + ", returning current version " + Build.VERSION.SDK_INT);
+            return Build.VERSION.SDK_INT;
         }
 
         // Otherwise, we're looking at an incompatible pre-release SDK.

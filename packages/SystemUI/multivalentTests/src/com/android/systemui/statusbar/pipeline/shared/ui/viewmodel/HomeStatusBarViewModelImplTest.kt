@@ -31,6 +31,7 @@ import android.view.Display.TYPE_EXTERNAL
 import android.view.View
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.compose.animation.scene.OverlayKey
 import com.android.media.projection.flags.Flags.FLAG_SHOW_STOP_DIALOG_POST_CALL_END
 import com.android.systemui.Flags
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
@@ -1413,11 +1414,11 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
             enableDualShade()
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
 
-            assertThat(currentOverlays).doesNotContain(Overlays.QuickSettingsShade)
+            assertThat(currentOverlays).doesNotContain(Overlays.NotificationsShade)
 
             underTest.onStatusBarLongPressed()
 
-            assertThat(currentOverlays).contains(Overlays.QuickSettingsShade)
+            assertThat(currentOverlays).contains(Overlays.NotificationsShade)
         }
 
     @Test
@@ -1612,10 +1613,94 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
             assertThat(latest).isTrue()
         }
 
+    @Test
+    @EnableFlags(FLAG_SCENE_CONTAINER, StatusBarForDesktop.FLAG_NAME, FLAG_DUAL_SHADE)
+    fun isQuickSettingsChipHighlighted_qsExpandedOnThisDisplay_true() =
+        kosmos.runTest {
+            enableDualShade()
+            fakeShadeDisplaysRepository.setPendingDisplayId(DEFAULT_DISPLAY)
+
+            showOverlay(Overlays.QuickSettingsShade)
+
+            assertThat(underTest.isQuickSettingsChipHighlighted).isTrue()
+        }
+
+    @Test
+    @EnableFlags(FLAG_SCENE_CONTAINER, StatusBarForDesktop.FLAG_NAME, FLAG_DUAL_SHADE)
+    fun isQuickSettingsChipHighlighted_qsExpandedOnOtherDisplay_false() =
+        kosmos.runTest {
+            enableDualShade()
+            fakeShadeDisplaysRepository.setPendingDisplayId(EXTERNAL_DISPLAY)
+
+            showOverlay(Overlays.QuickSettingsShade)
+
+            assertThat(underTest.isQuickSettingsChipHighlighted).isFalse()
+        }
+
+    @Test
+    @EnableFlags(FLAG_SCENE_CONTAINER, StatusBarForDesktop.FLAG_NAME, FLAG_DUAL_SHADE)
+    fun isQuickSettingsChipHighlighted_qsNotExpanded_false() =
+        kosmos.runTest {
+            enableDualShade()
+            fakeShadeDisplaysRepository.setPendingDisplayId(DEFAULT_DISPLAY)
+
+            // Default state is not expanded
+            assertThat(underTest.isQuickSettingsChipHighlighted).isFalse()
+        }
+
+    @Test
+    @EnableFlags(FLAG_SCENE_CONTAINER, StatusBarForDesktop.FLAG_NAME, FLAG_DUAL_SHADE)
+    fun isNotificationsChipHighlighted_notificationsExpandedOnThisDisplay_true() =
+        kosmos.runTest {
+            enableDualShade()
+            fakeShadeDisplaysRepository.setPendingDisplayId(DEFAULT_DISPLAY)
+
+            showOverlay(Overlays.NotificationsShade)
+
+            assertThat(underTest.isNotificationsChipHighlighted).isTrue()
+        }
+
+    @Test
+    @EnableFlags(FLAG_SCENE_CONTAINER, StatusBarForDesktop.FLAG_NAME, FLAG_DUAL_SHADE)
+    fun isNotificationsChipHighlighted_notificationsExpandedOnOtherDisplay_false() =
+        kosmos.runTest {
+            enableDualShade()
+            fakeShadeDisplaysRepository.setPendingDisplayId(EXTERNAL_DISPLAY)
+
+            showOverlay(Overlays.NotificationsShade)
+
+            assertThat(underTest.isNotificationsChipHighlighted).isFalse()
+        }
+
+    @Test
+    @EnableFlags(FLAG_SCENE_CONTAINER, StatusBarForDesktop.FLAG_NAME, FLAG_DUAL_SHADE)
+    fun isNotificationsChipHighlighted_notificationsNotExpanded_false() =
+        kosmos.runTest {
+            enableDualShade()
+            fakeShadeDisplaysRepository.setPendingDisplayId(DEFAULT_DISPLAY)
+
+            // Default state is not expanded
+            assertThat(underTest.isNotificationsChipHighlighted).isFalse()
+        }
+
     private fun activeNotificationsStore(notifications: List<ActiveNotificationModel>) =
         ActiveNotificationsStore.Builder()
             .apply { notifications.forEach(::addIndividualNotif) }
             .build()
+
+    private fun Kosmos.showOverlay(overlay: OverlayKey) {
+        val currentScene by collectLastValue(sceneInteractor.currentScene)
+        val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+
+        sceneInteractor.showOverlay(overlay, "reason")
+        setSceneTransition(
+            ObservableTransitionState.Idle(
+                checkNotNull(currentScene),
+                checkNotNull(currentOverlays),
+            ),
+            skipChangeScene = true,
+        )
+    }
 
     private val testNotifications by lazy {
         listOf(activeNotificationModel(key = "notif1"), activeNotificationModel(key = "notif2"))

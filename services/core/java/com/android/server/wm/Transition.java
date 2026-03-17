@@ -742,6 +742,14 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
     }
 
     /**
+     * @return true, if a display with ID {@param displayId} is a source for content that should be
+     * moved to another display because it is going to be disconnected or stop hosting tasks
+     */
+    private boolean isDisconnectDisplaySource(int displayId) {
+        return mDisconnectDestinationDisplays.indexOfKey(displayId) >= 0;
+    }
+
+    /**
      * Checks if the given display change is a display disconnect change that should lead to
      * DisplayContent removal. This will return false for content mode changes when a display
      * just becomes unable to host tasks and still kept in WindowManager.
@@ -3977,6 +3985,10 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 displayRemoved = true;
             }
             if (com.android.window.flags.Flags.syncedDisplayModeUpdates()) {
+                if (dc.getDisplay() != null && isDisconnectDisplaySource(displayId)) {
+                    dc.updateContentMode();
+                }
+
                 // Remove the display from the map of unprocessed displays later, since we can have
                 // multiple displays removed with the same destination, so we need to keep those
                 // until we go through all changes

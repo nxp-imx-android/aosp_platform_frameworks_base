@@ -147,6 +147,16 @@ flag {
 }
 
 flag {
+  name: "report_missed_enter_anim_on_resume"
+  namespace: "windowing_frontend"
+  description: "Notify onEnterAnimationComplete if process attaches after transition"
+  bug: "493382989"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
     name: "enable_split_dismiss_animation_v2"
     namespace: "windowing_frontend"
     description: "Resize animation for expanding and collapsing surfaces when split screen is dismissed"
@@ -443,16 +453,6 @@ flag {
     namespace: "windowing_frontend"
     description: "Allow the client to describe a transition animation and participate in the animation using a shared surface."
     bug: "475737659"
-}
-
-flag {
-    name: "use_transition_for_screenshot_window_additions"
-    namespace: "web_apps_on_chromeos_and_android"
-    description: "Use shell transitions to synchronize screenshot window additions."
-    bug: "476223353"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {

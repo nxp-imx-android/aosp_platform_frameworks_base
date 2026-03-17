@@ -99,8 +99,6 @@ import com.android.wm.shell.dagger.hierarchy.ContainerHierarchyDependency;
 import com.android.wm.shell.dagger.hierarchy.HandheldContainersModule;
 import com.android.wm.shell.dagger.pinnedlayer.PinnedLayerModule;
 import com.android.wm.shell.dagger.pip.PipModule;
-import com.android.wm.shell.desktopai.dagger.DesktopAIModule;
-import com.android.wm.shell.desktopai.dagger.DesktopAiInitializer;
 import com.android.wm.shell.desktopmode.CloseDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopActivityOrientationChangeHandler;
 import com.android.wm.shell.desktopmode.DesktopAnimationConfiguration;
@@ -275,7 +273,6 @@ import java.util.Optional;
                 LetterboxModule.class,
                 PinnedLayerModule.class,
                 DesktopModule.class,
-                DesktopAIModule.class,
                 HandheldContainersModule.class,
                 BubbleModule.class,
         })
@@ -2291,7 +2288,6 @@ public abstract class WMShellModule {
             ShellCrashHandler shellCrashHandler,
             AppToWebEducationController appToWebEducationController,
             QuitFocusedAppKeyGestureHandler quitFocusedAppKeyGestureHandler,
-            Optional<DesktopAiInitializer> desktopAiInitializer,
             BubbleRootTask bubbleRootTask,
             DesktopModeAidlProvider desktopModeAidlProvider,
             DesktopTasksTransitionHandler desktopTasksTransitionHandler,

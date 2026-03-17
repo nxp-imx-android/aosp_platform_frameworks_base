@@ -29,7 +29,6 @@ import android.testing.TestableLooper.RunWithLooper
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.CompoundButton
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -41,20 +40,19 @@ import com.android.settingslib.wifi.WifiEnterpriseRestrictionUtils
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
-import com.android.systemui.user.domain.interactor.SelectedUserInteractor
-import com.android.systemui.user.domain.interactor.fakeHeadlessSystemUserMode
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.time.FakeSystemClock
 import com.android.wifitrackerlib.WifiEntry
+import com.google.common.truth.Expect
 import com.google.common.truth.Truth.assertThat
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers
@@ -76,9 +74,11 @@ import platform.test.runner.parameterized.Parameters
 )
 @UiThreadTest
 class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : SysuiTestCase() {
+    @get:Rule
+    val expect: Expect = Expect.create()
+
     private val kosmos = testKosmos()
     private val handler: Handler = kosmos.fakeExecutorHandler
-    private val testDispatcher = kosmos.testDispatcher
     private val testScope = kosmos.testScope
     private val telephonyManager: TelephonyManager = kosmos.telephonyManager
     private val internetWifiEntry: WifiEntry = mock<WifiEntry>()
@@ -86,7 +86,6 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
     private val internetAdapter = mock<InternetAdapter>()
     private val internetDetailsContentController: InternetDetailsContentController =
         mock<InternetDetailsContentController>()
-    private val selectedUserInteractor = mock<SelectedUserInteractor>()
     private val keyguard: KeyguardStateController = mock<KeyguardStateController>()
     private val bgExecutor = FakeExecutor(FakeSystemClock())
     private val userRepository = kosmos.fakeUserRepository
@@ -98,7 +97,6 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
     private var wifiToggleSwitch: CompoundButton? = null
     private var wifiToggleSummary: TextView? = null
     private var connectedWifi: LinearLayout? = null
-    private var wifiSettingsIcon: ImageView? = null
     private var wifiList: RecyclerView? = null
     private var seeAll: LinearLayout? = null
     private var wifiScanNotify: LinearLayout? = null
@@ -163,9 +161,6 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
                 handler = handler,
                 backgroundExecutor = bgExecutor,
                 keyguard = keyguard,
-                mainDispatcher = testDispatcher,
-                selectedUserInteractor = selectedUserInteractor,
-                hsum = kosmos.fakeHeadlessSystemUserMode,
                 userRepository = userRepository,
             )
 
@@ -181,7 +176,6 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
         wifiToggleSwitch = contentView.requireViewById(R.id.wifi_toggle)
         wifiToggleSummary = contentView.requireViewById(R.id.wifi_toggle_summary)
         connectedWifi = contentView.requireViewById(R.id.wifi_connected_layout)
-        wifiSettingsIcon = contentView.requireViewById(R.id.wifi_settings_icon)
         wifiList = contentView.requireViewById(R.id.wifi_list_layout)
         seeAll = contentView.requireViewById(R.id.see_all_layout)
         wifiScanNotify = contentView.requireViewById(R.id.wifi_scan_notify_layout)
@@ -1001,6 +995,22 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
             internetDetailsContentManager.lifecycleOwner!!
         ) {
             assertThat(mobileToggleSwitch!!.visibility).isEqualTo(View.INVISIBLE)
+        }
+    }
+
+    @Test
+    fun updateContent_headlessSystemUser_hideWifiContent() {
+        whenever(internetDetailsContentController.isHeadlessSystemUser).thenReturn(true)
+
+        internetDetailsContentManager.updateContent(false)
+        bgExecutor.runAllReady()
+
+        internetDetailsContentManager.internetContentData.observe(
+            internetDetailsContentManager.lifecycleOwner!!
+        ) {
+            expect.that(connectedWifi!!.visibility).isEqualTo(View.GONE)
+            expect.that(wifiList!!.visibility).isEqualTo(View.GONE)
+            expect.that(seeAll!!.visibility).isEqualTo(View.GONE)
         }
     }
 

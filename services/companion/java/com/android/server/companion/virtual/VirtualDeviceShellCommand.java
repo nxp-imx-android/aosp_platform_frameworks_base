@@ -16,6 +16,8 @@
 
 package com.android.server.companion.virtual;
 
+import static android.companion.virtual.VirtualDevice.DEVICE_PROFILE_SHELL;
+
 import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
 import android.app.KeyguardManager;
@@ -176,8 +178,7 @@ class VirtualDeviceShellCommand extends ShellCommand {
             getErrPrintWriter().println("Error: deviceId " + deviceId + " does not exist");
             return null;
         }
-        if (!VirtualDeviceManagerService.DEVICE_PROFILE_SHELL.equals(
-                virtualDevice.getDeviceProfile())) {
+        if (virtualDevice.getDeviceProfile() != DEVICE_PROFILE_SHELL) {
             getErrPrintWriter().println("Error: device " + deviceId + " was not created by shell");
             return null;
         }
