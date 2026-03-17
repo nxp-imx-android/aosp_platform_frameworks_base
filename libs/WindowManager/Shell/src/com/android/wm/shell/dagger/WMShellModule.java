@@ -1296,13 +1296,14 @@ public abstract class WMShellModule {
             DisplayController displayController,
             DesktopState desktopState,
             AccessibilityManager accessibilityManager,
-            ShellController shellController) {
+            ShellController shellController,
+            KeyguardManager keyguardManager) {
         if (desktopState.canEnterDesktopMode()) {
             return Optional.of(new DesktopModeKeyGestureHandler(context,
                     desktopModeWindowDecorViewModel, desktopTasksController,
                     desktopUserRepositories, inputManager, shellTaskOrganizer,
                     focusTransitionObserver, mainExecutor, displayController, desktopState,
-                    accessibilityManager, shellController));
+                    accessibilityManager, shellController, keyguardManager));
         }
         return Optional.empty();
     }
