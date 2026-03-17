@@ -127,7 +127,7 @@ constructor(
             return transitionState.toContent == Overlays.NotificationsShade ||
                 transitionState.toContent == Scenes.Shade
         }
-        return false
+        return null
     }
 
     companion object {
