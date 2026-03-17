@@ -21,9 +21,9 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.compose.animation.scene.DynamicSizeEdgeDetector
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.scene.ui.viewmodel.SceneContainerArea.EndEdge
 import com.android.systemui.scene.ui.viewmodel.SceneContainerArea.EndHalf
@@ -51,7 +51,7 @@ class SceneContainerSwipeDetectorTest : SysuiTestCase() {
 
     private val underTest =
         SceneContainerSwipeDetector(
-            edgeSize = edgeSize.dp,
+            dynamicSizeEdgeDetector = DynamicSizeEdgeDetector { edgeSize },
             invocationGestureSplitRatio = invocationGestureSplitRatio,
         )
 

@@ -25,7 +25,7 @@ import android.view.WindowInsetsController
 import androidx.core.view.WindowInsetsCompat
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.compose.animation.scene.DefaultEdgeDetector
+import com.android.compose.animation.scene.DynamicSizeEdgeDetector
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
@@ -478,24 +478,26 @@ class SceneContainerViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun edgeDetector_singleShade_usesDefaultEdgeDetector() =
+    fun edgeDetector_singleShade_usesDynamicEdgeDetector() =
         kosmos.runTest {
             val shadeMode by collectLastValue(shadeMode)
             enableSingleShade()
 
             assertThat(shadeMode).isEqualTo(ShadeMode.Single)
-            assertThat(underTest.swipeSourceDetector).isEqualTo(DefaultEdgeDetector)
+            assertThat(underTest.swipeSourceDetector)
+                .isInstanceOf(DynamicSizeEdgeDetector::class.java)
         }
 
     @Test
     @DisableFlags(FLAG_DUAL_SHADE)
-    fun edgeDetector_splitShade_usesDefaultEdgeDetector() =
+    fun edgeDetector_splitShade_usesDynamicEdgeDetector() =
         kosmos.runTest {
             val shadeMode by collectLastValue(shadeMode)
             enableSplitShade()
 
             assertThat(shadeMode).isEqualTo(ShadeMode.Split)
-            assertThat(underTest.swipeSourceDetector).isEqualTo(DefaultEdgeDetector)
+            assertThat(underTest.swipeSourceDetector)
+                .isInstanceOf(DynamicSizeEdgeDetector::class.java)
         }
 
     @Test
