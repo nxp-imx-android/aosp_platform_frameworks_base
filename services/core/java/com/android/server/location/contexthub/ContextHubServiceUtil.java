@@ -454,6 +454,7 @@ import java.util.List;
         outputInfo.id = new android.hardware.contexthub.EndpointId();
         outputInfo.id.id = endpointId;
         outputInfo.id.hubId = hubId;
+        outputInfo.type = info.getType();
         outputInfo.name = info.getName();
         outputInfo.version = info.getVersion();
         outputInfo.tag = info.getTag();
