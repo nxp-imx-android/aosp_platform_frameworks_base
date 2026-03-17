@@ -116,6 +116,7 @@ import android.util.Slog;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.view.Display;
+import android.view.DisplayInfo;
 import android.view.View;
 import android.view.WindowManager;
 import android.window.DesktopExperienceFlags;
@@ -144,6 +145,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -1784,6 +1786,8 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
         boolean cropExists = wallpaper.cropExists();
         if (sourceExists) wallpaper.getWallpaperFile().delete();
         if (cropExists) wallpaper.getCropFile().delete();
+        WallpaperUtils.clearDefaultWallpaperCrops();
+
         return sourceExists || cropExists;
     }
 
@@ -3073,6 +3077,56 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             return mFallbackWallpaper;
         } else {
             return mWallpaperMap.get(userId);
+        }
+    }
+
+    @Override
+    public ParcelFileDescriptor getCroppedDefaultWallpaper(String callingPackage, int which,
+            int displayId) {
+        checkPermission(android.Manifest.permission.READ_WALLPAPER_INTERNAL);
+        if (callingPackage == null) {
+            return null;
+        }
+
+        synchronized (mLock) {
+            DisplayInfo displayInfo = mWallpaperDisplayHelper.getDisplayInfo(displayId);
+            if (displayInfo == null) {
+                Slog.w(TAG, "getCroppedDefaultWallpaper: Invalid displayId " + displayId);
+                return null;
+            }
+
+            final int width = displayInfo.logicalWidth;
+            final int height = displayInfo.logicalHeight;
+            final int maxSide = Math.max(width, height);
+            File cropFile = WallpaperUtils.getDefaultCropFile(maxSide);
+
+            // If a valid crop already exists, return it immediately
+            if (cropFile.exists()) {
+                try {
+                    Slog.d(TAG, "getCroppedDefaultWallpaper: Returning existing crop for display "
+                            + displayId + " with size " + width + "x" + height);
+                    return ParcelFileDescriptor.open(cropFile, MODE_READ_ONLY);
+                } catch (FileNotFoundException e) {
+                    // fall through to regeneration
+                }
+            }
+
+            try {
+                Context context = mContext.createPackageContextAsUser(
+                        callingPackage, 0, UserHandle.SYSTEM);
+                try (InputStream is = WallpaperManager.openRawDefaultWallpaper(context, which)) {
+                    if (is != null) {
+                        // TODO: b/491138113 - Implement cropping.
+                        FileUtils.copyToFile(is, cropFile);
+                    }
+                }
+                SELinux.restorecon(cropFile);
+
+                return ParcelFileDescriptor.open(cropFile, MODE_READ_ONLY);
+            } catch (PackageManager.NameNotFoundException | IOException e) {
+                Slog.w(TAG, "Failed to get cropped default wallpaper", e);
+            }
+            return null;
         }
     }
 
