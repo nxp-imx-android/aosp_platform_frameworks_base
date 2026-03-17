@@ -128,7 +128,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private static final int TRACE_COOKIE_WINDOW_DRAW = 1;
 
     private static final long DEFAULT_GLOBAL_SESSION_TIMEOUT_DURATION_MS =
-            TimeUnit.MILLISECONDS.convert(360, TimeUnit.MINUTES);
+            TimeUnit.MILLISECONDS.convert(60, TimeUnit.MINUTES);
 
     // Timeout for waiting for all windows on the display to be drawn before taking a screenshot.
     private static final int WINDOW_DRAW_TIMEOUT_MS = 1000;
