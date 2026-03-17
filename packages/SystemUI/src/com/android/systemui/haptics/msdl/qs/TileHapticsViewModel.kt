@@ -30,6 +30,7 @@ import dagger.assisted.AssistedInject
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.transform
@@ -73,12 +74,11 @@ constructor(
             .distinctUntilChanged()
 
     private val interactionHapticsState: Flow<TileHapticsState> =
-        tileInteractionState
-            .mapDirect {
-                if (it == TileInteractionState.LONG_CLICKED) {
-                    TileHapticsState.LONG_PRESS
-                } else {
-                    TileHapticsState.NO_HAPTICS
+        combine(tileInteractionState, tileAnimationState) { interactionState, animationState ->
+                when {
+                    interactionState == TileInteractionState.LONG_CLICKED &&
+                        animationState != TileAnimationState.IDLE -> TileHapticsState.LONG_PRESS
+                    else -> TileHapticsState.NO_HAPTICS
                 }
             }
             .distinctUntilChanged()
