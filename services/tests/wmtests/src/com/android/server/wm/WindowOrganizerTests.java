@@ -2670,6 +2670,48 @@ public class WindowOrganizerTests extends WindowTestsBase {
     }
 
     @Test
+    public void testCreateTask_setTaskProperties() {
+        registerMockOrganizer();
+        final TaskCreationParams params = new TaskCreationParams.Builder()
+                .setTaskPropertiesRequest(
+                        new TaskPropertiesRequest()
+                                .setReparentLeafTaskIfRelaunchFromHome(true)
+                                .setDisallowOverrideWindowingModeForChildren(true)
+                                .setPreserveLeafTaskIfRelaunch(true)
+                                .setTaskForceExcludedFromRecents(true)
+                                .setDisablePip(true)
+                                .setDisableLaunchAdjacent(true)
+                                .setForceTranslucent(true))
+                .build();
+
+        final TaskAppearedInfo taskAppearedInfo =
+                mWm.mAtmService.mTaskOrganizerController.createTask(params);
+
+        assertNotNull(taskAppearedInfo);
+        final WindowContainerToken token = taskAppearedInfo.getTaskInfo().getToken();
+        assertNotNull(fromBinder(token.asBinder()));
+        final Task newTask = fromBinder(token.asBinder()).asTask();
+        assertNotNull(newTask);
+
+        assertTrue(newTask.mReparentLeafTaskIfRelaunchFromHome);
+        assertTrue(newTask.mPreserveLeafTaskIfRelaunch);
+        assertTrue(newTask.isForceExcludedFromRecents());
+        assertTrue(newTask.isDisablePip());
+        assertTrue(newTask.isLaunchAdjacentDisabled());
+        assertTrue(newTask.isForceTranslucent());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testTaskPropertiesRequest_setForceOpaque_conflict() {
+        new TaskPropertiesRequest().setForceTranslucent(true).setForceOpaque(true);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testTaskPropertiesRequest_setForceTranslucent_conflict() {
+        new TaskPropertiesRequest().setForceOpaque(true).setForceTranslucent(true);
+    }
+
+    @Test
     public void testBoundsChange_withWindowingModeChange_resetLeafTaskBoundsFromOptions() {
         final Task task = new TaskBuilder(mSupervisor)
                 .setWindowingMode(WINDOWING_MODE_FREEFORM).build();

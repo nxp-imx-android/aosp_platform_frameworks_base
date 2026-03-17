@@ -25,11 +25,6 @@ import android.window.TaskAppearedInfo
 import android.window.TaskCreationParams
 import android.window.TaskPropertiesRequest.REQUEST_NONE
 import android.window.WindowContainerToken
-import android.window.WindowContainerTransaction
-import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN
-import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER
-import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_PRESERVE_LEAF_TASK_IF_RELAUNCH
-import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH_FROM_HOME
 import androidx.test.filters.SmallTest
 import com.android.testing.wm.util.MockToken
 import com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK
@@ -98,56 +93,22 @@ class BubbleRootTaskTest : ShellTestCase() {
         val rootTaskProperties = rootTaskParams.taskPropertiesRequest
         assertThat(rootTaskProperties.isIgnoreInsets).isTrue()
         assertThat(rootTaskProperties.isDisableAppCompatRoundedCorners).isTrue()
+        assertThat(rootTaskProperties.isReparentLeafTaskIfRelaunchFromHome).isTrue()
+        assertThat(rootTaskProperties.isDisallowOverrideWindowingModeForChildren).isTrue()
+        assertThat(rootTaskProperties.isPreserveLeafTaskIfRelaunch).isTrue()
+        assertThat(rootTaskProperties.isInterceptBackPressedOnTaskRoot).isTrue()
+        assertThat(rootTaskProperties.isTaskForceExcludedFromRecents).isTrue()
+        assertThat(rootTaskProperties.isDisablePip).isTrue()
+        assertThat(rootTaskProperties.isDisableLaunchAdjacent).isTrue()
+        assertThat(rootTaskProperties.isForceTranslucent).isTrue()
         if (com.android.window.flags.Flags.visibilityManagementInBubbleRoot()) {
             assertThat(rootTaskProperties.isForceLeafTasksNonOccluding).isTrue()
         }
-    }
 
-    @Test
-    fun onTaskAppeared_updateRootTaskProperties() {
         val token = MockToken.token()
-        val binder = token.asBinder()
         bubbleRootTask.prepareRootTaskForTest(bubbleRootTaskId = 123, bubbleRootToken = token)
 
-        assertThat(bubbleRootTask.taskId).isEqualTo(123)
-        assertThat(bubbleRootTask.windowContainerToken).isEqualTo(token)
-
-        // verify wct
-        val wct =
-            argumentCaptor<WindowContainerTransaction>().let { wctCaptor ->
-                verify(taskOrganizer).applyTransaction(wctCaptor.capture())
-                wctCaptor.firstValue
-            }
-
-        // verify hierarchy ops
-        if (com.android.window.flags.Flags.idempotentWctResolution()) {
-            assertThat(wct.hierarchyOps.map { it.type })
-                .containsAtLeast(
-                    HIERARCHY_OP_TYPE_REORDER,
-                    HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH_FROM_HOME,
-                    HIERARCHY_OP_TYPE_SET_PRESERVE_LEAF_TASK_IF_RELAUNCH,
-                )
-        } else {
-            assertThat(wct.hierarchyOps.map { it.type })
-                .containsAtLeast(
-                    HIERARCHY_OP_TYPE_REORDER,
-                    HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH_FROM_HOME,
-                    HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN,
-                    HIERARCHY_OP_TYPE_SET_PRESERVE_LEAF_TASK_IF_RELAUNCH,
-                )
-        }
-
-        // verify changes
-        assertThat(wct.changes[binder]).isNotNull()
-        val change = wct.changes[binder]!!
-        assertThat(change.interceptBackPressed).isTrue()
-        assertThat(change.forceExcludedFromRecents).isTrue()
-        assertThat(change.disablePip).isTrue()
-        assertThat(change.disableLaunchAdjacent).isTrue()
-        assertThat(change.forceTranslucent).isTrue()
-        if (com.android.window.flags.Flags.idempotentWctResolution()) {
-            assertThat(change.disallowOverrideWindowingModeForChildren).isTrue()
-        }
+        verify(taskOrganizer, never()).applyTransaction(any())
     }
 
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK)

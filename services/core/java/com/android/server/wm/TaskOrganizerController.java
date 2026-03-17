@@ -986,6 +986,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                 .setLaunchCookie(params.getLaunchCookie())
                 .setParent(parent)
                 .setRemoveWithTaskOrganizer(true)
+                .setOnTop(params.isOnTop())
                 .setReparentOnDisplayRemoval(properties.isReparentOnDisplayRemoval());
         if (Flags.visibilityManagementInBubbleRoot() && params.isVisibilityBarrier()) {
             builder.setIsVisibilityBarrier(true);
@@ -1000,6 +1001,30 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
 
         if (Flags.visibilityManagementInBubbleRoot() && properties.isForceLeafTasksNonOccluding()) {
             task.setForceLeafTasksNonOccluding(true);
+        }
+        if (properties.isReparentLeafTaskIfRelaunchFromHome()) {
+            task.setReparentLeafTaskIfRelaunchFromHome(true);
+        }
+        if (properties.isDisallowOverrideWindowingModeForChildren()) {
+            task.setDisallowOverrideWindowingModeForChildren(true);
+        }
+        if (properties.isPreserveLeafTaskIfRelaunch()) {
+            task.setPreserveLeafTaskIfRelaunch(true);
+        }
+        if (properties.isInterceptBackPressedOnTaskRoot()) {
+            setInterceptBackPressedOnTaskRoot(task.mTaskId, true);
+        }
+        if (properties.isTaskForceExcludedFromRecents()) {
+            task.setForceExcludedFromRecents(true);
+        }
+        if (properties.isDisablePip()) {
+            task.setDisablePip(true);
+        }
+        if (properties.isDisableLaunchAdjacent()) {
+            task.setLaunchAdjacentDisabled(true);
+        }
+        if (properties.isForceTranslucent()) {
+            task.setForceTranslucent(true);
         }
 
         // We want to defer the task appear signal until the task is fully created and attached to
