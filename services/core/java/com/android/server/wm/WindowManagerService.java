@@ -1252,7 +1252,9 @@ public class WindowManagerService extends IWindowManager.Stub
                 atoken.mLaunchTaskBehind = false;
             } else {
                 atoken.updateReportedVisibilityLocked();
-                if (atoken.mEnteringAnimation) {
+                if (com.android.window.flags.Flags.reportMissedEnterAnimOnResume()) {
+                    atoken.scheduleEnterAnimationCompleteIfNeeded();
+                } else if (atoken.mEnteringAnimation) {
                     atoken.mEnteringAnimation = false;
                     if (atoken.attachedToProcess()) {
                         try {
