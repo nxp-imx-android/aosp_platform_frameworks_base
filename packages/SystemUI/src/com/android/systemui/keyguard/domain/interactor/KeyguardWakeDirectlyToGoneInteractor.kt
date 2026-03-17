@@ -16,11 +16,9 @@
 
 package com.android.systemui.keyguard.domain.interactor
 
-import android.content.Context
 import android.util.Log
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.SceneKey
-import com.android.internal.widget.LockPatternUtils
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor
@@ -35,10 +33,7 @@ import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.shade.ShadeDisplayAware
-import com.android.systemui.user.domain.interactor.SelectedUserInteractor
-import com.android.systemui.util.settings.SecureSettings
-import com.android.systemui.util.settings.SystemSettings
+import com.android.systemui.statusbar.policy.domain.interactor.DeviceProvisioningInteractor
 import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -72,18 +67,14 @@ class KeyguardWakeDirectlyToGoneInteractor
 @Inject
 constructor(
     @Application private val scope: CoroutineScope,
-    @ShadeDisplayAware private val context: Context,
     private val repository: KeyguardRepository,
     private val transitionInteractor: KeyguardTransitionInteractor,
-    private val powerInteractor: PowerInteractor,
-    private val secureSettings: SecureSettings,
-    private val lockPatternUtils: LockPatternUtils,
-    private val systemSettings: SystemSettings,
-    private val selectedUserInteractor: SelectedUserInteractor,
+    powerInteractor: PowerInteractor,
     keyguardEnabledInteractor: KeyguardEnabledInteractor,
     keyguardServiceShowLockscreenInteractor: KeyguardServiceShowLockscreenInteractor,
     private val sceneInteractor: Lazy<SceneInteractor>,
     private val deviceUnlockedInteractor: Lazy<DeviceUnlockedInteractor>,
+    private val deviceProvisioningInteractor: DeviceProvisioningInteractor,
 ) {
 
     /**
@@ -114,6 +105,7 @@ constructor(
      * - We're wake and unlocking (fingerprint auth occurred while asleep).
      * - We're allowed to ignore auth and return to GONE, due to timeouts not elapsing.
      * - We're DREAMING and dismissible.
+     * - The device is not yet provisioned (still doing setup wizard stuff)
      */
     val canWakeDirectlyToGone by lazy {
         combine(
@@ -123,6 +115,7 @@ constructor(
                 repository.canIgnoreAuthAndReturnToGone,
                 deviceUnlockedInteractor.get().deviceUnlockStatus,
                 sceneInteractor.get().currentScene,
+                deviceProvisioningInteractor.isDeviceProvisioned,
             ) { values ->
                 val keyguardEnabled = values[0] as Boolean
                 val shouldSuppressKeyguard = values[1] as Boolean
@@ -130,6 +123,7 @@ constructor(
                 val canIgnoreAuthAndReturnToGone = values[3] as Boolean
                 val deviceUnlockStatus = values[4] as DeviceUnlockStatus
                 val currentScene = values[5] as SceneKey
+                val isDeviceProvisioned = values[6] as Boolean
 
                 val isWakeAndDismiss =
                     BiometricUnlockMode.isWakeAndDismiss(biometricUnlockState.mode)
@@ -140,7 +134,8 @@ constructor(
                 // make sure device is always unlocked. Even when keyguard is not enabled, SIM can
                 // be locked and force keyguard/bouncer to be shown.
                 deviceUnlockStatus.isUnlocked &&
-                    (!keyguardEnabled ||
+                    (!isDeviceProvisioned ||
+                        !keyguardEnabled ||
                         shouldSuppressKeyguard ||
                         isWakeAndDismiss ||
                         canIgnoreAuthAndReturnToGone ||

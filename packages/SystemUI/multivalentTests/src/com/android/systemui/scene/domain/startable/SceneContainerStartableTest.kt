@@ -58,7 +58,6 @@ import com.android.systemui.classifier.falsingManager
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.deviceentry.data.repository.deviceEntryRepository
 import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryBypassRepository
-import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryHapticsInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
@@ -1291,6 +1290,31 @@ class SceneContainerStartableTest : SysuiTestCase() {
             deviceEntryRepository.deviceUnlockStatus.value =
                 DeviceUnlockStatus(true, deviceUnlockSource = null)
             runCurrent()
+            assertThat(canWakeDirectlyToGone).isTrue()
+
+            powerInteractor.setAwakeForTest()
+            runCurrent()
+
+            assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
+        }
+
+    @Test
+    fun switchToGoneWhenDeviceStartsToWakeUp_whenDeviceNotProvisioned() =
+        kosmos.runTest {
+            val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
+            val canWakeDirectlyToGone by
+                collectLastValue(keyguardWakeDirectlyToGoneInteractor.canWakeDirectlyToGone)
+            prepareState(
+                initialSceneKey = Scenes.Lockscreen,
+                authenticationMethod = AuthenticationMethodModel.None,
+                isKeyguardEnabled = true,
+                isDeviceProvisioned = false,
+            )
+            powerInteractor.setAsleepForTest()
+            underTest.start()
+            runCurrent()
+
+            assertThat(currentSceneKey).isEqualTo(Scenes.Lockscreen)
             assertThat(canWakeDirectlyToGone).isTrue()
 
             powerInteractor.setAwakeForTest()
