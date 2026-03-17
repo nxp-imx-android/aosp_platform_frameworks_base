@@ -330,10 +330,21 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
 
         // When
         mUnderTest.onNotificationClicked(mNotificationEntry, mNotificationRow);
+
+        // Flush any IPCs offloaded during the initial call
+        if (Flags.asyncNotificationLaunchIpc()) {
+            mUiBgExecutor.runAllReady();
+        }
+
         // Run the collected runnables in fifo order, the way post() really does.
         while (!runnables.isEmpty()) runnables.remove(0).run();
         if (SceneContainerFlag.isEnabled()) {
             mMainExecutor.runAllReady();
+            // Flush the IPCs that were offloaded DURING the deferred callback
+            // This fixes the "zero interactions" failure and ensures they happen BEFORE dismissal.
+            if (Flags.asyncNotificationLaunchIpc()) {
+                mUiBgExecutor.runAllReady();
+            }
             while (!runnables.isEmpty()) runnables.remove(0).run();
         }
 
@@ -374,10 +385,20 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
 
         // When
         mUnderTest.onNotificationClicked(mNotificationEntry, mNotificationRow);
+        // Flush any IPCs offloaded during the initial call
+        if (Flags.asyncNotificationLaunchIpc()) {
+            mUiBgExecutor.runAllReady();
+        }
+
         // Run the collected runnables in fifo order, the way post() really does.
         while (!runnables.isEmpty()) runnables.remove(0).run();
         if (SceneContainerFlag.isEnabled()) {
             mMainExecutor.runAllReady();
+            // Flush the IPCs that were offloaded DURING the deferred callback
+            // This fixes the "zero interactions" failure and ensures they happen BEFORE dismissal.
+            if (Flags.asyncNotificationLaunchIpc()) {
+                mUiBgExecutor.runAllReady();
+            }
             while (!runnables.isEmpty()) runnables.remove(0).run();
         }
 
@@ -413,6 +434,10 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
                 mBubbleNotificationEntry, mBubbleNotificationRow);
         if (SceneContainerFlag.isEnabled()) {
             mMainExecutor.runAllReady();
+        }
+
+        if (Flags.asyncNotificationLaunchIpc()) {
+            mUiBgExecutor.runAllReady();
         }
 
         // Then
@@ -452,6 +477,10 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
             mMainExecutor.runAllReady();
         }
 
+        if (Flags.asyncNotificationLaunchIpc()) {
+            mUiBgExecutor.runAllReady();
+        }
+
         // Then
         verify(mBubblesManager).expandStackAndSelectBubble(eq(mBubbleNotificationEntry));
 
@@ -481,6 +510,10 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
                 mBubbleNotificationEntry, mBubbleNotificationRow);
         if (SceneContainerFlag.isEnabled()) {
             mMainExecutor.runAllReady();
+        }
+
+        if (Flags.asyncNotificationLaunchIpc()) {
+            mUiBgExecutor.runAllReady();
         }
 
         // Then
