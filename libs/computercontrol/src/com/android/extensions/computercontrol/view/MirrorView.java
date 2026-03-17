@@ -16,6 +16,7 @@
 
 package com.android.extensions.computercontrol.view;
 
+import android.annotation.IntDef;
 import android.annotation.MainThread;
 import android.companion.virtual.computercontrol.InteractiveMirror;
 import android.content.Context;
@@ -46,6 +47,8 @@ import androidx.annotation.Nullable;
 
 import com.android.extensions.computercontrol.ComputerControlSession;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Objects;
 
 /**
@@ -55,6 +58,34 @@ import java.util.Objects;
 public class MirrorView extends FrameLayout {
 
     private static final String TAG = MirrorView.class.getSimpleName();
+
+    /** Unknown scale type. */
+    public static final int SCALE_TYPE_UNKNOWN = 0;
+
+    /**
+     * Scale the mirror content, maintaining the aspect ratio, such that both dimensions
+     * (width and height) will be equal to or less than the corresponding dimension of the view.
+     */
+    public static final int SCALE_TYPE_FIT_CENTER = 1;
+
+    /**
+     * Scale the mirror content, maintaining the aspect ratio, such that both dimensions
+     * (width and height) will be equal to or larger than the corresponding dimension of the view.
+     */
+    public static final int SCALE_TYPE_FILL_CENTER = 2;
+
+    /** @hide */
+    @IntDef(prefix = {"SCALE_TYPE_"}, value = {
+            SCALE_TYPE_UNKNOWN,
+            SCALE_TYPE_FIT_CENTER,
+            SCALE_TYPE_FILL_CENTER
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ScaleType {
+    }
+
+    @ScaleType
+    private static final int DEFAULT_SCALE_TYPE = SCALE_TYPE_FIT_CENTER;
 
     // MirrorView should only be used on secure and trusted displays.
     private static final int REQUIRED_DISPLAY_FLAGS = Display.FLAG_SECURE | Display.FLAG_TRUSTED;
@@ -75,8 +106,12 @@ public class MirrorView extends FrameLayout {
 
     private float mLastCompoundedAlpha = -1f;
 
+    // The latest window insets that was applied to this view.
     @NonNull
-    private Insets mMirrorSurfaceInsets = Insets.NONE;
+    private WindowInsets mWindowInsets = WindowInsets.CONSUMED;
+    // The insets reported to the interactive mirror for this view.
+    @NonNull
+    private Insets mCurrentMirrorInsets = Insets.NONE;
 
     private final ViewTreeObserver.OnPreDrawListener mOnPreDrawListener = () -> {
         final float compoundedAlpha = getCompoundedAlpha();
@@ -147,7 +182,7 @@ public class MirrorView extends FrameLayout {
             @Nullable ComputerControlSession requestedSession, boolean isInteractive) {
         final var session = isMirrorViewAllowedOnDisplay(getDisplay())
                 ? requestedSession : null;
-        final var insets = mMirrorSurfaceInsets;
+        final var insets = mCurrentMirrorInsets;
 
         mHandlerThread.getThreadExecutor().execute(() -> {
             if (mInteractiveMirror != null) {
@@ -207,6 +242,23 @@ public class MirrorView extends FrameLayout {
     }
 
     /**
+     * Sets the scale type for the mirror view.
+     *
+     * @param scaleType The new scale type.
+     */
+    public void setScaleType(@ScaleType int scaleType) {
+        mMirrorSurface.setScaleType(scaleType);
+    }
+
+    /**
+     * Returns the current scale type for the mirror view.
+     */
+    @ScaleType
+    public int getScaleType() {
+        return mMirrorSurface.getScaleType();
+    }
+
+    /**
      * Sets the corner radius for all corners of the mirror view.
      *
      * @param cornerRadius The new radius of the corners in pixels.
@@ -226,35 +278,41 @@ public class MirrorView extends FrameLayout {
 
     @Override
     public WindowInsets onApplyWindowInsets(WindowInsets insets) {
-        final var mirrorInsets = calculateInsetsForMirrorSurface(insets);
+        mWindowInsets = new WindowInsets(insets);
+        updateInsets();
+        return WindowInsets.CONSUMED;
+    }
 
-        if (!Objects.equals(mMirrorSurfaceInsets, mirrorInsets)) {
-            mMirrorSurfaceInsets = mirrorInsets;
+    private void updateInsets() {
+        final var mirrorInsets = calculateInsetsForInteractiveMirror();
+
+        if (!Objects.equals(mCurrentMirrorInsets, mirrorInsets)) {
+            mCurrentMirrorInsets = mirrorInsets;
             mHandlerThread.getThreadExecutor().execute(() -> {
                 if (mInteractiveMirror != null) {
                     mInteractiveMirror.updateInsets(mirrorInsets);
                 }
             });
         }
-        return WindowInsets.CONSUMED;
     }
 
     @NonNull
-    private Insets calculateInsetsForMirrorSurface(WindowInsets windowInsets) {
-        var controller = getWindowInsetsController();
-        if (controller == null) {
-            return Insets.NONE;
-        }
+    private Insets calculateInsetsForInteractiveMirror() {
+        // 1. Calculate the bounds of the MirrorSurface relative to the Window
         var windowBounds = Objects.requireNonNull(mContext.getSystemService(WindowManager.class))
                 .getCurrentWindowMetrics().getBounds();
         var mirrorBounds = new Rect();
         mMirrorSurface.getBoundsInWindow(mirrorBounds, true);
 
-        return windowInsets.inset(mirrorBounds.left - windowBounds.left,
+        // 2. Adjust the window insets so they are relative to the MirrorSurface bounds
+        var baseInsets = mWindowInsets.inset(mirrorBounds.left - windowBounds.left,
                 mirrorBounds.top - windowBounds.top,
                 windowBounds.right - mirrorBounds.right,
                 windowBounds.bottom - mirrorBounds.bottom
         ).getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.ime());
+
+        // 3. Combine with the cropped area insets (from scaling) using Insets.max()
+        return Insets.max(baseInsets, mMirrorSurface.getCroppedAreaAsInsets());
     }
 
     private void init() {
@@ -296,6 +354,7 @@ public class MirrorView extends FrameLayout {
                 updateInteractiveMirrorOnAuxThread(null, false);
             }
         });
+        mMirrorSurface.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> updateInsets());
         addView(mMirrorSurface, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
     }
@@ -331,10 +390,26 @@ public class MirrorView extends FrameLayout {
         @Nullable
         private SurfaceControl mPreviousParentSurface = null;
 
+        @ScaleType
+        private int mScaleType = DEFAULT_SCALE_TYPE;
+
         MirrorSurface(Context context) {
             super(context);
             setCompositionOrder(0);
             setSurfaceLifecycle(SURFACE_LIFECYCLE_FOLLOWS_VISIBILITY);
+        }
+
+        void setScaleType(@ScaleType int scaleType) {
+            if (mScaleType == scaleType) {
+                return;
+            }
+            mScaleType = scaleType;
+            requestLayout();
+        }
+
+        @ScaleType
+        int getScaleType() {
+            return mScaleType;
         }
 
         @Override
@@ -351,6 +426,11 @@ public class MirrorView extends FrameLayout {
             final int parentHeight = MeasureSpec.getSize(heightMeasureSpec);
 
             if (parentWidth == 0 || parentHeight == 0) {
+                return;
+            }
+
+            if (mScaleType == SCALE_TYPE_FILL_CENTER) {
+                setMeasuredDimension(parentWidth, parentHeight);
                 return;
             }
 
@@ -465,9 +545,25 @@ public class MirrorView extends FrameLayout {
             if (mDisplaySize == null) {
                 return Transformation.IDENTITY;
             }
-            final var result = computerCenterFillTransformation(mDisplaySize.getWidth(),
+            final var result = computeCenterFillTransformation(mDisplaySize.getWidth(),
                     mDisplaySize.getHeight(), getWidth(), getHeight());
             return result != null ? result : Transformation.IDENTITY;
+        }
+
+        /** Get the area of the SurfaceView that is cropped due to scaling as Insets. */
+        @NonNull
+        Insets getCroppedAreaAsInsets() {
+            if (mCurrentTransformation == null) {
+                return Insets.NONE;
+            }
+            if (mScaleType == SCALE_TYPE_FILL_CENTER) {
+                var tx = Math.round(
+                        -mCurrentTransformation.translateX * mCurrentTransformation.scale);
+                var ty = Math.round(
+                        -mCurrentTransformation.translateY * mCurrentTransformation.scale);
+                return Insets.max(Insets.NONE, Insets.of(tx, ty, tx, ty));
+            }
+            return Insets.NONE;
         }
 
         private void applyTransactionOnVriDraw(SurfaceControl.Transaction t) {
@@ -499,7 +595,7 @@ public class MirrorView extends FrameLayout {
      * @return a {@link Transformation} object, or null if the transformation is invalid.
      */
     @Nullable
-    private static Transformation computerCenterFillTransformation(int inputWidth, int inputHeight,
+    private static Transformation computeCenterFillTransformation(int inputWidth, int inputHeight,
             int outputWidth, int outputHeight) {
         if (outputWidth == 0 || outputHeight == 0 || inputWidth == 0 || inputHeight == 0) {
             return null;

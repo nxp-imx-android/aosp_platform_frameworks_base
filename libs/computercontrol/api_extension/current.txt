@@ -105,9 +105,14 @@ package com.android.extensions.computercontrol.view {
     ctor public MirrorView(android.content.Context, android.util.AttributeSet);
     ctor public MirrorView(android.content.Context, android.util.AttributeSet, int);
     ctor public MirrorView(android.content.Context, android.util.AttributeSet, int, int);
+    method public int getScaleType();
     method public void setComputerControlSession(@Nullable com.android.extensions.computercontrol.ComputerControlSession);
     method public void setCornerRadius(int);
     method public void setInteractive(boolean);
+    method public void setScaleType(int);
+    field public static final int SCALE_TYPE_FILL_CENTER = 2; // 0x2
+    field public static final int SCALE_TYPE_FIT_CENTER = 1; // 0x1
+    field public static final int SCALE_TYPE_UNKNOWN = 0; // 0x0
   }
 
 }
