@@ -18,6 +18,7 @@
 //! modes.
 
 use std::collections::HashSet;
+use std::thread;
 use std::time::Duration;
 use tokio::sync::mpsc;
 
@@ -200,6 +201,9 @@ impl ModeSelectorTask {
                     self.sysfs_utils
                         .set_active_status(port, active.svid, false)
                         .and_then(|_| {
+                            // Writing to sysfs must be synchronous (so multiple events don't try to write at once)
+                            // thus use a synchronous sleep here.
+                            thread::sleep(Duration::from_millis(MODE_SELECTION_TIMEOUT));
                             self.sysfs_utils.set_active_status(
                                 port,
                                 highest_priority_mode.svid,
