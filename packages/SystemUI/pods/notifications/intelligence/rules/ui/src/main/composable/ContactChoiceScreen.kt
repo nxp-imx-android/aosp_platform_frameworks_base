@@ -51,7 +51,7 @@ fun ContactChoiceScreen(
             null -> emptyList()
         }
 
-    EditScreen(
+    EditScreenWithSearch(
         title = stringResource(R.string.notification_rules_field_people),
         initialSelection = initialSelection,
         onSelectionSaved = { viewState.onContactsSaved(it) },
