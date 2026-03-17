@@ -29,7 +29,7 @@ import java.util.function.Consumer;
  * Represents the system node in the process graph, acting as the root source of importance.
  */
 @RavenwoodKeepWholeClass
-final class SystemNode implements GraphNode {
+final class SystemNode extends GraphNode {
     private static SystemNode sInstance;
 
     /**

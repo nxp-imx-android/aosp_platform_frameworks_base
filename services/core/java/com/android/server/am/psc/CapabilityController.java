@@ -25,6 +25,7 @@ import static android.app.ActivityManager.PROCESS_CAPABILITY_FOREGROUND_MICROPHO
 import static android.app.ActivityManager.PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_INSTRUMENTATION_DEFAULTS;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
+import static android.app.ActivityManager.PROCESS_STATE_BOUND_FOREGROUND_SERVICE;
 import static android.app.ActivityManager.PROCESS_STATE_BOUND_TOP;
 import static android.app.ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE;
 import static android.app.ActivityManager.PROCESS_STATE_PERSISTENT;
@@ -46,12 +47,19 @@ import android.app.ActivityManager.ProcessCapability;
 import android.app.ActivityManager.ProcessState;
 import android.net.NetworkPolicyManager;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.util.Slog;
 
+import com.android.internal.annotations.VisibleForTesting;
+
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 /** The class that computes capabilities and CPU time reasons for processes. */
 @RavenwoodKeepWholeClass
-class CapabilityController {
+final class CapabilityController {
+    private static final String TAG = "CapabilityController";
+
     /**
      * A bitmask of all capabilities that can be granted by a foreground service.
      * Used for an optimization in {@link #evaluateForegroundServicePolicy}.
@@ -60,6 +68,9 @@ class CapabilityController {
             PROCESS_CAPABILITY_FOREGROUND_LOCATION | PROCESS_CAPABILITY_FOREGROUND_CAMERA
                     | PROCESS_CAPABILITY_FOREGROUND_MICROPHONE
                     | PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
+
+    private static final Consumer<GraphEdge> sUpdateTargetConsumer =
+            CapabilityController::updateTargetCapability;
 
     /**
      * Evaluates a filter by combining all the policies of a process edge and also updates its CPU
@@ -194,6 +205,8 @@ class CapabilityController {
         if (hasActiveInstrumentation) {
             // TODO(b/471530626): Whether the process is running remote animation or not is ignored,
             //  which is different from current OomAdjuster impl. Revisit this if needed.
+            // Regarding BFSL grants, there will be a final check using #revokeBfslCapability() that
+            // revokes BFSL if the target process state is worse than BFGS.
             baseCapabilities |= PROCESS_CAPABILITY_BFSL;
         }
         return baseCapabilities | networkCapabilities;
@@ -248,7 +261,8 @@ class CapabilityController {
 
     /** Evaluates whether a {@link ProviderBindingEdge} propagates BFSL. */
     private static @ProcessCapability int evaluateBfslPolicy(@NonNull ProviderBindingEdge unused) {
-        // Always propagate BFSL.
+        // Regarding BFSL grants, there will be a final check using #revokeBfslCapability() that
+        // revokes BFSL if the target process state is worse than BFGS. Always propagate BFSL here.
         return PROCESS_CAPABILITY_BFSL;
     }
 
@@ -271,7 +285,8 @@ class CapabilityController {
 
     /** Evaluates whether a {@link ServiceBindingEdge} propagates BFSL. */
     private static @ProcessCapability int evaluateBfslPolicy(@NonNull ServiceBindingEdge unused) {
-        // Always propagate BFSL.
+        // Regarding BFSL grants, there will be a final check using #revokeBfslCapability() that
+        // revokes BFSL if the target process state is worse than BFGS. Always propagate BFSL here.
         return PROCESS_CAPABILITY_BFSL;
     }
 
@@ -289,6 +304,55 @@ class CapabilityController {
         // LINT.ThenChange(OomAdjuster.java:getCpuCapabilitiesFromTransmissionType)
     }
 
+    /** Evaluates output capabilities of an edge based on its filter and source input. */
+    @VisibleForTesting
+    static @ProcessCapability int evaluateOutputCapability(@NonNull GraphEdge edge) {
+        return edge.getCachedCapabilityFilter() & edge.getSource().getCapability();
+    }
+
+    /** Evaluates capabilities for a newly attaching process. */
+    @VisibleForTesting
+    static @ProcessCapability int evaluateAttachingProcessCapability(
+            @NonNull ProcessNode node) {
+        return node.hasForegroundActivities() ? PROCESS_CAPABILITY_ALL : ALL_CPU_TIME_CAPABILITIES;
+    }
+
+    /**
+     * Updates the capabilities of the target node by merging the output capabilities of the edge.
+     *
+     * @return {@code true} if the capabilities of the target node were updated.
+     */
+    @VisibleForTesting
+    static boolean updateTargetCapability(@NonNull GraphEdge edge) {
+        final ProcessNode target = edge.getTarget();
+        @ProcessCapability int newCapability;
+        // Incoming edges can be ignored for attaching processes.
+        if (target.isPendingFinishAttach()) {
+            newCapability = evaluateAttachingProcessCapability(target);
+        } else {
+            newCapability = target.getCapability() | evaluateOutputCapability(edge);
+        }
+
+        if (newCapability == target.getCapability()) {
+            return false;
+        }
+        target.setCapability(newCapability);
+        return true;
+    }
+
+    /** Revokes BFSL in the given {@code node} if its procState is worse than BFGS. */
+    private static void revokeBfslCapability(@NonNull ProcessNode node) {
+        if (node.getProcState() > PROCESS_STATE_BOUND_FOREGROUND_SERVICE) {
+            node.setCapability(node.getCapability() & ~PROCESS_CAPABILITY_BFSL);
+        }
+    }
+
+    private final Consumer<GraphEdge> mUpdateAndEnqueueTargetConsumer =
+            this::updateAndEnqueueTarget;
+
+    /** Queue for nodes whose output capabilities need to be propagated. */
+    private final ArrayDeque<GraphNode> mPropagationQueue = new ArrayDeque<>();
+
     /**
      * Performs a partial update from a list of edges.
      *
@@ -298,10 +362,79 @@ class CapabilityController {
      */
     void update(@NonNull ArrayList<GraphEdge> edges,
             @NonNull ArrayList<ProcessNode> reachableNodes) {
+        if (!mPropagationQueue.isEmpty()) {
+            Slog.w(TAG, "mPropagationQueue is not empty before partial update");
+            mPropagationQueue.clear();
+        }
+
+        // Update the filter for all target edges.
         for (int i = 0, size = edges.size(); i < size; i++) {
             edges.get(i).updateCachedCapabilityFilter();
         }
 
-        // TODO(b/466961280): Reset capabilities of all reachable nodes and propagate capabilities.
+        // Clear the capabilities for all reachable nodes.
+        for (int i = 0, size = reachableNodes.size(); i < size; i++) {
+            reachableNodes.get(i).clearCapability();
+        }
+        // Compute initial capabilities for all reachable nodes. The loop is not merged into the
+        // previous one because we want the cached capabilities on all reachable nodes to be
+        // cleared first.
+        for (int i = 0, size = reachableNodes.size(); i < size; i++) {
+            // There are two kinds of edges here:
+            // 1. Edges that have an unreachable source. For such an edge, its output capabilities
+            //    remain unchanged during propagation, since its source remains unchanged.
+            // 2. Edges that have a reachable source. For such an edge, its initial output
+            //    capabilities are a subset of its final output capabilities after propagation,
+            //    for capability computation is monotonic and all reachable nodes' capabilities
+            //    have been cleared before this step. We don't exclude such edges from this step
+            //    because the pre-computation here speeds up the convergence in the propagation
+            //    step below.
+            // TODO: b/493522532 - Consider whether to use caching to avoid recomputing the first
+            //  type of edges' output capabilities.
+            final ProcessNode node = reachableNodes.get(i);
+            node.forEachIncomingEdge(sUpdateTargetConsumer);
+            if (node.getCapability() != PROCESS_CAPABILITY_NONE) {
+                enqueueNode(node);
+            }
+        }
+
+        // Propagate capabilities from nodes in the queue until no more capabilities can be added.
+        propagate();
+
+        // Revoke PROCESS_CAPABILITY_BFSL for nodes whose procState is worse than BFGS.
+        for (int i = 0, size = reachableNodes.size(); i < size; i++) {
+            revokeBfslCapability(reachableNodes.get(i));
+        }
+    }
+
+    /**
+     * Propagates capabilities from nodes in {@link #mPropagationQueue} until the queue becomes
+     * empty.
+     */
+    private void propagate() {
+        while (!mPropagationQueue.isEmpty()) {
+            final GraphNode node = mPropagationQueue.pollFirst();
+            node.setEnqueued(false);
+            // Check all its outgoing edges and enqueue targets that have gained new capabilities.
+            node.forEachOutgoingEdge(mUpdateAndEnqueueTargetConsumer);
+        }
+    }
+
+    /**
+     * Updates the target node of {@code edge} and adds it to {@link #mPropagationQueue} if it has
+     * gained any new capability.
+     */
+    private void updateAndEnqueueTarget(@NonNull GraphEdge edge) {
+        if (updateTargetCapability(edge)) {
+            enqueueNode(edge.getTarget());
+        }
+    }
+
+    /** Adds {@code node} to {@link #mPropagationQueue} if it is not enqueued. */
+    private void enqueueNode(@NonNull GraphNode node) {
+        if (!node.isEnqueued()) {
+            node.setEnqueued(true);
+            mPropagationQueue.add(node);
+        }
     }
 }
