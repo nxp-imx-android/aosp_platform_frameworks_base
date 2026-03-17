@@ -19,7 +19,23 @@ package com.android.settingslib.metadata.preferencesapi.types
 sealed interface EType<T : Any> {
     val clazz: Class<T>
 
-    data object String : EType<kotlin.String> { override val clazz = kotlin.String::class.java }
-    data object Boolean : EType<kotlin.Boolean> { override val clazz = kotlin.Boolean::class.javaObjectType }
-    data object Int : EType<kotlin.Int> { override val clazz = kotlin.Int::class.javaObjectType }
+    fun toString(value: T): kotlin.String
+    fun fromString(value: kotlin.String): T
+
+    data object String : EType<kotlin.String> {
+        override val clazz = kotlin.String::class.java
+
+        override fun toString(value: kotlin.String) = value
+        override fun fromString(value: kotlin.String) = value
+    }
+    data object Boolean : EType<kotlin.Boolean> {
+        override val clazz = kotlin.Boolean::class.javaObjectType
+        override fun toString(value: kotlin.Boolean) = value.toString()
+        override fun fromString(value: kotlin.String) = value.toBoolean()
+    }
+    data object Int : EType<kotlin.Int> {
+        override val clazz = kotlin.Int::class.javaObjectType
+        override fun toString(value: kotlin.Int) = value.toString()
+        override fun fromString(value: kotlin.String) = value.toInt()
+    }
 }

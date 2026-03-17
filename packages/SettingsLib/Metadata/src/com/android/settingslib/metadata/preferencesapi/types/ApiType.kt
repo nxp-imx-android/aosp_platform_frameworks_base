@@ -57,6 +57,7 @@ interface ApiType<InternalType, ExternalType : Any> {
 
     fun convertInternalToExternal(internalValue: InternalType): ExternalType
     fun convertExternalToInternal(externalValue: ExternalType): InternalType
+    fun convertStringToInternal(value: String): InternalType = convertExternalToInternal(externalType.fromString(value))
 }
 
 /** ApiType for types which have the same internal and external type. */
