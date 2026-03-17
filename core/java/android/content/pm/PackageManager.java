@@ -10392,6 +10392,17 @@ public abstract class PackageManager {
     public static final int RESTRICTION_HIDE_NOTIFICATIONS = 0x00000002;
 
     /**
+     * Mark a package as requiring a speedbump before launch.
+     * When a package with this restriction is launched, a speedbump screen will be shown
+     * to the user, who must confirm they want to proceed.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_ACTIVITY_START_INTERCEPTOR_SPEEDBUMPS)
+    public static final int RESTRICTION_CONFIRM_WITH_SPEEDBUMP = 0x00000004;
+
+    /**
      * Restriction flags to set on a package that is considered as distracting to the user.
      * These should help the user to restrict their usage of these apps.
      *
@@ -10401,7 +10412,8 @@ public abstract class PackageManager {
     @IntDef(flag = true, prefix = {"RESTRICTION_"}, value = {
             RESTRICTION_NONE,
             RESTRICTION_HIDE_FROM_SUGGESTIONS,
-            RESTRICTION_HIDE_NOTIFICATIONS
+            RESTRICTION_HIDE_NOTIFICATIONS,
+            RESTRICTION_CONFIRM_WITH_SPEEDBUMP
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface DistractionRestriction {}
@@ -10425,6 +10437,7 @@ public abstract class PackageManager {
      * @see #RESTRICTION_NONE
      * @see #RESTRICTION_HIDE_FROM_SUGGESTIONS
      * @see #RESTRICTION_HIDE_NOTIFICATIONS
+     * @see #RESTRICTION_CONFIRM_WITH_SPEEDBUMP
      */
     @SystemApi
     @RequiresPermission(android.Manifest.permission.SUSPEND_APPS)

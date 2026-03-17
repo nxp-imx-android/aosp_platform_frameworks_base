@@ -241,3 +241,11 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "windowing_sdk"
+    name: "activity_start_interceptor_speedbumps"
+    is_exported: true
+    description: "Feature flag for Activity Start Interceptor Speedbumps"
+    bug: "492347206"
+}

@@ -799,6 +799,14 @@ public class Intent implements Parcelable, Cloneable {
     public static final String ACTION_PICK = "android.intent.action.PICK";
 
     /**
+     * Activity Action: Confirm an action with the system's wellbeing app using a speedbump.
+     *
+     * @hide
+     */
+    public static final String ACTION_WELLBEING_CONFIRM_WITH_SPEEDBUMP =
+            "android.intent.action.WELLBEING_CONFIRM_WITH_SPEEDBUMP";
+
+    /**
      * Activity Action: Creates a reminder.
      * <p>Input: {@link #EXTRA_TITLE} The title of the reminder that will be shown to the user.
      * {@link #EXTRA_TEXT} The reminder text that will be shown to the user. The intent should at
