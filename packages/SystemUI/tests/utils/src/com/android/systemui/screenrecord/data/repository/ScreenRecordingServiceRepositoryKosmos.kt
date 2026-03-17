@@ -18,6 +18,7 @@ package com.android.systemui.screenrecord.data.repository
 
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.screencapture.record.shared.screenRecordingLogger
 import com.android.systemui.screenrecord.screenRecordUxController
 import com.android.systemui.screenrecord.service.fakeScreenRecordingService
 import kotlinx.coroutines.flow.flowOf
@@ -28,5 +29,6 @@ val Kosmos.screenRecordingServiceRepository: ScreenRecordingServiceRepository by
             applicationCoroutineScope,
             screenRecordUxController,
             flowOf(fakeScreenRecordingService),
+            screenRecordingLogger,
         )
     }
