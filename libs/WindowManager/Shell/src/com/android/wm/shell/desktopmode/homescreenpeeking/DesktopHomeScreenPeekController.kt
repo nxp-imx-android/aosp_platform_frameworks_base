@@ -28,6 +28,8 @@ import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
+import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
+import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityUtils
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.R
 import com.android.wm.shell.sysui.ShellController
@@ -53,6 +55,8 @@ class DesktopHomeScreenPeekController(
     private val shellController: ShellController,
     private val userRepositories: DesktopUserRepositories,
     private val shellTaskOrganizer: ShellTaskOrganizer,
+    private val desktopWallpaperActivityUtils: DesktopWallpaperActivityUtils,
+    private val desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
 ) {
     private val peekAmount =
         context.resources.getDimensionPixelSize(
@@ -79,12 +83,13 @@ class DesktopHomeScreenPeekController(
             ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: Unable to peek. Already peeking.", TAG)
             return
         }
-        ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: peek requested", TAG)
         val desktopTasks = getVisibleDesktopTasks()
         if (desktopTasks.isEmpty()) {
             ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: not peeking. No visible desktop tasks", TAG)
             return
         }
+        ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: peek requested", TAG)
+        isPeeking = true
         val wct = WindowContainerTransaction()
         taskBoundsBeforePeek =
             desktopTasks.associate { task ->
@@ -92,8 +97,8 @@ class DesktopHomeScreenPeekController(
                 wct.setBounds(task.token, taskBounds)
                 task.taskId to Rect(task.configuration.windowConfiguration.bounds)
             }
+        hideDesktopWallpaperActivityIfExists(wct)
         peekTransitionHandler.startTransition(wct) {
-            isPeeking = true
             ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: peek transition completed", TAG)
         }
     }
@@ -109,12 +114,12 @@ class DesktopHomeScreenPeekController(
             ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: Unable to unpeek. Not currently peeking.", TAG)
             return
         }
-        ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: unpeek requested", TAG)
         val desktopTasks = getVisibleDesktopTasks()
         if (desktopTasks.isEmpty()) {
             ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: not unpeeking. No visible desktop tasks", TAG)
             return
         }
+        ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: unpeek requested", TAG)
         val wct = WindowContainerTransaction()
         desktopTasks.forEach { task ->
             val restoreBounds = getRestoreBoundsForTask(task)
@@ -128,8 +133,10 @@ class DesktopHomeScreenPeekController(
                 )
             } else {
                 wct.setBounds(task.token, restoreBounds)
+                wct.reorder(task.token, true)
             }
         }
+        restoreDesktopWallpaperActivityIfExists(wct)
         peekTransitionHandler.startTransition(wct) {
             isPeeking = false
             taskBoundsBeforePeek = null
@@ -193,6 +200,29 @@ class DesktopHomeScreenPeekController(
                 }
                 .orEmpty()
         }
+
+    /** Hides the DesktopWallpaperActivity. */
+    private fun hideDesktopWallpaperActivityIfExists(wct: WindowContainerTransaction) {
+        if (desktopWallpaperActivityUtils.hasDesktopWallpaperActivityEnabled(getDisplayId())) {
+            val wallpaperActivityToken =
+                desktopWallpaperActivityTokenProvider.getToken(getDisplayId())
+            if (wallpaperActivityToken != null) {
+                wct.setHidden(wallpaperActivityToken, true)
+            }
+        }
+    }
+
+    /** Restores the DesktopWallpaperActivity, hiding the home screen. */
+    private fun restoreDesktopWallpaperActivityIfExists(wct: WindowContainerTransaction) {
+        if (desktopWallpaperActivityUtils.hasDesktopWallpaperActivityEnabled(getDisplayId())) {
+            val wallpaperActivityToken =
+                desktopWallpaperActivityTokenProvider.getToken(getDisplayId())
+            if (wallpaperActivityToken != null) {
+                wct.setHidden(wallpaperActivityToken, false)
+                wct.reorder(wallpaperActivityToken, true)
+            }
+        }
+    }
 
     companion object {
         private const val TAG = "DesktopHomeScreenPeekController"
