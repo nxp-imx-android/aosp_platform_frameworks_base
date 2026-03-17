@@ -35,11 +35,11 @@ constructor(blurConfig: BlurConfig, communalSceneInteractor: CommunalSceneIntera
 
     override val windowBlurRadius: Flow<Float> =
         communalSceneInteractor.editModeState
-            // Apply window blur when edit mode is not showing, and remove the blur immediately
+            // Apply window blur when edit mode is starting, and remove the blur immediately
             // when the edit mode activity is ready to show. No transition is needed because
-            // SystemUI applies an opague background that covers the views below.
+            // SystemUI applies an opaque background that covers the views below.
             .map { editModeState ->
-                if (editModeState == null || editModeState < EditModeState.READY_TO_SHOW) {
+                if (editModeState != null && editModeState < EditModeState.READY_TO_SHOW) {
                     blurConfig.maxBlurRadiusPx
                 } else {
                     blurConfig.minBlurRadiusPx
