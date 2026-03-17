@@ -102,19 +102,19 @@
                         android:gravity="center_vertical|start"
                     />
 
-                    <include layout="@layout/ongoing_activity_chip_primary"
-                        android:id="@+id/ongoing_activity_chip_primary"/>
-
-                    <include layout="@layout/ongoing_activity_chip_secondary"
-                        android:id="@+id/ongoing_activity_chip_secondary"
-                        android:visibility="gone"/>
-
-                    <com.android.systemui.statusbar.AlphaOptimizedFrameLayout
-                        android:id="@+id/notification_icon_area"
-                        android:layout_width="wrap_content"
+                    <!-- To avoid chips causing notifs to re-layout, wrap them in a FrameLayout
+                    so they can overlap -->
+                    <FrameLayout
+                        android:id="@+id/start_side_notif_and_chip_container"
                         android:layout_height="match_parent"
-                        android:orientation="horizontal"
-                        android:clipChildren="false"/>
+                        android:layout_width="wrap_content">
+                        <com.android.systemui.statusbar.AlphaOptimizedFrameLayout
+                            android:id="@+id/notification_icon_area"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal"
+                            android:clipChildren="false"/>
+                    </FrameLayout>
 
                 </LinearLayout>
             </FrameLayout>
