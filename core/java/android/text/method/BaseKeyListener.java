@@ -544,7 +544,8 @@ public abstract class BaseKeyListener extends MetaKeyKeyListener
      *
      * @hide
      */
-    protected static void replaceText(
+    @VisibleForTesting
+    public static void replaceText(
             Editable content,
             int start,
             int end,
@@ -562,7 +563,7 @@ public abstract class BaseKeyListener extends MetaKeyKeyListener
                 && CompatChanges.isChangeEnabled(
                         ShowSecretsSetting.SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)) {
             physicalInputSpan = new PhysicalInputSpan();
-            content.setSpan(physicalInputSpan, start, start, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+            content.setSpan(physicalInputSpan, start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
         }
 
         content.replace(start, end, text, tbStart, tbEnd);
