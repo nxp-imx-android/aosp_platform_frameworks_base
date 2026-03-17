@@ -1446,7 +1446,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    fun onShadeExpansionIntent_setsTargetDisplay() =
+    fun onShadeExpansionIntent_notConsumed_setsTargetDisplayAndIntent() =
         kosmos.runTest {
             displayRepository.addDisplays(display(id = EXTERNAL_DISPLAY, type = TYPE_EXTERNAL))
 
@@ -1456,8 +1456,27 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
             val eventX = 123f
             val statusBarWidth = 1080
 
-            underTest.onShadeExpansionIntent(eventX, statusBarWidth)
+            underTest.onShadeExpansionIntent(eventX, statusBarWidth, isConsumed = false)
+
             assertThat(displayId).isEqualTo(EXTERNAL_DISPLAY)
+            assertThat(statusBarTouchShadeDisplayPolicy.consumeExpansionIntent()).isNotNull()
+        }
+
+    @Test
+    fun onShadeExpansionIntent_isConsumed_setsTargetDisplayOnly() =
+        kosmos.runTest {
+            displayRepository.addDisplays(display(id = EXTERNAL_DISPLAY, type = TYPE_EXTERNAL))
+
+            val underTest = homeStatusBarViewModelFactory(EXTERNAL_DISPLAY)
+            val displayId by collectLastValue(statusBarTouchShadeDisplayPolicy.displayId)
+
+            val eventX = 123f
+            val statusBarWidth = 1080
+
+            underTest.onShadeExpansionIntent(eventX, statusBarWidth, isConsumed = true)
+
+            assertThat(displayId).isEqualTo(EXTERNAL_DISPLAY)
+            assertThat(statusBarTouchShadeDisplayPolicy.consumeExpansionIntent()).isNull()
         }
 
     @Test

@@ -28,7 +28,6 @@ import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.statusbar.chips.mediaprojection.domain.model.MediaProjectionStopDialogModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
-import com.android.systemui.statusbar.systemstatusicons.domain.interactor.SystemStatusIconBlocklistInteractor
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.Idle
 import com.android.systemui.statusbar.layout.ui.viewmodel.AppHandlesViewModel
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarBoundsViewModel
@@ -39,6 +38,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombine
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipModel
+import com.android.systemui.statusbar.systemstatusicons.domain.interactor.SystemStatusIconBlocklistInteractor
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -70,7 +70,7 @@ class FakeHomeStatusBarViewModel(
 
     override fun onNotificationIconChipClicked() {}
 
-    override fun onShadeExpansionIntent(eventX: Float, statusBarWidth: Int) {}
+    override fun onShadeExpansionIntent(eventX: Float, statusBarWidth: Int, isConsumed: Boolean) {}
 
     override val popupChips = emptyList<QuickActionChipModel.PopupChip>()
 

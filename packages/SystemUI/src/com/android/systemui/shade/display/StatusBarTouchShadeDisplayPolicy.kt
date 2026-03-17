@@ -62,7 +62,6 @@ constructor(
      * be made visible upon expansion.
      */
     fun setExpansionIntentForElement(element: ShadeElement, displayId: Int) {
-
         updateShadeDisplayIfNeeded(displayId)
         updateExpansionIntent(element)
     }
@@ -81,7 +80,7 @@ constructor(
             }
     }
 
-    private fun updateShadeDisplayIfNeeded(newDisplayId: Int) {
+    fun updateShadeDisplayIfNeeded(newDisplayId: Int) {
         if (newDisplayId !in availableDisplayIds.value) {
             Log.e(TAG, "Cannot update display id to unknown display $newDisplayId")
             return

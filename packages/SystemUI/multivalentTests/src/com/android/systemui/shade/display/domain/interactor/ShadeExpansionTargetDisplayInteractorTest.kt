@@ -176,6 +176,17 @@ class ShadeExpansionTargetDisplayInteractorTest : SysuiTestCase() {
             assertThat(displayId).isEqualTo(4)
         }
 
+    @Test
+    fun updateShadeDisplay_IfNeeded_updatesPolicy() =
+        kosmos.runTest {
+            val displayId by collectLastValue(statusBarTouchShadeDisplayPolicy.displayId)
+            displayRepository.addDisplays(display(id = 2, type = TYPE_EXTERNAL))
+
+            underTest.updateShadeDisplayIfNeeded(displayId = 2)
+
+            assertThat(displayId).isEqualTo(2)
+        }
+
     companion object {
         private const val STATUS_BAR_WIDTH = 100
         private const val LEFT_SIDE_X = STATUS_BAR_WIDTH * 0.1f
