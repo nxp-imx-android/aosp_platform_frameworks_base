@@ -20,6 +20,7 @@ import android.content.packageManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.notifications.content.icon.mockAppIconProvider
+import com.android.systemui.notifications.intelligence.rules.shared.notificationRulesLogBuffer
 import com.android.systemui.user.data.repository.fakeUserRepository
 
 val Kosmos.realInstalledAppsRepository by
@@ -29,5 +30,6 @@ val Kosmos.realInstalledAppsRepository by
             packageManager,
             mockAppIconProvider,
             fakeUserRepository,
+            notificationRulesLogBuffer,
         )
     }
