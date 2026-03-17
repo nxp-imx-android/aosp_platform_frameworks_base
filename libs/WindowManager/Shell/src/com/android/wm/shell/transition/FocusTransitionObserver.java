@@ -37,7 +37,7 @@ import android.util.SparseArray;
 import android.window.TransitionInfo;
 
 import com.android.internal.protolog.ProtoLog;
-import com.android.wm.shell.Flags;
+import com.android.window.flags.Flags;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.FocusTransitionListener;
 import com.android.wm.shell.shared.IFocusTransitionListener;
