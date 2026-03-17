@@ -16,7 +16,7 @@
 
 package com.android.wm.shell.shared;
 
-import android.app.ActivityManager;
+import android.app.ActivityManager.RunningTaskInfo;
 
 /**
  * Listener interface that to get focus-related transition callbacks.
@@ -31,6 +31,6 @@ oneway interface IFocusTransitionListener {
     /**
      * Called when the per-app or system-wide focus state has changed for a task.
      */
-    void onFocusedTaskChanged(in ActivityManager.RunningTaskInfo taskInfo,
-        boolean isFocusedOnDisplay, boolean isFocusedGlobally);
+    void onFocusedTaskChanged(in RunningTaskInfo taskInfo, boolean isFocusedOnDisplay,
+        boolean isFocusedGlobally);
 }
