@@ -256,7 +256,7 @@ class SliderHapticFeedbackProviderTest : SysuiTestCase() {
         }
 
     @Test
-    fun playHapticAtLowerBookend_afterPlayingAtProgress_playsTokensTwice() =
+    fun playHapticAtLowerBookend_afterPlayingAtProgress_playsThreeTokens() =
         with(kosmos) {
             // GIVEN max velocity and slider progress
             val progress = 1f
@@ -273,18 +273,21 @@ class SliderHapticFeedbackProviderTest : SysuiTestCase() {
             // WHEN a vibration is to trigger again at the lower bookend
             sliderHapticFeedbackProvider.onLowerBookend()
 
-            // THEN there are two bookend token vibrations
-            assertThat(msdlPlayer.getHistory().size).isEqualTo(2)
+            // THEN there are two bookend token vibrations and a one drag texture vibration
+            assertThat(msdlPlayer.getHistory().size).isEqualTo(3)
             assertThat(msdlPlayer.tokensPlayed[0])
                 .isEqualTo(MSDLToken.DRAG_THRESHOLD_INDICATOR_LIMIT)
             assertThat(msdlPlayer.propertiesPlayed[0]).isEqualTo(expectedProperties)
-            assertThat(msdlPlayer.tokensPlayed[1])
+
+            assertThat(msdlPlayer.tokensPlayed[1]).isEqualTo(MSDLToken.DRAG_INDICATOR_CONTINUOUS)
+
+            assertThat(msdlPlayer.tokensPlayed[2])
                 .isEqualTo(MSDLToken.DRAG_THRESHOLD_INDICATOR_LIMIT)
-            assertThat(msdlPlayer.propertiesPlayed[1]).isEqualTo(expectedProperties)
+            assertThat(msdlPlayer.propertiesPlayed[2]).isEqualTo(expectedProperties)
         }
 
     @Test
-    fun playHapticAtUpperBookend_afterPlayingAtProgress_playsTokensTwice() =
+    fun playHapticAtUpperBookend_afterPlayingAtProgress_playsThreeTokens() =
         with(kosmos) {
             // GIVEN max velocity and slider progress
             val progress = 1f
@@ -301,14 +304,17 @@ class SliderHapticFeedbackProviderTest : SysuiTestCase() {
             // WHEN a vibration is to trigger again at the upper bookend
             sliderHapticFeedbackProvider.onUpperBookend()
 
-            // THEN there are two bookend vibrations
-            assertThat(msdlPlayer.getHistory().size).isEqualTo(2)
+            // THEN there are two bookend vibrations and one drag texture vibration
+            assertThat(msdlPlayer.getHistory().size).isEqualTo(3)
             assertThat(msdlPlayer.tokensPlayed[0])
                 .isEqualTo(MSDLToken.DRAG_THRESHOLD_INDICATOR_LIMIT)
             assertThat(msdlPlayer.propertiesPlayed[0]).isEqualTo(expectedProperties)
-            assertThat(msdlPlayer.tokensPlayed[1])
+
+            assertThat(msdlPlayer.tokensPlayed[1]).isEqualTo(MSDLToken.DRAG_INDICATOR_CONTINUOUS)
+
+            assertThat(msdlPlayer.tokensPlayed[2])
                 .isEqualTo(MSDLToken.DRAG_THRESHOLD_INDICATOR_LIMIT)
-            assertThat(msdlPlayer.propertiesPlayed[1]).isEqualTo(expectedProperties)
+            assertThat(msdlPlayer.propertiesPlayed[2]).isEqualTo(expectedProperties)
         }
 
     @Test
