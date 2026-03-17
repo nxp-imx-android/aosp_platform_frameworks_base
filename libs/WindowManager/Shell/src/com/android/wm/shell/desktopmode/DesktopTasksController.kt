@@ -2414,12 +2414,21 @@ class DesktopTasksController(
     }
 
     /**
+     * Move a task to the front.
+     *
+     * Note: beyond moving a task to the front, this method will minimize a task if we reach the
+     * Desktop task limit.
+     */
+    fun moveTaskToFront(taskInfo: RunningTaskInfo) {
+        moveTaskToFront(taskInfo = taskInfo, remoteTransition = null)
+    }
+
+    /**
      * Move a task to the front, using [remoteTransition].
      *
      * Note: beyond moving a task to the front, this method will minimize a task if we reach the
      * Desktop task limit, so [remoteTransition] should also handle any such minimize change.
      */
-    @JvmOverloads
     fun moveTaskToFront(
         taskInfo: RunningTaskInfo,
         remoteTransition: RemoteTransition? = null,

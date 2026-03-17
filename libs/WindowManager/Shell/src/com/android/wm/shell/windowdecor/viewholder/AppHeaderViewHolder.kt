@@ -26,6 +26,7 @@ import android.graphics.Color
 import android.graphics.Rect
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnLongClickListener
 import android.view.accessibility.AccessibilityEvent
@@ -96,7 +97,7 @@ class AppHeaderViewHolder(
     private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
     private val dimensions: HeaderDimensions,
     private val focusTransitionObserver: FocusTransitionObserver,
-    private val decorThemeUtilFactory: DecorThemeUtil.Factory,
+    decorThemeUtilFactory: DecorThemeUtil.Factory,
 ) : WindowDecorationViewHolder<AppHeaderViewHolder.HeaderData>() {
 
     data class HeaderData(
@@ -164,6 +165,21 @@ class AppHeaderViewHolder(
     init {
         if (Flags.interceptTouchEventForAppHeaderDragMove()) {
             captionView.setGestureInterceptor(gestureInterceptor)
+            val onTouch =
+                View.OnTouchListener { _, event ->
+                    // Only move to front on down to prevent 2+ tasks from fighting
+                    // (and thus flickering) for front status when drag-moving them simultaneously
+                    // with
+                    // two pointers.
+                    if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+                        windowDecorationActions.onCaptionViewReceivedInteraction(currentTaskInfo)
+                    }
+                    return@OnTouchListener false
+                }
+            closeWindowButton.setOnTouchListener(onTouch)
+            maximizeWindowButton.setOnTouchListener(onTouch)
+            minimizeWindowButton.setOnTouchListener(onTouch)
+            openMenuButton.setOnTouchListener(onTouch)
         } else {
             captionView.setOnTouchListener(gestureInterceptor)
             captionHandle.setOnTouchListener(gestureInterceptor)
