@@ -292,6 +292,9 @@ abstract class ApiPreference<InternalType: Any, ExternalType : Any>(
     override fun getWritePermit(context: Context, callingPid: Int, callingUid: Int) =
         // TODO(b/469317113): This should run asynchronously
         runBlocking {
+            if (!supportsWrite) {
+                return@runBlocking ReadWritePermit.DISALLOW
+            }
             when (evaluatePreconditions(context, set?.preconditions)) {
                 Allowed -> ReadWritePermit.ALLOW
                 else -> ReadWritePermit.DISALLOW

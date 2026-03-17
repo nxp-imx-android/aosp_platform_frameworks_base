@@ -888,6 +888,10 @@ fun <T> PersistentPreference<T>.evalWritePermit(
     callingPid: Int,
     callingUid: Int,
 ): Int? {
+    if (!supportsWrite) {
+        return ReadWritePermit.DISALLOW
+    }
+
     val isDebuggable = AppUtils.isDebuggable()
 
     // Use the global setting as a gate for debug environments
