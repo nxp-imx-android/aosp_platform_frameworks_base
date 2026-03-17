@@ -235,12 +235,12 @@ constructor(private val aodBurnInViewModel: AodBurnInViewModel) : HydratedActiva
     val translation: Offset by
         aodBurnInViewModel.movement
             .map { Offset(it.translationX.toFloat(), it.translationY.toFloat()) }
-            .hydratedStateOf(traceName = "translation", initialValue = Offset(0f, 0f))
+            .hydratedStateOf(initialValue = Offset(0f, 0f))
 
     val scale: BurnInScaleViewModel by
         aodBurnInViewModel.movement
             .map { BurnInScaleViewModel(it.scale, it.scaleClockOnly) }
-            .hydratedStateOf(traceName = "scale", initialValue = BurnInScaleViewModel())
+            .hydratedStateOf(initialValue = BurnInScaleViewModel())
 
     @AssistedFactory
     interface Factory {

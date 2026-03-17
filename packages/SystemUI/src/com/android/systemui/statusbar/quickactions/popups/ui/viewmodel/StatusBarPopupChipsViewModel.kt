@@ -35,7 +35,6 @@ import com.android.systemui.statusbar.quickactions.sharescreen.ui.viewmodel.Shar
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -95,7 +94,7 @@ constructor(
         }
     }
 
-    override suspend fun onActivated(): Nothing {
+    override suspend fun onActivated() {
         coroutineScope {
             launch { avControlsChip.activate() }
             launch { mediaControlChip.activate() }
@@ -120,7 +119,6 @@ constructor(
                     }
             }
         }
-        awaitCancellation()
     }
 
     private data class QuickActionChipBundle(

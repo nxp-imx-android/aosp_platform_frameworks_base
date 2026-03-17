@@ -27,8 +27,6 @@ import com.android.systemui.scene.shared.model.DualShadeEducationElement
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.coroutineScope
 
 class DualShadeEducationalTooltipsViewModel
 @AssistedInject
@@ -63,8 +61,6 @@ constructor(
                     else -> null
                 }
             }
-
-    override suspend fun onActivated(): Nothing = coroutineScope { awaitCancellation() }
 
     private fun notificationsTooltip(): DualShadeEducationalTooltipViewModel? {
         val bounds =

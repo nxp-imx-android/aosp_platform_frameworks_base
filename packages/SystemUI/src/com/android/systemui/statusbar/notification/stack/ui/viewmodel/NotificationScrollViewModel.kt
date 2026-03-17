@@ -103,7 +103,7 @@ constructor(
     ActivatableFlowDumper by ActivatableFlowDumperImpl(dumpManager, "NotificationScrollViewModel"),
     ExclusiveActivatable() {
 
-    override suspend fun onActivated(): Nothing {
+    override suspend fun onActivated() {
         activateFlowDumper()
     }
 

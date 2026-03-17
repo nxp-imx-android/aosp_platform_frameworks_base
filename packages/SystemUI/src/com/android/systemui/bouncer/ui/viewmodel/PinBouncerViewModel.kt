@@ -114,12 +114,11 @@ constructor(
                 ::computeBackspaceButtonAppearance,
             )
             .hydratedStateOf(
-                traceName = "backspaceButtonAppearance",
                 initialValue =
                     computeBackspaceButtonAppearance(
                         mutablePinInput.value,
                         interactor.isAutoConfirmEnabled.value,
-                    ),
+                    )
             )
 
     private val _confirmButtonAppearance = MutableStateFlow(ActionButtonAppearance.Hidden)

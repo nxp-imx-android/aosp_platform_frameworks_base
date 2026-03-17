@@ -44,7 +44,6 @@ import com.android.systemui.shared.system.actioncorner.ActionCornerConstants
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.policy.data.repository.UserSetupRepository
 import javax.inject.Inject
-import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
@@ -68,7 +67,7 @@ constructor(
     private val noteTaskController: NoteTaskController,
 ) : ExclusiveActivatable() {
 
-    override suspend fun onActivated(): Nothing {
+    override suspend fun onActivated() {
         combine(
                 pointerDeviceRepository.isAnyPointerDeviceConnected,
                 actionCornerSettingRepository.isAnyActionConfigured,
@@ -117,7 +116,6 @@ constructor(
                     NONE -> {}
                 }
             }
-        awaitCancellation()
     }
 
     private fun getAction(region: ActionCornerRegion): ActionType {
