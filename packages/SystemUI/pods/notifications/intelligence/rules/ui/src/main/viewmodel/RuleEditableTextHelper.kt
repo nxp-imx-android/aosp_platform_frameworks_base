@@ -37,7 +37,7 @@ internal fun buildEditableRuleText(
     logger: Logger,
 ): RuleDisplayModel {
     val appsText: SingleFieldTextModel<AppModel>? =
-        viewModel.rule.includedApps?.let {
+        viewModel.rule.filter.includedApps?.let {
             createEditableIncludedAppsText(
                 selectedIncludedApps = it,
                 viewModel = viewModel,
@@ -49,7 +49,7 @@ internal fun buildEditableRuleText(
         }
 
     val contactsText: SingleFieldTextModel<ContactModel>? =
-        viewModel.rule.contacts?.let {
+        viewModel.rule.filter.contacts?.let {
             createEditableContactsText(
                 selectedContacts = it,
                 viewModel = viewModel,

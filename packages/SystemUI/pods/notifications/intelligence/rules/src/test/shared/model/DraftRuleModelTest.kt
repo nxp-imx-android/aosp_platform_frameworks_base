@@ -22,7 +22,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel.Companion.toDraft
+import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel.Companion.toFullRule
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -40,31 +42,17 @@ class DraftRuleModelTest : SysuiTestCase() {
 
         val draftRule = rule.toDraft()
 
-        assertThat(draftRule.isNew).isFalse()
+        assertThat(draftRule).isInstanceOf(DraftRuleModel.PreExisting::class.java)
+        assertThat((draftRule as DraftRuleModel.PreExisting).id).isEqualTo(1)
         assertThat(draftRule.action).isEqualTo(ActionModel.Bundle)
-        assertThat(draftRule.contacts).isNull()
-        assertThat(draftRule.includedApps).isNull()
+        assertThat(draftRule.filter.contacts).isNull()
+        assertThat(draftRule.filter.includedApps).isNull()
     }
 
     @Test
     fun toDraft_allFilledIn() {
-        val contacts =
-            ContactsModel(
-                listOf(
-                    ContactModel(lookupUri = "key".toUri(), name = "name", photoUri = "uri".toUri())
-                )
-            )
-        val includedApps =
-            IncludedAppsModel(
-                listOf(
-                    AppModel(
-                        uid = 13,
-                        label = "app label",
-                        icon = ShapeDrawable(),
-                        packageName = "app.name",
-                    )
-                )
-            )
+        val contacts = ContactsModel(listOf(FAKE_CONTACT))
+        val includedApps = IncludedAppsModel(listOf(FAKE_APP))
         val rule =
             RuleModel(
                 id = 2,
@@ -75,7 +63,140 @@ class DraftRuleModelTest : SysuiTestCase() {
         val draftRule = rule.toDraft()
 
         assertThat(draftRule.action).isEqualTo(ActionModel.Silence)
-        assertThat(draftRule.contacts).isEqualTo(RuleValue.Specified(contacts))
-        assertThat(draftRule.includedApps).isEqualTo(RuleValue.Specified(includedApps))
+        assertThat(draftRule.filter.contacts).isEqualTo(RuleValue.Specified(contacts))
+        assertThat(draftRule.filter.includedApps).isEqualTo(RuleValue.Specified(includedApps))
+    }
+
+    @Test
+    fun copyDraft_noArgs_isEqual() {
+        val draft =
+            DraftRuleModel.New(
+                ActionModel.HighlightAndAlert,
+                DraftFilterModel(contacts = RuleValue.Ambiguous("test")),
+            )
+
+        val copy = draft.copyDraft()
+
+        assertThat(copy).isEqualTo(draft)
+    }
+
+    @Test
+    fun copyDraft_changesActionOnly() {
+        val draft =
+            DraftRuleModel.New(
+                ActionModel.HighlightAndAlert,
+                DraftFilterModel(contacts = RuleValue.Ambiguous("test")),
+            )
+
+        val copy = draft.copyDraft(action = ActionModel.Silence)
+
+        assertThat(copy)
+            .isEqualTo(
+                DraftRuleModel.New(
+                    action = ActionModel.Silence,
+                    filter = DraftFilterModel(contacts = RuleValue.Ambiguous("test")),
+                )
+            )
+    }
+
+    @Test
+    fun copyDraft_changesFilterOnly() {
+        val draft =
+            DraftRuleModel.New(
+                ActionModel.HighlightAndAlert,
+                DraftFilterModel(contacts = RuleValue.Ambiguous("test")),
+            )
+
+        val newFilter = DraftFilterModel(contacts = RuleValue.Ambiguous("new"))
+        val copy = draft.copyDraft(filter = newFilter)
+
+        assertThat(copy)
+            .isEqualTo(
+                DraftRuleModel.New(action = ActionModel.HighlightAndAlert, filter = newFilter)
+            )
+    }
+
+    @Test
+    fun toFullRule_new_hasAmbiguousValues_throws() {
+        val newRule =
+            DraftRuleModel.New(
+                action = ActionModel.Bundle,
+                filter =
+                    DraftFilterModel(
+                        includedApps = RuleValue.Ambiguous("social media apps"),
+                        contacts = RuleValue.Specified(ContactsModel(listOf(FAKE_CONTACT))),
+                    ),
+            )
+
+        assertThrows(IllegalArgumentException::class.java) { newRule.toFullRule(1) }
+    }
+
+    @Test
+    fun toFullRule_new_noAmbiguousValues() {
+        val newRule =
+            DraftRuleModel.New(
+                action = ActionModel.Bundle,
+                filter =
+                    DraftFilterModel(
+                        includedApps = null,
+                        contacts = RuleValue.Specified(ContactsModel(listOf(FAKE_CONTACT))),
+                    ),
+            )
+
+        val fullRule = newRule.toFullRule(id = 4)
+
+        assertThat(fullRule.id).isEqualTo(4)
+        assertThat(fullRule.action).isEqualTo(ActionModel.Bundle)
+        assertThat(fullRule.filter.includedApps).isNull()
+        assertThat(fullRule.filter.contacts).isEqualTo(ContactsModel(listOf(FAKE_CONTACT)))
+    }
+
+    @Test
+    fun toFullRule_preExisting_hasAmbiguousValues_throws() {
+        val newRule =
+            DraftRuleModel.PreExisting(
+                id = 10,
+                action = ActionModel.Bundle,
+                filter =
+                    DraftFilterModel(
+                        includedApps = RuleValue.Specified(IncludedAppsModel(listOf(FAKE_APP))),
+                        contacts = RuleValue.Ambiguous("siblings"),
+                    ),
+            )
+
+        assertThrows(IllegalArgumentException::class.java) { newRule.toFullRule() }
+    }
+
+    @Test
+    fun toFullRule_preExisting_noAmbiguousValues() {
+        val newRule =
+            DraftRuleModel.PreExisting(
+                id = 10,
+                action = ActionModel.Bundle,
+                filter =
+                    DraftFilterModel(
+                        includedApps = RuleValue.Specified(IncludedAppsModel(listOf(FAKE_APP))),
+                        contacts = null,
+                    ),
+            )
+
+        val fullRule = newRule.toFullRule()
+
+        assertThat(fullRule.id).isEqualTo(10)
+        assertThat(fullRule.action).isEqualTo(ActionModel.Bundle)
+        assertThat(fullRule.filter.includedApps).isEqualTo(IncludedAppsModel(listOf(FAKE_APP)))
+        assertThat(fullRule.filter.contacts).isNull()
+    }
+
+    companion object {
+        private val FAKE_CONTACT =
+            ContactModel(lookupUri = "key".toUri(), name = "name", photoUri = "uri".toUri())
+        private val FAKE_APP =
+            AppModel(
+                uid = 13,
+                label = "app label",
+                icon = ShapeDrawable(),
+                packageName = "app.name",
+            )
     }
 }

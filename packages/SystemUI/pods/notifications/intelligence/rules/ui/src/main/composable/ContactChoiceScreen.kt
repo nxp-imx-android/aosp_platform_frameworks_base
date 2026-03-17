@@ -44,7 +44,7 @@ fun ContactChoiceScreen(
     val contentResolver = LocalContext.current.contentResolver
 
     val initialSelection =
-        when (val contacts = viewModel.rule.contacts) {
+        when (val contacts = viewModel.rule.filter.contacts) {
             is RuleValue.Specified -> contacts.value.contacts
             is RuleValue.Ambiguous -> emptyList()
             null -> emptyList()

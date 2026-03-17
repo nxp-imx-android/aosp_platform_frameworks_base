@@ -17,20 +17,20 @@
 package com.android.systemui.notifications.intelligence.rules.data.repository
 
 import android.app.NotificationManager
-import android.app.NotificationRule
-import android.app.NotificationRule.Action.PRIMARY_ACTION_BLOCK
-import android.app.NotificationRule.Action.PRIMARY_ACTION_BUNDLE
-import android.app.NotificationRule.Action.PRIMARY_ACTION_HIGHLIGHT
-import android.app.NotificationRule.Action.PRIMARY_ACTION_HIGHLIGHT_AND_ALERT
-import android.app.NotificationRule.Action.PRIMARY_ACTION_LOW
+import androidx.annotation.MainThread
 import androidx.compose.runtime.mutableStateListOf
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRuleConversionHelper.toInternalModel
+import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRuleConversionHelper.validActionsMap
+import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRuleToExternalHelpers.toExternalRuleFormat
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel.Companion.toFullRule
 import com.android.systemui.notifications.intelligence.rules.shared.model.FilterModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ResponseModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
@@ -47,9 +47,12 @@ constructor(
     private val notificationManager: NotificationManager,
     private val freeformRuleRepository: FreeformRuleRepository,
     @Application private val applicationScope: CoroutineScope,
+    @Main private val mainDispatcher: CoroutineDispatcher,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
 ) : NotificationRulesRepository, CoreStartable {
     override var rules = mutableStateListOf<RuleModel>()
+
+    private val availableRuleIds = mutableStateListOf<Int>().apply { addAll(RULE_ID_RANGE) }
 
     override fun start() {
         if (!NmContextualDisplayLaunch.isEnabled) {
@@ -58,10 +61,13 @@ constructor(
 
         applicationScope.launch {
             val initialRules = withContext(backgroundDispatcher) { fetchInitialRules() }
+            val initialRuleIds = initialRules.map { it.id }
 
             // Modify `rules` on the main thread so order is guaranteed.
             rules.clear()
             rules.addAll(initialRules)
+
+            availableRuleIds.removeAll(initialRuleIds)
         }
     }
 
@@ -69,7 +75,7 @@ constructor(
         return notificationManager.notificationRules
             .filter {
                 // TODO: b/478225883 - Log error if action isn't valid.
-                validActions.contains(it.action.primaryAction)
+                validActionsMap.containsKey(it.action.primaryAction)
             }
             .map {
                 RuleModel(
@@ -88,36 +94,77 @@ constructor(
         return freeformRuleRepository.createDraftRuleFromFreeformText(action, text)
     }
 
-    override fun createRule(newRule: RuleModel) {
+    override suspend fun saveRule(rule: DraftRuleModel): Boolean {
         NmContextualDisplayLaunch.expectInNewMode()
-        // TODO: b/478225883 - Send rule to system_server for saving. Use an actor pattern with a
-        // Channel to avoid blocking the main thread and guarantee order of operations.
-        rules += newRule
-    }
 
-    private fun NotificationRule.Action.toInternalModel(): ActionModel {
-        return when (this.primaryAction) {
-            PRIMARY_ACTION_HIGHLIGHT_AND_ALERT -> ActionModel.HighlightAndAlert
-            PRIMARY_ACTION_HIGHLIGHT -> ActionModel.Highlight
-            PRIMARY_ACTION_LOW -> ActionModel.Silence
-            PRIMARY_ACTION_BUNDLE -> ActionModel.Bundle
-            PRIMARY_ACTION_BLOCK -> ActionModel.Block
-            else ->
-                throw IllegalStateException(
-                    "Action $this should have been filtered out previously. " +
-                        "Does validActions need to be updated?"
-                )
+        return when (rule) {
+            is DraftRuleModel.New -> createNewRule(rule)
+            is DraftRuleModel.PreExisting -> updateExistingRule(rule)
         }
     }
 
+    private suspend fun createNewRule(newRule: DraftRuleModel.New): Boolean {
+        val position = 0
+        val formedRule = newRule.toFullRule(id = generateIdForNewRule())
+        val externalRule = formedRule.toExternalRuleFormat()
+        val savedRule =
+            withContext(backgroundDispatcher) {
+                val createdRule = notificationManager.addNotificationRule(externalRule, position)
+                if (createdRule != null) {
+                    // TODO: b/478225883 - Use the rule returned from NotificationManager as the
+                    // official rule definition
+                    formedRule
+                } else {
+                    null
+                }
+            }
+
+        if (savedRule != null) {
+            withContext(mainDispatcher) {
+                // Always modify rules list & IDs list on main thread
+                rules.add(position, savedRule)
+                availableRuleIds.remove(savedRule.id)
+            }
+        }
+        return savedRule != null
+    }
+
+    private suspend fun updateExistingRule(updatedRule: DraftRuleModel.PreExisting): Boolean {
+        val formedRule = updatedRule.toFullRule()
+        val externalRule = formedRule.toExternalRuleFormat()
+        val savedRule =
+            withContext(backgroundDispatcher) {
+                val updatedRule = notificationManager.updateNotificationRule(externalRule)
+                if (updatedRule != null) {
+                    // TODO: b/478225883 - Use the rule returned from NotificationManager as the
+                    // official rule definition
+                    formedRule
+                } else {
+                    null
+                }
+            }
+
+        if (savedRule != null) {
+            withContext(mainDispatcher) {
+                // Always modify rules list on main thread
+                val existingRuleIndex = rules.indexOfFirst { it.id == savedRule.id }
+                rules[existingRuleIndex] = savedRule
+            }
+        }
+        return savedRule != null
+    }
+
+    @MainThread // Keep on the main thread so that two rules can't take the same ID
+    private fun generateIdForNewRule(): Int {
+        if (availableRuleIds.isEmpty()) {
+            // TODO: b/478225883 - In the UI, don't allow a user to start creating a rule if they're
+            //  already maxed out.
+            throw IllegalStateException("All rule slots are already taken")
+        }
+        return availableRuleIds[0]
+    }
+
     companion object {
-        private val validActions =
-            listOf(
-                PRIMARY_ACTION_HIGHLIGHT_AND_ALERT,
-                PRIMARY_ACTION_HIGHLIGHT,
-                PRIMARY_ACTION_LOW,
-                PRIMARY_ACTION_BUNDLE,
-                PRIMARY_ACTION_BLOCK,
-            )
+        private val RULE_ID_RANGE = 100..125
     }
 }

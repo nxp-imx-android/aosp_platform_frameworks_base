@@ -17,46 +17,82 @@
 package com.android.systemui.notifications.intelligence.rules.shared.model
 
 /**
- * Represents a **draft** of a notification rule. Notification rules control when and how
- * notifications are presented.
+ * The equivalent of [FilterModel] for draft rules.
  *
- * This rule draft is being edited by a user and is not yet saved anywhere. And because it's a
- * draft, some values may be underspecified. Any underspecified values will use
- * [RuleValue.Ambiguous], and the user will have to specify the value in the UI before the rule is
- * saved.
- *
- * This is mostly an internal equivalent of [android.app.NotificationRule], but with ambiguous value
- * support as well.
- *
- * See also: [RuleModel] for rules that are already saved.
+ * Because the rule is a draft, some values may be underspecified. Any underspecified values will
+ * use [RuleValue.Ambiguous], and the user will have to specify the value in the UI before the rule
+ * is saved.
  */
-public data class DraftRuleModel(
-    /**
-     * True if the rule being edited is completely new, and false if the rule already existed
-     * previously.
-     */
-    val isNew: Boolean,
-    /** The action to apply to the notification. See [android.app.NotificationRule.getAction]. */
-    val action: ActionModel,
+data class DraftFilterModel(
     /**
      * The contacts that this rule applies to. Null if contacts are not part of the rule filter. See
      * [android.app.NotificationRule.Filter.getContacts].
      */
-    val contacts: RuleValue<ContactsModel>?,
+    val contacts: RuleValue<ContactsModel>? = null,
     /**
      * The apps that this rule applies to. Null if included apps are not part of the rule filter.
      * [android.app.NotificationRule.Filter.getIncludedPackageUids].
      */
-    val includedApps: RuleValue<IncludedAppsModel>?,
+    val includedApps: RuleValue<IncludedAppsModel>? = null,
 ) {
-    public companion object {
+    /** True if any parts of the filter are still ambiguous. */
+    val hasAmbiguousValues: Boolean
+        get() {
+            return contacts is RuleValue.Ambiguous || includedApps is RuleValue.Ambiguous
+        }
+}
+
+/**
+ * Represents a **draft** of a notification rule. Notification rules control when and how
+ * notifications are presented.
+ *
+ * This rule draft is being edited by a user. This is mostly an internal equivalent of
+ * [android.app.NotificationRule], but with ambiguous value support as well.
+ *
+ * See also: [RuleModel] for rules that are already saved.
+ */
+sealed interface DraftRuleModel {
+    /** The action to apply to the notification. See [android.app.NotificationRule.getAction]. */
+    val action: ActionModel
+    /** The filter on the rule. See [android.app.NotificationRule.Filter]. */
+    val filter: DraftFilterModel
+
+    /** True if any parts of the rule are still ambiguous. */
+    val hasAmbiguousValues: Boolean
+        get() = filter.hasAmbiguousValues
+
+    /** This represents a new rule being created. */
+    data class New(override val action: ActionModel, override val filter: DraftFilterModel) :
+        DraftRuleModel
+
+    /** This represents a pre-existing rule being edited. */
+    data class PreExisting(
+        val id: Int,
+        override val action: ActionModel,
+        override val filter: DraftFilterModel,
+    ) : DraftRuleModel
+
+    /** Copies this draft, changing the given values. */
+    fun copyDraft(
+        action: ActionModel = this.action,
+        filter: DraftFilterModel = this.filter,
+    ): DraftRuleModel {
+        return when (this) {
+            is New -> this.copy(action = action, filter = filter)
+            is PreExisting -> this.copy(action = action, filter = filter)
+        }
+    }
+
+    companion object {
         /** Converts a rule to a draft version so it can be edited. */
-        public fun RuleModel.toDraft(): DraftRuleModel {
-            return DraftRuleModel(
-                isNew = false,
-                action = action,
-                contacts = filter.contacts.toDraft(),
-                includedApps = filter.includedApps.toDraft(),
+        fun RuleModel.toDraft(): DraftRuleModel {
+            return PreExisting(id = id, action = action, filter = filter.toDraft())
+        }
+
+        private fun FilterModel.toDraft(): DraftFilterModel {
+            return DraftFilterModel(
+                contacts = this.contacts.toDraft(),
+                includedApps = this.includedApps.toDraft(),
             )
         }
 
@@ -66,6 +102,47 @@ public data class DraftRuleModel(
                 null
             } else {
                 RuleValue.Specified(this)
+            }
+        }
+
+        /**
+         * Converts a new draft rule to a fully fledged rule.
+         *
+         * @throws IllegalStateException if any of the values in [filter] are [RuleValue.Ambiguous].
+         */
+        fun New.toFullRule(id: Int): RuleModel {
+            return RuleModel(id = id, action = this.action, filter = this.filter.toFullFilter())
+        }
+
+        /**
+         * Converts a pre-existing draft rule to a fully fledged rule.
+         *
+         * @throws IllegalStateException if any of the values in [filter] are [RuleValue.Ambiguous].
+         */
+        fun PreExisting.toFullRule(): RuleModel {
+            return RuleModel(
+                id = this.id,
+                action = this.action,
+                filter = this.filter.toFullFilter(),
+            )
+        }
+
+        private fun DraftFilterModel.toFullFilter(): FilterModel {
+            return FilterModel(
+                contacts = this.contacts.toFullValue(),
+                includedApps = this.includedApps.toFullValue(),
+            )
+        }
+
+        private fun <T> RuleValue<T>?.toFullValue(): T? {
+            return when (this) {
+                is RuleValue.Specified<T> -> this.value
+                is RuleValue.Ambiguous<T> -> {
+                    throw IllegalArgumentException(
+                        "All values must be specified before a rule can be created"
+                    )
+                }
+                null -> null
             }
         }
     }

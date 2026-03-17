@@ -21,6 +21,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayTestConfig
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.DraftFilterModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ResponseModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
@@ -49,11 +50,13 @@ constructor(
             } else {
                 // TODO: b/478225883 - Send freeform text for processing.
                 val newDraftRule =
-                    DraftRuleModel(
-                        isNew = true,
+                    DraftRuleModel.New(
                         action = action,
-                        contacts = RuleValue.Ambiguous(text),
-                        includedApps = null,
+                        filter =
+                            DraftFilterModel(
+                                contacts = RuleValue.Ambiguous(text),
+                                includedApps = null,
+                            ),
                     )
                 ResponseModel.Success(newDraftRule)
             }

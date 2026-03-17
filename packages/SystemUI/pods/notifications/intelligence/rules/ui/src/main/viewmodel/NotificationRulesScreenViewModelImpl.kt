@@ -38,7 +38,7 @@ constructor(
     private val interactor: NotificationRulesInteractor,
     private val contactsInteractor: ContactsInteractor,
     @NotificationRulesLog logBuffer: LogBuffer,
-    ) : NotificationRulesScreenViewModel, HydratedActivatable() {
+) : NotificationRulesScreenViewModel, HydratedActivatable() {
     private val logger = Logger(logBuffer, "ScreenViewModel")
 
     override val rules: List<RuleModel>
@@ -46,10 +46,6 @@ constructor(
 
     override val currentScreen: RulesScreenViewState
         get() = backStack[backStack.size - 1]
-
-    override fun createRule(newRule: RuleModel) {
-        interactor.createRule(newRule)
-    }
 
     override fun buildRuleText(rule: RuleModel, resources: Resources): RuleDisplayModel {
         return buildReadOnlyRuleText(rule, resources, logger)

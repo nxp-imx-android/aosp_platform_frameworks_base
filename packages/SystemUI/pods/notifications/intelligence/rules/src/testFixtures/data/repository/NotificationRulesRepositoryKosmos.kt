@@ -27,6 +27,7 @@ val Kosmos.realNotificationRulesRepository by
             notificationManager,
             freeformRuleRepository = realFreeformRuleRepository,
             applicationScope = applicationCoroutineScope,
+            mainDispatcher = testDispatcher,
             backgroundDispatcher = testDispatcher,
         )
     }

@@ -38,7 +38,7 @@ fun AppChoiceScreen(viewState: RulesScreenViewState.EditField.Apps, onDismissReq
     val viewModel = viewState.viewModel
 
     val initialSelection: List<AppModel> =
-        when (val apps = viewModel.rule.includedApps) {
+        when (val apps = viewModel.rule.filter.includedApps) {
             is RuleValue.Specified -> apps.value.apps
             is RuleValue.Ambiguous -> emptyList()
             null -> emptyList()
