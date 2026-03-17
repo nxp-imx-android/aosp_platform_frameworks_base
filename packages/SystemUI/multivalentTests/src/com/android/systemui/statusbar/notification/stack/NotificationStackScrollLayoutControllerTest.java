@@ -156,7 +156,7 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
     private final StackStateLogger mStackLogger = new StackStateLogger(logcatLogBuffer(),
             logcatLogBuffer());
     private final NotificationStackScrollLogger mLogger = new NotificationStackScrollLogger(
-            logcatLogBuffer(), logcatLogBuffer(), logcatLogBuffer(), logcatLogBuffer());
+            logcatLogBuffer(), logcatLogBuffer(), logcatLogBuffer());
     @Mock private NotificationStackSizeCalculator mNotificationStackSizeCalculator;
     @Mock private NotificationTargetsHelper mNotificationTargetsHelper;
     @Mock private SecureSettings mSecureSettings;
