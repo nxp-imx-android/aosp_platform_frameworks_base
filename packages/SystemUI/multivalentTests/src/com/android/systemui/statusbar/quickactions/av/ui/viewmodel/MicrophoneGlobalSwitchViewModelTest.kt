@@ -47,7 +47,8 @@ class MicrophoneGlobalSwitchViewModelTest : SysuiTestCase() {
     fun initialState_micEnabled() =
         kosmos.runTest {
             assertThat(underTest.state.isEnabled).isTrue()
-            assertThat(underTest.state.image).isEqualTo(com.android.systemui.res.R.drawable.gs_mic)
+            assertThat(underTest.state.image)
+                .isEqualTo(com.android.systemui.res.R.drawable.gs_mic)
         }
 
     @Test

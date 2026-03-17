@@ -26,9 +26,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -39,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -216,7 +214,7 @@ private fun SupportingContent(
             val hasMicrophone = sensors.contains(Sensor.MICROPHONE)
             if (hasCamera) {
                 Icon(
-                    imageVector = Icons.Filled.Videocam,
+                    painter = painterResource(id = R.drawable.av_controls_chip_camera),
                     contentDescription = null,
                     tint = colorScheme.onSurface,
                 )
@@ -235,7 +233,7 @@ private fun SupportingContent(
             }
             if (hasMicrophone) {
                 Icon(
-                    imageVector = Icons.Filled.Mic,
+                    painter = painterResource(id = R.drawable.av_controls_chip_mic),
                     contentDescription = null,
                     tint = colorScheme.onSurface,
                 )
