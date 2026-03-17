@@ -231,8 +231,8 @@
     <item msgid="938784192903353277">"4K"</item>
     <item msgid="3210535805151556703">"4K (bezbedno, spoljni)"</item>
     <item msgid="7322156123728520872">"4K (uvećana rezolucija)"</item>
-    <item msgid="7117474422501223109">"4K (uvećana rezolucija, spoljni, bezbedno)"</item>
-    <item msgid="6450685034481873043">"720 piksela, 1080 piksela (2 ekrana, spoljni, bezbedno)"</item>
+    <item msgid="7117474422501223109">"4K (uvećana rez, spoljni, bezbedno)"</item>
+    <item msgid="6450685034481873043">"720 p, 1080 p (2 ekr, spoljni, bezb)"</item>
   </string-array>
   <string-array name="enable_opengl_traces_entries">
     <item msgid="4433736508877934305">"Nijedan"</item>
