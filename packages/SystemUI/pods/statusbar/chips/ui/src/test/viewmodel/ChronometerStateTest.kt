@@ -16,11 +16,9 @@
 
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
-import android.platform.test.annotations.EnableFlags
-import android.platform.test.flag.junit.FlagsParameterization
 import android.text.format.DateUtils.formatElapsedTime
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.statusbar.chips.ui.model.Chronometer
 import com.android.systemui.statusbar.chips.ui.model.EventTime
@@ -41,16 +39,11 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4
-import platform.test.runner.parameterized.Parameters
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
-@RunWith(ParameterizedAndroidJunit4::class)
-class ChronometerStateTest(flags: FlagsParameterization) : SysuiTestCase() {
-    init {
-        mSetFlagsRule.setFlagsParameterization(flags)
-    }
+@RunWith(AndroidJUnit4::class)
+class ChronometerStateTest : SysuiTestCase() {
 
     private val fakeTimeSource = testKosmos().fakeSystemClock
 
@@ -111,7 +104,6 @@ class ChronometerStateTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_STATUS_BAR_CHRONOMETER_FIXES)
     fun initialText_isEventInFutureFalse_roundsUp() = runTest {
         fakeTimeSource.setElapsedRealtime(4_600)
         val state =
@@ -439,13 +431,11 @@ class ChronometerStateTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     /** Regression test for b/450909625. */
     @Test
-    @EnableFlags(Flags.FLAG_STATUS_BAR_CHRONOMETER_FIXES)
     fun textUpdates_elapsedRealtime_isEventInFutureTrue_initialDelaySkewIsCorrect() =
         textUpdates_isEventInFutureTrue_initialDelaySkewIsCorrect(RunningTimeTest.ELAPSED_REALTIME)
 
     /** Regression test for b/450909625. */
     @Test
-    @EnableFlags(Flags.FLAG_STATUS_BAR_CHRONOMETER_FIXES)
     fun textUpdates_clockTime_isEventInFutureTrue_initialDelaySkewIsCorrect() =
         textUpdates_isEventInFutureTrue_initialDelaySkewIsCorrect(RunningTimeTest.CLOCK_TIME)
 
@@ -509,12 +499,10 @@ class ChronometerStateTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_STATUS_BAR_CHRONOMETER_FIXES)
     fun textUpdates_elapsedRealtime_isEventInFutureTrue_ticksEachSecond() =
         textUpdates_isEventInFutureTrue_ticksEachSecond(RunningTimeTest.ELAPSED_REALTIME)
 
     @Test
-    @EnableFlags(Flags.FLAG_STATUS_BAR_CHRONOMETER_FIXES)
     fun textUpdates_clockTime_isEventInFutureTrue_ticksEachSecond() =
         textUpdates_isEventInFutureTrue_ticksEachSecond(RunningTimeTest.CLOCK_TIME)
 
@@ -789,12 +777,6 @@ class ChronometerStateTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     companion object {
-        @JvmStatic
-        @Parameters(name = "{0}")
-        fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(Flags.FLAG_STATUS_BAR_CHRONOMETER_FIXES)
-        }
-
         private val SYSTEM_NOW = Instant.ofEpochMilli(1763645100000) // 2025-11-20 13:25:00 UTC
     }
 }
