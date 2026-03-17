@@ -395,7 +395,7 @@ private fun ContentScope.BesideUserSwitcherLayout(
         when {
             isContainerized -> PaddingValues(vertical = 96.dp)
             isHeightExpanded -> PaddingValues(vertical = 128.dp)
-            else -> PaddingValues(top = 96.dp, bottom = 48.dp)
+            else -> PaddingValues(top = 56.dp, bottom = 48.dp)
         }
 
     var swapAnimationEnd by remember { mutableStateOf(false) }
@@ -887,7 +887,7 @@ private fun UserSwitcher(viewModel: BouncerOverlayContentViewModel, modifier: Mo
             Spacer(modifier = Modifier.height(24.dp))
             UserNamePill(viewModel = viewModel, maxWidth = maxUserSwitcherWidth)
         } else {
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(30.dp))
             UserSwitcherDropdown(viewModel = viewModel, width = maxUserSwitcherWidth)
         }
     }
