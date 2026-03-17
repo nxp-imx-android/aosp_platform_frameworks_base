@@ -18,8 +18,7 @@ package com.android.server.companion.virtual.computercontrol;
 
 import static android.Manifest.permission.ACCESS_COMPUTER_CONTROL;
 import static android.Manifest.permission.POST_NOTIFICATIONS;
-
-import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionProcessor.MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17;
+import static android.companion.virtual.computercontrol.ComputerControlSessionParams.MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;

@@ -16,8 +16,9 @@
 
 package com.android.server.companion.virtual.computercontrol;
 
+import static android.companion.virtual.computercontrol.ComputerControlSessionParams.MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17;
+
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionProcessor.MAXIMUM_CONCURRENT_SESSIONS;
-import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionProcessor.MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;

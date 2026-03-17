@@ -16,6 +16,8 @@
 
 package android.companion.virtual.computercontrol;
 
+import static android.companion.virtual.computercontrol.ComputerControlSessionParams.MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17;
+
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -42,7 +44,6 @@ import java.util.List;
 public class ComputerControlSessionParamsTest {
 
     private static final String SESSION_NAME = "ComputerControlSessionName";
-    private static final int TARGET_COMPUTER_CONTROL_VERSION = 5;
     private static final String TARGET_PACKAGE_1 = "com.android.foo";
     private static final String TARGET_PACKAGE_2 = "com.android.bar";
     private static final List<String> TARGET_PACKAGE_NAMES =
@@ -82,7 +83,8 @@ public class ComputerControlSessionParamsTest {
         ComputerControlSessionParams originalParams =
                 new ComputerControlSessionParams.Builder()
                         .setName(SESSION_NAME)
-                        .setTargetComputerControlVersion(TARGET_COMPUTER_CONTROL_VERSION)
+                        .setTargetComputerControlVersion(
+                                MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17)
                         .setTargetPackageNames(TARGET_PACKAGE_NAMES)
                         .setPreviewIntent(previewIntent)
                         .setAppInteractionAttribution(APP_INTERACTION_ATTRIBUTION)
@@ -97,7 +99,7 @@ public class ComputerControlSessionParamsTest {
                 ComputerControlSessionParams.CREATOR.createFromParcel(parcel);
         assertThat(params.getName()).isEqualTo(SESSION_NAME);
         assertThat(params.getTargetComputerControlVersion())
-                .isEqualTo(TARGET_COMPUTER_CONTROL_VERSION);
+                .isEqualTo(MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17);
         assertThat(params.getTargetPackageNames()).containsExactlyElementsIn(TARGET_PACKAGE_NAMES);
         assertThat(params.getPreviewIntent()).isEqualTo(previewIntent);
         assertThat(params.getAppInteractionAttribution()).isEqualTo(APP_INTERACTION_ATTRIBUTION);
@@ -185,6 +187,34 @@ public class ComputerControlSessionParamsTest {
     }
 
     @Test
+    public void setTooManyTargetPackageNames_targetComputerControlVersion5_throwsException() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new ComputerControlSessionParams.Builder()
+                        .setName(SESSION_NAME)
+                        .setTargetComputerControlVersion(
+                                MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17)
+                        .setNotificationParams(NOTIFICATION_PARAMS)
+                        .setAppInteractionAttribution(APP_INTERACTION_ATTRIBUTION)
+                        .setTargetPackageNames(
+                                List.of("com.app1", "com.app2", "com.app3", "com.app4", "com.app5",
+                                        "com.app6", "com.app7"))
+                        .build());
+    }
+
+    @Test
+    public void setTooManyTargetPackageNames_targetComputerControlUnderVersion5_doesNotThrow() {
+        new ComputerControlSessionParams.Builder()
+                .setName(SESSION_NAME)
+                .setTargetComputerControlVersion(
+                        MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17 - 1)
+                .setTargetPackageNames(
+                        List.of("com.app1", "com.app2", "com.app3", "com.app4", "com.app5",
+                                "com.app6", "com.app7"))
+                .build();
+    }
+
+    @Test
     public void build_unsetName_throwsException() {
         assertThrows(
                 IllegalArgumentException.class,
@@ -206,7 +236,8 @@ public class ComputerControlSessionParamsTest {
         ComputerControlSessionParams params =
                 new ComputerControlSessionParams.Builder()
                         .setName(SESSION_NAME)
-                        .setTargetComputerControlVersion(TARGET_COMPUTER_CONTROL_VERSION)
+                        .setTargetComputerControlVersion(
+                                MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17)
                         .setTargetPackageNames(TARGET_PACKAGE_NAMES)
                         .setAppInteractionAttribution(APP_INTERACTION_ATTRIBUTION)
                         .setNotificationParams(NOTIFICATION_PARAMS)
@@ -221,7 +252,8 @@ public class ComputerControlSessionParamsTest {
         ComputerControlSessionParams params =
                 new ComputerControlSessionParams.Builder()
                         .setName(SESSION_NAME)
-                        .setTargetComputerControlVersion(4)
+                        .setTargetComputerControlVersion(
+                                MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17 - 1)
                         .setTargetPackageNames(TARGET_PACKAGE_NAMES)
                         .setAppInteractionAttribution(null)
                         .build();
@@ -235,7 +267,8 @@ public class ComputerControlSessionParamsTest {
         ComputerControlSessionParams params =
                 new ComputerControlSessionParams.Builder()
                         .setName(SESSION_NAME)
-                        .setTargetComputerControlVersion(TARGET_COMPUTER_CONTROL_VERSION)
+                        .setTargetComputerControlVersion(
+                                MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17)
                         .setTargetPackageNames(TARGET_PACKAGE_NAMES)
                         .setCompanionDeviceId(null)
                         .setNotificationParams(NOTIFICATION_PARAMS)
@@ -252,13 +285,13 @@ public class ComputerControlSessionParamsTest {
                 .setTargetPackageNames(TARGET_PACKAGE_NAMES)
                 .setAppInteractionAttribution(APP_INTERACTION_ATTRIBUTION)
                 .setNotificationParams(null)
-                .setTargetComputerControlVersion(4)
+                .setTargetComputerControlVersion(MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17 - 1)
                 .build();
         assertThat(params.getNotificationParams()).isNull();
     }
 
     @Test
-    public void build_withTargetComputerControlVersion5_unsetAppInteractionAttribution_throwsException() {
+    public void build_targetComputerControlVersion5_unsetAppInteractionAttribution_throwsException() {
         assertThrows(
                 IllegalArgumentException.class,
                 () ->
@@ -266,12 +299,13 @@ public class ComputerControlSessionParamsTest {
                                 .setName(SESSION_NAME)
                                 .setTargetPackageNames(TARGET_PACKAGE_NAMES)
                                 .setNotificationParams(NOTIFICATION_PARAMS)
-                                .setTargetComputerControlVersion(5)
+                                .setTargetComputerControlVersion(
+                                        MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17)
                                 .build());
     }
 
     @Test
-    public void build_withTargetComputerControlVersion5_unsetNotificationParams_throwsException() {
+    public void build_targetComputerControlVersion5_unsetNotificationParams_throwsException() {
         assertThrows(
                 IllegalArgumentException.class,
                 () ->
@@ -279,19 +313,21 @@ public class ComputerControlSessionParamsTest {
                                 .setName(SESSION_NAME)
                                 .setTargetPackageNames(TARGET_PACKAGE_NAMES)
                                 .setAppInteractionAttribution(APP_INTERACTION_ATTRIBUTION)
-                                .setTargetComputerControlVersion(5)
+                                .setTargetComputerControlVersion(
+                                        MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17)
                                 .build());
     }
 
     @Test
-    public void build_withCompanionDeviceId_targetVersionUnder5_throwsException() {
+    public void build_withCompanionDeviceId_targetComputerControlVersionUnder5_throwsException() {
         assertThrows(
                 IllegalArgumentException.class,
                 () ->
                         new ComputerControlSessionParams.Builder()
                                 .setName(SESSION_NAME)
                                 .setTargetPackageNames(TARGET_PACKAGE_NAMES)
-                                .setTargetComputerControlVersion(4)
+                                .setTargetComputerControlVersion(
+                                        MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17 - 1)
                                 .setCompanionDeviceId(COMPANION_DEVICE_ID)
                                 .build());
     }

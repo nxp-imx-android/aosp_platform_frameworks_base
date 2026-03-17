@@ -36,6 +36,10 @@ import java.util.Objects;
  */
 public final class ComputerControlSessionParams implements Parcelable {
 
+    private static final int MAX_TARGET_PACKAGES = 6;
+
+    public static final int MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17 = 5;
+
     private final String mName;
     private final int mTargetComputerControlVersion;
     private final List<String> mTargetPackageNames;
@@ -283,7 +287,7 @@ public final class ComputerControlSessionParams implements Parcelable {
                 throw new IllegalArgumentException("Target package names must be set");
             }
 
-            if (mTargetComputerControlVersion >= 5) {
+            if (mTargetComputerControlVersion >= MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17) {
                 if (android.app.appfunctions.flags.Flags.enableAppInteractionApi()
                         && mAppInteractionAttribution == null) {
                     throw new IllegalArgumentException(
@@ -293,12 +297,19 @@ public final class ComputerControlSessionParams implements Parcelable {
                     throw new IllegalArgumentException(
                             "Notification parameters must be set");
                 }
+                if (mTargetPackageNames.size() > MAX_TARGET_PACKAGES) {
+                    throw new IllegalArgumentException(
+                            "Number of target package names must not exceed "
+                                    + MAX_TARGET_PACKAGES);
+                }
             }
 
-            if (mCompanionDeviceId != null && mTargetComputerControlVersion < 5) {
+            if (mCompanionDeviceId != null
+                    && mTargetComputerControlVersion
+                    < MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17) {
                 throw new IllegalArgumentException(
-                        "companionDeviceId can only be used with targetComputerControlVersion 5 "
-                                + "or above");
+                        "companionDeviceId can only be used with targetComputerControlVersion "
+                                + MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17 + " or above");
             }
 
             return new ComputerControlSessionParams(
