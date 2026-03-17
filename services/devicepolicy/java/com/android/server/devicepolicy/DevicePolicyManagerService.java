@@ -22634,6 +22634,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     ) {
         mPermissions.enforce(MANAGE_ROLE_HOLDERS, getCallerIdentity());
         return mInjector.binderWithCleanCallingIdentity(() -> {
+            if (isDefaultRoleHolder(packageName)) {
+                return true;
+            }
             if (hasNonTestOnlyManagement()) {
                 return false;
             }
