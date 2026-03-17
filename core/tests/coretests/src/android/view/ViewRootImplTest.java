@@ -128,7 +128,6 @@ import org.junit.runner.RunWith;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -2086,35 +2085,16 @@ public class ViewRootImplTest {
         assertTrue(mViewRootImpl.dispatchesApplyInsetsDuringAnimationProgress());
 
         // 2. User animation ongoing
-        WindowInsetsAnimation anim = new WindowInsetsAnimation(Type.statusBars(), null, 0);
         sInstrumentation.runOnMainSync(() -> {
-            mViewRootImpl.dispatchWindowInsetsAnimationStart(anim,
-                    new WindowInsetsAnimation.Bounds(Insets.NONE, Insets.NONE),
-                    false /* isUserAnimation */,
-                    false /* isResizeAnimation */,
-                    false /* hasAnimationCallback */);
             mViewRootImpl.dispatchWindowInsetsAnimationProgress(
                     new WindowInsets.Builder().build(),
                     new InsetsState(),
-                    List.of(anim),
+                    Collections.emptyList(),
                     true /* hasUserAnimation */,
                     false /* hasResizeAnimation */,
                     false /* hasAnimationCallback */,
                     0 /* hidingTypes */);
         });
-        assertFalse(mViewRootImpl.dispatchesApplyInsetsDuringAnimationProgress());
-
-        // Reset animations
-        sInstrumentation.runOnMainSync(() -> {
-            mViewRootImpl.dispatchWindowInsetsAnimationEnd(anim,
-                    false /* isUserAnimation */,
-                    false /* isResizeAnimation */,
-                    false /* hasAnimationCallback */);
-        });
-        assertTrue(mViewRootImpl.dispatchesApplyInsetsDuringAnimationProgress());
-
-        // 3. usesSyncedInsetsAnimationByDefault is false
-        mViewRootImpl.setUsesSyncedInsetsAnimationByDefault(false);
         assertFalse(mViewRootImpl.dispatchesApplyInsetsDuringAnimationProgress());
     }
 

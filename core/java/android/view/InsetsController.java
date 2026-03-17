@@ -238,10 +238,10 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         }
 
         /**
-         * @return {@code true} if the default synchronized insets animation is enabled for this
+         * @return {@code true} if the default synchronized insets animation is allowed for this
          *         host, {@code false} otherwise.
          */
-        default boolean usesSyncedInsetsAnimationByDefault() {
+        default boolean allowsAdditionalSyncedAnimation() {
             return false;
         }
 
@@ -2023,7 +2023,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         final boolean hasAnimationCallbacks = mHost.hasAnimationCallbacks();
         final boolean useInsetsAnimationThread =
                 (!hasAnimationCallbacks && (!com.android.window.flags.Flags.syncedInsetsAnimation()
-                        || !mHost.usesSyncedInsetsAnimationByDefault())) || skipsCallbacks;
+                        || !mHost.allowsAdditionalSyncedAnimation())) || skipsCallbacks;
 
         Handler handler = null;
         if (Flags.fixJankTrackerImeAnimationDelay() && useInsetsAnimationThread) {
