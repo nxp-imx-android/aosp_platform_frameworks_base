@@ -21,6 +21,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.content.pm.ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED;
 import static android.content.pm.ActivityInfo.OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS;
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_EXCLUDE_CAPTION_INSETS;
@@ -30,8 +31,10 @@ import static com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeader
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 import android.compat.testing.PlatformCompatChangeRule;
+import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
@@ -273,6 +276,27 @@ public class AppCompatSandboxingPolicyTest extends WindowTestsBase {
         });
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_REFACTOR_CAPTION_SANDBOXING_TO_CORE)
+    public void testSandboxBoundsIfNeeded_freeform_shouldSandboxToAppBounds_configUpdated() {
+        runTestScenario((robot) -> {
+            robot.conf().setCanEnterDesktopMode(true);
+
+            robot.applyOnActivity((a) -> {
+                a.createActivityWithComponent();
+                a.setTaskWindowingMode(WINDOWING_MODE_FREEFORM);
+                a.configureUnresizableTopActivity(SCREEN_ORIENTATION_LANDSCAPE);
+            });
+            robot.assertScreenHeightDpMatchParent(true);
+            robot.setTaskIsCaptionInsetsExcluded(true);
+
+            robot.recomputeConfiguration();
+
+            robot.assertScreenHeightDpMatchParent(false);
+            robot.checkMaxBoundsSandboxed();
+        });
+    }
+
     /**
      * Runs a test scenario providing a Robot.
      */
@@ -324,6 +348,32 @@ public class AppCompatSandboxingPolicyTest extends WindowTestsBase {
             assertEquals(taskBounds.left, activityBounds.left);
             assertEquals(taskBounds.right, activityBounds.right);
             assertEquals(taskBounds.bottom, activityBounds.bottom);
+        }
+
+        void assertScreenHeightDpMatchParent(boolean expectedMatch) {
+            final ActivityRecord activity = activity().top();
+            final Configuration resolvedConfig = activity.getConfiguration();
+            final Configuration parentConfig = activity.getTask().getConfiguration();
+
+            if (expectedMatch) {
+                assertEquals(parentConfig.screenHeightDp, resolvedConfig.screenHeightDp);
+            } else {
+                assertNotEquals(parentConfig.screenHeightDp, resolvedConfig.screenHeightDp);
+            }
+        }
+
+        void checkMaxBoundsSandboxed() {
+            final ActivityRecord activity = activity().top();
+
+            assertTrue(activity.providesMaxBounds());
+
+            final Configuration resolvedConfig = activity.getConfiguration();
+            final Rect appBounds = resolvedConfig.windowConfiguration.getAppBounds();
+            final Rect bounds = resolvedConfig.windowConfiguration.getBounds();
+            final Rect maxBounds = resolvedConfig.windowConfiguration.getMaxBounds();
+
+            assertEquals(appBounds, maxBounds);
+            assertEquals(bounds, maxBounds);
         }
 
         void checkIsCaptionExcludedFromAppBounds(boolean expected, boolean isResizeable) {

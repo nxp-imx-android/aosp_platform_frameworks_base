@@ -81,7 +81,8 @@ class AppCompatSandboxingPolicy {
      * (see ConfigurationContainer#applySizeOverrideIfNeeded).
      */
     void sandboxBoundsIfNeeded(@NonNull Configuration resolvedConfig,
-            @WindowingMode int windowingMode) {
+            @NonNull Configuration parentConfig) {
+        final int windowingMode = parentConfig.windowConfiguration.getWindowingMode();
         if (shouldExcludeFreeformCaptionInsets(windowingMode)) {
             Rect appBounds = resolvedConfig.windowConfiguration.getAppBounds();
             if (appBounds == null || appBounds.isEmpty()) {
@@ -91,6 +92,7 @@ class AppCompatSandboxingPolicy {
             }
             if (mResolveConfigHint.shouldSandboxToAppBounds()) {
                 resolvedConfig.windowConfiguration.setBounds(appBounds);
+                mActivityRecord.computeConfigByResolveHint(resolvedConfig, parentConfig);
             }
         }
     }
