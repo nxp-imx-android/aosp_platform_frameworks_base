@@ -26,3 +26,9 @@ fun ComposeTestRule.swipeDownFromTopCenter() {
     onRoot().performTouchInput { swipe(start = topCenter, end = center, durationMillis = 200) }
     waitForIdle()
 }
+
+/** Swipes up from the center of the screen. */
+fun ComposeTestRule.swipeUpFromCenter() {
+    onRoot().performTouchInput { swipe(start = center, end = topCenter, durationMillis = 200) }
+    waitForIdle()
+}

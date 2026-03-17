@@ -18,6 +18,7 @@ package com.android.systemui.media
 import android.platform.test.annotations.DisableFlags
 import android.testing.TestableLooper
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
@@ -29,6 +30,7 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.snapshot.ObserveReadsRoot
 import com.android.compose.theme.PlatformTheme
+import com.android.internal.logging.InstanceId
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
@@ -37,10 +39,11 @@ import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.media.remedia.data.repository.fakeActiveMedia
-import com.android.systemui.media.remedia.data.repository.fakeResumableMedia
-import com.android.systemui.media.remedia.data.repository.setFakeCurrentMedia
-import com.android.systemui.media.remedia.data.repository.setHasMedia
+import com.android.systemui.media.controls.shared.model.MediaButton
+import com.android.systemui.media.remedia.data.repository.fakeActiveMediaData
+import com.android.systemui.media.remedia.data.repository.fakeResumableMediaData
+import com.android.systemui.media.remedia.data.repository.mediaPauseActionButton
+import com.android.systemui.media.remedia.data.repository.setFakeCurrentMediaData
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.notificationRulesParentViewModelFactory
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.qs.ui.composable.QuickSettingsScene
@@ -121,10 +124,9 @@ class MediaTransitionTest : SysuiTestCase() {
     @Test
     fun transitFromShadeToQuickSettings() {
         kosmos.runTest {
-            setFakeCurrentMedia(listOf(kosmos.fakeActiveMedia))
+            setFakeCurrentMediaData(listOf(kosmos.fakeActiveMediaData))
             usingMediaInComposeFragment = true
             enableSingleShade()
-            setHasMedia(true)
 
             composeTestRule.setContent { shadeSceneToQuickSettingsSceneContainer() }
             runCurrent()
@@ -132,7 +134,7 @@ class MediaTransitionTest : SysuiTestCase() {
 
             // Verify that the UMO show on shade.
             composeTestRule
-                .onNodeWithContentDescription(EXPECTED_UMO_CONTENT_DESC, substring = true)
+                .onNodeWithContentDescription(EXPECTED_UMO_TITLE, substring = true)
                 .assertIsDisplayed()
 
             composeTestRule.swipeDownFromTopCenter()
@@ -140,7 +142,7 @@ class MediaTransitionTest : SysuiTestCase() {
 
             // Verify that the UMO show on quick settings.
             composeTestRule
-                .onNodeWithContentDescription(EXPECTED_UMO_CONTENT_DESC, substring = true)
+                .onNodeWithContentDescription(EXPECTED_UMO_TITLE, substring = true)
                 .assertIsDisplayed()
         }
     }
@@ -150,22 +152,108 @@ class MediaTransitionTest : SysuiTestCase() {
     @Test
     fun resumableMediaPersistsInQuickSettings() =
         kosmos.runTest {
-            setFakeCurrentMedia(listOf(kosmos.fakeResumableMedia))
+            setFakeCurrentMediaData(listOf(kosmos.fakeResumableMediaData))
             usingMediaInComposeFragment = true
             enableSingleShade()
 
             composeTestRule.setContent { shadeSceneToQuickSettingsSceneContainer() }
+            runCurrent()
             composeTestRule.waitForIdle()
 
             composeTestRule
-                .onNodeWithContentDescription(EXPECTED_RESUMABLE_UMO_CONTENT_DESC, substring = true)
+                .onNodeWithContentDescription(EXPECTED_UMO_TITLE, substring = true)
                 .assertIsNotDisplayed()
 
             composeTestRule.swipeDownFromTopCenter()
             runCurrent()
 
             composeTestRule
-                .onNodeWithContentDescription(EXPECTED_RESUMABLE_UMO_CONTENT_DESC, substring = true)
+                .onNodeWithContentDescription(EXPECTED_UMO_TITLE, substring = true)
+                .assertIsDisplayed()
+        }
+
+    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    @Test
+    fun testResumeMedia() =
+        kosmos.runTest {
+            val media1 =
+                fakeResumableMediaData.copy(
+                    app = "app1",
+                    artist = "Fake artist 1",
+                    song = "Fake song 1",
+                    notificationKey = "fake_notification_key_1",
+                    instanceId = InstanceId.fakeInstanceId(1),
+                )
+            val media2 =
+                fakeResumableMediaData.copy(
+                    app = "app2",
+                    artist = "Fake artist 2",
+                    song = "Fake artist 2",
+                    notificationKey = "fake_notification_key_2",
+                    instanceId = InstanceId.fakeInstanceId(2),
+                )
+            val media3 =
+                fakeResumableMediaData.copy(
+                    app = "app3",
+                    artist = "Fake artist 3",
+                    song = "Fake song 3",
+                    notificationKey = "fake_notification_key_3",
+                    instanceId = InstanceId.fakeInstanceId(3),
+                )
+
+            usingMediaInComposeFragment = true
+            enableSingleShade()
+
+            composeTestRule.setContent { shadeSceneToQuickSettingsSceneContainer() }
+            setFakeCurrentMediaData(mutableStateListOf(media1, media2, media3))
+            runCurrent()
+            composeTestRule.waitForIdle()
+
+            // Verify that the UMO does not show on shade.
+            composeTestRule
+                .onNodeWithContentDescription(PLAY_BUTTON_CONTENT_DESC)
+                .assertIsNotDisplayed()
+
+            composeTestRule.swipeDownFromTopCenter()
+
+            // Verify that the UMO shows on qs.
+            composeTestRule
+                .onNodeWithContentDescription("Fake song 3", substring = true)
+                .assertIsDisplayed()
+            composeTestRule
+                .onNodeWithContentDescription(PLAY_BUTTON_CONTENT_DESC)
+                .assertIsDisplayed()
+
+            composeTestRule.swipeUpFromCenter()
+
+            val updatedMedia =
+                media1.copy(
+                    isPlaying = true,
+                    resumption = false,
+                    active = true,
+                    semanticActions = MediaButton(playOrPause = mediaPauseActionButton),
+                )
+
+            setFakeCurrentMediaData(mutableStateListOf(updatedMedia))
+            runCurrent()
+            composeTestRule.waitForIdle()
+
+            // Verify that the update UMO shows on shade.
+            composeTestRule
+                .onNodeWithContentDescription("Fake song 1", substring = true)
+                .assertIsDisplayed()
+            composeTestRule
+                .onNodeWithContentDescription(PAUSE_BUTTON_CONTENT_DESC)
+                .assertIsDisplayed()
+
+            composeTestRule.swipeDownFromTopCenter()
+
+            // Verify that the update UMO shows on qs.
+            composeTestRule
+                .onNodeWithContentDescription("Fake song 1", substring = true)
+                .assertIsDisplayed()
+            composeTestRule
+                .onNodeWithContentDescription(PAUSE_BUTTON_CONTENT_DESC)
                 .assertIsDisplayed()
         }
 
@@ -208,7 +296,8 @@ class MediaTransitionTest : SysuiTestCase() {
     }
 
     private companion object {
-        const val EXPECTED_UMO_CONTENT_DESC = "Fake_Music_Player"
-        const val EXPECTED_RESUMABLE_UMO_CONTENT_DESC = "Fake_Podcast_Player"
+        const val EXPECTED_UMO_TITLE = "Fake song"
+        const val PLAY_BUTTON_CONTENT_DESC = "Play"
+        const val PAUSE_BUTTON_CONTENT_DESC = "Pause"
     }
 }
