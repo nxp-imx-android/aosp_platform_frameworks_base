@@ -22,7 +22,7 @@ import androidx.compose.runtime.remember
 import com.android.app.tracing.coroutines.traceCoroutine
 
 /** Defines interface for classes that can be activated to do coroutine work. */
-public interface Activatable {
+interface Activatable {
 
     /**
      * Activates this object.
@@ -58,7 +58,7 @@ public interface Activatable {
      * }
      * ```
      */
-    public suspend fun activate(): Nothing
+    suspend fun activate(): Nothing
 }
 
 /**
@@ -74,11 +74,7 @@ public interface Activatable {
  * of some complex concatenation or templating scheme.
  */
 @Composable
-public fun <T : Activatable> rememberActivated(
-    traceName: String,
-    key: Any = Unit,
-    factory: () -> T,
-): T {
+fun <T : Activatable> rememberActivated(traceName: String, key: Any = Unit, factory: () -> T): T {
     val instance = remember(key) { factory() }
     LaunchedEffect(instance) { traceCoroutine(traceName) { instance.activate() } }
     return instance

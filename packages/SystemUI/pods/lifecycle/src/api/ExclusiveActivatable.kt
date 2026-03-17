@@ -24,11 +24,11 @@ import kotlinx.coroutines.awaitCancellation
  * call to [activate] must be canceled before a new call to [activate] can be made. Trying to call
  * [activate] while already active will result in a runtime error.
  */
-public abstract class ExclusiveActivatable : Activatable {
+abstract class ExclusiveActivatable : Activatable {
 
     private val _isActive = AtomicBoolean(false)
 
-    public var isActive: Boolean
+    var isActive: Boolean
         get() = _isActive.get()
         private set(value) {
             _isActive.set(value)
