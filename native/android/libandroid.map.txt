@@ -473,7 +473,6 @@ LIBANDROID_PLATFORM {
     APerformanceHint_closeSessionFromJava;
     APerformanceHint_createSessionFromJava;
     APerformanceHint_setReportBatchSizeCapForTesting;
-    ANpuBuffer_getFd;
     extern "C++" {
         ASurfaceControl_registerSurfaceStatsListener*;
         ASurfaceControl_unregisterSurfaceStatsListener*;
