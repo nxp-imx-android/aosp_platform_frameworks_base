@@ -943,7 +943,7 @@ public class PersonalContextManagerService extends SystemService {
 
                         if (Flags.enforcePersonalContextAllowlistAccessControl()) {
                             service.checkUidAccess(callingUid,
-                                    AccessController.ACCESS_PUBLISH_INSIGHTS);
+                                    AccessController.ACCESS_PUBLISH_HINTS);
                         }
                         getService()
                                 .publishInsightSurfaceHints(
