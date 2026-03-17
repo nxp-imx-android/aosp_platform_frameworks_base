@@ -18,6 +18,7 @@ package com.android.settingslib.metadata.preferencesapi.types
 
 import android.content.Context
 import com.android.settingslib.metadata.R
+import com.android.settingslib.metadata.preferencesapi.types.EType
 
 /**
  * The Ssid of a network which is either currently connected, able to be connected to, or saved to
@@ -25,7 +26,7 @@ import com.android.settingslib.metadata.R
  */
 class WifiSsid : DirectApiType<String> {
 
-    override fun getType(): Class<String> = String::class.java
+    override val externalType: EType<String> = EType.String
 
     override fun getDescription(context: Context): String =
         context.getString(R.string.wifi_ssid_type_description)

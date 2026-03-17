@@ -19,11 +19,12 @@ package com.android.settingslib.metadata.preferencesapi.types
 import android.content.Context
 import com.android.settingslib.metadata.KeyParametersSchema
 import com.android.settingslib.metadata.R
+import com.android.settingslib.metadata.preferencesapi.types.EType
 
 /** Any int in the given range, along the given step. */
 class IntInRange(val min: Int?, val max: Int?, val step: Int = 1, private val unitOfMeasurement: String? = null): DirectApiType<Int> {
 
-    override fun getType(): Class<Int> = Int::class.java
+    override val externalType: EType<Int> = EType.Int
 
     override fun getParametersSchema() = KeyParametersSchema.Builder()
         .parameter("unit", "The unit of measurement (if any) such as dB or milliseconds.", type = AnyString)
