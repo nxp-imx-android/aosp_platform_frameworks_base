@@ -23,8 +23,8 @@ import com.android.systemui.notifications.intelligence.rules.shared.NmContextual
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftFilterModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.KeywordsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ResponseModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
@@ -49,14 +49,16 @@ constructor(
                 ResponseModel.Error
             } else {
                 // TODO: b/478225883 - Send freeform text for processing.
+                val keywords =
+                    if (text.isNotBlank()) {
+                        KeywordsModel(listOf(text))
+                    } else {
+                        null
+                    }
                 val newDraftRule =
                     DraftRuleModel.New(
                         action = action,
-                        filter =
-                            DraftFilterModel(
-                                contacts = RuleValue.Ambiguous(text),
-                                includedApps = null,
-                            ),
+                        filter = DraftFilterModel(keywords = keywords),
                     )
                 ResponseModel.Success(newDraftRule)
             }

@@ -38,6 +38,7 @@ import com.android.systemui.notifications.intelligence.rules.shared.model.Contac
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.KeywordsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -73,6 +74,7 @@ constructor(
             onEnterEditField,
             onAppsSaved = { onAppsSaved(it, onExitEditField) },
             onContactsSaved = { onContactsSaved(it, onExitEditField) },
+            onKeywordsSaved = { onKeywordsSaved(it, onExitEditField) },
             resources = resources,
             logger = logger,
         )
@@ -103,6 +105,20 @@ constructor(
                     } else {
                         // Saving with no selected contacts is effectively removing contacts from
                         // the filter.
+                        null
+                    }
+            )
+        rule = rule.copyDraft(filter = newFilter)
+        onExitEditField()
+    }
+
+    override fun onKeywordsSaved(newKeywords: List<String>, onExitEditField: () -> Unit) {
+        val newFilter =
+            rule.filter.copy(
+                keywords =
+                    if (newKeywords.isNotEmpty()) {
+                        KeywordsModel(newKeywords)
+                    } else {
                         null
                     }
             )

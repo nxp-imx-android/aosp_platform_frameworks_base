@@ -34,6 +34,15 @@ data class DraftFilterModel(
      * [android.app.NotificationRule.Filter.getIncludedPackageUids].
      */
     val includedApps: RuleValue<IncludedAppsModel>? = null,
+    /**
+     * The keywords that the notification must contain in order for the rule to apply. Null if
+     * keywords are not part of the rule filter. See
+     * [android.app.NotificationRule.Filter.getKeywords].
+     *
+     * Note: Keywords can never be ambiguous since they're just strings, so this field doesn't use
+     * [RuleValue].
+     */
+    val keywords: KeywordsModel? = null,
 ) {
     /** True if any parts of the filter are still ambiguous. */
     val hasAmbiguousValues: Boolean
@@ -93,6 +102,7 @@ sealed interface DraftRuleModel {
             return DraftFilterModel(
                 contacts = this?.contacts.toDraft(),
                 includedApps = this?.includedApps.toDraft(),
+                keywords = this?.keywords,
             )
         }
 
@@ -128,10 +138,11 @@ sealed interface DraftRuleModel {
         }
 
         private fun DraftFilterModel.toFullFilter(): FilterModel? {
-            if (this.contacts != null || this.includedApps != null) {
+            if (this.contacts != null || this.includedApps != null || this.keywords != null) {
                 return FilterModel(
                     contacts = this.contacts.toFullValue(),
                     includedApps = this.includedApps.toFullValue(),
+                    keywords = this.keywords,
                 )
             }
 

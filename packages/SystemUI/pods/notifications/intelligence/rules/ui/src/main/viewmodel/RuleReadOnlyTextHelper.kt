@@ -22,6 +22,7 @@ import com.android.systemui.notifications.intelligence.rules.shared.model.AppMod
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.KeywordsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 
 /**
@@ -50,7 +51,22 @@ internal fun buildReadOnlyRuleText(
                 logger = logger,
             )
         }
-    return buildRuleText(appsText = appsText, contactsText = contactsText, resources = resources)
+
+    val keywordsText: SingleFieldTextModel<String>? =
+        rule.filter?.keywords?.let {
+            createReadOnlyKeywordsText(
+                selectedKeywords = it,
+                resources = resources,
+                logger = logger,
+            )
+        }
+
+    return buildRuleText(
+        appsText = appsText,
+        contactsText = contactsText,
+        keywordsText = keywordsText,
+        resources = resources,
+    )
 }
 
 /** Creates text representation for the included apps filter field. */
@@ -61,9 +77,10 @@ private fun createReadOnlyIncludedAppsText(
 ): SingleFieldTextModel<AppModel> {
     return createMultiItemText(
         items = selectedIncludedApps.apps,
-        id = { it.uniqueId },
+        iconId = { it.uniqueId },
         label = { it.label },
         onClick = null,
+        itemTextString = ItemTextStringConstants.includedAppString,
         resources = resources,
         logger = logger,
     )
@@ -77,9 +94,26 @@ private fun createReadOnlyContactsText(
 ): SingleFieldTextModel<ContactModel> {
     return createMultiItemText(
         items = selectedContacts.contacts,
-        id = { it.id },
+        iconId = { it.id },
         label = { it.displayLabel },
         onClick = null,
+        itemTextString = ItemTextStringConstants.contactString,
+        resources = resources,
+        logger = logger,
+    )
+}
+
+private fun createReadOnlyKeywordsText(
+    selectedKeywords: KeywordsModel,
+    resources: Resources,
+    logger: Logger,
+): SingleFieldTextModel<String> {
+    return createMultiItemText(
+        items = selectedKeywords.keywords,
+        iconId = null, // No icon for keywords
+        label = { it },
+        onClick = null,
+        itemTextString = ItemTextStringConstants.keywordString,
         resources = resources,
         logger = logger,
     )

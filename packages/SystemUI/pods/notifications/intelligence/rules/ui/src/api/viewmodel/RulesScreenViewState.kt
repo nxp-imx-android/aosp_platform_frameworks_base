@@ -53,6 +53,12 @@ public sealed interface RulesScreenViewState {
             val viewModel: NotificationRuleEditViewModel,
             val onAppsSaved: (List<AppModel>) -> Unit,
         ) : EditField
+
+        /** The list of keywords for a particular rule is being edited. */
+        data class Keywords(
+            val viewModel: NotificationRuleEditViewModel,
+            val onKeywordsSaved: (List<String>) -> Unit,
+        ) : EditField
     }
 
     // TODO: b/478225883 - Add more edit types.

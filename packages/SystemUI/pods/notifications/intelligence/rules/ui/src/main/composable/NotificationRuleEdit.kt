@@ -198,6 +198,16 @@ private fun buildAddFieldOptions(
                 )
             )
         }
+        if (viewModel.rule.filter.keywords == null) {
+            add(
+                RulesScreenViewState.EditField.Keywords(
+                    viewModel = viewModel,
+                    onKeywordsSaved = { newKeywords ->
+                        viewModel.onKeywordsSaved(newKeywords, onExitEditField)
+                    },
+                )
+            )
+        }
     }
 }
 

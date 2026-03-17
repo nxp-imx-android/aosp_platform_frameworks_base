@@ -34,6 +34,9 @@ object NotificationRuleToExternalHelpers {
                         internalFilter.includedApps?.let { apps ->
                             apps.apps.forEach { addIncludedPackageUid(it.uid) }
                         }
+                        internalFilter.keywords?.let { keywords ->
+                            keywords.keywords.forEach { addKeyword(it) }
+                        }
                     }
                     .build()
             } else {

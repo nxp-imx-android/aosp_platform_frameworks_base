@@ -53,6 +53,9 @@ public interface NotificationRuleEditViewModel {
     /** Saves a new set of contacts to the draft rule. */
     public fun onContactsSaved(newContacts: List<ContactModel>, onExitEditField: () -> Unit)
 
+    /** Saves a new set of keywords to the draft rule. */
+    fun onKeywordsSaved(newKeywords: List<String>, onExitEditField: () -> Unit)
+
     /**
      * Fetches all contacts whose name matches [searchQuery].
      *
