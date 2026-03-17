@@ -24,6 +24,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.content.pm.ActivityInfo.CONFIG_COLOR_MODE;
+import static android.content.pm.ActivityInfo.CONFIG_DENSITY;
 import static android.content.pm.ActivityInfo.CONFIG_KEYBOARD;
 import static android.content.pm.ActivityInfo.CONFIG_KEYBOARD_HIDDEN;
 import static android.content.pm.ActivityInfo.CONFIG_NAVIGATION;
@@ -3741,6 +3742,44 @@ public class ActivityRecordTests extends WindowTestsBase {
 
         final Configuration newConfig = new Configuration();
         newConfig.keyboard |= Configuration.KEYBOARD_QWERTY;
+        task.onRequestedOverrideConfigurationChanged(newConfig);
+        ensureActivityConfiguration(activity);
+
+        assertTrue(activity.isRelaunching());
+    }
+
+    @Test
+    public void testDensityConfigChange_inPip_doesNotRelaunch() {
+        final ActivityRecord activity = createActivityWithTask();
+        // The activity will already be relaunching out of the gate, finish the relaunch so we can
+        // test properly.
+        activity.finishRelaunching();
+
+        final Task task = activity.getTask();
+        task.setWindowingMode(WINDOWING_MODE_PINNED);
+        activity.setState(RESUMED, "Testing");
+
+        final Configuration newConfig = new Configuration(task.getConfiguration());
+        newConfig.densityDpi += 100;
+        task.onRequestedOverrideConfigurationChanged(newConfig);
+        ensureActivityConfiguration(activity);
+
+        assertFalse(activity.isRelaunching());
+    }
+
+    @Test
+    public void testDensityConfigChange_notInPip_relaunches() {
+        final ActivityRecord activity = createActivityWithTask();
+        // The activity will already be relaunching out of the gate, finish the relaunch so we can
+        // test properly.
+        activity.finishRelaunching();
+
+        final Task task = activity.getTask();
+        task.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
+        activity.setState(RESUMED, "Testing");
+
+        final Configuration newConfig = new Configuration(task.getConfiguration());
+        newConfig.densityDpi += 100;
         task.onRequestedOverrideConfigurationChanged(newConfig);
         ensureActivityConfiguration(activity);
 
