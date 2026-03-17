@@ -3867,7 +3867,7 @@ public final class ViewRootImpl implements ViewParent,
         // TODOb(b/463899193): introduce device config to disable synchronized insets animation.
         return com.android.window.flags.Flags.syncedInsetsAnimation()
                 // The synced animation might take more resources, thus disabling on low-end devices
-                && !ActivityManager.isLowRamDeviceStatic()
+                && ActivityManager.isHighEndGfx()
                 && !mHandlesWindowInsetsAnimation
                 && usesSyncedInsetsAnimationByDefault();
     }
