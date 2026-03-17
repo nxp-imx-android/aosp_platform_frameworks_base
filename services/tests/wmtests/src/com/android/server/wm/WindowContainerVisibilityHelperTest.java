@@ -763,8 +763,8 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
 
         if (Flags.partialTranslucentActivityEmbedding()) {
             // Makes both adjacent TFs translucent.
-            topAdjacentTaskFragment2.getTopMostActivity().setOccludesParent(true);
-            topAdjacentTaskFragment1.getTopMostActivity().setOccludesParent(true);
+            topAdjacentTaskFragment2.getTopMostActivity().setOccludesParent(false);
+            topAdjacentTaskFragment1.getTopMostActivity().setOccludesParent(false);
             sandwichTaskFragment.getTopMostActivity().setVisible(true);
             sandwichTaskFragment.getTopMostActivity().visibleIgnoringKeyguard = true;
 
