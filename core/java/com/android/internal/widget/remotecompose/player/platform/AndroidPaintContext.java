@@ -56,6 +56,7 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.text.TextUtils;
 
+import com.android.internal.widget.remotecompose.core.Limits;
 import com.android.internal.widget.remotecompose.core.MatrixAccess;
 import com.android.internal.widget.remotecompose.core.PaintContext;
 import com.android.internal.widget.remotecompose.core.RcPlatformServices;
@@ -93,26 +94,25 @@ public class AndroidPaintContext extends PaintContext {
     Rect mTmpRect = new Rect(); // use in calculation of bounds
     RenderNode mNode = null;
     Canvas mPreviousCanvas = null;
-    static final int MAX_ENTRIES = 20;
     private final LinkedHashMap<String, String> mPathCache =
-            new LinkedHashMap<String, String>(MAX_ENTRIES + 1, 0.75F, true) {
+            new LinkedHashMap<String, String>(Limits.MAX_CACHE_ENTRIES + 1, 0.75F, true) {
                 @Override
                 protected boolean removeEldestEntry(Map.Entry<String, String> eldest) {
-                    return size() > MAX_ENTRIES;
+                    return size() > Limits.MAX_CACHE_ENTRIES;
                 }
             };
     private final LinkedHashMap<String, Typeface> mTypefaceCache =
-            new LinkedHashMap<String, Typeface>(MAX_ENTRIES + 1, 0.75F, true) {
+            new LinkedHashMap<String, Typeface>(Limits.MAX_CACHE_ENTRIES + 1, 0.75F, true) {
                 @Override
                 protected boolean removeEldestEntry(Map.Entry<String, Typeface> eldest) {
-                    return size() > MAX_ENTRIES;
+                    return size() > Limits.MAX_CACHE_ENTRIES;
                 }
             };
     private final LinkedHashMap<String, Font.Builder> mFontBuilderCache =
-            new LinkedHashMap<String, Font.Builder>(MAX_ENTRIES + 1, 0.75F, true) {
+            new LinkedHashMap<String, Font.Builder>(Limits.MAX_CACHE_ENTRIES + 1, 0.75F, true) {
                 @Override
                 protected boolean removeEldestEntry(Map.Entry<String, Font.Builder> eldest) {
-                    return size() > MAX_ENTRIES;
+                    return size() > Limits.MAX_CACHE_ENTRIES;
                 }
             };
 

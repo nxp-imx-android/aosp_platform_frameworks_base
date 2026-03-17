@@ -40,7 +40,6 @@ import java.util.ArrayList;
  * <p>We also contain a PaintContext, so that any operation can draw as needed.
  */
 public abstract class RemoteContext {
-    private static final int MAX_OP_COUNT = 20_000; // Maximum cmds per frame
     private @NonNull RemoteClock mClock;
     protected @NonNull CoreDocument mDocument;
     public @NonNull RemoteComposeState mRemoteComposeState =
@@ -988,7 +987,7 @@ public abstract class RemoteContext {
     /** increments the count of operations executed in a pass */
     public void incrementOpCount() {
         mOpCount++;
-        if (mOpCount > MAX_OP_COUNT) {
+        if (mOpCount > Limits.MAX_OP_COUNT) {
             throw new RuntimeException("Too many operations executed");
         }
     }

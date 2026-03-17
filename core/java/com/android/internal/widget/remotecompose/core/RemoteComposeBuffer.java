@@ -131,6 +131,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.managers
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.RowLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.StateLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.TextLayout;
+import com.android.internal.widget.remotecompose.core.operations.layout.managers.TextStyle;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.AlignByModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.BackgroundModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.BorderModifierOperation;
@@ -1824,7 +1825,7 @@ public class RemoteComposeBuffer {
     public void addImage(
             int componentId, int animationId, int bitmapId, int scaleType, float alpha) {
         mLastComponentId = getComponentId(componentId);
-        ImageLayout.apply(mBuffer, componentId, animationId, bitmapId, scaleType, alpha);
+        ImageLayout.apply(mBuffer, mLastComponentId, animationId, bitmapId, scaleType, alpha);
     }
 
     /**
@@ -2092,6 +2093,7 @@ public class RemoteComposeBuffer {
             int componentId,
             int animationId,
             int textId,
+            int textStyleId,
             int color,
             int colorId,
             float fontSize,
@@ -2193,8 +2195,112 @@ public class RemoteComposeBuffer {
                     fontAxis,
                     fontAxisValues,
                     autosize,
-                    flags);
+                    flags,
+                    textStyleId);
         }
+    }
+
+    /**
+     * Add a text component start tag with a text style
+     *
+     * @param componentId component id
+     * @param animationId animation id
+     * @param textId      id of the text
+     * @param textStyleId id of the text style
+     * @param flags       flags for configuration
+     */
+    public void addTextComponentStart(
+            int componentId,
+            int animationId,
+            int textId,
+            int textStyleId,
+            int flags) {
+        mLastComponentId = getComponentId(componentId);
+        CoreText.apply(
+                mBuffer,
+                mLastComponentId,
+                animationId,
+                textId,
+                0,
+                -1,
+                16f,
+                -1f,
+                -1f,
+                0,
+                400f,
+                -1,
+                1,
+                1,
+                Integer.MAX_VALUE,
+                0f,
+                0f,
+                1f,
+                0,
+                0,
+                0,
+                false,
+                false,
+                null,
+                null,
+                false,
+                flags,
+                textStyleId);
+    }
+
+    /**
+     * Add a text style
+     */
+    public void addTextStyle(
+            int id,
+            @Nullable Integer color,
+            @Nullable Integer colorId,
+            @Nullable Float fontSize,
+            @Nullable Float minFontSize,
+            @Nullable Float maxFontSize,
+            @Nullable Integer fontStyle,
+            @Nullable Float fontWeight,
+            @Nullable Integer fontFamilyId,
+            @Nullable Integer textAlign,
+            @Nullable Integer overflow,
+            @Nullable Integer maxLines,
+            @Nullable Float letterSpacing,
+            @Nullable Float lineHeightAdd,
+            @Nullable Float lineHeightMultiplier,
+            @Nullable Integer lineBreakStrategy,
+            @Nullable Integer hyphenationFrequency,
+            @Nullable Integer justificationMode,
+            @Nullable Boolean underline,
+            @Nullable Boolean strikethrough,
+            @Nullable int [] fontAxis,
+            @Nullable float [] fontAxisValues,
+            @Nullable Boolean autosize,
+            @Nullable Integer parentId) {
+        TextStyle.apply(
+                mBuffer,
+                id,
+                color,
+                colorId,
+                fontSize,
+                minFontSize,
+                maxFontSize,
+                fontStyle,
+                fontWeight,
+                fontFamilyId,
+                textAlign,
+                overflow,
+                maxLines,
+                letterSpacing,
+                lineHeightAdd,
+                lineHeightMultiplier,
+                lineBreakStrategy,
+                hyphenationFrequency,
+                justificationMode,
+                underline,
+                strikethrough,
+                fontAxis,
+                fontAxisValues,
+                autosize,
+                parentId);
     }
 
     /**

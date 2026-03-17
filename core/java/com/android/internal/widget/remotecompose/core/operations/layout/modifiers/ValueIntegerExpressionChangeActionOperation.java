@@ -24,6 +24,7 @@ import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
+import com.android.internal.widget.remotecompose.core.operations.Utils;
 import com.android.internal.widget.remotecompose.core.operations.layout.ActionOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 import com.android.internal.widget.remotecompose.core.operations.utilities.StringSerializer;
@@ -75,7 +76,7 @@ public class ValueIntegerExpressionChangeActionOperation extends Operation
     @NonNull
     @Override
     public String deepToString(@NonNull String indent) {
-        return (indent != null ? indent : "") + toString();
+        return (indent != null ? indent : "") + this;
     }
 
     @Override
@@ -89,7 +90,11 @@ public class ValueIntegerExpressionChangeActionOperation extends Operation
             @NonNull Component component,
             float x,
             float y) {
-        document.evaluateIntExpression(mValueExpressionId, (int) mTargetValueId, context);
+        document.evaluateIntExpression(
+                Utils.idFromLong(mValueExpressionId),
+                (int) mTargetValueId,
+                context
+        );
     }
 
     /**
