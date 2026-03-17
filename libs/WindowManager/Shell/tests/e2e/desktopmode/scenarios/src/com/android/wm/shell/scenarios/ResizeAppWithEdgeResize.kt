@@ -17,6 +17,7 @@
 package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
+import android.graphics.Rect
 import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
@@ -25,6 +26,7 @@ import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.MotionEventHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
+import com.google.common.truth.Truth.assertWithMessage
 import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
@@ -50,7 +52,25 @@ constructor(
 
     @Test
     open fun resizeAppWithEdgeResizeRight() {
+        val initialBounds = wmHelper.getWindowRegion(testApp).bounds
         testApp.edgeResize(wmHelper, motionEventHelper, DesktopModeAppHelper.Edges.RIGHT)
+        val finalBounds = wmHelper.getWindowRegion(testApp).bounds
+        assertWindowExpandedRight(initialBounds, finalBounds)
+    }
+
+    private fun assertWindowExpandedRight(initialBounds: Rect, finalBounds: Rect) {
+        assertWithMessage("Window width should have increased")
+            .that(finalBounds.width())
+            .isGreaterThan(initialBounds.width())
+        assertWithMessage("Window left position should remain same")
+            .that(finalBounds.left)
+            .isEqualTo(initialBounds.left)
+        assertWithMessage("Window top position should remain same")
+            .that(finalBounds.top)
+            .isEqualTo(initialBounds.top)
+        assertWithMessage("Window bottom position should remain same")
+            .that(finalBounds.bottom)
+            .isEqualTo(initialBounds.bottom)
     }
 
     @After
