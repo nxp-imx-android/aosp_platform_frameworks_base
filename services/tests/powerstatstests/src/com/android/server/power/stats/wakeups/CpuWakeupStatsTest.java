@@ -37,6 +37,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.android.frameworks.powerstatstests.R;
 import com.android.server.power.stats.wakeups.CpuWakeupStats.Wakeup;
+import com.android.server.tests.assertutils.FlagAssert;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -604,8 +605,9 @@ public class CpuWakeupStatsTest {
         assertThat(wakeup.mElapsedMillis).isEqualTo(342);
         assertThat(wakeup.mUptimeMillis).isEqualTo(982);
         assertThat(wakeup.mIrqLines).asList().containsExactly(120);
-        assertThat(wakeup.mResponsibleSubsystems.size()).isEqualTo(1);
-        assertThat(wakeup.mResponsibleSubsystems.get(CPU_WAKEUP_SUBSYSTEM_ALARM)).isTrue();
+        FlagAssert.assertThat(wakeup.mResponsibleSubsystems)
+                .hasSetBits(1)
+                .hasSet(CPU_WAKEUP_SUBSYSTEM_ALARM);
     }
 
     @Test
@@ -616,9 +618,10 @@ public class CpuWakeupStatsTest {
         assertThat(wakeup.mElapsedMillis).isEqualTo(342);
         assertThat(wakeup.mUptimeMillis).isEqualTo(982);
         assertThat(wakeup.mIrqLines).asList().containsExactly(120, 130);
-        assertThat(wakeup.mResponsibleSubsystems.size()).isEqualTo(2);
-        assertThat(wakeup.mResponsibleSubsystems.get(CPU_WAKEUP_SUBSYSTEM_ALARM)).isTrue();
-        assertThat(wakeup.mResponsibleSubsystems.get(CPU_WAKEUP_SUBSYSTEM_WIFI)).isTrue();
+        FlagAssert.assertThat(wakeup.mResponsibleSubsystems)
+                .hasSetBits(2)
+                .hasSet(CPU_WAKEUP_SUBSYSTEM_ALARM)
+                .hasSet(CPU_WAKEUP_SUBSYSTEM_WIFI);
     }
 
     @Test
@@ -629,8 +632,9 @@ public class CpuWakeupStatsTest {
         assertThat(wakeup.mElapsedMillis).isEqualTo(342);
         assertThat(wakeup.mUptimeMillis).isEqualTo(982);
         assertThat(wakeup.mIrqLines).asList().containsExactly(-1);
-        assertThat(wakeup.mResponsibleSubsystems.size()).isEqualTo(1);
-        assertThat(wakeup.mResponsibleSubsystems.get(CPU_WAKEUP_SUBSYSTEM_ALARM)).isTrue();
+        FlagAssert.assertThat(wakeup.mResponsibleSubsystems)
+                .hasSetBits(1)
+                .hasSet(CPU_WAKEUP_SUBSYSTEM_ALARM);
     }
 
     @Test

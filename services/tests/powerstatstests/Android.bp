@@ -28,6 +28,7 @@ android_test {
         "platform-test-annotations",
         "flag-junit",
         "apct-perftests-utils",
+        "servicestests-assert-utils",
     ],
 
     libs: [
