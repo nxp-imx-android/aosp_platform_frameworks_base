@@ -59,6 +59,7 @@ import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.shadows.ShadowBuild
+import com.android.settingslib.metadata.preferencesapi.safe
 
 @RunWith(AndroidJUnit4::class)
 class PreferencesApiScreenTest {
@@ -178,7 +179,7 @@ class PreferencesApiScreenTest {
                         R.string.parameter_purpose1,
                         true,
                         GeneratedParameterType(R.string.parameter_type_description) {
-                            listOf(GeneratedValue("value", "type_description"))
+                            listOf(GeneratedValue("value".safe(), "type_description".safe()))
                         },
                     )
                 }
@@ -206,7 +207,7 @@ class PreferencesApiScreenTest {
                         R.string.parameter_purpose1,
                         true,
                         GeneratedParameterType(R.string.parameter_type_description) {
-                            listOf(GeneratedValue("value", "type_description"))
+                            listOf(GeneratedValue("value".safe(), "type_description".safe()))
                         },
                     )
                     prepareSpaRoute { params ->
@@ -756,7 +757,7 @@ class PreferencesApiScreenTest {
                                 R.string.parameter_purpose1,
                                 true,
                                 GeneratedParameterType(R.string.parameter_type_description) {
-                                    listOf(GeneratedValue("value", "type_description"))
+                                    listOf(GeneratedValue("value".safe(), "type_description".safe()))
                                 },
                             )
                         }
@@ -788,7 +789,7 @@ class PreferencesApiScreenTest {
                                 R.string.parameter_purpose1,
                                 true,
                                 GeneratedParameterType(R.string.parameter_type_description) {
-                                    listOf(GeneratedValue("value", "type_description"))
+                                    listOf(GeneratedValue("value".safe(), "type_description".safe()))
                                 },
                             )
                         }
@@ -866,7 +867,7 @@ class PreferencesApiScreenTest {
                                 R.string.parameter_purpose1,
                                 true,
                                 GeneratedParameterType(R.string.parameter_type_description) {
-                                    listOf(GeneratedValue("value", "type_description"))
+                                    listOf(GeneratedValue("value".safe(), "type_description".safe()))
                                 },
                             )
                         }
@@ -877,7 +878,7 @@ class PreferencesApiScreenTest {
                                 R.string.parameter_purpose2,
                                 true,
                                 GeneratedParameterType(R.string.parameter_type_description) {
-                                    listOf(GeneratedValue("value", "type_description"))
+                                    listOf(GeneratedValue("value".safe(), "type_description".safe()))
                                 },
                             )
                         }
@@ -934,7 +935,7 @@ class PreferencesApiScreenTest {
                                 R.string.parameter_purpose1,
                                 true,
                                 GeneratedParameterType(R.string.parameter_type_description) {
-                                    listOf(GeneratedValue("value", "type_description"))
+                                    listOf(GeneratedValue("value".safe(), "type_description".safe()))
                                 },
                             )
                             parameter(
@@ -942,7 +943,7 @@ class PreferencesApiScreenTest {
                                 R.string.parameter_purpose2,
                                 true,
                                 GeneratedParameterType(R.string.parameter_type_description) {
-                                    listOf(GeneratedValue("value", "type_description"))
+                                    listOf(GeneratedValue("value".safe(), "type_description".safe()))
                                 },
                             )
                         }
@@ -971,7 +972,7 @@ class PreferencesApiScreenTest {
                             R.string.parameter_purpose1,
                             true,
                             GeneratedParameterType(R.string.parameter_type_description) {
-                                listOf(GeneratedValue("value", "type_description"))
+                                listOf(GeneratedValue("value".safe(), "type_description".safe()))
                             },
                         )
                     }
@@ -2017,7 +2018,7 @@ class PreferencesApiScreenTest {
                             R.string.parameter_purpose1,
                             true,
                             GeneratedParameterType(R.string.parameter_type_description) {
-                                listOf(GeneratedValue("value", "type_description"))
+                                listOf(GeneratedValue("value".safe(), "type_description".safe()))
                             },
                         )
                         // Missing prepareSpaRoute

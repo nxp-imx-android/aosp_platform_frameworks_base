@@ -90,6 +90,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import com.android.settingslib.metadata.preferencesapi.SafetyAnnotated
+import com.android.settingslib.metadata.preferencesapi.extractSafety
 import java.util.Locale
 
 private const val TAG = "PreferenceGraphBuilder"
@@ -1019,25 +1021,25 @@ private fun ApiType<*, *>.toProto(
                             value = preferenceValueProto {
                                 when (this@toProto.getType()) {
                                     Int::class.java,
-                                    Int::class.javaObjectType -> intValue = it.first as Int
+                                    Int::class.javaObjectType -> intValue = extractSafety(it.first) as Int
 
                                     Boolean::class.java,
                                     Boolean::class.javaObjectType -> booleanValue =
-                                        it.first as Boolean
+                                        extractSafety(it.first) as Boolean
 
                                     Float::class.java,
-                                    Float::class.javaObjectType -> floatValue = it.first as Float
+                                    Float::class.javaObjectType -> floatValue = extractSafety(it.first) as Float
 
                                     Long::class.java,
-                                    Long::class.javaObjectType -> longValue = it.first as Long
+                                    Long::class.javaObjectType -> longValue = extractSafety(it.first) as Long
 
                                     String::class.java,
-                                    String::class.javaObjectType -> stringValue = it.first as String
+                                    String::class.javaObjectType -> stringValue = extractSafety(it.first) as String
 
                                     else -> error("Error: Unsupported type ${this@toProto.getType()}")
                                 }
                             }
-                            description = it.second
+                            description = extractSafety(it.second) as String
                         }
                     )
                 }

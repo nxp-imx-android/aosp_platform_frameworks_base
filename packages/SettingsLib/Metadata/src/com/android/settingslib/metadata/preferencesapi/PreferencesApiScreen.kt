@@ -47,6 +47,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.runBlocking
+import com.android.settingslib.metadata.preferencesapi.safe
+import com.android.settingslib.metadata.preferencesapi.unsafe
 
 /** Interface for preference screens that provide parameters in a non-static method. */
 interface ProvidesParametersNonStatically {
@@ -493,7 +495,7 @@ private constructor(
                 parameterToUse.type.getOptions(context).mapNotNull { parameterOption ->
                     parameterOption.first?.let {
                         this@PreferencesApiScreen.parametersSchema!!.prepare(
-                            parameterToUse.name to it.toString()
+                            parameterToUse.name.safe() to it
                         )
                     }
                 }
