@@ -42,6 +42,7 @@ val configAndroidHostOut = configAndroidBuildTop.resolve("out/host/linux-x86")!!
 val configRavenwoodRuntimePath = androidHostOut().resolve("testcases/ravenwood-runtime")!!
 val configRavenwoodUtilsPath = androidHostOut().resolve("testcases/ravenwood-utils")!!
 val configRavenizerJar = androidHostOut().resolve("framework/ravenizer.jar")!!
+val configRavenwoodPropFile = Paths.get("../ravenwood.properties")!!
 
 fun androidBuildTop() = configAndroidBuildTop
 fun androidHostOut() = configAndroidHostOut
@@ -49,6 +50,8 @@ fun androidHostOut() = configAndroidHostOut
 fun ravenwoodRuntimePath() = configRavenwoodRuntimePath
 fun ravenwoodUtilsPath() = configRavenwoodUtilsPath
 fun ravenizerJar() = configRavenizerJar
+
+fun ravenwoodPropFile() = configRavenwoodPropFile
 
 /** Jar files in ravenwood-runtime that need to be added before the test jars. */
 // TODO: Get this list from ravenwood-runtime/ravenwood-data/ravenwood-classpath.txt
@@ -96,6 +99,7 @@ fun ravenwoodJvmArgs() = listOf(
 fun ravenwoodJavaProps() = mapOf(
     "android.ravenwood.version" to "1",
     "android.ravenwood.runtime_path" to "${ravenwoodRuntimePath()}/",
+    "android.ravenwood.prop_file" to ravenwoodPropFile().toString(),
     "java.library.path" to "${ravenwoodRuntimePath()}/lib64/",
     // "android.ravenwood.artifacts_path" to "...", // Optional parameter, no need to set.
 )
