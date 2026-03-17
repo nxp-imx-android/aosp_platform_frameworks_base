@@ -20,11 +20,12 @@ import android.content.Context
 import com.android.settingslib.metadata.R
 
 import com.android.settingslib.metadata.preferencesapi.safe
+import com.android.settingslib.metadata.preferencesapi.types.EType
 
 /** A boolean value. */
 object AnyBoolean : DirectFiniteOptionsType<Boolean>
 {
-    override fun getType(): Class<Boolean> = Boolean::class.java
+    override val externalType = EType.Boolean
     override fun getDescription(context: Context): String =
         context.getString(R.string.any_boolean_type_description)
     override suspend fun getOptions(context: Context) = listOf(false.safe() to "False".safe(), true.safe() to "True".safe())

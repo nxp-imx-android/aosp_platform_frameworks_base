@@ -19,10 +19,11 @@ package com.android.settingslib.metadata.preferencesapi.types
 import android.content.Context
 import androidx.annotation.StringRes
 import com.android.settingslib.metadata.R
+import com.android.settingslib.metadata.preferencesapi.types.EType
 
 class SubscriptionId : DirectApiType<Int> {
 
-    override fun getType(): Class<Int> = Int::class.java
+    override val externalType: EType<Int> = EType.Int
 
     override fun getDescription(context: Context): String =
         context.getString(R.string.subscription_id_type_description)
