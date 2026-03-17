@@ -261,6 +261,7 @@ public class FocusTransitionObserver {
     private void notifyTaskFocusChanged(RunningTaskInfo task) {
         final boolean isFocusedOnDisplay = isFocusedOnDisplay(task);
         final boolean isFocusedGlobally = hasGlobalFocus(task);
+        notifyFocusedTaskChangedToRemote(task, isFocusedOnDisplay, isFocusedGlobally);
         ProtoLog.v(
                 ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
                 "%s: Notifying local listeners of task focus change: taskId=%d,"
@@ -293,6 +294,17 @@ public class FocusTransitionObserver {
                 mRemoteListener.onFocusedDisplayChanged(mFocusedDisplayId);
             } catch (RemoteException e) {
                 Slog.w(TAG, "Failed call notifyFocusedDisplayChangedToRemote", e);
+            }
+        }
+    }
+
+    private void notifyFocusedTaskChangedToRemote(RunningTaskInfo task, boolean isFocusedOnDisplay,
+            boolean isFocusedGlobally) {
+        if (mRemoteListener != null) {
+            try {
+                mRemoteListener.onFocusedTaskChanged(task, isFocusedOnDisplay, isFocusedGlobally);
+            } catch (RemoteException e) {
+                Slog.w(TAG, "Failed call notifyFocusedTaskChangedToRemote", e);
             }
         }
     }
