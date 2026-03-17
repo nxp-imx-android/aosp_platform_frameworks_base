@@ -248,7 +248,7 @@ constructor(
 
         // Initialize LiveData observer
         internetContentData.observe(lifecycleOwner!!) { internetContent ->
-            updateDetailsUI(internetContent)
+            internetContent?.let { updateDetailsUI(it) }
         }
 
         // Network layouts
@@ -840,10 +840,14 @@ constructor(
     }
 
     private fun setNonDDSActive(autoSwitchNonDdsSubId: Int) {
-        val stub: ViewStub = contentView.findViewById(R.id.secondary_mobile_network_stub)
-        stub.inflate()
-        secondaryMobileNetworkLayout =
-            contentView.findViewById(R.id.secondary_mobile_network_layout)
+        if (secondaryMobileNetworkLayout == null) {
+            secondaryMobileNetworkLayout =
+                contentView.findViewById(R.id.secondary_mobile_network_layout)
+                    ?: (contentView
+                        .findViewById<ViewStub>(R.id.secondary_mobile_network_stub)
+                        ?.inflate() as? LinearLayout)
+        }
+
         if (canConfigMobileData || !Flags.internetDialogDelegateLegacyDeprecation()) {
             secondaryMobileNetworkLayout?.setOnClickListener { view: View? ->
                 this.onClickConnectedSecondarySub(view)
@@ -1134,6 +1138,16 @@ constructor(
         shareWifiButton.setOnClickListener(null)
         addNetworkButton?.setOnClickListener(null)
         airplaneModeButton.setOnClickListener(null)
+
+        connectedMobileLayout = null
+        secondaryMobileNetworkLayout = null
+        turnMobileOnLayout = null
+        addNetworkButton = null
+        doneButton = null
+        mobileToggleDivider = null
+        internetDialogTitle = null
+        internetDialogSubTitle = null
+
         internetDetailsContentController.onStop()
     }
 
