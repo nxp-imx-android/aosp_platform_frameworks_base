@@ -16,10 +16,15 @@
 
 package com.android.systemui.headline.ui.viewmodel
 
+import android.annotation.CurrentTimeMillisLong
+import android.widget.ImageView
+import androidx.compose.ui.geometry.Rect
 import com.android.compose.animation.scene.HoistedSceneTransitionLayoutState
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.shared.model.Text
+import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel.Content
+import com.android.systemui.util.time.SystemClock
 
 /** ViewModel for the Headline. */
 public interface HeadlineViewModel {
@@ -46,6 +51,14 @@ public interface HeadlineViewModel {
      * as a dot indicator.
      */
     public fun onItemClicked(item: HeadlineItem)
+
+    /**
+     * Returns the [ImageView] associated with the [key] of a [HeadlineItemContent.ImageViewItem],
+     * or null if none exists.
+     */
+    public fun iconView(key: String): ImageView?
+
+    public var uiBounds: Rect
 
     public companion object {
         /**
@@ -95,9 +108,22 @@ public interface HeadlineItem {
 }
 
 public sealed interface HeadlineItemContent {
-    public data class TextItem(val text: Text) : HeadlineItemContent
+
+    sealed interface TextBasedContent : HeadlineItemContent {
+
+        public data class TextItem(val text: Text) : TextBasedContent
+
+        public data class TimerItem(val timer: Content.Timer) : TextBasedContent
+
+        public data class ShortTimeDelta(
+            @CurrentTimeMillisLong val time: Long,
+            val timeSource: SystemClock,
+        ) : TextBasedContent
+    }
 
     public data class IconItem(val icon: Icon) : HeadlineItemContent
+
+    public data class ImageViewItem(val iconKey: String) : HeadlineItemContent
 }
 
 /** A key associated to a [HeadlineItem]. */

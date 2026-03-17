@@ -16,6 +16,11 @@
 
 package com.android.systemui.headline.ui.viewmodel
 
+import android.widget.ImageView
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Rect
 import com.android.compose.animation.scene.HoistedSceneTransitionLayoutState
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.common.shared.model.ContentDescription
@@ -31,11 +36,13 @@ class FakeHeadlineViewModel(
     private val onItemClicked: (HeadlineItem) -> Unit = {
         // TODO(b/450236706): Call state.animateOrSnapTo(item.key.toSceneKey()) by default.
     },
+    private val iconViewStore: (key: String) -> ImageView? = { null },
 ) : HeadlineViewModel {
     constructor(
         items: List<HeadlineItem> = fakeHeadlineItems(),
         currentItem: HeadlineItem? = items.first(),
         onItemClicked: (HeadlineItem) -> Unit = {},
+        iconViewStore: (key: String) -> ImageView? = { null },
     ) : this(
         items = items,
         state =
@@ -43,11 +50,16 @@ class FakeHeadlineViewModel(
                 currentItem?.key?.toSceneKey() ?: HeadlineViewModel.GoneScene
             ),
         onItemClicked = onItemClicked,
+        iconViewStore = iconViewStore,
     )
 
     override fun onItemClicked(item: HeadlineItem) {
         onItemClicked.invoke(item)
     }
+
+    override fun iconView(key: String): ImageView? = iconViewStore.invoke(key)
+
+    override var uiBounds: Rect by mutableStateOf(Rect.Zero)
 
     companion object {
         private fun defaultInitialScene(items: List<HeadlineItem>): SceneKey =
@@ -76,7 +88,7 @@ class FakeHeadlineItem(
     ) : this(
         key,
         listOf(HeadlineItemContent.IconItem(Icon.Resource(icon, ContentDescription.Loaded(null)))),
-        listOf(HeadlineItemContent.TextItem(Text.Loaded(text))),
+        listOf(HeadlineItemContent.TextBasedContent.TextItem(Text.Loaded(text))),
     )
 
     override val key: HeadlineItemKey = HeadlineItemKey(key)

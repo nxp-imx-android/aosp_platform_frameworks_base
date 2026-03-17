@@ -16,23 +16,38 @@
 
 package com.android.systemui.statusbar.pipeline.shared.ui.viewmodel
 
+import android.widget.ImageView
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.geometry.Rect
 import com.android.compose.animation.scene.HoistedSceneTransitionLayoutState
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayId
 import com.android.systemui.headline.ui.viewmodel.HeadlineItem
 import com.android.systemui.headline.ui.viewmodel.HeadlineItemsAdapter
 import com.android.systemui.headline.ui.viewmodel.HeadlineViewModel
 import com.android.systemui.headline.ui.viewmodel.HeadlineViewModel.Companion.GoneScene
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.statusbar.notification.icon.ui.viewbinder.ConnectedDisplaysStatusBarNotificationIconViewStore
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 class HeadlineViewModelImpl
 @AssistedInject
-constructor(@DisplayAware private val adapter: HeadlineItemsAdapter) :
-    HeadlineViewModel, HydratedActivatable() {
+constructor(
+    @field:DisplayId @DisplayAware thisDisplayId: Int,
+    @DisplayAware private val adapter: HeadlineItemsAdapter,
+    iconViewStoreFactory: ConnectedDisplaysStatusBarNotificationIconViewStore.Factory,
+) : HeadlineViewModel, HydratedActivatable() {
+
+    private val iconViewStore: ConnectedDisplaysStatusBarNotificationIconViewStore =
+        iconViewStoreFactory.create(thisDisplayId)
 
     override val state: HoistedSceneTransitionLayoutState =
         HoistedSceneTransitionLayoutState(initialScene = GoneScene)
@@ -63,8 +78,17 @@ constructor(@DisplayAware private val adapter: HeadlineItemsAdapter) :
         snapTo(item.key.toSceneKey())
     }
 
+    override fun iconView(key: String): ImageView? {
+        return iconViewStore.iconView(key)
+    }
+
+    override var uiBounds: Rect by mutableStateOf(Rect.Zero)
+
     override suspend fun onActivated() {
-        adapter.headlineItems.collect { updateItems(it) }
+        coroutineScope {
+            launch { iconViewStore.activate() }
+            launch { adapter.headlineItems.collect { updateItems(it) } }
+        }
     }
 
     @AssistedFactory
