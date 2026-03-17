@@ -72,6 +72,7 @@ fun CredentialScreen(
     onCancel: () -> Unit = {}, // TODO: These three callbacks are Spaghetti related
     onCredentialMatched: (ByteArray, Boolean) -> Unit,
     onFallbackSelected: (Int) -> Unit = {},
+    onContentViewMoreOptionsButtonPressed: () -> Unit = {},
 ) {
     val viewModel = rememberViewModel("CredentialScreen") { viewModelFactory.create() }
     val credentialKind by
@@ -214,6 +215,7 @@ fun CredentialScreen(
                     footer = footer,
                     onCancel = onCancel,
                     isReversed = isSeascape,
+                    onContentViewMoreOptionsButtonPressed = onContentViewMoreOptionsButtonPressed,
                 )
             } else {
                 PortraitCredentialLayout(
@@ -221,6 +223,7 @@ fun CredentialScreen(
                     content = credentialInput,
                     footer = footer,
                     onCancel = onCancel,
+                    onContentViewMoreOptionsButtonPressed = onContentViewMoreOptionsButtonPressed,
                 )
             }
         }
@@ -233,6 +236,7 @@ private fun PortraitCredentialLayout(
     content: @Composable () -> Unit,
     footer: @Composable () -> Unit,
     onCancel: () -> Unit,
+    onContentViewMoreOptionsButtonPressed: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
         Column(
@@ -248,7 +252,10 @@ private fun PortraitCredentialLayout(
                         .verticalScroll(rememberScrollState()),
                 contentAlignment = Alignment.TopCenter,
             ) {
-                PromptHeader(header = header)
+                PromptHeader(
+                    header = header,
+                    onContentViewMoreOptionsButtonPressed = onContentViewMoreOptionsButtonPressed,
+                )
             }
             content()
             footer()
@@ -278,6 +285,7 @@ private fun LandscapeCredentialLayout(
     footer: @Composable () -> Unit,
     onCancel: () -> Unit,
     isReversed: Boolean,
+    onContentViewMoreOptionsButtonPressed: () -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth().fillMaxHeight().padding(24.dp).widthIn(max = 800.dp),
@@ -299,7 +307,11 @@ private fun LandscapeCredentialLayout(
                         Column(
                             modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())
                         ) {
-                            PromptHeaderLandscape(header = header)
+                            PromptHeaderLandscape(
+                                header = header,
+                                onContentViewMoreOptionsButtonPressed =
+                                    onContentViewMoreOptionsButtonPressed,
+                            )
                         }
                         footer()
                     }

@@ -16,12 +16,13 @@
 
 package com.android.systemui.biometrics.ui.view
 
+import android.view.View
+import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityManager
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,6 +41,8 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.key.utf16CodePoint
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.android.systemui.bouncer.ui.viewmodel.ActionButtonAppearance
@@ -56,6 +59,10 @@ fun CredentialPinView(
     var pinText by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     val focusRequester = remember { FocusRequester() }
+
+    val view = LocalView.current
+    val context = LocalContext.current
+    val accessibilityManager = remember(context) { AccessibilityManager.getInstance(context) }
 
     LaunchedEffect(isVisible) {
         if (isVisible) {
@@ -75,12 +82,25 @@ fun CredentialPinView(
                 .onPreviewKeyEvent { event ->
                     val digit = event.getDigitClicked()
                     if (digit != null) {
-                        if (pinText.length < 16) pinText += digit
+                        if (pinText.length < 16) {
+                            view.notifyPinTextChanged(
+                                accessibilityManager = accessibilityManager,
+                                previousLength = pinText.length,
+                                addedDigit = digit,
+                            )
+                            pinText += digit
+                        }
                         return@onPreviewKeyEvent true
                     }
 
                     if (event.isBackspace()) {
-                        if (pinText.isNotEmpty()) pinText = pinText.dropLast(1)
+                        if (pinText.isNotEmpty()) {
+                            view.notifyPinTextChanged(
+                                accessibilityManager = accessibilityManager,
+                                previousLength = pinText.length,
+                            )
+                            pinText = pinText.dropLast(1)
+                        }
                         return@onPreviewKeyEvent true
                     }
 
@@ -102,25 +122,28 @@ fun CredentialPinView(
                     false
                 },
     ) {
-        Text(
-            text = if (error.isNotEmpty()) error else " ",
-            style = MaterialTheme.typography.bodyMedium,
-            color =
-                MaterialTheme.colorScheme.error.copy(alpha = if (error.isNotEmpty()) 1f else 0f),
-            modifier = Modifier.padding(bottom = 16.dp),
-        )
+        PromptErrorText(error = error)
 
         PinDisplay(pinText = pinText, modifier = Modifier.padding(bottom = 16.dp))
 
         CredentialPinPad(
             onDigitClick = { digit ->
                 if (pinText.length < 16) {
+                    view.notifyPinTextChanged(
+                        accessibilityManager = accessibilityManager,
+                        previousLength = pinText.length,
+                        addedDigit = digit,
+                    )
                     pinText += digit
                     onPinPress()
                 }
             },
             onDeleteClick = {
                 if (pinText.isNotEmpty()) {
+                    view.notifyPinTextChanged(
+                        accessibilityManager = accessibilityManager,
+                        previousLength = pinText.length,
+                    )
                     pinText = pinText.dropLast(1)
                     onPinPress()
                 }
@@ -160,4 +183,38 @@ private fun KeyEvent.isEnter(): Boolean {
 private fun KeyEvent.isBackspace(): Boolean {
     if (type != KeyEventType.KeyDown) return false
     return key == Key.Backspace || key == Key.Delete
+}
+
+private const val PIN_BULLET = "\u2022"
+
+private fun View.notifyPinTextChanged(
+    accessibilityManager: AccessibilityManager,
+    previousLength: Int,
+    addedDigit: String? = null,
+) {
+    val isDeletion = addedDigit == null
+    if (!accessibilityManager.isEnabled || (isDeletion && previousLength <= 0)) return
+
+    val bulletString = PIN_BULLET.repeat(previousLength)
+
+    val event =
+        AccessibilityEvent(AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED).apply {
+            isEnabled = true
+            isPassword = true
+            beforeText = bulletString
+
+            if (addedDigit != null) {
+                text.add(bulletString + addedDigit)
+                addedCount = 1
+                removedCount = 0
+                fromIndex = previousLength
+            } else {
+                text.add(PIN_BULLET.repeat(previousLength - 1))
+                addedCount = 0
+                removedCount = 1
+                fromIndex = previousLength - 1
+            }
+        }
+
+    sendAccessibilityEventUnchecked(event)
 }
