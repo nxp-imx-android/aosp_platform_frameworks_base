@@ -63,8 +63,8 @@ import org.mockito.kotlin.whenever
 @SmallTest
 class MenuViewTest : SysuiTestCase() {
     private var nightMode = 0
-    private var uiModeManager: UiModeManager? = null
-    private var lastPosition: String? = null
+    private lateinit var uiModeManager: UiModeManager
+    private lateinit var lastPosition: String
     private val shortcutTargets = mutableListOf(MAGNIFICATION_CONTROLLER_NAME)
     private val testTargetList =
         listOf(TestAccessibilityTarget(mContext, 123), TestAccessibilityTarget(mContext, 456))
@@ -80,11 +80,10 @@ class MenuViewTest : SysuiTestCase() {
 
     @SuppressLint("MissingPermission")
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         uiModeManager = context.getSystemService(UiModeManager::class.java)
-        nightMode = uiModeManager!!.nightMode
-        uiModeManager!!.nightMode = UiModeManager.MODE_NIGHT_YES
+        nightMode = uiModeManager.nightMode
+        uiModeManager.nightMode = UiModeManager.MODE_NIGHT_YES
 
         // Programmatically update the resource's configuration to night mode to reduce flakiness
         val nightConfig = Configuration(mContext.resources.configuration)
@@ -111,9 +110,8 @@ class MenuViewTest : SysuiTestCase() {
     }
 
     @After
-    @Throws(Exception::class)
     fun tearDown() {
-        uiModeManager!!.nightMode = nightMode
+        uiModeManager.nightMode = nightMode
         Prefs.putString(mContext, Prefs.Key.ACCESSIBILITY_FLOATING_MENU_POSITION, lastPosition)
     }
 
@@ -245,12 +243,12 @@ class MenuViewTest : SysuiTestCase() {
 
             val initialTargets = listOf(TestAccessibilityTarget(context, 1))
             menuViewModel.onTargetFeaturesChanged(initialTargets)
-            assertThat(menuView.getTargetFeaturesView().adapter!!.itemCount).isEqualTo(1)
+            assertThat(menuView.targetFeaturesView.adapter!!.itemCount).isEqualTo(1)
 
             fakeKeyboardRepository.setIsAnyKeyboardConnected(true)
             menuViewModel.onTargetFeaturesChanged(initialTargets)
 
-            assertThat(menuView.getTargetFeaturesView().adapter!!.itemCount).isEqualTo(2)
+            assertThat(menuView.targetFeaturesView.adapter!!.itemCount).isEqualTo(2)
         }
     }
 
@@ -262,12 +260,12 @@ class MenuViewTest : SysuiTestCase() {
 
             val initialTargets = listOf(TestAccessibilityTarget(context, 1))
             menuViewModel.onTargetFeaturesChanged(initialTargets)
-            assertThat(menuView.getTargetFeaturesView().adapter!!.itemCount).isEqualTo(1)
+            assertThat(menuView.targetFeaturesView.adapter!!.itemCount).isEqualTo(1)
 
             fakePointerDeviceRepository.setIsAnyPointerConnected(true)
             menuViewModel.onTargetFeaturesChanged(initialTargets)
 
-            assertThat(menuView.getTargetFeaturesView().adapter!!.itemCount).isEqualTo(2)
+            assertThat(menuView.targetFeaturesView.adapter!!.itemCount).isEqualTo(2)
         }
     }
 
@@ -282,7 +280,7 @@ class MenuViewTest : SysuiTestCase() {
             val initialTargets = listOf(TestAccessibilityTarget(context, 1))
             menuViewModel.onTargetFeaturesChanged(initialTargets)
 
-            assertThat(menuView.getTargetFeaturesView().adapter!!.itemCount).isEqualTo(1)
+            assertThat(menuView.targetFeaturesView.adapter!!.itemCount).isEqualTo(1)
         }
     }
 
@@ -297,7 +295,7 @@ class MenuViewTest : SysuiTestCase() {
             val initialTargets = listOf(TestAccessibilityTarget(context, 1))
             menuViewModel.onTargetFeaturesChanged(initialTargets)
 
-            assertThat(menuView.getTargetFeaturesView().adapter!!.itemCount).isEqualTo(1)
+            assertThat(menuView.targetFeaturesView.adapter!!.itemCount).isEqualTo(1)
         }
     }
 
