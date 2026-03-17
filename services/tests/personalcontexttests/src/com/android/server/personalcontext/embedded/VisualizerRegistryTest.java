@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,24 @@ import static com.android.server.personalcontext.util.InsightUtils.fakePublishIn
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
+import android.service.personalcontext.Flags;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.insight.BundleInsight;
@@ -37,10 +48,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.internal.content.PackageMonitor;
+import com.android.server.personalcontext.AccessController;
 
 import com.google.android.collect.Lists;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -55,6 +68,12 @@ import java.util.function.Consumer;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class VisualizerRegistryTest {
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+
+    @Mock
+    private AccessController mAccessController;
+
     private static final String VISUALIZER_SERVICE_NAME = "VisualizerService";
     private static final String VISUALIZER_PACKAGE_NAME = "com.test";
 
@@ -191,5 +210,48 @@ public class VisualizerRegistryTest {
         serviceInfo.name = serviceName;
         serviceInfo.permission = "android.permission.BIND_INSIGHT_SURFACE_VISUALIZER_SERVICE";
         return serviceInfo;
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
+    public void testFetchingVisualizerServices_hasPermissionAndAccess() {
+        testFetchingVisualizerServices(true, true);
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
+    public void testFetchingVisualizerServices_serviceLacksPermission() {
+        testFetchingVisualizerServices(false, true);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
+    public void testFetchingVisualizerServices_accessDenied() {
+        testFetchingVisualizerServices(true, false);
+    }
+
+    private void testFetchingVisualizerServices(boolean hasPermission, boolean hasAccess) {
+        final Context context = mock(Context.class);
+        final PackageManager packageManager = mock(PackageManager.class);
+        when(context.getPackageManager()).thenReturn(packageManager);
+
+        final ResolveInfo resolveInfo = new ResolveInfo();
+        resolveInfo.serviceInfo =
+                createServiceInfo(VISUALIZER_PACKAGE_NAME, VISUALIZER_SERVICE_NAME);
+        if (!hasPermission) {
+            resolveInfo.serviceInfo.permission = null;
+        }
+        when(packageManager.queryIntentServices(any(Intent.class), anyInt()))
+                .thenReturn(List.of(resolveInfo));
+
+        when(mAccessController.hasAccess(
+                any(String.class), eq(AccessController.ACCESS_REGISTER_VISUALIZER)))
+                .thenReturn(hasAccess);
+
+        final VisualizerRegistry.DefaultInjector injector =
+                new VisualizerRegistry.DefaultInjector(context, mAccessController, Runnable::run);
+        final List<ServiceInfo> services =
+                injector.fetchVisualizerServiceInfos(VISUALIZER_PACKAGE_NAME);
+        assertThat(services).hasSize(hasPermission && hasAccess ? 1 : 0);
     }
 }

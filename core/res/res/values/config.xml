@@ -8044,6 +8044,10 @@
     <string-array translatable="false" name="config_allowlistPersonalContextInsightReceiving">
     </string-array>
 
+    <!-- Packages allowed to register a visualizer with the personal context service. -->
+    <string-array translatable="false" name="config_allowlistPersonalContextVisualizers">
+    </string-array>
+
     <!-- Timeout for waiting on text classification suggestions from PersonalContextService (milliseconds).
          This default is derived from config_smartSelectionInitializedTimeoutMillis. -->
     <integer name="config_textClassifierPersonalContextTimeoutMillis">180</integer>
