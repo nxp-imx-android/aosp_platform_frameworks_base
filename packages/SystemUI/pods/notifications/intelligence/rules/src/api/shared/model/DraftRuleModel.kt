@@ -89,10 +89,10 @@ sealed interface DraftRuleModel {
             return PreExisting(id = id, action = action, filter = filter.toDraft())
         }
 
-        private fun FilterModel.toDraft(): DraftFilterModel {
+        private fun FilterModel?.toDraft(): DraftFilterModel {
             return DraftFilterModel(
-                contacts = this.contacts.toDraft(),
-                includedApps = this.includedApps.toDraft(),
+                contacts = this?.contacts.toDraft(),
+                includedApps = this?.includedApps.toDraft(),
             )
         }
 
@@ -127,11 +127,15 @@ sealed interface DraftRuleModel {
             )
         }
 
-        private fun DraftFilterModel.toFullFilter(): FilterModel {
-            return FilterModel(
-                contacts = this.contacts.toFullValue(),
-                includedApps = this.includedApps.toFullValue(),
-            )
+        private fun DraftFilterModel.toFullFilter(): FilterModel? {
+            if (this.contacts != null || this.includedApps != null) {
+                return FilterModel(
+                    contacts = this.contacts.toFullValue(),
+                    includedApps = this.includedApps.toFullValue(),
+                )
+            }
+
+            return null
         }
 
         private fun <T> RuleValue<T>?.toFullValue(): T? {

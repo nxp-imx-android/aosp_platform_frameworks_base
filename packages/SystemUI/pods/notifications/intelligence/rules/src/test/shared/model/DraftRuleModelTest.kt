@@ -32,7 +32,20 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class DraftRuleModelTest : SysuiTestCase() {
     @Test
-    fun toDraft_allNull() {
+    fun toDraft_filterNull() {
+        val rule = RuleModel(id = 1, action = ActionModel.Bundle, filter = null)
+
+        val draftRule = rule.toDraft()
+
+        assertThat(draftRule).isInstanceOf(DraftRuleModel.PreExisting::class.java)
+        assertThat((draftRule as DraftRuleModel.PreExisting).id).isEqualTo(1)
+        assertThat(draftRule.action).isEqualTo(ActionModel.Bundle)
+        assertThat(draftRule.filter.contacts).isNull()
+        assertThat(draftRule.filter.includedApps).isNull()
+    }
+
+    @Test
+    fun toDraft_allFilterValuesNull() {
         val rule =
             RuleModel(
                 id = 1,
@@ -147,8 +160,9 @@ class DraftRuleModelTest : SysuiTestCase() {
 
         assertThat(fullRule.id).isEqualTo(4)
         assertThat(fullRule.action).isEqualTo(ActionModel.Bundle)
-        assertThat(fullRule.filter.includedApps).isNull()
-        assertThat(fullRule.filter.contacts).isEqualTo(ContactsModel(listOf(FAKE_CONTACT)))
+        assertThat(fullRule.filter).isNotNull()
+        assertThat(fullRule.filter!!.includedApps).isNull()
+        assertThat(fullRule.filter!!.contacts).isEqualTo(ContactsModel(listOf(FAKE_CONTACT)))
     }
 
     @Test
@@ -184,8 +198,40 @@ class DraftRuleModelTest : SysuiTestCase() {
 
         assertThat(fullRule.id).isEqualTo(10)
         assertThat(fullRule.action).isEqualTo(ActionModel.Bundle)
-        assertThat(fullRule.filter.includedApps).isEqualTo(IncludedAppsModel(listOf(FAKE_APP)))
-        assertThat(fullRule.filter.contacts).isNull()
+        assertThat(fullRule.filter).isNotNull()
+        assertThat(fullRule.filter!!.includedApps).isEqualTo(IncludedAppsModel(listOf(FAKE_APP)))
+        assertThat(fullRule.filter!!.contacts).isNull()
+    }
+
+    @Test
+    fun toFullRule_new_noFilterValues() {
+        val newRule =
+            DraftRuleModel.New(
+                action = ActionModel.Bundle,
+                filter = DraftFilterModel(includedApps = null, contacts = null),
+            )
+
+        val fullRule = newRule.toFullRule(id = 10)
+
+        assertThat(fullRule.id).isEqualTo(10)
+        assertThat(fullRule.action).isEqualTo(ActionModel.Bundle)
+        assertThat(fullRule.filter).isNull()
+    }
+
+    @Test
+    fun toFullRule_preExisting_noFilterValues() {
+        val preExistingRule =
+            DraftRuleModel.PreExisting(
+                id = 10,
+                action = ActionModel.Bundle,
+                filter = DraftFilterModel(includedApps = null, contacts = null),
+            )
+
+        val fullRule = preExistingRule.toFullRule()
+
+        assertThat(fullRule.id).isEqualTo(10)
+        assertThat(fullRule.action).isEqualTo(ActionModel.Bundle)
+        assertThat(fullRule.filter).isNull()
     }
 
     companion object {

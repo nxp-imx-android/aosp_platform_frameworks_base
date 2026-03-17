@@ -16,10 +16,12 @@
 
 package com.android.systemui.notifications.intelligence.rules.data.repository
 
+import android.content.Context
 import android.content.packageManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.notifications.content.icon.mockAppIconProvider
+import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 import com.android.systemui.notifications.intelligence.rules.shared.notificationRulesLogBuffer
 import com.android.systemui.user.data.repository.fakeUserRepository
 
@@ -33,3 +35,17 @@ val Kosmos.realInstalledAppsRepository by
             notificationRulesLogBuffer,
         )
     }
+
+val Kosmos.fakeInstalledAppsRepository by Kosmos.Fixture { FakeInstalledAppsRepository() }
+
+class FakeInstalledAppsRepository : InstalledAppsRepository {
+    var installedApps = emptyList<AppModel>()
+
+    override suspend fun lookupApp(uid: Int, context: Context): AppModel? {
+        return installedApps.find { it.uid == uid }
+    }
+
+    override suspend fun fetchInstalledApps(context: Context): List<AppModel> {
+        return installedApps
+    }
+}

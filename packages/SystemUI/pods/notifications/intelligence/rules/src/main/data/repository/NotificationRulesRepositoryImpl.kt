@@ -17,6 +17,10 @@
 package com.android.systemui.notifications.intelligence.rules.data.repository
 
 import android.app.NotificationManager
+import android.app.NotificationRule
+import android.content.ContentResolver
+import android.content.Context
+import android.net.Uri
 import androidx.annotation.MainThread
 import androidx.compose.runtime.mutableStateListOf
 import com.android.systemui.CoreStartable
@@ -24,14 +28,19 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.log.LogBuffer
+import com.android.systemui.log.core.Logger
 import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRuleConversionHelper.toInternalModel
 import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRuleConversionHelper.validActionsMap
 import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRuleToExternalHelpers.toExternalRuleFormat
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
+import com.android.systemui.notifications.intelligence.rules.shared.NotificationRulesLog
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel.Companion.toFullRule
 import com.android.systemui.notifications.intelligence.rules.shared.model.FilterModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ResponseModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 import javax.inject.Inject
@@ -46,10 +55,17 @@ class NotificationRulesRepositoryImpl
 constructor(
     private val notificationManager: NotificationManager,
     private val freeformRuleRepository: FreeformRuleRepository,
+    private val installedAppsRepository: InstalledAppsRepository,
+    private val contactsRepository: ContactsRepository,
+    private val contentResolver: ContentResolver,
+    @Application private val applicationContext: Context,
     @Application private val applicationScope: CoroutineScope,
     @Main private val mainDispatcher: CoroutineDispatcher,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
+    @NotificationRulesLog logBuffer: LogBuffer,
 ) : NotificationRulesRepository, CoreStartable {
+    private val logger = Logger(logBuffer, "RulesRepository")
+
     override var rules = mutableStateListOf<RuleModel>()
 
     private val availableRuleIds = mutableStateListOf<Int>().apply { addAll(RULE_ID_RANGE) }
@@ -60,6 +76,9 @@ constructor(
         }
 
         applicationScope.launch {
+            // TODO: b/478225883 & b/493539998 - Don't fetch the rules until private storage is
+            // unlocked, since some information (like contact information) is only available after
+            // first unlock.
             val initialRules = withContext(backgroundDispatcher) { fetchInitialRules() }
             val initialRuleIds = initialRules.map { it.id }
 
@@ -71,20 +90,18 @@ constructor(
         }
     }
 
-    private fun fetchInitialRules(): List<RuleModel> {
+    private suspend fun fetchInitialRules(): List<RuleModel> {
         return notificationManager.notificationRules
             .filter {
-                // TODO: b/478225883 - Log error if action isn't valid.
-                validActionsMap.containsKey(it.action.primaryAction)
+                val isValidAction = validActionsMap.containsKey(it.action.primaryAction)
+                if (!isValidAction) {
+                    logger.w({ "Filtering out invalid action $int1" }) {
+                        int1 = it.action.primaryAction
+                    }
+                }
+                isValidAction
             }
-            .map {
-                RuleModel(
-                    id = it.id,
-                    action = it.action.toInternalModel(),
-                    // TODO: b/478225883 - Fill in the rest of the RuleModel.
-                    filter = FilterModel(contacts = null, includedApps = null),
-                )
-            }
+            .map { it.toInternalModel() }
     }
 
     override suspend fun createDraftRuleFromFreeformText(
@@ -110,13 +127,7 @@ constructor(
         val savedRule =
             withContext(backgroundDispatcher) {
                 val createdRule = notificationManager.addNotificationRule(externalRule, position)
-                if (createdRule != null) {
-                    // TODO: b/478225883 - Use the rule returned from NotificationManager as the
-                    // official rule definition
-                    formedRule
-                } else {
-                    null
-                }
+                createdRule?.toInternalModel()
             }
 
         if (savedRule != null) {
@@ -135,13 +146,7 @@ constructor(
         val savedRule =
             withContext(backgroundDispatcher) {
                 val updatedRule = notificationManager.updateNotificationRule(externalRule)
-                if (updatedRule != null) {
-                    // TODO: b/478225883 - Use the rule returned from NotificationManager as the
-                    // official rule definition
-                    formedRule
-                } else {
-                    null
-                }
+                updatedRule?.toInternalModel()
             }
 
         if (savedRule != null) {
@@ -162,6 +167,49 @@ constructor(
             throw IllegalStateException("All rule slots are already taken")
         }
         return availableRuleIds[0]
+    }
+
+    private suspend fun NotificationRule.toInternalModel(): RuleModel {
+        return RuleModel(
+            id = this.id,
+            action = this.action.toInternalModel(),
+            filter =
+                if (this.filters.isNotEmpty()) {
+                    // TODO: b/478225883 - Parse all the filters, not just the first one.
+                    this.filters[0].toInternalModel()
+                } else {
+                    null
+                },
+        )
+    }
+
+    private fun NotificationRule.Action.toInternalModel(): ActionModel {
+        return validActionsMap[this.primaryAction]
+            ?: throw IllegalStateException("Action $this not present in validActionsMap")
+    }
+
+    private suspend fun NotificationRule.Filter.toInternalModel(): FilterModel {
+        return FilterModel(
+            contacts = this.contacts.toContactsModel(),
+            includedApps = this.includedPackageUids.toIncludedAppsModel(),
+        )
+    }
+
+    private suspend fun List<Uri>.toContactsModel(): ContactsModel? {
+        val contacts = this.mapNotNull { contactsRepository.lookupContact(it, contentResolver) }
+        if (contacts.isEmpty()) {
+            return null
+        }
+        return ContactsModel(contacts)
+    }
+
+    private suspend fun List<Int>.toIncludedAppsModel(): IncludedAppsModel? {
+        val includedApps =
+            this.mapNotNull { installedAppsRepository.lookupApp(it, applicationContext) }
+        if (includedApps.isEmpty()) {
+            return null
+        }
+        return IncludedAppsModel(includedApps)
     }
 
     companion object {

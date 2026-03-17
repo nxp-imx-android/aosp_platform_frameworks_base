@@ -25,7 +25,7 @@ object NotificationRuleToExternalHelpers {
     fun RuleModel.toExternalRuleFormat(): NotificationRule {
         val internalFilter = this.filter
         val filter =
-            if (internalFilter.hasContent) {
+            if (internalFilter != null && internalFilter.hasContent) {
                 NotificationRule.Filter.Builder()
                     .apply {
                         internalFilter.contacts?.let { contacts ->
