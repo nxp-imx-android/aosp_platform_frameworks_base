@@ -76,6 +76,14 @@ public final class MediaMetricsManagerService extends SystemService {
     private static final int LOGGING_LEVEL_NO_UID = 1000;
     private static final int LOGGING_LEVEL_BLOCKED = 99999;
 
+    // Corresponds to the types of sessions defined in
+    // frameworks/proto_logging/stats/enums/media/session/enums.proto
+    private static final int SESSION_TYPE_PLAYBACK = 1;
+    private static final int SESSION_TYPE_RECORDING = 2;
+    private static final int SESSION_TYPE_TRANSCODING = 3;
+    private static final int SESSION_TYPE_EDITING = 4;
+    private static final int SESSION_TYPE_BUNDLE = 5;
+
     private static final String mMetricsId = MediaMetrics.Name.METRICS_MANAGER;
 
     private static final String FAILED_TO_GET = "failed_to_get";
@@ -344,29 +352,57 @@ public final class MediaMetricsManagerService extends SystemService {
             Slog.v(TAG, "Releasing sessionId " + sessionId + " for userId " + userId + " [NOP]");
         }
 
+        private void reportMediaSessionCreation(String sessionId, int sessionType) {
+            int level = loggingLevel();
+            if (level == LOGGING_LEVEL_BLOCKED) {
+                return;
+            }
+            StatsEvent statsEvent =
+                    StatsEvent.newBuilder()
+                            .setAtomId(1316)
+                            .writeString(sessionId)
+                            .writeInt(level == LOGGING_LEVEL_EVERYTHING
+                                      ? Binder.getCallingUid()
+                                      : 0)
+                            .writeInt(sessionType)
+                            .usePooledBuffer()
+                            .build();
+            StatsLog.write(statsEvent);
+        }
+
         @Override
         public String getPlaybackSessionId(int userId) {
-            return getSessionIdInternal(userId);
+            String id = getSessionIdInternal(userId);
+            reportMediaSessionCreation(id, SESSION_TYPE_PLAYBACK);
+            return id;
         }
 
         @Override
         public String getRecordingSessionId(int userId) {
-            return getSessionIdInternal(userId);
+            String id = getSessionIdInternal(userId);
+            reportMediaSessionCreation(id, SESSION_TYPE_RECORDING);
+            return id;
         }
 
         @Override
         public String getTranscodingSessionId(int userId) {
-            return getSessionIdInternal(userId);
+            String id = getSessionIdInternal(userId);
+            reportMediaSessionCreation(id, SESSION_TYPE_TRANSCODING);
+            return id;
         }
 
         @Override
         public String getEditingSessionId(int userId) {
-            return getSessionIdInternal(userId);
+            String id = getSessionIdInternal(userId);
+            reportMediaSessionCreation(id, SESSION_TYPE_EDITING);
+            return id;
         }
 
         @Override
         public String getBundleSessionId(int userId) {
-            return getSessionIdInternal(userId);
+            String id = getSessionIdInternal(userId);
+            reportMediaSessionCreation(id, SESSION_TYPE_BUNDLE);
+            return id;
         }
 
         @Override
