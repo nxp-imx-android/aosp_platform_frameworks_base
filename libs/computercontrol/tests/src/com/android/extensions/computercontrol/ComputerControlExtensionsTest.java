@@ -27,7 +27,10 @@ import static org.testng.Assert.assertThrows;
 
 import android.companion.virtual.IVirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager;
+import android.companion.virtualdevice.flags.Flags;
 import android.content.pm.PackageManager;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.testing.TestableContext;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -48,6 +51,9 @@ import java.util.concurrent.Executors;
 public class ComputerControlExtensionsTest {
     private static final String SESSION_NAME = "test";
     private static final List<String> TARGET_PACKAGE_NAMES = List.of("com.android.foo");
+
+    @Rule
+    public SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Rule
     public final TestableContext mContext = spy(
@@ -115,12 +121,15 @@ public class ComputerControlExtensionsTest {
         assertThat(ComputerControlExtensions.getInstance(mContext)).isNotNull();
     }
 
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ACCESS)
     @Test
     public void isSessionCreationAvailable_noAccess_returnsFalse() throws Exception {
         when(mIVirtualDeviceManager.isComputerControlAvailable(any(), anyInt())).thenReturn(false);
         assertThat(ComputerControlExtensions.isSessionCreationAvailable(mContext)).isFalse();
     }
 
+
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ACCESS)
     @Test
     public void isSessionCreationAvailable_withAccess_returnsTrue() throws Exception {
         when(mIVirtualDeviceManager.isComputerControlAvailable(any(), anyInt())).thenReturn(true);
