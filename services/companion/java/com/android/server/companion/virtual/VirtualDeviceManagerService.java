@@ -857,6 +857,36 @@ public class VirtualDeviceManagerService extends SystemService implements Watchd
             return displayManager.getDisplayIdToMirror(displayId) != Display.INVALID_DISPLAY;
         }
 
+        @Override // Binder call
+        @EnforcePermission(android.Manifest.permission.MANAGE_COMPUTER_CONTROL_CONSENT)
+        public boolean isPackageApprovedToRunComputerControlAutomation(@NonNull String packageName,
+                int userId) {
+            isPackageApprovedToRunComputerControlAutomation_enforcePermission();
+            // TODO(b/483624078): Consider exposing this API without permission. Currently
+            //  unblocking per-app consent UX by guarding with the signature permission
+            Objects.requireNonNull(packageName);
+            if (!android.companion.virtualdevice.flags.Flags.computerControlPerAppConsent()) {
+                return false;
+            }
+            return mComputerControlSessionProcessor.isPackageApprovedToRunAutomation(
+                    packageName, userId);
+        }
+
+        @Override // Binder call
+        @EnforcePermission(android.Manifest.permission.MANAGE_COMPUTER_CONTROL_CONSENT)
+        public boolean isPackageTargetableForComputerControlAutomation(@NonNull String packageName,
+                int userId) {
+            isPackageTargetableForComputerControlAutomation_enforcePermission();
+            // TODO(b/483624078): Consider exposing this API without permission. Currently
+            //  unblocking per-app consent UX by guarding with the signature permission
+            Objects.requireNonNull(packageName);
+            if (!android.companion.virtualdevice.flags.Flags.computerControlPerAppConsent()) {
+                return false;
+            }
+            return mComputerControlSessionProcessor.isPackageTargetableForAutomation(packageName,
+                    userId);
+        }
+
         @Nullable
         private AssociationInfo getAssociationInfo(String packageName, int associationId) {
             final UserHandle userHandle = getCallingUserHandle();

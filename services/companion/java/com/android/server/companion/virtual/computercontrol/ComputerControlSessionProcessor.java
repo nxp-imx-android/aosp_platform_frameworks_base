@@ -397,6 +397,22 @@ public final class ComputerControlSessionProcessor {
         return mAllowlistController.getAutomatableAppListForAgent(agentUid, agentPackageName);
     }
 
+    /**
+     * Returns whether the given package is an approved computer control agent.
+     */
+    public boolean isPackageApprovedToRunAutomation(@NonNull String packageName,
+            int userId) {
+        return mAllowlistController.isPackageApprovedToRunAutomation(packageName, userId);
+    }
+
+    /**
+     * Returns whether the given package is an approved computer control session target.
+     */
+    public boolean isPackageTargetableForAutomation(@NonNull String packageName,
+            int userId) {
+        return mAllowlistController.isPackageTargetableForAutomation(packageName, userId);
+    }
+
     private void startHandlerThreadIfNeeded() {
         synchronized (mHandlerThreadLock) {
             if (mHandlerThread != null) {

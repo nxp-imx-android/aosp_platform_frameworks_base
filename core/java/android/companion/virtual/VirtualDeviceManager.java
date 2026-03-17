@@ -765,6 +765,42 @@ public final class VirtualDeviceManager {
     }
 
     /**
+     * Returns whether the given package is allowed to be a computer control agent.
+     *
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.MANAGE_COMPUTER_CONTROL_CONSENT)
+    public boolean isPackageApprovedToRunComputerControlAutomation(@NonNull String packageName,
+            int userId) {
+        if (mService == null) {
+            return false;
+        }
+        try {
+            return mService.isPackageApprovedToRunComputerControlAutomation(packageName, userId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Returns whether the given package is allowed to be automated by a computer control agent.
+     *
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.MANAGE_COMPUTER_CONTROL_CONSENT)
+    public boolean isPackageTargetableForComputerControlAutomation(@NonNull String packageName,
+            int userId) {
+        if (mService == null) {
+            return false;
+        }
+        try {
+            return mService.isPackageTargetableForComputerControlAutomation(packageName, userId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * A representation of a virtual device.
      *
      * <p>A virtual device can have its own virtual displays, audio input/output, sensors, etc.
