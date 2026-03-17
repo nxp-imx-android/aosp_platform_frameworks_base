@@ -42,7 +42,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -629,5 +631,25 @@ public class CpuWakeupStatsTest {
         assertThat(wakeup.mIrqLines).asList().containsExactly(-1);
         assertThat(wakeup.mResponsibleSubsystems.size()).isEqualTo(1);
         assertThat(wakeup.mResponsibleSubsystems.get(CPU_WAKEUP_SUBSYSTEM_ALARM)).isTrue();
+    }
+
+    @Test
+    public void wakeup_isCausedBy() {
+        final Wakeup wakeup = Wakeup.parseWakeup(
+                KERNEL_REASON_ALARM_IRQ + ":" + KERNEL_REASON_WIFI_IRQ, 342, 982, mDeviceMap);
+        assertThat(wakeup.isCausedBy(CPU_WAKEUP_SUBSYSTEM_ALARM)).isTrue();
+        assertThat(wakeup.isCausedBy(CPU_WAKEUP_SUBSYSTEM_WIFI)).isTrue();
+        assertThat(wakeup.isCausedBy(CPU_WAKEUP_SUBSYSTEM_BLUETOOTH)).isFalse();
+    }
+
+    @Test
+    public void wakeup_forEachResponsibleSubsystem() {
+        final Wakeup wakeup = Wakeup.parseWakeup(
+                KERNEL_REASON_ALARM_IRQ + ":" + KERNEL_REASON_WIFI_IRQ, 342, 982, mDeviceMap);
+        final List<Integer> subsystems = new ArrayList<>();
+        wakeup.forEachResponsibleSubsystem(subsystem -> subsystems.add(subsystem));
+
+        assertThat(subsystems).containsExactly(CPU_WAKEUP_SUBSYSTEM_ALARM,
+                CPU_WAKEUP_SUBSYSTEM_WIFI);
     }
 }

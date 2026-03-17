@@ -27,6 +27,7 @@ import static android.os.BatteryStatsInternal.CPU_WAKEUP_SUBSYSTEM_WIFI;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.content.Context;
+import android.os.BatteryStatsInternal.CpuWakeupSubsystem;
 import android.os.Handler;
 import android.os.HandlerExecutor;
 import android.os.Trace;
@@ -51,6 +52,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.IntConsumer;
 import java.util.function.LongSupplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -249,27 +251,26 @@ public class CpuWakeupStats {
     }
 
     private synchronized void attemptAttributionFor(Wakeup wakeup) {
-        final SparseBooleanArray subsystems = wakeup.mResponsibleSubsystems;
-
-        SparseArray<SparseIntArray> attribution = mWakeupAttribution.get(wakeup.mElapsedMillis);
-        if (attribution == null) {
+        final SparseArray<SparseIntArray> attribution;
+        final int idx = mWakeupAttribution.indexOfKey(wakeup.mElapsedMillis);
+        if (idx < 0) {
             attribution = new SparseArray<>();
             mWakeupAttribution.put(wakeup.mElapsedMillis, attribution);
+        } else {
+            attribution = mWakeupAttribution.valueAt(idx);
         }
+
         final long matchingWindowMillis = mConfig.WAKEUP_MATCHING_WINDOW_MS;
+        final long startTime = wakeup.mElapsedMillis - matchingWindowMillis;
+        final long endTime = wakeup.mElapsedMillis + matchingWindowMillis;
 
-        for (int subsystemIdx = 0; subsystemIdx < subsystems.size(); subsystemIdx++) {
-            final int subsystem = subsystems.keyAt(subsystemIdx);
-
-            // Blame all activity that happened matchingWindowMillis before or after
-            // the wakeup from each responsible subsystem.
-            final long startTime = wakeup.mElapsedMillis - matchingWindowMillis;
-            final long endTime = wakeup.mElapsedMillis + matchingWindowMillis;
-
+        // Blame all activity that happened matchingWindowMillis before or after
+        // the wakeup from each responsible subsystem.
+        wakeup.forEachResponsibleSubsystem(subsystem -> {
             final SparseIntArray uidsToBlame = mRecentWakingActivity.removeBetween(subsystem,
                     startTime, endTime);
             attribution.put(subsystem, uidsToBlame);
-        }
+        });
     }
 
     private synchronized boolean attemptAttributionWith(int subsystem, long activityElapsed,
@@ -283,8 +284,7 @@ public class CpuWakeupStats {
 
         for (int wakeupIdx = startIdx; wakeupIdx <= endIdx; wakeupIdx++) {
             final Wakeup wakeup = mWakeupEvents.valueAt(wakeupIdx);
-            final SparseBooleanArray subsystems = wakeup.mResponsibleSubsystems;
-            if (subsystems.get(subsystem)) {
+            if (wakeup.isCausedBy(subsystem)) {
                 // We don't expect more than one wakeup to be found within such a short window, so
                 // just attribute this one and exit
                 SparseArray<SparseIntArray> attribution = mWakeupAttribution.get(
@@ -503,7 +503,7 @@ public class CpuWakeupStats {
         }
     }
 
-    static int stringToKnownSubsystem(String rawSubsystem) {
+    static @CpuWakeupSubsystem int stringToKnownSubsystem(String rawSubsystem) {
         switch (rawSubsystem) {
             case SUBSYSTEM_ALARM_STRING:
                 return CPU_WAKEUP_SUBSYSTEM_ALARM;
@@ -609,7 +609,8 @@ public class CpuWakeupStats {
                     boolean anyKnownSubsystem = false;
                     if (rawSubsystems != null) {
                         for (int i = 0; i < rawSubsystems.size(); i++) {
-                            final int subsystem = stringToKnownSubsystem(rawSubsystems.get(i));
+                            final @CpuWakeupSubsystem int subsystem = stringToKnownSubsystem(
+                                    rawSubsystems.get(i));
                             if (subsystem != CPU_WAKEUP_SUBSYSTEM_UNKNOWN) {
                                 // Just in case the xml had arbitrary subsystem names, we want to
                                 // make sure that we only put the known ones into our map.
@@ -633,6 +634,17 @@ public class CpuWakeupStats {
             }
             return new Wakeup(type, parsedIrqLines.toArray(), elapsedMillis, uptimeMillis,
                     responsibleSubsystems);
+        }
+
+        void forEachResponsibleSubsystem(IntConsumer consumer) {
+            for (int i = 0; i < mResponsibleSubsystems.size(); i++) {
+                final int subsystem = mResponsibleSubsystems.keyAt(i);
+                consumer.accept(subsystem);
+            }
+        }
+
+        boolean isCausedBy(int subsystem) {
+            return mResponsibleSubsystems.get(subsystem, false);
         }
 
         @Override
