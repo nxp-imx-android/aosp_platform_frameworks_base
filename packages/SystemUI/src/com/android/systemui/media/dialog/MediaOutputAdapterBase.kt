@@ -22,6 +22,7 @@ import android.view.View
 import androidx.annotation.DoNotInline
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
+import com.android.media.flags.Flags
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTING
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTING_FAILED
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_GROUPING
@@ -118,34 +119,53 @@ abstract class MediaOutputAdapterBase(protected val mController: MediaSwitchingC
                     // mark as disconnected and set special click listener
                     clickListener = View.OnClickListener { cancelMuteAwaitConnection() }
                 } else if (device.state == STATE_GROUPING) {
-                    connectionState = ConnectionState.CONNECTING
+                    connectionState = CONNECTING
                 } else { // A connected or disconnected device.
-                    subtitle = if (device.hasSubtext()) device.subtextString else null
+                    if (Flags.makeDeviceSelectionBehaviourRespectRouteListingPreference()) {
+                        subtitle = getSubtitle(device)
+                    } else {
+                        subtitle = if (device.hasSubtext()) device.subtextString else null
+                    }
                     ongoingSessionStatus = getOngoingSessionStatus(device)
                     groupStatus = getGroupStatus(device)
 
-                    if (device.state == STATE_CONNECTING_FAILED) {
-                        deviceStatusIcon =
-                            mContext.getDrawable(R.drawable.media_output_status_failed)
-                        subtitle = mContext.getString(R.string.media_output_dialog_connect_failed)
-                        clickListener = View.OnClickListener { transferOutput(device) }
-                    } else if (currentlyConnected || device.isSelected()) {
-                        connectionState = ConnectionState.CONNECTED
-                    } else { // disconnected
-                        if (device.isSelectable()) { // groupable device
-                            if (device.isTransferable() || device.hasRouteListingPreferenceItem()) {
-                                clickListener = View.OnClickListener { transferOutput(device) }
-                            }
-                        } else {
+                    if (Flags.makeDeviceSelectionBehaviourRespectRouteListingPreference()) {
+                        if (currentlyConnected || device.isSelected()) {
+                            connectionState = CONNECTED
+                        } else { // disconnected
                             deviceStatusIcon = getDeviceStatusIcon(device)
                             clickListener = getClickListenerBasedOnSelectionBehavior(device)
+                            deviceDisabled = clickListener == null
                         }
-                        deviceDisabled = clickListener == null
+                    } else {
+                        if (device.state == STATE_CONNECTING_FAILED) {
+                            deviceStatusIcon =
+                                mContext.getDrawable(R.drawable.media_output_status_failed)
+                            subtitle =
+                                mContext.getString(R.string.media_output_dialog_connect_failed)
+                            clickListener = View.OnClickListener { transferOutput(device) }
+                        } else if (currentlyConnected || device.isSelected()) {
+                            connectionState = CONNECTED
+                        } else { // disconnected
+                            if (device.isSelectable()) { // groupable device
+                                if (
+                                    device.isTransferable() ||
+                                        device.hasRouteListingPreferenceItem()
+                                ) {
+                                    clickListener = View.OnClickListener { transferOutput(device) }
+                                }
+                            } else {
+                                deviceStatusIcon = getDeviceStatusIcon(device)
+                                clickListener = getClickListenerBasedOnSelectionBehavior(device)
+                            }
+
+                            deviceDisabled = clickListener == null
+                        }
                     }
                 }
             }
 
-            if (connectionState == ConnectionState.CONNECTED) {
+            if (connectionState == CONNECTED) {
                 mCurrentActivePosition = position
             }
 
@@ -213,7 +233,23 @@ abstract class MediaOutputAdapterBase(protected val mController: MediaSwitchingC
         }
 
         private fun getDeviceStatusIcon(device: MediaDevice): Drawable? {
-            return Api34Impl.getDeviceStatusIconBasedOnSelectionBehavior(device, mContext)
+            if (Flags.makeDeviceSelectionBehaviourRespectRouteListingPreference()) {
+                return if (device.state == STATE_CONNECTING_FAILED) {
+                    mContext.getDrawable(R.drawable.media_output_status_failed)
+                } else {
+                    Api34Impl.getDeviceStatusIconBasedOnSelectionBehavior(device, mContext)
+                }
+            } else {
+                return Api34Impl.getDeviceStatusIconBasedOnSelectionBehavior(device, mContext)
+            }
+        }
+
+        private fun getSubtitle(device: MediaDevice): String? {
+            return if (device.state == STATE_CONNECTING_FAILED) {
+                mContext.getString(R.string.media_output_dialog_connect_failed)
+            } else if (device.hasSubtext()) {
+                device.subtextString
+            } else null
         }
 
         protected fun onGroupActionTriggered(isChecked: Boolean, device: MediaDevice) {
