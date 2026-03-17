@@ -712,7 +712,10 @@ public final class OnDeviceIntelligenceManager {
      *
      * <p>The caller can use this method to discover available models and their signatures.
      * The model signature can then be cached and used to fetch the model directly via
-     * {@link #getEmbeddingModel(String, Executor, OutcomeReceiver)} in future calls.
+     * {@link #fetchEmbeddingModel(String, Executor, OutcomeReceiver)} in future calls.
+     *
+     * <p> The remote implementation would return the models in their order of preference (most
+     * strongly recommended to least strongly recommended).
      *
      * @param callbackExecutor Executor to run the callback on.
      * @param callback         Callback to receive the list of {@link EmbeddingModel embedding
@@ -826,6 +829,9 @@ public final class OnDeviceIntelligenceManager {
      * <p>The caller can use this method to discover available models and their signatures.
      * The model signature can then be cached and used to fetch the model directly via
      * {@link #fetchImageDescriptionModel(String, Executor, OutcomeReceiver)} in future calls.
+     *
+     * <p> The remote implementation would return the models in their order of preference (most
+     * strongly recommended to least strongly recommended).
      *
      * @param callbackExecutor Executor to run the callback on.
      * @param callback         Callback to receive the list of {@link ImageDescriptionModel}s or

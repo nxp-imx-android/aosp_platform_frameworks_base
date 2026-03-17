@@ -53,6 +53,7 @@ import java.util.concurrent.Executor;
  *
  * @hide
  */
+// <p> TODO(b/492256294): Add release date to the model metadata.
 @SystemApi
 @FlaggedApi(Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2)
 public final class ImageDescriptionModel implements OnDeviceModel, Parcelable {
