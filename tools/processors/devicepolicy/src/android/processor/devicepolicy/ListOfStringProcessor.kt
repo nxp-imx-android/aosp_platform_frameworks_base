@@ -123,7 +123,7 @@ class ListResolutionMechanismProcessor(val errorPrinter: (message: String) -> Un
         val isUnion = annotationValue.union
 
         if (isCustom && isUnion) {
-            printError( "Only one resolution mechanism can be selected")
+            printError("Only one resolution mechanism can be selected")
             return false
         }
 

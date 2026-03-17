@@ -153,7 +153,7 @@ class ResolutionMechanismTest {
     }
 
     @Test
-    fun resolve_packageListUnion() {
+    fun resolve_listUnion() {
         val adminPolicies: LinkedHashMap<EnforcingAdmin, PolicyValue<List<String>>> = LinkedHashMap()
         adminPolicies.put(
             SYSTEM_ADMIN,
@@ -164,7 +164,7 @@ class ResolutionMechanismTest {
             ListOfStringPolicyValue(listOf("package1", "package3")) as PolicyValue<List<String>>,
         )
 
-        val resolvedPolicy = PackageListUnion().resolve(adminPolicies)
+        val resolvedPolicy = ListUnion.PACKAGE.resolve(adminPolicies)
 
         assertThat(resolvedPolicy).isNotNull()
         assertThat(resolvedPolicy?.resolvedPolicyValue?.value)
@@ -261,8 +261,8 @@ class ResolutionMechanismTest {
     }
 
     @Test
-    fun isPolicyApplied_packageListUnion_listIncluded_returnsTrue() {
-        val resolutionMechanism = PackageListUnion()
+    fun isPolicyApplied_listUnion_listIncluded_returnsTrue() {
+        val resolutionMechanism = ListUnion.PACKAGE
 
         assertTrue {
             resolutionMechanism.isPolicyApplied(ListOfStringPolicyValue(listOf("package1")),
@@ -271,8 +271,8 @@ class ResolutionMechanismTest {
     }
 
     @Test
-    fun isPolicyApplied_packageListUnion_listDoesNotIntersect_returnsFalse() {
-        val resolutionMechanism = PackageListUnion()
+    fun isPolicyApplied_listUnion_listDoesNotIntersect_returnsFalse() {
+        val resolutionMechanism = ListUnion.PACKAGE
 
         assertFalse {
             resolutionMechanism.isPolicyApplied(ListOfStringPolicyValue(listOf("package3")),
@@ -281,8 +281,8 @@ class ResolutionMechanismTest {
     }
 
     @Test
-    fun isPolicyApplied_packageListUnion_listPartiallyIncluded_returnsFalse() {
-        val resolutionMechanism = PackageListUnion()
+    fun isPolicyApplied_listUnion_listPartiallyIncluded_returnsFalse() {
+        val resolutionMechanism = ListUnion.PACKAGE
 
         assertFalse {
             resolutionMechanism.isPolicyApplied(
