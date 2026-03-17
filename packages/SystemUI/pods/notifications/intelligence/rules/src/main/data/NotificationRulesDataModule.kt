@@ -28,7 +28,6 @@ import com.android.systemui.notifications.intelligence.rules.data.repository.Ins
 import com.android.systemui.notifications.intelligence.rules.data.repository.InstalledAppsRepositoryImpl
 import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRulesRepository
 import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRulesRepositoryImpl
-import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayTestConfig
 import com.android.systemui.notifications.intelligence.rules.shared.NotificationRulesLog
 import dagger.Binds
 import dagger.Module
@@ -64,15 +63,6 @@ interface NotificationRulesDataModule {
         @NotificationRulesLog
         fun providesRulesLogBuffer(factory: LogBufferFactory): LogBuffer {
             return factory.create("NotificationRules", 100)
-        }
-
-        @Provides
-        @SysUISingleton
-        fun provideTestConfig(): NmContextualDisplayTestConfig {
-            return object : NmContextualDisplayTestConfig {
-                override val delayOnRuleGenerationMs = 0L
-                override val forceErrorOnRuleGeneration = false
-            }
         }
     }
 }

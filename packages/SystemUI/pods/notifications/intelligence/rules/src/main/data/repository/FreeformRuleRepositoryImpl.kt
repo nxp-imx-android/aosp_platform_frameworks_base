@@ -16,10 +16,8 @@
 
 package com.android.systemui.notifications.intelligence.rules.data.repository
 
-import android.os.Build
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayTestConfig
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftFilterModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
@@ -27,41 +25,28 @@ import com.android.systemui.notifications.intelligence.rules.shared.model.Keywor
 import com.android.systemui.notifications.intelligence.rules.shared.model.ResponseModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
 @SysUISingleton
 class FreeformRuleRepositoryImpl
 @Inject
-constructor(
-    @Background private val backgroundDispatcher: CoroutineDispatcher,
-    private val testConfig: NmContextualDisplayTestConfig,
-) : FreeformRuleRepository {
+constructor(@Background private val backgroundDispatcher: CoroutineDispatcher) :
+    FreeformRuleRepository {
     override suspend fun createDraftRuleFromFreeformText(
         action: ActionModel,
         text: String,
     ): ResponseModel<DraftRuleModel> {
         return withContext(backgroundDispatcher) {
-            if (Build.IS_DEBUGGABLE) {
-                delay(testConfig.delayOnRuleGenerationMs)
-            }
-            if (Build.IS_DEBUGGABLE && testConfig.forceErrorOnRuleGeneration) {
-                ResponseModel.Error
-            } else {
-                // TODO: b/478225883 - Send freeform text for processing.
-                val keywords =
-                    if (text.isNotBlank()) {
-                        KeywordsModel(listOf(text))
-                    } else {
-                        null
-                    }
-                val newDraftRule =
-                    DraftRuleModel.New(
-                        action = action,
-                        filter = DraftFilterModel(keywords = keywords),
-                    )
-                ResponseModel.Success(newDraftRule)
-            }
+            // TODO: b/478225883 - Send freeform text for processing.
+            val keywords =
+                if (text.isNotBlank()) {
+                    KeywordsModel(listOf(text))
+                } else {
+                    null
+                }
+            val newDraftRule =
+                DraftRuleModel.New(action = action, filter = DraftFilterModel(keywords = keywords))
+            ResponseModel.Success(newDraftRule)
         }
     }
 }

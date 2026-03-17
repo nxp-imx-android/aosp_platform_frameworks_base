@@ -18,12 +18,6 @@ package com.android.systemui.notifications.intelligence.rules.data.repository
 
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testDispatcher
-import com.android.systemui.notifications.intelligence.rules.shared.nmContextualDisplayTestConfig
 
 val Kosmos.realFreeformRuleRepository by
-    Kosmos.Fixture {
-        FreeformRuleRepositoryImpl(
-            backgroundDispatcher = testDispatcher,
-            testConfig = nmContextualDisplayTestConfig,
-        )
-    }
+    Kosmos.Fixture { FreeformRuleRepositoryImpl(backgroundDispatcher = testDispatcher) }
