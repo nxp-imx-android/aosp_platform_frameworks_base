@@ -130,7 +130,7 @@ public class ContentRestrictionService extends IContentRestrictionManager.Stub {
             return;
         }
         if (!isContentRestrictionEnabledForUser(userId)) {
-            dispatchIsContentAllowedCallback(callback, false);
+            dispatchIsContentAllowedCallback(callback, true);
             return;
         }
 
