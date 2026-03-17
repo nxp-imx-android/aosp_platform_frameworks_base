@@ -37,6 +37,7 @@ import android.util.SparseArray;
 import android.window.TransitionInfo;
 
 import com.android.internal.protolog.ProtoLog;
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.FocusTransitionListener;
 import com.android.wm.shell.shared.IFocusTransitionListener;
@@ -147,7 +148,6 @@ public class FocusTransitionObserver {
                 }
             }
 
-
             if (change.hasFlags(FLAG_IS_DISPLAY) && change.hasFlags(FLAG_MOVED_TO_TOP)) {
                 if (mFocusedDisplayId != change.getEndDisplayId()) {
                     updateFocusedDisplay(change.getEndDisplayId());
@@ -156,6 +156,23 @@ public class FocusTransitionObserver {
         }
         mTmpTasksToBeNotified.forEach(this::notifyTaskFocusChanged);
         mTmpTasksToBeNotified.clear();
+    }
+
+    /**
+     * Called when a display is being disconnected (removed or switched to mirroring).
+     * Resets the focused display if the disconnected display was the one with focus.
+     */
+    public void onDisplayDisconnected(int displayId, int nextDisplayId) {
+        if (!Flags.enableFocusResetOnDisplayRemoval()) {
+            return;
+        }
+
+        mFocusedTaskOnDisplay.remove(displayId);
+        if (mFocusedDisplayId == displayId) {
+            Slog.d(TAG, "The focused display " + displayId
+                    + " is disconnected. Reset focus to " + nextDisplayId);
+            updateFocusedDisplay(nextDisplayId);
+        }
     }
 
     private void updateFocusedTaskPerDisplay(RunningTaskInfo task, int displayId) {

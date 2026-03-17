@@ -8765,6 +8765,13 @@ class DesktopTasksControllerTest : ShellTestCase() {
     }
 
     @Test
+    fun onDisplayDisconnect_notifiesFocusReset() {
+        val transition = Binder()
+        controller.onDisplayDisconnect(SECOND_DISPLAY, DEFAULT_DISPLAY, transition)
+        verify(focusTransitionObserver).onDisplayDisconnected(SECOND_DISPLAY, DEFAULT_DISPLAY)
+    }
+
+    @Test
     @EnableFlags(
         Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
     )

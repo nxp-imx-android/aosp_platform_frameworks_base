@@ -869,6 +869,9 @@ class DesktopTasksController(
         val wct = WindowContainerTransaction()
         addOnDisplayDisconnectChanges(wct, disconnectedDisplayId, destinationDisplayId)
             .invoke(transition)
+        // Ensure focus state does not get stuck disconnected display. Only update focus state after
+        // wct has been correctly updated
+        focusTransitionObserver.onDisplayDisconnected(disconnectedDisplayId, destinationDisplayId)
         try {
             userRepositories.current.getExpandedTasksOrdered(disconnectedDisplayId).forEach {
                 logD("addOnDisplayDisconnect: taking a snapshot of=%d before disconnect", it)
