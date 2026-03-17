@@ -33,10 +33,13 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.scene.data.repository.HideOverlay
 import com.android.systemui.scene.data.repository.Idle
+import com.android.systemui.scene.data.repository.ShowOverlay
 import com.android.systemui.scene.data.repository.Transition
 import com.android.systemui.scene.data.repository.setSceneTransition
 import com.android.systemui.scene.data.repository.setTransition
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -305,6 +308,38 @@ class NotificationShadeWindowModelTest(flags: FlagsParameterization) : SysuiTest
                 )
             )
             assertThat(isAnimatingGoneToAod).isTrue()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun isBouncerShowing_withSceneContainer() =
+        kosmos.runTest {
+            val isBouncerShowing by collectLastValue(underTest.isBouncerShowing)
+            assertThat(isBouncerShowing).isFalse()
+
+            setSceneTransition(Idle(currentScene = Scenes.Lockscreen, currentOverlays = setOf(Overlays.Bouncer)))
+            assertThat(isBouncerShowing).isTrue()
+
+            setSceneTransition(Idle(currentScene = Scenes.Lockscreen, currentOverlays = emptySet()))
+            assertThat(isBouncerShowing).isFalse()
+
+            setSceneTransition(
+                ShowOverlay(
+                    overlay = Overlays.Bouncer,
+                    fromScene = Scenes.Lockscreen,
+                    progress = flowOf(0.5f)
+                )
+            )
+            assertThat(isBouncerShowing).isTrue()
+
+            setSceneTransition(
+                HideOverlay(
+                    overlay = Overlays.Bouncer,
+                    toScene = Scenes.Lockscreen,
+                    progress = flowOf(0.5f)
+                )
+            )
+            assertThat(isBouncerShowing).isTrue()
         }
 
     @Test
