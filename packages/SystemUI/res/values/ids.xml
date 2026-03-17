@@ -307,4 +307,7 @@
     <item type="id" name="quick_settings_container" />
     <item type="id" name="quick_settings_panel" />
     <item type="id" name="qs_footer_actions" />
+
+    <!-- Identifier for the phishing animated smart action. -->
+    <item type="id" name="is_phishing_animated_action" />
 </resources>
