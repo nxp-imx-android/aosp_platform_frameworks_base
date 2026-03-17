@@ -155,3 +155,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "drive_dream_state_from_occlusion"
+    namespace: "systemui"
+    description: "Uses the WindowManager occlusion signal with task info to determine if the device is dreaming, instead of the DreamManager signal, to prevent race conditions."
+    bug: "462070389"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
