@@ -610,6 +610,25 @@ public class AdvancedProtectionServiceTest {
 
     @EnableFlags(Flags.FLAG_AAPM_API_V2)
     @Test
+    public void testUpdateProvisioning_doesNotTriggerRegularCallbacks() throws RemoteException {
+        AtomicBoolean callbackCalledCaptor = new AtomicBoolean(false);
+        IAdvancedProtectionCallback callback = createCallback(callbackCalledCaptor);
+        AdvancedProtectionHook hook = createHook(/* isAvailable */ true, null);
+        AdvancedProtectionService service = createService(hook, null);
+
+        service.setAdvancedProtectionEnabled(true);
+        service.registerAdvancedProtectionCallback(callback);
+        mLooper.dispatchAll();
+        callbackCalledCaptor.set(false);
+
+        service.updateAdvancedProtectionFeaturesProvisioning(new int[] {HOOK_ID}, null);
+        mLooper.dispatchAll();
+
+        assertFalse(callbackCalledCaptor.get());
+    }
+
+    @EnableFlags(Flags.FLAG_AAPM_API_V2)
+    @Test
     public void testUpdateProvisioning_invalidFeatureId() {
         AdvancedProtectionHook hook = createHook(/* isAvailable */ true, /* callbackCaptor */ null);
         AdvancedProtectionService service = createService(hook, null);
