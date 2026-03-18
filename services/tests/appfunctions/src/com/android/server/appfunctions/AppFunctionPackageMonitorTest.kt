@@ -32,6 +32,7 @@ import android.platform.test.flag.junit.CheckFlagsRule
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.android.server.appfunctions.observer.AppFunctionMetadataObserver
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Rule
