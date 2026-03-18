@@ -293,8 +293,249 @@ public class PowerStatsCollectorTest {
         assertThat(powerStats.uidStats.get(childUid2)).isNull();
     }
 
+
+    @Test
+    public void collectConsumedEnergy_emptyEnergyConsumerResult() throws Exception {
+        // Arrange block
+        int voltageMv = 3500;
+        int energyConsumerId = 1;
+
+        // Mock Energy Consumers
+        PowerStatsInternal powerStatsInternal = mock(PowerStatsInternal.class);
+        when(powerStatsInternal.getEnergyConsumerInfo())
+                .thenReturn(new EnergyConsumer[]{
+                        new EnergyConsumer() {{
+                            id = energyConsumerId;
+                            type = EnergyConsumerType.CPU_CLUSTER;
+                            ordinal = 0;
+                            name = "CPU0";
+                        }}
+                });
+
+        // Mock Energy Consumption to return an empty array
+        CompletableFuture<EnergyConsumerResult[]> future = mock(CompletableFuture.class);
+        when(future.get(anyLong(), any(TimeUnit.class)))
+                .thenReturn(new EnergyConsumerResult[0]);
+        when(powerStatsInternal.getEnergyConsumedAsync(eq(new int[]{energyConsumerId})))
+                .thenReturn(future);
+
+        PowerStatsCollector.ConsumedEnergyRetrieverImpl retriever =
+                new PowerStatsCollector.ConsumedEnergyRetrieverImpl(powerStatsInternal,
+                        () -> voltageMv);
+        TestPowerStatsLayout layout = new TestPowerStatsLayout();
+        PowerStats.Descriptor descriptor = new PowerStats.Descriptor(
+                0, 1, null, 0, 1, new PersistableBundle());
+        layout.toExtras(descriptor.extras);
+        PowerStats powerStats = new PowerStats(descriptor);
+        PowerStatsCollector.ConsumedEnergyHelper helper =
+                mCollector.new ConsumedEnergyHelper(retriever, energyConsumerId, true);
+
+        // Act & Assert block
+        assertThat(helper.collectConsumedEnergy(powerStats, layout)).isFalse();
+    }
+
+    @Test
+    public void collectConsumedEnergy_manyEnergyConsumers() throws Exception {
+        // Arrange block
+        int voltageMv = 3500;
+
+        // Mock Energy Consumers
+        PowerStatsInternal powerStatsInternal = mock(PowerStatsInternal.class);
+        when(powerStatsInternal.getEnergyConsumerInfo())
+                .thenReturn(new EnergyConsumer[]{
+                        new EnergyConsumer() {{
+                            id = 1;
+                            type = EnergyConsumerType.CPU_CLUSTER;
+                            ordinal = 0;
+                            name = "CPU0";
+                        }},
+                        new EnergyConsumer() {{
+                            id = 2;
+                            type = EnergyConsumerType.CPU_CLUSTER;
+                            ordinal = 1;
+                            name = "CPU1";
+                        }}
+                });
+
+        // Mock Energy Consumption
+        CompletableFuture<EnergyConsumerResult[]> future = mock(CompletableFuture.class);
+        when(future.get(anyLong(), any(TimeUnit.class)))
+                .thenReturn(new EnergyConsumerResult[]{
+                        new EnergyConsumerResult() {{
+                            id = 1;
+                            this.energyUWs = 0;
+                        }},
+                        new EnergyConsumerResult() {{
+                            id = 2;
+                            this.energyUWs = 0;
+                        }}
+                })
+                .thenReturn(new EnergyConsumerResult[]{
+                        new EnergyConsumerResult() {{
+                            id = 1;
+                            this.energyUWs = 1000;
+                        }},
+                        new EnergyConsumerResult() {{
+                            id = 2;
+                            this.energyUWs = 1500;
+                        }}
+                });
+        when(powerStatsInternal.getEnergyConsumedAsync(eq(new int[]{1, 2})))
+                .thenReturn(future);
+        PowerStatsCollector.ConsumedEnergyRetrieverImpl retriever =
+                new PowerStatsCollector.ConsumedEnergyRetrieverImpl(powerStatsInternal,
+                        () -> voltageMv);
+        TestPowerStatsLayout layout = new TestPowerStatsLayout();
+        PowerStats.Descriptor descriptor = new PowerStats.Descriptor(
+                1, 2, null, 2, 1, new PersistableBundle());
+        layout.toExtras(descriptor.extras);
+        PowerStats powerStats = new PowerStats(descriptor);
+        PowerStatsCollector.ConsumedEnergyHelper helper = mCollector.new ConsumedEnergyHelper(
+                retriever, EnergyConsumerType.CPU_CLUSTER);
+
+        // Act block
+        helper.collectConsumedEnergy(powerStats, layout);
+        helper.collectConsumedEnergy(powerStats, layout);
+
+        // Assert block
+        // Verify that the energy was set correctly
+        assertThat(layout.getConsumedEnergy(powerStats.stats, 0))
+                .isEqualTo(PowerStatsCollector.uJtoUc(1000, voltageMv));
+        assertThat(layout.getConsumedEnergy(powerStats.stats, 1))
+                .isEqualTo(PowerStatsCollector.uJtoUc(1500, voltageMv));
+    }
+
+    @Test
+    public void collectConsumedEnergy_energyConsumersMoreThanResults() throws Exception {
+        // Arrange block
+        int voltageMv = 3500;
+
+        // Mock Energy Consumers
+        PowerStatsInternal powerStatsInternal = mock(PowerStatsInternal.class);
+        when(powerStatsInternal.getEnergyConsumerInfo())
+                .thenReturn(new EnergyConsumer[]{
+                        new EnergyConsumer() {{
+                            id = 1;
+                            type = EnergyConsumerType.CPU_CLUSTER;
+                            ordinal = 0;
+                            name = "CPU0";
+                        }},
+                        new EnergyConsumer() {{
+                            id = 2;
+                            type = EnergyConsumerType.CPU_CLUSTER;
+                            ordinal = 1;
+                            name = "CPU1";
+                        }}
+                });
+
+        // Mock Energy Consumption
+        CompletableFuture<EnergyConsumerResult[]> future = mock(CompletableFuture.class);
+        when(future.get(anyLong(), any(TimeUnit.class)))
+                .thenReturn(new EnergyConsumerResult[]{
+                        new EnergyConsumerResult() {{
+                            id = 1;
+                            this.energyUWs = 0;
+                        }}
+                })
+                .thenReturn(new EnergyConsumerResult[]{
+                        new EnergyConsumerResult() {{
+                            id = 1;
+                            this.energyUWs = 1000;
+                        }}
+                });
+        when(powerStatsInternal.getEnergyConsumedAsync(eq(new int[]{1, 2})))
+                .thenReturn(future);
+        PowerStatsCollector.ConsumedEnergyRetrieverImpl retriever =
+                new PowerStatsCollector.ConsumedEnergyRetrieverImpl(powerStatsInternal,
+                        () -> voltageMv);
+        TestPowerStatsLayout layout = new TestPowerStatsLayout();
+        PowerStats.Descriptor descriptor = new PowerStats.Descriptor(
+                0, 2, null, 0, 1, new PersistableBundle());
+        layout.toExtras(descriptor.extras);
+        PowerStats powerStats = new PowerStats(descriptor);
+        PowerStatsCollector.ConsumedEnergyHelper helper = mCollector.new ConsumedEnergyHelper(
+                retriever, EnergyConsumerType.CPU_CLUSTER);
+
+        // Act block
+        helper.collectConsumedEnergy(powerStats, layout);
+        helper.collectConsumedEnergy(powerStats, layout);
+
+        // Assert block
+        // Verify that the energy was set correctly
+        assertThat(layout.getConsumedEnergy(powerStats.stats, 0))
+                .isEqualTo(PowerStatsCollector.uJtoUc(1000, voltageMv));
+        assertThat(layout.getConsumedEnergy(powerStats.stats, 1))
+                .isEqualTo(PowerStatsCollector.uJtoUc(0, voltageMv));
+    }
+
+    @Test
+    public void collectConsumedEnergy_energyConsumersLessThanResults() throws Exception {
+        // Arrange block
+        int voltageMv = 3500;
+
+        // Mock Energy Consumers
+        PowerStatsInternal powerStatsInternal = mock(PowerStatsInternal.class);
+        when(powerStatsInternal.getEnergyConsumerInfo())
+                .thenReturn(new EnergyConsumer[]{
+                        new EnergyConsumer() {{
+                            id = 1;
+                            type = EnergyConsumerType.CPU_CLUSTER;
+                            ordinal = 0;
+                            name = "CPU0";
+                        }}
+                });
+
+        // Mock Energy Consumption
+        CompletableFuture<EnergyConsumerResult[]> future = mock(CompletableFuture.class);
+        when(future.get(anyLong(), any(TimeUnit.class)))
+                .thenReturn(new EnergyConsumerResult[]{
+                        new EnergyConsumerResult() {{
+                            id = 1;
+                            this.energyUWs = 0;
+                        }},
+                        new EnergyConsumerResult() {{
+                            id = 2;
+                            this.energyUWs = 0;
+                        }}
+                })
+                .thenReturn(new EnergyConsumerResult[]{
+                        new EnergyConsumerResult() {{
+                            id = 1;
+                            this.energyUWs = 1000;
+                        }},
+                        new EnergyConsumerResult() {{
+                            id = 2;
+                            this.energyUWs = 2000;
+                        }}
+                });
+        when(powerStatsInternal.getEnergyConsumedAsync(eq(new int[]{1})))
+                .thenReturn(future);
+        PowerStatsCollector.ConsumedEnergyRetrieverImpl retriever =
+                new PowerStatsCollector.ConsumedEnergyRetrieverImpl(powerStatsInternal,
+                        () -> voltageMv);
+        TestPowerStatsLayout layout = new TestPowerStatsLayout();
+        PowerStats.Descriptor descriptor = new PowerStats.Descriptor(
+                0, 2, null, 0, 1, new PersistableBundle());
+        layout.toExtras(descriptor.extras);
+        PowerStats powerStats = new PowerStats(descriptor);
+        PowerStatsCollector.ConsumedEnergyHelper helper = mCollector.new ConsumedEnergyHelper(
+                retriever, EnergyConsumerType.CPU_CLUSTER);
+
+        // Act block
+        helper.collectConsumedEnergy(powerStats, layout);
+        helper.collectConsumedEnergy(powerStats, layout);
+
+        // Assert block
+        // Verify that the energy was set correctly
+        assertThat(layout.getConsumedEnergy(powerStats.stats, 0))
+                .isEqualTo(PowerStatsCollector.uJtoUc(1000, voltageMv));
+        assertThat(layout.getConsumedEnergy(powerStats.stats, 1))
+                .isEqualTo(PowerStatsCollector.uJtoUc(0, voltageMv));
+    }
+
     @SuppressWarnings("unchecked")
     private void mockEnergyConsumers(PowerStatsInternal powerStatsInternal) throws Exception {
+
         when(powerStatsInternal.getEnergyConsumerInfo())
                 .thenReturn(new EnergyConsumer[]{
                         new EnergyConsumer() {{
