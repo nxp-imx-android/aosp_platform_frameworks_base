@@ -724,17 +724,16 @@ fun PreferenceMetadata.toProto(
                 preconditionsDescription?.let { addPreconditions(it) }
             }
         }
-    } else {
-        if (metadata is PreferencesApiScreen) {
-            metadata.screenPreconditions?.getDescription(context)?.let { addGetPreconditions(it) }
-        } else if (metadata is PreferenceSetWarningProvider) {
-            metadata.setWarning?.let { warningInfo ->
-                setWarning =
-                    setWarningProto {
-                        warning = warningInfo.warningMessage
-                        warningInfo.preconditionsDescription?.let { addPreconditions(it) }
-                    }
-
+    } else if (metadata is PreferencesApiScreen) {
+        metadata.screenPreconditions?.getDescription(context)?.let { addGetPreconditions(it) }
+    } else if (metadata is PreferenceAvailabilityProvider) {
+        addGetPreconditions(metadata.availabilityDescription)
+    }
+    if (metadata is PreferenceSetWarningProvider) {
+        metadata.setWarning?.let { warningInfo ->
+            setWarning = setWarningProto {
+                warning = warningInfo.warningMessage
+                warningInfo.preconditionsDescription?.let { addPreconditions(it) }
             }
         }
     }
