@@ -372,7 +372,7 @@ public class PipTransitionState {
      * Sets the SurfaceControl leash for the currently pinned PiP task.
      */
     public void setPinnedTaskLeash(@Nullable SurfaceControl leash) {
-        if (!com.android.window.flags.Flags.releaseAllTransitionSurfaces()
+        if (!com.android.window.flags.Flags.releaseAllTransitionSurfacesOnIdle()
                 // mixpatcher handles leash cleanup itself
                 && !com.android.window.flags.Flags.transitMixpatcherBase()) {
             mPinnedTaskLeash = leash;

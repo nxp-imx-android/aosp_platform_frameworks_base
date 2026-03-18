@@ -253,6 +253,9 @@ public class Transitions implements RemoteCallable<Transitions>,
     /** List of {@link Runnable} instances to run when the last active transition has finished.  */
     private final ArrayList<Runnable> mRunWhenIdleQueue = new ArrayList<>();
 
+    /** Surfaces to be released after all transitions have completed. */
+    private final ArrayList<SurfaceControl> mCleanupSurfaces = new ArrayList<>();
+
     private float mTransitionAnimationScaleSetting = 1.0f;
 
     /**
@@ -936,6 +939,7 @@ public class Transitions implements RemoteCallable<Transitions>,
                             mRunWhenIdleQueue.get(i).run();
                         }
                         mRunWhenIdleQueue.clear();
+                        releaseCleanupSurfaces();
                     }
                 }
             }
@@ -1173,11 +1177,40 @@ public class Transitions implements RemoteCallable<Transitions>,
      */
     private void releaseSurfaces(@Nullable TransitionInfo info) {
         if (info == null) return;
-        if (com.android.window.flags.Flags.releaseAllTransitionSurfaces()) {
-            info.releaseAllSurfaces();
-            return;
-        }
         info.releaseAnimSurfaces();
+        if (com.android.window.flags.Flags.releaseAllTransitionSurfacesOnIdle()) {
+            recordReleaseSurfaces(mCleanupSurfaces, info.getChanges());
+        }
+    }
+
+    /** Called when all transitions are finished. */
+    private void releaseCleanupSurfaces() {
+        final int size = mCleanupSurfaces.size();
+        if (size == 0) return;
+        for (int i = size - 1; i >= 0; --i) {
+            mCleanupSurfaces.get(i).release();
+        }
+        mCleanupSurfaces.clear();
+    }
+
+    /** Populates the surfaces from changes that should be released later. */
+    static void recordReleaseSurfaces(@NonNull ArrayList<SurfaceControl> outCleanupSurfaces,
+            @NonNull List<TransitionInfo.Change> changes) {
+        for (int i = changes.size() - 1; i >= 0; --i) {
+            final TransitionInfo.Change change = changes.get(i);
+            SurfaceControl sc = change.getLeash();
+            if (sc.isValid()) {
+                outCleanupSurfaces.add(sc);
+            }
+            sc = change.getSnapshot();
+            if (sc != null && sc.isValid()) {
+                outCleanupSurfaces.add(sc);
+            }
+            sc = change.getTopCompatActivityLeash();
+            if (sc != null && sc.isValid()) {
+                outCleanupSurfaces.add(sc);
+            }
+        }
     }
 
     /**
