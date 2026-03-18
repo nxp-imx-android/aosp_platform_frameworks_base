@@ -108,6 +108,18 @@ public final class DataFlowSource implements AutoCloseable {
 
     private AtomicBoolean mIsBusy = new AtomicBoolean(false);
 
+    /** Whether this instance has been cancelled due to permissions. */
+    private AtomicBoolean mCancelled = new AtomicBoolean(false);
+
+    /** True if closeInternal() has been called. */
+    private boolean mClosed = false;
+
+    /**
+     * If mCancelled is set and mCancellationStarted is not, the first thread that checks this flag
+     * will be responsible for closing the source.
+     */
+    private AtomicBoolean mCancellationStarted = new AtomicBoolean(false);
+
     private final class ApiGuard implements AutoCloseable {
         @Override
         public void close() {
@@ -319,23 +331,7 @@ public final class DataFlowSource implements AutoCloseable {
     @Override
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     public void close() {
-        mCloseGuard.close();
-        AsyncState cancelOp = null;
-        synchronized (mNotificationLock) {
-            mNotificationFuture = null;
-            cancelOp = mAsyncState;
-            mAsyncState = null;
-        }
-        if (cancelOp != null) {
-            try {
-                cancelOp.mReceiver.onError(new CancellationException("User closed sink."));
-            } catch (Throwable t) {
-                // Ignore.
-            } finally {
-                cancelOp.mGuard.close();
-            }
-        }
-        mEndpoint.removeHostDataFlow(Optional.of(mDataFlowId.id), Optional.of(mRegion.id));
+        closeInternal();
     }
 
     /**
@@ -574,6 +570,54 @@ public final class DataFlowSource implements AutoCloseable {
         return false;
     }
 
+    /**
+     * Package-private implementation of {@link #close()}.
+     *
+     * @hide
+     */
+    /* package */ void closeInternal() {
+        if (mClosed) {
+            return;
+        }
+        mClosed = true;
+        mCloseGuard.close();
+        AsyncState cancelOp = null;
+        synchronized (mNotificationLock) {
+            mNotificationFuture = null;
+            cancelOp = mAsyncState;
+            mAsyncState = null;
+        }
+        if (cancelOp != null) {
+            try {
+                cancelOp.mReceiver.onError(new CancellationException("User closed source."));
+            } catch (Throwable t) {
+                // Ignore.
+            } finally {
+                cancelOp.mGuard.close();
+            }
+        }
+        mEndpoint.removeHostDataFlow(Optional.of(mDataFlowId.id), Optional.of(mRegion.id));
+    }
+
+    /** Cancels this source due to a runtime event like permissions revocation. */
+    /* package */ void cancel() {
+        mCancelled.set(true);
+    }
+
+    /**
+     * Checks the cancellation state, performing cleanup if necessary and throwing a {@link
+     * java.lang.SecurityException}.
+     */
+    private void checkCancelled() {
+        if (!mCancelled.get()) {
+            return;
+        }
+        if (mCancellationStarted.compareAndSet(/* expectedValue= */ false, /* newValue= */ true)) {
+            closeInternal();
+        }
+        throw new SecurityException("DataFlowSource permissions revoked.");
+    }
+
     /** Runnable dispatched to push data asynchronously. */
     private void pushDataAsyncRunnable(@NonNull AsyncState state) {
         boolean success = false;
@@ -633,6 +677,7 @@ public final class DataFlowSource implements AutoCloseable {
             throw new ConcurrentModificationException(
                     "Another source operation is currently in progress.");
         }
+        checkCancelled();
         return guard;
     }
 }

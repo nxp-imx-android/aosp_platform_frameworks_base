@@ -92,4 +92,12 @@ oneway interface IContextHubEndpointCallback {
      */
     void onDataFlowOffloadEndpointUnregistered(
             in DataFlowId dataFlowId, in @nullable HubEndpointInfo endpoint);
+
+    /**
+     * Callback notifying this endpoint that the provided data flows are no longer accessible, e.g.
+     * due to runtime permission changes.
+     *
+     * @param dataFlowIds The ids of the data flows that are no longer accessible.
+     */
+    void onDataFlowsInaccessible(in DataFlowId[] dataFlowIds);
 }

@@ -415,7 +415,10 @@ public class HubEndpoint {
                 @Override
                 public void onNotificationCallback(long hubId, int dataFlowId, boolean waking) {
                     if (hubId == mAssignedHubEndpointInfo.getIdentifier().getHub()) {
-                        DataFlowSource source = mSources.get(dataFlowId);
+                        DataFlowSource source;
+                        synchronized (mLock) {
+                            source = mSources.get(dataFlowId);
+                        }
                         if (source != null) {
                             if (!source.onNotificationCallback(
                                     DataFlowCallback.SOURCE_EVENT_WRITABLE)) {
@@ -434,7 +437,10 @@ public class HubEndpoint {
                         DataFlowId fullDataFlowId = new DataFlowId();
                         fullDataFlowId.hubId = hubId;
                         fullDataFlowId.id = dataFlowId;
-                        DataFlowSink sink = mSinks.get(new DataFlowIdWrapper(fullDataFlowId));
+                        DataFlowSink sink;
+                        synchronized (mLock) {
+                            sink = mSinks.get(new DataFlowIdWrapper(fullDataFlowId));
+                        }
                         if (sink != null) {
                             if (!sink.onNotificationCallback(
                                     DataFlowCallback.SINK_EVENT_READABLE)) {
@@ -452,9 +458,11 @@ public class HubEndpoint {
             };
 
     /** The sources associated with this endpoint. */
+    @GuardedBy("mLock")
     private final Map<Integer, DataFlowSource> mSources = new HashMap<>();
 
     /** The sinks associated with this endpoint. */
+    @GuardedBy("mLock")
     private final Map<DataFlowIdWrapper, DataFlowSink> mSinks = new HashMap<>();
 
     private final IContextHubEndpointCallback mServiceCallback =
@@ -581,7 +589,9 @@ public class HubEndpoint {
                     DataFlowDataConfig config =
                             enableHostSinkFromContext(context, source.getIdentifier());
                     DataFlowSink sink = createDataFlowSink(config, context);
-                    mSinks.put(new DataFlowIdWrapper(context.id), sink);
+                    synchronized (mLock) {
+                        mSinks.put(new DataFlowIdWrapper(context.id), sink);
+                    }
 
                     Log.d(TAG, "onDataFlowHostSinkRegistered: sink = " + sink);
 
@@ -630,7 +640,10 @@ public class HubEndpoint {
                 public void onDataFlowOffloadEndpointUnregistered(
                         DataFlowId dataFlowId, HubEndpointInfo endpoint) throws RemoteException {
                     if (mAssignedHubEndpointInfo.getIdentifier().getHub() == dataFlowId.hubId) {
-                        DataFlowSource source = mSources.get(dataFlowId.id);
+                        DataFlowSource source;
+                        synchronized (mLock) {
+                            source = mSources.get(dataFlowId.id);
+                        }
                         if (source == null) {
                             Log.w(
                                     TAG,
@@ -654,7 +667,10 @@ public class HubEndpoint {
                                     });
                         }
                     } else {
-                        DataFlowSink sink = mSinks.get(new DataFlowIdWrapper(dataFlowId));
+                        DataFlowSink sink;
+                        synchronized (mLock) {
+                            sink = mSinks.get(new DataFlowIdWrapper(dataFlowId));
+                        }
                         if (sink == null) {
                             Log.w(
                                     TAG,
@@ -673,6 +689,30 @@ public class HubEndpoint {
                                         mDataFlowCallback.onDataFlowSinkEvent(
                                                 sink, DataFlowCallback.SINK_EVENT_STOPPED);
                                     });
+                        }
+                    }
+                }
+
+                @Override
+                public void onDataFlowsInaccessible(DataFlowId[] dataFlowIds)
+                        throws RemoteException {
+                    for (DataFlowId dataFlowId : dataFlowIds) {
+                        if (dataFlowId.hubId == mAssignedHubEndpointInfo.getIdentifier().getHub()) {
+                            DataFlowSource source;
+                            synchronized (mLock) {
+                                source = mSources.get(dataFlowId.id);
+                            }
+                            if (source != null) {
+                                source.cancel();
+                            }
+                        } else {
+                            DataFlowSink sink;
+                            synchronized (mLock) {
+                                sink = mSinks.get(new DataFlowIdWrapper(dataFlowId));
+                            }
+                            if (sink != null) {
+                                sink.cancel();
+                            }
                         }
                     }
                 }
@@ -1052,7 +1092,9 @@ public class HubEndpoint {
             dataFlowIdObj.hubId = mPendingHubEndpointInfo.getIdentifier().getHub();
             dataFlowIdObj.id = dataFlowId.get();
             ret = new DataFlowSource(dataConfig, this, region, info, dataFlowIdObj);
-            mSources.put(dataFlowIdObj.id, ret);
+            synchronized (mLock) {
+                mSources.put(dataFlowIdObj.id, ret);
+            }
         } catch (RemoteException e) {
             e.rethrowFromSystemServer();
         } finally {
@@ -1461,7 +1503,9 @@ public class HubEndpoint {
             } catch (RemoteException e) {
                 e.rethrowFromSystemServer();
             }
-            mSources.remove(dataFlowId.get());
+            synchronized (mLock) {
+                mSources.remove(dataFlowId.get());
+            }
         }
         if (regionId.isPresent()) {
             native_removeHostSource(mNativeHandle, regionId.get());
@@ -1507,7 +1551,9 @@ public class HubEndpoint {
     /** @hide */
     void removeSink(DataFlowSinkContext context) {
         native_removeHostSink(mNativeHandle, context.id.hubId, context.id.id);
-        mSinks.remove(new DataFlowIdWrapper(context.id));
+        synchronized (mLock) {
+            mSinks.remove(new DataFlowIdWrapper(context.id));
+        }
     }
 
     private DataFlowDataConfig enableHostSinkFromContext(
