@@ -27,6 +27,7 @@
 #include <android/fdsan.h>
 #include <arpa/inet.h>
 #include <async_safe/log.h>
+#include <binder/ProcessState.h>
 #include <bionic/malloc.h>
 #include <bionic/mte.h>
 #include <com_android_base_core_jni_flags.h>
@@ -354,6 +355,7 @@ enum RuntimeFlags : uint32_t {
     PROFILEABLE = 1 << 24,
     DEBUG_ENABLE_PTRACE = 1 << 25,
     ENABLE_PAGE_SIZE_APP_COMPAT = 1 << 26,
+    AUDIT_OUTGOING_TRANSACTIONS = 1 << 27,
 };
 
 enum UnsolicitedZygoteMessageTypes : uint32_t {
@@ -2163,6 +2165,7 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids, 
         // runtime.
         runtime_flags &= ~RuntimeFlags::ENABLE_PAGE_SIZE_APP_COMPAT;
     }
+
     __android_log_close();
     AStatsSocket_close();
 
@@ -2171,6 +2174,13 @@ static void SpecializeCommon(JNIEnv* env, uid_t uid, gid_t gid, jintArray gids, 
     if (selinux_android_setcontext(uid, is_system_server, se_info_ptr, nice_name_ptr) == -1) {
         fail_fn(CREATE_ERROR("selinux_android_setcontext(%d, %d, \"%s\", \"%s\") failed", uid,
                              is_system_server, se_info_ptr, nice_name_ptr));
+    }
+
+    if ((runtime_flags & RuntimeFlags::AUDIT_OUTGOING_TRANSACTIONS) != 0) {
+        android::ProcessState::self()->setIsOutgoingTransactionsAuditable(true);
+        // Now that we've used the flag, clear it so that we don't pass unknown flags to the ART
+        // runtime.
+        runtime_flags &= ~RuntimeFlags::AUDIT_OUTGOING_TRANSACTIONS;
     }
 
     // Make it easier to debug audit logs by setting the main thread's name to the
