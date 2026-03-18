@@ -2061,6 +2061,10 @@ public final class ProcessList extends ProcessListInternal
             runtimeFlags |= Zygote.getMemorySafetyRuntimeFlags(
                     definingAppInfo, app.processInfo, instructionSet, mPlatformCompat);
 
+            if (isOutgoingTransactionsAuditable(definingAppInfo.uid)) {
+                runtimeFlags |= Zygote.AUDIT_OUTGOING_TRANSACTIONS;
+            }
+
             // the per-user SELinux context must be set
             if (TextUtils.isEmpty(app.info.seInfoUser)) {
                 Slog.wtf(ActivityManagerService.TAG, "SELinux tag not defined",
@@ -2115,6 +2119,23 @@ public final class ProcessList extends ProcessListInternal
                     + (TextUtils.isEmpty(app.info.seInfoUser) ? "" : app.info.seInfoUser)
                     + extraInfo;
         }
+    }
+
+    /**
+     * Returns true if the process should have its binder transactions auditable, false otherwise.
+     */
+    boolean isOutgoingTransactionsAuditable(int processUid) {
+        if (!enablePccFrameworkSupport()) {
+            return false;
+        }
+        if (Process.isPrivateComputeCoreUid(processUid)) {
+            return true;
+        }
+        PccSandboxManagerInternal manager = getPccSandboxManagerInternal();
+        if (manager != null) {
+            return manager.isPrivateComputeServicesUid(processUid);
+        }
+        return false;
     }
 
     @GuardedBy("mService")
