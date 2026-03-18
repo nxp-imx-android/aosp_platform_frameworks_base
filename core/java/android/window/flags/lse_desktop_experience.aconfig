@@ -1025,6 +1025,13 @@ flag {
 }
 
 flag {
+    name: "launch_games_in_fullscreen_by_allowlist"
+    namespace: "lse_desktop_experience"
+    description: "Launch games in fullscreen by allowlist in desktop-first displays."
+    bug: "492280747"
+}
+
+flag {
     name: "mask_presentation_flags_on_internal_displays"
     namespace: "lse_desktop_experience"
     description: "Mask Display.FLAG_PRESENTATION for certain apps on internal displays"
