@@ -360,6 +360,40 @@ class InputDeviceRemapperTests {
     }
 
     @Test
+    fun testRemapAxis_toUnknown() {
+        val inputDeviceRemapper = setupControllerRemapper()
+        val deviceId = 1
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_JOYSTICK,
+            )
+        addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
+        reset(native)
+
+        inputDeviceRemapper.remapAxis(
+            USER_ID,
+            device.identifier,
+            MotionEvent.AXIS_X,
+            MotionEvent.AXIS_DISABLED,
+        )
+
+        verify(native)
+            .setAxisRemappingForDevice(
+                eq(deviceId),
+                eq(intArrayOf(MotionEvent.AXIS_X)),
+                eq(intArrayOf(MotionEvent.AXIS_DISABLED)),
+            )
+        assertEquals(
+            inputDeviceRemapper.getAxisRemappings(USER_ID, device.identifier),
+            mapOf(MotionEvent.AXIS_X to MotionEvent.AXIS_DISABLED),
+        )
+    }
+
+    @Test
     fun testRemapAxis_doesNotApplyToKeyboard() {
         val inputDeviceRemapper = setupControllerRemapper()
         val deviceId = 1

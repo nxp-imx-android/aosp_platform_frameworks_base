@@ -925,7 +925,8 @@ public final class InputManager {
      *
      * @param identifier The unique identifier for the device.
      * @param fromAxis The controller axis getting remapped.
-     * @param toAxis The controller axis that it is mapped to.
+     * @param toAxis The controller axis that it is mapped to, or {@link MotionEvent#AXIS_DISABLED}
+     *               to disable the axis.
      *
      * @throws IllegalArgumentException if the provided fromAxis or toAxis is not a valid axis
      * @hide
