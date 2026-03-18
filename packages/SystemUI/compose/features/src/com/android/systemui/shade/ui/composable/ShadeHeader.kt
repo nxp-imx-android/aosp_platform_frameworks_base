@@ -323,14 +323,16 @@ fun ContentScope.ExpandedShadeHeader(
                             .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
                             .wrapContentSize(Alignment.CenterStart),
                 )
-                Box(
-                    modifier =
-                        Modifier.element(ShadeHeader.Elements.ShadeCarrierGroup).fillMaxWidth()
-                ) {
-                    ShadeCarrierGroup(
-                        viewModel = viewModel,
-                        modifier = Modifier.align(Alignment.CenterEnd).widthIn(max = 180.dp),
-                    )
+                if (!viewModel.isPrivacyChipVisible) {
+                    Box(
+                        modifier =
+                            Modifier.element(ShadeHeader.Elements.ShadeCarrierGroup).fillMaxWidth()
+                    ) {
+                        ShadeCarrierGroup(
+                            viewModel = viewModel,
+                            modifier = Modifier.align(Alignment.CenterEnd).widthIn(max = 180.dp),
+                        )
+                    }
                 }
             }
             Row(
