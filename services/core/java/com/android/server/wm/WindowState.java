@@ -4957,7 +4957,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             }
         }
 
-        if (mWinAnimator.mEnteringAnimation) {
+        if (!com.android.window.flags.Flags.reduceWindowTraversalOnEntering()
+                && mWinAnimator.mEnteringAnimation) {
+            // TODO(b/493429456): Remove the field mEnteringAnimation.
             mWinAnimator.mEnteringAnimation = false;
             mWmService.requestTraversal();
         }

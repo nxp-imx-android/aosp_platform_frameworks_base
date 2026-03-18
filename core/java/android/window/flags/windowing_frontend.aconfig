@@ -139,6 +139,16 @@ flag {
 }
 
 flag {
+  name: "reduce_window_traversal_on_entering"
+  namespace: "windowing_frontend"
+  description: "Reduce unnecessary window traversal when an entering animation is done"
+  bug: "493429456"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "fifo_priority_for_major_ui_processes"
   namespace: "windowing_frontend"
   description: "Use realtime priority for SystemUI and launcher"
