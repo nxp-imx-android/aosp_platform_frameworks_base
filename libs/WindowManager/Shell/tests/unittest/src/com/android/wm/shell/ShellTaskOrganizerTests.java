@@ -38,6 +38,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -974,5 +975,20 @@ public class ShellTaskOrganizerTests extends ShellTestCase {
         final CompatUIInfo captureValue = capture.getValue();
         assertEquals(captureValue.getTaskInfo(), taskInfo);
         assertEquals(captureValue.getListener(), listener);
+    }
+
+    @Test
+    public void testKeyguardOccludingTaskChanged() {
+        ShellTaskOrganizer.KeyguardOccludingTaskListener listener =
+                mock(ShellTaskOrganizer.KeyguardOccludingTaskListener.class);
+        mOrganizer.addKeyguardOccludingTaskListener(listener);
+
+        final RunningTaskInfo taskInfo = new TestRunningTaskInfoBuilder().build();
+        mOrganizer.onKeyguardOccludingTaskChanged(DEFAULT_DISPLAY, taskInfo);
+        verify(listener).onKeyguardOccludingTaskChanged(DEFAULT_DISPLAY, taskInfo);
+
+        mOrganizer.removeKeyguardOccludingTaskListener(listener);
+        mOrganizer.onKeyguardOccludingTaskChanged(DEFAULT_DISPLAY, null);
+        verify(listener, times(1)).onKeyguardOccludingTaskChanged(anyInt(), any());
     }
 }

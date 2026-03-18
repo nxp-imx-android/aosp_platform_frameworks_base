@@ -16,7 +16,10 @@
 
 package com.android.server.wm.utils;
 
+import static android.view.Display.DEFAULT_DISPLAY;
+
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -31,6 +34,7 @@ import java.util.List;
 
 public class StubOrganizer extends ITaskOrganizer.Stub {
     public ActivityManager.RunningTaskInfo mInfo;
+    public ActivityManager.RunningTaskInfo mLastOccludingTaskInfo;
 
     @Override
     public void addStartingWindow(StartingWindowInfo info) { }
@@ -75,4 +79,12 @@ public class StubOrganizer extends ITaskOrganizer.Stub {
 
     @Override
     public void onPackageUpdateFinished(List<ActivityManager.RunningTaskInfo> updatedTaskInfos) {}
+
+    @Override
+    public void onKeyguardOccludingTaskChanged(
+            int displayId, @Nullable ActivityManager.RunningTaskInfo taskInfo) {
+        if (displayId == DEFAULT_DISPLAY) {
+            mLastOccludingTaskInfo = taskInfo;
+        }
+    }
 }

@@ -949,6 +949,7 @@ public abstract class WMShellBaseModule {
     static KeyguardTransitionHandler provideKeyguardTransitionHandler(
             ShellInit shellInit,
             ShellController shellController,
+            ShellTaskOrganizer shellTaskOrganizer,
             DisplayController displayController,
             Transitions transitions,
             TaskStackListenerImpl taskStackListener,
@@ -956,8 +957,15 @@ public abstract class WMShellBaseModule {
             @ShellMainThread ShellExecutor mainExecutor,
             FocusTransitionObserver focusTransitionObserver) {
         return new KeyguardTransitionHandler(
-                shellInit, shellController, displayController, transitions, taskStackListener,
-                mainHandler, mainExecutor, focusTransitionObserver);
+                shellInit,
+                shellController,
+                shellTaskOrganizer,
+                displayController,
+                transitions,
+                taskStackListener,
+                mainHandler,
+                mainExecutor,
+                focusTransitionObserver);
     }
 
     @WMSingleton

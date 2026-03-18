@@ -49,6 +49,7 @@ import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLAS
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.ActivityManager;
 import android.internal.perfetto.protos.Windowmanagerservice.KeyguardPerDisplayProto;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -736,6 +737,14 @@ class KeyguardController {
                     reason);
         }
 
+        @Nullable
+        private ActivityManager.RunningTaskInfo getTopOccludesTaskInfo() {
+            if (mTopOccludesActivity == null) return null;
+            final Task task = mTopOccludesActivity.getTask();
+            if (task == null) return null;
+            return task.getTaskInfo();
+        }
+
         /**
          * Updates keyguard status if the top task could be visible. The top task may occlude
          * keyguard, request to dismiss keyguard or make insecure keyguard go away based on its
@@ -744,6 +753,7 @@ class KeyguardController {
         void updateVisibility(KeyguardController controller, DisplayContent display) {
             final boolean lastOccluded = mOccluded;
             final boolean lastKeyguardGoingAway = mKeyguardGoingAway;
+            final ActivityManager.RunningTaskInfo lastOccludesTaskInfo = getTopOccludesTaskInfo();
 
             final ActivityRecord lastDismissKeyguardActivity = mDismissingKeyguardActivity;
 
@@ -806,11 +816,20 @@ class KeyguardController {
 
             final boolean startedGoingAway = (!lastKeyguardGoingAway && mKeyguardGoingAway);
             final boolean occludedChanged = (lastOccluded != mOccluded);
+            final ActivityManager.RunningTaskInfo topOccludesTaskInfo = getTopOccludesTaskInfo();
+            final boolean occludesTaskChanged =
+                    (topOccludesTaskInfo == null)
+                            ? lastOccludesTaskInfo != null
+                            : !topOccludesTaskInfo.equalsForTaskOrganizer(lastOccludesTaskInfo);
 
             if (startedGoingAway) {
                 writeEventLog("dismissIfInsecure");
                 controller.handleDismissInsecureKeyguard(display);
                 controller.scheduleGoingAwayTimeout(mDisplayId);
+            }
+            if (occludesTaskChanged) {
+                mService.mTaskOrganizerController.handleKeyguardOccludingTaskChanged(
+                        mDisplayId, topOccludesTaskInfo);
             }
             if (occludedChanged) {
                 controller.handleOccludedChanged(display, mTopOccludesActivity);

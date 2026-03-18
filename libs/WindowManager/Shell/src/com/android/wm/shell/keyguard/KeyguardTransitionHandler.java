@@ -32,9 +32,8 @@ import static android.view.WindowManager.TRANSIT_SLEEP;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
-import static com.android.wm.shell.shared.TransitionUtil.isOpeningType;
 import static com.android.wm.shell.Flags.addOneOffHandlerLeashes;
-
+import static com.android.wm.shell.shared.TransitionUtil.isOpeningType;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -57,6 +56,7 @@ import android.window.WindowContainerTransaction;
 
 import com.android.internal.protolog.ProtoLog;
 import com.android.window.flags.Flags;
+import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.TaskStackListenerCallback;
@@ -76,14 +76,16 @@ import com.android.wm.shell.transition.Transitions.TransitionFinishCallback;
  * <p>This takes the highest priority.
  */
 public class KeyguardTransitionHandler
-        implements Transitions.TransitionHandler, KeyguardChangeListener,
-        TaskStackListenerCallback {
+        implements Transitions.TransitionHandler,
+                KeyguardChangeListener,
+                TaskStackListenerCallback {
     private static final boolean ENABLE_NEW_KEYGUARD_SHELL_TRANSITIONS =
             Flags.ensureKeyguardDoesTransitionStartingBugFix();
 
     private static final String TAG = "KeyguardTransition";
 
     private final Transitions mTransitions;
+    private final ShellTaskOrganizer mShellTaskOrganizer;
     private final ShellController mShellController;
 
     private final DisplayController mDisplayController;
@@ -129,6 +131,7 @@ public class KeyguardTransitionHandler
     public KeyguardTransitionHandler(
             @NonNull ShellInit shellInit,
             @NonNull ShellController shellController,
+            @NonNull ShellTaskOrganizer shellTaskOrganizer,
             @NonNull DisplayController displayController,
             @NonNull Transitions transitions,
             @NonNull TaskStackListenerImpl taskStackListener,
@@ -137,6 +140,7 @@ public class KeyguardTransitionHandler
             @NonNull FocusTransitionObserver focusTransitionObserver) {
         mTransitions = transitions;
         mShellController = shellController;
+        mShellTaskOrganizer = shellTaskOrganizer;
         mDisplayController = displayController;
         mMainHandler = mainHandler;
         mMainExecutor = mainExecutor;
@@ -489,6 +493,18 @@ public class KeyguardTransitionHandler
                 mTransitions.startTransition(keyguardShowing ? TRANSIT_TO_FRONT : TRANSIT_TO_BACK,
                         wct, KeyguardTransitionHandler.this);
             });
+        }
+
+        @Override
+        public void registerOccludingTaskListener(
+                @NonNull ShellTaskOrganizer.KeyguardOccludingTaskListener listener) {
+            mShellTaskOrganizer.addKeyguardOccludingTaskListener(listener);
+        }
+
+        @Override
+        public void unregisterOccludingTaskListener(
+                @NonNull ShellTaskOrganizer.KeyguardOccludingTaskListener listener) {
+            mShellTaskOrganizer.removeKeyguardOccludingTaskListener(listener);
         }
     }
 }
