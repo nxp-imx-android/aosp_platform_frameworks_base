@@ -81,6 +81,19 @@ public abstract class HalVibratorManagerTestCase {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_HAPTIC_PCM_GENERATION)
+    public void init_initializesHalAndClearHapticGeneratorSessions() {
+        mHelper.setCapabilities(IVibratorManager.CAP_SYNC, IVibratorManager.CAP_HAPTIC_GENERATOR);
+        mHelper.setVibratorIds(new int[] {1, 2});
+        HalVibratorManager manager = newVibratorManager();
+        manager.init(mHalCallbackMock, mHalVibratorCallbackMock);
+
+        assertThat(mHelper.getConnectCount()).isEqualTo(1);
+        assertThat(mHelper.getCancelSyncedCount()).isEqualTo(1);
+        assertThat(mHelper.getClearSessionsCount()).isEqualTo(1);
+    }
+
+    @Test
     public void init_withNullVibratorIds_returnsEmptyArray() {
         mHelper.setVibratorIds(null);
         HalVibratorManager manager = newVibratorManager();
