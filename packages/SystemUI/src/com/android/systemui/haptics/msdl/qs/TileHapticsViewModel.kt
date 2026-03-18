@@ -27,7 +27,6 @@ import com.google.android.msdl.domain.MSDLPlayer
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -86,25 +85,24 @@ constructor(
     private val hapticsState: Flow<TileHapticsState> =
         merge(toggleHapticsState, interactionHapticsState)
 
-    override suspend fun onActivated(): Nothing {
-        try {
-            hapticsState.collect { hapticsState ->
-                val tokenToPlay: MSDLToken? =
-                    when (hapticsState) {
-                        TileHapticsState.TOGGLE_ON -> MSDLToken.SWITCH_ON
-                        TileHapticsState.TOGGLE_OFF -> MSDLToken.SWITCH_OFF
-                        TileHapticsState.LONG_PRESS -> MSDLToken.LONG_PRESS
-                        TileHapticsState.NO_HAPTICS -> null
-                    }
-                tokenToPlay?.let {
-                    msdlPlayer.playToken(it)
-                    resetStates()
+    override suspend fun onActivated() {
+        hapticsState.collect { hapticsState ->
+            val tokenToPlay: MSDLToken? =
+                when (hapticsState) {
+                    TileHapticsState.TOGGLE_ON -> MSDLToken.SWITCH_ON
+                    TileHapticsState.TOGGLE_OFF -> MSDLToken.SWITCH_OFF
+                    TileHapticsState.LONG_PRESS -> MSDLToken.LONG_PRESS
+                    TileHapticsState.NO_HAPTICS -> null
                 }
+            tokenToPlay?.let {
+                msdlPlayer.playToken(it)
+                resetStates()
             }
-            awaitCancellation()
-        } finally {
-            resetStates()
         }
+    }
+
+    override suspend fun onDeactivated() {
+        resetStates()
     }
 
     private fun resetStates() {
