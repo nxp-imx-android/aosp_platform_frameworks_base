@@ -509,6 +509,17 @@ public class GlobalSettingsValidators {
         VALIDATORS.put(Global.Wearable.REMOTE_GESTURES_ENABLED, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Global.Wearable.WEAR_BUG_REPORT_WARNING_VISIBILITY_STATE, BOOLEAN_VALIDATOR);
         VALIDATORS.put(Global.Wearable.ALWAYS_ROUTE_GESTURES_TO_REMOTE_CLIENTS, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(Global.Wearable.RAISE_TO_TALK_ENABLED, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(Global.Wearable.RAISE_TO_TALK_MEDIATED_ENABLED, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(Global.Wearable.RAISE_TO_TALK_VISUAL_INDICATOR_ENABLED, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(Global.Wearable.RAISE_TO_TALK_GESTURE_SENSITIVITY,
+                new InclusiveIntegerRangeValidator(
+                        Global.Wearable.RAISE_TO_TALK_GESTURE_SENSITIVITY_LOW,
+                        Global.Wearable.RAISE_TO_TALK_GESTURE_SENSITIVITY_HIGH));
+        VALIDATORS.put(Global.Wearable.RAISE_TO_TALK_VOICE_SENSITIVITY,
+                new InclusiveIntegerRangeValidator(
+                        Global.Wearable.RAISE_TO_TALK_VOICE_SENSITIVITY_VERY_LOW,
+                        Global.Wearable.RAISE_TO_TALK_VOICE_SENSITIVITY_VERY_HIGH));
         VALIDATORS.put(Global.GLOBAL_ACTIONS_TIMEOUT_MILLIS, NON_NEGATIVE_INTEGER_VALIDATOR);
         VALIDATORS.put(Global.WATCH_RANGING_SUPPORTED_BY_PRIMARY_DEVICE,
                 new InclusiveIntegerRangeValidator(0, 1));
