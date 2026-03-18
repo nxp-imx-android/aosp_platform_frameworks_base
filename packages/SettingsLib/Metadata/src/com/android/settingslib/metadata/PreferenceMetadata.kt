@@ -184,6 +184,15 @@ interface PreferenceMetadata {
     fun isEnabled(context: Context): Boolean = true
 
     /**
+     * Returns a human readable description of the enabled state of the preference.
+     *
+     * This should describe any preconditions that must be met for the preference to be enabled.
+     *
+     * It does not need to be set if [isEnabled] always returns `true`.
+     */
+    fun getEnabledDescription(): String? = null
+
+    /**
      * Returns the keys of depended preferences.
      *
      * Keep in mind that the dependency is effective only on the same screen. For cross screen
