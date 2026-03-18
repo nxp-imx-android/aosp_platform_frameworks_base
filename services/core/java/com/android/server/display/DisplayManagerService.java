@@ -1621,11 +1621,6 @@ public final class DisplayManagerService extends SystemService {
     }
 
     private int[] getDisplayIdsInternal(int callingUid, boolean includeDisabled) {
-        if (!Flags.displayInfoCopyOnWriteCacheEnabled()) {
-            synchronized (mSyncRoot) {
-                return mLogicalDisplayMapper.getDisplayIdsLocked(callingUid, includeDisabled);
-            }
-        }
         if (mDisplayInfoCache.size() <= 1) {
             return ARRAY_DEFAULT_DISPLAY_ONLY;
         }
@@ -1635,28 +1630,26 @@ public final class DisplayManagerService extends SystemService {
     }
 
     private DisplayInfo getDisplayInfoInternal(int displayId, int callingUid) {
-        if (Flags.displayInfoCopyOnWriteCacheEnabled()) {
-            CachedDisplayInfo info = mDisplayInfoCache.get(displayId);
-            if (info == null) {
-                if (displayId != Display.DEFAULT_DISPLAY) {
-                    Slog.w(TAG, "Display info not found in cache for display " + displayId
-                            + ", callingUid " + callingUid);
-                    return null;
-                }
-                Slog.w(TAG, "Default display not found in cache");
-            } else if (!mInjector.doesCallingUidHaveAccessToDisplay(callingUid, info.info())) {
-                Slog.w(TAG, "Calling uid " + callingUid + " does not have access to display "
-                        + displayId);
+        CachedDisplayInfo cachedInfo = mDisplayInfoCache.get(displayId);
+        if (cachedInfo == null) {
+            if (displayId != Display.DEFAULT_DISPLAY) {
+                Slog.w(TAG, "Display info not found in cache for display " + displayId
+                        + ", callingUid " + callingUid);
                 return null;
-            } else {
-                if (DEBUG) {
-                    Slog.d(TAG, "getDisplayInfoInternal: for display from cache "
-                            + " for uid " + callingUid
-                            + " displayId " + displayId);
-                }
-                return getDisplayInfoForOverrides(
-                        info.frameRateOverrides(), info.info(), callingUid);
             }
+            Slog.w(TAG, "Default display not found in cache");
+        } else if (!mInjector.doesCallingUidHaveAccessToDisplay(callingUid, cachedInfo.info())) {
+            Slog.w(TAG, "Calling uid " + callingUid + " does not have access to display "
+                    + displayId);
+            return null;
+        } else {
+            if (DEBUG) {
+                Slog.d(TAG, "getDisplayInfoInternal: for display from cache "
+                        + " for uid " + callingUid
+                        + " displayId " + displayId);
+            }
+            return getDisplayInfoForOverrides(
+                    cachedInfo.frameRateOverrides(), cachedInfo.info(), callingUid);
         }
         synchronized (mSyncRoot) {
             final LogicalDisplay display = mLogicalDisplayMapper.getDisplayLocked(displayId);

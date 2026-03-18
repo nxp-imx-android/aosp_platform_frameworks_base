@@ -329,7 +329,7 @@ final class LogicalDisplay {
         DisplayInfo info = new DisplayInfo();
         copyDisplayInfoFields(info, mBaseDisplayInfo, mOverrideDisplayInfo,
                 WM_OVERRIDE_FIELDS);
-        if (Flags.displayInfoCopyOnWriteCacheEnabled() && info.supportedModes.length > 0) {
+        if (info.supportedModes.length > 0) {
             mDisplayInfoCache.put(info.displayId,
                     new CachedDisplayInfo(mIsEnabled, info, mFrameRateOverrides));
         }
