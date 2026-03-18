@@ -157,16 +157,32 @@ public abstract class BaseServiceClientComponent<C> implements Component {
         });
     }
 
-    public BaseServiceClientComponent(Context context, UUID componentId, ServiceInfo serviceInfo,
+    public BaseServiceClientComponent(
+            Context context,
+            AccessController accessController,
+            UUID componentId,
+            ServiceInfo serviceInfo,
             UserHandle userHandle) {
-        this(context, componentId, serviceInfo, userHandle, Executors.newSingleThreadExecutor(),
+        this(
+                context,
+                accessController,
+                componentId,
+                serviceInfo,
+                userHandle,
+                Executors.newSingleThreadExecutor(),
                 new Handler(Looper.getMainLooper()));
     }
-    protected BaseServiceClientComponent(Context context, UUID componentId, ServiceInfo serviceInfo,
-            UserHandle userHandle, Executor executor, Handler handler) {
+    protected BaseServiceClientComponent(
+            Context context,
+            AccessController accessController,
+            UUID componentId,
+            ServiceInfo serviceInfo,
+            UserHandle userHandle,
+            Executor executor,
+            Handler handler) {
         mExecutor = executor;
         mContext = context;
-        mAccessController = new AccessController(context, userHandle);
+        mAccessController = accessController;
         mServiceInfo = serviceInfo;
         mUserHandle = userHandle;
         mComponentId = componentId;

@@ -26,7 +26,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.Manifest;
-import android.content.Context;
+import android.app.role.RoleManager;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.os.UserHandle;
@@ -251,15 +251,10 @@ public class AccessControllerTest {
     }
 
     private static class AccessControllerBuilder {
-        private final Context mContext = mock(Context.class);
         private final Resources mResources = mock(Resources.class);
         private final PermissionManager mPermissionManager = mock(PermissionManager.class);
 
         AccessControllerBuilder() {
-            when(mContext.getResources()).thenReturn(mResources);
-            when(mContext.getSystemService(eq(PermissionManager.class)))
-                    .thenReturn(mPermissionManager);
-
             when(mPermissionManager.checkPackageNamePermission(any(), any(), anyInt(), anyInt()))
                     .thenReturn(PackageManager.PERMISSION_DENIED);
 
@@ -347,7 +342,34 @@ public class AccessControllerTest {
         }
 
         public AccessController build() {
-            return new AccessController(mContext, mock(UserHandle.class));
+            return new AccessController(
+                    new AccessController.Injector() {
+                        @Override
+                        public Resources getResources() {
+                            return mResources;
+                        }
+
+                        @Override
+                        public PackageManager getPackageManager() {
+                            return mock(PackageManager.class);
+                        }
+
+                        @Override
+                        public PermissionManager getPermissionManager() {
+                            return mPermissionManager;
+                        }
+
+                        @Override
+                        public RoleManager getRoleManager() {
+                            return mock(RoleManager.class);
+                        }
+
+                        @Override
+                        public AccessController.EventListener getEventListener() {
+                            return mock(AccessController.EventListener.class);
+                        }
+                    },
+                    mock(UserHandle.class));
         }
     }
 }

@@ -21,6 +21,7 @@ import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentat
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -54,6 +55,8 @@ import android.testing.TestableContext;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import com.android.server.personalcontext.AccessController;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -83,6 +86,7 @@ public class ServiceClientRefinerTest {
     @Mock private UserHandle mUserHandle;
     @Mock private PermissionManager mPermissionManager;
     @Mock private Handler mHandler;
+    @Mock private AccessController mAccessController;
 
     private final FakeExecutor mFakeExecutor = new FakeExecutor();
 
@@ -111,6 +115,7 @@ public class ServiceClientRefinerTest {
         mServiceClientRefiner =
                 new ServiceClientRefiner(
                         mContext,
+                        mAccessController,
                         UUID.randomUUID(),
                         serviceInfo,
                         mUserHandle,
@@ -121,6 +126,9 @@ public class ServiceClientRefinerTest {
 
     @Test
     public void testRefine() throws Exception {
+        when(mAccessController.isClientAllowed(
+                any(), eq(AccessController.ACCESS_RECEIVE_HINTS_PERMISSION))).thenReturn(true);
+
         BundleHint bundleHint = new BundleHint.Builder().build();
         PublishedContextHint hint =
                 new PublishedContextHint.Builder(
@@ -160,6 +168,9 @@ public class ServiceClientRefinerTest {
     @EnableFlags(android.service.personalcontext.Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
     @Test
     public void testRefine_noPublishHintPermissions_doesNotInvokeCallback() throws Exception {
+        when(mAccessController.isClientAllowed(
+                any(), eq(AccessController.ACCESS_RECEIVE_HINTS_PERMISSION))).thenReturn(true);
+
         mFakePermissionEnforcer.revoke(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS);
 
         BundleHint bundleHint = new BundleHint.Builder().build();

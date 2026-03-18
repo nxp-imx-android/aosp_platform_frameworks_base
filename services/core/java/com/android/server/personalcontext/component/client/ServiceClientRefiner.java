@@ -65,10 +65,15 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
 
     private HintFilter mFilter = null;
 
-    public ServiceClientRefiner(Context context, UUID componentId, ServiceInfo serviceInfo,
+    public ServiceClientRefiner(
+            Context context,
+            AccessController accessController,
+            UUID componentId,
+            ServiceInfo serviceInfo,
             UserHandle userHandle) {
         this(
                 context,
+                accessController,
                 componentId,
                 serviceInfo,
                 userHandle,
@@ -76,9 +81,15 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
                 new Handler(Looper.getMainLooper()));
     }
 
-    protected ServiceClientRefiner(Context context, UUID componentId, ServiceInfo serviceInfo,
-            UserHandle userHandle, Executor executor, Handler handler) {
-        super(context, componentId, serviceInfo, userHandle, executor, handler);
+    protected ServiceClientRefiner(
+            Context context,
+            AccessController accessController,
+            UUID componentId,
+            ServiceInfo serviceInfo,
+            UserHandle userHandle,
+            Executor executor,
+            Handler handler) {
+        super(context, accessController, componentId, serviceInfo, userHandle, executor, handler);
 
         runWithScopedBinder((binder, opCallback) -> {
             try {
