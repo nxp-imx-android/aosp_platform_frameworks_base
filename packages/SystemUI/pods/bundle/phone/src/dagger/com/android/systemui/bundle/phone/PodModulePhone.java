@@ -21,6 +21,7 @@ import com.android.systemui.graphics.ImageLoaderModule;
 import com.android.systemui.headline.ui.HeadlineModule;
 import com.android.systemui.notifications.intelligence.rules.NotificationRulesModule;
 import com.android.systemui.notifications.intelligence.rules.ui.NotificationRulesUiModule;
+import com.android.systemui.qs.panels.ui.PanelsUIModule;
 import com.android.systemui.retail.impl.RetailModeModule;
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.impl.AirplaneModeDataLayerModule;
 import com.android.systemui.statusbar.pipeline.airplane.shared.impl.AirplaneModeSharedModule;
@@ -40,6 +41,7 @@ import dagger.Module;
         ImageLoaderModule.class,
         NotificationRulesModule.class,
         NotificationRulesUiModule.class,
+        PanelsUIModule.class,
         PolicyRestrictionModule.class,
         RetailModeModule.class,
         SettingsUtilModule.class,
