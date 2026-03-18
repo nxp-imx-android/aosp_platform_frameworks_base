@@ -423,24 +423,43 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
 
     @Test
     @Throws(Exception::class)
-    fun isPackageAppLockEnabled_appLockIsEnabled_true() {
+    fun isPackageAppLockEnabled_appLockIsEnabled_true(
+        @TestParameter(valuesProvider = AuthorizedUidProvider::class) callingUid: Int,
+    ) {
         whenever(mockPackageUserStateInternal1.isAppLockEnabled).thenReturn(true)
 
         assertThat(
             appLockPackageHelper.isPackageAppLockEnabled(
-                mockSnapshot, TEST_PACKAGE_NAME, TEST_USER_ID_1
+                mockSnapshot, TEST_PACKAGE_NAME, TEST_USER_ID_1, callingUid
             )
         ).isTrue()
     }
 
     @Test
     @Throws(Exception::class)
-    fun isPackageAppLockEnabled_appLockIsDisabled_false() {
+    fun isPackageAppLockEnabled_notSystemOrRootUid_throwsException(
+        @TestParameter(valuesProvider = UnauthorizedUidProvider::class) callingUid: Int,
+    ) {
+        whenever(mockPackageUserStateInternal1.isAppLockEnabled).thenReturn(true)
+
+        assertFailsWith<SecurityException> {
+            appLockPackageHelper.isPackageAppLockEnabled(
+                mockSnapshot, TEST_PACKAGE_NAME, TEST_USER_ID_1, callingUid
+            )
+        }
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun isPackageAppLockEnabled_appLockIsDisabled_false(
+        @TestParameter(valuesProvider = AuthorizedUidProvider::class) callingUid: Int,
+    ) {
         whenever(mockPackageUserStateInternal1.isAppLockEnabled).thenReturn(false)
 
         assertThat(
             appLockPackageHelper.isPackageAppLockEnabled(
-                mockSnapshot, TEST_PACKAGE_NAME, TEST_USER_ID_1
+                mockSnapshot, TEST_PACKAGE_NAME, TEST_USER_ID_1, callingUid
+
             )
         ).isFalse()
     }
