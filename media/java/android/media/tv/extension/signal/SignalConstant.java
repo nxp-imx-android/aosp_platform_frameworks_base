@@ -112,7 +112,8 @@ public final class SignalConstant {
             DOLBY_AUDIO_ICON_AUDIO,
             DOLBY_AUDIO_ICON_ATMOS
     })
-    public @interface DolbyAudioIcon{}
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface DolbyAudioIcon {}
     /** No Dolby icon. */
     public static final int DOLBY_AUDIO_ICON_NONE = 0;
     /** Dolby Audio icon. */
