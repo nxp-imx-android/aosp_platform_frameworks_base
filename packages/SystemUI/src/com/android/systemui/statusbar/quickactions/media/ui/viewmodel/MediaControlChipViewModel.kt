@@ -17,12 +17,10 @@
 package com.android.systemui.statusbar.quickactions.media.ui.viewmodel
 
 import android.content.Context
-import androidx.compose.runtime.getValue
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.lifecycle.ExclusiveActivatable
-import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.media.domain.interactor.MediaControlChipInteractor
 import com.android.systemui.statusbar.quickactions.media.shared.model.MediaControlChipModel
@@ -46,25 +44,18 @@ constructor(
     @Application private val applicationContext: Context,
     mediaControlChipInteractor: MediaControlChipInteractor,
     private val popupViewModelFactory: MediaControlPopupViewModel.Factory,
-) : StatusBarPopupChipViewModel, ExclusiveActivatable() {
-    private val hydrator: Hydrator = Hydrator("MediaControlChipViewModel.hydrator")
+) : StatusBarPopupChipViewModel, HydratedActivatable() {
+
     /**
      * A snapshot [State] of the current [QuickActionChipModel]. This emits a new
      * [QuickActionChipModel] whenever the underlying [MediaControlChipModel] changes.
      */
     override val chip: QuickActionChipModel by
-        hydrator.hydratedStateOf(
-            traceName = "chip",
-            initialValue = QuickActionChipModel.Hidden(QuickActionChipId.MediaControl),
-            source =
-                mediaControlChipInteractor.mediaControlChipModel.map { model ->
-                    toPopupChipModel(model)
-                },
-        )
-
-    override suspend fun onActivated(): Nothing {
-        hydrator.activate()
-    }
+        mediaControlChipInteractor.mediaControlChipModel
+            .map { model -> toPopupChipModel(model) }
+            .hydratedStateOf(
+                initialValue = QuickActionChipModel.Hidden(QuickActionChipId.MediaControl)
+            )
 
     private fun toPopupChipModel(model: MediaControlChipModel?): QuickActionChipModel {
         if (model == null || model.songName.isNullOrEmpty()) {
