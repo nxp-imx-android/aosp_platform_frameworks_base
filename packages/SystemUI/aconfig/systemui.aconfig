@@ -811,6 +811,13 @@ flag {
 }
 
 flag {
+    name: "issue_recording_use_screen_recording_service"
+    namespace: "systemui"
+    description: "Enables IssueRecordingService to use the new ScreenRecordingService binding."
+    bug: "476328961"
+}
+
+flag {
     name: "keyboard_docking_indicator"
     namespace: "systemui"
     description: "Glow bar indicator reveals upon keyboard docking."

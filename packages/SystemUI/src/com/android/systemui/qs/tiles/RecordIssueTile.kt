@@ -24,10 +24,12 @@ import android.os.Handler
 import android.os.Looper
 import android.service.quicksettings.Tile
 import android.text.TextUtils
+import android.util.Log
 import android.widget.Switch
 import androidx.annotation.VisibleForTesting
 import com.android.internal.jank.InteractionJankMonitor.CUJ_SHADE_DIALOG_OPEN
 import com.android.internal.logging.MetricsLogger
+import com.android.systemui.Flags
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
@@ -43,9 +45,9 @@ import com.android.systemui.qs.QsEventLogger
 import com.android.systemui.qs.logging.QSLogger
 import com.android.systemui.qs.pipeline.domain.interactor.PanelInteractor
 import com.android.systemui.qs.tileimpl.QSTileImpl
-import com.android.systemui.recordissue.IssueRecordingService.Companion.getStartIntent
-import com.android.systemui.recordissue.IssueRecordingService.Companion.getStopIntent
+import com.android.systemui.recordissue.IssueRecordingService
 import com.android.systemui.recordissue.IssueRecordingServiceConnection
+import com.android.systemui.recordissue.IssueRecordingServiceLegacy
 import com.android.systemui.recordissue.IssueRecordingState
 import com.android.systemui.recordissue.RecordIssueDialogDelegate
 import com.android.systemui.recordissue.RecordIssueModule.Companion.TILE_SPEC
@@ -158,20 +160,42 @@ constructor(
             { sendStopIssueRecordingServiceIntent() },
         )
 
-    private fun sendStopIssueRecordingServiceIntent() =
-        pendingServiceIntent(getStopIntent(userContextProvider.userContext))
-            .send(BroadcastOptions.makeBasic().apply { isInteractive = true }.toBundle())
+    private fun sendStopIssueRecordingServiceIntent() {
+        val intent =
+            if (Flags.issueRecordingUseScreenRecordingService()) {
+                Log.d(TAG, "Sending stop intent for IssueRecordingService.")
+                IssueRecordingService.Companion.getStopIntent(userContextProvider.userContext)
+            } else {
+                Log.d(TAG, "Sending stop intent for IssueRecordingServiceLegacy.")
+                IssueRecordingServiceLegacy.Companion.getStopIntent(userContextProvider.userContext)
+            }
 
-    private fun sendStartIssueRecordingServiceIntent() =
-        pendingServiceIntent(
-                getStartIntent(
+        pendingServiceIntent(intent)
+            .send(BroadcastOptions.makeBasic().apply { isInteractive = true }.toBundle())
+    }
+
+    private fun sendStartIssueRecordingServiceIntent() {
+        val intent =
+            if (Flags.issueRecordingUseScreenRecordingService()) {
+                Log.d(TAG, "Sending start intent for IssueRecordingService.")
+                IssueRecordingService.Companion.getStartIntent(
                     userContextProvider.userContext,
                     issueRecordingState.traceConfig,
                     issueRecordingState.recordScreen,
                     issueRecordingState.takeBugreport,
                 )
-            )
+            } else {
+                Log.d(TAG, "Sending start intent for IssueRecordingServiceLegacy.")
+                IssueRecordingServiceLegacy.Companion.getStartIntent(
+                    userContextProvider.userContext,
+                    issueRecordingState.traceConfig,
+                    issueRecordingState.recordScreen,
+                    issueRecordingState.takeBugreport,
+                )
+            }
+        pendingServiceIntent(intent)
             .send(BroadcastOptions.makeBasic().apply { isInteractive = true }.toBundle())
+    }
 
     private fun pendingServiceIntent(action: Intent) =
         PendingIntent.getService(
