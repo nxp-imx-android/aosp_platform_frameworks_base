@@ -24,7 +24,6 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.AnimationVector1D
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Indication
@@ -348,9 +347,12 @@ private fun PinPadButton(
             DurationUnit.MILLISECONDS
         )
 
-    val cornerRadius: Dp by
-        animateDpAsState(
-            if (isAnimationEnabled && isPressed) 24.dp else pinButtonMaxSize / 2,
+    // Fraction of the total height of the button that the corner radius should be. Note that a
+    // value of 0.5 will make the button a perfect circle while any value below that will make it
+    // into a square with rounded corners.
+    val cornerRadiusFraction: Float by
+        animateFloatAsState(
+            if (isAnimationEnabled && isPressed) 0.25f else 0.5f,
             label = "PinButton round corners",
             animationSpec = tween(animDurationMillis, easing = animEasing),
         )
@@ -390,7 +392,7 @@ private fun PinPadButton(
                 .drawBehind {
                     drawRoundRect(
                         color = containerColor,
-                        cornerRadius = CornerRadius(cornerRadius.toPx()),
+                        cornerRadius = CornerRadius(cornerRadiusFraction * size.height),
                     )
                 }
                 .clip(CircleShape)
