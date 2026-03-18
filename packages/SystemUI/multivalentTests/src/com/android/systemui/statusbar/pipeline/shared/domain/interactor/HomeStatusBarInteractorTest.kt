@@ -307,7 +307,7 @@ class HomeStatusBarInteractorTest(flags: FlagsParameterization) : SysuiTestCase(
             assertThat(latest).isTrue()
 
             // WHEN keyguard gets unlocked
-            keyguardOcclusionRepository.setShowWhenLockedActivityInfo(
+            keyguardOcclusionRepository.setOccludedFromRemoteAnimation(
                 onTop = false,
                 taskInfo = null,
             )
