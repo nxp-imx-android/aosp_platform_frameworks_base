@@ -20,6 +20,7 @@ import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.ActivityManager.ProcessState;
 import android.app.IServiceConnection;
 import android.app.PendingIntent;
 import android.content.ComponentName;
@@ -196,7 +197,7 @@ final class ConnectionRecord extends ConnectionRecordInternal {
     }
 
     @Override
-    public void trackProcState(int procState, int seq) {
+    public void trackProcState(@ProcessState int procState, int seq) {
         if (association != null) {
             synchronized (mProcStatsLock) {
                 association.trackProcState(procState, seq, SystemClock.uptimeMillis());

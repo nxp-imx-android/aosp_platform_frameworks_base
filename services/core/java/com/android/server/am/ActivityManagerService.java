@@ -35,6 +35,7 @@ import static android.app.ActivityManager.INTENT_SENDER_ACTIVITY;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_ALL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_CPU_TIME;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
+import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
 import static android.app.ActivityManager.PROCESS_STATE_BOUND_TOP;
 import static android.app.ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE;
 import static android.app.ActivityManager.PROCESS_STATE_IMPORTANT_FOREGROUND;
@@ -3668,13 +3669,14 @@ public class ActivityManagerService extends IActivityManager.Stub
     }
 
     @Override
-    public int getPackageProcessState(String packageName, String callingPackage) {
+    public @ActivityManager.ProcessState int getPackageProcessState(String packageName,
+            String callingPackage) {
         if (!hasUsageStatsPermission(callingPackage)) {
             enforceCallingPermission(android.Manifest.permission.PACKAGE_USAGE_STATS,
                     "getPackageProcessState");
         }
 
-        final int[] procState = {PROCESS_STATE_NONEXISTENT};
+        final @ActivityManager.ProcessState int[] procState = {PROCESS_STATE_NONEXISTENT};
         synchronized (mProcLock) {
             mProcessList.forEachLruProcessesLOSP(false, proc -> {
                 if (procState[0] > proc.getSetProcState()) {
@@ -3999,8 +4001,8 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         // Clean up already done if the process has been re-started.
         IApplicationThread appThread;
-        final int setAdj = app.getSetAdj();
-        final int setProcState = app.getSetProcState();
+        final @OomAdjust int setAdj = app.getSetAdj();
+        final @ActivityManager.ProcessState int setProcState = app.getSetProcState();
         if (app.getPid() == pid && (appThread = app.getThread()) != null
                 && appThread.asBinder() == thread.asBinder()) {
             if (android.os.Flags.perfettoSdkTracingV3()) {
@@ -4315,7 +4317,8 @@ public class ActivityManagerService extends IActivityManager.Stub
      * @param maxProcState the process state at or below which to preserve
      *                     processes, or {@code -1} to ignore the process state
      */
-    void killAllBackgroundProcessesExcept(int minTargetSdk, int maxProcState) {
+    void killAllBackgroundProcessesExcept(int minTargetSdk,
+            @ActivityManager.ProcessState int maxProcState) {
         if (checkCallingPermission(android.Manifest.permission.KILL_ALL_BACKGROUND_PROCESSES)
                 != PackageManager.PERMISSION_GRANTED) {
             final String msg = "Permission Denial: killAllBackgroundProcessesExcept() from pid="
@@ -6608,6 +6611,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     // NOTE: this is an internal method used by the OnShellCommand implementation only and should
     // be guarded by permission checking.
+    @ActivityManager.ProcessState
     int getUidState(int uid) {
         synchronized (mProcLock) {
             return mProcessList.getUidProcStateLOSP(uid);
@@ -6615,6 +6619,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     }
 
     @GuardedBy("this")
+    @ActivityManager.ProcessState
     int getUidStateLocked(int uid) {
         return mProcessList.getUidProcStateLOSP(uid);
     }
@@ -7228,7 +7233,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             return true;
         }
 
-        final int procstate = pr.getProcState();
+        final @ActivityManager.ProcessState int procstate = pr.getProcState();
         if (procstate <= PROCESS_STATE_BOUND_TOP) {
             if (doesReasonCodeAllowSchedulingUserInitiatedJobs(
                     getReasonCodeFromProcState(procstate), uid)) {
@@ -9504,7 +9509,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                     return;
                 }
                 final ProcessProfileRecord pr = proc.mProfile;
-                final int setProcState = pr.getSetProcState();
+                final @ActivityManager.ProcessState int setProcState = pr.getSetProcState();
                 if (setProcState < ActivityManager.PROCESS_STATE_HOME
                         && setProcState >= ActivityManager.PROCESS_STATE_PERSISTENT) {
                     synchronized (mAppProfiler.mProfilerLock) {
@@ -15874,7 +15879,8 @@ public class ActivityManagerService extends IActivityManager.Stub
      * NOTE: Use {@link #noteUidProcessState(int, int)} instead of this method for listeners
      * interested in only ProcessState changes.
      */
-    void noteUidProcessStateAndCapability(final int uid, final int state,
+    void noteUidProcessStateAndCapability(final int uid,
+            final @ActivityManager.ProcessState int state,
             final @ProcessCapability int capability) {
         mAppOpsService.updateUidProcState(uid, state, capability);
     }
@@ -15884,7 +15890,7 @@ public class ActivityManagerService extends IActivityManager.Stub
      * NOTE: Use {@link #noteUidProcessStateAndCapability(int, int, int)} instead of this method
      * for listeners interested in both ProcessState and Capability changes.
      */
-    void noteUidProcessState(final int uid, final int state) {
+    void noteUidProcessState(final int uid, final @ActivityManager.ProcessState int state) {
         mBatteryStatsService.noteUidProcessState(uid, state);
         if (StatsPullAtomService.ENABLE_MOBILE_DATA_STATS_AGGREGATED_PULLER) {
             try {
@@ -16107,12 +16113,13 @@ public class ActivityManagerService extends IActivityManager.Stub
             throw new IllegalArgumentException("No UidRecord or uid");
         }
 
-        final int procState = uidRec != null
+        final @ActivityManager.ProcessState int procState = uidRec != null
                 ? uidRec.getSetProcState() : PROCESS_STATE_NONEXISTENT;
-        final int procAdj = uidRec != null
+        final @OomAdjust int procAdj = uidRec != null
                 ? uidRec.getMinProcAdj() : INVALID_ADJ;
         final long procStateSeq = uidRec != null ? uidRec.getCurProcStateSeq() : 0;
-        final int capability = uidRec != null ? uidRec.getSetCapability() : 0;
+        final @ProcessCapability int capability =
+                uidRec != null ? uidRec.getSetCapability() : PROCESS_CAPABILITY_NONE;
         final boolean ephemeral = uidRec != null ? uidRec.isEphemeral() : isEphemeralLocked(uid);
 
         if (uidRec != null && uidRec.isIdle() && (change & UidRecord.CHANGE_IDLE) != 0) {
@@ -17745,7 +17752,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         @Override
-        public int getUidProcessState(int uid) {
+        public @ActivityManager.ProcessState int getUidProcessState(int uid) {
             return getUidState(uid);
         }
 
@@ -18475,7 +18482,8 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         @Override
-        public void killAllBackgroundProcessesExcept(int minTargetSdk, int maxProcState) {
+        public void killAllBackgroundProcessesExcept(int minTargetSdk,
+                @ActivityManager.ProcessState int maxProcState) {
             synchronized (mGlobalLock) {
                 ActivityManagerService.this.killAllBackgroundProcessesExcept(
                         minTargetSdk, maxProcState);
