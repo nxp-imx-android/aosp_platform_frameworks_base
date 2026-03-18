@@ -38,6 +38,7 @@
 #include <unistd.h>
 #include <utils/Log.h>
 
+#include <filesystem>
 #include <map>
 #include <mutex>
 #include <optional>
@@ -60,10 +61,44 @@ const int POLL_PERIOD_MS = 5 * 60 * 1000;
  */
 enum class MonitoredLimit {
     // LINT.IfChange(limitTypes)
-    kUnknown,
-    kMemory,
+    kUnknown = 0,
+    kMemoryHigh = 1,
+    kSwapMax = 2,
     // LINT.ThenChange(/services/core/java/com/android/server/am/MemoryLimiter.java:limitTypes)
 };
+
+/**
+ * Return a string version of MonitoredLimit, for debug messages.  The function is often needed
+ * for debug messages but generates a compiler error when the debug messages are removed.
+ */
+[[maybe_unused]]
+char const* limitName(MonitoredLimit type) {
+    switch (type) {
+        case MonitoredLimit::kUnknown:
+            return "unknown";
+        case MonitoredLimit::kMemoryHigh:
+            return "memHigh";
+        case MonitoredLimit::kSwapMax:
+            return "swapMax";
+    }
+    return "invalid";
+}
+
+/**
+ * Two special limit values.  These are not an enumeration because they are just special long
+ * values.  However, order is important: the code treats all values that are less than
+ * LIMIT_IS_IGNORED as LIMIT_IS_IGNORED.
+ */
+// LINT.IfChange(limitSpecials)
+// A special value that means "configure the limit so that no limit is applied".  In practical
+// terms, this means the limit is configured as the string "max".
+static constexpr int64_t LIMIT_IS_DISABLED = -1;
+// A special value that means skip configuring the limit.
+static constexpr int64_t LIMIT_IS_IGNORED = -2;
+// LINT.ThenChange(/services/core/java/com/android/server/am/MemoryLimiter.java:limitSpecials)
+
+static_assert(LIMIT_IS_IGNORED < LIMIT_IS_DISABLED, "LIMIT_IS_IGNORED must be the lowest value");
+static_assert(LIMIT_IS_IGNORED < 0 && LIMIT_IS_DISABLED < 0, "Limit specials must be negative");
 
 // A convenience type declaration.
 using wdmap_t = std::unordered_map<int, pid_t>;
@@ -84,6 +119,88 @@ void throwRuntime(JNIEnv* env, char const* fmt, ...) {
 }
 
 /**
+ * The struct for memory.events.  Member names match the strings defined by the kernel.
+ */
+struct MemoryEvents {
+    int64_t low = 0;
+    int64_t high = 0;
+    int64_t max = 0;
+    int64_t oom = 0;
+    int64_t oom_kill = 0;
+    int64_t oom_group_kill = 0;
+
+    MemoryEvents() {}
+
+    MemoryEvents(std::string const& data) {
+        scan(data);
+    }
+
+    MemoryEvents(std::optional<std::string> const& data) {
+        if (data) scan(*data);
+    }
+
+    // Populate the object from a string that is the contents of the data.  Return true on
+    // success.
+    bool scan(std::string const& data) {
+        return sscanf(data.c_str(),
+                      "low %" PRId64 " high %" PRId64 " max %" PRId64 " oom %" PRId64
+                      " oom_kill %" PRId64 " oom_group_kill %" PRId64,
+                      &low, &high, &max, &oom, &oom_kill, &oom_group_kill) == 6;
+    }
+};
+
+/**
+ * The struct for memory.swap.events.  Member names match the strings defined by the kernel.
+ */
+struct MemorySwapEvents {
+    int64_t high = 0;
+    int64_t max = 0;
+    int64_t fail = 0;
+
+    MemorySwapEvents() {}
+
+    MemorySwapEvents(std::string const& data) {
+        scan(data);
+    }
+
+    MemorySwapEvents(std::optional<std::string> const& data) {
+        if (data) scan(*data);
+    }
+
+    // Populate the object from a string that is the contents of the file.  Return true on
+    // success.
+    bool scan(std::string const& data) {
+        return sscanf(data.c_str(), "high %" PRId64 " max %" PRId64 " fail %" PRId64, &high, &max,
+                      &fail) == 3;
+    }
+};
+
+/**
+ * The struct for memory.stat.  Member names match the strings defined by the kernel.  The file
+ * contains 56 entries but this feature only needs the first few.
+ */
+struct MemoryStat {
+    int64_t anon = 0;
+    int64_t file = 0;
+
+    MemoryStat() {}
+
+    MemoryStat(std::string const& data) {
+        scan(data);
+    }
+
+    MemoryStat(std::optional<std::string> const& data) {
+        if (data) scan(*data);
+    }
+
+    // Populate the object from a string that is the contents of the file.  Return true on
+    // success.
+    bool scan(std::string const& data) {
+        return sscanf(data.c_str(), "anon %" PRId64 " file %" PRId64, &anon, &file) == 2;
+    }
+};
+
+/**
  * Statistics for the limiter.  All counts are int64_t to be compatible with Java long.
  */
 struct Statistics {
@@ -99,6 +216,9 @@ struct Statistics {
     // The number of events that were generated.
     std::atomic<uint64_t> mEvents;
 
+    // The number of false events, which are events triggered for an unsought statistic.
+    std::atomic<uint64_t> mFalseEvents;
+
     // The current number of processes being watched.
     std::atomic<uint64_t> mProcesses;
 
@@ -107,10 +227,11 @@ struct Statistics {
 
     std::string toString() const {
         const char* fmt = "started=%" PRIu64 " watched=%" PRIu64 " watch-failed=%" PRIu64
-                          " events=%" PRIu64 "\n"
+                          " events=%" PRIu64 " false-events=%" PRIu64 "\n"
                           "processes=%" PRIu64 " process-hwm=%" PRIu64 "\n";
         return StringPrintf(fmt, mStarted.load(), mWatched.load(), mWatchFailed.load(),
-                            mEvents.load(), mProcesses.load(), mProcessesHwm.load());
+                            mEvents.load(), mFalseEvents.load(), mProcesses.load(),
+                            mProcessesHwm.load());
     }
 };
 
@@ -118,62 +239,106 @@ struct Statistics {
  * A monitored process.
  */
 class Process {
+    // The cgroup paths of interest to a Process.
+    enum class CgroupFile {
+        kUnknown,
+        kMemoryStat,  // The source of the current value for anon memory.
+        kMemoryEvent, // The event count for memory.high violations
+        kMemoryHigh,  // The limit for memory.high
+        kSwapCurrent, // The current value for swap
+        kSwapEvent,   // The event count for memory.swap.max violations
+        kSwapMax,     // The limit for memory.swap.max
+    };
+
 public:
-    // The pid and uid being monitored.  These are const, and therefore may be public.
-    const pid_t mPid;
-    const uid_t mUid;
-
-    Process(pid_t pid, uid_t uid) : mPid(pid), mUid(uid) {}
-
-    // There is no copy constructor.
-    Process(Process const&) = delete;
-
-    // The move constructor takes ownership of the pid fd for this process.  The watch
-    // descriptor is not owned by the Process, but it is copied over and then reset on the
-    // right-hand side.
-    Process(Process&& r) noexcept : mPid(r.mPid), mUid(r.mUid), mMemoryWd(r.mMemoryWd) {
-        r.mMemoryWd = UNSET;
-    }
-
-    // File descriptors are closed in the destructor if they are open.
-    ~Process() {}
-
-    // Watch the events files.  This cannot be called immediately after a process starts because
-    // the threads that move the process into its cgroup may take tens of microseconds to
-    // complete.  Once the call succeeds, further calls quietly do nothing.
-    void watch(int inotify_fd, wdmap_t& wdmap, Statistics& stats) {
-        // If the process has been initialized, do nothing.
-        if (mInitialized) return;
-
-        char path[PATH_MAX];
-        watchPath(path, sizeof(path));
-        mMemoryWd = inotify_add_watch(inotify_fd, path, IN_MODIFY);
-        if (mMemoryWd < 0) {
-            // Only report the failure if the error is not path-not-found.  The path will
-            // not be found if the process has already exited or if the process has not been
-            // moved into its cgroup yet.
-            ALOGE_IF(errno != ENOENT, "add_watch(%s) failed: %s", path, strerror(errno));
-            stats.mWatchFailed++;
-            return;
+    Process(pid_t pid, uid_t uid) : mPid(pid), mUid(uid) {
+        // Note that CgroupGetAttributePathForProcess() returns a success code, but success or
+        // failure is a function of the running cgroup version (v1 or v2).  The strategy here is
+        // that if the system is running cgroup v2 then the attribute will exist and the Process
+        // will contain a non-empty path.  Otherwise, the process will contain an empty path.
+        // The path is tested only in the isReady() method.
+        std::string path;
+        if (CgroupGetAttributePathForProcess("MemEvents", mUid, mPid, path)) {
+            mCgroupRoot = std::filesystem::path(path).remove_filename();
         }
-        wdmap[mMemoryWd] = mPid;
-        stats.mWatched++;
-        mInitialized = true;
     }
 
-    // Stop watching.  This does not change the initialized flag but it does remove the watch
-    // descriptors from the inotify.  To resume watching, clear the initialized flag.
+    // A process owns nothing.  In particular, it does not own its watch descriptors, so the
+    // destructor is just the default.
+    ~Process() = default;
+
+    pid_t getPid() const {
+        return mPid;
+    }
+
+    uid_t getUid() const {
+        return mUid;
+    }
+
+    // Return true if the process is ready to be monitored.  The implementation verifies the
+    // presence of the cgroup files.
+    bool isReady() const {
+        return !mCgroupRoot.empty() && std::filesystem::exists(mCgroupRoot);
+    }
+
+    // Watch the events files.  Once the call succeeds, further calls quietly do nothing.
+    void watch(int inotify_fd, wdmap_t& wdmap, bool monitorSwap, Statistics& stats) {
+        if (mMemoryWd == UNSET) {
+            std::string cpath = cgroupPath(CgroupFile::kMemoryEvent);
+            char const* path = cpath.c_str();
+            int memWd = inotify_add_watch(inotify_fd, path, IN_MODIFY);
+            if (memWd < 0) {
+                ALOGE_IF(DEBUG, "add_watch(%s) failed: %s", path, strerror(errno));
+                stats.mWatchFailed++;
+            } else {
+                mMemoryWd = memWd;
+                wdmap[mMemoryWd] = mPid;
+                mMemoryEventBaseline = getEventCount(MonitoredLimit::kMemoryHigh);
+                stats.mWatched++;
+            }
+        }
+
+        if (monitorSwap && mSwapWd == UNSET) {
+            std::string cpath = cgroupPath(CgroupFile::kSwapEvent);
+            char const* path = cpath.c_str();
+            int swapWd = inotify_add_watch(inotify_fd, path, IN_MODIFY);
+            if (swapWd < 0) {
+                ALOGE_IF(DEBUG, "add_watch(%s) failed: %s", path, strerror(errno));
+                stats.mWatchFailed++;
+            } else {
+                mSwapWd = swapWd;
+                wdmap[mSwapWd] = mPid;
+                mSwapEventBaseline = getEventCount(MonitoredLimit::kSwapMax);
+                stats.mWatched++;
+            }
+        }
+    }
+
+    // Stop watching the specified limit.
+    void unwatch(int inotify_fd, wdmap_t& wdmap, MonitoredLimit type) {
+        switch (type) {
+            case MonitoredLimit::kUnknown:
+                break;
+            case MonitoredLimit::kMemoryHigh:
+                mMemoryWd = unwatch(inotify_fd, wdmap, mMemoryWd);
+                break;
+            case MonitoredLimit::kSwapMax:
+                mSwapWd = unwatch(inotify_fd, wdmap, mSwapWd);
+                break;
+        }
+    }
+
+    // Stop watching all limits.  This does not change the initialized flag but it does remove
+    // the watch descriptors from the inotify.  To resume watching, clear the initialized flag.
     void unwatch(int inotify_fd, wdmap_t& wdmap) {
-        if (mMemoryWd >= 0) {
-            inotify_rm_watch(inotify_fd, mMemoryWd);
-            wdmap.erase(mMemoryWd);
-        }
-        mMemoryWd = UNSET;
+        unwatch(inotify_fd, wdmap, MonitoredLimit::kMemoryHigh);
+        unwatch(inotify_fd, wdmap, MonitoredLimit::kSwapMax);
     }
 
     // Return a string that identifies this process.
     std::string toString() const {
-        return android::base::StringPrintf("pid=%d uid=%d wd=%d", mPid, mUid, mMemoryWd);
+        return android::base::StringPrintf("pid=%d uid=%d mem=%d swap=%d", mPid, mUid, mMemoryWd,
+                                           mSwapWd);
     }
 
     // Return true if the process is alive.  If the process is privileged (meaning, it's
@@ -184,19 +349,129 @@ public:
         if (privileged) {
             return kill(mPid, 0) == 0;
         } else {
-            char path[PATH_MAX];
-            struct stat sbuff;
-            return stat(watchPath(path, sizeof(path)), &sbuff) == 0;
+            return !mCgroupRoot.empty() && std::filesystem::exists(mCgroupRoot);
         }
     }
 
     // Return the limit type that corresponds to the watch descriptor.
     MonitoredLimit getLimitType(int wd) const {
         if (wd == mMemoryWd) {
-            return MonitoredLimit::kMemory;
+            return MonitoredLimit::kMemoryHigh;
+        } else if (wd == mSwapWd) {
+            return MonitoredLimit::kSwapMax;
         } else {
             return MonitoredLimit::kUnknown;
         }
+    }
+
+    // Return the configured limit for the specified type.  This is the last value that was
+    // configured by the feature, which may be different from the value in the cgroup files if
+    // another system process is also modifying cgroup files.
+    int64_t getLimitValue(MonitoredLimit type) const {
+        switch (type) {
+            case MonitoredLimit::kMemoryHigh:
+                return mMemHighLimit;
+            case MonitoredLimit::kSwapMax:
+                return mSwapMaxLimit;
+            default:
+                return -1;
+        }
+    }
+
+    // Return the count of events associated with the limit.
+    int64_t getEventCount(MonitoredLimit type) const {
+        switch (type) {
+            case MonitoredLimit::kUnknown:
+                return 0;
+            case MonitoredLimit::kMemoryHigh:
+                return readMemoryEvents().high;
+            case MonitoredLimit::kSwapMax:
+                return readSwapEvents().max;
+        }
+    }
+
+    // Return the baseline associated with the limit.  The baseline is the count that was
+    // recorded when the watch began.
+    int64_t getEventBaseline(MonitoredLimit type) const {
+        switch (type) {
+            case MonitoredLimit::kUnknown:
+                return 0;
+            case MonitoredLimit::kMemoryHigh:
+                return mMemoryEventBaseline;
+            case MonitoredLimit::kSwapMax:
+                return mSwapEventBaseline;
+        }
+    }
+
+    // Return the value of the metric associated with the limit.
+    int64_t getMetric(MonitoredLimit type) const {
+        switch (type) {
+            case MonitoredLimit::kUnknown:
+                return 0;
+            case MonitoredLimit::kMemoryHigh:
+                return readMemoryStat().anon;
+            case MonitoredLimit::kSwapMax:
+                return readMetric(CgroupFile::kSwapCurrent);
+        }
+    }
+
+    // Set the value for the specified limit.  There are two special cases for limits: the
+    // "disabled" value is converted to "max" and the "ignored" value is skipped completely.
+    void setLimit(MonitoredLimit type, int64_t value) {
+        if (value <= LIMIT_IS_IGNORED) return;
+        std::string path;
+        switch (type) {
+            case MonitoredLimit::kUnknown:
+                break;
+            case MonitoredLimit::kMemoryHigh:
+                if (!mMemoryEnabled) return;
+                if (writeLimit(cgroupPath(CgroupFile::kMemoryHigh), value)) {
+                    mMemHighLimit = value;
+                }
+                break;
+            case MonitoredLimit::kSwapMax:
+                if (!mSwapEnabled) return;
+                if (writeLimit(cgroupPath(CgroupFile::kSwapMax), value)) {
+                    mSwapMaxLimit = value;
+                }
+                break;
+        }
+    }
+
+    // Set the process limits.
+    void setLimits(int64_t memHigh, int64_t swapMax) {
+        setLimit(MonitoredLimit::kMemoryHigh, memHigh);
+        setLimit(MonitoredLimit::kSwapMax, swapMax);
+    }
+
+    // Set the "event" flag based on the limit.  If limitMode is false, the limit is set to
+    // "max" before limits are disabled.
+    void setExceeded(MonitoredLimit type, bool limitMode) {
+        switch (type) {
+            case MonitoredLimit::kUnknown:
+                break;
+            case MonitoredLimit::kMemoryHigh:
+                if (!limitMode) {
+                    setLimits(LIMIT_IS_DISABLED, LIMIT_IS_IGNORED);
+                }
+                mMemoryEnabled = limitMode;
+                break;
+            case MonitoredLimit::kSwapMax:
+                if (!limitMode) {
+                    setLimits(LIMIT_IS_IGNORED, LIMIT_IS_DISABLED);
+                }
+                mSwapEnabled = limitMode;
+                break;
+        }
+    }
+
+    // Return true if the process is over-limit.  The function reads current values from the
+    // cgroup files and compares them to the configured maximum.
+    bool isOverLimit() const {
+        int64_t anon = readMemoryStat().anon;
+        int64_t swap = readMetric(CgroupFile::kSwapCurrent);
+        // Dummy conditional to make the compilation pass.
+        return swap > anon;
     }
 
 private:
@@ -204,21 +479,111 @@ private:
     // never creates a negative descriptor.
     static const int UNSET = -1;
 
-    // True if this process has been configured.  This is used to short-circuit subsequent
-    // attempts to configure the process.
-    bool mInitialized = false;
+    // The pid and uid being monitored.
+    pid_t mPid;
+    uid_t mUid;
+
+    // The root of the cgroup file system for this process.
+    std::filesystem::path mCgroupRoot;
 
     // The memory event watch descriptor.  This is remembered by Process but is not managed
     // autonmously by the Process.  It is created inside the watch() method and is destroyed
     // inside the unwatch() method.
     int mMemoryWd = UNSET;
 
-    // Construct the watch path.  Return a pointer to the path.
-    char* watchPath(char* buffer, size_t length) const {
-        constexpr char const* fmt = "/sys/fs/cgroup/%s/uid_%d/pid_%d/%s";
-        char const* category = (mUid >= FIRST_APPLICATION_UID) ? "apps" : "system";
-        snprintf(buffer, length, fmt, category, mUid, mPid, "memory.events");
-        return buffer;
+    // The initial memory.high count.
+    int64_t mMemoryEventBaseline = -1;
+
+    // True if MemHigh limits should be applied.  This initializes to true and can be reset by
+    // setExceeded().
+    bool mMemoryEnabled = true;
+
+    // The swap event watch descriptor.  This is remembered by Process but is not managed
+    // autonmously by the Process.  It is created inside the watch() method and is destroyed
+    // inside the unwatch() method.
+    int mSwapWd = UNSET;
+
+    // The initial swap.max count.
+    int64_t mSwapEventBaseline = -1;
+
+    // True if SwapMax limits should be applied.  This initializes to true and can be reset by
+    // setExceeded().
+    bool mSwapEnabled = true;
+
+    // The last-configured limits.
+    int64_t mMemHighLimit = -1;
+    int64_t mSwapMaxLimit = -1;
+
+    // A simple wrapper to stop watching a watch descriptor.  This does nothing if the watch
+    // descriptor is unset.   The wrapper returns UNSET so that it can be used in an assignment.
+    int unwatch(int inotify_fd, wdmap_t& wdmap, int wd) {
+        if (wd >= 0) {
+            inotify_rm_watch(inotify_fd, wd);
+            wdmap.erase(wd);
+        }
+        return UNSET;
+    }
+
+    // Return the path to the cgroup file.
+    std::string cgroupPath(CgroupFile file) const {
+        switch (file) {
+            case CgroupFile::kUnknown:
+                return "/dev/null";
+            case CgroupFile::kMemoryStat:
+                return (mCgroupRoot / "memory.stat").string();
+            case CgroupFile::kMemoryEvent:
+                return (mCgroupRoot / "memory.events").string();
+            case CgroupFile::kMemoryHigh:
+                return (mCgroupRoot / "memory.high").string();
+            case CgroupFile::kSwapCurrent:
+                return (mCgroupRoot / "memory.swap.current").string();
+            case CgroupFile::kSwapEvent:
+                return (mCgroupRoot / "memory.swap.events").string();
+            case CgroupFile::kSwapMax:
+                return (mCgroupRoot / "memory.swap.max").string();
+        }
+    }
+
+    // Return the content of a cgroup file as a string.
+    std::optional<std::string> cgroupData(CgroupFile file) const {
+        std::string content;
+        if (!android::base::ReadFileToString(cgroupPath(file), &content, false)) {
+            return std::nullopt;
+        }
+        return content;
+    }
+
+    // Read a single int64_t from the path.  Return 0 on error.
+    int64_t readMetric(CgroupFile file) const {
+        auto data = cgroupData(file);
+        if (!data) return 0;
+        errno = 0;
+        int64_t value = strtoll(data->c_str(), nullptr, 10);
+        return (errno == 0) ? value : 0;
+    }
+
+    MemoryStat readMemoryStat() const {
+        return MemoryStat(cgroupData(CgroupFile::kMemoryStat));
+    }
+
+    MemoryEvents readMemoryEvents() const {
+        return MemoryEvents(cgroupData(CgroupFile::kMemoryEvent));
+    }
+
+    MemorySwapEvents readSwapEvents() const {
+        return MemorySwapEvents(cgroupData(CgroupFile::kSwapEvent));
+    }
+
+    // Return a limit string, suitable for writing to a cgroup limit file.  The key new behavior
+    // is that the distinguished value LIMIT_IS_DISABLED is converted to "max".
+    static std::string limitStr(int64_t limit) {
+        return (limit == LIMIT_IS_DISABLED) ? "max" : std::to_string(limit);
+    }
+
+    // Write a limit to a cgroup file.  Any reclaim that is forced by lowering the limit will
+    // occur synchronously.
+    static bool writeLimit(std::string const& path, int64_t limit) {
+        return android::base::WriteStringToFile(limitStr(limit), path.c_str());
     }
 };
 
@@ -272,10 +637,11 @@ public:
         }
     }
 
-    void operator()(int pid, int uid, MonitoredLimit type, int64_t limit) {
+    void operator()(Process const& process, MonitoredLimit type) {
         JNIEnv* env;
         if (mVm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) == JNI_OK) {
-            env->CallVoidMethod(mLimiter, mFunc, pid, uid, type, limit);
+            env->CallVoidMethod(mLimiter, mFunc, process.getPid(), process.getUid(), type,
+                                process.getLimitValue(type));
         } else {
             ALOGE("GetEnv() failed");
         }
@@ -320,8 +686,14 @@ class Monitor {
     };
 
 public:
-    Monitor(JNIEnv* env, jobject jlimiter, bool privileged, bool monitor, bool testMode)
-          : mCallback(env, jlimiter), mSystem(privileged), mMonitor(monitor), mTestMode(testMode) {
+    Monitor(JNIEnv* env, jobject jlimiter, bool privileged, bool monitor, bool monitorSwap,
+            bool limitMode, bool testMode)
+          : mCallback(env, jlimiter),
+            mSystem(privileged),
+            mMonitor(monitor),
+            mMonitorSwap(monitorSwap),
+            mLimitMode(limitMode),
+            mTestMode(testMode) {
         if (env->ExceptionCheck()) {
             // The callback has probably failed in its constructor.  Exit immediately.
             return;
@@ -410,23 +782,16 @@ public:
         mStatistics.mStarted++;
     }
 
-    // Ensure the process is being watched.
-    void watch(int pid, int uid) {
+    // Set limits on a process.  This does nothing if the process cgroup files are not ready.
+    void setLimits(int pid, int uid, int64_t memHigh, int64_t swapMax) {
         if (!mMonitor) return;
-        std::lock_guard _l(mLock);
-        auto i = mTargets.find(pid);
-        if (i == mTargets.end()) {
-            Process p(pid, uid);
-            if (auto [j, inserted] = mTargets.emplace(pid, std::move(p)); !inserted) {
-                return;
-            } else {
-                i = j;
-                mStatistics.mProcesses = mTargets.size();
-                mStatistics.mProcessesHwm.store(
-                        std::max(mStatistics.mProcessesHwm, mStatistics.mProcesses));
-            }
+        if (!mMonitorSwap) {
+            swapMax = LIMIT_IS_IGNORED;
         }
-        i->second.watch(mInotifyFd, mWdMap, mStatistics);
+        std::lock_guard _l(mLock);
+        if (auto p = watchLocked(pid, uid); p.has_value()) {
+            (*p)->setLimits(memHigh, swapMax);
+        }
     }
 
     // Forget about a monitored process, if it exists.
@@ -452,6 +817,32 @@ private:
         p = mTargets.erase(p);
         mStatistics.mProcesses = mTargets.size();
         return p;
+    }
+
+    // Ensure the process is being watched.  Return a pointer to the process.  If this method
+    // returns a process pointer, it is guaranteed that the process is being watched.
+    std::optional<Process*> watchLocked(int pid, int uid) {
+        auto i = mTargets.find(pid);
+        if (i == mTargets.end()) {
+            Process p(pid, uid);
+            if (!p.isReady()) {
+                // If isReady() fails then the cgroup files are not present, which is either
+                // because the process is actually not alive or the cgroup files have not been
+                // created.  Either way, skip the current call.
+                return std::nullopt;
+            }
+            if (auto [j, inserted] = mTargets.emplace(pid, std::move(p)); !inserted) {
+                // This is a startling failure.
+                return std::nullopt;
+            } else {
+                j->second.watch(mInotifyFd, mWdMap, mMonitorSwap, mStatistics);
+                i = j;
+                mStatistics.mProcesses = mTargets.size();
+                mStatistics.mProcessesHwm.store(
+                        std::max(mStatistics.mProcessesHwm, mStatistics.mProcesses));
+            }
+        }
+        return &i->second;
     }
 
     static void* startMonitoring(void* arg) {
@@ -581,51 +972,70 @@ private:
         return true;
     }
 
-    // Handle an inotify event.  This should be a memory limit event.
     void handle_inotify() {
-        union {
-            struct inotify_event event;
-            char raw[sizeof(inotify_event) + NAME_MAX + 1];
-        } data;
-        if (read(mInotifyFd, &data, sizeof(data)) >= sizeof(struct inotify_event)) {
-            // inotify events often arrive when a process is deleted and its cgroup files go
-            // away.  In that case, lookup() will return null, and the event should be ignored.
-            int wd = data.event.wd;
-            uint32_t mask = data.event.mask;
-            pid_t pid = 0;
-            uid_t uid = 0;
-            MonitoredLimit type = MonitoredLimit::kUnknown;
-            if ((mask & IN_MODIFY) != 0) {
-                std::lock_guard _l(mLock);
-                pid = lookup(wd);
-                auto i = mTargets.find(pid);
-                if (i != mTargets.end()) {
-                    Process& p = i->second;
-                    uid = p.mUid;
-                    type = p.getLimitType(wd);
-                    p.unwatch(mInotifyFd, mWdMap);
-                }
-            }
-            if (pid != 0) {
-                // Fetch the configure memcg memory.high limit.  A value of 0 means the limit
-                // could not be read or the value was read but is suspicious.
-                int64_t limit = 0;
-                std::string path;
-                if (CgroupGetAttributePathForProcess("MemHigh", uid, pid, path)) {
-                    std::string value;
-                    if (android::base::ReadFileToString(path, &value, false)) {
-                        // This will fail if the limit is "max".  If so, the limit value above
-                        // will remain zero, which indicates that the limit could not be read or
-                        // is suspicious.  A value of "max" at this point suggests that there
-                        // may be another control process that is trying to configure limits.
-                        sscanf(value.c_str(), "%" SCNd64, &limit);
-                    }
-                }
-                mCallback(pid, uid, type, limit);
-                mStatistics.mEvents++;
-            }
-        } else {
+        // A buffer big enough to hold at least one complete inotify event.
+        char data[sizeof(inotify_event) + NAME_MAX + 1];
+
+        ssize_t len = read(mInotifyFd, data, sizeof(data));
+        if (len < sizeof(inotify_event)) {
             ALOGE("read(inotify) failed: %s", strerror(errno));
+            return;
+        }
+
+        // The size of data and the fact that read() returned enough bytes for an event means
+        // the following cast is valid.  There may be multiple events in the buffer because of
+        // the variable name[] field, which is not used in this code.
+        for (size_t pos = 0; pos <= (len - sizeof(inotify_event));) {
+            const inotify_event* event = reinterpret_cast<const inotify_event*>(&data[pos]);
+            if ((event->mask & IN_MODIFY) != 0) {
+                handle_modify(event->wd);
+            }
+            pos += sizeof(inotify_event) + event->len;
+        }
+    }
+
+    // Handle a single inotify "modify" event.
+    void handle_modify(int wd) {
+        MonitoredLimit type = MonitoredLimit::kUnknown;
+        std::optional<Process> found;
+
+        {
+            // A block that is guarded by the lock.
+            std::lock_guard _l(mLock);
+            pid_t pid = lookup(wd);
+            // inotify events can arrive when a process is deleted and its cgroup files go away.
+            // In that case, the process will not be in the process list, so ignore it.  The
+            // other reason a pid is not found is if an event arrives between the time it fired
+            // and it was unwatched: the first occurrence will remove it from the pid-map.  The
+            // second occurrence can be ignored.
+            auto i = mTargets.find(pid);
+            if (i == mTargets.end()) return;
+
+            Process& p = i->second;
+            if (!p.isAlive(mSystem)) {
+                // The process has exited.  It's unclear why the watch fired but ignore
+                // the event and stop watching the process.  The process record will be
+                // scrubbed in the poller.
+                p.unwatch(mInotifyFd, mWdMap);
+                return;
+            }
+            type = p.getLimitType(wd);
+            if (p.getEventCount(type) != p.getEventBaseline(type)) {
+                // Collect the state of the process before any further modifications.
+                found = p;
+
+                // Stop watching the specified limit, but keep watching any other enabled limits.
+                p.unwatch(mInotifyFd, mWdMap, type);
+                p.setExceeded(type, mLimitMode);
+            } else {
+                mStatistics.mFalseEvents++;
+            }
+        }
+
+        // If a callback is necessary, ensure it is issued outside the lock.
+        if (found) {
+            mCallback(*found, type);
+            mStatistics.mEvents++;
         }
     }
 
@@ -635,6 +1045,12 @@ private:
 
     // True if monitoring is enabled.
     const bool mMonitor;
+
+    // True if swap monitoring is enabled.
+    const bool mMonitorSwap;
+
+    // True if limits continue to be applied to a process after a limit is breached.
+    const bool mLimitMode;
 
     // True if running in test mode.  This primarily affects the poller, which is busier (less
     // efficient) in test mode.
@@ -647,9 +1063,11 @@ Monitor* getMonitor(jlong service) {
 }
 
 // Create a new Monitor object and returns its address.
-jlong initLimiter(JNIEnv* env, jclass, jobject jlimiter, jboolean monitor, jboolean testMode) {
+jlong initLimiter(JNIEnv* env, jclass, jobject jlimiter, jboolean monitor, jboolean monitorSwap,
+                  jboolean limitMode, jboolean testMode) {
     const bool system = (getuid() == AID_SYSTEM);
-    std::unique_ptr<Monitor> m(new Monitor(env, jlimiter, system, monitor, testMode));
+    std::unique_ptr<Monitor> m(
+            new Monitor(env, jlimiter, system, monitor, monitorSwap, limitMode, testMode));
     if (env->ExceptionCheck()) {
         return 0;
     }
@@ -669,38 +1087,11 @@ void startProcess(JNIEnv* env, jclass, jlong service, jint pid, jint /* uid */) 
     m->start(pid);
 }
 
-// A small wrapper to make lines shorter.  The compiler will inline this.
-bool writeString(std::string text, std::string& path) {
-    return android::base::WriteStringToFile(text, path);
-}
-
-// A small wrapper to write a limit.  The function converts a negative input to "max".  It does
-// nothing if the limit is zero.  It complains on error.
-void writeLimit(char const* attribute, int uid, int pid, long limit) {
-    if (limit == 0) return;
-
-    std::string path;
-    if (!CgroupGetAttributePathForProcess(attribute, uid, pid, path)) return;
-
-    if (!writeString((limit < 0) ? "max" : std::to_string(limit), path)) {
-        // Only report the failure if the error is not path-not-found.  The path will not be
-        // found if the process has already exited or if the process has not been moved into
-        // its cgroup yet.
-        ALOGE_IF(errno != ENOENT, "failed to write %s (%s): %s", attribute, path.c_str(),
-                 strerror(errno));
-    }
-}
-
 // A process is being configured with memory and swap limits.  See writeLimit() for special
 // handling of non-positive limits.
 void configureLimit(JNIEnv*, jclass, jlong service, jint pid, jint uid, jlong mem, jlong swap) {
     Monitor* m = getMonitor(service);
-
-    // Start watching for over-limit events, if possible.  The call is idempotent.  Once it
-    // succeeds further invocations do nothing.
-    m->watch(pid, uid);
-    writeLimit("MemHigh", uid, pid, mem);
-    writeLimit("SwapMax", uid, pid, swap);
+    m->setLimits(pid, uid, mem, swap);
 }
 
 // Return the statistics for the memory limiter.  If the limiter is invalid, null is returned.
@@ -710,13 +1101,61 @@ jstring getStatistics(JNIEnv* env, jclass, jlong service) {
     return env->NewStringUTF(stats.c_str());
 }
 
+// Parse a cgroup file into its components.  The two parameters are the name of the file and the
+// string to be parsed.  The function returns an array of longs.  The order of the longs matches
+// the order in which elements are found in the cgroup file.  Null is returned if parsing fails.
+//
+// This is not the most intuitive interface but it exists solely for testing internal code.
+jlongArray testParseCgroup(JNIEnv* env, jclass, jstring jfile, jstring jdata) {
+    ScopedUtfChars file(env, jfile);
+    ScopedUtfChars data(env, jdata);
+    std::vector<int64_t> fields;
+
+    if (strcmp(file.c_str(), "memory.stat") == 0) {
+        MemoryStat stat;
+        if (!stat.scan(data.c_str())) {
+            return nullptr;
+        }
+        fields.push_back(stat.anon);
+        fields.push_back(stat.file);
+    } else if (strcmp(file.c_str(), "memory.events") == 0) {
+        MemoryEvents events;
+        if (!events.scan(data.c_str())) {
+            return nullptr;
+        }
+        fields.push_back(events.low);
+        fields.push_back(events.high);
+        fields.push_back(events.max);
+        fields.push_back(events.oom);
+        fields.push_back(events.oom_kill);
+        fields.push_back(events.oom_group_kill);
+    } else if (strcmp(file.c_str(), "memory.swap.events") == 0) {
+        MemorySwapEvents events;
+        if (!events.scan(data.c_str())) {
+            return nullptr;
+        }
+        fields.push_back(events.high);
+        fields.push_back(events.max);
+        fields.push_back(events.fail);
+    } else {
+        return nullptr;
+    }
+
+    jlongArray result = env->NewLongArray(fields.size());
+    for (size_t i = 0; i < fields.size(); i++) {
+        env->SetLongArrayRegion(result, i, 1, &fields[i]);
+    }
+    return result;
+}
+
 const JNINativeMethod sMethods[] = {
-        {"initLimiter", "(Lcom/android/server/am/MemoryLimiter$Controller;ZZ)J",
+        {"initLimiter", "(Lcom/android/server/am/MemoryLimiter$Controller;ZZZZ)J",
          (void*)initLimiter},
         {"closeLimiter", "(J)V", (void*)closeLimiter},
         {"onProcessStarted", "(JII)V", (void*)startProcess},
         {"configureLimit", "(JIIJJ)V", (void*)configureLimit},
         {"getStatistics", "(J)Ljava/lang/String;", (void*)getStatistics},
+        {"testParseCgroup", "(Ljava/lang/String;Ljava/lang/String;)[J", (void*)testParseCgroup},
 };
 
 } // namespace
