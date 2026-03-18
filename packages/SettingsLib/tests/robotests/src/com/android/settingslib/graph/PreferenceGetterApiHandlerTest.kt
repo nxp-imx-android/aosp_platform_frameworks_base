@@ -41,6 +41,9 @@ import org.junit.runner.RunWith
 import org.mockito.kotlin.spy
 import org.robolectric.RobolectricTestRunner
 import com.android.settingslib.robotests.R
+import com.android.settingslib.testutils.GraphTestUtils.PersistentPreferenceConfig
+import com.android.settingslib.testutils.GraphTestUtils.PreferenceConfig
+import com.android.settingslib.testutils.GraphTestUtils.PreferenceScreenConfig
 
 @RunWith(RobolectricTestRunner::class)
 @EnableFlags(Flags.FLAG_CATALYST_USE_KEY_PARAMETERS)
@@ -478,6 +481,82 @@ class PreferenceGetterApiHandlerTest {
         assertThat(response.preferences).isEmpty()
         assertThat(response.errors[
             PreferenceCoordinate("pref_screen", "dne_pref")
+        ]).isEqualTo(PreferenceGetterErrorCode.NOT_FOUND)
+    }
+
+    @Test
+    fun invoke_onNestedScreens_callOnInnerPreferenceFromInnerScreen_succeeds() {
+        val innerPreference = createPersistentPreference<Boolean>(
+            persistentPreferenceConfig = PersistentPreferenceConfig(
+                PreferenceConfig(
+                    key = "inner_preference",
+                    purpose = R.string.preference_purpose,
+                    sensitivityLevel = SensitivityLevel.NO_SENSITIVITY,
+                ),
+                readPermission = null,
+                writePermission = null,
+                defaultValue = true
+            ),
+        )
+        val innerScreen = createScreen(PreferenceScreenConfig(
+            screenKey = "inner_screen",
+            purpose = R.string.preference_screen_purpose,
+            preferences = listOf(innerPreference)
+        )
+        )
+        setRegistryFactories(
+            innerScreen,
+            createScreen(PreferenceScreenConfig(
+                screenKey = "outer_screen",
+                purpose = R.string.preference_screen_purpose,
+                preferences = listOf(innerScreen)
+            ))
+        )
+
+        val response = invokeWithRequest("inner_screen", "inner_preference")
+
+        val preference = response.preferences[
+            PreferenceCoordinate("inner_screen", "inner_preference")
+        ]
+        assertThat(preference?.key).isEqualTo("inner_preference")
+        assertThat(preference?.value?.booleanValue).isEqualTo(true)
+        assertThat(response.errors).isEmpty()
+    }
+
+    @Test
+    fun invoke_onNestedScreens_callOnInnerPreferenceFromOuterScreen_returnsNotFound() {
+        val innerPreference = createPersistentPreference<Boolean>(
+            persistentPreferenceConfig = PersistentPreferenceConfig(
+                PreferenceConfig(
+                    key = "inner_preference",
+                    purpose = R.string.preference_purpose,
+                    sensitivityLevel = SensitivityLevel.NO_SENSITIVITY,
+                ),
+                readPermission = null,
+                writePermission = null,
+                defaultValue = true
+            ),
+        )
+        val innerScreen = createScreen(PreferenceScreenConfig(
+            screenKey = "inner_screen",
+            purpose = R.string.preference_screen_purpose,
+            preferences = listOf(innerPreference)
+        )
+        )
+        setRegistryFactories(
+            innerScreen,
+            createScreen(PreferenceScreenConfig(
+                screenKey = "outer_screen",
+                purpose = R.string.preference_screen_purpose,
+                preferences = listOf(innerScreen)
+            ))
+        )
+
+        val response = invokeWithRequest("outer_screen", "inner_preference")
+
+        assertThat(response.preferences).isEmpty()
+        assertThat(response.errors[
+            PreferenceCoordinate("outer_screen", "inner_preference")
         ]).isEqualTo(PreferenceGetterErrorCode.NOT_FOUND)
     }
 
