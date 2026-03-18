@@ -410,6 +410,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     static final int SCAN_AS_STOPPED_SYSTEM_APP = 1 << 27;
 
     private static final int STOP_AND_KILL_APP_TIMEOUT_MS = 15000;
+    private static final int STOP_AND_KILL_APP_SHARED_USER_TIMEOUT_MS = 3000;
 
     @IntDef(flag = true, prefix = { "SCAN_" }, value = {
             SCAN_NO_DEX,
@@ -3227,7 +3228,10 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             Slog.e(TAG, "Holds PM's lock, unable kill application synchronized");
             killApplication(pkgName, appId, userId, reason, exitInfoReason);
         } else {
-            KillAppBlocker blocker = new KillAppBlocker(STOP_AND_KILL_APP_TIMEOUT_MS);
+            final int timeoutMs = isSharedUidWithSiblingsRunning(userId, appId, pkgName)
+                    ? STOP_AND_KILL_APP_SHARED_USER_TIMEOUT_MS
+                    : STOP_AND_KILL_APP_TIMEOUT_MS;
+            KillAppBlocker blocker = new KillAppBlocker(timeoutMs);
             try {
                 blocker.register();
                 /* stopAndKillApp is non-blocking. It blocks, but only until it sends stop signal
@@ -3239,11 +3243,47 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                  * to wait for the process itself to be gone to be assured of its death.
                  */
                 atmi.stopAndKillAppForUpdate(pkgName, userId, appId);
-                blocker.waitAppProcessGone(ami, snapshotComputer(), mUserManager, pkgName);
+                if (!blocker.waitAppProcessGone(ami, snapshotComputer(), mUserManager, pkgName)) {
+                    Slog.w(TAG, "Timeout reached waiting for " + pkgName
+                            + " to be gone. Force killing now.");
+                    killApplication(pkgName, appId, userId, reason + " (force-kill)",
+                            exitInfoReason);
+                }
             } finally {
                 blocker.unregister();
             }
         }
+    }
+
+    private boolean isSharedUidWithSiblingsRunning(@UserIdInt int userId, @AppIdInt int appId,
+            String pkgName) {
+        final int checkUserId = userId == USER_ALL ? UserHandle.USER_SYSTEM : userId;
+        final int uid = UserHandle.getUid(checkUserId, appId);
+        String[] packages = snapshotComputer().getPackagesForUid(uid);
+        if (packages == null || packages.length <= 1) {
+            return false;
+        }
+        try {
+            IActivityManager am = ActivityManager.getService();
+            if (am == null) return false;
+            List<ActivityManager.RunningAppProcessInfo> runningProcesses =
+                    am.getRunningAppProcesses();
+            if (runningProcesses == null) return false;
+            final int size = runningProcesses.size();
+            for (int i = 0; i < size; i++) {
+                ActivityManager.RunningAppProcessInfo info = runningProcesses.get(i);
+                if (info.uid == uid && info.pkgList != null) {
+                    for (String runningPkg : info.pkgList) {
+                        if (!pkgName.equals(runningPkg)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        } catch (RemoteException e) {
+            Slog.w(TAG, "Failed to get running processes", e);
+        }
+        return false;
     }
 
     @Override
