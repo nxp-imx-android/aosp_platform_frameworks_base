@@ -224,4 +224,18 @@ to pre-existing users, but cannot uninstall pre-existing system packages from pr
         <install-in user-type="FULL" />
         <install-in user-type="PROFILE" />
     </install-in-user-type>
+
+    <!-- (CtsShimPrebuilt) -->
+    <install-in-user-type package="com.android.cts.ctsshim">
+        <install-in user-type="SYSTEM" />
+        <install-in user-type="FULL" />
+        <install-in user-type="PROFILE" />
+    </install-in-user-type>
+
+    <!-- (CtsShimPrivPrebuilt) -->
+    <install-in-user-type package="com.android.cts.priv.ctsshim">
+        <install-in user-type="SYSTEM" />
+        <install-in user-type="FULL" />
+        <install-in user-type="PROFILE" />
+    </install-in-user-type>
 </config>
