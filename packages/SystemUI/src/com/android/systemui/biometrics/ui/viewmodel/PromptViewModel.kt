@@ -287,10 +287,6 @@ constructor(
         context.resources.getDimensionPixelSize(
             R.dimen.biometric_prompt_two_pane_udfps_shorter_horizontal_guideline_padding
         )
-    private val mediumTopGuidelinePadding =
-        context.resources.getDimensionPixelSize(
-            R.dimen.biometric_prompt_one_pane_medium_top_guideline_padding
-        )
     private val mediumHorizontalGuidelinePadding =
         context.resources.getDimensionPixelSize(
             R.dimen.biometric_prompt_two_pane_medium_horizontal_guideline_padding
@@ -536,8 +532,7 @@ constructor(
                 var right = 0
                 when (position) {
                     PromptPosition.Bottom -> {
-                        val noSensorLandscape = promptKind.isOnePaneNoSensorLandscapeBiometric()
-                        top = if (noSensorLandscape) 0 else mediumTopGuidelinePadding
+                        // handled in viewbinder
                     }
                     PromptPosition.Right ->
                         left = getHorizontalPadding(size, modalities, hasOnlyOneLineTitle)

@@ -165,6 +165,6 @@ constructor(
     companion object {
         const val TAG = "DisplayStateRepositoryImpl"
         const val LARGE_SCREEN_MIN_DPS = 600f
-        const val EXTRA_LARGE_SCREEN_MIN_DPS = 1200f
+        const val EXTRA_LARGE_SCREEN_MIN_DPS = 1080f
     }
 }

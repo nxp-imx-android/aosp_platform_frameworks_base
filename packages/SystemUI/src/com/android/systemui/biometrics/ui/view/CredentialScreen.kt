@@ -174,6 +174,7 @@ fun CredentialScreen(
                                 error = errorMessage,
                             )
                         }
+
                         PromptKind.Password -> {
                             CredentialPasswordView(
                                 onVerify = verifyPinPassAction,
@@ -183,6 +184,7 @@ fun CredentialScreen(
                                 userId = header.user.userIdForPasswordEntry,
                             )
                         }
+
                         PromptKind.Pattern -> {
                             CredentialPatternView(
                                 onVerify = verifyPatternAction,
@@ -193,6 +195,7 @@ fun CredentialScreen(
                                 error = errorMessage,
                             )
                         }
+
                         else -> {}
                     }
                 }
@@ -223,6 +226,7 @@ fun CredentialScreen(
                     content = credentialInput,
                     footer = footer,
                     onCancel = onCancel,
+                    isPin = credentialKind == PromptKind.Pin,
                     onContentViewMoreOptionsButtonPressed = onContentViewMoreOptionsButtonPressed,
                 )
             }
@@ -236,9 +240,10 @@ private fun PortraitCredentialLayout(
     content: @Composable () -> Unit,
     footer: @Composable () -> Unit,
     onCancel: () -> Unit,
+    isPin: Boolean = false,
     onContentViewMoreOptionsButtonPressed: () -> Unit,
 ) {
-    Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
+    Box(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier =
                 Modifier.fillMaxWidth().imePadding().padding(horizontal = 24.dp, vertical = 32.dp),
@@ -257,7 +262,17 @@ private fun PortraitCredentialLayout(
                     onContentViewMoreOptionsButtonPressed = onContentViewMoreOptionsButtonPressed,
                 )
             }
-            content()
+            if (isPin) {
+                // Pin is larger than the other credentials and requires some extra space
+                Box(
+                    modifier = Modifier.weight(3f, fill = false),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    content()
+                }
+            } else {
+                content()
+            }
             footer()
         }
 
