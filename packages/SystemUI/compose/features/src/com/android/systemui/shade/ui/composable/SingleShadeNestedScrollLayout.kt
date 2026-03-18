@@ -225,10 +225,14 @@ fun ContentScope.SingleShadeNestedScrollLayout(
                                 }
                             )
                     ) {
-                        scrollableScrim(
-                            { contentHeight.intValue = it },
-                            { scrimOffset.value >= 0f && contentScrollState.value == 0 },
-                        )
+                        // whether the scrim is at its default position (QQS+Media fully visible)
+                        val isScrimAtRest by
+                            remember(scrimOffset, contentScrollState) {
+                                derivedStateOf {
+                                    scrimOffset.value >= 0f && contentScrollState.value == 0
+                                }
+                            }
+                        scrollableScrim({ contentHeight.intValue = it }, { isScrimAtRest })
                     }
                 },
             ),
