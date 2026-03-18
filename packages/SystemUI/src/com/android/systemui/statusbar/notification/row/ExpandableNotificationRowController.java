@@ -124,6 +124,7 @@ public class ExpandableNotificationRowController implements NotifViewController 
     private final EntryAdapterFactory mEntryAdapterFactory;
     private final WindowRootViewBlurInteractor mWindowRootViewBlurInteractor;
     private final NotificationActivityStarter mNotificationActivityStarter;
+    private final NotificationUiEligibilityChecker mNotificationUiEligibilityChecker;
     private final Context mContext;
 
     @VisibleForTesting
@@ -289,7 +290,8 @@ public class ExpandableNotificationRowController implements NotifViewController 
             EntryAdapterFactory entryAdapterFactory,
             WindowRootViewBlurInteractor windowRootViewBlurInteractor,
             BundleInteractionLogger bundleInteractionLogger,
-            NotificationActivityStarter notificationActivityStarter) {
+            NotificationActivityStarter notificationActivityStarter,
+            NotificationUiEligibilityChecker notificationUiEligibilityChecker) {
         mView = view;
         mContext = context;
         mListContainer = listContainer;
@@ -328,6 +330,7 @@ public class ExpandableNotificationRowController implements NotifViewController 
         mWindowRootViewBlurInteractor = windowRootViewBlurInteractor;
         mBundleInteractionLogger = bundleInteractionLogger;
         mNotificationActivityStarter = notificationActivityStarter;
+        mNotificationUiEligibilityChecker = notificationUiEligibilityChecker;
     }
 
     String loadsGutsAppName(Context context, PipelineEntry pipelineEntry) {
@@ -391,8 +394,8 @@ public class ExpandableNotificationRowController implements NotifViewController 
                 mUiEventLogger,
                 mNotificationRebindingTracker,
                 mBundleInteractionLogger,
-                mNotificationActivityStarter
-        );
+                mNotificationActivityStarter,
+                mNotificationUiEligibilityChecker);
         mView.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
         if (mAllowLongPress) {
             if (mFeatureFlags.isEnabled(

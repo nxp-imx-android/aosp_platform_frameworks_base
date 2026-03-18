@@ -434,6 +434,7 @@ class ExpandableNotificationRowBuilder(
             Mockito.mock(NotificationRebindingTracker::class.java, STUB_ONLY),
             Mockito.mock(BundleInteractionLogger::class.java, STUB_ONLY),
             Mockito.mock(NotificationActivityStarter::class.java, STUB_ONLY),
+            kosmos.notificationUiEligibilityChecker,
         )
         row.setAboveShelfChangedListener {}
         return row
