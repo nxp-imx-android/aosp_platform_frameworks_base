@@ -48,7 +48,7 @@ policy_metadata {
   allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
   allowed_dpc_types: DPC_TYPE_UNAFFILIATED_FULL_USER_PROFILE_OWNER
   allowed_dpc_types: DPC_TYPE_AFFILIATED_FULL_USER_PROFILE_OWNER
-  flag: "android.app.admin.flags.policy_streamlining"
+  flag: "android.app.admin.flags.policy_streamlining_screen_capture_api"
 }
 policy_metadata {
   identifier {
