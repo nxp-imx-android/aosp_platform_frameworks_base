@@ -211,6 +211,8 @@ interface PreferenceScreenMetadata : PreferenceGroup {
 
         /** Key for a Bundle of extras to be added to the launch intent. See [launchScreenExtra]. */
         const val EXTRA_LAUNCH_SCREEN = "launch_screen_extra"
+        /** Extra key for an itemization value to be mapped to the first screen parameter. */
+        const val EXTRA_ITEMIZATION = "itemization"
     }
 }
 
