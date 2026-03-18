@@ -13,19 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.server.appfunctions;
+package com.android.server.appfunctions.observer;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionStaticMetadataHelper;
 import android.app.appfunctions.IObserveAppFunctionChangesCallback;
-import android.app.appsearch.AppSearchManager;
 import android.app.appsearch.AppSearchSchema;
 import android.app.appsearch.GetSchemaResponse;
 import android.app.appsearch.observer.DocumentChangeInfo;
 import android.app.appsearch.observer.SchemaChangeInfo;
-import android.content.Context;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.RemoteCallbackList;
@@ -37,9 +35,14 @@ import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
-
 import com.android.internal.infra.AndroidFuture;
 import com.android.internal.os.BackgroundThread;
+import com.android.server.appfunctions.CallerIdentity;
+import com.android.server.appfunctions.FutureGlobalSearchSession;
+import com.android.server.appfunctions.NamedThreadFactory;
+import com.android.server.appfunctions.ServiceConfig;
+import com.android.server.appfunctions.VisibilityHelper;
+
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Set;

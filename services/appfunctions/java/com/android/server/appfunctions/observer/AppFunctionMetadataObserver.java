@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.server.appfunctions;
+package com.android.server.appfunctions.observer;
 
 import static com.android.server.appfunctions.AppFunctionExecutors.THREAD_POOL_EXECUTOR;
 
@@ -33,6 +33,13 @@ import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.SystemService;
+import com.android.server.appfunctions.CallerIdentity;
+import com.android.server.appfunctions.FutureGlobalSearchSession;
+import com.android.server.appfunctions.MetadataSyncAdapter;
+import com.android.server.appfunctions.MetadataSyncPerUser;
+import com.android.server.appfunctions.ServiceConfig;
+import com.android.server.appfunctions.VisibilityHelper;
+import com.android.server.appfunctions.reader.AppFunctionMetadataReader;
 
 import java.util.Objects;
 import java.util.Set;
@@ -60,7 +67,7 @@ public class AppFunctionMetadataObserver {
 
     @NonNull private final Context mContext;
 
-    AppFunctionMetadataObserver(
+    public AppFunctionMetadataObserver(
             @NonNull Context context,
             @NonNull AppFunctionMetadataReader appFunctionMetadataReader,
             @NonNull ServiceConfig serviceConfig,
@@ -72,7 +79,7 @@ public class AppFunctionMetadataObserver {
     }
 
     /** Registers a new {@link AppFunctionMetadataObserver} for {@code targetUser}. */
-    void registerAppSearchObserverForUser(@NonNull SystemService.TargetUser targetUser) {
+    public void registerAppSearchObserverForUser(@NonNull SystemService.TargetUser targetUser) {
         Context userContext =
                 mContext.createContextAsUser(targetUser.getUserHandle(), /* flags= */ 0);
         MetadataSyncAdapter mPerUserMetadataSyncAdapter =
@@ -122,7 +129,7 @@ public class AppFunctionMetadataObserver {
     }
 
     /** Unregisters the {@link AppFunctionMetadataObserver} for {@code targetUser}. */
-    void unregisterAppSearchObserverForUser(@NonNull SystemService.TargetUser targetUser) {
+    public void unregisterAppSearchObserverForUser(@NonNull SystemService.TargetUser targetUser) {
         MetadataSyncPerUser.removeUserSyncAdapter(targetUser.getUserHandle());
         synchronized (mRoutersLock) {
             if (mInternalCallbackRouters.contains(targetUser.getUserIdentifier())) {
@@ -136,7 +143,7 @@ public class AppFunctionMetadataObserver {
      * Registers the provided {@link IObserveAppFunctionChangesCallback} to receive updates to app
      * functions matching the {@link AppFunctionSearchSpec} for a specific user.
      */
-    void registerClientAppCallback(
+    public void registerClientAppCallback(
             @NonNull CallerIdentity callerIdentity,
             @NonNull IObserveAppFunctionChangesCallback proxyCallback)
             throws RemoteException {
@@ -156,7 +163,11 @@ public class AppFunctionMetadataObserver {
         }
     }
 
-    void unregisterClientAppCallback(
+    /**
+     * Unregisters the given {@link IObserveAppFunctionChangesCallback} from receiving app functions
+     * updates.
+     */
+    public void unregisterClientAppCallback(
             @NonNull CallerIdentity callerIdentity,
             @NonNull IObserveAppFunctionChangesCallback proxyCallback) {
         requireNonNull(callerIdentity);
@@ -172,7 +183,7 @@ public class AppFunctionMetadataObserver {
     }
 
     /** Notifies observers of a change to an app function's enabled state. */
-    void onEnabledStatesChanged(
+    public void onEnabledStatesChanged(
             @NonNull UserHandle userHandle, @NonNull Set<AppFunctionName> functionNames) {
         requireNonNull(userHandle);
         requireNonNull(functionNames);

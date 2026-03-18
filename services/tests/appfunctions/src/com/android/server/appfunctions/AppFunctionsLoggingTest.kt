@@ -44,6 +44,7 @@ import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.server.LocalServices
 import com.android.server.appfunctions.allowlist.AppFunctionAllowlistReader
 import com.android.server.appfunctions.dynamic.MultiUserDynamicAppFunctionRegistry
+import com.android.server.appfunctions.reader.AppFunctionMetadataReader
 import com.android.server.appinteraction.AppInteractionService
 import com.android.server.uri.UriGrantsManagerInternal
 import com.android.server.wm.ActivityTaskManagerInternal
@@ -456,7 +457,9 @@ class AppFunctionsLoggingTest {
                 /* requestDurationMs= */ any(),
                 /* requestOverheadMs= */ any(),
                 /* interactionType= */ any(),
-                /* functionType= */ eq<Int>(AppFunctionsLoggerWrapper.FUNCTION_TYPE_DYNAMIC_ACTIVITY),
+                /* functionType= */ eq<Int>(
+                    AppFunctionsLoggerWrapper.FUNCTION_TYPE_DYNAMIC_ACTIVITY
+                ),
             )
         }
     }

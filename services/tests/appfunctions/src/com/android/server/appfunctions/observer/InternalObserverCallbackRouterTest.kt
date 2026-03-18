@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.server.appfunctions
+package com.android.server.appfunctions.observer
 
 import android.app.appfunctions.AppFunctionName
 import android.app.appfunctions.AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_METADATA_DB
@@ -27,6 +27,11 @@ import android.os.Binder
 import android.os.IBinder
 import android.os.UserHandle
 import android.platform.test.annotations.RequiresFlagsEnabled
+import com.android.server.appfunctions.CallerIdentity
+import com.android.server.appfunctions.FakeScheduledExecutorService
+import com.android.server.appfunctions.FutureGlobalSearchSession
+import com.android.server.appfunctions.ServiceConfig
+import com.android.server.appfunctions.VisibilityHelper
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors
 import java.util.concurrent.ScheduledExecutorService

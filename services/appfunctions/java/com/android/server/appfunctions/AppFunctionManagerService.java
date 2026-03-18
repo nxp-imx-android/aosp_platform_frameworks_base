@@ -30,6 +30,8 @@ import com.android.server.SystemService;
 import com.android.server.appfunctions.allowlist.AppFunctionAllowlistReader;
 import com.android.server.appfunctions.allowlist.SystemAppFunctionAllowlistReader;
 import com.android.server.appfunctions.dynamic.MultiUserDynamicAppFunctionRegistry;
+import com.android.server.appfunctions.reader.AppFunctionMetadataReader;
+import com.android.server.appfunctions.reader.AppFunctionsMetadataCache;
 import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.appinteraction.AppInteractionServiceImpl;
 import com.android.server.uri.UriGrantsManagerInternal;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.appfunctions;
+package com.android.server.appfunctions.reader;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -35,16 +35,18 @@ import android.util.Slog;
 import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.server.appfunctions.FutureAppSearchSession;
+import com.android.server.appfunctions.FutureAppSearchSessionImpl;
+import com.android.server.appfunctions.FutureSearchResults;
+import com.android.server.appfunctions.NamedThreadFactory;
 
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/**
- * Provides an in-memory cache for {@code AppFunction} types. This class is thread-safe.
- */
-class AppFunctionsMetadataCache {
+/** Provides an in-memory cache for {@code AppFunction} types. This class is thread-safe. */
+public class AppFunctionsMetadataCache {
 
     private static final boolean DEBUG = Build.TYPE.equals("eng");
 
@@ -78,7 +80,7 @@ class AppFunctionsMetadataCache {
             new SparseArray<>();
 
     /** Constructs a new {@link AppFunctionsMetadataCache}. */
-    AppFunctionsMetadataCache(Context context) {
+    public AppFunctionsMetadataCache(Context context) {
         mContext = context;
         mExecutor =
                 Executors.newSingleThreadExecutor(
@@ -129,7 +131,7 @@ class AppFunctionsMetadataCache {
      * @throws IllegalArgumentException if the user is not unlocked.
      */
     boolean isGlobalScopedDynamicFunction(
-        String packageName, String functionIdentifier, UserHandle user)
+            String packageName, String functionIdentifier, UserHandle user)
             throws IllegalArgumentException {
         synchronized (mCrossUserLock) {
             if (!mPerUserDynamicFunctionsCache.contains(user.getIdentifier())) {
@@ -256,12 +258,15 @@ class AppFunctionsMetadataCache {
             List<SearchResult> searchResultsList = futureSearchResults.getNextPage().get();
             while (!searchResultsList.isEmpty()) {
                 for (SearchResult searchResult : searchResultsList) {
-                    String scopeType = searchResult
-                            .getGenericDocument()
-                            .getPropertyString(AppFunctionMetadata.PROPERTY_SCOPE);
+                    String scopeType =
+                            searchResult
+                                    .getGenericDocument()
+                                    .getPropertyString(AppFunctionMetadata.PROPERTY_SCOPE);
                     if (scopeType == null) {
-                        Log.w(TAG, "Scope type is not present for "
-                                + searchResult.getGenericDocument().getId());
+                        Log.w(
+                                TAG,
+                                "Scope type is not present for "
+                                        + searchResult.getGenericDocument().getId());
                     } else if (scopeType.equals(AppFunctionMetadata.PROPERTY_VALUE_SCOPE_GLOBAL)) {
                         populatedGlobalFunctions.add(searchResult.getGenericDocument().getId());
                     } else {
