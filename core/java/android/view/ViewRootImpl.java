@@ -608,7 +608,7 @@ public final class ViewRootImpl implements ViewParent,
 
     final W mWindow;
 
-    final IBinder mLeashToken;
+    private final IBinder mLeashToken;
 
     final int mTargetSdkVersion;
 
@@ -13397,6 +13397,14 @@ public final class ViewRootImpl implements ViewParent,
                     ViewRootImpl.this);
         }
         return mAccessibilityEmbeddedConnection;
+    }
+
+    /**
+     * Get the token used to track this window with the accessibility manager.
+     * @hide
+     */
+    public IBinder getAccessibilityLeashToken() {
+        return mLeashToken;
     }
 
     private class SendWindowContentChangedAccessibilityEvent implements Runnable {
