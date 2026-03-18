@@ -26,6 +26,7 @@ import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_INVALI
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_ACTIVITY;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_SENSORS;
+import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_THERMAL;
 import static android.content.Context.DEVICE_ID_DEFAULT;
 import static android.content.Context.DEVICE_ID_INVALID;
 import static android.content.Intent.ACTION_VIEW;
@@ -129,6 +130,7 @@ import com.android.server.LocalServices;
 import com.android.server.UiModeManagerInternal;
 import com.android.server.companion.virtual.camera.VirtualCameraController;
 import com.android.server.input.InputManagerInternal;
+import com.android.server.power.thermal.ThermalManagerInternal;
 import com.android.server.sensors.SensorManagerInternal;
 
 import com.google.android.collect.Sets;
@@ -267,6 +269,8 @@ public class VirtualDeviceManagerServiceTest {
     @Mock
     private UiModeManagerInternal mUiModeManagerInternalMock;
     @Mock
+    private ThermalManagerInternal mThermalManagerInternalMock;
+    @Mock
     private VirtualSensorCallback mSensorCallback;
     @Mock
     private IVirtualDeviceActivityListener mActivityListener;
@@ -352,6 +356,9 @@ public class VirtualDeviceManagerServiceTest {
 
         LocalServices.removeServiceForTest(UiModeManagerInternal.class);
         LocalServices.addService(UiModeManagerInternal.class, mUiModeManagerInternalMock);
+
+        LocalServices.removeServiceForTest(ThermalManagerInternal.class);
+        LocalServices.addService(ThermalManagerInternal.class, mThermalManagerInternalMock);
 
         final DisplayInfo displayInfo = new DisplayInfo();
         displayInfo.uniqueId = UNIQUE_ID;
@@ -1310,6 +1317,25 @@ public class VirtualDeviceManagerServiceTest {
         mDeviceImpl.close();
         verify(mUiModeManagerInternalMock).setDisplayUiMode(
                 DISPLAY_ID_1, Configuration.UI_MODE_TYPE_UNDEFINED);
+    }
+
+    @EnableFlags(Flags.FLAG_DEVICE_AWARE_THERMAL_STATUS)
+    @Test
+    public void setThermalStatus_deviceClosed_resetThermalStatus() {
+        mDeviceImpl.close();
+        VirtualDeviceParams params = new VirtualDeviceParams.Builder()
+                .setDevicePolicy(POLICY_TYPE_THERMAL, DEVICE_POLICY_CUSTOM)
+                .build();
+        mDeviceImpl = createVirtualDevice(VIRTUAL_DEVICE_ID_1, DEVICE_OWNER_UID_1, params);
+
+        int deviceId = mDeviceImpl.getDeviceId();
+        mDeviceImpl.setCurrentThermalStatus(PowerManager.THERMAL_STATUS_MODERATE);
+        verify(mThermalManagerInternalMock).notifyDeviceThermalStatusChanged(
+                deviceId, PowerManager.THERMAL_STATUS_MODERATE);
+
+        mDeviceImpl.close();
+        verify(mThermalManagerInternalMock).notifyDeviceThermalStatusChanged(
+                deviceId, PowerManager.THERMAL_STATUS_INVALID);
     }
 
     @EnableFlags(Flags.FLAG_DEVICE_AWARE_TOUCH_MODE)

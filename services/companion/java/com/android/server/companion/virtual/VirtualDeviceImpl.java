@@ -33,6 +33,7 @@ import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_BLOCKED_
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_CAMERA;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_CLIPBOARD;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
+import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_THERMAL;
 import static android.media.AudioManager.AUDIO_SESSION_ID_GENERATE;
 
 import android.annotation.NonNull;
@@ -107,6 +108,7 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.SystemClock;
+import android.os.Temperature;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.util.ArrayMap;
@@ -138,6 +140,7 @@ import com.android.server.UiModeManagerInternal;
 import com.android.server.companion.virtual.audio.VirtualAudioController;
 import com.android.server.companion.virtual.camera.VirtualCameraController;
 import com.android.server.inputmethod.InputMethodManagerInternal;
+import com.android.server.power.thermal.ThermalManagerInternal;
 
 import dalvik.annotation.optimization.FastNative;
 
@@ -263,6 +266,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     private final DisplayManagerInternal mDisplayManagerInternal;
     @NonNull
     private final UiModeManagerInternal mUiModeManagerInternal;
+    @NonNull
+    private final ThermalManagerInternal mThermalManagerInternal;
     @NonNull
     private final PowerManager mPowerManager;
     @NonNull
@@ -565,6 +570,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         mWindowManager = windowManager;
         mDisplayManagerInternal = LocalServices.getService(DisplayManagerInternal.class);
         mUiModeManagerInternal = LocalServices.getService(UiModeManagerInternal.class);
+        mThermalManagerInternal = LocalServices.getService(ThermalManagerInternal.class);
         mPowerManager = Objects.requireNonNull(context.getSystemService(PowerManager.class));
         mAudioManager = context.getSystemService(AudioManager.class);
         mDisplayManager = Objects.requireNonNull(context.getSystemService(DisplayManager.class));
@@ -992,6 +998,11 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
 
             mInputController.close();
             mSensorController.close();
+
+            if (getDevicePolicy(POLICY_TYPE_THERMAL) == DEVICE_POLICY_CUSTOM) {
+                mThermalManagerInternal.notifyDeviceThermalStatusChanged(
+                        mDeviceId, PowerManager.THERMAL_STATUS_INVALID);
+            }
         } finally {
             Binder.restoreCallingIdentity(ident);
         }
@@ -1290,6 +1301,20 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     }
 
     @Override // Binder call
+    public void setCurrentThermalStatus(@PowerManager.ThermalStatus int status) {
+        checkCallerIsDeviceOwner();
+        if (getDevicePolicy(POLICY_TYPE_THERMAL) != DEVICE_POLICY_CUSTOM) {
+            throw new UnsupportedOperationException(
+                    "Setting thermal status requires POLICY_TYPE_THERMAL to be custom");
+        }
+        if (!Temperature.isValidStatus(status)) {
+            throw new IllegalArgumentException("Not a valid thermal status: " + status);
+        }
+        Binder.withCleanCallingIdentity(
+                () -> mThermalManagerInternal.notifyDeviceThermalStatusChanged(mDeviceId, status));
+    }
+
+    @Override // Binder call
     @Nullable
     public List<VirtualSensor> getVirtualSensorList() {
         checkCallerIsDeviceOwner();
@@ -1478,7 +1503,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
             return false;
         }
 
-        if (getDevicePolicy(POLICY_TYPE_AUDIO) == VirtualDeviceParams.DEVICE_POLICY_CUSTOM) {
+        if (getDevicePolicy(POLICY_TYPE_AUDIO) == DEVICE_POLICY_CUSTOM) {
             return true;
         }
         final long token = Binder.clearCallingIdentity();

@@ -218,6 +218,9 @@ interface IVirtualDevice {
     /** Sets the UI mode for the given display. */
     void setDisplayUiMode(int displayId, int uiMode);
 
+    /** Sets the current thermal status of the device. */
+    void setCurrentThermalStatus(int status);
+
     /**
      * Registers an intent interceptor that will intercept an intent attempting to launch
      * when matching the provided IntentFilter and calls the callback with the intercepted
