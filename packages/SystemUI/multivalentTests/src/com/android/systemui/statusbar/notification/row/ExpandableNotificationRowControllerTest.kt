@@ -174,6 +174,7 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
             kosmos.windowRootViewBlurInteractor,
             bundleInteractionLogger,
             notificationActivityStarter,
+            kosmos.notificationUiEligibilityChecker,
         )
     }
 
