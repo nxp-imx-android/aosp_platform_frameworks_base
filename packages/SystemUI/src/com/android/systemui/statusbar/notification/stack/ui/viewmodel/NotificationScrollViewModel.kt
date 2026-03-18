@@ -158,6 +158,38 @@ constructor(
             }
         }
 
+    val lockScreenToShadeTransitionProgress: Flow<Float> =
+        combine(shadeInteractor.shadeExpansion, sceneInteractor.transitionStateFlow) {
+                shadeExp,
+                transitionState ->
+                when (transitionState) {
+                    is Idle -> 0f
+                    is ChangeScene ->
+                        if (
+                            transitionState.isTransitioning(
+                                from = Scenes.Lockscreen,
+                                to = Scenes.Shade,
+                            )
+                        ) {
+                            shadeExp
+                        } else {
+                            0f
+                        }
+
+                    is Transition.OverlayTransition ->
+                        if (
+                            transitionState.currentScene == Scenes.Lockscreen &&
+                                transitionState.isTransitioning(to = Overlays.NotificationsShade)
+                        ) {
+                            shadeExp
+                        } else {
+                            0f
+                        }
+                }
+            }
+            .distinctUntilChanged()
+            .dumpWhileCollecting("lockScreenToShadeTransitionProgress")
+
     private fun expandFractionDuringOverlayTransition(
         transitionState: Transition,
         currentScene: SceneKey,

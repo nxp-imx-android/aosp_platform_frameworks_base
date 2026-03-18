@@ -616,6 +616,36 @@ open class NotificationShelfTest(flags: FlagsParameterization) : SysuiTestCase()
     }
 
     @Test
+    fun getAmountInShelf_negativeHeight_inShelf() {
+        val shelfClipStart = 1f
+        val viewStart = 0f
+
+        val expandableView = mock(ExpandableView::class.java)
+        whenever(expandableView.shelfIcon).thenReturn(mock(StatusBarIconView::class.java))
+        whenever(expandableView.translationY).thenReturn(viewStart)
+        whenever(expandableView.actualHeight).thenReturn(-10)
+
+        whenever(expandableView.minHeight).thenReturn(-20)
+        whenever(expandableView.shelfTransformationTarget).thenReturn(null) // use translationY
+        whenever(expandableView.isInShelf).thenReturn(true)
+
+        whenever(ambientState.isOnKeyguard).thenReturn(true)
+        whenever(ambientState.isExpansionChanging).thenReturn(false)
+        whenever(ambientState.isShadeExpanded).thenReturn(true)
+
+        val amountInShelf =
+            shelf.getAmountInShelf(
+                /* i= */ 0,
+                /* view= */ expandableView,
+                /* scrollingFast= */ false,
+                /* expandingAnimated= */ false,
+                /* isLastChild= */ false,
+                shelfClipStart,
+            )
+        assert(amountInShelf > 0f)
+    }
+
+    @Test
     @DisableSceneContainer
     fun updateState_expansionChanging_shelfTransparent() {
         updateState_expansionChanging_shelfAlphaUpdated(
@@ -1094,6 +1124,35 @@ open class NotificationShelfTest(flags: FlagsParameterization) : SysuiTestCase()
         val shelfState = shelf.viewState as NotificationShelf.ShelfState
         assertEquals(true, shelfState.hidden)
         assertEquals(endOfStack, shelfState.yTranslation)
+    }
+
+    @Test
+    @EnableSceneContainer
+    fun testUpdateActualWidth() {
+        val fullWidth = 100
+        val actualWidth = 40
+        val partialWidth = 91
+        val iconContainerPadding = 16f
+        val numViewsInShelf = 1.0f
+        val shelfSpy =
+            prepareShelfSpy(
+                shelf,
+                rtl = false,
+                splitShade = false,
+                width = fullWidth,
+                actualWidth = actualWidth,
+                iconContainerPadding = iconContainerPadding,
+            )
+
+        // check width for partial expansion
+        whenever(ambientState.lStoShadeProgress).thenReturn(0.5f)
+        whenever(ambientState.isCurrentSceneLockscreen).thenReturn(true)
+        assertEquals(partialWidth, shelfSpy.calcActualWidth(numViewsInShelf))
+
+        // check that it reaches full width on full expansion
+        whenever(ambientState.lStoShadeProgress).thenReturn(1.0f)
+        whenever(ambientState.isCurrentSceneLockscreen).thenReturn(true)
+        assertEquals(fullWidth, shelfSpy.calcActualWidth(numViewsInShelf))
     }
 
     private fun setFractionToShade(fraction: Float) {
