@@ -1504,6 +1504,27 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     /**
+     * Verify that an activity is not finished if it is blocked by LockTask mode.
+     */
+    @Test
+    public void testFinishIfSameAffinity_blockedByLockTask() {
+        final ActivityRecord rootActivity = createActivityWithTask();
+        final ActivityRecord topActivity =
+                new ActivityBuilder(mAtm).setTask(rootActivity.getTask()).build();
+        assertEquals(rootActivity.taskAffinity, topActivity.taskAffinity);
+
+        final LockTaskController lockTaskController = mAtm.getLockTaskController();
+        spyOn(lockTaskController);
+        doReturn(true).when(lockTaskController).activityBlockedFromFinish(rootActivity);
+        spyOn(topActivity);
+        doReturn(false).when(lockTaskController).activityBlockedFromFinish(topActivity);
+
+        assertFalse(rootActivity.finishIfSameAffinity(topActivity));
+        verify(topActivity).finishIfPossible(anyString(), anyBoolean());
+        verify(rootActivity, never()).finishIfPossible(anyString(), anyBoolean());
+    }
+
+    /**
      * Verify that complete finish request for non-finishing activity is invalid.
      */
     @Test(expected = IllegalArgumentException.class)
@@ -2767,7 +2788,7 @@ public class ActivityRecordTests extends WindowTestsBase {
         spyOn(appWindow);
 
         // Set initial orientation and update.
-        performRotation(displayRotation, Surface.ROTATION_90);
+        performRotation(displayRotation, Surface.ROTATION_0);
         appWindow.mResizeReported = false;
 
         // Update the rotation to perform 180 degree rotation and check that resize was reported.
