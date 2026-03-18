@@ -1896,6 +1896,16 @@ flag {
 }
 
 flag {
+    name: "wakefulness_events_shared_flow"
+    namespace: "systemui"
+    description: "Add/use wakefulnessEvents SharedFlow in PowerInteractor"
+    bug: "489790572"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "wakefulness_for_animations"
     namespace: "systemui"
     description: "Changes the signal used for animation wakefulness on keyguard"

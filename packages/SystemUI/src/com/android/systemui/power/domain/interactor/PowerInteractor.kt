@@ -39,6 +39,7 @@ import dagger.Lazy
 import javax.inject.Inject
 import javax.inject.Provider
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
@@ -67,14 +68,33 @@ constructor(
      * and whether the power button gesture has been triggered (a special case that affects
      * wakefulness).
      *
+     * This is a StateFlow. Intermediate events may be dropped if the system is under high load or
+     * the wakefulness changes quickly. If you absolutely need to receive all events in order, you
+     * can collect from [detailedWakefulnessEvents].
+     *
      * Unless you need to respond differently to different [WakeSleepReason]s, you should use
      * [isAwake].
      */
     val detailedWakefulness: StateFlow<WakefulnessModel> = repository.wakefulness
 
     /**
+     * SharedFlow that emits all* wakefulness events in order. This should only be used by
+     * collectors that absolutely need to receive all events - if you just need to know if we're
+     * currently awake/asleep, collect from the [detailedWakefulness] StateFlow instead.
+     * * This flow has a buffer size of 4, ensuring that one each of the wakefulness event
+     *   enumeration will eventually be received (STARTED/FINISHED_WAKING_UP ->
+     *   STARTED/FINISHED_GOING_TO_SLEEP, or the opposite order).
+     */
+    val detailedWakefulnessEvents: SharedFlow<WakefulnessModel> = repository.wakefulnessEvents
+
+    /**
      * Whether we're awake (screen is on and responding to user touch) or asleep (screen is off, or
      * on AOD).
+     *
+     * Note: This is derived from a StateFlow. You are not guaranteed to receive each individual
+     * change to wakefulness (for example, if the device very quickly goes to sleep and then wakes
+     * back up, isAwake may simply remain true the entire time). If you need the intermediate events
+     * collect from [detailedWakefulnessEvents].
      */
     val isAwake =
         repository.wakefulness
