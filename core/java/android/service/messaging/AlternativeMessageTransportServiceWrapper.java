@@ -60,7 +60,7 @@ import java.util.function.Consumer;
  * @hide
  */
 // TODO(b/474304887): Make this class thread-safe
-public final class AlternativeMessageTransportServiceWrapper implements AutoCloseable {
+public class AlternativeMessageTransportServiceWrapper implements AutoCloseable {
     private static final String TAG = "AMTSWrapper";
     private static final int SERVICE_BIND_TIMEOUT = 10; // Seconds
 
