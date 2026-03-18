@@ -110,28 +110,12 @@ class DreamOverlayContainerViewModelTest : SysuiTestCase() {
     }
 
     @Test
-    fun multipleDreams_canSwitch() =
-        kosmos.runTest {
-            setDreamPlaylist(TEST_DREAM_1, TEST_DREAM_2, activeIndex = 0)
-
-            assertThat(underTest.canSwitchDreams).isTrue()
-        }
-
-    @Test
-    fun singleDream_cannotSwitch() =
-        kosmos.runTest {
-            setDreamPlaylist(TEST_DREAM_1, activeIndex = 0)
-
-            assertThat(underTest.canSwitchDreams).isFalse()
-        }
-
-    @Test
-    fun showDialog_failsIfSingleDream() =
+    fun showDialog_succeedsIfSingleDream() =
         kosmos.runTest {
             setDreamPlaylist(TEST_DREAM_2, activeIndex = 0)
 
-            assertThat(underTest.canSwitchDreams).isFalse()
-            assertThat(underTest.showDialog()).isFalse()
+            assertThat(underTest.showDialog()).isTrue()
+            assertThat(underTest.dialogShowing).isTrue()
         }
 
     @Test
@@ -139,7 +123,6 @@ class DreamOverlayContainerViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             setDreamPlaylist(TEST_DREAM_1, TEST_DREAM_2, activeIndex = 0)
 
-            assertThat(underTest.canSwitchDreams).isTrue()
             assertThat(underTest.showDialog()).isTrue()
             assertThat(underTest.dialogShowing).isTrue()
         }
@@ -158,11 +141,15 @@ class DreamOverlayContainerViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun accessibilityAction_nullIfSingleDream() =
+    fun accessibilityAction_nonNullIfSingleDream() =
         kosmos.runTest {
             setDreamPlaylist(TEST_DREAM_2, activeIndex = 0)
 
-            assertThat(underTest.dreamSwitcherAction).isNull()
+            assertThat(underTest.dreamSwitcherAction).isNotNull()
+            assertThat(underTest.dialogShowing).isFalse()
+
+            underTest.dreamSwitcherAction?.action?.invoke()
+            assertThat(underTest.dialogShowing).isTrue()
         }
 
     @Test
