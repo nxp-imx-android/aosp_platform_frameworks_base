@@ -80,6 +80,7 @@ import com.android.compose.animation.Easings
 import com.android.compose.grid.VerticalGrid
 import com.android.compose.modifiers.thenIf
 import com.android.compose.theme.LocalAndroidColorScheme
+import com.android.systemui.bouncer.shared.constants.PinBouncerConstants
 import com.android.systemui.bouncer.ui.viewmodel.ActionButtonAppearance
 import com.android.systemui.bouncer.ui.viewmodel.PinBouncerViewModel
 import com.android.systemui.common.shared.model.ContentDescription
@@ -238,7 +239,19 @@ fun DigitButton(
     isAnimationEnabled: Boolean,
     backgroundColor: Color = LocalAndroidColorScheme.current.surfaceEffect1,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val textScaleX by
+        animateFloatAsState(
+            targetValue =
+                if (isPressed) {
+                    PinBouncerConstants.Animation.pressedTextScaleX
+                } else {
+                    PinBouncerConstants.Animation.normalTextScaleX
+                }
+        )
     PinPadButton(
+        interactionSource = interactionSource,
         onClicked = { onClicked(digit) },
         isEnabled = isInputEnabled,
         backgroundColor = backgroundColor,
@@ -256,6 +269,7 @@ fun DigitButton(
             text = digit.toString(),
             style = MaterialTheme.typography.labelSmallEmphasized.merge(fontSize = 32.sp),
             color = { contentColor() },
+            modifier = Modifier.graphicsLayer { scaleX = textScaleX },
         )
     }
 }
@@ -314,13 +328,13 @@ private fun PinPadButton(
     foregroundColor: Color,
     isAnimationEnabled: Boolean,
     modifier: Modifier = Modifier,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     onPointerDown: () -> Unit,
     elementId: String? = null,
     onLongPressed: (() -> Unit)? = null,
     onLongClickLabel: String? = null,
     content: @Composable (contentColor: () -> Color) -> Unit,
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val indication = LocalIndication.current.takeUnless { isPressed }
     val view = LocalView.current
