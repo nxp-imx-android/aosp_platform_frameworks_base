@@ -23,6 +23,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.flags.Flags as ViewFlags
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -275,11 +276,6 @@ fun StatusBarRoot(
                         appHandlesViewModel,
                     )
 
-                // Make sure the legacy AndroidView primary chip is hidden.
-                phoneStatusBarView
-                    .requireViewById<View>(R.id.ongoing_activity_chip_primary)
-                    .visibility = View.GONE
-
                 // For notifications, first inflate the [NotificationIconContainer]
                 val notificationIconArea =
                     phoneStatusBarView.requireViewById<ViewGroup>(R.id.notification_icon_area)
@@ -522,14 +518,25 @@ private fun addStartSideComposable(
             }
         }
 
-    // Add the composable container for ongoingActivityChips before the
-    // notification_icon_area to maintain the same ordering for ongoing activity
-    // chips in the status bar layout.
-    val notificationIconAreaIndex =
-        startSideExceptHeadsUp.indexOfChild(
-            startSideExceptHeadsUp.findViewById(R.id.notification_icon_area)
-        )
-    startSideExceptHeadsUp.addView(composeView, notificationIconAreaIndex)
+    if (!Flags.statusBarChipVisibilityJankFix()) {
+        // Add the composable container for ongoingActivityChips before the
+        // notification_icon_area to maintain the same ordering for ongoing activity
+        // chips in the status bar layout.
+        val notificationIconAreaIndex =
+            startSideExceptHeadsUp.indexOfChild(
+                startSideExceptHeadsUp.findViewById(R.id.start_side_notif_and_chip_container)
+            )
+        startSideExceptHeadsUp.addView(composeView, notificationIconAreaIndex)
+    } else {
+        // notif_and_chip_container is a FrameLayout so the chips and notif icon container views
+        // don't interfere with each other's layout bounds. They are mutually exclusive per the
+        // view model
+        val startSideNotifAndChipsView =
+            phoneStatusBarView.requireViewById<FrameLayout>(
+                R.id.start_side_notif_and_chip_container
+            )
+        startSideNotifAndChipsView.addView(composeView, 0)
+    }
 }
 
 @VisibleForTesting
