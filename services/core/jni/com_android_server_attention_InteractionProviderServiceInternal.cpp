@@ -39,7 +39,6 @@ static struct {
 static struct {
     jclass clazz;
     jmethodID constructor;
-    jfieldID mNativePtr;
 } gNativeInteractionProviderClassInfo;
 
 static struct {
@@ -115,10 +114,9 @@ bool NativeInteractionProviderServiceInternal::unregisterInteractionProvider(
     return unregistered;
 }
 
-static jobject getSourceInteractions(JNIEnv* env, jobject thiz) {
+static jobject getSourceInteractions(JNIEnv* env, jobject thiz, jlong nativePtr) {
     attention::InteractionProvider* interactionProvider =
-            reinterpret_cast<attention::InteractionProvider*>(
-                    env->GetLongField(thiz, gNativeInteractionProviderClassInfo.mNativePtr));
+            reinterpret_cast<attention::InteractionProvider*>(nativePtr);
 
     const auto interactions = interactionProvider->getSourceInteractions();
 
@@ -140,12 +138,11 @@ static jobject getSourceInteractions(JNIEnv* env, jobject thiz) {
     return jInteractions;
 }
 
-static void requestWakeupCallback(JNIEnv* env, jobject thiz, jobject jCallback) {
+static void requestWakeupCallback(JNIEnv* env, jobject thiz, jlong nativePtr, jobject jCallback) {
     LOG_ALWAYS_FATAL_IF(jCallback == nullptr, "requestWakeupCallback: callback must not be null");
 
     attention::InteractionProvider* interactionProvider =
-            reinterpret_cast<attention::InteractionProvider*>(
-                    env->GetLongField(thiz, gNativeInteractionProviderClassInfo.mNativePtr));
+            reinterpret_cast<attention::InteractionProvider*>(nativePtr);
 
     jobject globalCallback = env->NewGlobalRef(jCallback);
     interactionProvider->requestWakeupCallback([globalCallback]() {
@@ -158,8 +155,8 @@ static void requestWakeupCallback(JNIEnv* env, jobject thiz, jobject jCallback) 
 
 static const JNINativeMethod gNativeInteractionProviderMethods[] = {
         /* name, signature, funcPtr */
-        {"getSourceInteractions", "()Ljava/util/List;", (void*)getSourceInteractions},
-        {"requestWakeupCallback", "(Lcom/android/server/attention/InteractionWakeupCallback;)V",
+        {"getSourceInteractions", "(J)Ljava/util/List;", (void*)getSourceInteractions},
+        {"requestWakeupCallback", "(JLcom/android/server/attention/InteractionWakeupCallback;)V",
          (void*)requestWakeupCallback},
 };
 
@@ -202,8 +199,6 @@ int register_com_android_server_attention_InteractionProviderServiceInternal(JNI
     gNativeInteractionProviderClassInfo.clazz = reinterpret_cast<jclass>(env->NewGlobalRef(clazz));
     gNativeInteractionProviderClassInfo.constructor =
             GetMethodIDOrDie(env, clazz, "<init>", "(J)V");
-    gNativeInteractionProviderClassInfo.mNativePtr =
-            GetFieldIDOrDie(env, gNativeInteractionProviderClassInfo.clazz, "mNativePtr", "J");
 
     // InteractionState
     clazz = FindClassOrDie(env, "android/attention/InteractionState");
