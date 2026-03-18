@@ -1341,7 +1341,6 @@ public final class ViewRootImpl implements ViewParent,
                     }
                     // Post to main thread
                     mHandler.post(() -> {
-                        Trace.instant(TRACE_TAG_VIEW, "mCornerRadiiCallback post to main thread");
                         CornerRadii newCornerRadii = new CornerRadii();
                         newCornerRadii.topLeft = cornerRadii[0];
                         newCornerRadii.topRight = cornerRadii[1];
@@ -1349,6 +1348,9 @@ public final class ViewRootImpl implements ViewParent,
                         newCornerRadii.bottomRight = cornerRadii[3];
                         mCornerRadii = newCornerRadii;
                         mCornerRadiiDirty = true;
+                        if (Trace.isTagEnabled(TRACE_TAG_VIEW)) {
+                            Trace.instant(TRACE_TAG_VIEW, "CornerRadii updated: " + mCornerRadii);
+                        }
                         invalidate();
                     });
                 }
@@ -5220,7 +5222,6 @@ public final class ViewRootImpl implements ViewParent,
                 || !mSurfaceControl.isValid()) {
             return;
         }
-        Trace.instant(TRACE_TAG_VIEW, "setClientDrawnCornerRadii: radii" + mCornerRadii);
         RectF bounds = threadedRenderer.setCornerRadius(mCornerRadii);
         if (mCornerRadiiDirty || !mLastSetClientDrawnRadiiBounds.equals(bounds)) {
             // Reset opacity if we are expecting clipping and surface was opaque before.
