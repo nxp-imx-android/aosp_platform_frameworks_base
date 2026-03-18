@@ -21,20 +21,18 @@ import android.testing.TestableLooper
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.TouchInjectionScope
-import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.assertIsNotDisplayed
-import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.swipe
 import androidx.compose.ui.test.swipeLeft
 import androidx.compose.ui.test.swipeRight
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.TestContentScope
 import com.android.compose.theme.PlatformTheme
+import com.android.systemui.Flags
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
@@ -45,7 +43,6 @@ import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.media.remedia.data.repository.fakeDismissibleMediaData
 import com.android.systemui.media.remedia.data.repository.setFakeCurrentMediaData
-import com.android.systemui.media.swipeDownFromTopCenter
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.notificationRulesParentViewModelFactory
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.scene.session.shared.SessionStorage
@@ -73,10 +70,10 @@ import org.junit.runner.RunWith
 @TestableLooper.RunWithLooper
 @EnableSceneContainer
 @DisableFlags(FLAG_DUAL_SHADE)
+// TODO(b/494578600) Remove DisableFlags once fixed
+@DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
 @SystemUiIntegrationTest
-/**
- * Tests for dismissing the Universal Media Object (UMO) by swiping it in the shade.
- */
+/** Tests for dismissing the Universal Media Object (UMO) by swiping it in the shade. */
 class DismissUmoTest : SysuiTestCase() {
     @get:Rule val composeTestRule = createComposeRule()
 
@@ -97,22 +94,21 @@ class DismissUmoTest : SysuiTestCase() {
             notificationStackScrollView = { kosmos.notificationScrollView },
             actionsViewModelFactory = kosmos.shadeUserActionsViewModelFactory,
             contentViewModelFactory = kosmos.shadeSceneContentViewModelFactory,
-            notificationsPlaceholderViewModelFactory = kosmos.notificationsPlaceholderViewModelFactory,
-            notificationRulesParentViewModelFactory = kosmos.notificationRulesParentViewModelFactory,
+            notificationsPlaceholderViewModelFactory =
+                kosmos.notificationsPlaceholderViewModelFactory,
+            notificationRulesParentViewModelFactory =
+                kosmos.notificationRulesParentViewModelFactory,
             jankMonitor = kosmos.interactionJankMonitor,
         )
 
-    private fun Kosmos.runTest(
-        body: suspend TestScope.() -> Unit,
-    ) = this.testScope.runTest { body() }
+    private fun Kosmos.runTest(body: suspend TestScope.() -> Unit) =
+        this.testScope.runTest { body() }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun dismissUmo_bySwipingLeftInShade() {
         dismissUmo_bySwiping(
-            swipeAction = {
-                swipeLeft(startX = right, endX = left, durationMillis = 200)
-            }
+            swipeAction = { swipeLeft(startX = right, endX = left, durationMillis = 200) }
         )
     }
 
@@ -120,15 +116,11 @@ class DismissUmoTest : SysuiTestCase() {
     @Test
     fun dismissUmo_bySwipingRightInShade() {
         dismissUmo_bySwiping(
-            swipeAction = {
-                swipeRight(startX = left, endX = right, durationMillis = 200)
-            }
+            swipeAction = { swipeRight(startX = left, endX = right, durationMillis = 200) }
         )
     }
 
-    private fun dismissUmo_bySwiping(
-        swipeAction: TouchInjectionScope.() -> Unit
-    ) =
+    private fun dismissUmo_bySwiping(swipeAction: TouchInjectionScope.() -> Unit) =
         kosmos.runTest {
             kosmos.usingMediaInComposeFragment = true
             kosmos.enableSingleShade()
@@ -159,7 +151,7 @@ class DismissUmoTest : SysuiTestCase() {
                 .onNodeWithContentDescription(EXPECTED_UMO_CONTENT_DESC, substring = true)
                 .assertExists()
 
-           // Step 4: Swipe the UMO to dismiss it.
+            // Step 4: Swipe the UMO to dismiss it.
             composeTestRule
                 .onNodeWithContentDescription(EXPECTED_UMO_CONTENT_DESC, substring = true)
                 .performTouchInput(swipeAction)

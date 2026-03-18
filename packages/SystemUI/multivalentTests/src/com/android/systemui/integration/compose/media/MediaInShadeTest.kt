@@ -74,6 +74,8 @@ import org.junit.runner.RunWith
 @TestableLooper.RunWithLooper
 @EnableSceneContainer
 @DisableFlags(FLAG_DUAL_SHADE)
+// TODO(b/494578600) Remove DisableFlags once fixed
+@DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
 @SystemUiIntegrationTest
 class MediaInShadeTest : SysuiTestCase() {
     @get:Rule val composeTestRule = createComposeRule()
@@ -129,7 +131,6 @@ class MediaInShadeTest : SysuiTestCase() {
                 .assertExists()
         }
 
-    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
     @Test
     fun umoInSplitShade() =
         kosmos.runTest {

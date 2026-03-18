@@ -68,6 +68,8 @@ import org.junit.runner.RunWith
 @TestableLooper.RunWithLooper
 @EnableSceneContainer
 @EnableFlags(Flags.FLAG_DUAL_SHADE)
+// TODO(b/494578600) Remove DisableFlags once fixed
+@DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
 @SystemUiIntegrationTest
 class MediaInQuickSettingsTest : SysuiTestCase() {
     @get:Rule val composeTestRule = createComposeRule()
@@ -111,7 +113,6 @@ class MediaInQuickSettingsTest : SysuiTestCase() {
         kosmos.setFakeCurrentMediaData(listOf(kosmos.fakeActiveMediaData))
     }
 
-    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
     @Test
     fun umoInQuickSettings() =
         kosmos.runTest {
@@ -139,7 +140,6 @@ class MediaInQuickSettingsTest : SysuiTestCase() {
                 .assertExists()
         }
 
-    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
     @Test
     fun umoInQuickSettingsOverlay() =
         kosmos.runTest {
