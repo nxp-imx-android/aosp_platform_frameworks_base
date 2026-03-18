@@ -2234,12 +2234,17 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
      */
     @InsetsType
     private int invokeControllableInsetsChangedListeners() {
+        if (mControllableInsetsChangedListeners.isEmpty()) {
+            return 0;
+        }
         mLastStartedAnimTypes = 0;
+        final ArrayList<WindowInsetsController.OnControllableInsetsChangedListener> listeners =
+                new ArrayList<>(mControllableInsetsChangedListeners);
+        final int size = listeners.size();
         @InsetsType
-        int types = calculateControllableTypes();
-        int size = mControllableInsetsChangedListeners.size();
+        final int types = calculateControllableTypes();
         for (int i = 0; i < size; i++) {
-            mControllableInsetsChangedListeners.get(i).onControllableInsetsChanged(this, types);
+            listeners.get(i).onControllableInsetsChanged(this, types);
         }
         return mLastStartedAnimTypes;
     }
