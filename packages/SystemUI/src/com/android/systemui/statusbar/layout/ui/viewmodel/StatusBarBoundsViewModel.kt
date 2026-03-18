@@ -20,8 +20,7 @@ import android.graphics.Rect
 import android.view.View
 import androidx.compose.runtime.getValue
 import com.android.systemui.clock.ClockModernization
-import com.android.systemui.lifecycle.ExclusiveActivatable
-import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.util.boundsOnScreen
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
@@ -42,8 +41,7 @@ class StatusBarBoundsViewModel
 constructor(
     @Assisted private val startSideContainerView: View,
     @Assisted private val clockView: Clock,
-) : ExclusiveActivatable() {
-    private val hydrator = Hydrator(traceName = "StatusBarBoundsViewModel.hydrator")
+) : HydratedActivatable() {
 
     private val _startSideContainerBounds: Flow<Rect> = conflatedCallbackFlow {
         val layoutListener =
@@ -59,10 +57,9 @@ constructor(
      * available start-side space. This is a hydrated value.
      */
     val startSideContainerBounds: Rect by
-        hydrator.hydratedStateOf(
+        _startSideContainerBounds.hydratedStateOf(
             traceName = "StatusBar.startSideContainerBounds",
             initialValue = Rect(),
-            source = _startSideContainerBounds,
         )
 
     private val _dateBounds = MutableStateFlow(Rect())
@@ -70,11 +67,7 @@ constructor(
     /** The on-screen bounds of the status bar date. This is a hydrated value. */
     // TODO(b/390204943): Re-implement this in Compose once the Clock is a Composable.
     val dateBounds: Rect by
-        hydrator.hydratedStateOf(
-            traceName = "StatusBar.dateBounds",
-            initialValue = Rect(),
-            source = _dateBounds,
-        )
+        _dateBounds.hydratedStateOf(traceName = "StatusBar.dateBounds", initialValue = Rect())
 
     /**
      * The on-screen bounds of the clock implemented in compose (used when the clock modernization
@@ -94,20 +87,12 @@ constructor(
     /** The on-screen bounds of the status bar clock. This is a hydrated value. */
     // TODO(b/390204943): Re-implement this in Compose once the Clock is a Composable.
     val clockBounds: Rect by
-        hydrator.hydratedStateOf(
-            traceName = "StatusBar.clockBounds",
-            initialValue = Rect(),
-            source =
-                if (ClockModernization.isEnabled) {
-                    _composeClockBounds
-                } else {
-                    _clockBounds
-                },
-        )
-
-    override suspend fun onActivated(): Nothing {
-        hydrator.activate()
-    }
+        if (ClockModernization.isEnabled) {
+                _composeClockBounds
+            } else {
+                _clockBounds
+            }
+            .hydratedStateOf(traceName = "StatusBar.clockBounds", initialValue = Rect())
 
     fun updateDateBounds(bounds: Rect) {
         _dateBounds.value = bounds
