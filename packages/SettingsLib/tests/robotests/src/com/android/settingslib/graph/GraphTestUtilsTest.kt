@@ -269,6 +269,20 @@ class GraphTestUtilsTest {
     }
 
     @Test
+    fun createPersistentPreference_withDefaultValue_returnsDefaultValue() {
+        val persistentConfig = GraphTestUtils.PersistentPreferenceConfig(
+            preferenceConfig = GraphTestUtils.PreferenceConfig(
+                key = "test_key",
+                purpose = R.string.preference_purpose
+            ),
+            defaultValue = true,
+        )
+        val preference = GraphTestUtils.createPersistentPreference<Boolean>(persistentConfig)
+
+        assertThat((preference as PersistentPreference<Boolean>).storage(context).getBoolean("test_key")).isEqualTo(true)
+    }
+
+    @Test
     fun createPersistentPreference_WithThrowsError_throwsErrorWhenConfigured() {
         val preference = GraphTestUtils.createPersistentPreference<Boolean>(
             GraphTestUtils.PersistentPreferenceConfig(
