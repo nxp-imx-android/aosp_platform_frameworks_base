@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,37 +14,24 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
+package com.android.systemui.statusbar.quickactions.screenrecord.ui.viewmodel
 
 import android.media.projection.StopReason
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.common.ScreenCaptureUiScope
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
-import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
-import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus
+import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupViewModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.map
 
-class LargeScreenStopRecordingPopupViewModel
+/** ViewModel used to display screen recording popup in the status bar. */
+class LargeScreenStopRecordingPopupViewModel2
 @AssistedInject
 constructor(
     private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
-    private val drawableLoaderViewModel: DrawableLoaderViewModel,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
-) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
-
-    val isShowingUi: Boolean by
-        screenRecordingServiceInteractor.status
-            .map { it.isRecording }
-            .hydratedStateOf(
-                traceName = "LargeScreenStopRecordingPopupViewModel#isRecording",
-                initialValue = screenRecordingServiceInteractor.status.value.isRecording,
-            )
+) : StatusBarPopupViewModel {
 
     fun dismiss() {
         screenCaptureUiInteractor.hide(ScreenCaptureType.RECORD)
@@ -57,10 +44,7 @@ constructor(
 
     @AssistedFactory
     @ScreenCaptureUiScope
-    interface Factory {
-        fun create(): LargeScreenStopRecordingPopupViewModel
+    interface Factory : StatusBarPopupViewModel.Factory.ScreenRecording {
+        override fun create(): LargeScreenStopRecordingPopupViewModel2
     }
 }
-
-private val ScreenRecordingStatus.isRecording
-    get() = this is ScreenRecordingStatus.Started

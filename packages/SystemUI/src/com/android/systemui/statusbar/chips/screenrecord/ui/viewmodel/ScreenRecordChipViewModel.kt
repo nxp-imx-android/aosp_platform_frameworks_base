@@ -78,75 +78,13 @@ constructor(
     private val instanceId = uiEventLogger.createNewInstanceId()
 
     /** A direct mapping from [ScreenRecordChipModel] to [OngoingActivityChipModel]. */
-    private val simpleChip =
+    private val simpleChip: StateFlow<OngoingActivityChipModel> =
         interactor.screenRecordState
             .map { state ->
                 when (state) {
                     is ScreenRecordChipModel.DoingNothing -> OngoingActivityChipModel.Inactive()
-                    is ScreenRecordChipModel.Starting -> {
-                        OngoingActivityChipModel.Active(
-                            key = KEY,
-                            notificationKey = null, // Not tied to a notification
-                            isImportantForPrivacy = true,
-                            content =
-                                OngoingActivityChipModel.Content.Countdown(
-                                    secondsUntilStarted =
-                                        state.millisUntilStarted.toCountdownSeconds()
-                                ),
-                            colors = ColorsModel.Red,
-                            instanceId = instanceId,
-                            icon = null,
-                            clickBehavior = OngoingActivityChipModel.ClickBehavior.None,
-                        )
-                    }
-                    is ScreenRecordChipModel.Recording -> {
-                        OngoingActivityChipModel.Active(
-                            key = KEY,
-                            notificationKey = null, // Not tied to a notification
-                            isImportantForPrivacy = true,
-                            icon =
-                                OngoingActivityChipModel.ChipIcon.SingleColorIcon(
-                                    Icon.Resource(
-                                        ICON,
-                                        ContentDescription.Resource(
-                                            R.string.screenrecord_ongoing_screen_only
-                                        ),
-                                    )
-                                ),
-                            content =
-                                OngoingActivityChipModel.Content.Timer(
-                                    value =
-                                        Chronometer.Running(
-                                            EventTime.ElapsedRealtime(systemClock.elapsedRealtime())
-                                        ),
-                                    timeSource = systemClock,
-                                ),
-                            colors = ColorsModel.Red,
-                            clickBehavior =
-                                OngoingActivityChipModel.ClickBehavior.ExpandAction(
-                                    if (
-                                        screenCaptureRecordFeaturesInteractor
-                                            .shouldShowNewRecordingToolbar
-                                    ) {
-                                        { showScreenRecordingToolbar() }
-                                    } else {
-                                        createDialogLaunchOnClickCallback(
-                                            dialogDelegateCreator = { context ->
-                                                createDelegate(context, state.recordedTask)
-                                            },
-                                            dialogTransitionAnimator = dialogTransitionAnimator,
-                                            DIALOG_CUJ,
-                                            key = KEY,
-                                            instanceId = instanceId,
-                                            uiEventLogger = uiEventLogger,
-                                            logger = logger,
-                                            tag = TAG,
-                                        )
-                                    }
-                                ),
-                            instanceId = instanceId,
-                        )
-                    }
+                    is ScreenRecordChipModel.Starting -> state.toOngoingActivityChipModel()
+                    is ScreenRecordChipModel.Recording -> state.toOngoingActivityChipModel()
                 }
             }
             // See b/347726238 for [SharingStarted.Lazily] reasoning.
@@ -212,6 +150,68 @@ constructor(
             /* dismissShade = */ true,
             /* afterKeyguardGone= */ true,
             /* deferred= */ false,
+        )
+    }
+
+    private fun ScreenRecordChipModel.Starting.toOngoingActivityChipModel():
+        OngoingActivityChipModel.Active {
+        return OngoingActivityChipModel.Active(
+            key = KEY,
+            notificationKey = null, // Not tied to a notification
+            isImportantForPrivacy = true,
+            content =
+                OngoingActivityChipModel.Content.Countdown(
+                    secondsUntilStarted = millisUntilStarted.toCountdownSeconds()
+                ),
+            colors = ColorsModel.Red,
+            instanceId = instanceId,
+            icon = null,
+            clickBehavior = OngoingActivityChipModel.ClickBehavior.None,
+        )
+    }
+
+    private fun ScreenRecordChipModel.Recording.toOngoingActivityChipModel():
+        OngoingActivityChipModel.Active {
+        return OngoingActivityChipModel.Active(
+            key = KEY,
+            notificationKey = null, // Not tied to a notification
+            isImportantForPrivacy = true,
+            icon =
+                OngoingActivityChipModel.ChipIcon.SingleColorIcon(
+                    Icon.Resource(
+                        ICON,
+                        ContentDescription.Resource(R.string.screenrecord_ongoing_screen_only),
+                    )
+                ),
+            content =
+                OngoingActivityChipModel.Content.Timer(
+                    value =
+                        Chronometer.Running(
+                            EventTime.ElapsedRealtime(systemClock.elapsedRealtime())
+                        ),
+                    timeSource = systemClock,
+                ),
+            colors = ColorsModel.Red,
+            clickBehavior =
+                OngoingActivityChipModel.ClickBehavior.ExpandAction(
+                    if (screenCaptureRecordFeaturesInteractor.shouldShowNewRecordingToolbar) {
+                        { showScreenRecordingToolbar() }
+                    } else {
+                        createDialogLaunchOnClickCallback(
+                            dialogDelegateCreator = { context ->
+                                createDelegate(context, recordedTask)
+                            },
+                            dialogTransitionAnimator = dialogTransitionAnimator,
+                            DIALOG_CUJ,
+                            key = KEY,
+                            instanceId = instanceId,
+                            uiEventLogger = uiEventLogger,
+                            logger = logger,
+                            tag = TAG,
+                        )
+                    }
+                ),
+            instanceId = instanceId,
         )
     }
 

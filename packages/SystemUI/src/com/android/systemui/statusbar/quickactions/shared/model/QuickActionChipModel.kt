@@ -19,8 +19,10 @@ package com.android.systemui.statusbar.quickactions.shared.model
 import android.content.Context
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.statusbar.chips.ui.model.Chronometer
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupViewModel
 import com.android.systemui.statusbar.quickactions.ui.compose.ChipColors
+import com.android.systemui.util.time.SystemClock
 
 /**
  * Ids used to track different types of popup chips. Will be used to ensure only one chip is
@@ -36,6 +38,8 @@ sealed class QuickActionChipId(val value: String) {
     data object AssistantIcon : QuickActionChipId("AssistantIcon")
 
     data object ImeIndicator : QuickActionChipId("ImeIndicator")
+
+    data object ScreenRecording : QuickActionChipId("ScreenRecording")
 }
 
 /**
@@ -54,6 +58,8 @@ sealed class ChipContent {
     data class Text(val text: String) : ChipContent()
 
     data class IconOnly(val icon: Icon) : ChipContent()
+
+    data class Timer(val chronometer: Chronometer, val timeSource: SystemClock) : ChipContent()
 }
 
 /** Model for individual status bar quick action chips. */
