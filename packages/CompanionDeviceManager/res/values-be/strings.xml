@@ -47,8 +47,7 @@
     <string name="summary_virtual_device" msgid="1062189396947962635">"Праграма \"<xliff:g id="APP_NAME">%2$s</xliff:g>\" атрымае наступныя дазволы:"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"прылада"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Гэта праграма зможа сінхранізаваць інфармацыю (напрыклад, імя таго, хто звоніць) паміж тэлефонам і выбранай прыладай"</string>
-    <!-- no translation found for summary_generic_with_remote_ai_capability (5053633566439056634) -->
-    <skip />
+    <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Праграма &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; зможа сінхранізаваць інфармацыю (напрыклад, даныя пра абанента) і выконваць разумныя дзеянні з прылады \"<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>\""</string>
     <string name="consent_yes" msgid="8344487259618762872">"Дазволіць"</string>
     <string name="consent_no" msgid="2640796915611404382">"Не дазваляць"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Скасаваць"</string>

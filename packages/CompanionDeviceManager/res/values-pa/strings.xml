@@ -47,8 +47,7 @@
     <string name="summary_virtual_device" msgid="1062189396947962635">"<xliff:g id="APP_NAME">%2$s</xliff:g> ਨੂੰ ਅੱਗੇ ਦਿੱਤੀਆਂ ਇਜਾਜ਼ਤਾਂ ਮਿਲ ਜਾਣਗੀਆਂ:"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"ਡੀਵਾਈਸ"</string>
     <string name="summary_generic" msgid="1761976003668044801">"ਇਹ ਐਪ ਤੁਹਾਡੇ ਫ਼ੋਨ ਅਤੇ ਚੁਣੇ ਗਏ ਡੀਵਾਈਸ ਵਿਚਕਾਰ ਕਾਲਰ ਦੇ ਨਾਮ ਵਰਗੀ ਜਾਣਕਾਰੀ ਨੂੰ ਸਿੰਕ ਕਰ ਸਕੇਗੀ"</string>
-    <!-- no translation found for summary_generic_with_remote_ai_capability (5053633566439056634) -->
-    <skip />
+    <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; ਨੂੰ ਤੁਹਾਡੇ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ਤੋਂ ਕਾਲਰ ਜਾਣਕਾਰੀ ਵਰਗੀ ਜਾਣਕਾਰੀ ਨੂੰ ਸਿੰਕ ਕਰਨ ਅਤੇ ਸਮਾਰਟ ਕਾਰਵਾਈਆਂ ਕਰਨ ਦੀ ਆਗਿਆ ਦਿਓ"</string>
     <string name="consent_yes" msgid="8344487259618762872">"ਆਗਿਆ ਦਿਓ"</string>
     <string name="consent_no" msgid="2640796915611404382">"ਆਗਿਆ ਨਾ ਦਿਓ"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"ਰੱਦ ਕਰੋ"</string>

@@ -47,8 +47,7 @@
     <string name="summary_virtual_device" msgid="1062189396947962635">"အောက်ပါခွင့်ပြုချက်များကို <xliff:g id="APP_NAME">%2$s</xliff:g> အား ပေးပါမည်-"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"စက်"</string>
     <string name="summary_generic" msgid="1761976003668044801">"ဤအက်ပ်သည် သင့်ဖုန်းနှင့် ရွေးထားသောစက်အကြား ခေါ်ဆိုသူ၏အမည်ကဲ့သို့ အချက်အလက်ကို စင့်ခ်လုပ်နိုင်ပါမည်"</string>
-    <!-- no translation found for summary_generic_with_remote_ai_capability (5053633566439056634) -->
-    <skip />
+    <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; အား ဖုန်းဆက်သူ အချက်အလက်ကဲ့သို့ အချက်အလက်များကို စင့်ခ်လုပ်ခွင့်ပြုပြီး သင့် <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> မှ စမတ်လုပ်ဆောင်ချက်များ လုပ်ဆောင်ခွင့်ပြုပါ"</string>
     <string name="consent_yes" msgid="8344487259618762872">"ခွင့်ပြုရန်"</string>
     <string name="consent_no" msgid="2640796915611404382">"ခွင့်မပြုပါ"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"မလုပ်တော့"</string>
