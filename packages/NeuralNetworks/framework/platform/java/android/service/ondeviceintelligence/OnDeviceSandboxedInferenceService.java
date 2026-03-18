@@ -226,6 +226,7 @@ public abstract class OnDeviceSandboxedInferenceService extends Service {
     /**
      * @hide
      */
+    // TODO:b/493564722 - Add regression test for binder thread pool exhaustion.
     @Nullable
     @Override
     public final IBinder onBind(@NonNull Intent intent) {
@@ -249,7 +250,8 @@ public abstract class OnDeviceSandboxedInferenceService extends Service {
                     ICancellationSignal transport = null;
                     if (cancellationSignalFuture != null) {
                         transport = CancellationSignal.createTransport();
-                        cancellationSignalFuture.complete(transport);
+                        final ICancellationSignal finalTransport = transport;
+                        mHandler.post(() -> cancellationSignalFuture.complete(finalTransport));
                     }
 
                     mHandler.executeOrSendMessage(
@@ -274,12 +276,16 @@ public abstract class OnDeviceSandboxedInferenceService extends Service {
                     ICancellationSignal transport = null;
                     if (cancellationSignalFuture != null) {
                         transport = CancellationSignal.createTransport();
-                        cancellationSignalFuture.complete(transport);
+                        final ICancellationSignal finalTransport = transport;
+                        mHandler.post(() -> cancellationSignalFuture.complete(finalTransport));
                     }
                     IProcessingSignal processingSignalTransport = null;
                     if (processingSignalFuture != null) {
                         processingSignalTransport = ProcessingSignal.createTransport();
-                        processingSignalFuture.complete(processingSignalTransport);
+                        final IProcessingSignal finalProcessingSignalTransport
+                            = processingSignalTransport;
+                        mHandler.post(() -> processingSignalFuture.complete(
+                                finalProcessingSignalTransport));
                     }
 
 
@@ -306,12 +312,16 @@ public abstract class OnDeviceSandboxedInferenceService extends Service {
                     ICancellationSignal transport = null;
                     if (cancellationSignalFuture != null) {
                         transport = CancellationSignal.createTransport();
-                        cancellationSignalFuture.complete(transport);
+                        final ICancellationSignal finalTransport = transport;
+                        mHandler.post(() -> cancellationSignalFuture.complete(finalTransport));
                     }
                     IProcessingSignal processingSignalTransport = null;
                     if (processingSignalFuture != null) {
                         processingSignalTransport = ProcessingSignal.createTransport();
-                        processingSignalFuture.complete(processingSignalTransport);
+                        final IProcessingSignal finalProcessingSignalTransport
+                            = processingSignalTransport;
+                        mHandler.post(() -> processingSignalFuture.complete(
+                                finalProcessingSignalTransport));
                     }
                     mHandler.executeOrSendMessage(
                             obtainMessage(
@@ -366,7 +376,9 @@ public abstract class OnDeviceSandboxedInferenceService extends Service {
                                         // Handled by CancellationSignal.fromTransport
                                     }
                                 };
-                        cancellationSignalFuture.complete(transport);
+                        final ICancellationSignal finalTransportForFuture = transport;
+                        mHandler.post(() ->
+                            cancellationSignalFuture.complete(finalTransportForFuture));
                     }
                     final ICancellationSignal finalTransport = transport;
                     mHandler.executeOrSendMessage(
@@ -401,7 +413,9 @@ public abstract class OnDeviceSandboxedInferenceService extends Service {
                                         // Handled by CancellationSignal.fromTransport
                                     }
                                 };
-                        cancellationSignalFuture.complete(transport);
+                        final ICancellationSignal finalTransportForFuture = transport;
+                        mHandler.post(() ->
+                            cancellationSignalFuture.complete(finalTransportForFuture));
                     }
                     final ICancellationSignal finalTransport = transport;
                     mHandler.executeOrSendMessage(
@@ -427,7 +441,8 @@ public abstract class OnDeviceSandboxedInferenceService extends Service {
                     ICancellationSignal transport = null;
                     if (cancellationSignalFuture != null) {
                         transport = CancellationSignal.createTransport();
-                        cancellationSignalFuture.complete(transport);
+                        final ICancellationSignal finalTransport = transport;
+                        mHandler.post(() -> cancellationSignalFuture.complete(finalTransport));
                     }
 
                     mHandler.executeOrSendMessage(
