@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -303,7 +304,12 @@ private fun LandscapeCredentialLayout(
     onContentViewMoreOptionsButtonPressed: () -> Unit,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().fillMaxHeight().padding(24.dp).widthIn(max = 800.dp),
+        modifier =
+            Modifier.fillMaxWidth()
+                .fillMaxHeight()
+                .navigationBarsPadding()
+                .padding(24.dp)
+                .widthIn(max = 800.dp),
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
