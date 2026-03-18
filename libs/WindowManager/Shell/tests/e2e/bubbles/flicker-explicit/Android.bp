@@ -236,6 +236,13 @@ test_module_config {
 }
 
 test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-ExpandBubbleViaRelaunchFromSplitDifferentAppTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.ExpandBubbleViaRelaunchFromSplitDifferentAppTest"],
+}
+
+test_module_config {
     name: "WMShellExplicitFlickerTestsBubbles-ExpandBubbleViaRelaunchInDesktopTest",
     base: "WMShellExplicitFlickerTestsBubbles",
     test_suites: ["device-tests"],
@@ -313,6 +320,13 @@ test_module_config {
 }
 
 test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-RelaunchBubbleToSameAppSplitScreenTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.RelaunchBubbleToSameAppSplitScreenTest"],
+}
+
+test_module_config {
     name: "WMShellExplicitFlickerTestsBubbles-RelaunchFullscreenToBubbleTest",
     base: "WMShellExplicitFlickerTestsBubbles",
     test_suites: ["device-tests"],
@@ -338,13 +352,6 @@ test_module_config {
     base: "WMShellExplicitFlickerTestsBubbles",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.bubbles.RelaunchSplitScreenToBubbleTrampolineTest"],
-}
-
-test_module_config {
-    name: "WMShellExplicitFlickerTestsBubbles-RelaunchBubbleIntoSplitScreenTest",
-    base: "WMShellExplicitFlickerTestsBubbles",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.flicker.bubbles.RelaunchBubbleIntoSplitScreenTest"],
 }
 
 test_module_config {

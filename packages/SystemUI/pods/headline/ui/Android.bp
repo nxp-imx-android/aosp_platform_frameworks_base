@@ -24,6 +24,8 @@ java_library {
     static_libs: ["androidx.compose.runtime_runtime"],
     libs: [
         "com.android.systemui.common.shared.model_api",
+        "com.android.systemui.statusbar.chips.ui_api",
+        "com.android.systemui.util.time_api",
         "PlatformComposeSceneTransitionLayout",
         "androidx.compose.ui_ui",
     ],
@@ -37,6 +39,8 @@ java_library {
         "com.android.systemui.common.ui.compose_api",
         "com.android.systemui.headline.ui_api",
         "com.android.systemui.lifecycle_api",
+        "com.android.systemui.statusbar.chips.ui_api",
+        "com.android.systemui.util.time_api",
         "PlatformComposeCore",
         "PlatformComposeSceneTransitionLayout",
         "androidx.compose.material3_material3",
@@ -62,6 +66,7 @@ android_library {
     static_libs: [
         "com.android.systemui.headline.ui_main",
         "com.android.systemui.headline.ui_api",
+        "SystemUI-res",
         "androidx.compose.material_material-icons-core",
         "androidx.compose.material3_material3",
         "androidx.compose.runtime_runtime",

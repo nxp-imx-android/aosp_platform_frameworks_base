@@ -23,6 +23,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.flags.Flags as ViewFlags
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -79,6 +80,7 @@ import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.headline.ui.compose.Headline
+import com.android.systemui.headline.ui.compose.drawWithHeadlineScrim
 import com.android.systemui.headline.ui.viewmodel.HeadlineViewModel
 import com.android.systemui.initOnBackPressedDispatcherOwner
 import com.android.systemui.lifecycle.WindowLifecycleState
@@ -94,7 +96,6 @@ import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChips
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.core.StatusBarEventForwardingModernization
 import com.android.systemui.statusbar.core.StatusBarForDesktop
-import com.android.systemui.statusbar.systemstatusicons.domain.interactor.SystemStatusIconBlocklistInteractor
 import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.layout.ui.viewmodel.AppHandlesViewModel
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.ConnectedDisplaysStatusBarNotificationIconViewStore
@@ -119,6 +120,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBar
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel.HomeStatusBarViewModelFactory
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
+import com.android.systemui.statusbar.systemstatusicons.domain.interactor.SystemStatusIconBlocklistInteractor
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIcons
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
 import com.android.systemui.statusbar.ui.viewmodel.StatusBarRegionSamplingViewModel
@@ -214,13 +216,19 @@ fun StatusBarRoot(
     val displayId = parent.context.displayId
     val statusBarViewModel =
         rememberViewModel("HomeStatusBar") { statusBarViewModelFactory.create() }
-    val iconViewStore: NotificationIconContainerViewBinder.IconViewStore? =
+    val iconViewStore: NotificationIconContainerViewBinder.IconViewStore =
         rememberViewModel("HomeStatusBar.IconViewStore[$displayId]") {
             iconViewStoreFactory.create(displayId)
         }
     val appHandlesViewModel =
         rememberViewModel("AppHandleBounds") {
             statusBarViewModel.appHandlesViewModelFactory.create(displayId)
+        }
+    val headlineViewModel =
+        if (StatusBarHeadline.isEnabled) {
+            rememberViewModel("HeadlineViewModel") { headlineViewModelFactory.create() }
+        } else {
+            null
         }
     var touchableExclusionRegionDisposableHandle: DisposableHandle? = null
 
@@ -267,11 +275,6 @@ fun StatusBarRoot(
                         phoneStatusBarView,
                         appHandlesViewModel,
                     )
-
-                // Make sure the legacy AndroidView primary chip is hidden.
-                phoneStatusBarView
-                    .requireViewById<View>(R.id.ongoing_activity_chip_primary)
-                    .visibility = View.GONE
 
                 // For notifications, first inflate the [NotificationIconContainer]
                 val notificationIconArea =
@@ -341,37 +344,41 @@ fun StatusBarRoot(
                 phoneStatusBarView
             },
             modifier =
-                modifier.thenIf(StatusBarEventForwardingModernization.isEnabled) {
-                    Modifier.pointerInput(Unit) {
-                            if (ViewFlags.scrollToTop()) {
-                                detectTapGesturesStrict(
-                                    onTap = { statusBarViewModel.onStatusBarTap(it.x) },
-                                    onLongPress = { statusBarViewModel.onStatusBarLongPressed() },
-                                )
-                            } else {
-                                detectLongPressGesture {
-                                    statusBarViewModel.onStatusBarLongPressed()
+                modifier
+                    .thenIf(StatusBarEventForwardingModernization.isEnabled) {
+                        Modifier.pointerInput(Unit) {
+                                if (ViewFlags.scrollToTop()) {
+                                    detectTapGesturesStrict(
+                                        onTap = { statusBarViewModel.onStatusBarTap(it.x) },
+                                        onLongPress = {
+                                            statusBarViewModel.onStatusBarLongPressed()
+                                        },
+                                    )
+                                } else {
+                                    detectLongPressGesture {
+                                        statusBarViewModel.onStatusBarLongPressed()
+                                    }
                                 }
                             }
-                        }
-                        .forwardDragAndSwipeToShadeRootView(shadeWindowRootView, touchSlop) {
-                            position,
-                            size ->
-                            // This call is needed to make sure the shade is preemptively moved to
-                            // the display that the user is currently interacting with.
-                            statusBarViewModel.onShadeExpansionIntent(position.x, size.width)
-                        }
-                },
+                            .forwardDragAndSwipeToShadeRootView(shadeWindowRootView, touchSlop) {
+                                position,
+                                size ->
+                                // This call is needed to make sure the shade is preemptively moved
+                                // to
+                                // the display that the user is currently interacting with.
+                                statusBarViewModel.onShadeExpansionIntent(position.x, size.width)
+                            }
+                    }
+                    .thenIf(headlineViewModel != null) {
+                        Modifier.drawWithHeadlineScrim(headlineViewModel!!)
+                    },
             onRelease = { touchableExclusionRegionDisposableHandle?.dispose() },
         )
 
-        if (StatusBarHeadline.isEnabled) {
+        if (StatusBarHeadline.isEnabled && headlineViewModel != null) {
             val lifecycle = LocalLifecycleOwner.current.lifecycle
             parent.initOnBackPressedDispatcherOwner(lifecycle, force = true)
-            headlineComposer.Content(
-                headlineViewModelFactory,
-                modifier = Modifier.align(Alignment.Center),
-            )
+            headlineComposer.Content(headlineViewModel, modifier = Modifier.align(Alignment.Center))
         }
     }
 }
@@ -511,14 +518,25 @@ private fun addStartSideComposable(
             }
         }
 
-    // Add the composable container for ongoingActivityChips before the
-    // notification_icon_area to maintain the same ordering for ongoing activity
-    // chips in the status bar layout.
-    val notificationIconAreaIndex =
-        startSideExceptHeadsUp.indexOfChild(
-            startSideExceptHeadsUp.findViewById(R.id.notification_icon_area)
-        )
-    startSideExceptHeadsUp.addView(composeView, notificationIconAreaIndex)
+    if (!Flags.statusBarChipVisibilityJankFix()) {
+        // Add the composable container for ongoingActivityChips before the
+        // notification_icon_area to maintain the same ordering for ongoing activity
+        // chips in the status bar layout.
+        val notificationIconAreaIndex =
+            startSideExceptHeadsUp.indexOfChild(
+                startSideExceptHeadsUp.findViewById(R.id.start_side_notif_and_chip_container)
+            )
+        startSideExceptHeadsUp.addView(composeView, notificationIconAreaIndex)
+    } else {
+        // notif_and_chip_container is a FrameLayout so the chips and notif icon container views
+        // don't interfere with each other's layout bounds. They are mutually exclusive per the
+        // view model
+        val startSideNotifAndChipsView =
+            phoneStatusBarView.requireViewById<FrameLayout>(
+                R.id.start_side_notif_and_chip_container
+            )
+        startSideNotifAndChipsView.addView(composeView, 0)
+    }
 }
 
 @VisibleForTesting

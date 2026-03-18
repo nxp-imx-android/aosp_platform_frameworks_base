@@ -23,8 +23,6 @@ import com.android.systemui.dreams.data.repository.DreamRepository
 import com.android.systemui.dreams.shared.model.DreamPlaylistModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 
 /**
  * The DreamInteractor provides a layer of business logic over the dream repository and is used to
@@ -37,14 +35,6 @@ class DreamInteractor @Inject constructor(private val repository: DreamRepositor
 
     /** Whether the dream switcher feature is supported and enabled. */
     val isDreamSwitcherEnabled: Boolean = repository.isDreamSwitcherEnabled
-
-    /** Emits whether the user can switch between dreams. */
-    val canSwitchDreams: Flow<Boolean> =
-        dreamState
-            .map { state ->
-                state.dreams.size > 1 && (state.nextDream ?: state.previousDream) != null
-            }
-            .distinctUntilChanged()
 
     /**
      * Sets the active dream.

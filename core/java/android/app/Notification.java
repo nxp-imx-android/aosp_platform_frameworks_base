@@ -8287,8 +8287,9 @@ public class Notification implements Parcelable
          */
         private void processSmallIconColor(Icon smallIcon, RemoteViews contentView,
                 StandardTemplateParams p) {
-            boolean colorable = !isLegacy() || getColorUtil().isGrayscaleIcon(mContext,
-                    smallIcon);
+            // Colorize any icon that is not either really ancient or an adaptive drawable.
+            boolean colorable = !isLegacy() && !ContrastColorUtil.isAdaptiveIconDrawableIcon(
+                    mContext, smallIcon);
             int color = getSmallIconColor(p);
             contentView.setInt(R.id.icon, "setBackgroundColor",
                     getBackgroundColor(p));

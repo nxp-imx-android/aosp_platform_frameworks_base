@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.server.appfunctions
+package com.android.server.appfunctions.observer
 
 import android.app.appfunctions.AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_METADATA_DB
 import android.app.appfunctions.AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_NAMESPACE
@@ -26,6 +26,8 @@ import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.CheckFlagsRule
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import com.android.internal.infra.AndroidFuture
+import com.android.server.appfunctions.MetadataSyncAdapter
+import com.android.server.appfunctions.reader.AppFunctionMetadataReader
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -49,8 +51,11 @@ class AppFunctionMetadataObserverCallback2Test {
 
     @Before
     fun setup() {
-        whenever(mockMetadataSyncAdapter.submitSyncRequest(
-                    /* shouldSetRuntimeMetadataSchemaUnconditionally= */ false))
+        whenever(
+                mockMetadataSyncAdapter.submitSyncRequest(
+                    /* shouldSetRuntimeMetadataSchemaUnconditionally= */ false
+                )
+            )
             .thenReturn(AndroidFuture.completedFuture(true))
     }
 

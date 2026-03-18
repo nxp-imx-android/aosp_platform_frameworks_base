@@ -93,6 +93,13 @@ interface IWallpaperManager {
             boolean getCropped);
 
     /**
+     * Returns a cropped version of the default wallpaper image.
+     *
+     * @hide
+     */
+    ParcelFileDescriptor getCroppedDefaultWallpaper(String callingPackage, int which, int displayId);
+
+    /**
      * For a given user and a list of display sizes, get a list of Rect representing the
      * area of the current wallpaper that is displayed for each display size.
      */

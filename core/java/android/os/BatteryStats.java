@@ -3405,6 +3405,26 @@ public abstract class BatteryStats {
     public abstract int getLearnedBatteryCapacity();
 
     /**
+     * @return The size of all files in PowerStatsStore, in bytes.
+     */
+    protected abstract long getPowerStatsStoreSize();
+
+    /**
+     * @return The size of the file batterystats.bin, in bytes.
+     */
+    protected abstract long getBatteryStatsFileSize();
+
+    /**
+     * @return The size of the file batterystats-checkin.bin, in bytes.
+     */
+    protected abstract long getBatteryStatsCheckinFileSize();
+
+    /**
+     * @return The size of the file batterystats-daily.xml, in bytes.
+     */
+    protected abstract long getBatteryStatsDailyFileSize();
+
+    /**
      * Returns best known estimate of the battery capacity in milli-amp-hours.
      */
     public int getBatteryCapacity() {
@@ -5700,6 +5720,17 @@ public abstract class BatteryStats {
         pw.println(getDischargeAmountScreenDozeSinceCharge());
         pw.println();
 
+        // Dump the file sizes of BatteryUsageStats
+        pw.print(prefix);
+        pw.print("  PowerStatsStoreSize: ");
+        printSizeValue(pw, getPowerStatsStoreSize());
+        pw.print(", BatteryStatsFileSize: ");
+        printSizeValue(pw, getBatteryStatsFileSize());
+        pw.print(", BatteryStatsCheckinFileSize: ");
+        printSizeValue(pw, getBatteryStatsCheckinFileSize());
+        pw.print(", BatteryStatsDailyFileSize: ");
+        printSizeValue(pw, getBatteryStatsDailyFileSize());
+        pw.println();
 
         BatteryUsageStats stats = dumpHelper.getBatteryUsageStats(this, true /* detailed */);
         stats.dump(pw, prefix);

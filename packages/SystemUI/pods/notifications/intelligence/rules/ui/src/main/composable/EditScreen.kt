@@ -213,6 +213,7 @@ private fun <T> SearchResults(
         item(key = "Search results") {
             Text(
                 stringResource(R.string.notification_rules_search_results),
+                color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.titleLargeEmphasized,
                 modifier = Modifier.fillMaxWidth().padding(start = 8.dp),
             )
@@ -301,6 +302,7 @@ private fun <T> Item(
             text = text(model),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
+            color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.height(24.dp).fillMaxWidth(0.8f).padding(horizontal = 8.dp),
         )

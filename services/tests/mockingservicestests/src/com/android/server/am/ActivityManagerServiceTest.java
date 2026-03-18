@@ -2624,6 +2624,41 @@ public class ActivityManagerServiceTest {
                 mAms.mProcessList.mAppZygotes.get(processName + "_zygote_native", appUid));
     }
 
+    @Test
+    @RequiresFlagsDisabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testisOutgoingTransactionsAuditable_flagDisabled() {
+        assertFalse(mAms.mProcessList.isOutgoingTransactionsAuditable(PCC_UID_1));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testisOutgoingTransactionsAuditable_flagEnabled_pccUid() {
+        assertTrue(mAms.mProcessList.isOutgoingTransactionsAuditable(PCC_UID_1));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testisOutgoingTransactionsAuditable_flagEnabled_pcsUid() {
+        when(mMockPccSandboxManagerInternal.isPrivateComputeServicesUid(REGULAR_UID))
+                .thenReturn(true);
+        assertTrue(mAms.mProcessList.isOutgoingTransactionsAuditable(REGULAR_UID));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testisOutgoingTransactionsAuditable_flagEnabled_regularUid() {
+        when(mMockPccSandboxManagerInternal.isPrivateComputeServicesUid(REGULAR_UID))
+                .thenReturn(false);
+        assertFalse(mAms.mProcessList.isOutgoingTransactionsAuditable(REGULAR_UID));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testisOutgoingTransactionsAuditable_flagEnabled_noManager() {
+        LocalServices.removeServiceForTest(PccSandboxManagerInternal.class);
+        assertFalse(mAms.mProcessList.isOutgoingTransactionsAuditable(REGULAR_UID));
+    }
+
     private static class TestHandler extends Handler {
         private static final long WAIT_FOR_MSG_TIMEOUT_MS = 4000; // 4 sec
         private static final long WAIT_FOR_MSG_INTERVAL_MS = 400; // 0.4 sec

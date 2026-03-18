@@ -238,10 +238,10 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         }
 
         /**
-         * @return {@code true} if the default synchronized insets animation is enabled for this
+         * @return {@code true} if the default synchronized insets animation is allowed for this
          *         host, {@code false} otherwise.
          */
-        default boolean usesSyncedInsetsAnimationByDefault() {
+        default boolean allowsAdditionalSyncedAnimation() {
             return false;
         }
 
@@ -2023,7 +2023,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         final boolean hasAnimationCallbacks = mHost.hasAnimationCallbacks();
         final boolean useInsetsAnimationThread =
                 (!hasAnimationCallbacks && (!com.android.window.flags.Flags.syncedInsetsAnimation()
-                        || !mHost.usesSyncedInsetsAnimationByDefault())) || skipsCallbacks;
+                        || !mHost.allowsAdditionalSyncedAnimation())) || skipsCallbacks;
 
         Handler handler = null;
         if (Flags.fixJankTrackerImeAnimationDelay() && useInsetsAnimationThread) {
@@ -2234,12 +2234,17 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
      */
     @InsetsType
     private int invokeControllableInsetsChangedListeners() {
+        if (mControllableInsetsChangedListeners.isEmpty()) {
+            return 0;
+        }
         mLastStartedAnimTypes = 0;
+        final ArrayList<WindowInsetsController.OnControllableInsetsChangedListener> listeners =
+                new ArrayList<>(mControllableInsetsChangedListeners);
+        final int size = listeners.size();
         @InsetsType
-        int types = calculateControllableTypes();
-        int size = mControllableInsetsChangedListeners.size();
+        final int types = calculateControllableTypes();
         for (int i = 0; i < size; i++) {
-            mControllableInsetsChangedListeners.get(i).onControllableInsetsChanged(this, types);
+            listeners.get(i).onControllableInsetsChanged(this, types);
         }
         return mLastStartedAnimTypes;
     }

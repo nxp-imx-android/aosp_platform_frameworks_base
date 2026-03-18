@@ -21,6 +21,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -44,7 +45,7 @@ fun ContactChoiceScreen(
     val contentResolver = LocalContext.current.contentResolver
 
     val initialSelection =
-        when (val contacts = viewModel.rule.contacts) {
+        when (val contacts = viewModel.rule.filter.contacts) {
             is RuleValue.Specified -> contacts.value.contacts
             is RuleValue.Ambiguous -> emptyList()
             null -> emptyList()
@@ -74,7 +75,7 @@ fun ContactIcon(model: ContactModel, size: Dp, loadBitmap: suspend (Uri, Context
         // TODO: b/478225883 - Use a better default placeholder, like the first letter of the
         // contact.
         placeholderContent = {
-            Box(modifier = Modifier.background(MaterialTheme.colorScheme.secondary))
+            Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.secondary))
         },
     )
 }

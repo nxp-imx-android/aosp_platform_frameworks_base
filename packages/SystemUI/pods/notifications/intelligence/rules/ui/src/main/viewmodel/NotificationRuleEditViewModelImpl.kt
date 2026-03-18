@@ -25,10 +25,12 @@ import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.ContactsInteractor
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.InstalledAppsInteractor
+import com.android.systemui.notifications.intelligence.rules.domain.interactor.NotificationRulesInteractor
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
 import com.android.systemui.notifications.intelligence.rules.shared.NotificationRulesLog
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
@@ -40,18 +42,26 @@ import com.android.systemui.notifications.intelligence.rules.shared.model.RuleVa
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 class NotificationRuleEditViewModelImpl
 @AssistedInject
 constructor(
     @Assisted startingRule: DraftRuleModel,
+    @Assisted private val onNavigateToCurrentRulesScreen: () -> Unit,
+    private val rulesInteractor: NotificationRulesInteractor,
     private val contactsInteractor: ContactsInteractor,
     private val installedAppsInteractor: InstalledAppsInteractor,
+    @Application private val applicationScope: CoroutineScope,
     @NotificationRulesLog logBuffer: LogBuffer,
 ) : NotificationRuleEditViewModel {
     private val logger = Logger(logBuffer, "EditViewModel")
 
     override var rule: DraftRuleModel by mutableStateOf(startingRule)
+
+    override var isErrorVisible: Boolean by mutableStateOf(false)
+        private set
 
     override fun buildRuleText(
         onEnterEditField: (RulesScreenViewState.EditField) -> Unit,
@@ -69,8 +79,8 @@ constructor(
     }
 
     override fun onAppsSaved(newApps: List<AppModel>, onExitEditField: () -> Unit) {
-        rule =
-            rule.copy(
+        val newFilter =
+            rule.filter.copy(
                 includedApps =
                     if (newApps.isNotEmpty()) {
                         RuleValue.Specified(IncludedAppsModel(newApps))
@@ -80,12 +90,13 @@ constructor(
                         null
                     }
             )
+        rule = rule.copyDraft(filter = newFilter)
         onExitEditField()
     }
 
     override fun onContactsSaved(newContacts: List<ContactModel>, onExitEditField: () -> Unit) {
-        rule =
-            rule.copy(
+        val newFilter =
+            rule.filter.copy(
                 contacts =
                     if (newContacts.isNotEmpty()) {
                         RuleValue.Specified(ContactsModel(newContacts))
@@ -95,6 +106,7 @@ constructor(
                         null
                     }
             )
+        rule = rule.copyDraft(filter = newFilter)
         onExitEditField()
     }
 
@@ -120,8 +132,27 @@ constructor(
         return installedAppsInteractor.fetchInstalledApps(context)
     }
 
+    override fun saveRule() {
+        // Use application scope so it's never cancelled
+        applicationScope.launch {
+            val wasSavedSuccessfully = rulesInteractor.saveRule(rule)
+            if (wasSavedSuccessfully) {
+                onNavigateToCurrentRulesScreen()
+            }
+            isErrorVisible = !wasSavedSuccessfully
+        }
+    }
+
+    override fun cleanUp() {
+        // Stop showing the error whenever the user leaves the page.
+        isErrorVisible = false
+    }
+
     @AssistedFactory
     interface Factory : NotificationRuleEditViewModel.Factory {
-        override fun create(rule: DraftRuleModel): NotificationRuleEditViewModelImpl
+        override fun create(
+            rule: DraftRuleModel,
+            onNavigateToCurrentRulesScreen: () -> Unit,
+        ): NotificationRuleEditViewModelImpl
     }
 }

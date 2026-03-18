@@ -36,6 +36,8 @@ import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.TestApi;
 import android.app.PropertyInvalidatedCache;
+import android.companion.virtual.VirtualDeviceManager;
+import android.companion.virtual.VirtualDeviceParams;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
 import android.service.dreams.Sandman;
@@ -1322,8 +1324,9 @@ public final class PowerManager {
     final Handler mHandler;
     final IThermalService mThermalService;
 
-    /** We lazily initialize it.*/
+    /** We lazily initialize them.*/
     private PowerExemptionManager mPowerExemptionManager;
+    private VirtualDeviceManager mVirtualDeviceManager;
 
     @GuardedBy("mThermalStatusListenerMap")
     private final ArrayMap<OnThermalStatusChangedListener, IThermalStatusListener>
@@ -3044,7 +3047,16 @@ public final class PowerManager {
      */
     public @ThermalStatus int getCurrentThermalStatus() {
         try {
-            return mThermalService.getCurrentThermalStatus();
+            if (!android.companion.virtualdevice.flags.Flags.deviceAwareThermalStatus()) {
+                return mThermalService.getCurrentThermalStatus();
+            }
+
+            int deviceId = mContext.getDeviceId();
+            if (getThermalPolicy(deviceId) != VirtualDeviceParams.DEVICE_POLICY_CUSTOM) {
+                return mThermalService.getCurrentThermalStatus();
+            } else {
+                return mThermalService.getCurrentThermalStatusForDevice(deviceId);
+            }
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -3146,7 +3158,19 @@ public final class PowerManager {
                 }
             };
             try {
-                if (mThermalService.registerThermalStatusListener(internalListener)) {
+                final boolean success;
+                if (!android.companion.virtualdevice.flags.Flags.deviceAwareThermalStatus()) {
+                    success = mThermalService.registerThermalStatusListener(internalListener);
+                } else {
+                    int deviceId = mContext.getDeviceId();
+                    if (getThermalPolicy(deviceId) != VirtualDeviceParams.DEVICE_POLICY_CUSTOM) {
+                        success = mThermalService.registerThermalStatusListener(internalListener);
+                    } else {
+                        success = mThermalService.registerThermalStatusListenerForDevice(
+                                mContext.getDeviceId(), internalListener);
+                    }
+                }
+                if (success) {
                     mThermalStatusListenerMap.put(listener, internalListener);
                 } else {
                     throw new RuntimeException("Thermal status listener failed to set");
@@ -3257,6 +3281,20 @@ public final class PowerManager {
         }
     }
 
+    @VirtualDeviceParams.DevicePolicy
+    private int getThermalPolicy(int deviceId) {
+        if (deviceId == Context.DEVICE_ID_DEFAULT) {
+            return VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
+        }
+        if (mVirtualDeviceManager == null) {
+            mVirtualDeviceManager = mContext.getSystemService(VirtualDeviceManager.class);
+        }
+        if (mVirtualDeviceManager == null) {
+            return VirtualDeviceParams.DEVICE_POLICY_INVALID;
+        }
+        return mVirtualDeviceManager.getDevicePolicy(
+                deviceId, VirtualDeviceParams.POLICY_TYPE_THERMAL);
+    }
 
     /**
      * Provides an estimate of how much thermal headroom the device currently has before hitting

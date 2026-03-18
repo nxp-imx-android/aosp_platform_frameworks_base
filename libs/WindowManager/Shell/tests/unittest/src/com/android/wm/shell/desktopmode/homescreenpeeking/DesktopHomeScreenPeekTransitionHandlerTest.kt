@@ -18,6 +18,7 @@ package com.android.wm.shell.desktopmode.homescreenpeeking
 
 import android.animation.AnimatorTestRule
 import android.app.ActivityManager.RunningTaskInfo
+import android.app.WindowConfiguration.ACTIVITY_TYPE_HOME
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.content.ComponentName
 import android.graphics.Rect
@@ -37,6 +38,7 @@ import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.data.DesktopRepository
+import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.transition.Transitions
 import java.util.function.Supplier
@@ -71,6 +73,8 @@ class DesktopHomeScreenPeekTransitionHandlerTest : ShellTestCase() {
     private val shellController = mock<ShellController>()
     private val userRepositories = mock<DesktopUserRepositories>()
     private val desktopRepository = mock<DesktopRepository>()
+    private val desktopWallpaperActivityTokenProvider =
+        mock<DesktopWallpaperActivityTokenProvider>()
 
     private lateinit var peekTransitionHandler: DesktopHomeScreenPeekTransitionHandler
 
@@ -86,6 +90,7 @@ class DesktopHomeScreenPeekTransitionHandlerTest : ShellTestCase() {
                 transactionSupplier,
                 shellController,
                 userRepositories,
+                desktopWallpaperActivityTokenProvider,
             )
     }
 
@@ -201,6 +206,98 @@ class DesktopHomeScreenPeekTransitionHandlerTest : ShellTestCase() {
         // non-desktop task was ignored
         verify(startTransaction, never()).setPosition(eq(nonDesktopLeash), any(), any())
         verify(finishTransaction, never()).setPosition(eq(nonDesktopLeash), any(), any())
+    }
+
+    @Test
+    fun startAnimation_peeking_animatesHomeAndWallpaper() {
+        val desktopTaskInfo = createDesktopTask(1)
+        val desktopChange =
+            createChange(desktopTaskInfo, Rect(0, 0, 100, 100), Rect(50, 0, 150, 100))
+        val homeTaskInfo =
+            TestRunningTaskInfoBuilder().setTaskId(2).setActivityType(ACTIVITY_TYPE_HOME).build()
+        val homeChange =
+            createChange(homeTaskInfo, Rect(0, 0, 1000, 1000), Rect(0, 0, 1000, 1000)).apply {
+                mode = TRANSIT_TO_FRONT
+            }
+        val wallpaperToken = mock<android.window.WindowContainerToken>()
+        whenever(desktopWallpaperActivityTokenProvider.getToken(any())).thenReturn(wallpaperToken)
+        val wallpaperTaskInfo =
+            TestRunningTaskInfoBuilder().setTaskId(3).setToken(wallpaperToken).build()
+        val wallpaperChange = createChange(wallpaperTaskInfo, Rect(), Rect())
+        val info =
+            TransitionInfoBuilder(TRANSIT_CHANGE)
+                .addChange(desktopChange)
+                .addChange(homeChange)
+                .addChange(wallpaperChange)
+                .build()
+        val finishCallback = mock<Transitions.TransitionFinishCallback>()
+        val startTransaction = mock<SurfaceControl.Transaction>()
+        val finishTransaction = mock<SurfaceControl.Transaction>()
+
+        val result =
+            peekTransitionHandler.startAnimation(
+                mock(),
+                info,
+                startTransaction,
+                finishTransaction,
+                finishCallback,
+            )
+
+        assertTrue(result)
+        // Assert start states
+        verify(startTransaction).setAlpha(eq(homeChange.leash), eq(0f))
+        verify(startTransaction).setAlpha(eq(wallpaperChange.leash), eq(1f))
+        mainExecutor.flushAll()
+        animatorTestRule.advanceTimeBy(TIME_MS)
+        // Assert finish states
+        verify(finishTransaction).setAlpha(eq(homeChange.leash), eq(1f))
+        verify(finishTransaction).setAlpha(eq(wallpaperChange.leash), eq(0f))
+        verify(finishCallback).onTransitionFinished(null)
+    }
+
+    @Test
+    fun startAnimation_unpeeking_animatesHomeAndWallpaper() {
+        val desktopTaskInfo = createDesktopTask(1)
+        val desktopChange =
+            createChange(desktopTaskInfo, Rect(50, 0, 150, 100), Rect(0, 0, 100, 100))
+        val homeTaskInfo =
+            TestRunningTaskInfoBuilder().setTaskId(2).setActivityType(ACTIVITY_TYPE_HOME).build()
+        val homeChange =
+            createChange(homeTaskInfo, Rect(0, 0, 1000, 1000), Rect(0, 0, 1000, 1000)).apply {
+                mode = android.view.WindowManager.TRANSIT_TO_BACK
+            }
+        val wallpaperToken = mock<android.window.WindowContainerToken>()
+        whenever(desktopWallpaperActivityTokenProvider.getToken(any())).thenReturn(wallpaperToken)
+        val wallpaperTaskInfo =
+            TestRunningTaskInfoBuilder().setTaskId(3).setToken(wallpaperToken).build()
+        val wallpaperChange = createChange(wallpaperTaskInfo, Rect(), Rect())
+        val info =
+            TransitionInfoBuilder(TRANSIT_CHANGE)
+                .addChange(desktopChange)
+                .addChange(homeChange)
+                .addChange(wallpaperChange)
+                .build()
+        val finishCallback = mock<Transitions.TransitionFinishCallback>()
+        val startTransaction = mock<SurfaceControl.Transaction>()
+        val finishTransaction = mock<SurfaceControl.Transaction>()
+
+        val result =
+            peekTransitionHandler.startAnimation(
+                mock(),
+                info,
+                startTransaction,
+                finishTransaction,
+                finishCallback,
+            )
+
+        assertTrue(result)
+        // Unpeeking: start states
+        verify(startTransaction).setAlpha(eq(wallpaperChange.leash), eq(0f))
+        mainExecutor.flushAll()
+        animatorTestRule.advanceTimeBy(TIME_MS)
+        // Assert finish states
+        verify(finishTransaction).setAlpha(eq(wallpaperChange.leash), eq(1f))
+        verify(finishCallback).onTransitionFinished(null)
     }
 
     private fun createDesktopTask(id: Int): RunningTaskInfo {

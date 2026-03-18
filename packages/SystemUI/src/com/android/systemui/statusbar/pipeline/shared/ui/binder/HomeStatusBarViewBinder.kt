@@ -71,13 +71,11 @@ class HomeStatusBarViewBinderImpl @Inject constructor() : HomeStatusBarViewBinde
         listener: StatusBarVisibilityChangeListener?,
     ) {
         // Set some top-level views to gone before we get started
-        val primaryChipView: View = view.requireViewById(R.id.ongoing_activity_chip_primary)
         val systemInfoView = view.requireViewById<View>(R.id.status_bar_end_side_content)
         val clockView = view.requireViewById<View>(R.id.clock)
         val notificationIconsArea = view.requireViewById<View>(R.id.notificationIcons)
 
         // GONE because this shouldn't take space in the layout
-        primaryChipView.hideInitially(state = View.GONE)
         systemInfoView.hideInitially()
         clockView.hideInitially()
         notificationIconsArea.hideInitially()

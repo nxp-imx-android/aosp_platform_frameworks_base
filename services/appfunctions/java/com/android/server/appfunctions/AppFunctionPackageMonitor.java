@@ -34,6 +34,7 @@ import android.util.Slog;
 import com.android.internal.content.PackageMonitor;
 import com.android.internal.os.BackgroundThread;
 import com.android.server.SystemService;
+import com.android.server.appfunctions.observer.AppFunctionMetadataObserver;
 
 import java.util.ArrayList;
 import java.util.List;

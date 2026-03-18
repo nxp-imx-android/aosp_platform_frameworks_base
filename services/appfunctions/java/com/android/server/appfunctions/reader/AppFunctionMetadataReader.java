@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.appfunctions;
+package com.android.server.appfunctions.reader;
 
 import static android.app.appfunctions.AppFunctionManager.APP_FUNCTION_STATE_DEFAULT;
 import static android.app.appfunctions.AppFunctionManager.APP_FUNCTION_STATE_ENABLED;
@@ -64,6 +64,10 @@ import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.infra.AndroidFuture;
+import com.android.server.appfunctions.FutureAppSearchSession;
+import com.android.server.appfunctions.FutureGlobalSearchSession;
+import com.android.server.appfunctions.FutureSearchResults;
+import com.android.server.appfunctions.ServiceConfig;
 import com.android.server.appfunctions.dynamic.MultiUserDynamicAppFunctionRegistry;
 
 import java.util.ArrayList;
@@ -78,7 +82,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 /** Manages app functions search requests. */
-final class AppFunctionMetadataReader {
+public final class AppFunctionMetadataReader {
     private static final String TAG = AppFunctionMetadataReader.class.getSimpleName();
 
     private static final SearchSpec RUNTIME_SEARCH_SPEC =
@@ -198,7 +202,7 @@ final class AppFunctionMetadataReader {
      * @param userId The target user id.
      * @return The detailed enabled state for the given app function.
      */
-    CompletableFuture<AppFunctionEnabledState> getAppFunctionEnabledState(
+    public CompletableFuture<AppFunctionEnabledState> getAppFunctionEnabledState(
             @NonNull FutureGlobalSearchSession futureGlobalSearchSession,
             @NonNull AppFunctionName targetAppFunction,
             int userId) {
@@ -346,7 +350,7 @@ final class AppFunctionMetadataReader {
 
     /** Gets a list of {@link AppFunctionState}. */
     @NonNull
-    AndroidFuture<List<AppFunctionState>> getAppFunctionStates(
+    public AndroidFuture<List<AppFunctionState>> getAppFunctionStates(
             @NonNull FutureGlobalSearchSession futureGlobalSearchSession,
             @NonNull Set<AppFunctionName> appFunctionNames,
             int userId) {
@@ -391,9 +395,10 @@ final class AppFunctionMetadataReader {
                         });
     }
 
+    /** Gets a list of {@link AppFunctionActivityState}. */
     @WorkerThread
     @NonNull
-    AndroidFuture<List<AppFunctionActivityState>> getAppFunctionActivityStates(
+    public AndroidFuture<List<AppFunctionActivityState>> getAppFunctionActivityStates(
             @NonNull List<AppFunctionActivityId> activityIds, int userId) {
         return AndroidFuture.completedFuture(
                 mMultiUserDynamicAppFunctionRegistry.getAppFunctionActivityStates(
@@ -477,7 +482,7 @@ final class AppFunctionMetadataReader {
      */
     @WorkerThread
     @NonNull
-    IAppFunctionSearchResults searchAppFunctions(
+    public IAppFunctionSearchResults searchAppFunctions(
             @NonNull FutureGlobalSearchSession futureGlobalSearchSession,
             @NonNull AppFunctionSearchSpec appFunctionSearchSpec,
             @NonNull Executor resultExecutor)
@@ -512,9 +517,9 @@ final class AppFunctionMetadataReader {
                 this, futureGlobalSearchSession, futureSearchResults, resultExecutor);
     }
 
-    /* Fetches the service class name for a given function. */
+    /** Fetches the service class name for a given function. */
     @NonNull
-    CompletableFuture<String> getAppFunctionServiceClassName(
+    public CompletableFuture<String> getAppFunctionServiceClassName(
             @NonNull FutureAppSearchSession futureAppSearchSession,
             @NonNull AppFunctionName targetAppFunction) {
         String qualifiedId = targetAppFunction.getQualifiedId();
@@ -604,7 +609,7 @@ final class AppFunctionMetadataReader {
      * Wraps the comprehensive enabled state of an app function resulting from both the static and
      * runtime metadata content.
      */
-    static class AppFunctionEnabledState {
+    public static class AppFunctionEnabledState {
         private final boolean mIsEnabledByDefault;
         private final boolean mIsEffectivelyEnabled;
 

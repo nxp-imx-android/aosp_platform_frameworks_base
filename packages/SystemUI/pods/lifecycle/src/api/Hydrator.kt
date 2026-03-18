@@ -41,7 +41,7 @@ import kotlinx.coroutines.flow.StateFlow
  * }
  * ```
  */
-public class Hydrator(
+class Hydrator(
     /**
      * A name for performance tracing purposes.
      *
@@ -65,12 +65,13 @@ public class Hydrator(
      * @param traceName Used for coroutine performance tracing purposes. Please try to use a label
      *   that's unique enough and easy enough to find in code search; this should help correlate
      *   performance findings with actual code. One recommendation: prefer whole string literals
-     *   instead of some complex concatenation or templating scheme.
+     *   instead of some complex concatenation or templating scheme. Use `null` to disable
+     *   performance tracing for this state.
      * @param source The upstream [StateFlow] to collect from; values emitted to it will be
      *   automatically set on the returned [State].
      */
     @StateFactoryMarker
-    public fun <T> hydratedStateOf(traceName: String, source: StateFlow<T>): State<T> {
+    fun <T> hydratedStateOf(traceName: String?, source: StateFlow<T>): State<T> {
         return hydratedStateOf(traceName = traceName, initialValue = source.value, source = source)
     }
 
@@ -92,7 +93,7 @@ public class Hydrator(
      *   set on the returned [State].
      */
     @StateFactoryMarker
-    public fun <T> hydratedStateOf(traceName: String?, initialValue: T, source: Flow<T>): State<T> {
+    fun <T> hydratedStateOf(traceName: String?, initialValue: T, source: Flow<T>): State<T> {
         check(!isActive) { "Cannot call hydratedStateOf after Hydrator is already active." }
 
         val mutableState = mutableStateOf(initialValue)
@@ -128,7 +129,7 @@ public class Hydrator(
         return mutableState
     }
 
-    override suspend fun onActivated(): Nothing = coroutineScope {
+    override suspend fun onActivated() = coroutineScope {
         traceCoroutine(traceName) {
             children.forEach { child ->
                 if (child.traceName != null) {
@@ -137,7 +138,6 @@ public class Hydrator(
                     launch { child.activatable.activate() }
                 }
             }
-            awaitCancellation()
         }
     }
 
@@ -154,7 +154,7 @@ public class Hydrator(
      * @param source The upstream [Flow] to collect from; values emitted to it will be automatically
      *   set on the returned [State].
      */
-    public fun <T> hydratedStateOf(initialValue: T, source: Flow<T>): StateDelegateProvider<T> {
+    fun <T> hydratedStateOf(initialValue: T, source: Flow<T>): StateDelegateProvider<T> {
         return StateDelegateProvider(initialValue, source)
     }
 
@@ -169,17 +169,17 @@ public class Hydrator(
      * @param source The upstream [Flow] to collect from; values emitted to it will be automatically
      *   set on the returned [State].
      */
-    public fun <T> hydratedStateOf(source: StateFlow<T>): StateDelegateProvider<T> {
+    fun <T> hydratedStateOf(source: StateFlow<T>): StateDelegateProvider<T> {
         return StateDelegateProvider(source.value, source)
     }
 
-    public inner class StateDelegateProvider<T>
+    inner class StateDelegateProvider<T>
     internal constructor(
         private val initialValue: T,
         private val sourceFlow: Flow<T>,
         private val explicitTraceName: String? = null,
     ) {
-        public operator fun provideDelegate(
+        operator fun provideDelegate(
             thisRef: Any?,
             property: KProperty<*>,
         ): ReadOnlyProperty<Any?, T> {
@@ -192,11 +192,7 @@ public class Hydrator(
                     source = sourceFlow,
                 )
 
-            return object : ReadOnlyProperty<Any?, T> {
-                override fun getValue(thisRef: Any?, property: KProperty<*>): T {
-                    return internalState.value
-                }
-            }
+            return ReadOnlyProperty { _, _ -> internalState.value }
         }
     }
 }

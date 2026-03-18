@@ -7846,7 +7846,7 @@
     <!-- Package name of the on-device intelligent processor for vendor specific
          features. Examples include the search functionality or the app
          predictor. -->
-    <string name="config_systemVendorIntelligence" translatable="false">com.android.personalcontext</string>
+    <string name="config_systemVendorIntelligence" translatable="false"></string>
 
     <!-- Whether the device supports Wi-Fi USD feature. -->
     <bool name="config_deviceSupportsWifiUsd">false</bool>
@@ -8028,6 +8028,9 @@
     <!-- The package name of the allowlist provider service -->
     <string name="config_allowlistProviderServicePackage" />
 
+    <!-- Whether PersonalContextManagerService is enabled on this device -->
+    <bool name="config_enablePersonalContextManagerService">false</bool>
+
     <!-- Packages allowed to publish hints to PersonalContextManagerService -->
     <string-array translatable="false" name="config_allowlistPersonalContextHintPublishing">
     </string-array>
@@ -8042,6 +8045,10 @@
 
     <!-- Packages allowed to publish insights to PersonalContextManagerService -->
     <string-array translatable="false" name="config_allowlistPersonalContextInsightReceiving">
+    </string-array>
+
+    <!-- Packages allowed to register a visualizer with the personal context service. -->
+    <string-array translatable="false" name="config_allowlistPersonalContextVisualizers">
     </string-array>
 
     <!-- Timeout for waiting on text classification suggestions from PersonalContextService (milliseconds).

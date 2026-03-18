@@ -10955,6 +10955,30 @@ public class BatteryStatsImpl extends BatteryStats {
         return mCharging;
     }
 
+    @Override
+    protected long getPowerStatsStoreSize() {
+        return mPowerStatsStore != null ? mPowerStatsStore.getStorageSize() : 0L;
+    }
+
+    @Override
+    protected long getBatteryStatsFileSize() {
+        return getAtomicFileSize(mStatsFile);
+    }
+
+    @Override
+    protected long getBatteryStatsCheckinFileSize() {
+        return getAtomicFileSize(mCheckinFile);
+    }
+
+    @Override
+    protected long getBatteryStatsDailyFileSize() {
+        return getAtomicFileSize(mDailyFile);
+    }
+
+    private static long getAtomicFileSize(@Nullable AtomicFile atomicFile) {
+        return atomicFile != null ? atomicFile.getBaseFile().length() : 0L;
+    }
+
     void initTimes(long uptimeUs, long realtimeUs) {
         mStartClockTimeMs = mClock.currentTimeMillis();
         mOnBatteryTimeBase.init(uptimeUs, realtimeUs);

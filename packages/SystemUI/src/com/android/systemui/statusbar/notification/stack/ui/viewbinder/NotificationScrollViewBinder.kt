@@ -144,8 +144,7 @@ constructor(
             launch {
                 viewModel.sidePaddingConfig.collectLatestTraced {
                     (baseSidePadding, alignToInnerQqsTiles) ->
-                    view.setBaseSidePadding(baseSidePadding)
-                    view.setAlignToInnerQqsTiles(alignToInnerQqsTiles)
+                    view.setSidePaddingConfig(baseSidePadding, alignToInnerQqsTiles)
                 }
             }
 

@@ -40,6 +40,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.telephony.SmsApplication;
 
 import java.util.LinkedHashMap;
@@ -58,7 +59,7 @@ import java.util.function.Consumer;
  * @hide
  */
 // TODO(b/474304887): Make this class thread-safe
-public final class MessageUpgradeWorker {
+public class MessageUpgradeWorker {
     private static final String TAG = MessageUpgradeWorker.class.getSimpleName();
     private static final String AUTHORITY_SMS = "sms";
     private static final String AUTHORITY_MMS = "mms";
@@ -95,7 +96,7 @@ public final class MessageUpgradeWorker {
     private boolean mCachedIsUpgradeSupported = false;
 
     /** @hide */
-    MessageUpgradeWorker(@NonNull Context context) {
+    public MessageUpgradeWorker(@NonNull Context context) {
         mContext = Objects.requireNonNull(context);
         mServiceWrapper = new AlternativeMessageTransportServiceWrapper(context, mScheduler);
         updateCachedDefaultSmsPackageData();
@@ -115,7 +116,8 @@ public final class MessageUpgradeWorker {
      * @param clientCallbackExecutor The executor to run the callback on.
      * @param clientCallback The callback to report the upgrade status.
      */
-    void upgradeMessage(
+    @VisibleForTesting
+    public void upgradeMessage(
             @NonNull Uri messageUri,
             @Nullable List<PendingIntent> sentIntents,
             @Nullable List<PendingIntent> deliveryIntents,
@@ -160,7 +162,19 @@ public final class MessageUpgradeWorker {
                 messageUri, smsAppPackage, clientCallbackExecutor, clientCallbackWrapper);
     }
 
-    boolean isMessageUpgradeSupportedForPackage(String callingPkg) {
+    /**
+     * Checks if the message upgrade feature is supported for a specific calling package.
+     *
+     * <p>A message upgrade is supported if the default SMS app has implemented the
+     * {@link android.service.messaging.AlternativeMessageTransportService} and the
+     * requesting package is not the default SMS app itself (to prevent self-upgrading).
+     *
+     * @param callingPkg The package name of the app requesting to send a message.
+     * @return {@code true} if the upgrade service is available and the calling package
+     *         is eligible for upgrade.
+     */
+    @VisibleForTesting
+    public boolean isMessageUpgradeSupportedForPackage(String callingPkg) {
         if (TextUtils.isEmpty(callingPkg)) {
             Log.e(TAG, "callingPkg is null or empty.");
             return false;
@@ -186,6 +200,7 @@ public final class MessageUpgradeWorker {
      * Clean up resources held by this worker instance. This should be called when the
      * corresponding user or profile is removed.
      */
+    @VisibleForTesting
     public void close() {
         Log.i(TAG, "Closing MessageUpgradeWorker for user " + mContext.getUserId());
         mContext.unregisterReceiver(mDefaultSmsAppChangedReceiver);
@@ -262,7 +277,8 @@ public final class MessageUpgradeWorker {
      * @param messageUri The URI of the updated SMS message.
      * @param values     The updated values of the SMS message.
      */
-    void dispatchSmsPendingIntentsIfUpgraded(Uri messageUri, ContentValues values) {
+    @VisibleForTesting
+    public void dispatchSmsPendingIntentsIfUpgraded(Uri messageUri, ContentValues values) {
         if (!isMessageUpgradeSupported()) return;
 
         long messageId = parseMessageId(messageUri);
@@ -323,7 +339,8 @@ public final class MessageUpgradeWorker {
      * @param messageUri The URI of the updated MMS message.
      * @param values     The updated values of the MMS message.
      */
-    void dispatchMmsPendingIntentsIfUpgraded(Uri messageUri, ContentValues values) {
+    @VisibleForTesting
+    public void dispatchMmsPendingIntentsIfUpgraded(Uri messageUri, ContentValues values) {
         if (!isMessageUpgradeSupported()) return;
 
         long messageId = parseMessageId(messageUri);

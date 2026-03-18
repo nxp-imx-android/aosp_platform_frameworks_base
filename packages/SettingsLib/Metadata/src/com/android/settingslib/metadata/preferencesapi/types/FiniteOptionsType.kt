@@ -22,7 +22,7 @@ import com.android.settingslib.metadata.preferencesapi.SafetyAnnotated
 /**
  * Specialized type that describes the subset of `ApiType`s which have a finite set of values.
  */
-interface FiniteOptionsType<InternalType, ExternalType> : ApiType<InternalType, ExternalType> {
+interface FiniteOptionsType<InternalType, ExternalType : Any> : ApiType<InternalType, ExternalType> {
 
     /**
      * Returns all the values a preference with this type could have, together with their
@@ -32,7 +32,7 @@ interface FiniteOptionsType<InternalType, ExternalType> : ApiType<InternalType, 
 }
 
 /** FiniteOptionsType for types which have the same internal and external type. */
-interface DirectFiniteOptionsType<ExternalType> : FiniteOptionsType<ExternalType, ExternalType> {
+interface DirectFiniteOptionsType<ExternalType : Any> : FiniteOptionsType<ExternalType, ExternalType> {
     override fun convertInternalToExternal(internalValue: ExternalType): ExternalType = internalValue
     override fun convertExternalToInternal(externalValue: ExternalType): ExternalType = externalValue
 }

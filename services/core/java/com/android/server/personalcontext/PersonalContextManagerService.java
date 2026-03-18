@@ -181,7 +181,7 @@ public class PersonalContextManagerService extends SystemService {
          * @return A new {@link EmbeddedInsightRenderer} instance.
          */
         EmbeddedInsightRenderer createEmbeddedInsightRenderer(
-                Context userContext, Executor executor);
+                Context userContext, AccessController accessController, Executor executor);
     }
 
     // TODO(b/454430085): Inject these fields.
@@ -264,7 +264,7 @@ public class PersonalContextManagerService extends SystemService {
                                     new ContextActionResolver(userContext)));
             final EmbeddedInsightRenderer embeddedInsightRenderer =
                     mEmbeddedInsightRendererFactory.createEmbeddedInsightRenderer(
-                            userContext, Executors.newSingleThreadExecutor());
+                            userContext, mAccessController, Executors.newSingleThreadExecutor());
 
             TextClassificationActionRenderer textClassificationActionRenderer;
             PersonalContextBridge tcPersonalContextBridge =
@@ -943,7 +943,7 @@ public class PersonalContextManagerService extends SystemService {
 
                         if (Flags.enforcePersonalContextAllowlistAccessControl()) {
                             service.checkUidAccess(callingUid,
-                                    AccessController.ACCESS_PUBLISH_INSIGHTS);
+                                    AccessController.ACCESS_PUBLISH_HINTS);
                         }
                         getService()
                                 .publishInsightSurfaceHints(

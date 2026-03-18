@@ -173,7 +173,8 @@ public final class VirtualDeviceParams implements Parcelable {
      */
     @IntDef(prefix = "POLICY_TYPE_", value = {POLICY_TYPE_SENSORS, POLICY_TYPE_AUDIO,
             POLICY_TYPE_RECENTS, POLICY_TYPE_ACTIVITY, POLICY_TYPE_CLIPBOARD, POLICY_TYPE_CAMERA,
-            POLICY_TYPE_BLOCKED_ACTIVITY, POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS})
+            POLICY_TYPE_BLOCKED_ACTIVITY, POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS,
+            POLICY_TYPE_THERMAL})
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
     public @interface PolicyType {}
@@ -193,7 +194,7 @@ public final class VirtualDeviceParams implements Parcelable {
     /**
      * Policy types that can be dynamically changed for a specific display.
      *
-     * @see VirtualDeviceManager.VirtualDevice#setDevicePolicyForDisplay
+     * @see VirtualDeviceManager.VirtualDevice#setDevicePolicy(int, int, int)
      * @hide
      */
     @IntDef(prefix = "POLICY_TYPE_", value = {POLICY_TYPE_RECENTS, POLICY_TYPE_ACTIVITY})
@@ -323,6 +324,22 @@ public final class VirtualDeviceParams implements Parcelable {
      */
     @FlaggedApi(Flags.FLAG_DEFAULT_DEVICE_CAMERA_ACCESS_POLICY)
     public static final int POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS = 7;
+
+    /**
+     * Allows for specifying the current thermal status of the device and tells the power framework
+     * how to handle thermal status queries from contexts associated with this virtual device,
+     * namely the status reported by {@link android.os.PowerManager#getCurrentThermalStatus()} and
+     * {@link android.os.PowerManager.OnThermalStatusChangedListener}.
+     *
+     * <ul>
+     *     <li>{@link #DEVICE_POLICY_DEFAULT}: Default device thermal status is reported.
+     *     <li>{@link #DEVICE_POLICY_CUSTOM}: Virtual device thermal status reported.
+     * </ul>
+     *
+     * @see VirtualDeviceManager.VirtualDevice#setCurrentThermalStatus(int)
+     */
+    @FlaggedApi(Flags.FLAG_DEVICE_AWARE_THERMAL_STATUS)
+    public static final int POLICY_TYPE_THERMAL = 8;
 
     private final int mLockState;
     @NonNull private final ArraySet<UserHandle> mAllowedUsers;
@@ -1441,6 +1458,10 @@ public final class VirtualDeviceParams implements Parcelable {
 
             if (!Flags.defaultDeviceCameraAccessPolicy()) {
                 mDevicePolicies.delete(POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS);
+            }
+
+            if (!Flags.deviceAwareThermalStatus()) {
+                mDevicePolicies.delete(POLICY_TYPE_THERMAL);
             }
 
             if ((mAudioPlaybackSessionId != AUDIO_SESSION_ID_GENERATE

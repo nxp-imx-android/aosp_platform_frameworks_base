@@ -17,16 +17,21 @@
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
@@ -34,6 +39,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.dp
+import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RuleDisplayModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RulesScreenViewState
@@ -58,6 +65,7 @@ fun NotificationRuleEdit(
     onExitEditField: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    DisposableEffect(viewModel) { onDispose { viewModel.cleanUp() } }
     val resources = LocalResources.current
 
     val addFieldOptions: List<RulesScreenViewState.EditField> =
@@ -102,7 +110,7 @@ fun NotificationRuleEdit(
     Column(modifier = modifier) {
         Header(
             title =
-                if (viewModel.rule.isNew) {
+                if (viewModel.rule is DraftRuleModel.New) {
                     stringResource(R.string.notification_rules_create_new_title)
                 } else {
                     stringResource(R.string.notification_rules_edit)
@@ -113,10 +121,15 @@ fun NotificationRuleEdit(
             action = viewModel.rule.action,
             onEnterEditField = onEnterEditField,
             onActionSaved = { newAction ->
-                viewModel.rule = viewModel.rule.copy(action = newAction)
+                viewModel.rule = viewModel.rule.copyDraft(action = newAction)
             },
         )
-        Text(text = text, inlineContent = inlineTextContent, style = textStyles.defaultStyle)
+        Text(
+            text = text,
+            inlineContent = inlineTextContent,
+            color = MaterialTheme.colorScheme.onSurface,
+            style = textStyles.defaultStyle,
+        )
 
         AddButton(
             addFieldOptions = addFieldOptions,
@@ -129,6 +142,18 @@ fun NotificationRuleEdit(
                 onOptionSelected = { editField -> onEnterEditField(editField) },
             )
         }
+
+        if (viewModel.isErrorVisible) {
+            ErrorMessage(modifier = Modifier.fillMaxWidth(0.8f).align(Alignment.CenterHorizontally))
+        }
+
+        SaveRuleButton(
+            // Only let the user save the rule once all ambiguous values have been fixed.
+            isEnabled = !viewModel.rule.hasAmbiguousValues,
+            isRuleNew = viewModel.rule is DraftRuleModel.New,
+            onClick = { viewModel.saveRule() },
+            modifier = Modifier.fillMaxWidth(0.8f).align(Alignment.CenterHorizontally),
+        )
     }
 }
 
@@ -155,7 +180,7 @@ private fun buildAddFieldOptions(
     onExitEditField: () -> Unit,
 ): List<RulesScreenViewState.EditField> {
     return mutableListOf<RulesScreenViewState.EditField>().apply {
-        if (viewModel.rule.contacts == null) {
+        if (viewModel.rule.filter.contacts == null) {
             add(
                 RulesScreenViewState.EditField.Contacts(
                     onContactsSaved = { newContacts ->
@@ -165,7 +190,7 @@ private fun buildAddFieldOptions(
                 )
             )
         }
-        if (viewModel.rule.includedApps == null) {
+        if (viewModel.rule.filter.includedApps == null) {
             add(
                 RulesScreenViewState.EditField.Apps(
                     viewModel = viewModel,
@@ -174,6 +199,40 @@ private fun buildAddFieldOptions(
             )
         }
     }
+}
+
+@Composable
+private fun SaveRuleButton(
+    isEnabled: Boolean,
+    isRuleNew: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Button(onClick = onClick, enabled = isEnabled, modifier = modifier) {
+        Text(
+            if (isRuleNew) {
+                stringResource(R.string.notification_rules_create_new_rule)
+            } else {
+                stringResource(R.string.notification_rules_confirm_changes)
+            }
+        )
+    }
+}
+
+@Composable
+private fun ErrorMessage(modifier: Modifier = Modifier) {
+    Text(
+        stringResource(R.string.notification_rules_save_error),
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onErrorContainer,
+        modifier =
+            modifier
+                .background(
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    shape = MaterialTheme.shapes.medium,
+                )
+                .padding(8.dp),
+    )
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)

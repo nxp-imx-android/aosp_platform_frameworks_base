@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.android.internal.logging.InstanceId
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.remedia.data.model.MediaDataModel
 import com.android.systemui.util.settings.FakeSettings
 import javax.inject.Inject
@@ -51,8 +52,9 @@ constructor(
         backgroundDispatcher,
         fakeUserSettings,
     ) {
-    override var currentMedia: SnapshotStateList<MediaDataModel> = mutableStateListOf()
-    override val keysNeedRemoval = mutableListOf(InstanceId.fakeInstanceId(1))
+
+    override var currentMedia by mutableStateOf(emptyList<MediaDataModel>())
+    override val keysNeedRemoval = mutableStateListOf(InstanceId.fakeInstanceId(1))
     override var currentCarouselIndex by mutableIntStateOf(FIRST_INDEX_OF_CAROUSEL)
     override var shouldScrollToFirst = false
     override var isSwipedAway = false
@@ -84,6 +86,7 @@ constructor(
 
     override fun setSwipedAwayState() {
         isSwipedAway = true
+        setFakeCurrentMedia(currentMedia.map { it.copy(isActive = false) })
     }
 
     override fun cleanKeysNeedRemoval() {
@@ -92,9 +95,36 @@ constructor(
 
     override fun clearCurrentUserMedia() = Unit
 
+    override fun removeCurrentUserMediaEntry(key: InstanceId): MediaData? {
+        val mutableList = currentMedia.toMutableList()
+        val itemToRemove = mutableList.find { it.instanceId == key }
+        if (itemToRemove != null) {
+            mutableList.remove(itemToRemove)
+            currentMedia = mutableList
+            keysNeedRemoval.add(key)
+        }
+
+        // Also remove from MediaPipelineRepository
+        return super.removeCurrentUserMediaEntry(key)
+    }
+
     fun setFakeCurrentMedia(mediaList: List<MediaDataModel>) {
-        currentMedia.clear()
-        currentMedia.addAll(mediaList)
+        currentMedia = mediaList
+        // Sync with MediaPipelineRepository to ensure hasActiveMedia() evaluates correctly
+        mutableUserEntries.value = LinkedHashMap(
+            mediaList.associateBy(
+                { it.instanceId },
+                { item ->
+                    MediaData(
+                        instanceId = item.instanceId,
+                        appUid = item.appUid,
+                        packageName = item.packageName,
+                        app = item.appName,
+                        active = item.isActive,
+                    )
+                }
+            )
+        )
     }
 
     private companion object {

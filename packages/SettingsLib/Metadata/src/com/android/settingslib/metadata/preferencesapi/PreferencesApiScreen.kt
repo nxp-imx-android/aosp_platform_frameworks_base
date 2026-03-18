@@ -71,7 +71,7 @@ class ParameterizationConfig {
         val name: String,
         @StringRes val purpose: Int,
         val required: Boolean,
-        val type: FiniteOptionsType<*, String>,
+        val type: FiniteOptionsType<*, *>,
     )
 
     internal val parameters = mutableMapOf<String, ApiParameterDefinition>()
@@ -91,7 +91,7 @@ class ParameterizationConfig {
         name: String,
         @StringRes purpose: Int,
         required: Boolean = false,
-        type: FiniteOptionsType<*, String>,
+        type: FiniteOptionsType<*, *>,
     ) {
         if (parameters.containsKey(name)) {
             throw IllegalArgumentException("Parameter '$name' is already defined.")

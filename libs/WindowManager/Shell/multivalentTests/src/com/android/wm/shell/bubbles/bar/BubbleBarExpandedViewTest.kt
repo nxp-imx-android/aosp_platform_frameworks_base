@@ -41,6 +41,7 @@ import com.android.wm.shell.bubbles.BubbleTaskView
 import com.android.wm.shell.bubbles.FakeBubbleFactory
 import com.android.wm.shell.bubbles.FakeBubbleTaskViewFactory
 import com.android.wm.shell.bubbles.UiEventSubject.Companion.assertThat
+import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView.ObscuredFlag
 import com.android.wm.shell.bubbles.logging.BubbleLogger
 import com.android.wm.shell.bubbles.util.BubblePolicyHelper
 import com.android.wm.shell.common.TestShellExecutor
@@ -51,11 +52,13 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.stub
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -90,6 +93,7 @@ class BubbleBarExpandedViewTest {
     private lateinit var bubbleExpandedView: BubbleBarExpandedView
 
     private val uiEventLoggerFake = UiEventLoggerFake()
+    private val layerBounds = Rect(0, 0, 100, 100)
 
     @Before
     fun setUp() {
@@ -338,6 +342,26 @@ class BubbleBarExpandedViewTest {
     }
 
     @Test
+    fun initialize_resetsTaskViewClipBounds() {
+        val expandedView =
+            LayoutInflater.from(context)
+                .inflate(R.layout.bubble_bar_expanded_view, null, false /* attachToRoot */)
+                as BubbleBarExpandedView
+        val taskView = bubbleTaskViewFactory.create()
+        taskView.taskView.clipBounds = Rect(0, 0, 100, 100)
+
+        expandedView.initialize(
+            expandedViewManager,
+            positioner,
+            false /* isOverflow */,
+            bubble,
+            taskView,
+        )
+
+        assertThat(taskView.taskView.clipBounds).isNull()
+    }
+
+    @Test
     fun onTaskInfoChanged_invalidTask_collapseStack() {
         val taskInfo = RunningTaskInfo()
         taskInfo.supportsMultiWindow = false
@@ -402,6 +426,105 @@ class BubbleBarExpandedViewTest {
         bubbleExpandedView.updateLocale()
         bubbleExpandedView.updateFontSize()
         bubbleExpandedView.updateTheme()
+    }
+
+    @Test
+    fun setObscured_trueThenFalse_setsAndClearsObscuredRect() {
+        // The view needs a supplier for the bounds of the obscuring view.
+        bubbleExpandedView.setLayerBoundsSupplier { layerBounds }
+        val taskView = bubbleTaskView.taskView!!
+
+        // WHEN the view is obscured
+        bubbleExpandedView.setObscured(true, ObscuredFlag.USER_EDUCATION_VISIBLE)
+
+        // THEN the obscured touch rect is set on the task view
+        verify(taskView).setObscuredTouchRect(layerBounds)
+
+        // WHEN the view is no longer obscured
+        bubbleExpandedView.setObscured(false, ObscuredFlag.USER_EDUCATION_VISIBLE)
+
+        // THEN the obscured touch rect is cleared
+        verify(taskView).setObscuredTouchRect(null)
+    }
+
+    @Test
+    fun setObscured_multipleFlags_clearsOnlyWhenAllRemoved() {
+        // The view needs a supplier for the bounds of the obscuring view.
+        bubbleExpandedView.setLayerBoundsSupplier { layerBounds }
+        val taskView = bubbleTaskView.taskView!!
+
+        // WHEN the view is obscured by a user education view
+        bubbleExpandedView.setObscured(true, ObscuredFlag.USER_EDUCATION_VISIBLE)
+        verify(taskView).setObscuredTouchRect(layerBounds)
+
+        // AND WHEN the view is also obscured by the handle menu
+        bubbleExpandedView.setObscured(true, ObscuredFlag.HANDLE_MENU_VISIBLE)
+        // THEN the obscured rect is set again
+        verify(taskView, times(2)).setObscuredTouchRect(layerBounds)
+
+        // WHEN the user education view is removed
+        bubbleExpandedView.setObscured(false, ObscuredFlag.USER_EDUCATION_VISIBLE)
+        // THEN the obscured rect is NOT cleared yet
+        verify(taskView, never()).setObscuredTouchRect(null)
+
+        // WHEN the handle menu is also removed
+        bubbleExpandedView.setObscured(false, ObscuredFlag.HANDLE_MENU_VISIBLE)
+        // THEN the obscured rect is cleared
+        verify(taskView).setObscuredTouchRect(null)
+    }
+
+    @Test
+    fun setObscured_sameFlagTwice_setsObscuredRectOnlyOnce() {
+        // The view needs a supplier for the bounds of the obscuring view.
+        bubbleExpandedView.setLayerBoundsSupplier { layerBounds }
+        val taskView = bubbleTaskView.taskView!!
+
+        // WHEN the view is obscured
+        bubbleExpandedView.setObscured(true, ObscuredFlag.USER_EDUCATION_VISIBLE)
+
+        // THEN the obscured rect is set
+        verify(taskView).setObscuredTouchRect(layerBounds)
+
+        // WHEN the view is obscured again with the same flag
+        bubbleExpandedView.setObscured(true, ObscuredFlag.USER_EDUCATION_VISIBLE)
+
+        // THEN the obscured rect is NOT set again
+        verify(taskView, times(1)).setObscuredTouchRect(layerBounds)
+    }
+
+    @Test
+    fun setObscured_nullLayerBoundsSupplier_doesNothing() {
+        val taskView = bubbleTaskView.taskView!!
+        // Note: layer bounds supplier is NOT set for this test.
+
+        // WHEN setObscured is called
+        bubbleExpandedView.setObscured(true, ObscuredFlag.USER_EDUCATION_VISIBLE)
+
+        // THEN nothing happens because the supplier is null
+        verify(taskView, never()).setObscuredTouchRect(any())
+    }
+
+    @Test
+    fun setObscured_nullTaskView_doesNothing() {
+        // GIVEN an expanded view for overflow, which has no task view
+        val overflowExpandedView =
+            LayoutInflater.from(context)
+                .inflate(R.layout.bubble_bar_expanded_view, null, false /* attachToRoot */)
+                as BubbleBarExpandedView
+        overflowExpandedView.bubbleLogger = BubbleLogger(uiEventLoggerFake)
+        overflowExpandedView.initialize(
+            expandedViewManager,
+            positioner,
+            true /* isOverflow */,
+            null, /* bubble */
+            null, /* bubbleTaskView */
+        )
+        overflowExpandedView.setLayerBoundsSupplier { layerBounds }
+        assertThat(overflowExpandedView.bubbleTaskView).isNull()
+
+        // WHEN setObscured is called
+        // THEN it does not crash, because it should handle the null task view gracefully
+        overflowExpandedView.setObscured(true, ObscuredFlag.USER_EDUCATION_VISIBLE)
     }
 
     private fun createOverflowViewWithMockContent():

@@ -131,7 +131,7 @@ class ContentRestrictionServiceTest {
 
     @Test
     @Throws(RemoteException::class)
-    fun testRequestClassification_serviceDisabled_returnsFalse() {
+    fun testRequestClassification_serviceDisabled_returnsTrue() {
         setServiceEnabled(false)
 
         val callback = mock<IContentRestrictionCallback>()
@@ -139,7 +139,7 @@ class ContentRestrictionServiceTest {
 
         service.requestClassification(userId, content, callback)
 
-        verify(callback).onResult(false)
+        verify(callback).onResult(true)
         verify(mockAppBindingService, never())
                 .dispatchAppServiceEvent(any(), anyInt(), any())
     }

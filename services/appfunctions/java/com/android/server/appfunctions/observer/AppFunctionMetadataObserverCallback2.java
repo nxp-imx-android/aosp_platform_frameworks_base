@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.server.appfunctions;
+package com.android.server.appfunctions.observer;
 
 import static android.app.appfunctions.AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_METADATA_DB;
 import static android.app.appfunctions.AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_NAMESPACE;
@@ -29,6 +29,9 @@ import android.app.appsearch.observer.ObserverCallback;
 import android.app.appsearch.observer.SchemaChangeInfo;
 import android.os.UserHandle;
 import android.util.Slog;
+
+import com.android.server.appfunctions.MetadataSyncAdapter;
+import com.android.server.appfunctions.reader.AppFunctionMetadataReader;
 
 /**
  * An {@link ObserverCallback} that manages the synchronization lifecycle for app function metadata.
@@ -51,7 +54,7 @@ public class AppFunctionMetadataObserverCallback2 implements ObserverCallback {
     @NonNull private final AppFunctionMetadataReader mAppFunctionMetadataReader;
     @NonNull private final UserHandle mUserHandle;
 
-    AppFunctionMetadataObserverCallback2(
+    public AppFunctionMetadataObserverCallback2(
             @Nullable MetadataSyncAdapter perUserMetadataSyncAdapter,
             @NonNull InternalObserverCallbackRouter callbackRouter,
             @NonNull AppFunctionMetadataReader appFunctionMetadataReader,

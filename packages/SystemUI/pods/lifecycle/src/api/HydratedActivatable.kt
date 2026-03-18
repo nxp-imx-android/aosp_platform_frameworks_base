@@ -33,12 +33,13 @@ import kotlinx.coroutines.launch
  *
  * @see [ExclusiveActivatable]
  */
-public abstract class HydratedActivatable(
+abstract class HydratedActivatable(
     /** Enable this to use [enqueueOnActivatedScope] */
-    public val enableEnqueuedActivations: Boolean = false
+    val enableEnqueuedActivations: Boolean = false,
+    traceName: String? = null,
 ) : Activatable {
 
-    private val hydrator = Hydrator("${this::class.simpleName}.hydrator")
+    private val hydrator = Hydrator(traceName ?: "${this::class.simpleName}.hydrator")
 
     private var requestChannel: Channel<suspend () -> Unit>? = null
 
@@ -102,11 +103,11 @@ public abstract class HydratedActivatable(
     }
 
     /** @see [Hydrator.hydratedStateOf] */
-    protected fun <T> StateFlow<T>.hydratedStateOf(traceName: String): State<T> =
+    protected fun <T> StateFlow<T>.hydratedStateOf(traceName: String?): State<T> =
         hydrator.hydratedStateOf(traceName, this)
 
     /** @see [Hydrator.hydratedStateOf] */
-    protected fun <T> Flow<T>.hydratedStateOf(traceName: String, initialValue: T): State<T> =
+    protected fun <T> Flow<T>.hydratedStateOf(traceName: String?, initialValue: T): State<T> =
         hydrator.hydratedStateOf(traceName, initialValue, this)
 
     /**

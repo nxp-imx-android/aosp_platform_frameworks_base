@@ -72,6 +72,8 @@ import com.android.systemui.util.RingerModeLiveData;
 import com.android.systemui.util.RingerModeTracker;
 import com.android.systemui.util.concurrency.ThreadFactory;
 import com.android.systemui.util.kotlin.JavaAdapter;
+import com.android.systemui.util.settings.GlobalSettings;
+import com.android.systemui.util.settings.SecureSettings;
 import com.android.systemui.volume.domain.interactor.AudioSharingInteractor;
 import com.android.systemui.volume.shared.VolumeLogger;
 
@@ -146,6 +148,8 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
     private final AtomicReference<CaptioningManager> mCaptioningManager = new AtomicReference<>();
     private final KeyguardManager mKeyguardManager;
     private final ActivityManager mActivityManager;
+    private final GlobalSettings mGlobalSettings;
+    private final SecureSettings mSecureSettings;
     private final UserTracker mUserTracker;
     private final VolumeControllerAdapter mVolumeControllerAdapter;
     protected C mCallbacks = new C();
@@ -198,6 +202,8 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
             WakefulnessLifecycle wakefulnessLifecycle,
             KeyguardManager keyguardManager,
             ActivityManager activityManager,
+            GlobalSettings globalSettings,
+            SecureSettings secureSettings,
             UserTracker userTracker,
             DumpManager dumpManager,
             AudioSharingInteractor audioSharingInteractor,
@@ -218,6 +224,8 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
         mVolumeLogger = volumeLogger;
         mAudio = audioManager;
         mNoMan = notificationManager;
+        mGlobalSettings = globalSettings;
+        mSecureSettings = secureSettings;
         mObserver = new SettingObserver(mWorker);
         mRingerModeObservers = new RingerModeObservers(
                 (RingerModeLiveData) ringerModeTracker.getRingerMode(),
@@ -227,6 +235,7 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
         mBroadcastDispatcher = broadcastDispatcher;
         mObserver.init();
         mReceiver.init();
+        updateHapticsEnabled(); // set initial state
         mVibrator = vibrator;
         mHasVibrator = mVibrator.hasVibrator();
         mAudioService = iAudioService;
@@ -456,7 +465,7 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
     }
 
     public boolean hasVibrator() {
-        return mHasVibrator;
+        return mHasVibrator && mState.hapticsEnabled;
     }
 
     private void onNotifyVisibleW(boolean visible) {
@@ -640,6 +649,7 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
         updateRingerModeExternalW(mRingerModeObservers.mRingerMode.getValue());
         updateZenModeW();
         updateZenConfig();
+        updateHapticsEnabled();
         updateEffectsSuppressorW(mNoMan.getEffectsSuppressor());
         mCallbacks.onStateChanged(mState);
     }
@@ -748,6 +758,14 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
         Events.writeEvent(Events.EVENT_ZEN_CONFIG_CHANGED, "disallowAlarms="
                 + disallowAlarms + " disallowMedia=" + disallowMedia + " disallowSystem="
                 + disallowSystem + " disallowRinger=" + disallowRinger);
+        return true;
+    }
+
+    private boolean updateHapticsEnabled() {
+        final boolean hapticsEnabled = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.VIBRATE_ON, 0) == 1;
+        if (mState.hapticsEnabled == hapticsEnabled) return false;
+        mState.hapticsEnabled = hapticsEnabled;
         return true;
     }
 
@@ -1272,17 +1290,22 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
         private final Uri ZEN_MODE_CONFIG_URI =
                 Settings.Global.getUriFor(Settings.Global.ZEN_MODE_CONFIG_ETAG);
 
+        private static final Uri VIBRATE_ENABLED_URI =
+                Settings.System.getUriFor(Settings.System.VIBRATE_ON);
+
         public SettingObserver(Handler handler) {
             super(handler);
         }
 
         public void init() {
-            mContext.getContentResolver().registerContentObserver(ZEN_MODE_URI, false, this);
-            mContext.getContentResolver().registerContentObserver(ZEN_MODE_CONFIG_URI, false, this);
+            mGlobalSettings.registerContentObserverAsync(ZEN_MODE_URI, false, this);
+            mGlobalSettings.registerContentObserverAsync(ZEN_MODE_CONFIG_URI, false, this);
+            mSecureSettings.registerContentObserverAsync(VIBRATE_ENABLED_URI, false, this);
         }
 
         public void destroy() {
-            mContext.getContentResolver().unregisterContentObserver(this);
+            mGlobalSettings.unregisterContentObserverAsync(this);
+            mSecureSettings.unregisterContentObserverAsync(this);
         }
 
         @Override
@@ -1293,6 +1316,9 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
             }
             if (ZEN_MODE_CONFIG_URI.equals(uri)) {
                 changed |= updateZenConfig();
+            }
+            if (VIBRATE_ENABLED_URI.equals(uri)) {
+                changed |= updateHapticsEnabled();
             }
 
             if (changed) {

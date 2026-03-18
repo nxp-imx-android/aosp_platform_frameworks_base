@@ -306,6 +306,8 @@ fun PreferenceMetadata.accessPreconditionsAsString(context: Context): String? {
                 .joinToString(", ")
         } else if (this is PreferencesApiScreen) {
             screenPreconditions?.getDescription(context) ?: ""
+        } else if (this is PreferenceAvailabilityProvider) {
+            availabilityDescription
         } else {
             ""
         }

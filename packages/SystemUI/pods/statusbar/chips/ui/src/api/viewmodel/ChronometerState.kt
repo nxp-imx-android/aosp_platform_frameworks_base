@@ -28,6 +28,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.systemui.statusbar.chips.ui.model.Chronometer
+import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.util.time.SystemClock
 import java.time.Duration
 import kotlin.math.absoluteValue
@@ -164,6 +165,12 @@ sealed interface Formatter {
             ChronometerAdaptiveFormat.getTickPeriod(currentValue)
     }
 }
+
+fun OngoingActivityChipModel.Content.Timer.Format.toFormatter() =
+    when (this) {
+        OngoingActivityChipModel.Content.Timer.Format.CHRONOMETER -> Formatter.Chronometer
+        OngoingActivityChipModel.Content.Timer.Format.ADAPTIVE -> Formatter.Adaptive
+    }
 
 /** Remember and manage the ChronometerState */
 @Composable

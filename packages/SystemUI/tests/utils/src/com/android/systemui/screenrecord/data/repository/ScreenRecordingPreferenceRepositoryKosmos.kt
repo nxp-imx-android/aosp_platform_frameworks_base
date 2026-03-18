@@ -16,14 +16,14 @@
 
 package com.android.systemui.screenrecord.data.repository
 
-import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.util.FakeSharedPreferences
 import com.android.systemui.util.settings.fakeSettings
 
 val Kosmos.screenRecordingPreferenceRepository: ScreenRecordingPreferenceRepository by
     Kosmos.Fixture {
         ScreenRecordingPreferenceRepository(
-            context = applicationContext,
+            getSharedPreferences = { FakeSharedPreferences() },
             secureSettingsPutInt = { name, value -> fakeSettings.putInt(name, value) },
             secureSettingsGetInt = { name -> fakeSettings.getInt(name, 0) },
             systemSettingsPutInt = { name, value -> fakeSettings.putInt(name, value) },

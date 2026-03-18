@@ -1467,6 +1467,11 @@ public class NotificationStackScrollLayout
         } else {
             startAnimationToState();
         }
+        if (SceneContainerFlag.isEnabled()) {
+            // Skip invalidate because we are already in the draw phase and do not need to schedule
+            // a new draw pass in another frame.
+            updateFirstAndLastBackgroundViews(/* shouldInvalidate= */ false);
+        }
         avoidNotificationOverlaps();
         Trace.endSection();
     }
@@ -3451,11 +3456,16 @@ public class NotificationStackScrollLayout
     }
 
     private void updateFirstAndLastBackgroundViews() {
+        updateFirstAndLastBackgroundViews(/* shouldInvalidate= */ true);
+    }
+
+    private void updateFirstAndLastBackgroundViews(boolean shouldInvalidate) {
         ExpandableView lastChild = getLastChildWithBackground();
         mSectionsManager.updateFirstAndLastViewsForAllSections(getChildrenWithBackground());
-
         mAmbientState.setLastVisibleBackgroundChild(lastChild);
-        invalidate();
+        if (shouldInvalidate) {
+            invalidate();
+        }
     }
 
     private void onViewAddedInternal(ExpandableView child) {
@@ -3502,15 +3512,15 @@ public class NotificationStackScrollLayout
     }
 
     @Override
-    public void setAlignToInnerQqsTiles(boolean alignToInnerQqsTiles) {
+    public void setSidePaddingConfig(int baseSidePadding, boolean alignToInnerQqsTiles) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
-        mScrollViewFields.alignToInnerQqsTiles = alignToInnerQqsTiles;
-    }
-
-    @Override
-    public void setBaseSidePadding(int baseSidePadding) {
-        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
+        if (mScrollViewFields.baseSidePadding == baseSidePadding
+                && mScrollViewFields.alignToInnerQqsTiles == alignToInnerQqsTiles) {
+            return;
+        }
         mScrollViewFields.baseSidePadding = baseSidePadding;
+        mScrollViewFields.alignToInnerQqsTiles = alignToInnerQqsTiles;
+        requestLayout();
     }
 
     private void updateNotificationAnimationStates() {

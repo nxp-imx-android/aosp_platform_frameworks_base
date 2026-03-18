@@ -18,8 +18,6 @@ package com.android.server.appfunctions;
 
 import static com.android.server.appfunctions.AppFunctionExecutors.LOGGING_THREAD_EXECUTOR;
 
-import com.android.server.appfunctions.AppFunctionMetadataReader;
-
 import android.annotation.NonNull;
 import android.app.AppInteractionAttribution;
 import android.app.appfunctions.AppFunctionMetadata;

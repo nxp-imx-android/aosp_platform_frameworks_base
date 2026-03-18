@@ -811,6 +811,13 @@ flag {
 }
 
 flag {
+    name: "issue_recording_use_screen_recording_service"
+    namespace: "systemui"
+    description: "Enables IssueRecordingService to use the new ScreenRecordingService binding."
+    bug: "476328961"
+}
+
+flag {
     name: "keyboard_docking_indicator"
     namespace: "systemui"
     description: "Glow bar indicator reveals upon keyboard docking."
@@ -1618,6 +1625,16 @@ flag {
     namespace: "systemui"
     description: "Implement a bespoke tap-chip-to-show-HUN animation for SB notification chips"
     bug: "393369891"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "status_bar_chip_visibility_jank_fix"
+    namespace: "systemui"
+    description: "Fixes the notification icons hopping around when the chip shows/hides"
+    bug: "467677035"
     metadata {
       purpose: PURPOSE_BUGFIX
     }

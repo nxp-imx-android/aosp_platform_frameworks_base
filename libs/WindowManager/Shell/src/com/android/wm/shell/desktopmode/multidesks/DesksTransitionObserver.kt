@@ -35,6 +35,7 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterRe
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
+import com.android.wm.shell.desktopmode.homescreenpeeking.DesktopHomeScreenPeekController
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler.isKeyguardAppearing
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.TransitionUtil
@@ -59,6 +60,7 @@ class DesksTransitionObserver(
     private val desktopModeEventLogger: DesktopModeEventLogger,
     private val shellController: ShellController,
     private val displayController: DisplayController,
+    private val desktopHomeScreenPeekController: DesktopHomeScreenPeekController,
 ) {
     // Tracks the desk transitions used to keep track of the desk state. This is usually removed
     // when the transition is ready. This map represents what a single shell transition is causing
@@ -389,6 +391,8 @@ class DesksTransitionObserver(
                                     // considered "in" the desk, it just happens to occlude/stop
                                     // everything behind it.
                                     hasFullImmersiveTask -> false
+                                    // When peeking the home screen, do not leave the active desk.
+                                    desktopHomeScreenPeekController.isPeeking -> false
                                     // Otherwise deactivate.
                                     else -> true
                                 }

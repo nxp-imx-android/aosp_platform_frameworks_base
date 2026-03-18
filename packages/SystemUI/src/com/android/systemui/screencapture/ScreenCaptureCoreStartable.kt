@@ -41,12 +41,10 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
@@ -95,9 +93,7 @@ constructor(
             }
 
         val componentFlow =
-            screenCaptureComponentInteractor.screenCaptureComponent(type).filterNotNull().onEach {
-                it.start()
-            }
+            screenCaptureComponentInteractor.screenCaptureComponent(type).onEach { it?.start() }
 
         combine(uiStateFlow, componentFlow) { state, component ->
                 if (state is ScreenCaptureUiState.Visible) component else null

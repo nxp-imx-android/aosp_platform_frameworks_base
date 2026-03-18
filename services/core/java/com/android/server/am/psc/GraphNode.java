@@ -28,11 +28,22 @@ import java.util.function.Consumer;
  * or the {@link SystemNode}, representing the system itself as a source of importance.
  */
 @RavenwoodKeepWholeClass
-interface GraphNode {
+abstract class GraphNode {
+    /** Whether the node is enqueued for capability propagation. */
+    private boolean mIsEnqueued;
+
     /** Streams the outgoing edges of this node to {@code consumer}. */
-    void forEachOutgoingEdge(@NonNull Consumer<GraphEdge> consumer);
+    abstract void forEachOutgoingEdge(@NonNull Consumer<GraphEdge> consumer);
 
     /** Gets output capabilities from the node. */
     @ProcessCapability
-    int getCapability();
+    abstract int getCapability();
+
+    final boolean isEnqueued() {
+        return mIsEnqueued;
+    }
+
+    final void setEnqueued(boolean isEnqueued) {
+        mIsEnqueued = isEnqueued;
+    }
 }

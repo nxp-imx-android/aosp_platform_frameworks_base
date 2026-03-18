@@ -104,6 +104,22 @@ data class ValidatedKeyParameters internal constructor(
     }
 
     /**
+     * Retrieves the value for a given parameter key in the correct type.
+     *
+     * This will ultimately replace the get<String> method.
+     *
+     * @param key The name of the parameter to retrieve.
+     * @return The value of the parameter, or `null` if the parameter is optional and was not
+     * provided.
+     * @throws IllegalArgumentException if the key is not defined in the schema.
+     */
+    fun <T> getTyped(key: String): T? {
+        val value = get(key) ?: return null
+        val type = schema.getParameters()[key]?.type as ApiType<T, *>? ?: return null
+        return type.convertStringToInternal(value)
+    }
+
+    /**
      * Retrieves the value for a parameter that is explicitly defined as **required** in the schema.
      *
      * This method enforces that the parameter was declared with `required = true` in the

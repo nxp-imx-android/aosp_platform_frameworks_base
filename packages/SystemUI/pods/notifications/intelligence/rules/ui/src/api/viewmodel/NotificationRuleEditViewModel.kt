@@ -31,6 +31,9 @@ public interface NotificationRuleEditViewModel {
     /** The rule being edited or created. */
     public var rule: DraftRuleModel
 
+    /** True if there was an error in saving the new/updated rule. */
+    val isErrorVisible: Boolean
+
     /**
      * Creates display text for the [rule]. This text is also interactable: Users can tap individual
      * fields to edit the contents.
@@ -74,7 +77,19 @@ public interface NotificationRuleEditViewModel {
     /** Fetches all apps installed on the device. */
     public suspend fun fetchInstalledApps(context: Context): List<AppModel>
 
-    public interface Factory {
-        public fun create(rule: DraftRuleModel): NotificationRuleEditViewModel
+    /**
+     * Saves the current version of [rule]. [isErrorVisible] will update based on whether the rule
+     * was saved successfully or not.
+     */
+    fun saveRule()
+
+    /** Cleans up any temporary values. Should be invoked when the user leaves the edit page. */
+    fun cleanUp()
+
+    interface Factory {
+        fun create(
+            rule: DraftRuleModel,
+            onNavigateToCurrentRulesScreen: () -> Unit,
+        ): NotificationRuleEditViewModel
     }
 }

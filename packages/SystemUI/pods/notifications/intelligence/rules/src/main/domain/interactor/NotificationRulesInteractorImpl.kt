@@ -38,7 +38,7 @@ constructor(private val repository: NotificationRulesRepository) : NotificationR
         return repository.createDraftRuleFromFreeformText(action, text)
     }
 
-    override fun createRule(newRule: RuleModel) {
-        repository.createRule(newRule)
+    override suspend fun saveRule(rule: DraftRuleModel): Boolean {
+        return repository.saveRule(rule)
     }
 }

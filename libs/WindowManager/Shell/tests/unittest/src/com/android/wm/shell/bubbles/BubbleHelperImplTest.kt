@@ -100,6 +100,8 @@ class BubbleHelperImplTest : ShellTestCase() {
         assertThat(bubbleHelper.isAppBubbleRootTask(123)).isTrue()
         assertThat(bubbleHelper.isAppBubbleRootTask(taskInfo0)).isFalse()
         assertThat(bubbleHelper.isAppBubbleRootTask(taskInfo1)).isTrue()
+        assertThat(bubbleHelper.isAppBubbleRootTask(null as ActivityManager.RunningTaskInfo?))
+                .isFalse()
     }
 
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK)
@@ -148,6 +150,12 @@ class BubbleHelperImplTest : ShellTestCase() {
             }
 
         assertThat(bubbleHelper.isAppBubbleTask(taskInfo)).isTrue()
+    }
+
+    @Test
+    fun isAppBubbleTask_nullInfo_returnsFalse() {
+        // Verifies that a null task info is safely handled and returns false
+        assertThat(bubbleHelper.isAppBubbleTask(null)).isFalse()
     }
 
     @Test
@@ -337,5 +345,11 @@ class BubbleHelperImplTest : ShellTestCase() {
             }
 
         assertThat(bubbleHelper.isBubbleTask(taskInfo)).isFalse()
+    }
+
+    @Test
+    fun isBubbleTask_nullInfo_returnsFalse() {
+        // Verifies that a null task info is safely handled and returns false
+        assertThat(bubbleHelper.isBubbleTask(null)).isFalse()
     }
 }

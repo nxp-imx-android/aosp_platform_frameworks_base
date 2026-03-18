@@ -238,7 +238,8 @@ public class ActivityManager {
         }
 
         @Override
-        public void onUidStateChanged(int uid, int procState, long procStateSeq, int capability) {
+        public void onUidStateChanged(int uid, @ProcessState int procState,
+                long procStateSeq, @ProcessCapability int capability) {
             mListener.onUidImportance(uid, RunningAppProcessInfo.procStateToImportanceForClient(
                     procState, mContext));
         }
@@ -1257,24 +1258,24 @@ public class ActivityManager {
 
     /** @hide Should this process state be considered a background state? */
     @RavenwoodKeep
-    public static final boolean isProcStateBackground(int procState) {
+    public static final boolean isProcStateBackground(@ProcessState int procState) {
         return procState >= PROCESS_STATE_TRANSIENT_BACKGROUND;
     }
 
     /** @hide Should this process state be considered in the cache? */
     @RavenwoodKeep
-    public static final boolean isProcStateCached(int procState) {
+    public static final boolean isProcStateCached(@ProcessState int procState) {
         return procState >= PROCESS_STATE_CACHED_ACTIVITY;
     }
 
     /** @hide Is this a foreground service type? */
     @RavenwoodKeep
-    public static boolean isForegroundService(int procState) {
+    public static boolean isForegroundService(@ProcessState int procState) {
         return procState == PROCESS_STATE_FOREGROUND_SERVICE;
     }
 
     /** @hide Should this process state be considered jank perceptible? */
-    public static final boolean isProcStateJankPerceptible(int procState) {
+    public static final boolean isProcStateJankPerceptible(@ProcessState int procState) {
         if (Flags.jankPerceptibleNarrow() && !Flags.jankPerceptibleNarrowHoldback()) {
             return procState == PROCESS_STATE_PERSISTENT_UI
                 || procState == PROCESS_STATE_TOP
@@ -4222,7 +4223,7 @@ public class ActivityManager {
          * @hide
          */
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-        public static @Importance int procStateToImportance(int procState) {
+        public static @Importance int procStateToImportance(@ProcessState int procState) {
             if (procState == PROCESS_STATE_NONEXISTENT) {
                 return IMPORTANCE_GONE;
             } else if (procState >= PROCESS_STATE_HOME) {
@@ -4251,7 +4252,7 @@ public class ActivityManager {
          * client's target SDK < {@link VERSION_CODES#O}.
          * @hide
          */
-        public static @Importance int procStateToImportanceForClient(int procState,
+        public static @Importance int procStateToImportanceForClient(@ProcessState int procState,
                 Context clientContext) {
             return procStateToImportanceForTargetSdk(procState,
                     clientContext.getApplicationInfo().targetSdkVersion);
@@ -4261,7 +4262,7 @@ public class ActivityManager {
          * See {@link #procStateToImportanceForClient}.
          * @hide
          */
-        public static @Importance int procStateToImportanceForTargetSdk(int procState,
+        public static @Importance int procStateToImportanceForTargetSdk(@ProcessState int procState,
                 int targetSdkVersion) {
             final int importance = procStateToImportance(procState);
 
@@ -4280,7 +4281,7 @@ public class ActivityManager {
         }
 
         /** @hide */
-        public static int importanceToProcState(@Importance int importance) {
+        public static @ProcessState int importanceToProcState(@Importance int importance) {
             if (importance == IMPORTANCE_GONE) {
                 return PROCESS_STATE_NONEXISTENT;
             } else if (importance >= IMPORTANCE_CACHED) {
@@ -4933,7 +4934,7 @@ public class ActivityManager {
     @RequiresPermission(Manifest.permission.PACKAGE_USAGE_STATS)
     public @RunningAppProcessInfo.Importance int getUidImportance(int uid) {
         try {
-            int procState = getService().getUidProcessState(uid,
+            @ProcessState int procState = getService().getUidProcessState(uid,
                     mContext.getOpPackageName());
             return RunningAppProcessInfo.procStateToImportanceForClient(procState, mContext);
         } catch (RemoteException e) {
@@ -4960,7 +4961,7 @@ public class ActivityManager {
     @RequiresPermission(Manifest.permission.GET_BINDING_UID_IMPORTANCE)
     public @RunningAppProcessInfo.Importance int getBindingUidImportance(int uid) {
         try {
-            int procState = getService().getBindingUidProcessState(uid,
+            @ProcessState int procState = getService().getBindingUidProcessState(uid,
                     mContext.getOpPackageName());
             return RunningAppProcessInfo.procStateToImportanceForClient(procState, mContext);
         } catch (RemoteException e) {
@@ -6347,7 +6348,7 @@ public class ActivityManager {
 
     /** @hide */
     @RavenwoodKeep
-    public static String procStateToString(int procState) {
+    public static String procStateToString(@ProcessState int procState) {
         final String procStateStr;
         switch (procState) {
             case ActivityManager.PROCESS_STATE_PERSISTENT:

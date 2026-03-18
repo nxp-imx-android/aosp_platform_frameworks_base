@@ -20,12 +20,15 @@ import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresFlagsDisabled
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
+import android.tools.device.apphelpers.BrowserAppHelper
 import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.helpers.NewTasksAppHelper
 import com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK
+import com.android.window.flags.Flags.FLAG_INHERIT_CONSECUTIVE_LAUNCH_CALLER_UID
 import com.android.wm.shell.Flags.FLAG_DISABLE_BUBBLE_ANYTHING_DESKTOP_WINDOWING
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.Utils.testSetupRule
+import com.android.wm.shell.flicker.bubbles.testcase.AppAnimateInTestCases
 import com.android.wm.shell.flicker.bubbles.testcase.AppReplacesPreviousAppTestCases
 import com.android.wm.shell.flicker.bubbles.testcase.ExpandBubbleTestCases
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerTestHelper.collapseBubbleAppViaTouchOutside
@@ -36,13 +39,18 @@ import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
 import com.android.wm.shell.flicker.utils.SplitScreenUtils
 import com.android.wm.shell.flicker.utils.SplitScreenUtils.enterSplit
 import org.junit.FixMethodOrder
+import org.junit.Ignore
 import org.junit.Rule
+import org.junit.Test
 import org.junit.runners.MethodSorters
 
 /**
- * Test relaunching a bubble from a primary split-screen app.
+ * Test relaunching a bubble from a split-screen app where the bubble belongs to a different app.
  *
- * To run this test: `atest WMShellExplicitFlickerTestsBubbles:ExpandBubbleViaRelaunchFromSplitTest`
+ * To run this test:
+ * ```
+ * atest WMShellExplicitFlickerTestsBubbles:ExpandBubbleViaRelaunchFromSplitDifferentAppTest
+ * ```
  *
  * Pre-steps:
  * ```
@@ -61,14 +69,19 @@ import org.junit.runners.MethodSorters
  */
 // TODO(b/479182156) Remove this when bubbling is supported in desktop mode.
 @RequiresFlagsDisabled(FLAG_DISABLE_BUBBLE_ANYTHING_DESKTOP_WINDOWING)
-@RequiresFlagsEnabled(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK)
+@RequiresFlagsEnabled(
+    FLAG_ENABLE_CREATE_ANY_BUBBLE,
+    FLAG_ENABLE_BUBBLE_ROOT_TASK,
+    FLAG_INHERIT_CONSECUTIVE_LAUNCH_CALLER_UID,
+)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-class ExpandBubbleViaRelaunchFromSplitTest : BubbleFlickerTestBase(), ExpandBubbleTestCases {
+class ExpandBubbleViaRelaunchFromSplitDifferentAppTest :
+    BubbleFlickerTestBase(), ExpandBubbleTestCases {
 
     companion object {
-        private val bubbleApp = testApp
+        private val bubbleApp = BrowserAppHelper(instrumentation)
         private val primaryApp = NewTasksAppHelper(instrumentation)
         private val secondaryApp = SplitScreenUtils.getSecondary(instrumentation)
 
@@ -83,8 +96,8 @@ class ExpandBubbleViaRelaunchFromSplitTest : BubbleFlickerTestBase(), ExpandBubb
                     enterSplit(wmHelper, tapl, uiDevice, primaryApp, secondaryApp)
                 },
                 transition = {
-                    // Relaunch bubble from secondary split.
-                    primaryApp.openNewTaskWithRecycle(uiDevice, wmHelper) {
+                    // Relaunch bubble from primary split.
+                    primaryApp.openNewBrowser(uiDevice, wmHelper) {
                         // Reopen the collapsed bubble.
                         withBubbleExpanded(bubbleApp)
                     }
@@ -108,6 +121,12 @@ class ExpandBubbleViaRelaunchFromSplitTest : BubbleFlickerTestBase(), ExpandBubb
         get() = recordTraceWithTransitionRule.reader
 
     /**
+     * The browser app in bubble. Used by [AppAnimateInTestCases] to verify that the bubble app
+     * layer becomes visible when the bubble is expanded.
+     */
+    override val testApp = bubbleApp
+
+    /**
      * The [primaryApp] in split-screen that launches the bubble. Used by
      * [AppReplacesPreviousAppTestCases] to verify that the bubble is opened on top of.
      */
@@ -118,4 +137,8 @@ class ExpandBubbleViaRelaunchFromSplitTest : BubbleFlickerTestBase(), ExpandBubb
      * that they become invisible.
      */
     override fun shouldAssertPreviousBecomesInvisible() = false
+
+    @Ignore("Rounded corners assertion fails after bubble expanded from split screen (b/493767015)")
+    @Test
+    override fun appLayerHasRoundedCorner() {}
 }

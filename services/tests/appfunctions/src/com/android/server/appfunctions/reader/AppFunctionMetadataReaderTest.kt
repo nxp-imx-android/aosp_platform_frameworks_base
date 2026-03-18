@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.server.appfunctions
+package com.android.server.appfunctions.reader
 
 import android.app.appfunctions.AppFunctionManager
 import android.app.appfunctions.AppFunctionMetadata
@@ -36,6 +36,9 @@ import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.CheckFlagsRule
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import com.android.internal.infra.AndroidFuture
+import com.android.server.appfunctions.FutureGlobalSearchSession
+import com.android.server.appfunctions.FutureSearchResults
+import com.android.server.appfunctions.ServiceConfig
 import com.android.server.appfunctions.dynamic.MultiUserDynamicAppFunctionRegistry
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors
@@ -135,9 +138,12 @@ class AppFunctionMetadataReaderTest {
         val testFutureTopLevelSearchResults =
             object : FutureSearchResults {
                 var pageNumber = 0
+
                 override fun getNextPage(): AndroidFuture<List<SearchResult?>?> {
                     return when (pageNumber++) {
-                        0, 1, 2 -> {
+                        0,
+                        1,
+                        2 -> {
                             AndroidFuture.completedFuture(listOf(TEST_TOP_LEVEL_SEARCH_RESULT))
                         }
                         else -> {
@@ -197,6 +203,7 @@ class AppFunctionMetadataReaderTest {
         val testFutureStaticSearchResults =
             object : FutureSearchResults {
                 var pageNumber = -1
+
                 override fun getNextPage(): AndroidFuture<List<SearchResult?>?> {
                     pageNumber++
                     when (pageNumber) {
@@ -219,6 +226,7 @@ class AppFunctionMetadataReaderTest {
         val testFutureTopLevelSearchResults =
             object : FutureSearchResults {
                 var pageNumber = 0
+
                 override fun getNextPage(): AndroidFuture<List<SearchResult?>?> {
                     when (pageNumber++) {
                         0 -> {

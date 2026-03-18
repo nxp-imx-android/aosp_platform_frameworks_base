@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -195,6 +195,26 @@ val Kosmos.fakeResumableMediaData by
         )
     }
 
+val Kosmos.fakeDismissibleMedia by
+    Kosmos.Fixture {
+        fakeActiveMedia.copy(
+            instanceId = InstanceId.fakeInstanceId(3),
+            appName = "Fake_Dismissible_Music_Player",
+            canBeDismissed = true,
+            state = MediaSessionState.Paused,
+        )
+    }
+
+val Kosmos.fakeDismissibleMediaData by
+    Kosmos.Fixture {
+        fakeActiveMediaData.copy(
+            instanceId = InstanceId.fakeInstanceId(3),
+            app = "Fake_Dismissible_Music_Player",
+            isClearable = true,
+            isPlaying = false,
+        )
+    }
+
 val Kosmos.mediaPlayActionButton: MediaAction
     get() =
         MediaAction(
@@ -254,7 +274,6 @@ val Kosmos.mediaPrevActionButton: MediaAction
 fun Kosmos.setFakeCurrentMedia(mediaList: List<MediaDataModel>) {
     fakeMediaRepository.setFakeCurrentMedia(mediaList)
 }
-
 fun Kosmos.setFakeCurrentMediaData(mediaDataList: List<MediaData>) {
     Snapshot.withMutableSnapshot {
         mediaDataList.forEach { data -> mediaRepository.addCurrentUserMediaEntry(data) }

@@ -157,7 +157,9 @@ public class PersonalContextManagerServiceTest {
         mContext.addMockSystemService(Context.PERMISSION_ENFORCER_SERVICE, mFakePermissionEnforcer);
 
         mService = spy(new PersonalContextManagerService(
-                mContext, mAccessController, (userContext, executor) -> mEmbeddedInsightRenderer));
+                mContext,
+                mAccessController,
+                (userContext, mAccessController, executor) -> mEmbeddedInsightRenderer));
         mLocalService = mService.new LocalService();
 
         mBinderService =
@@ -489,6 +491,21 @@ public class PersonalContextManagerServiceTest {
                 () ->
                         mBinderService.registerInsightSurfaceClient(
                                 mock(InsightSurfaceClientInfo.class), USER_ID_1));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
+    public void testPublishInsightSurfaceHints_allowListDenied_throwsException() {
+        when(mAccessController.hasAccess(anyInt(), eq(AccessController.ACCESS_PUBLISH_HINTS)))
+                .thenReturn(false);
+        BundleHint hint = new BundleHint.Builder().build();
+        ContextHintWrapper hintWrapper = new ContextHintWrapper(hint);
+        List<ContextHintWrapper> hints = List.of(hintWrapper);
+
+        assertThrows(
+                SecurityException.class,
+                () -> mBinderService.publishInsightSurfaceHints(
+                        hints, mock(InsightSurfaceClientInfo.class), USER_ID_1));
     }
 
     @Test

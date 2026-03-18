@@ -32,6 +32,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.util.fastAll
@@ -43,6 +44,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 /**
@@ -198,7 +200,7 @@ sealed interface MutableSceneTransitionLayoutState : BaseMutableSceneTransitionL
      */
     fun setTargetScene(
         targetScene: SceneKey,
-        animationScope: CoroutineScope,
+        animationScope: CoroutineScope? = null,
         transitionKey: TransitionKey? = null,
     ): Pair<TransitionState.Transition, Job>?
 
@@ -211,7 +213,7 @@ sealed interface MutableSceneTransitionLayoutState : BaseMutableSceneTransitionL
      */
     fun showOverlay(
         overlay: OverlayKey,
-        animationScope: CoroutineScope,
+        animationScope: CoroutineScope? = null,
         transitionKey: TransitionKey? = null,
     )
 
@@ -224,7 +226,7 @@ sealed interface MutableSceneTransitionLayoutState : BaseMutableSceneTransitionL
      */
     fun hideOverlay(
         overlay: OverlayKey,
-        animationScope: CoroutineScope,
+        animationScope: CoroutineScope? = null,
         transitionKey: TransitionKey? = null,
     )
 
@@ -238,7 +240,7 @@ sealed interface MutableSceneTransitionLayoutState : BaseMutableSceneTransitionL
     fun replaceOverlay(
         from: OverlayKey,
         to: OverlayKey,
-        animationScope: CoroutineScope,
+        animationScope: CoroutineScope? = null,
         transitionKey: TransitionKey? = null,
     )
 
@@ -252,6 +254,21 @@ sealed interface MutableSceneTransitionLayoutState : BaseMutableSceneTransitionL
      */
     fun startTransitionImmediately(
         animationScope: CoroutineScope,
+        transition: TransitionState.Transition,
+        chain: Boolean = true,
+    ): Job
+
+    /**
+     * Instantly start a [transition].
+     *
+     * This call returns immediately and [transition] will be the [currentTransition] of this
+     * [MutableSceneTransitionLayoutState].
+     *
+     * The transition will run in the [CoroutineScope] associated to this STL state.
+     *
+     * @see startTransition
+     */
+    fun startTransitionImmediately(
         transition: TransitionState.Transition,
         chain: Boolean = true,
     ): Job
@@ -400,6 +417,13 @@ fun MutableSceneTransitionLayoutState(
 ): MutableSceneTransitionLayoutState {
     val uiDelegate =
         object : MutableSceneTransitionLayoutStateImpl.UiDelegate {
+            // TODO(b/493511007): Remove this deprecated factory entirely.
+            override val coroutineScope: CoroutineScope
+                get() =
+                    error(
+                        "animationScope must be provided when using the deprecated MutableSceneTransitionLayoutState factory"
+                    )
+
             override var transitions: SceneTransitions = transitions
             override val motionScheme: MotionScheme = motionScheme
             override val viewRootImpl: ViewRootImpl? = null
@@ -438,8 +462,10 @@ fun rememberMutableSceneTransitionLayoutState(
 ): MutableSceneTransitionLayoutState {
     val motionScheme = MaterialTheme.motionScheme
     val localView = LocalView.current
+    val coroutineScope = rememberCoroutineScope()
     val uiDelegate = remember {
         object : MutableSceneTransitionLayoutStateImpl.UiDelegate {
+            override val coroutineScope: CoroutineScope = coroutineScope
             override var transitions = transitions
             override var motionScheme: MotionScheme = motionScheme
             override val viewRootImpl: ViewRootImpl? = localView.viewRootImpl
@@ -497,6 +523,7 @@ internal class MutableSceneTransitionLayoutStateImpl(
     private val uiDelegate: () -> UiDelegate,
 ) : MutableSceneTransitionLayoutState {
     interface UiDelegate {
+        val coroutineScope: CoroutineScope
         // TODO(b/450236706): Make this a `val`.
         var transitions: SceneTransitions
         val motionScheme: MotionScheme
@@ -599,16 +626,24 @@ internal class MutableSceneTransitionLayoutStateImpl(
 
     override fun setTargetScene(
         targetScene: SceneKey,
-        animationScope: CoroutineScope,
+        animationScope: CoroutineScope?,
         transitionKey: TransitionKey?,
     ): Pair<TransitionState.Transition.ChangeScene, Job>? {
         checkThread()
 
+        val animationScope = animationScope ?: uiDelegate().coroutineScope
         return animationScope.animateToScene(
             layoutState = this@MutableSceneTransitionLayoutStateImpl,
             target = targetScene,
             transitionKey = transitionKey,
         )
+    }
+
+    override fun startTransitionImmediately(
+        transition: TransitionState.Transition,
+        chain: Boolean,
+    ): Job {
+        return startTransitionImmediately(uiDelegate().coroutineScope, transition, chain)
     }
 
     override fun startTransitionImmediately(
@@ -783,7 +818,7 @@ internal class MutableSceneTransitionLayoutStateImpl(
 
     override fun showOverlay(
         overlay: OverlayKey,
-        animationScope: CoroutineScope,
+        animationScope: CoroutineScope?,
         transitionKey: TransitionKey?,
     ) {
         checkThread()
@@ -799,6 +834,7 @@ internal class MutableSceneTransitionLayoutStateImpl(
             replacedTransition: TransitionState.Transition.ShowOrHideOverlay? = null,
             reversed: Boolean = false,
         ) {
+            val animationScope = animationScope ?: uiDelegate().coroutineScope
             animationScope.showOrHideOverlay(
                 layoutState = this@MutableSceneTransitionLayoutStateImpl,
                 overlay = overlay,
@@ -826,7 +862,7 @@ internal class MutableSceneTransitionLayoutStateImpl(
 
     override fun hideOverlay(
         overlay: OverlayKey,
-        animationScope: CoroutineScope,
+        animationScope: CoroutineScope?,
         transitionKey: TransitionKey?,
     ) {
         checkThread()
@@ -842,6 +878,7 @@ internal class MutableSceneTransitionLayoutStateImpl(
             replacedTransition: TransitionState.Transition.ShowOrHideOverlay? = null,
             reversed: Boolean = false,
         ) {
+            val animationScope = animationScope ?: uiDelegate().coroutineScope
             animationScope.showOrHideOverlay(
                 layoutState = this@MutableSceneTransitionLayoutStateImpl,
                 overlay = overlay,
@@ -867,7 +904,7 @@ internal class MutableSceneTransitionLayoutStateImpl(
     override fun replaceOverlay(
         from: OverlayKey,
         to: OverlayKey,
-        animationScope: CoroutineScope,
+        animationScope: CoroutineScope?,
         transitionKey: TransitionKey?,
     ) {
         checkThread()
@@ -887,6 +924,7 @@ internal class MutableSceneTransitionLayoutStateImpl(
             replacedTransition: TransitionState.Transition.ReplaceOverlay? = null,
             reversed: Boolean = false,
         ) {
+            val animationScope = animationScope ?: uiDelegate().coroutineScope
             animationScope.replaceOverlay(
                 layoutState = this@MutableSceneTransitionLayoutStateImpl,
                 fromOverlay = if (reversed) to else from,
@@ -1004,8 +1042,10 @@ internal class HoistedSceneTransitionLayoutStateImpl(
     ): MutableSceneTransitionLayoutStateImpl {
         val motionScheme = MaterialTheme.motionScheme
         val localView = LocalView.current
+        val coroutineScope = rememberCoroutineScope()
         val delegate = remember {
             object : MutableSceneTransitionLayoutStateImpl.UiDelegate {
+                override val coroutineScope: CoroutineScope = coroutineScope
                 override var transitions: SceneTransitions = transitions
                 override var motionScheme: MotionScheme = motionScheme
                 override val viewRootImpl: ViewRootImpl? = localView.viewRootImpl

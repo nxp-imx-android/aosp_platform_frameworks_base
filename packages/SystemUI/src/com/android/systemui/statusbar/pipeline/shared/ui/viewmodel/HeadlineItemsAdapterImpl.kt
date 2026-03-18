@@ -20,6 +20,7 @@ import com.android.systemui.common.shared.model.Text
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.headline.ui.viewmodel.HeadlineItem
 import com.android.systemui.headline.ui.viewmodel.HeadlineItemContent
+import com.android.systemui.headline.ui.viewmodel.HeadlineItemContent.TextBasedContent
 import com.android.systemui.headline.ui.viewmodel.HeadlineItemKey
 import com.android.systemui.headline.ui.viewmodel.HeadlineItemsAdapter
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel.Active
@@ -29,6 +30,7 @@ import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsVie
 import com.android.systemui.statusbar.notification.shared.StatusBarHeadline
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.StatusBarVisibilityInteractor
 import com.android.systemui.statusbar.pipeline.shared.ui.model.HeadlineItemImpl
+import java.text.NumberFormat
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -74,15 +76,14 @@ constructor(
             return content.toHeadlineContent()?.let { listOf(it) } ?: emptyList()
         }
 
-        fun ChipIcon.toHeadlineIcon(): HeadlineItemContent.IconItem? {
+        fun ChipIcon.toHeadlineIcon(): HeadlineItemContent {
             return when (this) {
                 is ChipIcon.SingleColorIcon -> {
                     HeadlineItemContent.IconItem(impl)
                 }
 
                 is ChipIcon.StatusBarNotificationIcon -> {
-                    // TODO(b/488378334): Fetch notification icon
-                    null
+                    HeadlineItemContent.ImageViewItem(notificationKey)
                 }
             }
         }
@@ -90,29 +91,26 @@ constructor(
         fun Content.toHeadlineContent(): HeadlineItemContent? {
             return when (this) {
                 is Content.Countdown -> {
-                    // TODO(b/488457771): Support chronometer based chips in Headline
-                    HeadlineItemContent.TextItem(Text.Loaded(this.secondsUntilStarted.toString()))
+                    TextBasedContent.TextItem(
+                        Text.Loaded(NumberFormat.getIntegerInstance().format(secondsUntilStarted))
+                    )
                 }
 
                 is Content.ShortTimeDelta -> {
-                    // TODO(b/488457771): Support chronometer based chips in Headline
-                    HeadlineItemContent.TextItem(Text.Loaded(time.toString()))
+                    TextBasedContent.ShortTimeDelta(time, timeSource)
                 }
 
                 is Content.Timer -> {
-                    // TODO(b/488457771): Support chronometer based chips in Headline
-                    HeadlineItemContent.TextItem(Text.Loaded("Timer"))
+                    TextBasedContent.TimerItem(this)
                 }
 
                 is Content.Text -> {
-                    HeadlineItemContent.TextItem(Text.Loaded(text))
+                    TextBasedContent.TextItem(Text.Loaded(text))
                 }
 
                 is Content.TextVariants -> {
                     // TODO(b/491453334): Support TextVariants
-                    textVariants.firstOrNull()?.let {
-                        HeadlineItemContent.TextItem(Text.Loaded(it))
-                    }
+                    textVariants.firstOrNull()?.let { TextBasedContent.TextItem(Text.Loaded(it)) }
                 }
 
                 Content.IconOnly -> null

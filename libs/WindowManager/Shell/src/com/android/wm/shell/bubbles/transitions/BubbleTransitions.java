@@ -1535,9 +1535,8 @@ public class BubbleTransitions {
                         // leaf Task can be considered as dependent.
                         startTransaction.setAlpha(chg.getLeash(), 0f);
                     }
-                }
-                if (transitionInfo.getType() == TRANSIT_OPEN && isOpeningMode(
-                        chg.getMode())) {
+                } else if (transitionInfo.getType() == TRANSIT_OPEN
+                        && isOpeningMode(chg.getMode())) {
                     // In core-initiated launches, the transition is of an OPEN type, and we need to
                     // manually show the surfaces behind the newly bubbled task
                     startTransaction.setAlpha(chg.getLeash(), 1f);

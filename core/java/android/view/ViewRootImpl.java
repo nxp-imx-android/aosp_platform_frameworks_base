@@ -114,7 +114,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
 import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.WindowManager.LayoutParams.TYPE_VOLUME_OVERLAY;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_SANDBOXING_VIEW_BOUNDS_APIS;
-import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_SYNCHRONIZED_INSETS_ANIMATION;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_BUFFER_SYNC;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_CANCEL_AND_REDRAW;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_FIRST_TIME;
@@ -154,7 +153,6 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.Size;
 import android.annotation.UiContext;
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityThread;
 import android.app.AppOpsManager;
@@ -966,7 +964,6 @@ public final class ViewRootImpl implements ViewParent,
 
     boolean mHandlesWindowInsetsAnimation = false;
     private int mWindowInsetsAnimationCount = 0;
-    private boolean mUsesSyncedInsetsAnimationByDefault = false;
 
     // Insets types hidden by legacy window flags or system UI flags.
     private @InsetsType int mTypesHiddenByFlags = 0;
@@ -1683,9 +1680,6 @@ public final class ViewRootImpl implements ViewParent,
 
                 adjustLayoutInDisplayCutoutMode(attrs);
                 setAccessibilityFocus(null, null);
-
-                mUsesSyncedInsetsAnimationByDefault = isSyncedInsetsAnimationEnabledByDefault(
-                        attrs.token);
 
                 if (view instanceof RootViewSurfaceTaker) {
                     mSurfaceHolderCallback =
@@ -3827,8 +3821,8 @@ public final class ViewRootImpl implements ViewParent,
                             ignoringTypes).toRect());
             mScrollMayChange = true;
             mImmediateScrolling = true;
+            mLastInsetsDuringAnimationProgress = insets;
             if (dispatchesApplyInsetsDuringAnimationProgress()) {
-                mLastInsetsDuringAnimationProgress = insets;
                 notifyInsetsChanged();
             }
             return null;
@@ -3867,9 +3861,9 @@ public final class ViewRootImpl implements ViewParent,
         // TODOb(b/463899193): introduce device config to disable synchronized insets animation.
         return com.android.window.flags.Flags.syncedInsetsAnimation()
                 // The synced animation might take more resources, thus disabling on low-end devices
-                && !ActivityManager.isLowRamDeviceStatic()
+                && ActivityManager.isHighEndGfx()
                 && !mHandlesWindowInsetsAnimation
-                && usesSyncedInsetsAnimationByDefault();
+                && CompatChanges.isChangeEnabled(ActivityInfo.ENABLE_SYNCHRONIZED_INSETS_ANIMATION);
     }
 
     public void dispatchApplyInsets(View host) {
@@ -10531,48 +10525,6 @@ public final class ViewRootImpl implements ViewParent,
             outLocation[0] -= bounds.left;
             outLocation[1] -= bounds.top;
         }
-    }
-
-    private boolean isSyncedInsetsAnimationEnabledByDefault(IBinder token) {
-        if (ActivityThread.isSystem()) {
-            return true;
-        }
-
-        final PackageManager pm = mContext.getPackageManager();
-
-        final Activity activity = token != null
-                ? ActivityThread.currentActivityThread().getActivity(token)
-                : null;
-
-        if (activity != null) {
-            try {
-                return pm.getProperty(PROPERTY_COMPAT_ALLOW_SYNCHRONIZED_INSETS_ANIMATION,
-                        activity.getComponentName()).getBoolean();
-            } catch (PackageManager.NameNotFoundException e) {
-                // Not found for activity, fallback to application
-            }
-        }
-        try {
-            return pm.getProperty(PROPERTY_COMPAT_ALLOW_SYNCHRONIZED_INSETS_ANIMATION,
-                    mContext.getPackageName()).getBoolean();
-        } catch (PackageManager.NameNotFoundException e) {
-            // Not found for application either
-        }
-
-        return CompatChanges.isChangeEnabled(ActivityInfo.ENABLE_SYNCHRONIZED_INSETS_ANIMATION);
-    }
-
-    /**
-     * @return whether the synchronized insets animation is allowed for this window.
-     */
-    public boolean usesSyncedInsetsAnimationByDefault() {
-        return mUsesSyncedInsetsAnimationByDefault;
-    }
-
-    /** @hide */
-    @VisibleForTesting
-    public void setUsesSyncedInsetsAnimationByDefault(boolean allowed) {
-        mUsesSyncedInsetsAnimationByDefault = allowed;
     }
 
     private boolean getViewBoundsSandboxingEnabled() {

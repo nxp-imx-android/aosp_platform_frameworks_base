@@ -18,11 +18,12 @@ package com.android.settingslib.metadata.preferencesapi.types
 
 import android.content.Context
 import com.android.settingslib.metadata.R
+import com.android.settingslib.metadata.preferencesapi.types.EType
 
 /** A valid sim slot ID. */
 class SimSlotId: DirectApiType<String> {
 
-    override fun getType(): Class<String> = String::class.java
+    override val externalType: EType<String> = EType.String
 
     override fun getDescription(context: Context) =
         context.getString(R.string.sim_slot_id_type_description)

@@ -274,6 +274,7 @@ import com.android.server.security.authenticationpolicy.WatchRangingService;
 import com.android.server.security.authenticationpolicy.agent.AgentAuthService;
 import com.android.server.security.intrusiondetection.IntrusionDetectionService;
 import com.android.server.security.rkp.RemoteProvisioningService;
+import com.android.server.security.trusttoken.TrustTokenManagerService;
 import com.android.server.selectiontoolbar.SelectionToolbarManagerService;
 import com.android.server.selinux.SelinuxAuditLogsService;
 import com.android.server.sensorprivacy.SensorPrivacyService;
@@ -2677,7 +2678,8 @@ public final class SystemServer implements Dumpable {
                     new GraphicsStatsService(context));
             t.traceEnd();
 
-            if (android.service.personalcontext.Flags.enablePersonalContextService()) {
+            if (context.getResources().getBoolean(
+                    R.bool.config_enablePersonalContextManagerService)) {
                 t.traceBegin("StartPersonalContextService");
                 mSystemServiceManager.startService(PersonalContextManagerService.class);
                 t.traceEnd();
@@ -2698,6 +2700,12 @@ public final class SystemServer implements Dumpable {
             t.traceBegin("StartAttestationVerificationService");
             mSystemServiceManager.startService(AttestationVerificationManagerService.class);
             t.traceEnd();
+
+            if (android.security.Flags.enableTalismanService()) {
+                t.traceBegin("StartTrustTokenManagerService");
+                mSystemServiceManager.startService(TrustTokenManagerService.class);
+                t.traceEnd();
+            }
 
             if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_COMPANION_DEVICE_SETUP)) {
                 t.traceBegin("StartCompanionDeviceManager");

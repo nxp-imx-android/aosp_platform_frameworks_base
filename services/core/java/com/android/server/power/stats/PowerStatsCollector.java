@@ -474,16 +474,19 @@ public abstract class PowerStatsCollector {
 
             mLastVoltageMv = voltageMv;
 
+            // TODO(b/492385734): Fix possible out of order responses from getConsumedEnergy
             EnergyConsumerResult[] energy =
                     mConsumedEnergyRetriever.getConsumedEnergy(mEnergyConsumerIds);
-            if (energy == null) {
+            if (energy == null || energy.length == 0) {
                 return false;
             }
 
-            for (int i = 0; i < mEnergyConsumerIds.length; i++) {
+            // Ideally mEnergyConsumerIds and energy should have the same length but not guaranteed.
+            for (int i = 0; i < mEnergyConsumerIds.length && i < energy.length; i++) {
                 populatePowerStats(powerStats, layout, energy, i, averageVoltage);
             }
             mFirstCollection = false;
+
             return true;
         }
 

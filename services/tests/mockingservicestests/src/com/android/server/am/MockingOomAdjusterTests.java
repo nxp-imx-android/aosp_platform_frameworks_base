@@ -308,6 +308,7 @@ public class MockingOomAdjusterTests {
         setFieldValue(ActivityManagerService.class, mService, "mPhantomProcessList", ppl);
 
         doReturn(mock(AppOpsManager.class)).when(mService).getAppOpsManager();
+        doReturn(HOSTING_TYPE_EMPTY).when(mService).getHostingType(any());
         doCallRealMethod().when(mService).enqueueOomAdjTargetLocked(any(ProcessRecord.class));
         doCallRealMethod().when(mService).updateOomAdjPendingTargetsLocked(OOM_ADJ_REASON_ACTIVITY);
         setFieldValue(AppProfiler.class, profiler, "mProfilerLock", new Object());

@@ -35,6 +35,7 @@ import com.android.compose.animation.scene.TestScenes.SceneC
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.animation.scene.subjects.assertThat
 import com.android.compose.test.TestSceneTransition
+import com.android.compose.test.setContentAndCreateMainScope
 import com.android.compose.test.transition
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CompletableDeferred
@@ -555,5 +556,21 @@ class SceneTransitionLayoutStateTest {
             }
 
         assertThat(exception.message).isEqualTo(errorMessage)
+    }
+
+    @Test
+    fun defaultAnimationScope() {
+        val state = rule.runOnUiThread { HoistedSceneTransitionLayoutState(SceneA) }
+        val scope =
+            rule.setContentAndCreateMainScope {
+                SceneTransitionLayout(state) {
+                    scene(SceneA) {}
+                    scene(SceneB) {}
+                }
+            }
+
+        scope.launch { state.uiBoundState!!.startTransitionImmediately(transition(SceneA, SceneB)) }
+        rule.waitForIdle()
+        assertThat(state.isTransitioning(from = SceneA, to = SceneB)).isTrue()
     }
 }

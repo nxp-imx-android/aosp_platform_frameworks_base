@@ -1187,6 +1187,45 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
     @Test
     @EnableFlags(FLAG_ENABLE_BUBBLE_ROOT_TASK)
+    public void testLaunchOrConvert_processChangesFindMatching_mutuallyExclusiveAlpha() {
+        final ActivityManager.RunningTaskInfo taskInfo = setupAppBubble();
+        doReturn(mPendingIntent).when(mBubble).getPendingIntent();
+        final BubbleTransitions.LaunchOrConvertToBubble bt =
+                (BubbleTransitions.LaunchOrConvertToBubble)
+                        mBubbleTransitions.startLaunchIntoOrConvertToBubble(
+                                mBubble,
+                                mExpandedViewManager,
+                                mTaskViewFactory,
+                                mBubblePositioner,
+                                mStackView,
+                                mLayerView,
+                                mIconFactory,
+                                false /* inflateSync */,
+                                BubbleBarLocation.RIGHT);
+        bt.onInflated(mBubble);
+
+        final SurfaceControl taskLeash = new SurfaceControl.Builder().setName("taskLeash").build();
+        final TransitionInfo toFrontTransition =
+                setupToFrontTransition(
+                        taskInfo, taskLeash, null /* snapshot */, bt.mLaunchCookie.binder);
+
+        final IBinder transitionToken = mock(IBinder.class);
+        bt.mPlayingTransition = transitionToken;
+        final SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
+
+        bt.startAnimation(
+                transitionToken,
+                toFrontTransition,
+                startT,
+                mock(SurfaceControl.Transaction.class),
+                wct -> {});
+
+        verify(startT).setAlpha(taskLeash, 0f);
+        verify(startT, never()).setAlpha(taskLeash, 1f);
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_BUBBLE_ROOT_TASK)
     public void testLaunchOrConvert_plan() {
         final ActivityManager.RunningTaskInfo taskInfo = setupAppBubble();
         doReturn(mPendingIntent).when(mBubble).getPendingIntent();
@@ -1680,6 +1719,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         verify(finishT).reparent(taskLeash, taskViewSurface);
         verify(finishT).setPosition(taskLeash, 0, 0);
         verify(finishT).setWindowCrop(taskLeash, 50, 100);
+        verify(bev).setContentVisibility(true);
 
         TaskViewRepository.TaskViewState state = mRepository.byTaskView(mTaskViewTaskController);
         assertThat(state).isNotNull();

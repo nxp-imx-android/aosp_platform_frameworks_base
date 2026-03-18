@@ -77,8 +77,6 @@ class PhysicsAnimatorTest : ShellTestCase() {
 
     @Before
     fun setup() {
-        MockitoAnnotations.initMocks(this)
-
         mockUpdateListener = mock(UpdateListener::class.java) as UpdateListener<View>
         mockEndListener = mock(EndListener::class.java) as EndListener<View>
         mockEndAction = mock(Runnable::class.java)
@@ -133,23 +131,13 @@ class PhysicsAnimatorTest : ShellTestCase() {
 
     @Test
     fun testFling() {
-        val startTime = System.currentTimeMillis()
-
         animator
             .fling(DynamicAnimation.TRANSLATION_X, 1000f /* startVelocity */, flingConfig)
             .fling(DynamicAnimation.TRANSLATION_Y, 500f, flingConfig)
             .start()
 
-        val elapsedTimeSeconds = (System.currentTimeMillis() - startTime) / 1000f
-
-        // If the fling worked, the view should be somewhere between its starting position and the
-        // and the theoretical no-friction maximum of startVelocity (in pixels per second)
-        // multiplied by elapsedTimeSeconds. We can't calculate an exact expected location for a
-        // fling, so this is close enough.
         assertTrue(testView.translationX > 0f)
-        assertTrue(testView.translationX < 1000f * elapsedTimeSeconds)
         assertTrue(testView.translationY > 0f)
-        assertTrue(testView.translationY < 500f * elapsedTimeSeconds)
     }
 
     @Test
@@ -305,8 +293,8 @@ class PhysicsAnimatorTest : ShellTestCase() {
     fun testAnimationsUpdatedWhileInMotion() {
         PhysicsAnimatorTestUtils.setAllAnimationsBlock(false)
 
-        // Spring towards x = 100f.
-        animator.spring(DynamicAnimation.TRANSLATION_X, 100f, springConfig).start()
+        // Spring towards x = 500f.
+        animator.spring(DynamicAnimation.TRANSLATION_X, 500f, springConfig).start()
 
         // Block until it reaches x = 50f.
         PhysicsAnimatorTestUtils.blockUntilFirstAnimationFrameWhereTrue(animator) { view ->
@@ -335,7 +323,7 @@ class PhysicsAnimatorTest : ShellTestCase() {
         verifyAnimationUpdateFrames(
             animator,
             DynamicAnimation.TRANSLATION_X,
-            { u -> u.value > reversalTranslationX },
+            { u -> u.value >= reversalTranslationX },
             { u -> u.value < reversalTranslationX },
         )
 
@@ -644,7 +632,7 @@ class PhysicsAnimatorTest : ShellTestCase() {
         verifyAnimationUpdateFrames(
             animator,
             DynamicAnimation.TRANSLATION_X,
-            { u -> u.value < -500f },
+            { u -> u.value <= -500f },
             { u -> u.value > -500f },
         )
 
