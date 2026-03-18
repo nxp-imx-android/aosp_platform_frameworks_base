@@ -14749,6 +14749,7 @@ public class AudioService extends IAudioService.Stub
         ret.packageName = p.getPackageName();
         ret.targetSdk = p.getTargetSdkVersion();
         ret.isPlaybackCaptureAllowed = p.isAudioPlaybackCaptureAllowed();
+        ret.pccId = p.getPccId();
         return ret;
     }
 
