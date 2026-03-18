@@ -2114,12 +2114,9 @@
     <string name="notification_metric_label_unit" msgid="309618413505128451">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>)"</string>
     <string name="notification_metric_label_unit_separator" msgid="5631839566551764472">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>):"</string>
     <string name="notification_metric_label_separator" msgid="8416027475779515033">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>:"</string>
-    <!-- no translation found for notification_history_metric_subtext (7408216222655116821) -->
-    <skip />
-    <!-- no translation found for notification_metric_running_timer (1096459900744921213) -->
-    <skip />
-    <!-- no translation found for notification_metric_running_stopwatch (8039546029949295377) -->
-    <skip />
+    <string name="notification_history_metric_subtext" msgid="7408216222655116821">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g>: <xliff:g id="METRIC_VALUE">%2$s</xliff:g>"</string>
+    <string name="notification_metric_running_timer" msgid="1096459900744921213">"ચાલી રહેલું ટાઇમર"</string>
+    <string name="notification_metric_running_stopwatch" msgid="8039546029949295377">"ચાલી રહેલી સ્ટૉપવૉચ"</string>
     <string name="call_notification_answer_action" msgid="5999246836247132937">"જવાબ"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"વીડિયો"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"નકારો"</string>
@@ -2709,7 +2706,7 @@
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"ટીવી બંધ કરવા માટે પાવર બટનને થોડીવાર દબાવી રાખો"</string>
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"સિસ્ટમ સંસાધન સંબંધિત અલર્ટ"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"સંસાધનનો વધુ પડતો ઉપયોગ"</string>
-    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"ઍપ ‘<xliff:g id="APP_NAME">%1$s</xliff:g> ઘણા બધા સંસાધનોનો ઉપયોગ કરી રહી છે.\""</string>
+    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"સંસાધનનો વધુ પડતો ઉપયોગ થવાને કારણે ઍપ ‘<xliff:g id="APP_NAME">%1$s</xliff:g> બંધ કરવામાં આવી છે. તમે સેટિંગમાં ઍપ મેનૂમાંથી તેને ફરીથી ચાલુ કરી શકો છો.\""</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"તમારા માતાપિતા તરફથી અપડેટ"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> હાલ પૂરતી કાઢી નાખવામાં આવી હતી"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> હવે ઉપલબ્ધ છે"</string>
