@@ -171,14 +171,28 @@ object PreferenceGraphCompressor {
         if (hasKey()) setKey(stringMapper(key, parameters))
         if (hasTitle()) setTitle(mapStringsInText(title, parameters, stringMapper))
         if (hasSummary()) setSummary(mapStringsInText(summary, parameters, stringMapper))
+        if (hasExtras()) setExtras(mapStringsInBundle(extras, parameters, stringMapper))
         if (hasLaunchIntent()) setLaunchIntent(mapStringsInIntent(launchIntent, parameters, stringMapper))
         if (hasActionTarget()) setActionTarget(actionTarget.toBuilder().apply {
             if (hasKey()) setKey(stringMapper(key, parameters))
             if (hasKeyParameters()) setKeyParameters(mapKeyParameterStrings(keyParameters, parameters, stringMapper))
+            if (hasIntent()) setIntent(mapStringsInIntent(intent, parameters, stringMapper))
         }.build())
         if (hasParametersSchema()) setParametersSchema(mapStringsInSchema(parametersSchema, parameters, stringMapper))
         if (hasKeyParameters()) setKeyParameters(mapKeyParameterStrings(keyParameters, parameters, stringMapper))
         if (hasValueDescriptor()) setValueDescriptor(mapStringsInDescriptor(valueDescriptor, parameters, stringMapper))
+        
+        if (hasReadPermissions()) setReadPermissions(mapStringsInPermissions(readPermissions, parameters, stringMapper))
+        if (hasWritePermissions()) setWritePermissions(mapStringsInPermissions(writePermissions, parameters, stringMapper))
+
+        val mappedTags = tagsList.map { stringMapper(it, parameters) }
+        clearTags().addAllTags(mappedTags)
+        
+        val mappedGetPre = getPreconditionsList.map { stringMapper(it, parameters) }
+        clearGetPreconditions().addAllGetPreconditions(mappedGetPre)
+        
+        val mappedSetPre = setPreconditionsList.map { stringMapper(it, parameters) }
+        clearSetPreconditions().addAllSetPreconditions(mappedSetPre)
     }.build()
 
     private fun mapStringsInIntent(
@@ -192,6 +206,26 @@ object PreferenceGraphCompressor {
         if (hasComponent()) setComponent(stringMapper(component, parameters))
         if (hasExtras()) setExtras(mapStringsInBundle(extras, parameters, stringMapper))
         if (hasMimeType()) setMimeType(stringMapper(mimeType, parameters))
+    }.build()
+
+    private fun mapStringsInPermissions(
+        permissions: com.android.settingslib.graph.proto.PermissionsProto,
+        parameters: Map<String, String>,
+        stringMapper: (String, Map<String, String>) -> String
+    ): com.android.settingslib.graph.proto.PermissionsProto = permissions.toBuilder().apply {
+        val mappedAllOf = allOfList.map { mapStringsInPermission(it, parameters, stringMapper) }
+        clearAllOf().addAllAllOf(mappedAllOf)
+        val mappedAnyOf = anyOfList.map { mapStringsInPermission(it, parameters, stringMapper) }
+        clearAnyOf().addAllAnyOf(mappedAnyOf)
+    }.build()
+
+    private fun mapStringsInPermission(
+        permission: com.android.settingslib.graph.proto.PermissionProto,
+        parameters: Map<String, String>,
+        stringMapper: (String, Map<String, String>) -> String
+    ): com.android.settingslib.graph.proto.PermissionProto = permission.toBuilder().apply {
+        if (hasPermission()) setPermission(stringMapper(this.permission, parameters))
+        if (hasPermissions()) setPermissions(mapStringsInPermissions(permissions, parameters, stringMapper))
     }.build()
 
     private fun mapStringsInBundle(
@@ -245,6 +279,7 @@ object PreferenceGraphCompressor {
         stringMapper: (String, Map<String, String>) -> String
     ): PreferenceValueDescriptorProto = descriptor.toBuilder().apply {
         if (hasDescription()) setDescription(stringMapper(description, parameters))
+        if (hasValueDescriptorKey()) setValueDescriptorKey(stringMapper(valueDescriptorKey, parameters))
         val mappedPossibleValues = possibleValuesList.map {
             it.toBuilder().apply {
                 if (hasDescription()) setDescription(stringMapper(description, parameters))
@@ -255,6 +290,7 @@ object PreferenceGraphCompressor {
         }
         clearPossibleValues().addAllPossibleValues(mappedPossibleValues)
         if (hasParametersSchema()) setParametersSchema(mapStringsInSchema(parametersSchema, parameters, stringMapper))
+        if (hasParameters()) setParameters(mapKeyParameterStrings(this.parameters, parameters, stringMapper))
     }.build()
 
     private fun mapKeyParameterStrings(
