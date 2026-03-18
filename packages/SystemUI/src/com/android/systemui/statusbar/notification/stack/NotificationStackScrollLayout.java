@@ -3512,15 +3512,15 @@ public class NotificationStackScrollLayout
     }
 
     @Override
-    public void setAlignToInnerQqsTiles(boolean alignToInnerQqsTiles) {
+    public void setSidePaddingConfig(int baseSidePadding, boolean alignToInnerQqsTiles) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
-        mScrollViewFields.alignToInnerQqsTiles = alignToInnerQqsTiles;
-    }
-
-    @Override
-    public void setBaseSidePadding(int baseSidePadding) {
-        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
+        if (mScrollViewFields.baseSidePadding == baseSidePadding
+                && mScrollViewFields.alignToInnerQqsTiles == alignToInnerQqsTiles) {
+            return;
+        }
         mScrollViewFields.baseSidePadding = baseSidePadding;
+        mScrollViewFields.alignToInnerQqsTiles = alignToInnerQqsTiles;
+        requestLayout();
     }
 
     private void updateNotificationAnimationStates() {
