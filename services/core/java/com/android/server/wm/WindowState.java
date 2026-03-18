@@ -192,6 +192,7 @@ import android.app.admin.DevicePolicyCache;
 import android.app.servertransaction.WindowStateInsetsControlChangeItem;
 import android.app.servertransaction.WindowStateResizeItem;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -795,6 +796,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
      */
     private boolean mInsetsAnimationRunning;
 
+    private final boolean mUsesSyncedInsetsAnimation;
+
     private final Consumer<SurfaceControl.Transaction> mSetSurfacePositionConsumer = t -> {
         // Only apply the position to the surface when there's no leash created.
         if (mSurfaceControl != null && mSurfaceControl.isValid() && !mSurfaceAnimator.hasLeash()) {
@@ -1152,6 +1155,41 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             parentWindow.addChild(this, sWindowSubLayerComparator);
         }
 
+        mUsesSyncedInsetsAnimation = calculateUsesSyncedInsetsAnimation();
+    }
+
+    boolean isSyncedInsetsAnimationEnabled() {
+        return mUsesSyncedInsetsAnimation;
+    }
+
+    private boolean calculateUsesSyncedInsetsAnimation() {
+        if (mOwnerUid == android.os.Process.SYSTEM_UID) {
+            return true;
+        }
+
+        if (mActivityRecord != null) {
+            try {
+                return mContext.getPackageManager().getPropertyAsUser(
+                        WindowManager.PROPERTY_COMPAT_ALLOW_SYNCHRONIZED_INSETS_ANIMATION,
+                        mActivityRecord.mActivityComponent.getPackageName(),
+                        mActivityRecord.mActivityComponent.getClassName(), mShowUserId)
+                        .getBoolean();
+            } catch (PackageManager.NameNotFoundException e) {
+                // Not found for activity, fallback to application
+            }
+        }
+        try {
+            return mContext.getPackageManager().getPropertyAsUser(
+                    WindowManager.PROPERTY_COMPAT_ALLOW_SYNCHRONIZED_INSETS_ANIMATION,
+                    getOwningPackage(), null, mShowUserId)
+                    .getBoolean();
+        } catch (PackageManager.NameNotFoundException e) {
+            // Not found for application either
+        }
+
+        return android.app.compat.CompatChanges.isChangeEnabled(
+                android.content.pm.ActivityInfo.ENABLE_SYNCHRONIZED_INSETS_ANIMATION,
+                getOwningPackage(), android.os.UserHandle.of(mShowUserId));
     }
 
     @Override

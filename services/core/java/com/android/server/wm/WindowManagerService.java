@@ -2028,6 +2028,7 @@ public class WindowManagerService extends IWindowManager.Stub
             @NonNull ActivityRecord activity, @NonNull DisplayContent displayContent,
             @NonNull IWindow client, @NonNull LayoutParams attrs, int uid,
             @NonNull WindowRelayoutResult result) {
+        result.usesSyncedInsetsAnimation = win.isSyncedInsetsAnimationEnabled();
         int res = 0;
         final int type = attrs.type;
         boolean imMayMove = true;
@@ -2530,6 +2531,9 @@ public class WindowManagerService extends IWindowManager.Stub
             final WindowState win = windowForClient(session, client);
             if (win == null) {
                 return 0;
+            }
+            if (outRelayoutResult != null) {
+                outRelayoutResult.usesSyncedInsetsAnimation = win.isSyncedInsetsAnimationEnabled();
             }
             if (win.mRelayoutSeq < seq) {
                 win.mRelayoutSeq = seq;
