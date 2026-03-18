@@ -39,6 +39,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewStub
 import android.view.WindowManager
+import android.widget.Button
 import android.widget.CompoundButton
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -50,6 +51,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.AccessibilityDelegateCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Lifecycle
@@ -282,17 +286,21 @@ constructor(
                 uiEventLogger.log(InternetDetailsEvent.SHARE_WIFI_QS_BUTTON_CLICKED)
             }
         }
+        setButtonAccessibilityRole(shareWifiButton)
 
         // Add network
         addNetworkButton = contentView.findViewById(R.id.add_network_button)
         if (QsWifiConfig.isEnabled) {
-            addNetworkButton?.setOnClickListener {
-                val intent =
-                    WifiUtils.getWifiDialogIntent(null, true /* connectForCaller */).apply {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-                    }
-                internetDetailsContentController.startActivityForDialog(intent)
+            addNetworkButton?.let { button ->
+                button.setOnClickListener {
+                    val intent =
+                        WifiUtils.getWifiDialogIntent(null, true /* connectForCaller */).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                        }
+                    internetDetailsContentController.startActivityForDialog(intent)
+                }
+                setButtonAccessibilityRole(button)
             }
         }
 
@@ -301,6 +309,7 @@ constructor(
         airplaneModeButton.setOnClickListener {
             internetDetailsContentController.setAirplaneModeDisabled()
         }
+        setButtonAccessibilityRole(airplaneModeButton)
         if (isFlagEnabledAndInDialog) {
             internetDialogTitle = contentView.requireViewById(R.id.internet_dialog_title)
             internetDialogSubTitle = contentView.requireViewById(R.id.internet_dialog_subtitle)
@@ -412,6 +421,8 @@ constructor(
                 setEntryMargins()
                 layoutParams = layoutParams.apply { height = entryHeight }
             }
+        seeAllLayout.setOnClickListener(this::onClickSeeMoreButton)
+        setButtonAccessibilityRole(seeAllLayout)
 
         // Set click listeners for Wi-Fi related views
         turnWifiOnLayout.setOnClickListener {
@@ -429,7 +440,6 @@ constructor(
             connectedWifiListLayout.background =
                 context.getDrawable(R.drawable.settingslib_entry_bg_on)
         }
-        seeAllLayout.setOnClickListener(this::onClickSeeMoreButton)
     }
 
     private fun setMobileLayout() {
@@ -515,6 +525,22 @@ constructor(
 
     private fun getSubtitleText(): String {
         return internetDetailsContentController.getSubtitleText(isProgressBarVisible).toString()
+    }
+
+    // Add Accessibility Role for layout view so that they can be announced as "Button"
+    private fun setButtonAccessibilityRole(view: View) {
+        ViewCompat.setAccessibilityDelegate(
+            view,
+            object : AccessibilityDelegateCompat() {
+                override fun onInitializeAccessibilityNodeInfo(
+                    host: View,
+                    info: AccessibilityNodeInfoCompat,
+                ) {
+                    super.onInitializeAccessibilityNodeInfo(host, info)
+                    info.className = Button::class.java.name
+                }
+            },
+        )
     }
 
     private fun updateDetailsUI(internetContent: InternetContent) {
@@ -983,7 +1009,8 @@ constructor(
 
     @MainThread
     private fun updateWifiListAndSeeAll(internetContent: InternetContent) {
-        if (!internetContent.isWifiEnabled ||
+        if (
+            !internetContent.isWifiEnabled ||
                 internetContent.isDeviceLocked ||
                 internetContent.isHeadlessSystemUser
         ) {

@@ -28,9 +28,12 @@ import android.telephony.telephonyManager
 import android.testing.TestableLooper.RunWithLooper
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.Button
 import android.widget.CompoundButton
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.view.ViewCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.annotation.UiThreadTest
 import androidx.test.filters.SmallTest
@@ -74,8 +77,7 @@ import platform.test.runner.parameterized.Parameters
 )
 @UiThreadTest
 class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : SysuiTestCase() {
-    @get:Rule
-    val expect: Expect = Expect.create()
+    @get:Rule val expect: Expect = Expect.create()
 
     private val kosmos = testKosmos()
     private val handler: Handler = kosmos.fakeExecutorHandler
@@ -1011,6 +1013,24 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
             expect.that(connectedWifi!!.visibility).isEqualTo(View.GONE)
             expect.that(wifiList!!.visibility).isEqualTo(View.GONE)
             expect.that(seeAll!!.visibility).isEqualTo(View.GONE)
+        }
+    }
+
+    fun testButtonsAnnounceAsButton() {
+        // Test Share Wi-Fi button
+        val shareWifiNodeInfo = AccessibilityNodeInfoCompat.obtain()
+        ViewCompat.onInitializeAccessibilityNodeInfo(sharedWifiButton!!, shareWifiNodeInfo)
+        assertThat(shareWifiNodeInfo.className).isEqualTo(Button::class.java.name)
+
+        val seeAllNodeInfo = AccessibilityNodeInfoCompat.obtain()
+        ViewCompat.onInitializeAccessibilityNodeInfo(seeAll!!, seeAllNodeInfo)
+        assertThat(seeAllNodeInfo.className).isEqualTo(Button::class.java.name)
+
+        // Test Add Network Button
+        addNetworkButton?.let { button ->
+            val addNetworkNodeInfo = AccessibilityNodeInfoCompat.obtain()
+            ViewCompat.onInitializeAccessibilityNodeInfo(button, addNetworkNodeInfo)
+            assertThat(addNetworkNodeInfo.className).isEqualTo(Button::class.java.name)
         }
     }
 
