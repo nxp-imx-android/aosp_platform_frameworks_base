@@ -38,6 +38,7 @@ import android.app.admin.metadata.EnumPolicyMetadata;
 import android.app.admin.metadata.GeneratedPolicyMetadata;
 import android.app.admin.metadata.IntegerPolicyMetadata;
 import android.app.admin.metadata.ListPolicyMetadata;
+import android.app.admin.metadata.PackagePolicyMetadata;
 import android.app.admin.metadata.PolicyMetadata;
 import android.app.admin.metadata.ResolutionMechanismMetadata;
 import android.app.admin.metadata.StringPolicyMetadata;
@@ -175,8 +176,7 @@ public class PolicyDefinitionFactory {
         addFactory(
                 PolicyIdentifier.CONTENT_RESTRICTION_APPS,
                 builder -> {
-                    return builder
-                            .setResolutionMechanism(ListUnion.PACKAGE)
+                    return builder.setResolutionMechanism(ListUnion.PACKAGE)
                             .setEnforcerCallback(PolicyEnforcerCallbacks::setContentRestrictionApps)
                             .build();
                 });
@@ -301,10 +301,29 @@ public class PolicyDefinitionFactory {
                 case ResolutionMechanismMetadata.MostRestrictive m ->
                         new MostRestrictive<T>(convertValues(m.getMostToLeastRestrictiveValues()));
                 case ResolutionMechanismMetadata.NotCoexistable n -> new LeastRecent<T>();
+                case ResolutionMechanismMetadata.ListUnion m -> getListUnionResolutionMechanism();
                 default ->
                         throw new UnsupportedOperationException(
                                 "Unsupported resolution mechanism: " + input.getClass());
             };
+        }
+
+        private ResolutionMechanism<T> getListUnionResolutionMechanism() {
+            return (ResolutionMechanism<T>)
+                    switch (mMetadata) {
+                        case ListPolicyMetadata l ->
+                                switch (l.getElementMetadata()) {
+                                    case StringPolicyMetadata s -> ListUnion.STRING;
+                                    case PackagePolicyMetadata p -> ListUnion.PACKAGE;
+                                    default ->
+                                            throw new UnsupportedOperationException(
+                                                    "Unsupported list policy: " + l.getId());
+                                };
+                        default ->
+                                throw new UnsupportedOperationException(
+                                        "ListUnion is only supported on list policies but got: "
+                                                + mMetadata.getId());
+                    };
         }
 
         private List<PolicyValue<T>> convertValues(Collection<T> values) {

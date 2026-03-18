@@ -134,17 +134,28 @@ open class PolicyDefinitionFactoryTest {
     }
 
     @Test
-    fun getPolicyDefinition_resolutionMechanism_notCoexistable() {
+    fun getPolicyDefinition_resolutionMechanism_listUnionOnStringPolicy() {
         val metadata =
-            EnumPolicy.metadata.copy(
-                resolutionMechanism =
-                    ResolutionMechanismMetadata.NotCoexistable(),
+            ListOfStringPolicy.metadata.copy(
+                resolutionMechanism = ResolutionMechanismMetadata.ListUnion<List<String>>()
             )
 
         val policyDefinition = createPolicyDefinition(metadata)
 
-        val expected =
-            "LeastRecent {}"
+        val expected = "ListUnion<String> {}"
+        assertThat(policyDefinition.getResolutionMechanism().toString()).isEqualTo(expected)
+    }
+
+    @Test
+    fun getPolicyDefinition_resolutionMechanism_notCoexistable() {
+        val metadata =
+            EnumPolicy.metadata.copy(
+                resolutionMechanism = ResolutionMechanismMetadata.NotCoexistable()
+            )
+
+        val policyDefinition = createPolicyDefinition(metadata)
+
+        val expected = "LeastRecent {}"
         assertThat(policyDefinition.getResolutionMechanism().toString()).isEqualTo(expected)
     }
 }
