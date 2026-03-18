@@ -24,8 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import com.android.systemui.Flags.hsuQsChanges
 import com.android.systemui.classifier.domain.interactor.FalsingInteractor
-import com.android.systemui.lifecycle.ExclusiveActivatable
-import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.qs.panels.domain.interactor.QSPreferencesInteractor
@@ -39,7 +38,6 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -60,9 +58,7 @@ constructor(
     private val dualShadeEducationInteractor: DualShadeEducationInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
     @Assisted private val ignoreTestHarness: Boolean,
-) : ExclusiveActivatable() {
-
-    private val hydrator = Hydrator("editModeButtonViewModel.hydrator")
+) : HydratedActivatable() {
 
     /**
      * Avoid showing the tooltip when the shade is opened in test harness, as the tooltip will block
@@ -72,14 +68,9 @@ constructor(
         !ignoreTestHarness && ActivityManager.isRunningInUserTestHarness()
 
     val isEditButtonVisible: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "isEditButtonVisible",
-            initialValue = false,
-            source =
-                selectedUserInteractor.isCurrentUserHeadlessSystemUser.map { isHeadlessSystemUser ->
-                    !hsuQsChanges() || !isHeadlessSystemUser
-                },
-        )
+        selectedUserInteractor.isCurrentUserHeadlessSystemUser
+            .map { isHeadlessSystemUser -> !hsuQsChanges() || !isHeadlessSystemUser }
+            .hydratedStateOf(initialValue = false)
 
     /** Whether or not the edit mode tooltip should be displayed. */
     var showTooltip by mutableStateOf(false)
@@ -96,12 +87,8 @@ constructor(
         qsPreferencesInteractor.setEditTooltipShown(true)
     }
 
-    override suspend fun onActivated(): Nothing {
-        coroutineScope {
-            launch { hydrator.activate() }
-            launch { showTooltipsAsNeeded() }
-        }
-        awaitCancellation()
+    override suspend fun onActivated() {
+        coroutineScope { launch { showTooltipsAsNeeded() } }
     }
 
     private suspend fun showTooltipsAsNeeded() {
