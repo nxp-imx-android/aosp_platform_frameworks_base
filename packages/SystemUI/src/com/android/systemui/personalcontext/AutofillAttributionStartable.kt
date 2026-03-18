@@ -67,7 +67,10 @@ constructor(
         val renderToken = intent.getParcelableExtra(EXTRA_RENDER_TOKEN, RenderToken::class.java)
         val index = intent.getIntExtra(EXTRA_INSIGHT_INDEX, 0)
         if (insight == null || renderToken == null || !intent.hasExtra(EXTRA_INSIGHT_INDEX)) {
-            Log.e(TAG, "onReceive: insight ($insight) or render token ($renderToken) not found")
+            Log.e(
+                TAG,
+                "onReceive: insight ($insight), render token ($renderToken), or index not found",
+            )
             return
         }
 

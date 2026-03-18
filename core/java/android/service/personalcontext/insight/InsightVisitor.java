@@ -25,8 +25,8 @@ import android.annotation.NonNull;
  * InsightTraverser} to walk the insight tree and apply the visitor. Because this interface is
  * stateless, implementations can be safely reused and shared.
  *
- * <p>The index argument is the order in which the insight was traversed during the pre-order
- * traversal, excluding {@link InsightCollection} nodes.
+ * <p>The index argument is the order in which the insight was traversed during a pre-order
+ * traversal.
  *
  * @hide
  */
