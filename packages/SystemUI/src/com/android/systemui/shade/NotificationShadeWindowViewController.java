@@ -567,7 +567,7 @@ public class NotificationShadeWindowViewController implements Dumpable {
                         // directly to QS and not the shade
                         if (mStatusBarStateController.getState() == KEYGUARD
                                 && mQuickSettingsController.shouldQuickSettingsIntercept(
-                                    ev.getX(), ev.getY(), 0)) {
+                                    ev.getX(), ev.getY(), 0, ev)) {
                             mShadeLogger.d("NSWVC: QS intercepted");
                             return true;
                         }
