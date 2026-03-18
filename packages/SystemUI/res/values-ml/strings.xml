@@ -79,7 +79,6 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"അനുവദിക്കൂ"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"വയർലെസ് ഡീബഗ്ഗിംഗ് അനുവദനീയമല്ല"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"ഈ ഉപകരണത്തിൽ ഇപ്പോൾ സൈൻ ഇൻ ചെയ്‌തിരിക്കുന്ന ഉപയോക്താവിന് വയർലെസ് ഡീബഗ്ഗിംഗ് ഓണാക്കാനാകില്ല. ഈ ഫീച്ചർ ഉപയോഗിക്കാൻ അഡ്‌മിൻ ഉപയോക്താവിലേക്ക് മാറുക."</string>
-    <string name="change_connected_wifi_text" msgid="6346095920396568246">"ലോഗിൻ ചെയ്താൽ നിങ്ങൾക്ക് ഈ ക്രമീകരണം മാറ്റാം"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB പോർട്ട് പ്രവർത്തനരഹിതമാക്കി"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"ദ്രാവകത്തിൽ നിന്നോ പൊടിയിൽ നിന്നോ നിങ്ങളുടെ ഉപകരണത്തെ പരിരക്ഷിക്കാനായി USB പോർട്ട് പ്രവർത്തനരഹിതമാക്കിയിരിക്കുന്നതിനാൽ അത് ആക്‌സസറികളൊന്നും തിരിച്ചറിയില്ല.\n\n USB പോർട്ട് വീണ്ടും ഉപയോഗിക്കാനാകുമ്പോൾ നിങ്ങളെ അറിയിക്കും."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"ആക്‌സസറികളും ചാർജറുകളും കണ്ടെത്താൻ USB പോർട്ട് പ്രവർത്തനക്ഷമമാക്കുക"</string>
@@ -1836,6 +1835,7 @@
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"അടുത്തത്"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"അടുത്ത പേജിലേക്ക് നാവിഗേറ്റ് ചെയ്യുക"</string>
     <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"മടങ്ങുക"</string>
+    <string name="accessibility_close_overlay_box_description" msgid="8399871568780893724">"മടങ്ങുക"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"സ്വയമേവ പൂരിപ്പിക്കൽ"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"വികസിപ്പിക്കുക"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"കൃത്യമായ ലൊക്കേഷൻ"</string>
@@ -1886,4 +1886,11 @@
     <string name="dream_setup_title" msgid="7996530071414508238">"സ്ക്രീൻ സേവർ സജ്ജീകരിക്കുക"</string>
     <string name="dream_setup_button_not_now" msgid="8028385323668620805">"ഇപ്പോൾ വേണ്ട"</string>
     <string name="dream_setup_button_setup" msgid="4755361016017554826">"സജ്ജീകരിക്കുക"</string>
+    <string name="ace_attribution_dialog_settings_label" msgid="8898211593287114433">"ക്രമീകരണം"</string>
+    <string name="ace_attribution_dialog_title" msgid="5236154464063969824">"മാജിക് ക്യൂ നിർദ്ദേശങ്ങൾ"</string>
+    <string name="ace_attribution_dialog_description" msgid="1431906058759687758">"ഈ നിർദ്ദേശത്തിൽ പരിഗണിക്കുന്ന ഇനങ്ങൾ"</string>
+    <string name="ace_attribution_header_icon_accessibility_description" msgid="7385840112370423581">"Android Device Intelligence ഐക്കൺ"</string>
+    <string name="ace_attribution_settings_button_accessibility_description" msgid="8426163772933746374">"ക്രമീകരണ ബട്ടൺ"</string>
+    <string name="ace_attribution_thumbs_up_button_accessibility_description" msgid="3561722934830934360">"തംബ്‌സ് അപ്പ് ഫീഡ്ബാക്ക് ബട്ടൺ"</string>
+    <string name="ace_attribution_thumbs_down_button_accessibility_description" msgid="5471283747650437662">"തംബ്‌സ് ഡൗൺ ഫീഡ്ബാക്ക് ബട്ടൺ"</string>
 </resources>

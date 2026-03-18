@@ -79,7 +79,6 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"అనుమతించండి"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"వైర్‌లెస్ డీబగ్గింగ్‌కి అనుమతి లేదు"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"ఈ పరికరానికి ప్రస్తుతం సైన్ ఇన్ చేసిన యూజర్, వైర్‌లెస్ డీబగ్గింగ్ ఆన్ చేయలేరు. ఈ ఫీచర్ ఉపయోగించడానికి, అడ్మిన్ యూజర్‌కు స్విచ్ అవ్వండి."</string>
-    <string name="change_connected_wifi_text" msgid="6346095920396568246">"మీరు లాగిన్ అయిన తర్వాత ఈ సెట్టింగ్‌ను మార్చవచ్చు"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB పోర్ట్‌ నిలిపివేయబడింది"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"మీ పరికరంలోకి నీరు లేదా చెత్తాచెదారం చేరిపోకుండా కాపాడటానికి, USB పోర్ట్ నిలిపివేయబడుతుంది, అలాగే యాక్సెసరీలు వేటిని గుర్తించదు.\n\nUSB పోర్ట్‌ను ఉపయోగించడం సురక్షితమేనని నిర్ధారించుకున్న తర్వాత, మళ్లీ మీకో నోటిఫికేషన్‌ రూపంలో తెలియజేయబడుతుంది."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"ఛార్జర్‌లు, యాక్సెసరీలను గుర్తించే విధంగా USB పోర్ట్ ప్రారంభించబడింది"</string>
@@ -1836,6 +1835,7 @@
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"తర్వాత"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"తర్వాతి పేజీకి నావిగేట్ చేయండి"</string>
     <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"వెనుకకు వెళ్లండి"</string>
+    <string name="accessibility_close_overlay_box_description" msgid="8399871568780893724">"వెనుకకు"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ఆటోఫిల్ చేయండి"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"విస్తరించండి"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"ఖచ్చితమైన లొకేషన్"</string>
@@ -1861,25 +1861,18 @@
     <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"పోర్ట్రెయిట్ టచప్"</string>
     <string name="av_mic_label" msgid="5427348054144789879">"మైక్రోఫోన్"</string>
     <string name="av_camera_label" msgid="7719772172590702343">"కెమెరా"</string>
-    <!-- no translation found for av_camera_blur_drill_in_title (3392789469292685354) -->
-    <skip />
+    <string name="av_camera_blur_drill_in_title" msgid="3392789469292685354">"బ్యాక్‌గ్రౌండ్ బ్లర్"</string>
     <string name="av_camera_blur_off" msgid="3170334995799202022">"ఆఫ్‌లో ఉంది"</string>
-    <!-- no translation found for av_camera_blur_light (5105255788203563538) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_full (6493497965254048479) -->
-    <skip />
+    <string name="av_camera_blur_light" msgid="5105255788203563538">"తక్కువ బ్లర్"</string>
+    <string name="av_camera_blur_full" msgid="6493497965254048479">"ఎక్కువ బ్లర్"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"మెరుగైన లైటింగ్"</string>
     <string name="av_camera_face_retouch" msgid="45890971969486224">"పోర్ట్రెయిట్ టచప్"</string>
-    <!-- no translation found for av_camera_framing (2948988841290208034) -->
-    <skip />
-    <!-- no translation found for av_studio_mic (1815195630183143501) -->
-    <skip />
-    <!-- no translation found for av_studio_look (631085505786989852) -->
-    <skip />
+    <string name="av_camera_framing" msgid="2948988841290208034">"కెమెరా ఫ్రేమింగ్"</string>
+    <string name="av_studio_mic" msgid="1815195630183143501">"స్టూడియో మైక్"</string>
+    <string name="av_studio_look" msgid="631085505786989852">"స్టూడియో లుక్"</string>
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d ఎఫెక్ట్‌లు"</string>
     <string name="av_blur" msgid="405131343487260171">"బ్లర్"</string>
-    <!-- no translation found for av_live_captions (802763867449401889) -->
-    <skip />
+    <string name="av_live_captions" msgid="802763867449401889">"లైవ్ క్యాప్షన్‌లు"</string>
     <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"వెనుకకు"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"బ్యాటరీ %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"ఎడమ వైపు బ్యాటరీ %1$s    కుడి వైపు బ్యాటరీ %2$s"</string>
@@ -1893,4 +1886,11 @@
     <string name="dream_setup_title" msgid="7996530071414508238">"స్క్రీన్ సేవర్‌ను సెటప్ చేయండి"</string>
     <string name="dream_setup_button_not_now" msgid="8028385323668620805">"ఇప్పుడు కాదు"</string>
     <string name="dream_setup_button_setup" msgid="4755361016017554826">"సెటప్ చేయండి"</string>
+    <string name="ace_attribution_dialog_settings_label" msgid="8898211593287114433">"సెట్టింగ్‌లు"</string>
+    <string name="ace_attribution_dialog_title" msgid="5236154464063969824">"మ్యాజిక్ సూచన అందించిన సూచనలు"</string>
+    <string name="ace_attribution_dialog_description" msgid="1431906058759687758">"ఈ సూచనలో పరిగణించిన ఐటెమ్‌లు"</string>
+    <string name="ace_attribution_header_icon_accessibility_description" msgid="7385840112370423581">"Android డివైజ్ఇంటెలిజెన్స్ చిహ్నం"</string>
+    <string name="ace_attribution_settings_button_accessibility_description" msgid="8426163772933746374">"సెట్టింగ్‌లు బటన్"</string>
+    <string name="ace_attribution_thumbs_up_button_accessibility_description" msgid="3561722934830934360">"బాగుంది అనే ఫీడ్‌బ్యాక్ తెలియజేసే బటన్"</string>
+    <string name="ace_attribution_thumbs_down_button_accessibility_description" msgid="5471283747650437662">"బాలేదు అనే ఫీడ్‌బ్యాక్ తెలియజేసే బటన్"</string>
 </resources>

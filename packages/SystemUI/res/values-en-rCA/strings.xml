@@ -79,7 +79,6 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Allow"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Wireless debugging not allowed"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"The user currently signed in to this device can’t turn on wireless debugging. To use this feature, switch to an admin user."</string>
-    <string name="change_connected_wifi_text" msgid="6346095920396568246">"You can change this setting once logged in"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB port disabled"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"To protect your device from liquid or debris, the USB port is disabled and won’t detect any accessories.\n\nYou’ll be notified when it’s okay to use the USB port again."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"USB port enabled to detect chargers and accessories"</string>
@@ -1836,6 +1835,7 @@
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Next"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"navigate to the next page"</string>
     <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"go back"</string>
+    <string name="accessibility_close_overlay_box_description" msgid="8399871568780893724">"back"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"autofill"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"expand"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"Precise location"</string>
@@ -1886,4 +1886,11 @@
     <string name="dream_setup_title" msgid="7996530071414508238">"Set up screen saver"</string>
     <string name="dream_setup_button_not_now" msgid="8028385323668620805">"Not now"</string>
     <string name="dream_setup_button_setup" msgid="4755361016017554826">"Set up"</string>
+    <string name="ace_attribution_dialog_settings_label" msgid="8898211593287114433">"Settings"</string>
+    <string name="ace_attribution_dialog_title" msgid="5236154464063969824">"Magic Cue Suggestions"</string>
+    <string name="ace_attribution_dialog_description" msgid="1431906058759687758">"Items considered in this suggestion"</string>
+    <string name="ace_attribution_header_icon_accessibility_description" msgid="7385840112370423581">"Android Device Intelligence icon"</string>
+    <string name="ace_attribution_settings_button_accessibility_description" msgid="8426163772933746374">"Settings button"</string>
+    <string name="ace_attribution_thumbs_up_button_accessibility_description" msgid="3561722934830934360">"Thumbs up feedback button"</string>
+    <string name="ace_attribution_thumbs_down_button_accessibility_description" msgid="5471283747650437662">"Thumbs down feedback button"</string>
 </resources>
