@@ -2413,7 +2413,7 @@ public final class TvContract {
         public static final String COLUMN_INTERNAL_PROVIDER_DATA = "internal_provider_data";
 
         /**
-         * Key for the direct tune frequency.
+         * Column for the direct tune frequency.
          * <p>
          * This holds the physical frequency required for the tuner to lock onto the direct tune
          * channel.
@@ -2421,18 +2421,17 @@ public final class TvContract {
          *
          * @hide
          */
-        public static final String INTERNAL_PROVIDER_DATA_KEY_DIRECT_TUNE_FREQUENCY =
-                "direct_tune_frequency";
+        public static final String COLUMN_DIRECT_TUNE_FREQUENCY = "direct_tune_frequency";
 
         /**
-         * Key for the direct tune index number.
+         * Column for the direct tune index number.
          * <p>
          * This represents the specific index of the direct tune channel in the db.
          * </p>
          *
          * @hide
          */
-        public static final String INTERNAL_PROVIDER_DATA_KEY_DIRECT_TUNE_NUM = "direct_tune_num";
+        public static final String COLUMN_DIRECT_TUNE_NUM = "direct_tune_num";
 
         /**
          * Key for the TKGS category mask.
