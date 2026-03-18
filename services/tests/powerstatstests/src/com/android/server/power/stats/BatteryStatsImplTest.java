@@ -1336,6 +1336,45 @@ public class BatteryStatsImplTest {
         span.close();
     }
 
+    @Test
+    public void testGetFileAndStoreSizes() throws Exception {
+        File systemDir = Files.createTempDirectory("BatteryStatsFileSizeTest").toFile();
+        MockBatteryStatsImpl bsi = new MockBatteryStatsImpl(MockBatteryStatsImpl.DEFAULT_CONFIG,
+                mMockClock, new MonotonicClock(/*monotonicTime=*/ 0, mMockClock),
+                systemDir, mHandler, mPowerProfile,
+                mPowerStatsUidResolver);
+
+        // Files shouldn't exist initially, so sizes should be 0
+        assertThat(bsi.getBatteryStatsFileSize()).isEqualTo(0);
+        assertThat(bsi.getBatteryStatsCheckinFileSize()).isEqualTo(0);
+        assertThat(bsi.getBatteryStatsDailyFileSize()).isEqualTo(0);
+        assertThat(bsi.getPowerStatsStoreSize()).isEqualTo(0);
+
+        // Create some files with content
+        File statsFile = new File(systemDir, "batterystats.bin");
+        Files.write(statsFile.toPath(), new byte[100]);
+        assertThat(bsi.getBatteryStatsFileSize()).isEqualTo(100);
+
+        File checkinFile = new File(systemDir, "batterystats-checkin.bin");
+        Files.write(checkinFile.toPath(), new byte[200]);
+        assertThat(bsi.getBatteryStatsCheckinFileSize()).isEqualTo(200);
+
+        File dailyFile = new File(systemDir, "batterystats-daily.xml");
+        Files.write(dailyFile.toPath(), new byte[300]);
+        assertThat(bsi.getBatteryStatsDailyFileSize()).isEqualTo(300);
+
+        PowerStatsStore powerStatsStore = new PowerStatsStore(systemDir, mHandler);
+        bsi.saveBatteryUsageStatsOnNewSession(mBatteryUsageStatsProvider, powerStatsStore, false);
+
+        // Add something to power stats store
+        PowerStatsSpan span = new PowerStatsSpan(1000);
+        powerStatsStore.storePowerStatsSpan(span);
+
+        long storeSize = powerStatsStore.getStorageSize();
+        assertThat(storeSize).isGreaterThan(0L);
+        assertThat(bsi.getPowerStatsStoreSize()).isEqualTo(storeSize);
+    }
+
     private void awaitCompletion() {
         // Await completion
         ConditionVariable done = new ConditionVariable();
