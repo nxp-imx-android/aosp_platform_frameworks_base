@@ -393,7 +393,6 @@
                     android:clickable="false">
 
                     <ImageView
-                        android:contentDescription="@string/add_network_button_text"
                         android:src="@drawable/ic_add"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
