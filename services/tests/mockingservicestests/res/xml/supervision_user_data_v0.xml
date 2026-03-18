@@ -32,6 +32,12 @@
                 policy_version="1"
                 package_name="test.package.unknown"
                 package_type="1" />
+            <policy_holder
+                policy_type="package"
+                policy_version="1"
+                package_name="test.package.time.limit"
+                time_limit="10000"
+                package_type="2" />
         </policies_list>
     </supervision_user_data>
 </supervision_data>
