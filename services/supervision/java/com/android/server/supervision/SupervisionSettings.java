@@ -498,6 +498,10 @@ public class SupervisionSettings {
                 new PackageUsagePolicy.Builder(packageName, type).setVersion(policyVersion);
 
         if (!Flags.enableSupervisionPackageUsageApis()) {
+            if (type == PackageUsagePolicy.TYPE_TIME_LIMIT) {
+                Slog.e(SupervisionLog.TAG, "Time limit policy type is not supported");
+                return null;
+            }
             return builder.build();
         }
 

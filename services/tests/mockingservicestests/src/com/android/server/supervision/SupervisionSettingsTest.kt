@@ -23,6 +23,7 @@ import android.app.supervision.flags.Flags
 import android.content.Context
 import android.content.res.Resources
 import android.os.PersistableBundle
+import android.platform.test.annotations.RequiresFlagsDisabled
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.platform.test.flag.junit.SetFlagsRule
@@ -248,6 +249,7 @@ class SupervisionSettingsTest {
 
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
+    @RequiresFlagsDisabled(Flags.FLAG_ENABLE_SUPERVISION_PACKAGE_USAGE_APIS)
     fun loadUserData_withMixedPolicyIdentifiers_loadsKnownPoliciesCorrectly() {
         writeSupervisionSettingsFrom(R.xml.supervision_user_data_v0)
 
@@ -255,6 +257,26 @@ class SupervisionSettingsTest {
 
         val userData = mSupervisionSettings.getUserData(1)
         assertThat(userData.policies.getPolicies()).containsExactly(TEST_PACKAGE_POLICY)
+    }
+
+    @RequiresFlagsEnabled(
+        Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS,
+        Flags.FLAG_ENABLE_SUPERVISION_PACKAGE_USAGE_APIS,
+    )
+    fun loadUserData_withMixedPolicyIdentifiers_loadsTimeLimitPolicyCorrectly() {
+        writeSupervisionSettingsFrom(R.xml.supervision_user_data_v0)
+
+        mSupervisionSettings.loadUserData()
+
+        val expectedTimeLimitPolicy =
+            PackageUsagePolicy.Builder("test.package", PackageUsagePolicy.TYPE_TIME_LIMIT)
+                .setTimeLimit(Duration.ofMinutes(10))
+                .setVersion(1)
+                .build()
+
+        val userData = mSupervisionSettings.getUserData(1)
+        assertThat(userData.policies.getPolicies())
+            .containsExactly(listOf(expectedTimeLimitPolicy, TEST_PACKAGE_POLICY))
     }
 
     @Test
@@ -273,6 +295,19 @@ class SupervisionSettingsTest {
                 /* lockScreenOptions= */ BUNDLE_1,
                 /* escrowTokenRequired= */ false,
             )
+    }
+
+    @Test
+    @RequiresFlagsEnabled(
+        Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS,
+        Flags.FLAG_ENABLE_SUPERVISION_PACKAGE_USAGE_APIS,
+    )
+    fun loadUserData_withMalformedPolicies_skipsPolicyAndLoadsCorrectly() {
+        writeSupervisionSettingsFrom(R.xml.supervision_user_data_malformed_policies)
+        mSupervisionSettings.loadUserData()
+
+        assertThat(mSupervisionSettings.getUserData(1).policies.getPolicies())
+            .containsExactly(TEST_PACKAGE_POLICY)
     }
 
     private fun writeSupervisionSettingsFrom(@XmlRes resId: Int) {
