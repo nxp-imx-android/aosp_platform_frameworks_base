@@ -34,6 +34,7 @@ import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.collectValues
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.screencapture.record.shared.screenRecordingLogger
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.screenrecord.data.repository.ScreenRecordingServiceRepository
 import com.android.systemui.screenrecord.screenRecordUxController
@@ -86,6 +87,7 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
                 ) { _, _ ->
                     fakeScreenRecordingService
                 },
+                screenRecordingLogger,
             )
         }
     }
