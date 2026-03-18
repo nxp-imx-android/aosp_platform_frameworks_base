@@ -849,6 +849,18 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             return;
         }
 
+        if (!hasEndpointPermissions(source)) {
+            Log.w(
+                    TAG,
+                    "onDataFlowHostSinkRegistered: "
+                            + mEndpointInfo
+                            + " doesn't have permission for "
+                            + source
+                            + " - dropping");
+            unregisterDataFlowHostSink(context.id);
+            return;
+        }
+
         invokeCallback(
                 (consumer) ->
                         consumer.onDataFlowHostSinkRegistered(context, source, msg, sessionId));
