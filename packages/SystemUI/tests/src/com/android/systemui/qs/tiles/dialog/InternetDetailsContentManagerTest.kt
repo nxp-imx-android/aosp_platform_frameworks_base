@@ -684,6 +684,27 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
     }
 
     @Test
+    fun updateContent_showSecondaryDataSub_twice_noCrash() {
+        whenever(internetDetailsContentController.activeAutoSwitchNonDdsSubId).thenReturn(1)
+        whenever(internetDetailsContentController.hasActiveSubIdOnDds()).thenReturn(true)
+        whenever(internetDetailsContentController.isAirplaneModeEnabled).thenReturn(false)
+
+        // First call inflates the stub
+        internetDetailsContentManager.updateContent(true)
+        bgExecutor.runAllReady()
+
+        // Second call should not attempt to inflate the stub again and should not crash
+        internetDetailsContentManager.updateContent(true)
+        bgExecutor.runAllReady()
+    }
+
+    @Test
+    fun internetContentData_nullValue_noCrash() {
+        // Use value instead of postValue to trigger the observer immediately on the UI thread
+        internetDetailsContentManager.internetContentData.value = null
+    }
+
+    @Test
     fun updateContent_showSecondaryDataSub() {
         whenever(internetDetailsContentController.activeAutoSwitchNonDdsSubId).thenReturn(1)
         whenever(internetDetailsContentController.hasActiveSubIdOnDds()).thenReturn(true)
