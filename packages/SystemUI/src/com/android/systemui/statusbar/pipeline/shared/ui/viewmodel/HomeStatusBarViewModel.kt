@@ -367,13 +367,10 @@ constructor(
     override val areaDark: IsAreaDark by
         darkIconInteractor
             .isAreaDark(thisDisplayId)
-            .hydratedStateOf(traceName = "areaDark", initialValue = IsAreaDark { true })
+            .hydratedStateOf(initialValue = IsAreaDark { true })
 
     override val useDesktopStatusBar: Boolean by
-        desktopInteractor.useDesktopStatusBar.hydratedStateOf(
-            traceName = "useDesktopStatusBar",
-            initialValue = false,
-        )
+        desktopInteractor.useDesktopStatusBar.hydratedStateOf(initialValue = false)
 
     override val isQuickSettingsChipHighlighted: Boolean by
         combine(
@@ -382,7 +379,7 @@ constructor(
             ) { isQsExpanded, isShadeOnThisDisplay ->
                 isQsExpanded && isShadeOnThisDisplay
             }
-            .hydratedStateOf(traceName = "isQsChipHighlighted", initialValue = false)
+            .hydratedStateOf(initialValue = false)
 
     override val isNotificationsChipHighlighted: Boolean by
         combine(
@@ -391,25 +388,18 @@ constructor(
             ) { isNotificationsExpanded, isShadeOnThisDisplay ->
                 isNotificationsExpanded && isShadeOnThisDisplay
             }
-            .hydratedStateOf(traceName = "isNotificationsChipHighlighted", initialValue = false)
+            .hydratedStateOf(initialValue = false)
 
     override val hasStatusBarNotifications: Boolean by
         statusBarNotificationIconsInteractor.hasStatusBarNotifications.hydratedStateOf(
-            traceName = "hasStatusBarNotifications",
-            initialValue = false,
+            initialValue = false
         )
 
     override val isNotificationsChipClickable: Boolean by
-        deviceProvisioningInteractor.isDeviceProvisioned.hydratedStateOf(
-            traceName = "isNotificationsChipClickable",
-            initialValue = false,
-        )
+        deviceProvisioningInteractor.isDeviceProvisioned.hydratedStateOf(initialValue = false)
 
     override val isQuickSettingsChipClickable: Boolean by
-        deviceProvisioningInteractor.isDeviceProvisioned.hydratedStateOf(
-            traceName = "isQuickSettingsChipClickable",
-            initialValue = false,
-        )
+        deviceProvisioningInteractor.isDeviceProvisioned.hydratedStateOf(initialValue = false)
 
     override val isHomeStatusBarAllowed = statusBarVisibilityInteractor.isHomeStatusBarAllowed
 
@@ -464,12 +454,11 @@ constructor(
 
     override val ongoingActivityChips: ChipsVisibilityModel by
         chipsVisibilityModel.hydratedStateOf(
-            traceName = "ongoingActivityChips",
             initialValue =
                 ChipsVisibilityModel(
                     chips = MultipleOngoingActivityChipsModel(),
                     areChipsAllowed = false,
-                ),
+                )
         )
 
     override fun onChipBoundsChanged(key: String, bounds: RectF) {
@@ -621,7 +610,7 @@ constructor(
             } else {
                 flowOf(false)
             }
-            .hydratedStateOf(traceName = "isSignOutButtonVisible", initialValue = false)
+            .hydratedStateOf(initialValue = false)
 
     override fun onSignOut() {
         logger.d { "onSignOut" }
