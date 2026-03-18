@@ -161,10 +161,7 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
                 SystemProperties.getBoolean(
                         "ro.usb.data_protection.disable_when_locked.supported", false);
         Boolean forcedUsbState = mStore.retrieveFeatureAdbProvisioned(FEATURE_ID_DISALLOW_USB);
-        boolean enableUsb =
-                forcedUsbState != null
-                        ? forcedUsbState
-                        : isUsbDataProtectionSupported;
+        boolean enableUsb = forcedUsbState != null ? forcedUsbState : isUsbDataProtectionSupported;
         if (enableUsb) {
             try {
                 mHooks.add(new UsbDataAdvancedProtectionHook(mContext, enabled, this));
@@ -506,8 +503,9 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         AccessibilityManagerInternal.AccessibilityFeatureRestrictedCounts a11yFeatureCounts =
                 new AccessibilityManagerInternal.AccessibilityFeatureRestrictedCounts(0, 0);
         if (enabled) {
-            a11yFeatureCounts = AccessibilityManagerInternal.get()
-                    .getA11yFeatureRestrictedCounts(ActivityManager.getCurrentUser());
+            a11yFeatureCounts =
+                    AccessibilityManagerInternal.get()
+                            .getA11yFeatureRestrictedCounts(ActivityManager.getCurrentUser());
         }
 
         FrameworkStatsLog.write(
@@ -834,12 +832,12 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
                 case MODE_CHANGED:
                     if (android.security.Flags.aapmApiV2()) {
                         handleModeChanged(
-                                /* enabled = */ msg.arg1 == 1,
-                                /* features = */ (List<AdvancedProtectionFeature>) msg.obj,
-                                /* isToggle = */ msg.arg2 == 1);
+                                /* enabled= */ msg.arg1 == 1,
+                                /* features= */ (List<AdvancedProtectionFeature>) msg.obj,
+                                /* isToggle= */ msg.arg2 == 1);
                     } else {
-                        handleAllCallbacks(/* enabled = */ msg.arg1 == 1, /* isToggle = */
-                                msg.arg2 == 1);
+                        handleAllCallbacks(
+                                /* enabled= */ msg.arg1 == 1, /* isToggle= */ msg.arg2 == 1);
                     }
                     break;
                 // arg1 == enabled
@@ -917,6 +915,10 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
                 }
             }
 
+            if (!isToggle) {
+                return;
+            }
+            // Only notify callbacks if the change is a toggle.
             synchronized (mCallbacks) {
                 ArrayList<IAdvancedProtectionCallback> deadObjects = new ArrayList<>();
 
