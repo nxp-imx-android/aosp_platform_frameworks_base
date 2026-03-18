@@ -53,6 +53,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
@@ -170,13 +171,13 @@ constructor(
         )
     }
 
-    private suspend fun showDisclaimer() {
-        if (snackbarHostState.currentSnackbarData != null) return
-        snackbarHostState.showSnackbar(
-            message =
-                context.getString(R.string.screenrecord_permission_dialog_warning_entire_screen),
-            duration = SnackbarDuration.Short,
-        )
+    private suspend fun showDisclaimer(resId: Int) {
+        val newMessage = context.getString(resId)
+        if (snackbarHostState.currentSnackbarData?.visuals?.message == newMessage) {
+            return
+        }
+        snackbarHostState.currentSnackbarData?.dismiss()
+        snackbarHostState.showSnackbar(message = newMessage, duration = SnackbarDuration.Short)
     }
 
     private fun hideDisclaimer() {
@@ -398,10 +399,16 @@ constructor(
 
     override suspend fun onActivated() {
         coroutineScope {
-            captureTypeSource
-                .mapLatest { type ->
+            combine(captureTypeSource, captureRegionSource) { type, region -> type to region }
+                .mapLatest { (type, region) ->
                     if (type == ScreenCaptureType.RECORDING) {
-                        showDisclaimer()
+                        val resId =
+                            if (region == ScreenCaptureRegion.FULLSCREEN) {
+                                R.string.screenrecord_permission_dialog_warning_entire_screen
+                            } else {
+                                R.string.screenrecord_permission_dialog_warning_single_app
+                            }
+                        showDisclaimer(resId)
                     } else {
                         hideDisclaimer()
                     }
