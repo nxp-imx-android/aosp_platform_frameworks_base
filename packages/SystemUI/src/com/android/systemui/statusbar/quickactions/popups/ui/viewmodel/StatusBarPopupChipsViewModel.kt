@@ -18,26 +18,24 @@ package com.android.systemui.statusbar.quickactions.popups.ui.viewmodel
 
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
-import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayId
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.statusbar.quickactions.assistant.StatusBarAssistantIcon
 import com.android.systemui.statusbar.quickactions.assistant.ui.viewmodel.AssistantIconViewModel
 import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.AvControlsChipViewModel
+import com.android.systemui.statusbar.quickactions.domain.interactor.QuickActionsInteractor
 import com.android.systemui.statusbar.quickactions.ime.ui.viewmodel.ImeIndicatorChipViewModel
 import com.android.systemui.statusbar.quickactions.media.ui.viewmodel.MediaControlChipViewModel
 import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.quickactions.screenrecord.ui.viewmodel.LargeScreenRecordingChipViewModel
 import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipId
 import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipModel
+import com.android.systemui.statusbar.quickactions.shared.model.QuickActionPanelModel
 import com.android.systemui.statusbar.quickactions.sharescreen.ui.viewmodel.ShareScreenPrivacyIndicatorViewModel
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 /**
@@ -48,6 +46,7 @@ class StatusBarPopupChipsViewModel
 @AssistedInject
 constructor(
     @Assisted private val displayId: Int,
+    private val quickActionsInteractor: QuickActionsInteractor,
     mediaControlChipFactory: MediaControlChipViewModel.Factory,
     avControlsChipFactory: AvControlsChipViewModel.Factory,
     shareScreenPrivacyIndicatorFactory: ShareScreenPrivacyIndicatorViewModel.Factory,
@@ -66,7 +65,8 @@ constructor(
     }
 
     /** The ID of the current chip that is currently active, or `null` if no chip is active. */
-    private var currentActiveQuickActionId by mutableStateOf<QuickActionChipId?>(null)
+    private val currentActiveQuickActionId: QuickActionChipId?
+        get() = quickActionsInteractor.activePanel?.chipId
 
     private val incomingQuickActionChipBundle: QuickActionChipBundle by derivedStateOf {
         QuickActionChipBundle(
@@ -93,8 +93,16 @@ constructor(
                 .map { chip ->
                     chip.copy(
                         isPopupShown = chip.chipId == currentActiveQuickActionId,
-                        showPopup = { currentActiveQuickActionId = chip.chipId },
-                        hidePopup = { currentActiveQuickActionId = null },
+                        showPopup = { _, anchorBounds ->
+                            quickActionsInteractor.toggle(
+                                QuickActionPanelModel(
+                                    chipId = chip.chipId,
+                                    anchorBounds = anchorBounds,
+                                    panelContentViewModelFactory = chip.popupViewModelFactory!!,
+                                )
+                            )
+                        },
+                        hidePopup = { quickActionsInteractor.close() },
                     )
                 } +
                 listOfNotNull(bundle.assistant, bundle.ime).filter {
@@ -115,26 +123,6 @@ constructor(
                 launch { assistantIcon.activate() }
             }
             launch { imeIndicatorChip.activate() }
-            // TODO(b/452975516): Clean up this logic after the bundle is split into popup chips and
-            // action chips.
-            launch {
-                snapshotFlow { incomingQuickActionChipBundle }
-                    .distinctUntilChanged()
-                    .collect { bundle ->
-                        if (
-                            listOfNotNull(
-                                    bundle.media,
-                                    bundle.privacy,
-                                    bundle.shareScreen,
-                                    bundle.largeScreenRecording,
-                                )
-                                .filterIsInstance<QuickActionChipModel.PopupChip>()
-                                .none { it.chipId == currentActiveQuickActionId }
-                        ) {
-                            currentActiveQuickActionId = null
-                        }
-                    }
-            }
         }
     }
 
@@ -155,6 +143,6 @@ constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(@DisplayId displayId: Int): StatusBarPopupChipsViewModel
+        fun create(displayId: Int): StatusBarPopupChipsViewModel
     }
 }

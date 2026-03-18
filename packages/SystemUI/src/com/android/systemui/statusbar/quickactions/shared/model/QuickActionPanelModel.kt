@@ -16,7 +16,7 @@
 
 package com.android.systemui.statusbar.quickactions.shared.model
 
-import android.graphics.Rect
+import android.graphics.RectF
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupViewModel
 
 /**
@@ -25,6 +25,6 @@ import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBar
  */
 data class QuickActionPanelModel(
     val chipId: QuickActionChipId,
-    val anchorBounds: Rect,
+    val anchorBounds: RectF,
     val panelContentViewModelFactory: StatusBarPopupViewModel.Factory,
 )

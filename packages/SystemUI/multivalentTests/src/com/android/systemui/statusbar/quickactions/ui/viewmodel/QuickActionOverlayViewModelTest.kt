@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.quickactions.ui.viewmodel
 
 import android.graphics.Rect
+import android.graphics.RectF
 import androidx.compose.ui.geometry.Rect as ComposeRect
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -43,7 +44,7 @@ class QuickActionOverlayViewModelTest : SysuiTestCase() {
     private val panel =
         QuickActionPanelModel(
             chipId = QuickActionChipId.AvControlsIndicator,
-            anchorBounds = Rect(),
+            anchorBounds = RectF(),
             panelContentViewModelFactory = kosmos.avControlsPopupViewModelFactory,
         )
 
