@@ -572,6 +572,26 @@ public class ComputerControlSessionTest {
     }
 
     @Test
+    public void requestScreenshot_multipleFramesDrawn_usesLatestImage() throws Exception {
+        mLifecycle.onActive();
+        when(mMockSession.requestScreenshot()).thenAnswer((inv) -> {
+            // Draw multiple frames before the remote request completes
+            drawFrame(mSurface);
+            SystemClock.sleep(FRAME_PROCESSING_DELAY_MS);
+            drawFrame(mSurface);
+            SystemClock.sleep(FRAME_PROCESSING_DELAY_MS);
+            return true;
+        });
+
+        var callback = Mockito.mock(ScreenshotCallback.class);
+        mSession.requestScreenshot(mExecutor, callback, null);
+
+        verify(mMockSession).requestScreenshot();
+        verify(mMockSession).notifyScreenshotResult();
+        verify(callback).onResult(notNull());
+    }
+
+    @Test
     public void requestScreenshot_failedRemoteRequestRacesImageAvailable_succeeds()
             throws RemoteException {
         mLifecycle.onActive();
