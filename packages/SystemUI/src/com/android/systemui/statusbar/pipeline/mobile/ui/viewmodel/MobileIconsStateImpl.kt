@@ -17,30 +17,24 @@
 package com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel
 
 import androidx.compose.runtime.getValue
-import com.android.systemui.lifecycle.ExclusiveActivatable
-import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.map
 
 class MobileIconsStateImpl @AssistedInject constructor(viewModel: MobileIconsViewModel) :
-    MobileIconsState, ExclusiveActivatable() {
+    MobileIconsState, HydratedActivatable() {
 
     init {
         StatusBarMobileIconKairos.assertInLegacyMode()
     }
 
-    private val hydrator = Hydrator("MobileIconsStateImpl.hydrator")
-
-    override val isStackable: Boolean by
-        hydrator.hydratedStateOf("isStackable", viewModel.isStackable)
+    override val isStackable: Boolean by viewModel.isStackable.hydratedStateOf()
 
     override val mobileSubViewModels: List<MobileIconState.Factory> by
-        hydrator.hydratedStateOf(
-            "mobileSubViewModels",
-            emptyList(),
-            viewModel.mobileSubViewModels.map { vms ->
+        viewModel.mobileSubViewModels
+            .map { vms ->
                 vms.map { iconVm ->
                     object : MobileIconState.Factory {
                         override val subscriptionId: Int
@@ -49,12 +43,8 @@ class MobileIconsStateImpl @AssistedInject constructor(viewModel: MobileIconsVie
                         override fun create(): MobileIconState = MobileIconStateImpl(iconVm)
                     }
                 }
-            },
-        )
-
-    override suspend fun onActivated() {
-        hydrator.activate()
-    }
+            }
+            .hydratedStateOf(emptyList())
 
     @AssistedFactory
     fun interface Factory : MobileIconsState.Factory {
