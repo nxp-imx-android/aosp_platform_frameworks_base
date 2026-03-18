@@ -73,7 +73,12 @@ constructor(
     fun startObserving() {
         batteryController.addCallback(batteryStateListener)
         privacyController.addCallback(privacyStateListener)
-        startConnectedDisplayCollection()
+        if (
+            !Flags.statusBarIsConnectedDisplayChipControlledByConfig() ||
+                context.resources.getBoolean(R.bool.config_isStatusBarConnectedDisplayChipEnabled)
+        ) {
+            startConnectedDisplayCollection()
+        }
     }
 
     fun stopObserving() {
