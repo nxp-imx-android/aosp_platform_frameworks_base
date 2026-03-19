@@ -3047,15 +3047,10 @@ public final class PowerManager {
      */
     public @ThermalStatus int getCurrentThermalStatus() {
         try {
-            if (!android.companion.virtualdevice.flags.Flags.deviceAwareThermalStatus()) {
-                return mThermalService.getCurrentThermalStatus();
-            }
-
-            int deviceId = mContext.getDeviceId();
-            if (getThermalPolicy(deviceId) != VirtualDeviceParams.DEVICE_POLICY_CUSTOM) {
-                return mThermalService.getCurrentThermalStatus();
+            if (hasCustomDeviceThermalPolicy()) {
+                return mThermalService.getCurrentThermalStatusForDevice(mContext.getDeviceId());
             } else {
-                return mThermalService.getCurrentThermalStatusForDevice(deviceId);
+                return mThermalService.getCurrentThermalStatus();
             }
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
@@ -3159,16 +3154,11 @@ public final class PowerManager {
             };
             try {
                 final boolean success;
-                if (!android.companion.virtualdevice.flags.Flags.deviceAwareThermalStatus()) {
-                    success = mThermalService.registerThermalStatusListener(internalListener);
+                if (hasCustomDeviceThermalPolicy()) {
+                    success = mThermalService.registerThermalStatusListenerForDevice(
+                            mContext.getDeviceId(), internalListener);
                 } else {
-                    int deviceId = mContext.getDeviceId();
-                    if (getThermalPolicy(deviceId) != VirtualDeviceParams.DEVICE_POLICY_CUSTOM) {
-                        success = mThermalService.registerThermalStatusListener(internalListener);
-                    } else {
-                        success = mThermalService.registerThermalStatusListenerForDevice(
-                                mContext.getDeviceId(), internalListener);
-                    }
+                    success = mThermalService.registerThermalStatusListener(internalListener);
                 }
                 if (success) {
                     mThermalStatusListenerMap.put(listener, internalListener);
@@ -3227,6 +3217,10 @@ public final class PowerManager {
             @NonNull OnThermalHeadroomChangedListener listener) {
         Objects.requireNonNull(listener, "Thermal headroom listener cannot be null");
         Objects.requireNonNull(executor, "Executor cannot be null");
+        if (hasCustomDeviceThermalPolicy()) {
+            throw new UnsupportedOperationException(
+                    "Thermal headroom API not enabled for this device");
+        }
         synchronized (mThermalHeadroomListenerMap) {
             Preconditions.checkArgument(!mThermalHeadroomListenerMap.containsKey(listener),
                     "Thermal headroom listener already registered: %s", listener);
@@ -3281,19 +3275,20 @@ public final class PowerManager {
         }
     }
 
-    @VirtualDeviceParams.DevicePolicy
-    private int getThermalPolicy(int deviceId) {
-        if (deviceId == Context.DEVICE_ID_DEFAULT) {
-            return VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
+    private boolean hasCustomDeviceThermalPolicy() {
+        if (!android.companion.virtualdevice.flags.Flags.deviceAwareThermalStatus()) {
+            return false;
+        }
+        if (mContext.getDeviceId() == Context.DEVICE_ID_DEFAULT) {
+            return false;
         }
         if (mVirtualDeviceManager == null) {
             mVirtualDeviceManager = mContext.getSystemService(VirtualDeviceManager.class);
         }
-        if (mVirtualDeviceManager == null) {
-            return VirtualDeviceParams.DEVICE_POLICY_INVALID;
-        }
-        return mVirtualDeviceManager.getDevicePolicy(
-                deviceId, VirtualDeviceParams.POLICY_TYPE_THERMAL);
+        return mVirtualDeviceManager != null
+                && mVirtualDeviceManager.getDevicePolicy(
+                        mContext.getDeviceId(), VirtualDeviceParams.POLICY_TYPE_THERMAL)
+                == VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
     }
 
     /**
@@ -3332,6 +3327,9 @@ public final class PowerManager {
      */
     public @FloatRange(from = 0f) float getThermalHeadroom(
             @IntRange(from = 0, to = 60) int forecastSeconds) {
+        if (hasCustomDeviceThermalPolicy()) {
+            return Float.NaN;
+        }
         try {
             float forecast = mThermalService.getThermalHeadroom(forecastSeconds);
             return forecast;
@@ -3380,6 +3378,10 @@ public final class PowerManager {
      */
     @FlaggedApi(Flags.FLAG_ALLOW_THERMAL_HEADROOM_THRESHOLDS)
     public @NonNull Map<@ThermalStatus Integer, Float> getThermalHeadroomThresholds() {
+        if (hasCustomDeviceThermalPolicy()) {
+            throw new UnsupportedOperationException(
+                    "Thermal headroom API not enabled for this device");
+        }
         try {
             return convertThresholdsToMap(mThermalService.getThermalHeadroomThresholds());
         } catch (RemoteException e) {
