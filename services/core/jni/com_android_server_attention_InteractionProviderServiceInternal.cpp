@@ -29,6 +29,27 @@
 namespace input_flags = com::android::input::flags;
 
 namespace android {
+namespace {
+
+/**
+ * A deleter for jobject global references.
+ */
+struct GlobalRefDeleter {
+    void operator()(jobject obj) {
+        if (obj) {
+            AndroidRuntime::getJNIEnv()->DeleteGlobalRef(obj);
+        }
+    }
+};
+
+using ScopedGlobalRef = std::shared_ptr<_jobject>;
+
+static ScopedGlobalRef makeScopedGlobalRef(JNIEnv* env, jobject obj) {
+    if (obj == nullptr) return nullptr;
+    return ScopedGlobalRef(MakeGlobalRefOrDie(env, obj), GlobalRefDeleter());
+}
+
+} // namespace
 
 static struct {
     jclass clazz;
@@ -66,6 +87,9 @@ NativeInteractionProviderServiceInternal::NativeInteractionProviderServiceIntern
 
 NativeInteractionProviderServiceInternal::~NativeInteractionProviderServiceInternal() {
     JNIEnv* env = jniEnv();
+    for (auto const& [provider, providerObj] : mRegisteredInteractionProviders) {
+        env->DeleteGlobalRef(providerObj);
+    }
     env->DeleteGlobalRef(mServiceObj);
 }
 
@@ -144,12 +168,12 @@ static void requestWakeupCallback(JNIEnv* env, jobject thiz, jlong nativePtr, jo
     attention::InteractionProvider* interactionProvider =
             reinterpret_cast<attention::InteractionProvider*>(nativePtr);
 
-    jobject globalCallback = env->NewGlobalRef(jCallback);
+    ScopedGlobalRef globalCallback = makeScopedGlobalRef(env, jCallback);
     interactionProvider->requestWakeupCallback([globalCallback]() {
         // New env is required for the lambda.
-        JNIEnv* env = AndroidRuntime::getJNIEnv();
-        env->CallVoidMethod(globalCallback, gInteractionCallbackClassInfo.onInteractionsAvailable);
-        env->DeleteGlobalRef(globalCallback);
+        AndroidRuntime::getJNIEnv()
+                ->CallVoidMethod(globalCallback.get(),
+                                 gInteractionCallbackClassInfo.onInteractionsAvailable);
     });
 }
 
