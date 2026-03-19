@@ -614,12 +614,13 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
     }
 
     private fun dragAppWindowToTopDragZone(wmHelper: WindowManagerStateHelper, device: UiDevice) {
-        val windowRect = wmHelper.getWindowRegion(innerHelper).bounds
+        val task = wmHelper.currentState.wmState.getTaskForActivity(innerHelper)
+            ?: error("Unable to find task for $innerHelper")
         val displayRect = getDisplayRect(wmHelper)
 
-        val startX = windowRect.centerX()
+        val startX = task.bounds.centerX()
         val endX = displayRect.centerX()
-        val startY = windowRect.top
+        val startY = task.bounds.top
         val endY = 0 // top of the screen
 
         // drag the app window to top drag zone
