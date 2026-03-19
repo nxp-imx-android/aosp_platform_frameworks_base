@@ -2661,8 +2661,10 @@ class PermissionService(private val service: AccessCheckingService) :
         permissionNames.forEachIndexed { index, permissionName ->
             val isGranted =
                 if (hasAnyPackage) {
-                    val flags = with(policy) { getPermissionFlags(appId, userId, permissionName) }
-                    PermissionFlags.isAppOpGranted(flags)
+                    isBpfMapPermissionGranted(appId, userId, permissionName) ||
+                        getFullerPermission(permissionName).let {
+                            it != null && isBpfMapPermissionGranted(appId, userId, it)
+                        }
                 } else {
                     isSystemUidPermissionGranted(appId, permissionName)
                 }
@@ -2671,6 +2673,15 @@ class PermissionService(private val service: AccessCheckingService) :
             }
         }
         return permissionBits
+    }
+
+    private fun GetStateScope.isBpfMapPermissionGranted(
+        appId: Int,
+        userId: Int,
+        permissionName: String,
+    ): Boolean {
+        val flags = with(policy) { getPermissionFlags(appId, userId, permissionName) }
+        return PermissionFlags.isAppOpGranted(flags)
     }
 
     /** Generate a bitmap representing all permissions being granted. */
