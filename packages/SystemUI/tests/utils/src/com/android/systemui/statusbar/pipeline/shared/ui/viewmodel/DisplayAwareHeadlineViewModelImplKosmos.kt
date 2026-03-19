@@ -17,21 +17,24 @@
 package com.android.systemui.statusbar.pipeline.shared.ui.viewmodel
 
 import android.content.testableContext
+import com.android.systemui.headline.ui.viewmodel.mutableHeadlineViewModelImpl
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.connectedDisplaysStatusBarNotificationIconViewStoreFactory
 
-val Kosmos.headlineViewModelImpl: HeadlineViewModelImpl by
+val Kosmos.displayAwareHeadlineViewModelImpl: DisplayAwareHeadlineViewModelImpl by
     Kosmos.Fixture {
-        HeadlineViewModelImpl(
+        DisplayAwareHeadlineViewModelImpl(
             testableContext.displayId,
             headlineItemsAdapter,
             connectedDisplaysStatusBarNotificationIconViewStoreFactory,
+            mutableHeadlineViewModelImpl,
         )
     }
 
-val Kosmos.headlineViewModelImplFactory: HeadlineViewModelImpl.Factory by
+val Kosmos.displayAwareHeadlineViewModelImplFactory: DisplayAwareHeadlineViewModelImpl.Factory by
     Kosmos.Fixture {
-        object : HeadlineViewModelImpl.Factory {
-            override fun create(): HeadlineViewModelImpl = headlineViewModelImpl
+        object : DisplayAwareHeadlineViewModelImpl.Factory {
+            override fun create(): DisplayAwareHeadlineViewModelImpl =
+                displayAwareHeadlineViewModelImpl
         }
     }

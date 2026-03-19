@@ -56,8 +56,8 @@ import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarContentInsets
 import com.android.systemui.statusbar.phone.ConfigurationControllerImpl
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarInteractor
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.StatusBarVisibilityInteractor
+import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.DisplayAwareHeadlineViewModelImpl
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HeadlineItemsAdapterImpl
-import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HeadlineViewModelImpl
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractor
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractorImpl
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.NoOpAvControlsChipInteractor
@@ -133,7 +133,9 @@ interface PerDisplayStatusBarModule {
 
     @Binds
     @DisplayAware
-    fun headlineViewModelFactory(impl: HeadlineViewModelImpl.Factory): HeadlineViewModel.Factory
+    fun headlineViewModelFactory(
+        impl: DisplayAwareHeadlineViewModelImpl.Factory
+    ): HeadlineViewModel.Factory
 
     @Binds
     @PerDisplaySingleton
