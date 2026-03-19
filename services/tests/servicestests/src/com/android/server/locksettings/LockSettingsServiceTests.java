@@ -25,6 +25,7 @@ import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_NONE;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PASSWORD;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PATTERN;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PIN;
+import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_UNKNOWN;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -1142,6 +1143,42 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         mSpManager.injectWeaverTimeout(hwTimeout);
         setCredential(userId, credential);
         assertEquals(hwTimeout, mService.getLockoutEndTime(userId).getDuration());
+    }
+
+    @Test
+    @EnableFlags(android.security.Flags.FLAG_ENABLE_SERVICE_SIDE_CREDENTIAL_TYPE_CACHE)
+    public void testUserCredentialCache() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+
+        // The initial getCredentialType() should return NONE and set the cache entry.
+        assertEquals(CREDENTIAL_TYPE_UNKNOWN, mService.queryServiceSideCredentialTypeCache(userId));
+        assertEquals(CREDENTIAL_TYPE_NONE, mService.getCredentialType(userId));
+        assertEquals(CREDENTIAL_TYPE_NONE, mService.queryServiceSideCredentialTypeCache(userId));
+
+        // Set a PIN.
+        assertTrue(mService.setLockCredential(newPin("1234"), nonePassword(), userId));
+
+        // setLockCredential() should have updated the cache entry to PIN. (Actually it removes the
+        // cache entry and then re-adds it, but the effect is the same.)
+        assertEquals(CREDENTIAL_TYPE_PIN, mService.queryServiceSideCredentialTypeCache(userId));
+
+        // getCredentialType() should return PIN, and the cache entry should remain set.
+        assertEquals(CREDENTIAL_TYPE_PIN, mService.getCredentialType(userId));
+        assertEquals(CREDENTIAL_TYPE_PIN, mService.queryServiceSideCredentialTypeCache(userId));
+    }
+
+    @Test
+    @DisableFlags(android.security.Flags.FLAG_ENABLE_SERVICE_SIDE_CREDENTIAL_TYPE_CACHE)
+    public void testUserCredentialCache_disabled() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+
+        assertEquals(CREDENTIAL_TYPE_UNKNOWN, mService.queryServiceSideCredentialTypeCache(userId));
+        assertEquals(CREDENTIAL_TYPE_NONE, mService.getCredentialType(userId));
+        assertEquals(CREDENTIAL_TYPE_UNKNOWN, mService.queryServiceSideCredentialTypeCache(userId));
+        assertTrue(mService.setLockCredential(newPin("1234"), nonePassword(), userId));
+        assertEquals(CREDENTIAL_TYPE_UNKNOWN, mService.queryServiceSideCredentialTypeCache(userId));
+        assertEquals(CREDENTIAL_TYPE_PIN, mService.getCredentialType(userId));
+        assertEquals(CREDENTIAL_TYPE_UNKNOWN, mService.queryServiceSideCredentialTypeCache(userId));
     }
 
     private void guessWrongCredential(int userId, int times) {
