@@ -25,8 +25,7 @@ import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.authentication.domain.interactor.AuthenticationInteractor
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor
-import com.android.systemui.lifecycle.ExclusiveActivatable
-import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.scene.shared.model.Overlays
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -43,19 +42,9 @@ constructor(
     authenticationInteractor: AuthenticationInteractor,
     private val deviceUnlockedInteractor: DeviceUnlockedInteractor,
     private val interactionJankMonitor: InteractionJankMonitor,
-) : ExclusiveActivatable() {
-
-    private val hydrator = Hydrator("SceneJankMonitor.hydrator")
+) : HydratedActivatable() {
     private val authMethod: AuthenticationMethodModel? by
-        hydrator.hydratedStateOf(
-            traceName = "authMethod",
-            initialValue = null,
-            source = authenticationInteractor.authenticationMethod,
-        )
-
-    override suspend fun onActivated(): Nothing {
-        hydrator.activate()
-    }
+        authenticationInteractor.authenticationMethod.hydratedStateOf(initialValue = null)
 
     /**
      * Notifies that a transition is at its start.
