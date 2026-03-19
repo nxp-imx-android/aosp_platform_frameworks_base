@@ -56,12 +56,14 @@ import android.util.SparseArray;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
@@ -248,6 +250,42 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
     /** A map between a session ID which maps to its current state. */
     @GuardedBy("mOpenSessionLock")
     private final SparseArray<Session> mSessionMap = new SparseArray<>();
+
+    private final Object mDataFlowLock = new Object();
+
+    /** Wrapper around DataFlowId that is mappable. */
+    private static final class DataFlowIdWrapper {
+        private final DataFlowId mId;
+
+        DataFlowIdWrapper(DataFlowId id) {
+            mId = id;
+        }
+
+        public DataFlowId getId() {
+            return mId;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof DataFlowIdWrapper)) {
+                return false;
+            }
+            DataFlowIdWrapper that = (DataFlowIdWrapper) o;
+            return mId.hubId == that.mId.hubId && mId.id == that.mId.id;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(mId.hubId, mId.id);
+        }
+    }
+
+    @GuardedBy("mDataFlowLock")
+    private final Map<DataFlowIdWrapper, HubEndpointInfo> mDataFlowAsSinkMap =
+            new LinkedHashMap<>();
 
     /** The package name of the app that created the endpoint */
     private final String mPackageName;
@@ -697,6 +735,10 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             Log.e(TAG, "HAL exception in unregisterDataFlowHostSink", e);
             throw e;
         }
+
+        synchronized (mDataFlowLock) {
+            mDataFlowAsSinkMap.remove(new DataFlowIdWrapper(dataFlowId));
+        }
     }
 
     /** Invoked when the underlying binder of this broker has died at the client process. */
@@ -726,6 +768,38 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                         notifySessionClosedToBoth(id, Reason.PERMISSION_DENIED);
                     }
                 }
+            }
+            handleDataFlowPermissionChanges();
+        }
+    }
+
+    private void handleDataFlowPermissionChanges() {
+        List<DataFlowId> inaccessibleFlows = new ArrayList<>();
+        synchronized (mDataFlowLock) {
+            for (Map.Entry<DataFlowIdWrapper, HubEndpointInfo> entry :
+                    mDataFlowAsSinkMap.entrySet()) {
+                if (!hasEndpointPermissions(entry.getValue())) {
+                    Log.w(
+                            TAG,
+                            "Permissions revoked for data flow "
+                                    + entry.getKey().getId()
+                                    + " for "
+                                    + mPackageName
+                                    + ". Source endpoint "
+                                    + entry.getValue()
+                                    + " is no longer accessible.");
+                    inaccessibleFlows.add(entry.getKey().getId());
+                }
+            }
+        }
+
+        if (!inaccessibleFlows.isEmpty()) {
+            invokeCallback(
+                    (consumer) ->
+                            consumer.onDataFlowsInaccessible(
+                                    inaccessibleFlows.toArray(new DataFlowId[0])));
+            for (DataFlowId id : inaccessibleFlows) {
+                unregisterDataFlowHostSink(id);
             }
         }
     }
@@ -865,6 +939,10 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                             + " - dropping");
             unregisterDataFlowHostSink(context.id);
             return;
+        }
+
+        synchronized (mDataFlowLock) {
+            mDataFlowAsSinkMap.put(new DataFlowIdWrapper(context.id), source);
         }
 
         invokeCallback(
