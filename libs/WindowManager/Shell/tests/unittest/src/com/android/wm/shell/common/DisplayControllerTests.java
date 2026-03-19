@@ -36,6 +36,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.content.res.Configuration;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.hardware.display.DisplayManager;
@@ -286,6 +287,43 @@ public class DisplayControllerTests extends ShellTestCase {
         int displayId = mController.getDisplayIdByUniqueIdBlocking("invalidUniqueId");
 
         assert (displayId == INVALID_DISPLAY);
+    }
+
+    @Test
+    public void testDisplayRelativeCalculations() {
+        mDesktopState.setCanEnterDesktopMode(true);
+        mController.onInit();
+        mCapturedTopologyListener.accept(mMockTopology);
+
+        PointF direction = new PointF(1f, 2f);
+        when(mMockTopology.calculateRelativeDirection(eq(DISPLAY_ID_0), eq(DISPLAY_ID_1),
+                any(), any())).thenReturn(direction);
+        assertEquals(direction, mController.getRelativeDisplayDirection(DISPLAY_ID_0, DISPLAY_ID_1,
+                null, null));
+
+        // distanceDp = 50. direction = (1, 2). length = sqrt(5).
+        // xDir = signum(1/sqrt(5)) = 1.
+        // returns (1 * 50, 0) = (50, 0)
+        PointF translation = mController.getRelativeTranslationDp(DISPLAY_ID_0, DISPLAY_ID_1,
+                null, null, 50f);
+        assertEquals(50f, translation.x, 0.01f);
+        assertEquals(0f, translation.y, 0.01f);
+
+        // DISPLAY_ID_0 context density is roughly 1.0 in tests by default if not specified.
+        // Let's verify what density we get.
+        PointF dpVector = new PointF(10f, 20f);
+        PointF pxVector = mController.convertDpVectorToPxVector(DISPLAY_ID_0, dpVector);
+        float density = mContext.getResources().getDisplayMetrics().density;
+        assertEquals(dpVector.x * density, pxVector.x, 0.01f);
+        assertEquals(dpVector.y * density, pxVector.y, 0.01f);
+
+        //  Test IllegalArgumentException from calculateRelativeDirection
+        when(mMockTopology.calculateRelativeDirection(eq(DISPLAY_ID_0), eq(DISPLAY_ID_1),
+                any(), any())).thenThrow(new IllegalArgumentException("Not in topology"));
+        translation = mController.getRelativeTranslationDp(DISPLAY_ID_0, DISPLAY_ID_1,
+                null, null, 50f);
+        assertEquals(50f, translation.x, 0.01f);
+        assertEquals(0f, translation.y, 0.01f);
     }
 
     @Test

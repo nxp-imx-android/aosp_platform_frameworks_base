@@ -27,6 +27,7 @@ import com.android.internal.logging.uiEventLogger
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
+import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
 import com.android.systemui.bouncer.shared.logging.BouncerUiEvent
 import com.android.systemui.coroutines.collectLastValue
@@ -38,6 +39,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.sessionTracker
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDeviceRepository
 import com.android.systemui.testKosmos
@@ -143,4 +145,24 @@ class AlternateBouncerInteractorTest : SysuiTestCase() {
                 eq(instanceId),
             )
     }
+
+    @Test
+    @DisableSceneContainer
+    fun canShowAlternateBouncer_false_dueToBouncerShowing() =
+        kosmos.testScope.runTest {
+            kosmos.givenAlternateBouncerSupported()
+            val canShowAlternateBouncer by collectLastValue(underTest.canShowAlternateBouncer)
+            kosmos.fakeKeyguardBouncerRepository.setPrimaryShow(true)
+            assertFalse(canShowAlternateBouncer!!)
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun canShowAlternateBouncer_false_dueToBouncerOverlayShowing() =
+        kosmos.testScope.runTest {
+            kosmos.givenAlternateBouncerSupported()
+            val canShowAlternateBouncer by collectLastValue(underTest.canShowAlternateBouncer)
+            kosmos.sceneInteractor.showOverlay(overlay = Overlays.Bouncer, loggingReason = "test")
+            assertFalse(canShowAlternateBouncer!!)
+        }
 }

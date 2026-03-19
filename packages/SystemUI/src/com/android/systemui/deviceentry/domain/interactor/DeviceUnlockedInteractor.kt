@@ -50,7 +50,6 @@ import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -250,7 +249,7 @@ constructor(
      */
     private val unlockForPowerButtonGestureRequests = Channel<String>()
 
-    override suspend fun onActivated(): Nothing {
+    override suspend fun onActivated() {
         coroutineScope {
             launch {
                 combine(
@@ -293,8 +292,6 @@ constructor(
                     .collect()
             }
         }
-
-        awaitCancellation()
     }
 
     /** Locks the device instantly. */

@@ -48,6 +48,7 @@ abstract class DragAppWindowMultiWindowAndPip : DragAppWindowScenarioTestBase() 
 
     @Test
     override fun dragAppWindow() {
+        val initialBounds = wmHelper.getWindowRegion(imeAppHelper).bounds
         val (startXIme, startYIme) = getWindowDragStartCoordinate(imeAppHelper)
 
         imeApp.dragWindow(
@@ -58,6 +59,8 @@ abstract class DragAppWindowMultiWindowAndPip : DragAppWindowScenarioTestBase() 
             wmHelper,
             device,
         )
+        val finalBounds = wmHelper.getWindowRegion(imeAppHelper).bounds
+        assertWindowMovedRightAndDown(initialBounds, finalBounds)
     }
 
     @After

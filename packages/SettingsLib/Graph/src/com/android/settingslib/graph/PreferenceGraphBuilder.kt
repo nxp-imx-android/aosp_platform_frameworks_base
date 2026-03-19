@@ -693,7 +693,7 @@ fun PreferenceMetadata.toProto(
             }
         }
 
-        screenMetadata.getTrampolinedLaunchIntent(context, metadata)?.let {
+        screenMetadata.getTrampolinedLaunchIntent(metadata).let {
             launchIntent = it.toProto()
         }
 
@@ -729,6 +729,7 @@ fun PreferenceMetadata.toProto(
     } else if (metadata is PreferenceAvailabilityProvider) {
         addGetPreconditions(metadata.availabilityDescription)
     }
+    metadata.getEnabledDescription()?.let { addSetPreconditions(it) }
     if (metadata is PreferenceSetWarningProvider) {
         metadata.setWarning?.let { warningInfo ->
             setWarning = setWarningProto {

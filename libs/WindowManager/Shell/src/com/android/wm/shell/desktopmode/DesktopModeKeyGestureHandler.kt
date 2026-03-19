@@ -20,6 +20,7 @@ import android.app.ActivityManager.RunningTaskInfo
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
+import android.app.KeyguardManager
 import android.content.Context
 import android.hardware.input.InputManager
 import android.hardware.input.InputManager.KeyGestureEventHandler
@@ -62,6 +63,7 @@ class DesktopModeKeyGestureHandler(
     private val desktopState: DesktopState,
     private val accessibilityManager: AccessibilityManager,
     private val shellController: ShellController,
+    private val keyguardManager: KeyguardManager,
 ) : KeyGestureEventHandler {
     private val a11yAnnounceTextMinimizing: String =
         context.getString(R.string.desktop_mode_talkback_state_minimizing)
@@ -87,6 +89,11 @@ class DesktopModeKeyGestureHandler(
     }
 
     override fun handleKeyGestureEvent(event: KeyGestureEvent, focusedToken: IBinder?) {
+        if (keyguardManager.isKeyguardLocked) {
+            logV("Key gesture is ignored because keyguard is showing")
+            return
+        }
+
         if (shellController.isOverviewVisible(focusTransitionObserver.globallyFocusedDisplayId)) {
             logV("Key gesture is ignored because overview is visible")
             return

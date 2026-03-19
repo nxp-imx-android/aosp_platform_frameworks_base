@@ -307,23 +307,6 @@ public class LogicalDisplayMapperTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_DISPLAY_INFO_COPY_ON_WRITE_CACHE_ENABLED)
-    public void testDisplayDeviceAddAndRemove_NonInternalTypes() {
-        boolean infoCacheEnabled = false;
-        initLogicalDisplayMapper();
-        testDisplayDeviceAddAndRemove_NonInternal(TYPE_EXTERNAL, infoCacheEnabled);
-        testDisplayDeviceAddAndRemove_NonInternal(Display.TYPE_WIFI, infoCacheEnabled);
-        testDisplayDeviceAddAndRemove_NonInternal(TYPE_OVERLAY, infoCacheEnabled);
-        testDisplayDeviceAddAndRemove_NonInternal(TYPE_VIRTUAL, infoCacheEnabled);
-        testDisplayDeviceAddAndRemove_NonInternal(Display.TYPE_UNKNOWN, infoCacheEnabled);
-
-        // Call the internal test again, just to verify that adding non-internal displays
-        // doesn't affect the ability for an internal display to become the default display.
-        testDisplayDeviceAddAndRemove_Internal_Helper(infoCacheEnabled);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_DISPLAY_INFO_COPY_ON_WRITE_CACHE_ENABLED)
     public void testDisplayDeviceAddAndRemove_NonInternalTypes_displayInfoCacheEnabled() {
         boolean infoCacheEnabled = true;
         initLogicalDisplayMapper();

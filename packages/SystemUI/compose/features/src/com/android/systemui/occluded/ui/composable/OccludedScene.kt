@@ -55,7 +55,7 @@ constructor(
 
     override val alwaysCompose: Boolean = false
 
-    override suspend fun onActivated(): Nothing {
+    override suspend fun onActivated() {
         actionsViewModel.activate()
     }
 

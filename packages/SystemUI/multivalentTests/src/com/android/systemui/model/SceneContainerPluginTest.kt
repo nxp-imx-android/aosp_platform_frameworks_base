@@ -16,14 +16,18 @@
 
 package com.android.systemui.model
 
+import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.scene.data.repository.Transition
+import com.android.systemui.scene.data.repository.setSceneTransition
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.fakeSceneDataSource
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_AWAKE
+import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_NOTIFICATION_PANEL_EXPANDED
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_NOTIFICATION_PANEL_VISIBLE
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING
 import com.android.systemui.testKosmos
@@ -91,6 +95,32 @@ class SceneContainerPluginTest : SysuiTestCase() {
                 underTest.flagValueOverride(
                     flag = SYSUI_STATE_NOTIFICATION_PANEL_VISIBLE,
                     displayId = 1,
+                )
+            )
+            .isTrue()
+    }
+
+    @Test
+    fun flagValueOverride_duringTransition_returnsNull() {
+        kosmos.setSceneTransition(Transition(from = Scenes.Lockscreen, to = Scenes.Shade))
+
+        assertThat(
+                underTest.flagValueOverride(
+                    flag = SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING,
+                    displayId = Display.DEFAULT_DISPLAY,
+                )
+            )
+            .isNull()
+    }
+
+    @Test
+    fun flagValueOverride_duringTransition_expanded_returnsTrue() {
+        kosmos.setSceneTransition(Transition(from = Scenes.Lockscreen, to = Scenes.Shade))
+
+        assertThat(
+                underTest.flagValueOverride(
+                    flag = SYSUI_STATE_NOTIFICATION_PANEL_EXPANDED,
+                    displayId = Display.DEFAULT_DISPLAY,
                 )
             )
             .isTrue()

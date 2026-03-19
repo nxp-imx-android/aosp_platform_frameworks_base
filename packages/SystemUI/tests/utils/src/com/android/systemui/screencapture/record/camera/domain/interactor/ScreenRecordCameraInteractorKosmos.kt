@@ -20,6 +20,7 @@ import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.screencapture.record.camera.data.repository.screenRecordCameraRepository
+import com.android.systemui.screencapture.record.shared.screenRecordingLogger
 
 val Kosmos.screenRecordCameraInteractor: ScreenRecordCameraInteractor by
     Kosmos.Fixture {
@@ -27,5 +28,6 @@ val Kosmos.screenRecordCameraInteractor: ScreenRecordCameraInteractor by
             resources = applicationContext.resources,
             coroutineScope = backgroundScope,
             repository = screenRecordCameraRepository,
+            logger = screenRecordingLogger,
         )
     }

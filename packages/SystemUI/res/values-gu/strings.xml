@@ -79,7 +79,6 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"મંજૂરી આપો"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"વાયરલેસ ડિબગીંગની મંજૂરી નથી"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"હાલમાં આ ડિવાઇસમાં સાઇન ઇન થયેલા વપરાશકર્તા વાયરલેસ ડિબગીંગ ચાલુ કરી શકતા નથી. આ સુવિધાનો ઉપયોગ કરવા માટે કોઈ ઍડમિન વપરાશકર્તા પર સ્વિચ કરો."</string>
-    <string name="change_connected_wifi_text" msgid="6346095920396568246">"એકવાર લૉગ ઇન કરી લો પછી તમે આ સેટિંગ બદલી શકો છો"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB પોર્ટ બંધ કરવામાં આવ્યો છે"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"પ્રવાહી અથવા ધૂળથી તમારા ડિવાઇસનું રક્ષણ કરવા માટે, USB પોર્ટ બંધ કરવામાં આવ્યો છે અને કોઈ ઍક્સેસરી શોધશે નહીં.\n\nજ્યારે ફરીથી USB પોર્ટને ઉપયોગમાં લેવાનું સુરક્ષિત હશે ત્યારે તમને નોટિફિકેશન આપવામાં આવશે."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"ચાર્જર અને ઍક્સેસરીની ઓળખ માટે USB પોર્ટ ચાલુ કર્યું"</string>
@@ -174,8 +173,7 @@
     <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"પાછલી બતાવો"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"સ્ક્રીન રેકોર્ડિંગના સેટિંગ"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"માર્કઅપ"</string>
-    <!-- no translation found for screen_record_color_picker (6732567862106107021) -->
-    <skip />
+    <string name="screen_record_color_picker" msgid="6732567862106107021">"કલર પિકર"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"વીડિયો સાચવ્યો"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"વીડિયો ડિલીટ કર્યો"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"છેલ્લો ફેરફાર રદ કરો"</string>
@@ -1461,8 +1459,7 @@
     <string name="controls_media_button_prev" msgid="8126822360056482970">"પહેલાનો ટ્રૅક"</string>
     <string name="controls_media_button_next" msgid="6662636627525947610">"આગલો ટ્રૅક"</string>
     <string name="controls_media_button_connecting" msgid="3138354625847598095">"કનેક્ટ કરી રહ્યાં છીએ"</string>
-    <!-- no translation found for controls_media_output_chip (324952606619594635) -->
-    <skip />
+    <string name="controls_media_output_chip" msgid="324952606619594635">"આઉટપુટના સેટિંગ ખોલો"</string>
     <string name="media_transfer_undo" msgid="1895606387620728736">"છેલ્લો ફેરફાર રદ કરો"</string>
     <string name="media_move_closer_to_start_cast" msgid="2673104707465013176">"<xliff:g id="DEVICENAME">%1$s</xliff:g> પર ચલાવવા માટે વધુ નજીક ખસેડો"</string>
     <string name="media_move_closer_to_end_cast" msgid="7302555909119374738">"અહીં ચલાવવા માટે, <xliff:g id="DEVICENAME">%1$s</xliff:g>ની નજીક લાવો"</string>
@@ -1838,6 +1835,7 @@
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"આગળ"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"નૅવિગેટ કરીને આગલા પેજ પર જાઓ"</string>
     <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"પાછા જાઓ"</string>
+    <string name="accessibility_close_overlay_box_description" msgid="8399871568780893724">"પાછળ"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ઑટોમૅટિક રીતે ભરવાની સુવિધા"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"મોટું કરો"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"સચોટ લોકેશન"</string>
@@ -1863,25 +1861,18 @@
     <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"પોર્ટ્રેટ ટચ-અપ કરવાની સુવિધા"</string>
     <string name="av_mic_label" msgid="5427348054144789879">"માઇક્રોફોન"</string>
     <string name="av_camera_label" msgid="7719772172590702343">"કૅમેરા"</string>
-    <!-- no translation found for av_camera_blur_drill_in_title (3392789469292685354) -->
-    <skip />
+    <string name="av_camera_blur_drill_in_title" msgid="3392789469292685354">"બૅકગ્રાઉન્ડ બ્લર"</string>
     <string name="av_camera_blur_off" msgid="3170334995799202022">"બંધ"</string>
-    <!-- no translation found for av_camera_blur_light (5105255788203563538) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_full (6493497965254048479) -->
-    <skip />
+    <string name="av_camera_blur_light" msgid="5105255788203563538">"ઓછું બ્લર"</string>
+    <string name="av_camera_blur_full" msgid="6493497965254048479">"વધુ બ્લર"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"લાઇટિંગમાં સુધારો"</string>
     <string name="av_camera_face_retouch" msgid="45890971969486224">"પોર્ટ્રેટ ટચ-અપ કરવાની સુવિધા"</string>
-    <!-- no translation found for av_camera_framing (2948988841290208034) -->
-    <skip />
-    <!-- no translation found for av_studio_mic (1815195630183143501) -->
-    <skip />
-    <!-- no translation found for av_studio_look (631085505786989852) -->
-    <skip />
+    <string name="av_camera_framing" msgid="2948988841290208034">"કૅમેરા ફ્રેમિંગ"</string>
+    <string name="av_studio_mic" msgid="1815195630183143501">"સ્ટુડિયો માઇક"</string>
+    <string name="av_studio_look" msgid="631085505786989852">"સ્ટુડિયો લુક"</string>
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d ઇફેક્ટ"</string>
     <string name="av_blur" msgid="405131343487260171">"બ્લર કરો"</string>
-    <!-- no translation found for av_live_captions (802763867449401889) -->
-    <skip />
+    <string name="av_live_captions" msgid="802763867449401889">"લાઇવ કૅપ્શન"</string>
     <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"પાછળ"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"બૅટરી %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"ડાબી બાજુની બૅટરી %1$s    જમણી બાજુની બૅટરી %2$s"</string>
@@ -1895,4 +1886,11 @@
     <string name="dream_setup_title" msgid="7996530071414508238">"સ્ક્રીન સેવરનું સેટઅપ કરો"</string>
     <string name="dream_setup_button_not_now" msgid="8028385323668620805">"હમણાં નહીં"</string>
     <string name="dream_setup_button_setup" msgid="4755361016017554826">"સેટઅપ કરો"</string>
+    <string name="ace_attribution_dialog_settings_label" msgid="8898211593287114433">"સેટિંગ"</string>
+    <string name="ace_attribution_dialog_title" msgid="5236154464063969824">"મૅજિક ક્યૂ તરફથી સૂચનો"</string>
+    <string name="ace_attribution_dialog_description" msgid="1431906058759687758">"આ સૂચન આપવા માટે વાપરવામાં આવેલી આઇટમ"</string>
+    <string name="ace_attribution_header_icon_accessibility_description" msgid="7385840112370423581">"Android Device Intelligence આઇકન"</string>
+    <string name="ace_attribution_settings_button_accessibility_description" msgid="8426163772933746374">"સેટિંગ બટન"</string>
+    <string name="ace_attribution_thumbs_up_button_accessibility_description" msgid="3561722934830934360">"થમ્બ્સ અપ પ્રતિસાદ માટેનું બટન"</string>
+    <string name="ace_attribution_thumbs_down_button_accessibility_description" msgid="5471283747650437662">"થમ્બ્સ ડાઉન પ્રતિસાદ માટેનું બટન"</string>
 </resources>

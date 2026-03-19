@@ -35,6 +35,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -114,14 +115,16 @@ constructor(
         setContent {
             PlatformTheme {
                 val scope = rememberCoroutineScope()
+                val transition = rememberTransition(visibleState, label = "ShareScreenActivity")
                 val uiComponent: ScreenCaptureShareScreenUiComponent =
-                    remember(scope, parameters) {
+                    remember(scope, parameters, transition) {
                         val ui =
                             (component
                                     .uiComponentBuilders()[ScreenCaptureType.SHARE_SCREEN]
                                     ?.setScope(scope)
                                     ?.setDisplay(display)
                                     ?.setWindow(window)
+                                    ?.setVisibilityTransition(transition)
                                     ?.build() as ScreenCaptureShareScreenUiComponent)
                                 .apply {
                                     shareScreenUiInteractor.initialize(

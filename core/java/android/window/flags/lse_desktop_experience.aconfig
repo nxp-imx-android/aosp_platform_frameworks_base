@@ -271,6 +271,13 @@ flag {
 }
 
 flag {
+    name: "enable_cross_display_snap_support"
+    namespace: "lse_desktop_experience"
+    description: "Allow visual indicator to show on the target display even if it differs from the task's original display."
+    bug: "411292927"
+}
+
+flag {
     name: "enable_cross_displays_app_launch_transition"
     namespace: "lse_desktop_experience"
     description: "Enables a transition for launching an already opened app on another display."
@@ -596,6 +603,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enable fluid resizing for apps controlled by app compatibility framework."
     bug: "460405642"
+}
+
+flag {
+    name: "enable_focus_reset_on_display_removal"
+    namespace: "lse_desktop_experience"
+    description: "Resets focused display to default when it is removed"
+    bug: "450179124"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -1022,6 +1039,13 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "launch_games_in_fullscreen_by_allowlist"
+    namespace: "lse_desktop_experience"
+    description: "Launch games in fullscreen by allowlist in desktop-first displays."
+    bug: "492280747"
 }
 
 flag {

@@ -72,8 +72,6 @@ import static com.android.wm.shell.transition.TransitionAnimationHelper.getTrans
 import static com.android.wm.shell.transition.TransitionAnimationHelper.isCoveredByOpaqueFullscreenChange;
 import static com.android.wm.shell.transition.TransitionAnimationHelper.loadAttributeAnimation;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.annotation.ColorInt;
 import android.annotation.NonNull;
@@ -958,6 +956,12 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         return Optional.of(rotationAnimation);
     }
 
+    /**
+     * Animates a task moving across physical displays.
+     * This method coordinates a two-part animation:
+     * 1. A 'departure' animation on the source display using a snapshot (if available).
+     * 2. An 'arrival' animation on the destination display using the actual task leash.
+     */
     private Optional<WindowAnimation> startDisplayMoveAnimation(
             @NonNull SurfaceControl.Transaction startT,
             @NonNull TransitionInfo.Change change,
@@ -965,70 +969,10 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
             @NonNull Consumer<WindowAnimation> finishCallback,
             @NonNull ShellExecutor mainExecutor) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, "displayMoveAnimation");
-        final SurfaceControl snapshot = change.getSnapshot();
-
-        TransitionInfo.Root startRoot = null;
-        if (snapshot != null) {
-            int rootIndex = info.findRootIndex(change.getStartDisplayId());
-            if (rootIndex != -1) {
-                startRoot = info.getRoot(rootIndex);
-            }
-        }
-
-        final boolean hasSnapshotAndRoot = snapshot != null && startRoot != null;
-        startT.setAlpha(change.getLeash(), 0f);
-        final int animationDuration = 600;
-        final ValueAnimator fadeOut = ValueAnimator.ofFloat(1f, 0f);
-
-        final WindowAnimation winAnim = new WindowAnimation(change, 0 /* cornerRadius */);
-
-        if (hasSnapshotAndRoot) {
-            startT.reparent(snapshot, startRoot.getLeash());
-            startT.setPosition(snapshot,
-                    change.getStartAbsBounds().left - startRoot.getOffset().x,
-                    change.getStartAbsBounds().top - startRoot.getOffset().y);
-            startT.show(snapshot);
-
-            fadeOut.setDuration(animationDuration);
-            fadeOut.setInterpolator(Interpolators.LINEAR);
-            fadeOut.addUpdateListener(val -> {
-                final SurfaceControl.Transaction t = mTransactionPool.acquire();
-                t.setAlpha(snapshot, (float) val.getAnimatedValue());
-                t.apply();
-                mTransactionPool.release(t);
-            });
-            mAnimExecutor.execute(fadeOut::start);
-        }
-
-        final ValueAnimator fadeIn = ValueAnimator.ofFloat(0f, 1f);
-        fadeIn.setDuration(animationDuration);
-        fadeIn.setInterpolator(Interpolators.LINEAR);
-        fadeIn.addUpdateListener(val -> {
-            final SurfaceControl.Transaction t = mTransactionPool.acquire();
-            t.setAlpha(change.getLeash(), (float) val.getAnimatedValue());
-            t.apply();
-            mTransactionPool.release(t);
-        });
-
-        fadeIn.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                final SurfaceControl.Transaction t = mTransactionPool.acquire();
-                if (hasSnapshotAndRoot) {
-                    t.remove(snapshot);
-                    if (fadeOut.isRunning()) {
-                        fadeOut.end();
-                    }
-                }
-                t.setAlpha(change.getLeash(), 1f);
-                t.apply();
-                mTransactionPool.release(t);
-                mainExecutor.execute(() -> finishCallback.accept(winAnim));
-            }
-        });
-
-        winAnim.setAnimator(fadeIn);
-        return Optional.of(winAnim);
+        final DisplayMoveAnimation displayMoveAnimation = new DisplayMoveAnimation(mTransactionPool,
+                mDisplayController);
+        return displayMoveAnimation.startAnimation(startT, change, info, finishCallback,
+            mainExecutor);
     }
 
     private Optional<WindowAnimation> startBoundsChangeAnimation(

@@ -51,7 +51,7 @@ constructor(
         resources.getInteger(R.integer.config_growthBroadcastDelayMillis)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    override suspend fun onActivated(): Nothing {
+    override suspend fun onActivated() {
         deviceEntryInteractor
             // When the device is entered directly (`isEntered` is true), wait for a delay and then
             // emit. `transformLatest` will cancel the delay if `isDeviceEnteredDirectly` emits a

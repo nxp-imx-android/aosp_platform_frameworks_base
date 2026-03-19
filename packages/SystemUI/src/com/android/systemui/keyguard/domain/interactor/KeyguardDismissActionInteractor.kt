@@ -37,7 +37,6 @@ import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -145,7 +144,7 @@ constructor(
     }
 
     /** Launch any relevant coroutines that are required by this interactor. */
-    override suspend fun onActivated(): Nothing {
+    override suspend fun onActivated() {
         coroutineScope {
             launch {
                 finishedTransitionToGone.collect {
@@ -169,7 +168,6 @@ constructor(
             }
 
             launch { repository.dismissAction.collect { log("updatedDismissAction=$it") } }
-            awaitCancellation()
         }
     }
 

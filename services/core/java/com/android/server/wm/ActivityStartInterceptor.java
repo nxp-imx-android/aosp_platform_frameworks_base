@@ -42,6 +42,8 @@ import static android.view.Display.DEFAULT_DISPLAY;
 
 import static com.android.server.pm.PackageManagerService.PLATFORM_PACKAGE_NAME;
 
+import static android.content.pm.PackageManager.RESTRICTION_CONFIRM_WITH_SPEEDBUMP;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityOptions;
@@ -69,6 +71,8 @@ import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.view.Display;
+
+import com.android.window.flags.Flags;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.BlockedAppActivity;
@@ -281,6 +285,10 @@ class ActivityStartInterceptor {
             return true;
         }
 
+        if (interceptDistractingPackageIfNeeded()) {
+            return true;
+        }
+
         final SparseArray<ActivityInterceptorCallback> callbacks =
                 mService.getActivityInterceptorCallbacks();
         final ActivityInterceptorCallback.ActivityInterceptorInfo interceptorInfo =
@@ -477,6 +485,68 @@ class ActivityStartInterceptor {
         mAInfo = mSupervisor.resolveActivity(mIntent, mRInfo, mStartFlags, null /*profilerInfo*/);
         return true;
     }
+
+    private boolean interceptDistractingPackageIfNeeded() {
+        if (!Flags.activityStartInterceptorSpeedbumps()) {
+            return false;
+        }
+        if (mAInfo == null || mAInfo.applicationInfo == null) {
+            return false;
+        }
+
+        final PackageManagerInternal pmi = mService.getPackageManagerInternalLocked();
+        if (pmi == null) {
+            return false;
+        }
+
+        final String packageName = mAInfo.applicationInfo.packageName;
+        final int restrictions = pmi.getDistractingPackageRestrictions(packageName, mUserId);
+        if ((restrictions & RESTRICTION_CONFIRM_WITH_SPEEDBUMP) == 0) {
+            return false;
+        }
+
+        // Safe to call getWellbeingPackageName() here. Both this interceptor and the
+        // PackageManager implementation reside in system_server, so the Binder call is local
+        // and doesn't incur IPC overhead.
+        final String wellbeingPkg = mServiceContext.getPackageManager().getWellbeingPackageName();
+        if (wellbeingPkg == null) {
+            return false;
+        }
+
+        // Do not intercept if the intent is launched from the wellbeing app itself,
+        // otherwise it would result in an infinite interception loop.
+        if (wellbeingPkg.equals(mCallingPackage)) {
+            return false;
+        }
+
+        final Intent newIntent = new Intent(Intent.ACTION_WELLBEING_CONFIRM_WITH_SPEEDBUMP);
+        newIntent.setPackage(wellbeingPkg);
+        newIntent.putExtra(Intent.EXTRA_PACKAGE_NAME, packageName);
+
+        final IntentSender target = createIntentSenderForOriginalIntent(mCallingUid,
+                FLAG_CANCEL_CURRENT | FLAG_ONE_SHOT | FLAG_IMMUTABLE);
+        newIntent.putExtra(Intent.EXTRA_INTENT, target);
+        newIntent.addFlags(FLAG_ACTIVITY_NEW_TASK | FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+
+        final ResolveInfo rInfo = mSupervisor.resolveIntent(newIntent, null, mUserId, 0,
+                mRealCallingUid, mRealCallingPid);
+        final ActivityInfo aInfo = mSupervisor.resolveActivity(newIntent, rInfo, mStartFlags,
+                null /*profilerInfo*/);
+
+        // If Digital Wellbeing cannot handle the intent, skip interception.
+        if (aInfo == null) {
+            return false;
+        }
+
+        mIntent = newIntent;
+        mCallingPid = mRealCallingPid;
+        mCallingUid = mRealCallingUid;
+        mResolvedType = null;
+        mRInfo = rInfo;
+        mAInfo = aInfo;
+        return true;
+    }
+
 
     private boolean interceptLockedProfileIfNeeded() {
         final Intent interceptingIntent = interceptWithConfirmCredentialsIfNeeded(mAInfo, mUserId);

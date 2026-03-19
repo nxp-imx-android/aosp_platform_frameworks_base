@@ -50,6 +50,7 @@ abstract class DragAppWindowMultiWindow : DragAppWindowScenarioTestBase() {
     @Test
     @WithDesktopTest
     override fun dragAppWindow() {
+        val initialBounds = wmHelper.getWindowRegion(mailAppHelper).bounds
         val (startX, startY) = getWindowDragStartCoordinate(mailAppHelper)
 
         mailAppDesktopHelper.dragWindow(
@@ -60,6 +61,8 @@ abstract class DragAppWindowMultiWindow : DragAppWindowScenarioTestBase() {
             wmHelper,
             device,
         )
+        val finalBounds = wmHelper.getWindowRegion(mailAppHelper).bounds
+        assertWindowMovedRightAndDown(initialBounds, finalBounds)
     }
 
     @After

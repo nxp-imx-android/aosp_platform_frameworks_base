@@ -4099,20 +4099,36 @@ final class ActivityRecord extends WindowToken {
             mAtmService.getLockTaskController().clearLockedTask(task);
         }
 
-        // Transfer the launch cookie to the next running activity above this in the same task.
-        if (mLaunchCookie != null && mState != RESUMED && task != null && !task.mInRemoveTask
+        if (mState != RESUMED && task != null && !task.mInRemoveTask
                 && !task.isClearingToReuseTask()) {
-            final ActivityRecord nextCookieTarget = task.getActivity(
-                    // Intend to only associate the same app by checking uid.
-                    r -> r.mLaunchCookie == null && !r.finishing && r.isUid(getUid()),
-                    this, false /* includeBoundary */, false /* traverseTopToBottom */);
-            if (nextCookieTarget != null) {
-                ProtoLog.v(WM_DEBUG_WINDOW_TRANSITIONS,
-                        "Transferring launch cookie=%s on finish from=%s(%d) to=%s(%d)",
-                        mLaunchCookie, packageName, System.identityHashCode(this),
-                        nextCookieTarget.packageName, System.identityHashCode(nextCookieTarget));
-                nextCookieTarget.mLaunchCookie = mLaunchCookie;
-                mLaunchCookie = null;
+            // Transfer the launch cookie to the next running activity above this in the same task.
+            if (mLaunchCookie != null) {
+                final ActivityRecord nextCookieTarget = findNextRunningActivity(
+                        r -> r.mLaunchCookie == null);
+                if (nextCookieTarget != null) {
+                    ProtoLog.v(WM_DEBUG_WINDOW_TRANSITIONS,
+                            "Transferring launch cookie=%s on finish from=%s(%d) to=%s(%d)",
+                            mLaunchCookie, packageName, System.identityHashCode(this),
+                            nextCookieTarget.packageName,
+                            System.identityHashCode(nextCookieTarget));
+                    nextCookieTarget.mLaunchCookie = mLaunchCookie;
+                    mLaunchCookie = null;
+                }
+            }
+
+            // Similarly, transfer the override task transition flag.
+            if (mOverrideTaskTransition) {
+                final ActivityRecord nextOverrideTarget = findNextRunningActivity(
+                        r -> !r.mOverrideTaskTransition);
+                if (nextOverrideTarget != null) {
+                    ProtoLog.v(WM_DEBUG_WINDOW_TRANSITIONS,
+                            "Transferring override task transition flag on finish"
+                                    + " from=%s(%d) to=%s(%d)",
+                            packageName, System.identityHashCode(this),
+                            nextOverrideTarget.packageName,
+                            System.identityHashCode(nextOverrideTarget));
+                    nextOverrideTarget.mOverrideTaskTransition = true;
+                }
             }
         }
 
@@ -4131,6 +4147,23 @@ final class ActivityRecord extends WindowToken {
         if (mDisplayContent != null) {
             mDisplayContent.mUnknownAppVisibilityController.appRemovedOrHidden(this);
         }
+    }
+
+    /**
+     * Finds the next non-finishing activity in this task that belongs to the same app (UID)
+     * and satisfies the given filter. The search proceeds downwards from this activity.
+     *
+     * @param filter The predicate to evaluate against each candidate activity.
+     * @return The next eligible {@link ActivityRecord}, or {@code null} if none is found.
+     */
+    private ActivityRecord findNextRunningActivity(@NonNull Predicate<ActivityRecord> filter) {
+        if (task == null) {
+            return null;
+        }
+        return task.getActivity(
+                // Intend to only associate the same app by checking uid.
+                r -> !r.finishing && r.isUid(getUid()) && filter.test(r),
+                this, false /* includeBoundary */, false /* traverseTopToBottom */);
     }
 
     /**

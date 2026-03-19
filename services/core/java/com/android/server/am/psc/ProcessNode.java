@@ -247,7 +247,7 @@ class ProcessNode extends GraphNode {
     }
 
     @ProcessState
-    int getProcState() {
+    int getCurProcState() {
         return mProc.getCurProcState();
     }
 

@@ -44,7 +44,7 @@ public abstract class ListUnion<T> extends ResolutionMechanism<List<T>> {
 
                 @Override
                 public String toString() {
-                    return "StringListUnion {}";
+                    return "ListUnion<String> {}";
                 }
             };
 
@@ -59,7 +59,7 @@ public abstract class ListUnion<T> extends ResolutionMechanism<List<T>> {
 
                 @Override
                 public String toString() {
-                    return "PackageListUnion {}";
+                    return "ListUnion<Package> {}";
                 }
             };
 

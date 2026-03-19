@@ -914,6 +914,9 @@ public abstract class ProcessRecordInternal {
         return false;
     }
 
+    /**
+     * TODO: b/489901078 - Change the method to package-private.
+     */
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
     public @OomAdjust int getCurRawAdj() {
         return mCurRawAdj;
@@ -924,6 +927,9 @@ public abstract class ProcessRecordInternal {
         mSetRawAdj = setRawAdj;
     }
 
+    /**
+     * TODO: b/489901078 - Change the method to package-private.
+     */
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
     public @OomAdjust int getSetRawAdj() {
         return mSetRawAdj;
@@ -936,6 +942,9 @@ public abstract class ProcessRecordInternal {
         mObserver.onCurAdjChanged(mCurAdj);
     }
 
+    /**
+     * TODO: b/489901078 - Change the method to package-private.
+     */
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
     public @OomAdjust int getCurAdj() {
         return mCurAdj;
@@ -946,9 +955,27 @@ public abstract class ProcessRecordInternal {
         mSetAdj = setAdj;
     }
 
+    /**
+     * TODO: b/489901078 - Switch to the {@link #getOomAdj()} method after the
+     *                     {@link Flags#encapsulateCurOomAdj()} is enabled.
+     */
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
     public @OomAdjust int getSetAdj() {
         return mSetAdj;
+    }
+
+    /**
+     * Returns the OOM adjustment for usage outside the psc package.
+     *
+     * <p>If {@link Flags#encapsulateCurOomAdj()} is enabled, it returns the stable
+     * {@link #getSetAdj()}; otherwise, it returns the transient {@link #getCurAdj()}.
+     */
+    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
+    public @OomAdjust int getOomAdj() {
+        if (Flags.encapsulateCurOomAdj()) {
+            return mSetAdj;
+        }
+        return mCurAdj;
     }
 
     /**
@@ -1477,7 +1504,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public @OomAdjust int getCachedAdj() {
+    @OomAdjust int getCachedAdj() {
         return mCachedAdj;
     }
 

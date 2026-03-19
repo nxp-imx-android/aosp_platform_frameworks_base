@@ -34,11 +34,12 @@ import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.SCHEDULE_EXACT_ALARM;
 import static android.Manifest.permission.USE_EXACT_ALARM;
 import static android.Manifest.permission.WRITE_SECURE_SETTINGS;
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 
 import android.annotation.Nullable;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.Trace;
-import android.os.Process;
 import android.os.UserHandle;
 import android.util.IntArray;
 import android.util.Log;
@@ -50,8 +51,6 @@ import com.android.media.permission.UidPackageState;
 import com.android.media.permission.UidPackageState.PackageState;
 
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -359,12 +358,30 @@ public class AudioServerPermissionProvider {
             appIds.add(appId);
         }
 
+        final boolean pccEnabled = enablePccFrameworkSupport();
+
         for (int userId : mUserIdSupplier.get()) {
             for (int i = 0; i < appIds.size(); i++) {
                 int appId = appIds.get(i);
                 int uid = UserHandle.getUid(userId, appId);
                 if (mPermissionPredicate.test(uid, MONITORED_PERMS[perm])) {
                     acc.add(uid);
+                }
+
+                if (pccEnabled) {
+                    // Safely grab the packages for this appId
+                    Map<String, PackageState> packages = mPackageMap.get(appId);
+                    if (packages != null && !packages.isEmpty()) {
+                        // All packages under an appId share the same pccId
+                        int pccId = packages.values().iterator().next().pccId;
+
+                        if (pccId != Process.INVALID_UID) {
+                            int pccUid = UserHandle.getUid(userId, pccId);
+                            if (mPermissionPredicate.test(pccUid, MONITORED_PERMS[perm])) {
+                                acc.add(pccUid);
+                            }
+                        }
+                    }
                 }
             }
         }

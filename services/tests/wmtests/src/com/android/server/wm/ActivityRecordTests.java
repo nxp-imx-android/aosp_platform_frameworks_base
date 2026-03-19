@@ -2626,6 +2626,18 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     @Test
+    public void testTransferOverrideTaskTransitionFlagWhenFinishing() {
+        final ActivityRecord activity1 = createActivityWithTask();
+        activity1.mOverrideTaskTransition = true;
+        final ActivityRecord activity2 = createActivityRecord(activity1.getTask());
+        activity2.mOverrideTaskTransition = false;
+        activity1.setState(PAUSED, "test");
+        activity1.makeFinishingLocked();
+
+        assertTrue(activity2.mOverrideTaskTransition);
+    }
+
+    @Test
     public void testMakeFinishingLocked_clearsLockTask() {
         final ActivityRecord activity = createActivityWithTask();
         final Task task = activity.getTask();

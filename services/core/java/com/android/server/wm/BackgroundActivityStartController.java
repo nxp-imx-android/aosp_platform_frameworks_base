@@ -46,6 +46,8 @@ import static com.android.server.wm.ActivityTaskManagerService.APP_SWITCH_ALLOW;
 import static com.android.server.wm.ActivityTaskManagerService.APP_SWITCH_FG_ONLY;
 import static com.android.server.wm.ActivityTaskSupervisor.getApplicationLabel;
 import static com.android.server.wm.PendingRemoteAnimationRegistry.TIMEOUT_MS;
+import static com.android.server.wm.WindowContainer.alwaysTruePredicate;
+import static com.android.window.flags.Flags.balAsmOptInNullTopActivity;
 import static com.android.window.flags.Flags.balDontBringExistingBackgroundTaskStackToFg;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
@@ -1901,7 +1903,10 @@ public class BackgroundActivityStartController {
         // Always allow actual top activity
         ActivityRecord topActivity = task.getTopMostActivity();
         if (topActivity == null) {
-            Slog.wtf(TAG, "Activities for task: " + task + " not found.");
+            Slog.wtf(TAG, "Activities for task: " + task + " not found. "
+                    + "Task has " + task.getChildCount() + " children. "
+                    + "First Activity: " + task.getActivity(alwaysTruePredicate())
+                    + ".");
             return bas.optedIn(topActivity);
         }
 
@@ -2381,7 +2386,9 @@ public class BackgroundActivityStartController {
         BlockActivityStart optedIn(ActivityRecord activity) {
             if (activity == null) {
                 Slog.wtfStack(TAG, "BlockActivityStart.optedIn called with null activity");
-                return this;
+                if (!balAsmOptInNullTopActivity()) {
+                    return this;
+                }
             }
             mTopActivityOptedIn = true;
             if (mActivityOptedIn == null) {

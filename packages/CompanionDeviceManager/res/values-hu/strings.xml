@@ -47,8 +47,7 @@
     <string name="summary_virtual_device" msgid="1062189396947962635">"A(z) <xliff:g id="APP_NAME">%2$s</xliff:g> a következő engedélyeket kapja meg:"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"eszköz"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Ez az alkalmazás képes lesz szinkronizálni az olyan információkat a telefon és a kiválasztott eszköz között, mint például a hívó fél neve."</string>
-    <!-- no translation found for summary_generic_with_remote_ai_capability (5053633566439056634) -->
-    <skip />
+    <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Engedélyezi a(z) &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; számára, hogy szinkronizálja az olyan információkat, mint a hívó adatai, és intelligens műveleteket futtasson az Ön <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> eszközén."</string>
     <string name="consent_yes" msgid="8344487259618762872">"Engedélyezés"</string>
     <string name="consent_no" msgid="2640796915611404382">"Tiltás"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Mégse"</string>

@@ -34,14 +34,6 @@ flag {
 }
 
 flag {
-  name: "enable_app_approval"
-  is_exported: true
-  namespace: "supervision"
-  description: "Flag to enable the App Approval settings in Android settings UI"
-  bug: "390185393"
-}
-
-flag {
   name: "enable_supervision_pin_recovery_screen"
   is_exported: true
   namespace: "supervision"

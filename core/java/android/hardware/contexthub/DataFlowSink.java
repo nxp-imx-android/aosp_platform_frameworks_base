@@ -83,6 +83,18 @@ public final class DataFlowSink implements AutoCloseable {
 
     private AtomicBoolean mIsBusy = new AtomicBoolean(false);
 
+    /** Whether this instance has been cancelled due to permissions. */
+    private AtomicBoolean mCancelled = new AtomicBoolean(false);
+
+    /** True if closeInternal() has been called. */
+    private boolean mClosed = false;
+
+    /**
+     * If mCancelled is set and mCancellationStarted is not, the first thread that checks this flag
+     * will be responsible for closing the sink.
+     */
+    private AtomicBoolean mCancellationStarted = new AtomicBoolean(false);
+
     private final class ApiGuard implements AutoCloseable {
         @Override
         public void close() {
@@ -427,6 +439,10 @@ public final class DataFlowSink implements AutoCloseable {
      * @hide
      */
     /* package */ void closeInternal() {
+        if (mClosed) {
+            return;
+        }
+        mClosed = true;
         mCloseGuard.close();
         AsyncState cancelOp = null;
         synchronized (mNotificationLock) {
@@ -444,6 +460,25 @@ public final class DataFlowSink implements AutoCloseable {
             }
         }
         mEndpoint.removeSink(mContext);
+    }
+
+    /** Cancels this sink due to a runtime event like permissions revocation. */
+    /* package */ void cancel() {
+        mCancelled.set(true);
+    }
+
+    /**
+     * Checks the cancellation state, performing cleanup if necessary and throwing a {@link
+     * java.lang.SecurityException}.
+     */
+    private void checkCancelled() {
+        if (!mCancelled.get()) {
+            return;
+        }
+        if (mCancellationStarted.compareAndSet(/* expectedValue= */ false, /* newValue= */ true)) {
+            closeInternal();
+        }
+        throw new SecurityException("DataFlowSink permissions revoked.");
     }
 
     /** Runnable dispatched to await data asynchronously. */
@@ -508,6 +543,7 @@ public final class DataFlowSink implements AutoCloseable {
             throw new ConcurrentModificationException(
                     "Another sink operation is currently in progress.");
         }
+        checkCancelled();
         return new ApiGuard();
     }
 }

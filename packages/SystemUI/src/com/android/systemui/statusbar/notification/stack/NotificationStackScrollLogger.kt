@@ -1,16 +1,13 @@
 package com.android.systemui.statusbar.notification.stack
 
-import android.view.MotionEvent
 import android.view.ViewGroup
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.LogLevel.DEBUG
 import com.android.systemui.log.core.LogLevel.ERROR
 import com.android.systemui.log.core.LogLevel.INFO
-import com.android.systemui.log.core.LogLevel.WARNING
 import com.android.systemui.log.dagger.NotificationHeadsUpLog
 import com.android.systemui.log.dagger.NotificationRenderLog
 import com.android.systemui.log.dagger.ShadeLog
-import com.android.systemui.log.dagger.ShadeTouchLog
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.AnimationEvent.ANIMATION_TYPE_ACTIVATED_CHILD
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.AnimationEvent.ANIMATION_TYPE_ADD
@@ -39,7 +36,6 @@ constructor(
     @NotificationHeadsUpLog private val buffer: LogBuffer,
     @NotificationRenderLog private val notificationRenderBuffer: LogBuffer,
     @ShadeLog private val shadeLogBuffer: LogBuffer,
-    @ShadeTouchLog private val shadeTouchLogBuffer: LogBuffer,
 ) {
     fun hunAnimationSkipped(entry: String, reason: String) {
         buffer.log(
@@ -359,170 +355,7 @@ constructor(
         )
     }
 
-    fun logNsslcInterceptTouchEvent(
-        action: Int,
-        result: Boolean,
-        skipForDragging: Boolean,
-        isTouchInGuts: Boolean,
-        longPressWantsIt: Boolean,
-        expandWantsIt: Boolean,
-        lockscreenExpandWantsIt: Boolean,
-        scrollWantsIt: Boolean,
-        hunWantsIt: Boolean,
-        swipeWantsIt: Boolean,
-        isUp: Boolean,
-        shouldLockscreenExpand: Boolean,
-        shouldHeadsUp: Boolean,
-        onlyScrollingInThisMotion: Boolean,
-        expandingNotification: Boolean,
-        expandedInThisMotion: Boolean,
-        disallowDismissInThisMotion: Boolean,
-        isBeingDragged: Boolean,
-        isExpanded: Boolean,
-        sceneContainerEnabled: Boolean,
-    ) {
-        shadeTouchLogBuffer.log(
-            TAG,
-            DEBUG,
-            {
-                int1 = action
-                bool1 = result
-                bool2 = skipForDragging
-                bool3 = isTouchInGuts
-                bool4 = longPressWantsIt
-                bool5 = expandWantsIt
-            },
-            {
-                "NSSLC.interceptTouchEvent.log1: ${MotionEvent.actionToString(int1)}, result=$bool1, skipForDragging=$bool2, isTouchInGuts=$bool3, longPressWantsIt=$bool4, expandWantsIt=$bool5"
-            },
-        )
-        shadeTouchLogBuffer.log(
-            TAG,
-            DEBUG,
-            {
-                int1 = lockscreenExpandWantsIt.toInt()
-                int2 = scrollWantsIt.toInt()
-                bool1 = hunWantsIt
-                bool2 = swipeWantsIt
-                bool3 = isUp
-                bool4 = shouldLockscreenExpand
-                bool5 = shouldHeadsUp
-            },
-            {
-                "NSSLC.interceptTouchEvent.log2: lockscreenExpandWantsIt=$int1, scrollWantsIt=$int2, hunWantsIt=$bool1, swipeWantsIt=$bool2, isUp=$bool3, shouldLockscreenExpand=$bool4, shouldHeadsUp=$bool5"
-            },
-        )
-        shadeTouchLogBuffer.log(
-            TAG,
-            DEBUG,
-            {
-                int1 = onlyScrollingInThisMotion.toInt()
-                int2 = expandingNotification.toInt()
-                bool1 = expandedInThisMotion
-                bool2 = disallowDismissInThisMotion
-                bool3 = isBeingDragged
-                bool4 = isExpanded
-                bool5 = sceneContainerEnabled
-            },
-            {
-                "NSSLC.interceptTouchEvent.log3: onlyScrollingInThisMotion= $int1, expandingNotification=$int2, expandedInThisMotion=$bool1, disallowDismissInThisMotion=$bool2, isBeingDragged=$bool3, isExpanded=$bool4, sceneContainerEnabled=$bool5"
-            },
-        )
-    }
-
-    fun logNsslShouldRefuseTouchEvent(
-        action: Int,
-        result: Boolean,
-        interactive: Boolean,
-        isOutBoundsDown: Boolean,
-    ) {
-        shadeTouchLogBuffer.log(
-            TAG,
-            if (result) WARNING else DEBUG,
-            {
-                int1 = action
-                bool1 = result
-                bool2 = interactive
-                bool3 = isOutBoundsDown
-            },
-            {
-                "NSSL.shouldRefuseTouchEvent: ${MotionEvent.actionToString(int1)}, result=$bool1, interactive=$bool2, isOutBoundsDown=$bool3"
-            },
-        )
-    }
-
-    fun logNsslcTouchEvent(
-        action: Int,
-        result: Boolean,
-        sceneContainerEnabled: Boolean,
-        longPressWantsIt: Boolean,
-        expandWantsIt: Boolean,
-        lockscreenExpandWantsIt: Boolean,
-        horizontalSwipeWantsIt: Boolean,
-        scrollerWantsIt: Boolean,
-        hunWantsIt: Boolean,
-        onlyScrollingInThisMotion: Boolean,
-        expandingNotification: Boolean,
-        lockscreenExpandHandled: Boolean,
-        isCancelOrUp: Boolean,
-    ) {
-        shadeTouchLogBuffer.log(
-            TAG,
-            DEBUG,
-            {
-                int1 = action
-                bool1 = result
-                bool2 = sceneContainerEnabled
-                bool3 = longPressWantsIt
-                bool4 = expandWantsIt
-                bool5 = lockscreenExpandWantsIt
-            },
-            {
-                "NSSLC.touchEvent.log1: ${MotionEvent.actionToString(int1)}, result=$bool1, sceneContainerEnabled=$bool2, longPressWantsIt=$bool3, expandWantsIt=$bool4, lockscreenExpandWantsIt=$bool5"
-            },
-        )
-        shadeTouchLogBuffer.log(
-            TAG,
-            DEBUG,
-            {
-                int1 = horizontalSwipeWantsIt.toInt()
-                int2 = scrollerWantsIt.toInt()
-                bool1 = hunWantsIt
-                bool2 = onlyScrollingInThisMotion
-                bool3 = expandingNotification
-                bool4 = lockscreenExpandHandled
-                bool5 = isCancelOrUp
-            },
-            {
-                "NSSLC.touchEvent.log2: horizontalSwipeWantsIt=$int1, scrollerWantsIt=$int2, hunWantsIt=$bool1, onlyScrollingInThisMotion=$bool2, expandingNotification=$bool3, lockscreenExpandHandled=$bool4, isCancelOrUp=$bool5"
-            },
-        )
-    }
-
-    fun logNsslOnInterceptTouchEvent(
-        action: Int,
-        result: Boolean,
-        shouldRefuse: Boolean,
-        touchHandlerIntercepted: Boolean,
-    ) {
-        shadeTouchLogBuffer.log(
-            TAG,
-            DEBUG,
-            {
-                int1 = action
-                bool1 = result
-                bool2 = shouldRefuse
-                bool3 = touchHandlerIntercepted
-            },
-            {
-                "NSSL.onInterceptTouchEvent: ${MotionEvent.actionToString(int1)}, result=$bool1, shouldRefuse=$bool2, touchHandlerIntercepted=$bool3"
-            },
-        )
-    }
-
     companion object {
         private const val TAG = "NotificationStackScroll"
-
-        private fun Boolean.toInt() = if (this) 1 else 0
     }
 }

@@ -103,6 +103,7 @@ public class AmbientState implements Dumpable {
     private boolean mApplyHunTranslation;
     private float mPlaceholderAlpha = 1.0f;
     private boolean mCurrentSceneLockscreen;
+    private float mLStoShadeProgress = 0f;
 
     /**
      * Sets whether HUN translation should be applied to viewState.yTranslation
@@ -298,6 +299,21 @@ public class AmbientState implements Dumpable {
     public float getQsExpansionFraction() {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return 0f;
         return mQsExpansionFraction;
+    }
+
+
+    /**
+     * @param shadeProgress Fraction of shade expansion when expanding shade from Lockscreen.
+     */
+    public void setLStoShadeProgress(float shadeProgress) {
+        mLStoShadeProgress = shadeProgress;
+    }
+
+    /**
+     * @return Fraction of shade expansion when expanding shade from Lockscreen.
+     */
+    public float getLStoShadeProgress() {
+        return mLStoShadeProgress;
     }
 
     /**
@@ -939,6 +955,7 @@ public class AmbientState implements Dumpable {
             pw.println("mStackBounds=" + mStackBounds);
             pw.println("mHeadsUpTop=" + mHeadsUpTop);
             pw.println("mPlaceholderAlpha=" + mPlaceholderAlpha);
+            pw.println("mLStoShadeProgress=" + mLStoShadeProgress);
         } else {
             // fields which will be removed with SceneContainer
             pw.println("mTopPadding=" + mTopPadding);

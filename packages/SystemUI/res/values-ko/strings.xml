@@ -79,7 +79,6 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"허용"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"무선 디버깅이 허용되지 않음"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"현재 이 기기에 로그인한 사용자는 무선 디버깅을 사용 설정할 수 없습니다. 이 기능을 사용하려면 관리자로 전환하세요."</string>
-    <string name="change_connected_wifi_text" msgid="6346095920396568246">"로그인한 후 이 설정을 변경할 수 있습니다"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB 포트 비활성화됨"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"기기를 액체나 이물질로부터 보호하기 위해 USB 포트가 사용 중지되었으며 액세서리를 연결할 수 없습니다.\n\nUSB 포트를 다시 안전하게 사용할 수 있게 되면 알려 드리겠습니다."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"충전기와 액세서리를 감지할 수 있도록 USB 포트가 사용 설정됨"</string>
@@ -174,8 +173,7 @@
     <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"이전 앱 표시"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"화면 녹화 설정"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"마크업"</string>
-    <!-- no translation found for screen_record_color_picker (6732567862106107021) -->
-    <skip />
+    <string name="screen_record_color_picker" msgid="6732567862106107021">"색상 선택 도구"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"동영상 저장됨"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"동영상 삭제됨"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"실행취소"</string>
@@ -1461,8 +1459,7 @@
     <string name="controls_media_button_prev" msgid="8126822360056482970">"이전 트랙"</string>
     <string name="controls_media_button_next" msgid="6662636627525947610">"다음 트랙"</string>
     <string name="controls_media_button_connecting" msgid="3138354625847598095">"연결 중"</string>
-    <!-- no translation found for controls_media_output_chip (324952606619594635) -->
-    <skip />
+    <string name="controls_media_output_chip" msgid="324952606619594635">"출력 설정 열기"</string>
     <string name="media_transfer_undo" msgid="1895606387620728736">"실행취소"</string>
     <string name="media_move_closer_to_start_cast" msgid="2673104707465013176">"<xliff:g id="DEVICENAME">%1$s</xliff:g>에서 재생하려면 기기를 더 가까이로 옮기세요."</string>
     <string name="media_move_closer_to_end_cast" msgid="7302555909119374738">"여기에서 재생하려면 <xliff:g id="DEVICENAME">%1$s</xliff:g>에 더 가까이 이동하세요."</string>
@@ -1838,6 +1835,8 @@
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"다음"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"다음 페이지로 이동"</string>
     <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"뒤로 이동"</string>
+    <!-- no translation found for accessibility_close_overlay_box_description (8399871568780893724) -->
+    <skip />
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"자동 완성"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"펼치기"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"정확한 위치"</string>
@@ -1863,25 +1862,18 @@
     <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"인물 보정"</string>
     <string name="av_mic_label" msgid="5427348054144789879">"마이크"</string>
     <string name="av_camera_label" msgid="7719772172590702343">"카메라"</string>
-    <!-- no translation found for av_camera_blur_drill_in_title (3392789469292685354) -->
-    <skip />
+    <string name="av_camera_blur_drill_in_title" msgid="3392789469292685354">"배경 블러"</string>
     <string name="av_camera_blur_off" msgid="3170334995799202022">"사용 안 함"</string>
-    <!-- no translation found for av_camera_blur_light (5105255788203563538) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_full (6493497965254048479) -->
-    <skip />
+    <string name="av_camera_blur_light" msgid="5105255788203563538">"약한 블러"</string>
+    <string name="av_camera_blur_full" msgid="6493497965254048479">"강한 블러"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"조명 개선"</string>
     <string name="av_camera_face_retouch" msgid="45890971969486224">"인물 보정"</string>
-    <!-- no translation found for av_camera_framing (2948988841290208034) -->
-    <skip />
-    <!-- no translation found for av_studio_mic (1815195630183143501) -->
-    <skip />
-    <!-- no translation found for av_studio_look (631085505786989852) -->
-    <skip />
+    <string name="av_camera_framing" msgid="2948988841290208034">"카메라 프레임 조정"</string>
+    <string name="av_studio_mic" msgid="1815195630183143501">"스튜디오 마이크"</string>
+    <string name="av_studio_look" msgid="631085505786989852">"스튜디오 화질"</string>
     <string name="av_studio_look_effects" msgid="4105109585851068415">"효과 %d개"</string>
     <string name="av_blur" msgid="405131343487260171">"흐리게 처리"</string>
-    <!-- no translation found for av_live_captions (802763867449401889) -->
-    <skip />
+    <string name="av_live_captions" msgid="802763867449401889">"실시간 자막"</string>
     <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"뒤로"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"배터리 %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"왼쪽 배터리 %1$s    오른쪽 배터리 %2$s"</string>
@@ -1895,4 +1887,18 @@
     <string name="dream_setup_title" msgid="7996530071414508238">"화면 보호기 설정"</string>
     <string name="dream_setup_button_not_now" msgid="8028385323668620805">"나중에"</string>
     <string name="dream_setup_button_setup" msgid="4755361016017554826">"설정"</string>
+    <!-- no translation found for ace_attribution_dialog_settings_label (8898211593287114433) -->
+    <skip />
+    <!-- no translation found for ace_attribution_dialog_title (5236154464063969824) -->
+    <skip />
+    <!-- no translation found for ace_attribution_dialog_description (1431906058759687758) -->
+    <skip />
+    <!-- no translation found for ace_attribution_header_icon_accessibility_description (7385840112370423581) -->
+    <skip />
+    <!-- no translation found for ace_attribution_settings_button_accessibility_description (8426163772933746374) -->
+    <skip />
+    <!-- no translation found for ace_attribution_thumbs_up_button_accessibility_description (3561722934830934360) -->
+    <skip />
+    <!-- no translation found for ace_attribution_thumbs_down_button_accessibility_description (5471283747650437662) -->
+    <skip />
 </resources>

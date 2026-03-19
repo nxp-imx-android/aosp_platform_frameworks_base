@@ -104,6 +104,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
     private val desktopState = FakeDesktopState()
     private val shellController = mock<ShellController>()
     private val accessibilityManager = mock<AccessibilityManager>()
+    private val keyguardManager = mock<android.app.KeyguardManager>()
 
     private lateinit var desktopModeKeyGestureHandler: DesktopModeKeyGestureHandler
     private lateinit var keyGestureEventHandler: KeyGestureEventHandler
@@ -176,6 +177,7 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
                 desktopState,
                 accessibilityManager,
                 shellController,
+                keyguardManager,
             )
     }
 
@@ -526,6 +528,27 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         val displayId = 2
         whenever(focusTransitionObserver.globallyFocusedDisplayId).thenReturn(displayId)
         whenever(shellController.isOverviewVisible(displayId)).thenReturn(true)
+        val event =
+            KeyGestureEvent.Builder()
+                .setKeyGestureType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_FULLSCREEN)
+                .build()
+
+        keyGestureEventHandler.handleKeyGestureEvent(event, null)
+        testExecutor.flushAll()
+
+        verify(desktopTasksController, never())
+            .toggleFocusedTaskFullscreenState(
+                displayId = any(),
+                userId = any(),
+                transitionSource = any(),
+            )
+    }
+
+    @Test
+    fun keyGesture_keyguardLocked_doesNotHandleGesture() {
+        val displayId = 2
+        whenever(focusTransitionObserver.globallyFocusedDisplayId).thenReturn(displayId)
+        whenever(keyguardManager.isKeyguardLocked).thenReturn(true)
         val event =
             KeyGestureEvent.Builder()
                 .setKeyGestureType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_FULLSCREEN)

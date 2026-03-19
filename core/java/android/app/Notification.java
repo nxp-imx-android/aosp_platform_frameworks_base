@@ -3644,13 +3644,20 @@ public class Notification implements Parcelable
      */
     public String getHistoryText(@NonNull Context context) {
         Preconditions.checkNotNull(context);
-        final Style style =  Notification.Builder.recoverStyle(this);
         CharSequence text = null;
-        if (style != null) {
-            text = style.getHistoryText(context);
+        if (extras != null) {
+            final boolean hasStyledHistoryText = isStyle(BigTextStyle.class)
+                || isStyle(MetricStyle.class)
+                || isStyle(MessagingStyle.class);
+            if (hasStyledHistoryText) {
+                final Style style = Notification.Builder.recoverStyle(this);
+                if (style != null) {
+                    text = style.getHistoryText(context);
+                }
+            }
         }
 
-        if (TextUtils.isEmpty(text)) {
+        if (TextUtils.isEmpty(text) && extras != null) {
             text = extras.getCharSequence(EXTRA_TEXT);
         }
 
@@ -8802,6 +8809,10 @@ public class Notification implements Parcelable
                     action.mIcon.scaleDownIfNecessary(smallIconSize, smallIconSize);
                 }
             }
+        }
+
+        if (publicVersion != null) {
+            publicVersion.reduceImageSizes(context);
         }
         extras.putBoolean(EXTRA_REDUCED_IMAGES, true);
     }

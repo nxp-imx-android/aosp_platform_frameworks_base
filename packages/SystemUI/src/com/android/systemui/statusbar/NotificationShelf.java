@@ -569,17 +569,7 @@ public class NotificationShelf extends ActivatableNotificationView {
                 || !mShowNotificationShelf
                 || numViewsInShelf < 1f;
 
-        final float fractionToShade = Interpolators.STANDARD.getInterpolation(
-                mAmbientState.getFractionToShade());
-
-        if (mAmbientState.isOnKeyguard()) {
-            float numViews = MathUtils.min(numViewsInShelf, mMaxIconsOnLockscreen + 1);
-            float shortestWidth = mShelfIcons.calculateWidthFor(numViews);
-            float actualWidth = MathUtils.lerp(shortestWidth, getWidth(), fractionToShade);
-            setActualWidth(actualWidth);
-        } else {
-            setActualWidth(getWidth());
-        }
+        setActualWidth(calcActualWidth(numViewsInShelf));
 
         // TODO(b/172289889) transition last icon in shelf to notification icon and vice versa.
         setVisibility(isHidden ? View.INVISIBLE : View.VISIBLE);
@@ -597,6 +587,25 @@ public class NotificationShelf extends ActivatableNotificationView {
         setHideBackground(hideBackground);
         if (mNotGoneIndex == -1) {
             mNotGoneIndex = notGoneIndex;
+        }
+    }
+
+    public int calcActualWidth(float numViewsInShelf) {
+        final float fractionToShade = SceneContainerFlag.isEnabled()
+                ? Interpolators.STANDARD.getInterpolation(mAmbientState.getLStoShadeProgress())
+                : Interpolators.STANDARD.getInterpolation(mAmbientState.getFractionToShade());
+
+        final boolean isOnLockscreen = SceneContainerFlag.isEnabled()
+                ? mAmbientState.isCurrentSceneLockscreen()
+                : mAmbientState.isOnKeyguard();
+
+        if (isOnLockscreen) {
+            float numViews = MathUtils.min(numViewsInShelf, mMaxIconsOnLockscreen + 1);
+            float shortestWidth = mShelfIcons.calculateWidthFor(numViews);
+            float actualWidth = MathUtils.lerp(shortestWidth, getWidth(), fractionToShade);
+            return (int) actualWidth;
+        } else {
+            return getWidth();
         }
     }
 
@@ -821,7 +830,8 @@ public class NotificationShelf extends ActivatableNotificationView {
 
         // Let's calculate how much the view is in the shelf
         float viewStart = view.getTranslationY();
-        int fullHeight = view.getActualHeight() + mPaddingBetweenElements;
+        int actualH = Math.max(view.getActualHeight(), 0);
+        int fullHeight = actualH + mPaddingBetweenElements;
         float iconTransformStart = calculateIconTransformationStart(view);
 
         // Let's make sure the transform distance is
@@ -848,7 +858,6 @@ public class NotificationShelf extends ActivatableNotificationView {
                 fullTransitionAmount = 1f;
                 iconTransitionAmount = 1f;
             }
-
         } else if (viewEnd >= shelfClipStart
                 && (mAmbientState.isShadeExpanded()
                 || (!view.isPinned() && !view.isHeadsUpAnimatingAway()))) {

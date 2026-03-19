@@ -33,10 +33,10 @@ import org.junit.Test
 @Ignore("Test Base Class")
 abstract class ResizeAppCornerMultiWindow
 constructor(
-    val rotation: Rotation = Rotation.ROTATION_0,
+    rotation: Rotation = Rotation.ROTATION_0,
     val horizontalChange: Int = 50,
     val verticalChange: Int = -50,
-) : TestScenarioBase(rotation) {
+) : ResizeAppScenarioTestBase(rotation) {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
@@ -58,6 +58,7 @@ constructor(
     @WithDesktopTest
     @Test
     open fun resizeAppWithCornerResize() {
+        val initialBounds = wmHelper.getWindowRegion(mailAppHelper).bounds
         mailAppDesktopHelper.cornerResize(
             wmHelper,
             device,
@@ -65,6 +66,8 @@ constructor(
             horizontalChange,
             verticalChange,
         )
+        val finalBounds = wmHelper.getWindowRegion(mailAppHelper).bounds
+        assertWindowExpandedFromTopRight(initialBounds, finalBounds)
     }
 
     @After

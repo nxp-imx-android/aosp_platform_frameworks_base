@@ -606,7 +606,6 @@ public class Transitions implements RemoteCallable<Transitions>,
     @VisibleForTesting
     static void setupStartState(@NonNull TransitionInfo info,
             @NonNull SurfaceControl.Transaction t, @NonNull SurfaceControl.Transaction finishT) {
-        final boolean crossDisplay = com.android.window.flags.Flags.crossDisplayTransition();
         final SparseBooleanArray isRevealingOnDisplay = new SparseBooleanArray();
         for (int i = 0; i < info.getChanges().size(); ++i) {
             final TransitionInfo.Change change = info.getChanges().get(i);
@@ -652,7 +651,7 @@ public class Transitions implements RemoteCallable<Transitions>,
                 continue;
             }
             boolean isOpening;
-            if (crossDisplay) {
+            if (com.android.window.flags.Flags.crossDisplayTransition()) {
                 // If a window is closing or moving to another display, it reveals the content
                 // behind it.
                 if (isClosingType(mode) || change.getStartDisplayId() != change.getEndDisplayId()) {
@@ -663,7 +662,7 @@ public class Transitions implements RemoteCallable<Transitions>,
                 // being incorrectly hidden at the start of the transition.
                 final boolean isExcluded =
                         change.hasFlags(FLAG_MOVED_TO_TOP | FLAG_BACK_GESTURE_ANIMATED);
-                isOpening = !isRevealingOnDisplay.get(change.getEndDisplayId()) && !isExcluded;
+                isOpening = !isRevealingOnDisplay.get(change.getEndDisplayId()) && isExcluded;
             } else {
                 isOpening = isOpeningType(info.getType());
             }

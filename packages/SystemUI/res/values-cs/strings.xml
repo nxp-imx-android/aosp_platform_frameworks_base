@@ -79,7 +79,6 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Povolit"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Bezdrátové ladění není povoleno"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"Uživatel aktuálně přihlášený k tomuto zařízení nemůže zapnout bezdrátové ladění. Pokud chcete tuto funkci používat, přepněte na administrativního uživatele."</string>
-    <string name="change_connected_wifi_text" msgid="6346095920396568246">"Toto nastavení můžete změnit po přihlášení"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"Port USB je deaktivován"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"Kvůli ochraně vašeho zařízení před tekutinami a nečistotami je port USB zakázán a nerozpozná žádné příslušenství.\n\nAž bude opět bezpečné port USB použít, budeme vás informovat."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"Port USB může zjišťovat nabíječky a příslušenství"</string>
@@ -174,8 +173,7 @@
     <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"Zobrazit předchozí"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"Nastavení nahrávání obrazovky"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Označení"</string>
-    <!-- no translation found for screen_record_color_picker (6732567862106107021) -->
-    <skip />
+    <string name="screen_record_color_picker" msgid="6732567862106107021">"Výběr barev"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video bylo uloženo"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"Video bylo smazáno"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"Vrátit zpět"</string>
@@ -1463,8 +1461,7 @@
     <string name="controls_media_button_prev" msgid="8126822360056482970">"Předchozí skladba"</string>
     <string name="controls_media_button_next" msgid="6662636627525947610">"Další skladba"</string>
     <string name="controls_media_button_connecting" msgid="3138354625847598095">"Připojování"</string>
-    <!-- no translation found for controls_media_output_chip (324952606619594635) -->
-    <skip />
+    <string name="controls_media_output_chip" msgid="324952606619594635">"Otevřít nastavení výstupu"</string>
     <string name="media_transfer_undo" msgid="1895606387620728736">"Vrátit zpět"</string>
     <string name="media_move_closer_to_start_cast" msgid="2673104707465013176">"Pokud chcete přehrávat na zařízení <xliff:g id="DEVICENAME">%1$s</xliff:g>, přibližte se k němu"</string>
     <string name="media_move_closer_to_end_cast" msgid="7302555909119374738">"Pokud obsah chcete přehrát na tomto zařízení, přesuňte ho blíže k zařízení <xliff:g id="DEVICENAME">%1$s</xliff:g>"</string>
@@ -1840,6 +1837,7 @@
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Další"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"přejdete na další stránku"</string>
     <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"zpět"</string>
+    <string name="accessibility_close_overlay_box_description" msgid="8399871568780893724">"zpět"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"automatické vyplňování"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"rozbalit"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"Přesná poloha"</string>
@@ -1865,25 +1863,18 @@
     <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"Retuš portrétu"</string>
     <string name="av_mic_label" msgid="5427348054144789879">"Mikrofon"</string>
     <string name="av_camera_label" msgid="7719772172590702343">"Fotoaparát"</string>
-    <!-- no translation found for av_camera_blur_drill_in_title (3392789469292685354) -->
-    <skip />
+    <string name="av_camera_blur_drill_in_title" msgid="3392789469292685354">"Rozmazání pozadí"</string>
     <string name="av_camera_blur_off" msgid="3170334995799202022">"Vypnuto"</string>
-    <!-- no translation found for av_camera_blur_light (5105255788203563538) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_full (6493497965254048479) -->
-    <skip />
+    <string name="av_camera_blur_light" msgid="5105255788203563538">"Mírné rozmazání"</string>
+    <string name="av_camera_blur_full" msgid="6493497965254048479">"Silné rozmazání"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"Vylepšené osvětlení"</string>
     <string name="av_camera_face_retouch" msgid="45890971969486224">"Retuš portrétu"</string>
-    <!-- no translation found for av_camera_framing (2948988841290208034) -->
-    <skip />
-    <!-- no translation found for av_studio_mic (1815195630183143501) -->
-    <skip />
-    <!-- no translation found for av_studio_look (631085505786989852) -->
-    <skip />
+    <string name="av_camera_framing" msgid="2948988841290208034">"Automatické zabírání"</string>
+    <string name="av_studio_mic" msgid="1815195630183143501">"Studiový mikrofon"</string>
+    <string name="av_studio_look" msgid="631085505786989852">"Studiový záběr"</string>
     <string name="av_studio_look_effects" msgid="4105109585851068415">"Počet efektů: %d"</string>
     <string name="av_blur" msgid="405131343487260171">"Rozmazat"</string>
-    <!-- no translation found for av_live_captions (802763867449401889) -->
-    <skip />
+    <string name="av_live_captions" msgid="802763867449401889">"Okamžité titulky"</string>
     <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"Zpět"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Baterie %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Baterie (L): %1$s    Baterie (P): %2$s"</string>
@@ -1897,4 +1888,18 @@
     <string name="dream_setup_title" msgid="7996530071414508238">"Nastavení spořiče obrazovky"</string>
     <string name="dream_setup_button_not_now" msgid="8028385323668620805">"Teď ne"</string>
     <string name="dream_setup_button_setup" msgid="4755361016017554826">"Nastavit"</string>
+    <!-- no translation found for ace_attribution_dialog_settings_label (8898211593287114433) -->
+    <skip />
+    <!-- no translation found for ace_attribution_dialog_title (5236154464063969824) -->
+    <skip />
+    <!-- no translation found for ace_attribution_dialog_description (1431906058759687758) -->
+    <skip />
+    <!-- no translation found for ace_attribution_header_icon_accessibility_description (7385840112370423581) -->
+    <skip />
+    <!-- no translation found for ace_attribution_settings_button_accessibility_description (8426163772933746374) -->
+    <skip />
+    <!-- no translation found for ace_attribution_thumbs_up_button_accessibility_description (3561722934830934360) -->
+    <skip />
+    <!-- no translation found for ace_attribution_thumbs_down_button_accessibility_description (5471283747650437662) -->
+    <skip />
 </resources>

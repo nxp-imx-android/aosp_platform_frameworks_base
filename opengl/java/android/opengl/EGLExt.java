@@ -99,9 +99,10 @@ public class EGLExt {
      * closing the {@link HardwareBuffer}.</p>
      *
      * @param buffer A {@link HardwareBuffer} for which to obtain an EGLClientBuffer.
-     * @return An EGLClientBuffer, or {@code 0} if the operation fails.
+     * @return A native pointer to the EGLClientBuffer, or {@code 0} if the operation fails.
      *         The EGL error {@code EGL_BAD_PARAMETER} is generated if {@code buffer}
-     *         is invalid or has been closed.
+     *         is invalid or has been closed. To determine the error state, use
+     *         {@link android.opengl.EGL14#eglGetError()}.
      *
      * @see <a href="https://www.khronos.org/registry/EGL/extensions/ANDROID/EGL_ANDROID_get_native_client_buffer.txt">
      *     EGL_ANDROID_get_native_client_buffer</a>

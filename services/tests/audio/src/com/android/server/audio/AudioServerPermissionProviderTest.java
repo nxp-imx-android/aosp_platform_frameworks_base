@@ -15,15 +15,14 @@
  */
 package com.android.server.audio;
 
-import static com.android.server.audio.AudioService.generatePackageMap;
 import static com.android.server.audio.AudioServerPermissionProvider.MONITORED_PERMS;
+import static com.android.server.audio.AudioService.generatePackageMap;
 
 import static org.mockito.AdditionalMatchers.aryEq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyByte;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -32,8 +31,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.privatecompute.flags.Flags;
 import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.annotations.RequiresFlagsEnabled;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -52,14 +53,10 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 @RunWith(AndroidJUnit4.class)
 @Presubmit
@@ -80,6 +77,7 @@ public final class AudioServerPermissionProviderTest {
     @Mock public PackageState mMockPackageState_10000_three_sdk34_captrue;
     @Mock public PackageState mMockPackageState_10001_four_sdk34_capfalse;
     @Mock public PackageState mMockPackageState_10000_two_sdk33_capfalse;
+    @Mock public PackageState mMockPackageState_10002_pcc;
 
     @Mock public BiPredicate<Integer, String> mMockPermPred;
     @Mock public Supplier<int[]> mMockUserIdSupplier;
@@ -214,6 +212,19 @@ public final class AudioServerPermissionProviderTest {
         when(mMockPermPred.test(eq(110001), eq(MONITORED_PERMS[0]))).thenReturn(true);
         when(mMockPermPred.test(eq(10001), eq(MONITORED_PERMS[1]))).thenReturn(true);
         when(mMockPermPred.test(eq(110000), eq(MONITORED_PERMS[1]))).thenReturn(true);
+
+        // =================================================================
+        // DEDICATED PCC MOCK SETUP
+        // =================================================================
+        when(mMockPackageState_10002_pcc.getAppId()).thenReturn(10002);
+        when(mMockPackageState_10002_pcc.getPackageName()).thenReturn("com.package.pcc");
+        when(mMockPackageState_10002_pcc.getTargetSdkVersion()).thenReturn(33);
+        when(mMockPackageState_10002_pcc.isAudioPlaybackCaptureAllowed()).thenReturn(true);
+        when(mMockPackageState_10002_pcc.getPccId()).thenReturn(30002);
+
+        // Grant MONITORED_PERMS[0] to both the normal UID and the PCC UID
+        when(mMockPermPred.test(eq(10002), eq(MONITORED_PERMS[0]))).thenReturn(true);
+        when(mMockPermPred.test(eq(30002), eq(MONITORED_PERMS[0]))).thenReturn(true);
     }
 
     @Test
@@ -527,6 +538,24 @@ public final class AudioServerPermissionProviderTest {
         res.uid = uid;
         res.packageStates = packages;
         return res;
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testPermissionsPopulated_withPccId() throws Exception {
+        // 1. Create our initial package list containing the PCC mock
+        var initPackageListData = List.of(mMockPackageState_10002_pcc);
+
+        // 2. Initialize the provider. generatePackageMap() will now map the pccId
+        // directly into the UidPackageState.PackageState struct.
+        mPermissionProvider = new AudioServerPermissionProvider(
+                generatePackageMap(initPackageListData), mMockPermPred, () -> new int[]{0});
+
+        // 3. Trigger the initial sync to the native layer
+        mPermissionProvider.onServiceStart(mMockPc);
+
+        // 4. Verify the native controller gets BOTH the normal App ID and the PCC ID
+        verify(mMockPc).populatePermissionState(eq((byte) 0), aryEq(new int[]{10002, 30002}));
     }
 
     private static UidPackageState.PackageState createPackageState(String packageName,

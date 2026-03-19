@@ -16,7 +16,7 @@
 
 package com.android.server.appfunctions;
 
-import static com.android.server.appfunctions.AppFunctionExecutors.LOGGING_THREAD_EXECUTOR;
+import static com.android.server.appfunctions.AppFunctionExecutors.SHARED_BACKGROUND_EXECUTOR;
 
 import android.annotation.NonNull;
 import android.app.AppInteractionAttribution;
@@ -54,7 +54,7 @@ public class AppFunctionsLoggerWrapper {
     private final AppFunctionsLoggerClock mLoggerClock;
 
     AppFunctionsLoggerWrapper(@NonNull Context context) {
-        this(context.getPackageManager(), LOGGING_THREAD_EXECUTOR, SystemClock::elapsedRealtime);
+        this(context.getPackageManager(), SHARED_BACKGROUND_EXECUTOR, SystemClock::elapsedRealtime);
     }
 
     @VisibleForTesting

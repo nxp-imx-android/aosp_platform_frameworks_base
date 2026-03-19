@@ -191,6 +191,7 @@ fun ListPolicyMetadata<String>.copy(
     emptyStringAllowed: Boolean? = null,
     unprintableCharactersAllowed: Boolean? = null,
     emptyListAllowed: Boolean? = null,
+    resolutionMechanism: ResolutionMechanismMetadata<List<String>>? = null,
 ) =
     ListPolicyMetadata(
         /* id= */ id ?: this.id,
@@ -208,7 +209,7 @@ fun ListPolicyMetadata<String>.copy(
             /* unprintableCharactersAllowed= */ unprintableCharactersAllowed
                 ?: (this.elementMetadata as StringPolicyMetadata).isUnprintableCharactersAllowed,
         ),
-        /* resolutionMechanism= */ null,
+        /* resolutionMechanism= */ resolutionMechanism ?: this.resolutionMechanism,
         /* emptyListAllowed= */ emptyListAllowed ?: this.isEmptyListAllowed,
     )
 

@@ -40,6 +40,7 @@ import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.shade.ui.composable.ChipHighlightModel
 import com.android.systemui.shade.ui.composable.ShadeHighlightChip
+import com.android.systemui.statusbar.chips.ui.viewmodel.rememberChronometerState
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.DesktopStatusBar
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.WithAdaptiveTint
 import com.android.systemui.statusbar.quickactions.popups.ui.compose.StatusBarPopup
@@ -115,33 +116,43 @@ private fun Launch(chip: QuickActionChipModel.LaunchChip, isDarkProvider: (Rect)
             includePadding = false,
             isClickable = true,
         ) {
-            when (chip.chipContent) {
+            when (val content = chip.chipContent) {
                 is ChipContent.IconOnly ->
                     StatusBarIcon(
-                        icon = chip.chipContent.icon,
+                        icon = content.icon,
                         tint = tint,
                         modifier = Modifier.align(Alignment.CenterVertically),
                     )
                 is ChipContent.Text ->
-                    Text(
-                        text = chip.chipContent.text,
-                        color = tint,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 13.sp,
-                        style =
-                            LocalTextStyle.current.copy(
-                                platformStyle = PlatformTextStyle(includeFontPadding = false),
-                                lineHeightStyle =
-                                    LineHeightStyle(
-                                        alignment = LineHeightStyle.Alignment.Center,
-                                        trim = LineHeightStyle.Trim.Both,
-                                    ),
-                            ),
-                    )
+                    Text(text = content.text, color = tint, style = chipTextStyle)
+                is ChipContent.Timer -> {
+                    val timerState =
+                        rememberChronometerState(
+                            chronometer = content.chronometer,
+                            timeSource = content.timeSource,
+                        )
+                    timerState.currentTimeText?.let {
+                        Text(text = it, color = tint, style = chipTextStyle)
+                    }
+                }
             }
         }
     }
 }
+
+private val chipTextStyle
+    @Composable
+    get() =
+        LocalTextStyle.current.copy(
+            fontWeight = FontWeight.Medium,
+            fontSize = 13.sp,
+            platformStyle = PlatformTextStyle(includeFontPadding = false),
+            lineHeightStyle =
+                LineHeightStyle(
+                    alignment = LineHeightStyle.Alignment.Center,
+                    trim = LineHeightStyle.Trim.Both,
+                ),
+        )
 
 @Composable
 private fun Popup(chip: QuickActionChipModel.PopupChip) {

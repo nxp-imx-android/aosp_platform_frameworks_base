@@ -369,7 +369,7 @@ public class FocusTransitionObserverTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(com.android.wm.shell.Flags.FLAG_ENABLE_FOCUS_RESET_ON_DISPLAY_REMOVAL)
+    @EnableFlags(Flags.FLAG_ENABLE_FOCUS_RESET_ON_DISPLAY_REMOVAL)
     public void testOnDisplayDisconnected_focused_resetsFocus() throws RemoteException {
         // First, move focus to a secondary display.
         TransitionInfo info = mock(TransitionInfo.class);
@@ -390,7 +390,7 @@ public class FocusTransitionObserverTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(com.android.wm.shell.Flags.FLAG_ENABLE_FOCUS_RESET_ON_DISPLAY_REMOVAL)
+    @EnableFlags(Flags.FLAG_ENABLE_FOCUS_RESET_ON_DISPLAY_REMOVAL)
     public void testOnDisplayDisconnected_notFocused_doesNotResetFocus() throws RemoteException {
         // Focus is initially on DEFAULT_DISPLAY, disconnect on different display does not reset
         // focus.

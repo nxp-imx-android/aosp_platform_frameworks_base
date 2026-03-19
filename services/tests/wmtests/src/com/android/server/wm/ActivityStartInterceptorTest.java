@@ -34,6 +34,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.mock;
@@ -53,6 +54,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.IPackageManager;
 import android.content.pm.PackageManagerInternal;
+import android.content.pm.ResolveInfo;
 import android.content.pm.SuspendDialogInfo;
 import android.content.pm.UserInfo;
 import android.content.pm.UserPackage;
@@ -650,6 +652,113 @@ public class ActivityStartInterceptorTest {
 
         // THEN calling intercept returns false
         assertFalse(mInterceptor.intercept(null, null, mAInfo, null, null, null, 0, 0, null, null));
+    }
+
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ACTIVITY_START_INTERCEPTOR_SPEEDBUMPS)
+    @Test
+    public void testDistractingPackage_intercepted() {
+        // GIVEN the package is currently marked as distracting with speedbumps restriction
+        when(mPackageManagerInternal.getDistractingPackageRestrictions(
+                TEST_PACKAGE_NAME, TEST_USER_ID))
+                .thenReturn(android.content.pm.PackageManager
+                        .RESTRICTION_CONFIRM_WITH_SPEEDBUMP);
+
+        android.content.pm.PackageManager mockPm = mock(android.content.pm.PackageManager.class);
+        when(mContext.getPackageManager()).thenReturn(mockPm);
+        when(mockPm.getWellbeingPackageName()).thenReturn("com.android.wellbeing");
+
+        when(mSupervisor.resolveIntent(any(), any(), anyInt(), anyInt(), anyInt(), anyInt()))
+                .thenReturn(new ResolveInfo());
+        when(mSupervisor.resolveActivity(any(), any(), anyInt(), any()))
+                .thenReturn(new ActivityInfo());
+
+        // WHEN the interceptor is run
+        final boolean intercepted = mInterceptor.intercept(null, null, mAInfo, null, null, null, 0,
+                0, null, null);
+
+        // THEN the launch is intercepted
+        assertTrue(intercepted);
+        assertEquals(Intent.ACTION_WELLBEING_CONFIRM_WITH_SPEEDBUMP,
+                mInterceptor.mIntent.getAction());
+        assertEquals("com.android.wellbeing", mInterceptor.mIntent.getPackage());
+        assertEquals(TEST_PACKAGE_NAME,
+                mInterceptor.mIntent.getStringExtra(Intent.EXTRA_PACKAGE_NAME));
+        assertTrue(mInterceptor.mIntent.hasExtra(Intent.EXTRA_INTENT));
+        assertEquals(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS,
+                mInterceptor.mIntent.getFlags());
+    }
+
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ACTIVITY_START_INTERCEPTOR_SPEEDBUMPS)
+    @Test
+    public void testDistractingPackage_wellbeingPackageCannotResolve_notIntercepted() {
+        // GIVEN the package is currently marked as distracting with speedbumps restriction
+        when(mPackageManagerInternal.getDistractingPackageRestrictions(
+                TEST_PACKAGE_NAME, TEST_USER_ID))
+                .thenReturn(android.content.pm.PackageManager
+                        .RESTRICTION_CONFIRM_WITH_SPEEDBUMP);
+
+        android.content.pm.PackageManager mockPm = mock(android.content.pm.PackageManager.class);
+        when(mContext.getPackageManager()).thenReturn(mockPm);
+        when(mockPm.getWellbeingPackageName()).thenReturn("com.android.wellbeing");
+
+        when(mSupervisor.resolveIntent(any(), any(), anyInt(), anyInt(), anyInt(), anyInt()))
+                .thenReturn(new ResolveInfo());
+        when(mSupervisor.resolveActivity(any(), any(), anyInt(), any()))
+                .thenReturn(null);
+
+        // WHEN the interceptor is run
+        final boolean intercepted = mInterceptor.intercept(null, null, mAInfo, null, null, null, 0,
+                0, null, null);
+
+        // THEN the launch is not intercepted
+        assertFalse(intercepted);
+    }
+
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ACTIVITY_START_INTERCEPTOR_SPEEDBUMPS)
+    @Test
+    public void testDistractingPackage_noWellbeingPackage_notIntercepted() {
+        // GIVEN the package is currently marked as distracting with speedbumps restriction
+        // BUT wellbeing package name is null
+        when(mPackageManagerInternal.getDistractingPackageRestrictions(
+                TEST_PACKAGE_NAME, TEST_USER_ID))
+                .thenReturn(android.content.pm.PackageManager
+                        .RESTRICTION_CONFIRM_WITH_SPEEDBUMP);
+
+        android.content.pm.PackageManager mockPm = mock(android.content.pm.PackageManager.class);
+        when(mContext.getPackageManager()).thenReturn(mockPm);
+        when(mockPm.getWellbeingPackageName()).thenReturn(null);
+
+        // WHEN the interceptor is run
+        final boolean intercepted = mInterceptor.intercept(null, null, mAInfo, null, null, null, 0,
+                0, null, null);
+
+        // THEN the launch is not intercepted
+        assertFalse(intercepted);
+    }
+
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ACTIVITY_START_INTERCEPTOR_SPEEDBUMPS)
+    @Test
+    public void testDistractingPackage_fromWellbeing_notIntercepted() {
+        // GIVEN the package is currently marked as distracting with speedbumps restriction
+        when(mPackageManagerInternal.getDistractingPackageRestrictions(
+                TEST_PACKAGE_NAME, TEST_USER_ID))
+                .thenReturn(android.content.pm.PackageManager
+                        .RESTRICTION_CONFIRM_WITH_SPEEDBUMP);
+
+        android.content.pm.PackageManager mockPm = mock(android.content.pm.PackageManager.class);
+        when(mContext.getPackageManager()).thenReturn(mockPm);
+        when(mockPm.getWellbeingPackageName()).thenReturn(TEST_CALLING_PACKAGE);
+
+        mInterceptor.setStates(TEST_USER_ID, TEST_REAL_CALLING_PID, TEST_REAL_CALLING_UID,
+                0 /* startFlags */, TEST_CALLING_PACKAGE, null /* callingFeatureId */,
+                DEFAULT_DISPLAY /* sourceDisplayId */);
+
+        // WHEN the interceptor is run
+        final boolean intercepted = mInterceptor.intercept(null, null, mAInfo, null, null, null, 0,
+                0, null, null);
+
+        // THEN the launch is not intercepted
+        assertFalse(intercepted);
     }
 
     public void addMockInterceptorCallback(

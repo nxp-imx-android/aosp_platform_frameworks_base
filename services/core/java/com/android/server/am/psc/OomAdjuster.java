@@ -440,9 +440,11 @@ public abstract class OomAdjuster {
          * @param oomAdjReason The reason for the OOM adjustment leading to this call.
          * @param immediate True if the freeze/unfreeze action should be applied immediately.
          * @param oldOomAdj The previous OOM adjustment score of the process.
+         * @param newOomAdj The current OOM adjustment score of the process.
          */
         void onProcessFreezabilityChanged(ProcessRecordInternal app, boolean freezePolicy,
-                @OomAdjReason int oomAdjReason, boolean immediate, @OomAdjust int oldOomAdj);
+                @OomAdjReason int oomAdjReason, boolean immediate, @OomAdjust int oldOomAdj,
+                @OomAdjust int newOomAdj);
 
         /**
          * Notifies the client component when a process's process state is updated.
@@ -2421,7 +2423,7 @@ public abstract class OomAdjuster {
             changes |= ProcessListInternal.ProcessChangeItem.CHANGE_ACTIVITIES;
         }
 
-        updateAppFreezeStateLSP(state, oomAdjReason, false, oldOomAdj);
+        updateAppFreezeStateLSP(state, oomAdjReason, false, oldOomAdj, state.getCurAdj());
 
         if (state.getReportedProcState() != state.getCurProcState()) {
             state.setReportedProcState(state.getCurProcState());
@@ -2678,10 +2680,10 @@ public abstract class OomAdjuster {
      */
     @GuardedBy({"mServiceLock", "mProcLock"})
     public void updateAppFreezeStateLSP(ProcessRecordInternal app, @OomAdjReason int oomAdjReason,
-            boolean immediate, @OomAdjust int oldOomAdj) {
+            boolean immediate, @OomAdjust int oldOomAdj, @OomAdjust int newOomAdj) {
         final boolean freezePolicy = getFreezePolicy(app);
         mCallback.onProcessFreezabilityChanged(app, freezePolicy, oomAdjReason, immediate,
-                oldOomAdj);
+                oldOomAdj, newOomAdj);
     }
 
     /**

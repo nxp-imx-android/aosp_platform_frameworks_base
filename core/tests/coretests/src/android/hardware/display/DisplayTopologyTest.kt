@@ -28,6 +28,7 @@ import android.view.Display
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import androidx.core.util.size
+import org.junit.Assert.assertThrows
 
 class DisplayTopologyTest {
     private var topology = DisplayTopology()
@@ -1250,6 +1251,76 @@ class DisplayTopologyTest {
                 )
             }
         }
+    }
+
+    @Test
+    fun testCalculateRelativeDirection() {
+        // 1122222244
+        // 1122222244
+        // 11      44
+        // 11      44
+        // 1133333344
+        // 1133333344
+        val display1 = DisplayTopology.TreeNode(/* displayId= */ 1, /* logicalWidth= */ 300,
+            /* logicalHeight= */ 900, /* logicalDensity= */ 240, /* position= */ 0,
+            /* offset= */ 0f)
+
+        val display2 = DisplayTopology.TreeNode(/* displayId= */ 2, /* logicalWidth= */ 1200,
+            /* logicalHeight= */ 400, /* logicalDensity= */ 320, POSITION_RIGHT, /* offset= */ 0f)
+        display1.addChild(display2)
+
+        val display3 = DisplayTopology.TreeNode(/* displayId= */ 3, /* logicalWidth= */ 750,
+            /* logicalHeight= */ 250, /* logicalDensity= */ 200, POSITION_RIGHT, /* offset= */ 400f)
+        display1.addChild(display3)
+
+        val display4 = DisplayTopology.TreeNode(/* displayId= */ 4, /* logicalWidth= */ 150,
+            /* logicalHeight= */ 450, /* logicalDensity= */ 120, POSITION_RIGHT, /* offset= */ 0f)
+        display2.addChild(display4)
+
+        topology = DisplayTopology(display1, /* primaryDisplayId= */ 1)
+
+        // Display bounds (in DP):
+        // 1: (0, 0, 200, 600) -> Center: (100, 300)
+        // 2: (200, 0, 800, 200) -> Center: (500, 100)
+        // 3: (200, 400, 800, 600) -> Center: (500, 500)
+        // 4: (800, 0, 1000, 600) -> Center: (900, 300)
+
+        // Test display to display (centers)
+        var directionDp = topology.calculateRelativeDirection(1, 4, null, null)
+        assertThat(directionDp.x).isWithin(1e-6f).of(800f) // 900 - 100
+        assertThat(directionDp.y).isWithin(1e-6f).of(0f) // 300 - 300
+
+        directionDp = topology.calculateRelativeDirection(2, 3, null, null)
+        assertThat(directionDp.x).isWithin(1e-6f).of(0f) // 500 - 500
+        assertThat(directionDp.y).isWithin(1e-6f).of(400f) // 500 - 100
+
+        // Test with bounds
+        // Display 1: density 240 (1dp = 1.5px).
+        // Rect(0, 0, 150, 150) in pixels -> Center 75 px -> 50dp in display 1 space.
+        // Absolute DP: (0+50, 0+50) = (50, 50).
+        val fromWindowBoundsPx = android.graphics.Rect(0, 0, 150, 150)
+
+        // Display 4: density 120 (1dp = 0.75px).
+        // Rect(0, 0, 120, 120) in pixels -> Center 60 px -> 80dp in display 4 space.
+        // Absolute DP: (800+80, 0+80) = (880, 80).
+        val toWindowBoundsPx = android.graphics.Rect(0, 0, 120, 120)
+
+        directionDp = topology.calculateRelativeDirection(1, 4, fromWindowBoundsPx, toWindowBoundsPx)
+        assertThat(directionDp.x).isWithin(1e-6f).of(830f) // 880 - 50
+        assertThat(directionDp.y).isWithin(1e-6f).of(30f) // 80 - 50
+    }
+
+    @Test
+    fun testCalculateRelativeDirection_DisplayNotInTopology() {
+        // 222222
+        // 222222
+        val display2 = DisplayTopology.TreeNode(/* displayId= */ 2, /* logicalWidth= */ 1200,
+            /* logicalHeight= */ 400, /* logicalDensity= */ 320, POSITION_RIGHT, /* offset= */ 0f)
+        topology = DisplayTopology(display2, /* primaryDisplayId= */ 2)
+        val exception: IllegalArgumentException =
+            assertThrows(IllegalArgumentException::class.java) {
+            topology.calculateRelativeDirection(1, 2, null, null)}
+        assertThat(exception).hasMessageThat().contains("not part of the display topology")
     }
 
     @Test

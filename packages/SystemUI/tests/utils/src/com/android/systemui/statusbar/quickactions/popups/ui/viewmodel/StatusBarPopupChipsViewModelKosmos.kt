@@ -22,6 +22,7 @@ import com.android.systemui.statusbar.quickactions.assistant.ui.viewmodel.assist
 import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.avControlsChipViewModelFactory
 import com.android.systemui.statusbar.quickactions.ime.ui.viewmodel.imeIndicatorChipViewModelFactory
 import com.android.systemui.statusbar.quickactions.media.ui.viewmodel.mediaControlChipViewModelFactory
+import com.android.systemui.statusbar.quickactions.screenrecord.ui.viewmodel.largeScreenRecordingChipViewModelFactory
 import com.android.systemui.statusbar.quickactions.sharescreen.ui.viewmodel.shareScreenPrivacyIndicatorViewModelFactory
 
 private val Kosmos.statusBarPopupChipsViewModel: StatusBarPopupChipsViewModel by
@@ -33,6 +34,7 @@ private val Kosmos.statusBarPopupChipsViewModel: StatusBarPopupChipsViewModel by
             shareScreenPrivacyIndicatorFactory = shareScreenPrivacyIndicatorViewModelFactory,
             assistantIconFactory = assistantIconViewModelFactory,
             imeIndicatorChipFactory = imeIndicatorChipViewModelFactory,
+            largeScreenRecordingChipViewModelFactory = largeScreenRecordingChipViewModelFactory,
         )
     }
 

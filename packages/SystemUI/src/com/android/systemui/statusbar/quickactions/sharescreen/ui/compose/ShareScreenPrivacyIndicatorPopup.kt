@@ -32,11 +32,15 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.sharescreen.ui.viewmodel.ShareScreenPrivacyIndicatorPopupViewModel
 
 @Composable
-fun ShareScreenPrivacyIndicatorPopup(viewModel: ShareScreenPrivacyIndicatorPopupViewModel) {
+fun ShareScreenPrivacyIndicatorPopup(
+    viewModel: ShareScreenPrivacyIndicatorPopupViewModel,
+    modifier: Modifier = Modifier,
+) {
     Surface(
         shape = RoundedCornerShape(28.dp),
         color = MaterialTheme.colorScheme.surfaceBright,
         shadowElevation = 2.dp,
+        modifier = modifier,
     ) {
         Button(
             onClick = { viewModel.stopShare() },

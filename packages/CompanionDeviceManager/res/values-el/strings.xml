@@ -47,8 +47,7 @@
     <string name="summary_virtual_device" msgid="1062189396947962635">"Η εφαρμογή <xliff:g id="APP_NAME">%2$s</xliff:g> θα αποκτήσει τις ακόλουθες άδειες:"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"συσκευή"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Αυτή η εφαρμογή θα μπορεί να συγχρονίζει πληροφορίες μεταξύ του τηλεφώνου και της επιλεγμένης συσκευής σας, όπως το όνομα ενός ατόμου που σας καλεί."</string>
-    <!-- no translation found for summary_generic_with_remote_ai_capability (5053633566439056634) -->
-    <skip />
+    <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Να επιτρέπεται στην εφαρμογή &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; ο συγχρονισμός πληροφοριών, όπως τα στοιχεία καλούντος, και η εκτέλεση έξυπνων ενεργειών από τη συσκευή <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Να επιτρέπεται"</string>
     <string name="consent_no" msgid="2640796915611404382">"Να μην επιτρέπεται"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Ακύρωση"</string>

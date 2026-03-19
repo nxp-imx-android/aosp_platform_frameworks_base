@@ -11,6 +11,16 @@ flag {
 }
 
 flag {
+    name: "bal_asm_opt_in_null_top_activity"
+    namespace: "responsible_apis"
+    description: "Opt in null top activities for ASM."
+    bug: "416033243"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "bal_cover_intent_sender"
     namespace: "responsible_apis"
     description: "Cover IntentSender API in addition to PendingIntent."

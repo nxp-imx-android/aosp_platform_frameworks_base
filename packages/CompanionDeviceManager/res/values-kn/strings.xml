@@ -47,8 +47,7 @@
     <string name="summary_virtual_device" msgid="1062189396947962635">"<xliff:g id="APP_NAME">%2$s</xliff:g> ಗೆ ಈ ಕೆಳಗಿನ ಅನುಮತಿಗಳನ್ನು ನೀಡಲಾಗುತ್ತದೆ:"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"ಸಾಧನ"</string>
     <string name="summary_generic" msgid="1761976003668044801">"ಮೊಬೈಲ್ ಫೋನ್ ಮತ್ತು ಆಯ್ಕೆಮಾಡಿದ ಸಾಧನದ ನಡುವೆ, ಕರೆ ಮಾಡುವವರ ಹೆಸರಿನಂತಹ ಮಾಹಿತಿಯನ್ನು ಸಿಂಕ್ ಮಾಡಲು ಈ ಆ್ಯಪ್‌ಗೆ ಸಾಧ್ಯವಾಗುತ್ತದೆ"</string>
-    <!-- no translation found for summary_generic_with_remote_ai_capability (5053633566439056634) -->
-    <skip />
+    <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"ಕರೆ ಮಾಡುವವರ ಮಾಹಿತಿ ಮತ್ತು ನಿಮ್ಮ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ನಿಂದ ಸ್ಮಾರ್ಟ್ ಆ್ಯಕ್ಷನ್‌ಗಳನ್ನು ರನ್ ಮಾಡುವಂತಹ ಮಾಹಿತಿಯನ್ನು ಸಿಂಕ್ ಮಾಡಲು &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; ಗೆ ಅನುಮತಿಸಿ"</string>
     <string name="consent_yes" msgid="8344487259618762872">"ಅನುಮತಿಸಿ"</string>
     <string name="consent_no" msgid="2640796915611404382">"ಅನುಮತಿಸಬೇಡಿ"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"ರದ್ದುಮಾಡಿ"</string>

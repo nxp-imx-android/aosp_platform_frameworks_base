@@ -102,39 +102,40 @@ suspend fun <T> usePreferenceHierarchyScope(block: suspend CoroutineScope.() -> 
 }
 
 /**
- * Returns a safe launch intent for the given metadata.
+ * Returns an [Intent] to launch this preference screen through the Settings trampoline.
  *
- * If the screenMetadata provides a custom intent, this function wraps it in the
- * Settings trampoline to ensure it can be launched by external callers
- * without requiring internal platform permissions.
+ * This function creates a standard intent targeting the [LAUNCH_SETTINGS_PAGES_ACTION].
+ * By routing through the [SettingsLaunchpadActivity] trampoline, the Settings app
+ * can internally handle restricted targets (like Accessibility details),
+ * perform necessary permission checks that external callers might lack or generate the
+ * necessary extra data (like [EXTRA_LAUNCH_SCREEN])
+ *
+ * @param metadata The specific [PreferenceMetadata] to highlight or scroll to
+ *   when the screen is opened. If null, the screen opens at the top.
+ * @return A trampolined [Intent] configured with the necessary screen key,
+ *   arguments, and highlight key.
  */
 fun PreferenceScreenMetadata.getTrampolinedLaunchIntent(
-    context: Context,
     metadata: PreferenceMetadata?
-): Intent? {
-    val launchTarget = if (this != metadata) metadata else null
-    val screenLaunchIntent = this.getLaunchIntent(context, launchTarget)
+): Intent {
+    return Intent(PreferenceScreenMetadata.LAUNCH_SETTINGS_PAGES_ACTION).apply {
+        setPackage("com.android.settings")
+        putExtra(PreferenceScreenMetadata.EXTRA_SCREEN_KEY, this@getTrampolinedLaunchIntent.key)
 
-    if (screenLaunchIntent != null &&
-        screenLaunchIntent.action != PreferenceScreenMetadata.LAUNCH_SETTINGS_PAGES_ACTION
-    ) {
+        if (metadata?.key != null) {
+            putExtra(PreferenceScreenMetadata.EXTRA_FRAGMENT_ARG_KEY, metadata.key)
+        }
 
-        return Intent(PreferenceScreenMetadata.LAUNCH_SETTINGS_PAGES_ACTION).apply {
-            setPackage("com.android.settings")
-            putExtra(PreferenceScreenMetadata.EXTRA_SCREEN_KEY, this@getTrampolinedLaunchIntent.key)
-            if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
-                putExtra(
-                    PreferenceScreenMetadata.EXTRA_SCREEN_ARGS,
-                    this@getTrampolinedLaunchIntent.keyParameters?.toBundle()
-                )
-            } else {
-                putExtra(
-                    PreferenceScreenMetadata.EXTRA_SCREEN_ARGS,
-                    this@getTrampolinedLaunchIntent.arguments
-                )
-            }
+        if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
+            putExtra(
+                PreferenceScreenMetadata.EXTRA_SCREEN_ARGS,
+                this@getTrampolinedLaunchIntent.keyParameters?.toBundle()
+            )
+        } else {
+            putExtra(
+                PreferenceScreenMetadata.EXTRA_SCREEN_ARGS,
+                this@getTrampolinedLaunchIntent.arguments
+            )
         }
     }
-
-    return screenLaunchIntent
 }

@@ -599,13 +599,6 @@ flag {
 }
 
 flag {
-   name: "face_auth_low_light_animation"
-   namespace: "systemui"
-   description: "When a user is authenticating with face in low light scenarios, play an animation to illuminate the face."
-   bug: "487797673"
-}
-
-flag {
    namespace: "systemui"
    name: "fetch_bookmarks_xml_keyboard_shortcuts"
    description: "Fetches application launch keyboard shortcuts from system server rather than building a hardcoded list."
@@ -829,6 +822,16 @@ flag {
     namespace: "systemui"
     description: "Allow showing education for physical keyboard and touchpad"
     bug: "317496783"
+}
+
+flag {
+    name: "keyguard_remove_ime_focus"
+    namespace: "systemui"
+    description: "Keep the window flag FLAG_ALT_FOCUSABLE_IM while on keyguard and only change it when transitioning to bouncer."
+    bug: "422846629"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {

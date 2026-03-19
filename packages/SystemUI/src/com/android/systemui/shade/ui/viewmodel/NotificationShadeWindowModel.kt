@@ -100,7 +100,9 @@ constructor(
      */
     val isBouncerShowing: Flow<Boolean> =
         if (SceneContainerFlag.isEnabled) {
-                sceneInteractor.get().transitionStateFlow.map { it.isIdle(Overlays.Bouncer) }
+                sceneInteractor.get().transitionStateFlow.map {
+                    it.isTransitioningFromOrTo(Overlays.Bouncer) ||
+                            it.isIdle(Overlays.Bouncer) }
             } else {
                 flow { error("Consume this flow only when SceneContainerFlag is enabled") }
             }

@@ -16,10 +16,18 @@
 
 package com.android.systemui.deviceentry.domain.interactor
 
+import android.content.res.Configuration
+import android.graphics.PointF
+import android.graphics.Rect
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags.FLAG_STANDALONE_FINGERPRINT_LOCK_SCREEN_UX_FIX
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.biometrics.data.repository.fingerprintPropertyRepository
+import com.android.systemui.biometrics.shared.model.FingerprintSensorType
+import com.android.systemui.biometrics.shared.model.SensorStrength
+import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.deviceentry.domain.interactor.AuthRippleInteractor.DwellRipplePhase
 import com.android.systemui.flags.DisableSceneContainer
@@ -103,6 +111,33 @@ class AuthRippleInteractorTest : SysuiTestCase() {
             )
             assertThat(showUnlockRippleFromBiometricUnlock)
                 .isEqualTo(BiometricUnlockSource.FINGERPRINT_SENSOR)
+        }
+
+    @Test
+    @EnableFlags(FLAG_STANDALONE_FINGERPRINT_LOCK_SCREEN_UX_FIX)
+    @EnableSceneContainer
+    fun fingerprintUnlocked_standaloneFpsSupported_sensorOriginIsScreenCenter() =
+        testScope.runTest {
+            val sensorOrigin by collectLastValue(underTest.sensorOrigin)
+
+            fingerprintPropertyRepository.setProperties(
+                sensorId = 0,
+                strength = SensorStrength.STRONG,
+                sensorType = FingerprintSensorType.STANDALONE,
+                sensorLocations = emptyMap(),
+            )
+            keyguardRepository.setBiometricUnlockState(
+                BiometricUnlockMode.WAKE_AND_DISMISS,
+                BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+            val config = Configuration()
+            config.windowConfiguration.setMaxBounds(Rect(0, 0, WIDTH, HEIGHT))
+            kosmos.fakeConfigurationRepository.onConfigurationChange(config)
+            kosmos.fakeConfigurationRepository.setScaleForResolution(1f)
+
+            runCurrent()
+
+            assertThat(sensorOrigin).isEqualTo(PointF(WIDTH_CENTER, HEIGHT_CENTER))
         }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -288,5 +323,12 @@ class AuthRippleInteractorTest : SysuiTestCase() {
         keyguardRepository.setBiometricUnlockState(BiometricUnlockMode.ONLY_WAKE_UNLOCKED, source)
         underTest.sendAuthRippleEvent(AuthRippleInteractor.AuthRippleEvent.FadeOut)
         keyguardRepository.setKeyguardShowing(false)
+    }
+
+    companion object {
+        private const val WIDTH = 1600
+        private const val HEIGHT = 1000
+        private const val WIDTH_CENTER = 800f
+        private const val HEIGHT_CENTER = 500f
     }
 }

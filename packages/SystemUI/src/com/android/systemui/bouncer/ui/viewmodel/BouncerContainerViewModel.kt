@@ -23,7 +23,6 @@ import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 
 class BouncerContainerViewModel
@@ -34,7 +33,7 @@ constructor(
     private val selectedUserInteractor: SelectedUserInteractor,
 ) : ExclusiveActivatable() {
 
-    override suspend fun onActivated(): Nothing {
+    override suspend fun onActivated() {
         coroutineScope {
             launch {
                 authenticationInteractor.onAuthenticationResult.collect { authenticationSucceeded ->
@@ -45,7 +44,6 @@ constructor(
                     }
                 }
             }
-            awaitCancellation()
         }
     }
 
