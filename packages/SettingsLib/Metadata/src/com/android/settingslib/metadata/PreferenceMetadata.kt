@@ -26,6 +26,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.android.settingslib.metadata.preferencesapi.ApiPreference
 import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreen
+import com.android.settingslib.metadata.preferencesapi.preconditions.PreconditionStability
 import com.android.settingslib.utils.applications.AppUtils
 
 /** Indicates how sensitive of the data. */
@@ -191,6 +192,15 @@ interface PreferenceMetadata {
      * It does not need to be set if [isEnabled] always returns `true`.
      */
     fun getEnabledDescription(): String? = null
+
+    /**
+     * Returns the stability of the enabled state of the preference.
+     *
+     * This should describe whether the enabled state can be cached.
+     *
+     * It does not need to be set if [isEnabled] always returns `true`.
+     */
+    fun getEnabledStability() : PreconditionStability ?= PreconditionStability.STABLE_UNTIL_APK_UPDATE
 
     /**
      * Returns the keys of depended preferences.

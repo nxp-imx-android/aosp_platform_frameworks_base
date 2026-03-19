@@ -26,7 +26,8 @@ import com.android.settingslib.metadata.ValidatedKeyParameters
 import com.android.settingslib.metadata.preferencesapi.multiusers.ManagementScope.OWN_USER
 import com.android.settingslib.metadata.preferencesapi.multiusers.PreferenceTarget.USER
 import com.android.settingslib.metadata.preferencesapi.preconditions.Allowed
-import com.android.settingslib.metadata.preferencesapi.preconditions.Disallowed
+import com.android.settingslib.metadata.preferencesapi.preconditions.Custom
+import com.android.settingslib.metadata.preferencesapi.preconditions.PreconditionStability
 import com.android.settingslib.metadata.preferencesapi.types.AnyBoolean
 import com.android.settingslib.metadata.test.R
 import com.google.common.truth.Truth.assertThat
@@ -283,7 +284,7 @@ class ApiPreferenceTest {
             get { execute { true } }
             set {
                 valuePreconditions(R.string.preconditions_description1) {
-                    Disallowed(R.string.preconditions_description1)
+                    Custom(R.string.preconditions_description1, stability = PreconditionStability.UNSTABLE)
                 }
                 execute {}
             }

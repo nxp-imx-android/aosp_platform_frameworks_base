@@ -251,6 +251,8 @@ object GraphTestUtils {
         override fun isAvailable(context: Context): Boolean =
             persistentPreferenceConfig.preferenceConfig.isAvailable
 
+        override fun getAvailabilityStability() = PreconditionStability.UNSTABLE
+
         override fun isRestricted(context: Context): Boolean =
             persistentPreferenceConfig.preferenceConfig.isRestricted
 
