@@ -17,123 +17,189 @@
 package com.android.systemui.media.dialog
 
 import android.content.Intent
+import android.media.session.MediaSession
+import android.os.UserHandle
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.media.flags.Flags
 import com.android.settingslib.media.MediaOutputConstants
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.settings.FakeUserTracker
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.anyOrNull
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class MediaOutputDialogReceiverTest : SysuiTestCase() {
 
-    private lateinit var mediaOutputDialogReceiver: MediaOutputDialogReceiver
     private val mockMediaOutputDialogManager: MediaOutputDialogManager = mock()
+    private val fakeUserTracker = FakeUserTracker(TEST_USER_ID)
+    private lateinit var mediaOutputDialogReceiver: MediaOutputDialogReceiver
 
     @Before
     fun setup() {
-        mediaOutputDialogReceiver = MediaOutputDialogReceiver(mockMediaOutputDialogManager)
+        mediaOutputDialogReceiver =
+            MediaOutputDialogReceiver(mockMediaOutputDialogManager, fakeUserTracker)
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MEDIA_OUTPUT_SWITCHER_ENTRY_POINT_THEMING)
-    fun launchMediaOutputDialog_extraPackageName_dialogFactoryCalled() {
-        val intent = Intent(MediaOutputConstants.ACTION_LAUNCH_MEDIA_OUTPUT_DIALOG).apply {
-            putExtra(MediaOutputConstants.EXTRA_PACKAGE_NAME, context.packageName)
-        }
+    @DisableFlags(Flags.FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
+    fun launchMediaOutputDialog_extraPackageName_noMultiuserFlag_dialogFactoryCalled() {
+        val intent =
+            Intent(MediaOutputConstants.ACTION_LAUNCH_MEDIA_OUTPUT_DIALOG).apply {
+                putExtra(MediaOutputConstants.EXTRA_PACKAGE_NAME, context.packageName)
+            }
+
         mediaOutputDialogReceiver.onReceive(context, intent)
 
         verify(mockMediaOutputDialogManager, times(1))
             .createAndShow(
-                packageName = eq(context.packageName),
-                aboveStatusBar = eq(false),
-                view = anyOrNull(),
-                userHandle = anyOrNull(),
-                token = anyOrNull(),
-                useSystemColors = eq(true),
+                packageName = context.packageName,
+                aboveStatusBar = false,
+                useSystemColors = true,
             )
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MEDIA_OUTPUT_SWITCHER_ENTRY_POINT_THEMING)
-    fun launchMediaOutputDialog_wrongExtraKey_dialogFactoryNotCalled() {
-        val intent = Intent(MediaOutputConstants.ACTION_LAUNCH_MEDIA_OUTPUT_DIALOG).apply {
-            putExtra("Wrong Package Name Key", context.packageName)
-        }
+    @EnableFlags(Flags.FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
+    fun launchMediaOutputDialog_allExtrasPresent_launchesAppRoutingDialog() {
+        val uid = 42
+        val mediaSessionToken = MediaSession.Token(uid, null)
+        val userHandle = UserHandle.getUserHandleForUid(uid)
+        val packageName = "com.example.app"
+        val intent =
+            Intent(MediaOutputConstants.ACTION_LAUNCH_MEDIA_OUTPUT_DIALOG).apply {
+                putExtra(MediaOutputConstants.EXTRA_PACKAGE_NAME, packageName)
+                putExtra(MediaOutputConstants.EXTRA_USER_HANDLE, userHandle)
+                putExtra(MediaOutputConstants.KEY_MEDIA_SESSION_TOKEN, mediaSessionToken)
+            }
+
         mediaOutputDialogReceiver.onReceive(context, intent)
 
-        verify(mockMediaOutputDialogManager, never())
+        verify(mockMediaOutputDialogManager)
             .createAndShow(
-                anyOrNull(),
-                anyOrNull(),
-                anyOrNull(),
-                anyOrNull(),
-                anyOrNull(),
-                anyOrNull()
+                packageName = packageName,
+                aboveStatusBar = false,
+                useSystemColors = true,
+                userHandle = userHandle,
+                token = mediaSessionToken,
             )
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MEDIA_OUTPUT_SWITCHER_ENTRY_POINT_THEMING)
+    @EnableFlags(Flags.FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
+    fun launchMediaOutputDialog_noUserHandle_launchesAppRoutingDialogWithUserFromUserTracker() {
+        val uid = 42
+        val mediaSessionToken = MediaSession.Token(uid, null)
+        val packageName = "com.example.app"
+        val intent =
+            Intent(MediaOutputConstants.ACTION_LAUNCH_MEDIA_OUTPUT_DIALOG).apply {
+                putExtra(MediaOutputConstants.EXTRA_PACKAGE_NAME, packageName)
+                putExtra(MediaOutputConstants.KEY_MEDIA_SESSION_TOKEN, mediaSessionToken)
+            }
+
+        mediaOutputDialogReceiver.onReceive(context, intent)
+
+        verify(mockMediaOutputDialogManager)
+            .createAndShow(
+                packageName = packageName,
+                aboveStatusBar = false,
+                useSystemColors = true,
+                userHandle = fakeUserTracker.userHandle,
+                token = mediaSessionToken,
+            )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
+    fun launchMediaOutputDialog_noPackage_fails() {
+        val uid = 42
+        val mediaSessionToken = MediaSession.Token(uid, null)
+        val userHandle = UserHandle.getUserHandleForUid(uid)
+        val intent =
+            Intent(MediaOutputConstants.ACTION_LAUNCH_MEDIA_OUTPUT_DIALOG).apply {
+                putExtra(MediaOutputConstants.EXTRA_USER_HANDLE, userHandle)
+                putExtra(MediaOutputConstants.KEY_MEDIA_SESSION_TOKEN, mediaSessionToken)
+            }
+
+        mediaOutputDialogReceiver.onReceive(context, intent)
+
+        verifyNoInteractions(mockMediaOutputDialogManager)
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
+    fun launchSystemMediaOutputDialog_noMultiuserFlag_launchesSystemRoutingDialog() {
+        val intent = Intent(MediaOutputConstants.ACTION_LAUNCH_SYSTEM_MEDIA_OUTPUT_DIALOG)
+
+        mediaOutputDialogReceiver.onReceive(context, intent)
+
+        verify(mockMediaOutputDialogManager).createAndShowForSystemRouting()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
+    fun launchSystemMediaOutputDialog_hasUser_launchesSystemRoutingDialog() {
+        val userHandle = UserHandle.getUserHandleForUid(42)
+        val intent =
+            Intent(MediaOutputConstants.ACTION_LAUNCH_SYSTEM_MEDIA_OUTPUT_DIALOG).apply {
+                putExtra(MediaOutputConstants.EXTRA_USER_HANDLE, userHandle)
+            }
+
+        mediaOutputDialogReceiver.onReceive(context, intent)
+
+        verify(mockMediaOutputDialogManager).createAndShowForSystemRouting(userHandle = userHandle)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
+    fun launchSystemMediaOutputDialog_noUser_fails() {
+        val intent = Intent(MediaOutputConstants.ACTION_LAUNCH_SYSTEM_MEDIA_OUTPUT_DIALOG)
+
+        mediaOutputDialogReceiver.onReceive(context, intent)
+
+        verifyNoInteractions(mockMediaOutputDialogManager)
+    }
+
+    @Test
+    fun launchMediaOutputDialog_wrongExtraKey_dialogFactoryNotCalled() {
+        val intent =
+            Intent(MediaOutputConstants.ACTION_LAUNCH_MEDIA_OUTPUT_DIALOG).apply {
+                putExtra("Wrong Package Name Key", context.packageName)
+            }
+        mediaOutputDialogReceiver.onReceive(context, intent)
+
+        verifyNoInteractions(mockMediaOutputDialogManager)
+    }
+
+    @Test
     fun launchMediaOutputDialog_noExtra_dialogFactoryNotCalled() {
         val intent = Intent(MediaOutputConstants.ACTION_LAUNCH_MEDIA_OUTPUT_DIALOG)
         mediaOutputDialogReceiver.onReceive(context, intent)
 
-        verify(mockMediaOutputDialogManager, never())
-            .createAndShow(
-                anyOrNull(),
-                anyOrNull(),
-                anyOrNull(),
-                anyOrNull(),
-                anyOrNull(),
-                anyOrNull()
-            )
+        verifyNoInteractions(mockMediaOutputDialogManager)
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MEDIA_OUTPUT_SWITCHER_ENTRY_POINT_THEMING)
     fun unknownAction_extraPackageName_factoriesNotCalled() {
-        val intent = Intent("Unknown Action").apply {
-            putExtra(Intent.EXTRA_PACKAGE_NAME, context.packageName)
-            putExtra(MediaOutputConstants.EXTRA_PACKAGE_NAME, context.packageName)
-        }
+        val intent =
+            Intent("Unknown Action").apply {
+                putExtra(Intent.EXTRA_PACKAGE_NAME, context.packageName)
+                putExtra(MediaOutputConstants.EXTRA_PACKAGE_NAME, context.packageName)
+            }
         mediaOutputDialogReceiver.onReceive(context, intent)
 
-        verify(mockMediaOutputDialogManager, never())
-            .createAndShow(
-                anyOrNull(),
-                anyOrNull(),
-                anyOrNull(),
-                anyOrNull(),
-                anyOrNull(),
-                anyOrNull()
-            )
+        verifyNoInteractions(mockMediaOutputDialogManager)
     }
 
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MEDIA_OUTPUT_SWITCHER_ENTRY_POINT_THEMING)
-    fun unknownActionAnd_noExtra_factoriesNotCalled() {
-        val intent = Intent("Unknown Action")
-        mediaOutputDialogReceiver.onReceive(context, intent)
-
-        verify(mockMediaOutputDialogManager, never())
-            .createAndShow(
-                anyOrNull(),
-                anyOrNull(),
-                anyOrNull(),
-                anyOrNull(),
-                anyOrNull(),
-                anyOrNull()
-            )
+    companion object {
+        const val TEST_USER_ID = 25
     }
 }

@@ -207,6 +207,16 @@ flag {
 }
 
 flag {
+    name: "fix_output_switcher_multiuser_support"
+    namespace: "media_better_together"
+    description: "Fixes multi-user environment behavior in Output Switcher and SettingsLib/media."
+    bug: "491572006"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "hide_bt_address_from_apps_without_bt_permission"
     namespace: "media_better_together"
     description: "Hides the BT address of media routes to apps without BT permission."

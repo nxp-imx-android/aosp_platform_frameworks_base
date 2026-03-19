@@ -84,11 +84,11 @@ constructor(
         useSystemColors: Boolean = false,
     ) {
         createAndShow(
+            userHandle,
             packageName,
             aboveStatusBar,
             dialogTransitionAnimatorController = controller,
             includePlaybackAndAppMetadata = true,
-            userHandle = userHandle,
             token = token,
             onDialogEventListener = onDialogEventListener,
             mediaSwitchingType = mediaSwitchingType,
@@ -100,13 +100,14 @@ constructor(
         controller: DialogTransitionAnimator.Controller? = null,
         onDialogEventListener: MediaOutputDialogDelegate.OnDialogEventListener? = null,
         mediaSwitchingType: MediaSwitchingType? = null,
+        userHandle: UserHandle? = null,
     ) {
         createAndShow(
+            userHandle,
             packageName = null,
             aboveStatusBar = false,
             dialogTransitionAnimatorController = controller,
             includePlaybackAndAppMetadata = false,
-            userHandle = null,
             onDialogEventListener = onDialogEventListener,
             mediaSwitchingType = mediaSwitchingType,
             useSystemColors = true,
@@ -117,11 +118,11 @@ constructor(
     // package name. The user handle is necessary to disambiguate the same package running on
     // different users.
     private fun createAndShow(
+        userHandle: UserHandle?,
         packageName: String?,
         aboveStatusBar: Boolean,
         dialogTransitionAnimatorController: DialogTransitionAnimator.Controller?,
         includePlaybackAndAppMetadata: Boolean = true,
-        userHandle: UserHandle? = null,
         token: MediaSession.Token? = null,
         onDialogEventListener: MediaOutputDialogDelegate.OnDialogEventListener? = null,
         mediaSwitchingType: MediaSwitchingType? = null,
