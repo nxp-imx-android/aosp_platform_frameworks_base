@@ -360,13 +360,6 @@ flag {
 }
 
 flag {
-     name: "user_switching_dialog_entry_exit_animations"
-     namespace: "multiuser"
-     description: "Slight upwards translation when showing/hiding the UserSwitchingDialog"
-     bug: "433910583"
-}
-
-flag {
      name: "user_switching_dialog_use_system_wallpaper"
      namespace: "multiuser"
      description: "Use the system wallpaper as the background for the UserSwitchingDialog"
