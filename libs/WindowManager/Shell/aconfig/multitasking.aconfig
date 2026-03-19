@@ -274,6 +274,13 @@ flag {
 }
 
 flag {
+    name: "enable_bubble_pinning"
+    namespace: "multitasking"
+    description: "Enables pinning bubbles on laptops and tablets"
+    bug: "493912543"
+}
+
+flag {
     name: "consolidate_split_keyboard_shortcut_controllers"
     namespace: "multitasking"
     description: "Consolidate split desktop keyboard shortcuts handling on shell and launcher side"
