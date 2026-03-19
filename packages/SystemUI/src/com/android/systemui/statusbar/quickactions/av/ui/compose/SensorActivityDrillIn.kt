@@ -112,7 +112,7 @@ fun SensorActivityDrillIn(
                         text = stringResource(R.string.sensor_activity_see_all_access_button),
                         textAlign = TextAlign.Center,
                         style =
-                            MaterialTheme.typography.labelMedium.copy(
+                            typography.labelMedium.copy(
                                 fontWeight = FontWeight.ExtraBold
                             ),
                         color = colorScheme.onSurface,
@@ -169,8 +169,7 @@ private fun AppDetailItem(
         headlineContent = {
             Text(
                 text = appName,
-                style =
-                    MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.ExtraBold),
+                style = MaterialTheme.typography.titleSmallEmphasized,
                 color = colorScheme.onSurface,
             )
         },
@@ -220,14 +219,14 @@ private fun SupportingContent(
                 )
                 Text(
                     text = stringResource(R.string.sensor_activity_camera_label),
-                    style = MaterialTheme.typography.bodySmall,
+                    style = typography.bodySmall,
                     color = colorScheme.onSurfaceVariant,
                 )
             }
             if (hasCamera && hasMicrophone) {
                 Text(
                     text = "•",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = typography.bodySmall,
                     color = colorScheme.onSurfaceVariant,
                 )
             }
@@ -239,7 +238,7 @@ private fun SupportingContent(
                 )
                 Text(
                     text = stringResource(R.string.sensor_activity_microphone_label),
-                    style = MaterialTheme.typography.bodySmall,
+                    style = typography.bodySmall,
                     color = colorScheme.onSurfaceVariant,
                 )
             }
@@ -250,13 +249,13 @@ private fun SupportingContent(
         ) {
             Text(
                 text = stringResource(R.string.sensor_activity_manage_access_button),
-                style = typography.labelMedium.copy(fontWeight = FontWeight.ExtraBold),
+                style = typography.titleSmallEmphasized,
                 color = colorScheme.primary,
                 modifier = Modifier.clickable(onClick = { viewModel.manageApp(packageName) }),
             )
             Text(
                 text = stringResource(R.string.sensor_activity_close_app_button),
-                style = typography.labelMedium.copy(fontWeight = FontWeight.ExtraBold),
+                style = typography.titleSmallEmphasized,
                 color = colorScheme.primary,
                 modifier = Modifier.clickable(onClick = { viewModel.closeApp(packageName) }),
             )

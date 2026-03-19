@@ -235,7 +235,14 @@ private fun SectionButton(
                 Icon(painter = painterResource(id = it), contentDescription = null)
             }
         },
-        headlineContent = { viewModel.state.mainTitle?.let { Text(text = stringResource(it)) } },
+        headlineContent = {
+            viewModel.state.mainTitle?.let {
+                Text(
+                    text = stringResource(it),
+                    style = MaterialTheme.typography.titleSmallEmphasized,
+                )
+            }
+        },
         supportingContent = {
             if (viewModel.state.isEnabled) {
                 viewModel.state.subTitle?.let {
@@ -245,7 +252,7 @@ private fun SectionButton(
                         } else {
                             stringResource(it)
                         }
-                    Text(text = text)
+                    Text(text = text, style = MaterialTheme.typography.labelMedium)
                 }
             }
         },
@@ -295,13 +302,19 @@ private fun SensorAccessButton(
                                 is SensorAccessSummary.Simple -> summary.text
                                 is SensorAccessSummary.WithCount ->
                                     "${summary.prefix} ${stringResource(summary.suffixResId, summary.suffixArg)}"
-                            }
+                            },
+                        style = MaterialTheme.typography.titleSmallEmphasized,
                     )
                 }
             },
             supportingContent =
                 viewModel.activeAppsSensorSectionSupportText?.let {
-                    { Text(text = stringResource(it)) }
+                    {
+                        Text(
+                            text = stringResource(it),
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                    }
                 },
             trailingContent = {
                 Icon(
