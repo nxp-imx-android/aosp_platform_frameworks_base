@@ -26,8 +26,7 @@ import com.android.systemui.keyguard.shared.model.ClockSize
 import com.android.systemui.keyguard.shared.model.ClockSizeSetting
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.ui.composable.elements.UnfoldTranslations
-import com.android.systemui.lifecycle.ExclusiveActivatable
-import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
@@ -35,7 +34,6 @@ import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNoti
 import com.android.systemui.unfold.domain.interactor.UnfoldTransitionInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.map
 
@@ -51,90 +49,59 @@ constructor(
     private val activeNotificationsInteractor: ActiveNotificationsInteractor,
     private val desktopInteractor: DesktopInteractor,
     private val transitionInteractor: KeyguardTransitionInteractor,
-) : ExclusiveActivatable() {
+) : HydratedActivatable() {
     data class Decision<T>(val choice: T, val reason: String)
 
-    private val hydrator = Hydrator("LockscreenUpperRegionViewModel.hydrator")
     private val keyguardMediaViewModel: KeyguardMediaViewModel by lazy {
         keyguardMediaViewModelFactory.create()
     }
 
-    val isDozing: Boolean by
-        hydrator.hydratedStateOf(traceName = "isDozing", source = keyguardInteractor.isDozing)
+    val isDozing: Boolean by keyguardInteractor.isDozing.hydratedStateOf()
 
     val isMediaVisible: Boolean
         get() = keyguardMediaViewModel.isMediaVisible
 
     val isNotificationStackActive: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "isNotificationStackActive",
-            source = activeNotificationsInteractor.areAnyNotificationsPresent,
-            initialValue = activeNotificationsInteractor.areAnyNotificationsPresentValue,
+        activeNotificationsInteractor.areAnyNotificationsPresent.hydratedStateOf(
+            initialValue = activeNotificationsInteractor.areAnyNotificationsPresentValue
         )
 
     val isHeadsUpNotificationActive: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "isHeadsUpNotificationActive",
-            source = headsUpNotificationInteractor.isHeadsUpOrAnimatingAway,
-            initialValue = false,
-        )
+        headsUpNotificationInteractor.isHeadsUpOrAnimatingAway.hydratedStateOf(initialValue = false)
 
     val isPromotedNotificationActive: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "isPromotedNotificationActive",
-            source = clockInteractor.isAodPromotedNotificationPresent,
-            initialValue = false,
-        )
+        clockInteractor.isAodPromotedNotificationPresent.hydratedStateOf(initialValue = false)
 
     val unfoldTranslations: UnfoldTranslations =
         object : UnfoldTranslations {
             override val start: Float by
-                hydrator.hydratedStateOf(
-                    traceName = "unfoldTranslations.start",
-                    initialValue = 0f,
-                    source = unfoldTransitionInteractor.unfoldTranslationX(isOnStartSide = true),
-                )
+                unfoldTransitionInteractor
+                    .unfoldTranslationX(isOnStartSide = true)
+                    .hydratedStateOf(traceName = "unfoldTranslations.start", initialValue = 0f)
 
             override val end: Float by
-                hydrator.hydratedStateOf(
-                    traceName = "unfoldTranslations.end",
-                    initialValue = 0f,
-                    source = unfoldTransitionInteractor.unfoldTranslationX(isOnStartSide = false),
-                )
+                unfoldTransitionInteractor
+                    .unfoldTranslationX(isOnStartSide = false)
+                    .hydratedStateOf(traceName = "unfoldTranslations.end", initialValue = 0f)
         }
 
-    val shadeMode: ShadeMode by
-        hydrator.hydratedStateOf(traceName = "shadeMode", source = shadeModeInteractor.shadeMode)
+    val shadeMode: ShadeMode by shadeModeInteractor.shadeMode.hydratedStateOf()
 
     val useDesktopStatusBar: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "useDesktopStatusBar",
-            initialValue = desktopInteractor.useDesktopStatusBar.value,
-            source = desktopInteractor.useDesktopStatusBar,
+        desktopInteractor.useDesktopStatusBar.hydratedStateOf(
+            initialValue = desktopInteractor.useDesktopStatusBar.value
         )
 
     private val forcedClockSize: ClockSize? by
-        hydrator.hydratedStateOf(
-            traceName = "forcedClockSize",
-            source = clockInteractor.forcedClockSize,
-            initialValue = null,
-        )
+        clockInteractor.forcedClockSize.hydratedStateOf(initialValue = null)
 
     private val clockSizeSetting: ClockSizeSetting by
-        hydrator.hydratedStateOf(
-            traceName = "clockSizeSetting",
-            source = clockInteractor.selectedClockSize,
-        )
+        clockInteractor.selectedClockSize.hydratedStateOf()
 
     val shouldSkipTransition: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "shouldSkipTransition",
-            source =
-                transitionInteractor.transitionState.map { state ->
-                    state.from == KeyguardState.OFF || state.from == KeyguardState.DOZING
-                },
-            initialValue = false,
-        )
+        transitionInteractor.transitionState
+            .map { state -> state.from == KeyguardState.OFF || state.from == KeyguardState.DOZING }
+            .hydratedStateOf(initialValue = false)
 
     fun evaluateClockSize(evaluateDynamicSize: () -> Decision<ClockSize>): Decision<ClockSize> {
         return forcedClockSize?.let { Decision(it, "forcedClockSize") }
@@ -144,12 +111,8 @@ constructor(
             }
     }
 
-    override suspend fun onActivated(): Nothing {
-        coroutineScope {
-            launch { hydrator.activate() }
-            launch { keyguardMediaViewModel.activate() }
-            awaitCancellation()
-        }
+    override suspend fun onActivated() {
+        coroutineScope { launch { keyguardMediaViewModel.activate() } }
     }
 
     @AssistedFactory
