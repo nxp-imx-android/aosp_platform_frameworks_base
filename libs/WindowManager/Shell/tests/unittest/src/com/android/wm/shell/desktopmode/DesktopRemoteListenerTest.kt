@@ -22,10 +22,13 @@ import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SingleInstanceRemoteListener
 import com.android.wm.shell.common.transition.TransitionStateHolder
 import com.android.wm.shell.desktopmode.data.DesktopRepository
+import com.android.wm.shell.desktopmode.data.DesktopRepository.DeskChangeListener
+import com.android.wm.shell.desktopmode.data.DesktopRepository.VisibleTasksListener
 import com.android.wm.shell.sysui.ShellController
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -64,7 +67,6 @@ class DesktopRemoteListenerTest : ShellTestCase() {
                 it.getArgument(0) as SingleInstanceRemoteListener.RemoteCall<IDesktopTaskListener>
             callback.accept(desktopTaskListener)
         }
-
         listener.register(remoteListener)
     }
 
@@ -116,5 +118,35 @@ class DesktopRemoteListenerTest : ShellTestCase() {
         verify(desktopTaskListener, never()).onEnterDesktopModeTransitionStarted(any())
         verify(desktopTaskListener, never()).onExitDesktopModeTransitionStarted(any(), any())
         verify(desktopTaskListener, never()).onTaskbarCornerRoundingUpdate(any(), any())
+    }
+
+    @Test
+    fun unregister_removesListeners() {
+        val deskChangeCaptor = argumentCaptor<DeskChangeListener>()
+        val visibleTasksCaptor = argumentCaptor<VisibleTasksListener>()
+        // register is called in setUp, so capture listeners immediately
+        verify(currentRepository).addDeskChangeListener(deskChangeCaptor.capture(), any())
+        verify(currentRepository).addVisibleTasksListener(visibleTasksCaptor.capture(), any())
+
+        listener.unregister()
+        verify(currentRepository).removeDeskChangeListener(deskChangeCaptor.firstValue)
+        verify(currentRepository).removeVisibleTasksListener(visibleTasksCaptor.firstValue)
+    }
+
+    @Test
+    fun unregister_beforeRegister_doesNotRemoveDeskChangeListener() {
+        // Create a new instance to ensure register() is not called on the listener member
+        val newListener =
+            DesktopRemoteListener(
+                shellExecutor,
+                userRepositories,
+                shellController,
+                transitionStateHolder,
+            )
+        newListener.unregister()
+        // Verify removeDeskChangeListener is never called as it was not initialized
+        verify(currentRepository, never()).removeDeskChangeListener(any())
+        // Verify removeVisibleTasksListener is still called as it is not guarded
+        verify(currentRepository).removeVisibleTasksListener(any())
     }
 }
