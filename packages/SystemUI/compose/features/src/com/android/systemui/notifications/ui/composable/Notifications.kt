@@ -416,8 +416,8 @@ fun ContentScope.NestedScrollingNotificationPanel(
     val expansionFraction by viewModel.expandFraction.collectAsStateWithLifecycle(0f)
     val screenHeight = with(density) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
 
-    /** Total horizontal stack padding in pixels. */
-    val stackHorizontalPaddingPx = {
+    /** Total vertical stack padding in pixels. */
+    val stackVerticalPaddingPx = {
         with(density) { (stackTopPadding + stackBottomPadding()).toPx() }.roundToInt()
     }
 
@@ -574,7 +574,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
                         modifier =
                             Modifier.notificationStackHeight(view = stackScrollView)
                                 .onSizeChanged { size ->
-                                    onStackHeightChanged(size.height + stackHorizontalPaddingPx())
+                                    onStackHeightChanged(size.height + stackVerticalPaddingPx())
                                 },
                     )
                     Spacer(
