@@ -16,7 +16,6 @@
 
 package com.android.server.companion.virtual;
 
-import static android.Manifest.permission.ACCESS_COMPUTER_CONTROL;
 import static android.Manifest.permission.ADD_ALWAYS_UNLOCKED_DISPLAY;
 import static android.Manifest.permission.ADD_MIRROR_DISPLAY;
 import static android.Manifest.permission.ADD_TRUSTED_DISPLAY;
@@ -1420,12 +1419,6 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
 
     @Override
     public boolean canCreateMirrorDisplays() {
-        if (Flags.computerControlAccess()
-                && (mContext.checkCallingOrSelfPermission(ACCESS_COMPUTER_CONTROL)
-                        == PackageManager.PERMISSION_GRANTED)) {
-            return true;
-        }
-
         if (Flags.vdmMirrorDisplayPermission()
                 && CompatChanges.isChangeEnabled(CHECK_ADD_MIRROR_DISPLAY_PERMISSION,
                     mOwnerPackageName, UserHandle.getUserHandleForUid(mOwnerUid))) {
