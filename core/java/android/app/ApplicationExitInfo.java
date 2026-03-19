@@ -31,6 +31,7 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.DebugUtils;
+import android.util.IndentingPrintWriter;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
 import android.util.proto.WireTypeMismatchException;
@@ -40,7 +41,6 @@ import com.android.internal.util.ArrayUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Date;
@@ -1466,35 +1466,36 @@ public final class ApplicationExitInfo implements Parcelable {
     };
 
     /** @hide */
-    public void dump(@NonNull PrintWriter pw, @Nullable String prefix, @Nullable String seqSuffix,
+    public void dump(@NonNull IndentingPrintWriter pw, @Nullable String seqSuffix,
+            @NonNull SimpleDateFormat sdf) {
+        pw.increaseIndent();
+        pw.print("ApplicationExitInfo "); pw.print(seqSuffix); pw.println(":");
+        dumpInternalState(pw, sdf);
+        pw.decreaseIndent();
+    }
+
+    private void dumpInternalState(@NonNull IndentingPrintWriter pw,
             @NonNull SimpleDateFormat sdf) {
         final StringBuilder sb = new StringBuilder();
-        sb.append(prefix)
-                .append("ApplicationExitInfo ").append(seqSuffix).append(':')
-                .append('\n');
-        sb.append(prefix).append(' ')
-                .append(" timestamp=").append(sdf.format(new Date(mTimestamp)))
+        sb.append("timestamp=").append(sdf.format(new Date(mTimestamp)))
                 .append(" pid=").append(mPid)
                 .append(" realUid=").append(mRealUid)
                 .append(" packageUid=").append(mPackageUid)
                 .append(" definingUid=").append(mDefiningUid)
                 .append(" user=").append(UserHandle.getUserId(mPackageUid))
                 .append('\n');
-        sb.append(prefix).append(' ')
-                .append(" process=").append(mProcessName)
+        sb.append("process=").append(mProcessName)
                 .append(" reason=").append(mReason)
                 .append(" (").append(reasonCodeToString(mReason)).append(")")
                 .append(" subreason=").append(mSubReason)
                 .append(" (").append(subreasonToString(mSubReason)).append(")")
                 .append(" status=").append(mStatus)
                 .append('\n');
-        sb.append(prefix).append(' ')
-                .append(" importance=").append(mImportance)
+        sb.append("importance=").append(mImportance)
                 .append(" pss=");
         DebugUtils.sizeValueToString(mPss << 10, sb);
         sb.append(" rss=");
         DebugUtils.sizeValueToString(mRss << 10, sb);
-        sb.append(" description=").append(mDescription);
         sb.append(" state=");
         if (ArrayUtils.isEmpty(mState)) {
             sb.append("empty");
@@ -1503,8 +1504,14 @@ public final class ApplicationExitInfo implements Parcelable {
         }
         sb.append(" trace=").append(mTraceFile)
                 .append('\n');
-        sb.append(" anrInfo=").append(mAnrInfo);
+        sb.append("description=").append(mDescription)
+                .append('\n');
+        sb.append("anrInfo=").append(mAnrInfo)
+                .append('\n');
+
+        pw.increaseIndent();
         pw.print(sb);
+        pw.decreaseIndent();
     }
 
     @Override
