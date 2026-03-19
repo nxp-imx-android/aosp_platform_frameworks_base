@@ -20,8 +20,7 @@ import androidx.compose.runtime.getValue
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
-import com.android.systemui.lifecycle.ExclusiveActivatable
-import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractor
 import com.android.systemui.statusbar.quickactions.av.shared.model.AvControlsChipModel
@@ -41,24 +40,18 @@ class AvControlsChipViewModel
 constructor(
     @DisplayAware avControlsChipInteractor: AvControlsChipInteractor,
     private val popupViewModelFactory: AvControlsPopupViewModel.Factory,
-) : StatusBarPopupChipViewModel, ExclusiveActivatable() {
+) : StatusBarPopupChipViewModel, HydratedActivatable() {
     companion object {
         val CAMERA_DRAWABLE: Int = R.drawable.av_controls_chip_camera
         val MICROPHONE_DRAWABLE: Int = R.drawable.av_controls_chip_mic
     }
 
-    private val hydrator: Hydrator = Hydrator("AvControlsChipViewModel.hydrator")
-
     override val chip: QuickActionChipModel by
-        hydrator.hydratedStateOf(
-            traceName = "chip",
-            initialValue = QuickActionChipModel.Hidden(QuickActionChipId.AvControlsIndicator),
-            source = avControlsChipInteractor.model.map { toPopupChipModel(it) },
-        )
-
-    override suspend fun onActivated(): Nothing {
-        hydrator.activate()
-    }
+        avControlsChipInteractor.model
+            .map { toPopupChipModel(it) }
+            .hydratedStateOf(
+                initialValue = QuickActionChipModel.Hidden(QuickActionChipId.AvControlsIndicator)
+            )
 
     private fun toPopupChipModel(avControlsChipModel: AvControlsChipModel): QuickActionChipModel {
         val chipId = QuickActionChipId.AvControlsIndicator
