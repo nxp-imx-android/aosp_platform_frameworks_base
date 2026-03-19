@@ -118,6 +118,9 @@
         night,dark,dnd,flashlight,rotation,location
     </string>
 
+    <!-- Whether to disable dual shade educational tooltips -->
+    <bool name="config_disableDualShadeEducationalTooltips">false</bool>
+
     <!-- Tiles to auto add to Quick Settings upon first change of a given secure setting.
          The syntax is setting-name:spec. If the tile is a TileService, the spec should be specified
          as custom(package/class). Relative class name is supported. -->

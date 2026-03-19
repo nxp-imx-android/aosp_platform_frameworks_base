@@ -43,7 +43,8 @@ constructor(
      * allowed, as the tooltip may interfere with test automation.
      */
     private val disableEducationTooltips =
-        !ignoreTestHarness && ActivityManager.isRunningInUserTestHarness()
+        (!ignoreTestHarness && ActivityManager.isRunningInUserTestHarness()) ||
+            context.resources.getBoolean(R.bool.config_disableDualShadeEducationalTooltips)
 
     /**
      * The tooltip to show, or `null` if none should be shown.
