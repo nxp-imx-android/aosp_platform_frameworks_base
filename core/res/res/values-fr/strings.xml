@@ -928,11 +928,11 @@
     <string name="policylab_watchLogin" msgid="7599669460083719504">"Contrôler les tentatives de déverrouillage de l\'écran"</string>
     <string name="policydesc_watchLogin" product="tablet" msgid="2388436408621909298">"Contrôler le nombre de mots de passe incorrects saisis pour déverrouiller l\'écran, et verrouiller la tablette ou effacer toutes ses données si trop de mots de passe incorrects sont saisis"</string>
     <string name="policydesc_watchLogin" product="tv" msgid="2140588224468517507">"Contrôle le nombre de fois qu\'un mot de passe incorrect est saisi lors du déverrouillage de l\'écran, et verrouille votre appareil Android TV ou en efface toutes les données si le nombre maximal de mots de passe incorrects autorisé est dépassé."</string>
-    <string name="policydesc_watchLogin" product="automotive" msgid="7011438994051251521">"Contrôler le nombre de mots de passe incorrects saisis pour le déverrouillage de l\'écran, puis verrouiller le système d\'infoloisirs ou effacer toutes ses données si le nombre maximal de tentatives de saisie du mot de passe est atteint."</string>
+    <string name="policydesc_watchLogin" product="automotive" msgid="7011438994051251521">"Contrôler le nombre de mots de passe incorrects saisis pour le déverrouillage de l\'écran, puis verrouiller le système d\'infodivertissement ou effacer toutes ses données si le nombre maximal de tentatives de saisie du mot de passe est atteint."</string>
     <string name="policydesc_watchLogin" product="default" msgid="4885030206253600299">"Contrôler le nombre de mots de passe incorrects saisis pour le déverrouillage de l\'écran, puis verrouiller le téléphone ou effacer toutes ses données si le nombre maximal de tentatives de saisie du mot de passe est atteint"</string>
     <string name="policydesc_watchLogin_secondaryUser" product="tablet" msgid="2049038943004297474">"Contrôlez le nombre de mots de passe incorrects saisis pour déverrouiller l\'écran, et verrouillez la tablette ou effacez toutes les données de cet utilisateur si trop de mots de passe incorrects sont saisis."</string>
     <string name="policydesc_watchLogin_secondaryUser" product="tv" msgid="8965224107449407052">"Contrôle le nombre de fois qu\'un mot de passe incorrect est saisi lors du déverrouillage de l\'écran, et verrouille votre appareil Android TV ou efface toutes les données de cet utilisateur si le nombre maximal de mots de passe incorrects autorisé est dépassé."</string>
-    <string name="policydesc_watchLogin_secondaryUser" product="automotive" msgid="7180857406058327941">"Contrôler le nombre de mots de passe incorrects saisis pour le déverrouillage de l\'écran, puis verrouiller le système d\'infoloisirs ou effacer toutes les données de ce profil si le nombre maximal de tentatives de saisie du mot de passe est atteint."</string>
+    <string name="policydesc_watchLogin_secondaryUser" product="automotive" msgid="7180857406058327941">"Contrôler le nombre de mots de passe incorrects saisis pour le déverrouillage de l\'écran, puis verrouiller le système d\'infodivertissement ou effacer toutes les données de ce profil si le nombre maximal de tentatives de saisie du mot de passe est atteint."</string>
     <string name="policydesc_watchLogin_secondaryUser" product="default" msgid="9177645136475155924">"Contrôlez le nombre de fois qu\'un mot de passe incorrect est saisi lors du déverrouillage de l\'écran, et verrouillez le téléphone ou effacez toutes les informations sur l\'utilisateur si le nombre maximal de mots de passe incorrects autorisés est dépassé."</string>
     <string name="policylab_resetPassword" msgid="214556238645096520">"Modifier le verrouillage de l\'écran"</string>
     <string name="policydesc_resetPassword" msgid="4626419138439341851">"Modifier le verrouillage de l\'écran"</string>
@@ -941,13 +941,13 @@
     <string name="policylab_wipeData" msgid="1359485247727537311">"Effacer toutes les données"</string>
     <string name="policydesc_wipeData" product="tablet" msgid="7245372676261947507">"Effacer les données de la tablette sans avertissement, en rétablissant la configuration d\'usine"</string>
     <string name="policydesc_wipeData" product="tv" msgid="513862488950801261">"Efface les données de votre appareil Android TV sans avertissement en rétablissant la configuration d\'usine."</string>
-    <string name="policydesc_wipeData" product="automotive" msgid="660804547737323300">"Effacer les données du système d\'infoloisirs sans avertissement en rétablissant la configuration d\'usine."</string>
+    <string name="policydesc_wipeData" product="automotive" msgid="660804547737323300">"Effacer les données du système d\'infodivertissement sans avertissement en rétablissant la configuration d\'usine."</string>
     <string name="policydesc_wipeData" product="default" msgid="8036084184768379022">"Effacer les données du téléphone sans avertissement, en rétablissant la configuration d\'usine"</string>
     <string name="policylab_wipeData_secondaryUser" product="automotive" msgid="115034358520328373">"Effacer les données du profil"</string>
     <string name="policylab_wipeData_secondaryUser" product="default" msgid="413813645323433166">"Effacer les informations sur l\'utilisateur"</string>
     <string name="policydesc_wipeData_secondaryUser" product="tablet" msgid="2336676480090926470">"Effacer les informations sur cet utilisateur de cette tablette sans avertissement"</string>
     <string name="policydesc_wipeData_secondaryUser" product="tv" msgid="2293713284515865200">"Efface les données concernant cet utilisateur de cet appareil Android TV sans avertissement."</string>
-    <string name="policydesc_wipeData_secondaryUser" product="automotive" msgid="4658832487305780879">"Effacer les données de ce profil sur ce système d\'infoloisirs sans avertissement."</string>
+    <string name="policydesc_wipeData_secondaryUser" product="automotive" msgid="4658832487305780879">"Effacer les données de ce profil sur ce système d\'infodivertissement sans avertissement."</string>
     <string name="policydesc_wipeData_secondaryUser" product="default" msgid="2788325512167208654">"Effacer les informations sur cet utilisateur de ce téléphone sans avertissement"</string>
     <string name="policylab_setGlobalProxy" msgid="215332221188670221">"Définir le proxy global du mobile"</string>
     <string name="policydesc_setGlobalProxy" msgid="7149665222705519604">"Indiquer le proxy global à utiliser pour l\'appareil lorsque la règle est activée. Seul le propriétaire de l\'appareil peut définir le proxy global."</string>
@@ -2119,12 +2119,9 @@
     <string name="notification_metric_label_unit" msgid="309618413505128451">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>)"</string>
     <string name="notification_metric_label_unit_separator" msgid="5631839566551764472">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> (<xliff:g id="METRIC_UNIT">%2$s</xliff:g>) :"</string>
     <string name="notification_metric_label_separator" msgid="8416027475779515033">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> :"</string>
-    <!-- no translation found for notification_history_metric_subtext (7408216222655116821) -->
-    <skip />
-    <!-- no translation found for notification_metric_running_timer (1096459900744921213) -->
-    <skip />
-    <!-- no translation found for notification_metric_running_stopwatch (8039546029949295377) -->
-    <skip />
+    <string name="notification_history_metric_subtext" msgid="7408216222655116821">"<xliff:g id="METRIC_LABEL">%1$s</xliff:g> : <xliff:g id="METRIC_VALUE">%2$s</xliff:g>"</string>
+    <string name="notification_metric_running_timer" msgid="1096459900744921213">"Minuteur lancé"</string>
+    <string name="notification_metric_running_stopwatch" msgid="8039546029949295377">"Chronomètre lancé"</string>
     <string name="call_notification_answer_action" msgid="5999246836247132937">"Répondre"</string>
     <string name="call_notification_answer_video_action" msgid="2086030940195382249">"Vidéo"</string>
     <string name="call_notification_decline_action" msgid="3700345945214000726">"Refuser"</string>
@@ -2714,7 +2711,8 @@
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Appuyez de manière prolongée sur le bouton Marche/Arrêt pour éteindre le téléviseur"</string>
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Alertes sur les ressources système"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Utilisation excessive des ressources"</string>
-    <string name="tv_watchdog_notification_content" msgid="6444873431710133936">"L\'appli \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" utilise trop de ressources."</string>
+    <!-- no translation found for tv_watchdog_notification_content (8330578168178291921) -->
+    <skip />
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Modification effectuée par ton parent"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"L\'application <xliff:g id="APP_NAME">%1$s</xliff:g> a été supprimée pour le moment"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> est désormais disponible"</string>
