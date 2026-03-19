@@ -39,6 +39,7 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.window.WindowAnimationState;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
@@ -831,5 +832,11 @@ public class BubbleBarLayerView extends FrameLayout
         if (ContextUtils.isGestureNavigationMode(mContext)) {
             mBubbleBarGestureNavSwipeController.stopMonitoring();
         }
+    }
+
+    @Override
+    @Nullable
+    public WindowAnimationState cancelAnimation() {
+        return mAnimationHelper.cancelAnimationsAndReturnState();
     }
 }

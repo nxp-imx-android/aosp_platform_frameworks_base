@@ -27,6 +27,7 @@ import static android.view.View.Y;
 
 import static com.android.wm.shell.bubbles.bar.BubbleBarExpandedView.CORNER_RADIUS;
 import static com.android.wm.shell.bubbles.bar.BubbleBarExpandedView.TASK_VIEW_ALPHA;
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 import static com.android.wm.shell.shared.animation.Interpolators.EMPHASIZED;
 import static com.android.wm.shell.shared.animation.Interpolators.EMPHASIZED_DECELERATE;
@@ -38,9 +39,11 @@ import android.animation.ObjectAnimator;
 import android.annotation.NonNull;
 import android.content.Context;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.util.Log;
 import android.view.SurfaceControl;
 import android.widget.FrameLayout;
+import android.window.WindowAnimationState;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -728,15 +731,18 @@ public class BubbleBarAnimationHelper {
         bbev.setSurfaceZOrderedOnTop(true);
         a.setDuration(EXPANDED_VIEW_ANIMATE_TO_REST_DURATION);
         a.setInterpolator(EMPHASIZED);
-        a.start();
+        if (Flags.enableBubbleTransitionPlanner()) {
+            startNewAnimator(a);
+        } else {
+            a.start();
+        }
     }
 
-    /**
-     * Cancel current animations
-     */
+    /** Cancel current animations */
     public void cancelAnimations() {
-        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.cancelAnimations(): "
-                + "hasRunningAnimator=%b",
+        ProtoLog.d(
+                WM_SHELL_BUBBLES_NOISY,
+                "BBAnimationHelper.cancelAnimations(): hasRunningAnimator=%b",
                 (mRunningAnimator != null && mRunningAnimator.isRunning()));
         PhysicsAnimator.getInstance(mExpandedViewContainerMatrix).cancel();
         if (mRunningAnimator != null) {
@@ -746,6 +752,33 @@ public class BubbleBarAnimationHelper {
             mRunningAnimator = null;
         }
         cancelPendingAnimation();
+    }
+
+    /** Cancel current animations and return window state */
+    @Nullable
+    public WindowAnimationState cancelAnimationsAndReturnState() {
+        if (!Flags.enableBubbleTransitionPlanner()) {
+            throw new IllegalStateException(
+                    "cancelAnimationsAndReturnState() should not be called if guarding flag is"
+                        + " disabled");
+        }
+        ProtoLog.d(
+                WM_SHELL_BUBBLES,
+                "BBAnimationHelper.cancelAnimationsAndReturnState(): hasRunningAnimator=%b",
+                (mRunningAnimator != null && mRunningAnimator.isRunning()));
+        WindowAnimationState state = null;
+        BubbleBarExpandedView bbev = getExpandedView();
+        if (bbev != null
+                && ((mRunningAnimator != null && mRunningAnimator.isRunning())
+                        || PhysicsAnimator.getInstance(mExpandedViewContainerMatrix).isRunning())) {
+            state = new WindowAnimationState();
+            state.scale = bbev.getScaleX();
+            state.bounds =
+                    new RectF(bbev.getLeft(), bbev.getTop(), bbev.getRight(), bbev.getBottom());
+            state.timestamp = System.currentTimeMillis();
+        }
+        cancelAnimations();
+        return state;
     }
 
     /** Handles IME position changes. */

@@ -20,6 +20,7 @@ import android.annotation.Nullable;
 import android.graphics.Rect;
 import android.view.SurfaceControl;
 import android.view.View;
+import android.window.WindowAnimationState;
 
 import androidx.annotation.NonNull;
 
@@ -90,4 +91,8 @@ public interface BubbleExpandedViewTransitionAnimator {
      * Bubble transitions calls this when a view should be removed from the parent.
      */
     void removeViewFromTransition(View view);
+
+    /** Cancels the current animation and returns its current state. */
+    @Nullable
+    WindowAnimationState cancelAnimation();
 }
