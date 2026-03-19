@@ -72,6 +72,7 @@ public class VibrationConfig {
     private final int[] mRequestVibrationParamsForUsages;
     private final float mDefaultVibrationScaleLevelGain;
     private final float[] mVibrationScaleFactors;
+    private final float[] mKeyboardVibrationScaleFactors;
     private final float[] mExternalVibrationScaleFactors;
     private final boolean mIgnoreVibrationsOnWirelessCharger;
     private final boolean mKeyboardVibrationSettingsSupported;
@@ -110,6 +111,7 @@ public class VibrationConfig {
         mVibrationPipelineMaxDurationMs = builder.mVibrationPipelineMaxDurationMs;
         mDefaultVibrationScaleLevelGain = builder.mDefaultVibrationScaleLevelGain;
         mVibrationScaleFactors = builder.mVibrationScaleFactors;
+        mKeyboardVibrationScaleFactors = builder.mKeyboardVibrationScaleFactors;
         mExternalVibrationScaleFactors = builder.mExternalVibrationScaleFactors;
         mDefaultAlarmVibrationIntensity = builder.mDefaultAlarmVibrationIntensity;
         mDefaultHapticFeedbackIntensity = builder.mDefaultHapticFeedbackIntensity;
@@ -230,6 +232,19 @@ public class VibrationConfig {
             return defaultValue;
         }
         return mVibrationScaleFactors[intensity - 1];
+    }
+
+    /**
+     * Return the scale factor configured for given intensity for keyboard vibrations, or the
+     * default value if no configuration is in place.
+     */
+    public float getKeyboardVibrationScaleFactor(@VibrationIntensity int intensity,
+            float defaultValue) {
+        if (mKeyboardVibrationScaleFactors == null
+                || mKeyboardVibrationScaleFactors.length < intensity) {
+            return getVibrationScaleFactor(intensity, defaultValue);
+        }
+        return mKeyboardVibrationScaleFactors[intensity - 1];
     }
 
     /** Return true if device has vibration scale factors config. */
@@ -421,6 +436,7 @@ public class VibrationConfig {
         private int[] mRequestVibrationParamsForUsages;
         private float mDefaultVibrationScaleLevelGain;
         private float[] mVibrationScaleFactors;
+        private float[] mKeyboardVibrationScaleFactors;
         private float[] mExternalVibrationScaleFactors;
         private boolean mIgnoreVibrationsOnWirelessCharger;
         private boolean mKeyboardVibrationSettingsSupported;
@@ -463,6 +479,8 @@ public class VibrationConfig {
                     com.android.internal.R.integer.config_vibrationPipelineMaxDuration);
             mVibrationScaleFactors = loadIntensityScaleFactors(resources,
                     com.android.internal.R.array.config_vibrationIntensityScaleFactors);
+            mKeyboardVibrationScaleFactors = loadIntensityScaleFactors(resources,
+                    com.android.internal.R.array.config_keyboardVibrationIntensityScaleFactors);
             mExternalVibrationScaleFactors = loadIntensityScaleFactors(resources,
                     com.android.internal.R.array.config_externalVibrationIntensityScaleFactors);
             mDefaultAlarmVibrationIntensity = loadDefaultIntensity(resources,
@@ -538,6 +556,10 @@ public class VibrationConfig {
 
         public void setVibrationScaleFactors(float[] scaleFactors) {
             mVibrationScaleFactors = scaleFactors;
+        }
+
+        public void setKeyboardVibrationScaleFactors(float[] scaleFactors) {
+            mKeyboardVibrationScaleFactors = scaleFactors;
         }
 
         public void setDefaultVibrationScaleLevelGain(float scaleLevelGain) {

@@ -2254,6 +2254,7 @@
   <java-symbol type="integer" name="config_vibratorControlServiceDumpAggregationTimeMillisLimit" />
   <java-symbol type="integer" name="config_defaultVibrationAmplitude" />
   <java-symbol type="array" name="config_vibrationIntensityScaleFactors" />
+  <java-symbol type="array" name="config_keyboardVibrationIntensityScaleFactors" />
   <java-symbol type="array" name="config_externalVibrationIntensityScaleFactors" />
   <java-symbol type="dimen" name="config_hapticChannelMaxVibrationAmplitude" />
   <java-symbol type="dimen" name="config_keyboardHapticFeedbackFixedAmplitude" />
