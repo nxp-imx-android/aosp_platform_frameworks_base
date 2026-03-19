@@ -212,7 +212,6 @@ import static com.android.server.am.psc.Constants.SYSTEM_ADJ;
 import static com.android.server.am.psc.Constants.UNKNOWN_ADJ;
 import static com.android.server.am.psc.Constants.VISIBLE_APP_ADJ;
 import static com.android.server.am.psc.PlatformCompatCache.CACHED_COMPAT_CHANGE_USE_SHORT_FGS_USAGE_INTERACTION_TIME;
-import static com.android.server.feature.flags.Flags.enableWtfExceptionDropboxCarveout;
 import static com.android.server.flags.Flags.disableSystemCompaction;
 import static com.android.server.net.NetworkPolicyManagerInternal.updateBlockedReasonsWithProcState;
 import static com.android.server.pm.PackageManagerService.PLATFORM_PACKAGE_NAME;
@@ -10468,7 +10467,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         // Exit early if the dropbox isn't configured to accept this report type.
         final String dropboxTag = processClass(process) + "_" + eventType;
-        if (enableWtfExceptionDropboxCarveout() && crashInfo != null) {
+        if (crashInfo != null) {
             // For a subset of errors, we augment the check with the associated exception class
             // name to allow more granular filtering and control.
             if (!dbox.isTagEnabled(dropboxTag, crashInfo.exceptionClassName)) return;
