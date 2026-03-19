@@ -1,6 +1,5 @@
 // Signature format: 6.0
 // - style=java
-// - normalize-abstract-modifier=no
 // - overloaded-method-order=source
 // - strip-java-lang-prefix=legacy
 package android.test {
@@ -20,7 +19,7 @@ package android.test {
   }
 
   @Deprecated @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME) @java.lang.annotation.Target(java.lang.annotation.ElementType.METHOD) public @interface FlakyTest {
-    method @Deprecated public abstract int tolerance() default 1;
+    method @Deprecated public int tolerance() default 1;
   }
 
   @Deprecated public class InstrumentationTestCase extends junit.framework.TestCase {
@@ -57,7 +56,7 @@ package android.test {
   }
 
   @Deprecated @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME) @java.lang.annotation.Target(java.lang.annotation.ElementType.METHOD) public @interface RepetitiveTest {
-    method @Deprecated public abstract int numIterations() default 1;
+    method @Deprecated public int numIterations() default 1;
   }
 
   @Deprecated @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME) @java.lang.annotation.Target(java.lang.annotation.ElementType.METHOD) public @interface UiThreadTest {
