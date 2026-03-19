@@ -64,6 +64,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.internal.logging.UiEvent
 import com.android.internal.logging.UiEventLogger
+import com.android.internal.telephony.flags.Flags as telephonyFlags
 import com.android.settingslib.satellite.SatelliteDialogUtils.TYPE_IS_WIFI
 import com.android.settingslib.satellite.SatelliteDialogUtils.mayStartSatelliteWarningDialog
 import com.android.settingslib.wifi.WifiEnterpriseRestrictionUtils
@@ -762,7 +763,13 @@ constructor(
                 internetContent.currentSatelliteState ==
                     InternetDetailsContentController.SATELLITE_CONNECTED
             ) {
-                mobileSummaryTextView.setText(R.string.mobile_data_connection_active)
+                val strConnected = context.getString(R.string.mobile_data_connection_active)
+                mobileSummaryTextView.text =
+                    if (telephonyFlags.newSatelliteIcon()) {
+                        satelliteSummary(strConnected)
+                    } else {
+                        strConnected
+                    }
                 mobileSummaryTextView.setBreakStrategy(Layout.BREAK_STRATEGY_SIMPLE)
                 mobileSummaryTextView.visibility = View.VISIBLE
             } else {
@@ -1197,6 +1204,15 @@ constructor(
 
     private fun getDefaultCarrierName(): String? {
         return context.getString(R.string.mobile_data_disable_message_default_carrier)
+    }
+
+    private fun satelliteSummary(strConnected: String): String {
+        val strSat: String = context.getString(com.android.internal.R.string.satellite_indicator)
+        return context.getString(
+            com.android.settingslib.R.string.preference_summary_default_combination,
+            strConnected,
+            strSat,
+        )
     }
 
     @VisibleForTesting
