@@ -245,10 +245,11 @@ fun StatusBarRoot(
             modifier =
                 modifier.forwardDragAndSwipeToShadeRootView(shadeWindowRootView, touchSlop) {
                     position,
-                    size ->
+                    size,
+                    isConsumed ->
                     // This call is needed to make sure the shade is preemptively moved to the
                     // display that the user is currently interacting with.
-                    statusBarViewModel.onShadeExpansionIntent(position.x, size.width)
+                    statusBarViewModel.onShadeExpansionIntent(position.x, size.width, isConsumed)
                 },
         )
         return
@@ -362,11 +363,16 @@ fun StatusBarRoot(
                             }
                             .forwardDragAndSwipeToShadeRootView(shadeWindowRootView, touchSlop) {
                                 position,
-                                size ->
+                                size,
+                                isConsumed ->
                                 // This call is needed to make sure the shade is preemptively moved
                                 // to
                                 // the display that the user is currently interacting with.
-                                statusBarViewModel.onShadeExpansionIntent(position.x, size.width)
+                                statusBarViewModel.onShadeExpansionIntent(
+                                    position.x,
+                                    size.width,
+                                    isConsumed,
+                                )
                             }
                     }
                     .thenIf(headlineViewModel != null) {
@@ -742,20 +748,20 @@ private fun rememberViewWidthAsState(view: View): MutableIntState {
 fun Modifier.forwardDragAndSwipeToShadeRootView(
     view: View,
     touchSlop: Float,
-    onDown: (downPosition: Offset, size: IntSize) -> Unit,
+    onDown: (downPosition: Offset, size: IntSize, isConsumed: Boolean) -> Unit,
 ): Modifier =
     pointerInput(view) {
         awaitEachGesture {
-            // Wait for the initial press, but don't consume it.
-            // This allows clicks to pass through if no drag occurs.
-            val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+            val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Main)
+            val isConsumed = down.isConsumed
 
             val cachedEvents = mutableListOf<MotionEvent>()
             var isIntercepting = false
 
             // Always cache the down event.
             currentEvent.motionEvent?.let { cachedEvents.add(MotionEvent.obtain(it)) }
-            onDown(down.position, size)
+
+            onDown(down.position, size, isConsumed)
             try {
                 // Loop to process events for the current gesture.
                 do {

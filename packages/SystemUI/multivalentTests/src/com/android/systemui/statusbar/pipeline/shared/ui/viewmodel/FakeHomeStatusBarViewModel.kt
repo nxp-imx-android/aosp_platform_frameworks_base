@@ -68,7 +68,7 @@ class FakeHomeStatusBarViewModel(
 
     override fun onNotificationIconChipClicked() {}
 
-    override fun onShadeExpansionIntent(eventX: Float, statusBarWidth: Int) {}
+    override fun onShadeExpansionIntent(eventX: Float, statusBarWidth: Int, isConsumed: Boolean) {}
 
     override val popupChips = emptyList<QuickActionChipModel.PopupChip>()
 

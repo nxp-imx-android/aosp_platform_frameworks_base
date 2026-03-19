@@ -170,7 +170,7 @@ interface HomeStatusBarViewModel : Activatable {
     fun onNotificationIconChipClicked()
 
     /** Notifies that there is an intent to start expansion of a shade */
-    fun onShadeExpansionIntent(eventX: Float, statusBarWidth: Int)
+    fun onShadeExpansionIntent(eventX: Float, statusBarWidth: Int, isConsumed: Boolean)
 
     /** Whether the QS Chip should be highlighted. */
     val isQuickSettingsChipHighlighted: Boolean
@@ -505,7 +505,15 @@ constructor(
         )
     }
 
-    override fun onShadeExpansionIntent(eventX: Float, statusBarWidth: Int) {
+    override fun onShadeExpansionIntent(eventX: Float, statusBarWidth: Int, isConsumed: Boolean) {
+        // The event was already consumed by a child (like a chip). So we don't want to expand the
+        // shade, but we still update the target display to ensure the shade window becomes
+        // available on the active display.
+        if (isConsumed) {
+            shadeExpansionTargetDisplayInteractor.updateShadeDisplayIfNeeded(thisDisplayId)
+            return
+        }
+
         val isRtl = resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
         shadeExpansionTargetDisplayInteractor.setExpansionIntentFromStatusBarEvent(
             eventX = eventX,
