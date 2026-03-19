@@ -28,6 +28,8 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.qs.panels.shared.model.PanelsLog
+import com.android.systemui.qs.pipeline.shared.InternetTileMigration.logMigration
+import com.android.systemui.qs.pipeline.shared.InternetTileMigration.migrateInternetTile
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.pipeline.shared.TilesUpgradePath
 import com.android.systemui.settings.UserFileManager
@@ -74,7 +76,15 @@ constructor(
         combine(backupRestorationEvents, userRepository.selectedUserInfo, ::Pair)
             .flatMapLatest { (_, userInfo) ->
                 val prefs = getSharedPrefs(userInfo.id)
-                prefs.observe().emitOnStart().map { prefs.getLargeTilesSpecs() }
+                prefs.observe().emitOnStart().map {
+                    val loaded = prefs.getLargeTilesSpecs()
+                    loaded.migrateInternetTile().also {
+                        if (loaded != it) {
+                            logger.logMigration()
+                            writeLargeTileSpecs(it, changeDefault = false)
+                        }
+                    }
+                }
             }
             .flowOn(backgroundDispatcher)
 

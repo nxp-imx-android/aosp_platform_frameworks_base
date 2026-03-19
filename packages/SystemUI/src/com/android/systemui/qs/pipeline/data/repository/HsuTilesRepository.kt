@@ -19,7 +19,7 @@ package com.android.systemui.qs.pipeline.data.repository
 import android.content.res.Resources
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.qs.pipeline.data.model.AllowedTiles
-import com.android.systemui.qs.pipeline.shared.InternetTileMigration.Companion.migrateInternetTile
+import com.android.systemui.qs.pipeline.shared.InternetTileMigration.migrateInternetTile
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware

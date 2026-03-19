@@ -7,9 +7,8 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.Flags.hsuQsChanges
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.qs.panels.data.repository.QSPreferencesRepository
 import com.android.systemui.qs.pipeline.data.model.RestoreData
-import com.android.systemui.qs.pipeline.shared.InternetTileMigration
+import com.android.systemui.qs.pipeline.shared.InternetTileMigration.migrateInternetTile
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.pipeline.shared.TilesUpgradePath
 import com.android.systemui.qs.pipeline.shared.logging.QSPipelineLogger
@@ -52,8 +51,6 @@ constructor(
     private val secureSettings: SecureSettings,
     private val hsum: HeadlessSystemUserMode,
     private val logger: QSPipelineLogger,
-    private val qsPreferencesRepository: QSPreferencesRepository,
-    private val internetTileMigration: InternetTileMigration,
     private val userRepository: UserRepository,
     @Application private val applicationScope: CoroutineScope,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
@@ -79,11 +76,13 @@ constructor(
             }
             _tiles =
                 changeEvents
-                    .scan(loadTilesFromSettingsAndParse(userId).migrationSteps()) { current, change
-                        ->
+                    .scan(loadTilesFromSettingsAndParse(userId)) { current, change ->
                         change
                             .apply(current)
-                            .run { migrationSteps() }
+                            // Apply this here in case a Change operation produced an `internet`
+                            // tile. We know that that should never happen and it should always
+                            // be replaced with `wifi`.
+                            .migrateInternetTile()
                             .also { afterRestore ->
                                 if (current != afterRestore) {
                                     if (change is RestoreTiles) {
@@ -196,6 +195,13 @@ constructor(
                 secureSettings.getStringForUser(SETTING, userId) ?: ""
             }
             .toTilesList()
+            .run {
+                migrateInternetTile().also { migrated ->
+                    if (migrated != this) {
+                        logger.logInternetTileMigrationOnTileLoad(userId)
+                    }
+                }
+            }
     }
 
     suspend fun reconcileRestore(restoreData: RestoreData, currentAutoAdded: Set<TileSpec>) {
@@ -273,57 +279,6 @@ constructor(
                 it is TileSpec.CustomTileSpec && it.componentName.packageName == packageName
             }
         }
-    }
-
-    /**
-     * Steps for migrating tiles in place.
-     *
-     * This is usually needed for a feature that requires a complex migration of tile specs (and
-     * possibly other databases). This is applied as part of the flow construction for [tiles], so
-     * that all downstream see the correct tiles. This is not exclusive to tiles that are new, it
-     * could be used for existing tiles that require complex migration, based on the state of the
-     * device beyond the current list of tiles.
-     *
-     * Each step should be a `List<TileSpec>.() -> List<TileSpec>`, mapping the list of tiles
-     * pre-migration to the tiles post-migration. Be mindful (not completely banned) of side
-     * effects. An example of a valid side effect is updating another related data source (e.g. the
-     * set of large tiles).
-     *
-     * The migration step should provide the forward (when the flag is enabled) and backward (when
-     * the flag is disabled) migration. The latter can be removed after the corresponding flag is
-     * released.
-     *
-     * Steps should be idempotent, as they will be applied to every list, regardless of whether the
-     * migration has happened for this user. This means that after a list is migrated, further
-     * applications of the step should early return with no changes to the list and no side effects
-     * run.
-     */
-    private fun List<TileSpec>.migrationSteps(): List<TileSpec> {
-        return migrateInternetTileSpecs()
-    }
-
-    /**
-     * Migration between internet <-> wifi + cell.
-     *
-     * The internet tile has been retired in favor of separate wifi and cell tiles. As the exact
-     * migration for the list of tiles is dependent on the current set of large tiles, this has been
-     * extracted into [migrateInternetTile] due to the complexity.
-     *
-     * It has side effects as the migration is tied to the size of the tiles.
-     *
-     * @see migrateInternetTile for the exact migration when the flag is enabled or disabled
-     */
-    private fun List<TileSpec>.migrateInternetTileSpecs(): List<TileSpec> {
-        val largeTiles = qsPreferencesRepository.getLargeTilesForUser(userId)
-        val isMainUser = userRepository.mainUserId == userId
-        val (newTiles, newLargeTiles) =
-            internetTileMigration.migrateInternetTile(this, largeTiles, isMainUser) { scenario ->
-                logger.logInternetTileMigrated(userId, scenario)
-            }
-        if (newLargeTiles != largeTiles) {
-            qsPreferencesRepository.setLargeTilesForUser(userId, newLargeTiles)
-        }
-        return newTiles.distinct()
     }
 
     companion object {

@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.systemui.qs.pipeline.shared
+package com.android.systemui.qs.tiles.impl.wifi
 
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.statusbar.pipeline.shared.connectivityConstants
+import com.android.systemui.qs.qsEventLogger
+import com.android.systemui.statusbar.connectivity.ConnectivityModule
 
-val Kosmos.internetTileMigration by Kosmos.Fixture { InternetTileMigration(connectivityConstants) }
+val Kosmos.qsWifiTileConfig by
+    Kosmos.Fixture { ConnectivityModule.provideWifiTileConfig(qsEventLogger) }
