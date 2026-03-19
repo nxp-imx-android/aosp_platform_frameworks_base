@@ -35,6 +35,7 @@ abstract class DragAppWindowSingleWindow : DragAppWindowScenarioTestBase() {
 
     @Test
     override fun dragAppWindow() {
+        val initialBounds = wmHelper.getWindowRegion(simpleAppHelper).bounds
         val (startXTest, startYTest) = getWindowDragStartCoordinate(simpleAppHelper)
         testApp.dragWindow(
             startXTest,
@@ -44,6 +45,8 @@ abstract class DragAppWindowSingleWindow : DragAppWindowScenarioTestBase() {
             wmHelper,
             device,
         )
+        val finalBounds = wmHelper.getWindowRegion(simpleAppHelper).bounds
+        assertWindowMovedRightAndDown(initialBounds, finalBounds)
     }
 
     @After
