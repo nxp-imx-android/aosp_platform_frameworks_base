@@ -130,8 +130,8 @@ constructor(@ScreenRecordingLog private val logBuffer: LogBuffer) {
         )
     }
 
-    fun cameraTapped() {
-        logBuffer.log(TAG, LogLevel.DEBUG, {}, { "cameraTapped" })
+    fun cameraTapped(canTap: Boolean) {
+        logBuffer.log(TAG, LogLevel.DEBUG, { bool1 = canTap }, { "cameraTapped canTap=$bool1" })
     }
 
     fun cameraBackgroundChanged(color: Int) {
