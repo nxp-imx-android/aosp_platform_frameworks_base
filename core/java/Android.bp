@@ -1080,3 +1080,22 @@ aidl_interface {
         },
     },
 }
+
+// Build rust bindings for hidservice
+aidl_interface {
+    name: "android.hardware.hid",
+    host_supported: true,
+    unstable: true,
+    srcs: [
+        "android/hardware/hid/IHidManager.aidl",
+    ],
+    backend: {
+        java: {
+            // java code is generated through framework-core-sources.
+            enabled: false,
+        },
+        rust: {
+            enabled: true,
+        },
+    },
+}
