@@ -13,16 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import com.android.build.api.variant.AndroidComponentsExtension
+import com.android.build.api.variant.HasHostTests
 import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.ScopedArtifacts
 import java.io.BufferedWriter
 import java.io.FileWriter
-import java.nio.file.Paths
+import java.nio.file.Files
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
+
+private val log = Logging.getLogger("Ravenwood")
 
 /**
  * Boolean indicating whether to run host tests on Ravenwood or not.
@@ -31,7 +35,7 @@ plugins {
  * - Or, ./gradlew :app:testDebugUnitTest --info -PenableRavenwood=false
  */
 val enableRavenwood = project.findProperty("enableRavenwood")?.toString()?.toBoolean() ?: false
-logger.lifecycle("Ravenwood: enableRavenwood=$enableRavenwood")
+log.lifecycle("Ravenwood: enableRavenwood=$enableRavenwood")
 
 /**
  * If true, use Robolectric instead of Ravenwood. [enableRobolectric] and [enableRavenwood] must
@@ -39,57 +43,73 @@ logger.lifecycle("Ravenwood: enableRavenwood=$enableRavenwood")
  */
 val enableRobolectric = !enableRavenwood
 
+// Add this to be compatible with go/sonata.
+private fun Project.androidBuildTop() = project.rootDir.resolve("../../../../..")
 
-// Do not use the following `config*` Paths directly, use the functions below so that we can easily
-// change how we set them later.
+// Relative to $ANDROID_BUILD_TOP
+private val _androidHostOut = "out/host/linux-x86"
+private val _ravenwoodRuntimePath = "$_androidHostOut/testcases/ravenwood-runtime"
+private val _ravenwoodRuntimeClasspathFile =
+    "$_ravenwoodRuntimePath/ravenwood-data/ravenwood-classpath.txt"
+private val _ravenwoodUtilsPath = "$_androidHostOut/testcases/ravenwood-utils"
+private val _ravenizerJar = "$_androidHostOut/framework/ravenizer.jar"
 
-val configAndroidBuildTop = Paths.get("../../../../../..")!!
-val configAndroidHostOut = configAndroidBuildTop.resolve("out/host/linux-x86")!!
-val configRavenwoodRuntimePath = androidHostOut().resolve("testcases/ravenwood-runtime")!!
-val configRavenwoodUtilsPath = androidHostOut().resolve("testcases/ravenwood-utils")!!
-val configRavenizerJar = androidHostOut().resolve("framework/ravenizer.jar")!!
-val configRavenwoodPropFile = Paths.get("../ravenwood.properties")!!
+private fun Project.ravenwoodRuntimePath() = this.androidBuildTop().resolve(_ravenwoodRuntimePath)
+private fun Project.ravenwoodRuntimeClasspathFile() =
+    this.androidBuildTop().resolve(_ravenwoodRuntimeClasspathFile)
+private fun Project.ravenwoodUtilsPath() = this.androidBuildTop().resolve(_ravenwoodUtilsPath)
+private fun Project.ravenizerJar() = this.androidBuildTop().resolve(_ravenizerJar)
 
-fun androidBuildTop() = configAndroidBuildTop
-fun androidHostOut() = configAndroidHostOut
+private fun Project.ravenwoodPropFile() = this.rootProject.rootDir.resolve("ravenwood.properties")
 
-fun ravenwoodRuntimePath() = configRavenwoodRuntimePath
-fun ravenwoodUtilsPath() = configRavenwoodUtilsPath
-fun ravenizerJar() = configRavenizerJar
+/**
+ * Represents jar files in ravenwood-runtime.
+ */
+private data class ClassPathJars(
+    /** Jar files that need to be added before the test jar file. */
+    val preJars: List<String>,
 
-fun ravenwoodPropFile() = configRavenwoodPropFile
-
-/** Jar files in ravenwood-runtime that need to be added before the test jars. */
-// TODO: Get this list from ravenwood-runtime/ravenwood-data/ravenwood-classpath.txt
-fun ravenwoodRuntimeJarsPre() = listOf(
-    "ravenwood-junit-impl.jar",
-    "hoststubgen-helper-runtime.jar",
-    "ravenwood-framework.jar",
-    "mockito-ravenwood-prebuilt.jar",
-    "framework-minus-apex.ravenwood.jar",
-    "kxml2-android.jar",
-    "json-prebuilt.jar",
-    "ext-ravenwood.jar",
-    "services.core.ravenwood-jarjar.jar",
-    "framework-updatable.ravenwood.jar",
-    "icu4j-icudata-jarjar.jar",
-    "icu4j-icutzdata-jarjar.jar",
+    /** Jar files that need to be added after the test jar file. */
+    val postJars: List<String>,
 )
 
-/** Jar files in ravenwood-runtime that need to be added after the test jars. */
-// TODO: Get this list from ravenwood-runtime/ravenwood-data/ravenwood-classpath.txt
-fun ravenwoodRuntimeJarsPost() = listOf(
-    "framework-updatable-stubs-module_libs_api.jar",
-    "all-modules-system-stubs.jar",
-)
+/**
+ * Return the ravenwood-runtime jars to be added to the classpath.
+ *
+ * The input file looks like this: http://ac/frameworks/base/ravenwood/texts/ravenwood-classpath.txt
+ * Parse it and return two list -- ones before "{TEST_JARS}" and ones after.
+ */
+private fun Project.ravenwoodRuntimeJars(): ClassPathJars {
+    val commentMatcher = Regex("#.*")
+    val jars = Files.lines(ravenwoodRuntimeClasspathFile().toPath())
+        .map<String> { line -> line.trim().replace(commentMatcher, "")}
+        .filter { line -> !line.isEmpty() }
+        .toList()
 
-fun ravenwoodUtilsJars() = listOf(
+    val testJarsIndex = jars.indexOf("{TEST_JARS}")
+
+    if (testJarsIndex < 0) {
+        throw RuntimeException("Failed to read ravenwood-classpath.txt: {TEST_JARS} not found")
+    }
+    val pre = jars.subList(0, testJarsIndex - 1)
+    val post = jars.subList(testJarsIndex + 1, jars.size)
+    return ClassPathJars(pre, post)
+}
+
+/**
+ * Jars in ravenwood-utils to be (optionally) used when compiling tests. They contain RavenwoodRule,
+ * various ravenwood annotations, etc.
+ */
+// TODO: Do not hardcode this. However, unlike ravenwood-runtime, we don't have
+// a source of truth for this at the moment.
+// If we add "android_ravenwood_libgroup" to the java deps file, we could get it fom there.
+private fun Project.ravenwoodUtilsJars() = listOf(
     "ravenwood-junit.jar",
     "ravenwood-framework.jar",
     "mockito-ravenwood-prebuilt.jar",
 )
 
-fun ravenwoodJvmArgs() = listOf(
+private fun Project.ravenwoodJvmArgs() = listOf(
     "--add-modules=jdk.compiler",
     "--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
     "--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
@@ -102,49 +122,37 @@ fun ravenwoodJvmArgs() = listOf(
     "--add-exports=java.base/jdk.internal.access=ALL-UNNAMED",
 )
 
-fun ravenwoodJavaProps() = mapOf(
+private fun Project.ravenwoodJavaProps() = mapOf(
     "android.ravenwood.version" to "1",
     "android.ravenwood.runtime_path" to "${ravenwoodRuntimePath()}/",
     "android.ravenwood.prop_file" to ravenwoodPropFile().toString(),
     "java.library.path" to "${ravenwoodRuntimePath()}/lib64/",
-    // "android.ravenwood.artifacts_path" to "...", // Optional parameter, no need to set.
+    // "android.ravenwood.artifacts_path" to ..., // Optional parameter, no need to set.
 )
 
-fun ravenwoodEnvVars() = mapOf(
+private fun Project.ravenwoodEnvVars() = mapOf(
     "LANG" to "C",
     "LC_ALL" to "C",
     "RAVENWOOD_RUNTIME_PATH" to "${ravenwoodRuntimePath()}",
 
     // TODO: Need to add the test's self JNI path, if a test uses any.
-    "LD_LIBRARY_PATH" to "${ravenwoodRuntimePath()}/lib64/"
+    "LD_LIBRARY_PATH" to "${ravenwoodRuntimePath()}/lib64/",
 )
 
-fun ravenizerOptionalArgs() = listOf(
-    "--strip-mockito"
+private fun ravenizerOptionalArgs() = listOf(
+    "--info",
+    "--strip-mockito",
 )
-
-val configureRavenwoodTestIfNeeded: (Test) -> Unit = configureRavenwoodTestIfNeeded@ { test ->
-    if (!enableRavenwood) return@configureRavenwoodTestIfNeeded
-    logger.lifecycle("Ravenwood: configureRavenwoodTestIfNeeded(Test={${test.name}})")
-
-    test.jvmArgs(ravenwoodJvmArgs())
-    ravenwoodEnvVars().forEach { test.environment(it.key, it.value) }
-    ravenwoodJavaProps().forEach { test.systemProperty(it.key, it.value) }
-
-    if (logger.isInfoEnabled) {
-        logger.info(
-            "Ravenwood: configureRavenwoodTestIfNeeded: original classpath=\n{}\n",
-            test.classpath.files.map { "    $it" }.joinToString("\n")
-        )
-    }
-}
 
 /**
  * Task to run Ravenizer.
  */
-abstract class RavenizeClassesTask @Inject constructor(
+internal abstract class RavenizeClassesTask @Inject constructor(
     private val execOperations: ExecOperations
 ) : DefaultTask() {
+    companion object {
+        private val log = Logging.getLogger("Ravenwood:Ravenizer")
+    }
 
     /** This contains all the dependency jars */
     @get:InputFiles
@@ -173,9 +181,9 @@ abstract class RavenizeClassesTask @Inject constructor(
         val outJarFile = outputJar.get().asFile
         outJarFile.parentFile.mkdirs()
 
-        if (logger.isInfoEnabled) {
-            logger.info(
-                "Ravenwood: Ravenizer:\n  out={}\n  in-jars={}\n  in-dirs={}\n",
+        if (log.isInfoEnabled) {
+            log.info(
+                "Ravenwood: Ravenizer:\n  out={}\n  in-jars=\n{}\n  in-dirs=\n{}\n",
                 outputJar.get().asFile,
                 inputJars.get().map { "    $it" }.joinToString("\n"),
                 inputDirectories.get().map { "    $it" }.joinToString("\n"),
@@ -252,8 +260,11 @@ android {
             isIncludeAndroidResources = true
         }
 
-        unitTests.all { test ->
-            configureRavenwoodTestIfNeeded(test)
+        // Needed for Ravenwood tests.
+        if (enableRavenwood) {
+            unitTests.all { test ->
+                configureRavenwoodTest(test)
+            }
         }
     }
 }
@@ -277,23 +288,72 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-    // Build the test classes with ravenwood-utils.jar.
-    // We need to do it even if enableRavenwood is false because the test source code uses them.
-    testCompileOnly(files(ravenwoodUtilsJars().map {"${ravenwoodUtilsPath()}/$it"}))
-
+    if (enableRavenwood) {
+        configureRavenwood()
+    }
     if (enableRobolectric) {
         testImplementation("org.robolectric:robolectric:4.16.1")
+
+        // Build the test with ravenwood-utils.jars.
+        // We need to do this for Ravenwood too, but we do this in configureRavenwood(),
+        // to avoid ravenwood specific logic in dependencies, so we can easily copy it
+        // to sonata.
+        testCompileOnly(files(ravenwoodUtilsJars().map {"${ravenwoodUtilsPath()}/$it"}))
     }
 }
 
-/** Register ravenizer task if enableRavenwood is true. */
-androidComponents {
-    if (!enableRavenwood) return@androidComponents
+/**
+ * Configure [test] to be run with the JVM arguments, etc, as required by Ravenwood.
+ */
+internal fun Project.configureRavenwoodTest(test: Test) {
+    log.info("Ravenwood: configureRavenwoodTest(Test={${test.name}})")
 
-    val targetVariant = selector().withName("debug")
+    test.jvmArgs(ravenwoodJvmArgs())
+    ravenwoodEnvVars().forEach { test.environment(it.key, it.value) }
+    ravenwoodJavaProps().forEach { test.systemProperty(it.key, it.value) }
 
-    onVariants(targetVariant) { variant ->
-        val unitTestComponent = variant.hostTests[HostTestBuilder.UNIT_TEST_TYPE]
+    // If it's the test task we're interested in, update its classpath.
+    if (test.name == "testDebugUnitTest") {
+        val ravenizerTask = project.tasks.named<RavenizeClassesTask>("ravenizerDebugClasses")
+        test.dependsOn(ravenizerTask)
+
+        // Output jar file
+        val ravenizedJar = project.files(ravenizerTask.flatMap { it.outputJar })
+
+        val ravenwoodRuntimeJars = ravenwoodRuntimeJars()
+
+        val ravenizedClassPath =
+            files(ravenwoodRuntimeJars.preJars.map { "${ravenwoodRuntimePath()}/$it" }) +
+            ravenizedJar +
+            files(ravenwoodRuntimeJars.postJars.map { "${ravenwoodRuntimePath()}/$it" })
+
+        if (log.isInfoEnabled) {
+            log.info(
+                "Ravenwood: Updating classpath for {}: ravenized=\n{}",
+                test.name, ravenizedClassPath.files.map { "    $it" }.joinToString("\n")
+            )
+        }
+
+        // Update the class path.
+        test.classpath = ravenizedClassPath
+    }
+}
+
+/**
+ * Prepare host tests for Ravenwood.
+ */
+internal fun Project.configureRavenwood() {
+    // Compile ravenwood tests with ravenwood-utils jars.
+    dependencies {
+        "testCompileOnly"(
+            files(ravenwoodUtilsJars().map {"${ravenwoodUtilsPath()}/$it"})
+        )
+    }
+
+    // Register Ravenizer task on all host tests.
+    val androidComponents = extensions.findByType(AndroidComponentsExtension::class.java)
+    androidComponents?.onVariants { variant ->
+        val unitTestComponent = (variant as? HasHostTests)?.hostTests[HostTestBuilder.UNIT_TEST_TYPE]
             ?: return@onVariants
 
         val taskName = "ravenizer${variant.name.replaceFirstChar { it.uppercase() }}Classes"
@@ -312,63 +372,5 @@ androidComponents {
                 RavenizeClassesTask::inputDirectories,
                 RavenizeClassesTask::outputJar
             )
-    }
-}
-
-/**
- * Run Ravenizer if Ravenwood is enabled, and also update the test's classpath. We also add
- * ravenwood-runtime jar files to the classpath too.
- *
- * - This method first runs Ravenizer on the test classes and all the dependencies. Ravenizer
- *   modifies the bytecode as needed, and merge them into a single jar file. We remove the
- *   original jars and classes from the class path and replace with this jar file.
- *
- * - We also add ravenwood-runtime jars to the classpath. [ravenwoodRuntimeJarsPre] needs
- *   to be put before the ravenized jar, and [ravenwoodRuntimeJarsPre] after.
- *
- */
-tasks.withType<Test>().configureEach {
-    if (!enableRavenwood) return@configureEach
-
-    // Run Ravenizer if Ravenwood is enabled.
-    if (name == "testDebugUnitTest") {
-
-        // Set up dependency on Ravenizer
-        val ravenizerTask = project.tasks.named<RavenizeClassesTask>("ravenizerDebugClasses")
-        dependsOn(ravenizerTask)
-
-        // Output jar file
-        val ravenizedJar = project.files(ravenizerTask.flatMap { it.outputJar })
-
-        // Tell JUnit to look for the @Test methods inside the ravenized jar,
-        // not the default uninstrumented directories!
-        testClassesDirs = ravenizedJar
-
-        fun logClassPath(label: String) {
-            if (logger.isInfoEnabled) {
-                logger.info(
-                    "Ravenwood: Updating classpath: {}=\n{}\n",
-                    label,
-                    classpath.files.map { "    $it" }.joinToString("\n")
-                )
-            }
-        }
-
-        // Update the class path.
-        doFirst {
-            logClassPath("original")
-
-            classpath =
-                // Ravenwood runtime jars, first half.
-                files(ravenwoodRuntimeJarsPre().map { "${ravenwoodRuntimePath()}/$it" }) +
-
-                // Ravenized test classes and dependencies.
-                ravenizedJar +
-
-                // Ravenwood runtime jars, second half.
-                files(ravenwoodRuntimeJarsPost().map { "${ravenwoodRuntimePath()}/$it" })
-
-            logClassPath("updated")
-        }
     }
 }
