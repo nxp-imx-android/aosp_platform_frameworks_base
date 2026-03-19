@@ -244,7 +244,7 @@ abstract class ApiPreference<InternalType: Any, ExternalType : Any>(
      * Returns the first precondition that is not [Allowed], or [Allowed] if all preconditions
      * are met.
      */
-    private suspend fun evaluatePreconditions(
+    suspend fun evaluatePreconditions(
         context: Context,
         operationPreconditions: PreconditionsConfig?
     ): ApiPreconditions {

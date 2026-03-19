@@ -200,7 +200,7 @@ interface PreferenceMetadata {
      *
      * It does not need to be set if [isEnabled] always returns `true`.
      */
-    fun getEnabledStability() : PreconditionStability ?= PreconditionStability.STABLE_UNTIL_APK_UPDATE
+    fun getEnabledStability() : PreconditionStability? = PreconditionStability.STABLE_UNTIL_APK_UPDATE
 
     /**
      * Returns the keys of depended preferences.

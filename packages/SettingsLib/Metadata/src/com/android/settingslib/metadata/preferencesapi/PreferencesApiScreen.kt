@@ -239,6 +239,42 @@ private constructor(
             }
         }
 
+    /**
+     * Evaluates preconditions in order: screen-level.
+     * Returns the first precondition that is not [Allowed], or [Allowed] if all preconditions
+     * are met.
+     */
+    suspend fun evaluatePreconditions(context: Context): ApiPreconditions {
+        val opContext =
+            ApiOperationContext(
+                context = context,
+                parameters = keyParameters ?: ValidatedKeyParameters.EMPTY,
+            )
+
+        screenPreconditions?.check(opContext)?.let {
+            if (it is Disallowed) {
+                Log.d(
+                    TAG,
+                    "Screen precondition failed: ${it.getReason(context)}",
+                )
+            }
+            if (it != Allowed) return it
+        }
+        return Allowed
+    }
+
+    override fun getLaunchIntent(context: Context, metadata: PreferenceMetadata?): Intent? {
+        val checkScreenPreconditions =
+            // TODO(b/469317113): This should run asynchronously
+            runBlocking { evaluatePreconditions(context) }
+
+        if (checkScreenPreconditions != Allowed) {
+            return null
+        }
+
+        return super.getLaunchIntent(context, metadata)
+    }
+
     var flag: FlagConfig? = null
     var parametersSchema: KeyParametersSchema? = null
     var screenPermissions: Permissions? = null
