@@ -236,7 +236,10 @@ constructor(private val context: Context, private val autofillManager: AutofillM
         val attributionAction =
             PendingIntent.getBroadcast(
                 context,
-                0,
+                // Use insight index as the requestCode so that each PendingIntent is unique to the
+                // system, otherwise they will resolve to the same cached entry as extras are not
+                // considered for uniqueness.
+                suggestionDetails.index,
                 AutofillAttributionStartable.getAttributionIntent(
                     this.applicationContext,
                     suggestionDetails.insight,
@@ -288,8 +291,9 @@ constructor(private val context: Context, private val autofillManager: AutofillM
         val insight: PublishedContextInsight,
         val renderToken: RenderToken,
         /**
-         * Index of the insight inside the InsightCollection. Will be 0 if a single insight not in a
-         * collection was provided.
+         * Index of the insight inside the InsightCollection
+         *
+         * @see InsightVisitor
          */
         val index: Int,
     )

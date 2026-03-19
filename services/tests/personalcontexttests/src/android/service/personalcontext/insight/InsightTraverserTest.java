@@ -85,10 +85,10 @@ public class InsightTraverserTest {
         InsightTraverser.traverse(root, mMockVisitor);
 
         mInOrder.verify(mMockVisitor).visit(root, /*index=*/ 0);
-        mInOrder.verify(mMockVisitor).visit(child1, /*index=*/ 0);
-        mInOrder.verify(mMockVisitor).visit(child2, /*index=*/ 1);
-        mInOrder.verify(mMockVisitor).visit(grandchild1, /*index=*/ 1);
-        mInOrder.verify(mMockVisitor).visit(child3, /*index=*/ 2);
+        mInOrder.verify(mMockVisitor).visit(child1, /*index=*/ 1);
+        mInOrder.verify(mMockVisitor).visit(child2, /*index=*/ 2);
+        mInOrder.verify(mMockVisitor).visit(grandchild1, /*index=*/ 3);
+        mInOrder.verify(mMockVisitor).visit(child3, /*index=*/ 4);
         mInOrder.verifyNoMoreInteractions();
     }
 
@@ -103,7 +103,7 @@ public class InsightTraverserTest {
 
         // Grandchild should not be visited.
         mInOrder.verify(mMockVisitor).visit(root, /*index=*/ 0);
-        mInOrder.verify(mMockVisitor).visit(child, /*index=*/ 0);
+        mInOrder.verify(mMockVisitor).visit(child, /*index=*/ 1);
         mInOrder.verifyNoMoreInteractions();
         Mockito.verify(mMockVisitor, Mockito.never()).visit(eq(grandchild), anyInt());
     }
@@ -117,8 +117,8 @@ public class InsightTraverserTest {
         InsightTraverser.traverse(root, mMockVisitor, 3);
 
         mInOrder.verify(mMockVisitor).visit(root, /*index=*/ 0);
-        mInOrder.verify(mMockVisitor).visit(child, /*index=*/ 0);
-        mInOrder.verify(mMockVisitor).visit(grandchild, /*index=*/ 0);
+        mInOrder.verify(mMockVisitor).visit(child, /*index=*/ 1);
+        mInOrder.verify(mMockVisitor).visit(grandchild, /*index=*/ 2);
         mInOrder.verifyNoMoreInteractions();
     }
 }
