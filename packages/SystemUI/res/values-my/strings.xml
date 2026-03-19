@@ -79,7 +79,6 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"ခွင့်ပြုရန်"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"ကြိုးမဲ့ အမှားရှာပြင်ခြင်းကို ခွင့်မပြုပါ"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"ဤစက်သို့ လက်ရှိလက်မှတ်ထိုးဝင်ထားသူသည် ကြိုးမဲ့ အမှားရှာပြင်ခြင်းကို ဖွင့်၍မရပါ။ ဤဝန်ဆောင်မှု အသုံးပြုရန် စီမံခန့်ခွဲသူအဖြစ်ပြောင်းပါ။"</string>
-    <string name="change_connected_wifi_text" msgid="6346095920396568246">"အကောင့်ဝင်ပြီးသောအခါ ဤဆက်တင်ကို ပြောင်းနိုင်သည်"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB ပို့တ် ပိတ်ပြီးပြီ"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"USB ပို့တ်ကို ပိတ်၍ သင့်ကိရိယာသို့ အရည် သို့မဟုတ် အမှိုက်စများ မဝင်စေရန် ကာကွယ်ပါ၊ မည်သည့် အပိုပစ္စည်းကိုမျှ အာရုံခံသိရှိနိုင်တော့မည် မဟုတ်ပါ။\n\nUSB ပို့တ်ကို ပြန်အသုံးပြုနိုင်သည့်အခါ သင့်ကိုအကြောင်းကြားပါမည်။"</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"အားသွင်းကိရိယာနှင့် ဆက်စပ်ပစ္စည်းများ သိရှိရန် USB ပို့တ် ဖွင့်ထားသည်"</string>
@@ -174,8 +173,7 @@
     <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"ယခင်တစ်ခု ပြပါ"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"ဖန်သားပြင်ရိုက်ကူးခြင်း ဆက်တင်များ"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"စာပြင်ရေးဆွဲခြင်း"</string>
-    <!-- no translation found for screen_record_color_picker (6732567862106107021) -->
-    <skip />
+    <string name="screen_record_color_picker" msgid="6732567862106107021">"အရောင်ရွေးစနစ်"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ဗီဒီယို သိမ်းပြီးပြီ"</string>
     <string name="screen_record_video_deleted" msgid="30786214839944540">"ဗီဒီယို ဖျက်ထားသည်"</string>
     <string name="screen_record_undo" msgid="7942716736019800870">"နောက်ပြန်ရန်"</string>
@@ -1461,8 +1459,7 @@
     <string name="controls_media_button_prev" msgid="8126822360056482970">"ယခင် တစ်ပုဒ်"</string>
     <string name="controls_media_button_next" msgid="6662636627525947610">"နောက်တစ်ပုဒ်"</string>
     <string name="controls_media_button_connecting" msgid="3138354625847598095">"ချိတ်ဆက်နေသည်"</string>
-    <!-- no translation found for controls_media_output_chip (324952606619594635) -->
-    <skip />
+    <string name="controls_media_output_chip" msgid="324952606619594635">"အထွက်ဆက်တင်များ ဖွင့်ရန်"</string>
     <string name="media_transfer_undo" msgid="1895606387620728736">"နောက်ပြန်ရန်"</string>
     <string name="media_move_closer_to_start_cast" msgid="2673104707465013176">"<xliff:g id="DEVICENAME">%1$s</xliff:g> တွင်ဖွင့်ရန် အနီးသို့ရွှေ့ပါ"</string>
     <string name="media_move_closer_to_end_cast" msgid="7302555909119374738">"ဤနေရာတွင် ဖွင့်ရန် <xliff:g id="DEVICENAME">%1$s</xliff:g> အနီးသို့ ရွှေ့ပါ"</string>
@@ -1838,6 +1835,8 @@
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"ရှေ့သို့"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"နောက်စာမျက်နှာသို့ သွားရန်"</string>
     <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"နောက်သို့"</string>
+    <!-- no translation found for accessibility_close_overlay_box_description (8399871568780893724) -->
+    <skip />
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"အော်တိုဖြည့်"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"ချဲ့ရန်"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"နေရာအတိအကျ"</string>
@@ -1863,25 +1862,18 @@
     <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"အလှပုံ ခြယ်မှုန်းမှု"</string>
     <string name="av_mic_label" msgid="5427348054144789879">"မိုက်ခရိုဖုန်း"</string>
     <string name="av_camera_label" msgid="7719772172590702343">"ကင်မရာ"</string>
-    <!-- no translation found for av_camera_blur_drill_in_title (3392789469292685354) -->
-    <skip />
+    <string name="av_camera_blur_drill_in_title" msgid="3392789469292685354">"နောက်ခံမှုန်ဝါးခြင်း"</string>
     <string name="av_camera_blur_off" msgid="3170334995799202022">"ပိတ်"</string>
-    <!-- no translation found for av_camera_blur_light (5105255788203563538) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_full (6493497965254048479) -->
-    <skip />
+    <string name="av_camera_blur_light" msgid="5105255788203563538">"အနည်းငယ် မှုန်ဝါး"</string>
+    <string name="av_camera_blur_full" msgid="6493497965254048479">"အလွန်အမင်း မှုန်ဝါး"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"မီးရောင်မွမ်းမံခြင်း"</string>
     <string name="av_camera_face_retouch" msgid="45890971969486224">"အလှပုံ ခြယ်မှုန်းမှု"</string>
-    <!-- no translation found for av_camera_framing (2948988841290208034) -->
-    <skip />
-    <!-- no translation found for av_studio_mic (1815195630183143501) -->
-    <skip />
-    <!-- no translation found for av_studio_look (631085505786989852) -->
-    <skip />
+    <string name="av_camera_framing" msgid="2948988841290208034">"ကင်မရာ ဘောင်သွင်းချိန်ညှိခြင်း"</string>
+    <string name="av_studio_mic" msgid="1815195630183143501">"စတူဒီယိုမိုက်"</string>
+    <string name="av_studio_look" msgid="631085505786989852">"စတူဒီယိုပုံစံ"</string>
     <string name="av_studio_look_effects" msgid="4105109585851068415">"အထူးပြုလုပ်ချက် %d ခု"</string>
     <string name="av_blur" msgid="405131343487260171">"မှုန်ဝါးရန်"</string>
-    <!-- no translation found for av_live_captions (802763867449401889) -->
-    <skip />
+    <string name="av_live_captions" msgid="802763867449401889">"တိုက်ရိုက်စာတန်းများ"</string>
     <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"နောက်သို့"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"ဘက်ထရီ %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"L ဘက်ထရီ %1$s    R ဘက်ထရီ %2$s"</string>
@@ -1895,4 +1887,18 @@
     <string name="dream_setup_title" msgid="7996530071414508238">"စခရင်နားချိန်ပုံ သတ်မှတ်ရန်"</string>
     <string name="dream_setup_button_not_now" msgid="8028385323668620805">"ယခုမလုပ်ပါ"</string>
     <string name="dream_setup_button_setup" msgid="4755361016017554826">"စနစ်ထည့်သွင်းရန်"</string>
+    <!-- no translation found for ace_attribution_dialog_settings_label (8898211593287114433) -->
+    <skip />
+    <!-- no translation found for ace_attribution_dialog_title (5236154464063969824) -->
+    <skip />
+    <!-- no translation found for ace_attribution_dialog_description (1431906058759687758) -->
+    <skip />
+    <!-- no translation found for ace_attribution_header_icon_accessibility_description (7385840112370423581) -->
+    <skip />
+    <!-- no translation found for ace_attribution_settings_button_accessibility_description (8426163772933746374) -->
+    <skip />
+    <!-- no translation found for ace_attribution_thumbs_up_button_accessibility_description (3561722934830934360) -->
+    <skip />
+    <!-- no translation found for ace_attribution_thumbs_down_button_accessibility_description (5471283747650437662) -->
+    <skip />
 </resources>

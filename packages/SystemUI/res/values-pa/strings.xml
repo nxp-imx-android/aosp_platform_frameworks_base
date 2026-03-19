@@ -79,7 +79,6 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"ਆਗਿਆ ਦਿਓ"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"ਵਾਇਰਲੈੱਸ ਡੀਬੱਗਿੰਗ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਹੈ"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"ਫ਼ਿਲਹਾਲ ਇਸ ਡੀਵਾਈਸ \'ਤੇ ਸਾਈਨ-ਇਨ ਕੀਤਾ ਵਰਤੋਂਕਾਰ ਵਾਇਰਲੈੱਸ ਡੀਬੱਗਿੰਗ ਨੂੰ ਚਾਲੂ ਨਹੀਂ ਕਰ ਸਕਦਾ। ਇਸ ਵਿਸ਼ੇਸ਼ਤਾ ਨੂੰ ਵਰਤਣ ਲਈ, ਪ੍ਰਸ਼ਾਸਕ ਵਰਤੋਂਕਾਰ \'ਤੇ ਸਵਿੱਚ ਕਰੋ।"</string>
-    <string name="change_connected_wifi_text" msgid="6346095920396568246">"ਤੁਸੀਂ ਲੌਗ-ਇਨ ਕਰਨ ਤੋਂ ਬਾਅਦ ਇਹ ਸੈਟਿੰਗ ਬਦਲ ਸਕਦੇ ਹੋ"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB ਪੋਰਟ ਬੰਦ ਕੀਤਾ ਗਿਆ"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਨੂੰ ਪਾਣੀ ਅਤੇ ਧੂੜ-ਮਿੱਟੀ ਤੋਂ ਬਚਾਉਣ ਲਈ, USB ਪੋਰਟ ਨੂੰ ਬੰਦ ਕੀਤਾ ਗਿਆ ਹੈ ਅਤੇ ਕੋਈ ਵੀ ਐਕਸੈਸਰੀ ਪਛਾਣੀ ਨਹੀਂ ਜਾਵੇਗੀ।\n\nUSB ਪੋਰਟ ਨੂੰ ਦੁਬਾਰਾ ਵਰਤਣਾ ਠੀਕ ਹੋਣ \'ਤੇ ਤੁਹਾਨੂੰ ਸੂਚਿਤ ਕੀਤਾ ਜਾਵੇਗਾ।"</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"ਚਾਰਜਰਾਂ ਅਤੇ ਉਪਸਾਧਨਾਂ ਦੀ ਪਛਾਣ ਕਰਨ ਲਈ USB ਪੋਰਟ ਚਾਲੂ ਹੈ"</string>
@@ -1836,6 +1835,8 @@
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"ਅੱਗੇ"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"ਅਗਲੇ ਪੰਨੇ \'ਤੇ ਜਾਓ"</string>
     <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"ਵਾਪਸ ਜਾਓ"</string>
+    <!-- no translation found for accessibility_close_overlay_box_description (8399871568780893724) -->
+    <skip />
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"ਆਟੋਫਿਲ ਕਰੋ"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"ਵਿਸਤਾਰ ਕਰੋ"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"ਸਟੀਕ ਟਿਕਾਣਾ"</string>
@@ -1861,25 +1862,18 @@
     <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"ਪੋਰਟਰੇਟ ਟੱਚ-ਅੱਪ"</string>
     <string name="av_mic_label" msgid="5427348054144789879">"ਮਾਈਕ੍ਰੋਫ਼ੋਨ"</string>
     <string name="av_camera_label" msgid="7719772172590702343">"ਕੈਮਰਾ"</string>
-    <!-- no translation found for av_camera_blur_drill_in_title (3392789469292685354) -->
-    <skip />
+    <string name="av_camera_blur_drill_in_title" msgid="3392789469292685354">"ਧੁੰਦਲਾ ਬੈਕਗ੍ਰਾਊਂਡ"</string>
     <string name="av_camera_blur_off" msgid="3170334995799202022">"ਬੰਦ"</string>
-    <!-- no translation found for av_camera_blur_light (5105255788203563538) -->
-    <skip />
-    <!-- no translation found for av_camera_blur_full (6493497965254048479) -->
-    <skip />
+    <string name="av_camera_blur_light" msgid="5105255788203563538">"ਹਲਕਾ ਧੁੰਦਲਾਪਣ"</string>
+    <string name="av_camera_blur_full" msgid="6493497965254048479">"ਭਾਰੀ ਧੁੰਦਲਾਪਣ"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"ਬਿਹਤਰ ਲਾਈਟਿੰਗ"</string>
     <string name="av_camera_face_retouch" msgid="45890971969486224">"ਪੋਰਟਰੇਟ ਟੱਚ-ਅੱਪ"</string>
-    <!-- no translation found for av_camera_framing (2948988841290208034) -->
-    <skip />
-    <!-- no translation found for av_studio_mic (1815195630183143501) -->
-    <skip />
-    <!-- no translation found for av_studio_look (631085505786989852) -->
-    <skip />
+    <string name="av_camera_framing" msgid="2948988841290208034">"ਕੈਮਰਾ ਫ੍ਰੇਮਿੰਗ"</string>
+    <string name="av_studio_mic" msgid="1815195630183143501">"Studio ਮਾਈਕ"</string>
+    <string name="av_studio_look" msgid="631085505786989852">"ਸਟੂਡੀਓ ਲੁੱਕ"</string>
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d ਪ੍ਰਭਾਵ"</string>
     <string name="av_blur" msgid="405131343487260171">"ਧੁੰਦਲਾ ਕਰੋ"</string>
-    <!-- no translation found for av_live_captions (802763867449401889) -->
-    <skip />
+    <string name="av_live_captions" msgid="802763867449401889">"ਲਾਈਵ ਸੁਰਖੀਆਂ"</string>
     <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"ਪਿੱਛੇ"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"ਬੈਟਰੀ %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"ਖੱਬੀ ਬੈਟਰੀ %1$s    ਸੱਜੀ ਬੈਟਰੀ %2$s"</string>
@@ -1893,4 +1887,18 @@
     <string name="dream_setup_title" msgid="7996530071414508238">"ਸਕ੍ਰੀਨ ਸੇਵਰ ਦਾ ਸੈੱਟਅੱਪ ਕਰੋ"</string>
     <string name="dream_setup_button_not_now" msgid="8028385323668620805">"ਹੁਣੇ ਨਹੀਂ"</string>
     <string name="dream_setup_button_setup" msgid="4755361016017554826">"ਸੈੱਟਅੱਪ ਕਰੋ"</string>
+    <!-- no translation found for ace_attribution_dialog_settings_label (8898211593287114433) -->
+    <skip />
+    <!-- no translation found for ace_attribution_dialog_title (5236154464063969824) -->
+    <skip />
+    <!-- no translation found for ace_attribution_dialog_description (1431906058759687758) -->
+    <skip />
+    <!-- no translation found for ace_attribution_header_icon_accessibility_description (7385840112370423581) -->
+    <skip />
+    <!-- no translation found for ace_attribution_settings_button_accessibility_description (8426163772933746374) -->
+    <skip />
+    <!-- no translation found for ace_attribution_thumbs_up_button_accessibility_description (3561722934830934360) -->
+    <skip />
+    <!-- no translation found for ace_attribution_thumbs_down_button_accessibility_description (5471283747650437662) -->
+    <skip />
 </resources>

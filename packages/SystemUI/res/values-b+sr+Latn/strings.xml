@@ -79,7 +79,6 @@
     <string name="wifi_debugging_allow" msgid="4573224609684957886">"Dozvoli"</string>
     <string name="wifi_debugging_secondary_user_title" msgid="2493201475880517725">"Bežično otklanjanje grešaka nije dozvoljeno"</string>
     <string name="wifi_debugging_secondary_user_message" msgid="9085779370142222881">"Korisnik koji je trenutno prijavljen na ovaj uređaj ne može da uključi bežično otklanjanje grešaka. Da biste koristili ovu funkciju, pređite na korisnika sa administratorskim pravima."</string>
-    <string name="change_connected_wifi_text" msgid="6346095920396568246">"Možete da promenite podešavanje kada se prijavite"</string>
     <string name="usb_contaminant_title" msgid="894052515034594113">"USB port je onemogućen"</string>
     <string name="usb_contaminant_message" msgid="7730476585174719805">"Da bi se uređaj zaštitio od tečnosti ili nečistoće, USB port je onemogućen i neće otkrivati dodatnu opremu.\n\nObavestićemo vas kada ponovo budete mogli da koristite USB port."</string>
     <string name="usb_port_enabled" msgid="531823867664717018">"USB port je omogućen radi otkrivanja punjača i dodatne opreme"</string>
@@ -1836,6 +1835,7 @@
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Dalje"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"idite na sledeću stranicu"</string>
     <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"idi nazad"</string>
+    <string name="accessibility_close_overlay_box_description" msgid="8399871568780893724">"nazad"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"automatsko popunjavanje"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"proširi"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"Precizna lokacija"</string>
@@ -1886,4 +1886,18 @@
     <string name="dream_setup_title" msgid="7996530071414508238">"Podesite čuvar ekrana"</string>
     <string name="dream_setup_button_not_now" msgid="8028385323668620805">"Ne sada"</string>
     <string name="dream_setup_button_setup" msgid="4755361016017554826">"Podesi"</string>
+    <!-- no translation found for ace_attribution_dialog_settings_label (8898211593287114433) -->
+    <skip />
+    <!-- no translation found for ace_attribution_dialog_title (5236154464063969824) -->
+    <skip />
+    <!-- no translation found for ace_attribution_dialog_description (1431906058759687758) -->
+    <skip />
+    <!-- no translation found for ace_attribution_header_icon_accessibility_description (7385840112370423581) -->
+    <skip />
+    <!-- no translation found for ace_attribution_settings_button_accessibility_description (8426163772933746374) -->
+    <skip />
+    <!-- no translation found for ace_attribution_thumbs_up_button_accessibility_description (3561722934830934360) -->
+    <skip />
+    <!-- no translation found for ace_attribution_thumbs_down_button_accessibility_description (5471283747650437662) -->
+    <skip />
 </resources>
