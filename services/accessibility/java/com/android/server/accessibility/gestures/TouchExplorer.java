@@ -400,8 +400,12 @@ public class TouchExplorer extends BaseEventStreamTransformation
         }
         mAms.onTouchInteractionEnd();
         // Remove pending event deliveries.
-        mSendHoverEnterAndMoveDelayed.cancel();
-        mSendHoverExitDelayed.cancel();
+        if (Flags.sendHoverExitOnGestureInterruption()) {
+            cancelPendingHoverEvents(policyFlags);
+        } else {
+            mSendHoverEnterAndMoveDelayed.cancel();
+            mSendHoverExitDelayed.cancel();
+        }
         if (isSendMotionEventsEnabled()) {
             AccessibilityGestureEvent gestureEvent =
                     new AccessibilityGestureEvent(
@@ -460,8 +464,12 @@ public class TouchExplorer extends BaseEventStreamTransformation
         }
         // We have to perform gesture detection, so
         // clear the current state and try to detect.
-        mSendHoverEnterAndMoveDelayed.cancel();
-        mSendHoverExitDelayed.cancel();
+        if (Flags.sendHoverExitOnGestureInterruption()) {
+            cancelPendingHoverEvents(mState.getLastReceivedPolicyFlags());
+        } else {
+            mSendHoverEnterAndMoveDelayed.cancel();
+            mSendHoverExitDelayed.cancel();
+        }
         mExitGestureDetectionModeDelayed.post();
         // Send accessibility event to announce the start
         // of gesture recognition.
@@ -547,11 +555,7 @@ public class TouchExplorer extends BaseEventStreamTransformation
         // If we still have not notified the user for the last
         // touch, we figure out what to do. If were waiting
         // we resent the delayed callback and wait again.
-        mSendHoverEnterAndMoveDelayed.cancel();
-        // clear any hover events that might have been queued and never sent.
-        mSendHoverEnterAndMoveDelayed.clear();
-        mSendHoverExitDelayed.cancel();
-        sendHoverExitAndTouchExplorationGestureEndIfNeeded(policyFlags);
+        cancelPendingHoverEvents(policyFlags);
         if (mState.isClear()) {
             if (!mSendHoverEnterAndMoveDelayed.isPending()) {
                 // Queue a delayed transition to STATE_TOUCH_EXPLORING.
@@ -1123,6 +1127,18 @@ public class TouchExplorer extends BaseEventStreamTransformation
                     pointerIdBits,
                     policyFlags);
         }
+    }
+
+    /**
+     * Cancels any pending hover events and sends hover exit if needed.
+     *
+     * @param policyFlags The policy flags associated with the event.
+     */
+    private void cancelPendingHoverEvents(int policyFlags) {
+        mSendHoverEnterAndMoveDelayed.cancel();
+        mSendHoverEnterAndMoveDelayed.clear();
+        mSendHoverExitDelayed.cancel();
+        sendHoverExitAndTouchExplorationGestureEndIfNeeded(policyFlags);
     }
 
     /**
