@@ -14543,7 +14543,7 @@ public final class Settings {
          *
          * @hide
          */
-        public static final String USER_HOME_TIME_ZONE_ID = "user_home_time_zone_id";
+        public static final String HOME_TIME_ZONE_ID = "home_time_zone_id";
 
         /**
          * URI for the car dock "in" event sound.
