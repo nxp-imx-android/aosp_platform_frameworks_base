@@ -24,7 +24,6 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.AnimationVector1D
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Indication
@@ -64,6 +63,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.disabled
@@ -79,7 +79,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.Easings
 import com.android.compose.grid.VerticalGrid
 import com.android.compose.modifiers.thenIf
-import com.android.compose.theme.LocalAndroidColorScheme
+import com.android.systemui.bouncer.shared.constants.PinBouncerConstants
+import com.android.systemui.bouncer.ui.BouncerColors.pinActionBg
+import com.android.systemui.bouncer.ui.BouncerColors.pinDigitBg
 import com.android.systemui.bouncer.ui.viewmodel.ActionButtonAppearance
 import com.android.systemui.bouncer.ui.viewmodel.PinBouncerViewModel
 import com.android.systemui.common.shared.model.ContentDescription
@@ -153,6 +155,7 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
                 scaling = buttonScaleAnimatables[index]::value,
                 isAnimationEnabled = isDigitButtonAnimationEnabled,
                 onPointerDown = viewModel::onDigitButtonDown,
+                backgroundColor = Color(context.pinDigitBg()),
             )
         }
 
@@ -191,6 +194,7 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
             appearance = viewModel.backspaceButtonAppearance,
             scaling = buttonScaleAnimatables[9]::value,
             elementId = "delete_button",
+            backgroundColor = Color(context.pinActionBg()),
         )
 
         DigitButton(
@@ -208,6 +212,7 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
             scaling = buttonScaleAnimatables[10]::value,
             isAnimationEnabled = isDigitButtonAnimationEnabled,
             onPointerDown = viewModel::onDigitButtonDown,
+            backgroundColor = Color(context.pinDigitBg()),
         )
 
         ActionButton(
@@ -223,6 +228,7 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
             appearance = confirmButtonAppearance,
             scaling = buttonScaleAnimatables[11]::value,
             elementId = "key_enter",
+            backgroundColor = Color(context.pinActionBg()),
         )
     }
 }
@@ -236,13 +242,25 @@ fun DigitButton(
     onPointerDown: () -> Unit,
     scaling: () -> Float,
     isAnimationEnabled: Boolean,
-    backgroundColor: Color = LocalAndroidColorScheme.current.surfaceEffect1,
+    backgroundColor: Color,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val textScaleX by
+        animateFloatAsState(
+            targetValue =
+                if (isPressed) {
+                    PinBouncerConstants.Animation.pressedTextScaleX
+                } else {
+                    PinBouncerConstants.Animation.normalTextScaleX
+                }
+        )
     PinPadButton(
+        interactionSource = interactionSource,
         onClicked = { onClicked(digit) },
         isEnabled = isInputEnabled,
         backgroundColor = backgroundColor,
-        foregroundColor = MaterialTheme.colorScheme.onSurface,
+        foregroundColor = colorResource(PinBouncerConstants.Color.digit),
         isAnimationEnabled = isAnimationEnabled,
         onPointerDown = onPointerDown,
         modifier =
@@ -256,6 +274,7 @@ fun DigitButton(
             text = digit.toString(),
             style = MaterialTheme.typography.labelSmallEmphasized.merge(fontSize = 32.sp),
             color = { contentColor() },
+            modifier = Modifier.graphicsLayer { scaleX = textScaleX },
         )
     }
 }
@@ -271,14 +290,14 @@ fun ActionButton(
     onLongClickLabel: String? = null,
     appearance: ActionButtonAppearance,
     scaling: () -> Float,
-    backgroundColor: Color = LocalAndroidColorScheme.current.surfaceEffect0,
+    backgroundColor: Color,
 ) {
     val isHidden = appearance == ActionButtonAppearance.Hidden
     val hiddenAlpha by animateFloatAsState(if (isHidden) 0f else 1f, label = "Action button alpha")
 
-    val foregroundColor = MaterialTheme.colorScheme.onSurface
+    val foregroundColor = colorResource(PinBouncerConstants.Color.action)
 
-    val color =
+    val backgroundColorOrTransparentWhenHidden =
         when (appearance) {
             ActionButtonAppearance.Shown -> backgroundColor
             else -> Color.Transparent
@@ -288,7 +307,7 @@ fun ActionButton(
         onClicked = onClicked,
         onLongPressed = onLongPressed,
         isEnabled = isInputEnabled && !isHidden,
-        backgroundColor = color,
+        backgroundColor = backgroundColorOrTransparentWhenHidden,
         foregroundColor = foregroundColor,
         isAnimationEnabled = true,
         elementId = elementId,
@@ -314,16 +333,15 @@ private fun PinPadButton(
     foregroundColor: Color,
     isAnimationEnabled: Boolean,
     modifier: Modifier = Modifier,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     onPointerDown: () -> Unit,
     elementId: String? = null,
     onLongPressed: (() -> Unit)? = null,
     onLongClickLabel: String? = null,
     content: @Composable (contentColor: () -> Color) -> Unit,
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val indication = LocalIndication.current.takeUnless { isPressed }
-    val view = LocalView.current
 
     // Pin button animation specification is asymmetric: fast animation to the pressed state, and a
     // slow animation upon release. Note that isPressed is guaranteed to be true for at least the
@@ -334,9 +352,12 @@ private fun PinPadButton(
             DurationUnit.MILLISECONDS
         )
 
-    val cornerRadius: Dp by
-        animateDpAsState(
-            if (isAnimationEnabled && isPressed) 24.dp else pinButtonMaxSize / 2,
+    // Fraction of the total height of the button that the corner radius should be. Note that a
+    // value of 0.5 will make the button a perfect circle while any value below that will make it
+    // into a square with rounded corners.
+    val cornerRadiusFraction: Float by
+        animateFloatAsState(
+            if (isAnimationEnabled && isPressed) 0.25f else 0.5f,
             label = "PinButton round corners",
             animationSpec = tween(animDurationMillis, easing = animEasing),
         )
@@ -344,7 +365,8 @@ private fun PinPadButton(
     val containerColor: Color by
         animateColorAsState(
             when {
-                isAnimationEnabled && isPressed -> MaterialTheme.colorScheme.primary
+                isAnimationEnabled && isPressed ->
+                    colorResource(PinBouncerConstants.Color.bgPressed)
                 lockscreenTimeoutDeactivatePinPad() && !isEnabled ->
                     backgroundColor.copy(alpha = 0.18f)
                 else -> backgroundColor
@@ -355,7 +377,8 @@ private fun PinPadButton(
     val contentColor =
         animateColorAsState(
             when {
-                isAnimationEnabled && isPressed -> MaterialTheme.colorScheme.onPrimary
+                isAnimationEnabled && isPressed ->
+                    colorResource(PinBouncerConstants.Color.digitPressed)
                 lockscreenTimeoutDeactivatePinPad() && !isEnabled ->
                     foregroundColor.copy(alpha = 0.38f)
                 else -> foregroundColor
@@ -376,7 +399,7 @@ private fun PinPadButton(
                 .drawBehind {
                     drawRoundRect(
                         color = containerColor,
-                        cornerRadius = CornerRadius(cornerRadius.toPx()),
+                        cornerRadius = CornerRadius(cornerRadiusFraction * size.height),
                     )
                 }
                 .clip(CircleShape)
@@ -481,7 +504,7 @@ private fun Modifier.pinPadButtonInput(
                                         longClickJob = launch {
                                             delay(viewConfiguration.longPressTimeoutMillis)
                                             longClicked = true
-                                            downInteraction?.let {
+                                            downInteraction.let {
                                                 launch {
                                                     interactionSource.emit(
                                                         PressInteraction.Release(it)
