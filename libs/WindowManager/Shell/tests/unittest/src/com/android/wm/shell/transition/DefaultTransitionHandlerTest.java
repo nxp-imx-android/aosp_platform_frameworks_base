@@ -31,14 +31,20 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atMostOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 
 import android.animation.ValueAnimator;
 import android.app.ActivityManager.RunningTaskInfo;
 import android.content.Context;
+import android.graphics.PointF;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -445,11 +451,17 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
         final Transitions.TransitionFinishCallback finishCallback =
                 mock(Transitions.TransitionFinishCallback.class);
 
+        when(mDisplayController.getRelativeTranslationDp(anyInt(), anyInt(), any(), any(),
+                anyFloat())).thenReturn(new PointF(1, 0));
+        when(mDisplayController.convertDpVectorToPxVector(anyInt(), any()))
+                .thenReturn(new PointF(1, 0));
+
         mTransitionHandler.startAnimation(token, info, startT, finishT, finishCallback);
         flushHandlers();
 
         verify(startT).setAlpha(change.getLeash(), 0f);
         verify(startT).reparent(eq(mockSnapshot), any());
+        verify(startT, times(2)).reparent(any(), any());
         verify(startT).show(mockSnapshot);
     }
 
@@ -473,12 +485,17 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
         final SurfaceControl.Transaction startT = MockTransactionPool.create();
         final SurfaceControl.Transaction finishT = MockTransactionPool.create();
 
+        when(mDisplayController.getRelativeTranslationDp(anyInt(), anyInt(), any(), any(),
+                anyFloat())).thenReturn(new PointF(1, 0));
+        when(mDisplayController.convertDpVectorToPxVector(anyInt(), any()))
+                .thenReturn(new PointF(1, 0));
+
         mTransitionHandler.startAnimation(token, info, startT, finishT,
                 mock(Transitions.TransitionFinishCallback.class));
         flushHandlers();
 
         verify(startT).setAlpha(change.getLeash(), 0f);
-        verify(startT, never()).reparent(any(), any());
+        verify(startT, atMostOnce()).reparent(any(), any());
         verify(startT, never()).show(any());
     }
 

@@ -23,12 +23,14 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayTopology;
 import android.os.RemoteException;
 import android.util.ArraySet;
+import android.util.Log;
 import android.util.Size;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -161,6 +163,56 @@ public class DisplayController {
     public boolean isDisplayInTopology(int displayId) {
         return mDisplayTopology != null
                 && mDisplayTopology.findDisplay(displayId, mDisplayTopology.getRoot()) != null;
+    }
+
+    /**
+     * Returns the relative direction from one display to another based on the topology.
+     */
+    public PointF getRelativeDisplayDirection(int fromDisplayId, int toDisplayId,
+            @Nullable Rect fromWindowBoundsPx, @Nullable Rect toWindowBoundsPx) {
+        if (mDisplayTopology == null) {
+            return new PointF(0, 0);
+        }
+        return mDisplayTopology.calculateRelativeDirection(fromDisplayId, toDisplayId,
+                fromWindowBoundsPx, toWindowBoundsPx);
+    }
+
+    /**
+     * Calculates a translation vector in DP for a move from one display to another.
+     * The vector is normalized to the given {@code distanceDp} and is only along the X-axis.
+     */
+    public PointF getRelativeTranslationDp(int fromDisplayId, int toDisplayId,
+            @Nullable Rect fromWindowBoundsPx, @Nullable Rect toWindowBoundsPx, float distanceDp) {
+        PointF direction;
+        try {
+            direction = getRelativeDisplayDirection(fromDisplayId, toDisplayId, fromWindowBoundsPx,
+                    toWindowBoundsPx);
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, "Couldn't calculate the relative direction. Using (0,0) instead.", e);
+            direction = new PointF(0, 0);
+        }
+        // There are general patterns about not moving on two axis at the same so we only support
+        // horizontal translations for now and ignore the vertical component of the direction
+        // vector, forcing the result to be strictly horizontal.
+        direction.y = 0;
+        // Since y is 0, the magnitude of the vector is just the absolute value of x and the sign of
+        // x determines the direction.
+        if (Math.abs(direction.x) > 1e-6) {
+            return new PointF(Math.signum(direction.x) * distanceDp, 0);
+        }
+        // Fallback if topology is vertical or missing
+        direction.set(fromDisplayId <= toDisplayId ? 1f : -1f, 0f);
+        return new PointF(direction.x * distanceDp, 0);
+    }
+
+    /**
+     *  Converts a vector from DP to pixels based on the density of the given display.
+     */
+    public PointF convertDpVectorToPxVector(int displayId, PointF vector) {
+        final Context context = getDisplayContext(displayId);
+        final float density = context != null
+                ? context.getResources().getDisplayMetrics().density : 1f;
+        return new PointF(vector.x * density, vector.y * density);
     }
 
     /**
