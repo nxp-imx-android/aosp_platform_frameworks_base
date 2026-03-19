@@ -16,10 +16,12 @@
 
 package com.android.settingslib.metadata
 
+import android.R
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.os.Bundle
+import android.text.SpannableStringBuilder
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
@@ -69,9 +71,9 @@ interface PreferenceSummaryProvider {
         object : NoOpKeyedObservable<String>(), KeyValueStore {
             override fun contains(storageKey: String) = storageKey == key
             override fun <T : Any> getValue(key: String, valueType: Class<T>): T? =
-                getSummary(context) as? T
+                getSummary(context).toString() as? T
             override fun <T : Any> getDefaultValue(key: String, valueType: Class<T>): T? =
-                getSummary(context) as? T
+                getSummary(context).toString() as? T
             override fun <T : Any> setValue(key: String, valueType: Class<T>, value: T?) {}
         }
 }
