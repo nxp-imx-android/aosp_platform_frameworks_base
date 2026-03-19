@@ -46,6 +46,7 @@ import com.google.common.truth.Truth.assertThat
 import java.util.function.Consumer
 import kotlin.test.assertNotNull
 import org.junit.After
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -242,6 +243,20 @@ class DragResizeInputListenerTest : ShellTestCase() {
         testBgExecutor.flushAll()
         inputListener.close()
         testMainExecutor.flushAll()
+
+        assertThat(inputChannelPairs.size).isEqualTo(2)
+        try {
+            inputChannelPairs[0][1].token
+            fail("InputChannel should have been disposed")
+        } catch (_: Exception) {
+            // Expected
+        }
+        try {
+            inputChannelPairs[1][1].token
+            fail("InputChannel should have been disposed")
+        } catch (_: Exception) {
+            // Expected
+        }
     }
 
     @Test

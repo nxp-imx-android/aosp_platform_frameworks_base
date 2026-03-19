@@ -179,6 +179,8 @@ class DragResizeInputListener implements AutoCloseable {
                     mSurfaceControlTransactionSupplier);
             mainExecutor.execute(() -> {
                 if (mClosed) {
+                    result.mInputChannel.dispose();
+                    result.mSinkInputChannel.dispose();
                     mSurfaceControlTransactionSupplier.get().remove(
                             result.mInputSinkSurface).apply();
                     return;
