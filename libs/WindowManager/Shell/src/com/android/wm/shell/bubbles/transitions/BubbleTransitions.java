@@ -69,6 +69,7 @@ import androidx.core.animation.ValueAnimator;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.launcher3.icons.BubbleIconFactory;
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.bubbles.Bubble;
 import com.android.wm.shell.bubbles.BubbleController;
@@ -1135,6 +1136,7 @@ public class BubbleTransitions {
         private Runnable mAnimationFinishCb;
         private WindowContainerTransaction mFinishWct;
         final Rect mStartBounds = new Rect();
+        float mStartScale = 1.0f;
         SurfaceControl mSnapshot = null;
         // The task info is resolved once we find the task from the transition info using the
         // pending launch cookie otherwise
@@ -1454,11 +1456,10 @@ public class BubbleTransitions {
             }
 
             if (animate) {
-                float startScale = 1f;
                 if (mPlayConvertTaskAnimation) {
                     mExpandedViewAnimator.animateConvert(startT,
                             mStartBounds,
-                            startScale,
+                            mStartScale,
                             mSnapshot,
                             mTaskLeash,
                             this::cleanup);
@@ -1475,6 +1476,7 @@ public class BubbleTransitions {
         private void cleanup() {
             BubbleLog.d("LaunchOrConvertToBubble.cleanup(): removeCookie=%s",
                     mLaunchCookie.binder);
+            mStartScale = 1.0f;
             if (!mHasPlayed) {
                 // Cleanup the new Bubble which is never used.
                 // This would happen when the animation is aborted.
@@ -1549,6 +1551,11 @@ public class BubbleTransitions {
         public void plan(@NonNull AnimationPlan plan, @NonNull TransitionInfo fullInfo,
                 @NonNull IBinder transition, @NonNull TransitionInfo plannableInfo,
                 @NonNull SurfaceControl.Transaction startTransaction) {
+            if (!Flags.enableBubbleTransitionPlanner()) {
+                throw new IllegalStateException(
+                        "ITransitionPlanner.plan() should not be called if guarding flag is"
+                            + " disabled");
+            }
             BubbleLog.d("LaunchOrConvertToBubble.plan() bubble=%s", mBubble.getKey());
             mPlayConvertTaskAnimation = false;
             SurfaceControl.Transaction finishTransaction = new SurfaceControl.Transaction();
@@ -1616,8 +1623,14 @@ public class BubbleTransitions {
                                 @NonNull TransitionInfo info,
                                 @NonNull List<WindowAnimationState> from,
                                 @NonNull IFinishedCallback onFinished) {
-                            BubbleLog.w("ITransitionAnimation.start()");
-                            // TODO(b/483107404) use from for the animation
+                            BubbleLog.d("LaunchOrConvertToBubble.ITransitionAnimation.start()");
+                            if (!from.isEmpty()) {
+                                WindowAnimationState state = from.getFirst();
+                                if (state.bounds != null) {
+                                    state.bounds.roundOut(mStartBounds);
+                                }
+                                mStartScale = state.scale;
+                            }
                             mAnimationFinishCb = () -> onFinished.onFinished(finishTransaction);
                             startExpandAnim();
                         }
