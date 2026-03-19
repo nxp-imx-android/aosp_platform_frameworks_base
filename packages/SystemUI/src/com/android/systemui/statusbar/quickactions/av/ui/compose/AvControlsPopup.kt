@@ -38,7 +38,7 @@ import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.PageType
 
 /** Displays a popup containing the Audio, Video and Privacy controls. */
 @Composable
-fun AvControlsChipPopup(viewModel: AvControlsPopupViewModel) {
+fun AvControlsChipPopup(viewModel: AvControlsPopupViewModel, modifier: Modifier = Modifier) {
     // check(Flags.desktopAvControlsPopup()) { "Flag desktop_av_controls_popup is not enabled." }
 
     var screen by remember { mutableStateOf(PageType.MAIN) }
@@ -47,7 +47,7 @@ fun AvControlsChipPopup(viewModel: AvControlsPopupViewModel) {
 
     Surface(
         // TODO(469370207): consider wrapping the hardcoded dimensions in s resource
-        modifier = Modifier.width(376.dp).clip(shape = RoundedCornerShape(36.dp)).fillMaxWidth(),
+        modifier = modifier.width(376.dp).clip(shape = RoundedCornerShape(36.dp)).fillMaxWidth(),
         // color = Color(ShadeColors.shadePanelScrimBehind(LocalContext.current)),
         color =
             Color(

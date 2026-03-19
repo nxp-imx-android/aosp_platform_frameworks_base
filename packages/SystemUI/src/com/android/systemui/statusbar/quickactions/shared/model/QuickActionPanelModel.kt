@@ -20,12 +20,11 @@ import android.graphics.Rect
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupViewModel
 
 /**
- * A Model representing the currently active quick action panel in the status bar. QuickActionPanels
- * are panels anchored to a specific QuickActionChip in the status bar.
+ * A Model representing the currently active quick action panel. QuickActionPanels are panels
+ * anchored to a specific QuickActionChip in the status bar.
  */
 data class QuickActionPanelModel(
     val chipId: QuickActionChipId,
-    val displayId: Int,
     val anchorBounds: Rect,
     val panelContentViewModelFactory: StatusBarPopupViewModel.Factory,
 )

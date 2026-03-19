@@ -547,7 +547,8 @@ constructor(
                 Scenes.Shade -> Classifier.SHADE_DRAG
                 Overlays.NotificationsShade -> Classifier.NOTIFICATION_DRAG_DOWN
                 Scenes.QuickSettings,
-                Overlays.QuickSettingsShade -> Classifier.QUICK_SETTINGS
+                Overlays.QuickSettingsShade,
+                Overlays.QuickActions -> Classifier.QUICK_SETTINGS
                 else -> null
             }
 
