@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,16 @@
 
 package com.android.settingslib.metadata.preferencesapi.preconditions
 
-import androidx.annotation.StringRes
-
-/** The getter is unavailable due to some missing permissions. */
-class MissingPermission : Disallowed {
-    constructor(permissions: List<String>, @StringRes reason: Int) : super(reason)
-
-    constructor(permissions: List<String>, reason: String) : super(reason)
+/**
+ * Stability of the precondition state.
+ *
+ * This allows us to inform clients how frequently they should check
+ * precondition state. It is acceptable (but suboptimal) to report a
+ * precondition as being LESS stable than it actually is, but never more stable.
+ */
+enum class PreconditionStability {
+    /** The precondition state will not change until the APK is updated. */
+    STABLE_UNTIL_APK_UPDATE,
+    /** The precondition state can change at any time. */
+    UNSTABLE
 }

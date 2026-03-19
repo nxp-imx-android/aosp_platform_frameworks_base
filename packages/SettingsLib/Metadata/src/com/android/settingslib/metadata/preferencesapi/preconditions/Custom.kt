@@ -24,7 +24,7 @@ import androidx.annotation.StringRes
  * result type.
  */
 class Custom : Disallowed {
-    constructor(@StringRes reason: Int) : super(reason)
+    constructor(@StringRes reason: Int, stability: PreconditionStability) : super(reason, stability)
 
-    constructor(reason: String) : super(reason)
+    constructor(reason: String, stability: PreconditionStability) : super(reason, stability)
 }

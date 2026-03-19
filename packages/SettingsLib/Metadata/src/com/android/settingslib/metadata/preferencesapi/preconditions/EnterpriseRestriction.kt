@@ -23,7 +23,9 @@ import androidx.annotation.StringRes
  * restriction.
  */
 class EnterpriseRestriction : Disallowed {
-    constructor(@StringRes reason: Int) : super(reason)
+    // Enterprise restrictions are an unusual case given it can technically change
+    // at any time, but in practice these usually only change at setup time.
+    constructor(@StringRes reason: Int) : super(reason, stability = PreconditionStability.UNSTABLE)
 
-    constructor(reason: String) : super(reason)
+    constructor(reason: String) : super(reason, stability = PreconditionStability.UNSTABLE)
 }
