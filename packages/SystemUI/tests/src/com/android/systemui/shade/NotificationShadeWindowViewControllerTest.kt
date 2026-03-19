@@ -472,7 +472,7 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
             DozeTransitionModel(from = DozeStateModel.INITIALIZED, to = DozeStateModel.DOZE_AOD)
         )
         // AND quick settings controller doesn't want it
-        whenever(quickSettingsController.shouldQuickSettingsIntercept(any(), any(), any()))
+        whenever(quickSettingsController.shouldQuickSettingsIntercept(any(), any(), any(), any()))
             .thenReturn(false)
 
         // THEN touch should be intercepted by NotificationShade
@@ -487,7 +487,7 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
         )
 
         // AND quick settings controller DOES want it
-        whenever(quickSettingsController.shouldQuickSettingsIntercept(any(), any(), any()))
+        whenever(quickSettingsController.shouldQuickSettingsIntercept(any(), any(), any(), any()))
             .thenReturn(true)
 
         // THEN touch should be intercepted by NotificationShade
@@ -504,7 +504,7 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
             DozeTransitionModel(from = DozeStateModel.DOZE_AOD, to = DozeStateModel.DOZE_PULSING)
         )
         // AND quick settings controller DOES want it
-        whenever(quickSettingsController.shouldQuickSettingsIntercept(any(), any(), any()))
+        whenever(quickSettingsController.shouldQuickSettingsIntercept(any(), any(), any(), any()))
             .thenReturn(true)
         // AND bouncer is not showing
         whenever(centralSurfaces.isBouncerShowing()).thenReturn(false)
@@ -582,7 +582,7 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
 
         whenever(panelExpansionInteractor.isFullyExpanded).thenReturn(true)
         // AND quick settings controller doesn't want it
-        whenever(quickSettingsController.shouldQuickSettingsIntercept(any(), any(), any()))
+        whenever(quickSettingsController.shouldQuickSettingsIntercept(any(), any(), any(), any()))
             .thenReturn(false)
         whenever(dragDownHelper.isDragDownEnabled).thenReturn(true)
         whenever(dragDownHelper.onInterceptTouchEvent(any())).thenReturn(true)

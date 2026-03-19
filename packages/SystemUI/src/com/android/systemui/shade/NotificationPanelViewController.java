@@ -3807,7 +3807,7 @@ public final class NotificationPanelViewController implements
                         + "HeadsUpTouchHelper");
                 return true;
             }
-            if (!mQsController.shouldQuickSettingsIntercept(mDownX, mDownY, 0)
+            if (!mQsController.shouldQuickSettingsIntercept(mDownX, mDownY, 0, event)
                     && mPulseExpansionHandler.onInterceptTouchEvent(event)) {
                 mShadeLog.v("NotificationPanelViewController MotionEvent intercepted: "
                         + "PulseExpansionHandler");
@@ -4003,7 +4003,7 @@ public final class NotificationPanelViewController implements
             // If pulse is expanding already, let's give it the touch. There are situations
             // where the panel starts expanding even though we're also pulsing
             boolean pulseShouldGetTouch = (!mIsExpandingOrCollapsing
-                    && !mQsController.shouldQuickSettingsIntercept(mDownX, mDownY, 0))
+                    && !mQsController.shouldQuickSettingsIntercept(mDownX, mDownY, 0, event))
                     || mPulseExpansionHandler.isExpanding();
             if (pulseShouldGetTouch && mPulseExpansionHandler.onTouchEvent(event)) {
                 // We're expanding all the other ones shouldn't get this anymore
