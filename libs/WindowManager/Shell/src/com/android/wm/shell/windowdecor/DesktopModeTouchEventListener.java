@@ -57,7 +57,6 @@ import com.android.wm.shell.desktopmode.ShellDesktopState;
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction;
 import com.android.wm.shell.desktopmode.data.DesktopRepository;
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
-import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel.AppHandleMotionEventHandler;
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel.CaptionTouchStatusListener;
 import com.android.wm.shell.windowdecor.common.InputPilferer;
@@ -88,7 +87,6 @@ public class DesktopModeTouchEventListener
     private final @NonNull WindowDecorationGestureExclusionTracker mGestureExclusionTracker;
     private final @NonNull InputPilferer mInputPilferer;
     private final @Nullable InputManager mInputManager;
-    private final @NonNull FocusTransitionObserver mFocusTransitionObserver;
     private final @NonNull ShellDesktopState mShellDesktopState;
     private final @NonNull MultiDisplayDragMoveIndicatorController
             mMultiDisplayDragMoveIndicatorController;
@@ -133,7 +131,6 @@ public class DesktopModeTouchEventListener
             @NonNull WindowDecorationGestureExclusionTracker gestureExclusionTracker,
             @NonNull InputPilferer inputPilferer,
             @Nullable InputManager inputManager,
-            @NonNull FocusTransitionObserver focusTransitionObserver,
             @NonNull ShellDesktopState shellDesktopState,
             @NonNull
             MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController,
@@ -152,7 +149,6 @@ public class DesktopModeTouchEventListener
         mGestureExclusionTracker = gestureExclusionTracker;
         mInputPilferer = inputPilferer;
         mInputManager = inputManager;
-        mFocusTransitionObserver = focusTransitionObserver;
         mShellDesktopState = shellDesktopState;
         mMultiDisplayDragMoveIndicatorController = multiDisplayDragMoveIndicatorController;
         mTransactionFactory = transactionFactory;
@@ -211,7 +207,7 @@ public class DesktopModeTouchEventListener
             }
             if (decoration.getHandleMenuController() != null
                     && !decoration.getHandleMenuController().isHandleMenuActive()) {
-                moveTaskToFront(decoration.getTaskInfo());
+                mWindowDecorationActions.onCaptionViewReceivedInteraction(decoration.getTaskInfo());
                 mWindowDecorationActions.onOpenHandleMenu(mTaskId);
             }
         } else if (id == R.id.maximize_window) {
@@ -363,11 +359,7 @@ public class DesktopModeTouchEventListener
             // Only move to front on down to prevent 2+ tasks from fighting
             // (and thus flickering) for front status when drag-moving them simultaneously with
             // two pointers.
-            // TODO(b/356962065): during a drag-move, this shouldn't be a WCT - just move the
-            //  task surface to the top of other tasks and reorder once the user releases the
-            //  gesture together with the bounds' WCT. This is probably still valid for other
-            //  gestures like simple clicks.
-            moveTaskToFront(taskInfo);
+            mWindowDecorationActions.onCaptionViewReceivedInteraction(taskInfo);
 
         }
         final String viewName = getResourceName(v);
@@ -409,7 +401,7 @@ public class DesktopModeTouchEventListener
             WdLog.logD(TAG, mTaskId, "onLongClick(%s) but decoration is null, ignoring", viewName);
             return false;
         }
-        moveTaskToFront(decoration.getTaskInfo());
+        mWindowDecorationActions.onCaptionViewReceivedInteraction(decoration.getTaskInfo());
         if (decoration.getIsDragging()) {
             WdLog.logD(TAG, mTaskId, "onLongClick(%s) but is dragging, skip creating layout menu",
                     viewName);
@@ -453,35 +445,6 @@ public class DesktopModeTouchEventListener
             return true;
         }
         return false;
-    }
-
-    private void moveTaskToFront(ActivityManager.RunningTaskInfo taskInfo) {
-        if (!mFocusTransitionObserver.hasGlobalFocus(taskInfo)) {
-            WdLog.logD(
-                    TAG,
-                    mTaskId,
-                    "moveTaskToFront display=%d "
-                            + "globallyFocusedTaskId=%d globallyFocusedDisplayId=%d",
-                    taskInfo.displayId,
-                    mFocusTransitionObserver.getGloballyFocusedTaskId(),
-                    mFocusTransitionObserver.getGloballyFocusedDisplayId());
-            if (isPinned(taskInfo)) {
-                mPinnedLayerController.requestFocus(taskInfo);
-            } else {
-                mDesktopModeUiEventLogger.log(taskInfo,
-                        DesktopUiEventEnum.DESKTOP_WINDOW_HEADER_TAP_TO_REFOCUS);
-                mDesktopTasksController.moveTaskToFront(taskInfo);
-            }
-        } else {
-            WdLog.motionEventLogD(
-                    TAG,
-                    mTaskId,
-                    "moveTaskToFront already had global focus, skipping "
-                            + " display=%d globallyFocusedTaskId=%d globallyFocusedDisplayId=%d",
-                    taskInfo.displayId,
-                    mFocusTransitionObserver.getGloballyFocusedTaskId(),
-                    mFocusTransitionObserver.getGloballyFocusedDisplayId());
-        }
     }
 
     /**

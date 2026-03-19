@@ -1382,6 +1382,42 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mPinnedLayerController.closeTask(task);
     }
 
+    private void moveTaskToFront(ActivityManager.RunningTaskInfo taskInfo) {
+        // TODO(b/356962065): during a drag-move, this shouldn't be a WCT - just move the
+        //  task surface to the top of other tasks and reorder once the user releases the
+        //  gesture together with the bounds' WCT. This is probably still valid for other
+        //  gestures like simple clicks.
+        final int taskId = taskInfo.taskId;
+        if (!mFocusTransitionObserver.hasGlobalFocus(taskInfo)) {
+            WdLog.logD(
+                    TAG,
+                    taskId,
+                    "moveTaskToFront display=%d "
+                            + "globallyFocusedTaskId=%d globallyFocusedDisplayId=%d",
+                    taskInfo.displayId,
+                    mFocusTransitionObserver.getGloballyFocusedTaskId(),
+                    mFocusTransitionObserver.getGloballyFocusedDisplayId());
+            final boolean isPinned =
+                    mPinnedLayerController != null && mPinnedLayerController.isPinned(taskId);
+            if (isPinned) {
+                mPinnedLayerController.requestFocus(taskInfo);
+            } else {
+                mDesktopModeUiEventLogger.log(taskInfo,
+                        DesktopUiEventEnum.DESKTOP_WINDOW_HEADER_TAP_TO_REFOCUS);
+                mDesktopTasksController.moveTaskToFront(taskInfo);
+            }
+        } else {
+            WdLog.motionEventLogD(
+                    TAG,
+                    taskId,
+                    "moveTaskToFront already had global focus, skipping "
+                            + " display=%d globallyFocusedTaskId=%d globallyFocusedDisplayId=%d",
+                    taskInfo.displayId,
+                    mFocusTransitionObserver.getGloballyFocusedTaskId(),
+                    mFocusTransitionObserver.getGloballyFocusedDisplayId());
+        }
+    }
+
     /** Listener for caption touch events. */
     public interface CaptionTouchStatusListener {
         /** Called when the caption is pressed. */
@@ -1900,10 +1936,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         mDesktopModeUiEventLogger, mWindowDecorationActions,
                         mDesktopUserRepositories, mGestureExclusionTracker,
                         new InputPilfererImpl(mInputManager), mInputManager,
-                        mFocusTransitionObserver, mShellDesktopState,
-                        mMultiDisplayDragMoveIndicatorController, mTransactionFactory,
-                        mCaptionTouchStatusListener, mAppHandleMotionEventHandler,
-                        mPinnedLayerController);
+                        mShellDesktopState, mMultiDisplayDragMoveIndicatorController,
+                        mTransactionFactory, mCaptionTouchStatusListener,
+                        mAppHandleMotionEventHandler, mPinnedLayerController);
         windowDecoration.setCaptionListeners(
                 touchEventListener, touchEventListener, touchEventListener, touchEventListener);
         windowDecoration.setExclusionRegionListener(mExclusionRegionListener);
@@ -2173,6 +2208,13 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             WdLog.logD(TAG, "Using DefaultWindowDecorationActions to close task=%d with "
                     + "forceKeepDesktop=%b", taskInfo.taskId, forceKeepDesktop);
             mViewModel.closeTask(taskInfo, forceKeepDesktop);
+        }
+
+        @Override
+        public void onCaptionViewReceivedInteraction(@NonNull RunningTaskInfo taskInfo) {
+            WdLog.logD(TAG, "Using DefaultWindowDecorationActions to bring task=%d to front",
+                    taskInfo.taskId);
+            mViewModel.moveTaskToFront(taskInfo);
         }
 
         @Override
