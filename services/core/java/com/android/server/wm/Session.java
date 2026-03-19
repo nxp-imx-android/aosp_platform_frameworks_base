@@ -364,6 +364,19 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
         validateDragFlags(flags, callingUid);
         final long ident = Binder.clearCallingIdentity();
         try {
+            // TODO(b/491220041): Block Drag-n-Drop for visible background users. Re-enable once
+            //  Drag-n-Drop is made per-pointer, as tracked in b/491220041.
+            synchronized (mService.mGlobalLock) {
+                final int displayId = mService.mInternal.getDisplayIdForWindow(window.asBinder());
+                final int displayOwner = mService.mUmInternal.getUserAssignedToDisplay(displayId);
+                if (mService.mUmInternal.isVisibleBackgroundFullUser(displayOwner)) {
+                    Slog.w(TAG_WM, "Blocking performDrag from display " + displayId
+                            + " assigned to visible background user " + displayOwner
+                            + " (Window owned by UID " + mUid + ")");
+                    return null;
+                }
+            }
+
             return mDragDropController.performDrag(mPid, mUid, window, flags, surface, touchSource,
                     touchDeviceId, touchPointerId, touchX, touchY, thumbCenterX, thumbCenterY,
                     data);
