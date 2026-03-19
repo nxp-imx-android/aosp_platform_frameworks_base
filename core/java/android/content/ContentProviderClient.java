@@ -251,12 +251,27 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
         mCallNotCancelledTimeoutMillis = timeoutMillis;
     }
 
+    /**
+     * Prepares for a remote call by scheduling an ANR detection runnable if a fixed
+     * timeout has been configured using {@link #setDetectNotResponding(long)}.
+     */
     private void beforeRemote() {
         if (mAnrRunnable != null) {
             sAnrHandler.postDelayed(mAnrRunnable, mAnrTimeout);
         }
     }
 
+    /**
+     * Prepares for a remote call that supports cancellation.
+     * <p>
+     * Schedules runnables to detect if the remote provider becomes unresponsive. If
+     * {@link android.content.flags.Flags#FLAG_ENABLE_CONTENT_PROVIDER_CLIENT_ANR_ON_CANCEL}
+     * is enabled, it schedules a runnable that triggers after a cancellation signal
+     * is received if a cancellation-specific timeout is set; otherwise, it falls
+     * back to the fixed timeout runnable.
+     *
+     * @param cancellationSignal The {@link CancellationSignal} for the remote call.
+     */
     private void beforeRemote(CancellationSignal cancellationSignal) {
         if (!enableContentProviderClientAnrOnCancel()) {
             beforeRemote();
@@ -276,6 +291,12 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
         }
     }
 
+    /**
+     * Cleans up state after a remote call has completed.
+     * <p>
+     * This method removes any scheduled ANR detection runnables from the handler
+     * to prevent them from triggering after the call has already finished.
+     */
     private void afterRemote() {
         if (mAnrRunnable != null) {
             sAnrHandler.removeCallbacks(mAnrRunnable);
@@ -288,6 +309,23 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
                 sAnrHandler.removeCallbacks(mCallNotCancelledRunnable);
             }
         }
+    }
+
+    /**
+     * Cleans up state after a remote call that supports cancellation has completed.
+     * <p>
+     * In addition to removing scheduled ANR runnables, this method clears any
+     * {@link CancellationSignal.OnCancelListener} that was set on the provided
+     * signal to ensure it does not trigger ANR detection after the call finishes.
+     *
+     * @param cancellationSignal The {@link CancellationSignal} for the remote call.
+     */
+    private void afterRemote(@Nullable CancellationSignal cancellationSignal) {
+        if (enableContentProviderClientAnrOnCancel() && cancellationSignal != null
+                && mAnrRunnableOnCancel != null) {
+            cancellationSignal.setOnCancelListener(null);
+        }
+        afterRemote();
     }
 
     private CancellationSignal maybeWrapNotRespondingSignal(CancellationSignal callerSignal) {
@@ -736,7 +774,7 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
             }
             throw e;
         } finally {
-            afterRemote();
+            afterRemote(cancellationSignal);
         }
     }
 
@@ -781,7 +819,7 @@ public class ContentProviderClient implements ContentInterface, AutoCloseable {
             }
             throw e;
         } finally {
-            afterRemote();
+            afterRemote(cancellationSignal);
         }
     }
 
