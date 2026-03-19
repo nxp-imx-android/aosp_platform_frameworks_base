@@ -2060,7 +2060,8 @@ public class AccountManagerService
                 }
             }
         }
-        if (getUserManager().getUserInfo(accounts.userId).canHaveProfile()) {
+        if (getUserManager().getUserInfo(accounts.userId)
+                .canHaveProfile(UserManager.USER_TYPE_FULL_RESTRICTED)) {
             addAccountToLinkedRestrictedUsers(account, accounts.userId);
         }
 
@@ -2369,7 +2370,7 @@ public class AccountManagerService
                 recomputeCacheSizeForAccountLocked(accounts, renamedAccount);
 
                 int parentUserId = accounts.userId;
-                if (canHaveProfile(parentUserId)) {
+                if (canHaveRestrictedProfile(parentUserId)) {
                 /*
                  * Owner or system user account was renamed, rename the account for
                  * those users with which the account was shared.
@@ -2401,9 +2402,9 @@ public class AccountManagerService
         return resultAccount;
     }
 
-    private boolean canHaveProfile(final int parentUserId) {
+    private boolean canHaveRestrictedProfile(final int parentUserId) {
         final UserInfo userInfo = getUserManager().getUserInfo(parentUserId);
-        return userInfo != null && userInfo.canHaveProfile();
+        return userInfo != null && userInfo.canHaveProfile(UserManager.USER_TYPE_FULL_RESTRICTED);
     }
 
     @Override
@@ -2663,7 +2664,7 @@ public class AccountManagerService
         final long id = Binder.clearCallingIdentity();
         try {
             int parentUserId = accounts.userId;
-            if (canHaveProfile(parentUserId)) {
+            if (canHaveRestrictedProfile(parentUserId)) {
                 // Remove from any restricted profiles that are sharing this account.
                 List<UserInfo> users = getUserManager().getAliveUsers();
                 for (UserInfo user : users) {
