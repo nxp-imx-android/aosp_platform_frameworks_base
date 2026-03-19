@@ -37,13 +37,6 @@ flag {
 }
 
 flag {
-  name: "polite_notifications_attn_update"
-  namespace: "systemui"
-  description: "This flag controls the polite notification attention behavior updates as per UXR feedback"
-  bug: "270456865"
-}
-
-flag {
   name: "trace_cancel_events"
   namespace: "systemui"
   description: "Adds performance tracing for binder cancel calls"
