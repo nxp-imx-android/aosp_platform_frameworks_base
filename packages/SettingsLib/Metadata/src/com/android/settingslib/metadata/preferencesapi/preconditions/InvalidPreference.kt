@@ -21,34 +21,44 @@ import com.android.settingslib.metadata.KeyParametersSchema
 
 /**
  * The getter is unavailable due to the value or state of another preference. The
- * otherPreferenceScreenKey/otherPreferenceKey/otherPreferenceParams should identify the
- * problematic preference (params being required only if the other preference is
- * parameterised). The reason should explain what is wrong.
+ * otherPreferenceScreenKey/otherPreferenceKey/otherPreferenceParams should identify the problematic
+ * preference (params being required only if the other preference is parameterised). The reason
+ * should explain what is wrong.
  */
 class InvalidPreference : Disallowed {
     constructor(
         otherPreferenceScreenKey: String,
         otherPreferenceKey: String,
         otherPreferenceParams: KeyParametersSchema?,
-        @StringRes reason: Int
-    ) : super(reason)
+        @StringRes reason: Int,
+    ) : super(reason, stability = PreconditionStability.UNSTABLE)
 
     constructor(
         otherPreferenceScreenKey: String,
         otherPreferenceKey: String,
         otherPreferenceParams: KeyParametersSchema?,
-        reason: String
-    ) : super(reason)
+        reason: String,
+    ) : super(reason, stability = PreconditionStability.UNSTABLE)
 
     constructor(
         otherPreferenceScreenKey: String,
         otherPreferenceKey: String,
-        @StringRes reason: Int
-    ) : this(otherPreferenceScreenKey, otherPreferenceKey, null, reason)
+        @StringRes reason: Int,
+    ) : this(
+        otherPreferenceScreenKey,
+        otherPreferenceKey,
+        null,
+        reason,
+    )
 
     constructor(
         otherPreferenceScreenKey: String,
         otherPreferenceKey: String,
-        reason: String
-    ) : this(otherPreferenceScreenKey, otherPreferenceKey, null, reason)
+        reason: String,
+    ) : this(
+        otherPreferenceScreenKey,
+        otherPreferenceKey,
+        null,
+        reason,
+    )
 }

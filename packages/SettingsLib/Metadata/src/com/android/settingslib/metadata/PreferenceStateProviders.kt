@@ -26,6 +26,7 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LifecycleOwner
 import com.android.settingslib.datastore.KeyValueStore
+import com.android.settingslib.metadata.preferencesapi.preconditions.PreconditionStability
 import com.android.settingslib.datastore.NoOpKeyedObservable
 import kotlinx.coroutines.CoroutineScope
 
@@ -128,6 +129,13 @@ interface PreferenceAvailabilityProvider {
      *   implementation).
      */
     fun isAvailable(context: Context): Boolean
+
+    /**
+     * Returns the stability of the preference availability.
+     *
+     * This should describe if the preference availability can be cached or not.
+     */
+    fun getAvailabilityStability(): PreconditionStability
 }
 
 /**

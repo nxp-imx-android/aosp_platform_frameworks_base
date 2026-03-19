@@ -22,7 +22,9 @@ import androidx.annotation.StringRes
  * The getter is unavailable due to some legal restriction on the country of use.
  */
 class RegionalRestriction : Disallowed {
-    constructor(@StringRes reason: Int) : super(reason)
+    // Similar to EnterpriseRestriction, this is technically unstable, but in
+    // practice these will change very rarely.
+    constructor(@StringRes reason: Int) : super(reason, stability = PreconditionStability.UNSTABLE)
 
-    constructor(reason: String) : super(reason)
+    constructor(reason: String) : super(reason, stability = PreconditionStability.UNSTABLE)
 }

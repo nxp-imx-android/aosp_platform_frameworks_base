@@ -22,6 +22,7 @@ import android.provider.Browser
 import android.provider.Settings
 import androidx.core.net.toUri
 import com.android.settingslib.metadata.PreferenceAvailabilityProvider
+import com.android.settingslib.metadata.preferencesapi.preconditions.PreconditionStability
 import com.android.settingslib.metadata.PreferenceMetadata
 import com.android.settingslib.metadata.UI_ONLY_PREFERENCE
 import com.android.systemui.accessibility.accessibilitymenu.R
@@ -49,6 +50,8 @@ class HelpPreference : PreferenceMetadata, PreferenceAvailabilityProvider {
     }
 
     override val availabilityDescription = "Must not be during setup. The intent must resolve to an activity."
+
+    override fun getAvailabilityStability() = PreconditionStability.UNSTABLE
 
     override fun isAvailable(context: Context): Boolean {
         // Do not allow access to web during setup.
