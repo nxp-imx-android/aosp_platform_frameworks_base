@@ -354,4 +354,31 @@ public class PackageInstallerServiceTest {
                         longAttributionTag,
                         /* userId= */ UserHandle.USER_SYSTEM));
     }
+
+    @Test
+    public void testAddDeveloperVerificationExperiment_throwsExceptionForNonRootOrShell() {
+        final PackageInstallerService service = new PackageInstallerService(
+                rule.mocks().getContext(), mPms, null,
+                new ComponentName(mPackageName, this.getClass().getName()));
+
+        // Verifies that a SecurityException is thrown when a non-root/non-shell caller
+        // attempts to add a developer verification experiment.
+        assertThrows(SecurityException.class,
+                () -> service.addDeveloperVerificationExperiment(
+                        "com.example.app",
+                        PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
+                        new int[]{1, 2, 3}));
+    }
+
+    @Test
+    public void testClearDeveloperVerificationExperiment_throwsExceptionForNonRootOrShell() {
+        final PackageInstallerService service = new PackageInstallerService(
+                rule.mocks().getContext(), mPms, null,
+                new ComponentName(mPackageName, this.getClass().getName()));
+
+        // Verifies that a SecurityException is thrown when a non-root/non-shell caller
+        // attempts to clear a developer verification experiment.
+        assertThrows(SecurityException.class,
+                () -> service.clearDeveloperVerificationExperiment("com.example.app"));
+    }
 }
