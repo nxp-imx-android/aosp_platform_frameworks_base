@@ -1,6 +1,5 @@
 // Signature format: 6.0
 // - style=java
-// - type-argument-spacing=legacy
 package android.test {
 
   @Deprecated public abstract class ActivityInstrumentationTestCase<T extends android.app.Activity> extends android.test.ActivityTestCase {
@@ -126,8 +125,8 @@ package android.test {
     method @Deprecated public static void assertContentsInOrder(String, Iterable<?>, Object...);
     method @Deprecated public static void assertEmpty(Iterable<?>);
     method @Deprecated public static void assertEmpty(String, Iterable<?>);
-    method @Deprecated public static void assertEmpty(String, java.util.Map<?,?>);
-    method @Deprecated public static void assertEmpty(java.util.Map<?,?>);
+    method @Deprecated public static void assertEmpty(String, java.util.Map<?, ?>);
+    method @Deprecated public static void assertEmpty(java.util.Map<?, ?>);
     method @Deprecated public static void assertEquals(byte[], byte[]);
     method @Deprecated public static void assertEquals(double[], double[]);
     method @Deprecated public static void assertEquals(int[], int[]);
@@ -144,8 +143,8 @@ package android.test {
     method @Deprecated public static void assertNotContainsRegex(String, String, String);
     method @Deprecated public static void assertNotEmpty(Iterable<?>);
     method @Deprecated public static void assertNotEmpty(String, Iterable<?>);
-    method @Deprecated public static void assertNotEmpty(String, java.util.Map<?,?>);
-    method @Deprecated public static void assertNotEmpty(java.util.Map<?,?>);
+    method @Deprecated public static void assertNotEmpty(String, java.util.Map<?, ?>);
+    method @Deprecated public static void assertNotEmpty(java.util.Map<?, ?>);
     method @Deprecated public static void assertNotEqual(Object, Object);
     method @Deprecated public static void assertNotEqual(String, Object, Object);
     method @Deprecated public static void assertNotMatchesRegex(String, String);
