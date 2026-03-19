@@ -49,10 +49,10 @@ class LocationButtonInteractorTest : SysuiTestCase() {
 
         val state = underTest.getButtonState(sessionId)!!
         val density = 1.0f
-        assertThat(state.paddingLeft).isEqualTo(0)
-        assertThat(state.paddingTop).isEqualTo(0)
-        assertThat(state.paddingRight).isEqualTo(0)
-        assertThat(state.paddingBottom).isEqualTo(0)
+        assertThat(state.paddingLeft).isEqualTo(4)
+        assertThat(state.paddingTop).isEqualTo(4)
+        assertThat(state.paddingRight).isEqualTo(4)
+        assertThat(state.paddingBottom).isEqualTo(4)
         assertThat(state.strokeWidth).isEqualTo(0)
         assertThat(state.cornerRadius).isNull()
         assertThat(state.pressedCornerRadius).isNull()
@@ -227,6 +227,27 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     }
 
     @Test
+    fun setButtonState_paddingTooSmall_highDensity_clampedToScaledMin() {
+        // Min 4dp = 12px at 3.0x density
+        val sessionId = 1
+        val request =
+            LocationButtonRequest.Builder(100, 100, Configuration())
+                .setPaddingLeft(1)
+                .setPaddingTop(1)
+                .setPaddingRight(1)
+                .setPaddingBottom(1)
+                .build()
+
+        underTest.setButtonState(sessionId, request, 3.0f)
+
+        val state = underTest.getButtonState(sessionId)!!
+        assertThat(state.paddingLeft).isEqualTo(12)
+        assertThat(state.paddingTop).isEqualTo(12)
+        assertThat(state.paddingRight).isEqualTo(12)
+        assertThat(state.paddingBottom).isEqualTo(12)
+    }
+
+    @Test
     fun setButtonState_paddingValid_remainsUnchanged() {
         val sessionId = 1
         val request =
@@ -287,7 +308,7 @@ class LocationButtonInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    fun setButtonState_negativePaddingAndStroke_clampedToZero() {
+    fun setButtonState_negativePaddingAndStroke_clampedToMin() {
         val sessionId = 1
         val request =
             LocationButtonRequest.Builder(100, 100, Configuration())
@@ -299,7 +320,7 @@ class LocationButtonInteractorTest : SysuiTestCase() {
         underTest.setButtonState(sessionId, request, 1.0f)
 
         val state = underTest.getButtonState(sessionId)!!
-        assertThat(state.paddingLeft).isEqualTo(0)
+        assertThat(state.paddingLeft).isEqualTo(4)
         assertThat(state.strokeWidth).isEqualTo(0)
         assertThat(state.cornerRadius).isEqualTo(0f)
     }
