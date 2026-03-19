@@ -104,8 +104,6 @@
     <!-- Divider handle size for split screen -->
     <dimen name="split_divider_handle_width">40dp</dimen>
     <dimen name="split_divider_handle_height">4dp</dimen>
-    <dimen name="split_divider_button_size">48dp</dimen>
-    <dimen name="split_divider_button_margin">16dp</dimen>
 
     <dimen name="split_divider_bar_width">10dp</dimen>
     <dimen name="split_divider_corner_size">42dp</dimen>
