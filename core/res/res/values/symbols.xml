@@ -6590,6 +6590,8 @@
   <java-symbol type="array" name="config_allowlistPersonalContextInsightReceiving" />
   <!-- Packages allowed to register a visualizer -->
   <java-symbol type="array" name="config_allowlistPersonalContextVisualizers" />
+  <!-- Packages allowed to filter for context insights -->
+  <java-symbol type="array" name="config_allowlistPersonalContextInsightFiltering" />
 
   <!-- PersonalContext TextClassifier configuration -->
   <java-symbol type="integer" name="config_textClassifierPersonalContextTimeoutMillis" />

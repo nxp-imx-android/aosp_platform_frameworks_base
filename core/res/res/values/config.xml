@@ -8035,7 +8035,7 @@
     <string-array translatable="false" name="config_allowlistPersonalContextHintPublishing">
     </string-array>
 
-    <!-- Packages allowed to receive hints to PersonalContextManagerService -->
+    <!-- Packages allowed to receive hints from PersonalContextManagerService -->
     <string-array translatable="false" name="config_allowlistPersonalContextHintReceiving">
     </string-array>
 
@@ -8043,12 +8043,16 @@
     <string-array translatable="false" name="config_allowlistPersonalContextInsightPublishing">
     </string-array>
 
-    <!-- Packages allowed to publish insights to PersonalContextManagerService -->
+    <!-- Packages allowed to receive insights from PersonalContextManagerService -->
     <string-array translatable="false" name="config_allowlistPersonalContextInsightReceiving">
     </string-array>
 
     <!-- Packages allowed to register a visualizer with the personal context service. -->
     <string-array translatable="false" name="config_allowlistPersonalContextVisualizers">
+    </string-array>
+
+    <!-- Packages allowed to get insights without a RenderToken from PersonalContextManagerService -->
+    <string-array translatable="false" name="config_allowlistPersonalContextInsightFiltering">
     </string-array>
 
     <!-- Timeout for waiting on text classification suggestions from PersonalContextService (milliseconds).
