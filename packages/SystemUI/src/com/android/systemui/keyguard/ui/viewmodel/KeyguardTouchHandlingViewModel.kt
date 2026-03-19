@@ -71,13 +71,10 @@ constructor(
 
     /**
      * Notifies that the user has long-pressed on the lock screen.
-     *
-     * @param isA11yAction: Whether the action was performed as an a11y action
      */
-    fun onLongPress(isA11yAction: Boolean) {
+    fun onLongPress() {
         if (
             SceneContainerFlag.isEnabled &&
-                !isA11yAction &&
                 falsingManager.isFalseLongTap(FalsingManager.LOW_PENALTY)
         ) {
             return
@@ -86,7 +83,7 @@ constructor(
         if (Flags.msdlFeedback()) {
             msdlPlayer.playToken(MSDLToken.LONG_PRESS)
         }
-        interactor.onLongPress(isA11yAction)
+        interactor.onLongPress()
     }
 
     /**

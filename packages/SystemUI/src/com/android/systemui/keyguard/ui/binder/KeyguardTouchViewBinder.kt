@@ -85,16 +85,12 @@ object KeyguardTouchViewBinder {
                                 view: View,
                                 x: Int,
                                 y: Int,
-                                isA11yAction: Boolean,
                             ) {
-                                if (
-                                    !isA11yAction &&
-                                        falsingManager.isFalseLongTap(FalsingManager.LOW_PENALTY)
-                                ) {
+                                if (falsingManager.isFalseLongTap(FalsingManager.LOW_PENALTY)) {
                                     return
                                 }
 
-                                viewModel.onLongPress(isA11yAction)
+                                viewModel.onLongPress()
                             }
 
                             override fun onSingleTapDetected(view: View, x: Int, y: Int) {
