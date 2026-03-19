@@ -22,8 +22,7 @@ import androidx.compose.runtime.getValue
 import com.android.systemui.Flags
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryUdfpsInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTouchHandlingInteractor
-import com.android.systemui.lifecycle.ExclusiveActivatable
-import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.google.android.msdl.data.model.MSDLToken
@@ -43,8 +42,7 @@ constructor(
     private val msdlPlayer: MSDLPlayer,
     private val falsingManager: FalsingManager,
     deviceEntryUdfpsInteractor: DeviceEntryUdfpsInteractor,
-) : ExclusiveActivatable() {
-    private val hydrator = Hydrator("KeyguardTouchHandlingViewModel.hydrator")
+) : HydratedActivatable() {
 
     /**
      * Bounds of the UDFPS accessibility overlay. This is needed in order to prevent interrupted
@@ -65,23 +63,11 @@ constructor(
 
     /** Whether the long-press handling feature should be enabled. */
     val isLongPressHandlingEnabled: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "longPressHandlingEnabled",
-            initialValue = false,
-            source = interactor.isLongPressHandlingEnabled,
-        )
+        interactor.isLongPressHandlingEnabled.hydratedStateOf(initialValue = false)
 
     /** Whether the double tap handling feature should be enabled. */
     val isDoubleTapHandlingEnabled: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "doubleTapHandlingEnabled",
-            initialValue = false,
-            source = interactor.isDoubleTapHandlingEnabled,
-        )
-
-    override suspend fun onActivated(): Nothing {
-        hydrator.activate()
-    }
+        interactor.isDoubleTapHandlingEnabled.hydratedStateOf(initialValue = false)
 
     /**
      * Notifies that the user has long-pressed on the lock screen.
