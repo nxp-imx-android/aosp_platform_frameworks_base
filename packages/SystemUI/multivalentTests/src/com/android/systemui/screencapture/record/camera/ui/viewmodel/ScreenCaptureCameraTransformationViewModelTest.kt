@@ -137,6 +137,41 @@ class ScreenCaptureCameraTransformationViewModelTest : SysuiTestCase() {
                 .equals(ScreenRecordEvent.SCREEN_RECORD_SURFACE_ADJUSTED_MID_RECORDING)
         }
 
+    @Test
+    fun boundsUpdated_isCoercedInSafeGestureBounds() =
+        kosmos.runTest {
+            underTest.onUiBoundsChanged(uiBounds = uiBounds, safeGestureBounds = safeGestureBounds)
+            underTest.onSurfaceScreenBoundsUpdated(surfaceScreenBounds)
+
+            // Pan by a large amount to move it outside safeGestureBounds
+            underTest.transformableState.transform { transformBy(panChange = Offset(1000f, 1000f)) }
+
+            val initialOffsetX = underTest.offsetX
+            val initialOffsetY = underTest.offsetY
+
+            // Shrink safeGestureBounds to be smaller
+            underTest.onUiBoundsChanged(
+                uiBounds = uiBounds,
+                safeGestureBounds = safeGestureBounds.deflate(100f),
+            )
+
+            // Verify offsets changed
+            assertThat(underTest.offsetX).isNotEqualTo(initialOffsetX)
+            assertThat(underTest.offsetY).isNotEqualTo(initialOffsetY)
+
+            val newOffsetX = underTest.offsetX
+            val newOffsetY = underTest.offsetY
+
+            // Shrink surface screen bounds to be smaller and shift its center
+            underTest.onSurfaceScreenBoundsUpdated(
+                surfaceScreenBounds.deflate(100f).translate(100f, 100f)
+            )
+
+            // Verify offsets changed again due to center recalculation
+            assertThat(underTest.offsetX).isNotEqualTo(newOffsetX)
+            assertThat(underTest.offsetY).isNotEqualTo(newOffsetY)
+        }
+
     private suspend fun ScreenCaptureCameraTransformationViewModel.transform() {
         transformableState.transform {
             transformByWithCentroid(
