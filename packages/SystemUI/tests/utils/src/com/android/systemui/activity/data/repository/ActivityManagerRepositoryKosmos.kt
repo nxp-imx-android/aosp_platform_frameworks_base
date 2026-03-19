@@ -37,12 +37,10 @@ val Kosmos.realActivityManagerRepository by
 class FakeActivityManagerRepository(private val systemClock: SystemClock) :
     ActivityManagerRepository {
     private val isVisibleFlows = mutableMapOf<Int, MutableList<MutableStateFlow<Boolean>>>()
-    private val isDeadFlows = mutableMapOf<Int, MutableList<MutableStateFlow<Boolean>>>()
     private val appVisibilityFlows =
         mutableMapOf<Int, MutableList<MutableStateFlow<AppVisibilityModel>>>()
 
     var startingIsAppVisibleValue = false
-    var startingIsAppDeadValue = false
 
     override fun createAppVisibilityFlow(
         creationUid: Int,
@@ -74,16 +72,6 @@ class FakeActivityManagerRepository(private val systemClock: SystemClock) :
         return newFlow
     }
 
-    override fun createIsAppDeadFlow(
-        creationUid: Int,
-        logger: Logger,
-        identifyingLogTag: String,
-    ): Flow<Boolean> {
-        val newFlow = MutableStateFlow(startingIsAppDeadValue)
-        isDeadFlows.computeIfAbsent(creationUid) { mutableListOf() }.add(newFlow)
-        return newFlow
-    }
-
     fun setIsAppVisible(uid: Int, isAppVisible: Boolean) {
         isVisibleFlows[uid]?.forEach { stateFlow -> stateFlow.value = isAppVisible }
         appVisibilityFlows[uid]?.forEach { stateFlow ->
@@ -100,10 +88,6 @@ class FakeActivityManagerRepository(private val systemClock: SystemClock) :
                     )
                 }
         }
-    }
-
-    fun setIsAppDead(uid: Int, isAppDead: Boolean) {
-        isDeadFlows[uid]?.forEach { stateFlow -> stateFlow.value = isAppDead }
     }
 }
 
