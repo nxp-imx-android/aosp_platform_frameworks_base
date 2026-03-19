@@ -15,6 +15,8 @@
  */
 package com.android.server.appfunctions.observer;
 
+import static com.android.server.appfunctions.AppFunctionExecutors.SHARED_BACKGROUND_EXECUTOR;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.appfunctions.AppFunctionName;
@@ -141,7 +143,7 @@ class InternalObserverCallbackRouter {
                 Executors.newSingleThreadScheduledExecutor(
                         new NamedThreadFactory("AppFunctionsObserverRouter")),
                 SystemClock::elapsedRealtimeNanos,
-                BackgroundThread.getExecutor());
+                SHARED_BACKGROUND_EXECUTOR);
     }
 
     @VisibleForTesting
