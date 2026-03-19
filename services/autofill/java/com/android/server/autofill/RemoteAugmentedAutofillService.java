@@ -467,6 +467,14 @@ final class RemoteAugmentedAutofillService {
             future.complete(null);
             return future;
         }
+        if (!mPersonalContextManagerInternal.isPersonalContextServiceEnabledForPackage(
+                activityComponent.getPackageName(), mUserId)) {
+            if (sDebug) {
+                Slog.d(TAG, "Personal context trigger ignored due to app flag being disabled");
+            }
+            future.complete(null);
+            return future;
+        }
         if (focusedValue == null || inlineSuggestionsRequest == null) {
             if (sDebug) {
                 Slog.d(TAG, "No inline suggestions request, not sending personal context trigger");

@@ -27,6 +27,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -281,6 +282,34 @@ public class RemoteAugmentedAutofillServiceTest {
 
         // Autofill result is chosen as the personal context response is empty.
         assertInlinePresentationResult(AUTOFILL_INLINE_PRESENTATION_SPEC);
+    }
+
+    @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    @Test
+    public void onRequestAutofillLocked_disabledPackage_noPersonalContextHintSent() {
+        when(mContextManagerInternal.isPersonalContextServiceEnabledForPackage(any(), anyInt()))
+                .thenReturn(false);
+        final int sessionId = 1234;
+        AutofillId focusedId = new AutofillId(3);
+        final InlineSuggestionsRequest inlineSuggestionsRequest =
+                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
+                        .build();
+        // Request augmented autofill.
+        mService.onRequestAutofillLocked(
+                sessionId,
+                mClient,
+                4567, // taskId
+                ACTIVITY_COMPONENT_NAME,
+                mActivityToken,
+                focusedId,
+                AUTOFILL_VALUE,
+                inlineSuggestionsRequest,
+                mInlineSuggestionsCallback,
+                () -> {}, // onErrorCallback
+                mRemoteInlineSuggestionRenderService,
+                USER_ID);
+
+        verify(mContextManagerInternal, never()).publishTriggeringHint(any(), any(), any());
     }
 
     @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)

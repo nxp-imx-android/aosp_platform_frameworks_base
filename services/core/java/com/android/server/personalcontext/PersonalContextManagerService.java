@@ -603,6 +603,23 @@ public class PersonalContextManagerService extends SystemService {
         startRefinerWorkflow(userId, callingUid, hints, Set.of(renderToken), emptySet());
     }
 
+    private boolean isPersonalContextModeEnabled(
+            String packageName, int callingUid, @UserIdInt int userId) {
+        // Manifest.permission.QUERY_ALL_PACKAGES permission is enforced inside package manager.
+        int personalContextMode = mPackageManager.getPersonalContextMode(
+                packageName, callingUid, userId);
+        if (personalContextMode == PackageManager.PERSONAL_CONTEXT_MODE_UNSET) {
+            // Mode is unset for this app, check the default value.
+            return Settings.Secure.getIntForUser(
+                    getContext().getContentResolver(),
+                    Settings.Secure.PERSONAL_CONTEXT_MODE_ENABLED_DEFAULT,
+                    PERSONAL_CONTEXT_MODE_ENABLED_DEFAULT_VALUE,
+                    userId) == 1;
+        } else {
+            return personalContextMode == PackageManager.PERSONAL_CONTEXT_MODE_USER_ON;
+        }
+    }
+
     @SuppressLint("MissingPermission")
     private void sendPersonalContextModeChangedBroadcasts(
             String packageName, @UserIdInt int userId) {
@@ -761,28 +778,8 @@ public class PersonalContextManagerService extends SystemService {
         public boolean isPersonalContextModeEnabled(String packageName, @UserIdInt int userId) {
             final int callingUid = Binder.getCallingUid();
 
-            // Manifest.permission.QUERY_ALL_PACKAGES permission is enforced inside package manager.
-            return Boolean.TRUE.equals(
-                    Binder.withCleanCallingIdentity(
-                            () -> {
-                                int personalContextMode =
-                                        mPackageManager.getPersonalContextMode(
-                                                packageName, callingUid, userId);
-                                if (personalContextMode
-                                        == PackageManager.PERSONAL_CONTEXT_MODE_UNSET) {
-                                    // Mode is unset for this app, check the default value.
-                                    return Settings.Secure.getIntForUser(
-                                                    getService().getContext().getContentResolver(),
-                                                    Settings.Secure
-                                                            .PERSONAL_CONTEXT_MODE_ENABLED_DEFAULT,
-                                                    PERSONAL_CONTEXT_MODE_ENABLED_DEFAULT_VALUE,
-                                                    userId)
-                                            == 1;
-                                } else {
-                                    return personalContextMode
-                                            == PackageManager.PERSONAL_CONTEXT_MODE_USER_ON;
-                                }
-                            }));
+            return Boolean.TRUE.equals(Binder.withCleanCallingIdentity(() ->
+                    getService().isPersonalContextModeEnabled(packageName, callingUid, userId)));
         }
 
         @EnforcePermission(android.Manifest.permission.CHANGE_PERSONAL_CONTEXT_MODE)
@@ -1033,6 +1030,12 @@ public class PersonalContextManagerService extends SystemService {
     @VisibleForTesting
     class LocalService extends PersonalContextManagerInternal {
         @Override
+        public boolean isPersonalContextServiceEnabledForPackage(
+                String packageName, @UserIdInt int userId) {
+            return isPersonalContextModeEnabled(packageName, Process.myUid(), userId);
+        }
+
+        @Override
         public void onNotificationEvent(@NonNull NotificationEvent event) {
             final StatusBarNotification sbn = getSbnFromNotificationEvent(event);
             if (sbn == null) {
@@ -1044,6 +1047,12 @@ public class PersonalContextManagerService extends SystemService {
             final UserState userState = getUserStateSynchronized(user.getIdentifier());
             if (userState == null) {
                 Slog.e(TAG, "No user state for user " + user.getIdentifier());
+                return;
+            }
+
+            if (!isPersonalContextServiceEnabledForPackage(
+                    sbn.getPackageName(), user.getIdentifier())) {
+                Slog.i(TAG, "Personal Context disabled for package " + sbn.getPackageName());
                 return;
             }
 
@@ -1068,6 +1077,12 @@ public class PersonalContextManagerService extends SystemService {
             final UserState userState = getUserStateSynchronized(userId);
             if (userState == null) {
                 Slog.e(TAG, "No user state for user " + userId);
+                return;
+            }
+            if (!isPersonalContextServiceEnabledForPackage(
+                    request.getCallingPackageName(), userId)) {
+                Slog.i(TAG,
+                        "Personal Context disabled for package " + request.getCallingPackageName());
                 return;
             }
             if (userState.textClassificationActionRenderer == null) {
