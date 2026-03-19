@@ -5143,6 +5143,7 @@ package android.content.pm {
     field public static final int MATCH_HIDDEN_UNTIL_INSTALLED_COMPONENTS = 536870912; // 0x20000000
     field public static final int MATCH_INSTANT = 8388608; // 0x800000
     field public static final int MODULE_APEX_NAME = 1; // 0x1
+    field @FlaggedApi("com.android.window.flags.activity_start_interceptor_speedbumps") public static final int RESTRICTION_CONFIRM_WITH_SPEEDBUMP = 4; // 0x4
     field public static final int RESTRICTION_HIDE_FROM_SUGGESTIONS = 1; // 0x1
     field public static final int RESTRICTION_HIDE_NOTIFICATIONS = 2; // 0x2
     field public static final int RESTRICTION_NONE = 0; // 0x0
