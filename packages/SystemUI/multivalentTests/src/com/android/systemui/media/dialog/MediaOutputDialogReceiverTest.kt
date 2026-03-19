@@ -14,101 +14,126 @@
  * limitations under the License.
  */
 
-package com.android.systemui.media.dialog;
+package com.android.systemui.media.dialog
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
-import android.content.Intent;
-import android.platform.test.annotations.EnableFlags;
-
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.filters.SmallTest;
-
-import com.android.media.flags.Flags;
-import com.android.settingslib.media.MediaOutputConstants;
-import com.android.systemui.SysuiTestCase;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import android.content.Intent
+import android.platform.test.annotations.EnableFlags
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.SmallTest
+import com.android.media.flags.Flags
+import com.android.settingslib.media.MediaOutputConstants
+import com.android.systemui.SysuiTestCase
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 
 @SmallTest
-@RunWith(AndroidJUnit4.class)
-public class MediaOutputDialogReceiverTest extends SysuiTestCase {
+@RunWith(AndroidJUnit4::class)
+class MediaOutputDialogReceiverTest : SysuiTestCase() {
 
-    private MediaOutputDialogReceiver mMediaOutputDialogReceiver;
-
-    private final MediaOutputDialogManager mMockMediaOutputDialogManager =
-            mock(MediaOutputDialogManager.class);
+    private lateinit var mediaOutputDialogReceiver: MediaOutputDialogReceiver
+    private val mockMediaOutputDialogManager: MediaOutputDialogManager = mock()
 
     @Before
-    public void setup() {
-        mMediaOutputDialogReceiver = new MediaOutputDialogReceiver(mMockMediaOutputDialogManager);
+    fun setup() {
+        mediaOutputDialogReceiver = MediaOutputDialogReceiver(mockMediaOutputDialogManager)
     }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MEDIA_OUTPUT_SWITCHER_ENTRY_POINT_THEMING)
-    public void launchMediaOutputDialog_ExtraPackageName_DialogFactoryCalled() {
-        Intent intent = new Intent(MediaOutputConstants.ACTION_LAUNCH_MEDIA_OUTPUT_DIALOG);
-        intent.putExtra(MediaOutputConstants.EXTRA_PACKAGE_NAME, getContext().getPackageName());
-        mMediaOutputDialogReceiver.onReceive(getContext(), intent);
+    fun launchMediaOutputDialog_extraPackageName_dialogFactoryCalled() {
+        val intent = Intent(MediaOutputConstants.ACTION_LAUNCH_MEDIA_OUTPUT_DIALOG).apply {
+            putExtra(MediaOutputConstants.EXTRA_PACKAGE_NAME, context.packageName)
+        }
+        mediaOutputDialogReceiver.onReceive(context, intent)
 
-        verify(mMockMediaOutputDialogManager, times(1))
-                .createAndShow(
-                        eq(getContext().getPackageName()),
-                        eq(false),
-                        any(),
-                        any(),
-                        any(),
-                        anyBoolean());
+        verify(mockMediaOutputDialogManager, times(1))
+            .createAndShow(
+                packageName = eq(context.packageName),
+                aboveStatusBar = eq(false),
+                view = anyOrNull(),
+                userHandle = anyOrNull(),
+                token = anyOrNull(),
+                useSystemColors = eq(true),
+            )
     }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MEDIA_OUTPUT_SWITCHER_ENTRY_POINT_THEMING)
-    public void launchMediaOutputDialog_WrongExtraKey_DialogFactoryNotCalled() {
-        Intent intent = new Intent(MediaOutputConstants.ACTION_LAUNCH_MEDIA_OUTPUT_DIALOG);
-        intent.putExtra("Wrong Package Name Key", getContext().getPackageName());
-        mMediaOutputDialogReceiver.onReceive(getContext(), intent);
+    fun launchMediaOutputDialog_wrongExtraKey_dialogFactoryNotCalled() {
+        val intent = Intent(MediaOutputConstants.ACTION_LAUNCH_MEDIA_OUTPUT_DIALOG).apply {
+            putExtra("Wrong Package Name Key", context.packageName)
+        }
+        mediaOutputDialogReceiver.onReceive(context, intent)
 
-        verify(mMockMediaOutputDialogManager, never())
-                .createAndShow(any(), anyBoolean(), any(), any(), any(), anyBoolean());
+        verify(mockMediaOutputDialogManager, never())
+            .createAndShow(
+                anyOrNull(),
+                anyOrNull(),
+                anyOrNull(),
+                anyOrNull(),
+                anyOrNull(),
+                anyOrNull()
+            )
     }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MEDIA_OUTPUT_SWITCHER_ENTRY_POINT_THEMING)
-    public void launchMediaOutputDialog_NoExtra_DialogFactoryNotCalled() {
-        Intent intent = new Intent(MediaOutputConstants.ACTION_LAUNCH_MEDIA_OUTPUT_DIALOG);
-        mMediaOutputDialogReceiver.onReceive(getContext(), intent);
+    fun launchMediaOutputDialog_noExtra_dialogFactoryNotCalled() {
+        val intent = Intent(MediaOutputConstants.ACTION_LAUNCH_MEDIA_OUTPUT_DIALOG)
+        mediaOutputDialogReceiver.onReceive(context, intent)
 
-        verify(mMockMediaOutputDialogManager, never())
-                .createAndShow(any(), anyBoolean(), any(), any(), any(), anyBoolean());
+        verify(mockMediaOutputDialogManager, never())
+            .createAndShow(
+                anyOrNull(),
+                anyOrNull(),
+                anyOrNull(),
+                anyOrNull(),
+                anyOrNull(),
+                anyOrNull()
+            )
     }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MEDIA_OUTPUT_SWITCHER_ENTRY_POINT_THEMING)
-    public void unKnownAction_ExtraPackageName_FactoriesNotCalled() {
-        Intent intent = new Intent("UnKnown Action");
-        intent.putExtra(Intent.EXTRA_PACKAGE_NAME, getContext().getPackageName());
-        intent.putExtra(MediaOutputConstants.EXTRA_PACKAGE_NAME, getContext().getPackageName());
-        mMediaOutputDialogReceiver.onReceive(getContext(), intent);
+    fun unknownAction_extraPackageName_factoriesNotCalled() {
+        val intent = Intent("Unknown Action").apply {
+            putExtra(Intent.EXTRA_PACKAGE_NAME, context.packageName)
+            putExtra(MediaOutputConstants.EXTRA_PACKAGE_NAME, context.packageName)
+        }
+        mediaOutputDialogReceiver.onReceive(context, intent)
 
-        verify(mMockMediaOutputDialogManager, never())
-                .createAndShow(any(), anyBoolean(), any(), any(), any(), anyBoolean());
+        verify(mockMediaOutputDialogManager, never())
+            .createAndShow(
+                anyOrNull(),
+                anyOrNull(),
+                anyOrNull(),
+                anyOrNull(),
+                anyOrNull(),
+                anyOrNull()
+            )
     }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MEDIA_OUTPUT_SWITCHER_ENTRY_POINT_THEMING)
-    public void unKnownActionAnd_NoExtra_FactoriesNotCalled() {
-        Intent intent = new Intent("UnKnown Action");
-        mMediaOutputDialogReceiver.onReceive(getContext(), intent);
+    fun unknownActionAnd_noExtra_factoriesNotCalled() {
+        val intent = Intent("Unknown Action")
+        mediaOutputDialogReceiver.onReceive(context, intent)
 
-        verify(mMockMediaOutputDialogManager, never())
-                .createAndShow(any(), anyBoolean(), any(), any(), any(), anyBoolean());
+        verify(mockMediaOutputDialogManager, never())
+            .createAndShow(
+                anyOrNull(),
+                anyOrNull(),
+                anyOrNull(),
+                anyOrNull(),
+                anyOrNull(),
+                anyOrNull()
+            )
     }
 }
