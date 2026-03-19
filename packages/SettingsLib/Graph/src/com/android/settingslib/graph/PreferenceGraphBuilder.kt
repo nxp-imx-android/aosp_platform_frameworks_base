@@ -292,32 +292,32 @@ private constructor(
                     factory.parameters(context).collect { screen.addParameters(it.toProto()) }
                 }
             }
-        }
-        if (includeHierarchy) {
-            var flagEnabled: Boolean? = null
-            if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
-                // We need to instantiate without parameters to add an empty default entry
-                // if there are no valid parameter sets
-                val parameters = factory.keyParameters(context).toList()
-                if (parameters.isEmpty()) {
-                    addPreferenceScreen(
-                        factory.create(context),
-                        PreferenceScreenCoordinate(screenKey + ":empty")
-                    )
+            if (includeHierarchy) {
+                var flagEnabled: Boolean? = null
+                if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
+                    // We need to instantiate without parameters to add an empty default entry
+                    // if there are no valid parameter sets
+                    val parameters = factory.keyParameters(context).toList()
+                    if (parameters.isEmpty()) {
+                        addPreferenceScreen(
+                            factory.create(context),
+                            PreferenceScreenCoordinate(screenKey + ":empty")
+                        )
+                    } else {
+                        parameters.forEach {
+                            if (flagEnabled == false) return@forEach
+                            val screenMetadata = factory.createWithKeyParameters(context, it)
+                            if (flagEnabled == null) flagEnabled = checkScreenFlag(screenMetadata)
+                            if (flagEnabled) addPreferenceScreen(screenMetadata)
+                        }
+                    }
                 } else {
-                    parameters.forEach {
-                        if (flagEnabled == false) return@forEach
-                        val screenMetadata = factory.createWithKeyParameters(context, it)
+                    factory.parameters(context).collect {
+                        if (flagEnabled == false) return@collect
+                        val screenMetadata = factory.create(context, it)
                         if (flagEnabled == null) flagEnabled = checkScreenFlag(screenMetadata)
                         if (flagEnabled) addPreferenceScreen(screenMetadata)
                     }
-                }
-            } else {
-                factory.parameters(context).collect {
-                    if (flagEnabled == false) return@collect
-                    val screenMetadata = factory.create(context, it)
-                    if (flagEnabled == null) flagEnabled = checkScreenFlag(screenMetadata)
-                    if (flagEnabled) addPreferenceScreen(screenMetadata)
                 }
             }
         }
