@@ -8619,7 +8619,21 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         EnforcingAdmin enforcingAdmin = getEnforcingAdmin(caller);
         Integer state = mDevicePolicyEngine.getGlobalPolicySetByAdmin(
                 getPolicyDefinitionForIdentifier(PolicyIdentifier.AUTO_TIME_ZONE), enforcingAdmin);
-        return state != null ? state : DevicePolicyManager.AUTO_TIME_ZONE_NOT_CONTROLLED_BY_POLICY;
+        if(state == null){
+            return DevicePolicyManager.AUTO_TIME_ZONE_NOT_CONTROLLED_BY_POLICY;
+        }
+
+        switch (state) {
+            case PolicyIdentifier.AUTO_TIME_ZONE_ENABLED:
+            case PolicyIdentifier.AUTO_TIME_ZONE_ENABLED_UNENFORCED:
+                return DevicePolicyManager.AUTO_TIME_ZONE_ENABLED;
+            case PolicyIdentifier.AUTO_TIME_ZONE_DISABLED:
+            case PolicyIdentifier.AUTO_TIME_ZONE_DISABLED_UNENFORCED:
+                return DevicePolicyManager.AUTO_TIME_ZONE_DISABLED;
+            case PolicyIdentifier.AUTO_TIME_ZONE_USER_CHOICE:
+            default:
+                return DevicePolicyManager.AUTO_TIME_NOT_CONTROLLED_BY_POLICY;
+        }
     }
 
     // TODO (b/137101239): remove this method in follow-up CL
