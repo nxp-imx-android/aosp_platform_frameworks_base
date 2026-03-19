@@ -25,7 +25,6 @@ import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatu
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
@@ -51,12 +50,11 @@ constructor(
     override val visible: Boolean
         get() = mobileIcons.mobileSubViewModels.isNotEmpty()
 
-    override suspend fun onActivated(): Nothing {
+    override suspend fun onActivated() {
         coroutineScope {
             launch { mobileIcons.activate() }
             launch { stackedMobileIconViewModel.activate() }
         }
-        awaitCancellation()
     }
 
     @AssistedFactory

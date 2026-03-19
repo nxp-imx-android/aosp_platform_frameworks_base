@@ -46,9 +46,8 @@ constructor(
         shareScreenPrivacyIndicatorInteractor.isChipVisible
             .map { toPopupChipModel(it) }
             .hydratedStateOf(
-                traceName = "chip",
                 initialValue =
-                    QuickActionChipModel.Hidden(QuickActionChipId.ShareScreenPrivacyIndicator),
+                    QuickActionChipModel.Hidden(QuickActionChipId.ShareScreenPrivacyIndicator)
             )
 
     private fun toPopupChipModel(isVisible: Boolean): QuickActionChipModel {

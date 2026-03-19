@@ -40,12 +40,12 @@ constructor(
     val hasInputDevice: Boolean by
         mediaInputComponentInteractor.currentInputDevice
             .map { mediaDevice -> mediaDevice != null }
-            .hydratedStateOf(traceName = "hasInputDevice", initialValue = false)
+            .hydratedStateOf(initialValue = false)
 
     val connectedDeviceName: String? by
         mediaInputComponentInteractor.currentInputDevice
             .map { mediaDevice -> mediaDevice?.name }
-            .hydratedStateOf(traceName = "connectedDeviceName", initialValue = null)
+            .hydratedStateOf(initialValue = null)
 
     val connectedDeviceIcon: Icon by
         mediaInputComponentInteractor.currentInputDevice
@@ -53,10 +53,7 @@ constructor(
                 mediaDevice?.icon?.let { Icon.Loaded(it, null) }
                     ?: Icon.Resource(R.drawable.ic_media_home_devices, null)
             }
-            .hydratedStateOf(
-                traceName = "connectedDeviceIcon",
-                initialValue = Icon.Resource(R.drawable.ic_media_home_devices, null),
-            )
+            .hydratedStateOf(initialValue = Icon.Resource(R.drawable.ic_media_home_devices, null))
 
     fun onBarClick(expandable: Expandable?) {
         uiEventLogger.log(VolumePanelUiEvent.VOLUME_PANEL_MEDIA_INPUT_CLICKED)

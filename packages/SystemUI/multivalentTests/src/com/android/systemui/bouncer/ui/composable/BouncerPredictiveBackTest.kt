@@ -66,7 +66,6 @@ import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.testKosmos
 import kotlin.test.Ignore
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -261,7 +260,5 @@ class BouncerPredictiveBackTest : SysuiTestCase() {
                 Text(text = "Fake Lockscreen")
             }
         }
-
-        override suspend fun onActivated() = awaitCancellation()
     }
 }

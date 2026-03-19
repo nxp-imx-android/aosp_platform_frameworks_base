@@ -343,10 +343,7 @@ constructor(
             .distinctUntilChanged()
 
     val udfpsLocationState by
-        deviceEntryUdfpsInteractor.udfpsLocation.hydratedStateOf(
-            traceName = "udfpsLocationState",
-            initialValue = null,
-        )
+        deviceEntryUdfpsInteractor.udfpsLocation.hydratedStateOf(initialValue = null)
 
     /** The size of the biometric icon */
     val iconSize: Flow<Pair<Int, Int>> =

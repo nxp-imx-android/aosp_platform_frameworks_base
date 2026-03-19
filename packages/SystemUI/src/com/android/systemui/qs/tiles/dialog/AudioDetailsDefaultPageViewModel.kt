@@ -60,7 +60,7 @@ constructor(
         snapshotFlow { volumePanelViewModel }
             .flatMapLatest { it?.componentsLayout ?: flowOf(null) }
             .map { layout -> layout?.footerComponents }
-            .hydratedStateOf(traceName = "footerComponents", initialValue = null)
+            .hydratedStateOf(initialValue = null)
 
     val volumeComponentsFactory by derivedStateOf { volumePanelViewModel?.componentsFactory }
 

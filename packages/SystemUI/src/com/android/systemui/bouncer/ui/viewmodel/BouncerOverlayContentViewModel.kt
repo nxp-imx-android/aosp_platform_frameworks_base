@@ -144,8 +144,7 @@ constructor(
      */
     val actionButton: BouncerActionButtonModel? by
         bouncerActionButtonInteractor.actionButton.hydratedStateOf(
-            traceName = "actionButton",
-            initialValue = bouncerActionButtonInteractor.currentActionButton,
+            initialValue = bouncerActionButtonInteractor.currentActionButton
         )
 
     private val _isOneHandedModeSupported = MutableStateFlow(false)
@@ -211,11 +210,10 @@ constructor(
             .filter { it !is AuthenticationMethodModel.Biometric }
             .distinctUntilChanged()
             .hydratedStateOf(
-                traceName = "authenticationMethod",
                 initialValue =
                     authenticationInteractor.authenticationMethod.value.takeIf {
                         it !is AuthenticationMethodModel.Biometric
-                    },
+                    }
             )
 
     /** View-model for the current UI, based on the current authentication method. */
@@ -231,8 +229,7 @@ constructor(
             .filterNotNull()
             .flatMapLatest { it.readyToTryAuthenticate }
             .hydratedStateOf(
-                traceName = "isSignInButtonEnabled",
-                initialValue = authMethodViewModel?.readyToTryAuthenticate?.value ?: false,
+                initialValue = authMethodViewModel?.readyToTryAuthenticate?.value ?: false
             )
 
     /**
