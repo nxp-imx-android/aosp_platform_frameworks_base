@@ -212,9 +212,7 @@ class BubbleTaskViewListenerTest(flags: FlagsParameterization) {
         assertThat((intentFlags and Intent.FLAG_ACTIVITY_NEW_DOCUMENT) != 0).isTrue()
         assertThat((intentFlags and Intent.FLAG_ACTIVITY_MULTIPLE_TASK) != 0).isTrue()
         assertThat(optionsCaptor.lastValue.launchedFromBubble).isTrue()
-        if (!BubbleFlagHelper.enableRootTaskForBubble()) {
-            assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
-        }
+        assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
     }
 
     @Test
@@ -238,9 +236,7 @@ class BubbleTaskViewListenerTest(flags: FlagsParameterization) {
             .startShortcutActivity(any(), eq(shortcutInfo), optionsCaptor.capture(), any())
         assertThat(optionsCaptor.lastValue.launchedFromBubble).isTrue()
         assertThat(optionsCaptor.lastValue.isApplyActivityFlagsForBubbles).isTrue()
-        if (!BubbleFlagHelper.enableRootTaskForBubble()) {
-            assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
-        }
+        assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
     }
 
     @EnableFlags(FLAG_ENABLE_BUBBLE_ANYTHING)

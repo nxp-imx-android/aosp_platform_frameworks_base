@@ -126,7 +126,7 @@ public class BubbleTaskViewListener implements TaskView.Listener {
             try {
                 final WindowContainerToken rootToken =
                         mExpandedViewManager.getBubbleHelper().getAppBubbleRootTaskToken();
-                if (rootToken == null) {
+                if (rootToken == null || mBubble.isChat()) {
                     options.setTaskAlwaysOnTop(true /* alwaysOnTop */);
                 }
                 options.setPendingIntentBackgroundActivityStartMode(
