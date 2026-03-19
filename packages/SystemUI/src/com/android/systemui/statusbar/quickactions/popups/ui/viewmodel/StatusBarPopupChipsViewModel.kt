@@ -18,7 +18,7 @@ package com.android.systemui.statusbar.quickactions.popups.ui.viewmodel
 
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.statusbar.quickactions.assistant.StatusBarAssistantIcon
 import com.android.systemui.statusbar.quickactions.assistant.ui.viewmodel.AssistantIconViewModel
@@ -36,6 +36,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
 /**
@@ -123,6 +124,17 @@ constructor(
                 launch { assistantIcon.activate() }
             }
             launch { imeIndicatorChip.activate() }
+
+            launch {
+                snapshotFlow {
+                        val activeId = currentActiveQuickActionId ?: return@snapshotFlow false
+                        val bundle = incomingQuickActionChipBundle
+
+                        bundle.asList.find { it.chipId == activeId } is QuickActionChipModel.Hidden
+                    }
+                    .filter { isHidden -> isHidden }
+                    .collect { quickActionsInteractor.close() }
+            }
         }
     }
 
@@ -139,7 +151,10 @@ constructor(
             QuickActionChipModel.Hidden(chipId = QuickActionChipId.ImeIndicator),
         val largeScreenRecording: QuickActionChipModel =
             QuickActionChipModel.Hidden(chipId = QuickActionChipId.ScreenRecording),
-    )
+    ) {
+        val asList: List<QuickActionChipModel>
+            get() = listOf(media, privacy, shareScreen, assistant, ime, largeScreenRecording)
+    }
 
     @AssistedFactory
     interface Factory {

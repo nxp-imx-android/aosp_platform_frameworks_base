@@ -102,7 +102,7 @@ fun ContentScope.QuickActionsPanel(
     modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
-    val edgePaddingPx = with(density) { QuickActions.Dimensions.EdgePadding.toPx() }
+    val edgePaddingPx = with(density) { QuickActions.Dimensions.EdgePadding.roundToPx() }
 
     val panelModifier =
         modifier
