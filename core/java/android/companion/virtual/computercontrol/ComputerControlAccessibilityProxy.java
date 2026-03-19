@@ -85,10 +85,10 @@ final class ComputerControlAccessibilityProxy extends AccessibilityDisplayProxy 
      * Called whenever something significant happens in the ComputerControl session (new input
      * events, new apps launched, etc.).
      */
-    void resetStabilityState() {
+    void resetStabilityState(@ComputerControlSession.UnstableReason int reason) {
         synchronized (this) {
             if (mStabilitySignalTracker != null) {
-                mStabilitySignalTracker.resetStabilityState();
+                mStabilitySignalTracker.resetStabilityState(reason);
             }
         }
     }
@@ -111,6 +111,13 @@ final class ComputerControlAccessibilityProxy extends AccessibilityDisplayProxy 
                         if (mStabilitySignalTracker.mStabilityListener == this) {
                             executor.execute(listener::onSessionStable);
                         }
+                    }
+                }
+
+                @Override
+                public void onSessionUnstable(@ComputerControlSession.UnstableReason int reason) {
+                    if (mStabilitySignalTracker.mStabilityListener == this) {
+                        executor.execute(() -> listener.onSessionUnstable(reason));
                     }
                 }
             };
@@ -155,7 +162,8 @@ final class ComputerControlAccessibilityProxy extends AccessibilityDisplayProxy 
         private final Handler mHandler;
         private final EventIdleTracker mEventIdleTracker;
         private boolean mIsFirstFrameReceived;
-        private boolean mIsUnstable;
+        @Nullable
+        private Integer mUnstableReason;
 
         StabilitySignalTracker(long timeoutMillis, Handler handler,
                 ComputerControlSession.StabilityListener listener, boolean isFirstFrameReceived) {
@@ -179,11 +187,12 @@ final class ComputerControlAccessibilityProxy extends AccessibilityDisplayProxy 
             mHandler.post(mEventIdleTracker::onEvent);
         }
 
-        void resetStabilityState() {
+        void resetStabilityState(@ComputerControlSession.UnstableReason int reason) {
             mHandler.post(() -> {
-                mIsUnstable = true;
+                mUnstableReason = reason;
                 mEventIdleTracker.reset();
                 mEventIdleTracker.registerOneShotIdleCallback(this);
+                mStabilityListener.onSessionUnstable(reason);
             });
         }
 
@@ -198,10 +207,11 @@ final class ComputerControlAccessibilityProxy extends AccessibilityDisplayProxy 
         }
 
         private void checkStability() {
-            if (!mIsUnstable || mEventIdleTracker.hasPendingCallback() || !mIsFirstFrameReceived) {
+            if (mUnstableReason == null || mEventIdleTracker.hasPendingCallback()
+                    || !mIsFirstFrameReceived) {
                 return;
             }
-            mIsUnstable = false;
+            mUnstableReason = null;
             mStabilityListener.onSessionStable();
         }
     }

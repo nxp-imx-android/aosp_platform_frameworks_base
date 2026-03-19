@@ -48,6 +48,8 @@ package com.android.extensions.computercontrol {
     field public static final int ERROR_PERMISSION_DENIED = 3; // 0x3
     field public static final int ERROR_SESSION_LIMIT_REACHED = 1; // 0x1
     field public static final int ERROR_UNKNOWN = 0; // 0x0
+    field public static final int UNSTABLE_REASON_CALLER_INTERACTION = 1; // 0x1
+    field public static final int UNSTABLE_REASON_UNKNOWN = 0; // 0x0
   }
 
   public static interface ComputerControlSession.Callback {
@@ -109,6 +111,7 @@ package com.android.extensions.computercontrol {
 
   public static interface ComputerControlSession.StabilityListener {
     method public void onSessionStable();
+    method public default void onSessionUnstable(int);
   }
 
 }
