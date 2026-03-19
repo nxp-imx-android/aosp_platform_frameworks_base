@@ -599,6 +599,16 @@ flag {
 }
 
 flag {
+    name: "enable_focus_reset_on_display_removal"
+    namespace: "lse_desktop_experience"
+    description: "Resets focused display to default when it is removed"
+    bug: "450179124"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_focus_transition_observer_cleanup"
     namespace: "lse_desktop_experience"
     description: "Enable migration from TaskInfo#isFocused to FocusTransitionObserver on per display focus use case"
