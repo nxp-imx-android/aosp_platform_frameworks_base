@@ -21,12 +21,14 @@ import android.app.IAnrWarningCallback;
 import android.os.IBinder;
 import android.os.PerfettoCategories;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.os.Trace;
 import android.util.Log;
 import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.util.FrameworkStatsLog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +37,7 @@ import java.util.UUID;
 /** Controller for handling ANR warning listeners. */
 final class AnrWarningController {
     private static final String TAG = "AnrWarningController";
+    private static final int METRIC_FIELD_NOT_APPLICABLE = -1;
 
     @GuardedBy("mAnrWarningCallbacks")
     private final SparseArray<List<IAnrWarningCallback>> mAnrWarningCallbacks;
@@ -65,6 +68,11 @@ final class AnrWarningController {
             } catch (RemoteException e) {
                 Log.e(TAG, "Exception linking death recipient", e);
             }
+            logAnrApiEvent(
+                    callingUid,
+                    FrameworkStatsLog.ANR_WARNING_API_REPORTED__ACTION__REGISTER,
+                    perUidCallbacks.size()
+            );
         }
     }
 
@@ -84,6 +92,10 @@ final class AnrWarningController {
             } else {
                 mAnrWarningCallbacks.put(callingUid, perUidCallbacks);
             }
+            logAnrApiEvent(callingUid,
+                    FrameworkStatsLog.ANR_WARNING_API_REPORTED__ACTION__UNREGISTER,
+                    perUidCallbacks.size()
+            );
         }
     }
 
@@ -97,6 +109,9 @@ final class AnrWarningController {
             long timeoutMs,
             String description) {
         synchronized (mAnrWarningCallbacks) {
+            long startTime = SystemClock.elapsedRealtime();
+            int resultCode =
+                    FrameworkStatsLog.ANR_WARNING_API_REPORTED__NOTIFY_RESULT__NOTIFY_SUCCESS;
             if (!mAnrWarningCallbacks.contains(uid)) {
                 return;
             }
@@ -125,8 +140,17 @@ final class AnrWarningController {
                     callback.onAnrImminent(result);
                 } catch (RemoteException e) {
                     Log.e(TAG, "Unable to notify pre Anr callback");
+                    resultCode = FrameworkStatsLog
+                            .ANR_WARNING_API_REPORTED__NOTIFY_RESULT__NOTIFY_FAILURE;
                 } finally {
+                    int duration = (int) (SystemClock.elapsedRealtime() - startTime);
                     Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+                    logAnrApiEvent(uid,
+                            FrameworkStatsLog.ANR_WARNING_API_REPORTED__ACTION__NOTIFY,
+                            perUidCallbacks.size(),
+                            duration,
+                            resultCode,
+                            anrId);
                 }
             }
         }
@@ -167,6 +191,33 @@ final class AnrWarningController {
                 callbacks.removeAll(callbacksToRemove);
             }
         }
+    }
+
+    /** Log for Notify (All fields are relevant) */
+    private void logAnrApiEvent(int uid, int action, int callbackCount,
+            int latencyMs, int result, int anrId) {
+
+        FrameworkStatsLog.write(
+                FrameworkStatsLog.ANR_WARNING_API_REPORTED,
+                action,
+                uid,
+                callbackCount,
+                latencyMs,
+                result,
+                anrId
+        );
+    }
+
+    /** Log for Register/Unregister (Contextual fields are ignored) */
+    private void logAnrApiEvent(int uid, int action, int callbackCount) {
+        logAnrApiEvent(
+                uid,
+                action,
+                callbackCount,
+                /*latency*/ METRIC_FIELD_NOT_APPLICABLE,
+                /*resultCode*/
+                FrameworkStatsLog.ANR_WARNING_API_REPORTED__NOTIFY_RESULT__NOTIFY_UNKNOWN,
+                /*anrId*/ METRIC_FIELD_NOT_APPLICABLE);
     }
 
     private class AnrWarningDeathRecipient implements IBinder.DeathRecipient {
