@@ -666,17 +666,23 @@ public class CompanionAssociationActivity extends FragmentActivity implements
     }
 
     private Spanned getSummary(String deviceName) {
-        if (mRequest.isRemoteAiAgentSupported()) {
-            return getHtmlFromResources(this,
-                    R.string.summary_generic_with_remote_ai_capability, deviceName,
-                    getString(R.string.device_type));
-        }
-
         final String deviceProfile = mRequest.getDeviceProfile();
 
         if (mRequest.isSelfManaged()) {
             return getHtmlFromResources(this, PROFILE_SUMMARIES.get(deviceProfile),
                     mAppLabel, getString(R.string.device_type), mDeviceName);
+        }
+
+        if (mRequest.isRemoteAiAgentSupported()) {
+            if (deviceProfile == null && mRequest.getExtraPermissions().isEmpty()) {
+                return getHtmlFromResources(this,
+                        R.string.summary_generic_with_remote_ai_capability, deviceName,
+                        getString(R.string.device_type));
+            } else {
+                return getHtmlFromResources(this,
+                        R.string.summary_with_permissions_and_remote_ai_capability, deviceName,
+                        getString(R.string.device_type));
+            }
         }
 
         if (deviceProfile == null && mRequest.isSingleDevice()) {
