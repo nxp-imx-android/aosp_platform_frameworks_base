@@ -96,3 +96,13 @@ flag {
             "on KV backup and logging agent logs with the proper flow id."
     bug: "443738546"
 }
+
+flag {
+    name: "enable_synchronous_restore_session_cleanup"
+    namespace: "onboarding"
+    description: "Make restore session cleanup synchronous to fix flaky backup tests"
+    bug: "493162233"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
