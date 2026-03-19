@@ -1,4 +1,8 @@
-// Signature format: 2.0
+// Signature format: 6.0
+// - style=java
+// - normalize-abstract-modifier=no
+// - overloaded-method-order=source
+// - strip-java-lang-prefix=legacy
 package android.test {
 
   @Deprecated public class AndroidTestCase extends junit.framework.TestCase {
