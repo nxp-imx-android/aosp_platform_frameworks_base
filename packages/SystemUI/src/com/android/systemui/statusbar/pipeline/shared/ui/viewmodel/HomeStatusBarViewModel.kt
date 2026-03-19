@@ -378,7 +378,7 @@ constructor(
     override val isQuickSettingsChipHighlighted: Boolean by
         combine(
                 shadeInteractor.isQsExpanded,
-                statusBarVisibilityInteractor.isShadeVisibleOnThisDisplay,
+                statusBarVisibilityInteractor.isShadeWindowOnThisDisplay,
             ) { isQsExpanded, isShadeOnThisDisplay ->
                 isQsExpanded && isShadeOnThisDisplay
             }
@@ -387,7 +387,7 @@ constructor(
     override val isNotificationsChipHighlighted: Boolean by
         combine(
                 shadeInteractor.isNotificationsExpanded,
-                statusBarVisibilityInteractor.isShadeVisibleOnThisDisplay,
+                statusBarVisibilityInteractor.isShadeWindowOnThisDisplay,
             ) { isNotificationsExpanded, isShadeOnThisDisplay ->
                 isNotificationsExpanded && isShadeOnThisDisplay
             }
