@@ -47,8 +47,7 @@
     <string name="summary_virtual_device" msgid="1062189396947962635">"<xliff:g id="APP_NAME">%2$s</xliff:g> অ্যাপকে নিম্নলিখিত অনুমতি দেওয়া হবে:"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"ডিভাইস"</string>
     <string name="summary_generic" msgid="1761976003668044801">"এই অ্যাপ, আপনার ফোন এবং বেছে নেওয়া ডিভাইসের মধ্যে তথ্য সিঙ্ক করতে পারবে, যেমন কোনও কলারের নাম"</string>
-    <!-- no translation found for summary_generic_with_remote_ai_capability (5053633566439056634) -->
-    <skip />
+    <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"আপনার <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> থেকে কলারের তথ্য সহ অন্যান্য তথ্য সিঙ্ক করতে এবং স্মার্ট অ্যাকশন রান করতে &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt;-কে অনুমতি দিন"</string>
     <string name="consent_yes" msgid="8344487259618762872">"অনুমতি দিন"</string>
     <string name="consent_no" msgid="2640796915611404382">"অনুমতি দেবেন না"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"বাতিল করুন"</string>

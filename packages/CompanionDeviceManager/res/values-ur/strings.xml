@@ -47,8 +47,7 @@
     <string name="summary_virtual_device" msgid="1062189396947962635">"<xliff:g id="APP_NAME">%2$s</xliff:g> کو مندرجہ ذیل چیزوں کی اجازتیں ہوں گی:"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"آلہ"</string>
     <string name="summary_generic" msgid="1761976003668044801">"یہ ایپ آپ کے فون اور منتخب کردہ آلے کے درمیان معلومات، جیسے کسی کال کرنے والے کے نام، کی مطابقت پذیری کر سکے گی"</string>
-    <!-- no translation found for summary_generic_with_remote_ai_capability (5053633566439056634) -->
-    <skip />
+    <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"‏‫ &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; کو آپ کے <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> سے کالر کی معلومات جیسی معلومات کی مطابقت پذیری کرنے اور اسمارٹ کارروائیاں چلانے کی اجازت دیں"</string>
     <string name="consent_yes" msgid="8344487259618762872">"اجازت دیں"</string>
     <string name="consent_no" msgid="2640796915611404382">"اجازت نہ دیں"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"منسوخ کریں"</string>

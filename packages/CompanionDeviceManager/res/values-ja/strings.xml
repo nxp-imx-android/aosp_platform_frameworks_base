@@ -47,8 +47,7 @@
     <string name="summary_virtual_device" msgid="1062189396947962635">"<xliff:g id="APP_NAME">%2$s</xliff:g> には次の権限が付与されます。"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"デバイス"</string>
     <string name="summary_generic" msgid="1761976003668044801">"このアプリは、あなたのスマートフォンと選択したデバイスとの間で、通話相手の名前などの情報を同期できるようになります"</string>
-    <!-- no translation found for summary_generic_with_remote_ai_capability (5053633566439056634) -->
-    <skip />
+    <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>からの発信者情報などの情報の同期とスマート アクションの実行を&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt;に許可します"</string>
     <string name="consent_yes" msgid="8344487259618762872">"許可"</string>
     <string name="consent_no" msgid="2640796915611404382">"許可しない"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"キャンセル"</string>

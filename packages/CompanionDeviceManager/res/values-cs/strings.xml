@@ -47,8 +47,7 @@
     <string name="summary_virtual_device" msgid="1062189396947962635">"Aplikaci <xliff:g id="APP_NAME">%2$s</xliff:g> budou udělena následující oprávnění:"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"zařízení"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Tato aplikace bude moci synchronizovat údaje, jako je jméno volajícího, mezi vaším telefonem a vybraným zařízením"</string>
-    <!-- no translation found for summary_generic_with_remote_ai_capability (5053633566439056634) -->
-    <skip />
+    <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Povolte aplikaci &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; synchronizovat informace, jako jsou údaje o volajícím, a spouštět chytré akce z vašeho zařízení (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>)"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Povolit"</string>
     <string name="consent_no" msgid="2640796915611404382">"Nepovolovat"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Zrušit"</string>

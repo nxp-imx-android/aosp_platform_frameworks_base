@@ -47,8 +47,7 @@
     <string name="summary_virtual_device" msgid="1062189396947962635">"<xliff:g id="APP_NAME">%2$s</xliff:g> dará os seguintes permisos:"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"dispositivo"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Esta aplicación poderá sincronizar información (por exemplo, o nome de quen chama) entre o teléfono e o dispositivo escollido"</string>
-    <!-- no translation found for summary_generic_with_remote_ai_capability (5053633566439056634) -->
-    <skip />
+    <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Permite que &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; sincronice información (por exemplo, a de quen chama) e execute accións intelixentes desde o teu dispositivo (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>)"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Permitir"</string>
     <string name="consent_no" msgid="2640796915611404382">"Non permitir"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Cancelar"</string>
