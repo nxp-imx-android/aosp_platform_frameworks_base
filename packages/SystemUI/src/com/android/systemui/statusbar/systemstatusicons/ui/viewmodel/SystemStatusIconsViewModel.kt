@@ -17,10 +17,7 @@
 package com.android.systemui.statusbar.systemstatusicons.ui.viewmodel
 
 import android.content.Context
-import androidx.compose.runtime.getValue
-import com.android.systemui.lifecycle.ExclusiveActivatable
-import com.android.systemui.lifecycle.Hydrator
-import com.android.systemui.statusbar.systemstatusicons.domain.interactor.SystemStatusIconBlocklistInteractor
+import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
 import com.android.systemui.statusbar.systemstatusicons.airplane.ui.viewmodel.AirplaneModeIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.alarm.ui.viewmodel.NextAlarmIconViewModel
@@ -30,6 +27,7 @@ import com.android.systemui.statusbar.systemstatusicons.datasaver.ui.viewmodel.D
 import com.android.systemui.statusbar.systemstatusicons.devicesatellite.ui.viewmodel.DeviceBasedSatelliteIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.domain.interactor.ExternalSystemStatusIconInteractor
 import com.android.systemui.statusbar.systemstatusicons.domain.interactor.OrderedIconSlotNamesInteractor
+import com.android.systemui.statusbar.systemstatusicons.domain.interactor.SystemStatusIconBlocklistInteractor
 import com.android.systemui.statusbar.systemstatusicons.ethernet.ui.viewmodel.EthernetIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.heaset.ui.viewmodel.HeadsetIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.hotspot.ui.viewmodel.HotspotIconViewModel
@@ -44,7 +42,6 @@ import com.android.systemui.statusbar.systemstatusicons.zenmode.ui.viewmodel.Zen
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -93,13 +90,11 @@ constructor(
     vpnIconViewModelFactory: VpnIconViewModel.Factory,
     wifiIconViewModelFactory: WifiIconViewModel.Factory,
     zenModeIconViewModelFactory: ZenModeIconViewModel.Factory,
-) : ExclusiveActivatable(), SystemStatusIconsViewModel {
+) : HydratedActivatable(), SystemStatusIconsViewModel {
 
     init {
         SystemStatusIconsInCompose.expectInNewMode()
     }
-
-    private val hydrator = Hydrator("SystemStatusIcons.hydrator")
 
     private val airplaneModeIcon by lazy { airplaneModeIconViewModelFactory.create(context) }
     private val bluetoothIcon by lazy { bluetoothIconViewModelFactory.create(context) }
@@ -169,23 +164,15 @@ constructor(
         }
 
     override val iconViewModels by
-        hydrator.hydratedStateOf(
-            traceName = "iconViewModels",
-            initialValue = emptyList(),
-            source =
-                combine(externalIconViewModels, internalIconViewModels) {
-                    externalIcons,
-                    internalIcons ->
-                    // Put external at the beginning because they're the lowest priority, so they
-                    // should get ellipsized first.
-                    externalIcons + internalIcons
-                },
-        )
+        combine(externalIconViewModels, internalIconViewModels) { externalIcons, internalIcons ->
+                // Put external at the beginning because they're the lowest priority, so they
+                // should get ellipsized first.
+                externalIcons + internalIcons
+            }
+            .hydratedStateOf(initialValue = emptyList())
 
-    override suspend fun onActivated(): Nothing {
+    override suspend fun onActivated() {
         coroutineScope {
-            launch { hydrator.activate() }
-
             launch { airplaneModeIcon.activate() }
             launch { bluetoothIcon.activate() }
             launch { connectedDisplayIcon.activate() }
@@ -204,7 +191,6 @@ constructor(
             launch { wifiIcon.activate() }
             launch { zenModeIcon.activate() }
         }
-        awaitCancellation()
     }
 
     private fun sortViewModelsBySlotNames(
