@@ -295,7 +295,7 @@
             granted to the system app predictor -->
         <flag name="appPredictor" value="0x200000" />
         <!-- Additional flag from base permission type: this permission can also be granted if the
-             requesting application is included in the mainline module}. -->
+             requesting application is included in a platform module. -->
         <flag name="module" value="0x400000" />
         <!-- Additional flag from base permission type: this permission can be automatically
             granted to the system companion device manager service -->
