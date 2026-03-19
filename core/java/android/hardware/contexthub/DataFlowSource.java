@@ -30,8 +30,8 @@ import android.os.OutcomeReceiver;
 import android.os.SystemClock;
 import android.system.SystemCleaner;
 import android.util.CloseGuard;
-
 import android.util.Log;
+
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
@@ -193,6 +193,8 @@ public final class DataFlowSource implements AutoCloseable {
      * @throws NoSuchElementException if the sink's endpoint ID cannot be resolved
      * @throws ConcurrentModificationException if another API is being called concurrently or an
      *     async operation is in progress
+     * @throws SecurityException if the source does not have required permissions to communicate
+     *     with the sink
      */
     @RequiresPermission(android.Manifest.permission.ACCESS_CONTEXT_HUB)
     public void shareDataFlow(
