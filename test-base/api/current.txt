@@ -1,6 +1,5 @@
 // Signature format: 6.0
 // - style=java
-// - strip-java-lang-prefix=legacy
 package android.test {
 
   @Deprecated public class AndroidTestCase extends junit.framework.TestCase {
@@ -10,7 +9,7 @@ package android.test {
     method @Deprecated public void assertWritingContentUriRequiresPermission(android.net.Uri, String);
     method @Deprecated public android.content.Context getContext();
     method @Deprecated public android.content.Context getTestContext();
-    method @Deprecated protected void scrubClass(Class<?>) throws java.lang.IllegalAccessException;
+    method @Deprecated protected void scrubClass(Class<?>) throws IllegalAccessException;
     method @Deprecated public void setContext(android.content.Context);
     method @Deprecated public void setTestContext(android.content.Context);
     method @Deprecated @android.test.suitebuilder.annotation.Suppress public void testAndroidTestCaseSetupProperly();
@@ -28,7 +27,7 @@ package android.test {
     method @Deprecated public void injectInstrumentation(android.app.Instrumentation);
     method @Deprecated public final <T extends android.app.Activity> T launchActivity(String, Class<T>, android.os.Bundle);
     method @Deprecated public final <T extends android.app.Activity> T launchActivityWithIntent(String, Class<T>, android.content.Intent);
-    method @Deprecated public void runTestOnUiThread(Runnable) throws java.lang.Throwable;
+    method @Deprecated public void runTestOnUiThread(Runnable) throws Throwable;
     method @Deprecated public void sendKeys(int...);
     method @Deprecated public void sendKeys(String);
     method @Deprecated public void sendRepeatedKeys(int...);
@@ -134,7 +133,7 @@ package junit.framework {
     method public static String format(String, Object, Object);
   }
 
-  public class AssertionFailedError extends java.lang.AssertionError {
+  public class AssertionFailedError extends AssertionError {
     ctor public AssertionFailedError();
     ctor public AssertionFailedError(String);
   }
@@ -146,7 +145,7 @@ package junit.framework {
   }
 
   public interface Protectable {
-    method public void protect() throws java.lang.Throwable;
+    method public void protect() throws Throwable;
   }
 
   public interface Test {
@@ -162,11 +161,11 @@ package junit.framework {
     method public String getName();
     method public junit.framework.TestResult run();
     method public void run(junit.framework.TestResult);
-    method public void runBare() throws java.lang.Throwable;
-    method protected void runTest() throws java.lang.Throwable;
+    method public void runBare() throws Throwable;
+    method protected void runTest() throws Throwable;
     method public void setName(String);
-    method protected void setUp() throws java.lang.Exception;
-    method protected void tearDown() throws java.lang.Exception;
+    method protected void setUp() throws Exception;
+    method protected void tearDown() throws Exception;
   }
 
   public class TestFailure {
@@ -223,7 +222,7 @@ package junit.framework {
     method public int countTestCases();
     method public static junit.framework.Test createTest(Class<?>, String);
     method public String getName();
-    method public static java.lang.reflect.Constructor<?> getTestConstructor(Class<?>) throws java.lang.NoSuchMethodException;
+    method public static java.lang.reflect.Constructor<?> getTestConstructor(Class<?>) throws NoSuchMethodException;
     method public void run(junit.framework.TestResult);
     method public void runTest(junit.framework.Test, junit.framework.TestResult);
     method public void setName(String);
