@@ -133,21 +133,17 @@ public class TrustTokenManagerService extends SystemService {
     @Override
     public void onBootPhase(@BootPhase int phase) {
         if (phase == PHASE_SYSTEM_SERVICES_READY) {
+            mHasProvider = TrustTokenProvider.getServiceProvider(getContext()) != null;
+            if (mHasProvider) {
+                mRefreshScheduler.scheduleRegularRefresh();
+                mCleanUpScheduler.scheduleRegularCleanUp();
+            }
             var statsManager = mContext.getSystemService(StatsManager.class);
             statsManager.setPullAtomCallback(
                     MetricsLogger.TrustTokenState.ATOM_TAG,
                     new PullAtomMetadata.Builder().setCoolDownMillis(60000).build(),
                     ConcurrentUtils.DIRECT_EXECUTOR,
                     new PullTrustTokenState());
-        }
-    }
-
-    @Override
-    public void onUserUnlocked(@NonNull TargetUser user) {
-        mHasProvider = TrustTokenProvider.getServiceProvider(getContext()) != null;
-        if (mHasProvider) {
-            mRefreshScheduler.scheduleRegularRefresh();
-            mCleanUpScheduler.scheduleRegularCleanUp();
         }
     }
 
