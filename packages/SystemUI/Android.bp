@@ -926,6 +926,7 @@ android_robolectric_test {
         "RoboTestLibraries",
         "androidx.compose.runtime_runtime",
         "androidx.compose.ui_ui-test-junit4",
+        "platform-compat-test-rules",
         "SystemUI_pod_tests",
         "SystemUI_test_fixtures",
     ],
@@ -1000,6 +1001,7 @@ android_ravenwood_test {
         "kotlin-test",
         "mockito-kotlin-nodeps",
         "androidx.compose.runtime_runtime",
+        "platform-compat-test-rules",
     ],
     libs: [
         "android.test.runner.impl",

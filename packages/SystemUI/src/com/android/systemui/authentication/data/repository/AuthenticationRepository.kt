@@ -18,10 +18,12 @@ package com.android.systemui.authentication.data.repository
 
 import android.annotation.UserIdInt
 import android.app.admin.DevicePolicyManager
+import android.content.Context
 import android.content.IntentFilter
 import android.os.UserHandle
 import android.security.Flags.lockscreenIndicateDuplicateGuesses
 import android.security.Flags.secureLockDevice
+import android.text.ShowSecretsSetting
 import android.util.Log
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.widget.LockPatternUtils
@@ -40,6 +42,7 @@ import com.android.systemui.authentication.shared.model.AuthenticationResult
 import com.android.systemui.authentication.shared.model.AuthenticationResultModel
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
@@ -61,10 +64,12 @@ import kotlin.time.toJavaDuration
 import kotlin.time.toKotlinDuration
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
@@ -142,6 +147,12 @@ interface AuthenticationRepository {
 
     /** Whether the "enhanced PIN privacy" setting is enabled for the current user. */
     val isPinEnhancedPrivacyEnabled: StateFlow<Boolean>
+
+    /** Whether characters in password/secret fields should be shown for touch input. */
+    val isShowPasswordsTouchEnabled: StateFlow<Boolean>
+
+    /** Whether characters in password/secret fields should be shown for physical keyboard input. */
+    val isShowPasswordsPhysicalEnabled: StateFlow<Boolean>
 
     /**
      * Checks the given [LockscreenCredential] to see if it's correct, returning an
@@ -233,6 +244,7 @@ class AuthenticationRepositoryImpl
 constructor(
     @Background private val applicationScope: CoroutineScope,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
+    @Application private val context: Context,
     private val clock: SystemClock,
     private val getSecurityMode: Function<Int, KeyguardSecurityModel.SecurityMode>,
     private val userRepository: UserRepository,
@@ -297,6 +309,48 @@ constructor(
             initialValue = true,
             getFreshValue = { userId -> lockPatternUtils.isPinEnhancedPrivacyEnabled(userId) },
         )
+
+    override val isShowPasswordsTouchEnabled: StateFlow<Boolean> =
+        userRepository.selectedUserInfo
+            .map { it.id }
+            .distinctUntilChanged()
+            .flatMapLatest { userId ->
+                callbackFlow {
+                    val userContext = context.createContextAsUser(UserHandle.of(userId), 0)
+                    val unregister =
+                        ShowSecretsSetting.registerCallback(userContext) {
+                            trySend(ShowSecretsSetting.shouldShowTouchInput(userContext))
+                        }
+                    trySend(ShowSecretsSetting.shouldShowTouchInput(userContext))
+                    awaitClose { unregister.run() }
+                }
+            }
+            .stateIn(
+                scope = applicationScope,
+                started = SharingStarted.Eagerly,
+                initialValue = false,
+            )
+
+    override val isShowPasswordsPhysicalEnabled: StateFlow<Boolean> =
+        userRepository.selectedUserInfo
+            .map { it.id }
+            .distinctUntilChanged()
+            .flatMapLatest { userId ->
+                callbackFlow {
+                    val userContext = context.createContextAsUser(UserHandle.of(userId), 0)
+                    val unregister =
+                        ShowSecretsSetting.registerCallback(userContext) {
+                            trySend(ShowSecretsSetting.shouldShowPhysicalInput(userContext))
+                        }
+                    trySend(ShowSecretsSetting.shouldShowPhysicalInput(userContext))
+                    awaitClose { unregister.run() }
+                }
+            }
+            .stateIn(
+                scope = applicationScope,
+                started = SharingStarted.Eagerly,
+                initialValue = false,
+            )
 
     private val _failedAuthenticationAttempts = MutableStateFlow(0)
     override val failedAuthenticationAttempts: StateFlow<Int> =

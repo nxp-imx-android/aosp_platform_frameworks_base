@@ -17,8 +17,10 @@
 package com.android.systemui.authentication.data.repository
 
 import android.app.admin.DevicePolicyManager
+import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.UserInfo
+import android.os.UserHandle
 import android.platform.test.annotations.EnableFlags
 import android.security.Flags.FLAG_SECURE_LOCK_DEVICE
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -85,6 +87,18 @@ class AuthenticationRepositoryTest : SysuiTestCase() {
         runBlocking { userRepository.setSelectedUserInfo(USER_INFOS[0]) }
         whenever(getSecurityMode.apply(anyInt())).thenAnswer { currentSecurityMode }
 
+        USER_INFOS.forEach { userInfo ->
+            val userHandle = UserHandle.of(userInfo.id)
+            context.prepareCreateContextAsUser(
+                userHandle,
+                object : ContextWrapper(context) {
+                    override fun getUserId(): Int = userInfo.id
+
+                    override fun getUser(): UserHandle = userHandle
+                },
+            )
+        }
+
         underTest =
             AuthenticationRepositoryImpl(
                 applicationScope = testScope.backgroundScope,
@@ -97,6 +111,7 @@ class AuthenticationRepositoryTest : SysuiTestCase() {
                 broadcastDispatcher = fakeBroadcastDispatcher,
                 mobileConnectionsRepository = mobileConnectionsRepository,
                 tableLogBuffer = logcatTableLogBuffer(kosmos, "sceneFrameworkTableLogBuffer"),
+                context = context,
             )
     }
 
@@ -223,6 +238,20 @@ class AuthenticationRepositoryTest : SysuiTestCase() {
             underTest.reportAuthenticationAttempt(AuthenticationResult.SUCCEEDED)
             verify(lockPatternUtils, never()).userPresent(anyInt())
             verify(lockPatternUtils, never()).reportSuccessfulPasswordAttempt(anyInt())
+        }
+
+    @Test
+    fun isShowPasswordsTouchEnabled_emitsSafeDefaultFirst() =
+        testScope.runTest {
+            val values by collectValues(underTest.isShowPasswordsTouchEnabled)
+            assertThat(values.first()).isFalse()
+        }
+
+    @Test
+    fun isShowPasswordsPhysicalEnabled_emitsSafeDefaultFirst() =
+        testScope.runTest {
+            val values by collectValues(underTest.isShowPasswordsPhysicalEnabled)
+            assertThat(values.first()).isFalse()
         }
 
     private fun setSecurityModeAndDispatchBroadcast(

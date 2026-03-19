@@ -17,6 +17,9 @@
 package com.android.systemui.bouncer.domain.interactor
 
 import android.app.StatusBarManager.SESSION_KEYGUARD
+import android.app.compat.CompatChanges
+import android.content.res.Configuration
+import android.text.ShowSecretsSetting
 import com.android.app.tracing.FlowTracing.traceAsCounter
 import com.android.app.tracing.coroutines.asyncTraced as async
 import com.android.compose.animation.scene.ObservableTransitionState
@@ -48,6 +51,7 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
+import com.android.text.flags.Flags as TextFlags
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -116,6 +120,30 @@ constructor(
         ) { userSwitcherVisible, authMethod, _ ->
             userSwitcherVisible ||
                 (repository.isOneHandedBouncerSupportedInConfig && (authMethod !is Password))
+        }
+
+    /** Whether characters in password/secret fields should be obfuscated based on input source. */
+    val isPasswordObfuscationRequired: Flow<Boolean> =
+        if (!TextFlags.splitShowPasswordsToTouchAndPhysical()) {
+            flowOf(false)
+        } else {
+            combine(
+                configurationInteractor.configurationValues,
+                authenticationInteractor.isShowPasswordsTouchEnabled,
+                authenticationInteractor.isShowPasswordsPhysicalEnabled,
+            ) { config, touchEnabled, physicalEnabled ->
+                if (
+                    !CompatChanges.isChangeEnabled(
+                        ShowSecretsSetting.SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL
+                    )
+                ) {
+                    false
+                } else {
+                    val keyboardConnected = config.keyboard != Configuration.KEYBOARD_NOKEYS
+                    val shouldShow = if (keyboardConnected) physicalEnabled else touchEnabled
+                    !shouldShow
+                }
+            }
         }
 
     /** Whether interactions should be improved for large-screen (non-handheld) form factor. */

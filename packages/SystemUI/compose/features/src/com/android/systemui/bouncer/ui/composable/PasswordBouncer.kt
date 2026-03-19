@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.input.TextObfuscationMode
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -134,15 +133,7 @@ internal fun ContentScope.PasswordBouncer(
                             imeAction = ImeAction.Done,
                         ),
                     onKeyboardAction = { viewModel.onAuthenticateKeyPressed() },
-                    textObfuscationMode =
-                        if (isPasswordRevealed) TextObfuscationMode.Visible
-                        // Note that [TextObfuscationMode.RevealLastTyped] is a misleading name.
-                        // On Android it means "briefly reveal last typed character *if and only if*
-                        // the System.TEXT_SHOW_PASSWORD setting is enabled, otherwise it behaves as
-                        // [TextObfuscationMode.Hidden].
-                        // With this being in a [SelectedUserAwareLocalContext] block, the
-                        // setting will be read from the user identified by [selectedUserId].
-                        else TextObfuscationMode.RevealLastTyped,
+                    textObfuscationMode = viewModel.textObfuscationMode,
                     modifier =
                         modifier
                             .width(dimensionResource(id = R.dimen.keyguard_password_field_width))

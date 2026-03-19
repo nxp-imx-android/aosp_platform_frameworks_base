@@ -19,6 +19,7 @@ package com.android.systemui.bouncer.ui.viewmodel
 import android.view.inputmethod.InputMethodManager
 import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.TextObfuscationMode
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.snapshotFlow
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -108,6 +109,25 @@ constructor(
     private val _isPasswordRevealed = MutableStateFlow(false)
     /** Informs the UI whether the password should be currently revealed in clear text. */
     val isPasswordRevealed: StateFlow<Boolean> = _isPasswordRevealed.asStateFlow()
+
+    /** Informs the UI about the current text obfuscation mode. */
+    val textObfuscationMode: TextObfuscationMode by
+        combine(_isPasswordRevealed, interactor.isPasswordObfuscationRequired) { revealed, required
+                ->
+                if (revealed) {
+                    TextObfuscationMode.Visible
+                } else if (required) {
+                    // TODO(b/494143029): Remove this once compose supports physical inputs.
+                    TextObfuscationMode.Hidden
+                } else {
+                    // Note that [TextObfuscationMode.RevealLastTyped] is a misleading name.
+                    // On Android it means "briefly reveal last typed character *if and only
+                    // if* the System.TEXT_SHOW_PASSWORD setting is enabled, otherwise it
+                    // behaves as [TextObfuscationMode.Hidden].
+                    TextObfuscationMode.RevealLastTyped
+                }
+            }
+            .hydratedStateOf(initialValue = TextObfuscationMode.RevealLastTyped)
 
     /** Hides the password if it's been revealed and there was no user interaction. */
     private val HIDE_PASSWORD_DELAY = 5.seconds
