@@ -18,6 +18,7 @@ package com.android.server.pm;
 
 import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
 import static android.app.ActivityManager.PROCESS_STATE_TOP;
+import static android.os.Process.FIRST_PCC_UID;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -37,6 +38,7 @@ import android.app.IUidObserver;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.IntArray;
 
@@ -77,6 +79,7 @@ public class KillAppBlockerTest {
     private static final int TEST_USER_ID = 0;
     private static final int TEST_OWNER_UID = 10123;
     private static final int TEST_ISOLATED_UID = 99001;
+    private static final int TEST_PCC_UID = FIRST_PCC_UID;
 
     @Mock private IActivityManager mIActivityManager;
     @Mock private ActivityManagerInternal mActivityManagerInternal;
@@ -166,6 +169,54 @@ public class KillAppBlockerTest {
         // 5. Assert that it unblocks
         waiterThread.join(2000); // Wait for the thread to finish
         assertTrue("waitAppProcessGone should have unblocked after UID is gone",
+                waitFinished.get());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testWaitsForPccUid_andUnblocksWhenGone() throws Exception {
+        // 1. Setup mocks
+        when(mUserManagerService.getUserIds()).thenReturn(new int[]{TEST_USER_ID});
+
+        // Mock the normal owner UID as nonexistent so we isolate testing the PCC UID logic
+        when(mSnapshot.getPackageUidInternal(eq(TEST_PACKAGE_NAME), anyLong(), eq(TEST_USER_ID),
+                anyInt())).thenReturn(TEST_OWNER_UID);
+        when(mActivityManagerInternal.getUidProcessState(TEST_OWNER_UID))
+                .thenReturn(PROCESS_STATE_NONEXISTENT);
+        when(mSnapshot.getIsolatedUidsForUid(TEST_OWNER_UID))
+                .thenReturn(new IntArray());
+
+        // Mock the PCC UID lookup
+        when(mSnapshot.getPackageUidInternal(eq(TEST_PACKAGE_NAME), anyLong(), eq(TEST_USER_ID),
+                anyInt(), eq(true))).thenReturn(TEST_PCC_UID);
+        when(mActivityManagerInternal.getUidProcessState(TEST_PCC_UID))
+                .thenReturn(PROCESS_STATE_TOP);
+
+        final AtomicBoolean waitFinished = new AtomicBoolean(false);
+        final CountDownLatch waiterStartedLatch = new CountDownLatch(1);
+
+        // 2. Start waiting in a background thread
+        Thread waiterThread = new Thread(() -> {
+            mKillAppBlocker.register();
+            waiterStartedLatch.countDown();
+            mKillAppBlocker.waitAppProcessGone(mActivityManagerInternal, mSnapshot,
+                    mUserManagerService, TEST_PACKAGE_NAME);
+            waitFinished.set(true);
+        });
+
+        waiterThread.start();
+        waiterStartedLatch.await(1, TimeUnit.SECONDS);
+
+        // 3. Assert that it is blocking for the PCC UID
+        assertFalse("waitAppProcessGone should be blocking for PCC UID", waitFinished.get());
+        assertTrue("UidObserver should have been registered", mUidObserver != null);
+
+        // 4. Simulate the PCC UID dying
+        mUidObserver.onUidGone(TEST_PCC_UID, false);
+
+        // 5. Assert that it unblocks
+        waiterThread.join(2000);
+        assertTrue("waitAppProcessGone should have unblocked after PCC UID is gone",
                 waitFinished.get());
     }
 
