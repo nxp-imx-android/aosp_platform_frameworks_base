@@ -53,8 +53,6 @@ import android.app.appfunctions.ExecuteAppFunctionRequest;
 import android.app.appfunctions.ExecuteAppFunctionResponse;
 import android.app.appfunctions.IAppFunctionExecutor;
 import android.app.appfunctions.IAppFunctionManager;
-import android.app.appfunctions.IAppFunctionSearchResultCallback;
-import android.app.appfunctions.IAppFunctionSearchResults;
 import android.app.appfunctions.IAppFunctionService;
 import android.app.appfunctions.ICancellationCallback;
 import android.app.appfunctions.IExecuteAppFunctionCallback;
@@ -63,7 +61,6 @@ import android.app.appfunctions.IGetAppFunctionStatesCallback;
 import android.app.appfunctions.IIsAppFunctionEnabledCallback;
 import android.app.appfunctions.IObserveAppFunctionChangesCallback;
 import android.app.appfunctions.IOnAppFunctionAccessChangeListener;
-import android.app.appfunctions.ISearchAppFunctionsCallback;
 import android.app.appfunctions.ISetAppFunctionEnabledCallback;
 import android.app.appfunctions.SafeOneTimeExecuteAppFunctionCallback;
 import android.app.appsearch.AppSearchBatchResult;
@@ -884,102 +881,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                                     Slog.w(TAG, "Fail to call onError", ex);
                                                 }
                                             });
-                });
-    }
-
-    @Override
-    public void searchAppFunctions(
-            @NonNull AppFunctionAidlSearchSpec aidlSearchSpec,
-            @NonNull ISearchAppFunctionsCallback searchAppFunctionsCallback)
-            throws RemoteException {
-        Objects.requireNonNull(aidlSearchSpec);
-        Objects.requireNonNull(searchAppFunctionsCallback);
-
-        final int callingUid = Binder.getCallingUid();
-        final int callingPid = Binder.getCallingPid();
-
-        try {
-            // The calling package name will be used to determine the visible packages.
-            mCallerValidator.validateCallingPackage(aidlSearchSpec.getCallingPackageName());
-            mCallerValidator.verifyUserInteraction(
-                    /* targetUserId= */ aidlSearchSpec.getTargetUserId(),
-                    /* callingUid= */ callingUid,
-                    /* callingPid= */ callingPid,
-                    /* callingPackageName= */ aidlSearchSpec.getCallingPackageName());
-        } catch (SecurityException e) {
-            try {
-                searchAppFunctionsCallback.onError(new ParcelableException(e));
-            } catch (RemoteException ex) {
-                Slog.e(TAG, "Failed to execute callback#onError.", e);
-            }
-            return;
-        }
-
-        UserHandle targetUser = UserHandle.of(aidlSearchSpec.getTargetUserId());
-        AppSearchManager perUserAppSearchManager = getAppSearchManagerAsUser(targetUser);
-        if (perUserAppSearchManager == null) {
-            throw new IllegalStateException(
-                    "AppSearchManager not found for user:" + targetUser.getIdentifier());
-        }
-
-        THREAD_POOL_EXECUTOR.execute(
-                () -> {
-                    AppFunctionSearchSpec filteredSearchSpec =
-                            mVisibilityHelper.applyVisiblePackageFilter(
-                                    aidlSearchSpec, callingUid, callingPid);
-                    if (filteredSearchSpec == null) {
-                        // Early return when the calling package is unable to see any AppFunction
-                        try {
-                            searchAppFunctionsCallback.onSuccess(
-                                    new IAppFunctionSearchResults.Stub() {
-                                        @PermissionManuallyEnforced
-                                        @Override
-                                        public void getNextPage(
-                                                IAppFunctionSearchResultCallback callback)
-                                                throws RemoteException {
-                                            callback.onResult(Collections.emptyList());
-                                        }
-
-                                        @PermissionManuallyEnforced
-                                        @Override
-                                        public void close() {}
-                                    });
-                        } catch (RemoteException e) {
-                            Slog.e(TAG, "Failed to execute callback#onSuccess.", e);
-                        }
-                        return;
-                    }
-
-                    // Clear the caller identity since the AppFunction service needs to search
-                    // with "android" capability and filter the documents via search query.
-                    final long token = Binder.clearCallingIdentity();
-                    try {
-                        FutureGlobalSearchSession futureGlobalSearchSession =
-                                new FutureGlobalSearchSession(
-                                        perUserAppSearchManager, Runnable::run);
-                        searchAppFunctionsCallback
-                                .asBinder()
-                                .linkToDeath(futureGlobalSearchSession::close, /* flags= */ 0);
-                        IAppFunctionSearchResults results =
-                                mAppFunctionMetadataReader.searchAppFunctions(
-                                        futureGlobalSearchSession,
-                                        filteredSearchSpec,
-                                        THREAD_POOL_EXECUTOR);
-                        try {
-                            searchAppFunctionsCallback.onSuccess(results);
-                        } catch (RemoteException e) {
-                            Slog.e(TAG, "Failed to execute callback#onSuccess.", e);
-                            results.close();
-                        }
-                    } catch (Exception e) {
-                        try {
-                            searchAppFunctionsCallback.onError(new ParcelableException(e));
-                        } catch (RemoteException ex) {
-                            Slog.e(TAG, "Failed to execute callback#onError.", ex);
-                        }
-                    } finally {
-                        Binder.restoreCallingIdentity(token);
-                    }
                 });
     }
 

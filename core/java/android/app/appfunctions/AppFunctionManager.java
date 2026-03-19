@@ -630,33 +630,30 @@ public final class AppFunctionManager {
                 new AppFunctionAidlSearchSpec(
                         mContext.getPackageName(), searchSpec, mContext.getUserId());
 
-        try {
-            mService.searchAppFunctions(
-                    aidlSearchSpec,
-                    new ISearchAppFunctionsCallback.Stub() {
-                        @Override
-                        public void onSuccess(IAppFunctionSearchResults results) {
-                            new SearchResultsProcessor(results, executor, callback).fetchNext();
-                        }
-
-                        @Override
-                        public void onError(ParcelableException exception) {
-                            executor.execute(
-                                    () -> {
-                                        if (exception.getCause() == null) {
-                                            callback.onError(
-                                                    new RuntimeException(
-                                                            "Unknown remote failure."));
-                                        } else {
-                                            callback.onError(
-                                                    new RuntimeException(exception.getCause()));
-                                        }
-                                    });
-                        }
-                    });
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
+        AppSearchManager appSearchManager = mContext.getSystemService(AppSearchManager.class);
+        if (appSearchManager == null) {
+            executor.execute(
+                    () ->
+                            callback.onError(
+                                    new IllegalStateException("Failed to get AppSearchManager.")));
+            return;
         }
+
+        AppFunctionManagerHelper.searchAppFunctions(
+                        mContext, appSearchManager, searchSpec, executor)
+                .whenCompleteAsync(
+                        (result, cause) -> {
+                            if (cause != null) {
+                                if (cause instanceof Exception exception) {
+                                    callback.onError(exception);
+                                } else {
+                                    callback.onError(new RuntimeException(cause));
+                                }
+                            } else {
+                                callback.onResult(result);
+                            }
+                        },
+                        executor);
     }
 
     /**
@@ -1571,73 +1568,6 @@ public final class AppFunctionManager {
                             mCallback.onError(exception);
                         }
                     });
-        }
-    }
-
-    /**
-     * A processor that consumes the asynchronous search result stream from the system service.
-     *
-     * <p>It buffers these results in memory until the stream is exhausted (signaled by an empty
-     * page), at which point it delivers the complete list to the user's callback.
-     */
-    private static final class SearchResultsProcessor
-            extends IAppFunctionSearchResultCallback.Stub {
-        private final IAppFunctionSearchResults mSession;
-        private final Executor mExecutor;
-        private final OutcomeReceiver<List<AppFunctionMetadata>, Exception> mUserCallback;
-
-        private final List<AppFunctionMetadata> mAccumulator = new ArrayList<>();
-
-        SearchResultsProcessor(
-                @NonNull IAppFunctionSearchResults session,
-                @NonNull Executor executor,
-                @NonNull OutcomeReceiver<List<AppFunctionMetadata>, Exception> callback) {
-            mSession = Objects.requireNonNull(session);
-            mExecutor = Objects.requireNonNull(executor);
-            mUserCallback = Objects.requireNonNull(callback);
-        }
-
-        void fetchNext() {
-            try {
-                mSession.getNextPage(this);
-            } catch (RemoteException e) {
-                notifyError(e.rethrowFromSystemServer());
-            }
-        }
-
-        @Override
-        public void onResult(List<AppFunctionMetadata> result) {
-            if (result.isEmpty()) {
-                closeSession();
-                final List<AppFunctionMetadata> resultCopy = new ArrayList<>(mAccumulator);
-                mExecutor.execute(() -> mUserCallback.onResult(resultCopy));
-            } else {
-                mAccumulator.addAll(result);
-                fetchNext();
-            }
-        }
-
-        @Override
-        public void onError(ParcelableException exception) {
-            closeSession();
-            if (exception.getCause() != null) {
-                notifyError(new RuntimeException(exception.getCause()));
-            } else {
-                notifyError(new RuntimeException("Unknown failure during search"));
-            }
-        }
-
-        private void notifyError(@NonNull Exception e) {
-            Objects.requireNonNull(e);
-            mExecutor.execute(() -> mUserCallback.onError(e));
-        }
-
-        private void closeSession() {
-            try {
-                mSession.close();
-            } catch (RemoteException e) {
-                Log.w(TAG, "Fail to close the search session", e);
-            }
         }
     }
 }

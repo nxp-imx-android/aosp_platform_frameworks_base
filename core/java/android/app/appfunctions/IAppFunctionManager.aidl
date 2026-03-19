@@ -26,7 +26,6 @@ import android.app.appfunctions.IExecuteAppFunctionCallback;
 import android.app.appfunctions.IOnAppFunctionAccessChangeListener;
 import android.app.appfunctions.IAppFunctionExecutor;
 import android.app.appfunctions.IObserveAppFunctionChangesCallback;
-import android.app.appfunctions.ISearchAppFunctionsCallback;
 import android.app.appfunctions.IGetAppFunctionStatesCallback;
 import android.app.appfunctions.AppFunctionName;
 import android.os.ICancellationSignal;
@@ -51,19 +50,6 @@ interface IAppFunctionManager {
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = android.Manifest.permission.EXECUTE_APP_FUNCTIONS, conditional = true)")
     ICancellationSignal executeAppFunction(
         in ExecuteAppFunctionAidlRequest request, in IExecuteAppFunctionCallback callback
-    );
-
-    /**
-     * Performs a one-time search for AppFunctionMetadata with the given searchSpec and notifies the
-     * given callback of the result.
-     *
-     * @param aidlSearchSpec The spec of app functions to search for.
-     * @param callback The callback to receive the search results.
-     */
-    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = android.Manifest.permission.EXECUTE_APP_FUNCTIONS, conditional = true)")
-    void searchAppFunctions(
-        in AppFunctionAidlSearchSpec aidlSearchSpec,
-        in ISearchAppFunctionsCallback callback
     );
 
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = android.Manifest.permission.EXECUTE_APP_FUNCTIONS, conditional = true)")
