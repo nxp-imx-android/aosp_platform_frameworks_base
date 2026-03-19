@@ -21,6 +21,7 @@ import android.net.Uri
 import com.android.internal.logging.uiEventLogger
 import com.android.systemui.broadcast.broadcastSender
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.plugins.activityStarter
 import com.android.systemui.screencapture.common.ui.viewmodel.drawableLoaderViewModel
 import com.android.systemui.screencapture.domain.interactor.screenCaptureUiInteractor
 import com.android.systemui.screencapture.record.largescreen.data.repository.parentUriRepositoryKosmos
@@ -41,6 +42,7 @@ val Kosmos.postRecordingActionsViewModelFactory by
                     screenCaptureUiInteractor = screenCaptureUiInteractor,
                     parentUriRepository = parentUriRepositoryKosmos,
                     uiEventLogger = uiEventLogger,
+                    activityStarter = activityStarter,
                 )
             }
         }
