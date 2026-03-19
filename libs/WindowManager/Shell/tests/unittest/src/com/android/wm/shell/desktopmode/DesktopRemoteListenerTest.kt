@@ -58,6 +58,9 @@ class DesktopRemoteListenerTest : ShellTestCase() {
             transitionStateHolder,
         )
 
+    private val deskChangeListenerCaptor = argumentCaptor<DeskChangeListener>()
+    private val visibleTasksListenerCaptor = argumentCaptor<VisibleTasksListener>()
+
     @Before
     fun setUp() {
         whenever(userRepositories.current).thenReturn(currentRepository)
@@ -67,11 +70,97 @@ class DesktopRemoteListenerTest : ShellTestCase() {
                 it.getArgument(0) as SingleInstanceRemoteListener.RemoteCall<IDesktopTaskListener>
             callback.accept(desktopTaskListener)
         }
+    }
+
+    @Test
+    fun register_addsListeners() {
         listener.register(remoteListener)
+        // Verify listeners were added
+        verify(currentRepository).addDeskChangeListener(any(), any())
+        verify(currentRepository).addVisibleTasksListener(any(), any())
+    }
+
+    @Test
+    fun deskChangeListener_onDeskAdded_notifiesRemote() {
+        listener.register(remoteListener)
+        verify(currentRepository).addDeskChangeListener(deskChangeListenerCaptor.capture(), any())
+        deskChangeListenerCaptor.firstValue.onDeskAdded(1, 2)
+        verify(desktopTaskListener).onDeskAdded(1, 2)
+    }
+
+    @Test
+    fun deskChangeListener_onDeskRemoved_notifiesRemote() {
+        listener.register(remoteListener)
+        verify(currentRepository).addDeskChangeListener(deskChangeListenerCaptor.capture(), any())
+        deskChangeListenerCaptor.firstValue.onDeskRemoved(1, 2)
+        verify(desktopTaskListener).onDeskRemoved(1, 2)
+    }
+
+    @Test
+    fun deskChangeListener_onActiveDeskChanged_notifiesRemote() {
+        listener.register(remoteListener)
+        verify(currentRepository).addDeskChangeListener(deskChangeListenerCaptor.capture(), any())
+        deskChangeListenerCaptor.firstValue.onActiveDeskChanged(1, 2, 3)
+        verify(desktopTaskListener).onActiveDeskChanged(1, 2, 3)
+    }
+
+    @Test
+    fun deskChangeListener_onCanCreateDesksChanged_notifiesRemote() {
+        listener.register(remoteListener)
+        verify(currentRepository).addDeskChangeListener(deskChangeListenerCaptor.capture(), any())
+        deskChangeListenerCaptor.firstValue.onCanCreateDesksChanged(true)
+        verify(desktopTaskListener).onCanCreateDesksChanged(true)
+    }
+
+    @Test
+    fun deskChangeListener_onTaskAppearingInDesk_overviewVisible_notifiesRemote() {
+        whenever(shellController.isOverviewVisible(any())).thenReturn(true)
+        whenever(transitionStateHolder.isRecentsTransitionRunning()).thenReturn(false)
+        listener.register(remoteListener)
+        verify(currentRepository).addDeskChangeListener(deskChangeListenerCaptor.capture(), any())
+        deskChangeListenerCaptor.firstValue.onTaskAppearingInDesk(1, 2, 3)
+        verify(desktopTaskListener).onTaskAppearingInDeskWithOverviewShowing(1, 2, 3)
+    }
+
+    @Test
+    fun deskChangeListener_onTaskAppearingInDesk_overviewNotVisible_doesNotNotifyRemote() {
+        whenever(shellController.isOverviewVisible(any())).thenReturn(false)
+        listener.register(remoteListener)
+        verify(currentRepository).addDeskChangeListener(deskChangeListenerCaptor.capture(), any())
+        deskChangeListenerCaptor.firstValue.onTaskAppearingInDesk(1, 2, 3)
+        verify(desktopTaskListener, never())
+            .onTaskAppearingInDeskWithOverviewShowing(any(), any(), any())
+    }
+
+    @Test
+    fun visibleTasksListener_onTasksVisibilityChanged_notifiesRemote() {
+        listener.register(remoteListener)
+        verify(currentRepository)
+            .addVisibleTasksListener(visibleTasksListenerCaptor.capture(), any())
+        visibleTasksListenerCaptor.firstValue.onTasksVisibilityChanged(1, 5)
+        verify(desktopTaskListener).onTasksVisibilityChanged(1, 5)
+    }
+
+    @Test
+    fun unregister_afterRegister_stopsNotifications() {
+        listener.register(remoteListener)
+        verify(currentRepository).addDeskChangeListener(deskChangeListenerCaptor.capture(), any())
+        verify(currentRepository)
+            .addVisibleTasksListener(visibleTasksListenerCaptor.capture(), any())
+
+        listener.unregister()
+
+        // Simulate events after unregister
+        deskChangeListenerCaptor.firstValue.onDeskAdded(1, 2)
+        visibleTasksListenerCaptor.firstValue.onTasksVisibilityChanged(1, 5)
+
+        verify(desktopTaskListener, never()).onDeskAdded(any(), any())
+        verify(desktopTaskListener, never()).onTasksVisibilityChanged(any(), any())
     }
 
     @Test
     fun testOnEnterDesktopModeTransitionStarted() {
+        listener.register(remoteListener)
         val transitionDuration = 100
         listener.onEnterDesktopModeTransitionStarted(transitionDuration)
         verify(desktopTaskListener).onEnterDesktopModeTransitionStarted(transitionDuration)
@@ -79,6 +168,7 @@ class DesktopRemoteListenerTest : ShellTestCase() {
 
     @Test
     fun testOnExitDesktopModeTransitionStarted() {
+        listener.register(remoteListener)
         val transitionDuration = 200
         val shouldEndUpAtHome = true
         listener.onExitDesktopModeTransitionStarted(transitionDuration, shouldEndUpAtHome)
@@ -88,6 +178,7 @@ class DesktopRemoteListenerTest : ShellTestCase() {
 
     @Test
     fun onTaskbarCornerRoundingUpdate_callsRemoteListener() {
+        listener.register(remoteListener)
         listener.onTaskbarCornerRoundingUpdate(
             hasTasksRequiringTaskbarRounding = true,
             displayId = 2,
@@ -100,11 +191,10 @@ class DesktopRemoteListenerTest : ShellTestCase() {
     }
 
     @Test
-    fun unregister_callbacksCannotBeCalled() {
+    fun unregister_directCallbacksCannotBeCalled() {
+        listener.register(remoteListener)
         listener.unregister()
         // After stopping, the remote listener should not be called.
-        // We can't directly verify that the internal `remoteListener` is null,
-        // but we can verify that no more calls are made to it.
         val transitionDuration = 100
         val shouldEndUpAtHome = true
 
@@ -122,15 +212,16 @@ class DesktopRemoteListenerTest : ShellTestCase() {
 
     @Test
     fun unregister_removesListeners() {
-        val deskChangeCaptor = argumentCaptor<DeskChangeListener>()
-        val visibleTasksCaptor = argumentCaptor<VisibleTasksListener>()
-        // register is called in setUp, so capture listeners immediately
-        verify(currentRepository).addDeskChangeListener(deskChangeCaptor.capture(), any())
-        verify(currentRepository).addVisibleTasksListener(visibleTasksCaptor.capture(), any())
+        listener.register(remoteListener)
+
+        // Now capture listeners
+        verify(currentRepository).addDeskChangeListener(deskChangeListenerCaptor.capture(), any())
+        verify(currentRepository)
+            .addVisibleTasksListener(visibleTasksListenerCaptor.capture(), any())
 
         listener.unregister()
-        verify(currentRepository).removeDeskChangeListener(deskChangeCaptor.firstValue)
-        verify(currentRepository).removeVisibleTasksListener(visibleTasksCaptor.firstValue)
+        verify(currentRepository).removeDeskChangeListener(deskChangeListenerCaptor.firstValue)
+        verify(currentRepository).removeVisibleTasksListener(visibleTasksListenerCaptor.firstValue)
     }
 
     @Test
