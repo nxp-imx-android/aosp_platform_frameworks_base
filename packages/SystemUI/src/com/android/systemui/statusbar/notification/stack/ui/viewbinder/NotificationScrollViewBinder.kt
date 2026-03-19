@@ -101,6 +101,11 @@ constructor(
             if (Flags.notificationShadeBlur() || Flags.fixNsslBlockingQs()) {
                 launch { viewModel.interactive.collectTraced(view::setInteractive) }
             }
+            launch {
+                viewModel.lockScreenToShadeTransitionProgress.collectTraced {
+                    view.setLStoShadeProgress(it)
+                }
+            }
             launch { viewModel.isSplitShade.collectTraced { view.setSplitShade(it) } }
             launch {
                 viewModel

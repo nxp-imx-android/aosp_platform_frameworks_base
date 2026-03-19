@@ -1928,6 +1928,12 @@ public class NotificationStackScrollLayout
         }
     }
 
+    @Override
+    public void setLStoShadeProgress(float shadeProgress) {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
+        mAmbientState.setLStoShadeProgress(shadeProgress);
+    }
+
     @VisibleForTesting
     void updateExpandedHeight(float expandFraction) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
