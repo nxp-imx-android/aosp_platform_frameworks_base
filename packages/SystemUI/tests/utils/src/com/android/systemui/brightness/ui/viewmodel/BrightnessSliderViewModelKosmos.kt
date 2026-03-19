@@ -23,6 +23,7 @@ import com.android.systemui.classifier.domain.interactor.falsingInteractor
 import com.android.systemui.graphics.imageLoader
 import com.android.systemui.haptics.slider.sliderHapticsViewModelFactory
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.settings.brightness.ui.brightnessWarningToast
 
 val Kosmos.brightnessSliderViewModelFactory: BrightnessSliderViewModel.Factory by
@@ -34,10 +35,11 @@ val Kosmos.brightnessSliderViewModelFactory: BrightnessSliderViewModel.Factory b
                     brightnessPolicyEnforcementInteractor = brightnessPolicyEnforcementInteractor,
                     hapticsViewModelFactory = sliderHapticsViewModelFactory,
                     brightnessMirrorShowingInteractorLazy = { brightnessMirrorShowingInteractor },
-                    supportsMirroring = allowsMirroring,
                     falsingInteractor = falsingInteractor,
+                    supportsMirroring = allowsMirroring,
                     brightnessWarningToast = brightnessWarningToast,
                     imageLoader = imageLoader,
+                    coroutineScope = applicationCoroutineScope,
                 )
             }
         }
