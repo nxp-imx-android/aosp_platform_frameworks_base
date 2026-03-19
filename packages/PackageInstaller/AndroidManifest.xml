@@ -36,8 +36,7 @@
             android:supportsRtl="true"
             android:defaultToDeviceProtectedStorage="true"
             android:forceQueryable="true"
-            android:directBootAware="true"
-            android:enableOnBackInvokedCallback="false">
+            android:directBootAware="true">
 
         <receiver android:name=".common.TemporaryFileManager"
             android:exported="false">

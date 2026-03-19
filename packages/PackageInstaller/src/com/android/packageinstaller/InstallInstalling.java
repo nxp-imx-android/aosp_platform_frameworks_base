@@ -35,6 +35,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.window.OnBackInvokedDispatcher;
 
 import androidx.annotation.Nullable;
 
@@ -79,6 +80,14 @@ public class InstallInstalling extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+                () -> {
+                    if (mCancelButton != null && mCancelButton.isEnabled()) {
+                        finish();
+                    }
+                });
 
         ApplicationInfo appInfo = getIntent()
                 .getParcelableExtra(PackageUtil.INTENT_ATTR_APPLICATION_INFO);
@@ -222,13 +231,6 @@ public class InstallInstalling extends Activity {
 
         outState.putInt(SESSION_ID, mSessionId);
         outState.putInt(INSTALL_ID, mInstallId);
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (mCancelButton.isEnabled()) {
-            super.onBackPressed();
-        }
     }
 
     @Override
