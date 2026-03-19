@@ -4745,7 +4745,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         final TransitionInfo.Change barChange = new TransitionInfo.Change(null /* token */,
                 // Make a copy because the transition leash may be released on finish.
                 new SurfaceControl(leash, "addDividerBarToTransition"));
-        mSplitLayout.getDividerLeashBounds(mTempRect1);
+        mSplitLayout.getRefDividerBounds(mTempRect1);
         barChange.setParent(mSplitRootTaskInfo.token);
         barChange.setStartAbsBounds(mTempRect1);
         barChange.setEndAbsBounds(mTempRect1);
