@@ -263,69 +263,21 @@ class StatusBarVisibilityInteractorTest(flags: FlagsParameterization) : SysuiTes
         }
 
     @Test
-    fun isShadeVisibleOnThisDisplay_shadeVisibleOnThisDisplay_true() =
+    fun isShadeWindowOnThisDisplay_thisDisplayIsPending_true() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.isShadeVisibleOnThisDisplay)
+            val latest by collectLastValue(underTest.isShadeWindowOnThisDisplay)
 
-            if (SceneContainerFlag.isEnabled) {
-                kosmos.sceneContainerRepository.showOverlay(Overlays.QuickSettingsShade)
-                kosmos.shadeTestUtil.setQsExpansion(1f)
-            } else {
-                kosmos.shadeTestUtil.setShadeExpansion(1f)
-            }
             kosmos.fakeShadeDisplaysRepository.setPendingDisplayId(DEFAULT_DISPLAY)
-            runCurrent()
 
             assertThat(latest).isTrue()
         }
 
     @Test
-    fun isShadeVisibleOnThisDisplay_shadeNotExpanded_false() =
+    fun isShadeWindowOnThisDisplay_otherDisplayIsPending_false() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.isShadeVisibleOnThisDisplay)
+            val latest by collectLastValue(underTest.isShadeWindowOnThisDisplay)
 
-            if (SceneContainerFlag.isEnabled) {
-                kosmos.sceneContainerRepository.hideOverlay(Overlays.QuickSettingsShade)
-                kosmos.shadeTestUtil.setQsExpansion(0f)
-            } else {
-                kosmos.shadeTestUtil.setShadeExpansion(0f)
-            }
-            kosmos.fakeShadeDisplaysRepository.setPendingDisplayId(DEFAULT_DISPLAY)
-            runCurrent()
-
-            assertThat(latest).isFalse()
-        }
-
-    @Test
-    fun isShadeVisibleOnThisDisplay_shadeVisibleOnAnotherDisplay_false() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isShadeVisibleOnThisDisplay)
-
-            if (SceneContainerFlag.isEnabled) {
-                kosmos.sceneContainerRepository.showOverlay(Overlays.QuickSettingsShade)
-                kosmos.shadeTestUtil.setQsExpansion(1f)
-            } else {
-                kosmos.shadeTestUtil.setShadeExpansion(1f)
-            }
             kosmos.fakeShadeDisplaysRepository.setPendingDisplayId(EXTERNAL_DISPLAY)
-            runCurrent()
-
-            assertThat(latest).isFalse()
-        }
-
-    @Test
-    fun isShadeVisibleOnThisDisplay_nothingVisible_false() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isShadeVisibleOnThisDisplay)
-
-            if (SceneContainerFlag.isEnabled) {
-                kosmos.sceneContainerRepository.hideOverlay(Overlays.QuickSettingsShade)
-                kosmos.shadeTestUtil.setQsExpansion(0f)
-            } else {
-                kosmos.shadeTestUtil.setShadeExpansion(0f)
-            }
-            kosmos.fakeShadeDisplaysRepository.setPendingDisplayId(EXTERNAL_DISPLAY)
-            runCurrent()
 
             assertThat(latest).isFalse()
         }
