@@ -37,27 +37,27 @@
         androidprv:productId="0x200e" />
     <!-- Playstation DualShock 4 controller -->
     <keyboard-glyph-map
-        androidprv:glyphMap="@xml/default_game_controller_glyph_map"
+        androidprv:glyphMap="@xml/playstation_controller_glyph_map"
         androidprv:vendorId="0x054c"
         androidprv:productId="0x05c4" />
     <!-- Playstation DualShock 4 (Slim) controller -->
     <keyboard-glyph-map
-        androidprv:glyphMap="@xml/default_game_controller_glyph_map"
+        androidprv:glyphMap="@xml/playstation_controller_glyph_map"
         androidprv:vendorId="0x054c"
         androidprv:productId="0x09cc" />
     <!-- Playstation DualShock 4 controller (USB receiver) -->
     <keyboard-glyph-map
-        androidprv:glyphMap="@xml/default_game_controller_glyph_map"
+        androidprv:glyphMap="@xml/playstation_controller_glyph_map"
         androidprv:vendorId="0x054c"
         androidprv:productId="0x0ba0" />
     <!-- Playstation DualSense controller -->
     <keyboard-glyph-map
-        androidprv:glyphMap="@xml/default_game_controller_glyph_map"
+        androidprv:glyphMap="@xml/playstation_controller_glyph_map"
         androidprv:vendorId="0x054c"
         androidprv:productId="0x0ce6" />
     <!-- Playstation DualSense Edge controller -->
     <keyboard-glyph-map
-        androidprv:glyphMap="@xml/default_game_controller_glyph_map"
+        androidprv:glyphMap="@xml/playstation_controller_glyph_map"
         androidprv:vendorId="0x054c"
         androidprv:productId="0x0df2" />
 </keyboard-glyph-maps>
