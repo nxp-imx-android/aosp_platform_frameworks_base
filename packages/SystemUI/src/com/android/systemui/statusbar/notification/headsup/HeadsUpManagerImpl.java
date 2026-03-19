@@ -294,6 +294,14 @@ public class HeadsUpManagerImpl
     @Override
     public void showNotification(
             @NonNull NotificationEntry entry, boolean isFromUserOpenAction) {
+
+        final HeadsUpEntry existing = mHeadsUpEntryMap.get(entry.getKey());
+        if (existing != null && existing.mEntry != entry) {
+            // NotificationEntry does not override equals() or hashCode()
+            // so this check defaults to memory address comparison
+            mLogger.logNotifEntryMismatch("showNotification", entry);
+        }
+
         HeadsUpEntry headsUpEntry = createHeadsUpEntry(entry);
 
         mLogger.logShowNotificationRequest(entry, isFromUserOpenAction);
