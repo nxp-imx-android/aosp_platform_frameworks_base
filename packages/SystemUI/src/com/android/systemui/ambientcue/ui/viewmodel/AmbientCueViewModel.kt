@@ -30,8 +30,7 @@ import com.android.systemui.ambientcue.domain.interactor.AmbientCueInteractor.Co
 import com.android.systemui.ambientcue.shared.flag.AmbientCueFlag
 import com.android.systemui.ambientcue.shared.logger.AmbientCueLogger
 import com.android.systemui.dump.DumpManager
-import com.android.systemui.lifecycle.ExclusiveActivatable
-import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.util.kotlin.launchAndDispose
 import com.android.systemui.util.time.SystemClock
 import dagger.assisted.AssistedFactory
@@ -42,7 +41,6 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -57,36 +55,20 @@ constructor(
     private val systemClock: SystemClock,
     private val dumpManager: DumpManager,
     private val ambientCueLogger: AmbientCueLogger,
-) : ExclusiveActivatable(), Dumpable {
-
-    private val hydrator = Hydrator("AmbientCueViewModel.hydrator")
+) : HydratedActivatable(), Dumpable {
 
     private val isRootViewAttached: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "isRootViewAttached",
-            initialValue = false,
-            source = ambientCueInteractor.isRootViewAttached,
-        )
+        ambientCueInteractor.isRootViewAttached.hydratedStateOf(initialValue = false)
 
     val isImeVisible: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "isImeVisible",
-            initialValue = false,
-            source = ambientCueInteractor.isImeVisible,
-        )
+        ambientCueInteractor.isImeVisible.hydratedStateOf(initialValue = false)
 
     private val isOccludedBySystemUi: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "isOccludedBySystemUi",
-            initialValue = false,
-            source = ambientCueInteractor.isOccludedBySystemUi,
-        )
+        ambientCueInteractor.isOccludedBySystemUi.hydratedStateOf(initialValue = false)
 
     private val ambientCueTimeoutMs: Int by
-        hydrator.hydratedStateOf(
-            traceName = "ambientCueTimeoutMs",
-            initialValue = AMBIENT_CUE_TIMEOUT_MS,
-            source = ambientCueInteractor.ambientCueTimeoutMs,
+        ambientCueInteractor.ambientCueTimeoutMs.hydratedStateOf(
+            initialValue = AMBIENT_CUE_TIMEOUT_MS
         )
 
     val isVisible: Boolean
@@ -100,106 +82,92 @@ constructor(
         private set
 
     val showFirstTimeEducation: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "showFirstTimeEducation",
-            source = ambientCueInteractor.firstTimeEducationShownAt.map { it == null },
-            initialValue = false,
-        )
+        ambientCueInteractor.firstTimeEducationShownAt
+            .map { it == null }
+            .hydratedStateOf(initialValue = false)
 
     val showLongPressEducation: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "showLongPressEducation",
-            initialValue = false,
-            source =
-                combine(
-                    ambientCueInteractor.shouldShowLongPressEducation,
-                    ambientCueInteractor.firstTimeEducationShownAt,
-                    ambientCueInteractor.isRootViewAttached,
-                ) { shouldShowLongPressEducation, firstTimeEducationShownAt, _ ->
-                    Log.i(
-                        TAG,
-                        "showLongPressEducation: $shouldShowLongPressEducation " +
-                            "$firstTimeEducationShownAt",
-                    )
-                    val firstTimeSeenAtMs =
-                        (firstTimeEducationShownAt ?: systemClock.currentTimeMillis()).milliseconds
-                    firstTimeSeenAtMs + ONBOARDING_DELAY <
-                        systemClock.currentTimeMillis().milliseconds && shouldShowLongPressEducation
-                },
-        )
+        combine(
+                ambientCueInteractor.shouldShowLongPressEducation,
+                ambientCueInteractor.firstTimeEducationShownAt,
+                ambientCueInteractor.isRootViewAttached,
+            ) { shouldShowLongPressEducation, firstTimeEducationShownAt, _ ->
+                Log.i(
+                    TAG,
+                    "showLongPressEducation: $shouldShowLongPressEducation " +
+                        "$firstTimeEducationShownAt",
+                )
+                val firstTimeSeenAtMs =
+                    (firstTimeEducationShownAt ?: systemClock.currentTimeMillis()).milliseconds
+                firstTimeSeenAtMs + ONBOARDING_DELAY <
+                    systemClock.currentTimeMillis().milliseconds && shouldShowLongPressEducation
+            }
+            .hydratedStateOf(initialValue = false)
 
     val pillStyle: PillStyleViewModel by
-        hydrator.hydratedStateOf(
-            traceName = "pillStyle",
-            initialValue = PillStyleViewModel.Uninitialized,
-            source =
-                combine(
-                    ambientCueInteractor.isGestureNav,
-                    ambientCueInteractor.isTaskBarVisible,
-                    ambientCueInteractor.recentsButtonPosition,
-                ) { isGestureNav, isTaskBarVisible, recentsButtonPosition ->
-                    if (isGestureNav) {
-                        if (isTaskBarVisible) {
-                            PillStyleViewModel.NoPillStyle
-                        } else {
-                            PillStyleViewModel.NavBarPillStyle
-                        }
+        combine(
+                ambientCueInteractor.isGestureNav,
+                ambientCueInteractor.isTaskBarVisible,
+                ambientCueInteractor.recentsButtonPosition,
+            ) { isGestureNav, isTaskBarVisible, recentsButtonPosition ->
+                if (isGestureNav) {
+                    if (isTaskBarVisible) {
+                        PillStyleViewModel.NoPillStyle
                     } else {
-                        val position = recentsButtonPosition
-                        PillStyleViewModel.ShortPillStyle(position?.toComposeRect())
+                        PillStyleViewModel.NavBarPillStyle
                     }
-                },
-        )
+                } else {
+                    val position = recentsButtonPosition
+                    PillStyleViewModel.ShortPillStyle(position?.toComposeRect())
+                }
+            }
+            .hydratedStateOf(initialValue = PillStyleViewModel.Uninitialized)
 
     @OptIn(FlowPreview::class)
     val actions: List<ActionViewModel> by
-        hydrator.hydratedStateOf(
-            traceName = "actions",
-            initialValue = listOf(),
-            source =
-                ambientCueInteractor.actions
-                    .debounce { actions -> if (actions.isEmpty()) ACTIONS_DEBOUNCE_MS else 0L }
-                    .map { actions ->
-                        actions.map { action ->
-                            ActionViewModel(
-                                icon =
-                                    IconViewModel(
-                                        large = action.icon.large,
-                                        small = action.icon.small,
-                                        iconId = action.icon.iconId,
-                                        repeatCount = 0,
-                                    ),
-                                label = action.label,
-                                attribution = action.attribution,
-                                onClick = {
-                                    action.onPerformAction()
-                                    collapse()
-                                },
-                                onLongClick = {
-                                    action.onPerformLongClick()
-                                    // Long press onboarding only triggers 7 days after the initial
-                                    // onboarding. That said, we'd like to suppress it in case the
-                                    // user discovers the gesture on their own. For this reason, we
-                                    // don't check if the tooltip is visible before updating the
-                                    // shared preference.
-                                    ambientCueInteractor.putSharedPrefsBoolean(
-                                        KEY_SHOW_LONG_PRESS_ONBOARDING,
-                                        false,
-                                    )
-                                },
-                                actionType =
-                                    when (action.actionType) {
-                                        "ma" -> ActionType.MA
-                                        "mr" -> ActionType.MR
-                                        else -> ActionType.Unknown
-                                    },
-                                oneTapEnabled = action.oneTapEnabled,
-                                oneTapDelayMs = action.oneTapDelayMs,
-                                dismissalGroupId = action.dismissalGroupId,
+        ambientCueInteractor.actions
+            .debounce { actions -> if (actions.isEmpty()) ACTIONS_DEBOUNCE_MS else 0L }
+            .map { actions ->
+                actions.map { action ->
+                    ActionViewModel(
+                        icon =
+                            IconViewModel(
+                                large = action.icon.large,
+                                small = action.icon.small,
+                                iconId = action.icon.iconId,
+                                repeatCount = 0,
+                            ),
+                        label = action.label,
+                        attribution = action.attribution,
+                        onClick = {
+                            action.onPerformAction()
+                            collapse()
+                        },
+                        onLongClick = {
+                            action.onPerformLongClick()
+                            // Long press onboarding only triggers 7 days after the initial
+                            // onboarding. That said, we'd like to suppress it in case the
+                            // user discovers the gesture on their own. For this reason, we
+                            // don't check if the tooltip is visible before updating the
+                            // shared preference.
+                            ambientCueInteractor.putSharedPrefsBoolean(
+                                KEY_SHOW_LONG_PRESS_ONBOARDING,
+                                false,
                             )
-                        }
-                    },
-        )
+                        },
+                        actionType =
+                            when (action.actionType) {
+                                "ma" -> ActionType.MA
+                                "mr" -> ActionType.MR
+                                else -> ActionType.Unknown
+                            },
+                        oneTapEnabled = action.oneTapEnabled,
+                        oneTapDelayMs = action.oneTapDelayMs,
+                        dismissalGroupId = action.dismissalGroupId,
+                    )
+                }
+            }
+            .hydratedStateOf(initialValue = listOf())
 
     fun expand() {
         isExpanded = true
@@ -248,9 +216,8 @@ constructor(
         }
     }
 
-    override suspend fun onActivated(): Nothing {
+    override suspend fun onActivated() {
         coroutineScopeTraced("AmbientCueViewModel") {
-            launch { hydrator.activate() }
             launch {
                 // Hide the UI if the user doesn't interact with it after N seconds
                 ambientCueInteractor.isRootViewAttached.collectLatest { isAttached ->
@@ -265,7 +232,6 @@ constructor(
                 dumpManager.registerNormalDumpable(TAG, this@AmbientCueViewModel)
                 DisposableHandle { dumpManager.unregisterDumpable(TAG) }
             }
-            awaitCancellation()
         }
     }
 
