@@ -20317,6 +20317,22 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    public void enableNotificationAssistantsOnProfileAdded() throws Exception {
+        final Intent intent = new Intent(Intent.ACTION_USER_ADDED);
+        intent.putExtra(Intent.EXTRA_USER_HANDLE, mZeroManagedProfile.id);
+        mUserIntentReceiver.onReceive(mContext, intent);
+        verify(mAssistants, times(1)).getDefaultComponents();
+    }
+
+    @Test
+    public void doNotEnableConditionProvidersOnProfileAdded() throws Exception {
+        final Intent intent = new Intent(Intent.ACTION_USER_ADDED);
+        intent.putExtra(Intent.EXTRA_USER_HANDLE, mZeroManagedProfile.id);
+        mUserIntentReceiver.onReceive(mContext, intent);
+        verify(mConditionProviders, times(0)).getDefaultComponents();
+    }
+
+    @Test
     @EnableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
     public void getNotificationRules() throws Exception {
         NotificationRule first = NotificationRuleManagerTest.createFullRule(101, "first", true);

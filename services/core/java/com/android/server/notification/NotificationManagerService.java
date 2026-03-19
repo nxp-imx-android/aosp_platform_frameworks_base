@@ -1038,14 +1038,16 @@ public class NotificationManagerService extends SystemService {
         mAssistants.loadDefaultsFromConfig();
     }
 
-    protected void allowDefaultApprovedServices(int userId) {
-        ArraySet<ComponentName> defaultListeners = mListeners.getDefaultComponents();
-        for (int i = 0; i < defaultListeners.size(); i++) {
-            ComponentName cn = defaultListeners.valueAt(i);
-            setNotificationListenerAccessGrantedForUserInternal(cn, userId, true, true);
-        }
+    protected void allowDefaultApprovedServices(int userId, boolean isProfile) {
+        if (!isProfile) {
+            ArraySet<ComponentName> defaultListeners = mListeners.getDefaultComponents();
+            for (int i = 0; i < defaultListeners.size(); i++) {
+                ComponentName cn = defaultListeners.valueAt(i);
+                setNotificationListenerAccessGrantedForUserInternal(cn, userId, true, true);
+            }
 
-        allowDndPackages(userId);
+            allowDndPackages(userId);
+        }
 
         setDefaultAssistantForUser(userId);
     }
@@ -1428,7 +1430,7 @@ public class NotificationManagerService extends SystemService {
                 // No data yet
                 // Load default managed services approvals
                 loadDefaultApprovedServices(USER_SYSTEM);
-                allowDefaultApprovedServices(USER_SYSTEM);
+                allowDefaultApprovedServices(USER_SYSTEM, /*isProfile*/ false);
             } catch (IOException | NumberFormatException | XmlPullParserException e) {
                 Log.wtf(TAG, "Unable to read notification policy", e);
             } finally {
@@ -2642,9 +2644,8 @@ public class NotificationManagerService extends SystemService {
                 final int userId = intent.getIntExtra(Intent.EXTRA_USER_HANDLE, USER_NULL);
                 if (userId != USER_NULL) {
                     mUserProfiles.updateCache(context);
-                    if (!mUserProfiles.isProfileUser(userId, context)) {
-                        allowDefaultApprovedServices(userId);
-                    }
+                    allowDefaultApprovedServices(userId,
+                            mUserProfiles.isProfileUser(userId, context));
                     mHistoryManager.onUserAdded(userId);
                     mSettingsObserver.update(null, userId);
                     if (nmContextualDisplayLaunch()) {
