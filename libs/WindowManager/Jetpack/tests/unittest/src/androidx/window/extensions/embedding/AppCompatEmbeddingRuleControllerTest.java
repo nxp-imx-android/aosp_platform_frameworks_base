@@ -26,6 +26,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.app.AppGlobals;
@@ -33,7 +34,9 @@ import android.app.compat.CompatChanges;
 import android.content.ComponentName;
 import android.content.pm.IPackageManager;
 import android.content.pm.PackageManager;
+import android.hardware.input.InputManagerGlobal;
 import android.platform.test.annotations.Presubmit;
+import android.view.InputDevice;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -62,6 +65,9 @@ public class AppCompatEmbeddingRuleControllerTest {
     @Mock
     private IPackageManager mMockPackageManager;
 
+    @Mock
+    private InputManagerGlobal mMockInputManagerGlobal;
+
     private StaticMockitoSession mMockSession;
 
     @Before
@@ -70,12 +76,15 @@ public class AppCompatEmbeddingRuleControllerTest {
                 ExtendedMockito.mockitoSession()
                         .initMocks(this)
                         .mockStatic(AppGlobals.class)
-                    .mockStatic(CompatChanges.class)
-                    .strictness(Strictness.LENIENT)
-                    .startMocking();
+                        .mockStatic(CompatChanges.class)
+                        .mockStatic(InputManagerGlobal.class)
+                        .strictness(Strictness.LENIENT)
+                        .startMocking();
         when(AppGlobals.getPackageManager()).thenReturn(mMockPackageManager);
         when(CompatChanges.isChangeEnabled(
                 eq(OVERRIDE_ENABLE_VIRTUAL_GAMEPAD))).thenReturn(true);
+        when(InputManagerGlobal.getInstance()).thenReturn(mMockInputManagerGlobal);
+        when(mMockInputManagerGlobal.getInputDeviceIds()).thenReturn(new int[0]);
     }
 
     @After
@@ -108,8 +117,8 @@ public class AppCompatEmbeddingRuleControllerTest {
 
     @Test
     public void testVirtualGamepadOptOutSessionStickiness() throws Exception {
-        AppCompatEmbeddingRuleController.sIsVirtualGamepadAllowedByApp = true;
-        AppCompatEmbeddingRuleController.sIsVirtualGamepadOptOutInSession = false;
+        AppCompatEmbeddingRuleController.sIsVirtualGamepadRuleEnabled = true;
+        AppCompatEmbeddingRuleController.sIsVirtualGamepadOptOutSeenInSession = false;
 
         // 1. Initial state: UNSET -> returns true
         when(mMockPackageManager.getVirtualGamepadUserOption(anyString(), anyInt()))
@@ -120,11 +129,42 @@ public class AppCompatEmbeddingRuleControllerTest {
         when(mMockPackageManager.getVirtualGamepadUserOption(anyString(), anyInt()))
                 .thenReturn(PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_OPT_OUT);
         assertFalse(AppCompatEmbeddingRuleController.isVirtualGamepadEnabled("pkg", 0));
-        assertTrue(AppCompatEmbeddingRuleController.sIsVirtualGamepadOptOutInSession);
+        assertTrue(AppCompatEmbeddingRuleController.sIsVirtualGamepadOptOutSeenInSession);
 
         // 3. UNSET again -> returns false (sticky)
         when(mMockPackageManager.getVirtualGamepadUserOption(anyString(), anyInt()))
                 .thenReturn(PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET);
+        assertFalse(AppCompatEmbeddingRuleController.isVirtualGamepadEnabled("pkg", 0));
+    }
+
+    @Test
+    public void testIsVirtualGamepadEnabled_physicalGamepadConnected() throws Exception {
+        AppCompatEmbeddingRuleController.sIsVirtualGamepadRuleEnabled = true;
+        AppCompatEmbeddingRuleController.sIsVirtualGamepadOptOutSeenInSession = false;
+        when(mMockPackageManager.getVirtualGamepadUserOption(anyString(), anyInt()))
+                .thenReturn(PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET);
+
+        // 1. No physical gamepad -> returns true
+        when(mMockInputManagerGlobal.getInputDeviceIds()).thenReturn(new int[0]);
+        assertTrue(AppCompatEmbeddingRuleController.isVirtualGamepadEnabled("pkg", 0));
+
+        // 2. Physical gamepad connected -> returns false
+        final int deviceId = 1;
+        when(mMockInputManagerGlobal.getInputDeviceIds()).thenReturn(new int[]{deviceId});
+        final InputDevice mockDevice = mock(InputDevice.class);
+        when(mockDevice.isVirtual()).thenReturn(false);
+        when(mockDevice.getSources()).thenReturn(InputDevice.SOURCE_GAMEPAD);
+        when(mMockInputManagerGlobal.getInputDevice(deviceId)).thenReturn(mockDevice);
+
+        assertFalse(AppCompatEmbeddingRuleController.isVirtualGamepadEnabled("pkg", 0));
+
+        // 3. Virtual gamepad connected (should be ignored) -> returns true
+        when(mockDevice.isVirtual()).thenReturn(true);
+        assertTrue(AppCompatEmbeddingRuleController.isVirtualGamepadEnabled("pkg", 0));
+
+        // 4. Physical joystick connected -> returns false
+        when(mockDevice.isVirtual()).thenReturn(false);
+        when(mockDevice.getSources()).thenReturn(InputDevice.SOURCE_JOYSTICK);
         assertFalse(AppCompatEmbeddingRuleController.isVirtualGamepadEnabled("pkg", 0));
     }
 }
