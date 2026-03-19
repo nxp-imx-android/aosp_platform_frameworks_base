@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.quickactions.av.ui.compose
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -76,7 +77,14 @@ fun StudioLookSwitch(shape: Shape, viewModel: ButtonViewModel) {
                 Icon(painter = painterResource(id = it), contentDescription = null)
             }
         },
-        headlineContent = { viewModel.state.mainTitle?.let { Text(text = stringResource(it)) } },
+        headlineContent = {
+            viewModel.state.mainTitle?.let {
+                Text(
+                    text = stringResource(it),
+                    style = MaterialTheme.typography.titleSmallEmphasized,
+                )
+            }
+        },
         trailingContent = {
             Switch(
                 checked = viewModel.state.isEnabled,
