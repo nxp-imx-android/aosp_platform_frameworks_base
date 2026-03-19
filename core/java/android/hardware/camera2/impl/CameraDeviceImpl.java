@@ -723,6 +723,8 @@ public class CameraDeviceImpl extends CameraDevice
 
                     List<OutputConfiguration> configuredOutputs = new ArrayList<>();
                     // Delete all streams first (to free up HW resources)
+                    // Should fail at cameraserver level only if we try to delete a stream
+                    // that is not registered.
                     for (Integer streamId : deleteList) {
                         mConfiguredOutputs.delete(streamId);
                     }
@@ -755,13 +757,6 @@ public class CameraDeviceImpl extends CameraDevice
                             sessionConfigurationAndStreamIds.sessionConfigurationDelta.
                                     setInputConfiguration(inputConfig);
                         }
-                    }
-
-                    // Delete streams from mConfiguredOutputs
-                    // Should fail at cameraserver level only if we try to delete a stream
-                    // that is not registered.
-                    for (Integer streamId : deleteList) {
-                        mConfiguredOutputs.delete(streamId);
                     }
 
                     OutputAndInputStreamIds outputAndInputStreamIds =
