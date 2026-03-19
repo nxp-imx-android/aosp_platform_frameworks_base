@@ -825,6 +825,16 @@ flag {
 }
 
 flag {
+    name: "keyguard_remove_ime_focus"
+    namespace: "systemui"
+    description: "Keep the window flag FLAG_ALT_FOCUSABLE_IM while on keyguard and only change it when transitioning to bouncer."
+    bug: "422846629"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "keyguard_transition_force_finish_on_screen_off"
     namespace: "systemui"
     description: "Forces KTF transitions to finish if the screen turns all the way off."

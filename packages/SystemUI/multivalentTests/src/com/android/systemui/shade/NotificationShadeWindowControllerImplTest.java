@@ -315,6 +315,7 @@ public class NotificationShadeWindowControllerImplTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableFlags(com.android.systemui.Flags.FLAG_KEYGUARD_REMOVE_IME_FOCUS)
     public void setKeyguardShowing_focusable_notAltFocusable_whenNeedsInput() {
         mNotificationShadeWindowController.setKeyguardShowing(true);
         clearInvocations(mWindowManager);
@@ -323,6 +324,52 @@ public class NotificationShadeWindowControllerImplTest extends SysuiTestCase {
         verify(mWindowManager).updateViewLayout(any(), mLayoutParameters.capture());
         assertThat((mLayoutParameters.getValue().flags & FLAG_NOT_FOCUSABLE) == 0).isTrue();
         assertThat((mLayoutParameters.getValue().flags & FLAG_ALT_FOCUSABLE_IM) == 0).isTrue();
+    }
+
+    @Test
+    @EnableFlags(com.android.systemui.Flags.FLAG_KEYGUARD_REMOVE_IME_FOCUS)
+    public void setKeyguardShowing_focusable_altFocusable_whenNeedsInput() {
+        clearInvocations(mWindowManager);
+        mNotificationShadeWindowController.setKeyguardShowing(true);
+
+        verify(mWindowManager).updateViewLayout(any(), mLayoutParameters.capture());
+        assertThat((mLayoutParameters.getValue().flags & FLAG_NOT_FOCUSABLE) == 0).isTrue();
+        assertThat((mLayoutParameters.getValue().flags & FLAG_ALT_FOCUSABLE_IM) != 0).isTrue();
+
+        clearInvocations(mWindowManager);
+        mNotificationShadeWindowController.setKeyguardNeedsInput(true);
+
+        verify(mWindowManager, never()).updateViewLayout(any(), any());
+    }
+
+    @Test
+    @DisableFlags(com.android.systemui.Flags.FLAG_KEYGUARD_REMOVE_IME_FOCUS)
+    public void setKeyguardShowing_afterBouncer_notAltFocusable_whenNeedsInput() {
+        mNotificationShadeWindowController.setKeyguardShowing(true);
+        mNotificationShadeWindowController.setKeyguardNeedsInput(true);
+        mNotificationShadeWindowController.setBouncerShowing(true);
+        clearInvocations(mWindowManager);
+
+        mNotificationShadeWindowController.setBouncerShowing(false);
+
+        verify(mWindowManager).updateViewLayout(any(), mLayoutParameters.capture());
+        assertThat((mLayoutParameters.getValue().flags & FLAG_NOT_FOCUSABLE) == 0).isTrue();
+        assertThat((mLayoutParameters.getValue().flags & FLAG_ALT_FOCUSABLE_IM) == 0).isTrue();
+    }
+
+    @Test
+    @EnableFlags(com.android.systemui.Flags.FLAG_KEYGUARD_REMOVE_IME_FOCUS)
+    public void setKeyguardShowing_afterBouncer_altFocusable_whenNeedsInput() {
+        mNotificationShadeWindowController.setKeyguardShowing(true);
+        mNotificationShadeWindowController.setKeyguardNeedsInput(true);
+        mNotificationShadeWindowController.setBouncerShowing(true);
+        clearInvocations(mWindowManager);
+
+        mNotificationShadeWindowController.setBouncerShowing(false);
+
+        verify(mWindowManager).updateViewLayout(any(), mLayoutParameters.capture());
+        assertThat((mLayoutParameters.getValue().flags & FLAG_NOT_FOCUSABLE) == 0).isTrue();
+        assertThat((mLayoutParameters.getValue().flags & FLAG_ALT_FOCUSABLE_IM) != 0).isTrue();
     }
 
     @Test
