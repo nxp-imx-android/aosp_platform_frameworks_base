@@ -26,8 +26,7 @@ import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.desktop.domain.interactor.DesktopInteractor
 import com.android.systemui.keyguard.ui.transitions.BlurConfig
-import com.android.systemui.lifecycle.ExclusiveActivatable
-import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
 import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
 import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
@@ -48,7 +47,6 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -78,9 +76,7 @@ constructor(
     private val blurConfig: BlurConfig,
     private val windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
     shadeStatusBarComponentsInteractor: ShadeStatusBarComponentsInteractor,
-) : ExclusiveActivatable() {
-
-    private val hydrator = Hydrator("NotificationsShadeOverlayContentViewModel.hydrator")
+) : HydratedActivatable() {
 
     /**
      * The Shade header can only be shown if usingDesktopStatusBar is disabled. This is because the
@@ -88,55 +84,50 @@ constructor(
      */
     val showHeader: Boolean by
         if (StatusBarForDesktop.isEnabled) {
-            hydrator.hydratedStateOf(
-                traceName = "showHeader",
-                initialValue = !desktopInteractor.useDesktopStatusBar.value,
-                source = desktopInteractor.useDesktopStatusBar.map { !it },
-            )
+            desktopInteractor.useDesktopStatusBar
+                .map { !it }
+                .hydratedStateOf(
+                    traceName = "showHeader",
+                    initialValue = !desktopInteractor.useDesktopStatusBar.value,
+                )
         } else {
             mutableStateOf(true)
         }
 
     val showMedia: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "showMedia",
-            initialValue =
-                shadeStatusBarComponentsInteractor.disableFlags.value.isQuickSettingsEnabled() &&
-                    mediaCarouselInteractor.hasActiveMedia.value,
-            source =
-                shadeStatusBarComponentsInteractor.disableFlags.flatMapLatestConflated {
-                    if (it.isQuickSettingsEnabled()) {
-                        mediaCarouselInteractor.hasActiveMedia
-                    } else {
-                        flowOf(false)
-                    }
-                },
-        )
+        shadeStatusBarComponentsInteractor.disableFlags
+            .flatMapLatestConflated {
+                if (it.isQuickSettingsEnabled()) {
+                    mediaCarouselInteractor.hasActiveMedia
+                } else {
+                    flowOf(false)
+                }
+            }
+            .hydratedStateOf(
+                initialValue =
+                    shadeStatusBarComponentsInteractor.disableFlags.value
+                        .isQuickSettingsEnabled() && mediaCarouselInteractor.hasActiveMedia.value
+            )
 
     /**
      * Whether the shade container transparency effect should be enabled (`true`), or whether to
      * render a fully-opaque shade container (`false`).
      */
     val isTransparencyEnabled: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "isTransparencyEnabled",
-            source =
-                if (Flags.notificationShadeBlur()) {
-                    windowRootViewBlurInteractor.isBlurCurrentlySupported
-                } else {
-                    MutableStateFlow(false)
-                },
-        )
+        if (Flags.notificationShadeBlur()) {
+                windowRootViewBlurInteractor.isBlurCurrentlySupported
+            } else {
+                MutableStateFlow(false)
+            }
+            .hydratedStateOf()
 
     /**
      * The horizontal alignment of the notifications shade panel. Ignored on narrow screens, where
      * the panel is always center-aligned.
      */
     val alignmentOnWideScreens: Alignment.Horizontal by
-        hydrator.hydratedStateOf(
-            traceName = "alignmentOnWideScreens",
-            initialValue = Alignment.Start,
-            source = shadeModeInteractor.notificationStackHorizontalAlignment,
+        shadeModeInteractor.notificationStackHorizontalAlignment.hydratedStateOf(
+            initialValue = Alignment.Start
         )
 
     /**
@@ -162,10 +153,8 @@ constructor(
 
     fun onMediaSwipeToDismiss() = mediaCarouselInteractor.onSwipeToDismiss()
 
-    override suspend fun onActivated(): Nothing {
+    override suspend fun onActivated() {
         coroutineScope {
-            launch { hydrator.activate() }
-
             launch {
                 shadeInteractor.isShadeTouchable
                     .distinctUntilChanged()
@@ -196,7 +185,6 @@ constructor(
                     }
             }
         }
-        awaitCancellation()
     }
 
     fun onScrimClicked() {
