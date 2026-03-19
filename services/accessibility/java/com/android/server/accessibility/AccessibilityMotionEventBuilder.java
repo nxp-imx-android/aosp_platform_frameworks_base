@@ -31,7 +31,7 @@ import android.view.MotionEvent.PointerProperties;
  * coordinates, pointer count, and flags) from a base event.
  */
 public final class AccessibilityMotionEventBuilder {
-    private static final String TAG = "A11yMotionEventBuilder";
+    private static final String TAG = AccessibilityMotionEventBuilder.class.getSimpleName();
 
     private final MotionEvent mBaseEvent;
 

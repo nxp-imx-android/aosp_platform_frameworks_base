@@ -45,7 +45,7 @@ import com.android.server.accessibility.AccessibilityLogUtil;
  *  it just only uses in FullScreenMagnification
  */
 public class MagnificationThumbnail {
-    private static final String LOG_TAG = "MagnificationThumbnail";
+    private static final String LOG_TAG = MagnificationThumbnail.class.getSimpleName();
     private static final boolean DEBUG = AccessibilityLogUtil.isDebugEnabled(LOG_TAG);
 
     private static final int FADE_IN_ANIMATION_DURATION_MS = 200;

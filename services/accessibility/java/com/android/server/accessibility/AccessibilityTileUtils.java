@@ -43,7 +43,7 @@ import java.util.Set;
  */
 public class AccessibilityTileUtils {
     private AccessibilityTileUtils() {}
-    private static final String TAG = "AccessibilityTileUtils";
+    private static final String TAG = AccessibilityTileUtils.class.getSimpleName();
 
     /**
      * Checks if a given {@link ComponentName} corresponds to a valid and enabled TileService

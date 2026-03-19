@@ -74,7 +74,7 @@ import java.util.StringJoiner;
 @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
 public class AccessibilityInputFilter extends InputFilter implements EventStreamTransformation {
 
-    private static final String TAG = "A11yInputFilter";
+    private static final String TAG = AccessibilityInputFilter.class.getSimpleName();
 
     private static final boolean DEBUG = AccessibilityLogUtil.isDebugEnabled(TAG);
 

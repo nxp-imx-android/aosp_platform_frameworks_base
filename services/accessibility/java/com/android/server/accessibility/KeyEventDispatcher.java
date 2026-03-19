@@ -46,7 +46,7 @@ import java.util.List;
  */
 public class KeyEventDispatcher implements Handler.Callback {
     // Debugging
-    private static final String LOG_TAG = "KeyEventDispatcher";
+    private static final String LOG_TAG = KeyEventDispatcher.class.getSimpleName();
     private static final boolean DEBUG = AccessibilityLogUtil.isDebugEnabled(LOG_TAG);
     /* KeyEvents must be processed in this time interval */
     private static final long ON_KEY_EVENT_TIMEOUT_MILLIS = 500;
