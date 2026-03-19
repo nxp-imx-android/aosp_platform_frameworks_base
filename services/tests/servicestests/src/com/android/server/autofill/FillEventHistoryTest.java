@@ -30,81 +30,59 @@ import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class FillEventHistoryTest {
-    private final FillEventHistory.Event mEvent1 = new FillEventHistory.Event(
-            FillEventHistory.Event.TYPE_DATASET_SELECTED, // eventType
-            "123", // datasetId
-            null, // clientState
-            Arrays.asList("123", "234"), // selectedDatasetIds
-            new ArraySet<>(Arrays.asList("345", "456")), // ignoredDatasetIds
-            new ArrayList<>(Arrays.asList(new AutofillId(1), new AutofillId(2))), // changedFieldIds
-            new ArrayList<>(Arrays.asList("234", "345")), // changedDatasetIds
-            null, // manuallyFilledFieldIds
-            null, // manuallyFilledDatasetIds
-            null, // detectedFieldIds
-            null, // detectedFieldClassifications
-            FillEventHistory.Event.NO_SAVE_UI_REASON_NONE, // saveDialogNotShowReason
-            FillEventHistory.Event.UI_TYPE_INLINE, // uiType
-            new AutofillId(1) // focusedId
-        );
+    private final FillEventHistory.Event mEvent1 =
+            new FillEventHistory.Event.Builder(FillEventHistory.Event.TYPE_DATASET_SELECTED)
+                    .setDatasetId("123")
+                    .setSelectedDatasetIds(Arrays.asList("123", "234"))
+                    .setIgnoredDatasetIds(new ArraySet<>(Arrays.asList("345", "456")))
+                    .setChangedFieldIds(
+                            new ArrayList<>(Arrays.asList(new AutofillId(1), new AutofillId(2))))
+                    .setChangedDatasetIds(new ArrayList<>(Arrays.asList("234", "345")))
+                    .setSaveDialogNotShowReason(FillEventHistory.Event.NO_SAVE_UI_REASON_NONE)
+                    .setUiType(FillEventHistory.Event.UI_TYPE_INLINE)
+                    .setFocusedId(new AutofillId(1))
+                    .build();
 
     // Same as Event1.
-    private final FillEventHistory.Event mEvent2 = new FillEventHistory.Event(
-            FillEventHistory.Event.TYPE_DATASET_SELECTED, // eventType
-            "123", // datasetId
-            null, // clientState
-            Arrays.asList("123", "234"), // selectedDatasetIds
-            new ArraySet<>(Arrays.asList("345", "456")), // ignoredDatasetIds
-            new ArrayList<>(Arrays.asList(new AutofillId(1), new AutofillId(2))), // changedFieldIds
-            new ArrayList<>(Arrays.asList("234", "345")), // changedDatasetIds
-            null, // manuallyFilledFieldIds
-            null, // manuallyFilledDatasetIds
-            null, // detectedFieldIds
-            null, // detectedFieldClassifications
-            FillEventHistory.Event.NO_SAVE_UI_REASON_NONE, // saveDialogNotShowReason
-            FillEventHistory.Event.UI_TYPE_INLINE, // uiType
-            new AutofillId(1) // focusedId
-        );
+    private final FillEventHistory.Event mEvent2 =
+            new FillEventHistory.Event.Builder(FillEventHistory.Event.TYPE_DATASET_SELECTED)
+                    .setDatasetId("123")
+                    .setSelectedDatasetIds(Arrays.asList("123", "234"))
+                    .setIgnoredDatasetIds(new ArraySet<>(Arrays.asList("345", "456")))
+                    .setChangedFieldIds(
+                            new ArrayList<>(Arrays.asList(new AutofillId(1), new AutofillId(2))))
+                    .setChangedDatasetIds(new ArrayList<>(Arrays.asList("234", "345")))
+                    .setSaveDialogNotShowReason(FillEventHistory.Event.NO_SAVE_UI_REASON_NONE)
+                    .setUiType(FillEventHistory.Event.UI_TYPE_INLINE)
+                    .setFocusedId(new AutofillId(1))
+                    .build();
 
     // Different from Event1.
-    private final FillEventHistory.Event mEvent3 = new FillEventHistory.Event(
-            FillEventHistory.Event.TYPE_DATASET_SELECTED, // eventType
-            "123", // datasetId
-            null, // clientState
-            Arrays.asList("123", "234"), // selectedDatasetIds
-            new ArraySet<>(Arrays.asList("456", "567")), // ignoredDatasetIds
-            new ArrayList<>(Arrays.asList(new AutofillId(2), new AutofillId(3))), // changedFieldIds
-            new ArrayList<>(Arrays.asList("234", "345")), // changedDatasetIds
-            null, // manuallyFilledFieldIds
-            null, // manuallyFilledDatasetIds
-            null, // detectedFieldIds
-            null, // detectedFieldClassifications
-            FillEventHistory.Event.NO_SAVE_UI_REASON_NONE, // saveDialogNotShowReason
-            FillEventHistory.Event.UI_TYPE_INLINE, // uiType
-            new AutofillId(1) // focusedId
-        );
-
+    private final FillEventHistory.Event mEvent3 =
+            new FillEventHistory.Event.Builder(FillEventHistory.Event.TYPE_DATASET_SELECTED)
+                    .setDatasetId("123")
+                    .setSelectedDatasetIds(Arrays.asList("123", "234"))
+                    .setIgnoredDatasetIds(new ArraySet<>(Arrays.asList("456", "567")))
+                    .setChangedFieldIds(
+                            new ArrayList<>(Arrays.asList(new AutofillId(2), new AutofillId(3))))
+                    .setChangedDatasetIds(new ArrayList<>(Arrays.asList("234", "345")))
+                    .setSaveDialogNotShowReason(FillEventHistory.Event.NO_SAVE_UI_REASON_NONE)
+                    .setUiType(FillEventHistory.Event.UI_TYPE_INLINE)
+                    .setFocusedId(new AutofillId(1))
+                    .build();
 
     // Different from Event1.
-    private final FillEventHistory.Event mEvent4 = new FillEventHistory.Event(
-            FillEventHistory.Event.TYPE_DATASET_SELECTED, // eventType
-            null, // datasetId
-            null, // clientState
-            null, // selectedDatasetIds
-            null, // ignoredDatasetIds
-            null, // changedFieldIds
-            null, // changedDatasetIds
-            null, // manuallyFilledFieldIds
-            null, // manuallyFilledDatasetIds
-            null, // detectedFieldIds
-            null, // detectedFieldClassifications
-            FillEventHistory.Event.NO_SAVE_UI_REASON_NONE, // saveDialogNotShowReason
-            FillEventHistory.Event.UI_TYPE_INLINE, // uiType
-            null // focusedId
-        );
+    private final FillEventHistory.Event mEvent4 =
+            new FillEventHistory.Event.Builder(FillEventHistory.Event.TYPE_DATASET_SELECTED)
+                    .setSaveDialogNotShowReason(FillEventHistory.Event.NO_SAVE_UI_REASON_NONE)
+                    .setUiType(FillEventHistory.Event.UI_TYPE_INLINE)
+                    .build();
+
     @Test
     public void event_hashCodeAndEquals() throws Exception {
         assertThat(mEvent1.hashCode()).isEqualTo(mEvent2.hashCode());
@@ -160,5 +138,54 @@ public class FillEventHistoryTest {
         } finally {
             parcel.recycle();
         }
+    }
+
+    @Test
+    public void fillEventHistory_builderMatchesEquals() {
+        final FillEventHistory.Event constructed =
+                new FillEventHistory.Event(
+                        FillEventHistory.Event.TYPE_DATASET_SELECTED, // eventType
+                        "123", // datasetId
+                        null, // clientState
+                        Arrays.asList("123", "234"), // selectedDatasetIds
+                        new ArraySet<>(Arrays.asList("345", "456")), // ignoredDatasetIds
+                        new ArrayList<>(
+                                Arrays.asList(
+                                        new AutofillId(1), new AutofillId(2))), // changedFieldIds
+                        new ArrayList<>(Arrays.asList("234", "345")), // changedDatasetIds
+                        new ArrayList<>(Arrays.asList(new AutofillId(5))), // manuallyFilledFieldIds
+                        new ArrayList<>(
+                                List.of(
+                                        new ArrayList<>(
+                                                Arrays.asList(
+                                                        "6", "7")))), // manuallyFilledDatasetIds
+                        new AutofillId[] {new AutofillId(3), new AutofillId(4)}, // detectedFieldIds
+                        null, // detectedFieldClassifications
+                        FillEventHistory.Event.NO_SAVE_UI_REASON_NONE, // saveDialogNotShowReason
+                        FillEventHistory.Event.UI_TYPE_INLINE, // uiType
+                        new AutofillId(1) // focusedId
+                        );
+
+        final FillEventHistory.Event build =
+                new FillEventHistory.Event.Builder(FillEventHistory.Event.TYPE_DATASET_SELECTED)
+                        .setDatasetId("123")
+                        .setSelectedDatasetIds(Arrays.asList("123", "234"))
+                        .setIgnoredDatasetIds(new ArraySet<>(Arrays.asList("345", "456")))
+                        .setChangedFieldIds(
+                                new ArrayList<>(
+                                        Arrays.asList(new AutofillId(1), new AutofillId(2))))
+                        .setChangedDatasetIds(new ArrayList<>(Arrays.asList("234", "345")))
+                        .setManuallyFilledFieldIds(
+                                new ArrayList<>(Arrays.asList(new AutofillId(5))))
+                        .setManuallyFilledDatasetIds(
+                                new ArrayList<>(List.of(new ArrayList<>(Arrays.asList("6", "7")))))
+                        .setDetectedFieldIds(
+                                new AutofillId[] {new AutofillId(3), new AutofillId(4)})
+                        .setSaveDialogNotShowReason(FillEventHistory.Event.NO_SAVE_UI_REASON_NONE)
+                        .setUiType(FillEventHistory.Event.UI_TYPE_INLINE)
+                        .setFocusedId(new AutofillId(1))
+                        .build();
+
+        assertThat(constructed).isEqualTo(build);
     }
 }

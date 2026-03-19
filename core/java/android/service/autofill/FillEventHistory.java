@@ -662,102 +662,16 @@ public final class FillEventHistory implements Parcelable {
          * @param selectedDatasetIds The ids of datasets selected by the user.
          * @param ignoredDatasetIds The ids of datasets NOT select by the user.
          * @param changedFieldIds The ids of fields changed by the user.
-         * @param changedDatasetIds The ids of the datasets that havd values matching the
-         * respective entry on {@code changedFieldIds}.
+         * @param changedDatasetIds The ids of the datasets that have values matching the respective
+         * entry on {@code changedFieldIds}.
          * @param manuallyFilledFieldIds The ids of fields that were manually entered by the user
          * and belonged to datasets.
          * @param manuallyFilledDatasetIds The ids of datasets that had values matching the
          * respective entry on {@code manuallyFilledFieldIds}.
-         * @param detectedFieldClassifications the field classification matches.
-         * @param focusedId the field which was focused at the time of event trigger
-         *
-         * @throws IllegalArgumentException If the length of {@code changedFieldIds} and
-         * {@code changedDatasetIds} doesn't match.
-         * @throws IllegalArgumentException If the length of {@code manuallyFilledFieldIds} and
-         * {@code manuallyFilledDatasetIds} doesn't match.
-         *
-         * @hide
-         */
-        public Event(int eventType, @Nullable String datasetId, @Nullable Bundle clientState,
-                @Nullable List<String> selectedDatasetIds,
-                @Nullable ArraySet<String> ignoredDatasetIds,
-                @Nullable ArrayList<AutofillId> changedFieldIds,
-                @Nullable ArrayList<String> changedDatasetIds,
-                @Nullable ArrayList<AutofillId> manuallyFilledFieldIds,
-                @Nullable ArrayList<ArrayList<String>> manuallyFilledDatasetIds,
-                @Nullable AutofillId[] detectedFieldIds,
-                @Nullable FieldClassification[] detectedFieldClassifications,
-                @Nullable AutofillId focusedId) {
-            this(eventType, datasetId, clientState, selectedDatasetIds, ignoredDatasetIds,
-                    changedFieldIds, changedDatasetIds, manuallyFilledFieldIds,
-                    manuallyFilledDatasetIds, detectedFieldIds, detectedFieldClassifications,
-                    NO_SAVE_UI_REASON_NONE, focusedId);
-        }
-
-        /**
-         * Creates a new event.
-         *
-         * @param eventType The type of the event
-         * @param datasetId The dataset the event was on, or {@code null} if the event was on the
-         *                  whole response.
-         * @param clientState The client state associated with the event.
-         * @param selectedDatasetIds The ids of datasets selected by the user.
-         * @param ignoredDatasetIds The ids of datasets NOT select by the user.
-         * @param changedFieldIds The ids of fields changed by the user.
-         * @param changedDatasetIds The ids of the datasets that havd values matching the
-         * respective entry on {@code changedFieldIds}.
-         * @param manuallyFilledFieldIds The ids of fields that were manually entered by the user
-         * and belonged to datasets.
-         * @param manuallyFilledDatasetIds The ids of datasets that had values matching the
-         * respective entry on {@code manuallyFilledFieldIds}.
-         * @param detectedFieldClassifications the field classification matches.
-         * @param saveDialogNotShowReason The reason why a save dialog was not shown.
-         * @param focusedId the field which was focused at the time of event trigger
-         *
-         * @throws IllegalArgumentException If the length of {@code changedFieldIds} and
-         * {@code changedDatasetIds} doesn't match.
-         * @throws IllegalArgumentException If the length of {@code manuallyFilledFieldIds} and
-         * {@code manuallyFilledDatasetIds} doesn't match.
-         *
-         * @hide
-         */
-        public Event(int eventType, @Nullable String datasetId, @Nullable Bundle clientState,
-                @Nullable List<String> selectedDatasetIds,
-                @Nullable ArraySet<String> ignoredDatasetIds,
-                @Nullable ArrayList<AutofillId> changedFieldIds,
-                @Nullable ArrayList<String> changedDatasetIds,
-                @Nullable ArrayList<AutofillId> manuallyFilledFieldIds,
-                @Nullable ArrayList<ArrayList<String>> manuallyFilledDatasetIds,
-                @Nullable AutofillId[] detectedFieldIds,
-                @Nullable FieldClassification[] detectedFieldClassifications,
-                int saveDialogNotShowReason,
-                @Nullable AutofillId focusedId) {
-            this(eventType, datasetId, clientState, selectedDatasetIds, ignoredDatasetIds,
-                    changedFieldIds, changedDatasetIds, manuallyFilledFieldIds,
-                    manuallyFilledDatasetIds, detectedFieldIds, detectedFieldClassifications,
-                    saveDialogNotShowReason, UI_TYPE_UNKNOWN, focusedId);
-        }
-
-        /**
-         * Creates a new event.
-         *
-         * @param eventType The type of the event
-         * @param datasetId The dataset the event was on, or {@code null} if the event was on the
-         *                  whole response.
-         * @param clientState The client state associated with the event.
-         * @param selectedDatasetIds The ids of datasets selected by the user.
-         * @param ignoredDatasetIds The ids of datasets NOT select by the user.
-         * @param changedFieldIds The ids of fields changed by the user.
-         * @param changedDatasetIds The ids of the datasets that havd values matching the
-         * respective entry on {@code changedFieldIds}.
-         * @param manuallyFilledFieldIds The ids of fields that were manually entered by the user
-         * and belonged to datasets.
-         * @param manuallyFilledDatasetIds The ids of datasets that had values matching the
-         * respective entry on {@code manuallyFilledFieldIds}.
-         * @param detectedFieldClassifications the field classification matches.
+         * @param detectedFieldClassifications The field classification matches.
          * @param saveDialogNotShowReason The reason why a save dialog was not shown.
          * @param uiType The ui presentation type for fill suggestion.
-         * @param focusedId the field which was focused at the time of event trigger
+         * @param focusedId The field which was focused at the time of event trigger
          *
          * @throws IllegalArgumentException If the length of {@code changedFieldIds} and
          * {@code changedDatasetIds} doesn't match.
@@ -901,6 +815,197 @@ public final class FillEventHistory implements Parcelable {
                     return "UI_TYPE_CREDMAN_BOTTOM_SHEET";
                 default:
                     return "UI_TYPE_UNKNOWN";
+            }
+        }
+
+        /**
+         * Builder for {@link Event}.
+         *
+         * @hide
+         */
+        public static final class Builder {
+            private final int mEventType;
+            @Nullable private String mDatasetId;
+            @Nullable private Bundle mClientState;
+            @Nullable private List<String> mSelectedDatasetIds;
+            @Nullable private ArraySet<String> mIgnoredDatasetIds;
+            @Nullable private ArrayList<AutofillId> mChangedFieldIds;
+            @Nullable private ArrayList<String> mChangedDatasetIds;
+            @Nullable private ArrayList<AutofillId> mManuallyFilledFieldIds;
+            @Nullable private ArrayList<ArrayList<String>> mManuallyFilledDatasetIds;
+            @Nullable private AutofillId[] mDetectedFieldIds;
+            @Nullable private FieldClassification[] mDetectedFieldClassifications;
+            private int mSaveDialogNotShowReason = NO_SAVE_UI_REASON_NONE;
+            private int mUiType = UI_TYPE_UNKNOWN;
+            @Nullable private AutofillId mFocusedId;
+
+            /**
+             * Constructs an instance of this builder.
+             *
+             * @param eventType The type of the event
+             */
+            public Builder(int eventType) {
+                mEventType = eventType;
+            }
+
+            /**
+             * Sets the dataset id.
+             *
+             * @param datasetId The dataset the event was on, or {@code null} if the event was on
+             *     the whole response.
+             */
+            public Builder setDatasetId(@Nullable String datasetId) {
+                mDatasetId = datasetId;
+                return this;
+            }
+
+            /**
+             * Sets the client state.
+             *
+             * @param clientState The client state associated with the event.
+             */
+            public Builder setClientState(@Nullable Bundle clientState) {
+                mClientState = clientState;
+                return this;
+            }
+
+            /**
+             * Sets the selected dataset ids.
+             *
+             * @param selectedDatasetIds The ids of datasets selected by the user.
+             */
+            public Builder setSelectedDatasetIds(@Nullable List<String> selectedDatasetIds) {
+                mSelectedDatasetIds = selectedDatasetIds;
+                return this;
+            }
+
+            /**
+             * Sets the ignored dataset ids.
+             *
+             * @param ignoredDatasetIds The ids of datasets NOT select by the user.
+             */
+            public Builder setIgnoredDatasetIds(@Nullable ArraySet<String> ignoredDatasetIds) {
+                mIgnoredDatasetIds = ignoredDatasetIds;
+                return this;
+            }
+
+            /**
+             * Sets the changed field ids.
+             *
+             * @param changedFieldIds The ids of fields changed by the user.
+             */
+            public Builder setChangedFieldIds(@Nullable ArrayList<AutofillId> changedFieldIds) {
+                mChangedFieldIds = changedFieldIds;
+                return this;
+            }
+
+            /**
+             * Sets the changed dataset ids.
+             *
+             * @param changedDatasetIds The ids of the datasets that have values matching the
+             *     respective entry on the values provided in {@link #setChangedFieldIds(ArrayList)}
+             */
+            public Builder setChangedDatasetIds(@Nullable ArrayList<String> changedDatasetIds) {
+                mChangedDatasetIds = changedDatasetIds;
+                return this;
+            }
+
+            /**
+             * Sets the manually filled field ids.
+             *
+             * @param manuallyFilledFieldIds The ids of fields that were manually entered by the
+             *     user and belonged to datasets.
+             */
+            public Builder setManuallyFilledFieldIds(
+                    @Nullable ArrayList<AutofillId> manuallyFilledFieldIds) {
+                mManuallyFilledFieldIds = manuallyFilledFieldIds;
+                return this;
+            }
+
+            /**
+             * Sets the manually filled dataset ids.
+             *
+             * @param manuallyFilledDatasetIds The ids of datasets that had values matching the
+             *     respective entry on the values provided in {@link
+             *     #setManuallyFilledFieldIds(ArrayList)}.
+             */
+            public Builder setManuallyFilledDatasetIds(
+                    @Nullable ArrayList<ArrayList<String>> manuallyFilledDatasetIds) {
+                mManuallyFilledDatasetIds = manuallyFilledDatasetIds;
+                return this;
+            }
+
+            /** Sets the detected field ids. */
+            public Builder setDetectedFieldIds(@Nullable AutofillId[] detectedFieldIds) {
+                mDetectedFieldIds = detectedFieldIds;
+                return this;
+            }
+
+            /**
+             * Sets the detected field classifications.
+             *
+             * @param detectedFieldClassifications The field classification matches.
+             */
+            public Builder setDetectedFieldClassifications(
+                    @Nullable FieldClassification[] detectedFieldClassifications) {
+                mDetectedFieldClassifications = detectedFieldClassifications;
+                return this;
+            }
+
+            /**
+             * Sets the save dialog not show reason.
+             *
+             * @param saveDialogNotShowReason The reason why a save dialog was not shown.
+             */
+            public Builder setSaveDialogNotShowReason(int saveDialogNotShowReason) {
+                mSaveDialogNotShowReason = saveDialogNotShowReason;
+                return this;
+            }
+
+            /**
+             * Sets the ui type.
+             *
+             * @param uiType The ui presentation type for fill suggestion.
+             */
+            public Builder setUiType(int uiType) {
+                mUiType = uiType;
+                return this;
+            }
+
+            /**
+             * Sets the focused id.
+             *
+             * @param focusedId The field which was focused at the time of event trigger
+             */
+            public Builder setFocusedId(@Nullable AutofillId focusedId) {
+                mFocusedId = focusedId;
+                return this;
+            }
+
+            /**
+             * Builds the event.
+             *
+             * @throws IllegalArgumentException If the length of {@code changedFieldIds} and {@code
+             *     changedDatasetIds} doesn't match.
+             * @throws IllegalArgumentException If the length of {@code manuallyFilledFieldIds} and
+             *     {@code manuallyFilledDatasetIds} doesn't match.
+             */
+            public Event build() {
+                return new Event(
+                        mEventType,
+                        mDatasetId,
+                        mClientState,
+                        mSelectedDatasetIds,
+                        mIgnoredDatasetIds,
+                        mChangedFieldIds,
+                        mChangedDatasetIds,
+                        mManuallyFilledFieldIds,
+                        mManuallyFilledDatasetIds,
+                        mDetectedFieldIds,
+                        mDetectedFieldClassifications,
+                        mSaveDialogNotShowReason,
+                        mUiType,
+                        mFocusedId);
             }
         }
     }
