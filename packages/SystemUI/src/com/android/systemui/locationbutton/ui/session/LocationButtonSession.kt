@@ -33,6 +33,7 @@ import android.os.Process
 import android.os.RemoteCallback
 import android.os.RemoteException
 import android.os.Trace
+import android.os.UserHandle
 import android.util.Log
 import android.util.Slog
 import android.view.SurfaceControlViewHost
@@ -185,6 +186,9 @@ class LocationButtonSession(
                 locationButtonClient.onPermissionsResult(isPermissionGranted)
             }
 
+            val userHandle = UserHandle.getUserHandleForUid(packageUid)
+            val userContext = context.createContextAsUser(userHandle, /* flags= */ 0)
+
             val intent =
                 Intent(LocationButtonClient.ACTION_REQUEST_LOCATION_BUTTON_PERMISSIONS).apply {
                     setPackage(context.packageManager.permissionControllerPackageName)
@@ -193,7 +197,7 @@ class LocationButtonSession(
                 }
             val flags = PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT
             val pendingIntent =
-                PendingIntent.getActivity(context, /* requestCode */ 0, intent, flags)
+                PendingIntent.getActivity(userContext, /* requestCode */ 0, intent, flags)
             try {
                 locationButtonClient.onRequestPermissions(pendingIntent)
             } catch (e: RemoteException) {
