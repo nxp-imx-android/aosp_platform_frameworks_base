@@ -22,8 +22,8 @@ import static android.hardware.display.DisplayManager.EXTERNAL_DISPLAY_CONNECTIO
 import static android.hardware.display.DisplayManager.HDR_PREFERENCE_HDR_ALLOWED;
 import static android.hardware.display.DisplayManager.HDR_PREFERENCE_SDR_ONLY;
 
-import static com.android.server.display.PersistentDataStoreTestUtils.createTestDisplayDevice;
-import static com.android.server.display.PersistentDataStoreTestUtils.stateBuilder;
+import static com.android.server.display.persistence.PersistentDataStoreTestUtils.createTestDisplayDevice;
+import static com.android.server.display.persistence.PersistentDataStoreTestUtils.stateBuilder;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -34,6 +34,7 @@ import static org.junit.Assert.assertTrue;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.hardware.display.BrightnessConfiguration;
 import android.os.Handler;
 import android.os.test.TestLooper;
@@ -43,6 +44,8 @@ import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.server.display.persistence.TestInjector;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,15 +54,12 @@ import org.mockito.MockitoAnnotations;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-public class PersistentDataStoreTest {
-    private PersistentDataStore mDataStore;
+public class LegacyPersistentDataStoreTest {
+    private LegacyPersistentDataStore mDataStore;
     private TestInjector mInjector;
     private TestLooper mTestLooper;
 
@@ -72,7 +72,7 @@ public class PersistentDataStoreTest {
         mInjector = new TestInjector();
         mTestLooper = new TestLooper();
         Handler handler = new Handler(mTestLooper.getLooper());
-        mDataStore = new PersistentDataStore(mInjector, handler);
+        mDataStore = new LegacyPersistentDataStore(mInjector, handler);
     }
 
     @Test
@@ -143,7 +143,7 @@ public class PersistentDataStoreTest {
                 mInjector.wasWriteSuccessful());
 
         TestInjector newInjector = new TestInjector();
-        PersistentDataStore newDataStore = new PersistentDataStore(newInjector,
+        LegacyPersistentDataStore newDataStore = new LegacyPersistentDataStore(newInjector,
                 new Handler(mTestLooper.getLooper()));
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         newInjector.setReadStream(bais);
@@ -181,7 +181,7 @@ public class PersistentDataStoreTest {
         assertTrue(mInjector.wasWriteSuccessful());
 
         TestInjector newInjector = new TestInjector();
-        PersistentDataStore newDataStore = new PersistentDataStore(newInjector,
+        LegacyPersistentDataStore newDataStore = new LegacyPersistentDataStore(newInjector,
                 new Handler(mTestLooper.getLooper()));
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         newInjector.setReadStream(bais);
@@ -299,8 +299,8 @@ public class PersistentDataStoreTest {
                 mInjector.wasWriteSuccessful());
 
         TestInjector newInjector = new TestInjector();
-        PersistentDataStore newDataStore =
-                new PersistentDataStore(newInjector, new Handler(mTestLooper.getLooper()));
+        LegacyPersistentDataStore newDataStore =
+                new LegacyPersistentDataStore(newInjector, new Handler(mTestLooper.getLooper()));
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         newInjector.setReadStream(bais);
         newDataStore.loadIfNeeded();
@@ -345,8 +345,8 @@ public class PersistentDataStoreTest {
         assertTrue(mInjector.wasWriteSuccessful());
 
         TestInjector newInjector = new TestInjector();
-        PersistentDataStore newDataStore =
-                new PersistentDataStore(newInjector, new Handler(mTestLooper.getLooper()));
+        LegacyPersistentDataStore newDataStore =
+                new LegacyPersistentDataStore(newInjector, new Handler(mTestLooper.getLooper()));
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         newInjector.setReadStream(bais);
         newDataStore.loadIfNeeded();
@@ -392,15 +392,17 @@ public class PersistentDataStoreTest {
         final DisplayDevice testDisplayDevice =
                 createTestDisplayDevice(mDisplayAdapter, "test:123");
 
-        String contents = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n"
-                + "<display-manager-state>\n"
-                + "  <display-states>\n"
-                + "    <display unique-id=\"test:123\">\n"
-                + "      <brightness-value user-serial=\"1\">0.1</brightness-value>\n"
-                + "      <brightness-value user-serial=\"2\">0.2</brightness-value>\n"
-                + "    </display>\n"
-                + "  </display-states>\n"
-                + "</display-manager-state>\n";
+        String contents = """
+                <?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+                <display-manager-state>
+                  <display-states>
+                    <display unique-id="test:123">
+                      <brightness-value user-serial="1">0.1</brightness-value>
+                      <brightness-value user-serial="2">0.2</brightness-value>
+                    </display>
+                  </display-states>
+                </display-manager-state>
+                """;
 
         InputStream is = new ByteArrayInputStream(contents.getBytes(UTF_8));
         mInjector.setReadStream(is);
@@ -418,15 +420,17 @@ public class PersistentDataStoreTest {
         final DisplayDevice testDisplayDevice =
                 createTestDisplayDevice(mDisplayAdapter, "test:123");
 
-        String contents = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n"
-                + "<display-manager-state>\n"
-                + "  <display-states>\n"
-                + "    <color-mode>0</color-mode>\n"
-                + "    <display unique-id=\"test:123\">\n"
-                + "      <brightness-value>0.5</brightness-value>\n"
-                + "    </display>\n"
-                + "  </display-states>\n"
-                + "</display-manager-state>\n";
+        String contents = """
+                <?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+                <display-manager-state>
+                  <display-states>
+                    <color-mode>0</color-mode>
+                    <display unique-id="test:123">
+                      <brightness-value>0.5</brightness-value>
+                    </display>
+                  </display-states>
+                </display-manager-state>
+                """;
 
         InputStream is = new ByteArrayInputStream(contents.getBytes(UTF_8));
         mInjector.setReadStream(is);
@@ -459,7 +463,7 @@ public class PersistentDataStoreTest {
         mTestLooper.dispatchAll();
         assertTrue(mInjector.wasWriteSuccessful());
         TestInjector newInjector = new TestInjector();
-        PersistentDataStore newDataStore = new PersistentDataStore(newInjector);
+        LegacyPersistentDataStore newDataStore = new LegacyPersistentDataStore(newInjector);
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         newInjector.setReadStream(bais);
         newDataStore.loadIfNeeded();
@@ -475,26 +479,28 @@ public class PersistentDataStoreTest {
 
     @Test
     public void testLoadingBrightnessConfigurations() {
-        String contents = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n"
-                + "<display-manager-state>\n"
-                + "  <brightness-configurations>\n"
-                + "    <brightness-configuration"
-                + "         user-serial=\"1\""
-                + "         package-name=\"example.com\""
-                + "         timestamp=\"123456\">\n"
-                + "      <brightness-curve description=\"something\">\n"
-                + "        <brightness-point lux=\"0\" nits=\"13.25\"/>\n"
-                + "        <brightness-point lux=\"25\" nits=\"35.94\"/>\n"
-                + "      </brightness-curve>\n"
-                + "    </brightness-configuration>\n"
-                + "    <brightness-configuration user-serial=\"3\">\n"
-                + "      <brightness-curve>\n"
-                + "        <brightness-point lux=\"0\" nits=\"13.25\"/>\n"
-                + "        <brightness-point lux=\"10.2\" nits=\"15\"/>\n"
-                + "      </brightness-curve>\n"
-                + "    </brightness-configuration>\n"
-                + "  </brightness-configurations>\n"
-                + "</display-manager-state>\n";
+        String contents = """
+                <?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+                <display-manager-state>
+                  <brightness-configurations>
+                    <brightness-configuration\
+                         user-serial="1"\
+                         package-name="example.com"\
+                         timestamp="123456">
+                      <brightness-curve description="something">
+                        <brightness-point lux="0" nits="13.25"/>
+                        <brightness-point lux="25" nits="35.94"/>
+                      </brightness-curve>
+                    </brightness-configuration>
+                    <brightness-configuration user-serial="3">
+                      <brightness-curve>
+                        <brightness-point lux="0" nits="13.25"/>
+                        <brightness-point lux="10.2" nits="15"/>
+                      </brightness-curve>
+                    </brightness-configuration>
+                  </brightness-configurations>
+                </display-manager-state>
+                """;
         InputStream is = new ByteArrayInputStream(contents.getBytes(UTF_8));
         mInjector.setReadStream(is);
         mDataStore.loadIfNeeded();
@@ -517,17 +523,19 @@ public class PersistentDataStoreTest {
 
     @Test
     public void testBrightnessConfigWithInvalidCurveIsIgnored() {
-        String contents = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n"
-                + "<display-manager-state>\n"
-                + "  <brightness-configurations>\n"
-                + "    <brightness-configuration user-serial=\"0\">\n"
-                + "      <brightness-curve>\n"
-                + "        <brightness-point lux=\"1\" nits=\"13.25\"/>\n"
-                + "        <brightness-point lux=\"25\" nits=\"35.94\"/>\n"
-                + "      </brightness-curve>\n"
-                + "    </brightness-configuration>\n"
-                + "  </brightness-configurations>\n"
-                + "</display-manager-state>\n";
+        String contents = """
+                <?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+                <display-manager-state>
+                  <brightness-configurations>
+                    <brightness-configuration user-serial="0">
+                      <brightness-curve>
+                        <brightness-point lux="1" nits="13.25"/>
+                        <brightness-point lux="25" nits="35.94"/>
+                      </brightness-curve>
+                    </brightness-configuration>
+                  </brightness-configurations>
+                </display-manager-state>
+                """;
         InputStream is = new ByteArrayInputStream(contents.getBytes(UTF_8));
         mInjector.setReadStream(is);
         mDataStore.loadIfNeeded();
@@ -536,17 +544,19 @@ public class PersistentDataStoreTest {
 
     @Test
     public void testBrightnessConfigWithInvalidFloatsIsIgnored() {
-        String contents = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n"
-                + "<display-manager-state>\n"
-                + "  <brightness-configurations>\n"
-                + "    <brightness-configuration user-serial=\"0\">\n"
-                + "      <brightness-curve>\n"
-                + "        <brightness-point lux=\"0\" nits=\"13.25\"/>\n"
-                + "        <brightness-point lux=\"0xFF\" nits=\"foo\"/>\n"
-                + "      </brightness-curve>\n"
-                + "    </brightness-configuration>\n"
-                + "  </brightness-configurations>\n"
-                + "</display-manager-state>\n";
+        String contents = """
+                <?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+                <display-manager-state>
+                  <brightness-configurations>
+                    <brightness-configuration user-serial="0">
+                      <brightness-curve>
+                        <brightness-point lux="0" nits="13.25"/>
+                        <brightness-point lux="0xFF" nits="foo"/>
+                      </brightness-curve>
+                    </brightness-configuration>
+                  </brightness-configurations>
+                </display-manager-state>
+                """;
         InputStream is = new ByteArrayInputStream(contents.getBytes(UTF_8));
         mInjector.setReadStream(is);
         mDataStore.loadIfNeeded();
@@ -554,11 +564,13 @@ public class PersistentDataStoreTest {
     }
 
     @Test
-    public void testEmptyBrightnessConfigurationsDoesntCrash() {
-        String contents = "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n"
-                + "<display-manager-state>\n"
-                + "  <brightness-configurations />\n"
-                + "</display-manager-state>\n";
+    public void testEmptyBrightnessConfigurationsDoesNotCrash() {
+        String contents = """
+                <?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+                <display-manager-state>
+                  <brightness-configurations />
+                </display-manager-state>
+                """;
         InputStream is = new ByteArrayInputStream(contents.getBytes(UTF_8));
         mInjector.setReadStream(is);
         mDataStore.loadIfNeeded();
@@ -566,7 +578,7 @@ public class PersistentDataStoreTest {
     }
 
     @Test
-    public void testStoreAndReloadOfDisplayBrightnessConfigurations() throws InterruptedException {
+    public void testStoreAndReloadOfDisplayBrightnessConfigurations() {
         final String uniqueDisplayId = "test:123";
         int userSerial = 0;
         String packageName = "pdsTestPackage";
@@ -591,7 +603,7 @@ public class PersistentDataStoreTest {
         mTestLooper.dispatchAll();
         assertTrue(mInjector.wasWriteSuccessful());
         TestInjector newInjector = new TestInjector();
-        PersistentDataStore newDataStore = new PersistentDataStore(newInjector);
+        LegacyPersistentDataStore newDataStore = new LegacyPersistentDataStore(newInjector);
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         newInjector.setReadStream(bais);
         newDataStore.loadIfNeeded();
@@ -599,7 +611,7 @@ public class PersistentDataStoreTest {
                 userSerial));
         assertEquals(mDataStore.getBrightnessConfigurationForDisplayLocked(uniqueDisplayId,
                 userSerial), newDataStore.getBrightnessConfigurationForDisplayLocked(
-                        uniqueDisplayId, userSerial));
+                uniqueDisplayId, userSerial));
     }
 
     @Test
@@ -624,7 +636,7 @@ public class PersistentDataStoreTest {
     }
 
     @Test
-    public void testStoreAndReloadOfBrightnessConfigurations() throws InterruptedException {
+    public void testStoreAndReloadOfBrightnessConfigurations() {
         final float[] lux = { 0f, 10f };
         final float[] nits = {1f, 100f };
         final BrightnessConfiguration config = new BrightnessConfiguration.Builder(lux, nits)
@@ -644,7 +656,7 @@ public class PersistentDataStoreTest {
         assertTrue(mInjector.wasWriteSuccessful());
 
         TestInjector newInjector = new TestInjector();
-        PersistentDataStore newDataStore = new PersistentDataStore(newInjector);
+        LegacyPersistentDataStore newDataStore = new LegacyPersistentDataStore(newInjector);
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         newInjector.setReadStream(bais);
         newDataStore.loadIfNeeded();
@@ -664,10 +676,10 @@ public class PersistentDataStoreTest {
         mDataStore.loadIfNeeded();
         assertNull(mDataStore.getBrightnessConfiguration(userSerial));
 
-        mDataStore.setBrightnessConfigurationForUser(config, userSerial, "packagename");
+        mDataStore.setBrightnessConfigurationForUser(config, userSerial, "packageName");
         assertNotNull(mDataStore.getBrightnessConfiguration(userSerial));
 
-        mDataStore.setBrightnessConfigurationForUser(null, userSerial, "packagename");
+        mDataStore.setBrightnessConfigurationForUser(null, userSerial, "packageName");
         assertNull(mDataStore.getBrightnessConfiguration(userSerial));
     }
 
@@ -686,15 +698,18 @@ public class PersistentDataStoreTest {
         mTestLooper.dispatchAll();
         assertTrue(mInjector.wasWriteSuccessful());
         TestInjector newInjector = new TestInjector();
-        PersistentDataStore newDataStore = new PersistentDataStore(newInjector);
+        LegacyPersistentDataStore newDataStore = new LegacyPersistentDataStore(newInjector);
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         newInjector.setReadStream(bais);
         newDataStore.loadIfNeeded();
-        assertNotNull(newDataStore.getUserPreferredResolution(testDisplayDevice));
-        assertEquals(35, newDataStore.getUserPreferredResolution(testDisplayDevice).x);
-        assertEquals(35, mDataStore.getUserPreferredResolution(testDisplayDevice).x);
-        assertEquals(45, newDataStore.getUserPreferredResolution(testDisplayDevice).y);
-        assertEquals(45, mDataStore.getUserPreferredResolution(testDisplayDevice).y);
+        Point resolution = mDataStore.getUserPreferredResolution(testDisplayDevice);
+        Point newResolution = newDataStore.getUserPreferredResolution(testDisplayDevice);
+        assertNotNull(resolution);
+        assertNotNull(newResolution);
+        assertEquals(35, newResolution.x);
+        assertEquals(35, resolution.x);
+        assertEquals(45, newResolution.y);
+        assertEquals(45, resolution.y);
     }
 
     @Test
@@ -711,7 +726,7 @@ public class PersistentDataStoreTest {
         mTestLooper.dispatchAll();
         assertTrue(mInjector.wasWriteSuccessful());
         TestInjector newInjector = new TestInjector();
-        PersistentDataStore newDataStore = new PersistentDataStore(newInjector);
+        LegacyPersistentDataStore newDataStore = new LegacyPersistentDataStore(newInjector);
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         newInjector.setReadStream(bais);
         newDataStore.loadIfNeeded();
@@ -724,7 +739,7 @@ public class PersistentDataStoreTest {
         final DisplayDevice testDisplayDevice =
                 createTestDisplayDevice(mDisplayAdapter, "test:123");
 
-        // Set any value which initialises Display state
+        // Set any value which initializes Display state
         float refreshRate = 85.3f;
         mDataStore.loadIfNeeded();
         mDataStore.setUserPreferredRefreshRate(testDisplayDevice, refreshRate);
@@ -735,7 +750,7 @@ public class PersistentDataStoreTest {
         mTestLooper.dispatchAll();
         assertTrue(mInjector.wasWriteSuccessful());
         TestInjector newInjector = new TestInjector();
-        PersistentDataStore newDataStore = new PersistentDataStore(newInjector);
+        LegacyPersistentDataStore newDataStore = new LegacyPersistentDataStore(newInjector);
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         newInjector.setReadStream(bais);
         newDataStore.loadIfNeeded();
@@ -754,7 +769,7 @@ public class PersistentDataStoreTest {
         mTestLooper.dispatchAll();
         assertTrue(mInjector.wasWriteSuccessful());
         TestInjector newInjector = new TestInjector();
-        PersistentDataStore newDataStore = new PersistentDataStore(newInjector);
+        LegacyPersistentDataStore newDataStore = new LegacyPersistentDataStore(newInjector);
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         newInjector.setReadStream(bais);
         newDataStore.loadIfNeeded();
@@ -779,57 +794,11 @@ public class PersistentDataStoreTest {
                 .setDescription("description")
                 .build();
         mDataStore.loadIfNeeded();
-        mDataStore.setBrightnessConfigurationForUser(config, userSerial, "packagename");
+        mDataStore.setBrightnessConfigurationForUser(config, userSerial, "packageName");
         assertNotNull(mDataStore.getBrightnessConfiguration(userSerial));
 
         mDataStore.removeUserData(userSerial);
         assertNull(mDataStore.getBrightnessConfiguration(userSerial));
-    }
-
-    public class TestInjector extends PersistentDataStore.Injector {
-        private InputStream mReadStream;
-        private OutputStream mWriteStream;
-
-        private boolean mWasSuccessful;
-
-        @Override
-        public InputStream openRead() throws FileNotFoundException {
-            if (mReadStream != null) {
-                return mReadStream;
-            } else {
-                throw new FileNotFoundException();
-            }
-        }
-
-        @Override
-        public OutputStream startWrite() {
-            return mWriteStream;
-        }
-
-        @Override
-        public void finishWrite(OutputStream os, boolean success) {
-            mWasSuccessful = success;
-            try {
-                os.close();
-            } catch (IOException e) {
-                // This method can't throw IOException since the super implementation doesn't, so
-                // we just wrap it in a RuntimeException so we end up crashing the test all the
-                // same.
-                throw new RuntimeException(e);
-            }
-        }
-
-        public void setReadStream(InputStream is) {
-            mReadStream = is;
-        }
-
-        public void setWriteStream(OutputStream os) {
-            mWriteStream = os;
-        }
-
-        public boolean wasWriteSuccessful() {
-            return mWasSuccessful;
-        }
     }
 
     private static void assertArrayEquals(float[] expected, float[] actual, String name) {

@@ -31,6 +31,7 @@ import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHE
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE;
 import static android.hardware.display.DisplayManager.BRIGHTNESS_UNIT_NITS;
 import static android.hardware.display.DisplayManager.BRIGHTNESS_UNIT_PERCENTAGE;
+import static android.hardware.display.DisplayManager.EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_DEFAULT;
 import static android.hardware.display.DisplayManager.DEFAULT_HDR_PREFERENCE;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH;
 import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
@@ -67,7 +68,6 @@ import static android.provider.Settings.Secure.RESOLUTION_MODE_UNKNOWN;
 import static android.text.TextUtils.formatSimple;
 import static android.view.Display.HdrCapabilities.HDR_TYPE_INVALID;
 
-import static com.android.server.display.PersistentDataStore.DEFAULT_CONNECTION_PREFERENCE;
 import static com.android.server.display.brightness.BrightnessUtils.isValidBrightnessValue;
 import static com.android.server.display.layout.Layout.Display.POSITION_REAR;
 
@@ -210,6 +210,8 @@ import com.android.server.display.feature.flags.Flags;
 import com.android.server.display.layout.Layout;
 import com.android.server.display.mode.DisplayModeDirector;
 import com.android.server.display.notifications.DisplayNotificationManager;
+import com.android.server.display.persistence.DisplayMode;
+import com.android.server.display.persistence.PersistentDataStoreDelegate;
 import com.android.server.display.plugin.PluginManager;
 import com.android.server.display.utils.DebugUtils;
 import com.android.server.display.utils.SensorUtils;
@@ -532,7 +534,7 @@ public final class DisplayManagerService extends SystemService {
     private final ArrayList<DisplayViewport> mViewports = new ArrayList<>();
 
     // Persistent data store for all internal settings maintained by the display manager service.
-    private final PersistentDataStore mPersistentDataStore;
+    private final PersistentDataStoreDelegate mPersistentDataStore;
 
     // Temporary callback list, used when sending display events to applications.
     // May be used outside of the lock but only on the handler thread.
@@ -2931,19 +2933,19 @@ public final class DisplayManagerService extends SystemService {
 
     @Nullable
     private Display.Mode getStoredUserPreferredModeLocked(@Nullable DisplayDevice device) {
-        Point userPreferredResolution =
-                mPersistentDataStore.getUserPreferredResolution(device);
-        float refreshRate = mPersistentDataStore.getUserPreferredRefreshRate(device);
-        if (userPreferredResolution == null && Float.isNaN(refreshRate)) {
+        UserManager userManager = getUserManager();
+        int userSerial = userManager != null ? userManager.getUserSerialNumber(mCurrentUserId)
+                : UserHandle.USER_SERIAL_SYSTEM;
+        DisplayMode userPreferredDisplayMode = mPersistentDataStore.getUserPreferredDisplayMode(
+                userSerial, device);
+        if (userPreferredDisplayMode == null) {
             return null;
         }
+        Point userPreferredResolution = userPreferredDisplayMode.getResolution();
+        float refreshRate = userPreferredDisplayMode.getRefreshRate();
         Display.Mode.Builder modeBuilder = new Display.Mode.Builder();
-        if (userPreferredResolution != null) {
-            modeBuilder.setResolution(userPreferredResolution.x, userPreferredResolution.y);
-        }
-        if (!Float.isNaN(refreshRate)) {
-            modeBuilder.setRefreshRate(refreshRate);
-        }
+        modeBuilder.setResolution(userPreferredResolution.x, userPreferredResolution.y);
+        modeBuilder.setRefreshRate(refreshRate);
         return modeBuilder.build();
     }
 
@@ -3103,9 +3105,10 @@ public final class DisplayManagerService extends SystemService {
             return;
         }
         try {
-            mPersistentDataStore.setUserPreferredResolution(
-                    displayDevice, resolutionWidth, resolutionHeight);
-            mPersistentDataStore.setUserPreferredRefreshRate(displayDevice, refreshRate);
+            mPersistentDataStore.setUserPreferredDisplayMode(
+                    getUserManager().getUserSerialNumber(mCurrentUserId), displayDevice,
+                    new DisplayMode(resolutionWidth, resolutionHeight, refreshRate)
+            );
         } finally {
             mPersistentDataStore.saveIfNeeded();
         }
@@ -3474,7 +3477,7 @@ public final class DisplayManagerService extends SystemService {
     }
 
     private void loadBrightnessConfigurations() {
-        int userSerial = getUserManager().getUserSerialNumber(mContext.getUserId());
+        int userSerial = getUserManager().getUserSerialNumber(mCurrentUserId);
         synchronized (mSyncRoot) {
             mLogicalDisplayMapper.forEachLocked((logicalDisplay) -> {
                 final String uniqueId =
@@ -3749,14 +3752,15 @@ public final class DisplayManagerService extends SystemService {
     }
 
     void resetBrightnessConfigurations() {
-        mPersistentDataStore.setBrightnessConfigurationForUser(null, mContext.getUserId(),
+        mPersistentDataStore.setBrightnessConfigurationForUser(null,
+                getUserManager().getUserSerialNumber(mCurrentUserId),
                 mContext.getPackageName());
         mLogicalDisplayMapper.forEachLocked((logicalDisplay -> {
             if (logicalDisplay.getDisplayInfoLocked().type != Display.TYPE_INTERNAL) {
                 return;
             }
             final String uniqueId = logicalDisplay.getPrimaryDisplayDeviceLocked().getUniqueId();
-            setBrightnessConfigurationForDisplayInternal(null, uniqueId, mContext.getUserId(),
+            setBrightnessConfigurationForDisplayInternal(null, uniqueId, mCurrentUserId,
                     mContext.getPackageName());
         }));
     }
@@ -4439,8 +4443,8 @@ public final class DisplayManagerService extends SystemService {
             return DesktopModeHelper.canEnterDesktopMode(context);
         }
 
-        PersistentDataStore getPersistentDataStore() {
-            return new PersistentDataStore();
+        PersistentDataStoreDelegate getPersistentDataStore() {
+            return new PersistentDataStoreDelegate();
         }
 
         boolean doesCallingUidHaveAccessToDisplay(int uid, DisplayInfo info) {
@@ -4492,7 +4496,7 @@ public final class DisplayManagerService extends SystemService {
             mBrightnessTracker = new BrightnessTracker(mContext, null);
         }
 
-        final int userSerial = getUserManager().getUserSerialNumber(mContext.getUserId());
+        final int userSerial = getUserManager().getUserSerialNumber(mCurrentUserId);
         final BrightnessSetting brightnessSetting = new BrightnessSetting(userSerial,
                 mPersistentDataStore, display, mSyncRoot);
         final DisplayPowerController displayPowerController;
@@ -4525,11 +4529,12 @@ public final class DisplayManagerService extends SystemService {
         return display == null ? null : display.getPrimaryDisplayDeviceLocked();
     }
 
+    @Nullable
     private BrightnessConfiguration getBrightnessConfigForDisplayWithPdsFallbackLocked(
             String uniqueId, int userSerial) {
         BrightnessConfiguration config =
                 mPersistentDataStore.getBrightnessConfigurationForDisplayLocked(
-                        uniqueId, userSerial);
+                        mDisplayDeviceRepo.getByUniqueIdLocked(uniqueId), userSerial);
         if (config == null) {
             // Get from global configurations
             config = mPersistentDataStore.getBrightnessConfiguration(userSerial);
@@ -4600,7 +4605,9 @@ public final class DisplayManagerService extends SystemService {
                 return;
             }
 
-            if (mPersistentDataStore.setConnectionPreference(displayDevice, preference)) {
+            if (mPersistentDataStore.setConnectionPreference(
+                    getUserManager().getUserSerialNumber(mCurrentUserId), displayDevice, preference
+            )) {
                 Slog.d(TAG, "Updating connection preference to" + preference
                         + " for display with uniqueId: " + uniqueId);
                 mPersistentDataStore.saveIfNeeded();
@@ -4614,11 +4621,11 @@ public final class DisplayManagerService extends SystemService {
             if (displayDevice == null) {
                 Slog.w(TAG, "No display device found with uniqueId: " + uniqueId
                         + ", returning default connection preference");
-                return DEFAULT_CONNECTION_PREFERENCE;
+                return EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_DEFAULT;
             }
 
-            int persistedConnectionPreference =
-                    mPersistentDataStore.getConnectionPreference(displayDevice);
+            int persistedConnectionPreference = mPersistentDataStore.getConnectionPreference(
+                    getUserManager().getUserSerialNumber(mCurrentUserId), displayDevice);
             Slog.d(TAG, "Returning saved connection preference " + persistedConnectionPreference
                     + " for display with uniqueId: " + uniqueId);
             return mSecondaryDisplayPolicy.getPolicyAwareConnectionPreference(
@@ -4636,7 +4643,9 @@ public final class DisplayManagerService extends SystemService {
                                 + displayId);
                 return;
             }
-            if (mPersistentDataStore.setUserPreferredHdrMode(displayDevice, preference)) {
+            if (mPersistentDataStore.setUserPreferredHdrMode(
+                    getUserManager().getUserSerialNumber(mCurrentUserId), displayDevice, preference
+            )) {
                 mPersistentDataStore.saveIfNeeded();
                 mDisplayModeDirector.setUserPreferredHdrMode(displayId, preference);
             }
@@ -4650,7 +4659,9 @@ public final class DisplayManagerService extends SystemService {
                 return DEFAULT_HDR_PREFERENCE;
             }
 
-            return mPersistentDataStore.getUserPreferredHdrMode(displayDevice);
+            return mPersistentDataStore.getUserPreferredHdrMode(
+                    getUserManager().getUserSerialNumber(mCurrentUserId), displayDevice
+            );
         }
     }
 

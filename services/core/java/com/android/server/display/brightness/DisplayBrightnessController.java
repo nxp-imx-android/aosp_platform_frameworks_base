@@ -16,6 +16,8 @@
 
 package com.android.server.display.brightness;
 
+import static com.android.server.display.BrightnessMappingStrategy.INVALID_NITS;
+
 import android.annotation.Nullable;
 import android.content.Context;
 import android.hardware.SensorManager;
@@ -380,7 +382,8 @@ public final class DisplayBrightnessController {
             // stored value is greater. On multi-screen device, when switching between a
             // screen with a wider brightness range and one with a narrower brightness range,
             // the stored value shouldn't change.
-            if (nits >= 0 && !(brightnessValue >= maxBrightness && currentlyStoredNits > nits)) {
+            if (nits != INVALID_NITS && !(brightnessValue >= maxBrightness
+                    && currentlyStoredNits > nits)) {
                 mBrightnessSetting.setBrightnessNitsForDefaultDisplay(nits);
             }
         }
@@ -489,12 +492,12 @@ public final class DisplayBrightnessController {
      * passing the brightness value to follower displays.
      *
      * @param brightness The float scale value
-     * @return The nit value or {@link BrightnessMappingStrategy.INVALID_NITS} if no conversion is
+     * @return The nit value or {@link INVALID_NITS} if no conversion is
      * possible.
      */
     public float convertToNits(float brightness) {
         if (mAutomaticBrightnessController == null) {
-            return BrightnessMappingStrategy.INVALID_NITS;
+            return INVALID_NITS;
         }
         return mAutomaticBrightnessController.convertToNits(brightness);
     }
@@ -505,12 +508,12 @@ public final class DisplayBrightnessController {
      * {@link com.android.server.display.BrightnessTracker}.
      *
      * @param brightness The float scale value
-     * @return The nit value or {@link BrightnessMappingStrategy.INVALID_NITS} if no conversion is
+     * @return The nit value or {@link INVALID_NITS} if no conversion is
      * possible.
      */
     public float convertToAdjustedNits(float brightness) {
         if (mAutomaticBrightnessController == null) {
-            return BrightnessMappingStrategy.INVALID_NITS;
+            return INVALID_NITS;
         }
         return mAutomaticBrightnessController.convertToAdjustedNits(brightness);
     }
@@ -742,7 +745,7 @@ public final class DisplayBrightnessController {
         if (mDisplayId == Display.DEFAULT_DISPLAY && mPersistBrightnessNitsForDefaultDisplay) {
             float brightnessNitsForDefaultDisplay =
                     mBrightnessSetting.getBrightnessNitsForDefaultDisplay();
-            if (brightnessNitsForDefaultDisplay >= 0) {
+            if (brightnessNitsForDefaultDisplay != INVALID_NITS) {
                 float brightnessForDefaultDisplay = getBrightnessFromNits(
                         brightnessNitsForDefaultDisplay);
                 if (BrightnessUtils.isValidBrightnessValue(brightnessForDefaultDisplay)) {

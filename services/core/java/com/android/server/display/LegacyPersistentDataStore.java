@@ -16,8 +16,11 @@
 
 package com.android.server.display;
 
+import static android.hardware.display.DisplayManager.EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_DEFAULT;
 import static android.hardware.display.DisplayManager.DEFAULT_HDR_PREFERENCE;
 import static android.hardware.display.DisplayManager.EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_ASK;
+
+import static com.android.server.display.BrightnessMappingStrategy.INVALID_NITS;
 
 import android.annotation.Nullable;
 import android.graphics.Point;
@@ -26,7 +29,6 @@ import android.hardware.display.DisplayManager.ExternalDisplayConnection;
 import android.hardware.display.DisplayManager.HdrPreference;
 import android.hardware.display.WifiDisplay;
 import android.os.Handler;
-import android.util.AtomicFile;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.SparseLongArray;
@@ -39,15 +41,14 @@ import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.XmlUtils;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
+import com.android.server.display.persistence.PersistentDataStoreDelegate;
 
 import libcore.io.IoUtils;
 
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -105,8 +106,9 @@ import java.util.Objects;
  *
  * TODO: refactor this to extract common code shared with the input manager's data store
  */
-final class PersistentDataStore {
-    static final String TAG = "DisplayManager.PersistentDataStore";
+public final class LegacyPersistentDataStore {
+    private static final String TAG = "DisplayManager.PersistentDataStore";
+    private static final String FILE_NAME = "/data/system/display-manager-state.xml";
 
     private static final String TAG_DISPLAY_MANAGER_STATE = "display-manager-state";
 
@@ -141,23 +143,20 @@ final class PersistentDataStore {
     private static final String TAG_HDR_PREFERENCE = "hdr-preference";
 
     public static final int DEFAULT_USER_ID = -1;
-    public static final int DEFAULT_CONNECTION_PREFERENCE =
-            EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_ASK;
 
-    // Remembered Wifi display devices.
-    private ArrayList<WifiDisplay> mRememberedWifiDisplays = new ArrayList<WifiDisplay>();
+    // Remembered Wi-Fi display devices.
+    private final ArrayList<WifiDisplay> mRememberedWifiDisplays = new ArrayList<>();
 
     // Display state by unique id.
-    private final HashMap<String, DisplayState> mDisplayStates =
-            new HashMap<String, DisplayState>();
+    private final HashMap<String, DisplayState> mDisplayStates = new HashMap<>();
 
-    private float mBrightnessNitsForDefaultDisplay = -1;
+    private float mBrightnessNitsForDefaultDisplay = INVALID_NITS;
 
     // Display values which should be stable across the device's lifetime.
     private final StableDeviceValues mStableDeviceValues = new StableDeviceValues();
 
     // Brightness configuration by user
-    private BrightnessConfigurations mGlobalBrightnessConfigurations =
+    private final BrightnessConfigurations mGlobalBrightnessConfigurations =
             new BrightnessConfigurations();
 
     // True if the data has been loaded.
@@ -167,26 +166,42 @@ final class PersistentDataStore {
     private boolean mDirty;
 
     // The interface for methods which should be replaced by the test harness.
-    private Injector mInjector;
+    private final PersistentDataStoreDelegate.Injector mInjector;
 
     private final Handler mHandler;
     private final Object mFileAccessLock = new Object();
 
-    public PersistentDataStore() {
-        this(new Injector());
+    /**
+     * Creates a new instance of LegacyPersistentDataStore.
+     */
+    public LegacyPersistentDataStore() {
+        this(new PersistentDataStoreDelegate.Injector(FILE_NAME));
     }
 
+    /**
+     * Creates a new instance of LegacyPersistentDataStore with a specific injector.
+     * @param injector The injector to use for file operations.
+     */
     @VisibleForTesting
-    PersistentDataStore(Injector injector) {
+    public LegacyPersistentDataStore(PersistentDataStoreDelegate.Injector injector) {
         this(injector, new Handler(BackgroundThread.getHandler().getLooper()));
     }
 
+    /**
+     * Creates a new instance of LegacyPersistentDataStore with a specific injector and handler.
+     * @param injector The injector to use for file operations.
+     * @param handler The handler to use for asynchronous operations.
+     */
     @VisibleForTesting
-    PersistentDataStore(Injector injector, Handler handler) {
+    LegacyPersistentDataStore(PersistentDataStoreDelegate.Injector injector,
+            Handler handler) {
         mInjector = injector;
         mHandler = handler;
     }
 
+    /**
+     * Saves the data to the file if there are any pending changes.
+     */
     public void saveIfNeeded() {
         if (mDirty) {
             save();
@@ -194,6 +209,12 @@ final class PersistentDataStore {
         }
     }
 
+    /**
+     * Gets a remembered Wi-Fi display by its device address.
+     * @param deviceAddress The address of the device to retrieve.
+     * @return The remembered Wi-Fi display, or null if not found.
+     */
+    @Nullable
     public WifiDisplay getRememberedWifiDisplay(String deviceAddress) {
         loadIfNeeded();
         int index = findRememberedWifiDisplay(deviceAddress);
@@ -203,11 +224,20 @@ final class PersistentDataStore {
         return null;
     }
 
+    /**
+     * Gets all remembered Wi-Fi displays.
+     * @return An array of remembered Wi-Fi displays.
+     */
     public WifiDisplay[] getRememberedWifiDisplays() {
         loadIfNeeded();
-        return mRememberedWifiDisplays.toArray(new WifiDisplay[mRememberedWifiDisplays.size()]);
+        return mRememberedWifiDisplays.toArray(WifiDisplay.EMPTY_ARRAY);
     }
 
+    /**
+     * Applies the saved alias to a given Wi-Fi display if it matches a remembered display.
+     * @param display The display to apply the alias to.
+     * @return A new WifiDisplay with the alias applied, or the same display if no alias is found.
+     */
     public WifiDisplay applyWifiDisplayAlias(WifiDisplay display) {
         if (display != null) {
             loadIfNeeded();
@@ -225,24 +255,11 @@ final class PersistentDataStore {
         return display;
     }
 
-    public WifiDisplay[] applyWifiDisplayAliases(WifiDisplay[] displays) {
-        WifiDisplay[] results = displays;
-        if (results != null) {
-            int count = displays.length;
-            for (int i = 0; i < count; i++) {
-                WifiDisplay result = applyWifiDisplayAlias(displays[i]);
-                if (result != displays[i]) {
-                    if (results == displays) {
-                        results = new WifiDisplay[count];
-                        System.arraycopy(displays, 0, results, 0, count);
-                    }
-                    results[i] = result;
-                }
-            }
-        }
-        return results;
-    }
-
+    /**
+     * Remembers a Wi-Fi display, updating its information if it already exists.
+     * @param display The Wi-Fi display to remember.
+     * @return true if the remembered list was changed.
+     */
     public boolean rememberWifiDisplay(WifiDisplay display) {
         loadIfNeeded();
 
@@ -260,6 +277,11 @@ final class PersistentDataStore {
         return true;
     }
 
+    /**
+     * Forgets a remembered Wi-Fi display by its device address.
+     * @param deviceAddress The address of the device to forget.
+     * @return true if the device was forgotten.
+     */
     public boolean forgetWifiDisplay(String deviceAddress) {
         loadIfNeeded();
         int index = findRememberedWifiDisplay(deviceAddress);
@@ -281,6 +303,11 @@ final class PersistentDataStore {
         return -1;
     }
 
+    /**
+     * Gets the color mode for a display device.
+     * @param device The display device.
+     * @return The color mode, or Display.COLOR_MODE_INVALID if not found.
+     */
     public int getColorMode(DisplayDevice device) {
         if (!device.hasStableUniqueId()) {
             return Display.COLOR_MODE_INVALID;
@@ -292,6 +319,12 @@ final class PersistentDataStore {
         return state.getColorMode();
     }
 
+    /**
+     * Sets the color mode for a display device.
+     * @param device The display device.
+     * @param colorMode The color mode to set.
+     * @return true if the color mode was changed.
+     */
     public boolean setColorMode(DisplayDevice device, int colorMode) {
         if (!device.hasStableUniqueId()) {
             return false;
@@ -304,6 +337,12 @@ final class PersistentDataStore {
         return false;
     }
 
+    /**
+     * Gets the brightness level for a display device and user.
+     * @param device The display device.
+     * @param userSerial The serial number of the user.
+     * @return The brightness level, or Float.NaN if not found.
+     */
     public float getBrightness(DisplayDevice device, int userSerial) {
         if (device == null || !device.hasStableUniqueId()) {
             return Float.NaN;
@@ -315,6 +354,13 @@ final class PersistentDataStore {
         return state.getBrightness(userSerial);
     }
 
+    /**
+     * Sets the brightness level for a display device and user.
+     * @param displayDevice The display device.
+     * @param brightness The brightness level to set.
+     * @param userSerial The serial number of the user.
+     * @return true if the brightness level was changed.
+     */
     public boolean setBrightness(DisplayDevice displayDevice, float brightness, int userSerial) {
         if (displayDevice == null || !displayDevice.hasStableUniqueId()) {
             return false;
@@ -331,10 +377,19 @@ final class PersistentDataStore {
         return false;
     }
 
+    /**
+     * Gets the brightness in nits for the default display.
+     * @return The brightness in nits.
+     */
     public float getBrightnessNitsForDefaultDisplay() {
         return mBrightnessNitsForDefaultDisplay;
     }
 
+    /**
+     * Sets the brightness in nits for the default display.
+     * @param nits The brightness in nits to set.
+     * @return true if the brightness was changed.
+     */
     public boolean setBrightnessNitsForDefaultDisplay(float nits) {
         if (nits != mBrightnessNitsForDefaultDisplay) {
             mBrightnessNitsForDefaultDisplay = nits;
@@ -344,6 +399,12 @@ final class PersistentDataStore {
         return false;
     }
 
+    /**
+     * Sets the user preferred refresh rate for a display device.
+     * @param displayDevice The display device.
+     * @param refreshRate The user preferred refresh rate to set.
+     * @return true if the refresh rate was changed.
+     */
     public boolean setUserPreferredRefreshRate(DisplayDevice displayDevice, float refreshRate) {
         final String displayDeviceUniqueId = displayDevice.getUniqueId();
         if (!displayDevice.hasStableUniqueId() || displayDeviceUniqueId == null) {
@@ -357,17 +418,31 @@ final class PersistentDataStore {
         return false;
     }
 
+    /**
+     * Gets the user preferred refresh rate for a display device.
+     *
+     * @param device The display device.
+     * @return The user preferred refresh rate, or {@link Display.INVALID_DISPLAY_REFRESH_RATE} if
+     * not found.
+     */
     public float getUserPreferredRefreshRate(DisplayDevice device) {
         if (device == null || !device.hasStableUniqueId()) {
-            return Float.NaN;
+            return Display.INVALID_DISPLAY_REFRESH_RATE;
         }
         final DisplayState state = getDisplayState(device.getUniqueId(), false);
         if (state == null) {
-            return Float.NaN;
+            return Display.INVALID_DISPLAY_REFRESH_RATE;
         }
         return state.getRefreshRate();
     }
 
+    /**
+     * Sets the user preferred resolution for a display device.
+     * @param displayDevice The display device.
+     * @param width The user preferred resolution width to set.
+     * @param height The user preferred resolution height to set.
+     * @return true if the resolution was changed.
+     */
     public boolean setUserPreferredResolution(DisplayDevice displayDevice, int width, int height) {
         final String displayDeviceUniqueId = displayDevice.getUniqueId();
         if (!displayDevice.hasStableUniqueId() || displayDeviceUniqueId == null) {
@@ -381,6 +456,12 @@ final class PersistentDataStore {
         return false;
     }
 
+    /**
+     * Gets the user preferred resolution for a display device.
+     * @param displayDevice The display device.
+     * @return The user preferred resolution as a Point(width, height), or null if not found.
+     */
+    @Nullable
     public Point getUserPreferredResolution(DisplayDevice displayDevice) {
         if (displayDevice == null || !displayDevice.hasStableUniqueId()) {
             return null;
@@ -392,11 +473,19 @@ final class PersistentDataStore {
         return state.getResolution();
     }
 
+    /**
+     * Gets the stable display size.
+     * @return The stable display size as a Point(width, height).
+     */
     public Point getStableDisplaySize() {
         loadIfNeeded();
         return mStableDeviceValues.getDisplaySize();
     }
 
+    /**
+     * Sets the stable display size.
+     * @param size The stable display size as a Point(width, height) to set.
+     */
     public void setStableDisplaySize(Point size) {
         loadIfNeeded();
         if (mStableDeviceValues.setDisplaySize(size)) {
@@ -404,6 +493,12 @@ final class PersistentDataStore {
         }
     }
 
+    /**
+     * Sets the brightness configuration for a specific user.
+     * @param c The brightness configuration.
+     * @param userSerial The serial number of the user.
+     * @param packageName The package name of the app setting the configuration.
+     */
     // Used for testing & reset
     public void setBrightnessConfigurationForUser(BrightnessConfiguration c, int userSerial,
             @Nullable String packageName) {
@@ -415,6 +510,14 @@ final class PersistentDataStore {
         }
     }
 
+    /**
+     * Sets the brightness configuration for a specific display device and user.
+     * @param configuration The brightness configuration.
+     * @param device The display device.
+     * @param userSerial The serial number of the user.
+     * @param packageName The package name of the app setting the configuration.
+     * @return true if the configuration was changed.
+     */
     public boolean setBrightnessConfigurationForDisplayLocked(BrightnessConfiguration configuration,
             DisplayDevice device, int userSerial, String packageName) {
         if (device == null || !device.hasStableUniqueId()) {
@@ -428,7 +531,13 @@ final class PersistentDataStore {
         return false;
     }
 
-
+    /**
+     * Gets the brightness configuration for a specific display device and user.
+     * @param uniqueDisplayId The unique ID of the display.
+     * @param userSerial The serial number of the user.
+     * @return The brightness configuration, or null if not found.
+     */
+    @Nullable
     public BrightnessConfiguration getBrightnessConfigurationForDisplayLocked(
             String uniqueDisplayId, int userSerial) {
         loadIfNeeded();
@@ -439,6 +548,12 @@ final class PersistentDataStore {
         return null;
     }
 
+    /**
+     * Gets the brightness configuration for a specific user.
+     * @param userSerial The serial number of the user.
+     * @return The brightness configuration, or null if not found.
+     */
+    @Nullable
     public BrightnessConfiguration getBrightnessConfiguration(int userSerial) {
         loadIfNeeded();
         return mGlobalBrightnessConfigurations.getBrightnessConfiguration(userSerial);
@@ -478,10 +593,10 @@ final class PersistentDataStore {
      * value if no preference has been saved or if the device lacks a stable unique ID.
      */
     public @ExternalDisplayConnection int getConnectionPreference(DisplayDevice device) {
-        if (!device.hasStableUniqueId()) return DEFAULT_CONNECTION_PREFERENCE;
+        if (!device.hasStableUniqueId()) return EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_DEFAULT;
         DisplayState state = getDisplayState(device.getUniqueId(), /* createIfAbsent= */ false);
         if (state == null) {
-            return DEFAULT_CONNECTION_PREFERENCE;
+            return EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_DEFAULT;
         }
         return state.getConnectionPreference();
     }
@@ -543,6 +658,9 @@ final class PersistentDataStore {
         return state;
     }
 
+    /**
+     * Loads the data from the file if it has not been loaded yet.
+     */
     public void loadIfNeeded() {
         if (!mLoaded) {
             load();
@@ -553,15 +671,15 @@ final class PersistentDataStore {
     /**
      * Removes all persistent data associated with a specific deleted user id.
      * This should be called when a device user is removed from the system.
-     * @param userId The id number of the user to remove.
+     * @param userSerial The id number of the user to remove.
      */
-    public void removeUserData(int userId) {
+    public void removeUserData(int userSerial) {
         loadIfNeeded();
-        mGlobalBrightnessConfigurations.removeUser(userId);
+        mGlobalBrightnessConfigurations.removeUser(userSerial);
 
         // Remove from each DisplayState's per-user brightness and configurations
         for (DisplayState state : mDisplayStates.values()) {
-            state.removeUser(userId);
+            state.removeUser(userSerial);
         }
 
         setDirty();
@@ -583,6 +701,7 @@ final class PersistentDataStore {
             try {
                 is = mInjector.openRead();
             } catch (FileNotFoundException ex) {
+                Slog.e(TAG, "The file does not exist.", ex);
                 return;
             }
 
@@ -590,11 +709,8 @@ final class PersistentDataStore {
             try {
                 parser = Xml.resolvePullParser(is);
                 loadFromXml(parser);
-            } catch (IOException ex) {
-                Slog.w(TAG, "Failed to load display manager persistent store data.", ex);
-                clearState();
-            } catch (XmlPullParserException ex) {
-                Slog.w(TAG, "Failed to load display manager persistent store data.", ex);
+            } catch (IOException | XmlPullParserException ex) {
+                Slog.e(TAG, "Failed to load display manager persistent store data.", ex);
                 clearState();
             } finally {
                 IoUtils.closeQuietly(is);
@@ -620,7 +736,7 @@ final class PersistentDataStore {
                         os.writeTo(fileOutput);
                         fileOutput.flush();
                     } catch (IOException ex) {
-                        Slog.w(TAG, "Failed to save display manager persistent store data.", ex);
+                        Slog.e(TAG, "Failed to save display manager persistent store data.", ex);
                     } finally {
                         if (fileOutput != null) {
                             mInjector.finishWrite(fileOutput, true);
@@ -629,7 +745,7 @@ final class PersistentDataStore {
                 }
             });
         } catch (IOException ex) {
-            Slog.w(TAG, "Failed to process the XML serializer.", ex);
+            Slog.e(TAG, "Failed to process the XML serializer.", ex);
         }
     }
 
@@ -741,8 +857,12 @@ final class PersistentDataStore {
         serializer.endDocument();
     }
 
+    /**
+     * Dumps the state of the persistent data store.
+     * @param pw The print writer to dump to.
+     */
     public void dump(PrintWriter pw) {
-        pw.println("PersistentDataStore:");
+        pw.println("LegacyPersistentDataStore:");
         pw.println("--------------------");
 
         pw.println("  mLoaded=" + mLoaded);
@@ -768,14 +888,14 @@ final class PersistentDataStore {
     private static final class DisplayState {
         private int mColorMode;
 
-        private SparseArray<Float> mPerUserBrightness = new SparseArray<>();
+        private final SparseArray<Float> mPerUserBrightness = new SparseArray<>();
         private int mWidth;
         private int mHeight;
         private float mRefreshRate;
         private int mHdrPreference = DEFAULT_HDR_PREFERENCE;
 
         // Brightness configuration by user
-        private BrightnessConfigurations mDisplayBrightnessConfigurations =
+        private final BrightnessConfigurations mDisplayBrightnessConfigurations =
                 new BrightnessConfigurations();
 
         private int mConnectionPreference = EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_ASK;
@@ -820,6 +940,7 @@ final class PersistentDataStore {
             return true;
         }
 
+        @Nullable
         public BrightnessConfiguration getBrightnessConfiguration(int userSerial) {
             return mDisplayBrightnessConfigurations.mConfigurations.get(userSerial);
         }
@@ -1021,7 +1142,7 @@ final class PersistentDataStore {
         }
 
         private static int loadIntValue(TypedXmlPullParser parser)
-            throws IOException, XmlPullParserException {
+                throws IOException, XmlPullParserException {
             try {
                 String value = parser.nextText();
                 return Integer.parseInt(value);
@@ -1055,7 +1176,7 @@ final class PersistentDataStore {
         // Package that set the configuration.
         private final SparseArray<String> mPackageNames;
 
-        public BrightnessConfigurations() {
+        BrightnessConfigurations() {
             mConfigurations = new SparseArray<>();
             mTimeStamps = new SparseLongArray();
             mPackageNames = new SparseArray<>();
@@ -1064,7 +1185,7 @@ final class PersistentDataStore {
         private boolean setBrightnessConfigurationForUser(BrightnessConfiguration c,
                 int userSerial, String packageName) {
             BrightnessConfiguration currentConfig = mConfigurations.get(userSerial);
-            if (currentConfig != c && (currentConfig == null || !currentConfig.equals(c))) {
+            if (!Objects.equals(currentConfig, c)) {
                 if (c != null) {
                     if (packageName == null) {
                         mPackageNames.remove(userSerial);
@@ -1083,6 +1204,7 @@ final class PersistentDataStore {
             return false;
         }
 
+        @Nullable
         public BrightnessConfiguration getBrightnessConfiguration(int userSerial) {
             return mConfigurations.get(userSerial);
         }
@@ -1112,7 +1234,7 @@ final class PersistentDataStore {
                     try {
                         BrightnessConfiguration config =
                                 BrightnessConfiguration.loadFromXml(parser);
-                        if (userSerial >= 0 && config != null) {
+                        if (userSerial >= 0) {
                             mConfigurations.put(userSerial, config);
                             if (timeStamp != -1) {
                                 mTimeStamps.put(userSerial, timeStamp);
@@ -1161,36 +1283,6 @@ final class PersistentDataStore {
                     pw.println(prefix + "  set by: " + packageName);
                 }
                 pw.println(prefix + "  " + mConfigurations.valueAt(i));
-            }
-        }
-    }
-
-    @VisibleForTesting
-    static class Injector {
-        private final AtomicFile mAtomicFile;
-
-        public Injector() {
-            mAtomicFile = new AtomicFile(new File("/data/system/display-manager-state.xml"),
-                    "display-state");
-        }
-
-        public InputStream openRead() throws FileNotFoundException {
-            return mAtomicFile.openRead();
-        }
-
-        public OutputStream startWrite() throws IOException {
-            return mAtomicFile.startWrite();
-        }
-
-        public void finishWrite(OutputStream os, boolean success) {
-            if (!(os instanceof FileOutputStream)) {
-                throw new IllegalArgumentException("Unexpected OutputStream as argument: " + os);
-            }
-            FileOutputStream fos = (FileOutputStream) os;
-            if (success) {
-                mAtomicFile.finishWrite(fos);
-            } else {
-                mAtomicFile.failWrite(fos);
             }
         }
     }
