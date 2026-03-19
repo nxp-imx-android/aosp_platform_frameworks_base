@@ -122,14 +122,38 @@ public class SensorLocationInternal implements Parcelable {
     }
 
     /**
+     * Returns the physical location of a standalone sensor.
+     *
      * @return {@link PhysicalSensorLocation} when available or
      * {@link PhysicalSensorLocation#UNKNOWN}.
      */
     public byte getStandalonePhysicalLocation() {
-        if (sensorLocationData != null) {
+        if (sensorLocationData != null
+                && sensorLocationData.getTag() == SensorLocationData.standaloneLocation) {
             return sensorLocationData.getStandaloneLocation().location;
         }
         return PhysicalSensorLocation.UNKNOWN;
+    }
+
+    /**
+     * Returns the physical location of the sensor by checking all supported
+     * physical placement types. This includes standalone location and power button physical
+     * location.
+     *
+     * @return {@link PhysicalSensorLocation} when available or
+     * {@link PhysicalSensorLocation#UNKNOWN}.
+     */
+    public byte getPhysicalSensorLocation() {
+        if (sensorLocationData == null) {
+            return PhysicalSensorLocation.UNKNOWN;
+        }
+        return switch (sensorLocationData.getTag()) {
+            case SensorLocationData.standaloneLocation ->
+                    sensorLocationData.getStandaloneLocation().location;
+            case SensorLocationData.powerButtonPhysicalLocation ->
+                    sensorLocationData.getPowerButtonPhysicalLocation().location;
+            default -> PhysicalSensorLocation.UNKNOWN;
+        };
     }
 
     @Override
