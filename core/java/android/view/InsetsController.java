@@ -1713,14 +1713,15 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     @VisibleForTesting
     @Override
     public void notifyFinished(@NonNull InsetsAnimationControlRunner runner, boolean shown) {
-        setRequestedVisibleTypes(shown ? runner.getTypes() : 0, runner.getTypes());
-        if (runner.getAnimationType() != ANIMATION_TYPE_RESIZE) {
-            // We update and send the requestedVisibleTypes first to the server to avoid an
-            // unwanted show/hide request.
-            // This could happen if a controlled (hide) animation is finished, but the IME is
-            // still shown: In this case, it is crucial that the server knows about the IME's
-            // requested visibility to avoid flickering (by first hiding due to being not
-            // requested and not animating, then showing because it becomes requested again).
+        if (runner.getAnimationType() == ANIMATION_TYPE_USER) {
+            // App-controlled animations (USER) may finish with a visibility state that differs
+            // from the last requested state. We update the requested visible types here and
+            // report them to the server to ensure synchronization between the client and server.
+            // This prevents unwanted show/hide requests and avoids flickering. For example, if a
+            // controlled hide animation for the IME finishes but the IME surface is still
+            // briefly visible, the server needs to know that the IME is officially not requested
+            // to avoid a redundant show request when the animation officially ends.
+            setRequestedVisibleTypes(shown ? runner.getTypes() : 0, runner.getTypes());
             reportRequestedVisibleTypes(null /* statsToken */);
         }
         cancelAnimation(runner, false /* invokeCallback */);
