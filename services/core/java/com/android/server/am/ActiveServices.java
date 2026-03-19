@@ -4442,7 +4442,7 @@ public final class ActiveServices {
                 // queued up in the app side as they're one way calls. And we'll also hold off
                 // the service timeout timer until the process is unfrozen.
                 mAm.mOomAdjuster.updateAppFreezeStateLSP(callerApp, OOM_ADJ_REASON_BIND_SERVICE,
-                        true, UNKNOWN_ADJ);
+                        true, UNKNOWN_ADJ, callerApp.getOomAdj());
             }
 
             final boolean wasStopped = hostApp == null ? s.appInfo.isStopped() : false;
