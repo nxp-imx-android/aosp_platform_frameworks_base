@@ -156,7 +156,7 @@ flag {
     name: "enable_talisman_service"
     namespace: "cross_device_authentication"
     description: "Enable the Talisman service."
-    bug: "433283951"
+    bug: "477486847"
 }
 
 flag {
