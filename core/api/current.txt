@@ -9118,9 +9118,9 @@ package android.app.admin {
     field @FlaggedApi("android.app.admin.flags.managed_esim_outgoing_transfer_policy") public static final int MANAGED_ESIM_OUTGOING_TRANSFER_ALLOWED = 1; // 0x1
     field @FlaggedApi("android.app.admin.flags.managed_esim_outgoing_transfer_policy") public static final int MANAGED_ESIM_OUTGOING_TRANSFER_DISALLOWED = 2; // 0x2
     field @FlaggedApi("android.app.admin.flags.managed_esim_outgoing_transfer_policy") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.Integer> MANAGED_ESIM_OUTGOING_TRANSFER_POLICY;
-    field @FlaggedApi("android.app.admin.flags.policy_streamlining") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.Integer> SCREEN_CAPTURE;
-    field @FlaggedApi("android.app.admin.flags.policy_streamlining") public static final int SCREEN_CAPTURE_ALLOWED = 2; // 0x2
-    field @FlaggedApi("android.app.admin.flags.policy_streamlining") public static final int SCREEN_CAPTURE_DISALLOWED = 1; // 0x1
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining_screen_capture_api") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.Integer> SCREEN_CAPTURE;
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining_screen_capture_api") public static final int SCREEN_CAPTURE_ALLOWED = 2; // 0x2
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining_screen_capture_api") public static final int SCREEN_CAPTURE_DISALLOWED = 1; // 0x1
   }
 
   public abstract class PolicyUpdateReceiver extends android.content.BroadcastReceiver {

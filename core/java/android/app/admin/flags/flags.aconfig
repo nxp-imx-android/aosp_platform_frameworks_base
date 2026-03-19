@@ -725,3 +725,10 @@ flag {
   bug: "444380537"
 }
 
+flag {
+  name: "policy_streamlining_screen_capture_api"
+  is_exported: true
+  namespace: "enterprise"
+  description: "Policy streamlining for the SCREEN_CAPTURE API."
+  bug: "434919316"
+}
