@@ -1,6 +1,5 @@
 // Signature format: 6.0
 // - style=java
-// - strip-java-lang-prefix=legacy
 // - type-argument-spacing=legacy
 package android.test {
 
@@ -8,7 +7,7 @@ package android.test {
     ctor @Deprecated public ActivityInstrumentationTestCase(String, Class<T>);
     ctor @Deprecated public ActivityInstrumentationTestCase(String, Class<T>, boolean);
     method @Deprecated public T getActivity();
-    method @Deprecated public void testActivityTestCaseSetUpProperly() throws java.lang.Exception;
+    method @Deprecated public void testActivityTestCaseSetUpProperly() throws Exception;
   }
 
   @Deprecated public abstract class ActivityInstrumentationTestCase2<T extends android.app.Activity> extends android.test.ActivityTestCase {
@@ -22,7 +21,7 @@ package android.test {
   @Deprecated public abstract class ActivityTestCase extends android.test.InstrumentationTestCase {
     ctor @Deprecated public ActivityTestCase();
     method @Deprecated protected android.app.Activity getActivity();
-    method @Deprecated protected void scrubClass(Class<?>) throws java.lang.IllegalAccessException;
+    method @Deprecated protected void scrubClass(Class<?>) throws IllegalAccessException;
     method @Deprecated protected void setActivity(android.app.Activity);
   }
 
@@ -47,7 +46,7 @@ package android.test {
     method @Deprecated public java.util.List<junit.framework.TestCase> getTestCases();
     method @Deprecated public String getTestClassName();
     method @Deprecated public junit.framework.TestResult getTestResult();
-    method @Deprecated protected Class loadSuiteClass(String) throws java.lang.ClassNotFoundException;
+    method @Deprecated protected Class loadSuiteClass(String) throws ClassNotFoundException;
     method @Deprecated protected void runFailed(String);
     method @Deprecated public void runTest();
     method @Deprecated public void runTest(junit.framework.TestResult);
@@ -67,10 +66,10 @@ package android.test {
     method @Deprecated public T getApplication();
     method @Deprecated public android.content.Context getSystemContext();
     method @Deprecated protected final void terminateApplication();
-    method @Deprecated public final void testApplicationTestCaseSetUpProperly() throws java.lang.Exception;
+    method @Deprecated public final void testApplicationTestCaseSetUpProperly() throws Exception;
   }
 
-  @Deprecated public class AssertionFailedError extends java.lang.Error {
+  @Deprecated public class AssertionFailedError extends Error {
     ctor @Deprecated public AssertionFailedError();
     ctor @Deprecated public AssertionFailedError(String);
   }
@@ -121,10 +120,10 @@ package android.test {
     method @Deprecated public static void assertAssignableFrom(Class<?>, Object);
     method @Deprecated public static java.util.regex.MatchResult assertContainsRegex(String, String);
     method @Deprecated public static java.util.regex.MatchResult assertContainsRegex(String, String, String);
-    method @Deprecated public static void assertContentsInAnyOrder(Iterable<?>, java.lang.Object...);
-    method @Deprecated public static void assertContentsInAnyOrder(String, Iterable<?>, java.lang.Object...);
-    method @Deprecated public static void assertContentsInOrder(Iterable<?>, java.lang.Object...);
-    method @Deprecated public static void assertContentsInOrder(String, Iterable<?>, java.lang.Object...);
+    method @Deprecated public static void assertContentsInAnyOrder(Iterable<?>, Object...);
+    method @Deprecated public static void assertContentsInAnyOrder(String, Iterable<?>, Object...);
+    method @Deprecated public static void assertContentsInOrder(Iterable<?>, Object...);
+    method @Deprecated public static void assertContentsInOrder(String, Iterable<?>, Object...);
     method @Deprecated public static void assertEmpty(Iterable<?>);
     method @Deprecated public static void assertEmpty(String, Iterable<?>);
     method @Deprecated public static void assertEmpty(String, java.util.Map<?,?>);
@@ -160,7 +159,7 @@ package android.test {
     method @Deprecated public android.test.mock.MockContentResolver getMockContentResolver();
     method @Deprecated public android.test.IsolatedContext getMockContext();
     method @Deprecated public T getProvider();
-    method @Deprecated public static <T extends android.content.ContentProvider> android.content.ContentResolver newResolverWithContentProviderFromSql(android.content.Context, Class<T>, String, String, int, String) throws java.lang.IllegalAccessException, java.lang.InstantiationException;
+    method @Deprecated public static <T extends android.content.ContentProvider> android.content.ContentResolver newResolverWithContentProviderFromSql(android.content.Context, Class<T>, String, String, int, String) throws IllegalAccessException, InstantiationException;
   }
 
   public abstract class ProviderTestCase2<T extends android.content.ContentProvider> extends android.test.AndroidTestCase {
@@ -168,7 +167,7 @@ package android.test {
     method public android.test.mock.MockContentResolver getMockContentResolver();
     method public android.test.IsolatedContext getMockContext();
     method public T getProvider();
-    method public static <T extends android.content.ContentProvider> android.content.ContentResolver newResolverWithContentProviderFromSql(android.content.Context, String, Class<T>, String, String, int, String) throws java.lang.IllegalAccessException, java.lang.InstantiationException;
+    method public static <T extends android.content.ContentProvider> android.content.ContentResolver newResolverWithContentProviderFromSql(android.content.Context, String, Class<T>, String, String, int, String) throws IllegalAccessException, InstantiationException;
   }
 
   @Deprecated public class RenamingDelegatingContext extends android.content.ContextWrapper {
@@ -176,8 +175,8 @@ package android.test {
     ctor @Deprecated public RenamingDelegatingContext(android.content.Context, String);
     method @Deprecated public String getDatabasePrefix();
     method @Deprecated public void makeExistingFilesAndDbsAccessible();
-    method @Deprecated public static <T extends android.content.ContentProvider> T providerWithRenamedContext(Class<T>, android.content.Context, String) throws java.lang.IllegalAccessException, java.lang.InstantiationException;
-    method @Deprecated public static <T extends android.content.ContentProvider> T providerWithRenamedContext(Class<T>, android.content.Context, String, boolean) throws java.lang.IllegalAccessException, java.lang.InstantiationException;
+    method @Deprecated public static <T extends android.content.ContentProvider> T providerWithRenamedContext(Class<T>, android.content.Context, String) throws IllegalAccessException, InstantiationException;
+    method @Deprecated public static <T extends android.content.ContentProvider> T providerWithRenamedContext(Class<T>, android.content.Context, String, boolean) throws IllegalAccessException, InstantiationException;
   }
 
   @Deprecated public abstract class ServiceTestCase<T extends android.app.Service> extends android.test.AndroidTestCase {
@@ -190,19 +189,19 @@ package android.test {
     method @Deprecated protected void setupService();
     method @Deprecated protected void shutdownService();
     method @Deprecated protected void startService(android.content.Intent);
-    method @Deprecated public void testServiceTestCaseSetUpProperly() throws java.lang.Exception;
+    method @Deprecated public void testServiceTestCaseSetUpProperly() throws Exception;
   }
 
   @Deprecated public abstract class SingleLaunchActivityTestCase<T extends android.app.Activity> extends android.test.InstrumentationTestCase {
     ctor @Deprecated public SingleLaunchActivityTestCase(String, Class<T>);
     method @Deprecated public T getActivity();
-    method @Deprecated public void testActivityTestCaseSetUpProperly() throws java.lang.Exception;
+    method @Deprecated public void testActivityTestCaseSetUpProperly() throws Exception;
   }
 
   @Deprecated public class SyncBaseInstrumentation extends android.test.InstrumentationTestCase {
     ctor @Deprecated public SyncBaseInstrumentation();
     method @Deprecated protected void cancelSyncsandDisableAutoSync();
-    method @Deprecated protected void syncProvider(android.net.Uri, String, String) throws java.lang.Exception;
+    method @Deprecated protected void syncProvider(android.net.Uri, String, String) throws Exception;
   }
 
   @Deprecated public interface TestSuiteProvider {
@@ -273,7 +272,7 @@ package android.test.suitebuilder {
     ctor @Deprecated public TestMethod(java.lang.reflect.Method, Class<? extends junit.framework.TestCase>);
     ctor @Deprecated public TestMethod(String, Class<? extends junit.framework.TestCase>);
     ctor @Deprecated public TestMethod(junit.framework.TestCase);
-    method @Deprecated public junit.framework.TestCase createTest() throws java.lang.IllegalAccessException, java.lang.InstantiationException, java.lang.reflect.InvocationTargetException;
+    method @Deprecated public junit.framework.TestCase createTest() throws IllegalAccessException, InstantiationException, java.lang.reflect.InvocationTargetException;
     method @Deprecated public <T extends java.lang.annotation.Annotation> T getAnnotation(Class<T>);
     method @Deprecated public Class<? extends junit.framework.TestCase> getEnclosingClass();
     method @Deprecated public String getEnclosingClassname();
@@ -284,10 +283,10 @@ package android.test.suitebuilder {
     ctor @Deprecated public TestSuiteBuilder(Class);
     ctor @Deprecated public TestSuiteBuilder(String, ClassLoader);
     method @Deprecated public final junit.framework.TestSuite build();
-    method @Deprecated public android.test.suitebuilder.TestSuiteBuilder excludePackages(java.lang.String...);
+    method @Deprecated public android.test.suitebuilder.TestSuiteBuilder excludePackages(String...);
     method @Deprecated protected String getSuiteName();
     method @Deprecated public final android.test.suitebuilder.TestSuiteBuilder includeAllPackagesUnderHere();
-    method @Deprecated public android.test.suitebuilder.TestSuiteBuilder includePackages(java.lang.String...);
+    method @Deprecated public android.test.suitebuilder.TestSuiteBuilder includePackages(String...);
     method @Deprecated public android.test.suitebuilder.TestSuiteBuilder named(String);
   }
 
@@ -321,7 +320,7 @@ package junit.runner {
     method protected static java.util.Properties getPreferences();
     method public junit.framework.Test getTest(String);
     method @Deprecated public static boolean inVAJava();
-    method protected Class<?> loadSuiteClass(String) throws java.lang.ClassNotFoundException;
+    method protected Class<?> loadSuiteClass(String) throws ClassNotFoundException;
     method protected String processArguments(String[]);
     method protected abstract void runFailed(String);
     method public static void savePreferences() throws java.io.IOException;
@@ -339,8 +338,8 @@ package junit.runner {
   }
 
   public interface TestSuiteLoader {
-    method public Class load(String) throws java.lang.ClassNotFoundException;
-    method public Class reload(Class) throws java.lang.ClassNotFoundException;
+    method public Class load(String) throws ClassNotFoundException;
+    method public Class reload(Class) throws ClassNotFoundException;
   }
 
   public class Version {
