@@ -77,7 +77,6 @@ import android.hardware.display.DisplayManagerInternal;
 import android.hardware.input.InputManager;
 import android.hardware.input.KeyGestureEvent;
 import android.media.AudioManagerInternal;
-import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
@@ -387,7 +386,7 @@ class TestPhoneWindowManager {
         }
         doNothing().when(mPhoneWindowManager).screenTurningOn(anyInt(), any());
         doNothing().when(mPhoneWindowManager).screenTurnedOn(anyInt());
-        doNothing().when(mPhoneWindowManager).startedWakingUp(anyInt(), anyInt());
+        doNothing().when(mPhoneWindowManager).startedWakingUp(anyInt(), anyInt(), anyBoolean());
         doNothing().when(mPhoneWindowManager).finishedWakingUp(anyInt(), anyInt());
         doNothing().when(mPhoneWindowManager).lockNow(any());
 

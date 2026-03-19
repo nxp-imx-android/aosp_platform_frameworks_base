@@ -171,7 +171,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 
@@ -3849,14 +3848,20 @@ public class PowerManagerServiceTest {
         assertThat(mService.getWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP)).isEqualTo(
                 WAKEFULNESS_ASLEEP);
 
-        verify(mNotifierMock).onGroupWakefulnessChangeStarted(eq(Display.DEFAULT_DISPLAY_GROUP),
-                eq(WAKEFULNESS_ASLEEP), eq(PowerManager.GO_TO_SLEEP_REASON_APPLICATION), anyLong());
+        verify(mNotifierMock)
+                .onGroupWakefulnessChangeStarted(
+                        eq(Display.DEFAULT_DISPLAY_GROUP),
+                        eq(WAKEFULNESS_ASLEEP),
+                        eq(PowerManager.GO_TO_SLEEP_REASON_APPLICATION),
+                        /* anyDefaultOrAdjacentGroupInteractive= */ eq(false),
+                        anyLong());
         verify(mNotifierMock).onGlobalWakefulnessChangeStarted(eq(WAKEFULNESS_ASLEEP),
                 eq(PowerManager.GO_TO_SLEEP_REASON_APPLICATION), anyLong());
     }
 
     @Test
-    public void testMultiDisplay_bothDisplaysSleep_onWakefulnessChangedEventsFireCorrectly() {
+    public void
+            testMultiDisplay_sleepDefaultSecond_onWakefulnessChangedEventsFireCorrectly() {
         final int nonDefaultDisplayGroupId = Display.DEFAULT_DISPLAY_GROUP + 1;
         final int nonDefaultDisplay = Display.DEFAULT_DISPLAY + 1;
         final AtomicReference<DisplayManagerInternal.DisplayGroupListener> listener =
@@ -3875,10 +3880,44 @@ public class PowerManagerServiceTest {
         assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
         listener.get().onDisplayGroupAdded(nonDefaultDisplayGroupId);
 
-        mService.setWakefulnessLocked(nonDefaultDisplayGroupId, WAKEFULNESS_ASLEEP, 0, 0,
-                PowerManager.GO_TO_SLEEP_REASON_APPLICATION, 0, null, null);
-        mService.setWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP, WAKEFULNESS_ASLEEP, 0, 0,
-                PowerManager.GO_TO_SLEEP_REASON_APPLICATION, 0, null, null);
+        // Event 1: A display group which is not default and also not default adjacent goes to
+        // sleep.
+        mService.setWakefulnessLocked(
+                nonDefaultDisplayGroupId,
+                WAKEFULNESS_ASLEEP,
+                0,
+                0,
+                PowerManager.GO_TO_SLEEP_REASON_APPLICATION,
+                0,
+                null,
+                null);
+
+        // -> Only the non-default display group is asleep.
+        assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
+        assertThat(mService.getWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP))
+                .isEqualTo(WAKEFULNESS_AWAKE);
+        assertThat(mService.getWakefulnessLocked(nonDefaultDisplayGroupId))
+                .isEqualTo(WAKEFULNESS_ASLEEP);
+
+        verify(mNotifierMock)
+                .onGroupWakefulnessChangeStarted(
+                        eq(nonDefaultDisplayGroupId),
+                        eq(WAKEFULNESS_ASLEEP),
+                        eq(PowerManager.GO_TO_SLEEP_REASON_APPLICATION),
+                        /* anyDefaultOrAdjacentGroupInteractive= */ eq(true),
+                        anyLong());
+        reset(mNotifierMock);
+
+        // Event 2: The default group goes to sleep.
+        mService.setWakefulnessLocked(
+                Display.DEFAULT_DISPLAY_GROUP,
+                WAKEFULNESS_ASLEEP,
+                0,
+                0,
+                PowerManager.GO_TO_SLEEP_REASON_APPLICATION,
+                0,
+                null,
+                null);
 
         assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_ASLEEP);
         assertThat(mService.getWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP)).isEqualTo(
@@ -3886,12 +3925,175 @@ public class PowerManagerServiceTest {
         assertThat(mService.getWakefulnessLocked(nonDefaultDisplayGroupId)).isEqualTo(
                 WAKEFULNESS_ASLEEP);
 
-        verify(mNotifierMock).onGroupWakefulnessChangeStarted(eq(nonDefaultDisplayGroupId),
-                eq(WAKEFULNESS_ASLEEP), eq(PowerManager.GO_TO_SLEEP_REASON_APPLICATION), anyLong());
-        verify(mNotifierMock).onGroupWakefulnessChangeStarted(eq(Display.DEFAULT_DISPLAY_GROUP),
-                eq(WAKEFULNESS_ASLEEP), eq(PowerManager.GO_TO_SLEEP_REASON_APPLICATION), anyLong());
         verify(mNotifierMock).onGlobalWakefulnessChangeStarted(eq(WAKEFULNESS_ASLEEP),
                 eq(PowerManager.GO_TO_SLEEP_REASON_APPLICATION), anyLong());
+    }
+
+    @Test
+    public void
+            testMultiDisplay_sleepDefaultFirst_onWakefulnessChangedEventsFireCorrectly() {
+        final int nonDefaultDisplayGroupId = Display.DEFAULT_DISPLAY_GROUP + 1;
+        final int nonDefaultDisplay = Display.DEFAULT_DISPLAY + 1;
+        final AtomicReference<DisplayManagerInternal.DisplayGroupListener> listener =
+                new AtomicReference<>();
+        doAnswer((Answer<Void>) invocation -> {
+            listener.set(invocation.getArgument(0));
+            return null;
+        }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
+
+        final DisplayInfo info = createDisplayInfo(nonDefaultDisplay, nonDefaultDisplayGroupId);
+        setMockDisplays(mDefaultDisplayInfo, info);
+
+        createService();
+        startSystem();
+
+        assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
+        listener.get().onDisplayGroupAdded(nonDefaultDisplayGroupId);
+
+        // Event 1: The default group goes to sleep.
+        mService.setWakefulnessLocked(
+                Display.DEFAULT_DISPLAY_GROUP,
+                WAKEFULNESS_ASLEEP,
+                0,
+                0,
+                PowerManager.GO_TO_SLEEP_REASON_APPLICATION,
+                0,
+                null,
+                null);
+
+        // Only the default group is asleep.
+        assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
+        assertThat(mService.getWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP))
+                .isEqualTo(WAKEFULNESS_ASLEEP);
+        assertThat(mService.getWakefulnessLocked(nonDefaultDisplayGroupId))
+                .isEqualTo(WAKEFULNESS_AWAKE);
+
+        // Note that the notification now has anyDefaultOrAdjacentGroupInteractive=false, because
+        // the only display group which is awake is not default or default adjacent.
+        verify(mNotifierMock)
+                .onGroupWakefulnessChangeStarted(
+                        eq(Display.DEFAULT_DISPLAY_GROUP),
+                        eq(WAKEFULNESS_ASLEEP),
+                        eq(PowerManager.GO_TO_SLEEP_REASON_APPLICATION),
+                        /* anyDefaultOrAdjacentGroupInteractive= */ eq(false),
+                        anyLong());
+        reset(mNotifierMock);
+
+        // Event 2: A display group which is not default and also not default adjacent goes to
+        // sleep.
+        mService.setWakefulnessLocked(
+                nonDefaultDisplayGroupId,
+                WAKEFULNESS_ASLEEP,
+                0,
+                0,
+                PowerManager.GO_TO_SLEEP_REASON_APPLICATION,
+                0,
+                null,
+                null);
+
+        assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_ASLEEP);
+        assertThat(mService.getWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP))
+                .isEqualTo(WAKEFULNESS_ASLEEP);
+        assertThat(mService.getWakefulnessLocked(nonDefaultDisplayGroupId))
+                .isEqualTo(WAKEFULNESS_ASLEEP);
+
+        verify(mNotifierMock)
+                .onGroupWakefulnessChangeStarted(
+                        eq(nonDefaultDisplayGroupId),
+                        eq(WAKEFULNESS_ASLEEP),
+                        eq(PowerManager.GO_TO_SLEEP_REASON_APPLICATION),
+                        /* anyDefaultOrAdjacentGroupInteractive= */ eq(false),
+                        anyLong());
+    }
+
+    @Test
+    public void
+            testMultiDisplayAdjacent_sleepDefaultFirst_onWakefulnessChangedEventsFireCorrectly() {
+        final int nonDefaultDisplayGroupId = Display.DEFAULT_DISPLAY_GROUP + 1;
+        final int nonDefaultDisplay = Display.DEFAULT_DISPLAY + 1;
+        final AtomicReference<DisplayManagerInternal.DisplayGroupListener> listener =
+                new AtomicReference<>();
+        doAnswer((Answer<Void>) invocation -> {
+            listener.set(invocation.getArgument(0));
+            return null;
+        }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
+        // Mock getDisplayGroupFlags for the non-default group to be adjacent
+        when(mDisplayManagerInternalMock.getDisplayGroupFlags(nonDefaultDisplayGroupId))
+                .thenReturn(DisplayGroup.FLAG_DEFAULT_GROUP_ADJACENT);
+
+        final DisplayInfo info = createDisplayInfo(nonDefaultDisplay, nonDefaultDisplayGroupId);
+        setMockDisplays(mDefaultDisplayInfo, info);
+
+        createService();
+        startSystem();
+
+        assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
+        listener.get().onDisplayGroupAdded(nonDefaultDisplayGroupId);
+
+        // Event 1: The default group goes to sleep.
+        mService.setWakefulnessLocked(
+                Display.DEFAULT_DISPLAY_GROUP,
+                WAKEFULNESS_ASLEEP,
+                0,
+                0,
+                PowerManager.GO_TO_SLEEP_REASON_APPLICATION,
+                0,
+                null,
+                null);
+
+        // Only the default group is asleep.
+        assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
+        assertThat(mService.getWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP))
+                .isEqualTo(WAKEFULNESS_ASLEEP);
+        assertThat(mService.getWakefulnessLocked(nonDefaultDisplayGroupId))
+                .isEqualTo(WAKEFULNESS_AWAKE);
+
+        // Note that the notification now has anyDefaultOrAdjacentGroupInteractive=true, because
+        // the only display group which is still awake has been setup with
+        // FLAG_DEFAULT_GROUP_ADJACENT.
+        verify(mNotifierMock)
+                .onGroupWakefulnessChangeStarted(
+                        eq(Display.DEFAULT_DISPLAY_GROUP),
+                        eq(WAKEFULNESS_ASLEEP),
+                        eq(PowerManager.GO_TO_SLEEP_REASON_APPLICATION),
+                        /* anyDefaultOrAdjacentGroupInteractive= */ eq(true),
+                        anyLong());
+        reset(mNotifierMock);
+
+        // Event 2: A display group which is not default and also not default adjacent goes to
+        // sleep.
+        mService.setWakefulnessLocked(
+                nonDefaultDisplayGroupId,
+                WAKEFULNESS_ASLEEP,
+                0,
+                0,
+                PowerManager.GO_TO_SLEEP_REASON_APPLICATION,
+                0,
+                null,
+                null);
+
+        // The non-default (adjacent) display group went asleep, and the default one switched to
+        // dozing.
+        assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_DOZING);
+        assertThat(mService.getWakefulnessLocked(Display.DEFAULT_DISPLAY_GROUP))
+                .isEqualTo(WAKEFULNESS_DOZING);
+        assertThat(mService.getWakefulnessLocked(nonDefaultDisplayGroupId))
+                .isEqualTo(WAKEFULNESS_ASLEEP);
+
+        verify(mNotifierMock)
+                .onGroupWakefulnessChangeStarted(
+                        eq(nonDefaultDisplayGroupId),
+                        eq(WAKEFULNESS_ASLEEP),
+                        eq(PowerManager.GO_TO_SLEEP_REASON_APPLICATION),
+                        /* anyDefaultOrAdjacentGroupInteractive= */ eq(false),
+                        anyLong());
+        verify(mNotifierMock)
+                .onGroupWakefulnessChangeStarted(
+                        eq(Display.DEFAULT_DISPLAY_GROUP),
+                        eq(WAKEFULNESS_DOZING),
+                        eq(PowerManager.GO_TO_SLEEP_REASON_TIMEOUT),
+                        /* anyDefaultOrAdjacentGroupInteractive= */ eq(false),
+                        anyLong());
     }
 
     @Test
@@ -3931,10 +4133,20 @@ public class PowerManagerServiceTest {
                 WAKEFULNESS_ASLEEP);
         assertThat(mService.getWakefulnessLocked(nonDefaultDisplayGroupId)).isEqualTo(
                 WAKEFULNESS_AWAKE);
-        verify(mNotifierMock).onGroupWakefulnessChangeStarted(eq(nonDefaultDisplayGroupId),
-                eq(WAKEFULNESS_AWAKE), eq(PowerManager.WAKE_REASON_DISPLAY_GROUP_ADDED), anyLong());
-        verify(mNotifierMock).onGroupWakefulnessChangeStarted(eq(Display.DEFAULT_DISPLAY_GROUP),
-                eq(WAKEFULNESS_ASLEEP), eq(PowerManager.GO_TO_SLEEP_REASON_APPLICATION), anyLong());
+        verify(mNotifierMock)
+                .onGroupWakefulnessChangeStarted(
+                        eq(nonDefaultDisplayGroupId),
+                        eq(WAKEFULNESS_AWAKE),
+                        eq(PowerManager.WAKE_REASON_DISPLAY_GROUP_ADDED),
+                        /* anyDefaultOrAdjacentGroupInteractive= */ eq(true),
+                        anyLong());
+        verify(mNotifierMock)
+                .onGroupWakefulnessChangeStarted(
+                        eq(Display.DEFAULT_DISPLAY_GROUP),
+                        eq(WAKEFULNESS_ASLEEP),
+                        eq(PowerManager.GO_TO_SLEEP_REASON_APPLICATION),
+                        /* anyDefaultOrAdjacentGroupInteractive= */ eq(false),
+                        anyLong());
         verify(mNotifierMock, never()).onGlobalWakefulnessChangeStarted(eq(WAKEFULNESS_ASLEEP),
                 anyInt(), anyLong());
     }
@@ -3975,9 +4187,13 @@ public class PowerManagerServiceTest {
         assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
         verify(mNotifierMock, never()).onGlobalWakefulnessChangeStarted(anyInt(), anyInt(),
                 anyLong());
-        verify(mNotifierMock, atMost(1)).onGroupWakefulnessChangeStarted(
-                eq(nonDefaultDisplayGroupId), eq(WAKEFULNESS_ASLEEP),
-                eq(PowerManager.GO_TO_SLEEP_REASON_APPLICATION), eq(eventTime));
+        verify(mNotifierMock, atMost(1))
+                .onGroupWakefulnessChangeStarted(
+                        eq(nonDefaultDisplayGroupId),
+                        eq(WAKEFULNESS_ASLEEP),
+                        eq(PowerManager.GO_TO_SLEEP_REASON_APPLICATION),
+                        /* anyDefaultOrAdjacentGroupInteractive= */ eq(false),
+                        eq(eventTime));
     }
 
     @Test
