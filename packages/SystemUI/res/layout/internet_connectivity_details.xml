@@ -115,7 +115,7 @@
                         android:baselineAligned="false"
                         android:layout_height="@dimen/tile_details_toggle_row_height"
                         android:clickable="false"
-                        android:focusable="false"
+                        android:focusable="true"
                         android:gravity="center">
 
                         <LinearLayout
@@ -149,7 +149,6 @@
                                 android:scaleY="0.77"
                                 android:layout_gravity="center_vertical"
                                 android:focusable="false"
-                                android:clickable="false"
                                 android:theme="@style/Theme.Material3.DynamicColors.DayNight"
                                 style="@style/SettingslibSwitchStyle.Expressive"
                                 tools:ignore="UseSwitchCompatOrMaterialXml" />
@@ -219,7 +218,7 @@
                     android:layout_height="@dimen/internet_dialog_wifi_network_height"
                     android:gravity="center"
                     android:clickable="false"
-                    android:focusable="false">
+                    android:focusable="true">
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -261,7 +260,6 @@
                             android:scaleY="0.77"
                             android:layout_gravity="center_vertical"
                             android:focusable="false"
-                            android:clickable="false"
                             android:theme="@style/Theme.Material3.DynamicColors.DayNight"
                             style="@style/SettingslibSwitchStyle.Expressive"
                             tools:ignore="UseSwitchCompatOrMaterialXml" />
@@ -439,7 +437,6 @@
                     android:paddingTop="16dp">
 
                     <ImageView
-                        android:contentDescription="@string/turn_on_wifi"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:src="@drawable/ic_info_outline"
