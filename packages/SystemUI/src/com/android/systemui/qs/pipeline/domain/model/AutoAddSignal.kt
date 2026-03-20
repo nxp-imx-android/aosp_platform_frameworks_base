@@ -37,6 +37,8 @@ sealed interface AutoAddSignal {
     /** Signal for remove the auto-add marker from the tile, but not remove the tile */
     data class RemoveTracking(override val spec: TileSpec) : AutoAddSignal
 
+    data class AddTracking(override val spec: TileSpec) : AutoAddSignal
+
     /**
      * Size for the tile to add:
      *

@@ -54,6 +54,7 @@ import com.android.systemui.user.domain.interactor.headlessSystemUserMode
 import com.android.systemui.util.settings.data.repository.secureSettingsForUserRepository
 import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
@@ -211,7 +212,7 @@ class WifiCellTileMigrationTest : SysuiTestCase() {
      * * Cell tile is not marked as auto-added (original migration flow)
      *
      * Result:
-     * * No changes
+     * * Cell tile is now marked as added
      */
     @Test
     fun loadedAlreadyHasLargeCell_noChanges() =
@@ -241,9 +242,9 @@ class WifiCellTileMigrationTest : SysuiTestCase() {
             assertThat(largeTiles).doesNotContain(wifiSpec)
 
             /*
-             * Cell is not marked as auto-added
+             * Cell is marked as auto-added
              */
-            assertThat(autoAddedTiles).doesNotContain(cellSpec)
+            assertThat(autoAddedTiles).contains(cellSpec)
         }
 
     /**
@@ -253,7 +254,7 @@ class WifiCellTileMigrationTest : SysuiTestCase() {
      * * Cell tile is not marked as auto-added (original migration flow)
      *
      * Result:
-     * * No changes
+     * * Cell tile is now marked as added
      */
     @Test
     fun loadedAlreadyHasSmallCell_noChanges() =
@@ -283,23 +284,22 @@ class WifiCellTileMigrationTest : SysuiTestCase() {
             assertThat(largeTiles).doesNotContain(wifiSpec)
 
             /*
-             * Cell is not marked as auto-added
+             * Cell is marked as auto-added
              */
-            assertThat(autoAddedTiles).doesNotContain(cellSpec)
+            assertThat(autoAddedTiles).contains(cellSpec)
         }
 
     /**
      * This test the following scenario:
-     * * User has migrated already (original migration flow)
+     * * User has migrated already (original migration flow, not marked as auto-added)
      * * User has a small Cell tile, not at the end
-     * * User removes cell tile twice
+     * * User removes cell tile
      *
      * Result:
-     * * The first time the cell tile is removed, it will be auto added at the end as large
-     * * The second time it won't be auto added.
+     * * The cell tile is not auto-added
      */
     @Test
-    fun loadedAlreadyHasSmallCell_removedTwice_addedOnlyOnce() =
+    fun loadedAlreadyHasSmallCell_removed_notAddedAgain() =
         kosmos.runTest {
             fakeUserRepository.asDefaultUser()
             setTilesInSettings(
@@ -314,13 +314,9 @@ class WifiCellTileMigrationTest : SysuiTestCase() {
             currentTilesInteractor.removeTiles(setOf(cellSpec))
 
             assertThat(currentTilesInteractor.currentTilesSpecs)
-                .isEqualTo(listOf(TileSpec.create("a"), wifiSpec, TileSpec.create("b"), cellSpec))
+                .isEqualTo(listOf(TileSpec.create("a"), wifiSpec, TileSpec.create("b")))
 
-            assertThat(largeTiles).contains(cellSpec)
-
-            currentTilesInteractor.removeTiles(setOf(cellSpec))
-
-            assertThat(currentTilesInteractor.currentTilesSpecs).doesNotContain(cellSpec)
+            assertThat(largeTiles).doesNotContain(cellSpec)
         }
 
     /*
@@ -336,7 +332,7 @@ class WifiCellTileMigrationTest : SysuiTestCase() {
      *
      * NOTE: This scenario can happen either in a device experiencing the new migration for the
      * first time (with a removed internet tile), or in a device that already experienced the old
-     * migration.
+     * migration and removed both wifi and cell
      */
     @Test
     fun noInternetTile_largeCellTileAddedAtTheEnd() =
@@ -364,7 +360,7 @@ class WifiCellTileMigrationTest : SysuiTestCase() {
             assertThat(largeTiles).doesNotContain(wifiSpec)
 
             /*
-             * Cell is not marked as auto-added
+             * Cell is marked as auto-added
              */
             assertThat(autoAddedTiles).contains(cellSpec)
         }
@@ -411,12 +407,20 @@ class WifiCellTileMigrationTest : SysuiTestCase() {
             assertThat(largeTiles).doesNotContain(wifiSpec)
 
             /*
-             * Cell is not marked as auto-added
+             * Cell is marked as auto-added
              */
             assertThat(autoAddedTiles).contains(cellSpec)
         }
 
-    // Restore with internet tile
+    /*
+     * This tests the following scenario:
+     * * User is restoring from a device pre-migration, and it has an internet tile.
+     *
+     * Result:
+     * * Wifi tile replaces internet tile in the same position
+     * * Cell tile is added as large to the end
+     * * Cell tile is marked as auto-added
+     */
     @Test
     fun restoreWithInternetTile_replacedWithWifi_cellAddedAtEnd() =
         kosmos.runTest {
@@ -435,8 +439,6 @@ class WifiCellTileMigrationTest : SysuiTestCase() {
 
             val autoAddedTiles by collectLastValue(autoAddRepository.autoAddedTiles(USER))
             val largeTiles by collectLastValue(iconTilesInteractor.largeTilesSpecs)
-            // val tilesUpgrade by
-            // collectValues(tileSpecRepository.tilesUpgradePath.receiveAsFlow())
             autoAddInteractor.init(currentTilesInteractor, iconTilesInteractor)
 
             fakeRestoreRepository.onDataRestored(
@@ -458,20 +460,31 @@ class WifiCellTileMigrationTest : SysuiTestCase() {
                 )
 
             /*
-             * No large tiles
+             * Cell and Wifi expected as large
              */
             assertThat(largeTiles).containsAtLeast(cellSpec, wifiSpec)
             assertThat(largeTiles).doesNotContain(internetSpec)
 
             /*
-             * Cell is not marked as auto-added
+             * Cell is marked as auto-added
              */
             assertThat(autoAddedTiles).contains(cellSpec)
         }
 
-    // Restore without internet tile
+    /*
+     * This tests the following scenario:
+     * * User is restoring from a device without the internet tile (and without cell or wifi)
+     *
+     * Result:
+     * * Wifi tile is not added anywhere
+     * * Large Cell tile is added at the end and marked as auto-added
+     *
+     * NOTE: This could be one of two indistinguishable cases: either the user is restoring from
+     * a device pre-migration, or the user is restoring from a device that underwent the old
+     * migration.
+     */
     @Test
-    fun restoreWithoutInternetTile_cellAddedAtEnd() =
+    fun restoreWithoutInternetCellWifiTile_cellAddedAtEnd() =
         kosmos.runTest {
             fakeUserRepository.asDefaultUser()
             restoreReconciliationInteractor.start()
@@ -494,15 +507,143 @@ class WifiCellTileMigrationTest : SysuiTestCase() {
                 .isEqualTo(listOf(TileSpec.create("a"), TileSpec.create("b"), cellSpec))
 
             /*
-             * No large tiles
+             * Only Cell large tile
              */
             assertThat(largeTiles).contains(cellSpec)
             assertThat(largeTiles).doesNotContain(internetSpec)
             assertThat(largeTiles).doesNotContain(wifiSpec)
 
             /*
-             * Cell is not marked as auto-added
+             * Cell is marked as auto-added
              */
+            assertThat(autoAddedTiles).contains(cellSpec)
+        }
+
+    /*
+     * This tests the following scenario:
+     * * User is restoring from a backup from a device with the previous migration
+     * * User has cell tile added in the restore
+     * * Cell tile is not marked as auto-added in the restore (due to previous migration)
+     *
+     * Result:
+     * * Wifi tile is not added anywhere
+     * * Large Cell tile is moved to the end and marked as auto-added
+     *
+     * NOTE: This is not a fully desirable scenario, but it won't be experienced by many users.
+     * It requires that the backup is created with a build that has the flag enabled (post
+     * migration), but does not contain the CL that introduces the new migration.
+     */
+    @Test
+    fun restoreWithCellTile_afterPreviousMigration_tileMovedToTheEndLarge() =
+        kosmos.runTest {
+            fakeUserRepository.asDefaultUser()
+            restoreReconciliationInteractor.start()
+            val restoredTiles = listOf(TileSpec.create("a"), cellSpec, TileSpec.create("b"))
+            val autoAddedRestored = setOf(TileSpec.create("hotspot"))
+            iconTilesInteractor.setLargeTiles(emptySet())
+
+            val autoAddedTiles by collectLastValue(autoAddRepository.autoAddedTiles(USER))
+            val largeTiles by collectLastValue(iconTilesInteractor.largeTilesSpecs)
+            autoAddInteractor.init(currentTilesInteractor, iconTilesInteractor)
+
+            fakeRestoreRepository.onDataRestored(
+                RestoreData(restoredTiles, autoAddedRestored, USER)
+            )
+
+            /*
+             * Internet replaced with wifi. Cell added at the end
+             */
+            assertThat(currentTilesInteractor.currentTilesSpecs)
+                .isEqualTo(listOf(TileSpec.create("a"), TileSpec.create("b"), cellSpec))
+
+            /*
+             * Only Cell large tile
+             */
+            assertThat(largeTiles).contains(cellSpec)
+            assertThat(largeTiles).doesNotContain(internetSpec)
+            assertThat(largeTiles).doesNotContain(wifiSpec)
+
+            /*
+             * Cell is marked as auto-added
+             */
+            assertThat(autoAddedTiles).contains(cellSpec)
+        }
+
+    /**
+     * This tests the following scenario:
+     * * User is restoring from a backup that underwent this new migration
+     * * Cell tile was in the restored set
+     * * Cell tile was marked as auto added in the restore data (as it's after new migration)
+     *
+     * Result:
+     * * Tile list is the restored list
+     * * Cell tile is not moved or have its size changed
+     * * Cell tile is marked as auto-added
+     */
+    @Test
+    fun restoreWithSmallCellTile_afterCurrentMigration_tileNotMovedAndSizeNotChanged() =
+        kosmos.runTest {
+            fakeUserRepository.asDefaultUser()
+            restoreReconciliationInteractor.start()
+            val restoredTiles = listOf(TileSpec.create("a"), cellSpec, TileSpec.create("b"))
+            val autoAddedRestored = setOf(TileSpec.create("hotspot"), cellSpec)
+            iconTilesInteractor.setLargeTiles(emptySet())
+
+            val autoAddedTiles by collectLastValue(autoAddRepository.autoAddedTiles(USER))
+            val largeTiles by collectLastValue(iconTilesInteractor.largeTilesSpecs)
+            autoAddInteractor.init(currentTilesInteractor, iconTilesInteractor)
+
+            fakeRestoreRepository.onDataRestored(
+                RestoreData(restoredTiles, autoAddedRestored, USER)
+            )
+
+            /*
+             * Cell tile is not moved
+             */
+            assertThat(currentTilesInteractor.currentTilesSpecs)
+                .isEqualTo(listOf(TileSpec.create("a"), cellSpec, TileSpec.create("b")))
+
+            /*
+             * Cell time remains small
+             */
+            assertThat(largeTiles).doesNotContain(cellSpec)
+            assertThat(largeTiles).doesNotContain(internetSpec)
+            assertThat(largeTiles).doesNotContain(wifiSpec)
+
+            /*
+             * Cell is marked as auto-added
+             */
+            assertThat(autoAddedTiles).contains(cellSpec)
+        }
+
+    /*
+     * This tests the following scenario:
+     * * User starts from the default set of tiles
+     * * Default set contains Cell tile
+     * * User removes the Cell tile
+     *
+     * Result:
+     * * The Cell tile is not auto added
+     * * The Cell tile is marked as auto added, so it cannot be added again.
+     */
+    @Test
+    fun startingWithDefaultSet_cellTileRemoved_tileIsGoneAndMarked() =
+        kosmos.runTest {
+            fakeUserRepository.asDefaultUser()
+            autoAddInteractor.init(currentTilesInteractor, iconTilesInteractor)
+            val autoAddedTiles by collectLastValue(autoAddRepository.autoAddedTiles(USER))
+
+            /*
+             * Assumption: Cell tile starts in the current tiles
+             */
+            assumeTrue(currentTilesInteractor.currentTilesSpecs.contains(cellSpec))
+
+            currentTilesInteractor.removeTiles(setOf(cellSpec))
+
+            /** Cell tile has not been automatically re-added */
+            assertThat(currentTilesInteractor.currentTilesSpecs).doesNotContain(cellSpec)
+
+            /** Cell tile is marked as auto added */
             assertThat(autoAddedTiles).contains(cellSpec)
         }
 
