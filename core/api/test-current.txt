@@ -1,7 +1,6 @@
 // Signature format: 6.0
 // - style=java
 // - normalize-abstract-modifier=no
-// - type-argument-spacing=legacy
 package android {
 
   public static final class Manifest.permission {
@@ -511,15 +510,15 @@ package android.app {
   public class WallpaperManager {
     method @Nullable public android.graphics.Bitmap getBitmap();
     method @Nullable public android.graphics.Bitmap getBitmapAsUser(int, boolean, int);
-    method @FlaggedApi("com.android.window.flags.multi_crop") @NonNull public java.util.List<android.graphics.Rect> getBitmapCrops(@NonNull android.graphics.Point, @NonNull java.util.List<android.graphics.Point>, @Nullable java.util.Map<android.graphics.Point,android.graphics.Rect>);
+    method @FlaggedApi("com.android.window.flags.multi_crop") @NonNull public java.util.List<android.graphics.Rect> getBitmapCrops(@NonNull android.graphics.Point, @NonNull java.util.List<android.graphics.Point>, @Nullable java.util.Map<android.graphics.Point, android.graphics.Rect>);
     method @NonNull @RequiresPermission(android.Manifest.permission.READ_WALLPAPER_INTERNAL) public android.util.SparseArray<android.graphics.Rect> getBitmapCrops(int);
     method @FlaggedApi("com.android.window.flags.multi_crop") @NonNull @RequiresPermission(android.Manifest.permission.READ_WALLPAPER_INTERNAL) public java.util.List<android.graphics.Rect> getBitmapCrops(@NonNull java.util.List<android.graphics.Point>, int, boolean);
     method public static int getOrientation(@NonNull android.graphics.Point);
     method public boolean isLockscreenLiveWallpaperEnabled();
     method @Nullable public android.graphics.Rect peekBitmapDimensions();
     method @Nullable public android.graphics.Rect peekBitmapDimensions(int);
-    method @FlaggedApi("com.android.window.flags.multi_crop") @RequiresPermission(android.Manifest.permission.SET_WALLPAPER) public int setBitmapWithCrops(@Nullable android.graphics.Bitmap, @NonNull java.util.Map<android.graphics.Point,android.graphics.Rect>, boolean, int) throws java.io.IOException;
-    method @FlaggedApi("com.android.window.flags.multi_crop") @RequiresPermission(android.Manifest.permission.SET_WALLPAPER) public int setStreamWithCrops(@NonNull java.io.InputStream, @NonNull java.util.Map<android.graphics.Point,android.graphics.Rect>, boolean, int) throws java.io.IOException;
+    method @FlaggedApi("com.android.window.flags.multi_crop") @RequiresPermission(android.Manifest.permission.SET_WALLPAPER) public int setBitmapWithCrops(@Nullable android.graphics.Bitmap, @NonNull java.util.Map<android.graphics.Point, android.graphics.Rect>, boolean, int) throws java.io.IOException;
+    method @FlaggedApi("com.android.window.flags.multi_crop") @RequiresPermission(android.Manifest.permission.SET_WALLPAPER) public int setStreamWithCrops(@NonNull java.io.InputStream, @NonNull java.util.Map<android.graphics.Point, android.graphics.Rect>, boolean, int) throws java.io.IOException;
     method public void setWallpaperZoomOut(@NonNull android.os.IBinder, float);
     method public boolean shouldEnableWideColorGamut();
     method public boolean wallpaperSupportsWcg(int);
@@ -1112,7 +1111,7 @@ package android.content {
     field public long appDisabledExpiration;
     field public boolean augmentedAutofillEnabled;
     field public final boolean compatModeEnabled;
-    field @Nullable public android.util.ArrayMap<String,Long> disabledActivities;
+    field @Nullable public android.util.ArrayMap<String, Long> disabledActivities;
     field public final int loggingLevel;
     field @Nullable public android.util.ArraySet<android.content.ComponentName> whitelistedActivitiesForAugmentedAutofill;
   }
@@ -1671,11 +1670,11 @@ package android.graphics {
   }
 
   public class Typeface {
-    method @NonNull public static android.util.Pair<java.util.List<android.graphics.Typeface>,java.util.List<android.graphics.Typeface>> changeDefaultFontForTest(@NonNull java.util.List<android.graphics.Typeface>, @NonNull java.util.List<android.graphics.Typeface>);
-    method @NonNull public static long[] deserializeFontMap(@NonNull java.nio.ByteBuffer, @NonNull java.util.Map<String,android.graphics.Typeface>) throws java.io.IOException;
+    method @NonNull public static android.util.Pair<java.util.List<android.graphics.Typeface>, java.util.List<android.graphics.Typeface>> changeDefaultFontForTest(@NonNull java.util.List<android.graphics.Typeface>, @NonNull java.util.List<android.graphics.Typeface>);
+    method @NonNull public static long[] deserializeFontMap(@NonNull java.nio.ByteBuffer, @NonNull java.util.Map<String, android.graphics.Typeface>) throws java.io.IOException;
     method @Nullable public static android.os.SharedMemory getSystemFontMapSharedMemory();
     method public void releaseNativeObjectForTest();
-    method @NonNull public static android.os.SharedMemory serializeFontMap(@NonNull java.util.Map<String,android.graphics.Typeface>) throws android.system.ErrnoException, java.io.IOException;
+    method @NonNull public static android.os.SharedMemory serializeFontMap(@NonNull java.util.Map<String, android.graphics.Typeface>) throws android.system.ErrnoException, java.io.IOException;
   }
 
 }
@@ -1847,7 +1846,7 @@ package android.hardware.camera2 {
 package android.hardware.camera2.params {
 
   public final class ColorSpaceProfiles {
-    method @NonNull public java.util.Map<android.graphics.ColorSpace.Named,java.util.Map<Integer,java.util.Set<Long>>> getProfileMap();
+    method @NonNull public java.util.Map<android.graphics.ColorSpace.Named, java.util.Map<Integer, java.util.Set<Long>>> getProfileMap();
   }
 
   public final class DynamicRangeProfiles {
@@ -2037,12 +2036,12 @@ package android.hardware.input {
     method @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public void clearAllControllerButtonToAxisRemappings(@NonNull android.hardware.input.InputDeviceIdentifier);
     method @RequiresPermission(android.Manifest.permission.REMAP_MODIFIER_KEYS) public void clearAllModifierKeyRemappings();
     method @NonNull @RequiresPermission(android.Manifest.permission.INJECT_EVENTS) public android.hardware.input.VirtualMouse createVirtualMouse(@NonNull android.hardware.input.VirtualMouseConfig);
-    method @FlaggedApi("com.android.hardware.input.controller_remapping") @NonNull @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public java.util.Map<Integer,Integer> getControllerAxisRemappings(@NonNull android.hardware.input.InputDeviceIdentifier);
-    method @FlaggedApi("com.android.hardware.input.controller_remapping") @NonNull @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public java.util.Map<Integer,Integer> getControllerButtonRemappings(@NonNull android.hardware.input.InputDeviceIdentifier);
+    method @FlaggedApi("com.android.hardware.input.controller_remapping") @NonNull @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public java.util.Map<Integer, Integer> getControllerAxisRemappings(@NonNull android.hardware.input.InputDeviceIdentifier);
+    method @FlaggedApi("com.android.hardware.input.controller_remapping") @NonNull @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public java.util.Map<Integer, Integer> getControllerButtonRemappings(@NonNull android.hardware.input.InputDeviceIdentifier);
     method @Nullable @RequiresPermission(android.Manifest.permission.INJECT_EVENTS) public android.graphics.PointF getCursorPosition(int);
     method @NonNull public java.util.List<String> getKeyboardLayoutDescriptors();
     method @NonNull public String getKeyboardLayoutTypeForLayoutDescriptor(@NonNull String);
-    method @NonNull @RequiresPermission(android.Manifest.permission.REMAP_MODIFIER_KEYS) public java.util.Map<Integer,Integer> getModifierKeyRemapping();
+    method @NonNull @RequiresPermission(android.Manifest.permission.REMAP_MODIFIER_KEYS) public java.util.Map<Integer, Integer> getModifierKeyRemapping();
     method public int getMousePointerSpeed();
     method @FlaggedApi("com.android.hardware.input.controller_remapping") @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public void remapControllerAxis(@NonNull android.hardware.input.InputDeviceIdentifier, int, int);
     method @FlaggedApi("com.android.hardware.input.controller_remapping") @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public void remapControllerButton(@NonNull android.hardware.input.InputDeviceIdentifier, int, int);
@@ -2275,7 +2274,7 @@ package android.media {
     method @NonNull public java.util.List<Integer> getReportedSurroundFormats();
     method @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED) public float getRs2Value();
     method public int getStreamMinVolumeInt(int);
-    method @NonNull public java.util.Map<Integer,Boolean> getSurroundFormats();
+    method @NonNull public java.util.Map<Integer, Boolean> getSurroundFormats();
     method @NonNull public android.media.VolumePolicy getVolumePolicy();
     method public boolean hasRegisteredDynamicPolicy();
     method @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED) public boolean isCsdEnabled();
@@ -2706,7 +2705,7 @@ package android.os {
   }
 
   public class IpcDataCache<Query, Result> {
-    ctor public IpcDataCache(int, @NonNull String, @NonNull String, @NonNull String, @NonNull android.os.IpcDataCache.QueryHandler<Query,Result>);
+    ctor public IpcDataCache(int, @NonNull String, @NonNull String, @NonNull String, @NonNull android.os.IpcDataCache.QueryHandler<Query, Result>);
     method public void disableForCurrentProcess();
     method public static void disableForCurrentProcess(@NonNull String);
     method public final void disableInstance();
@@ -2914,7 +2913,7 @@ package android.os {
     method @NonNull public static String getPlatformSepolicyVersion();
     method public static String getSepolicyVersion();
     method public static Long getTargetFrameworkCompatibilityMatrixVersion();
-    method public static java.util.Map<String,String[]> getVndkSnapshots();
+    method public static java.util.Map<String, String[]> getVndkSnapshots();
     method public static String[] report();
   }
 
@@ -3362,7 +3361,7 @@ package android.security.trusttoken {
 
   @FlaggedApi("android.security.talisman_service_api") public final class TrustTokenServiceClient {
     ctor public TrustTokenServiceClient(@NonNull android.os.IBinder);
-    method @NonNull public android.os.CancellationSignal requestTrustTokens(@NonNull android.security.trusttoken.TrustTokenRequest, @NonNull android.os.OutcomeReceiver<android.security.trusttoken.TrustTokenResponse,android.security.trusttoken.TrustTokenServiceException>);
+    method @NonNull public android.os.CancellationSignal requestTrustTokens(@NonNull android.security.trusttoken.TrustTokenRequest, @NonNull android.os.OutcomeReceiver<android.security.trusttoken.TrustTokenResponse, android.security.trusttoken.TrustTokenServiceException>);
   }
 
 }
@@ -3380,8 +3379,8 @@ package android.service.autofill {
     method public android.os.Bundle getDefaultFieldClassificationArgs();
     method @Nullable public String getFieldClassificationAlgorithm();
     method @Nullable public String getFieldClassificationAlgorithmForCategory(@NonNull String);
-    method public android.util.ArrayMap<String,String> getFieldClassificationAlgorithms();
-    method public android.util.ArrayMap<String,android.os.Bundle> getFieldClassificationArgs();
+    method public android.util.ArrayMap<String, String> getFieldClassificationAlgorithms();
+    method public android.util.ArrayMap<String, android.os.Bundle> getFieldClassificationArgs();
     method public String[] getValues();
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.service.autofill.CompositeUserData> CREATOR;
@@ -3450,7 +3449,7 @@ package android.service.autofill {
 
   public abstract class InternalTransformation implements android.os.Parcelable android.service.autofill.Transformation {
     ctor public InternalTransformation();
-    method public static boolean batchApply(@NonNull android.service.autofill.ValueFinder, @NonNull android.widget.RemoteViews, @NonNull java.util.ArrayList<android.util.Pair<Integer,android.service.autofill.InternalTransformation>>);
+    method public static boolean batchApply(@NonNull android.service.autofill.ValueFinder, @NonNull android.widget.RemoteViews, @NonNull java.util.ArrayList<android.util.Pair<Integer, android.service.autofill.InternalTransformation>>);
   }
 
   public abstract class InternalValidator implements android.os.Parcelable android.service.autofill.Validator {
@@ -3471,7 +3470,7 @@ package android.service.autofill {
   }
 
   public final class UserData implements android.os.Parcelable {
-    method public android.util.ArrayMap<String,String> getFieldClassificationAlgorithms();
+    method public android.util.ArrayMap<String, String> getFieldClassificationAlgorithms();
   }
 
   public interface ValueFinder {
@@ -3718,7 +3717,7 @@ package android.service.quicksettings {
 package android.service.settings.preferences {
 
   @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public class SettingsPreferenceServiceClient implements AutoCloseable {
-    ctor public SettingsPreferenceServiceClient(@NonNull android.content.Context, @NonNull String, boolean, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.service.settings.preferences.SettingsPreferenceServiceClient,Exception>);
+    ctor public SettingsPreferenceServiceClient(@NonNull android.content.Context, @NonNull String, boolean, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.service.settings.preferences.SettingsPreferenceServiceClient, Exception>);
   }
 
 }
@@ -3882,9 +3881,9 @@ package android.telephony {
     method public int getCarrierIdListVersion();
     method @NonNull @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public java.util.List<String> getCertsFromCarrierPrivilegeAccessRules();
     method @NonNull public java.util.List<android.telephony.data.ApnSetting> getDevicePolicyOverrideApns(@NonNull android.content.Context);
-    method @NonNull public android.util.Pair<Integer,Integer> getHalVersion(int);
+    method @NonNull public android.util.Pair<Integer, Integer> getHalVersion(int);
     method @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE) public String getLine1AlphaTag();
-    method @Deprecated public android.util.Pair<Integer,Integer> getRadioHalVersion();
+    method @Deprecated public android.util.Pair<Integer, Integer> getRadioHalVersion();
     method public boolean modifyDevicePolicyOverrideApn(@NonNull android.content.Context, int, @NonNull android.telephony.data.ApnSetting);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void refreshUiccProfile();
     method @Deprecated public void setCarrierTestOverride(String, String, String, String, String, String, String);
@@ -4027,7 +4026,7 @@ package android.util {
 
   public class FeatureFlagUtils {
     ctor public FeatureFlagUtils();
-    method public static java.util.Map<String,String> getAllFeatureFlags();
+    method public static java.util.Map<String, String> getAllFeatureFlags();
     method public static boolean isEnabled(android.content.Context, String);
     method public static void setEnabled(android.content.Context, String, boolean);
     field public static final String FFLAG_OVERRIDE_PREFIX = "sys.fflag.override.";
@@ -4130,7 +4129,7 @@ package android.view {
   }
 
   public final class ContentInfo implements android.os.Parcelable {
-    method @NonNull public android.util.Pair<android.view.ContentInfo,android.view.ContentInfo> partition(@NonNull java.util.function.Predicate<android.content.ClipData.Item>);
+    method @NonNull public android.util.Pair<android.view.ContentInfo, android.view.ContentInfo> partition(@NonNull java.util.function.Predicate<android.content.ClipData.Item>);
     method public void releasePermissions();
   }
 
@@ -4277,7 +4276,7 @@ package android.view {
 
   public class ViewDebug {
     method @Nullable public static AutoCloseable startRenderingCommandsCapture(android.view.View, java.util.concurrent.Executor, java.util.concurrent.Callable<java.io.OutputStream>);
-    method @Deprecated @Nullable public static AutoCloseable startRenderingCommandsCapture(android.view.View, java.util.concurrent.Executor, java.util.function.Function<android.graphics.Picture,Boolean>);
+    method @Deprecated @Nullable public static AutoCloseable startRenderingCommandsCapture(android.view.View, java.util.concurrent.Executor, java.util.function.Function<android.graphics.Picture, Boolean>);
   }
 
   public abstract class Window {
@@ -4953,9 +4952,9 @@ package android.window {
 
   public class WindowInfosListenerForTest {
     ctor public WindowInfosListenerForTest();
-    method @RequiresPermission(android.Manifest.permission.ACCESS_SURFACE_FLINGER) public void addWindowInfosListener(@NonNull java.util.function.BiConsumer<java.util.List<android.window.WindowInfosListenerForTest.WindowInfo>,java.util.List<android.window.WindowInfosListenerForTest.DisplayInfo>>);
+    method @RequiresPermission(android.Manifest.permission.ACCESS_SURFACE_FLINGER) public void addWindowInfosListener(@NonNull java.util.function.BiConsumer<java.util.List<android.window.WindowInfosListenerForTest.WindowInfo>, java.util.List<android.window.WindowInfosListenerForTest.DisplayInfo>>);
     method @Deprecated @RequiresPermission(android.Manifest.permission.ACCESS_SURFACE_FLINGER) public void addWindowInfosListener(@NonNull java.util.function.Consumer<java.util.List<android.window.WindowInfosListenerForTest.WindowInfo>>);
-    method public void removeWindowInfosListener(@NonNull java.util.function.BiConsumer<java.util.List<android.window.WindowInfosListenerForTest.WindowInfo>,java.util.List<android.window.WindowInfosListenerForTest.DisplayInfo>>);
+    method public void removeWindowInfosListener(@NonNull java.util.function.BiConsumer<java.util.List<android.window.WindowInfosListenerForTest.WindowInfo>, java.util.List<android.window.WindowInfosListenerForTest.DisplayInfo>>);
     method @Deprecated public void removeWindowInfosListener(@NonNull java.util.function.Consumer<java.util.List<android.window.WindowInfosListenerForTest.WindowInfo>>);
   }
 
