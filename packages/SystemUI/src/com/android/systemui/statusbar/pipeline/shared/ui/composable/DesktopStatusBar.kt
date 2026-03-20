@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -103,7 +104,7 @@ fun DesktopStatusBar(
     // TODO(433589833): Update padding values to match UX specs.
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.fillMaxSize().padding(start = 16.dp, end = 12.dp),
+        modifier = modifier.fillMaxSize().padding(start = 16.dp),
     ) {
         WithAdaptiveTint(
             highlightModel = ChipHighlightModel.Transparent,
@@ -161,17 +162,23 @@ fun DesktopStatusBar(
             if (StatusBarPopupChips.isEnabled) {
                 QuickActionChipsContainer(
                     chips = viewModel.popupChips,
-                    isDarkProvider = { bounds -> viewModel.areaDark.isDarkTheme(bounds) },
+                    isDarkProvider = viewModel.areaDark::isDarkTheme,
                 )
             }
 
-            NotificationsChip(viewModel = viewModel)
+            // The wrapper box prevents application of ElementSpacing between the chips. Instead,
+            // they will internally allocate the same padding space to their touch targets.
+            // TODO(b/489444201): Remove this wrapper and `spacedBy` above once all the elements in
+            //  this row have expanded touch targets.
+            Box {
+                NotificationsChip(viewModel = viewModel)
 
-            QuickSettingsChip(
-                viewModel = viewModel,
-                statusBarIconController = statusBarIconController,
-                iconManagerFactory = iconManagerFactory,
-            )
+                QuickSettingsChip(
+                    viewModel = viewModel,
+                    statusBarIconController = statusBarIconController,
+                    iconManagerFactory = iconManagerFactory,
+                )
+            }
         }
     }
 }
@@ -206,7 +213,14 @@ private fun NotificationsChip(viewModel: HomeStatusBarViewModel, modifier: Modif
                     .widthIn(min = DesktopStatusBar.Dimensions.ChipHeight)
                     .semantics { this.contentDescription = contentDescription }
                     .sysuiResTag("notificationIcons"),
-            onClick = { viewModel.onNotificationIconChipClicked() },
+            onClick = viewModel::onNotificationIconChipClicked,
+            clickTargetModifier =
+                Modifier.fillMaxHeight()
+                    .padding(
+                        // Divide by two, since the spacing between this chip and the next one is
+                        // divided among the corresponding touch targets.
+                        end = DesktopStatusBar.Dimensions.ElementSpacing / 2
+                    ),
             backgroundColor = chipHighlightModel.backgroundColor,
             hoverBackgroundColor = hoverColor,
             rippleColor = rippleColor,
@@ -284,7 +298,15 @@ private fun QuickSettingsChip(
         ShadeHighlightChip(
             modifier =
                 modifier.height(DesktopStatusBar.Dimensions.ChipHeight).sysuiResTag("statusIcons"),
-            onClick = { viewModel.onQuickSettingsChipClicked() },
+            onClick = viewModel::onQuickSettingsChipClicked,
+            clickTargetModifier =
+                Modifier.fillMaxHeight()
+                    .padding(
+                        // Divide by two, since the spacing between this chip and the previous one
+                        // is divided among the corresponding touch targets.
+                        start = DesktopStatusBar.Dimensions.ElementSpacing / 2,
+                        end = DesktopStatusBar.Dimensions.ElementSpacing,
+                    ),
             backgroundColor = chipHighlightModel.backgroundColor,
             hoverBackgroundColor = hoverColor,
             rippleColor = rippleColor,
