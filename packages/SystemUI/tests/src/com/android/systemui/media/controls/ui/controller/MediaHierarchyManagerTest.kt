@@ -109,6 +109,7 @@ class MediaHierarchyManagerTest : SysuiTestCase() {
     @Mock private lateinit var keyguardStateController: KeyguardStateController
     @Mock private lateinit var statusBarStateController: SysuiStatusBarStateController
     @Mock private lateinit var mediaCarouselController: MediaCarouselController
+    @Mock private lateinit var mediaReorderController: MediaReorderController
     @Mock private lateinit var mediaCarouselScrollHandler: MediaCarouselScrollHandler
     @Mock private lateinit var wakefulnessLifecycle: WakefulnessLifecycle
     @Mock private lateinit var mediaDataManager: MediaDataManager
@@ -160,6 +161,7 @@ class MediaHierarchyManagerTest : SysuiTestCase() {
                 keyguardStateController,
                 bypassController,
                 mediaCarouselController,
+                mediaReorderController,
                 mediaDataManager,
                 dreamOverlayStateController,
                 kosmos.keyguardInteractor,

@@ -947,6 +947,16 @@ flag {
 }
 
 flag {
+    name: "media_controls_reorder_fix"
+    namespace: "systemui"
+    description: "Use new provider to determine when to reorder media controls"
+    bug: "433331357"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
    name: "media_projection_dialog_behind_lockscreen"
    namespace: "systemui"
    description: "Ensure MediaProjection Dialog appears behind the lockscreen"
