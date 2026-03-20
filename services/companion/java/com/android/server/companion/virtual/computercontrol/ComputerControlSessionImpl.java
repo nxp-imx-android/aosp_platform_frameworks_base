@@ -231,9 +231,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @GuardedBy("mAllowedTaskIds")
     private final Set<Integer> mAllowedTaskIds = new ArraySet<>();
 
-    /** Whether screenshot is allowed depending on if the top activity is allowlisted. */
+    /**
+     * Whether screenshot is allowed depending on if the top activity is allowlisted.
+     * Null indicates display is empty.
+     */
     @GuardedBy("mAllowedTaskIds")
-    private boolean mIsTopActivityScreenshotAllowed = false;
+    @Nullable
+    private Boolean mIsTopActivityScreenshotAllowed = null;
 
     // Handle state transitions for the session lifecycle.
     private final ComputerControlSession.LifecycleCallback mStateTransitions =
@@ -997,7 +1001,11 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         // Limit screenshots to the task of allowlisted packages of the automated apps.
         // In the Blocked state, this check ensures the agent only sees authorized content.
         synchronized (mAllowedTaskIds) {
-            if (!mIsTopActivityScreenshotAllowed) {
+            if (mIsTopActivityScreenshotAllowed == null) {
+                Slog.w(TAG, "Screenshot blocked: There is no top activity on the display.");
+                return false;
+            }
+            if (Boolean.FALSE.equals(mIsTopActivityScreenshotAllowed)) {
                 Slog.w(TAG, "Screenshot blocked: Top task not part of the initial automated set.");
                 return false;
             }
@@ -1396,7 +1404,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     TimeUnit.MILLISECONDS);
             synchronized (mAllowedTaskIds) {
                 mAllowedTaskIds.clear();
-                mIsTopActivityScreenshotAllowed = false;
+                mIsTopActivityScreenshotAllowed = null;
             }
         }
 
