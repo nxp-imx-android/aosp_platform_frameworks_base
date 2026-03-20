@@ -70,13 +70,15 @@ public final class MessageUpgradeController {
      * @param context The calling app's context.
      * @param callingUser The calling app's user id.
      * @param callingPkg The calling app's package.
+     * @param shouldLog Whether to log the event in case of upgrade not supported.
      * @return {@code true} if the calling package is not the default messaging app (DMA) and if the
      *         DMA has a valid {@link AlternativeMessageTransportService}, returns false otherise.
      */
     public static boolean isMessageUpgradeSupportedForPackage(
             @NonNull Context context,
             int callingUser,
-            @NonNull String callingPkg) {
+            @NonNull String callingPkg,
+            boolean shouldLog) {
         Objects.requireNonNull(context, "context cannot be null");
         if (TextUtils.isEmpty(callingPkg)) {
             throw new IllegalArgumentException("callingPkg cannot be null or empty");
@@ -89,7 +91,7 @@ public final class MessageUpgradeController {
             return false;
         }
 
-        return upgradeWorker.isMessageUpgradeSupportedForPackage(callingPkg);
+        return upgradeWorker.isMessageUpgradeSupportedForPackage(callingPkg, shouldLog);
     }
 
     /**
