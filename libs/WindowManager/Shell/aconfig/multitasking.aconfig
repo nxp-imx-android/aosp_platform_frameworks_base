@@ -461,6 +461,16 @@ flag {
 }
 
 flag {
+    name: "fix_bubbled_task_height"
+    namespace: "multitasking"
+    description: "Fixes bubbled task being short after device is folded"
+    bug: "487855787"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "bubbles_fix_issues_with_repeated_fold_unfold"
     namespace: "multitasking"
     description: "Fixes bubble issues when transitioning between modes due to repeated folding and unfolding"
