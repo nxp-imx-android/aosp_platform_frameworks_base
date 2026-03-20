@@ -455,6 +455,10 @@ public class Operations {
             sMapV7AndroidX.put(DYNAMIC_FLOAT_LIST, DataDynamicListFloat::read);
             sMapV7AndroidX.put(UPDATE_DYNAMIC_FLOAT_LIST, UpdateDynamicFloatList::read);
             sMapV7AndroidX.put(SKIP, Skip::read);
+            sMapV7AndroidX.put(CORE_TEXT, CoreText::read);
+            sMapV7AndroidX.put(TEXT_STYLE, TextStyle::read);
+            sMapV7AndroidX.put(TEXT_TRANSFORM, TextTransform::read);
+            sMapV7AndroidX.put(COLOR_THEME, ColorTheme::read);
         }
         return sMapV7AndroidX;
     }
@@ -465,10 +469,6 @@ public class Operations {
             // add experimental operations for this profile here
             sMapV7AndroidXExperimental.put(MODIFIER_ALIGN_BY, AlignByModifierOperation::read);
             sMapV7AndroidXExperimental.put(LAYOUT_COMPUTE, LayoutComputeOperation::read);
-            sMapV7AndroidXExperimental.put(CORE_TEXT, CoreText::read);
-            sMapV7AndroidXExperimental.put(TEXT_STYLE, TextStyle::read);
-            sMapV7AndroidXExperimental.put(TEXT_TRANSFORM, TextTransform::read);
-            sMapV7AndroidXExperimental.put(COLOR_THEME, ColorTheme::read);
             sMapV7AndroidXExperimental.put(LAYOUT_FLOW, FlowLayout::read);
         }
         return sMapV7AndroidXExperimental;
@@ -498,7 +498,10 @@ public class Operations {
             sMapV7Widgets.put(DYNAMIC_FLOAT_LIST, DataDynamicListFloat::read);
             sMapV7Widgets.put(UPDATE_DYNAMIC_FLOAT_LIST, UpdateDynamicFloatList::read);
             sMapV7Widgets.put(SKIP, Skip::read);
-
+            sMapV7Widgets.put(CORE_TEXT, CoreText::read);
+            sMapV7Widgets.put(TEXT_STYLE, TextStyle::read);
+            sMapV7Widgets.put(TEXT_TRANSFORM, TextTransform::read);
+            sMapV7Widgets.put(COLOR_THEME, ColorTheme::read);
         }
         return sMapV7Widgets;
     }
@@ -509,10 +512,6 @@ public class Operations {
             // add experimental operations for this profile here
             sMapV7WidgetsExperimental.put(MODIFIER_ALIGN_BY, AlignByModifierOperation::read);
             sMapV7WidgetsExperimental.put(LAYOUT_COMPUTE, LayoutComputeOperation::read);
-            sMapV7WidgetsExperimental.put(CORE_TEXT, CoreText::read);
-            sMapV7WidgetsExperimental.put(TEXT_STYLE, TextStyle::read);
-            sMapV7WidgetsExperimental.put(TEXT_TRANSFORM, TextTransform::read);
-            sMapV7WidgetsExperimental.put(COLOR_THEME, ColorTheme::read);
             sMapV7WidgetsExperimental.put(LAYOUT_FLOW, FlowLayout::read);
         }
         return sMapV7WidgetsExperimental;
