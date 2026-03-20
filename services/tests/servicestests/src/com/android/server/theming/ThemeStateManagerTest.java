@@ -584,9 +584,10 @@ public class ThemeStateManagerTest {
                 DEFAULT_CONTRAST, DEFAULT_STYLE);
         ThemeStatePair pair = mThemeStateManager.getState(DEFAULT_USER_ID);
 
-        // Mock color scheme as applied
+        // Mock color scheme as applied AND enabled
         when(mThemeOverlayHelper.isColorSchemeApplied(any(), anyInt(), any(), any())).thenReturn(
                 true);
+        when(mThemeOverlayHelper.isOverlayEnabled(anyInt())).thenReturn(true);
 
         mThemeStateManager.evaluateAllUsers(false, false);
         assertThat(pair.getPendingState()).isNull(); // there is no update

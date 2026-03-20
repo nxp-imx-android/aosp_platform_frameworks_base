@@ -64,6 +64,17 @@ public class ThemeWallpaperManager implements WallpaperColorsReader {
     }
 
     /**
+     * Removes a listener for wallpaper color changes.
+     */
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+    public void removeOnColorsChangedListener(
+            @NonNull WallpaperManagerInternal.ColorsChangedCallbackInternal listener) {
+        if (mService != null) {
+            mService.removeOnColorsChangedListener(listener);
+        }
+    }
+
+    /**
      * Retrieves the current wallpaper colors.
      * Returns {@code null} if the WallpaperManager is unavailable or if no colors are set.
      */

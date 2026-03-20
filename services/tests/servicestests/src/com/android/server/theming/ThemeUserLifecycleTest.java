@@ -116,7 +116,8 @@ public class ThemeUserLifecycleTest {
         mEnvironment = new ThemeEnvironment(mContext, mHardwareColorRule.sysPropReader);
 
         // Constructor simplified
-        mThemeUserLifecycle = new ThemeUserLifecycle(mContext, mEnvironment, mThemeManagerImpl);
+        mThemeUserLifecycle = new ThemeUserLifecycle(mContext, mEnvironment);
+        mThemeUserLifecycle.setDispatcher(mThemeManagerImpl);
         mEnvironment.setBootingComplete(mThemeUserLifecycle);
     }
 
