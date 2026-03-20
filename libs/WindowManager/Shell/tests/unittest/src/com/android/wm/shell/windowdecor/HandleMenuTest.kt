@@ -54,6 +54,7 @@ import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.windowdecor.WindowDecoration2.SurfaceControlViewHostFactory
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalViewHostViewContainer
+import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -97,6 +98,7 @@ class HandleMenuTest : ShellTestCase() {
     @Mock private lateinit var mockDesktopModeUiEventLogger: DesktopModeUiEventLogger
     @Mock private lateinit var mockSurfaceControlViewHostFactory: SurfaceControlViewHostFactory
 
+    private val decorThemeUtilFactory = DecorThemeUtil.Factory()
     private val handleMenuFactory = HandleMenu.HandleMenuFactory
     private lateinit var handleMenu: HandleMenu
 
@@ -421,6 +423,7 @@ class HandleMenuTest : ShellTestCase() {
                     captionHeight = 50,
                     captionX = captionX,
                     captionY = 0,
+                    decorThemeUtilFactory = decorThemeUtilFactory,
                     surfaceControlViewHostFactory = mockSurfaceControlViewHostFactory,
                 )
             } else {
@@ -447,6 +450,7 @@ class HandleMenuTest : ShellTestCase() {
                     captionHeight = 50,
                     captionX = captionX,
                     captionY = 0,
+                    decorThemeUtilFactory = decorThemeUtilFactory,
                     surfaceControlViewHostFactory = mockSurfaceControlViewHostFactory,
                 )
             }

@@ -333,7 +333,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
         when(mMockHandleMenuFactory.create(any(), any(), any(), any(), any(), any(), anyInt(),
                 any(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(),
                 anyBoolean(), anyBoolean(), any(), any(), any(), anyInt(), anyInt(),
-                anyInt(), anyInt()))
+                anyInt(), anyInt(), any()))
                 .thenReturn(mMockHandleMenu);
         when(mMockMultiInstanceHelper.supportsMultiInstanceSplit(any(), anyInt()))
                 .thenReturn(false);
@@ -514,7 +514,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
+                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR,
+                mDecorThemeUtilFactory);
 
         assertThat(relayoutParams.mCornerRadiusId).isEqualTo(Resources.ID_NULL);
     }
@@ -693,7 +694,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
+                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR,
+                mDecorThemeUtilFactory);
 
         // Force consuming flags are disabled.
         assertThat((relayoutParams.mInsetSourceFlags & FLAG_FORCE_CONSUMING) == 0).isTrue();
@@ -731,7 +733,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
+                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR,
+                mDecorThemeUtilFactory);
 
         assertThat((relayoutParams.mInsetSourceFlags & FLAG_FORCE_CONSUMING) != 0).isTrue();
         assertThat(
@@ -813,7 +816,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
+                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR,
+                mDecorThemeUtilFactory);
 
         // Takes status bar inset as padding, ignores caption bar inset.
         assertThat(relayoutParams.mCaptionTopPadding).isEqualTo(50);
@@ -844,7 +848,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
+                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR,
+                mDecorThemeUtilFactory);
 
         assertThat(relayoutParams.mIsInsetSource).isFalse();
     }
@@ -874,7 +879,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 /* isTaskLocked= */ true,
-                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
+                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR,
+                mDecorThemeUtilFactory);
 
         // Caption should not show when in Lock Task mode
         assertThat(relayoutParams.mIsCaptionVisible).isFalse();
@@ -905,7 +911,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
+                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR,
+                mDecorThemeUtilFactory);
 
         assertThat(relayoutParams.mIsCaptionVisible).isTrue();
     }
@@ -935,7 +942,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
+                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR,
+                mDecorThemeUtilFactory);
 
         assertThat(relayoutParams.mIsCaptionVisible).isFalse();
     }
@@ -965,7 +973,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
+                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR,
+                mDecorThemeUtilFactory);
 
         assertThat(relayoutParams.mIsCaptionVisible).isFalse();
     }
@@ -995,7 +1004,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
+                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR,
+                mDecorThemeUtilFactory);
 
         assertThat(relayoutParams.mIsCaptionVisible).isTrue();
 
@@ -1018,7 +1028,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
+                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR,
+                mDecorThemeUtilFactory);
 
         assertThat(relayoutParams.mIsCaptionVisible).isFalse();
     }
@@ -1048,7 +1059,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
+                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR,
+                mDecorThemeUtilFactory);
 
         assertThat(relayoutParams.mIsCaptionVisible).isTrue();
     }
@@ -1078,7 +1090,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
+                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR,
+                mDecorThemeUtilFactory);
 
         assertThat(relayoutParams.mIsCaptionVisible).isFalse();
     }
@@ -1747,7 +1760,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 any(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(),
                 anyBoolean(), anyBoolean(), argThat(appToWebData ->
                         verifyAppToWebData(uri, appToWebData)),
-                any(), any(), anyInt(), anyInt(), anyInt(), anyInt());
+                any(), any(), anyInt(), anyInt(), anyInt(), anyInt(), any());
     }
 
     private boolean verifyAppToWebData(@Nullable Uri uri,
@@ -1799,7 +1812,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mDesktopConfig,
                 DEFAULT_IN_SYNC_WITH_TRANSITION,
                 DEFAULT_IS_TASK_LOCKED,
-                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR);
+                DEFAULT_OCCLUDING_ELEMENTS_CALCULATOR,
+                mDecorThemeUtilFactory);
     }
 
     private DesktopModeWindowDecoration createWindowDecoration(

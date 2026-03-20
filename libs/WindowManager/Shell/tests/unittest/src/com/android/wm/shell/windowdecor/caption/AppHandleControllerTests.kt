@@ -52,6 +52,7 @@ import com.android.wm.shell.windowdecor.WindowDecorationActions
 import com.android.wm.shell.windowdecor.WindowDecorationTestHelper.TestWindowDecorTaskResourceLoader
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
 import com.android.wm.shell.windowdecor.caption.CaptionController.CaptionType
+import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
 import kotlinx.coroutines.Dispatchers
@@ -115,6 +116,7 @@ class AppHandleControllerTests : ShellTestCase() {
             shellInit = shellInit,
             recentsTransitionHandler = mock(),
         )
+    private val decorThemeUtilFactory = DecorThemeUtil.Factory()
 
     private lateinit var userRepositories: DesktopUserRepositories
     private lateinit var appToWebRepository: AppToWebRepositoryImpl
@@ -225,6 +227,7 @@ class AppHandleControllerTests : ShellTestCase() {
             focusTransitionObserver = mockFocusTransitionObserver,
             pinnedLayerController = mockPinnedLayerController,
             desktopTasksController = mockDesktopTasksController,
+            decorThemeUtilFactory = decorThemeUtilFactory,
         )
 
     private fun AppHandleController.relayout(taskInfo: RunningTaskInfo) {
