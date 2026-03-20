@@ -212,6 +212,7 @@ public class HardeningEnforcer {
      * @param volumeMethod name of the method to check, for logging purposes
      * @return false if the method call is allowed, true if it should be a no-op
      */
+    @SuppressWarnings("AndroidFrameworkCompatChange")  // primary enforcement in native
     protected boolean blockVolumeMethod(int volumeMethod, String packageName, int uid) {
         // Regardless of flag state, always permit callers with privileged audio permissions
         // Prevent them from showing up in metrics as well
@@ -236,15 +237,29 @@ public class HardeningEnforcer {
             return true;
         } else {
             int allowed;
+            int targetSdk = Build.VERSION_CODES.CUR_DEVELOPMENT;
+            try {
+                targetSdk = mPackageManager.getApplicationInfoAsUser(
+                        packageName, 0, UserHandle.getUserId(uid)).targetSdkVersion;
+            } catch (PackageManager.NameNotFoundException e) {
+                // keep default
+            }
             // This flag is misnamed: it blocks volume changes at the strict level: app usage of
             // volume modifications between partial and strict level should be extremely limited
             // given we don't want to encourage apps modify volume regardless.
             var overrideState = mHardeningOverride.get();
+            boolean isPreCinnamonBun = targetSdk < Build.VERSION_CODES.CINNAMON_BUN;
             boolean enforced = switch (overrideState) {
                 case HardeningOverride.ENABLE, AudioManager.HARDENING_THROW -> true;
                 case HardeningOverride.DISABLE -> false;
                 default -> hardeningPartialVolume();
             };
+            boolean enforcedFull = switch (overrideState) {
+                case HardeningOverride.ENABLE, AudioManager.HARDENING_THROW -> true;
+                case HardeningOverride.DISABLE -> false;
+                default -> hardeningPartialVolume() && !isPreCinnamonBun;
+            };
+
             if (!noteOp(AppOpsManager.OP_CONTROL_AUDIO_PARTIAL, uid, packageName, null)) {
                 // blocked by partial
                 Counter.logIncrementWithUid(
@@ -261,10 +276,12 @@ public class HardeningEnforcer {
                         "media_audio.value_audio_volume_hardening_allowed", uid);
                 allowed = ALLOWED;
             }
+            boolean blocked = ((allowed == DENIED_IF_PARTIAL) && enforced) ||
+                                ((allowed == DENIED_IF_FULL) && enforcedFull);
             if (allowed != ALLOWED) {
                 String msg = "AudioHardening volume control for api "
                         + volumeMethod
-                        + (!enforced ? " would be " : " ")
+                        + (!blocked ? " would be " : " ")
                         + "ignored for "
                         + getPackNameForUid(uid) + " (" + uid + "), "
                         + "level: " + (allowed == DENIED_IF_PARTIAL ? "partial" : "full");
@@ -276,18 +293,18 @@ public class HardeningEnforcer {
                 if (volumeMethod == METHOD_AUDIO_MANAGER_SET_RINGER_MODE) {
                     AudioAtomsLog.write(AudioAtomsLog.AUDIO_HARDENING_REPORTED, uid,
                             AUDIO_HARDENING_REPORTED__API_TYPE__AUDIO_HARDENING_API_TYPE_RINGER,
-                            isStrict, enforced,
+                            isStrict, blocked,
                             AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_UNKNOWN,
                             AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_NONE);
                 } else {
                     AudioAtomsLog.write(AudioAtomsLog.AUDIO_HARDENING_REPORTED, uid,
                             AUDIO_HARDENING_REPORTED__API_TYPE__AUDIO_HARDENING_API_TYPE_VOLUME,
-                            isStrict, enforced,
+                            isStrict, blocked,
                             AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_UNKNOWN,
                             AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_NONE);
                 }
             }
-            return enforced && allowed != ALLOWED;
+            return blocked;
         }
     }
 
@@ -318,6 +335,7 @@ public class HardeningEnforcer {
 
         var overrideState = mHardeningOverride.get();
         boolean isPreVic = targetSdk < Build.VERSION_CODES.VANILLA_ICE_CREAM;
+        boolean isPreCinnamonBun = targetSdk < Build.VERSION_CODES.CINNAMON_BUN;
         boolean enforcedPartial = switch (overrideState) {
             case HardeningOverride.ENABLE, AudioManager.HARDENING_THROW -> true;
             case HardeningOverride.DISABLE -> false;
@@ -326,7 +344,7 @@ public class HardeningEnforcer {
         boolean enforcedFull = switch (overrideState) {
             case HardeningOverride.ENABLE, AudioManager.HARDENING_THROW -> true;
             case HardeningOverride.DISABLE -> false;
-            default -> hardeningStrict();
+            default -> hardeningStrict() && !isPreCinnamonBun;
         };
 
         int exemption = AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_NONE;
