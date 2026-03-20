@@ -1,7 +1,6 @@
 // Signature format: 6.0
 // - style=java
 // - normalize-abstract-modifier=no
-// - overloaded-method-order=source
 // - strip-java-lang-prefix=legacy
 // - type-argument-spacing=legacy
 package android {
@@ -513,9 +512,9 @@ package android.app {
   public class WallpaperManager {
     method @Nullable public android.graphics.Bitmap getBitmap();
     method @Nullable public android.graphics.Bitmap getBitmapAsUser(int, boolean, int);
-    method @FlaggedApi("com.android.window.flags.multi_crop") @NonNull @RequiresPermission(android.Manifest.permission.READ_WALLPAPER_INTERNAL) public java.util.List<android.graphics.Rect> getBitmapCrops(@NonNull java.util.List<android.graphics.Point>, int, boolean);
-    method @NonNull @RequiresPermission(android.Manifest.permission.READ_WALLPAPER_INTERNAL) public android.util.SparseArray<android.graphics.Rect> getBitmapCrops(int);
     method @FlaggedApi("com.android.window.flags.multi_crop") @NonNull public java.util.List<android.graphics.Rect> getBitmapCrops(@NonNull android.graphics.Point, @NonNull java.util.List<android.graphics.Point>, @Nullable java.util.Map<android.graphics.Point,android.graphics.Rect>);
+    method @NonNull @RequiresPermission(android.Manifest.permission.READ_WALLPAPER_INTERNAL) public android.util.SparseArray<android.graphics.Rect> getBitmapCrops(int);
+    method @FlaggedApi("com.android.window.flags.multi_crop") @NonNull @RequiresPermission(android.Manifest.permission.READ_WALLPAPER_INTERNAL) public java.util.List<android.graphics.Rect> getBitmapCrops(@NonNull java.util.List<android.graphics.Point>, int, boolean);
     method public static int getOrientation(@NonNull android.graphics.Point);
     method public boolean isLockscreenLiveWallpaperEnabled();
     method @Nullable public android.graphics.Rect peekBitmapDimensions();
@@ -889,8 +888,8 @@ package android.app.modes {
   }
 
   @FlaggedApi("android.service.notification.enable_dnd_sync") public static final class ContextualMode.Builder {
-    ctor public ContextualMode.Builder(@NonNull String);
     ctor public ContextualMode.Builder(@NonNull android.app.modes.ContextualMode);
+    ctor public ContextualMode.Builder(@NonNull String);
     method @NonNull public android.app.modes.ContextualMode build();
     method @NonNull public android.app.modes.ContextualMode.Builder setState(int);
     method @NonNull public android.app.modes.ContextualMode.Builder setType(int);
@@ -1005,8 +1004,8 @@ package android.appwidget {
 package android.companion {
 
   public static final class AssociationInfo.Builder {
-    ctor public AssociationInfo.Builder(int, int, @NonNull String);
     ctor public AssociationInfo.Builder(@NonNull android.companion.AssociationInfo);
+    ctor public AssociationInfo.Builder(int, int, @NonNull String);
     method @NonNull public android.companion.AssociationInfo build();
     method @NonNull public android.companion.AssociationInfo.Builder setAssociatedDevice(@Nullable android.companion.AssociatedDevice);
     method @FlaggedApi("android.companion.association_device_icon") @NonNull public android.companion.AssociationInfo.Builder setDeviceIcon(@Nullable android.graphics.drawable.Icon);
@@ -1097,10 +1096,10 @@ package android.companion.virtual.sensor {
 package android.content {
 
   public final class AttributionSource implements android.os.Parcelable {
+    ctor @FlaggedApi("android.permission.flags.device_aware_permission_apis_enabled") public AttributionSource(int, int, @Nullable String, @Nullable String, @NonNull android.os.IBinder, @Nullable String[], int, @Nullable android.content.AttributionSource);
     ctor public AttributionSource(int, @Nullable String, @Nullable String);
     ctor public AttributionSource(int, @Nullable String, @Nullable String, @NonNull android.os.IBinder);
     ctor public AttributionSource(int, @Nullable String, @Nullable String, @Nullable java.util.Set<java.lang.String>, @Nullable android.content.AttributionSource);
-    ctor @FlaggedApi("android.permission.flags.device_aware_permission_apis_enabled") public AttributionSource(int, int, @Nullable String, @Nullable String, @NonNull android.os.IBinder, @Nullable String[], int, @Nullable android.content.AttributionSource);
     method public void enforceCallingPid();
   }
 
@@ -1263,8 +1262,8 @@ package android.content.pm {
     method @Nullable public String getDefaultTextClassifierPackageName();
     method @RequiresPermission(android.Manifest.permission.INJECT_EVENTS) public android.os.IBinder getHoldLockToken();
     method public abstract int getInstallReason(@NonNull String, @NonNull android.os.UserHandle);
-    method @NonNull public abstract java.util.List<android.content.pm.ApplicationInfo> getInstalledApplicationsAsUser(int, int);
     method @NonNull public java.util.List<android.content.pm.ApplicationInfo> getInstalledApplicationsAsUser(@NonNull android.content.pm.PackageManager.ApplicationInfoFlags, int);
+    method @NonNull public abstract java.util.List<android.content.pm.ApplicationInfo> getInstalledApplicationsAsUser(int, int);
     method @Nullable public abstract String[] getNamesForUids(int[]);
     method @NonNull public String getPermissionControllerPackageName();
     method @NonNull public String getSdkSandboxPackageName();
@@ -1308,11 +1307,11 @@ package android.content.pm {
   }
 
   public class UserInfo implements android.os.Parcelable {
+    ctor @Deprecated public UserInfo();
+    ctor public UserInfo(android.content.pm.UserInfo);
     ctor public UserInfo(int, String, int);
     ctor public UserInfo(int, String, String, int);
     ctor public UserInfo(int, String, String, int, String);
-    ctor @Deprecated public UserInfo();
-    ctor public UserInfo(android.content.pm.UserInfo);
     method public boolean canHaveProfile();
     method public int describeContents();
     method public android.os.UserHandle getUserHandle();
@@ -1578,8 +1577,8 @@ package android.credentials.selection {
   }
 
   @FlaggedApi("android.credentials.flags.configurable_selector_ui_enabled") public abstract class ProviderData implements android.os.Parcelable {
-    ctor public ProviderData(@NonNull String);
     ctor protected ProviderData(@NonNull android.os.Parcel);
+    ctor public ProviderData(@NonNull String);
     method public int describeContents();
     method @NonNull public String getProviderFlattenedComponentName();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
@@ -1930,8 +1929,8 @@ package android.hardware.display {
     method public boolean alwaysOnAvailable();
     method public boolean alwaysOnAvailableForUser(int);
     method public boolean alwaysOnEnabled(int);
-    method public void disableDozeSettings(int);
     method public void disableDozeSettings(boolean, int);
+    method public void disableDozeSettings(int);
     method public void restoreDozeSettings(int);
   }
 
@@ -2306,8 +2305,8 @@ package android.media {
   }
 
   public final class AudioRecordingConfiguration implements android.os.Parcelable {
-    ctor public AudioRecordingConfiguration(int, int, int, android.media.AudioFormat, android.media.AudioFormat, int, String, int, boolean, int, android.media.audiofx.AudioEffect.Descriptor[], android.media.audiofx.AudioEffect.Descriptor[]);
     ctor public AudioRecordingConfiguration(int, int, int, android.media.AudioFormat, android.media.AudioFormat, int, String);
+    ctor public AudioRecordingConfiguration(int, int, int, android.media.AudioFormat, android.media.AudioFormat, int, String, int, boolean, int, android.media.audiofx.AudioEffect.Descriptor[], android.media.audiofx.AudioEffect.Descriptor[]);
   }
 
   public class AudioSystem {
@@ -2372,8 +2371,8 @@ package android.media {
   }
 
   public static final class MediaCodecInfo.VideoCapabilities.PerformancePoint {
-    ctor public MediaCodecInfo.VideoCapabilities.PerformancePoint(int, int, int, int, @NonNull android.util.Size);
     ctor public MediaCodecInfo.VideoCapabilities.PerformancePoint(@NonNull android.media.MediaCodecInfo.VideoCapabilities.PerformancePoint, @NonNull android.util.Size);
+    ctor public MediaCodecInfo.VideoCapabilities.PerformancePoint(int, int, int, int, @NonNull android.util.Size);
     method public int getMaxFrameRate();
     method public long getMaxMacroBlockRate();
     method public int getMaxMacroBlocks();
@@ -2444,11 +2443,11 @@ package android.media.audiofx {
     method public static boolean isEffectTypeAvailable(java.util.UUID);
     method public static boolean isError(int);
     method public int setParameter(byte[], byte[]) throws java.lang.IllegalStateException;
+    method public int setParameter(int, byte[]) throws java.lang.IllegalStateException;
     method public int setParameter(int, int) throws java.lang.IllegalStateException;
     method public int setParameter(int, short) throws java.lang.IllegalStateException;
-    method public int setParameter(int, byte[]) throws java.lang.IllegalStateException;
-    method public int setParameter(int[], int[]) throws java.lang.IllegalStateException;
     method public int setParameter(int[], byte[]) throws java.lang.IllegalStateException;
+    method public int setParameter(int[], int[]) throws java.lang.IllegalStateException;
     method public void setParameterListener(android.media.audiofx.AudioEffect.OnParameterChangeListener);
     method public static byte[] shortToByteArray(short);
     field public static final java.util.UUID EFFECT_TYPE_NULL;
@@ -2868,9 +2867,9 @@ package android.os {
 
   public abstract class VibrationEffect implements android.os.Parcelable {
     method @Nullable public abstract long[] computeCreateWaveformOffOnTimingsOrNull();
+    method @Nullable public static android.os.VibrationEffect get(android.net.Uri, android.content.Context);
     method public static android.os.VibrationEffect get(int);
     method public static android.os.VibrationEffect get(int, boolean);
-    method @Nullable public static android.os.VibrationEffect get(android.net.Uri, android.content.Context);
     method public abstract long getDuration();
     field public static final int EFFECT_POP = 4; // 0x4
     field public static final int EFFECT_STRENGTH_LIGHT = 0; // 0x0
@@ -3020,8 +3019,8 @@ package android.os.health {
 package android.os.storage {
 
   public final class CrateInfo implements android.os.Parcelable {
-    ctor public CrateInfo(@NonNull CharSequence, long);
     ctor public CrateInfo(@NonNull CharSequence);
+    ctor public CrateInfo(@NonNull CharSequence, long);
     method @Nullable public static android.os.storage.CrateInfo copyFrom(int, @Nullable String, @Nullable String);
     method public int describeContents();
     method public long getExpirationMillis();
@@ -3060,8 +3059,8 @@ package android.os.storage {
 package android.os.storage.operations {
 
   @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public final class FileOperationEnqueueResult implements android.os.Parcelable {
-    ctor public FileOperationEnqueueResult(@NonNull String);
     ctor public FileOperationEnqueueResult(int);
+    ctor public FileOperationEnqueueResult(@NonNull String);
   }
 
 }
@@ -4213,8 +4212,8 @@ package android.view {
   }
 
   public final class KeyboardShortcutGroup implements android.os.Parcelable {
-    ctor public KeyboardShortcutGroup(@Nullable CharSequence, @NonNull java.util.List<android.view.KeyboardShortcutInfo>, boolean);
     ctor public KeyboardShortcutGroup(@Nullable CharSequence, boolean);
+    ctor public KeyboardShortcutGroup(@Nullable CharSequence, @NonNull java.util.List<android.view.KeyboardShortcutInfo>, boolean);
     method public boolean isSystemGroup();
   }
 
@@ -4278,8 +4277,8 @@ package android.view {
   }
 
   public class ViewDebug {
-    method @Deprecated @Nullable public static AutoCloseable startRenderingCommandsCapture(android.view.View, java.util.concurrent.Executor, java.util.function.Function<android.graphics.Picture,java.lang.Boolean>);
     method @Nullable public static AutoCloseable startRenderingCommandsCapture(android.view.View, java.util.concurrent.Executor, java.util.concurrent.Callable<java.io.OutputStream>);
+    method @Deprecated @Nullable public static AutoCloseable startRenderingCommandsCapture(android.view.View, java.util.concurrent.Executor, java.util.function.Function<android.graphics.Picture,java.lang.Boolean>);
   }
 
   public abstract class Window {
@@ -4376,10 +4375,10 @@ package android.view.autofill {
   }
 
   public final class AutofillId implements android.os.Parcelable {
-    ctor public AutofillId(int);
     ctor public AutofillId(@NonNull android.view.autofill.AutofillId, int);
-    ctor public AutofillId(int, int);
     ctor public AutofillId(@NonNull android.view.autofill.AutofillId, long, int);
+    ctor public AutofillId(int);
+    ctor public AutofillId(int, int);
     method public boolean equalsIgnoreSession(@Nullable android.view.autofill.AutofillId);
     method public boolean isNonVirtual();
     method @NonNull public static android.view.autofill.AutofillId withoutSession(@NonNull android.view.autofill.AutofillId);
@@ -4419,8 +4418,8 @@ package android.view.contentcapture {
   }
 
   public static final class ViewNode.ViewStructureImpl extends android.view.ViewStructure {
-    ctor public ViewNode.ViewStructureImpl(@NonNull android.view.View);
     ctor public ViewNode.ViewStructureImpl(@NonNull android.view.autofill.AutofillId, long, int);
+    ctor public ViewNode.ViewStructureImpl(@NonNull android.view.View);
     method public int addChildCount(int);
     method public void asyncCommit();
     method public android.view.ViewStructure asyncNewChild(int);
@@ -4521,8 +4520,8 @@ package android.view.inputmethod {
   }
 
   public final class InputMethodInfo implements android.os.Parcelable {
-    ctor @FlaggedApi("android.view.inputmethod.connectionless_handwriting") public InputMethodInfo(@NonNull String, @NonNull String, @NonNull CharSequence, @NonNull String, @NonNull String, boolean, boolean, @NonNull String);
     ctor public InputMethodInfo(@NonNull String, @NonNull String, @NonNull CharSequence, @NonNull String, int);
+    ctor @FlaggedApi("android.view.inputmethod.connectionless_handwriting") public InputMethodInfo(@NonNull String, @NonNull String, @NonNull CharSequence, @NonNull String, @NonNull String, boolean, boolean, @NonNull String);
     field public static final int COMPONENT_NAME_MAX_LENGTH = 1000; // 0x3e8
     field public static final int MAX_IMES_PER_PACKAGE = 20; // 0x14
   }
@@ -4955,10 +4954,10 @@ package android.window {
 
   public class WindowInfosListenerForTest {
     ctor public WindowInfosListenerForTest();
-    method @Deprecated @RequiresPermission(android.Manifest.permission.ACCESS_SURFACE_FLINGER) public void addWindowInfosListener(@NonNull java.util.function.Consumer<java.util.List<android.window.WindowInfosListenerForTest.WindowInfo>>);
     method @RequiresPermission(android.Manifest.permission.ACCESS_SURFACE_FLINGER) public void addWindowInfosListener(@NonNull java.util.function.BiConsumer<java.util.List<android.window.WindowInfosListenerForTest.WindowInfo>,java.util.List<android.window.WindowInfosListenerForTest.DisplayInfo>>);
-    method @Deprecated public void removeWindowInfosListener(@NonNull java.util.function.Consumer<java.util.List<android.window.WindowInfosListenerForTest.WindowInfo>>);
+    method @Deprecated @RequiresPermission(android.Manifest.permission.ACCESS_SURFACE_FLINGER) public void addWindowInfosListener(@NonNull java.util.function.Consumer<java.util.List<android.window.WindowInfosListenerForTest.WindowInfo>>);
     method public void removeWindowInfosListener(@NonNull java.util.function.BiConsumer<java.util.List<android.window.WindowInfosListenerForTest.WindowInfo>,java.util.List<android.window.WindowInfosListenerForTest.DisplayInfo>>);
+    method @Deprecated public void removeWindowInfosListener(@NonNull java.util.function.Consumer<java.util.List<android.window.WindowInfosListenerForTest.WindowInfo>>);
   }
 
   public static class WindowInfosListenerForTest.DisplayInfo {
