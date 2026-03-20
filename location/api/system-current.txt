@@ -1,7 +1,5 @@
 // Signature format: 6.0
 // - style=java
-// - overloaded-method-order=source
-// - strip-java-lang-prefix=legacy
 // - type-argument-spacing=legacy
 package android.location {
 
@@ -1275,9 +1273,9 @@ package android.location {
     method @Deprecated @RequiresPermission(allOf={android.Manifest.permission.LOCATION_HARDWARE, android.Manifest.permission.UPDATE_APP_OPS_STATS}) public boolean registerGnssBatchedLocationCallback(long, boolean, @NonNull android.location.BatchedLocationCallback, @Nullable android.os.Handler);
     method @Deprecated @RequiresPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) public boolean registerGnssMeasurementsCallback(@NonNull android.location.GnssRequest, @NonNull java.util.concurrent.Executor, @NonNull android.location.GnssMeasurementsEvent.Callback);
     method @Deprecated @FlaggedApi("android.location.flags.deprecate_provider_request_apis") @RequiresPermission(android.Manifest.permission.LOCATION_HARDWARE) public void removeProviderRequestChangedListener(@NonNull android.location.provider.ProviderRequest.ChangedListener);
+    method @Deprecated @RequiresPermission(anyOf={android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION}) public void requestLocationUpdates(@Nullable android.location.LocationRequest, @NonNull android.app.PendingIntent);
     method @Deprecated @RequiresPermission(anyOf={android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION}) public void requestLocationUpdates(@Nullable android.location.LocationRequest, @NonNull android.location.LocationListener, @Nullable android.os.Looper);
     method @Deprecated @RequiresPermission(anyOf={android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION}) public void requestLocationUpdates(@Nullable android.location.LocationRequest, @NonNull java.util.concurrent.Executor, @NonNull android.location.LocationListener);
-    method @Deprecated @RequiresPermission(anyOf={android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION}) public void requestLocationUpdates(@Nullable android.location.LocationRequest, @NonNull android.app.PendingIntent);
     method @RequiresPermission(android.Manifest.permission.LOCATION_BYPASS) public void setAdasGnssLocationEnabled(boolean);
     method @RequiresPermission(android.Manifest.permission.LOCATION_HARDWARE) public void setExtraLocationControllerPackage(@Nullable String);
     method @RequiresPermission(android.Manifest.permission.LOCATION_HARDWARE) public void setExtraLocationControllerPackageEnabled(boolean);
@@ -1572,15 +1570,15 @@ package android.location.provider {
   @FlaggedApi("android.location.flags.new_geocoder") public abstract class GeocodeProviderBase {
     ctor public GeocodeProviderBase(@NonNull android.content.Context, @NonNull String);
     method @NonNull public final android.os.IBinder getBinder();
-    method public abstract void onForwardGeocode(@NonNull android.location.provider.ForwardGeocodeRequest, @NonNull android.os.OutcomeReceiver<java.util.List<android.location.Address>,java.lang.Throwable>);
-    method public abstract void onReverseGeocode(@NonNull android.location.provider.ReverseGeocodeRequest, @NonNull android.os.OutcomeReceiver<java.util.List<android.location.Address>,java.lang.Throwable>);
+    method public abstract void onForwardGeocode(@NonNull android.location.provider.ForwardGeocodeRequest, @NonNull android.os.OutcomeReceiver<java.util.List<android.location.Address>,Throwable>);
+    method public abstract void onReverseGeocode(@NonNull android.location.provider.ReverseGeocodeRequest, @NonNull android.os.OutcomeReceiver<java.util.List<android.location.Address>,Throwable>);
     field public static final String ACTION_GEOCODE_PROVIDER = "com.android.location.service.GeocodeProvider";
   }
 
   @FlaggedApi("android.location.flags.gnss_assistance_interface") public abstract class GnssAssistanceProviderBase {
     ctor public GnssAssistanceProviderBase(@NonNull android.content.Context, @NonNull String);
     method @NonNull public final android.os.IBinder getBinder();
-    method public abstract void onRequest(@NonNull android.os.OutcomeReceiver<android.location.GnssAssistance,java.lang.Throwable>);
+    method public abstract void onRequest(@NonNull android.os.OutcomeReceiver<android.location.GnssAssistance,Throwable>);
     field public static final String ACTION_GNSS_ASSISTANCE_PROVIDER = "android.location.provider.action.GNSS_ASSISTANCE_PROVIDER";
   }
 
@@ -1608,8 +1606,8 @@ package android.location.provider {
   public abstract class PopulationDensityProviderBase {
     ctor public PopulationDensityProviderBase(@NonNull android.content.Context, @NonNull String);
     method @Nullable public final android.os.IBinder getBinder();
-    method public abstract void onGetCoarsenedS2Cells(double, double, @IntRange(from=0) int, @NonNull android.os.OutcomeReceiver<long[],java.lang.Throwable>);
-    method public abstract void onGetDefaultCoarseningLevel(@NonNull android.os.OutcomeReceiver<java.lang.Integer,java.lang.Throwable>);
+    method public abstract void onGetCoarsenedS2Cells(double, double, @IntRange(from=0) int, @NonNull android.os.OutcomeReceiver<long[],Throwable>);
+    method public abstract void onGetDefaultCoarseningLevel(@NonNull android.os.OutcomeReceiver<Integer,Throwable>);
     field public static final String ACTION_POPULATION_DENSITY_PROVIDER = "com.android.location.service.PopulationDensityProvider";
   }
 
