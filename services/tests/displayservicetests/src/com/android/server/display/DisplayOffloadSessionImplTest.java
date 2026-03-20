@@ -17,6 +17,7 @@
 package com.android.server.display;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertFalse;
@@ -31,20 +32,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.hardware.display.DisplayManagerInternal;
-import android.view.Display;
-import java.lang.reflect.Method;
-
-import com.android.modules.utils.testing.ExtendedMockitoRule;
-import com.android.os.AtomsProto.Atom;
 import android.util.StatsEvent;
 import android.util.StatsLog;
-import android.util.StatsEventTestUtils;
-import com.android.os.wear.powermanager.PowermanagerExtensionAtoms;
-import com.google.protobuf.ExtensionRegistryLite;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.android.internal.util.FrameworkStatsLog;
+import android.view.Display;
 
-import android.util.Log;
+import com.android.internal.util.FrameworkStatsLog;
+import com.android.modules.utils.testing.ExtendedMockitoRule;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -54,7 +47,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.List;
+import java.lang.reflect.Method;
 
 public class DisplayOffloadSessionImplTest {
 
@@ -93,7 +86,7 @@ public class DisplayOffloadSessionImplTest {
     @Test
     public void testStopOffload() throws Exception {
         mSession.startOffload(Display.STATE_DOZE_SUSPEND);
-        mSession.stopOffload();
+        mSession.stopOffload(Display.STATE_ON);
 
         assertFalse(mSession.isActive());
 
@@ -109,8 +102,8 @@ public class DisplayOffloadSessionImplTest {
         assertThat(atomId).isEqualTo(FrameworkStatsLog.DISPLAY_SWITCH_TO_AP_ISSUED);
 
         // An inactive session shouldn't be stopped again
-        mSession.stopOffload();
-        verify(mDisplayOffloader, times(1)).stopOffload();
+        mSession.stopOffload(Display.STATE_ON);
+        verify(mDisplayOffloader, times(1)).stopOffload(Display.STATE_ON);
     }
 
     @Test

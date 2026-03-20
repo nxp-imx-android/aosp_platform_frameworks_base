@@ -1599,7 +1599,7 @@ public class LocalDisplayAdapterTest {
         changeStateToDozeSuspendRunnable.run();
         changeStateToDozeRunnable.run();
 
-        verify(mDisplayOffloader).stopOffload();
+        verify(mDisplayOffloader).stopOffload(Display.STATE_DOZE);
         assertFalse(mDisplayOffloadSession.isActive());
     }
 
