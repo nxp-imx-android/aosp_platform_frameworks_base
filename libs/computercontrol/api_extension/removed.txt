@@ -1,4 +1,2 @@
 // Signature format: 6.0
 // - style=java
-// - overloaded-method-order=source
-// - type-argument-spacing=legacy
