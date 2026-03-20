@@ -1,6 +1,5 @@
 // Signature format: 6.0
 // - style=java
-// - sort-whole-extends-list=no
 package android {
 
   public final class Manifest {
@@ -15352,7 +15351,7 @@ package android.content.res {
     method public void recycle();
   }
 
-  public interface XmlResourceParser extends org.xmlpull.v1.XmlPullParser android.util.AttributeSet AutoCloseable {
+  public interface XmlResourceParser extends android.util.AttributeSet AutoCloseable org.xmlpull.v1.XmlPullParser {
     method public void close();
     method public String getAttributeNamespace(int);
   }
@@ -41978,7 +41977,7 @@ package android.sax {
     method public void setTextElementListener(android.sax.TextElementListener);
   }
 
-  public interface ElementListener extends android.sax.StartElementListener android.sax.EndElementListener {
+  public interface ElementListener extends android.sax.EndElementListener android.sax.StartElementListener {
   }
 
   public interface EndElementListener {
@@ -41999,7 +41998,7 @@ package android.sax {
     method public void start(org.xml.sax.Attributes);
   }
 
-  public interface TextElementListener extends android.sax.StartElementListener android.sax.EndTextElementListener {
+  public interface TextElementListener extends android.sax.EndTextElementListener android.sax.StartElementListener {
   }
 
 }
@@ -49613,7 +49612,7 @@ package android.text {
     method @NonNull public android.text.DynamicLayout.Builder setUseLineSpacingFromFallbacks(boolean);
   }
 
-  public interface Editable extends CharSequence Appendable android.text.GetChars android.text.Spannable {
+  public interface Editable extends Appendable CharSequence android.text.GetChars android.text.Spannable {
     method public android.text.Editable append(char);
     method public android.text.Editable append(CharSequence);
     method public android.text.Editable append(CharSequence, int, int);

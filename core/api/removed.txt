@@ -1,6 +1,5 @@
 // Signature format: 6.0
 // - style=java
-// - sort-whole-extends-list=no
 package android.app {
 
   public class Notification implements android.os.Parcelable {
