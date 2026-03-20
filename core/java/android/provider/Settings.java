@@ -22097,6 +22097,14 @@ public final class Settings {
              * @hide
              */
             public static final int RAISE_TO_TALK_VOICE_SENSITIVITY_VERY_HIGH = 4;
+
+            /**
+             * Whether satellite mode is enabled on the watch.
+             *
+             * @hide
+             */
+            @Readable
+            public static final String WEAR_SATELLITE_MODE_ENABLED = "wear_satellite_mode_enabled";
         }
     }
 
