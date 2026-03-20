@@ -22638,7 +22638,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     }
 
     @Override
-    public boolean isPackageQualifiedForDevicePolicyManagementRole(
+    public boolean isPackageAllowedToBypassDevicePolicyManagementRoleQualification(
             @NonNull String packageName, @UserIdInt int userId
     ) {
         mPermissions.enforce(MANAGE_ROLE_HOLDERS, getCallerIdentity());

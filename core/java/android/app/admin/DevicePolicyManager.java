@@ -18827,10 +18827,11 @@ public class DevicePolicyManager {
     @RequiresPermission(android.Manifest.permission.MANAGE_ROLE_HOLDERS)
     @UserHandleAware
     @FlaggedApi(FLAG_SECURE_ADB_ROLE_BYPASSING)
-    public boolean isPackageQualifiedForDevicePolicyManagementRole(@NonNull String packageName) {
+    public boolean isPackageAllowedToBypassDevicePolicyManagementRoleQualification(
+            @NonNull String packageName) {
         if (mService != null) {
             try {
-                return mService.isPackageQualifiedForDevicePolicyManagementRole(
+                return mService.isPackageAllowedToBypassDevicePolicyManagementRoleQualification(
                         packageName, myUserId());
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
