@@ -18,9 +18,12 @@ package com.android.server.personalcontext;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -31,6 +34,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
 import android.content.res.Resources;
+import android.os.PermissionEnforcer;
 import android.os.UserHandle;
 import android.permission.PermissionManager;
 import android.platform.test.annotations.EnableFlags;
@@ -47,6 +51,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -288,9 +293,48 @@ public class AccessControllerTest {
         return serviceInfo;
     }
 
+    @Test
+    public void testEnforcePermissions() {
+        checkPermission(AccessController.ACCESS_PUBLISH_HINTS_PERMISSION,
+                Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS);
+        checkPermission(AccessController.ACCESS_RECEIVE_HINTS_PERMISSION,
+                Manifest.permission.PERSONAL_CONTEXT_RECEIVE_HINTS);
+        checkPermission(AccessController.ACCESS_PUBLISH_INSIGHTS_PERMISSION,
+                Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS);
+        checkPermission(AccessController.ACCESS_RECEIVE_INSIGHTS_PERMISSION,
+                Manifest.permission.PERSONAL_CONTEXT_RECEIVE_INSIGHTS);
+        checkPermission(AccessController.ACCESS_HOST_INSIGHT_SURFACE_PERMISSION,
+                Manifest.permission.PERSONAL_CONTEXT_HOST_INSIGHT_SURFACE);
+    }
+
+    private void checkPermission(@AccessController.Access int access, String permission) {
+        {
+            final AccessController controller = new AccessControllerBuilder()
+                    .revokePermission(permission)
+                    .build();
+            assertThrows(SecurityException.class, () -> {
+                controller.enforcePermissions(0, 0, access);
+            });
+        }
+
+        {
+            final AccessController controller = new AccessControllerBuilder()
+                    .build();
+            try {
+                controller.enforcePermissions(0, 0, access);
+            } catch (Throwable e) {
+                fail("should not have thrown");
+            }
+        }
+    }
+
     private static class AccessControllerBuilder {
         private final Resources mResources = mock(Resources.class);
         private final PermissionManager mPermissionManager = mock(PermissionManager.class);
+
+        private final PermissionEnforcer mPermissionEnforcer = mock(PermissionEnforcer.class);
+
+        private final HashSet<String> mRevokedPermissions = new HashSet<>();
 
         AccessControllerBuilder() {
             when(mPermissionManager.checkPackageNamePermission(any(), any(), anyInt(), anyInt()))
@@ -315,6 +359,11 @@ public class AccessControllerTest {
                         .when(mPermissionManager).checkPackageNamePermission(
                                 eq(permission), eq(packageName), anyInt(), anyInt());
             }
+        }
+
+        public AccessControllerBuilder revokePermission(String permission) {
+            mRevokedPermissions.add(permission);
+            return this;
         }
 
         public AccessControllerBuilder setAllowedHintPublishers(Set<String> publishers) {
@@ -380,6 +429,14 @@ public class AccessControllerTest {
         }
 
         public AccessController build() {
+            doAnswer(invocation -> {
+                for (String permission : (String[]) invocation.getArgument(0)) {
+                    if (mRevokedPermissions.contains(permission)) {
+                        throw new SecurityException();
+                    }
+                }
+                return null;
+            }).when(mPermissionEnforcer).enforcePermissionAllOf(any(), anyInt(), anyInt());
             return new AccessController(
                     new AccessController.Injector() {
                         @Override
@@ -390,6 +447,11 @@ public class AccessControllerTest {
                         @Override
                         public PackageManager getPackageManager() {
                             return mock(PackageManager.class);
+                        }
+
+                        @Override
+                        public PermissionEnforcer getPermissionEnforcer() {
+                            return mPermissionEnforcer;
                         }
 
                         @Override

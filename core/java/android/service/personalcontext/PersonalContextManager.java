@@ -43,6 +43,12 @@ import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.service.personalcontext.insight.interaction.ReturnHintReport;
 import android.util.Log;
 
+import androidx.annotation.IntDef;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -196,6 +202,40 @@ public final class PersonalContextManager {
     public void setPersonalContextModeEnabled(@NonNull String packageName, boolean enabled) {
         try {
             mService.setPersonalContextModeEnabled(packageName, mContext.getUserId(), enabled);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Default operating mode (normal operation - allowlist/permissions enforced).
+     * @hide
+     */
+    public static final int OPERATING_MODE_DEFAULT = 0;
+
+    /**
+     * Test operating mode (test operation - test only components, no allowlist/permissions).
+     * @hide
+     */
+    public static final int OPERATING_MODE_TEST = 1;
+
+    /**
+     * @hide
+     */
+    @IntDef({OPERATING_MODE_DEFAULT, OPERATING_MODE_TEST})
+    @Target(ElementType.TYPE_USE)
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface OperatingMode { }
+
+    /**
+     * Sets the current operating mode
+     *
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.CHANGE_PERSONAL_CONTEXT_OPERATING_MODE)
+    public void setOperatingMode(@OperatingMode int mode) {
+        try {
+            mService.setOperatingMode(mContext.getUserId(), mode);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

@@ -49,6 +49,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.server.personalcontext.AccessController;
+import com.android.server.personalcontext.OperatingModeProvider;
 import com.android.server.personalcontext.component.Renderer;
 
 import org.junit.Before;
@@ -110,7 +111,8 @@ public class ServiceClientRendererTest {
                         serviceInfo,
                         mUserHandle,
                         mFakeExecutor,
-                        mHandler);
+                        mHandler,
+                        new OperatingModeProvider());
         mFakeExecutor.runAll();
     }
 
@@ -131,7 +133,8 @@ public class ServiceClientRendererTest {
                 ? PackageManager.PERMISSION_GRANTED : PackageManager.PERMISSION_DENIED);
 
         final ServiceClientRenderer renderer = new ServiceClientRenderer(
-                mContext, mAccessController, UUID.randomUUID(), serviceInfo, mUserHandle);
+                mContext, mAccessController, UUID.randomUUID(), serviceInfo, mUserHandle,
+                new OperatingModeProvider());
         return (renderer.getProperties()
                 & Renderer.PROPERTY_CAN_RECEIVE_NOTIFICATION_INSIGHTS)
                 == Renderer.PROPERTY_CAN_RECEIVE_NOTIFICATION_INSIGHTS;
@@ -172,7 +175,7 @@ public class ServiceClientRendererTest {
     @Test
     public void testRender() throws Exception {
         when(mAccessController.isClientAllowed(
-                any(), eq(AccessController.ACCESS_PCC_OR_AUTO_COMPANION_ROLE))).thenReturn(true);
+                any(), anyInt())).thenReturn(true);
 
         BundleInsight insight = new BundleInsight.Builder().build();
         PublishedContextInsight publishedInsight =

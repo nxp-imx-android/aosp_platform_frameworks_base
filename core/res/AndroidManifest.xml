@@ -3142,6 +3142,20 @@
         android:protectionLevel="signature"
         android:featureFlag="android.service.personalcontext.enable_personal_context_service" />
 
+    <!-- Allows setting personal context operating mode.
+
+    <p> This permission allows setting the operating mode of personal context service. This is can
+        be used to place the service in a test mode where the production components are disabled
+        in favor of a test environment.
+
+     <p>Protection level: signature
+     @hide
+    -->
+    <permission
+        android:name="android.permission.CHANGE_PERSONAL_CONTEXT_OPERATING_MODE"
+        android:protectionLevel="signature"
+        android:featureFlag="android.service.personalcontext.enable_personal_context_service" />
+
     <!--@SystemApi Allows privileged applications to publish hints to personal context manager.
         <p>This permission is only granted to system apps.
         <p>Protection level: signature|privileged|recents

@@ -43,6 +43,7 @@ import android.util.Slog;
 import androidx.annotation.NonNull;
 
 import com.android.server.personalcontext.AccessController;
+import com.android.server.personalcontext.OperatingModeProvider;
 import com.android.server.personalcontext.RefinerWorkflow;
 import com.android.server.personalcontext.component.Refiner;
 
@@ -70,7 +71,8 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
             AccessController accessController,
             UUID componentId,
             ServiceInfo serviceInfo,
-            UserHandle userHandle) {
+            UserHandle userHandle,
+            OperatingModeProvider operatingModeProvider) {
         this(
                 context,
                 accessController,
@@ -78,7 +80,8 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
                 serviceInfo,
                 userHandle,
                 Executors.newSingleThreadExecutor(),
-                new Handler(Looper.getMainLooper()));
+                new Handler(Looper.getMainLooper()),
+                operatingModeProvider);
     }
 
     protected ServiceClientRefiner(
@@ -88,8 +91,10 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
             ServiceInfo serviceInfo,
             UserHandle userHandle,
             Executor executor,
-            Handler handler) {
-        super(context, accessController, componentId, serviceInfo, userHandle, executor, handler);
+            Handler handler,
+            OperatingModeProvider operatingModeProvider) {
+        super(context, accessController, componentId, serviceInfo, userHandle, executor, handler,
+                operatingModeProvider);
 
         runWithScopedBinder((binder, opCallback) -> {
             try {
@@ -145,16 +150,18 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
                     @EnforcePermission(android.Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS)
                     @Override
                     public void onHintsRefined(List<ContextHintWrapper> hints) {
-                        if (android.service.personalcontext.Flags
-                                .enforcePersonalContextPermissions()) {
-                            onHintsRefined_enforcePermission();
-                        }
+                        enforcePermissions(getCallingPid(), getCallingUid(),
+                                AccessController.ACCESS_PUBLISH_HINTS_PERMISSION);
+
                         callback.accept(ContextHintWrapper.unwrapInto(hints, new HashSet<>()));
                     }
 
                     @PermissionManuallyEnforced
                     @Override
                     public void onUnderstood(List<ContextInsightWrapper> insights) {
+                        enforcePermissions(getCallingPid(), getCallingUid(),
+                                AccessController.ACCESS_PUBLISH_INSIGHTS_PERMISSION);
+
                         insightCallback.accept(
                                 getComponentId(),
                                 ContextInsightWrapper.unwrapInto(insights, new HashSet<>()));

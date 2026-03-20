@@ -40,6 +40,7 @@ import android.util.Slog;
 import androidx.annotation.NonNull;
 
 import com.android.server.personalcontext.AccessController;
+import com.android.server.personalcontext.OperatingModeProvider;
 import com.android.server.personalcontext.component.Renderer;
 
 import java.util.List;
@@ -66,7 +67,8 @@ public class ServiceClientRenderer
             AccessController accessController,
             UUID componentId,
             ServiceInfo serviceInfo,
-            UserHandle userHandle) {
+            UserHandle userHandle,
+            OperatingModeProvider operatingModeProvider) {
         this(
                 context,
                 accessController,
@@ -74,7 +76,8 @@ public class ServiceClientRenderer
                 serviceInfo,
                 userHandle,
                 Executors.newSingleThreadExecutor(),
-                new Handler(Looper.getMainLooper()));
+                new Handler(Looper.getMainLooper()),
+                operatingModeProvider);
     }
 
     protected ServiceClientRenderer(
@@ -84,8 +87,10 @@ public class ServiceClientRenderer
             ServiceInfo serviceInfo,
             UserHandle userHandle,
             Executor executor,
-            Handler handler) {
-        super(context, accessController, componentId, serviceInfo, userHandle, executor, handler);
+            Handler handler,
+            OperatingModeProvider operatingModeProvider) {
+        super(context, accessController, componentId, serviceInfo, userHandle, executor, handler,
+                operatingModeProvider);
 
         int properties = 0;
 
@@ -151,8 +156,10 @@ public class ServiceClientRenderer
     @Override
     public void render(@NonNull PublishedContextInsight publishedContextInsight,
             RenderToken renderToken) {
-        // Do the delivery time check that renderer has PCC or automotive companion role.
-        if (!isAllowed(AccessController.ACCESS_PCC_OR_AUTO_COMPANION_ROLE)) {
+        if (!isAllowed(
+                AccessController.ACCESS_PCC_OR_AUTO_COMPANION_ROLE
+                | AccessController.ACCESS_RECEIVE_INSIGHTS_PERMISSION
+                | AccessController.ACCESS_RECEIVE_INSIGHTS_ALLOWLIST)) {
             Slog.w(TAG, getComponentName() + " is not allowed to receive insights.");
             return;
         }

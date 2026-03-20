@@ -36,6 +36,7 @@ import android.util.Log;
 import android.util.Slog;
 
 import com.android.server.personalcontext.AccessController;
+import com.android.server.personalcontext.OperatingModeProvider;
 import com.android.server.personalcontext.component.Component;
 
 import java.lang.ref.WeakReference;
@@ -74,6 +75,9 @@ public abstract class BaseServiceClientComponent<C> implements Component {
     private final Handler mHandler;
 
     private final List<IOpCallback> mActiveScopedCallbacks = new ArrayList<>();
+
+    private final OperatingModeProvider mOperatingModeProvider;
+
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder binder) {
@@ -162,7 +166,8 @@ public abstract class BaseServiceClientComponent<C> implements Component {
             AccessController accessController,
             UUID componentId,
             ServiceInfo serviceInfo,
-            UserHandle userHandle) {
+            UserHandle userHandle,
+            OperatingModeProvider operatingModeProvider) {
         this(
                 context,
                 accessController,
@@ -170,7 +175,8 @@ public abstract class BaseServiceClientComponent<C> implements Component {
                 serviceInfo,
                 userHandle,
                 Executors.newSingleThreadExecutor(),
-                new Handler(Looper.getMainLooper()));
+                new Handler(Looper.getMainLooper()),
+                operatingModeProvider);
     }
     protected BaseServiceClientComponent(
             Context context,
@@ -179,7 +185,8 @@ public abstract class BaseServiceClientComponent<C> implements Component {
             ServiceInfo serviceInfo,
             UserHandle userHandle,
             Executor executor,
-            Handler handler) {
+            Handler handler,
+            OperatingModeProvider operatingModeProvider) {
         mExecutor = executor;
         mContext = context;
         mAccessController = accessController;
@@ -190,6 +197,7 @@ public abstract class BaseServiceClientComponent<C> implements Component {
         mServiceIntent = new Intent();
         mServiceIntent.setComponent(mComponentName);
         mHandler = handler;
+        mOperatingModeProvider = operatingModeProvider;
     }
 
     @Override
@@ -218,8 +226,22 @@ public abstract class BaseServiceClientComponent<C> implements Component {
                 mComponentName.flattenToShortString());
     }
 
+    protected boolean shouldCheckPermissions() {
+        return mOperatingModeProvider.hasProperties(
+                OperatingModeProvider.OPERATING_PROPERTY_FLAG_ENFORCE_PERMISSIONS);
+    }
+
+    protected void enforcePermissions(int pid, int uid, @AccessController.Access int accessFlags) {
+        mAccessController.enforcePermissions(pid, uid,
+                mOperatingModeProvider.filterAccessFlags(accessFlags));
+    }
+
     /** Returns true if this service client has the given permission. */
     protected boolean checkPermission(String permission) {
+        if (!shouldCheckPermissions()) {
+            return true;
+        }
+
         return mContext.getSystemService(PermissionManager.class)
                         .checkPackageNamePermission(
                                 permission,
@@ -305,7 +327,8 @@ public abstract class BaseServiceClientComponent<C> implements Component {
     protected abstract void initializeClient(C client) throws RemoteException;
 
     protected final boolean isAllowed(int accessFlags) {
-        return mAccessController.isClientAllowed(this, accessFlags);
+        return mAccessController.isClientAllowed(this,
+                mOperatingModeProvider.filterAccessFlags(accessFlags));
     }
 
     /**

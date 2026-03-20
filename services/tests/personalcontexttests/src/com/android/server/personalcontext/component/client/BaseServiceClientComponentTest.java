@@ -43,6 +43,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.server.personalcontext.AccessController;
+import com.android.server.personalcontext.OperatingModeProvider;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -95,7 +96,8 @@ public class BaseServiceClientComponentTest {
                     serviceInfo,
                     userHandle,
                     executor,
-                    handler);
+                    handler,
+                    new OperatingModeProvider());
         }
 
         @Override
