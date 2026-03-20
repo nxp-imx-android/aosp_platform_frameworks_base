@@ -259,14 +259,15 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
         val identifier = getFullyQualifiedFieldName(element)
 
         val type = classTypeMirrorToName(policyType(element))
-        val documentation = processingEnv.elementUtils.getDocComment(element)?.trimIndent() ?: ""
+        val documentation =
+            processingEnv.elementUtils.getDocComment(element)?.trimIndent()?.trim() ?: ""
         val allowedScopes = convertScopes(element, definition.allowedScopes.toList())
         val affectedResource =
             convertResourceType(element, definition.affectedResource) ?: return null
         val allowedDpcTypes = convertDpcTypes(element, definition.allowedDpcTypes)
-        val flaggedApi = readFlaggedApi(element);
+        val flaggedApi = readFlaggedApi(element)
 
-        if (documentation.trim().isEmpty()) {
+        if (documentation.isEmpty()) {
             printError(element, "Missing JavaDoc")
         }
 
@@ -290,7 +291,7 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
             validateRequiredCrossUserPermission(element, requiredCrossUserPermission)
             builder.setRequiredCrossUserPermission(requiredCrossUserPermission)
         }
-        if (flaggedApi!= null) {
+        if (flaggedApi != null) {
             builder.setFlag(flaggedApi)
         }
 
@@ -495,8 +496,7 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
             }
 
     private fun readFlaggedApi(element: Element): String? {
-        val flaggedApiAnnotation =
-            element.getAnnotation(FlaggedApi::class.java) ?: return null
+        val flaggedApiAnnotation = element.getAnnotation(FlaggedApi::class.java) ?: return null
 
         return flaggedApiAnnotation.value
     }
