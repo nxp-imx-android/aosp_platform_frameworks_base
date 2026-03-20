@@ -1,6 +1,5 @@
 // Signature format: 6.0
 // - style=java
-// - normalize-abstract-modifier=no
 package android {
 
   public static final class Manifest.permission {
@@ -2978,7 +2977,7 @@ package android.os.health {
   }
 
   @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME) @java.lang.annotation.Target({java.lang.annotation.ElementType.FIELD}) public static @interface HealthKeys.Constant {
-    method public abstract int type();
+    method public int type();
   }
 
   public static class HealthKeys.Constants {
@@ -4228,7 +4227,7 @@ package android.view {
   }
 
   @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME) @java.lang.annotation.Target({java.lang.annotation.ElementType.METHOD}) public @interface RemotableViewMethod {
-    method public abstract String asyncImpl() default "";
+    method public String asyncImpl() default "";
   }
 
   public final class SurfaceControl implements android.os.Parcelable {
@@ -4556,23 +4555,23 @@ package android.view.inputmethod {
 package android.view.inspector {
 
   @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.SOURCE) @java.lang.annotation.Target({java.lang.annotation.ElementType.METHOD, java.lang.annotation.ElementType.FIELD}) public @interface InspectableProperty {
-    method public abstract int attributeId() default android.content.res.Resources.ID_NULL;
-    method public abstract android.view.inspector.InspectableProperty.EnumEntry[] enumMapping() default {};
-    method public abstract android.view.inspector.InspectableProperty.FlagEntry[] flagMapping() default {};
-    method public abstract boolean hasAttributeId() default true;
-    method public abstract String name() default "";
-    method public abstract android.view.inspector.InspectableProperty.ValueType valueType() default android.view.inspector.InspectableProperty.ValueType.INFERRED;
+    method public int attributeId() default android.content.res.Resources.ID_NULL;
+    method public android.view.inspector.InspectableProperty.EnumEntry[] enumMapping() default {};
+    method public android.view.inspector.InspectableProperty.FlagEntry[] flagMapping() default {};
+    method public boolean hasAttributeId() default true;
+    method public String name() default "";
+    method public android.view.inspector.InspectableProperty.ValueType valueType() default android.view.inspector.InspectableProperty.ValueType.INFERRED;
   }
 
   @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.SOURCE) @java.lang.annotation.Target({java.lang.annotation.ElementType.TYPE}) public static @interface InspectableProperty.EnumEntry {
-    method public abstract String name();
-    method public abstract int value();
+    method public String name();
+    method public int value();
   }
 
   @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.SOURCE) @java.lang.annotation.Target({java.lang.annotation.ElementType.TYPE}) public static @interface InspectableProperty.FlagEntry {
-    method public abstract int mask() default 0;
-    method public abstract String name();
-    method public abstract int target();
+    method public int mask() default 0;
+    method public String name();
+    method public int target();
   }
 
   public enum InspectableProperty.ValueType {

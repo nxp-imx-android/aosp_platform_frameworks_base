@@ -1,6 +1,5 @@
 // Signature format: 6.0
 // - style=java
-// - normalize-abstract-modifier=no
 // - normalize-final-modifier=no
 // - sort-whole-extends-list=no
 package android {
@@ -4410,11 +4409,11 @@ package android.animation {
 package android.annotation {
 
   @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.CLASS) @java.lang.annotation.Target({java.lang.annotation.ElementType.TYPE, java.lang.annotation.ElementType.FIELD, java.lang.annotation.ElementType.METHOD, java.lang.annotation.ElementType.PARAMETER, java.lang.annotation.ElementType.CONSTRUCTOR, java.lang.annotation.ElementType.LOCAL_VARIABLE}) public @interface SuppressLint {
-    method public abstract String[] value();
+    method public String[] value();
   }
 
   @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.CLASS) @java.lang.annotation.Target({java.lang.annotation.ElementType.TYPE, java.lang.annotation.ElementType.METHOD, java.lang.annotation.ElementType.CONSTRUCTOR, java.lang.annotation.ElementType.FIELD}) public @interface TargetApi {
-    method public abstract int value();
+    method public int value();
   }
 
 }
@@ -55767,26 +55766,26 @@ package android.view {
   }
 
   @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME) @java.lang.annotation.Target({java.lang.annotation.ElementType.FIELD, java.lang.annotation.ElementType.METHOD}) public static @interface ViewDebug.CapturedViewProperty {
-    method public abstract boolean retrieveReturn() default false;
+    method public boolean retrieveReturn() default false;
   }
 
   @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME) @java.lang.annotation.Target({java.lang.annotation.ElementType.FIELD, java.lang.annotation.ElementType.METHOD}) public static @interface ViewDebug.ExportedProperty {
-    method public abstract String category() default "";
-    method public abstract boolean deepExport() default false;
-    method public abstract android.view.ViewDebug.FlagToString[] flagMapping() default {};
-    method public abstract boolean formatToHexString() default false;
-    method public abstract boolean hasAdjacentMapping() default false;
-    method public abstract android.view.ViewDebug.IntToString[] indexMapping() default {};
-    method public abstract android.view.ViewDebug.IntToString[] mapping() default {};
-    method public abstract String prefix() default "";
-    method public abstract boolean resolveId() default false;
+    method public String category() default "";
+    method public boolean deepExport() default false;
+    method public android.view.ViewDebug.FlagToString[] flagMapping() default {};
+    method public boolean formatToHexString() default false;
+    method public boolean hasAdjacentMapping() default false;
+    method public android.view.ViewDebug.IntToString[] indexMapping() default {};
+    method public android.view.ViewDebug.IntToString[] mapping() default {};
+    method public String prefix() default "";
+    method public boolean resolveId() default false;
   }
 
   @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME) @java.lang.annotation.Target({java.lang.annotation.ElementType.TYPE}) public static @interface ViewDebug.FlagToString {
-    method public abstract int equals();
-    method public abstract int mask();
-    method public abstract String name();
-    method public abstract boolean outputIf() default true;
+    method public int equals();
+    method public int mask();
+    method public String name();
+    method public boolean outputIf() default true;
   }
 
   @Deprecated public enum ViewDebug.HierarchyTraceType {
@@ -55801,8 +55800,8 @@ package android.view {
   }
 
   @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME) @java.lang.annotation.Target({java.lang.annotation.ElementType.TYPE}) public static @interface ViewDebug.IntToString {
-    method public abstract int from();
-    method public abstract String to();
+    method public int from();
+    method public String to();
   }
 
   @Deprecated public enum ViewDebug.RecyclerTraceType {
