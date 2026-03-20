@@ -1,7 +1,6 @@
 // Signature format: 6.0
 // - style=java
 // - overloaded-method-order=source
-// - strip-java-lang-prefix=legacy
 package com.android.uiautomator.core {
 
   @Deprecated public final class Configurator {
@@ -134,7 +133,7 @@ package com.android.uiautomator.core {
     field @Deprecated protected static final long WAIT_FOR_WINDOW_TMEOUT = 5500L; // 0x157cL
   }
 
-  @Deprecated public class UiObjectNotFoundException extends java.lang.Exception {
+  @Deprecated public class UiObjectNotFoundException extends Exception {
     ctor @Deprecated public UiObjectNotFoundException(String);
     ctor @Deprecated public UiObjectNotFoundException(String, Throwable);
     ctor @Deprecated public UiObjectNotFoundException(Throwable);
