@@ -1,6 +1,5 @@
 // Signature format: 6.0
 // - style=java
-// - flagged-api-inheritance=none
 // - overloaded-method-order=source
 // - strip-java-lang-prefix=legacy
 // - type-argument-spacing=legacy
@@ -1235,7 +1234,7 @@ package android.app {
     field public static final int RESERVED_ID_STATIC_BUNDLES = 203; // 0xcb
   }
 
-  public static final class NotificationRule.Action implements android.os.Parcelable {
+  @FlaggedApi("android.app.nm_contextual_display_launch") public static final class NotificationRule.Action implements android.os.Parcelable {
     method public int describeContents();
     method @Nullable public String getDynamicBundleEmojiIcon();
     method @Nullable public String getDynamicBundleName();
@@ -1253,7 +1252,7 @@ package android.app {
     field public static final int PRIMARY_ACTION_NONE = 0; // 0x0
   }
 
-  public static final class NotificationRule.Action.Builder {
+  @FlaggedApi("android.app.nm_contextual_display_launch") public static final class NotificationRule.Action.Builder {
     ctor public NotificationRule.Action.Builder(@NonNull android.app.NotificationRule.Action);
     ctor public NotificationRule.Action.Builder(int);
     method @NonNull public android.app.NotificationRule.Action build();
@@ -1264,7 +1263,7 @@ package android.app {
     method @NonNull public android.app.NotificationRule.Action.Builder setSoundHapticOverride(@Nullable android.net.Uri);
   }
 
-  public static final class NotificationRule.Builder {
+  @FlaggedApi("android.app.nm_contextual_display_launch") public static final class NotificationRule.Builder {
     ctor public NotificationRule.Builder(@NonNull android.app.NotificationRule);
     ctor public NotificationRule.Builder(@IntRange(from=100, to=125) int, @NonNull android.app.NotificationRule.Action);
     method @NonNull public android.app.NotificationRule build();
@@ -1274,7 +1273,7 @@ package android.app {
     method @NonNull public android.app.NotificationRule.Builder setFilters(@Nullable java.util.List<android.app.NotificationRule.Filter>);
   }
 
-  public static final class NotificationRule.Condition implements android.os.Parcelable {
+  @FlaggedApi("android.app.nm_contextual_display_launch") public static final class NotificationRule.Condition implements android.os.Parcelable {
     method @NonNull public static android.app.NotificationRule.Condition createLocationCondition(double, double, float);
     method @NonNull public static android.app.NotificationRule.Condition createTimeCondition(@NonNull java.util.List<java.lang.Integer>, @IntRange(from=0, to=23) int, @IntRange(from=0, to=59) int, @IntRange(from=0, to=23) int, @IntRange(from=0, to=59) int);
     method public int describeContents();
@@ -1294,7 +1293,7 @@ package android.app {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.NotificationRule.Condition> CREATOR;
   }
 
-  public static final class NotificationRule.Filter implements android.os.Parcelable {
+  @FlaggedApi("android.app.nm_contextual_display_launch") public static final class NotificationRule.Filter implements android.os.Parcelable {
     method public int describeContents();
     method @NonNull public java.util.List<java.lang.String> getCategories();
     method public int getContactLevel();
@@ -1316,7 +1315,7 @@ package android.app {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.NotificationRule.Filter> CREATOR;
   }
 
-  public static final class NotificationRule.Filter.Builder {
+  @FlaggedApi("android.app.nm_contextual_display_launch") public static final class NotificationRule.Filter.Builder {
     ctor public NotificationRule.Filter.Builder();
     ctor public NotificationRule.Filter.Builder(@NonNull android.app.NotificationRule.Filter);
     method @NonNull public android.app.NotificationRule.Filter build();
@@ -4011,7 +4010,7 @@ package android.companion.datatransfer.continuity {
     field @NonNull public static final android.os.Parcelable.Creator<android.companion.datatransfer.continuity.RemoteTask> CREATOR;
   }
 
-  public static final class RemoteTask.Builder {
+  @FlaggedApi("android.companion.task_continuity") public static final class RemoteTask.Builder {
     ctor public RemoteTask.Builder(int, int);
     method @NonNull public android.companion.datatransfer.continuity.RemoteTask build();
     method @NonNull public android.companion.datatransfer.continuity.RemoteTask.Builder setAssociationDisplayName(@Nullable String);
@@ -4043,15 +4042,15 @@ package android.companion.datatransfer.continuity {
     field public static final int HANDOFF_REQUEST_RESULT_SUCCESS = 0; // 0x0
   }
 
-  public static interface TaskContinuityManager.HandoffFeatureStateListener {
+  @FlaggedApi("android.companion.task_continuity") public static interface TaskContinuityManager.HandoffFeatureStateListener {
     method public void onHandoffFeatureStateChanged(int, boolean);
   }
 
-  public static interface TaskContinuityManager.HandoffRequestCallback {
+  @FlaggedApi("android.companion.task_continuity") public static interface TaskContinuityManager.HandoffRequestCallback {
     method public void onHandoffRequestFinished(int, int, int);
   }
 
-  public static interface TaskContinuityManager.RemoteTaskListener {
+  @FlaggedApi("android.companion.task_continuity") public static interface TaskContinuityManager.RemoteTaskListener {
     method public void onRemoteTasksChanged(@NonNull java.util.List<android.companion.datatransfer.continuity.RemoteTask>);
   }
 
@@ -4377,7 +4376,7 @@ package android.companion.virtual.sensor {
     field @NonNull public static final android.os.Parcelable.Creator<android.companion.virtual.sensor.VirtualSensorAdditionalInfo> CREATOR;
   }
 
-  public static final class VirtualSensorAdditionalInfo.Builder {
+  @FlaggedApi("android.companion.virtualdevice.flags.virtual_sensor_additional_info") public static final class VirtualSensorAdditionalInfo.Builder {
     ctor public VirtualSensorAdditionalInfo.Builder(int);
     method @NonNull public android.companion.virtual.sensor.VirtualSensorAdditionalInfo.Builder addValues(@NonNull float[]);
     method @NonNull public android.companion.virtual.sensor.VirtualSensorAdditionalInfo build();
@@ -5413,7 +5412,7 @@ package android.content.pm.verify.developer {
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.verify.developer.DeveloperVerificationStatus> CREATOR;
   }
 
-  public static final class DeveloperVerificationStatus.Builder {
+  @FlaggedApi("android.content.pm.verification_service") public static final class DeveloperVerificationStatus.Builder {
     ctor public DeveloperVerificationStatus.Builder();
     method @NonNull public android.content.pm.verify.developer.DeveloperVerificationStatus build();
     method @NonNull public android.content.pm.verify.developer.DeveloperVerificationStatus.Builder setAppMetadataVerificationStatus(int);
@@ -5687,7 +5686,7 @@ package android.graphics.fonts {
     method public int getPriority();
   }
 
-  public static final class FallbackFontUpdateRequest.Builder {
+  @FlaggedApi("com.android.text.flags.insert_font_family") public static final class FallbackFontUpdateRequest.Builder {
     ctor public FallbackFontUpdateRequest.Builder();
     method @NonNull public android.graphics.fonts.FallbackFontUpdateRequest.Builder addFont(@NonNull android.graphics.fonts.FontFamilyUpdateRequest.Font);
     method @NonNull public android.graphics.fonts.FallbackFontUpdateRequest build();
@@ -6151,7 +6150,7 @@ package android.hardware.contexthub {
     field public static final int REASON_PERMISSION_DENIED = 9; // 0x9
   }
 
-  public static final class HubEndpoint.Builder {
+  @FlaggedApi("android.chre.flags.offload_api") public static final class HubEndpoint.Builder {
     ctor public HubEndpoint.Builder(@NonNull android.content.Context);
     method @NonNull public android.hardware.contexthub.HubEndpoint build();
     method @FlaggedApi("android.chre.flags.fmcq_api") @NonNull public android.hardware.contexthub.HubEndpoint.Builder setDataFlowCallback(@NonNull android.hardware.contexthub.DataFlowCallback);
@@ -6188,7 +6187,7 @@ package android.hardware.contexthub {
     field public static final int TYPE_NATIVE = 3; // 0x3
   }
 
-  public static class HubEndpointInfo.HubEndpointIdentifier {
+  @FlaggedApi("android.chre.flags.offload_api") public static class HubEndpointInfo.HubEndpointIdentifier {
     method public long getEndpoint();
     method public long getHub();
   }
@@ -6225,7 +6224,7 @@ package android.hardware.contexthub {
     field @NonNull public static final android.os.Parcelable.Creator<android.hardware.contexthub.HubMessage> CREATOR;
   }
 
-  public static final class HubMessage.Builder {
+  @FlaggedApi("android.chre.flags.offload_api") public static final class HubMessage.Builder {
     ctor public HubMessage.Builder(int, @NonNull byte[]);
     method @NonNull public android.hardware.contexthub.HubMessage build();
     method @NonNull public android.hardware.contexthub.HubMessage.Builder setResponseRequired(boolean);
@@ -6245,7 +6244,7 @@ package android.hardware.contexthub {
     field public static final int FORMAT_PW_RPC_PROTOBUF = 2; // 0x2
   }
 
-  public static final class HubServiceInfo.Builder {
+  @FlaggedApi("android.chre.flags.offload_api") public static final class HubServiceInfo.Builder {
     ctor public HubServiceInfo.Builder(@NonNull String, int, int, int);
     method @NonNull public android.hardware.contexthub.HubServiceInfo build();
   }
@@ -6282,7 +6281,7 @@ package android.hardware.devicestate {
     method public void unregisterCallback(@NonNull android.hardware.devicestate.DeviceStateManager.DeviceStateCallback);
   }
 
-  public static interface DeviceStateManager.DeviceStateCallback {
+  @FlaggedApi("android.hardware.devicestate.feature.flags.device_state_property_api") public static interface DeviceStateManager.DeviceStateCallback {
     method public void onDeviceStateChanged(@NonNull android.hardware.devicestate.DeviceState);
     method public default void onSupportedStatesChanged(@NonNull java.util.List<android.hardware.devicestate.DeviceState>);
   }
@@ -7765,7 +7764,7 @@ package android.hardware.radio {
     field public static final int URGENCY_UNKNOWN = 4; // 0x4
   }
 
-  public static final class RadioAlert.AlertArea implements android.os.Parcelable {
+  @FlaggedApi("android.hardware.radio.hd_radio_emergency_alert_system") public static final class RadioAlert.AlertArea implements android.os.Parcelable {
     method public int describeContents();
     method @NonNull public java.util.List<android.hardware.radio.RadioAlert.Geocode> getGeocodes();
     method @NonNull public java.util.List<android.hardware.radio.RadioAlert.Polygon> getPolygons();
@@ -7773,7 +7772,7 @@ package android.hardware.radio {
     field @NonNull public static final android.os.Parcelable.Creator<android.hardware.radio.RadioAlert.AlertArea> CREATOR;
   }
 
-  public static final class RadioAlert.AlertInfo implements android.os.Parcelable {
+  @FlaggedApi("android.hardware.radio.hd_radio_emergency_alert_system") public static final class RadioAlert.AlertInfo implements android.os.Parcelable {
     method public int describeContents();
     method @NonNull public java.util.List<android.hardware.radio.RadioAlert.AlertArea> getAreas();
     method @NonNull public int[] getCategories();
@@ -7786,7 +7785,7 @@ package android.hardware.radio {
     field @NonNull public static final android.os.Parcelable.Creator<android.hardware.radio.RadioAlert.AlertInfo> CREATOR;
   }
 
-  public static final class RadioAlert.Coordinate implements android.os.Parcelable {
+  @FlaggedApi("android.hardware.radio.hd_radio_emergency_alert_system") public static final class RadioAlert.Coordinate implements android.os.Parcelable {
     method public int describeContents();
     method @FloatRange(from=-90.0, to=90.0) public double getLatitude();
     method @FloatRange(from=-180.0, to=180.0) public double getLongitude();
@@ -7794,7 +7793,7 @@ package android.hardware.radio {
     field @NonNull public static final android.os.Parcelable.Creator<android.hardware.radio.RadioAlert.Coordinate> CREATOR;
   }
 
-  public static final class RadioAlert.Geocode implements android.os.Parcelable {
+  @FlaggedApi("android.hardware.radio.hd_radio_emergency_alert_system") public static final class RadioAlert.Geocode implements android.os.Parcelable {
     method public int describeContents();
     method @NonNull public String getValue();
     method @NonNull public String getValueName();
@@ -7802,7 +7801,7 @@ package android.hardware.radio {
     field @NonNull public static final android.os.Parcelable.Creator<android.hardware.radio.RadioAlert.Geocode> CREATOR;
   }
 
-  public static final class RadioAlert.Polygon implements android.os.Parcelable {
+  @FlaggedApi("android.hardware.radio.hd_radio_emergency_alert_system") public static final class RadioAlert.Polygon implements android.os.Parcelable {
     method public int describeContents();
     method @NonNull public java.util.List<android.hardware.radio.RadioAlert.Coordinate> getCoordinates();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
@@ -8189,7 +8188,7 @@ package android.hardware.soundtrigger {
     field @NonNull public static final android.os.Parcelable.Creator<android.hardware.soundtrigger.SoundTrigger.RecognitionConfig> CREATOR;
   }
 
-  public static final class SoundTrigger.RecognitionConfig.Builder {
+  @FlaggedApi("android.media.soundtrigger.manager_api") public static final class SoundTrigger.RecognitionConfig.Builder {
     ctor public SoundTrigger.RecognitionConfig.Builder();
     method @NonNull public android.hardware.soundtrigger.SoundTrigger.RecognitionConfig build();
     method @NonNull public android.hardware.soundtrigger.SoundTrigger.RecognitionConfig.Builder setAudioCapabilities(int);
@@ -8808,7 +8807,7 @@ package android.media {
     field public static final int VOLUME_SHAPER_SYSTEM_FADE_ID = 2; // 0x2
   }
 
-  public static final class FadeManagerConfiguration.Builder {
+  @FlaggedApi("android.media.audiopolicy.enable_fade_manager_configuration") public static final class FadeManagerConfiguration.Builder {
     ctor public FadeManagerConfiguration.Builder();
     ctor public FadeManagerConfiguration.Builder(@IntRange(from=1) long, @IntRange(from=1) long);
     ctor public FadeManagerConfiguration.Builder(@NonNull android.media.FadeManagerConfiguration);
@@ -9237,7 +9236,7 @@ package android.media.quality {
     method public void setSuperResolutionEnabled(boolean);
   }
 
-  public static final class PictureProfile.Builder {
+  @FlaggedApi("android.media.tv.flags.media_quality_fw") public static final class PictureProfile.Builder {
     method @NonNull public android.media.quality.PictureProfile.Builder setInputId(@NonNull String);
     method @NonNull public android.media.quality.PictureProfile.Builder setPackageName(@NonNull String);
     method @NonNull public android.media.quality.PictureProfile.Builder setProfileType(int);
@@ -9251,7 +9250,7 @@ package android.media.quality {
     field @NonNull public static final android.media.quality.PictureProfileHandle NONE;
   }
 
-  public static final class SoundProfile.Builder {
+  @FlaggedApi("android.media.tv.flags.media_quality_fw") public static final class SoundProfile.Builder {
     method @NonNull public android.media.quality.SoundProfile.Builder setInputId(@NonNull String);
     method @NonNull public android.media.quality.SoundProfile.Builder setPackageName(@NonNull String);
     method @NonNull public android.media.quality.SoundProfile.Builder setProfileType(int);
@@ -11819,11 +11818,11 @@ package android.net.wifi.nl80211 {
     field @Deprecated public static final int SEND_MGMT_FRAME_ERROR_UNKNOWN = 1; // 0x1
   }
 
-  @Deprecated public static interface WifiNl80211Manager.CountryCodeChangedListener {
+  @Deprecated @FlaggedApi("android.net.wifi.flags.deprecate_wificond") public static interface WifiNl80211Manager.CountryCodeChangedListener {
     method @Deprecated public void onCountryCodeChanged(@NonNull String);
   }
 
-  @Deprecated public static class WifiNl80211Manager.OemSecurityType {
+  @Deprecated @FlaggedApi("android.net.wifi.flags.deprecate_wificond") public static class WifiNl80211Manager.OemSecurityType {
     ctor @Deprecated public WifiNl80211Manager.OemSecurityType(int, @NonNull java.util.List<java.lang.Integer>, @NonNull java.util.List<java.lang.Integer>, int);
     field @Deprecated public final int groupCipher;
     field @Deprecated @NonNull public final java.util.List<java.lang.Integer> keyManagement;
@@ -11831,36 +11830,36 @@ package android.net.wifi.nl80211 {
     field @Deprecated public final int protocol;
   }
 
-  @Deprecated public static interface WifiNl80211Manager.PnoScanRequestCallback {
+  @Deprecated @FlaggedApi("android.net.wifi.flags.deprecate_wificond") public static interface WifiNl80211Manager.PnoScanRequestCallback {
     method @Deprecated public void onPnoRequestFailed();
     method @Deprecated public void onPnoRequestSucceeded();
   }
 
-  @Deprecated public static interface WifiNl80211Manager.ScanEventCallback {
+  @Deprecated @FlaggedApi("android.net.wifi.flags.deprecate_wificond") public static interface WifiNl80211Manager.ScanEventCallback {
     method @Deprecated public void onScanFailed();
     method @Deprecated public default void onScanFailed(int);
     method @Deprecated public void onScanResultReady();
   }
 
-  @Deprecated public static interface WifiNl80211Manager.SendMgmtFrameCallback {
+  @Deprecated @FlaggedApi("android.net.wifi.flags.deprecate_wificond") public static interface WifiNl80211Manager.SendMgmtFrameCallback {
     method @Deprecated public void onAck(int);
     method @Deprecated public void onFailure(int);
   }
 
-  @Deprecated public static class WifiNl80211Manager.SignalPollResult {
+  @Deprecated @FlaggedApi("android.net.wifi.flags.deprecate_wificond") public static class WifiNl80211Manager.SignalPollResult {
     field @Deprecated public final int associationFrequencyMHz;
     field @Deprecated public final int currentRssiDbm;
     field @Deprecated public final int rxBitrateMbps;
     field @Deprecated public final int txBitrateMbps;
   }
 
-  @Deprecated public static interface WifiNl80211Manager.SoftApCallback {
+  @Deprecated @FlaggedApi("android.net.wifi.flags.deprecate_wificond") public static interface WifiNl80211Manager.SoftApCallback {
     method @Deprecated public void onConnectedClientsChanged(@NonNull android.net.wifi.nl80211.NativeWifiClient, boolean);
     method @Deprecated public void onFailure();
     method @Deprecated public void onSoftApChannelSwitched(int, int);
   }
 
-  @Deprecated public static class WifiNl80211Manager.TxPacketCounters {
+  @Deprecated @FlaggedApi("android.net.wifi.flags.deprecate_wificond") public static class WifiNl80211Manager.TxPacketCounters {
     field @Deprecated public final int txPacketFailed;
     field @Deprecated public final int txPacketSucceeded;
   }
@@ -13237,7 +13236,7 @@ package android.os.vibrator {
     method @NonNull @RequiresPermission(android.Manifest.permission.USE_VIBRATOR_HAPTIC_GENERATOR) public android.os.vibrator.HapticGeneratorChannelStream generateHapticChannelStream(@NonNull android.os.VibrationEffect);
   }
 
-  public static final class HapticGeneratorSession.Config implements android.os.Parcelable {
+  @FlaggedApi("android.os.vibrator.haptic_pcm_generation") public static final class HapticGeneratorSession.Config implements android.os.Parcelable {
     ctor public HapticGeneratorSession.Config(@NonNull android.media.AudioFormat, @Nullable android.os.ParcelableHolder);
     method public int describeContents();
     method @NonNull public android.media.AudioFormat getAudioFormat();
@@ -14061,7 +14060,7 @@ package android.security.intrusiondetection {
     field public static final int STATE_UNKNOWN = 0; // 0x0
   }
 
-  public static interface IntrusionDetectionManager.CommandCallback {
+  @FlaggedApi("android.security.afl_api") public static interface IntrusionDetectionManager.CommandCallback {
     method public void onFailure(int);
     method public void onSuccess();
   }
@@ -14237,7 +14236,7 @@ package android.security.trusttoken {
     field @NonNull public static final android.os.Parcelable.Creator<android.security.trusttoken.TrustTokenRequest> CREATOR;
   }
 
-  public static final class TrustTokenRequest.Builder {
+  @FlaggedApi("android.security.talisman_service_api") public static final class TrustTokenRequest.Builder {
     ctor public TrustTokenRequest.Builder();
     method @NonNull public android.security.trusttoken.TrustTokenRequest build();
     method @NonNull public android.security.trusttoken.TrustTokenRequest.Builder setAttestation(@NonNull java.util.List<byte[]>);
@@ -14256,7 +14255,7 @@ package android.security.trusttoken {
     field @NonNull public static final android.os.Parcelable.Creator<android.security.trusttoken.TrustTokenResponse> CREATOR;
   }
 
-  public static final class TrustTokenResponse.Builder {
+  @FlaggedApi("android.security.talisman_service_api") public static final class TrustTokenResponse.Builder {
     ctor public TrustTokenResponse.Builder();
     method @NonNull public android.security.trusttoken.TrustTokenResponse.Builder addEncodedToken(@NonNull byte[]);
     method @NonNull public android.security.trusttoken.TrustTokenResponse.Builder addIntermediateCertificate(@NonNull byte[]);
@@ -15153,7 +15152,7 @@ package android.service.personalcontext.embedded {
     method public void unregister();
   }
 
-  public static final class InsightSurfaceClient.Builder {
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class InsightSurfaceClient.Builder {
     ctor public InsightSurfaceClient.Builder(@NonNull android.content.Context);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder addReceiver(@NonNull android.service.personalcontext.embedded.InsightSurfaceClient.InsightReceiver);
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient build();
@@ -15165,7 +15164,7 @@ package android.service.personalcontext.embedded {
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClient.Builder setThemeResourceId(@StyleRes int);
   }
 
-  public static interface InsightSurfaceClient.ClientCallback {
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static interface InsightSurfaceClient.ClientCallback {
     method public default void onError(@NonNull android.service.personalcontext.embedded.InsightSurfaceSessionException);
     method public default void onSessionCreated(@NonNull android.service.personalcontext.embedded.InsightSurfaceSession);
     method public default void onSessionDestroyed(@NonNull android.service.personalcontext.embedded.InsightSurfaceSession);
@@ -15173,7 +15172,7 @@ package android.service.personalcontext.embedded {
     method public default void onSizeChanged(int, int);
   }
 
-  public static interface InsightSurfaceClient.InsightReceiver {
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static interface InsightSurfaceClient.InsightReceiver {
     method public boolean onReceive(@NonNull android.service.personalcontext.insight.ContextInsight);
   }
 
@@ -15219,7 +15218,7 @@ package android.service.personalcontext.embedded {
     field public static final String KEY_THEME_RESOURCE_NAME = "key_theme_resource_name";
   }
 
-  public static final class InsightSurfaceClientUpdate.Builder {
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class InsightSurfaceClientUpdate.Builder {
     ctor public InsightSurfaceClientUpdate.Builder();
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate build();
     method @NonNull public android.service.personalcontext.embedded.InsightSurfaceClientUpdate.Builder setBackgroundColor(@NonNull android.graphics.Color);
@@ -15271,7 +15270,7 @@ package android.service.personalcontext.hint {
     method public int getTaskId();
   }
 
-  public static final class AutofillInlineRequestHint.Builder {
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class AutofillInlineRequestHint.Builder {
     ctor public AutofillInlineRequestHint.Builder(int, int, @NonNull java.time.Instant, @NonNull android.content.ComponentName, @NonNull android.view.autofill.AutofillId, @NonNull android.view.autofill.AutofillValue, @NonNull android.view.inputmethod.InlineSuggestionsRequest, @NonNull android.os.IBinder);
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint build();
@@ -15298,7 +15297,7 @@ package android.service.personalcontext.hint {
     field public static final int MODALITY_VIDEO = 2; // 0x2
   }
 
-  public static final class CallHint.Builder {
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class CallHint.Builder {
     ctor public CallHint.Builder(int, @NonNull java.util.Set<android.app.Person>);
     method @NonNull public android.service.personalcontext.hint.CallHint.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.hint.CallHint build();
@@ -15456,7 +15455,7 @@ package android.service.personalcontext.hint {
     field public static final int FILTER_TYPE_REQUIRED = 2; // 0x2
   }
 
-  public static final class HintFilter.Builder {
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class HintFilter.Builder {
     ctor public HintFilter.Builder();
     method @NonNull public android.service.personalcontext.hint.HintFilter.Builder addBundleHintTypeName(@NonNull String, int);
     method @NonNull public android.service.personalcontext.hint.HintFilter.Builder addHintType(@NonNull Class<? extends android.service.personalcontext.hint.ContextHint>, int);
@@ -15713,7 +15712,7 @@ package android.service.personalcontext.insight {
     field @NonNull public static final android.service.personalcontext.insight.InsightFilter REQUIRE_RENDER_TOKEN;
   }
 
-  public static final class InsightFilter.Builder {
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class InsightFilter.Builder {
     ctor public InsightFilter.Builder();
     method @NonNull public android.service.personalcontext.insight.InsightFilter.Builder addInsightType(@NonNull String);
     method @NonNull public android.service.personalcontext.insight.InsightFilter.Builder addInsightType(@NonNull Class<? extends android.service.personalcontext.insight.ContextInsight>);
@@ -15737,7 +15736,7 @@ package android.service.personalcontext.insight.interaction {
     field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.insight.interaction.AttributionDetails> CREATOR;
   }
 
-  public static final class AttributionDetails.AttributionLine implements android.os.Parcelable {
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class AttributionDetails.AttributionLine implements android.os.Parcelable {
     ctor public AttributionDetails.AttributionLine(@Nullable CharSequence, @Nullable android.graphics.drawable.Icon, @Nullable CharSequence, @Nullable CharSequence);
     method public int describeContents();
     method @Nullable public CharSequence getContentDescription();
@@ -18161,7 +18160,7 @@ package android.telephony {
     method public boolean isTelephonyDumpsysCollectionEnabled();
   }
 
-  public static final class TelephonyManager.EmergencyCallDiagnosticData.Builder {
+  @FlaggedApi("com.android.server.telecom.flags.telecom_resolve_hidden_dependencies") public static final class TelephonyManager.EmergencyCallDiagnosticData.Builder {
     ctor public TelephonyManager.EmergencyCallDiagnosticData.Builder();
     method @NonNull public android.telephony.TelephonyManager.EmergencyCallDiagnosticData build();
     method @NonNull public android.telephony.TelephonyManager.EmergencyCallDiagnosticData.Builder setLogcatCollectionStartTimeMillis(long);
@@ -20424,7 +20423,7 @@ package android.telephony.satellite {
     field @NonNull public static final android.os.Parcelable.Creator<android.telephony.satellite.EnableRequestAttributes> CREATOR;
   }
 
-  public static final class EnableRequestAttributes.Builder {
+  @FlaggedApi("com.android.internal.telephony.flags.satellite_upsell") public static final class EnableRequestAttributes.Builder {
     ctor public EnableRequestAttributes.Builder(boolean);
     method @NonNull public android.telephony.satellite.EnableRequestAttributes build();
     method @NonNull public android.telephony.satellite.EnableRequestAttributes.Builder setConnectType(int);
@@ -20732,7 +20731,7 @@ package android.telephony.satellite {
     field public static final int SUBSCRIBER_ID_TYPE_IMSI_MSISDN = 1; // 0x1
   }
 
-  public static final class SatelliteSubscriberInfo.Builder {
+  @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final class SatelliteSubscriberInfo.Builder {
     ctor public SatelliteSubscriberInfo.Builder();
     method @NonNull public android.telephony.satellite.SatelliteSubscriberInfo build();
     method @NonNull public android.telephony.satellite.SatelliteSubscriberInfo.Builder setCarrierId(int);
@@ -20750,7 +20749,7 @@ package android.telephony.satellite {
     field @NonNull public static final android.os.Parcelable.Creator<android.telephony.satellite.SatelliteSubscriberProvisionStatus> CREATOR;
   }
 
-  public static final class SatelliteSubscriberProvisionStatus.Builder {
+  @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final class SatelliteSubscriberProvisionStatus.Builder {
     ctor public SatelliteSubscriberProvisionStatus.Builder();
     method @NonNull public android.telephony.satellite.SatelliteSubscriberProvisionStatus build();
     method @NonNull public android.telephony.satellite.SatelliteSubscriberProvisionStatus.Builder setProvisioned(boolean);
@@ -20790,7 +20789,7 @@ package android.telephony.satellite {
     field @NonNull public static final android.os.Parcelable.Creator<android.telephony.satellite.SystemSelectionSpecifier> CREATOR;
   }
 
-  public static final class SystemSelectionSpecifier.Builder {
+  @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final class SystemSelectionSpecifier.Builder {
     ctor public SystemSelectionSpecifier.Builder();
     method @NonNull public android.telephony.satellite.SystemSelectionSpecifier build();
     method @NonNull public android.telephony.satellite.SystemSelectionSpecifier.Builder setBands(@NonNull int[]);

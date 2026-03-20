@@ -1,6 +1,5 @@
 // Signature format: 6.0
 // - style=java
-// - flagged-api-inheritance=none
 // - normalize-abstract-modifier=no
 // - overloaded-method-order=source
 // - strip-java-lang-prefix=legacy
@@ -346,7 +345,7 @@ package android.app {
     field public static final int FLAG_USER_INITIATED_JOB = 32768; // 0x8000
   }
 
-  public static final class Notification.Metric.FixedFloat extends android.app.Notification.Metric.MetricValue {
+  @FlaggedApi("android.app.api_metric_style") public static final class Notification.Metric.FixedFloat extends android.app.Notification.Metric.MetricValue {
     field public static final int DEFAULT_MAX_FRACTION_DIGITS = 2; // 0x2
     field public static final int DEFAULT_MIN_FRACTION_DIGITS = 0; // 0x0
   }
@@ -412,7 +411,7 @@ package android.app {
     method @Nullable public String getEditIntentAction();
   }
 
-  public static final class NotificationRule.Builder {
+  @FlaggedApi("android.app.nm_contextual_display_launch") public static final class NotificationRule.Builder {
     method @NonNull public android.app.NotificationRule.Builder setCanBeDisabled(boolean);
     method @NonNull public android.app.NotificationRule.Builder setEditIntentAction(@Nullable String);
   }
@@ -889,7 +888,7 @@ package android.app.modes {
     field public static final int TYPE_UNKNOWN = -1; // 0xffffffff
   }
 
-  public static final class ContextualMode.Builder {
+  @FlaggedApi("android.service.notification.enable_dnd_sync") public static final class ContextualMode.Builder {
     ctor public ContextualMode.Builder(@NonNull String);
     ctor public ContextualMode.Builder(@NonNull android.app.modes.ContextualMode);
     method @NonNull public android.app.modes.ContextualMode build();
@@ -904,7 +903,7 @@ package android.app.modes {
     method @RequiresPermission(android.Manifest.permission.MANAGE_CONTEXTUAL_MODES) public void unregisterModeListener(@NonNull android.app.modes.ContextualModeManager.ContextualModeListener);
   }
 
-  public static interface ContextualModeManager.ContextualModeListener {
+  @FlaggedApi("android.service.notification.enable_dnd_sync") public static interface ContextualModeManager.ContextualModeListener {
     method public void onModeRemoved(@NonNull String);
     method public void onModesChanged(@NonNull java.util.List<android.app.modes.ContextualMode>);
   }
@@ -916,7 +915,7 @@ package android.app.modes {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.modes.ContextualModesMutation> CREATOR;
   }
 
-  public static final class ContextualModesMutation.Builder {
+  @FlaggedApi("android.service.notification.enable_dnd_sync") public static final class ContextualModesMutation.Builder {
     ctor public ContextualModesMutation.Builder();
     method @NonNull public android.app.modes.ContextualModesMutation.Builder addUpdatedMode(@NonNull android.app.modes.ContextualMode);
     method @NonNull public android.app.modes.ContextualModesMutation build();
@@ -1797,7 +1796,7 @@ package android.hardware.biometrics {
     field @NonNull public static final android.os.Parcelable.Creator<android.hardware.biometrics.IdentityCheckStatus> CREATOR;
   }
 
-  public static final class IdentityCheckStatus.Builder {
+  @FlaggedApi("android.hardware.biometrics.identity_check_test_api") public static final class IdentityCheckStatus.Builder {
     ctor public IdentityCheckStatus.Builder();
     method @NonNull public android.hardware.biometrics.IdentityCheckStatus build();
     method @NonNull public android.hardware.biometrics.IdentityCheckStatus.Builder setIdentityCheckActive(boolean);
@@ -1877,7 +1876,7 @@ package android.hardware.devicestate {
     field public static final int PROPERTY_POLICY_AVAILABLE_FOR_APP_REQUEST = 8; // 0x8
   }
 
-  public static final class DeviceState.Configuration implements android.os.Parcelable {
+  @FlaggedApi("android.hardware.devicestate.feature.flags.device_state_property_api") public static final class DeviceState.Configuration implements android.os.Parcelable {
     method public int describeContents();
     method public int getIdentifier();
     method @NonNull public String getName();
@@ -1887,7 +1886,7 @@ package android.hardware.devicestate {
     field @NonNull public static final android.os.Parcelable.Creator<android.hardware.devicestate.DeviceState.Configuration> CREATOR;
   }
 
-  public static final class DeviceState.Configuration.Builder {
+  @FlaggedApi("android.hardware.devicestate.feature.flags.device_state_property_api") public static final class DeviceState.Configuration.Builder {
     ctor public DeviceState.Configuration.Builder(int, @NonNull String);
     method @NonNull public android.hardware.devicestate.DeviceState.Configuration build();
     method @NonNull public android.hardware.devicestate.DeviceState.Configuration.Builder setPhysicalProperties(@NonNull java.util.Set<java.lang.Integer>);
@@ -1996,12 +1995,12 @@ package android.hardware.display {
     method @NonNull public android.util.SparseArray<android.hardware.display.DisplayTopologyGraph.DisplayNode> getDisplayNodes();
   }
 
-  public static final class DisplayTopologyGraph.AdjacentEdge {
+  @FlaggedApi("com.android.server.display.feature.flags.display_topology_api") public static final class DisplayTopologyGraph.AdjacentEdge {
     method @NonNull public android.hardware.display.DisplayTopologyGraph.DisplayNode getDisplayNode();
     method public int getPosition();
   }
 
-  public static class DisplayTopologyGraph.DisplayNode {
+  @FlaggedApi("com.android.server.display.feature.flags.display_topology_api") public static class DisplayTopologyGraph.DisplayNode {
     method @NonNull public java.util.List<android.hardware.display.DisplayTopologyGraph.AdjacentEdge> getAdjacentEdges();
     method public int getDisplayId();
   }
@@ -3514,7 +3513,7 @@ package android.service.chooser {
     method public void startSession(@NonNull android.content.ComponentName, @Nullable android.net.Uri, @NonNull java.util.concurrent.Executor, @NonNull android.service.chooser.TapToShareClient.SessionListener);
   }
 
-  public static interface TapToShareClient.SessionListener {
+  @FlaggedApi("android.service.chooser.tap_to_share") public static interface TapToShareClient.SessionListener {
     method public void onConnectionFailed(@NonNull Exception);
     method public void onDeviceTapped();
   }
@@ -3601,7 +3600,7 @@ package android.service.personalcontext {
 
 package android.service.personalcontext.hint {
 
-  public static final class AutofillInlineRequestHint.Builder {
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class AutofillInlineRequestHint.Builder {
     ctor public AutofillInlineRequestHint.Builder(int, int, @NonNull java.time.Instant, @NonNull android.content.ComponentName, @NonNull android.view.autofill.AutofillId, @NonNull android.view.autofill.AutofillValue, @NonNull android.view.inputmethod.InlineSuggestionsRequest, @NonNull android.service.personalcontext.hint.autofill.AugmentedAutofillProxy);
   }
 
@@ -3619,7 +3618,7 @@ package android.service.personalcontext.hint {
     field public static final String HMAC_ALGORITHM = "HmacSHA256";
   }
 
-  public static final class PublishedContextHint.Builder {
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class PublishedContextHint.Builder {
     ctor public PublishedContextHint.Builder(@NonNull android.service.personalcontext.hint.ContextHint, @NonNull javax.crypto.spec.SecretKeySpec);
     method @NonNull public android.service.personalcontext.hint.PublishedContextHint.Builder addAttributionHint(@NonNull android.service.personalcontext.hint.PublishedContextHint);
     method @NonNull public android.service.personalcontext.hint.PublishedContextHint.Builder addAttributionHints(@NonNull java.util.Collection<android.service.personalcontext.hint.PublishedContextHint>);
