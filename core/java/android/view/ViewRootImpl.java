@@ -139,7 +139,6 @@ import static com.android.text.flags.Flags.disableHandwritingInitiatorForIme;
 import static com.android.window.flags.Flags.alwaysSeqIdLayout;
 import static com.android.window.flags.Flags.alwaysSeqIdLayoutWear;
 import static com.android.window.flags.Flags.enableWindowContextResourcesUpdateOnConfigChange;
-import static com.android.window.flags.Flags.predictiveBackFixImeEventsSkipBackDispatcher;
 import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
 
 import android.Manifest;
@@ -11286,18 +11285,14 @@ public final class ViewRootImpl implements ViewParent,
             if (q.shouldSendToSynthesizer()) {
                 stage = mSyntheticInputStage;
             } else {
-                if (predictiveBackFixImeEventsSkipBackDispatcher()) {
-                    // Optimization: Skip to Post-IME stage for pointer events (touch), unless the
-                    // SKIP_IME flag is set.
-                    // Why? The flag implies we need to handle Pre-IME logic (for KEYCODE_BACK
-                    // interception) which lives in the NativePreImeStage, so we can't take the
-                    // shortcut.
-                    boolean canSkipToPostIme = q.shouldSkipIme()
-                            && (q.mFlags & QueuedInputEvent.FLAG_SKIP_IME) == 0;
-                    stage = canSkipToPostIme ? mFirstPostImeInputStage : mFirstInputStage;
-                } else {
-                    stage = q.shouldSkipIme() ? mFirstPostImeInputStage : mFirstInputStage;
-                }
+                // Optimization: Skip to Post-IME stage for pointer events (touch), unless the
+                // SKIP_IME flag is set.
+                // Why? The flag implies we need to handle Pre-IME logic (for KEYCODE_BACK
+                // interception) which lives in the NativePreImeStage, so we can't take the
+                // shortcut.
+                boolean canSkipToPostIme = q.shouldSkipIme()
+                        && (q.mFlags & QueuedInputEvent.FLAG_SKIP_IME) == 0;
+                stage = canSkipToPostIme ? mFirstPostImeInputStage : mFirstInputStage;
             }
 
             if (q.mEvent instanceof KeyEvent) {
