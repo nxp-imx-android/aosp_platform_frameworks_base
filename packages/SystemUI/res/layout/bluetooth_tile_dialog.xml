@@ -238,7 +238,9 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/see_all_button"
                 android:clipToPadding="false"
-                android:visibility="gone">
+                android:visibility="gone"
+                android:focusable="true"
+                android:contentDescription="@string/accessibility_bluetooth_device_settings_pair_new_device">
 
                 <Button
                     style="@style/BluetoothTileDialog.Device"
@@ -247,7 +249,6 @@
                     android:background="@drawable/bluetooth_tile_dialog_bg_off"
                     android:layout_width="match_parent"
                     android:layout_height="64dp"
-                    android:contentDescription="@string/accessibility_bluetooth_device_settings_pair_new_device"
                     android:drawableStart="@drawable/ic_add"
                     android:drawablePadding="26dp"
                     android:drawableTint="@color/materialColorOnSurface"
@@ -260,6 +261,7 @@
                     android:ellipsize="end"
                     android:layout_gravity="center"
                     android:duplicateParentState="true"
+                    android:focusable="false"
                     android:clickable="false" />
             </FrameLayout>
 
