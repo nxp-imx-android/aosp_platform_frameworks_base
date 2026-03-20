@@ -16,8 +16,6 @@
 
 package com.android.wm.shell.dagger;
 
-import static android.window.DesktopExperienceFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityTaskManager;
@@ -1013,8 +1011,7 @@ public abstract class WMShellModule {
             ShellController shellController,
             Optional<PinnedLayerController> pinnedLayerController,
             @DynamicOverride DesksOrganizer desksOrganizer) {
-        if (ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue()
-                && desktopState.canEnterDesktopMode()) {
+        if (desktopState.canEnterDesktopMode()) {
             return Optional.of(
                     new DesktopTaskChangeListener(
                             desktopUserRepositories,
@@ -1037,8 +1034,7 @@ public abstract class WMShellModule {
             Optional<DesktopImeHandler> desktopImeHandler,
             Optional<DesktopBackNavTransitionObserver> desktopBackNavTransitionObserver,
             DesktopModeLoggerTransitionObserver desktopModeLoggerTransitionObserver) {
-        if (ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue()
-                && desktopState.canEnterDesktopMode()) {
+        if (desktopState.canEnterDesktopMode()) {
             return Optional.of(new DesktopInOrderTransitionObserver(
                     desktopImmersiveController,
                     focusTransitionObserver,
