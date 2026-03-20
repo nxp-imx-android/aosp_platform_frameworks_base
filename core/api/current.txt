@@ -1,6 +1,5 @@
 // Signature format: 6.0
 // - style=java
-// - normalize-final-modifier=no
 // - sort-whole-extends-list=no
 package android {
 
@@ -50105,13 +50104,13 @@ package android.text {
 
   public final class SpannedString implements CharSequence android.text.GetChars android.text.Spanned {
     ctor public SpannedString(CharSequence);
-    method public final char charAt(int);
-    method public final void getChars(int, int, char[], int);
+    method public char charAt(int);
+    method public void getChars(int, int, char[], int);
     method public int getSpanEnd(Object);
     method public int getSpanFlags(Object);
     method public int getSpanStart(Object);
     method public <T> T[] getSpans(int, int, Class<T>);
-    method public final int length();
+    method public int length();
     method public int nextSpanTransition(int, int, Class);
     method public CharSequence subSequence(int, int);
     method public static android.text.SpannedString valueOf(CharSequence);
