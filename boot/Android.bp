@@ -30,7 +30,6 @@ soong_config_module_type {
     bool_variables: [
         "car_bootclasspath_fragment",
         "nfc_apex_bootclasspath_fragment",
-        "release_crashrecovery_module",
         "release_npumanager_module",
         "release_ondevice_intelligence_module",
         "release_package_profiling_module",
@@ -90,6 +89,10 @@ custom_platform_bootclasspath {
         {
             apex: "com.android.conscrypt",
             module: "com.android.conscrypt-bootclasspath-fragment",
+        },
+        {
+            apex: "com.android.crashrecovery",
+            module: "com.android.crashrecovery-bootclasspath-fragment",
         },
         {
             apex: "com.android.devicelock",
@@ -169,15 +172,6 @@ custom_platform_bootclasspath {
                 {
                     apex: "com.android.nfcservices",
                     module: "com.android.nfcservices-bootclasspath-fragment",
-                },
-            ],
-        },
-        release_crashrecovery_module: {
-            fragments: [
-                // only used when crashrecovery is enabled
-                {
-                    apex: "com.android.crashrecovery",
-                    module: "com.android.crashrecovery-bootclasspath-fragment",
                 },
             ],
         },

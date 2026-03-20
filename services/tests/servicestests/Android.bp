@@ -84,6 +84,7 @@ android_test {
         "services.companion",
         "services.contentcapture",
         "services.core",
+        "service-crashrecovery-pre-jarjar",
         "services.credentials",
         "services.devicepolicy",
         "services.files",
@@ -103,10 +104,7 @@ android_test {
         "services.signal-collector-manager-internal",
         "service-anomaly-detector.impl",
         "TestParameterInjector",
-    ] + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
-        "true": ["service-crashrecovery-pre-jarjar"],
-        default: [],
-    }),
+    ],
 
     libs: [
         "android.hardware.power-V1-java",
