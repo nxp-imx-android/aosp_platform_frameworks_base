@@ -77,16 +77,20 @@ class ListOfStringProcessor(processingEnv: ProcessingEnvironment) :
             TypeSpecificPolicyMetadata.newBuilder()
                 .setListMetadata(
                     TypeSpecificPolicyMetadata.ListPolicyMetadata.newBuilder()
-                        .setStringMetadata(
-                            stringProcessor.extractTypeSpecificMetadata(listOfStringDefinition.base)
-                        )
+                        .setStringMetadata(getStringMetadata(listOfStringDefinition))
                         .setEmptyListAllowed(listOfStringDefinition.emptyListAllowed)
                         .setResolutionMechanism(resolutionMechanism)
                 )
                 .build()
 
-        return Pair(typeSpecificMetadata, listOfStringDefinition.base.base)
+        return Pair(typeSpecificMetadata, listOfStringDefinition.base)
     }
+
+    private fun getStringMetadata(annotation: ListOfStringPolicyDefinition) =
+        TypeSpecificPolicyMetadata.StringPolicyMetadata.newBuilder()
+            .setEmptyStringAllowed(annotation.emptyStringAllowed)
+            .setUnprintableCharactersAllowed(annotation.unprintableCharactersAllowed)
+            .build()
 
     private fun getResolutionMechanism(annotation: ListOfStringPolicyDefinition, element: Element) =
         ListResolutionMechanismProcessor(errorPrinter = { message -> printError(element, message) })
