@@ -181,7 +181,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
         @Override
         public void onPipShowMenu() {
             mMenuController.showMenu(MENU_STATE_FULL, mPipBoundsState.getBounds(),
-                    true /* allowMenuTimeout */, willResizeMenu(), shouldShowResizeHandle());
+                    true /* allowMenuTimeout */, willResizeMenu());
         }
     }
 
@@ -238,8 +238,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                 () -> {
                     mMenuController.showMenuWithPossibleDelay(MENU_STATE_FULL,
                             mPipBoundsState.getBounds(), true /* allowMenuTimeout */,
-                            willResizeMenu(),
-                            shouldShowResizeHandle());
+                            willResizeMenu());
                 },
                 menuController::hideMenu,
                 mainExecutor);
@@ -316,10 +315,6 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
         mPipDismissTargetHandler.init();
     }
 
-    private boolean shouldShowResizeHandle() {
-        return false;
-    }
-
     @VisibleForTesting void setPipInputConsumer(PipInputConsumer consumer) {
         mPipInputConsumer = consumer;
     }
@@ -340,8 +335,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
         // Only show the menu if the user isn't currently interacting with the PiP
         if (!mTouchState.isUserInteracting()) {
             mMenuController.showMenu(MENU_STATE_FULL, mPipBoundsState.getBounds(),
-                    false /* allowMenuTimeout */, willResizeMenu(),
-                    shouldShowResizeHandle());
+                    false /* allowMenuTimeout */, willResizeMenu());
         }
     }
 
@@ -513,8 +507,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
 
     private void onAccessibilityShowMenu() {
         mMenuController.showMenu(MENU_STATE_FULL, mPipBoundsState.getBounds(),
-                true /* allowMenuTimeout */, willResizeMenu(),
-                shouldShowResizeHandle());
+                true /* allowMenuTimeout */, willResizeMenu());
     }
 
     /**
@@ -620,8 +613,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                         && !mPipBoundsState.isStashed()) {
                     mTouchState.removeHoverExitTimeoutCallback();
                     mMenuController.showMenu(MENU_STATE_FULL, mPipBoundsState.getBounds(),
-                            false /* allowMenuTimeout */, false /* willResizeMenu */,
-                            shouldShowResizeHandle());
+                            false /* allowMenuTimeout */, false /* willResizeMenu */);
                 }
             }
             // Fall through
@@ -967,8 +959,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                     // If the menu is still visible, then just poke the menu so that
                     // it will timeout after the user stops touching it
                     mMenuController.showMenu(mMenuState, mPipBoundsState.getBounds(),
-                            true /* allowMenuTimeout */, willResizeMenu(),
-                            shouldShowResizeHandle());
+                            true /* allowMenuTimeout */, willResizeMenu());
                 }
                 mShouldHideMenuAfterFling = mMenuState == MENU_STATE_NONE;
                 // If free-floating PiP is enabled, we don't stash and always snap-to-edge if PiP is
@@ -1038,8 +1029,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                     // User has stalled long enough for this not to be a drag or a double tap,
                     // just expand the menu
                     mMenuController.showMenu(MENU_STATE_FULL, mPipBoundsState.getBounds(),
-                            true /* allowMenuTimeout */, willResizeMenu(),
-                            shouldShowResizeHandle());
+                            true /* allowMenuTimeout */, willResizeMenu());
                 } else {
                     // Next touch event _may_ be the second tap for the double-tap, schedule a
                     // fallback runnable to trigger the menu if no touch event occurs before the
