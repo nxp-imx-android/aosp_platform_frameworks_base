@@ -16,9 +16,13 @@
 
 package android.processor.devicepolicy;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * Metadata for a enum policy. Represented by an Integer.
  */
+@Retention(RetentionPolicy.SOURCE)
 public @interface EnumPolicyDefinition {
     /**
      * Base data for all policies.
