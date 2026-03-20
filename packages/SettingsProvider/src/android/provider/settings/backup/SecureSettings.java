@@ -347,5 +347,6 @@ public class SecureSettings {
         Settings.Secure.PERSONAL_CONTEXT_MODE_ENABLED_DEFAULT,
         Settings.Secure.LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED,
         Settings.Secure.IME_SWITCHER_BUTTON_IN_NAVBAR_ENABLED,
+        Settings.Secure.RAISE_TRIGGER_DEFAULT_ASSISTANT,
     };
 }
