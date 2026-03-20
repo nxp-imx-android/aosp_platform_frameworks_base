@@ -101,6 +101,7 @@ import com.android.wm.shell.shared.IOverviewOverlayLeashInvalidationCallback;
 import com.android.wm.shell.shared.IShellTransitions;
 import com.android.wm.shell.shared.ShellTransitions;
 import com.android.wm.shell.shared.TransactionPool;
+import com.android.wm.shell.shared.TransitionUtil;
 import com.android.wm.shell.shared.annotations.ExternalThread;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
@@ -241,6 +242,7 @@ public class Transitions implements RemoteCallable<Transitions>,
 
     private final TransactionPool mTransactionPool;
     private final TransitionMixpatcher mMixpatcher;
+    private final ActivityPlanner mActivityPlanner;
 
     /** List of possible handlers. Ordered by specificity (eg. tapped back to front). */
     private final ArrayList<TransitionHandler> mHandlers = new ArrayList<>();
@@ -402,9 +404,14 @@ public class Transitions implements RemoteCallable<Transitions>,
         if (com.android.window.flags.Flags.transitMixpatcherBase()) {
             mMixpatcher = new TransitionMixpatcher(mOrganizer, mMainExecutor);
             mMixpatcher.overridePrePlanner(mMixpatchLegacyPrePlanner);
+            mActivityPlanner = new ActivityPlanner(context, pool,
+                    displayController, displayInsetsController, mainExecutor, animExecutor);
+
             addPlanner(mMixpatchLegacyPlanner);
+            addPlanner(mActivityPlanner);
         } else {
             mMixpatcher = null;
+            mActivityPlanner = null;
         }
     }
 
@@ -465,6 +472,9 @@ public class Transitions implements RemoteCallable<Transitions>,
     private void dispatchAnimScaleSetting(float scale) {
         for (int i = mHandlers.size() - 1; i >= 0; --i) {
             mHandlers.get(i).setAnimScaleSetting(scale);
+        }
+        if (mMixpatcher != null) {
+            mMixpatcher.setAnimScaleSetting(scale);
         }
     }
 
@@ -1657,7 +1667,7 @@ public class Transitions implements RemoteCallable<Transitions>,
                     (info.getType() == TRANSIT_SLEEP
                             || (info.getFlags() & TransitionInfo.FLAG_SYNC) != 0)
                             || KeyguardTransitionHandler.handles(info);
-            if (!isSleepOrKeyguard) {
+            if (!isSleepOrKeyguard && !TransitionUtil.isDreamTransition(info)) {
                 return;
             }
             // Synthesize a change for sleep/keyguard (in order to ensure at-least one

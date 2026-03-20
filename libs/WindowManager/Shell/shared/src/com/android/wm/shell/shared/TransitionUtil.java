@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.shared;
 
+import static android.app.WindowConfiguration.ACTIVITY_TYPE_DREAM;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.view.RemoteAnimationTarget.MODE_CHANGING;
@@ -227,6 +228,21 @@ public class TransitionUtil {
                 return true;
             }
         }
+        return false;
+    }
+
+    /**
+     * Check if {@link TransitionInfo} contains a change related to Dream.
+     */
+    public static boolean isDreamTransition(@NonNull TransitionInfo info) {
+        for (int i = info.getChanges().size() - 1; i >= 0; --i) {
+            final TransitionInfo.Change change = info.getChanges().get(i);
+            if (change.getTaskInfo() != null
+                    && change.getTaskInfo().topActivityType == ACTIVITY_TYPE_DREAM) {
+                return true;
+            }
+        }
+
         return false;
     }
 

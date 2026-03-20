@@ -183,6 +183,12 @@ public class TransitionMixpatcher {
     /** List of {@link Runnable} instances to run when the last active transition has finished. */
     private final ArrayList<Runnable> mRunWhenIdleQueue = new ArrayList<>();
 
+    private float mAnimScaleSetting = 1.0f;
+
+    void setAnimScaleSetting(float scale) {
+        mAnimScaleSetting = scale;
+    }
+
     TransitionMixpatcher(@NonNull ShellTaskOrganizer organizer,
             @NonNull ShellExecutor mainExecutor) {
         mOrganizer = organizer;
@@ -480,6 +486,8 @@ public class TransitionMixpatcher {
             final ITransitionAnimation anim = start.mAnims.keyAt(i);
             ProtoLog.v(WM_SHELL_MIXPATCHER, "animating #%d| start %s", transit.mDebugId,
                     anim.getDebugName());
+
+            anim.setAnimScaleSetting(mAnimScaleSetting);
             anim.start(start.mAnims.valueAt(i), startStates,
                     (finishT) -> mMainExecutor.execute(() -> onFinish(anim, finishT)));
         }

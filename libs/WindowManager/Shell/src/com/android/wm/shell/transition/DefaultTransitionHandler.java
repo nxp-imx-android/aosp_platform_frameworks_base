@@ -25,7 +25,6 @@ import static android.app.ActivityOptions.ANIM_SCALE_UP;
 import static android.app.ActivityOptions.ANIM_SCENE_TRANSITION;
 import static android.app.ActivityOptions.ANIM_THUMBNAIL_SCALE_DOWN;
 import static android.app.ActivityOptions.ANIM_THUMBNAIL_SCALE_UP;
-import static android.app.WindowConfiguration.ACTIVITY_TYPE_DREAM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.app.admin.DevicePolicyManager.ACTION_DEVICE_POLICY_RESOURCE_UPDATED;
@@ -380,7 +379,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         @ColorInt int backgroundColorForTransition = 0;
         final int wallpaperTransit = getWallpaperTransitType(info);
         int animatingDisplayId = Integer.MIN_VALUE;
-        final boolean isDreamTransition = isDreamTransition(info);
+        final boolean isDreamTransition = TransitionUtil.isDreamTransition(info);
         final boolean isOnlyTranslucent = isOnlyTranslucent(info);
         final boolean isActivityLevel = isActivityLevelOnly(info);
 
@@ -761,18 +760,6 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
 
             finishTransaction.remove(backgroundSurface);
         }
-    }
-
-    private static boolean isDreamTransition(@NonNull TransitionInfo info) {
-        for (int i = info.getChanges().size() - 1; i >= 0; --i) {
-            final TransitionInfo.Change change = info.getChanges().get(i);
-            if (change.getTaskInfo() != null
-                    && change.getTaskInfo().topActivityType == ACTIVITY_TYPE_DREAM) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**
