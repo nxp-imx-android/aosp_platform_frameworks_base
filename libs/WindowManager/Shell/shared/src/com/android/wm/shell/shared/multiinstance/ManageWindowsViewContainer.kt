@@ -23,11 +23,12 @@ import android.animation.ObjectAnimator
 import android.annotation.ColorInt
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Outline
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.RoundRectShape
 import android.util.TypedValue
+import android.view.ViewOutlineProvider
 import android.view.MotionEvent.ACTION_OUTSIDE
-import android.view.SurfaceView
 import android.view.View
 import android.view.View.ALPHA
 import android.view.View.SCALE_X
@@ -35,7 +36,7 @@ import android.view.View.SCALE_Y
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.ViewGroup.MarginLayoutParams
 import android.view.WindowManager
-import android.view.WindowManagerPolicyConstants.APPLICATION_MEDIA_OVERLAY_SUBLAYER
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.window.TaskSnapshot
@@ -112,7 +113,7 @@ abstract class ManageWindowsViewContainer(
 
     class ManageWindowsView(private val context: Context, menuBackgroundColor: Int) {
         private val animators = mutableListOf<Animator>()
-        private val iconViews = mutableListOf<SurfaceView>()
+        private val iconViews = mutableListOf<ImageView>()
         val scrollableMenuView: ScrollView =
             ScrollView(context).apply { isVerticalScrollBarEnabled = false }
         private val menuBaseView: LinearLayout = LinearLayout(context)
@@ -134,6 +135,12 @@ abstract class ManageWindowsViewContainer(
             menuBackground.paint.color = menuBackgroundColor
             scrollableMenuView.alpha = 0f
             scrollableMenuView.background = menuBackground
+            scrollableMenuView.outlineProvider = object : ViewOutlineProvider() {
+                override fun getOutline(view: View, outline: Outline) {
+                    outline.setRoundRect(0, 0, view.width, view.height, menuRadius)
+                }
+            }
+            scrollableMenuView.clipToOutline = true
             scrollableMenuView.elevation = getDimensionPixelSize(MENU_ELEVATION_DP)
             scrollableMenuView.setOnTouchListener { _, event ->
                 if (event.actionMasked == ACTION_OUTSIDE) {
@@ -186,9 +193,14 @@ abstract class ManageWindowsViewContainer(
                             true, /* filter */
                         )
                     }
-                val appSnapshotButton = SurfaceView(context)
-                appSnapshotButton.cornerRadius = iconRadius
-                appSnapshotButton.compositionOrder = APPLICATION_MEDIA_OVERLAY_SUBLAYER
+                val appSnapshotButton = ImageView(context)
+                appSnapshotButton.outlineProvider = object : ViewOutlineProvider() {
+                    override fun getOutline(view: View, outline: Outline) {
+                        outline.setRoundRect(0, 0, view.width, view.height, iconRadius)
+                    }
+                }
+                appSnapshotButton.clipToOutline = true
+                appSnapshotButton.scaleType = ImageView.ScaleType.FIT_CENTER
                 appSnapshotButton.contentDescription =
                     context.resources.getString(R.string.manage_windows_icon_text, iconCount + 1)
                 appSnapshotButton.setOnClickListener { onIconClickListener?.invoke(taskId) }
@@ -205,13 +217,7 @@ abstract class ManageWindowsViewContainer(
                 rowLayout?.addView(appSnapshotButton)
                 appSnapshotButton.alpha = 0f
                 iconViews += appSnapshotButton
-                appSnapshotButton.requestLayout()
-                rowLayout?.post {
-                    appSnapshotButton.holder.surface.attachAndQueueBufferWithColorSpace(
-                        scaledSnapshotBitmap?.hardwareBuffer,
-                        scaledSnapshotBitmap?.colorSpace,
-                    )
-                }
+                appSnapshotButton.setImageBitmap(scaledSnapshotBitmap)
             }
             // Add margin again for the right/bottom of the menu.
             menuWidth += iconMargin.toInt()
