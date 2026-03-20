@@ -11008,21 +11008,27 @@ public class ActivityManagerService extends IActivityManager.Stub
         } catch (RemoteException e) {
             Log.e(TAG, "Could not get SDK sandbox package name");
         }
+
+        if (checkCallingPermission(android.Manifest.permission.DUMP)
+                != PackageManager.PERMISSION_GRANTED) {
+            // The caller does not have DUMP permission. They can only dump their own packages.
+            // Check if the requested package belongs to the caller.
+            // Using getPackageUid() would leak whether the package exists via timing.
+            // Instead, get the packages for the caller's UID and check if packageName is in it.
+            String[] pkgs = mContext.getPackageManager().getPackagesForUid(callingUid);
+            if (!ArrayUtils.contains(pkgs, packageName)) {
+                enforceCallingPermission(android.Manifest.permission.DUMP, function);
+            }
+            return UserHandle.getUid(userId, UserHandle.getAppId(callingUid));
+        }
+
         final long identity = Binder.clearCallingIdentity();
-        int uid = INVALID_UID;
         try {
-            uid = mPackageManagerInt.getPackageUid(packageName,
+            return mPackageManagerInt.getPackageUid(packageName,
                     MATCH_DIRECT_BOOT_AWARE | MATCH_DIRECT_BOOT_UNAWARE, userId);
         } finally {
             Binder.restoreCallingIdentity(identity);
         }
-        // If the uid is Process.INVALID_UID, the below 'if' check will be always true
-        if (UserHandle.getAppId(uid) != UserHandle.getAppId(callingUid)) {
-            // Requires the DUMP permission if the target package doesn't belong
-            // to the caller or it doesn't exist.
-            enforceCallingPermission(android.Manifest.permission.DUMP, function);
-        }
-        return uid;
     }
 
     @Override
