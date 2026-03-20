@@ -28,7 +28,9 @@ import static com.android.server.wallpaper.WallpaperUtils.RECORD_LOCK_FILE;
 import static com.android.server.wallpaper.WallpaperUtils.WALLPAPER;
 import static com.android.server.wallpaper.WallpaperUtils.getWallpaperDir;
 
+import android.annotation.NonNull;
 import android.app.WallpaperManager;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageDecoder;
@@ -50,6 +52,9 @@ import libcore.io.IoUtils;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.Locale;
 
 /**
@@ -486,6 +491,60 @@ public class WallpaperCropper {
         t.traceBegin("WPMS.generateCrop");
         generateCropInternal(wallpaper);
         t.traceEnd();
+    }
+
+    /**
+     * Generates a centered crop of the default wallpaper to the destination file,
+     */
+    void generateDefaultWallpaperCrop(@NonNull Context context, @NonNull File dest, int which,
+            int targetWidth, int targetHeight) {
+        TimingsTraceAndSlog t = new TimingsTraceAndSlog(TAG);
+        t.traceBegin("WPMS.generateDefaultWallpaperCrop");
+
+        try (InputStream is = WallpaperManager.openRawDefaultWallpaper(context, which);
+             FileOutputStream fos = new FileOutputStream(dest);
+             BufferedOutputStream bos = new BufferedOutputStream(fos, 64 * 1024)) {
+            if (is == null) {
+                Slog.e(TAG, "generateDefaultWallpaperCrop: Default wallpaper stream is null");
+                return;
+            }
+
+            // Using ImageDecoder for better quality and modern API support
+            byte[] imageBytes = is.readAllBytes();
+            ImageDecoder.Source source = ImageDecoder.createSource(ByteBuffer.wrap(imageBytes));
+
+            Bitmap cropped = ImageDecoder.decodeBitmap(source, (decoder, info, src) -> {
+                int width = info.getSize().getWidth();
+                int height = info.getSize().getHeight();
+
+                // Calculate scale to fit the target dimensions while preserving aspect ratio
+                float scale = Math.max((float) targetWidth / width, (float) targetHeight / height);
+                int scaledWidth = Math.round(width * scale);
+                int scaledHeight = Math.round(height * scale);
+                decoder.setTargetSize(scaledWidth, scaledHeight);
+
+                // Center crop to target dimensions
+                int left = (scaledWidth - targetWidth) / 2;
+                int top = (scaledHeight - targetHeight) / 2;
+                Rect cropRect = new Rect(left, top, left + targetWidth, top + targetHeight);
+                decoder.setCrop(cropRect);
+
+                Slog.i(TAG, "generateDefaultWallpaperCrop: (" + width + "x" + height
+                        + ") -> target: " + targetWidth + "x" + targetHeight
+                        + " scaled: " + scaledWidth + "x" + scaledHeight
+                        + " crop: " + cropRect.toShortString());
+            });
+
+            if (cropped != null) {
+                cropped.compress(Bitmap.CompressFormat.JPEG, 90, bos);
+                bos.flush();
+                Slog.i(TAG, "generateDefaultWallpaperCrop: Success");
+            }
+        } catch (IOException e) {
+            Slog.e(TAG, "Failed to generate default wallpaper crop", e);
+        } finally {
+            t.traceEnd();
+        }
     }
 
     private void generateCropInternal(WallpaperData wallpaper) {
