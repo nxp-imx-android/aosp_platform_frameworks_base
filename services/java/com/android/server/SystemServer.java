@@ -233,7 +233,6 @@ import com.android.server.pm.BackgroundInstallControlService;
 import com.android.server.pm.CrossProfileAppsService;
 import com.android.server.pm.DataLoaderManagerService;
 import com.android.server.pm.DexOptHelper;
-import com.android.server.pm.DynamicCodeLoggingService;
 import com.android.server.pm.HsumBootUserInitializer;
 import com.android.server.pm.Installer;
 import com.android.server.pm.LauncherAppsService;
@@ -2844,18 +2843,6 @@ public final class SystemServer implements Dumpable {
 
                 t.traceBegin("StartAuthenticationPolicyService");
                 mSystemServiceManager.startService(AuthenticationPolicyService.class);
-                t.traceEnd();
-            }
-
-            if (!isWatch) {
-                // We don't run this on watches as there are no plans to use the data logged
-                // on watch devices.
-                t.traceBegin("StartDynamicCodeLoggingService");
-                try {
-                    DynamicCodeLoggingService.schedule(context);
-                } catch (Throwable e) {
-                    reportWtf("starting DynamicCodeLoggingService", e);
-                }
                 t.traceEnd();
             }
 
