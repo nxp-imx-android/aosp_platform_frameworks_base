@@ -35,6 +35,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.media.AudioAttributes;
+import android.media.AudioDeviceAttributes;
 import android.media.AudioManager;
 import android.media.IAudioService;
 import android.media.session.MediaSession;
@@ -79,6 +81,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 
@@ -223,8 +226,13 @@ public class VolumeDialogControllerImplTest extends SysuiTestCase {
         mVolumeController.setDeviceInteractive(false);
         when(mWakefullnessLifcycle.getWakefulness()).thenReturn(
                 WakefulnessLifecycle.WAKEFULNESS_AWAKE);
-        when(mAudioManager.getDevicesForStream(AudioManager.STREAM_VOICE_CALL)).thenReturn(
-                AudioManager.DEVICE_OUT_BLE_HEADSET);
+        final AudioAttributes audioAttributesForCall = (new AudioAttributes.Builder())
+                .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION).build();
+        final AudioDeviceAttributes callDevice = new AudioDeviceAttributes(
+                AudioManager.DEVICE_OUT_BLE_HEADSET, "blabla");
+        final List<AudioDeviceAttributes> devices = List.of(callDevice);
+        when(mAudioManager.getDevicesForAttributes(audioAttributesForCall)).thenReturn(
+                devices);
 
         mVolumeController.onVolumeChangedW(
                 AudioManager.STREAM_VOICE_CALL, AudioManager.FLAG_SHOW_UI, true);
@@ -237,8 +245,13 @@ public class VolumeDialogControllerImplTest extends SysuiTestCase {
         mVolumeController.setDeviceInteractive(false);
         when(mWakefullnessLifcycle.getWakefulness()).thenReturn(
                 WakefulnessLifecycle.WAKEFULNESS_AWAKE);
-        when(mAudioManager.getDevicesForStream(AudioManager.STREAM_VOICE_CALL)).thenReturn(
-                AudioManager.DEVICE_OUT_BLUETOOTH_A2DP);
+        final AudioAttributes audioAttributesForCall = (new AudioAttributes.Builder())
+                .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION).build();
+        final AudioDeviceAttributes incorrectCallDevice = new AudioDeviceAttributes(
+                AudioManager.DEVICE_OUT_BLUETOOTH_A2DP, "blabla");
+        final List<AudioDeviceAttributes> devices = List.of(incorrectCallDevice);
+        when(mAudioManager.getDevicesForAttributes(audioAttributesForCall)).thenReturn(
+                devices);
 
         mVolumeController.onVolumeChangedW(
                 AudioManager.STREAM_VOICE_CALL, AudioManager.FLAG_SHOW_UI, true);

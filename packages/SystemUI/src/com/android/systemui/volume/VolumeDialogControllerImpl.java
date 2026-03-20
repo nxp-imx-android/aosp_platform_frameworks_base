@@ -31,6 +31,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.ContentObserver;
 import android.media.AudioAttributes;
+import android.media.AudioDeviceAttributes;
 import android.media.AudioManager;
 import android.media.AudioSystem;
 import android.media.IAudioService;
@@ -84,6 +85,7 @@ import kotlin.jvm.functions.Function1;
 
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
@@ -522,33 +524,50 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
         mCallbacks.onAccessibilityModeChanged(showA11yStream);
     }
 
+    private static final List<Integer> sBtNativeDeviceTypesForMusic = List.of(
+            AudioManager.DEVICE_OUT_BLUETOOTH_A2DP,
+            AudioManager.DEVICE_OUT_BLUETOOTH_A2DP_HEADPHONES,
+            AudioManager.DEVICE_OUT_BLUETOOTH_A2DP_SPEAKER,
+            AudioManager.DEVICE_OUT_BLE_HEADSET,
+            AudioManager.DEVICE_OUT_BLE_SPEAKER,
+            AudioManager.DEVICE_OUT_BLE_BROADCAST,
+            AudioManager.DEVICE_OUT_BLE_HEARING_AID
+    );
+
+    private static final List<Integer> sBtNativeDeviceTypesForCalls = List.of(
+            AudioManager.DEVICE_OUT_BLE_HEADSET,
+            AudioManager.DEVICE_OUT_BLE_HEARING_AID,
+            AudioManager.DEVICE_OUT_BLUETOOTH_SCO_HEADSET,
+            AudioManager.DEVICE_OUT_BLUETOOTH_SCO_CARKIT
+    );
+
+    private static final AudioAttributes sAudioAttributesForMusic = (new AudioAttributes.Builder())
+            .setUsage(AudioAttributes.USAGE_MEDIA).build();
+
+    private static final AudioAttributes sAudioAttributesForCalls = (new AudioAttributes.Builder())
+            .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION).build();
+
     private boolean checkRoutedToBluetoothW(int stream) {
         boolean changed = false;
         if (stream == AudioManager.STREAM_MUSIC) {
-            // Note: Here we didn't use DEVICE_OUT_BLE_SPEAKER and DEVICE_OUT_BLE_BROADCAST
-            //       Since their values overlap with DEVICE_OUT_EARPIECE and DEVICE_OUT_SPEAKER.
-            //       Anyway, we can check BLE devices by using just DEVICE_OUT_BLE_HEADSET.
-            final boolean routedToBluetooth =
-                    // TODO(b/359737651): Need audio support to return broadcast mask.
-                    // For now, mAudio.getDevicesForStream(AudioManager.STREAM_MUSIC) will return
-                    // AudioManager.DEVICE_NONE, so we also need to check if the device is in audio
-                    // sharing here.
-                    mInAudioSharing
-                            || (mAudio.getDevicesForStream(AudioManager.STREAM_MUSIC)
-                                            & (AudioManager.DEVICE_OUT_BLUETOOTH_A2DP
-                                                    | AudioManager
-                                                            .DEVICE_OUT_BLUETOOTH_A2DP_HEADPHONES
-                                                    | AudioManager.DEVICE_OUT_BLUETOOTH_A2DP_SPEAKER
-                                                    | AudioManager.DEVICE_OUT_BLE_HEADSET))
-                                    != 0;
+            final boolean routedToBluetooth;
+            if (mInAudioSharing) {
+                routedToBluetooth = true;
+            } else {
+                final List<AudioDeviceAttributes> devices =
+                        mAudio.getDevicesForAttributes(sAudioAttributesForMusic);
+                routedToBluetooth = devices.stream()
+                        .map(AudioDeviceAttributes::getInternalType)
+                        .anyMatch(sBtNativeDeviceTypesForMusic::contains);
+            }
             changed |= updateStreamRoutedToBluetoothW(stream, routedToBluetooth);
         } else if (stream == AudioManager.STREAM_VOICE_CALL) {
-            final int devices = mAudio.getDevicesForStream(AudioManager.STREAM_VOICE_CALL);
-            final int bluetoothDevicesMask = (AudioManager.DEVICE_OUT_BLE_HEADSET
-                    | AudioManager.DEVICE_OUT_BLUETOOTH_SCO_HEADSET
-                    | AudioManager.DEVICE_OUT_BLUETOOTH_SCO_CARKIT);
-            changed |= updateStreamRoutedToBluetoothW(stream,
-                    (devices & bluetoothDevicesMask) != 0);
+            final List<AudioDeviceAttributes> devices =
+                    mAudio.getDevicesForAttributes(sAudioAttributesForCalls);
+            final boolean routedToBluetooth = devices.stream()
+                    .map(AudioDeviceAttributes::getInternalType)
+                    .anyMatch(sBtNativeDeviceTypesForCalls::contains);
+            changed |= updateStreamRoutedToBluetoothW(stream, routedToBluetooth);
         }
         return changed;
     }
