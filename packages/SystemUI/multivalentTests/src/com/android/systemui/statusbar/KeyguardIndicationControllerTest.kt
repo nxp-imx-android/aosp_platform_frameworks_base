@@ -1972,7 +1972,10 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ADD_NEW_UNLOCK_HINT_ON_KEYGUARD)
+    @EnableFlags(
+        Flags.FLAG_ADD_NEW_UNLOCK_HINT_ON_KEYGUARD,
+        Flags.FLAG_PRESS_ANY_KEY_TO_ACCESS_BOUNCER_2,
+    )
     fun newUnlockHintAndImproveLargeScreenInteractionEnabledShowsBothUnlockHints() {
         assertTrue(Flags.addNewUnlockHintOnKeyguard())
         whenever(mBouncerInteractor.isImproveLargeScreenInteractionEnabled).thenReturn(true)
@@ -1988,6 +1991,33 @@ class KeyguardIndicationControllerTest : KeyguardIndicationControllerBaseTest() 
         verifyIndicationMessage(
             KeyguardIndicationRotateTextViewController.INDICATION_TYPE_KEY_TO_UNLOCK_HINT,
             mContext.getString(com.android.internal.R.string.lockscreen_key_to_unlock_hint),
+        )
+        verifyHideIndication(
+            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_ENTER_TO_UNLOCK_HINT
+        )
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_PRESS_ANY_KEY_TO_ACCESS_BOUNCER_2)
+    @EnableFlags(Flags.FLAG_ADD_NEW_UNLOCK_HINT_ON_KEYGUARD)
+    fun newUnlockHintAndImproveLargeScreenInteractionEnabledShowsEnterUnlockHint() {
+        assertTrue(Flags.addNewUnlockHintOnKeyguard())
+        whenever(mBouncerInteractor.isImproveLargeScreenInteractionEnabled).thenReturn(true)
+
+        createController()
+
+        mController.setVisible(true)
+
+        verifyIndicationMessage(
+            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_CLICK_TO_UNLOCK_HINT,
+            mContext.getString(com.android.internal.R.string.lockscreen_click_to_unlock_hint),
+        )
+        verifyIndicationMessage(
+            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_ENTER_TO_UNLOCK_HINT,
+            mContext.getString(com.android.internal.R.string.lockscreen_enter_to_unlock_hint),
+        )
+        verifyHideIndication(
+            KeyguardIndicationRotateTextViewController.INDICATION_TYPE_KEY_TO_UNLOCK_HINT
         )
     }
 

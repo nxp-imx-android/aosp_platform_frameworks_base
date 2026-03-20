@@ -3790,6 +3790,7 @@
 
   <!-- Text added to the keyguard message rotation hinting the user on how to go to the bouncer -->
   <java-symbol type="string" name="lockscreen_click_to_unlock_hint" />
+  <java-symbol type="string" name="lockscreen_enter_to_unlock_hint" />
   <java-symbol type="string" name="lockscreen_key_to_unlock_hint" />
   <java-symbol type="string" name="lockscreen_storage_locked" />
 

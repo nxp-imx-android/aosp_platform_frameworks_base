@@ -2893,6 +2893,9 @@
     <!-- On the keyguard screen, this string explains that the user can click anywhere to go to the
          bouncer and, ultimately, unlock the device. [CHAR LIMIT=48] -->
     <string name="lockscreen_click_to_unlock_hint">Click to unlock</string>
+    <!-- On the keyguard screen, this string explains that the user can press the ENTER key to go to the
+         bouncer and, ultimately, unlock the device. [CHAR LIMIT=48] -->
+    <string name="lockscreen_enter_to_unlock_hint">Press Enter to unlock</string>
     <!-- On the keyguard screen, this string explains that the user can press any key to go to the
          bouncer and, ultimately, unlock the device. [CHAR LIMIT=48] -->
     <string name="lockscreen_key_to_unlock_hint">Press any key to unlock</string>
