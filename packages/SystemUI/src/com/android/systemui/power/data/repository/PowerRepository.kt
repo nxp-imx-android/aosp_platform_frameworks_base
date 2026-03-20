@@ -47,8 +47,10 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
@@ -59,10 +61,28 @@ interface PowerRepository {
     val isInteractive: StateFlow<Boolean>
 
     /**
+     * SharedFlow that is guaranteed to emit each wakefulness update. This has a buffer size of 4,
+     * so we'll eventually always receive two pairs of STARTED/FINISHED GOING_TO_SLEEP/WAKING.
+     *
+     * This flow has poor performance characteristics. If possible, use [wakefulness], which will
+     * always end up with the current wakefulness state even if intermediate states are dropped.
+     */
+    val wakefulnessEvents: SharedFlow<WakefulnessModel>
+
+    /**
      * Whether the device is awake or asleep. [WakefulnessState.AWAKE] means the screen is fully
      * powered on, and the user can interact with the device. [WakefulnessState.ASLEEP] means the
      * screen is either off, or in low-power always-on-display mode - in either case, the user
      * cannot interact with the device and will need to wake it up somehow if they wish to do so.
+     *
+     * As this is a StateFlow, this will represent the most recent wakefulness state of the device,
+     * but intermediate states may be dropped (for example, if the user quickly turns the screen off
+     * and back on, this may never emit STARTED_GOING_TO_SLEEP prior to emitting
+     * FINISHED_WAKING_UP).
+     *
+     * If you absolutely need to be able to count on receiving all events, use [wakefulnessEvents].
+     * However, avoid this if possible as that is a SharedFlow with poor performance
+     * characteristics.
      */
     val wakefulness: StateFlow<WakefulnessModel>
 
@@ -102,14 +122,38 @@ interface PowerRepository {
 
     /** Updates the wakefulness state, keeping previous values by default. */
     fun updateWakefulness(
-        rawState: WakefulnessState = wakefulness.value.internalWakefulnessState,
-        lastWakeReason: WakeSleepReason = wakefulness.value.lastWakeReason,
-        lastSleepReason: WakeSleepReason = wakefulness.value.lastSleepReason,
+        rawState: WakefulnessState =
+            if (Flags.wakefulnessEventsSharedFlow() && SceneContainerFlag.isEnabled) {
+                wakefulnessEvents.replayCache.first().internalWakefulnessState
+            } else {
+                wakefulness.value.internalWakefulnessState
+            },
+        lastWakeReason: WakeSleepReason =
+            if (Flags.wakefulnessEventsSharedFlow() && SceneContainerFlag.isEnabled) {
+                wakefulnessEvents.replayCache.first().lastWakeReason
+            } else {
+                wakefulness.value.lastWakeReason
+            },
+        lastSleepReason: WakeSleepReason =
+            if (Flags.wakefulnessEventsSharedFlow() && SceneContainerFlag.isEnabled) {
+                wakefulnessEvents.replayCache.first().lastSleepReason
+            } else {
+                wakefulness.value.lastSleepReason
+            },
         powerButtonLaunchGestureTriggered: Boolean =
-            wakefulness.value.powerButtonLaunchGestureTriggered,
+            if (Flags.wakefulnessEventsSharedFlow() && SceneContainerFlag.isEnabled) {
+                wakefulnessEvents.replayCache.first().powerButtonLaunchGestureTriggered
+            } else {
+                wakefulness.value.powerButtonLaunchGestureTriggered
+            },
         asleepOrWakingFromPreviouslyEnteredDevice: Boolean =
             if (SceneContainerFlag.isEnabled) {
-                wakefulness.value.asleepOrWakingFromPreviouslyEnteredDevice()
+                if (Flags.wakefulnessEventsSharedFlow()) {
+                    wakefulnessEvents.replayCache.first()
+                        .asleepOrWakingFromPreviouslyEnteredDevice()
+                } else {
+                    wakefulness.value.asleepOrWakingFromPreviouslyEnteredDevice()
+                }
             } else {
                 false
             },
@@ -122,6 +166,7 @@ interface PowerRepository {
     fun onPowerButtonLaunchEvent(event: PowerButtonLaunchEvent)
 }
 
+@SuppressLint("SharedFlowCreation")
 @SysUISingleton
 class PowerRepositoryImpl
 @Inject
@@ -164,8 +209,25 @@ constructor(
                 .stateIn(applicationScope, SharingStarted.Eagerly, false)
         }
 
-    private val _wakefulness = MutableStateFlow(WakefulnessModel()).traceAs("wakefulness")
-    override val wakefulness = _wakefulness.asStateFlow()
+    private val _wakefulnessEvents by lazy {
+        MutableSharedFlow<WakefulnessModel>(
+                replay = 1,
+                extraBufferCapacity =
+                    3, // Covers a full STARTED/FINISHED WAKING/GOING_TO_SLEEP cycle.
+                onBufferOverflow = BufferOverflow.DROP_OLDEST,
+            )
+            .traceAs("wakefulness")
+            .also { it.tryEmit(WakefulnessModel()) }
+    }
+    override val wakefulnessEvents by lazy { _wakefulnessEvents.asSharedFlow() }
+
+    private val _wakefulness by lazy { MutableStateFlow(WakefulnessModel()).traceAs("wakefulness") }
+    override val wakefulness =
+        if (SceneContainerFlag.isEnabled && Flags.wakefulnessEventsSharedFlow()) {
+            _wakefulnessEvents.stateIn(backgroundScope, SharingStarted.Eagerly, WakefulnessModel())
+        } else {
+            _wakefulness.asStateFlow()
+        }
 
     @SuppressLint("SharedFlowCreation")
     override val powerButtonLaunchEvents =
@@ -181,14 +243,25 @@ constructor(
         powerButtonLaunchGestureTriggered: Boolean,
         asleepOrWakingFromPreviouslyEnteredDevice: Boolean,
     ) {
-        _wakefulness.value =
-            WakefulnessModel(
+        if (Flags.wakefulnessEventsSharedFlow()) {
+            _wakefulnessEvents.tryEmit(
+                WakefulnessModel(
+                    rawState,
+                    lastWakeReason,
+                    lastSleepReason,
+                    powerButtonLaunchGestureTriggered,
+                    asleepOrWakingFromPreviouslyEnteredDevice,
+                )
+            )
+        } else {
+            _wakefulness.value = WakefulnessModel(
                 rawState,
                 lastWakeReason,
                 lastSleepReason,
                 powerButtonLaunchGestureTriggered,
                 asleepOrWakingFromPreviouslyEnteredDevice,
             )
+        }
     }
 
     private val _screenPowerState =
