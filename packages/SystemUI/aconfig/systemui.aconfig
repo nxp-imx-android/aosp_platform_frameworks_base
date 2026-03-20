@@ -1691,6 +1691,13 @@ flag {
 }
 
 flag {
+    name: "status_bar_is_connected_display_chip_controlled_by_config"
+    namespace: "systemui"
+    description: "Enable config to control the connected display chip"
+    bug: "400404040"
+}
+
+flag {
    name: "status_bar_long_press_gesture_detector_per_display"
    namespace: "systemui"
    description: "Makes StatusBarLongPressGestureDetector per-display"
