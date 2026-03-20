@@ -138,9 +138,9 @@ message PreferenceProto {
   }
   optional int32 purpose = 21;
   // Preconditions of the preference.
-  repeated string get_preconditions = 22;
+  repeated string get_preconditions = 22 [deprecated = true];
   // Preconditions of the preference when setting values.
-  repeated string set_preconditions = 23;
+  repeated string set_preconditions = 23 [deprecated = true];
   // True if the preference supports setting values in any circumstances.
   optional bool writable = 24;
   // Schema for the key-value parameters, as a string.
@@ -149,6 +149,22 @@ message PreferenceProto {
   optional KeyParametersProto key_parameters = 26;
   // Warning of the preference when setting values.
   optional SetWarningProto set_warning = 27;
+  repeated PreconditionStatusProto get_preconditions_status = 28;
+  repeated PreconditionStatusProto set_preconditions_status = 29;
+}
+
+message PreconditionStatusProto {
+  optional string precondition = 1;
+  optional bool satisfied = 2;
+  // Only populated when satisfied is false.
+  optional string failure = 3;
+  optional PreconditionStability stability = 4;
+}
+
+enum PreconditionStability {
+  STABILITY_UNKNOWN = 0;
+  STABLE_UNTIL_APK_UPDATE = 1;
+  UNSTABLE = 2;
 }
 
 message PossibleValueProto {
@@ -186,7 +202,12 @@ message PreferenceValueProto {
     float float_value = 3;
     int64 long_value = 4;
     string string_value = 5;
+    PreferenceErrorProto error = 6;
   }
+}
+
+message PreferenceErrorProto {
+  string error = 1;
 }
 
 // Proto of preference value descriptor.

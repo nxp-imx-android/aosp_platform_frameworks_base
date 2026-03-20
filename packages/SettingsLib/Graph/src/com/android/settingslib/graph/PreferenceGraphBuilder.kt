@@ -93,6 +93,13 @@ import kotlinx.coroutines.withContext
 import com.android.settingslib.metadata.preferencesapi.SafetyAnnotated
 import com.android.settingslib.metadata.preferencesapi.extractSafety
 import java.util.Locale
+import com.android.settingslib.metadata.preferencesapi.preconditions.Allowed
+import com.android.settingslib.metadata.preferencesapi.preconditions.ApiPreconditions
+import com.android.settingslib.metadata.preferencesapi.preconditions.Custom
+import com.android.settingslib.metadata.preferencesapi.preconditions.Disallowed
+import com.android.settingslib.metadata.preferencesapi.preconditions.PreconditionStability
+import com.android.settingslib.graph.proto.PreconditionStatusProto
+import com.android.settingslib.graph.proto.PreconditionStability as PreconditionStabilityProto
 
 private const val TAG = "PreferenceGraphBuilder"
 
@@ -476,7 +483,13 @@ private constructor(
         available = isVisible
         persistent = isPersistent
         if (request.flags.includeValue() && isPersistent && this@toProto is TwoStatePreference) {
-            value = preferenceValueProto { booleanValue = this@toProto.isChecked }
+            if (!isEnabled) {
+                value = preferenceValueProto { error = preferenceErrorProto { error = "enabled not set" } }
+            } else if (!isVisible) {
+                value = preferenceValueProto { error = preferenceErrorProto { error = "availability not set" } }
+            } else {
+                value = preferenceValueProto { booleanValue = this@toProto.isChecked }
+            }
         }
         this@toProto.fragment.toActionTarget(preferenceExtras)?.let {
             actionTarget = it
@@ -623,6 +636,44 @@ private constructor(
             }
     }
 }
+private fun PreconditionStability.toProto(): PreconditionStabilityProto =
+    when (this) {
+        PreconditionStability.STABLE_UNTIL_APK_UPDATE ->
+            PreconditionStabilityProto.STABLE_UNTIL_APK_UPDATE
+        PreconditionStability.UNSTABLE -> PreconditionStabilityProto.UNSTABLE
+    }
+
+private fun PreferenceProto.Builder.addPreconditionStatus(
+    context: Context,
+    preconditionDescription: String?,
+    includeValue: Boolean,
+    isGet: Boolean,
+    evaluate: (suspend () -> ApiPreconditions)? = null,
+) {
+    if (preconditionDescription == null) return
+    val statusBuilder = PreconditionStatusProto.newBuilder()
+    statusBuilder.precondition = preconditionDescription
+    if (includeValue) {
+        val result =
+            if (evaluate != null) {
+                runBlocking { evaluate() }
+            } else {
+                null
+            }
+        if (result is Allowed) {
+            statusBuilder.satisfied = true
+        } else if (result is Disallowed) {
+            statusBuilder.satisfied = false
+            statusBuilder.failure = result.getReason(context)
+            statusBuilder.stability = result.stability.toProto()
+        }
+    }
+    if (isGet) {
+        addGetPreconditionsStatus(statusBuilder)
+    } else {
+        addSetPreconditionsStatus(statusBuilder)
+    }
+}
 
 fun PreferenceMetadata.toProto(
     context: Context,
@@ -700,12 +751,44 @@ fun PreferenceMetadata.toProto(
         for (tag in metadata.tags(context)) addTags(tag)
     }
     purpose = metadata.purpose
+    val includeValue = flags.includeValue()
     if (metadata is ApiPreference<*, *>) {
-        metadata.screenPreconditions?.getDescription(context)?.let { addGetPreconditions(it) }
-        metadata.preconditions?.getDescription(context)?.let { addGetPreconditions(it) }
-        metadata.get.preconditions?.getDescription(context)?.let { addGetPreconditions(it) }
-        metadata.set?.preconditions?.getDescription(context)?.let { addSetPreconditions(it) }
-        metadata.set?.valuePreconditions?.getDescription(context)?.let { addSetPreconditions(it) }
+        addPreconditionStatus(
+            context,
+            metadata.screenPreconditions?.getDescription(context),
+            includeValue,
+            isGet = true,
+            evaluate = { metadata.evaluatePreconditions(context, metadata.screenPreconditions) }
+        )
+        addPreconditionStatus(
+            context,
+            metadata.preconditions?.getDescription(context),
+            includeValue,
+            isGet = true,
+            evaluate = { metadata.evaluatePreconditions(context, metadata.preconditions) }
+        )
+        addPreconditionStatus(
+            context,
+            metadata.get.preconditions?.getDescription(context),
+            includeValue,
+            isGet = true,
+            evaluate = { metadata.evaluatePreconditions(context, metadata.get.preconditions) }
+        )
+        addPreconditionStatus(
+            context,
+            metadata.set?.preconditions?.getDescription(context),
+            includeValue,
+            isGet = false,
+            evaluate = { metadata.evaluatePreconditions(context, metadata.set?.preconditions) }
+        )
+        addPreconditionStatus(
+            context,
+            metadata.set?.valuePreconditions?.getDescription(context),
+            includeValue,
+            isGet = false,
+            // TODO: should this be null?
+            evaluate = { metadata.evaluatePreconditions(context, null) }
+        )
         metadata.set?.warning?.let { warningConfig ->
             setWarning = setWarningProto {
                 warning = warningConfig.getWarning(context)
@@ -725,58 +808,134 @@ fun PreferenceMetadata.toProto(
             }
         }
     } else if (metadata is PreferencesApiScreen) {
-        metadata.screenPreconditions?.getDescription(context)?.let { addGetPreconditions(it) }
+        addPreconditionStatus(
+            context,
+            metadata.screenPreconditions?.getDescription(context),
+            includeValue,
+            isGet = true,
+            evaluate = { metadata.evaluatePreconditions(context) }
+        )
     } else if (metadata is PreferenceAvailabilityProvider) {
-        addGetPreconditions(metadata.availabilityDescription)
-    }
-    metadata.getEnabledDescription()?.let { addSetPreconditions(it) }
-    if (metadata is PreferenceSetWarningProvider) {
-        metadata.setWarning?.let { warningInfo ->
-            setWarning = setWarningProto {
-                warning = warningInfo.warningMessage
-                warningInfo.preconditionsDescription?.let { addPreconditions(it) }
+        addPreconditionStatus(
+            context,
+            metadata.availabilityDescription,
+            includeValue,
+            isGet = true,
+            evaluate = {
+                if (metadata.isAvailable(context)) Allowed
+                else Custom(metadata.availabilityDescription, metadata.getAvailabilityStability())
             }
-        }
+        )
+    }
+    metadata.getEnabledDescription()?.let {
+        addPreconditionStatus(
+            context,
+            it,
+            includeValue,
+            isGet = false,
+            evaluate = {
+                if (metadata.isEnabled(context)) Allowed
+                else Custom(it, metadata.getEnabledStability() ?: PreconditionStability.STABLE_UNTIL_APK_UPDATE)
+            }
+        )
     }
     // always true for preferences
     persistent = metadata.isPersistent(context)
     sensitivityLevel = metadata.sensitivityLevel
-    if (metadata !is PersistentPreference<*> || metadata is PreferenceScreenMetadata) return@preferenceProto
+    if (metadata !is PersistentPreference<*> || metadata is PreferenceScreenMetadata) {
+        if (metadata is PreferencesApiScreen && flags.includeValue()) {
+            val preconditions = runBlocking { metadata.evaluatePreconditions(context) }
+            if (preconditions is com.android.settingslib.metadata.preferencesapi.preconditions.Disallowed) {
+                value = preferenceValueProto {
+                    error = preferenceErrorProto {
+                        if (preconditions.stability == PreconditionStability.STABLE_UNTIL_APK_UPDATE) {
+                            error = "read precondition not met: ${preconditions.getReason(context)} (stable)"
+                        } else {
+                            error = "read precondition not met: ${preconditions.getReason(context)}"
+                        }
+                    }
+                }
+            }
+        }
+        return@preferenceProto
+    }
     metadata.getReadPermissions(context)?.let { if (it.size > 0) readPermissions = it.toProto() }
     metadata.getWritePermissions(context)?.let { if (it.size > 0) writePermissions = it.toProto() }
     val readPermit = metadata.evalReadPermit(context, callingPid, callingUid)
     val writePermit =
         metadata.evalWritePermit(context, callingPid, callingUid) ?: ReadWritePermit.ALLOW
     readWritePermit = ReadWritePermit.make(readPermit, writePermit)
-    if (
-        flags.includeValue() &&
-        enabled &&
-        (!hasAvailable() || available) &&
-        (!hasRestricted() || !restricted) &&
-        readPermit == ReadWritePermit.ALLOW
-    ) {
-        val storage = metadata.storage(context)
-        value = preferenceValueProto {
-            val key = metadata.key
-            when (metadata.valueType) {
-                Int::class.java,
-                Int::class.javaObjectType -> storage.getInt(key)?.let { intValue = it }
+    if (flags.includeValue()) {
+        val errorString = if (hasAvailable() && !available) {
+            if (metadata is PreferenceAvailabilityProvider) {
+                if (metadata.getAvailabilityStability() == PreconditionStability.STABLE_UNTIL_APK_UPDATE) {
+                    "read precondition not met: ${metadata.availabilityDescription} (stable)"
+                } else {
+                    "read precondition not met: ${metadata.availabilityDescription}"
+                }
+            } else {
+                "read precondition not met: missing available with unknown reason"
+            }
+        } else if (readPermit == ReadWritePermit.REQUIRE_APP_PERMISSION) {
+            "read precondition not met: must hold all specified permissions"
+        } else if (readPermit != ReadWritePermit.ALLOW) {
+            if (metadata is ApiPreference<*, *>) {
+                val failure = runBlocking { metadata.evaluatePreconditions(context, metadata.get.preconditions) }
+                if (failure is com.android.settingslib.metadata.preferencesapi.preconditions.Disallowed) {
+                    failure.getReason(context)
+                } else {
+                    "read precondition not met: missing readPermit with unknown reason - ${failure}"
+                }
+            } else {
+                "read precondition not met: missing readPermit with unknown reason - ${readPermit}"
+            }
+        } else {
+            null
+        }
 
-                Boolean::class.java,
-                Boolean::class.javaObjectType -> storage.getBoolean(key)?.let { booleanValue = it }
+        if (errorString != null) {
+            value = preferenceValueProto {
+                error = preferenceErrorProto {
+                    error = errorString
+                }
+            }
+        } else {
+            val storage = metadata.storage(context)
+            try {
+                value = preferenceValueProto {
+                    val key = metadata.key
+                    when (metadata.valueType) {
+                        Int::class.java,
+                        Int::class.javaObjectType -> storage.getInt(key)?.let { intValue = it }
 
-                Float::class.java,
-                Float::class.javaObjectType -> storage.getFloat(key)?.let { floatValue = it }
+                        Boolean::class.java,
+                        Boolean::class.javaObjectType -> storage.getBoolean(key)?.let { booleanValue = it }
 
-                Long::class.java,
-                Long::class.javaObjectType -> storage.getLong(key)?.let { longValue = it }
-                CharSequence::class.java,
-                CharSequence::class.javaObjectType,
+                        Float::class.java,
+                        Float::class.javaObjectType -> storage.getFloat(key)?.let { floatValue = it }
 
-                String::class.java,
-                String::class.javaObjectType -> storage.getString(key)?.let { stringValue = it.toString() }
+                        Long::class.java,
+                        Long::class.javaObjectType -> storage.getLong(key)?.let { longValue = it }
+                        CharSequence::class.java,
+                        CharSequence::class.javaObjectType,
 
-                else -> error("Error: Unsupported type ${metadata.valueType}")
+                        String::class.java,
+                        String::class.javaObjectType -> storage.getString(key)?.let { stringValue = it.toString() }
+
+                        else -> {
+                            Log.e("PreferenceGraphBuilder", "Unsupported type ${metadata.valueType}")
+                            error = preferenceErrorProto {
+                                error = "Error: Unsupported type ${metadata.valueType}"
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                value = preferenceValueProto {
+                    error = preferenceErrorProto {
+                        error = "Error: ${e.message ?: e.toString()}"
+                    }
+                }
             }
         }
     }
