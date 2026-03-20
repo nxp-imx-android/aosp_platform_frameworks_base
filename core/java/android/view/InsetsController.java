@@ -421,15 +421,11 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         @Nullable
         private final InputMethodJankContext mInputMethodJankContext;
 
-        /* The handler of the thread used for running inset animations. */
-        @Nullable
-        private final Handler mHandler;
-
         public InternalAnimationControlListener(boolean show, boolean hasAnimationCallbacks,
                 @InsetsType int requestedTypes, @Behavior int behavior, boolean disable,
                 int floatingImeBottomInset,
                 @Nullable WindowInsetsAnimationControlListener loggingListener,
-                @Nullable InputMethodJankContext jankContext, @Nullable Handler handler) {
+                @Nullable InputMethodJankContext jankContext) {
             mShow = show;
             mHasAnimationCallbacks = hasAnimationCallbacks;
             mRequestedTypes = requestedTypes;
@@ -438,7 +434,6 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             mFloatingImeBottomInset = floatingImeBottomInset;
             mLoggingListener = loggingListener;
             mInputMethodJankContext = jankContext;
-            mHandler = handler;
         }
 
         @Override
@@ -495,8 +490,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                     ImeTracker.forJank().onRequestAnimation(
                             mInputMethodJankContext,
                             getAnimationType(),
-                            !mHasAnimationCallbacks,
-                            mHandler);
+                            !mHasAnimationCallbacks);
                 }
 
                 @Override
@@ -2025,17 +2019,10 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                 (!hasAnimationCallbacks && (!com.android.window.flags.Flags.syncedInsetsAnimation()
                         || !mHost.usesSyncedInsetsAnimationByDefault())) || skipsCallbacks;
 
-        Handler handler = null;
-        if (Flags.fixJankTrackerImeAnimationDelay() && useInsetsAnimationThread) {
-            handler = android.view.InsetsAnimationThread.getHandler();
-        } else if (mHost.getRootViewContext() != null) {
-            handler = mHost.getRootViewContext().getMainThreadHandler();
-        }
-
         final var listener = new InternalAnimationControlListener(
                 show, hasAnimationCallbacks, types, mHost.getSystemBarsBehavior(),
                 skipsAnim || mAnimationsDisabled, mHost.dipToPx(FLOATING_IME_BOTTOM_INSET_DP),
-                mLoggingListener, mJankContext, handler);
+                mLoggingListener, mJankContext);
 
         // We are about to playing the default animation (show/hide). Passing a null frame indicates
         // the controlled types should be animated regardless of the frame.
