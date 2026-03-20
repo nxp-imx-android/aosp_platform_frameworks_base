@@ -25,6 +25,9 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.Token;
+import android.service.personalcontext.hint.ContentCaptureConversationEvent.ConversationUpdateEvent;
+
+import androidx.annotation.Nullable;
 
 import java.util.Objects;
 
@@ -74,6 +77,16 @@ public final class ContentCaptureConversationHint extends ContextHint {
     @NonNull
     public ContentCaptureConversationEvent getConversationEvent() {
         return mConversationEvent;
+    }
+
+    /** @hide */
+    @Nullable
+    @Override
+    public String getSourcePackageName() {
+        if (mConversationEvent instanceof ConversationUpdateEvent updateEvent) {
+            return updateEvent.getConversationData().getComponentName().getPackageName();
+        }
+        return null;
     }
 
     /** @hide */

@@ -106,6 +106,13 @@ public final class RecentViewHint extends ContextHint {
         return mSourceAppActivityComponentName;
     }
 
+    /** @hide */
+    @Nullable
+    @Override
+    public String getSourcePackageName() {
+        return mSourceAppActivityComponentName.getPackageName();
+    }
+
     @NonNull
     @Override
     Bundle toBundleImpl() {

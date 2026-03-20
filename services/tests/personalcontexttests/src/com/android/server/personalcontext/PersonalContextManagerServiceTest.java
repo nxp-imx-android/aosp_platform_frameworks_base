@@ -435,6 +435,40 @@ public class PersonalContextManagerServiceTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
+    public void testPublishTriggeringHint_deepPackageDisabled_throwsIllegalStateException() {
+        mService.onUserStarting(mUser1);
+
+        final String enabledPackageName = "com.android.cts.test";
+        when(mPackageManagerInternal.getPersonalContextMode(
+                        eq(enabledPackageName), anyInt(), anyInt()))
+                .thenReturn(PackageManager.PERSONAL_CONTEXT_MODE_USER_ON);
+
+        final String disabledPackageName = "com.android.cts.test2";
+        when(mPackageManagerInternal.getPersonalContextMode(
+                        eq(disabledPackageName), anyInt(), anyInt()))
+                .thenReturn(PackageManager.PERSONAL_CONTEXT_MODE_USER_OFF);
+
+        // Source package has per-app setting enabled, publishing hint succeeds.
+        ContextHint enabledHint = mock(ContextHint.class);
+        when(enabledHint.getSourcePackageName()).thenReturn(enabledPackageName);
+        mBinderService.publishTriggeringHint(
+                List.of(new ContextHintWrapper(enabledHint)), List.of(), List.of(), USER_ID_1);
+
+        // Source package has per-app setting disabled, publishing hint throws an exception.
+        ContextHint disabledHint = mock(ContextHint.class);
+        when(disabledHint.getSourcePackageName()).thenReturn(disabledPackageName);
+        assertThrows(
+                IllegalStateException.class,
+                () ->
+                        mBinderService.publishTriggeringHint(
+                                List.of(new ContextHintWrapper(disabledHint)),
+                                List.of(),
+                                List.of(),
+                                USER_ID_1));
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
     public void testPublishTriggeringHint_accessDenied_throwsSecurityException() {
         BundleHint hint = new BundleHint.Builder().build();
