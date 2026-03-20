@@ -3350,6 +3350,11 @@
         frameworks/base/services/core/java/com/android/server/pm/UserSystemPackageInstaller.java -->
     <integer name="config_userTypePackageWhitelistMode">13</integer> <!-- 1+4+8 -->
 
+    <!-- TODO(b/488421414). This is deprecated and only here temporarily to prevent breakage.
+         It will be immediately removed.
+    -->
+    <bool name="config_supportProfilesOnNonMainUser">false</bool>
+
     <!-- Whether the device will automatically (at first boot) have a designated main user and treat
          it as a permanent admin.
          Since the main user is a permanent admin user it can't be deleted or downgraded to
