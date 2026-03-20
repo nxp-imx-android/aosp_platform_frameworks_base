@@ -51,7 +51,7 @@ public object Scenes {
      * visual elements. However, it is a very important device state where activities that have
      * declared the ability to showOverLockscreen will be visible, with the [Shade] and
      * [QuickSettings] being available to access from this state. Activities can also request
-     * keyguard dismissal directly, so it not required to navigate back to [Lockscreen] before
+     * keyguard dismissal directly, so it's not required to navigate back to [Lockscreen] before
      * unlocking.
      */
     @JvmField public val Occluded: SceneKey = SceneKey("occluded")
@@ -68,7 +68,7 @@ public object Scenes {
      *
      * For the dual shade configuration, where there are two separate shades: one for notifications
      * and one for quick settings, the overlays `NotificationsShade` and `QuickSettingsShade` are
-     * used respectively.
+     * used, respectively.
      */
     @JvmField public val QuickSettings: SceneKey = SceneKey("quick_settings")
 
@@ -81,7 +81,7 @@ public object Scenes {
      * large screens or unfolded foldables, where notifications and quick settings are shown
      * side-by-side in their own columns). For the dual shade configuration, where there are two
      * separate shades: one for notifications and one for quick settings, the overlays
-     * `NotificationsShade` and `QuickSettingsShade` are used respectively.
+     * `NotificationsShade` and `QuickSettingsShade` are used, respectively.
      */
     @JvmField public val Shade: SceneKey = SceneKey("shade")
 }
