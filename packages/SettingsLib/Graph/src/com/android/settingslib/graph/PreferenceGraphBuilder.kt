@@ -636,8 +636,6 @@ fun PreferenceMetadata.toProto(
     val metadata = this@toProto
     key = metadata.key
     if (flags.includeMetadata()) {
-        metadata.getTitleTextProto(context, isRoot)?.let { title = it }
-        val metadataIcon = metadata.getPreferenceIcon(context)
         writable =
             if (metadata is ApiPreference<*, *>) {
                 metadata.set != null
@@ -647,29 +645,14 @@ fun PreferenceMetadata.toProto(
                 false
             }
 
-        if (metadataIcon != 0) icon = metadataIcon
-        if (metadata.keywords != 0) keywords = metadata.keywords
         val preferenceExtras = metadata.extras(context)
         preferenceExtras?.let { extras = it.toProto() }
-        indexable = metadata.isPreferenceIndexable(context)
         enabled = metadata.isEnabled(context)
         if (metadata is PreferenceAvailabilityProvider) {
             available = metadata.isAvailable(context)
         }
         if (metadata is PreferenceRestrictionProvider) {
             restricted = metadata.isRestricted(context)
-        }
-        if (metadata is PreferenceScreenMetadata) {
-            actionTarget = actionTargetProto {
-                key = metadata.key
-                if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
-                    metadata.keyParameters?.let { keyParameters = it.toProto() }
-                } else {
-                    metadata.arguments?.let { args = it.toProto() }
-                }
-            }
-        } else {
-            metadata.intent(context)?.let { actionTarget = it.toActionTarget(context) }
         }
 
         if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
@@ -911,27 +894,6 @@ fun <T> PersistentPreference<T>.evalWritePermit(
 
         // Otherwise, delegate to the specific permit logic.
         else -> getWritePermit(context, callingPid, callingUid)
-    }
-}
-
-private fun PreferenceMetadata.getTitleTextProto(context: Context, isRoot: Boolean): TextProto? {
-    if (isRoot && this is PreferenceScreenMetadata) {
-        val titleRes = screenTitle
-        if (titleRes != 0) {
-            return textProto { resourceId = titleRes }
-        } else {
-            getScreenTitle(context)?.let {
-                return textProto { string = it.toString() }
-            }
-        }
-    } else {
-        val titleRes = title
-        if (titleRes != 0) {
-            return textProto { resourceId = titleRes }
-        }
-    }
-    return (this as? PreferenceTitleProvider)?.getTitle(context)?.let {
-        textProto { string = it.toString() }
     }
 }
 
