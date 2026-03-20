@@ -1,6 +1,5 @@
 // Signature format: 6.0
 // - style=java
-// - normalize-final-modifier=no
 // - sort-whole-extends-list=no
 package android.app {
 
