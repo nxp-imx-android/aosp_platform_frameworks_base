@@ -35,14 +35,22 @@ WHERE
   -- for now we can simply omit them to avoid alerting on false
   -- positives.
   AND COALESCE(abt.aidl_name, abt.server_process, 'NULL') NOT IN (
-       '/system/bin/surfaceflinger',
-       '/system/bin/gpuservice',
-       'AIDL::cpp::IDisplayEventConnection::requestNextVsync::cppServer',
-       'AIDL::cpp::IDisplayEventConnection::stealReceiveChannel::cppServer',
-       'AIDL::cpp::ISurfaceComposerClient::createSurface::cppServer',
-       'AIDL::java::IInputManager::getVelocityTrackerStrategy::server'
+    '/system/bin/gpuservice',
+    'AIDL::cpp::android.graphicsenv.IGpuService::#1::server',
+    'AIDL::cpp::android.graphicsenv.IGpuService::#6::server',
+    'AIDL::cpp::android.ui.ISurfaceComposer::#8::server',
+    'AIDL::cpp::android.gui.IDisplayEventConnection::requestNextVsync::server',
+    'AIDL::cpp::android.gui.IDisplayEventConnection::stealReceiveChannel::server',
+    'AIDL::cpp::android.gui.ISurfaceComposerClient::createSurface::server',
+    'AIDL::java::IInputManager::getVelocityTrackerStrategy::server',
+    -- Legacy cpp naming convention from before go/libbinder-traces
+    -- refactor. Leaving them here for posterity
+    '/system/bin/surfaceflinger',
+    'AIDL::cpp::IDisplayEventConnection::requestNextVsync::cppServer',
+    'AIDL::cpp::IDisplayEventConnection::stealReceiveChannel::cppServer',
+    'AIDL::cpp::ISurfaceComposerClient::createSurface::cppServer',
   )
-      "
+    "
   }
 }
 
