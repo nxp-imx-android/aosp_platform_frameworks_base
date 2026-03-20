@@ -1,6 +1,5 @@
 // Signature format: 6.0
 // - style=java
-// - strip-java-lang-prefix=legacy
 package android.location {
 
   public class Address implements android.os.Parcelable {
@@ -555,12 +554,12 @@ package android.location {
     method @RequiresPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) public boolean addNmeaListener(@NonNull java.util.concurrent.Executor, @NonNull android.location.OnNmeaMessageListener);
     method @RequiresPermission(anyOf={android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION}) public void addProximityAlert(double, double, float, long, @NonNull android.app.PendingIntent);
     method public void addTestProvider(@NonNull String, @NonNull android.location.provider.ProviderProperties);
-    method public void addTestProvider(@NonNull String, @NonNull android.location.provider.ProviderProperties, @NonNull java.util.Set<java.lang.String>);
+    method public void addTestProvider(@NonNull String, @NonNull android.location.provider.ProviderProperties, @NonNull java.util.Set<String>);
     method public void addTestProvider(@NonNull String, boolean, boolean, boolean, boolean, boolean, boolean, boolean, int, int);
     method @Deprecated public void clearTestProviderEnabled(@NonNull String);
     method @Deprecated public void clearTestProviderLocation(@NonNull String);
     method @Deprecated public void clearTestProviderStatus(@NonNull String);
-    method @NonNull public java.util.List<java.lang.String> getAllProviders();
+    method @NonNull public java.util.List<String> getAllProviders();
     method @Deprecated @Nullable public String getBestProvider(@NonNull android.location.Criteria, boolean);
     method @RequiresPermission(anyOf={android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION}) public void getCurrentLocation(@NonNull String, @NonNull android.location.LocationRequest, @Nullable android.os.CancellationSignal, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<android.location.Location>);
     method @RequiresPermission(anyOf={android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION}) public void getCurrentLocation(@NonNull String, @Nullable android.os.CancellationSignal, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<android.location.Location>);
@@ -572,8 +571,8 @@ package android.location {
     method @Nullable @RequiresPermission(anyOf={android.Manifest.permission.ACCESS_COARSE_LOCATION, android.Manifest.permission.ACCESS_FINE_LOCATION}) public android.location.Location getLastKnownLocation(@NonNull String);
     method @Deprecated @Nullable public android.location.LocationProvider getProvider(@NonNull String);
     method @Nullable public android.location.provider.ProviderProperties getProviderProperties(@NonNull String);
-    method @Deprecated @NonNull public java.util.List<java.lang.String> getProviders(@NonNull android.location.Criteria, boolean);
-    method @NonNull public java.util.List<java.lang.String> getProviders(boolean);
+    method @Deprecated @NonNull public java.util.List<String> getProviders(@NonNull android.location.Criteria, boolean);
+    method @NonNull public java.util.List<String> getProviders(boolean);
     method public boolean hasProvider(@NonNull String);
     method public boolean isLocationEnabled();
     method public boolean isProviderEnabled(@NonNull String);

@@ -1,6 +1,5 @@
 // Signature format: 6.0
 // - style=java
-// - strip-java-lang-prefix=legacy
 package android.location {
 
   public final class GnssClock implements android.os.Parcelable {
@@ -99,7 +98,7 @@ package android.location {
     method @NonNull public String[] getBackgroundThrottlingWhitelist();
     method @NonNull public android.os.PackageTagsList getIgnoreSettingsAllowlist();
     method @Deprecated @NonNull public String[] getIgnoreSettingsWhitelist();
-    method @Deprecated @Nullable @RequiresPermission(android.Manifest.permission.READ_DEVICE_CONFIG) public java.util.List<java.lang.String> getProviderPackages(@NonNull String);
+    method @Deprecated @Nullable @RequiresPermission(android.Manifest.permission.READ_DEVICE_CONFIG) public java.util.List<String> getProviderPackages(@NonNull String);
   }
 
 }
