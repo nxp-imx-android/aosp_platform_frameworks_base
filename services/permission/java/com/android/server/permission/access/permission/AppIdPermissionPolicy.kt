@@ -1262,20 +1262,20 @@ class AppIdPermissionPolicy : SchemePolicy() {
                 }
                 if (!isImplicitPermission && hasImplicitFlag) {
                     newFlags = newFlags andInv PermissionFlags.IMPLICIT
-                    var shouldRetainAsNearbyDevices = false
-                    if (permissionName in NEARBY_DEVICES_PERMISSIONS) {
+                    var shouldRetainAsBluetooth = false
+                    if (permissionName in BLUETOOTH_PERMISSIONS) {
                         val accessBackgroundLocationFlags =
                             getPermissionFlags(
                                 appId,
                                 userId,
                                 Manifest.permission.ACCESS_BACKGROUND_LOCATION,
                             )
-                        shouldRetainAsNearbyDevices =
+                        shouldRetainAsBluetooth =
                             PermissionFlags.isAppOpGranted(accessBackgroundLocationFlags) &&
                                 !accessBackgroundLocationFlags.hasBits(PermissionFlags.IMPLICIT)
                     }
                     val shouldRetainByMask = newFlags.hasAnyBit(SYSTEM_OR_POLICY_FIXED_MASK)
-                    if (shouldRetainAsNearbyDevices || shouldRetainByMask) {
+                    if (shouldRetainAsBluetooth || shouldRetainByMask) {
                         if (wasGrantedByImplicit) {
                             newFlags = newFlags or PermissionFlags.RUNTIME_GRANTED
                         }
@@ -2081,18 +2081,27 @@ class AppIdPermissionPolicy : SchemePolicy() {
                 Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
             )
 
-        val NEARBY_DEVICES_PERMISSIONS =
+        val BLUETOOTH_PERMISSIONS =
             indexedSetOf(
+                Manifest.permission.BLUETOOTH_ADVERTISE,
+                Manifest.permission.BLUETOOTH_CONNECT,
+                Manifest.permission.BLUETOOTH_SCAN,
+            )
+
+        val NEARBY_DEVICES_PERMISSIONS: IndexedSet<String> =
+            mutableIndexedSetOf(
                     Manifest.permission.BLUETOOTH_ADVERTISE,
                     Manifest.permission.BLUETOOTH_CONNECT,
                     Manifest.permission.BLUETOOTH_SCAN,
+                    Manifest.permission.UWB_RANGING,
                     Manifest.permission.NEARBY_WIFI_DEVICES,
                 )
-                .let {
+                .apply {
+                    if (Flags.rangingPermissionEnabled()) {
+                        this += Manifest.permission.RANGING
+                    }
                     if (Flags.accessLocalNetworkPermissionEnabled()) {
-                        it + Manifest.permission.ACCESS_LOCAL_NETWORK
-                    } else {
-                        it
+                        this += Manifest.permission.ACCESS_LOCAL_NETWORK
                     }
                 }
 
