@@ -32,13 +32,6 @@ flag {
 }
 
 flag {
-  name: "camera_compat_fullscreen_pick_same_task_activity"
-  namespace: "large_screen_experiences_app_compat"
-  description: "Limit undo of camera compat treatment to the same task that started the treatment."
-  bug: "350495350"
-}
-
-flag {
     name: "camera_compat_landscape_camera_support"
     namespace: "large_screen_experiences_app_compat"
     description: "Whether to support landscape cameras in camera compat."
