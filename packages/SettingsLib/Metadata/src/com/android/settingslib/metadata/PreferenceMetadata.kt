@@ -26,6 +26,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.android.settingslib.metadata.preferencesapi.ApiPreference
 import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreen
+import com.android.settingslib.metadata.preferencesapi.preconditions.Allowed
 import com.android.settingslib.metadata.preferencesapi.preconditions.Disallowed
 import com.android.settingslib.metadata.preferencesapi.preconditions.PreconditionStability
 import com.android.settingslib.utils.applications.AppUtils
@@ -333,6 +334,77 @@ fun PreferenceMetadata.accessPreconditionsAsString(context: Context): String? {
         }
 
     return if (preconditions.isEmpty()) null else "Preconditions to accessing: $preconditions."
+}
+
+/** Returns a string describing the preconditions for accessing the preference as well as the status of them. */
+suspend fun PreferenceMetadata.resolvedAccessAndGetPreconditionsAsString(context: Context): String? {
+    return if (this is ApiPreference<*, *>) {
+            val operationContext = getApiOperationContext(context)
+
+            val screenPreconditionsResult = screenPreconditions?.check(operationContext)
+            val preconditionsResult = preconditions?.check(operationContext)
+            val getPreconditionsResult = get?.preconditions?.check(operationContext)
+
+            val preconditionFailures = listOfNotNull(
+                if (screenPreconditionsResult is Disallowed) screenPreconditionsResult.getReason(context) else null,
+                if (preconditionsResult is Disallowed) preconditionsResult.getReason(context) else null,
+                if (getPreconditionsResult is Disallowed) getPreconditionsResult.getReason(context) else null,
+            )
+
+            val preconditionPasses = listOfNotNull(
+                if (screenPreconditionsResult is Allowed) screenPreconditions?.getDescription(context) else null,
+                if (preconditionsResult is Allowed) preconditions?.getDescription(context) else null,
+                if (getPreconditionsResult is Allowed) get?.preconditions?.getDescription(context) else null,
+            )
+
+            val preconditionFailuresString = if (preconditionFailures.isEmpty()) {
+                null
+            } else {
+                "Failing read preconditions: ${preconditionFailures.joinToString(", ")}"
+            }
+
+            val preconditionPassesString = if (preconditionPasses.isEmpty()) {
+                null
+            } else {
+                "Passing read preconditions: ${preconditionPasses.joinToString(", ")}"
+            }
+
+            listOfNotNull(preconditionFailuresString, preconditionPassesString).joinToString(", ").takeIf { it.isNotEmpty() }
+        } else if (this is PreferencesApiScreen) {
+            val screenPreconditionsResult = evaluatePreconditions(context)
+
+            if (screenPreconditionsResult is Disallowed) "Failing screen access preconditions: ${screenPreconditionsResult.getReason(context)}"
+            else if (screenPreconditionsResult is Allowed) "Passing screen access preconditions: ${screenPreconditions?.getDescription(context)}"
+            else null
+        } else if (this is PreferenceAvailabilityProvider) {
+            if (isAvailable(context)) {
+                "Passing availability preconditions: ${availabilityDescription}"
+            } else {
+                "Failing availability preconditions: ${availabilityDescription}"
+            }
+        } else {
+            null
+        }
+}
+
+/** Returns a string describing the preconditions for setting the preference as well as the status of them. */
+suspend fun PreferenceMetadata.resolvedSetPreconditionsAsString(context: Context): String? {
+    return if (this is ApiPreference<*, *>) {
+            val operationContext = getApiOperationContext(context)
+            val setPreconditionsResult = set?.preconditions?.check(operationContext)
+
+            if (setPreconditionsResult is Disallowed) "Failing set preconditions: ${setPreconditionsResult.getReason(context)}"
+            else if (setPreconditionsResult is Allowed) "Passing set preconditions: ${set?.preconditions?.getDescription(context)}"
+            else null
+        } else if (getEnabledDescription() != null) {
+            if (isEnabled(context)) {
+                "Passing set preconditions: ${getEnabledDescription()}"
+            } else {
+                "Failing set preconditions: ${getEnabledDescription()}"
+            }
+        } else {
+            null
+        }
 }
 
 suspend fun PreferenceMetadata.stableAccessPreconditionFailuresAsString(context: Context): String? {
