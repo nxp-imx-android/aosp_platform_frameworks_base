@@ -482,7 +482,7 @@ flag {
 }
 
 flag {
-    name: "cross_display_transition"
+    name: "cross_display_transition_v2"
     namespace: "windowing_frontend"
     description: "Cross fade transition between two displays"
     bug: "481219379"
