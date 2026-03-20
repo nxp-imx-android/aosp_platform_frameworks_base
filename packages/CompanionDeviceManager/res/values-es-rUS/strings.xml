@@ -69,7 +69,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Cambiar la salida multimedia"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Fotos y contenido multimedia"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Notificaciones"</string>
-    <string name="permission_app_streaming" msgid="4488910074894929222">"Replicar pantalla y trans. app"</string>
+    <string name="permission_app_streaming" msgid="4488910074894929222">"Replicar pantalla y transmitir apps"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Transmitir datos a tu <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Duplicar la pantalla"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Transmitir apps"</string>

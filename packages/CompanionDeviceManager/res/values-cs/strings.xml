@@ -35,7 +35,7 @@
     <string name="profile_name_medical" msgid="5617160509499466400">"zdravotní přístroj"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Povolit aplikaci &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; streamovat aplikace a systémové funkce mezi zařízeními <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> a &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"Aplikaci <xliff:g id="APP_NAME">%1$s</xliff:g> budou udělena následující oprávnění:"</string>
-    <string name="helper_summary_app_streaming" msgid="160149899100957545">"Aplikace <xliff:g id="APP_NAME">%1$s</xliff:g> požaduje za vaše zařízení <xliff:g id="DEVICE_NAME">%2$s</xliff:g> oprávnění ke streamování aplikací a systémových funkcí mezi vašimi zařízeními."</string>
+    <string name="helper_summary_app_streaming" msgid="160149899100957545">"Aplikace <xliff:g id="APP_NAME">%1$s</xliff:g> požaduje za <xliff:g id="DEVICE_NAME">%2$s</xliff:g> oprávnění ke streamování aplikací a systémových funkcí mezi vašimi zařízeními."</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
     <string name="title_computer" msgid="5040395223341777259">"Povolte aplikaci &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%3$s</xliff:g>&lt;/strong&gt; přístup k těmto informacím z vašeho zařízení typu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>

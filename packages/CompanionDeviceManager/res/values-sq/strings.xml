@@ -34,17 +34,17 @@
     <string name="summary_glasses" msgid="5469208629679579157">"Këtij aplikacioni do t\'i lejohet qasja te këto leje në pajisjen tënde: <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="profile_name_medical" msgid="5617160509499466400">"pajisje mjekësore"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"Të lejohet që &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; të transmetojë aplikacionet dhe veçoritë e sistemit mes <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> dhe &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
-    <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> do të marrë lejet e mëposhtme:"</string>
-    <string name="helper_summary_app_streaming" msgid="160149899100957545">"<xliff:g id="APP_NAME">%1$s</xliff:g> po kërkon leje në emër të <xliff:g id="DEVICE_NAME">%2$s</xliff:g> për të transmetuar aplikacionet dhe veçoritë e sistemit mes pajisjeve të tua"</string>
+    <string name="summary_app_streaming" msgid="8346968726357732862">"Aplikacionit \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" do t\'i jepen lejet e mëposhtme:"</string>
+    <string name="helper_summary_app_streaming" msgid="160149899100957545">"Aplikacioni \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" po kërkon leje në emër të <xliff:g id="DEVICE_NAME">%2$s</xliff:g> për të transmetuar aplikacionet dhe veçoritë e sistemit mes pajisjeve të tua"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
     <string name="title_computer" msgid="5040395223341777259">"Lejo që &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%3$s</xliff:g>&lt;/strong&gt; të ketë qasje në këto informacione te <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g> po kërkon leje në emër të <xliff:g id="DEVICE_NAME">%2$s</xliff:g> për të marrë qasje te fotografitë, media dhe njoftimet te <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
-    <string name="title_nearby_device_streaming" msgid="5342768208699657581">"Të lejohet që &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; të transmetojë aplikacionet dhe veçoritë e sistemit mes <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> dhe &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
-    <string name="summary_nearby_device_streaming" msgid="7940640272770197219">"<xliff:g id="APP_NAME">%1$s</xliff:g> do të marrë lejet e mëposhtme:"</string>
+    <string name="title_nearby_device_streaming" msgid="5342768208699657581">"Të lejohet që aplikacioni &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; të transmetojë aplikacionet dhe veçoritë e sistemit mes pajisjes sate të llojit <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> dhe &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
+    <string name="summary_nearby_device_streaming" msgid="7940640272770197219">"Aplikacionit \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" do t\'i jepen lejet e mëposhtme:"</string>
     <string name="helper_summary_nearby_device_streaming" msgid="4712712177819370967">"<xliff:g id="APP_NAME">%1$s</xliff:g> po kërkon leje në emër të <xliff:g id="DEVICE_NAME">%2$s</xliff:g> për të transmetuar aplikacione nga <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_virtual_device" msgid="6556338763070329395">"Të lejohet që &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; të transmetojë audion dhe veçoritë e sistemit mes <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> dhe &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
-    <string name="summary_virtual_device" msgid="1062189396947962635">"<xliff:g id="APP_NAME">%2$s</xliff:g> do të marrë lejet e mëposhtme:"</string>
+    <string name="summary_virtual_device" msgid="1062189396947962635">"Aplikacionit \"<xliff:g id="APP_NAME">%2$s</xliff:g>\" do t\'i jepen lejet e mëposhtme:"</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"pajisje"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Ky aplikacion do të mund të sinkronizojë informacione, si p.sh emrin e dikujt që po telefonon, mes telefonit tënd dhe pajisjes së zgjedhur."</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Lejo që &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; të sinkronizojë informacionet si p.sh. informacionet e telefonuesit dhe të ekzekutojë veprimet inteligjente nga <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
@@ -69,7 +69,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Të ndryshojë daljen e medias"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Fotografitë dhe media"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Njoftimet"</string>
-    <string name="permission_app_streaming" msgid="4488910074894929222">"Pasqyro ekranin dhe transmeto aplikacionet"</string>
+    <string name="permission_app_streaming" msgid="4488910074894929222">"Pasqyrimi i ekranit dhe transmetimi i aplikacioneve"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Transmeto të dhënat te <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Pasqyro ekranin tënd"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Transmeto aplikacionet"</string>

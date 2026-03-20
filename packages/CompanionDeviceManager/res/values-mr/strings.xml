@@ -69,7 +69,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"मीडिया आउटपुट बदला"</string>
     <string name="permission_storage" msgid="6831099350839392343">"फोटो आणि मीडिया"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"नोटिफिकेशन"</string>
-    <string name="permission_app_streaming" msgid="4488910074894929222">"स्क्रीन मिरर करा, ॲप्स स्ट्रीम करा"</string>
+    <string name="permission_app_streaming" msgid="4488910074894929222">"स्क्रीन मिरर करणे आणि ॲप्स स्ट्रीम करणे"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"तुमच्या <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> वर डेटा स्ट्रीम करा"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"तुमची स्क्रीन मिरर करा"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"अ‍ॅप्स स्ट्रीम करा"</string>

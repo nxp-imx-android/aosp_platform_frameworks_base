@@ -33,7 +33,7 @@
     <string name="profile_name_glasses" msgid="3506504967216601277">"enhet"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Appen får åtkomst till dessa behörigheter på din <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="profile_name_medical" msgid="5617160509499466400">"medicinteknisk produkt"</string>
-    <string name="title_app_streaming" msgid="237666000400427614">"Vill du tillåta att &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; streamar appar och systemfunktioner mellan <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> och &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
+    <string name="title_app_streaming" msgid="237666000400427614">"Vill du tillåta att &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; streamar appar och systemfunktioner mellan din <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> och &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> får följande behörigheter:"</string>
     <string name="helper_summary_app_streaming" msgid="160149899100957545">"<xliff:g id="APP_NAME">%1$s</xliff:g> begär behörighet för <xliff:g id="DEVICE_NAME">%2$s</xliff:g> att streama appar och systemfunktioner mellan dina enheter."</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>

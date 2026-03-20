@@ -33,9 +33,9 @@
     <string name="profile_name_glasses" msgid="3506504967216601277">"gailua"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Baimen hauek izango ditu aplikazioak <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> erabiltzean:"</string>
     <string name="profile_name_medical" msgid="5617160509499466400">"gailu medikoak"</string>
-    <string name="title_app_streaming" msgid="237666000400427614">"Zure <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> eta &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; gailuen artean aplikazioak eta sistemaren eginbideak zuzenean igortzeko baimena eman nahi diozu &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; aplikazioari?"</string>
+    <string name="title_app_streaming" msgid="237666000400427614">"Hauen artean aplikazioak eta sistemaren eginbideak zuzenean igortzeko baimena eman nahi diozu &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; aplikazioari?: <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> eta &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;."</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"Baimen hauek emango zaizkio <xliff:g id="APP_NAME">%1$s</xliff:g> aplikazioari:"</string>
-    <string name="helper_summary_app_streaming" msgid="160149899100957545">"Gailuen artean aplikazioak eta sistemaren eginbideak zuzenean igortzeko baimena eskatzen ari da <xliff:g id="APP_NAME">%1$s</xliff:g>, <xliff:g id="DEVICE_NAME">%2$s</xliff:g> gailuaren izenean"</string>
+    <string name="helper_summary_app_streaming" msgid="160149899100957545">"Gailuen artean aplikazioak eta sistemaren eginbideak zuzenean igortzeko baimena eskatzen ari da <xliff:g id="APP_NAME">%1$s</xliff:g>, honen izenean: <xliff:g id="DEVICE_NAME">%2$s</xliff:g>"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
     <string name="title_computer" msgid="5040395223341777259">"Eman informazioa <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> gailutik hartzeko baimena &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%3$s</xliff:g>&lt;/strong&gt; gailuari"</string>

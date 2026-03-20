@@ -33,9 +33,9 @@
     <string name="profile_name_glasses" msgid="3506504967216601277">"裝置"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"此應用程式將可在<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>上取得以下權限"</string>
     <string name="profile_name_medical" msgid="5617160509499466400">"醫療裝置"</string>
-    <string name="title_app_streaming" msgid="237666000400427614">"要允許「<xliff:g id="APP_NAME">%1$s</xliff:g>」&lt;strong&gt;&lt;/strong&gt;在你的<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>和「<xliff:g id="DEVICE_NAME">%3$s</xliff:g>」之間串流應用程式和系統功能嗎&lt;strong&gt;&lt;/strong&gt;？"</string>
+    <string name="title_app_streaming" msgid="237666000400427614">"要允許「<xliff:g id="APP_NAME">%1$s</xliff:g>」&lt;strong&gt;&lt;/strong&gt;在你的<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>和「<xliff:g id="DEVICE_NAME">%3$s</xliff:g>」間串流應用程式和系統功能嗎&lt;strong&gt;&lt;/strong&gt;？"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"「<xliff:g id="APP_NAME">%1$s</xliff:g>」將獲授予以下權限："</string>
-    <string name="helper_summary_app_streaming" msgid="160149899100957545">"「<xliff:g id="APP_NAME">%1$s</xliff:g>」正在代表「<xliff:g id="DEVICE_NAME">%2$s</xliff:g>」要求權限，以便在裝置之間串流應用程式和系統功能"</string>
+    <string name="helper_summary_app_streaming" msgid="160149899100957545">"「<xliff:g id="APP_NAME">%1$s</xliff:g>」正在代表<xliff:g id="DEVICE_NAME">%2$s</xliff:g>要求權限，以便在裝置間串流應用程式和系統功能"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
     <string name="title_computer" msgid="5040395223341777259">"允許 <xliff:g id="DISPLAY_NAME">%3$s</xliff:g> 在<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>上存取這項資料"</string>
