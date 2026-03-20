@@ -139,6 +139,21 @@ public class InputSessionTest extends SysuiTestCase {
         verify(mInputMonitor, times(1)).pilferPointers();
     }
 
+    @Test
+    public void testExplicitPilfer() {
+        createSession(true);
+        mSession.pilfer();
+        verify(mInputMonitor).pilferPointers();
+    }
+
+    @Test
+    public void testExplicitPilferOnce() {
+        createSession(true);
+        mSession.pilfer();
+        mSession.pilfer();
+        verify(mInputMonitor, times(1)).pilferPointers();
+    }
+
     /**
      * Ensures components are properly disposed.
      */

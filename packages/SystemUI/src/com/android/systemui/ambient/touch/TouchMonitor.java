@@ -252,6 +252,22 @@ public class TouchMonitor {
         public Rect getBounds() {
             return mBounds;
         }
+
+        @Override
+        public void pilfer() {
+            mTouchMonitor.mMainExecutor.execute(() -> {
+                //InputSession will pilfer the touch event from the rest of Android OS
+                if (mTouchMonitor.mCurrentInputSession != null) {
+                    mTouchMonitor.mCurrentInputSession.pilfer();
+                }
+
+                //TouchMonitor will isolate this touch event from other TouchHandlers.
+                //Making this caller the only TouchHandler that will handle this touch event.
+                final HashSet<TouchSessionImpl> consumingSessions = new HashSet<>();
+                consumingSessions.add(this);
+                mTouchMonitor.isolate(consumingSessions);
+            });
+        }
     }
 
     /**

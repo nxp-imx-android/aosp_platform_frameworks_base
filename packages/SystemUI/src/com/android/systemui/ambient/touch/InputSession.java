@@ -76,12 +76,22 @@ public class InputSession {
 
                     if (ev instanceof MotionEvent
                             && mGestureDetector.onTouchEvent((MotionEvent) ev)
-                            && pilferOnGestureConsume
-                            && !mPilfering) {
-                        mPilfering = true;
-                        mInputMonitor.pilferPointers();
+                            && pilferOnGestureConsume) {
+                        pilfer();
                     }
                 });
+    }
+
+    /**
+     * Explicitly requests pilfering of a touch event.
+     * This is useful for asynchronous gestures (e.g. Long Press) where the consumption cannot
+     * be determined synchronously during an InputEvent.
+     */
+    public void pilfer() {
+        if (!mPilfering) {
+            mPilfering = true;
+            mInputMonitor.pilferPointers();
+        }
     }
 
     /**
