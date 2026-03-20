@@ -59,10 +59,7 @@ constructor(
                 availableModes =
                     mutableListOf(RingerMode(RINGER_MODE_NORMAL), RingerMode(RINGER_MODE_SILENT))
                         .also { list ->
-                            if (
-                                controller.hasVibrator() ||
-                                    state.ringerModeInternal == RINGER_MODE_VIBRATE
-                            ) {
+                            if (controller.hasVibrator()) {
                                 list.add(RingerMode(RINGER_MODE_VIBRATE))
                             }
                         },

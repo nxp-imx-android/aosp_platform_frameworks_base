@@ -24,8 +24,10 @@ import com.android.systemui.qs.pipeline.dagger.QSTileListLog
 import com.android.systemui.qs.pipeline.dagger.QSUpgraderLog
 import com.android.systemui.qs.pipeline.data.model.RestoreData
 import com.android.systemui.qs.pipeline.data.repository.UserTileSpecRepository
+import com.android.systemui.qs.pipeline.domain.model.AutoAddSignal
 import com.android.systemui.qs.pipeline.domain.upgrade.CustomTileAddedUpgrade
 import com.android.systemui.qs.pipeline.domain.upgrade.describe
+import com.android.systemui.qs.pipeline.shared.InternetTileMigration
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import javax.inject.Inject
 
@@ -200,7 +202,12 @@ constructor(
         )
     }
 
-    fun logTileAutoAdded(userId: Int, spec: TileSpec, position: Int) {
+    fun logTileAutoAdded(
+        userId: Int,
+        spec: TileSpec,
+        position: Int,
+        size: AutoAddSignal.AutoAddSize,
+    ) {
         tileAutoAddLogBuffer.log(
             AUTO_ADD_TAG,
             LogLevel.DEBUG,
@@ -208,8 +215,9 @@ constructor(
                 int1 = userId
                 int2 = position
                 str1 = spec.toString()
+                str2 = size.toString()
             },
-            { "Tile $str1 auto added for user $int1 at position $int2" },
+            { "Tile $str1 auto added for user $int1 at position $int2 ($str2)" },
         )
     }
 
@@ -234,6 +242,18 @@ constructor(
                 str1 = spec.toString()
             },
             { "Tile $str1 unmarked as auto-added for user $int1" },
+        )
+    }
+
+    fun logTileMarked(userId: Int, spec: TileSpec) {
+        tileAutoAddLogBuffer.log(
+            AUTO_ADD_TAG,
+            LogLevel.DEBUG,
+            {
+                int1 = userId
+                str1 = spec.toString()
+            },
+            { "Tile $str1 marked as auto-added for user $int1" },
         )
     }
 
@@ -332,15 +352,27 @@ constructor(
         )
     }
 
-    fun logInternetTileMigrated(userId: Int, scenario: InternetTileMigrationScenario) {
+    fun logInternetTileMigrationOnRestore(userId: Int) {
+        restoreLogBuffer.log(
+            RESTORE_TAG,
+            LogLevel.INFO,
+            {
+                str1 = InternetTileMigration.migrationString
+                int1 = userId
+            },
+            { "Internet tile migrated in restore for user $int1: $str1" },
+        )
+    }
+
+    fun logInternetTileMigrationOnTileLoad(userId: Int) {
         tileListLogBuffer.log(
             TILE_LIST_TAG,
-            LogLevel.DEBUG,
+            LogLevel.INFO,
             {
+                str1 = InternetTileMigration.migrationString
                 int1 = userId
-                str1 = scenario.readable
             },
-            { "Internet tile migrated for user $int1: $str1" },
+            { "Internet tile migrated in loading from settings for user $int1: $str1" },
         )
     }
 
@@ -357,36 +389,5 @@ constructor(
     enum class RestorePreprocessorStep {
         PREPROCESSING,
         POSTPROCESSING,
-    }
-
-    enum class InternetTileMigrationScenario(val readable: String) {
-        LARGE_INTERNET_TO_LARGE_WIFI(
-            "Large internet tile migrated to large wifi. Cell not supported"
-        ),
-        LARGE_INTERNET_TO_SMALL_WIFI_CELL(
-            "Large internet tile migrated to small wifi and small cell"
-        ),
-        SMALL_INTERNET_TO_SMALL_WIFI("Small internet tile migrated to small wifi"),
-        WIFI_CELL_ADJACENT_TO_LARGE_INTERNET(
-            "Wifi and cell tiles next to each other migrated to large internet"
-        ),
-        SMALL_WIFI_CELL_NOT_ADJACENT_TO_SMALL_INTERNET(
-            "Small wifi tile with not adjacent cell tile migrated to small internet"
-        ),
-        LARGE_WIFI_CELL_NOT_ADJACENT_TO_LARGE_INTERNET(
-            "Large wifi tile with not adjacent cell tile migrated to large internet"
-        ),
-        SMALL_WIFI_TO_SMALL_INTERNET_NO_CELL(
-            "Small wifi tile (no cell) migrated to small internet tile"
-        ),
-        LARGE_WIFI_TO_LARGE_INTERNET_NO_CELL(
-            "Large wifi tile (no cell) migrated to large internet tile"
-        ),
-        SMALL_CELL_TO_SMALL_INTERNET_NO_WIFI(
-            "Small cell tile (no wifi) migrated to small internet tile"
-        ),
-        LARGE_CELL_TO_LARGE_INTERNET_NO_WIFI(
-            "Large cell tile (no wifi) migrated to large internet tile"
-        ),
     }
 }

@@ -114,8 +114,6 @@ class VolumeDialogControllerImplTestKt : SysuiTestCase() {
                         wakefulnessLifecycle,
                         keyguardManager,
                         activityManager,
-                        mock {},
-                        mock {},
                         mock { on { userContext }.thenReturn(applicationContext) },
                         dumpManager,
                         fakeAudioSharingInteractor,

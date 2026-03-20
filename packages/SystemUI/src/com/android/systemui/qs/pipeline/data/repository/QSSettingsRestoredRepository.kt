@@ -12,6 +12,7 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.qs.pipeline.data.model.RestoreData
 import com.android.systemui.qs.pipeline.data.repository.QSSettingsRestoredRepository.Companion.BUFFER_CAPACITY
 import com.android.systemui.qs.pipeline.data.repository.TilesSettingConverter.toTilesList
+import com.android.systemui.qs.pipeline.shared.InternetTileMigration.migrateInternetTile
 import com.android.systemui.qs.pipeline.shared.logging.QSPipelineLogger
 import com.android.systemui.statusbar.policy.DeviceProvisionedController
 import com.android.systemui.util.kotlin.emitOnStart
@@ -149,7 +150,11 @@ constructor(
             }
 
         return RestoreData(
-            (tiles.getStringExtra(Intent.EXTRA_SETTING_NEW_VALUE) ?: "").toTilesList(),
+            (tiles.getStringExtra(Intent.EXTRA_SETTING_NEW_VALUE) ?: "").toTilesList().run {
+                migrateInternetTile().also { migrated ->
+                    if (migrated != this) logger.logInternetTileMigrationOnRestore(user)
+                }
+            },
             (autoAdd.getStringExtra(Intent.EXTRA_SETTING_NEW_VALUE) ?: "").toTilesSet(),
             user,
         )
