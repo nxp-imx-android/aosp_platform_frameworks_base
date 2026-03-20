@@ -2,7 +2,6 @@
 // - style=java
 // - normalize-abstract-modifier=no
 // - normalize-final-modifier=no
-// - overloaded-method-order=source
 // - sort-whole-extends-list=no
 // - strip-java-lang-prefix=legacy
 // - type-argument-spacing=legacy
@@ -99,8 +98,8 @@ package android.graphics {
   }
 
   public class Canvas {
-    method @Deprecated public boolean clipRegion(@NonNull android.graphics.Region, @NonNull android.graphics.Region.Op);
     method @Deprecated public boolean clipRegion(@NonNull android.graphics.Region);
+    method @Deprecated public boolean clipRegion(@NonNull android.graphics.Region, @NonNull android.graphics.Region.Op);
     method @Deprecated public int save(int);
     field @Deprecated public static final int CLIP_SAVE_FLAG = 2; // 0x2
     field @Deprecated public static final int CLIP_TO_LAYER_SAVE_FLAG = 16; // 0x10
@@ -111,8 +110,8 @@ package android.graphics {
 
   @Deprecated public class LayerRasterizer extends android.graphics.Rasterizer {
     ctor @Deprecated public LayerRasterizer();
-    method @Deprecated public void addLayer(android.graphics.Paint, float, float);
     method @Deprecated public void addLayer(android.graphics.Paint);
+    method @Deprecated public void addLayer(android.graphics.Paint, float, float);
   }
 
   public class Paint {

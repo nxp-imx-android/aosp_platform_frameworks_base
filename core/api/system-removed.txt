@@ -1,6 +1,5 @@
 // Signature format: 6.0
 // - style=java
-// - overloaded-method-order=source
 // - strip-java-lang-prefix=legacy
 // - type-argument-spacing=legacy
 package android.app {
@@ -38,8 +37,8 @@ package android.app.prediction {
 
   public static final class AppTarget.Builder {
     ctor @Deprecated public AppTarget.Builder(@NonNull android.app.prediction.AppTargetId);
-    method @Deprecated @NonNull public android.app.prediction.AppTarget.Builder setTarget(@NonNull String, @NonNull android.os.UserHandle);
     method @Deprecated @NonNull public android.app.prediction.AppTarget.Builder setTarget(@NonNull android.content.pm.ShortcutInfo);
+    method @Deprecated @NonNull public android.app.prediction.AppTarget.Builder setTarget(@NonNull String, @NonNull android.os.UserHandle);
   }
 
 }
@@ -309,8 +308,8 @@ package android.telephony.ims {
   }
 
   @Deprecated public static final class SipDelegateImsConfiguration.Builder {
-    ctor @Deprecated public SipDelegateImsConfiguration.Builder(int);
     ctor @Deprecated public SipDelegateImsConfiguration.Builder(@NonNull android.telephony.ims.SipDelegateImsConfiguration);
+    ctor @Deprecated public SipDelegateImsConfiguration.Builder(int);
     method @Deprecated @NonNull public android.telephony.ims.SipDelegateImsConfiguration.Builder addBoolean(@NonNull String, boolean);
     method @Deprecated @NonNull public android.telephony.ims.SipDelegateImsConfiguration.Builder addInt(@NonNull String, int);
     method @Deprecated @NonNull public android.telephony.ims.SipDelegateImsConfiguration.Builder addString(@NonNull String, @NonNull String);
