@@ -337,6 +337,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                                     .setFocusedA11yEmbeddedConnectionReceiverOnDisplay(
                                             mVirtualDisplayId,
                                             firstMirror.getA11yEmbeddedConnectionReceiver());
+                            mVirtualDevice.setDisplayImePolicy(mVirtualDisplayId,
+                                    WindowManager.DISPLAY_IME_POLICY_FALLBACK_DISPLAY);
 
                         } else {
                             // If all mirrors are non-interactive, disable top focus stealing for
@@ -346,6 +348,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                             mWindowManagerInternal
                                     .setFocusedA11yEmbeddedConnectionReceiverOnDisplay(
                                             mVirtualDisplayId, null);
+                            mVirtualDevice.setDisplayImePolicy(mVirtualDisplayId,
+                                    WindowManager.DISPLAY_IME_POLICY_HIDE);
                         }
                     }
                     mStatsController.onMirrorViewInteractive(isInteractive);
