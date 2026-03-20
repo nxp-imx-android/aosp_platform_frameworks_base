@@ -1,4 +1,6 @@
-// Signature format: 2.0
+// Signature format: 6.0
+// - style=java
+// - overloaded-method-order=source
 package javax.obex {
 
   public class ObexPacket {
