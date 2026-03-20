@@ -25,6 +25,7 @@ import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.compat.annotation.UnsupportedAppUsage;
+import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.net.Uri;
 import android.os.BadParcelableException;
@@ -3138,8 +3139,22 @@ public final class Call {
                     try {
                         final Object value = bundle.get(key);
                         final Object newValue = newBundle.get(key);
+                        // Intent class does not override equals API so leverage
+                        // Intent.filterEquals instead:
+                        if (value instanceof Intent intentValue &&
+                                newValue instanceof Intent newIntentValue) {
+                            if (intentValue.filterEquals(newIntentValue)) {
+                                continue;
+                            } else {
+                                Log.d("Call", "areBundlesEqual Intents are not equal");
+                                return false;
+                            }
+                        }
                         if (value instanceof Bundle && newValue instanceof Bundle) {
-                            if (!areBundlesEqual((Bundle) value, (Bundle) newValue)) {
+                            if (areBundlesEqual((Bundle) value, (Bundle) newValue)) {
+                                continue;
+                            } else {
+                                Log.d("Call", "areBundlesEqual Bundles are not equal");
                                 return false;
                             }
                         }
