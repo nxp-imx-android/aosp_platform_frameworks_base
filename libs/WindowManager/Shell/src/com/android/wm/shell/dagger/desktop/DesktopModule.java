@@ -102,9 +102,8 @@ public class DesktopModule {
             DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider
     ) {
         return new DesktopHomeScreenPeekController(context, peekTransitionHandlerLazy,
-                displayController, shellController, desktopUserRepositories,
-                shellTaskOrganizer, desktopWallpaperActivityUtils,
-                desktopWallpaperActivityTokenProvider);
+                displayController, shellController, desktopUserRepositories, shellTaskOrganizer,
+                desktopWallpaperActivityUtils, desktopWallpaperActivityTokenProvider);
     }
 
     @WMSingleton

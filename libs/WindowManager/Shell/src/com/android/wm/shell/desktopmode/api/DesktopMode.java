@@ -112,4 +112,7 @@ public interface DesktopMode {
 
     /** Check is a specific displayId is in DesktopMode. */
     boolean isDisplayInDesktopMode(int displayId);
+
+    /** Called when requested to toggle peek state in desktop mode. */
+    void togglePeek(int displayId);
 }

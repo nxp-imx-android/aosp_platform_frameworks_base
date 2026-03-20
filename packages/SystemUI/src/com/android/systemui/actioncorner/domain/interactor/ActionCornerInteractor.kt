@@ -16,6 +16,7 @@
 
 package com.android.systemui.actioncorner.domain.interactor
 
+import android.util.Log
 import android.view.IWindowManager
 import com.android.systemui.LauncherProxyService
 import com.android.systemui.actioncorner.data.model.ActionCornerRegion
@@ -32,6 +33,7 @@ import com.android.systemui.actioncorner.data.model.ActionType.NOTE
 import com.android.systemui.actioncorner.data.model.ActionType.NOTIFICATIONS
 import com.android.systemui.actioncorner.data.model.ActionType.OVERVIEW
 import com.android.systemui.actioncorner.data.model.ActionType.QUICK_SETTINGS
+import com.android.systemui.actioncorner.data.model.ActionType.TOGGLE_DESKTOP_HOME_SCREEN_PEEK
 import com.android.systemui.actioncorner.data.repository.ActionCornerRepository
 import com.android.systemui.actioncorner.data.repository.ActionCornerSettingRepository
 import com.android.systemui.dagger.SysUISingleton
@@ -43,6 +45,8 @@ import com.android.systemui.notetask.NoteTaskEntryPoint
 import com.android.systemui.shared.system.actioncorner.ActionCornerConstants
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.policy.data.repository.UserSetupRepository
+import com.android.wm.shell.desktopmode.api.DesktopMode
+import java.util.Optional
 import javax.inject.Inject
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.combine
@@ -66,6 +70,7 @@ constructor(
     private val commandQueue: CommandQueue,
     private val windowManager: IWindowManager,
     private val noteTaskController: NoteTaskController,
+    private val desktopMode: Optional<DesktopMode>,
 ) : ExclusiveActivatable() {
 
     override suspend fun onActivated(): Nothing {
@@ -114,6 +119,17 @@ constructor(
                             entryPoint = NoteTaskEntryPoint.ACTION_CORNER
                         )
                     }
+                    TOGGLE_DESKTOP_HOME_SCREEN_PEEK -> {
+                        if (desktopMode.isPresent) {
+                            desktopMode.get().togglePeek(it.displayId)
+                        } else {
+                            Log.w(
+                                TAG,
+                                "TOGGLE_DESKTOP_HOME_SCREEN_PEEK, desktopMode expected " +
+                                    "to be present, but is not.",
+                            )
+                        }
+                    }
                     NONE -> {}
                 }
             }
@@ -127,5 +143,9 @@ constructor(
             BOTTOM_LEFT -> actionCornerSettingRepository.bottomLeftCornerAction.value
             BOTTOM_RIGHT -> actionCornerSettingRepository.bottomRightCornerAction.value
         }
+    }
+
+    companion object {
+        private const val TAG = "ActionCornerInteractor"
     }
 }
