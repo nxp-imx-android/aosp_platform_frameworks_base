@@ -3,7 +3,6 @@
 // - normalize-abstract-modifier=no
 // - normalize-final-modifier=no
 // - sort-whole-extends-list=no
-// - type-argument-spacing=legacy
 package android.app {
 
   public class Notification implements android.os.Parcelable {
@@ -80,7 +79,7 @@ package android.database {
   public abstract class AbstractCursor implements android.database.CrossProcessCursor {
     field protected Long mCurrentRowID;
     field protected int mRowIdColumnIndex;
-    field protected java.util.HashMap<Long,java.util.Map<String,Object>> mUpdatedRows;
+    field protected java.util.HashMap<Long, java.util.Map<String, Object>> mUpdatedRows;
   }
 
 }
