@@ -96,7 +96,7 @@ public class AppCompatEmbeddingRuleControllerTest {
     public void testCreateVirtualGamepadOverrideRule() {
         final EmbeddingRule embeddingRule =
                 AppCompatEmbeddingRuleController.createVirtualGamepadOverrideRule(
-                        "package", "activity", 100, "self-package", 1000);
+                        "package", "activity", 100, "self-package", 1000, 10000);
         assertNotNull(embeddingRule);
         assertTrue(embeddingRule instanceof SplitPlaceholderRule);
 
@@ -111,7 +111,8 @@ public class AppCompatEmbeddingRuleControllerTest {
     public void testCreateVirtualGamepadOverrideRule_emptyConfig() {
         final EmbeddingRule embeddingRule =
                 AppCompatEmbeddingRuleController.createVirtualGamepadOverrideRule(
-                        "" /* packageName */, "" /* activityName */, 100, "self-package", 1000);
+                        "" /* packageName */, "" /* activityName */, 100, "self-package", 1000,
+                        10000);
         assertNull(embeddingRule);
     }
 
