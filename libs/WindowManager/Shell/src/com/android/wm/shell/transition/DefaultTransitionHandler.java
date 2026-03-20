@@ -429,9 +429,12 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
             }
 
             if (mode == TRANSIT_CHANGE) {
-                // If task is child task, only set position in parent and update crop when needed.
+                // If task is child task, only set position in parent and update crop when needed,
+                // unless the task is changing displays.
                 if (isTask && change.getParent() != null
-                        && info.getChange(change.getParent()).getTaskInfo() != null) {
+                        && info.getChange(change.getParent()).getTaskInfo() != null
+                        && !(com.android.window.flags.Flags.crossDisplayTransition()
+                                && change.isCrossDisplay())) {
                     final Point positionInParent = change.getTaskInfo().positionInParent;
                     startTransaction.setPosition(change.getLeash(),
                             positionInParent.x, positionInParent.y);
@@ -475,8 +478,8 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                 }
 
                 // Display move
-                if (com.android.window.flags.Flags.crossDisplayTransition() &&
-                        change.getStartDisplayId() != change.getEndDisplayId()) {
+                if (com.android.window.flags.Flags.crossDisplayTransition()
+                        && change.isCrossDisplay()) {
                     startDisplayMoveAnimation(startTransaction, change, info,
                             onAnimFinish, mMainExecutor).ifPresent(animations::add);
                     continue;
