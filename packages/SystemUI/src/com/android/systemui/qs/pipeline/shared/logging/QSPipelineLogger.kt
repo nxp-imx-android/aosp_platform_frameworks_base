@@ -245,6 +245,18 @@ constructor(
         )
     }
 
+    fun logTileMarked(userId: Int, spec: TileSpec) {
+        tileAutoAddLogBuffer.log(
+            AUTO_ADD_TAG,
+            LogLevel.DEBUG,
+            {
+                int1 = userId
+                str1 = spec.toString()
+            },
+            { "Tile $str1 marked as auto-added for user $int1" },
+        )
+    }
+
     fun logSettingsRestoredOnUserSetupComplete(userId: Int) {
         restoreLogBuffer.log(
             RESTORE_TAG,

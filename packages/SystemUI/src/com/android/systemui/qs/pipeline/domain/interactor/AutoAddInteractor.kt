@@ -146,6 +146,10 @@ constructor(
                         qsPipelineLogger.logTileUnmarked(userId, signal.spec)
                         repository.unmarkTileAdded(userId, signal.spec)
                     }
+                    is AutoAddSignal.AddTracking -> {
+                        qsPipelineLogger.logTileMarked(userId, signal.spec)
+                        repository.markTileAdded(userId, signal.spec)
+                    }
                 }
             }
     }

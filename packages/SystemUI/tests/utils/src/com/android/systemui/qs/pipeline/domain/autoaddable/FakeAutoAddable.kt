@@ -54,6 +54,10 @@ class FakeAutoAddable(private val spec: TileSpec, override val autoAddTracking: 
         getFlow(userId).value = AutoAddSignal.RemoveTracking(spec)
     }
 
+    fun sendAddTrackingSignal(userId: Int) {
+        getFlow(userId).value = AutoAddSignal.AddTracking(spec)
+    }
+
     override val description: String
         get() = "FakeAutoAddable($spec)"
 }
