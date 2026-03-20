@@ -49,9 +49,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -122,9 +124,24 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                 hostState = viewModel.snackbarHostState,
                 modifier = Modifier.padding(top = 12.dp),
             ) { data ->
+                val shape = RoundedCornerShape(size = 50.dp)
                 Surface(
-                    modifier = Modifier.width(496.dp).height(84.dp),
-                    shape = RoundedCornerShape(size = 50.dp),
+                    modifier =
+                        Modifier.width(496.dp)
+                            .height(84.dp)
+                            .shadow(
+                                elevation = 8.dp,
+                                shape = shape,
+                                spotColor = Color(0x26000000),
+                                ambientColor = Color(0x26000000),
+                            )
+                            .shadow(
+                                elevation = 3.dp,
+                                shape = shape,
+                                spotColor = Color(0x4D000000),
+                                ambientColor = Color(0x4D000000),
+                            ),
+                    shape = shape,
                     color = MaterialTheme.colorScheme.surfaceBright,
                 ) {
                     Box(
