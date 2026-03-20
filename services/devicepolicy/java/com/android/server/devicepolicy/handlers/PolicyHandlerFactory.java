@@ -29,6 +29,12 @@ public class PolicyHandlerFactory {
     public static List<PolicyHandler<?>> build() {
         List<PolicyHandler<?>> handlers = new ArrayList<>();
 
+        // Note: You don't need to manually add a handler here if your policy handler is
+        // completely default, so don't write
+        //    handlers.add(new PolicyHandler<Type>(PolicyIdentifier.THE_KEY));
+        // Instead, simply write nothing and the system will create a policy handler for
+        // you.
+
         // Keep the policy handlers sorted, first on type and then on PolicyIdentifier.
         // go/keep-sorted start ignore_prefixes='handlers.add(new '
 
@@ -41,12 +47,6 @@ public class PolicyHandlerFactory {
                         PolicyDefinition.SCREEN_CAPTURE_DISABLED,
                         /* trueValue= */ PolicyIdentifier.SCREEN_CAPTURE_DISALLOWED,
                         /* falseValue= */ PolicyIdentifier.SCREEN_CAPTURE_ALLOWED));
-        handlers.add(new PolicyHandler<Integer>(PolicyIdentifier.AUTO_TIME));
-        handlers.add(new PolicyHandler<Integer>(PolicyIdentifier.AUTO_TIME_ZONE));
-        handlers.add(
-                new PolicyHandler<Integer>(PolicyIdentifier.MANAGED_ESIM_OUTGOING_TRANSFER_POLICY));
-        handlers.add(new PolicyHandler<List<String>>(PolicyIdentifier.CONTENT_RESTRICTION_APPS));
-        handlers.add(new PolicyHandler<String>(PolicyIdentifier.LOCKSCREEN_MESSAGE));
         // go/keep-sorted end
 
         return handlers;

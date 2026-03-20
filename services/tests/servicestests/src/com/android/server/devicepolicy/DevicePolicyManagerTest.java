@@ -117,6 +117,8 @@ import android.app.admin.PreferentialNetworkServiceConfig;
 import android.app.admin.SystemUpdatePolicy;
 import android.app.admin.WifiSsidPolicy;
 import android.app.admin.flags.Flags;
+import android.app.admin.metadata.GeneratedPolicyMetadata;
+import android.app.admin.metadata.PolicyMetadata;
 import android.app.role.RoleManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -171,6 +173,7 @@ import com.android.internal.widget.LockscreenCredential;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.devicepolicy.DevicePolicyManagerService.RestrictionsListener;
+import com.android.server.devicepolicy.handlers.PolicyDefinitionFactory;
 import com.android.server.locksettings.EscrowTokenStateChangeCallback;
 import com.android.server.pm.RestrictionsSet;
 import com.android.server.pm.UserManagerInternal;
@@ -455,6 +458,18 @@ public class DevicePolicyManagerTest extends DpmTestBase {
 
         // But should still register the lite one
         assertThat(LocalServices.getService(DevicePolicyManagerLiteInternal.class)).isNotNull();
+    }
+
+    @Test
+    public void testCreatePolicyHandlers_includesAllMetadata() throws Exception {
+        var generatedPolicyDefinitions = PolicyDefinitionFactory.buildAll();
+        var handlers = DevicePolicyManagerService.createPolicyHandlers(
+                dpms, generatedPolicyDefinitions);
+
+        for (PolicyMetadata<?> metadata : GeneratedPolicyMetadata.getAllPolicyMetadata()) {
+            assertThat(handlers).containsKey(metadata.getId().getId());
+            assertThat(handlers.get(metadata.getId().getId())).isNotNull();
+        }
     }
 
     @Test
