@@ -1,6 +1,5 @@
 // Signature format: 6.0
 // - style=java
-// - flagged-api-inheritance=none
 // - normalize-abstract-modifier=no
 // - normalize-final-modifier=no
 // - overloaded-method-order=source

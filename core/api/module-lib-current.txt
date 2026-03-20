@@ -1,6 +1,5 @@
 // Signature format: 6.0
 // - style=java
-// - flagged-api-inheritance=none
 // - overloaded-method-order=source
 // - strip-java-lang-prefix=legacy
 // - type-argument-spacing=legacy
@@ -215,18 +214,18 @@ package android.media {
     field public static final int ROUTING_RESULT_TIMED_OUT = 3; // 0x3
   }
 
-  public static final class AudioModeSession.AudioRoute {
+  @FlaggedApi("android.media.audio.fused_telecom_route_api") public static final class AudioModeSession.AudioRoute {
     method @Nullable public android.media.AudioDeviceAttributes getInputDevice();
     method @NonNull public android.media.AudioDeviceAttributes getPrimaryDevice();
   }
 
-  public static final class AudioModeSession.AudioRoute.Builder {
+  @FlaggedApi("android.media.audio.fused_telecom_route_api") public static final class AudioModeSession.AudioRoute.Builder {
     ctor public AudioModeSession.AudioRoute.Builder(@NonNull android.media.AudioDeviceAttributes);
     method @NonNull public android.media.AudioModeSession.AudioRoute build();
     method @NonNull public android.media.AudioModeSession.AudioRoute.Builder setInputDevice(@Nullable android.media.AudioDeviceAttributes);
   }
 
-  public static interface AudioModeSession.Callback {
+  @FlaggedApi("android.media.audio.fused_telecom_route_api") public static interface AudioModeSession.Callback {
     method public void onAvailableRoutesChanged(@NonNull java.util.List<android.media.AudioModeSession.AudioRoute>);
     method public void onClosed();
     method public void onExternalRequestedRouteChanged(@Nullable android.media.AudioModeSession.AudioRoute, int);
@@ -235,14 +234,14 @@ package android.media {
     method public void onRoutingResult(int, @Nullable android.media.AudioModeSession.AudioRoute, int);
   }
 
-  public static final class AudioModeSession.Request {
+  @FlaggedApi("android.media.audio.fused_telecom_route_api") public static final class AudioModeSession.Request {
     method @Nullable public android.content.AttributionSource getClientAttribution();
     method public int getInitialMode();
     method @NonNull public java.util.List<java.lang.Integer> getNoFocusModes();
     method public boolean isDisplayActiveUseCase();
   }
 
-  public static final class AudioModeSession.Request.Builder {
+  @FlaggedApi("android.media.audio.fused_telecom_route_api") public static final class AudioModeSession.Request.Builder {
     ctor public AudioModeSession.Request.Builder();
     method @NonNull public android.media.AudioModeSession.Request build();
     method @NonNull public android.media.AudioModeSession.Request.Builder setClientAttribution(@Nullable android.content.AttributionSource);
@@ -507,11 +506,11 @@ package android.os {
     method @NonNull public android.os.ProfilingServiceManager.ServiceRegisterer getProfilingServiceRegisterer();
   }
 
-  public static class ProfilingServiceManager.ServiceNotFoundException extends java.lang.Exception {
+  @FlaggedApi("android.os.telemetry_apis_framework_initialization") public static class ProfilingServiceManager.ServiceNotFoundException extends java.lang.Exception {
     ctor public ProfilingServiceManager.ServiceNotFoundException(@NonNull String);
   }
 
-  public static final class ProfilingServiceManager.ServiceRegisterer {
+  @FlaggedApi("android.os.telemetry_apis_framework_initialization") public static final class ProfilingServiceManager.ServiceRegisterer {
     method @Nullable public android.os.IBinder get();
     method @Nullable public android.os.IBinder getOrThrow() throws android.os.ProfilingServiceManager.ServiceNotFoundException;
   }
@@ -551,7 +550,7 @@ package android.os {
     method @NonNull public static android.os.TelecomServiceManager.ServiceRegisterer getTelecomServiceRegisterer();
   }
 
-  public static final class TelecomServiceManager.ServiceRegisterer {
+  @FlaggedApi("android.telecom.flags.telecom_mainline_api") public static final class TelecomServiceManager.ServiceRegisterer {
     method @Nullable public android.os.IBinder get();
   }
 
@@ -559,7 +558,7 @@ package android.os {
     method @NonNull public android.os.TelephonyServiceManager.ServiceRegisterer getPhoneNumberServiceRegisterer();
   }
 
-  public static final class TelephonyServiceManager.ServiceRegisterer {
+  @FlaggedApi("com.android.internal.telephony.flags.enable_phone_number_parsing_api") public static final class TelephonyServiceManager.ServiceRegisterer {
     method @Nullable public android.os.IBinder get();
     method public void publishBinderService(@NonNull android.os.IBinder);
   }

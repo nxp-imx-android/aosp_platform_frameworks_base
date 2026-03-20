@@ -1,6 +1,5 @@
 // Signature format: 6.0
 // - style=java
-// - flagged-api-inheritance=none
 // - normalize-abstract-modifier=no
 // - normalize-final-modifier=no
 // - overloaded-method-order=source
@@ -5287,7 +5286,7 @@ package android.app {
     field public static final int INTERACTION_TYPE_USER_SCHEDULED = 2; // 0x2
   }
 
-  public static final class AppInteractionAttribution.Builder {
+  @FlaggedApi("android.app.appfunctions.flags.enable_app_interaction_api") public static final class AppInteractionAttribution.Builder {
     ctor public AppInteractionAttribution.Builder(int);
     method @NonNull public android.app.AppInteractionAttribution build();
     method @NonNull public android.app.AppInteractionAttribution.Builder setCustomInteractionType(@NonNull String);
@@ -7218,7 +7217,7 @@ package android.app {
     method @NonNull public android.app.Notification.Metric.MetricValue getValue();
   }
 
-  public static final class Notification.Metric.FixedDate extends android.app.Notification.Metric.MetricValue {
+  @FlaggedApi("android.app.api_metric_style") public static final class Notification.Metric.FixedDate extends android.app.Notification.Metric.MetricValue {
     ctor public Notification.Metric.FixedDate(@NonNull java.time.LocalDate);
     ctor public Notification.Metric.FixedDate(@NonNull java.time.LocalDate, int);
     method public int getFormat();
@@ -7228,7 +7227,7 @@ package android.app {
     field public static final int FORMAT_SHORT_DATE = 2; // 0x2
   }
 
-  public static final class Notification.Metric.FixedFloat extends android.app.Notification.Metric.MetricValue {
+  @FlaggedApi("android.app.api_metric_style") public static final class Notification.Metric.FixedFloat extends android.app.Notification.Metric.MetricValue {
     ctor public Notification.Metric.FixedFloat(float);
     ctor public Notification.Metric.FixedFloat(float, @Nullable CharSequence);
     ctor public Notification.Metric.FixedFloat(float, @Nullable CharSequence, @IntRange(from=0x0, to=0x6) int, @IntRange(from=0x0, to=0x6) int);
@@ -7238,29 +7237,29 @@ package android.app {
     method public float getValue();
   }
 
-  public static final class Notification.Metric.FixedInt extends android.app.Notification.Metric.MetricValue {
+  @FlaggedApi("android.app.api_metric_style") public static final class Notification.Metric.FixedInt extends android.app.Notification.Metric.MetricValue {
     ctor public Notification.Metric.FixedInt(int);
     ctor public Notification.Metric.FixedInt(int, @Nullable CharSequence);
     method @Nullable public CharSequence getUnit();
     method public int getValue();
   }
 
-  public static final class Notification.Metric.FixedText extends android.app.Notification.Metric.MetricValue {
+  @FlaggedApi("android.app.api_metric_style") public static final class Notification.Metric.FixedText extends android.app.Notification.Metric.MetricValue {
     ctor public Notification.Metric.FixedText(@NonNull CharSequence);
     ctor public Notification.Metric.FixedText(@NonNull CharSequence, @Nullable CharSequence);
     method @Nullable public CharSequence getUnit();
     method @NonNull public CharSequence getValue();
   }
 
-  public static final class Notification.Metric.FixedTime extends android.app.Notification.Metric.MetricValue {
+  @FlaggedApi("android.app.api_metric_style") public static final class Notification.Metric.FixedTime extends android.app.Notification.Metric.MetricValue {
     ctor public Notification.Metric.FixedTime(@NonNull java.time.LocalTime);
     method @NonNull public java.time.LocalTime getValue();
   }
 
-  public abstract static class Notification.Metric.MetricValue {
+  @FlaggedApi("android.app.api_metric_style") public abstract static class Notification.Metric.MetricValue {
   }
 
-  public static final class Notification.Metric.TimeDifference extends android.app.Notification.Metric.MetricValue {
+  @FlaggedApi("android.app.api_metric_style") public static final class Notification.Metric.TimeDifference extends android.app.Notification.Metric.MetricValue {
     method @NonNull public static android.app.Notification.Metric.TimeDifference forPausedStopwatch(@NonNull java.time.Duration, int);
     method @NonNull public static android.app.Notification.Metric.TimeDifference forPausedTimer(@NonNull java.time.Duration, int);
     method @NonNull public static android.app.Notification.Metric.TimeDifference forStopwatch(@NonNull java.time.Instant, int);
@@ -9458,7 +9457,7 @@ package android.app.appfunctions {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.AppFunctionSearchSpec> CREATOR;
   }
 
-  public static final class AppFunctionSearchSpec.Builder {
+  @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public static final class AppFunctionSearchSpec.Builder {
     ctor public AppFunctionSearchSpec.Builder();
     method @NonNull public android.app.appfunctions.AppFunctionSearchSpec build();
     method @NonNull public android.app.appfunctions.AppFunctionSearchSpec.Builder setFunctionNames(@Nullable java.util.Set<android.app.appfunctions.AppFunctionName>);
@@ -9506,7 +9505,7 @@ package android.app.appfunctions {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.appfunctions.ExecuteAppFunctionRequest> CREATOR;
   }
 
-  public static final class ExecuteAppFunctionRequest.Builder {
+  @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public static final class ExecuteAppFunctionRequest.Builder {
     ctor public ExecuteAppFunctionRequest.Builder(@NonNull String, @NonNull String);
     ctor @FlaggedApi("android.app.appfunctions.flags.enable_dynamic_app_functions") public ExecuteAppFunctionRequest.Builder(@NonNull android.app.appfunctions.AppFunctionName);
     method @NonNull public android.app.appfunctions.ExecuteAppFunctionRequest build();
@@ -9815,7 +9814,7 @@ package android.app.contentrestriction {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.contentrestriction.ClassifiableContent> CREATOR;
   }
 
-  public static final class ClassifiableContent.Builder {
+  @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public static final class ClassifiableContent.Builder {
     ctor public ClassifiableContent.Builder(@NonNull android.content.LocusId, @NonNull String);
     method @NonNull public android.app.contentrestriction.ClassifiableContent build();
     method @NonNull public android.app.contentrestriction.ClassifiableContent.Builder setData(@NonNull android.os.ParcelFileDescriptor);
@@ -10227,7 +10226,7 @@ package android.app.permissionui {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.permissionui.LocationButtonRequest> CREATOR;
   }
 
-  public static final class LocationButtonRequest.Builder {
+  @FlaggedApi("android.permission.flags.location_button_enabled") public static final class LocationButtonRequest.Builder {
     ctor public LocationButtonRequest.Builder(int, int, @NonNull android.content.res.Configuration);
     method @NonNull public android.app.permissionui.LocationButtonRequest build();
     method @NonNull public android.app.permissionui.LocationButtonRequest.Builder setBackgroundColor(@ColorInt int);
@@ -10864,7 +10863,7 @@ package android.companion {
     field public static final int REQUEST_TRANSPORT = 2; // 0x2
   }
 
-  public static final class ActionRequest.Builder {
+  @FlaggedApi("android.companion.enable_data_sync") public static final class ActionRequest.Builder {
     ctor public ActionRequest.Builder(int, int);
     method @NonNull public android.companion.ActionRequest build();
   }
@@ -10880,7 +10879,7 @@ package android.companion {
     field public static final int RESULT_FAILED_TO_ACTIVATE = 1; // 0x1
   }
 
-  public static final class ActionResult.Builder {
+  @FlaggedApi("android.companion.enable_data_sync") public static final class ActionResult.Builder {
     ctor public ActionResult.Builder(int, int);
     method @NonNull public android.companion.ActionResult build();
   }
@@ -12065,7 +12064,7 @@ package android.content {
     method public void setUnbind();
   }
 
-  public static final class Context.UpdateBindingParams.Builder {
+  @FlaggedApi("android.content.flags.enable_update_service_bindings") public static final class Context.UpdateBindingParams.Builder {
     ctor public Context.UpdateBindingParams.Builder(@NonNull android.content.ServiceConnection);
     ctor public Context.UpdateBindingParams.Builder(@NonNull android.content.ServiceConnection, @NonNull android.content.Context.BindServiceFlags);
     method @NonNull public android.content.Context.UpdateBindingParams build();
@@ -21998,7 +21997,7 @@ package android.hardware.lights {
     field public static final int INTERPOLATION_MODE_NONE = 0; // 0x0
   }
 
-  public static final class ColorSequence.Builder {
+  @FlaggedApi("com.android.server.lights.feature.flags.enable_light_animations") public static final class ColorSequence.Builder {
     ctor public ColorSequence.Builder();
     method @NonNull public android.hardware.lights.ColorSequence.Builder addControlPoint(long, @ColorInt int);
     method @NonNull public android.hardware.lights.ColorSequence.Builder addControlPoints(@NonNull long[], @ColorInt @NonNull int[]);
@@ -26991,7 +26990,7 @@ package android.media {
     field @NonNull public static final android.os.Parcelable.Creator<android.media.SuggestedDeviceInfo> CREATOR;
   }
 
-  public static final class SuggestedDeviceInfo.Builder {
+  @FlaggedApi("com.android.media.flags.enable_suggested_device_api") public static final class SuggestedDeviceInfo.Builder {
     ctor public SuggestedDeviceInfo.Builder(@NonNull String, @NonNull String, int);
     method @NonNull public android.media.SuggestedDeviceInfo build();
     method @NonNull public android.media.SuggestedDeviceInfo.Builder setExtras(@NonNull android.os.Bundle);
@@ -28449,7 +28448,7 @@ package android.media.projection {
     field @NonNull public static final android.os.Parcelable.Creator<android.media.projection.MediaProjectionAppContent> CREATOR;
   }
 
-  public static final class MediaProjectionAppContent.Builder {
+  @FlaggedApi("com.android.media.projection.flags.app_content_sharing") public static final class MediaProjectionAppContent.Builder {
     ctor public MediaProjectionAppContent.Builder(int);
     method @NonNull public android.media.projection.MediaProjectionAppContent build();
     method @NonNull public android.media.projection.MediaProjectionAppContent.Builder setIcon(@NonNull android.graphics.drawable.Icon);
@@ -28577,7 +28576,7 @@ package android.media.quality {
     field @NonNull public static final android.os.Parcelable.Creator<android.media.quality.EqualizerSettings> CREATOR;
   }
 
-  public static final class EqualizerSettings.Builder {
+  @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final class EqualizerSettings.Builder {
     ctor public EqualizerSettings.Builder();
     method @NonNull public android.media.quality.EqualizerSettings.Builder addBands(@NonNull java.util.List<android.media.quality.EqualizerBand>);
     method @NonNull public android.media.quality.EqualizerSettings build();
@@ -28684,7 +28683,7 @@ package android.media.quality {
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String THREE_D_MODE_UNKNOWN = "unknown";
   }
 
-  public static final class MediaQualityContract.PictureQuality {
+  @FlaggedApi("android.media.tv.flags.media_quality_fw") public static final class MediaQualityContract.PictureQuality {
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_3D_MODE = "3d_mode";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_3D_TO_2D = "3d_to_2d";
     field public static final String PARAMETER_AUTO_PICTURE_QUALITY_ENABLED = "auto_picture_quality_enabled";
@@ -28773,7 +28772,7 @@ package android.media.quality {
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_VRR = "vrr";
   }
 
-  public static final class MediaQualityContract.SoundQuality {
+  @FlaggedApi("android.media.tv.flags.media_quality_fw") public static final class MediaQualityContract.SoundQuality {
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_AD_HEADPHONE_ENABLE = "ad_headphone_enable";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_AD_SPEAKER_ENABLE = "ad_speaker_enable";
     field @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public static final String PARAMETER_AD_VOLUME = "ad_volume";
@@ -28845,11 +28844,11 @@ package android.media.quality {
     method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") public boolean usesDisplayTechnology(int);
   }
 
-  public static interface MediaQualityManager.AmbientBacklightCallback {
+  @FlaggedApi("android.media.tv.flags.media_quality_fw") public static interface MediaQualityManager.AmbientBacklightCallback {
     method public void onAmbientBacklightEvent(@NonNull android.media.quality.AmbientBacklightEvent);
   }
 
-  public abstract static class MediaQualityManager.PictureProfileCallback {
+  @FlaggedApi("android.media.tv.flags.media_quality_fw") public abstract static class MediaQualityManager.PictureProfileCallback {
     ctor public MediaQualityManager.PictureProfileCallback();
     method public void onError(@Nullable String, int);
     method public void onParameterCapabilitiesChanged(@Nullable String, @NonNull java.util.List<android.media.quality.ParameterCapability>);
@@ -28858,20 +28857,20 @@ package android.media.quality {
     method public void onPictureProfileUpdated(@NonNull String, @NonNull android.media.quality.PictureProfile);
   }
 
-  public static final class MediaQualityManager.ProfileQueryParams implements android.os.Parcelable {
+  @FlaggedApi("android.media.tv.flags.media_quality_fw") public static final class MediaQualityManager.ProfileQueryParams implements android.os.Parcelable {
     method public boolean areParametersIncluded();
     method public int describeContents();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.media.quality.MediaQualityManager.ProfileQueryParams> CREATOR;
   }
 
-  public static final class MediaQualityManager.ProfileQueryParams.Builder {
+  @FlaggedApi("android.media.tv.flags.media_quality_fw") public static final class MediaQualityManager.ProfileQueryParams.Builder {
     ctor public MediaQualityManager.ProfileQueryParams.Builder();
     method @NonNull public android.media.quality.MediaQualityManager.ProfileQueryParams build();
     method @NonNull public android.media.quality.MediaQualityManager.ProfileQueryParams.Builder setParametersIncluded(boolean);
   }
 
-  public abstract static class MediaQualityManager.SoundProfileCallback {
+  @FlaggedApi("android.media.tv.flags.media_quality_fw") public abstract static class MediaQualityManager.SoundProfileCallback {
     ctor public MediaQualityManager.SoundProfileCallback();
     method public void onError(@Nullable String, int);
     method public void onParameterCapabilitiesChanged(@Nullable String, @NonNull java.util.List<android.media.quality.ParameterCapability>);
@@ -28929,7 +28928,7 @@ package android.media.quality {
     field public static final int TYPE_SYSTEM = 1; // 0x1
   }
 
-  public static final class PictureProfile.Builder {
+  @FlaggedApi("android.media.tv.flags.media_quality_fw") public static final class PictureProfile.Builder {
     ctor public PictureProfile.Builder(@NonNull String);
     ctor public PictureProfile.Builder(@NonNull android.media.quality.PictureProfile);
     method @FlaggedApi("android.media.tv.flags.media_quality_fw_c") @NonNull public android.media.quality.PictureProfile.Builder addStreamStatusVariant(@NonNull String, @NonNull android.os.PersistableBundle);
@@ -28964,7 +28963,7 @@ package android.media.quality {
     field public static final int TYPE_SYSTEM = 1; // 0x1
   }
 
-  public static final class SoundProfile.Builder {
+  @FlaggedApi("android.media.tv.flags.media_quality_fw") public static final class SoundProfile.Builder {
     ctor public SoundProfile.Builder(@NonNull String);
     ctor public SoundProfile.Builder(@NonNull android.media.quality.SoundProfile);
     method @NonNull public android.media.quality.SoundProfile build();
@@ -30439,7 +30438,7 @@ package android.media.tv.ad {
     field public static final int SESSION_STATE_STOPPED = 1; // 0x1
   }
 
-  public abstract static class TvAdManager.TvAdServiceCallback {
+  @FlaggedApi("android.media.tv.flags.enable_ad_service_fw") public abstract static class TvAdManager.TvAdServiceCallback {
     ctor public TvAdManager.TvAdServiceCallback();
     method public void onAdServiceAdded(@NonNull String);
     method public void onAdServiceRemoved(@NonNull String);
@@ -30455,7 +30454,7 @@ package android.media.tv.ad {
     field public static final String SERVICE_META_DATA = "android.media.tv.ad.service";
   }
 
-  public abstract static class TvAdService.Session implements android.view.KeyEvent.Callback {
+  @FlaggedApi("android.media.tv.flags.enable_ad_service_fw") public abstract static class TvAdService.Session implements android.view.KeyEvent.Callback {
     ctor public TvAdService.Session(@NonNull android.content.Context);
     method public boolean isMediaViewEnabled();
     method @CallSuper public void layoutSurface(int, int, int, int);
@@ -30537,11 +30536,11 @@ package android.media.tv.ad {
     field public static final String ERROR_KEY_METHOD_NAME = "method_name";
   }
 
-  public static interface TvAdView.OnUnhandledInputEventListener {
+  @FlaggedApi("android.media.tv.flags.enable_ad_service_fw") public static interface TvAdView.OnUnhandledInputEventListener {
     method public boolean onUnhandledInputEvent(@NonNull android.view.InputEvent);
   }
 
-  public abstract static class TvAdView.TvAdCallback {
+  @FlaggedApi("android.media.tv.flags.enable_ad_service_fw") public abstract static class TvAdView.TvAdCallback {
     ctor public TvAdView.TvAdCallback();
     method public void onRequestCurrentChannelUri(@NonNull String);
     method public void onRequestCurrentTvInputId(@NonNull String);
@@ -35212,7 +35211,7 @@ package android.os {
     field public static final int CPU_HEADROOM_CALCULATION_TYPE_MIN = 0; // 0x0
   }
 
-  public static final class CpuHeadroomParams.Builder {
+  @FlaggedApi("android.os.cpu_gpu_headrooms") public static final class CpuHeadroomParams.Builder {
     ctor public CpuHeadroomParams.Builder();
     ctor public CpuHeadroomParams.Builder(@NonNull android.os.CpuHeadroomParams);
     method @NonNull public android.os.CpuHeadroomParams build();
@@ -35481,7 +35480,7 @@ package android.os {
     field public static final int GPU_HEADROOM_CALCULATION_WINDOW_MILLIS_MIN = 50; // 0x32
   }
 
-  public static final class GpuHeadroomParams.Builder {
+  @FlaggedApi("android.os.cpu_gpu_headrooms") public static final class GpuHeadroomParams.Builder {
     ctor public GpuHeadroomParams.Builder();
     ctor public GpuHeadroomParams.Builder(@NonNull android.os.GpuHeadroomParams);
     method @NonNull public android.os.GpuHeadroomParams build();
@@ -37012,7 +37011,7 @@ package android.os.storage.operations {
     field public static final int OPERATION_MOVE = 1; // 0x1
   }
 
-  public static final class FileOperationRequest.Builder {
+  @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final class FileOperationRequest.Builder {
     ctor public FileOperationRequest.Builder(int);
     method @NonNull public android.os.storage.operations.FileOperationRequest build();
     method @NonNull public android.os.storage.operations.FileOperationRequest.Builder setRegisterCompletionListener(boolean);
@@ -37161,7 +37160,7 @@ package android.os.vibrator {
     method public int getUsage();
   }
 
-  public static final class HapticFeedbackRequest.Builder {
+  @FlaggedApi("android.os.vibrator.haptic_feedback_with_custom_usage") public static final class HapticFeedbackRequest.Builder {
     ctor public HapticFeedbackRequest.Builder(int);
     ctor public HapticFeedbackRequest.Builder(@NonNull android.os.vibrator.HapticFeedbackRequest);
     method @NonNull public android.os.vibrator.HapticFeedbackRequest build();
@@ -39859,7 +39858,7 @@ package android.provider {
     field public static final int VERIFICATION_STATE_VERIFIED = 2; // 0x2
   }
 
-  public static final class E2eeContactKeysManager.E2eeContactKey implements android.os.Parcelable {
+  @FlaggedApi("android.provider.user_keys") public static final class E2eeContactKeysManager.E2eeContactKey implements android.os.Parcelable {
     method public int describeContents();
     method @NonNull public String getAccountId();
     method @Nullable public String getDeviceId();
@@ -39875,7 +39874,7 @@ package android.provider {
     field @NonNull public static final android.os.Parcelable.Creator<android.provider.E2eeContactKeysManager.E2eeContactKey> CREATOR;
   }
 
-  public static final class E2eeContactKeysManager.E2eeSelfKey implements android.os.Parcelable {
+  @FlaggedApi("android.provider.user_keys") public static final class E2eeContactKeysManager.E2eeSelfKey implements android.os.Parcelable {
     method public int describeContents();
     method @NonNull public String getAccountId();
     method @Nullable public String getDeviceId();
@@ -43334,7 +43333,7 @@ package android.service.chooser {
     field public static final int STATE_STARTED = 1; // 0x1
   }
 
-  public static interface ChooserSession.StateListener {
+  @FlaggedApi("android.service.chooser.interactive_chooser") public static interface ChooserSession.StateListener {
     method public void onBoundsChanged(@NonNull android.graphics.Rect);
     method public void onStateChanged(int);
   }
