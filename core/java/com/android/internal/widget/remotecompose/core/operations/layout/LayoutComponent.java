@@ -537,6 +537,33 @@ public class LayoutComponent extends Component {
         context.getContext().mLastComponent = prev;
     }
 
+    @Override
+    public void updateVariables(@NonNull RemoteContext context) {
+        super.updateVariables(context);
+        for (ModifierOperation op : mComponentModifiers.getList()) {
+            if (op instanceof VariableSupport) {
+                ((VariableSupport) op).updateVariables(context);
+            }
+        }
+        updatePadding();
+    }
+
+    private void updatePadding() {
+        mPaddingLeft = 0f;
+        mPaddingTop = 0f;
+        mPaddingRight = 0f;
+        mPaddingBottom = 0f;
+        for (ModifierOperation op : mComponentModifiers.getList()) {
+            if (op instanceof PaddingModifierOperation) {
+                PaddingModifierOperation padding = (PaddingModifierOperation) op;
+                mPaddingLeft += padding.getLeft();
+                mPaddingTop += padding.getTop();
+                mPaddingRight += padding.getRight();
+                mPaddingBottom += padding.getBottom();
+            }
+        }
+    }
+
     /** Traverse the modifiers to compute indicated dimension */
     public float computeModifierDefinedWidth(@Nullable RemoteContext context) {
         return computeModifierDefinedWidth(context, false);
@@ -547,10 +574,12 @@ public class LayoutComponent extends Component {
         float s = 0f;
         float e = 0f;
         float w = 0f;
+        boolean dirty = false;
         for (OperationInterface c : mComponentModifiers.getList()) {
             if (context != null && c.isDirty() && c instanceof VariableSupport) {
                 ((VariableSupport) c).updateVariables(context);
                 c.markNotDirty();
+                dirty = true;
             }
             if (c instanceof WidthModifierOperation) {
                 WidthModifierOperation o = (WidthModifierOperation) c;
@@ -572,6 +601,9 @@ public class LayoutComponent extends Component {
                 s += pop.getLeft();
                 e += pop.getRight();
             }
+        }
+        if (dirty) {
+            updatePadding();
         }
         return s + w + e;
     }
@@ -607,10 +639,12 @@ public class LayoutComponent extends Component {
         float t = 0f;
         float b = 0f;
         float h = 0f;
+        boolean dirty = false;
         for (OperationInterface c : mComponentModifiers.getList()) {
             if (context != null && c.isDirty() && c instanceof VariableSupport) {
                 ((VariableSupport) c).updateVariables(context);
                 c.markNotDirty();
+                dirty = true;
             }
             if (c instanceof HeightModifierOperation) {
                 HeightModifierOperation o = (HeightModifierOperation) c;
@@ -632,6 +666,9 @@ public class LayoutComponent extends Component {
                 t += pop.getTop();
                 b += pop.getBottom();
             }
+        }
+        if (dirty) {
+            updatePadding();
         }
         return t + h + b;
     }

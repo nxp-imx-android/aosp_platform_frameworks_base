@@ -34,14 +34,11 @@ import com.android.internal.widget.remotecompose.player.accessibility.RemoteComp
  * RemoteDocumentPlayer is either running in the platform on a known API version, or outside in
  * which case it must use the Androidx ViewCompat class.
  */
-
 @SuppressLint({"RestrictedApiAndroidX", "deprecation", "UnknownNullness"})
 public class PlatformRemoteComposeAccessibilityRegistrar
         implements RemoteComposeAccessibilityRegistrar {
 
-    /**
-     * return helper
-     */
+    /** return helper */
     public PlatformRemoteComposeTouchHelper forRemoteComposePlayer(
             View player, @NonNull CoreDocument coreDocument) {
         return new PlatformRemoteComposeTouchHelper(
@@ -54,13 +51,12 @@ public class PlatformRemoteComposeAccessibilityRegistrar
      * set delegate
      *
      * @param remoteComposePlayer The View representing the remote compose player.
-     * @param document            The CoreDocument containing the accessibility information for
-     *                            the UI
-     *                            elements.
+     * @param document The CoreDocument containing the accessibility information for the UI
+     *     elements.
      */
     @Override
-    public void setAccessibilityDelegate(@NonNull View remoteComposePlayer,
-            @NonNull CoreDocument document) {
+    public void setAccessibilityDelegate(
+            @NonNull View remoteComposePlayer, @NonNull CoreDocument document) {
         remoteComposePlayer.setAccessibilityDelegate(
                 forRemoteComposePlayer(remoteComposePlayer, document));
     }
@@ -76,8 +72,8 @@ public class PlatformRemoteComposeAccessibilityRegistrar
     }
 
     /**
-     * Gets the accessibility delegate from the player if it is an instance of
-     * {@link ExploreByTouchHelper}.
+     * Gets the accessibility delegate from the player if it is an instance of {@link
+     * ExploreByTouchHelper}.
      *
      * @param remoteComposePlayer The View representing the remote compose player.
      * @return The ExploreByTouchHelper delegate, or null if it's not set or not of that type.
@@ -91,7 +87,6 @@ public class PlatformRemoteComposeAccessibilityRegistrar
                 : null;
     }
 
-
     /**
      * Dispatch a hover event.
      *
@@ -99,12 +94,11 @@ public class PlatformRemoteComposeAccessibilityRegistrar
      * @return true if the event was handled by the view, false otherwise.
      */
     @Override
-    public boolean dispatchHoverEvent(@NonNull View remoteComposePlayer,
-            @NonNull MotionEvent event) {
+    public boolean dispatchHoverEvent(
+            @NonNull View remoteComposePlayer, @NonNull MotionEvent event) {
         ExploreByTouchHelper exploreByTouchHelper = getAccessibilityDelegate(remoteComposePlayer);
         return (exploreByTouchHelper != null && exploreByTouchHelper.dispatchHoverEvent(event));
     }
-
 
     /**
      * Dispatch a key event to the next view on the focus path.
@@ -118,20 +112,22 @@ public class PlatformRemoteComposeAccessibilityRegistrar
         return false;
     }
 
-
     /**
-     * Called by the view system when the focus state of this view changes.
-     * When the focus change event is caused by directional navigation, direction
-     * and previouslyFocusedRect provide insight into where the focus is coming from.
+     * Called by the view system when the focus state of this view changes. When the focus change
+     * event is caused by directional navigation, direction and previouslyFocusedRect provide
+     * insight into where the focus is coming from.
      *
-     * @param gainFocus             true if the View has focus; false otherwise.
-     * @param direction             the direction focus has moved when requestFocus()
-     *                              is called to give this view focus.
-     * @param previouslyFocusedRect the rectangle, in this view's coordinate
-     *                              system, of the previously focused view.
+     * @param gainFocus true if the View has focus; false otherwise.
+     * @param direction the direction focus has moved when requestFocus() is called to give this
+     *     view focus.
+     * @param previouslyFocusedRect the rectangle, in this view's coordinate system, of the
+     *     previously focused view.
      */
     @Override
-    public void onFocusChanged(@NonNull View remoteComposePlayer, boolean gainFocus, int direction,
+    public void onFocusChanged(
+            @NonNull View remoteComposePlayer,
+            boolean gainFocus,
+            int direction,
             @Nullable Rect previouslyFocusedRect) {
         // Not present in platform
     }

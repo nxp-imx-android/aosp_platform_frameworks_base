@@ -15,14 +15,11 @@
  */
 package com.android.internal.widget.remotecompose.player.accessibility.platform;
 
-
 import com.android.internal.widget.remotecompose.player.accessibility.RemoteComposeAccessibilityRegistrar;
 
 /**
  * This class is the entry point for finding the AccessibilityDelegate for a RemoteCompose document.
  */
-
-
 public class RemoteComposeTouchHelper {
     /** Get the platform specific accessibility delegate registrar */
     public static final RemoteComposeAccessibilityRegistrar REGISTRAR =
