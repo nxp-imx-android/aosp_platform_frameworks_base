@@ -184,6 +184,19 @@ public class TaskOrganizer extends WindowOrganizer {
             @NonNull List<ActivityManager.RunningTaskInfo> updatedTasks) { }
 
     /**
+     * Called when the keyguard occluding task has changed.
+     *
+     * <p>This callback is dispatched before the keyguard occlude/unocclude transition is requested.
+     *
+     * @param displayId The ID of the display.
+     * @param taskInfo The RunningTaskInfo of the top Activity which is occluding the Keyguard, or
+     *     {@code null} if no task is occluding it.
+     * @hide
+     */
+    public void onKeyguardOccludingTaskChanged(
+            int displayId, @Nullable ActivityManager.RunningTaskInfo taskInfo) {}
+
+    /**
      * @deprecated use {@link #createTask(TaskCreationParams)} instead
      */
     @Deprecated
@@ -430,6 +443,13 @@ public class TaskOrganizer extends WindowOrganizer {
         @Override
         public void onPackageUpdateFinished(List<ActivityManager.RunningTaskInfo> updatedTasks) {
             mExecutor.execute(() -> TaskOrganizer.this.onPackageUpdateFinished(updatedTasks));
+        }
+
+        @Override
+        public void onKeyguardOccludingTaskChanged(
+                int displayId, @Nullable ActivityManager.RunningTaskInfo taskInfo) {
+            mExecutor.execute(() -> TaskOrganizer.this.onKeyguardOccludingTaskChanged(
+                    displayId, taskInfo));
         }
     };
 

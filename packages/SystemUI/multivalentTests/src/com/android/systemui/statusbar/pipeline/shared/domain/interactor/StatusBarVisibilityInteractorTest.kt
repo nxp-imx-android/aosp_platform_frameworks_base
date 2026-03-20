@@ -70,7 +70,10 @@ class StatusBarVisibilityInteractorTest(flags: FlagsParameterization) : SysuiTes
             val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
 
             kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
-            kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(false, taskInfo = null)
+            kosmos.keyguardOcclusionRepository.setOccludedFromRemoteAnimation(
+                false,
+                taskInfo = null,
+            )
 
             assertThat(latest).isFalse()
         }
@@ -82,7 +85,7 @@ class StatusBarVisibilityInteractorTest(flags: FlagsParameterization) : SysuiTes
             val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
 
             kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
-            kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(true, taskInfo = null)
+            kosmos.keyguardOcclusionRepository.setOccludedFromRemoteAnimation(true, taskInfo = null)
 
             assertThat(latest).isTrue()
         }
@@ -289,7 +292,10 @@ class StatusBarVisibilityInteractorTest(flags: FlagsParameterization) : SysuiTes
 
             // home status bar not allowed
             kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
-            kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(false, taskInfo = null)
+            kosmos.keyguardOcclusionRepository.setOccludedFromRemoteAnimation(
+                false,
+                taskInfo = null,
+            )
 
             assertThat(latest).isFalse()
         }
@@ -355,7 +361,10 @@ class StatusBarVisibilityInteractorTest(flags: FlagsParameterization) : SysuiTes
 
             // GIVEN home status bar is NOT allowed by Scene(e.g. on lockscreen)
             kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
-            kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(false, taskInfo = null)
+            kosmos.keyguardOcclusionRepository.setOccludedFromRemoteAnimation(
+                false,
+                taskInfo = null,
+            )
 
             // WHEN desktop status bar is in use
             overrideResource(R.bool.config_useDesktopStatusBar, true)

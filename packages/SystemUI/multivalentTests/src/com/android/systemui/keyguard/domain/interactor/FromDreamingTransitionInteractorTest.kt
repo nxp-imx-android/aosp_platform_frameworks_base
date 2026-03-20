@@ -112,7 +112,7 @@ class FromDreamingTransitionInteractorTest(flags: FlagsParameterization?) : Sysu
     @Ignore("Until b/349837588 is fixed")
     fun testTransitionToOccluded_ifDreamEnds_occludingActivityOnTop() =
         kosmos.runTest {
-            keyguardOcclusionRepository.setShowWhenLockedActivityInfo(onTop = true)
+            keyguardOcclusionRepository.setOccludedFromWm(true)
             fakeKeyguardRepository.setDreaming(false)
 
             assertThat(transitionRepository)

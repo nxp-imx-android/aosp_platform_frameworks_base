@@ -569,7 +569,10 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         kosmos.runTest {
             // home status bar not allowed
             kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
-            kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(false, taskInfo = null)
+            kosmos.keyguardOcclusionRepository.setOccludedFromRemoteAnimation(
+                false,
+                taskInfo = null,
+            )
 
             assertThat(underTest.ongoingActivityChips.areChipsAllowed).isFalse()
         }
@@ -908,7 +911,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
 
             if (SceneContainerFlag.isEnabled) {
                 kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
-                kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(
+                kosmos.keyguardOcclusionRepository.setOccludedFromRemoteAnimation(
                     true,
                     taskInfo = null,
                 )

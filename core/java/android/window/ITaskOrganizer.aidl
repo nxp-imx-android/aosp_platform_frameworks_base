@@ -142,4 +142,16 @@ oneway interface ITaskOrganizer {
     * @param updatedTaskInfos Information about the tasks that are updated.
     */
     void onPackageUpdateFinished(in List<ActivityManager.RunningTaskInfo> updatedTaskInfos);
+
+    /**
+     * Called when the keyguard occluding task has changed.
+     * <p>
+     * This callback is dispatched before the keyguard occlude/unocclude transition is requested.
+     *
+     * @param displayId The ID of the display.
+     * @param taskInfo The RunningTaskInfo of the top Activity which is occluding the Keyguard,
+     *                 or {@code null} if no task is occluding it.
+     */
+     void onKeyguardOccludingTaskChanged(int displayId,
+             in @nullable ActivityManager.RunningTaskInfo taskInfo);
 }
