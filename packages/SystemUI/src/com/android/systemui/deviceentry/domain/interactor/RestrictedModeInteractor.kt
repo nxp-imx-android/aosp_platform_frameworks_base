@@ -16,53 +16,52 @@
 
 package com.android.systemui.deviceentry.domain.interactor
 
-import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.systemui.bouncer.domain.interactor.SimBouncerInteractor
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.power.domain.interactor.PowerInteractor
+import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 
 /**
- * Helper interactor that is used to filter user actions when device's SIM is locked and requires a
- * PIN or PUK for it to be unlocked.
+ * A restricted mode where the lockscreen content will not be visible. Rather, the user must
+ * authenticate to continue. One example of this state is when a SIM PIN/PUK is required.
  */
 @SysUISingleton
 class RestrictedModeInteractor
 @Inject
-constructor(private val simBouncerInteractor: Lazy<SimBouncerInteractor>) {
-    /**
-     * Filter user actions that
-     * 1. hide the bouncer
-     * 2. show non-bouncer overlays
-     * 2. change to a scene other than lockscreen or occluded scenes..
-     */
+constructor(
+    private val simBouncerInteractor: Lazy<SimBouncerInteractor>,
+    private val sceneInteractor: Lazy<SceneInteractor>,
+    private val powerInteractor: PowerInteractor,
+) {
+
+    /** Whether the restricted mode is currently active. */
+    val isActive: StateFlow<Boolean> = simBouncerInteractor.get().isAnySimSecure
+
+    /** Filter user actions that attempt to hide the bouncer when on lockscreen */
     fun filteredUserActions(
         unfiltered: Flow<Map<UserAction, UserActionResult>>
     ): Flow<Map<UserAction, UserActionResult>> {
-        return combine(simBouncerInteractor.get().isAnySimSecure, unfiltered) {
-            isAnySimSecure,
-            unfilteredUserActions ->
-            if (isAnySimSecure) {
+        return combine(isActive, unfiltered) { isActive, unfilteredUserActions ->
+            if (isActive) {
                 unfilteredUserActions.filterValues { actionResult ->
                     when (actionResult) {
                         is UserActionResult.HideOverlay -> {
-                            actionResult.overlay != Overlays.Bouncer
+                            !(actionResult.overlay == Overlays.Bouncer &&
+                                sceneInteractor.get().transitionState.currentScene ==
+                                    Scenes.Lockscreen)
                         }
-                        is UserActionResult.ChangeScene -> {
-                            isSceneChangeAllowed(toScene = actionResult.toScene)
-                        }
-                        is UserActionResult.ShowOverlay -> {
-                            isOverlayChangeAllowed(toOverlayKey = actionResult.overlay)
-                        }
-                        is UserActionResult.ReplaceByOverlay -> {
-                            isOverlayChangeAllowed(toOverlayKey = actionResult.overlay)
+                        else -> {
+                            true
                         }
                     }
                 }
@@ -72,21 +71,29 @@ constructor(private val simBouncerInteractor: Lazy<SimBouncerInteractor>) {
         }
     }
 
-    /** Is scene change allowed based on whether the device is in restricted mode or not */
-    fun isSceneChangeAllowed(toScene: SceneKey): Boolean {
-        return if (simBouncerInteractor.get().isAnySimSecure.value) {
-            toScene == Scenes.Lockscreen || toScene == Scenes.Occluded || toScene == Scenes.Dream
-        } else {
-            true
-        }
-    }
-
-    /** Is overlay change allowed based on whether the device is in restricted mode or not */
-    fun isOverlayChangeAllowed(toOverlayKey: OverlayKey?): Boolean {
-        return if (simBouncerInteractor.get().isAnySimSecure.value) {
-            toOverlayKey == null || toOverlayKey == Overlays.Bouncer
-        } else {
-            true
+    /**
+     * Enforce the bouncer overlay when on lockscreen but awake, and hide it in other scenarios, but
+     * only when active
+     */
+    fun modifyOverlaysOnSceneChange(toScene: SceneKey) {
+        if (!isActive.value) return
+        when {
+            toScene == Scenes.Lockscreen && powerInteractor.detailedWakefulness.value.isAwake() ->
+                sceneInteractor
+                    .get()
+                    .showOverlay(
+                        overlay = Overlays.Bouncer,
+                        loggingReason = "RestrictedMode active",
+                    )
+            toScene == Scenes.Occluded ||
+                toScene == Scenes.Dream ||
+                powerInteractor.detailedWakefulness.value.isAsleep() ->
+                sceneInteractor
+                    .get()
+                    .hideOverlay(
+                        overlay = Overlays.Bouncer,
+                        loggingReason = "dreaming or occluded, hiding bouncer",
+                    )
         }
     }
 }

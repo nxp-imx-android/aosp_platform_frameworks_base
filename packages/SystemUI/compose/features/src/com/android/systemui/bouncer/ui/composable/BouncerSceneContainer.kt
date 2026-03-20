@@ -19,16 +19,22 @@ package com.android.systemui.bouncer.ui.composable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.HoistedSceneTransitionLayoutState
 import com.android.compose.animation.scene.SceneTransitionLayout
+import com.android.compose.animation.scene.UserAction
+import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.transitions
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.composable.Overlay
 import com.android.systemui.scene.ui.composable.transitions.sharedBouncerTransitions
+import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
 import com.android.systemui.scene.ui.viewmodel.ToBouncerTransitionViewModel
 
 /**
@@ -40,12 +46,16 @@ import com.android.systemui.scene.ui.viewmodel.ToBouncerTransitionViewModel
  */
 @Composable
 fun BouncerSceneContainer(
+    viewModel: SceneContainerViewModel,
     state: HoistedSceneTransitionLayoutState,
     bouncerOverlay: Overlay,
     toBouncerTransitionViewModel: ToBouncerTransitionViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val userActions by bouncerOverlay.userActions.collectAsStateWithLifecycle(emptyMap())
+    var userActions by remember { mutableStateOf(emptyMap<UserAction, UserActionResult>()) }
+    LaunchedEffect(viewModel, bouncerOverlay) {
+        viewModel.filteredUserActions(bouncerOverlay.userActions).collect { userActions = it }
+    }
 
     SceneTransitionLayout(
         state = state,

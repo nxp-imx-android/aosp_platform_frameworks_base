@@ -38,6 +38,7 @@ import com.android.systemui.biometrics.data.repository.fakeFingerprintPropertyRe
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
 import com.android.systemui.bouncer.domain.interactor.alternateBouncerInteractor
+import com.android.systemui.bouncer.domain.interactor.simBouncerInteractor
 import com.android.systemui.bouncer.shared.logging.BouncerUiEvent
 import com.android.systemui.dreams.dreamStartable
 import com.android.systemui.flags.EnableSceneContainer
@@ -79,6 +80,7 @@ import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.phone.BiometricUnlockController
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.fakeMobileConnectionsRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -1142,6 +1144,72 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
 
             // THEN device will transition to Gone
             assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
+        }
+
+    @Test
+    fun attemptDeviceEntry_whenOccludedAndSimSecure_doesNotShowBouncer() =
+        kosmos.runTest {
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+
+            // GIVEN no security setup
+            fakeAuthenticationRepository.setAuthenticationMethod(None)
+
+            // GIVEN a SIM is secure
+            kosmos.fakeMobileConnectionsRepository.isAnySimSecure.value = true
+
+            // GIVEN the device is occluded
+            switchToScene(Scenes.Occluded)
+
+            assertThat(sceneInteractor.currentScene.value).isEqualTo(Scenes.Occluded)
+            assertThat(kosmos.simBouncerInteractor.isAnySimSecure.value).isTrue()
+
+            // WHEN attempting device entry
+            underTest.attemptDeviceEntry("test")
+
+            // THEN bouncer overlay is NOT shown
+            assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
+        }
+
+    @Test
+    fun attemptDeviceEntry_whenOccludedAndSimUnlocked_showsBouncer() =
+        kosmos.runTest {
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+
+            // GIVEN authentication is required
+            fakeAuthenticationRepository.setAuthenticationMethod(Pin)
+
+            // GIVEN the device is occluded
+            switchToScene(Scenes.Occluded)
+
+            // GIVEN SIM is unlocked
+            kosmos.fakeMobileConnectionsRepository.isAnySimSecure.value = false
+
+            // WHEN attempting device entry
+            underTest.attemptDeviceEntry("test")
+
+            // THEN bouncer overlay IS shown
+            assertThat(currentOverlays).contains(Overlays.Bouncer)
+        }
+
+    @Test
+    fun attemptDeviceEntry_whenNotOccludedAndSimSecure_showsBouncer() =
+        kosmos.runTest {
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+
+            // GIVEN authentication is required
+            fakeAuthenticationRepository.setAuthenticationMethod(Pin)
+
+            // GIVEN the device is NOT occluded
+            switchToScene(Scenes.Lockscreen)
+
+            // GIVEN a SIM is secure
+            kosmos.fakeMobileConnectionsRepository.isAnySimSecure.value = true
+
+            // WHEN attempting device entry
+            underTest.attemptDeviceEntry("test")
+
+            // THEN bouncer overlay IS shown
+            assertThat(currentOverlays).contains(Overlays.Bouncer)
         }
 
     private fun Kosmos.setupSwipeDeviceEntryMethod() {
