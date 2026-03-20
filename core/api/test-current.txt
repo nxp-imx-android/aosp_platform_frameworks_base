@@ -1,4 +1,10 @@
-// Signature format: 2.0
+// Signature format: 6.0
+// - style=java
+// - flagged-api-inheritance=none
+// - normalize-abstract-modifier=no
+// - overloaded-method-order=source
+// - strip-java-lang-prefix=legacy
+// - type-argument-spacing=legacy
 package android {
 
   public static final class Manifest.permission {
