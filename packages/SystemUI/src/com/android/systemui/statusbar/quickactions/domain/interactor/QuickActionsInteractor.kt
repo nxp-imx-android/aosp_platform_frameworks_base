@@ -61,6 +61,17 @@ constructor(
                 )
             }
 
+        // TODO(b/494657434): Exempt QuickActionChips from Shade window dismissal logic.
+        // Currently, clicking a chip registers as an out-of-bounds click, which dismisses
+        // the Shade. Because the Shade is transitioning out, subsequent showOverlay()
+        // calls for the chip's new content are rejected.
+        if (Overlays.QuickActions in currentOverlays) {
+            sceneInteractor.instantlyHideOverlay(
+                overlay = Overlays.QuickActions,
+                loggingReason = "Switching to different panel in the QuickAction Overlay",
+            )
+        }
+
         repository.setActivePanel(panel)
 
         sceneInteractor.showOverlay(
