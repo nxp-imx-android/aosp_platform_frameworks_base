@@ -19,42 +19,126 @@ package android.aiseal.tests.odim;
 import android.aiseal.AiSealManager;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.text.format.DateUtils;
 import android.util.Log;
+import androidx.annotation.GuardedBy;
 
 public class AiSealOdimTestService extends Service {
     private static final String TAG = AiSealOdimTestService.class.getSimpleName();
     private final AiSealOdimTestServiceImpl mService = new AiSealOdimTestServiceImpl();
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        mService.onCreate();
+    }
+
+    @Override
+    public void onDestroy() {
+        mService.onDestroy();
+        super.onDestroy();
+    }
+
     public class AiSealOdimTestServiceImpl extends IAiSealOdimTestService.Stub {
+        private final HandlerThread mHandlerThread = new HandlerThread("AiSealOdimTestServiceThread");
+        private Handler mHandler;
+
+        // Synchronizes AiSeal service connection.
+        private static final Object sLock = new Object();
+
+        @GuardedBy("sLock")
         private IAiSealOdimPayloadService mGuestService;
 
-        private IAiSealOdimPayloadService getGuestService() {
-            if (mGuestService == null) {
-                try {
-                    AiSealManager mAiSeal =
-                            getApplicationContext().getSystemService(AiSealManager.class);
-                    IBinder binder =
-                            mAiSeal.connectService(IAiSealOdimPayloadService.SERVICE_NAME);
-                    mGuestService = IAiSealOdimPayloadService.Stub.asInterface(binder);
-                } catch (Exception e) {
-                    Log.e(TAG, "Failed to connect to guest service", e);
-                    throw new IllegalStateException("Failed to connect to guest service", e);
-                }
+        public void onCreate() {
+            mHandlerThread.start();
+            mHandler = new Handler(mHandlerThread.getLooper());
+            connectGuestService();
+        }
+
+        public void onDestroy() {
+            mHandlerThread.quitSafely();
+        }
+
+        private void connectGuestService() {
+            synchronized (sLock) {
+                connectGuestServiceLocked();
             }
-            return mGuestService;
+        }
+
+        @GuardedBy("sLock")
+        private void connectGuestServiceLocked() {
+            // Reset the service to null if we are currently connected to it.
+            mGuestService = null;
+            sLock.notifyAll();
+
+            IBinder binder = null;
+            try {
+                AiSealManager mAiSeal =
+                        getApplicationContext().getSystemService(AiSealManager.class);
+                binder = mAiSeal.connectService(IAiSealOdimPayloadService.SERVICE_NAME);
+                binder.linkToDeath(
+                        () -> {
+                            Log.w(TAG, "Guest service died");
+                            connectGuestService();
+                        },
+                        0);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to connect to guest service", e);
+            }
+            if (binder != null) {
+                mGuestService = IAiSealOdimPayloadService.Stub.asInterface(binder);
+                sLock.notifyAll();
+            } else {
+                Log.i(TAG, "Guest service not yet available; trying again");
+                mHandler.postDelayed(
+                        () -> {
+                            connectGuestService();
+                        },
+                        DateUtils.SECOND_IN_MILLIS);
+            }
+        }
+
+        private IAiSealOdimPayloadService waitForGuestService() throws InterruptedException {
+            synchronized (sLock) {
+                while (mGuestService == null) {
+                    Log.i(TAG, "Waiting for guest service...");
+                    sLock.wait();
+                }
+                return mGuestService;
+            }
         }
 
         @Override
         public String joinStringsWithSpace(String a, String b) {
             Log.d(TAG, "joinStringsWithSpace()");
-            var guest = getGuestService();
             try {
+                var guest = waitForGuestService();
                 return guest.joinStringsWithSpace(a, b);
             } catch (Exception e) {
                 Log.e(TAG, "Failed to call guest service", e);
                 throw new IllegalStateException("Failed to call guest service", e);
+            }
+        }
+
+        @Override
+        public void exit(int status) {
+            Log.d(TAG, "exit()");
+            try {
+                var guest = waitForGuestService();
+                guest.exit(status);
+                synchronized (sLock) {
+                    while (mGuestService != null) {
+                        Log.i(TAG, "Waiting for guest service to stop...");
+                        sLock.wait();
+                    }
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to stop guest service", e);
+                throw new IllegalStateException("Failed to stop guest service", e);
             }
         }
     }

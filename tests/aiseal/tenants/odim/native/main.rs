@@ -60,4 +60,8 @@ impl IAiSealOdimPayloadService for AiSealOdimPayloadService {
     fn joinStringsWithSpace(&self, a: &str, b: &str) -> BinderResult<String> {
         Ok(format!("{} {}", a, b))
     }
+
+    fn exit(&self, status: i32) -> BinderResult<()> {
+        std::process::exit(status);
+    }
 }
