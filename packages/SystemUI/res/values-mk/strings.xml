@@ -1886,18 +1886,11 @@
     <string name="dream_setup_title" msgid="7996530071414508238">"Поставете штедач на екранот"</string>
     <string name="dream_setup_button_not_now" msgid="8028385323668620805">"Не сега"</string>
     <string name="dream_setup_button_setup" msgid="4755361016017554826">"Поставете"</string>
-    <!-- no translation found for ace_attribution_dialog_settings_label (8898211593287114433) -->
-    <skip />
-    <!-- no translation found for ace_attribution_dialog_title (5236154464063969824) -->
-    <skip />
-    <!-- no translation found for ace_attribution_dialog_description (1431906058759687758) -->
-    <skip />
-    <!-- no translation found for ace_attribution_header_icon_accessibility_description (7385840112370423581) -->
-    <skip />
-    <!-- no translation found for ace_attribution_settings_button_accessibility_description (8426163772933746374) -->
-    <skip />
-    <!-- no translation found for ace_attribution_thumbs_up_button_accessibility_description (3561722934830934360) -->
-    <skip />
-    <!-- no translation found for ace_attribution_thumbs_down_button_accessibility_description (5471283747650437662) -->
-    <skip />
+    <string name="ace_attribution_dialog_settings_label" msgid="8898211593287114433">"Поставки"</string>
+    <string name="ace_attribution_dialog_title" msgid="5236154464063969824">"Предлози на „Волшебен предлог“"</string>
+    <string name="ace_attribution_dialog_description" msgid="1431906058759687758">"Ставки што се земаат предвид во предлогов"</string>
+    <string name="ace_attribution_header_icon_accessibility_description" msgid="7385840112370423581">"Икона за Android Device Intelligence"</string>
+    <string name="ace_attribution_settings_button_accessibility_description" msgid="8426163772933746374">"Копче за поставки"</string>
+    <string name="ace_attribution_thumbs_up_button_accessibility_description" msgid="3561722934830934360">"Копче за повратни информации за „Ми се допаѓа“"</string>
+    <string name="ace_attribution_thumbs_down_button_accessibility_description" msgid="5471283747650437662">"Копче за повратни информации за „Не ми се допаѓа“"</string>
 </resources>

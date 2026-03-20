@@ -1835,8 +1835,7 @@
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"পৰৱৰ্তী"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"পৰৱৰ্তী পৃষ্ঠাখনলৈ যাওক"</string>
     <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"উভতি যাওক"</string>
-    <!-- no translation found for accessibility_close_overlay_box_description (8399871568780893724) -->
-    <skip />
+    <string name="accessibility_close_overlay_box_description" msgid="8399871568780893724">"উভতি যাওক"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"স্বয়ংপূৰ্তি"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"বিস্তাৰ কৰক"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"সঠিক অৱস্থান"</string>
@@ -1887,18 +1886,11 @@
     <string name="dream_setup_title" msgid="7996530071414508238">"স্ক্ৰীনছেভাৰ ছেট আপ কৰক"</string>
     <string name="dream_setup_button_not_now" msgid="8028385323668620805">"এতিয়া নহয়"</string>
     <string name="dream_setup_button_setup" msgid="4755361016017554826">"ছেট আপ কৰক"</string>
-    <!-- no translation found for ace_attribution_dialog_settings_label (8898211593287114433) -->
-    <skip />
-    <!-- no translation found for ace_attribution_dialog_title (5236154464063969824) -->
-    <skip />
-    <!-- no translation found for ace_attribution_dialog_description (1431906058759687758) -->
-    <skip />
-    <!-- no translation found for ace_attribution_header_icon_accessibility_description (7385840112370423581) -->
-    <skip />
-    <!-- no translation found for ace_attribution_settings_button_accessibility_description (8426163772933746374) -->
-    <skip />
-    <!-- no translation found for ace_attribution_thumbs_up_button_accessibility_description (3561722934830934360) -->
-    <skip />
-    <!-- no translation found for ace_attribution_thumbs_down_button_accessibility_description (5471283747650437662) -->
-    <skip />
+    <string name="ace_attribution_dialog_settings_label" msgid="8898211593287114433">"ছেটিং"</string>
+    <string name="ace_attribution_dialog_title" msgid="5236154464063969824">"Magic Cueৰ পৰামৰ্শ(সমূহ)"</string>
+    <string name="ace_attribution_dialog_description" msgid="1431906058759687758">"এই পৰামৰ্শত বিবেচনা কৰা বস্তু"</string>
+    <string name="ace_attribution_header_icon_accessibility_description" msgid="7385840112370423581">"Android Device Intelligenceৰ চিহ্ন"</string>
+    <string name="ace_attribution_settings_button_accessibility_description" msgid="8426163772933746374">"ছেটিঙৰ বুটাম"</string>
+    <string name="ace_attribution_thumbs_up_button_accessibility_description" msgid="3561722934830934360">"মতামতত থাম্বছ আপ দিয়াৰ বুটাম"</string>
+    <string name="ace_attribution_thumbs_down_button_accessibility_description" msgid="5471283747650437662">"মতামতত থাম্বছ ডাউন দিয়াৰ বুটাম"</string>
 </resources>

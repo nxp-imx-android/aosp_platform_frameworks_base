@@ -1228,24 +1228,24 @@
     <string name="accessibility_quick_settings_power_menu_collapsed" msgid="5800930916550853776">"Palosur"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Faqja <xliff:g id="ID_1">%1$d</xliff:g> nga <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Të aktivizohet \"<xliff:g id="ID_1">%1$s</xliff:g>\"?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612"><annotation id="action_key_icon">"Ikona"</annotation>" e <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> është shkurtorja e tastierës për të përdorur <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"Veprimi <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> është shkurtorja e tastierës për të përdorur \"<xliff:g id="ID_4">^4</xliff:g>\". <xliff:g id="ID_5">^5</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"Shtyp përsëri <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> + <xliff:g id="ID_3">%3$s</xliff:g> për të aktivizuar <xliff:g id="ID_4">%4$s</xliff:g>"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Të aktivizohet shkurtorja e tastierës për \"<xliff:g id="ID_1">%1$s</xliff:g>\"?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Mos e aktivizo"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Aktivizo shkurtoren"</string>
-    <string name="accessibility_key_gesture_color_inversion_dialog_content" msgid="8831745570619953566"><annotation id="action_key_icon">"Ikona"</annotation>" e <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> është shkurtorja e tastierës për të përdorur anasjelljen e ngjyrës. Anasjellja e ngjyrave i bën të errëta ekranet e çelura. Gjithashtu, ajo i bën të çelura ekranet e errëta."</string>
+    <string name="accessibility_key_gesture_color_inversion_dialog_content" msgid="8831745570619953566">"Veprimi <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> është shkurtorja e tastierës për të përdorur anasjelljen e ngjyrave. Anasjellja e ngjyrave i bën të errëta ekranet e çelura. Gjithashtu, ajo i bën të çelura ekranet e errëta."</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Shkurtorja e tastierës <xliff:g id="ID_1">%1$s</xliff:g> u aktivizua"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645"><annotation id="action_key_icon">"Ikona"</annotation>" e <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> është shkurtorja e tastierës për të përdorur <xliff:g id="ID_4">^4</xliff:g>, një veçori qasshmërie. Kjo të lejon që të zmadhosh me shpejtësi në ekran për ta bërë përmbajtjen më të madhe. Pasi të aktivizohet zmadhimi, shtyp "<annotation id="action_key_icon">"ikonën"</annotation>" e <xliff:g id="ID_5">^1</xliff:g> + <xliff:g id="ID_6">^2</xliff:g> dhe \"+\" ose \"-\" për të rregulluar zmadhimin."</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"Veprimi <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> është shkurtorja e tastierës për të përdorur \"<xliff:g id="ID_4">^4</xliff:g>\", një veçori qasshmërie. Kjo të lejon që të zmadhosh me shpejtësi në ekran për ta bërë përmbajtjen më të madhe. Pasi të aktivizohet zmadhimi, shtyp "<annotation id="action_key_icon">"ikonën"</annotation>" e <xliff:g id="ID_5">^1</xliff:g> + <xliff:g id="ID_6">^2</xliff:g> dhe \"+\" ose \"-\" për të rregulluar zmadhimin."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Çaktivizo shkurtoren"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Mbaje të aktivizuar"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751"><annotation id="action_key_icon">"Ikona"</annotation>" e <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> është shkurtorja e tastierës për të përdorur <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^4</xliff:g> është një lexues ekrani që të lejon t\'i dëgjosh artikujt të lexuar me zë. Kjo mund të jetë e dobishme për njerëzit që kanë vështirësi në shikimin e ekranit. Kjo mund të ndryshojë mënyrën se si funksionon pajisja jote."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"Veprimi <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> është shkurtorja e tastierës për të përdorur \"<xliff:g id="ID_4">^4</xliff:g>\". <xliff:g id="ID_5">^4</xliff:g> është një lexues ekrani që të lejon t\'i dëgjosh artikujt të lexuar me zë. Kjo mund të jetë e dobishme për njerëzit që kanë vështirësi në shikimin e ekranit. Kjo mund të ndryshojë mënyrën se si funksionon pajisja jote."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Duke aktivizuar shkurtoren e tastierës, do të lejosh që TalkBack të ketë kontroll të plotë të pajisjes sate."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Kontrolli i plotë është i përshtatshëm për aplikacionet që të ndihmojnë me nevojat e qasshmërisë, por jo për shumicën e aplikacioneve."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Shiko dhe kontrollo ekranin"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Mund të lexojë të gjitha përmbajtjet në ekran dhe të shfaqë përmbajtje mbi aplikacione të tjera."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Shiko dhe kryej veprimet"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Mund të monitorojë ndërveprimet me një aplikacion ose një sensor hardueri dhe të ndërveprojë me aplikacionet në emrin tënd."</string>
-    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861"><annotation id="action_key_icon">"Ikona"</annotation>" e <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> është shkurtorja e tastierës për të përdorur <xliff:g id="ID_4">^4</xliff:g>. Kjo të lejon që të personalizosh fontin dhe hapësirën dhe të dëgjosh tekstin që të lexohet me zë pikërisht në pajisjen tënde."</string>
+    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861">"Veprimi <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> është shkurtorja e tastierës për të përdorur \"<xliff:g id="ID_4">^4</xliff:g>\". Kjo të lejon që të personalizosh fontin dhe hapësirën dhe të dëgjosh tekstin që të lexohet me zë pikërisht në pajisjen tënde."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Shtypja e "<annotation id="action_key_icon">"ikonës"</annotation>" së <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> aktivizon <xliff:g id="ID_4">^4</xliff:g>, një veçori qasshmërie. Kjo të lejon ta kontrollosh pajisjen tënde pa përdorur duart."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Tasti i qasshmërisë"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Mund të shtypësh tastin e qasshmërisë për të filluar të përdorësh veçoritë e qasshmërisë."</string>
@@ -1489,7 +1489,7 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Pajisjet që ofrohen për daljen e audios."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Volumi"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <string name="media_output_dialog_missing_permissions_warning" msgid="4312830846174995199">"Për të parë më shumë pajisje, mund të të duhet të lejosh lejet për <xliff:g id="MEDIA_APP_NAME">%1$s</xliff:g>"</string>
+    <string name="media_output_dialog_missing_permissions_warning" msgid="4312830846174995199">"Për të parë më shumë pajisje, mund të të duhet të japësh leje për <xliff:g id="MEDIA_APP_NAME">%1$s</xliff:g>"</string>
     <string name="media_output_dialog_warning_button_fix" msgid="3650735180540135181">"Hap <xliff:g id="MEDIA_APP_NAME">%1$s</xliff:g>"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Altoparlantët e lidhur"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Altoparlantët dhe ekranet"</string>
@@ -1886,18 +1886,11 @@
     <string name="dream_setup_title" msgid="7996530071414508238">"Konfiguro mbrojtësin e ekranit"</string>
     <string name="dream_setup_button_not_now" msgid="8028385323668620805">"Jo tani"</string>
     <string name="dream_setup_button_setup" msgid="4755361016017554826">"Konfiguro"</string>
-    <!-- no translation found for ace_attribution_dialog_settings_label (8898211593287114433) -->
-    <skip />
-    <!-- no translation found for ace_attribution_dialog_title (5236154464063969824) -->
-    <skip />
-    <!-- no translation found for ace_attribution_dialog_description (1431906058759687758) -->
-    <skip />
-    <!-- no translation found for ace_attribution_header_icon_accessibility_description (7385840112370423581) -->
-    <skip />
-    <!-- no translation found for ace_attribution_settings_button_accessibility_description (8426163772933746374) -->
-    <skip />
-    <!-- no translation found for ace_attribution_thumbs_up_button_accessibility_description (3561722934830934360) -->
-    <skip />
-    <!-- no translation found for ace_attribution_thumbs_down_button_accessibility_description (5471283747650437662) -->
-    <skip />
+    <string name="ace_attribution_dialog_settings_label" msgid="8898211593287114433">"Cilësimet"</string>
+    <string name="ace_attribution_dialog_title" msgid="5236154464063969824">"Sugjerimet e \"Sugjerimeve proaktive\""</string>
+    <string name="ace_attribution_dialog_description" msgid="1431906058759687758">"Artikujt e marrë në konsideratë në këtë sugjerim"</string>
+    <string name="ace_attribution_header_icon_accessibility_description" msgid="7385840112370423581">"Ikona e Android Device Intelligence"</string>
+    <string name="ace_attribution_settings_button_accessibility_description" msgid="8426163772933746374">"Butoni i cilësimeve"</string>
+    <string name="ace_attribution_thumbs_up_button_accessibility_description" msgid="3561722934830934360">"Butoni i komentit me gishtat lart"</string>
+    <string name="ace_attribution_thumbs_down_button_accessibility_description" msgid="5471283747650437662">"Butoni i komentit me gishtat poshtë"</string>
 </resources>

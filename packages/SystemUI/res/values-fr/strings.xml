@@ -1489,7 +1489,7 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Appareils disponibles pour la sortie audio."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Volume"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g> %%"</string>
-    <string name="media_output_dialog_missing_permissions_warning" msgid="4312830846174995199">"Pour voir plus d\'appareils, vous devrez peut-être accorder des autorisations pour <xliff:g id="MEDIA_APP_NAME">%1$s</xliff:g>"</string>
+    <string name="media_output_dialog_missing_permissions_warning" msgid="4312830846174995199">"Pour voir plus d\'appareils, vous devrez peut-être accorder des autorisations à <xliff:g id="MEDIA_APP_NAME">%1$s</xliff:g>"</string>
     <string name="media_output_dialog_warning_button_fix" msgid="3650735180540135181">"Ouvrir <xliff:g id="MEDIA_APP_NAME">%1$s</xliff:g>"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Haut-parleurs connectés"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Enceintes et écrans"</string>
@@ -1886,18 +1886,11 @@
     <string name="dream_setup_title" msgid="7996530071414508238">"Configurer l\'économiseur d\'écran"</string>
     <string name="dream_setup_button_not_now" msgid="8028385323668620805">"Pas maintenant"</string>
     <string name="dream_setup_button_setup" msgid="4755361016017554826">"Configurer"</string>
-    <!-- no translation found for ace_attribution_dialog_settings_label (8898211593287114433) -->
-    <skip />
-    <!-- no translation found for ace_attribution_dialog_title (5236154464063969824) -->
-    <skip />
-    <!-- no translation found for ace_attribution_dialog_description (1431906058759687758) -->
-    <skip />
-    <!-- no translation found for ace_attribution_header_icon_accessibility_description (7385840112370423581) -->
-    <skip />
-    <!-- no translation found for ace_attribution_settings_button_accessibility_description (8426163772933746374) -->
-    <skip />
-    <!-- no translation found for ace_attribution_thumbs_up_button_accessibility_description (3561722934830934360) -->
-    <skip />
-    <!-- no translation found for ace_attribution_thumbs_down_button_accessibility_description (5471283747650437662) -->
-    <skip />
+    <string name="ace_attribution_dialog_settings_label" msgid="8898211593287114433">"Paramètres"</string>
+    <string name="ace_attribution_dialog_title" msgid="5236154464063969824">"Suggestions proactives"</string>
+    <string name="ace_attribution_dialog_description" msgid="1431906058759687758">"Éléments pris en compte dans cette suggestion"</string>
+    <string name="ace_attribution_header_icon_accessibility_description" msgid="7385840112370423581">"Icône Android Device Intelligence"</string>
+    <string name="ace_attribution_settings_button_accessibility_description" msgid="8426163772933746374">"Bouton Paramètres"</string>
+    <string name="ace_attribution_thumbs_up_button_accessibility_description" msgid="3561722934830934360">"Bouton J\'aime"</string>
+    <string name="ace_attribution_thumbs_down_button_accessibility_description" msgid="5471283747650437662">"Bouton Je n\'aime pas"</string>
 </resources>

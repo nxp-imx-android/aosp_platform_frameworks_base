@@ -1864,7 +1864,7 @@
     <string name="av_camera_blur_drill_in_title" msgid="3392789469292685354">"Achtergrondvervaging"</string>
     <string name="av_camera_blur_off" msgid="3170334995799202022">"Uit"</string>
     <string name="av_camera_blur_light" msgid="5105255788203563538">"Lichte vervaging"</string>
-    <string name="av_camera_blur_full" msgid="6493497965254048479">"Intense vervaging"</string>
+    <string name="av_camera_blur_full" msgid="6493497965254048479">"Sterke vervaging"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"Belichting verbeteren"</string>
     <string name="av_camera_face_retouch" msgid="45890971969486224">"Portret retoucheren"</string>
     <string name="av_camera_framing" msgid="2948988841290208034">"Cameraframing"</string>
@@ -1886,18 +1886,11 @@
     <string name="dream_setup_title" msgid="7996530071414508238">"Screensaver instellen"</string>
     <string name="dream_setup_button_not_now" msgid="8028385323668620805">"Niet nu"</string>
     <string name="dream_setup_button_setup" msgid="4755361016017554826">"Instellen"</string>
-    <!-- no translation found for ace_attribution_dialog_settings_label (8898211593287114433) -->
-    <skip />
-    <!-- no translation found for ace_attribution_dialog_title (5236154464063969824) -->
-    <skip />
-    <!-- no translation found for ace_attribution_dialog_description (1431906058759687758) -->
-    <skip />
-    <!-- no translation found for ace_attribution_header_icon_accessibility_description (7385840112370423581) -->
-    <skip />
-    <!-- no translation found for ace_attribution_settings_button_accessibility_description (8426163772933746374) -->
-    <skip />
-    <!-- no translation found for ace_attribution_thumbs_up_button_accessibility_description (3561722934830934360) -->
-    <skip />
-    <!-- no translation found for ace_attribution_thumbs_down_button_accessibility_description (5471283747650437662) -->
-    <skip />
+    <string name="ace_attribution_dialog_settings_label" msgid="8898211593287114433">"Instellingen"</string>
+    <string name="ace_attribution_dialog_title" msgid="5236154464063969824">"Suggesties voor Magische hint"</string>
+    <string name="ace_attribution_dialog_description" msgid="1431906058759687758">"Items die zijn overwogen in deze suggestie"</string>
+    <string name="ace_attribution_header_icon_accessibility_description" msgid="7385840112370423581">"Icoon van Android Device Intelligence"</string>
+    <string name="ace_attribution_settings_button_accessibility_description" msgid="8426163772933746374">"Knop Instellingen"</string>
+    <string name="ace_attribution_thumbs_up_button_accessibility_description" msgid="3561722934830934360">"Feedbackknop Leuk"</string>
+    <string name="ace_attribution_thumbs_down_button_accessibility_description" msgid="5471283747650437662">"Feedbackknop Niet leuk"</string>
 </resources>
