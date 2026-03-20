@@ -1023,8 +1023,8 @@ public class AudioService extends IAudioService.Stub
         }
 
         @Override
-        public void permissionUpdateBarrier() {
-            AudioService.this.permissionUpdateBarrier();
+        public void permissionUpdateBarrier(boolean forRecord) {
+            AudioService.this.permissionUpdateBarrier(forRecord);
         }
 
         /**
@@ -17231,7 +17231,10 @@ public class AudioService extends IAudioService.Stub
 
     @Override
     /** @see AudioManager#permissionUpdateBarrier() */
-    public void permissionUpdateBarrier() {
+    public void permissionUpdateBarrier(boolean forRecord) {
+        if (!forRecord) {
+            return;
+        }
         mCacheWatcher.doCheck();
         List<Future> snapshot;
         synchronized (mScheduledPermissionTasks) {
