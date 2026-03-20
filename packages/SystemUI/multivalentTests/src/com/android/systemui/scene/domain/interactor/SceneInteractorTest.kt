@@ -39,9 +39,11 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.useStandardTestDispatcher
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.scene.data.repository.Idle
 import com.android.systemui.scene.data.repository.Transition
+import com.android.systemui.scene.data.repository.lockDevice
 import com.android.systemui.scene.data.repository.sceneContainerRepository
 import com.android.systemui.scene.data.repository.setSceneTransition
 import com.android.systemui.scene.data.repository.unlockDevice
@@ -119,6 +121,20 @@ class SceneInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    fun changeScene_rapidCalls_doesNotReject() =
+        // Explicitly use the standard test dispatcher here to verify that extremely rapid
+        // changeScene calls don't fail, without letting coroutines run between calls
+        testKosmos().useStandardTestDispatcher().runTest {
+            underTest.snapToScene(Scenes.Occluded, "initial")
+            assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Occluded)
+
+            underTest.changeScene(Scenes.Lockscreen, "first request")
+            underTest.changeScene(Scenes.Occluded, "second request")
+
+            assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Occluded)
+        }
+
+    @Test
     @EnableFlags(FLAG_DUAL_SHADE)
     fun changeScene_sameScene_hidesOverlays() =
         kosmos.runTest {
@@ -182,25 +198,21 @@ class SceneInteractorTest : SysuiTestCase() {
     @Test
     fun changeScene_toGoneWhenTransitionToLockedFromGone() =
         kosmos.runTest {
-            val currentScene by collectLastValue(underTest.currentScene)
-            val transitionTo by collectLastValue(underTest.transitioningTo)
-            sceneContainerRepository.setTransitionState(
-                flowOf(
-                    ObservableTransitionState.Transition(
-                        fromScene = Scenes.Gone,
-                        toScene = Scenes.Lockscreen,
-                        currentScene = flowOf(Scenes.Lockscreen),
-                        progress = flowOf(.5f),
-                        isInitiatedByUserInput = true,
-                        isUserInputOngoing = flowOf(false),
-                    )
-                )
-            )
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            assertThat(transitionTo).isEqualTo(Scenes.Lockscreen)
+            val currentSceneFlow by collectLastValue(underTest.currentScene)
+
+            // Start in unlocked + gone
+            unlockDevice()
+            underTest.changeScene(Scenes.Gone, "initial state")
+            assertThat(currentSceneFlow).isEqualTo(Scenes.Gone)
+
+            // Start transition from gone to lockscreen.
+            lockDevice()
+            setSceneTransition(Transition(Scenes.Gone, Scenes.Lockscreen))
+            assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Lockscreen)
+            assertThat(underTest.transitionState.isTransitioning(to = Scenes.Lockscreen)).isTrue()
 
             underTest.changeScene(Scenes.Gone, "simulate double tap power")
-            assertThat(currentScene).isEqualTo(Scenes.Gone)
+            assertThat(underTest.currentSceneAsState).isEqualTo(Scenes.Gone)
         }
 
     @Test
