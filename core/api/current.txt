@@ -60848,6 +60848,7 @@ package android.widget {
     method public boolean isFastScrollEnabled();
     method protected boolean isInFilterMode();
     method public boolean isItemChecked(int);
+    method @FlaggedApi("android.view.flags.scroll_to_top") public boolean isScrollToTopEnabled();
     method public boolean isScrollingCacheEnabled();
     method public boolean isSelectedChildViewEnabled();
     method public boolean isSmoothScrollbarEnabled();
@@ -60884,6 +60885,7 @@ package android.widget {
     method public void setRecyclerListener(android.widget.AbsListView.RecyclerListener);
     method public void setRemoteViewsAdapter(android.content.Intent);
     method public void setScrollIndicators(android.view.View, android.view.View);
+    method @FlaggedApi("android.view.flags.scroll_to_top") public void setScrollToTopEnabled(boolean);
     method public void setScrollingCacheEnabled(boolean);
     method public void setSelectedChildViewEnabled(boolean);
     method public void setSelectionFromTop(int, int);
@@ -62795,12 +62797,14 @@ package android.widget {
     method public int getMaxScrollAmount();
     method @ColorInt public int getTopEdgeEffectColor();
     method public boolean isFillViewport();
+    method @FlaggedApi("android.view.flags.scroll_to_top") public boolean isScrollToTopEnabled();
     method public boolean isSmoothScrollingEnabled();
     method public boolean pageScroll(int);
     method public void scrollToDescendant(@NonNull android.view.View);
     method public void setBottomEdgeEffectColor(@ColorInt int);
     method public void setEdgeEffectColor(@ColorInt int);
     method public void setFillViewport(boolean);
+    method @FlaggedApi("android.view.flags.scroll_to_top") public void setScrollToTopEnabled(boolean);
     method public void setSmoothScrollingEnabled(boolean);
     method public void setTopEdgeEffectColor(@ColorInt int);
     method public final void smoothScrollBy(int, int);
