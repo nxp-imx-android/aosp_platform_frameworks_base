@@ -705,7 +705,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         mTransitionAnimators.remove(transition);
         mFinishCallbacks.remove(transition);
 
-        if (!Flags.releaseAllTransitionSurfaces()) {
+        if (!Flags.releaseAllTransitionSurfacesOnIdle()) {
             info.releaseAllSurfaces();
         }
         finishCallback.onTransitionFinished(null /* wct */);
