@@ -1971,6 +1971,30 @@ public class ComputerControlSessionImplTest {
         verify(mTransaction).setDropInputMode(any(), eq(DropInputMode.ALL));
     }
 
+    @Test
+    public void isSessionActive_activeState_returnsTrue() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        assertThat(mSession.isSessionActive()).isTrue();
+    }
+
+    @Test
+    public void isSessionActive_blockedState_returnsFalse() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        mSession.notifyBlocked();
+        waitForIdle();
+
+        assertThat(mSession.isSessionActive()).isFalse();
+    }
+
+    @Test
+    public void isSessionActive_closedState_returnsFalse() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        mSession.close();
+        waitForIdle();
+
+        assertThat(mSession.isSessionActive()).isFalse();
+    }
+
     private void setupMockMirror() {
         WindowManagerInternal.DisplayMirror displayMirror = mockDisplayMirror();
         when(mWindowManagerInternal.createMirrorForDisplayContent(VIRTUAL_DISPLAY_ID))

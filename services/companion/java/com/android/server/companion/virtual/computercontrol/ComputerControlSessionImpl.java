@@ -641,7 +641,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
         // TODO(b/444600407): Remove this once the consent model is per-target app. While the
         // consent is general, the caller can extend the list of target packages dynamically.
-        if (!(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
+        if (!isSessionActive()) {
             Slog.e(TAG, "Cannot launch application: Agent interaction is not available");
             return;
         }
@@ -893,6 +893,15 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     // interactions.
     private boolean isMirrorInteractionAllowed() {
         return mLifecycle.getCurrentState() instanceof LifecycleState.Blocked;
+    }
+
+    /**
+     * Returns {@code true} if the agent is actively automating the session.
+     * This is the basis for various policies, such as whether autofill or
+     * camera, audio etc. is enabled for a session.
+     */
+    public boolean isSessionActive() {
+        return mLifecycle.getCurrentState() instanceof LifecycleState.Active;
     }
 
     private boolean areAnyMirrorsInteractive() {
@@ -1248,7 +1257,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private boolean shouldDisallowInteractions(String callSite) {
         // TODO: b/452428736 - Find a long term solution for blocking agent interactions.
-        if (!(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
+        if (!isSessionActive()) {
             Slog.w(TAG, "Computer control interaction blocked since session is not active: "
                     + callSite);
             return true;

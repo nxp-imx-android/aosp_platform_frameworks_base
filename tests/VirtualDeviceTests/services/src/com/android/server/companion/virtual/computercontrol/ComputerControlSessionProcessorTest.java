@@ -806,6 +806,39 @@ public class ComputerControlSessionProcessorTest {
         verify(mComputerControlSessionCallback).onSessionPending(any());
     }
 
+    @Test
+    public void isActiveComputerControlDisplay_sessionActive_returnsTrue() throws Exception {
+        mProcessor.processNewSessionRequest(
+                mAppThread, ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
+                .onSessionCreated(anyInt(), mSessionArgumentCaptor.capture());
+
+        IComputerControlSession session = mSessionArgumentCaptor.getValue();
+        session.initialize(mLifecycleCallback, mSurface);
+
+        assertTrue(mProcessor.isActiveComputerControlDisplay(VIRTUAL_DISPLAY_ID));
+    }
+
+    @Test
+    public void isActiveComputerControlDisplay_sessionBlocked_returnsFalse() throws Exception {
+        mProcessor.processNewSessionRequest(
+                mAppThread, ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
+                .onSessionCreated(anyInt(), mSessionArgumentCaptor.capture());
+
+        IComputerControlSession session = mSessionArgumentCaptor.getValue();
+        session.initialize(mLifecycleCallback, mSurface);
+
+        session.notifyBlocked();
+
+        assertFalse(mProcessor.isActiveComputerControlDisplay(VIRTUAL_DISPLAY_ID));
+    }
+
+    @Test
+    public void isActiveComputerControlDisplay_invalidDisplay_returnsFalse() {
+        assertFalse(mProcessor.isActiveComputerControlDisplay(999));
+    }
+
     private ComputerControlSessionParams generateUniqueParams(int index) {
         return new ComputerControlSessionParams.Builder()
                 .setName(PARAMS.getName() + index)
