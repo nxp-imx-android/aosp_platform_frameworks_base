@@ -1,6 +1,5 @@
 // Signature format: 6.0
 // - style=java
-// - type-argument-spacing=legacy
 package com.android.server {
 
   public final class LocalManagerRegistry {
@@ -96,13 +95,13 @@ package com.android.server.pm {
   public static interface PackageManagerLocal.FilteredSnapshot extends AutoCloseable {
     method public void close();
     method @Nullable public com.android.server.pm.pkg.PackageState getPackageState(@NonNull String);
-    method @NonNull public java.util.Map<String,com.android.server.pm.pkg.PackageState> getPackageStates();
+    method @NonNull public java.util.Map<String, com.android.server.pm.pkg.PackageState> getPackageStates();
   }
 
   public static interface PackageManagerLocal.UnfilteredSnapshot extends AutoCloseable {
     method public void close();
     method @NonNull public com.android.server.pm.PackageManagerLocal.FilteredSnapshot filtered(int, @NonNull android.os.UserHandle);
-    method @NonNull public java.util.Map<String,com.android.server.pm.pkg.PackageState> getPackageStates();
+    method @NonNull public java.util.Map<String, com.android.server.pm.pkg.PackageState> getPackageStates();
   }
 
 }
@@ -251,7 +250,7 @@ package com.android.server.role {
 
   public interface RoleServicePlatformHelper {
     method @NonNull public String computePackageStateHash(int);
-    method @NonNull public java.util.Map<String,java.util.Set<String>> getLegacyRoleState(int);
+    method @NonNull public java.util.Map<String, java.util.Set<String>> getLegacyRoleState(int);
   }
 
 }
