@@ -65,6 +65,7 @@ import static com.android.server.alarm.AlarmManagerService.RemovedAlarm.REMOVE_R
 import static com.android.server.alarm.AlarmManagerService.RemovedAlarm.REMOVE_REASON_LISTENER_CACHED;
 import static com.android.server.alarm.AlarmManagerService.RemovedAlarm.REMOVE_REASON_PI_CANCELLED;
 import static com.android.server.alarm.AlarmManagerService.RemovedAlarm.REMOVE_REASON_UNDEFINED;
+import static com.android.server.deviceidle.Flags.supportAllowWhileIdleQuotaZero;
 
 import android.Manifest;
 import android.annotation.CurrentTimeMillisLong;
@@ -893,6 +894,11 @@ public class AlarmManagerService extends SystemService {
          */
         public long CACHED_LISTENER_REMOVAL_DELAY = DEFAULT_CACHED_LISTENER_REMOVAL_DELAY;
 
+        /**
+         * Whether the device has the PC feature.
+         */
+        public volatile boolean mIsFeaturePc;
+
         private long mLastAllowWhileIdleWhitelistDuration = -1;
         private int mVersion = 0;
 
@@ -910,6 +916,8 @@ public class AlarmManagerService extends SystemService {
         }
 
         public void start() {
+            mIsFeaturePc =
+                    getContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_PC);
             mInjector.registerDeviceConfigListener(this);
             onPropertiesChanged(DeviceConfig.getProperties(DeviceConfig.NAMESPACE_ALARM_MANAGER));
         }
@@ -935,6 +943,7 @@ public class AlarmManagerService extends SystemService {
         public void onPropertiesChanged(@NonNull DeviceConfig.Properties properties) {
             boolean standbyQuotaUpdated = false;
             boolean deviceIdleFuzzBoundariesUpdated = false;
+            final boolean allowQuotaZero = mIsFeaturePc && supportAllowWhileIdleQuotaZero();
             synchronized (mLock) {
                 mVersion++;
                 for (String name : properties.getKeyset()) {
@@ -958,7 +967,8 @@ public class AlarmManagerService extends SystemService {
                         case KEY_ALLOW_WHILE_IDLE_QUOTA:
                             ALLOW_WHILE_IDLE_QUOTA = properties.getInt(KEY_ALLOW_WHILE_IDLE_QUOTA,
                                     DEFAULT_ALLOW_WHILE_IDLE_QUOTA);
-                            if (ALLOW_WHILE_IDLE_QUOTA <= 0) {
+                            if (ALLOW_WHILE_IDLE_QUOTA < 0
+                                    || (ALLOW_WHILE_IDLE_QUOTA == 0 && !allowQuotaZero)) {
                                 Slog.w(TAG, "Must have positive allow_while_idle quota");
                                 ALLOW_WHILE_IDLE_QUOTA = 1;
                             }
@@ -967,7 +977,8 @@ public class AlarmManagerService extends SystemService {
                             ALLOW_WHILE_IDLE_LISTENER_QUOTA = properties.getInt(
                                     KEY_ALLOW_WHILE_IDLE_LISTENER_QUOTA,
                                     DEFAULT_ALLOW_WHILE_IDLE_LISTENER_QUOTA);
-                            if (ALLOW_WHILE_IDLE_LISTENER_QUOTA <= 0) {
+                            if (ALLOW_WHILE_IDLE_LISTENER_QUOTA < 0
+                                    || (ALLOW_WHILE_IDLE_LISTENER_QUOTA == 0 && !allowQuotaZero)) {
                                 Slog.w(TAG, "Must have positive allow_while_idle_listener quota");
                                 ALLOW_WHILE_IDLE_LISTENER_QUOTA = 1;
                             }
@@ -979,7 +990,8 @@ public class AlarmManagerService extends SystemService {
                             ALLOW_WHILE_IDLE_COMPAT_QUOTA = properties.getInt(
                                     KEY_ALLOW_WHILE_IDLE_COMPAT_QUOTA,
                                     DEFAULT_ALLOW_WHILE_IDLE_COMPAT_QUOTA);
-                            if (ALLOW_WHILE_IDLE_COMPAT_QUOTA <= 0) {
+                            if (ALLOW_WHILE_IDLE_COMPAT_QUOTA < 0
+                                    || (ALLOW_WHILE_IDLE_COMPAT_QUOTA == 0 && !allowQuotaZero)) {
                                 Slog.w(TAG, "Must have positive allow_while_idle_compat quota");
                                 ALLOW_WHILE_IDLE_COMPAT_QUOTA = 1;
                             }
@@ -2462,9 +2474,9 @@ public class AlarmManagerService extends SystemService {
                 window = mConstants.ALLOW_WHILE_IDLE_COMPAT_WINDOW;
                 history = mAllowWhileIdleCompatHistory;
             }
-            final int dispatchesInHistory = history.getTotalWakeupsInWindow(
-                    alarm.sourcePackage, userId);
-            if (dispatchesInHistory < quota) {
+            if (quota == 0) {
+                batterySaverPolicyElapsed = nowElapsed + INDEFINITE_DELAY;
+            } else if (history.getTotalWakeupsInWindow(alarm.sourcePackage, userId) < quota) {
                 // fine to go out immediately.
                 batterySaverPolicyElapsed = nowElapsed;
             } else {
@@ -2535,9 +2547,9 @@ public class AlarmManagerService extends SystemService {
                 window = mConstants.ALLOW_WHILE_IDLE_COMPAT_WINDOW;
                 history = mAllowWhileIdleCompatHistory;
             }
-            final int dispatchesInHistory = history.getTotalWakeupsInWindow(
-                    alarm.sourcePackage, userId);
-            if (dispatchesInHistory < quota) {
+            if (quota == 0) {
+                deviceIdlePolicyTime = mPendingIdleUntil.getWhenElapsed();
+            } else if (history.getTotalWakeupsInWindow(alarm.sourcePackage, userId) < quota) {
                 // fine to go out immediately.
                 deviceIdlePolicyTime = nowElapsed;
             } else {

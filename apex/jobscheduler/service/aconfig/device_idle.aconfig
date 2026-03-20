@@ -61,3 +61,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "support_allow_while_idle_quota_zero"
+    namespace: "backstage_power"
+    description: "Allows the allow-while-idle quotas to be set to 0"
+    bug: "437418242"
+}
