@@ -479,3 +479,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fix_dismiss_flyout_persistent_taskbar"
+    namespace: "multitasking"
+    description: "Fixes a bug where bubble bar flyout is not hidden on persistent taskbars"
+    bug: "493963961"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
