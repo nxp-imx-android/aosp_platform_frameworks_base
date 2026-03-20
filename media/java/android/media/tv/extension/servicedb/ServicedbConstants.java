@@ -85,16 +85,23 @@ public final class ServicedbConstants {
     public static final String SERVICE_LIST_TYPE_ISDB_JP_ADVCS = "ISDB_JP_ADVCS";
 
     /***********************************Service List Prefix****************************************/
-    @StringDef({SERVICE_LIST_TERRESTRIAL_PREFIX, SERVICE_LIST_CABLE_PREFIX,
-            SERVICE_LIST_PREFERRED_SATELLITE_PREFIX, SERVICE_LIST_GENERAL_SATELLITE_PREFIX,
-            SERVICE_LIST_SATELLITE_PREFIX})
+    @StringDef({SERVICE_LIST_TERRESTRIAL, SERVICE_LIST_CABLE,
+            SERVICE_LIST_GENERAL_SATELLITE, SERVICE_LIST_PREFERRED_SATELLITE,
+            SERVICE_LIST_SATELLITE, SERVICE_LIST_CAM_TERRESTRIAL, SERVICE_LIST_CAM_CABLE,
+            SERVICE_LIST_CAM_SATELLITE, SERVICE_LIST_ATV_TERRESTRIAL, SERVICE_LIST_ATV_CABLE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ServiceListPrefix {}
-    public static final String SERVICE_LIST_TERRESTRIAL_PREFIX = "TERRESTRIAL";
-    public static final String SERVICE_LIST_CABLE_PREFIX = "CABLE";
-    public static final String SERVICE_LIST_PREFERRED_SATELLITE_PREFIX = "PREFERRED_SATELLITE";
-    public static final String SERVICE_LIST_GENERAL_SATELLITE_PREFIX = "GENERAL_SATELLITE";
-    public static final String SERVICE_LIST_SATELLITE_PREFIX = "SATELLITE";
+    public static final String SERVICE_LIST_TERRESTRIAL = "SERVICE_LIST_TERRESTRIAL";
+    public static final String SERVICE_LIST_CABLE = "SERVICE_LIST_CABLE";
+    public static final String SERVICE_LIST_GENERAL_SATELLITE = "SERVICE_LIST_GENERAL_SATELLITE";
+    public static final String SERVICE_LIST_PREFERRED_SATELLITE =
+            "SERVICE_LIST_PREFERRED_SATELLITE";
+    public static final String SERVICE_LIST_SATELLITE = "SERVICE_LIST_SATELLITE";
+    public static final String SERVICE_LIST_CAM_TERRESTRIAL = "SERVICE_LIST_CAM_TERRESTRIAL";
+    public static final String SERVICE_LIST_CAM_CABLE = "SERVICE_LIST_CAM_CABLE";
+    public static final String SERVICE_LIST_CAM_SATELLITE = "SERVICE_LIST_CAM_SATELLITE";
+    public static final String SERVICE_LIST_ATV_TERRESTRIAL = "SERVICE_LIST_ATV_TERRESTRIAL";
+    public static final String SERVICE_LIST_ATV_CABLE = "SERVICE_LIST_ATV_CABLE";
 
     /*************************************** Service Info *****************************************/
     @StringDef({
@@ -141,6 +148,7 @@ public final class ServicedbConstants {
             KEY_NETWORK_NAME,
             KEY_ORIGINAL_NETWORK_ID,
             KEY_TRANSPORT_STREAM_ID,
+            KEY_TRANSPORT_STREAM_REC_ID,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface TransportStreamInfoKey {}
@@ -151,6 +159,7 @@ public final class ServicedbConstants {
     public static final String KEY_NETWORK_NAME = "network_name";
     public static final String KEY_ORIGINAL_NETWORK_ID = Channels.COLUMN_ORIGINAL_NETWORK_ID;
     public static final String KEY_TRANSPORT_STREAM_ID = Channels.COLUMN_TRANSPORT_STREAM_ID;
+    public static final String KEY_TRANSPORT_STREAM_REC_ID = "transport_stream_rec_id";
 
     /****************************************** Network ******************************************/
     @StringDef({KEY_FAVORITE_NETWORK_CANDIDATE, KEY_IS_FAVORITE_NETWORK, KEY_NETWORK_REC_ID,
