@@ -2091,11 +2091,22 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             DevicePolicyManagerService dpms,
             Map<PolicyIdentifier<?>, PolicyDefinition<?>> generatedPolicyDefinitions) {
         var delegate = dpms.new PolicyHandlerDelegate();
-        var allHandlers =
+
+        var manualHandlers =
                 Stream.concat(
                         PolicyHandlerFactory.build().stream(),
                         createPolicyHandlersDependingOnDpms(dpms).stream());
-        return allHandlers
+
+        Map<String, PolicyHandler<?>> handlersMap = new HashMap<>();
+        manualHandlers.forEach(h -> handlersMap.put(h.getKey().getId(), h));
+
+        // Automatically add standard handlers for policies that have a generated definition
+        // but no manual handler.
+        for (PolicyIdentifier<?> identifier : generatedPolicyDefinitions.keySet()) {
+            handlersMap.putIfAbsent(identifier.getId(), new PolicyHandler<>(identifier));
+        }
+
+        return handlersMap.values().stream()
                 .peek(
                         (handler) -> {
                             var definition =
