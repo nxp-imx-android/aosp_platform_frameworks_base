@@ -68,7 +68,7 @@ public final class ActionableInsight extends ContextInsight {
 
     @Override
     @NonNull
-    Bundle toBundleImpl() {
+    Bundle toBundleImpl(boolean includeHints) {
         final Bundle b = new Bundle();
         b.putParcelable(KEY_ACTION_DETAILS, mActionDetails);
         b.putParcelable(KEY_DISPLAY_DETAILS, mDisplayDetails);

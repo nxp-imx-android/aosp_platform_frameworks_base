@@ -74,10 +74,20 @@ public final class InsightCollection extends ContextInsight implements Iterable<
 
     @NonNull
     @Override
-    Bundle toBundleImpl() {
+    Bundle toBundleImpl(boolean includeHints) {
+        final Collection<ContextInsight> insights = new ArrayList<>();
+        if (includeHints) {
+            insights.addAll(mInsights);
+        } else {
+            for (final ContextInsight insight : mInsights) {
+                insights.add(insight.copyWithoutHints());
+            }
+        }
+
         final Bundle b = new Bundle();
         b.putParcelableArrayList(
-                KEY_INSIGHTS, new ArrayList<>(ContextInsightWrapper.wrapList(mInsights)));
+                KEY_INSIGHTS, new ArrayList<>(ContextInsightWrapper.wrapList(insights)));
+
         return b;
     }
 

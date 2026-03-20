@@ -359,7 +359,7 @@ public final class InsightSurfaceClientInfo implements Parcelable {
      */
     public void onReceiveInsight(@NonNull ContextInsight insight) {
         try {
-            mClient.onReceiveInsight(new ContextInsightWrapper(insight));
+            mClient.onReceiveInsight(new ContextInsightWrapper(insight.copyWithoutHints()));
         } catch (RemoteException e) {
             Log.e(TAG, "Error sending insight to client", e);
             throw e.rethrowFromSystemServer();
