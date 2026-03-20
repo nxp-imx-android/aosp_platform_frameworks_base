@@ -98,13 +98,11 @@ fun QuickActionChip(
             modifier
                 .minimumInteractiveComponentSize()
                 .contentDescription(contentDescription)
-                .thenIf(!isSelected) {
-                    Modifier.clickable(
-                        onClick = onClick,
-                        indication = null,
-                        interactionSource = interactionSource,
-                    )
-                },
+                .clickable(
+                    onClick = onClick,
+                    indication = null,
+                    interactionSource = interactionSource,
+                ),
     ) {
         // Symmetrical padding unless there are both icons and text.
         val startPadding = 4.dp

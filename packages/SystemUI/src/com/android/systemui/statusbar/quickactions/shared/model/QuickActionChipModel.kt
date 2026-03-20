@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.quickactions.shared.model
 
 import android.content.Context
+import android.graphics.RectF
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.statusbar.chips.ui.model.Chronometer
@@ -90,7 +91,7 @@ sealed class QuickActionChipModel {
         /** Determines the colors used for the chip. Defaults to system themed colors. */
         val colors: ChipColors = ChipColors.SystemTheme,
         val isPopupShown: Boolean = false,
-        val showPopup: (Context) -> Unit = {},
+        val showPopup: (Context, RectF) -> Unit = { _, _ -> },
         val hidePopup: () -> Unit = {},
         val contentDescription: ContentDescription? = null,
         val popupViewModelFactory: StatusBarPopupViewModel.Factory? = null,

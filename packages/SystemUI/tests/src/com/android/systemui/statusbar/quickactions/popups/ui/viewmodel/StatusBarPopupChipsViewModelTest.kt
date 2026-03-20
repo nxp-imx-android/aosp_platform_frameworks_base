@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.quickactions.popups.ui.viewmodel
 
+import android.graphics.RectF
 import android.platform.test.annotations.EnableFlags
 import android.view.Display
 import androidx.compose.runtime.snapshots.Snapshot
@@ -85,7 +86,7 @@ class StatusBarPopupChipsViewModelTest : SysuiTestCase() {
                 val mediaChip = shownPopupChips.first() as QuickActionChipModel.PopupChip
                 assertThat(mediaChip.isPopupShown).isFalse()
 
-                mediaChip.showPopup.invoke(context)
+                mediaChip.showPopup.invoke(context, RectF())
                 assertThat((shownPopupChips.first() as QuickActionChipModel.PopupChip).isPopupShown)
                     .isTrue()
             }

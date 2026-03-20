@@ -16,7 +16,7 @@
 
 package com.android.systemui.statusbar.quickactions.domain.interactor
 
-import android.graphics.Rect
+import android.graphics.RectF
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -44,21 +44,21 @@ class QuickActionsInteractorTest : SysuiTestCase() {
     private val panel1 =
         QuickActionPanelModel(
             chipId = QuickActionChipId.MediaControl,
-            anchorBounds = Rect(),
+            anchorBounds = RectF(),
             panelContentViewModelFactory = kosmos.mediaControlPopupViewModelFactory,
         )
 
     private val panel2 =
         QuickActionPanelModel(
             chipId = QuickActionChipId.AvControlsIndicator,
-            anchorBounds = Rect(),
+            anchorBounds = RectF(),
             panelContentViewModelFactory = kosmos.avControlsPopupViewModelFactory,
         )
 
     private val panel3_differentDisplay =
         QuickActionPanelModel(
             chipId = QuickActionChipId.MediaControl,
-            anchorBounds = Rect(),
+            anchorBounds = RectF(),
             panelContentViewModelFactory = kosmos.mediaControlPopupViewModelFactory,
         )
 
