@@ -25,24 +25,28 @@ import androidx.compose.foundation.gestures.awaitDragOrCancellation
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.awaitVerticalTouchSlopOrCancellation
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.pointer.PointerEvent
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerInputScope
+import androidx.compose.ui.input.pointer.SuspendingPointerInputModifierNode
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.input.pointer.util.addPointerInputChange
 import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.node.DelegatingNode
+import androidx.compose.ui.node.ModifierNodeElement
+import androidx.compose.ui.node.PointerInputModifierNode
+import androidx.compose.ui.platform.InspectorInfo
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Velocity
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.roundToInt
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -87,154 +91,222 @@ fun Modifier.swipeToExpandNotification(
     allowStartGesture: () -> Boolean = { true },
     velocityThresholdPx: Float,
     distanceThresholdPx: Float,
-): Modifier = composed {
-    val currentLayoutCoordinates by rememberUpdatedState(layoutCoordinatesProvider)
-    val currentAllowStartGesture by rememberUpdatedState(allowStartGesture)
-    val currentCallback by rememberUpdatedState(callback)
+): Modifier =
+    this then
+        SwipeToExpandNotificationElement(
+            callback = callback,
+            overscrollEffect = overscrollEffect,
+            layoutCoordinatesProvider = layoutCoordinatesProvider,
+            allowStartGestureCallback = allowStartGesture,
+            velocityThresholdPx = velocityThresholdPx,
+            distanceThresholdPx = distanceThresholdPx,
+        )
 
-    this.pointerInput(velocityThresholdPx, distanceThresholdPx) {
-        coroutineScope {
-            swipeToExpandPointerInput(
-                scope = this,
-                callback = currentCallback,
-                overscrollEffect = overscrollEffect,
-                layoutCoordinatesProvider = { currentLayoutCoordinates() },
-                allowStartGesture = { currentAllowStartGesture() },
-                velocityThresholdPx = velocityThresholdPx,
-                distanceThresholdPx = distanceThresholdPx,
-            )
-        }
+private data class SwipeToExpandNotificationElement(
+    val callback: SwipeToExpandCallback,
+    val overscrollEffect: OverscrollEffect,
+    val layoutCoordinatesProvider: () -> LayoutCoordinates?,
+    val allowStartGestureCallback: () -> Boolean,
+    val velocityThresholdPx: Float,
+    val distanceThresholdPx: Float,
+) : ModifierNodeElement<SwipeToExpandNotificationNode>() {
+    override fun create(): SwipeToExpandNotificationNode {
+        return SwipeToExpandNotificationNode(
+            callback = callback,
+            overscrollEffect = overscrollEffect,
+            layoutCoordinatesProvider = layoutCoordinatesProvider,
+            allowStartGestureCallback = allowStartGestureCallback,
+            velocityThresholdPx = velocityThresholdPx,
+            distanceThresholdPx = distanceThresholdPx,
+        )
+    }
+
+    override fun update(node: SwipeToExpandNotificationNode) {
+        node.update(
+            callback = callback,
+            overscrollEffect = overscrollEffect,
+            layoutCoordinatesProvider = layoutCoordinatesProvider,
+            allowStartGestureCallback = allowStartGestureCallback,
+            velocityThresholdPx = velocityThresholdPx,
+            distanceThresholdPx = distanceThresholdPx,
+        )
+    }
+
+    override fun InspectorInfo.inspectableProperties() {
+        name = "swipeToExpandNotification"
+        properties["velocityThresholdPx"] = velocityThresholdPx
+        properties["distanceThresholdPx"] = distanceThresholdPx
     }
 }
 
-private suspend fun PointerInputScope.swipeToExpandPointerInput(
-    scope: CoroutineScope,
-    callback: SwipeToExpandCallback,
-    overscrollEffect: OverscrollEffect,
-    layoutCoordinatesProvider: () -> LayoutCoordinates?,
-    allowStartGesture: () -> Boolean,
-    velocityThresholdPx: Float,
-    distanceThresholdPx: Float,
-) {
-    val velocityTracker = VelocityTracker()
-    var animationJob: Job? = null
+private class SwipeToExpandNotificationNode(
+    var callback: SwipeToExpandCallback,
+    var overscrollEffect: OverscrollEffect,
+    var layoutCoordinatesProvider: () -> LayoutCoordinates?,
+    var allowStartGestureCallback: () -> Boolean,
+    var velocityThresholdPx: Float,
+    var distanceThresholdPx: Float,
+) : DelegatingNode(), PointerInputModifierNode {
 
-    awaitEachGesture {
-        // Phase 1: Finding a target
-        val down = awaitFirstDown()
-        velocityTracker.resetTracking()
-        velocityTracker.addPointerInputChange(down)
-        animationJob?.cancel()
-        debugLog { "DOWN at ${down.position}" }
+    private val pointerInputNode =
+        delegate(SuspendingPointerInputModifierNode { swipeToExpandPointerInput() })
 
-        if (!allowStartGesture()) {
-            debugLog { "Gesture not allowed.." }
-            return@awaitEachGesture
+    fun update(
+        callback: SwipeToExpandCallback,
+        overscrollEffect: OverscrollEffect,
+        layoutCoordinatesProvider: () -> LayoutCoordinates?,
+        allowStartGestureCallback: () -> Boolean,
+        velocityThresholdPx: Float,
+        distanceThresholdPx: Float,
+    ) {
+        val velocityChanged = this.velocityThresholdPx != velocityThresholdPx
+        val distanceChanged = this.distanceThresholdPx != distanceThresholdPx
+
+        this.callback = callback
+        this.overscrollEffect = overscrollEffect
+        this.layoutCoordinatesProvider = layoutCoordinatesProvider
+        this.allowStartGestureCallback = allowStartGestureCallback
+        this.velocityThresholdPx = velocityThresholdPx
+        this.distanceThresholdPx = distanceThresholdPx
+
+        if (velocityChanged || distanceChanged) {
+            pointerInputNode.resetPointerInputHandler()
         }
+    }
 
-        val targetView =
-            obtainExpandableTarget(down.position, callback, layoutCoordinatesProvider)
-                ?: run {
-                    debugLog { "No target found." }
-                    return@awaitEachGesture
+    override fun onPointerEvent(
+        pointerEvent: PointerEvent,
+        pass: PointerEventPass,
+        bounds: IntSize,
+    ) {
+        pointerInputNode.onPointerEvent(pointerEvent, pass, bounds)
+    }
+
+    override fun onCancelPointerInput() {
+        pointerInputNode.onCancelPointerInput()
+    }
+
+    private suspend fun PointerInputScope.swipeToExpandPointerInput() {
+        val velocityTracker = VelocityTracker()
+        var animationJob: Job? = null
+
+        awaitEachGesture {
+            // Phase 1: Finding a target
+            val down = awaitFirstDown()
+            velocityTracker.resetTracking()
+            velocityTracker.addPointerInputChange(down)
+            animationJob?.cancel()
+            debugLog { "DOWN at ${down.position}" }
+
+            if (!allowStartGestureCallback()) {
+                debugLog { "Gesture not allowed.." }
+                return@awaitEachGesture
+            }
+
+            val targetView =
+                obtainExpandableTarget(down.position, callback, layoutCoordinatesProvider)
+                    ?: run {
+                        debugLog { "No target found." }
+                        return@awaitEachGesture
+                    }
+
+            var isExpanding = false
+            var currentHeight = targetView.actualHeight.toFloat()
+            val collapsedHeight = targetView.collapsedHeight.toFloat()
+            val expandedHeight = targetView.maxContentHeight.toFloat()
+
+            /** Inline helper to handle the drag for an expansion. */
+            fun processDrag(dragAmount: Float) {
+                if (!isExpanding) {
+                    val movingDown = dragAmount > 0
+                    if (movingDown) {
+                        debugLog { "START expanding" }
+                        isExpanding = true
+                        callback.setUserSwipingToExpand(targetView, true)
+                        callback.expansionStateChanged(true)
+                        callback.playExpandStartHaptic()
+                    } else {
+                        debugLog { "Upward drag, not expanding yet" }
+                    }
                 }
 
-        var isExpanding = false
-        var currentHeight = targetView.actualHeight.toFloat()
-        val collapsedHeight = targetView.collapsedHeight.toFloat()
-        val expandedHeight = targetView.maxContentHeight.toFloat()
+                if (isExpanding) {
+                    val dragDelta = Offset(0f, dragAmount)
 
-        /** Inline helper to handle the drag for an expansion. */
-        fun processDrag(dragAmount: Float) {
-            if (!isExpanding) {
-                val movingDown = dragAmount > 0
-                if (movingDown) {
-                    debugLog { "START expanding" }
-                    isExpanding = true
-                    callback.setUserSwipingToExpand(targetView, true)
-                    callback.expansionStateChanged(true)
-                    callback.playExpandStartHaptic()
-                } else {
-                    debugLog { "Upward drag, not expanding yet" }
+                    // Dispatch DRAG to OverscrollEffect
+                    overscrollEffect.applyToScroll(
+                        delta = dragDelta,
+                        source = NestedScrollSource.UserInput,
+                    ) { availableDelta ->
+                        val availableY = availableDelta.y
+                        // Theoretical new height based on the drag
+                        val rawHeight = currentHeight + availableY
+                        val newHeight = rawHeight.coerceIn(collapsedHeight, expandedHeight)
+                        val actualDelta = newHeight - currentHeight
+
+                        if (newHeight != currentHeight) {
+                            targetView.setFinalActualHeight(newHeight.toInt())
+                            currentHeight = newHeight
+                        }
+
+                        debugLog {
+                            "processDrag isExpanding:$isExpanding totalDrag:$dragAmount currentHeight:$currentHeight newHeight:$newHeight"
+                        }
+
+                        // Return exactly how much the expand/collapse consumed
+                        Offset(0f, actualDelta)
+                    }
                 }
             }
 
+            // Phase 2: Vertical drag slop detection
+            // Wait for a vertical drag motion before doing anything.
+            var lastChange =
+                awaitVerticalTouchSlopOrCancellation(down.id) { change, over ->
+                    velocityTracker.addPointerInputChange(change)
+                    processDrag(over)
+                    if (isExpanding) {
+                        // Consume all of the change during an expansion.
+                        change.consume()
+                    }
+                }
+
+            // Phase 3: Drag
+            // Consume pointer input events, and handle drags in any directions.
+            while (lastChange != null && lastChange.pressed) {
+                val change = awaitDragOrCancellation(lastChange.id)
+                if (change != null && change.pressed) {
+                    velocityTracker.addPointerInputChange(change)
+                    processDrag(change.positionChange().y)
+                    if (isExpanding) {
+                        // Consume all of the change during an expansion.
+                        change.consume()
+                    }
+                }
+                lastChange = change
+            }
+
+            // Phase 4: Finish the expansion
+            // Animate the target to either collapsed or expanded.
             if (isExpanding) {
-                val dragDelta = Offset(0f, dragAmount)
-
-                // Dispatch DRAG to OverscrollEffect
-                overscrollEffect.applyToScroll(
-                    delta = dragDelta,
-                    source = NestedScrollSource.UserInput,
-                ) { availableDelta ->
-                    val availableY = availableDelta.y
-                    // Theoretical new height based on the drag
-                    val rawHeight = currentHeight + availableY
-                    val newHeight = rawHeight.coerceIn(collapsedHeight, expandedHeight)
-                    val actualDelta = newHeight - currentHeight
-
-                    if (newHeight != currentHeight) {
-                        targetView.setFinalActualHeight(newHeight.toInt())
-                        currentHeight = newHeight
+                val initialVelocity = velocityTracker.calculateVelocity().y
+                debugLog { "STOP expanding with velocity:$initialVelocity" }
+                animationJob =
+                    coroutineScope.launch {
+                        finishExpansion(
+                            view = targetView,
+                            callback = callback,
+                            overscrollEffect = overscrollEffect,
+                            currentHeight = currentHeight,
+                            collapsedHeight = collapsedHeight,
+                            expandedHeight = expandedHeight,
+                            initialVelocity = initialVelocity,
+                            velocityThresholdPx = velocityThresholdPx,
+                            distanceThresholdPx = distanceThresholdPx,
+                        )
                     }
-
-                    debugLog {
-                        "processDrag isExpanding:$isExpanding totalDrag:$dragAmount currentHeight:$currentHeight newHeight:$newHeight"
-                    }
-
-                    // Return exactly how much the expand/collapse consumed
-                    Offset(0f, actualDelta)
-                }
+                isExpanding = false
             }
-        }
-
-        // Phase 2: Vertical drag slop detection
-        // Wait for a vertical drag motion before doing anything.
-        var lastChange =
-            awaitVerticalTouchSlopOrCancellation(down.id) { change, over ->
-                velocityTracker.addPointerInputChange(change)
-                processDrag(over)
-                if (isExpanding) {
-                    // Consume all of the change during an expansion.
-                    change.consume()
-                }
-            }
-
-        // Phase 3: Drag
-        // Consume pointer input events, and handle drags in any directions.
-        while (lastChange != null && lastChange.pressed) {
-            val change = awaitDragOrCancellation(lastChange.id)
-            if (change != null && change.pressed) {
-                velocityTracker.addPointerInputChange(change)
-                processDrag(change.positionChange().y)
-                if (isExpanding) {
-                    // Consume all of the change during an expansion.
-                    change.consume()
-                }
-            }
-            lastChange = change
-        }
-
-        // Phase 4: Finish the expansion
-        // Animate the target to either collapsed or expanded.
-        if (isExpanding) {
-            val initialVelocity = velocityTracker.calculateVelocity().y
-            debugLog { "STOP expanding with velocity:$initialVelocity" }
-            animationJob =
-                scope.launch {
-                    finishExpansion(
-                        view = targetView,
-                        callback = callback,
-                        overscrollEffect = overscrollEffect,
-                        currentHeight = currentHeight,
-                        collapsedHeight = collapsedHeight,
-                        expandedHeight = expandedHeight,
-                        initialVelocity = initialVelocity,
-                        velocityThresholdPx = velocityThresholdPx,
-                        distanceThresholdPx = distanceThresholdPx,
-                    )
-                }
-            isExpanding = false
         }
     }
 }
