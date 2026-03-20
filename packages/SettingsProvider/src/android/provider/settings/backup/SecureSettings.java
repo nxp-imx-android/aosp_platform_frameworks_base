@@ -344,6 +344,7 @@ public class SecureSettings {
         Settings.Secure.TEXT_SHOW_PASSWORD_TOUCH,
         Settings.Secure.TEXT_SHOW_PASSWORD_PHYSICAL,
         Settings.Secure.PERSONAL_CONTEXT_ENABLED,
+        Settings.Secure.PERSONAL_CONTEXT_MODE_ENABLED_DEFAULT,
         Settings.Secure.LIGHT_ANIMATION_FAVORITE_CALLS_ENABLED,
         Settings.Secure.IME_SWITCHER_BUTTON_IN_NAVBAR_ENABLED,
     };
