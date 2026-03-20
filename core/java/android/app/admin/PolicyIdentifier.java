@@ -628,8 +628,9 @@ public final class PolicyIdentifier<T> {
                                             deviceOwner = ALLOWED,
                                             profileOwnerOnUser0 = ALLOWED,
                                             managedProfileOwnerOfOrganizationOwnedDevice =
-                                                    DISALLOWED,
-                                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                                    ALLOWED,
+                                            financedDeviceOwner = ALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = ALLOWED,
                                             unaffiliatedFullUserProfileOwner = DISALLOWED)),
             intDef = FactoryResetValue.class,
             defaultValue = FACTORY_RESET_ALLOWED,

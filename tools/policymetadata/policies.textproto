@@ -146,7 +146,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 1
-        documentation: "Specifies that the user is allowed to transfer managed eSIMs from the device."
+        documentation: "Specifies that the user is allowed to transfer managed eSIMs from the device. "
       }
       values {
         field_name {
@@ -155,7 +155,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 2
-        documentation: "Specifies that the user is not allowed to transfer managed eSIMs from the device."
+        documentation: "Specifies that the user is not allowed to transfer managed eSIMs from the device. "
       }
       resolution_mechanism {
         most_restrictive {
@@ -259,7 +259,7 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Policy that controls whether app installation is allowed or disallowed."
+  documentation: "Policy that controls whether app installation is allowed or disallowed. "
   type_specific_metadata {
     enum_metadata {
       default_value: 1
@@ -272,7 +272,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 1
-        documentation: "Installing Apps is allowed."
+        documentation: "Installing Apps is allowed. "
       }
       values {
         field_name {
@@ -311,7 +311,7 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Policy that controls whether app uninstallation is allowed or disallowed."
+  documentation: "Policy that controls whether app uninstallation is allowed or disallowed. "
   type_specific_metadata {
     enum_metadata {
       default_value: 1
@@ -324,7 +324,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 1
-        documentation: "Uninstalling Apps is allowed."
+        documentation: "Uninstalling Apps is allowed. "
       }
       values {
         field_name {
@@ -413,7 +413,7 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Policy that controls if the factory reset option is available in the\nsettings menu. Even if it is disabled factory reset might still be\npossible through other means."
+  documentation: "Policy that controls if the factory reset option is available in the settings menu. Even if\nit is disabled factory reset might still be possible through other means."
   type_specific_metadata {
     enum_metadata {
       default_value: 2
@@ -426,7 +426,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 1
-        documentation: "The settings menu of the user has factory reset disabled."
+        documentation: "The settings menu of the user has factory reset disabled. "
       }
       values {
         field_name {
@@ -435,7 +435,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 2
-        documentation: "The settings menu of the user has the factory reset option."
+        documentation: "The settings menu of the user has the factory reset option. "
       }
       resolution_mechanism {
         custom: true
@@ -448,7 +448,10 @@ policy_metadata {
   required_permission: "android.permission.MANAGE_DEVICE_POLICY_FACTORY_RESET"
   required_cross_user_permission: "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS"
   allowed_dpc_types: DPC_TYPE_DEVICE_OWNER
+  allowed_dpc_types: DPC_TYPE_FINANCED_DEVICE_OWNER
+  allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
   allowed_dpc_types: DPC_TYPE_PROFILE_OWNER_ON_USER0
+  allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
   flag: "android.app.admin.flags.policy_streamlining_disallow_factory_reset"
 }
 policy_metadata {
