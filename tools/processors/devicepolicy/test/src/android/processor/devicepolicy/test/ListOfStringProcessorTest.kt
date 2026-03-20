@@ -35,12 +35,10 @@ class ListOfStringProcessorTest {
             """
                 /** Only one ResolutionMechanism can be selected.  */
                 @ListOfStringPolicyDefinition(
-                        base = @StringPolicyDefinition(
-                                base = @PolicyDefinition(
-                                    allowedScopes = { POLICY_SCOPE_USER },
-                                    affectedResource = RESOURCE_DEVICE_WIDE,
-                                    $ALLOWED_DPC_TYPES_SNIPPET
-                                )
+                        base = @PolicyDefinition(
+                            allowedScopes = { POLICY_SCOPE_USER },
+                            affectedResource = RESOURCE_DEVICE_WIDE,
+                            $ALLOWED_DPC_TYPES_SNIPPET
                         ),
                         resolutionMechanism = @ListResolutionMechanism(
                             custom=true,
@@ -60,12 +58,10 @@ class ListOfStringProcessorTest {
             """
                 /** ResolutionMechanism must not be empty.  */
                 @ListOfStringPolicyDefinition(
-                        base = @StringPolicyDefinition(
-                                base = @PolicyDefinition(
-                                    allowedScopes = { POLICY_SCOPE_USER },
-                                    affectedResource = RESOURCE_DEVICE_WIDE,
-                                    $ALLOWED_DPC_TYPES_SNIPPET
-                                )
+                        base = @PolicyDefinition(
+                            allowedScopes = { POLICY_SCOPE_USER },
+                            affectedResource = RESOURCE_DEVICE_WIDE,
+                            $ALLOWED_DPC_TYPES_SNIPPET
                         ),
                         resolutionMechanism = @ListResolutionMechanism()
                 )
@@ -84,12 +80,10 @@ class ListOfStringProcessorTest {
                     """
                         /** ResolutionMechanism custom */
                         @ListOfStringPolicyDefinition(
-                                base = @StringPolicyDefinition(
-                                        base = @PolicyDefinition(
-                                            allowedScopes = { POLICY_SCOPE_USER },
-                                            affectedResource = RESOURCE_DEVICE_WIDE,
-                                            $ALLOWED_DPC_TYPES_SNIPPET
-                                        )
+                                base = @PolicyDefinition(
+                                    allowedScopes = { POLICY_SCOPE_USER },
+                                    affectedResource = RESOURCE_DEVICE_WIDE,
+                                    $ALLOWED_DPC_TYPES_SNIPPET
                                 ),
                                 resolutionMechanism = @ListResolutionMechanism(custom=true)
                         )
@@ -113,12 +107,10 @@ class ListOfStringProcessorTest {
                     """
                         /** ResolutionMechanism union.  */
                         @ListOfStringPolicyDefinition(
-                                base = @StringPolicyDefinition(
-                                        base = @PolicyDefinition(
-                                            allowedScopes = { POLICY_SCOPE_USER },
-                                            affectedResource = RESOURCE_DEVICE_WIDE,
-                                            $ALLOWED_DPC_TYPES_SNIPPET
-                                        )
+                                base = @PolicyDefinition(
+                                    allowedScopes = { POLICY_SCOPE_USER },
+                                    affectedResource = RESOURCE_DEVICE_WIDE,
+                                    $ALLOWED_DPC_TYPES_SNIPPET
                                 ),
                                 resolutionMechanism = @ListResolutionMechanism(union=true)
                         )
