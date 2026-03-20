@@ -17,10 +17,8 @@ package com.android.systemui.statusbar.notification.shared
 
 import android.app.PendingIntent
 import android.graphics.drawable.Icon
-import android.util.Log
 import com.android.internal.logging.InstanceId
 import com.android.systemui.statusbar.StatusBarIconView
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 import com.android.systemui.statusbar.notification.stack.PriorityBucket
 
@@ -107,6 +105,8 @@ data class ActiveNotificationModel(
     val promotedContent: PromotedNotificationContentModels?,
     /** True if this notification set the "requested promotion?" extra and false otherwise. */
     val requestedPromotion: Boolean,
+    /** True if this notification set the "is screen share" extra and false otherwise. */
+    val isScreenShareNotification: Boolean,
     /** The visual style of the notification, containing additional data relevant to that style. */
     val style: NotifStyle?,
 ) : ActiveNotificationEntryModel() {
