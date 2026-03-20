@@ -1983,7 +1983,11 @@ class ActivityStarter {
                     remoteTransition, null /* displayChange */);
         } else if (result == START_SUCCESS && mStartActivity.isState(RESUMED)) {
             // Do nothing if the activity is started and is resumed directly.
-        } else if (isStarted && mBalVerdict.allows() && mDoResume) {
+        } else if (isStarted && mBalVerdict.allows() && mDoResume
+                // Only wait if the activity is added on top if its parent, because if the activity
+                // is inserted in the middle, it won't trigger another activity to pause. Note that
+                // the "started" may be a non-attached record if it matches an existing activity.
+                && (started.getParent() == null || started == started.getParent().getTopChild())) {
             // Make the collecting transition wait until this request is ready.
             if (transition != null) {
                 transition.setReady(started, false);
