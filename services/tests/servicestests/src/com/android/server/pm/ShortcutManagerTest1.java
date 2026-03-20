@@ -182,7 +182,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
     /**
      * Test for the first launch path, no settings file available.
      */
-    public void disabled_testFirstInitialize() {
+    @Test
+    public void testFirstInitialize() {
         assertResetTimes(START_TIME, START_TIME + INTERVAL);
     }
 
@@ -295,7 +296,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
     }
 
     /** Test for {@link android.content.pm.ShortcutManager#getRemainingCallCount()} */
-    public void disabled_testGetRemainingCallCount() {
+    @Test
+    public void testGetRemainingCallCount() {
         assertEquals(MAX_UPDATES_PER_INTERVAL, mManager.getRemainingCallCount());
     }
 
@@ -1817,8 +1819,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
     }
 
     // === Test for launcher side APIs ===
-
-    public void disabled_testGetShortcuts() {
+    @Test
+    public void testGetShortcuts() {
 
         // Set up shortcuts.
 
@@ -2196,7 +2198,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void disabled_testGetShortcuts_personsFlag() {
+    @Test
+    public void testGetShortcuts_personsFlag() {
         ShortcutInfo s = new ShortcutInfo.Builder(mClientContext, "id")
                 .setShortLabel("label")
                 .setActivity(new ComponentName(mClientContext, ShortcutActivity2.class))
@@ -2244,7 +2247,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
     }
 
     // TODO resource
-    public void disabled_testGetShortcutInfo() {
+    @Test
+    public void testGetShortcutInfo() {
         // Create shortcuts.
         setCaller(CALLING_PACKAGE_1);
         final ShortcutInfo s1_1 = makeShortcut(
@@ -7492,12 +7496,14 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         mManager.hasShareTargets(CALLING_PACKAGE_1);
     }
 
-    public void disabled_testDumpsys_crossProfile() {
+    @Test
+    public void testDumpsys_crossProfile() {
         prepareCrossProfileDataSet();
         dumpsysOnLogcat("test1", /* force= */ true);
     }
 
-    public void disabled_testDumpsys_withIcons() throws IOException {
+    @Test
+    public void testDumpsys_withIcons() throws IOException {
         testIcons();
         // Dump after having some icons.
         dumpsysOnLogcat("test1", /* force= */ true);
