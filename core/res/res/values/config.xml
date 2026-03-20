@@ -4549,6 +4549,18 @@
      </string-array> -->
     <string-array name="config_vibrationIntensityScaleFactors" translatable="false" />
 
+    <!-- The scale factor to be applied for keyboard vibrations at each vibration intensity level
+         supported by the device, defined by a positive float value. This maps to 0.38, 0.62 and
+         1.0 when 0.62 is the default value.
+         The values from config_vibrationIntensityScaleFactors will be used if this is not set.
+         The number of entries here must be the device supported scale levels for LOW/MEDIUM/HIGH.
+    -->
+    <string-array name="config_keyboardVibrationIntensityScaleFactors" translatable="false">
+        <item>0.6129</item>
+        <item>1.0</item>
+        <item>2.6129</item>
+    </string-array>
+
     <!-- The scale factor to be applied for external vibrations only (i.e. audio-coupled haptics),
          defined by a positive float value.
          The values from config_vibrationIntensityScaleFactors will be used if this is not set.

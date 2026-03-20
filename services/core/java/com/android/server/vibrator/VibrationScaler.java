@@ -98,6 +98,11 @@ final class VibrationScaler {
             return SCALE_FACTOR_NONE;
         }
         float defaultScale = scaleLevelToScaleFactor(getScaleLevel(usageHint));
+        if (usageHint == VibrationAttributes.USAGE_IME_FEEDBACK
+                && !isExternalVibration
+                && mVibrationConfig.isKeyboardVibrationSettingsIntensitySupported()) {
+            return mVibrationConfig.getKeyboardVibrationScaleFactor(currentIntensity, defaultScale);
+        }
         return isExternalVibration
                 ? mVibrationConfig.getExternalVibrationScaleFactor(currentIntensity, defaultScale)
                 : mVibrationConfig.getVibrationScaleFactor(currentIntensity, defaultScale);
@@ -209,6 +214,15 @@ final class VibrationScaler {
         } else {
             pw.println("DeviceConfigVibrationScales = null");
         }
+
+        pw.println("DeviceConfigKeyboardVibrationScales:");
+        pw.increaseIndent();
+        for (int intensity = Vibrator.VIBRATION_INTENSITY_LOW;
+                intensity <= Vibrator.VIBRATION_INTENSITY_HIGH; intensity++) {
+            pw.println(intensityToString(intensity)
+                    + " = " + mVibrationConfig.getKeyboardVibrationScaleFactor(intensity, 0));
+        }
+        pw.decreaseIndent();
 
         if (mVibrationConfig.hasExternalVibrationScaleFactors()) {
             pw.println("DeviceConfigExternalVibrationScales:");
