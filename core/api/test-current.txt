@@ -1,7 +1,6 @@
 // Signature format: 6.0
 // - style=java
 // - normalize-abstract-modifier=no
-// - strip-java-lang-prefix=legacy
 // - type-argument-spacing=legacy
 package android {
 
@@ -80,7 +79,7 @@ package android.accessibilityservice {
 
 package android.animation {
 
-  public abstract class Animator implements java.lang.Cloneable {
+  public abstract class Animator implements Cloneable {
     method public static long getBackgroundPauseDelay();
     method public static void setAnimatorPausingEnabled(boolean);
     method public static void setBackgroundPauseDelay(long);
@@ -118,7 +117,7 @@ package android.app {
     method @RequiresPermission(android.Manifest.permission.SET_ACTIVITY_WATCHER) public void removeHomeVisibilityListener(@NonNull android.app.HomeVisibilityListener);
     method @RequiresPermission(android.Manifest.permission.RESET_APP_ERRORS) public void resetAppErrors();
     method public static void resumeAppSwitches() throws android.os.RemoteException;
-    method @RequiresPermission(android.Manifest.permission.CHANGE_CONFIGURATION) public void scheduleApplicationInfoChanged(java.util.List<java.lang.String>, int);
+    method @RequiresPermission(android.Manifest.permission.CHANGE_CONFIGURATION) public void scheduleApplicationInfoChanged(java.util.List<String>, int);
     method @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.INTERACT_ACROSS_USERS}) public void setStopUserOnSwitch(int);
     method @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.INTERACT_ACROSS_USERS}) public boolean startUserInBackgroundVisibleOnDisplay(int, int);
     method @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS_FULL) public boolean stopUser(int);
@@ -194,7 +193,7 @@ package android.app {
   }
 
   public class ActivityTaskManager {
-    method @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS) public void clearLaunchParamsForPackages(java.util.List<java.lang.String>);
+    method @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS) public void clearLaunchParamsForPackages(java.util.List<String>);
     method public static boolean currentUiModeSupportsErrorDialogs(@NonNull android.content.Context);
     method public static int getMaxNumPictureInPictureActions(@NonNull android.content.Context);
     method @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS) public void moveTaskToRootTask(int, int, boolean);
@@ -387,7 +386,7 @@ package android.app {
     method @NonNull public android.service.notification.ZenPolicy getDefaultZenPolicy();
     method public android.content.ComponentName getEffectsSuppressor();
     method @FlaggedApi("android.app.nm_contextual_display_launch") @NonNull public java.util.List<android.app.NotificationRule> getNotificationRules();
-    method @NonNull public java.util.Set<java.lang.String> getUnsupportedAdjustmentTypes();
+    method @NonNull public java.util.Set<String> getUnsupportedAdjustmentTypes();
     method public boolean isNotificationPolicyAccessGrantedForPackage(@NonNull String);
     method public boolean removeAutomaticZenRule(@NonNull String, boolean);
     method @FlaggedApi("android.app.nm_contextual_display_launch") public boolean removeNotificationRule(int);
@@ -478,7 +477,7 @@ package android.app {
     method public void clearAllOverridePermissionStates();
     method public void clearOverridePermissionStates(int);
     method public void destroy();
-    method @NonNull public java.util.Set<java.lang.String> getAdoptedShellPermissions();
+    method @NonNull public java.util.Set<String> getAdoptedShellPermissions();
     method @Deprecated public boolean grantRuntimePermission(String, String, android.os.UserHandle);
     method @Deprecated public boolean injectInputEvent(@NonNull android.view.InputEvent, boolean, boolean);
     method @Deprecated public void injectInputEventToInputFilter(@NonNull android.view.InputEvent);
@@ -488,7 +487,7 @@ package android.app {
     method public void syncInputTransactions();
     method public void syncInputTransactions(boolean);
     method @NonNull public android.graphics.Bitmap takeScreenshot(int) throws java.io.IOException;
-    field @NonNull public static final java.util.Set<java.lang.String> ALL_PERMISSIONS;
+    field @NonNull public static final java.util.Set<String> ALL_PERMISSIONS;
     field public static final int FLAG_NOT_ACCESSIBILITY_TOOL = 4; // 0x4
   }
 
@@ -530,7 +529,7 @@ package android.app {
     field public static final int ORIENTATION_SQUARE_PORTRAIT = 2; // 0x2
   }
 
-  public class WindowConfiguration implements java.lang.Comparable<android.app.WindowConfiguration> android.os.Parcelable {
+  public class WindowConfiguration implements Comparable<android.app.WindowConfiguration> android.os.Parcelable {
     ctor public WindowConfiguration();
     method public int compareTo(android.app.WindowConfiguration);
     method public int describeContents();
@@ -593,16 +592,16 @@ package android.app.admin {
     method @RequiresPermission(android.Manifest.permission.FORCE_DEVICE_POLICY_MANAGER_LOGS) public long forceSecurityLogs();
     method @RequiresPermission("android.permission.MANAGE_DEVICE_POLICY_STORAGE_LIMIT") public void forceSetMaxPolicyStorageLimit(int);
     method public void forceUpdateUserSetupComplete(int);
-    method @NonNull public java.util.Set<java.lang.String> getDefaultCrossProfilePackages();
+    method @NonNull public java.util.Set<String> getDefaultCrossProfilePackages();
     method @Deprecated public int getDeviceOwnerType(@NonNull android.content.ComponentName);
     method @Nullable public String getDevicePolicyManagementRoleHolderUpdaterPackage();
-    method @NonNull public java.util.Set<java.lang.String> getDisallowedSystemApps(@NonNull android.content.ComponentName, int, @NonNull String);
+    method @NonNull public java.util.Set<String> getDisallowedSystemApps(@NonNull android.content.ComponentName, int, @NonNull String);
     method @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public int getHeadlessDeviceOwnerMode();
     method public long getLastBugReportRequestTime();
     method public long getLastNetworkLogRetrievalTime();
     method public long getLastSecurityLogRetrievalTime();
-    method public java.util.List<java.lang.String> getOwnerInstalledCaCerts(@NonNull android.os.UserHandle);
-    method @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_DEVICE_ADMINS) public java.util.Set<java.lang.String> getPolicyExemptApps();
+    method public java.util.List<String> getOwnerInstalledCaCerts(@NonNull android.os.UserHandle);
+    method @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_DEVICE_ADMINS) public java.util.Set<String> getPolicyExemptApps();
     method @RequiresPermission("android.permission.MANAGE_DEVICE_POLICY_STORAGE_LIMIT") public int getPolicySizeForAdmin(@NonNull android.app.admin.EnforcingAdmin);
     method public boolean isCurrentInputMethodSetByOwner();
     method public boolean isFactoryResetProtectionPolicySupported();
@@ -678,7 +677,7 @@ package android.app.admin {
     ctor public EnforcingAdmin(@NonNull String, @NonNull android.app.admin.Authority, @NonNull android.os.UserHandle, @Nullable android.content.ComponentName);
   }
 
-  public final class FlagUnion extends android.app.admin.ResolutionMechanism<java.lang.Integer> {
+  public final class FlagUnion extends android.app.admin.ResolutionMechanism<Integer> {
     method public int describeContents();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.admin.FlagUnion> CREATOR;
@@ -738,7 +737,7 @@ package android.app.admin {
     ctor public SecurityLog.SecurityEvent(long, byte[]);
   }
 
-  public final class StringSetUnion extends android.app.admin.ResolutionMechanism<java.util.Set<java.lang.String>> {
+  public final class StringSetUnion extends android.app.admin.ResolutionMechanism<java.util.Set<String>> {
     ctor public StringSetUnion();
     method public int describeContents();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
@@ -764,7 +763,7 @@ package android.app.admin {
     field @NonNull public static final android.app.admin.UnknownAuthority UNKNOWN_AUTHORITY;
   }
 
-  public final class UnsafeStateException extends java.lang.IllegalStateException implements android.os.Parcelable {
+  public final class UnsafeStateException extends IllegalStateException implements android.os.Parcelable {
     ctor public UnsafeStateException(int, int);
     method public int getOperation();
   }
@@ -803,7 +802,7 @@ package android.app.blob {
 
   @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class BlobStoreManager {
     method @Nullable public android.app.blob.LeaseInfo getLeaseInfo(@NonNull android.app.blob.BlobHandle) throws java.io.IOException;
-    method public void waitForIdle(long) throws java.lang.InterruptedException, java.util.concurrent.TimeoutException;
+    method public void waitForIdle(long) throws InterruptedException, java.util.concurrent.TimeoutException;
   }
 
   public final class LeaseInfo implements android.os.Parcelable {
@@ -1013,11 +1012,11 @@ package android.companion {
     method @NonNull public android.companion.AssociationInfo.Builder setDeviceMacAddress(@Nullable android.net.MacAddress);
     method @NonNull public android.companion.AssociationInfo.Builder setDeviceProfile(@Nullable String);
     method @NonNull public android.companion.AssociationInfo.Builder setDisplayName(@Nullable CharSequence);
-    method @FlaggedApi("android.companion.association_extra_permission") @NonNull public android.companion.AssociationInfo.Builder setExtraPermissions(@NonNull java.util.Set<java.lang.String>);
+    method @FlaggedApi("android.companion.association_extra_permission") @NonNull public android.companion.AssociationInfo.Builder setExtraPermissions(@NonNull java.util.Set<String>);
     method @NonNull public android.companion.AssociationInfo.Builder setLastTimeConnected(long);
     method @FlaggedApi("android.companion.enable_data_sync") @NonNull public android.companion.AssociationInfo.Builder setMetadata(@NonNull android.os.PersistableBundle);
     method @NonNull public android.companion.AssociationInfo.Builder setNotifyOnDeviceNearby(boolean);
-    method @FlaggedApi("android.companion.association_verification") @NonNull public android.companion.AssociationInfo.Builder setPackagesToNotify(@Nullable java.util.List<java.lang.String>);
+    method @FlaggedApi("android.companion.association_verification") @NonNull public android.companion.AssociationInfo.Builder setPackagesToNotify(@Nullable java.util.List<String>);
     method @FlaggedApi("android.companion.support_ai_agent") @NonNull public android.companion.AssociationInfo.Builder setRemoteAiAgentSupported(boolean);
     method @NonNull public android.companion.AssociationInfo.Builder setRevoked(boolean);
     method @NonNull public android.companion.AssociationInfo.Builder setSelfManaged(boolean);
@@ -1037,7 +1036,7 @@ package android.companion {
 
   public final class CompanionDeviceManager {
     method @RequiresPermission("android.permission.MANAGE_COMPANION_DEVICES") public void overrideTransportType(int);
-    method @FlaggedApi("android.companion.enable_data_sync") @RequiresPermission("android.Manifest.permission.USE_COMPANION_TRANSPORTS") public void setRequestActionAllowList(@Nullable java.util.List<java.lang.String>);
+    method @FlaggedApi("android.companion.enable_data_sync") @RequiresPermission("android.Manifest.permission.USE_COMPANION_TRANSPORTS") public void setRequestActionAllowList(@Nullable java.util.List<String>);
   }
 
   public abstract class CompanionDeviceService extends android.app.Service {
@@ -1099,7 +1098,7 @@ package android.content {
     ctor @FlaggedApi("android.permission.flags.device_aware_permission_apis_enabled") public AttributionSource(int, int, @Nullable String, @Nullable String, @NonNull android.os.IBinder, @Nullable String[], int, @Nullable android.content.AttributionSource);
     ctor public AttributionSource(int, @Nullable String, @Nullable String);
     ctor public AttributionSource(int, @Nullable String, @Nullable String, @NonNull android.os.IBinder);
-    ctor public AttributionSource(int, @Nullable String, @Nullable String, @Nullable java.util.Set<java.lang.String>, @Nullable android.content.AttributionSource);
+    ctor public AttributionSource(int, @Nullable String, @Nullable String, @Nullable java.util.Set<String>, @Nullable android.content.AttributionSource);
     method public void enforceCallingPid();
   }
 
@@ -1113,7 +1112,7 @@ package android.content {
     field public long appDisabledExpiration;
     field public boolean augmentedAutofillEnabled;
     field public final boolean compatModeEnabled;
-    field @Nullable public android.util.ArrayMap<java.lang.String,java.lang.Long> disabledActivities;
+    field @Nullable public android.util.ArrayMap<String,Long> disabledActivities;
     field public final int loggingLevel;
     field @Nullable public android.util.ArraySet<android.content.ComponentName> whitelistedActivitiesForAugmentedAutofill;
   }
@@ -1176,7 +1175,7 @@ package android.content {
     method public void updateDisplay(int);
   }
 
-  public class Intent implements java.lang.Cloneable android.os.Parcelable {
+  public class Intent implements Cloneable android.os.Parcelable {
     method @NonNull public android.content.Intent addExtendedFlags(int);
     method public int getExtendedFlags();
     field public static final String ACTION_USER_STOPPED = "android.intent.action.USER_STOPPED";
@@ -1193,7 +1192,7 @@ package android.content.integrity {
 
   public class AppIntegrityManager {
     method @NonNull public android.content.integrity.RuleSet getCurrentRuleSet();
-    method @NonNull public java.util.List<java.lang.String> getWhitelistedRuleProviders();
+    method @NonNull public java.util.List<String> getWhitelistedRuleProviders();
   }
 
 }
@@ -1273,7 +1272,7 @@ package android.content.pm {
     method @Nullable public String getWellbeingPackageName();
     method public void holdLock(android.os.IBinder, int);
     method @RequiresPermission(android.Manifest.permission.MAKE_UID_VISIBLE) public void makeUidVisible(int, int);
-    method @RequiresPermission(android.Manifest.permission.KEEP_UNINSTALLED_PACKAGES) public void setKeepUninstalledPackages(@NonNull java.util.List<java.lang.String>);
+    method @RequiresPermission(android.Manifest.permission.KEEP_UNINSTALLED_PACKAGES) public void setKeepUninstalledPackages(@NonNull java.util.List<String>);
     method @FlaggedApi("android.security.app_lock_apis") @RequiresPermission(android.Manifest.permission.TEST_LOCK_APPS) public boolean setPackageAppLockEnabled(@NonNull String, boolean);
     field public static final String FEATURE_ADOPTABLE_STORAGE = "android.software.adoptable_storage";
     field public static final String FEATURE_COMMUNAL_MODE = "android.software.communal_mode";
@@ -1294,7 +1293,7 @@ package android.content.pm {
   }
 
   public final class SharedLibraryInfo implements android.os.Parcelable {
-    method @NonNull public java.util.List<java.lang.String> getAllCodePaths();
+    method @NonNull public java.util.List<String> getAllCodePaths();
     method public boolean isNative();
   }
 
@@ -1386,7 +1385,7 @@ package android.content.pm {
   }
 
   @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public final class UsesPermissionPurposeInfo implements android.os.Parcelable {
-    ctor @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public UsesPermissionPurposeInfo(@NonNull String, @NonNull java.util.Set<java.lang.String>, @NonNull java.util.Set<java.lang.String>, @StringRes int);
+    ctor @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public UsesPermissionPurposeInfo(@NonNull String, @NonNull java.util.Set<String>, @NonNull java.util.Set<String>, @StringRes int);
   }
 
   @FlaggedApi("android.permission.flags.ppd_manifest_enabled") public final class ValidGeneralPurposeInfo implements android.os.Parcelable {
@@ -1401,7 +1400,7 @@ package android.content.pm {
 
 package android.content.res {
 
-  public final class AssetManager implements java.lang.AutoCloseable {
+  public final class AssetManager implements AutoCloseable {
     method @NonNull public String[] getApkPaths();
     method @Nullable public String getLastResourceResolution();
     method @Nullable public String getOverlayablesToString(String);
@@ -1431,7 +1430,7 @@ package android.content.res {
     method @NonNull public android.content.res.CameraCompatibilityInfo.Builder setShouldOverrideSensorOrientation(boolean);
   }
 
-  public final class Configuration implements java.lang.Comparable<android.content.res.Configuration> android.os.Parcelable {
+  public final class Configuration implements Comparable<android.content.res.Configuration> android.os.Parcelable {
     field public int assetsSeq;
     field public final android.app.WindowConfiguration windowConfiguration;
   }
@@ -1483,7 +1482,7 @@ package android.credentials {
 
   public final class CredentialProviderInfo implements android.os.Parcelable {
     method public int describeContents();
-    method @NonNull public java.util.List<java.lang.String> getCapabilities();
+    method @NonNull public java.util.List<String> getCapabilities();
     method @NonNull public android.content.ComponentName getComponentName();
     method @Nullable public CharSequence getLabel(@NonNull android.content.Context);
     method @Nullable public android.graphics.drawable.Drawable getServiceIcon(@NonNull android.content.Context);
@@ -1500,7 +1499,7 @@ package android.credentials {
 
   public static final class CredentialProviderInfo.Builder {
     ctor public CredentialProviderInfo.Builder(@NonNull android.content.pm.ServiceInfo);
-    method @NonNull public android.credentials.CredentialProviderInfo.Builder addCapabilities(@NonNull java.util.List<java.lang.String>);
+    method @NonNull public android.credentials.CredentialProviderInfo.Builder addCapabilities(@NonNull java.util.List<String>);
     method @NonNull public android.credentials.CredentialProviderInfo build();
     method @NonNull public android.credentials.CredentialProviderInfo.Builder setEnabled(boolean);
     method @NonNull public android.credentials.CredentialProviderInfo.Builder setSettingsSubtitle(@Nullable CharSequence);
@@ -1587,7 +1586,7 @@ package android.credentials.selection {
   }
 
   @FlaggedApi("android.credentials.flags.configurable_selector_ui_enabled") public final class RequestInfo implements android.os.Parcelable {
-    method @FlaggedApi("android.credentials.flags.configurable_selector_ui_enabled") @NonNull public static android.credentials.selection.RequestInfo newCreateRequestInfo(@NonNull android.os.IBinder, @NonNull android.credentials.CreateCredentialRequest, @NonNull String, boolean, @NonNull java.util.List<java.lang.String>, boolean);
+    method @FlaggedApi("android.credentials.flags.configurable_selector_ui_enabled") @NonNull public static android.credentials.selection.RequestInfo newCreateRequestInfo(@NonNull android.os.IBinder, @NonNull android.credentials.CreateCredentialRequest, @NonNull String, boolean, @NonNull java.util.List<String>, boolean);
     method @FlaggedApi("android.credentials.flags.configurable_selector_ui_enabled") @NonNull public static android.credentials.selection.RequestInfo newGetRequestInfo(@NonNull android.os.IBinder, @NonNull android.credentials.GetCredentialRequest, @NonNull String, boolean, boolean);
   }
 
@@ -1662,7 +1661,7 @@ package android.database.sqlite {
 
 package android.graphics {
 
-  public final class ImageDecoder implements java.lang.AutoCloseable {
+  public final class ImageDecoder implements AutoCloseable {
     method @AnyThread @NonNull public static android.graphics.ImageDecoder.Source createSource(android.content.res.Resources, @NonNull java.io.InputStream, int);
   }
 
@@ -1673,10 +1672,10 @@ package android.graphics {
 
   public class Typeface {
     method @NonNull public static android.util.Pair<java.util.List<android.graphics.Typeface>,java.util.List<android.graphics.Typeface>> changeDefaultFontForTest(@NonNull java.util.List<android.graphics.Typeface>, @NonNull java.util.List<android.graphics.Typeface>);
-    method @NonNull public static long[] deserializeFontMap(@NonNull java.nio.ByteBuffer, @NonNull java.util.Map<java.lang.String,android.graphics.Typeface>) throws java.io.IOException;
+    method @NonNull public static long[] deserializeFontMap(@NonNull java.nio.ByteBuffer, @NonNull java.util.Map<String,android.graphics.Typeface>) throws java.io.IOException;
     method @Nullable public static android.os.SharedMemory getSystemFontMapSharedMemory();
     method public void releaseNativeObjectForTest();
-    method @NonNull public static android.os.SharedMemory serializeFontMap(@NonNull java.util.Map<java.lang.String,android.graphics.Typeface>) throws android.system.ErrnoException, java.io.IOException;
+    method @NonNull public static android.os.SharedMemory serializeFontMap(@NonNull java.util.Map<String,android.graphics.Typeface>) throws android.system.ErrnoException, java.io.IOException;
   }
 
 }
@@ -1740,7 +1739,7 @@ package android.hardware {
   }
 
   public final class SensorPrivacyManager {
-    method @FlaggedApi("com.android.internal.camera.flags.camera_privacy_allowlist") @RequiresPermission(android.Manifest.permission.MANAGE_SENSOR_PRIVACY) public void setCameraPrivacyAllowlist(@NonNull java.util.List<java.lang.String>);
+    method @FlaggedApi("com.android.internal.camera.flags.camera_privacy_allowlist") @RequiresPermission(android.Manifest.permission.MANAGE_SENSOR_PRIVACY) public void setCameraPrivacyAllowlist(@NonNull java.util.List<String>);
     method @RequiresPermission(android.Manifest.permission.MANAGE_SENSOR_PRIVACY) public void setSensorPrivacy(int, int, boolean);
     method @FlaggedApi("com.android.internal.camera.flags.camera_privacy_allowlist") @RequiresPermission(android.Manifest.permission.MANAGE_SENSOR_PRIVACY) public void setSensorPrivacyState(int, int, int);
   }
@@ -1766,17 +1765,17 @@ package android.hardware.biometrics {
   }
 
   public class BiometricPrompt {
-    method @NonNull public java.util.List<java.lang.Integer> getAllowedSensorIds();
+    method @NonNull public java.util.List<Integer> getAllowedSensorIds();
     method public boolean isAllowBackgroundAuthentication();
   }
 
   public static class BiometricPrompt.Builder {
     method @NonNull @RequiresPermission(anyOf={android.Manifest.permission.TEST_BIOMETRIC, "android.permission.USE_BIOMETRIC_INTERNAL"}) public android.hardware.biometrics.BiometricPrompt.Builder setAllowBackgroundAuthentication(boolean);
     method @FlaggedApi("android.os.allow_private_profile") @NonNull @RequiresPermission(anyOf={android.Manifest.permission.TEST_BIOMETRIC, "android.permission.USE_BIOMETRIC_INTERNAL"}) public android.hardware.biometrics.BiometricPrompt.Builder setAllowBackgroundAuthentication(boolean, boolean);
-    method @NonNull @RequiresPermission(anyOf={android.Manifest.permission.TEST_BIOMETRIC, "android.permission.USE_BIOMETRIC_INTERNAL"}) public android.hardware.biometrics.BiometricPrompt.Builder setAllowedSensorIds(@NonNull java.util.List<java.lang.Integer>);
+    method @NonNull @RequiresPermission(anyOf={android.Manifest.permission.TEST_BIOMETRIC, "android.permission.USE_BIOMETRIC_INTERNAL"}) public android.hardware.biometrics.BiometricPrompt.Builder setAllowedSensorIds(@NonNull java.util.List<Integer>);
   }
 
-  public class BiometricTestSession implements java.lang.AutoCloseable {
+  public class BiometricTestSession implements AutoCloseable {
     method @RequiresPermission(android.Manifest.permission.TEST_BIOMETRIC) public void acceptAuthentication(int);
     method @RequiresPermission(android.Manifest.permission.TEST_BIOMETRIC) public void cleanupInternalState(int);
     method @RequiresPermission(android.Manifest.permission.TEST_BIOMETRIC) public void close();
@@ -1848,7 +1847,7 @@ package android.hardware.camera2 {
 package android.hardware.camera2.params {
 
   public final class ColorSpaceProfiles {
-    method @NonNull public java.util.Map<android.graphics.ColorSpace.Named,java.util.Map<java.lang.Integer,java.util.Set<java.lang.Long>>> getProfileMap();
+    method @NonNull public java.util.Map<android.graphics.ColorSpace.Named,java.util.Map<Integer,java.util.Set<Long>>> getProfileMap();
   }
 
   public final class DynamicRangeProfiles {
@@ -1879,8 +1878,8 @@ package android.hardware.devicestate {
     method public int describeContents();
     method public int getIdentifier();
     method @NonNull public String getName();
-    method @NonNull public java.util.Set<java.lang.Integer> getPhysicalProperties();
-    method @NonNull public java.util.Set<java.lang.Integer> getSystemProperties();
+    method @NonNull public java.util.Set<Integer> getPhysicalProperties();
+    method @NonNull public java.util.Set<Integer> getSystemProperties();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.hardware.devicestate.DeviceState.Configuration> CREATOR;
   }
@@ -1888,8 +1887,8 @@ package android.hardware.devicestate {
   @FlaggedApi("android.hardware.devicestate.feature.flags.device_state_property_api") public static final class DeviceState.Configuration.Builder {
     ctor public DeviceState.Configuration.Builder(int, @NonNull String);
     method @NonNull public android.hardware.devicestate.DeviceState.Configuration build();
-    method @NonNull public android.hardware.devicestate.DeviceState.Configuration.Builder setPhysicalProperties(@NonNull java.util.Set<java.lang.Integer>);
-    method @NonNull public android.hardware.devicestate.DeviceState.Configuration.Builder setSystemProperties(@NonNull java.util.Set<java.lang.Integer>);
+    method @NonNull public android.hardware.devicestate.DeviceState.Configuration.Builder setPhysicalProperties(@NonNull java.util.Set<Integer>);
+    method @NonNull public android.hardware.devicestate.DeviceState.Configuration.Builder setSystemProperties(@NonNull java.util.Set<Integer>);
   }
 
   @FlaggedApi("android.hardware.devicestate.feature.flags.device_state_property_api") public final class DeviceStateManager {
@@ -2038,12 +2037,12 @@ package android.hardware.input {
     method @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public void clearAllControllerButtonToAxisRemappings(@NonNull android.hardware.input.InputDeviceIdentifier);
     method @RequiresPermission(android.Manifest.permission.REMAP_MODIFIER_KEYS) public void clearAllModifierKeyRemappings();
     method @NonNull @RequiresPermission(android.Manifest.permission.INJECT_EVENTS) public android.hardware.input.VirtualMouse createVirtualMouse(@NonNull android.hardware.input.VirtualMouseConfig);
-    method @FlaggedApi("com.android.hardware.input.controller_remapping") @NonNull @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public java.util.Map<java.lang.Integer,java.lang.Integer> getControllerAxisRemappings(@NonNull android.hardware.input.InputDeviceIdentifier);
-    method @FlaggedApi("com.android.hardware.input.controller_remapping") @NonNull @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public java.util.Map<java.lang.Integer,java.lang.Integer> getControllerButtonRemappings(@NonNull android.hardware.input.InputDeviceIdentifier);
+    method @FlaggedApi("com.android.hardware.input.controller_remapping") @NonNull @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public java.util.Map<Integer,Integer> getControllerAxisRemappings(@NonNull android.hardware.input.InputDeviceIdentifier);
+    method @FlaggedApi("com.android.hardware.input.controller_remapping") @NonNull @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public java.util.Map<Integer,Integer> getControllerButtonRemappings(@NonNull android.hardware.input.InputDeviceIdentifier);
     method @Nullable @RequiresPermission(android.Manifest.permission.INJECT_EVENTS) public android.graphics.PointF getCursorPosition(int);
-    method @NonNull public java.util.List<java.lang.String> getKeyboardLayoutDescriptors();
+    method @NonNull public java.util.List<String> getKeyboardLayoutDescriptors();
     method @NonNull public String getKeyboardLayoutTypeForLayoutDescriptor(@NonNull String);
-    method @NonNull @RequiresPermission(android.Manifest.permission.REMAP_MODIFIER_KEYS) public java.util.Map<java.lang.Integer,java.lang.Integer> getModifierKeyRemapping();
+    method @NonNull @RequiresPermission(android.Manifest.permission.REMAP_MODIFIER_KEYS) public java.util.Map<Integer,Integer> getModifierKeyRemapping();
     method public int getMousePointerSpeed();
     method @FlaggedApi("com.android.hardware.input.controller_remapping") @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public void remapControllerAxis(@NonNull android.hardware.input.InputDeviceIdentifier, int, int);
     method @FlaggedApi("com.android.hardware.input.controller_remapping") @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public void remapControllerButton(@NonNull android.hardware.input.InputDeviceIdentifier, int, int);
@@ -2236,7 +2235,7 @@ package android.media {
     field @FlaggedApi("android.os.vibrator.haptic_pcm_generation") public static final int CHANNEL_OUT_HAPTIC_B = 268435456; // 0x10000000
   }
 
-  public final class AudioHalVersionInfo implements java.lang.Comparable<android.media.AudioHalVersionInfo> android.os.Parcelable {
+  public final class AudioHalVersionInfo implements Comparable<android.media.AudioHalVersionInfo> android.os.Parcelable {
     method public int compareTo(@NonNull android.media.AudioHalVersionInfo);
     method public int describeContents();
     method public int getHalType();
@@ -2258,7 +2257,7 @@ package android.media {
 
   public class AudioManager {
     method @RequiresPermission("android.permission.QUERY_AUDIO_STATE") public int abandonAudioFocusForTest(@NonNull android.media.AudioFocusRequest, @NonNull String);
-    method @FlaggedApi("android.media.audio.focus_freeze_test_api") @RequiresPermission("Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED") public boolean enterAudioFocusFreezeForTest(@NonNull java.util.List<java.lang.Integer>);
+    method @FlaggedApi("android.media.audio.focus_freeze_test_api") @RequiresPermission("Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED") public boolean enterAudioFocusFreezeForTest(@NonNull java.util.List<Integer>);
     method @FlaggedApi("android.media.audio.focus_freeze_test_api") @RequiresPermission("Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED") public boolean exitAudioFocusFreezeForTest();
     method @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED) public void forceComputeCsdOnAllDevices(boolean);
     method @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED) public void forceUseFrameworkMel(boolean);
@@ -2267,16 +2266,16 @@ package android.media {
     method @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED) public float getCsd();
     method @Nullable public static android.media.AudioDeviceInfo getDeviceInfoFromType(int);
     method @IntRange(from=0) @RequiresPermission("android.permission.QUERY_AUDIO_STATE") public long getFadeOutDurationOnFocusLossMillis(@NonNull android.media.AudioAttributes);
-    method @FlaggedApi("android.media.audio.focus_freeze_test_api") @NonNull @RequiresPermission("android.permission.QUERY_AUDIO_STATE") public java.util.List<java.lang.Integer> getFocusDuckedUidsForTest();
+    method @FlaggedApi("android.media.audio.focus_freeze_test_api") @NonNull @RequiresPermission("android.permission.QUERY_AUDIO_STATE") public java.util.List<Integer> getFocusDuckedUidsForTest();
     method @FlaggedApi("android.media.audio.focus_freeze_test_api") @RequiresPermission("android.permission.QUERY_AUDIO_STATE") public long getFocusFadeOutDurationForTest();
     method @FlaggedApi("android.media.audio.focus_freeze_test_api") @RequiresPermission("android.permission.QUERY_AUDIO_STATE") public long getFocusUnmuteDelayAfterFadeOutForTest();
     method @Nullable public static android.media.AudioHalVersionInfo getHalVersion();
     method public static final int[] getPublicStreamTypes();
     method @NonNull public java.util.List<android.media.audiopolicy.AudioMix> getRegisteredPolicyMixes();
-    method @NonNull public java.util.List<java.lang.Integer> getReportedSurroundFormats();
+    method @NonNull public java.util.List<Integer> getReportedSurroundFormats();
     method @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED) public float getRs2Value();
     method public int getStreamMinVolumeInt(int);
-    method @NonNull public java.util.Map<java.lang.Integer,java.lang.Boolean> getSurroundFormats();
+    method @NonNull public java.util.Map<Integer,Boolean> getSurroundFormats();
     method @NonNull public android.media.VolumePolicy getVolumePolicy();
     method public boolean hasRegisteredDynamicPolicy();
     method @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED) public boolean isCsdEnabled();
@@ -2334,7 +2333,7 @@ package android.media {
     field public static final String SAMPLE_RATE = "android.media.audiotrack.sampleRate";
   }
 
-  public abstract class Image implements java.lang.AutoCloseable {
+  public abstract class Image implements AutoCloseable {
     ctor protected Image();
   }
 
@@ -2342,7 +2341,7 @@ package android.media {
     ctor protected Image.Plane();
   }
 
-  public final class MediaCas implements java.lang.AutoCloseable {
+  public final class MediaCas implements AutoCloseable {
     method public void forceResourceLost();
     method public boolean isAidlHal();
   }
@@ -2378,7 +2377,7 @@ package android.media {
     method public int getMaxMacroBlocks();
   }
 
-  public final class MediaDescrambler implements java.lang.AutoCloseable {
+  public final class MediaDescrambler implements AutoCloseable {
     method public boolean isAidlHal();
   }
 
@@ -2434,20 +2433,20 @@ package android.media.audiofx {
   public class AudioEffect {
     method public static int byteArrayToInt(byte[]);
     method public static short byteArrayToShort(byte[]);
-    method public int getParameter(byte[], byte[]) throws java.lang.IllegalStateException;
-    method public int getParameter(int, byte[]) throws java.lang.IllegalStateException;
-    method public int getParameter(int, int[]) throws java.lang.IllegalStateException;
-    method public int getParameter(int, short[]) throws java.lang.IllegalStateException;
-    method public int getParameter(int[], short[]) throws java.lang.IllegalStateException;
+    method public int getParameter(byte[], byte[]) throws IllegalStateException;
+    method public int getParameter(int, byte[]) throws IllegalStateException;
+    method public int getParameter(int, int[]) throws IllegalStateException;
+    method public int getParameter(int, short[]) throws IllegalStateException;
+    method public int getParameter(int[], short[]) throws IllegalStateException;
     method public static byte[] intToByteArray(int);
     method public static boolean isEffectTypeAvailable(java.util.UUID);
     method public static boolean isError(int);
-    method public int setParameter(byte[], byte[]) throws java.lang.IllegalStateException;
-    method public int setParameter(int, byte[]) throws java.lang.IllegalStateException;
-    method public int setParameter(int, int) throws java.lang.IllegalStateException;
-    method public int setParameter(int, short) throws java.lang.IllegalStateException;
-    method public int setParameter(int[], byte[]) throws java.lang.IllegalStateException;
-    method public int setParameter(int[], int[]) throws java.lang.IllegalStateException;
+    method public int setParameter(byte[], byte[]) throws IllegalStateException;
+    method public int setParameter(int, byte[]) throws IllegalStateException;
+    method public int setParameter(int, int) throws IllegalStateException;
+    method public int setParameter(int, short) throws IllegalStateException;
+    method public int setParameter(int[], byte[]) throws IllegalStateException;
+    method public int setParameter(int[], int[]) throws IllegalStateException;
     method public void setParameterListener(android.media.audiofx.AudioEffect.OnParameterChangeListener);
     method public static byte[] shortToByteArray(short);
     field public static final java.util.UUID EFFECT_TYPE_NULL;
@@ -2691,7 +2690,7 @@ package android.os {
   }
 
   public class Environment {
-    method public static java.io.File buildPath(java.io.File, java.lang.String...);
+    method public static java.io.File buildPath(java.io.File, String...);
   }
 
   public final class FileUtils {
@@ -2772,7 +2771,7 @@ package android.os {
     method @FlaggedApi("com.android.server.power.feature.flags.partial_sleep_wakelocks") @RequiresPermission(android.Manifest.permission.DEVICE_POWER) public void goToSleep(long, int, int);
     method @FlaggedApi("android.os.battery_saver_supported_check_api") public boolean isBatterySaverSupported();
     method public boolean isInteractive(int);
-    method @FlaggedApi("com.android.server.power.feature.flags.partial_sleep_wakelocks") @NonNull @RequiresPermission(android.Manifest.permission.ACQUIRE_SLEEP_LOCK) public android.os.PowerManager.SleepLock newSleepLock(int, @NonNull String) throws java.lang.RuntimeException;
+    method @FlaggedApi("com.android.server.power.feature.flags.partial_sleep_wakelocks") @NonNull @RequiresPermission(android.Manifest.permission.ACQUIRE_SLEEP_LOCK) public android.os.PowerManager.SleepLock newSleepLock(int, @NonNull String) throws RuntimeException;
     field public static final String ACTION_ENHANCED_DISCHARGE_PREDICTION_CHANGED = "android.os.action.ENHANCED_DISCHARGE_PREDICTION_CHANGED";
     field @RequiresPermission(android.Manifest.permission.DEVICE_POWER) public static final int SYSTEM_WAKELOCK = -2147483648; // 0x80000000
   }
@@ -2784,7 +2783,7 @@ package android.os {
   }
 
   public class Process {
-    method public static final int getThreadScheduler(int) throws java.lang.IllegalArgumentException;
+    method public static final int getThreadScheduler(int) throws IllegalArgumentException;
     method public static final int toSdkSandboxUid(int);
     field public static final int FIRST_APP_ZYGOTE_ISOLATED_UID = 90000; // 0x15f90
     field public static final int FIRST_ISOLATED_UID = 99000; // 0x182b8
@@ -2847,7 +2846,7 @@ package android.os {
     method @NonNull @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.CREATE_USERS}) public android.os.UserHandle getBootUser();
     method @FlaggedApi("android.multiuser.support_communal_profile") @Nullable @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.CREATE_USERS, android.Manifest.permission.QUERY_USERS}) public android.os.UserHandle getCommunalProfile();
     method public int getMainDisplayIdAssignedToUser();
-    method @Nullable @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.CREATE_USERS}) public java.util.Set<java.lang.String> getPreInstallableSystemPackages(@NonNull String);
+    method @Nullable @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.CREATE_USERS}) public java.util.Set<String> getPreInstallableSystemPackages(@NonNull String);
     method @RequiresPermission(anyOf={android.Manifest.permission.CREATE_USERS, android.Manifest.permission.QUERY_USERS}) public int getUserRemovability(int);
     method @NonNull @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.CREATE_USERS, android.Manifest.permission.QUERY_USERS}) public String getUserType();
     method @NonNull @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.CREATE_USERS}) public java.util.List<android.content.pm.UserInfo> getUsers();
@@ -2915,7 +2914,7 @@ package android.os {
     method @NonNull public static String getPlatformSepolicyVersion();
     method public static String getSepolicyVersion();
     method public static Long getTargetFrameworkCompatibilityMatrixVersion();
-    method public static java.util.Map<java.lang.String,java.lang.String[]> getVndkSnapshots();
+    method public static java.util.Map<String,String[]> getVndkSnapshots();
     method public static String[] report();
   }
 
@@ -3152,7 +3151,7 @@ package android.os.vibrator.persistence {
 package android.permission {
 
   public final class PermissionControllerManager {
-    method @RequiresPermission(android.Manifest.permission.GET_RUNTIME_PERMISSIONS) public void countPermissionApps(@NonNull java.util.List<java.lang.String>, int, @NonNull android.permission.PermissionControllerManager.OnCountPermissionAppsResultCallback, @Nullable android.os.Handler);
+    method @RequiresPermission(android.Manifest.permission.GET_RUNTIME_PERMISSIONS) public void countPermissionApps(@NonNull java.util.List<String>, int, @NonNull android.permission.PermissionControllerManager.OnCountPermissionAppsResultCallback, @Nullable android.os.Handler);
     method @RequiresPermission(android.Manifest.permission.GET_RUNTIME_PERMISSIONS) public void getAppPermissions(@NonNull String, @NonNull android.permission.PermissionControllerManager.OnGetAppPermissionResultCallback, @Nullable android.os.Handler);
     method @RequiresPermission(android.Manifest.permission.REVOKE_RUNTIME_PERMISSIONS) public void revokeRuntimePermission(@NonNull String, @NonNull String);
   }
@@ -3328,7 +3327,7 @@ package android.security {
     method @RequiresPermission("android.permission.MANAGE_CREDENTIAL_MANAGEMENT_APP") @WorkerThread public static boolean setCredentialManagementApp(@NonNull android.content.Context, @NonNull String, @NonNull android.security.AppUriAuthenticationPolicy);
   }
 
-  public class KeyStoreException extends java.lang.Exception {
+  public class KeyStoreException extends Exception {
     method public int getErrorCode();
     method public static boolean hasFailureInfoForError(int);
   }
@@ -3371,7 +3370,7 @@ package android.security.trusttoken {
 package android.service.autofill {
 
   public final class CharSequenceTransformation extends android.service.autofill.InternalTransformation implements android.os.Parcelable android.service.autofill.Transformation {
-    method public void apply(@NonNull android.service.autofill.ValueFinder, @NonNull android.widget.RemoteViews, int) throws java.lang.Exception;
+    method public void apply(@NonNull android.service.autofill.ValueFinder, @NonNull android.widget.RemoteViews, int) throws Exception;
   }
 
   public final class CompositeUserData implements android.os.Parcelable {
@@ -3381,8 +3380,8 @@ package android.service.autofill {
     method public android.os.Bundle getDefaultFieldClassificationArgs();
     method @Nullable public String getFieldClassificationAlgorithm();
     method @Nullable public String getFieldClassificationAlgorithmForCategory(@NonNull String);
-    method public android.util.ArrayMap<java.lang.String,java.lang.String> getFieldClassificationAlgorithms();
-    method public android.util.ArrayMap<java.lang.String,android.os.Bundle> getFieldClassificationArgs();
+    method public android.util.ArrayMap<String,String> getFieldClassificationAlgorithms();
+    method public android.util.ArrayMap<String,android.os.Bundle> getFieldClassificationArgs();
     method public String[] getValues();
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.service.autofill.CompositeUserData> CREATOR;
@@ -3394,7 +3393,7 @@ package android.service.autofill {
 
   public final class Dataset implements android.os.Parcelable {
     method @Nullable public android.content.IntentSender getAuthentication();
-    method @Nullable public java.util.ArrayList<java.lang.String> getAutofillDatatypes();
+    method @Nullable public java.util.ArrayList<String> getAutofillDatatypes();
     method @Nullable public android.content.ClipData getFieldContent();
     method @Nullable public android.widget.RemoteViews getFieldDialogPresentation(int);
     method @Nullable public java.util.ArrayList<android.view.autofill.AutofillId> getFieldIds();
@@ -3419,7 +3418,7 @@ package android.service.autofill {
   }
 
   public final class DateTransformation extends android.service.autofill.InternalTransformation implements android.os.Parcelable android.service.autofill.Transformation {
-    method public void apply(@NonNull android.service.autofill.ValueFinder, @NonNull android.widget.RemoteViews, int) throws java.lang.Exception;
+    method public void apply(@NonNull android.service.autofill.ValueFinder, @NonNull android.widget.RemoteViews, int) throws Exception;
   }
 
   public final class DateValueSanitizer extends android.service.autofill.InternalSanitizer implements android.os.Parcelable android.service.autofill.Sanitizer {
@@ -3436,7 +3435,7 @@ package android.service.autofill {
   }
 
   public final class ImageTransformation extends android.service.autofill.InternalTransformation implements android.os.Parcelable android.service.autofill.Transformation {
-    method public void apply(@NonNull android.service.autofill.ValueFinder, @NonNull android.widget.RemoteViews, int) throws java.lang.Exception;
+    method public void apply(@NonNull android.service.autofill.ValueFinder, @NonNull android.widget.RemoteViews, int) throws Exception;
   }
 
   public abstract class InternalOnClickAction implements android.service.autofill.OnClickAction android.os.Parcelable {
@@ -3451,7 +3450,7 @@ package android.service.autofill {
 
   public abstract class InternalTransformation implements android.os.Parcelable android.service.autofill.Transformation {
     ctor public InternalTransformation();
-    method public static boolean batchApply(@NonNull android.service.autofill.ValueFinder, @NonNull android.widget.RemoteViews, @NonNull java.util.ArrayList<android.util.Pair<java.lang.Integer,android.service.autofill.InternalTransformation>>);
+    method public static boolean batchApply(@NonNull android.service.autofill.ValueFinder, @NonNull android.widget.RemoteViews, @NonNull java.util.ArrayList<android.util.Pair<Integer,android.service.autofill.InternalTransformation>>);
   }
 
   public abstract class InternalValidator implements android.os.Parcelable android.service.autofill.Validator {
@@ -3472,7 +3471,7 @@ package android.service.autofill {
   }
 
   public final class UserData implements android.os.Parcelable {
-    method public android.util.ArrayMap<java.lang.String,java.lang.String> getFieldClassificationAlgorithms();
+    method public android.util.ArrayMap<String,String> getFieldClassificationAlgorithms();
   }
 
   public interface ValueFinder {
@@ -3572,11 +3571,11 @@ package android.service.notification {
   }
 
   public final class ZenDeviceEffects implements android.os.Parcelable {
-    method @NonNull public java.util.Set<java.lang.String> getExtraEffects();
+    method @NonNull public java.util.Set<String> getExtraEffects();
   }
 
   public static final class ZenDeviceEffects.Builder {
-    method @NonNull public android.service.notification.ZenDeviceEffects.Builder setExtraEffects(@NonNull java.util.Set<java.lang.String>);
+    method @NonNull public android.service.notification.ZenDeviceEffects.Builder setExtraEffects(@NonNull java.util.Set<String>);
   }
 
   public final class ZenPolicy implements android.os.Parcelable {
@@ -3591,7 +3590,7 @@ package android.service.notification {
 
 package android.service.personalcontext {
 
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class RenderToken implements java.lang.Comparable<android.service.personalcontext.RenderToken> android.os.Parcelable {
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class RenderToken implements Comparable<android.service.personalcontext.RenderToken> android.os.Parcelable {
     ctor public RenderToken(@NonNull java.util.UUID, @Nullable String);
   }
 
@@ -3718,8 +3717,8 @@ package android.service.quicksettings {
 
 package android.service.settings.preferences {
 
-  @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public class SettingsPreferenceServiceClient implements java.lang.AutoCloseable {
-    ctor public SettingsPreferenceServiceClient(@NonNull android.content.Context, @NonNull String, boolean, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.service.settings.preferences.SettingsPreferenceServiceClient,java.lang.Exception>);
+  @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public class SettingsPreferenceServiceClient implements AutoCloseable {
+    ctor public SettingsPreferenceServiceClient(@NonNull android.content.Context, @NonNull String, boolean, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.service.settings.preferences.SettingsPreferenceServiceClient,Exception>);
   }
 
 }
@@ -3817,15 +3816,15 @@ package android.telephony {
     ctor public CellularIdentifierDisclosure(int, int, @NonNull String, boolean);
   }
 
-  public class MbmsDownloadSession implements java.lang.AutoCloseable {
+  public class MbmsDownloadSession implements AutoCloseable {
     field public static final String MBMS_DOWNLOAD_SERVICE_OVERRIDE_METADATA = "mbms-download-service-override";
   }
 
-  public class MbmsGroupCallSession implements java.lang.AutoCloseable {
+  public class MbmsGroupCallSession implements AutoCloseable {
     field public static final String MBMS_GROUP_CALL_SERVICE_OVERRIDE_METADATA = "mbms-group-call-service-override";
   }
 
-  public class MbmsStreamingSession implements java.lang.AutoCloseable {
+  public class MbmsStreamingSession implements AutoCloseable {
     field public static final String MBMS_STREAMING_SERVICE_OVERRIDE_METADATA = "mbms-streaming-service-override";
   }
 
@@ -3868,7 +3867,7 @@ package android.telephony {
   public final class SmsManager {
     method @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE) public int checkSmsShortCodeDestination(String, String);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void clearStorageMonitorMemoryStatusOverride();
-    method @NonNull @RequiresPermission(allOf={android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE, "android.permission.MANAGE_COMPANION_DEVICES", android.Manifest.permission.MANAGE_ROLE_HOLDERS}) public static java.util.Set<java.lang.String> getSmsOtpTrustedPackages(@NonNull android.content.Context, @Nullable android.os.UserHandle);
+    method @NonNull @RequiresPermission(allOf={android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE, "android.permission.MANAGE_COMPANION_DEVICES", android.Manifest.permission.MANAGE_ROLE_HOLDERS}) public static java.util.Set<String> getSmsOtpTrustedPackages(@NonNull android.content.Context, @Nullable android.os.UserHandle);
     method @RequiresPermission(allOf={android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE, "android.permission.MANAGE_COMPANION_DEVICES", android.Manifest.permission.MANAGE_ROLE_HOLDERS}) public static boolean isAppTrustedForSmsOtp(@NonNull android.content.Context, @NonNull String, int);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void setStorageMonitorMemoryStatusOverride(boolean);
     field public static final int SMS_CATEGORY_FREE_SHORT_CODE = 1; // 0x1
@@ -3881,11 +3880,11 @@ package android.telephony {
   public class TelephonyManager {
     method public int addDevicePolicyOverrideApn(@NonNull android.content.Context, @NonNull android.telephony.data.ApnSetting);
     method public int getCarrierIdListVersion();
-    method @NonNull @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public java.util.List<java.lang.String> getCertsFromCarrierPrivilegeAccessRules();
+    method @NonNull @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE) public java.util.List<String> getCertsFromCarrierPrivilegeAccessRules();
     method @NonNull public java.util.List<android.telephony.data.ApnSetting> getDevicePolicyOverrideApns(@NonNull android.content.Context);
-    method @NonNull public android.util.Pair<java.lang.Integer,java.lang.Integer> getHalVersion(int);
+    method @NonNull public android.util.Pair<Integer,Integer> getHalVersion(int);
     method @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE) public String getLine1AlphaTag();
-    method @Deprecated public android.util.Pair<java.lang.Integer,java.lang.Integer> getRadioHalVersion();
+    method @Deprecated public android.util.Pair<Integer,Integer> getRadioHalVersion();
     method public boolean modifyDevicePolicyOverrideApn(@NonNull android.content.Context, int, @NonNull android.telephony.data.ApnSetting);
     method @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public void refreshUiccProfile();
     method @Deprecated public void setCarrierTestOverride(String, String, String, String, String, String, String);
@@ -3907,7 +3906,7 @@ package android.telephony {
 
 package android.telephony.emergency {
 
-  public final class EmergencyNumber implements java.lang.Comparable<android.telephony.emergency.EmergencyNumber> android.os.Parcelable {
+  public final class EmergencyNumber implements Comparable<android.telephony.emergency.EmergencyNumber> android.os.Parcelable {
     field public static final int EMERGENCY_NUMBER_SOURCE_TEST = 32; // 0x20
   }
 
@@ -4028,7 +4027,7 @@ package android.util {
 
   public class FeatureFlagUtils {
     ctor public FeatureFlagUtils();
-    method public static java.util.Map<java.lang.String,java.lang.String> getAllFeatureFlags();
+    method public static java.util.Map<String,String> getAllFeatureFlags();
     method public static boolean isEnabled(android.content.Context, String);
     method public static void setEnabled(android.content.Context, String, boolean);
     field public static final String FFLAG_OVERRIDE_PREFIX = "sys.fflag.override.";
@@ -4104,7 +4103,7 @@ package android.util.proto {
     method public void writeRawZigZag64(long);
   }
 
-  public class ProtoParseException extends java.lang.RuntimeException {
+  public class ProtoParseException extends RuntimeException {
     ctor public ProtoParseException(String);
   }
 
@@ -4278,7 +4277,7 @@ package android.view {
 
   public class ViewDebug {
     method @Nullable public static AutoCloseable startRenderingCommandsCapture(android.view.View, java.util.concurrent.Executor, java.util.concurrent.Callable<java.io.OutputStream>);
-    method @Deprecated @Nullable public static AutoCloseable startRenderingCommandsCapture(android.view.View, java.util.concurrent.Executor, java.util.function.Function<android.graphics.Picture,java.lang.Boolean>);
+    method @Deprecated @Nullable public static AutoCloseable startRenderingCommandsCapture(android.view.View, java.util.concurrent.Executor, java.util.function.Function<android.graphics.Picture,Boolean>);
   }
 
   public abstract class Window {
@@ -4322,7 +4321,7 @@ package android.view {
 package android.view.accessibility {
 
   public final class AccessibilityManager {
-    method @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_ACCESSIBILITY) public java.util.List<java.lang.String> getAccessibilityShortcutTargets(int);
+    method @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_ACCESSIBILITY) public java.util.List<String> getAccessibilityShortcutTargets(int);
     method public boolean hasAnyDirectConnection();
     method @FlaggedApi("android.view.accessibility.enable_trusted_accessibility_service_api") @RequiresPermission(android.Manifest.permission.MANAGE_ACCESSIBILITY) public void setTrustedAccessibilityServiceForTesting(@Nullable android.content.ComponentName);
     method @FlaggedApi("android.view.accessibility.flash_notification_system_api") public boolean startFlashNotificationSequence(@NonNull android.content.Context, int);
@@ -4542,9 +4541,9 @@ package android.view.inputmethod {
     method @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public boolean isInputMethodPickerShown();
     method @NonNull @RequiresPermission(value=android.Manifest.permission.INTERACT_ACROSS_USERS_FULL, conditional=true) public boolean isStylusHandwritingAvailableAsUser(@NonNull android.os.UserHandle);
     method @RequiresPermission(allOf={android.Manifest.permission.WRITE_SECURE_SETTINGS, android.Manifest.permission.TEST_INPUT_METHOD, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}, conditional=true) public void resetInputMethodsForTesting(int);
-    method @FlaggedApi("android.view.inputmethod.enforce_device_policy_ime") @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public void setAllowedImesByPolicyForTest(@Nullable java.util.List<java.lang.String>);
+    method @FlaggedApi("android.view.inputmethod.enforce_device_policy_ime") @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public void setAllowedImesByPolicyForTest(@Nullable java.util.List<String>);
     method @RequiresPermission(allOf={android.Manifest.permission.WRITE_SECURE_SETTINGS, android.Manifest.permission.TEST_INPUT_METHOD, android.Manifest.permission.INTERACT_ACROSS_USERS_FULL}, conditional=true) public boolean setInputMethodForTesting(@NonNull String, int);
-    method @FlaggedApi("android.view.inputmethod.prevent_ime_startup_bypassed_apps") @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public void setPreventImeStartupBypassedAppsForTest(@Nullable java.util.List<java.lang.String>);
+    method @FlaggedApi("android.view.inputmethod.prevent_ime_startup_bypassed_apps") @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public void setPreventImeStartupBypassedAppsForTest(@Nullable java.util.List<String>);
     method @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public void setStylusWindowIdleTimeoutForTest(long);
     method @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public boolean shouldShowImeSwitcherButtonForTest();
     method @RequiresPermission(android.Manifest.permission.TEST_INPUT_METHOD) public void waitUntilNoPendingRequests(long);

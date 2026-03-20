@@ -1,6 +1,5 @@
 // Signature format: 6.0
 // - style=java
-// - strip-java-lang-prefix=legacy
 // - type-argument-spacing=legacy
 package android.app {
 
@@ -49,7 +48,7 @@ package android.app.search {
     method @Deprecated @NonNull public long getTimestamp();
   }
 
-  public final class SearchSession implements java.lang.AutoCloseable {
+  public final class SearchSession implements AutoCloseable {
     method @Deprecated public void destroy();
   }
 
@@ -65,7 +64,7 @@ package android.app.search {
 
 package android.content {
 
-  public class Intent implements java.lang.Cloneable android.os.Parcelable {
+  public class Intent implements Cloneable android.os.Parcelable {
     field @Deprecated public static final String ACTION_DEVICE_INITIALIZATION_WIZARD = "android.intent.action.DEVICE_INITIALIZATION_WIZARD";
     field @Deprecated public static final String ACTION_MASTER_CLEAR = "android.intent.action.MASTER_CLEAR";
     field @Deprecated public static final String ACTION_SERVICE_STATE = "android.intent.action.SERVICE_STATE";
@@ -180,7 +179,7 @@ package android.service.notification {
   }
 
   public static class NotificationListenerService.Ranking {
-    method public java.util.List<java.lang.String> getAdditionalPeople();
+    method public java.util.List<String> getAdditionalPeople();
     method public java.util.List<android.service.notification.SnoozeCriterion> getSnoozeCriteria();
   }
 

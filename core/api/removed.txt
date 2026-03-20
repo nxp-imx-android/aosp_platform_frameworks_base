@@ -3,7 +3,6 @@
 // - normalize-abstract-modifier=no
 // - normalize-final-modifier=no
 // - sort-whole-extends-list=no
-// - strip-java-lang-prefix=legacy
 // - type-argument-spacing=legacy
 package android.app {
 
@@ -49,7 +48,7 @@ package android.content {
     method public java.io.File getSharedPreferencesPath(String);
   }
 
-  public class Intent implements java.lang.Cloneable android.os.Parcelable {
+  public class Intent implements Cloneable android.os.Parcelable {
     field @Deprecated public static final String EXTRA_QUICK_VIEW_ADVANCED = "android.intent.extra.QUICK_VIEW_ADVANCED";
   }
 
@@ -81,7 +80,7 @@ package android.database {
   public abstract class AbstractCursor implements android.database.CrossProcessCursor {
     field protected Long mCurrentRowID;
     field protected int mRowIdColumnIndex;
-    field protected java.util.HashMap<java.lang.Long,java.util.Map<java.lang.String,java.lang.Object>> mUpdatedRows;
+    field protected java.util.HashMap<Long,java.util.Map<String,Object>> mUpdatedRows;
   }
 
 }
@@ -307,8 +306,8 @@ package android.provider {
     method @RequiresPermission(value="com.android.browser.permission.WRITE_HISTORY_BOOKMARKS", apis="..22") public static final void clearSearches(android.content.ContentResolver);
     method @RequiresPermission(value="com.android.browser.permission.WRITE_HISTORY_BOOKMARKS", apis="..22") public static final void deleteFromHistory(android.content.ContentResolver, String);
     method @RequiresPermission(value="com.android.browser.permission.WRITE_HISTORY_BOOKMARKS", apis="..22") public static final void deleteHistoryTimeFrame(android.content.ContentResolver, long, long);
-    method @RequiresPermission(value="com.android.browser.permission.READ_HISTORY_BOOKMARKS", apis="..22") public static final android.database.Cursor getAllBookmarks(android.content.ContentResolver) throws java.lang.IllegalStateException;
-    method @RequiresPermission(value="com.android.browser.permission.READ_HISTORY_BOOKMARKS", apis="..22") public static final android.database.Cursor getAllVisitedUrls(android.content.ContentResolver) throws java.lang.IllegalStateException;
+    method @RequiresPermission(value="com.android.browser.permission.READ_HISTORY_BOOKMARKS", apis="..22") public static final android.database.Cursor getAllBookmarks(android.content.ContentResolver) throws IllegalStateException;
+    method @RequiresPermission(value="com.android.browser.permission.READ_HISTORY_BOOKMARKS", apis="..22") public static final android.database.Cursor getAllVisitedUrls(android.content.ContentResolver) throws IllegalStateException;
     method @RequiresPermission(value="com.android.browser.permission.READ_HISTORY_BOOKMARKS", apis="..22") public static final void requestAllIcons(android.content.ContentResolver, String, android.webkit.WebIconDatabase.IconListener);
     method public static final void saveBookmark(android.content.Context, String, String);
     method @RequiresPermission(allOf={"com.android.browser.permission.READ_HISTORY_BOOKMARKS", "com.android.browser.permission.WRITE_HISTORY_BOOKMARKS"}, apis="..22") public static final void truncateHistory(android.content.ContentResolver);
