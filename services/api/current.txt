@@ -1,4 +1,7 @@
-// Signature format: 2.0
+// Signature format: 6.0
+// - style=java
+// - strip-java-lang-prefix=legacy
+// - type-argument-spacing=legacy
 package com.android.server {
 
   public final class LocalManagerRegistry {
@@ -38,8 +41,8 @@ package com.android.server {
 package com.android.server.am {
 
   public interface ActivityManagerLocal {
-    method public boolean bindSdkSandboxService(@NonNull android.content.Intent, @NonNull android.content.ServiceConnection, int, @NonNull android.os.IBinder, @NonNull String, @NonNull String, int) throws android.os.RemoteException;
     method public boolean bindSdkSandboxService(@NonNull android.content.Intent, @NonNull android.content.ServiceConnection, int, @NonNull android.os.IBinder, @NonNull String, @NonNull String, @NonNull android.content.Context.BindServiceFlags) throws android.os.RemoteException;
+    method public boolean bindSdkSandboxService(@NonNull android.content.Intent, @NonNull android.content.ServiceConnection, int, @NonNull android.os.IBinder, @NonNull String, @NonNull String, int) throws android.os.RemoteException;
     method @Deprecated public boolean bindSdkSandboxService(@NonNull android.content.Intent, @NonNull android.content.ServiceConnection, int, @NonNull String, @NonNull String, int) throws android.os.RemoteException;
     method public boolean canStartForegroundService(int, int, @NonNull String);
     method @FlaggedApi("com.android.server.am.get_package_names_for_pid_api") @NonNull public String[] getPackageNamesForPid(int, int);
@@ -257,8 +260,8 @@ package com.android.server.role {
 package com.android.server.security {
 
   public final class FileIntegrity {
-    method public static void setUpFsVerity(@NonNull java.io.File) throws java.io.IOException;
     method public static void setUpFsVerity(@NonNull android.os.ParcelFileDescriptor) throws java.io.IOException;
+    method public static void setUpFsVerity(@NonNull java.io.File) throws java.io.IOException;
   }
 
 }
