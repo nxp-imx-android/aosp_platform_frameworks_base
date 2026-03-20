@@ -16,30 +16,23 @@
 
 package android.processor.devicepolicy.test
 
-import android.processor.devicepolicy.DevicePolicyAnnotationProcessor
 import android.processor.devicepolicy.protos.PolicyMetadataList
-import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.ListPolicyMetadata
 import com.google.common.base.Charsets
 import com.google.common.io.Resources
 import com.google.common.truth.extensions.proto.ProtoTruth.assertThat
 import com.google.protobuf.Message
 import com.google.protobuf.TextFormat
-import com.google.testing.compile.Compilation
 import com.google.testing.compile.CompilationSubject.assertThat
-import com.google.testing.compile.Compiler
 import com.google.testing.compile.JavaFileObjects
 import java.io.IOException
-import javax.tools.JavaFileObject
-import javax.tools.StandardLocation.SOURCE_OUTPUT
-import kotlin.jvm.optionals.getOrNull
 import kotlin.reflect.KClass
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.fail
 import org.junit.Test
 
 class DevicePolicyAnnotationProcessorTest {
-    private val mCompilerWithoutProcessor = Compiler.javac()
-    private val mCompiler = Compiler.javac().withProcessors(DevicePolicyAnnotationProcessor())
+
+    private val compiler = PolicyIdentifierCompiler()
 
     private companion object {
         const val RESOURCE_ROOT = "test/resources/android/processor/devicepolicy/test"
@@ -48,24 +41,10 @@ class DevicePolicyAnnotationProcessorTest {
         const val POLICY_IDENTIFIER_LOCATION = "android/app/admin/PolicyIdentifier"
         const val POLICY_IDENTIFIER_TEXTPROTO = "$RESOURCE_ROOT/ExpectedPolicyIdentifier.textproto"
 
-        // Can be used by tests that do not care about the allowedDpcTypes field.
-        const val ALLOWED_DPC_TYPES_SNIPPET =
-            """
-            allowedDpcTypes = @AllowedDpcTypes(
-                    deviceOwner = DISALLOWED,
-                    financedDeviceOwner = DISALLOWED,
-                    managedProfileOwnerOfOrganizationOwnedDevice = DISALLOWED,
-                    managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
-                    profileOwnerOnUser0 = DISALLOWED,
-                    unaffiliatedFullUserProfileOwner = DISALLOWED,
-                    affiliatedFullUserProfileOwner = DISALLOWED)
-        """
+        const val ALLOWED_DPC_TYPES_SNIPPET = PolicyIdentifierCompiler.ALLOWED_DPC_TYPES_SNIPPET
 
         // A set of source files required to compile `POLICY_IDENTIFIER_JAVA`
         val REQUIRED_SOURCE_FILES = setOf("android/annotation/IntDef.java")
-
-        /** Build path for the output. */
-        const val POLICIES_TEXTPROTO_LOCATION = "android/processor/devicepolicy/policies.textproto"
 
         fun loadTextResource(path: String): String {
             try {
@@ -77,61 +56,16 @@ class DevicePolicyAnnotationProcessorTest {
                 return ""
             }
         }
-
-        fun buildPolicyIdentifier(policies: String): JavaFileObject =
-            JavaFileObjects.forSourceLines(
-                "android.app.admin.PolicyIdentifier",
-                """
-                package android.app.admin;
-
-                import static android.processor.devicepolicy.AllowedDpcTypes.ALLOWED;
-                import static android.processor.devicepolicy.AllowedDpcTypes.DISALLOWED;
-
-                import android.annotation.IntDef;
-                import android.processor.devicepolicy.AllowedDpcTypes;
-                import android.processor.devicepolicy.BooleanPolicyDefinition;
-                import android.processor.devicepolicy.EnumPolicyDefinition;
-                import android.processor.devicepolicy.EnumResolutionMechanism;
-                import android.processor.devicepolicy.IntegerPolicyDefinition;
-                import android.processor.devicepolicy.ListOfStringPolicyDefinition;
-                import android.processor.devicepolicy.ListResolutionMechanism;
-                import android.processor.devicepolicy.LongPolicyDefinition;
-                import android.processor.devicepolicy.PackagePolicyDefinition;
-                import android.processor.devicepolicy.PolicyDefinition;
-                import android.processor.devicepolicy.StringPolicyDefinition;
-
-                import java.lang.annotation.Retention;
-                import java.lang.annotation.RetentionPolicy;
-                import java.util.List;
-
-                public final class PolicyIdentifier<T> {
-                    // Allow using the constants without having to build DevicePolicyManager
-                    // in our tests.
-                    public static final int POLICY_SCOPE_USER = 1;
-                    public static final int POLICY_SCOPE_DEVICE = 2;
-                    public static final int POLICY_SCOPE_PARENT_USER = 3;
-                    public static final int RESOURCE_DEVICE_WIDE = 1;
-                    public static final int RESOURCE_PER_USER = 2;
-
-                    // We don't actually do anything with this.
-                    public PolicyIdentifier(String id) {}
-
-                    ${policies.trimIndent()}
-                }
-            """
-                    .trimIndent(),
-            )
     }
 
     @Test
     fun test_policyIdentifierFake_generates() {
         val expectedOutput = loadTextResource(POLICY_IDENTIFIER_TEXTPROTO)
-
         val requiredSources =
             REQUIRED_SOURCE_FILES.map { JavaFileObjects.forResource(it) }.toTypedArray()
 
-        val compilation: Compilation =
-            mCompiler.compile(
+        val generatedProto =
+            compiler.compileExpectSuccess(
                 JavaFileObjects.forSourceString(
                     POLICY_IDENTIFIER_LOCATION,
                     loadTextResource(POLICY_IDENTIFIER_JAVA),
@@ -139,10 +73,7 @@ class DevicePolicyAnnotationProcessorTest {
                 *requiredSources,
             )
 
-        assertThat(compilation).succeeded()
-
-        assertThat(compilation.generatedProto())
-            .isEqualTo(expectedOutput.parseProto(PolicyMetadataList::class))
+        assertThat(generatedProto).isEqualTo(expectedOutput.parseProto(PolicyMetadataList::class))
     }
 
     @Test
@@ -185,7 +116,7 @@ class DevicePolicyAnnotationProcessorTest {
                 loadTextResource(POLICY_IDENTIFIER_JAVA),
             )
 
-        compileExpectError(
+        compiler.compileExpectError(
             otherClass,
             policyIdentifier,
             expectedError =
@@ -195,26 +126,21 @@ class DevicePolicyAnnotationProcessorTest {
 
     @Test
     fun test_invalidType_failsToCompile() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    /**
-                    * Type of metadata and identifier must match.
-                    */
-                    @BooleanPolicyDefinition(
-                            base = @PolicyDefinition(
-                                    allowedScopes = { POLICY_SCOPE_DEVICE },
-                                    affectedResource = RESOURCE_DEVICE_WIDE,
-                                    $ALLOWED_DPC_TYPES_SNIPPET
-                            )
-                    )
-                    public static final PolicyIdentifier<Integer> INVALID_TYPE =
-                        new PolicyIdentifier<>("INVALID_TYPE");
-                """
-            )
-
-        compileExpectError(
-            policyIdentifier,
+        compiler.compileExpectError(
+            """
+                /**
+                * Type of metadata and identifier must match.
+                */
+                @BooleanPolicyDefinition(
+                        base = @PolicyDefinition(
+                                allowedScopes = { POLICY_SCOPE_DEVICE },
+                                affectedResource = RESOURCE_DEVICE_WIDE,
+                                $ALLOWED_DPC_TYPES_SNIPPET
+                        )
+                )
+                public static final PolicyIdentifier<Integer> INVALID_TYPE =
+                    new PolicyIdentifier<>("INVALID_TYPE");
+            """,
             expectedError =
                 "booleanValue in @PolicyDefinition can only be applied to policies of type java.lang.Boolean",
         )
@@ -222,24 +148,19 @@ class DevicePolicyAnnotationProcessorTest {
 
     @Test
     fun test_directPolicyDefinition_failsToCompile() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    /**
-                    * Don't use @PolicyDefinition
-                    */
-                    @PolicyDefinition(
-                            allowedScopes = { POLICY_SCOPE_DEVICE },
-                            affectedResource = RESOURCE_DEVICE_WIDE,
-                            $ALLOWED_DPC_TYPES_SNIPPET
-                    )
-                    public static final PolicyIdentifier<Boolean> INVALID_ANNOTATION =
-                        new PolicyIdentifier<>("INVALID_ANNOTATION");
-                """
-            )
-
-        compileExpectError(
-            policyIdentifier,
+        compiler.compileExpectError(
+            """
+                /**
+                * Don't use @PolicyDefinition
+                */
+                @PolicyDefinition(
+                        allowedScopes = { POLICY_SCOPE_DEVICE },
+                        affectedResource = RESOURCE_DEVICE_WIDE,
+                        $ALLOWED_DPC_TYPES_SNIPPET
+                )
+                public static final PolicyIdentifier<Boolean> INVALID_ANNOTATION =
+                    new PolicyIdentifier<>("INVALID_ANNOTATION");
+            """,
             expectedError =
                 "@PolicyDefinition can not be applied to any element, use a type-specific annotation such as @EnumPolicyDefinition instead",
         )
@@ -247,776 +168,214 @@ class DevicePolicyAnnotationProcessorTest {
 
     @Test
     fun test_missingDocumentation_failsToCompile() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    @BooleanPolicyDefinition(
-                            base = @PolicyDefinition(
-                                    allowedScopes = { POLICY_SCOPE_DEVICE },
-                                    affectedResource = RESOURCE_DEVICE_WIDE,
-                                    $ALLOWED_DPC_TYPES_SNIPPET
-                            )
-                    )
-                    public static final PolicyIdentifier<Boolean> MISSING_DOCS =
-                        new PolicyIdentifier<>("MISSING_DOCS");
-                """
-            )
-
-        compileExpectError(policyIdentifier, expectedError = "Missing JavaDoc")
+        compiler.compileExpectError(
+            """
+                @BooleanPolicyDefinition(
+                        base = @PolicyDefinition(
+                                allowedScopes = { POLICY_SCOPE_DEVICE },
+                                affectedResource = RESOURCE_DEVICE_WIDE,
+                                $ALLOWED_DPC_TYPES_SNIPPET
+                        )
+                )
+                public static final PolicyIdentifier<Boolean> MISSING_DOCS =
+                    new PolicyIdentifier<>("MISSING_DOCS");
+            """,
+            expectedError = "Missing JavaDoc",
+        )
     }
 
     @Test
     fun test_emptyScope_failsToCompile() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    /**
-                    * Empty allowedScopes should fail.
-                    */
-                    @BooleanPolicyDefinition(
-                            base = @PolicyDefinition(
-                                    allowedScopes = {},
-                                    affectedResource = RESOURCE_PER_USER,
-                                    $ALLOWED_DPC_TYPES_SNIPPET
-                            )
-                    )
-                    public static final PolicyIdentifier<Boolean> EMPTY_SCOPE_POLICY =
-                        new PolicyIdentifier<>("EMPTY_SCOPE");
-                """
-            )
-
-        compileExpectError(policyIdentifier, expectedError = "allowedScopes must not be empty")
+        compiler.compileExpectError(
+            """
+                /**
+                * Empty allowedScopes should fail.
+                */
+                @BooleanPolicyDefinition(
+                        base = @PolicyDefinition(
+                                allowedScopes = {},
+                                affectedResource = RESOURCE_PER_USER,
+                                $ALLOWED_DPC_TYPES_SNIPPET
+                        )
+                )
+                public static final PolicyIdentifier<Boolean> EMPTY_SCOPE_POLICY =
+                    new PolicyIdentifier<>("EMPTY_SCOPE");
+            """,
+            expectedError = "allowedScopes must not be empty",
+        )
     }
 
     @Test
     fun test_invalidScopeValue_failsToCompile() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    /**
-                    * Invalid scope should fail.
-                    */
-                    @BooleanPolicyDefinition(
-                            base = @PolicyDefinition(
-                                    allowedScopes = { 100 },
-                                    affectedResource = RESOURCE_PER_USER,
-                                    $ALLOWED_DPC_TYPES_SNIPPET
-                            )
-                    )
-                    public static final PolicyIdentifier<Boolean> EMPTY_SCOPE_POLICY =
-                        new PolicyIdentifier<>("INVALID_SCOPE");
-                """
-            )
-
-        compileExpectError(
-            policyIdentifier,
+        compiler.compileExpectError(
+            """
+                /**
+                * Invalid scope should fail.
+                */
+                @BooleanPolicyDefinition(
+                        base = @PolicyDefinition(
+                                allowedScopes = { 100 },
+                                affectedResource = RESOURCE_PER_USER,
+                                $ALLOWED_DPC_TYPES_SNIPPET
+                        )
+                )
+                public static final PolicyIdentifier<Boolean> EMPTY_SCOPE_POLICY =
+                    new PolicyIdentifier<>("INVALID_SCOPE");
+            """,
             expectedError = "allowedScopes contains an unknown value",
         )
     }
 
     @Test
     fun test_undefinedScope_failsToCompile() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    /**
-                    * Unspecified (0) scope should fail.
-                    */
-                    @BooleanPolicyDefinition(
-                            base = @PolicyDefinition(
-                                    allowedScopes = { 0 },
-                                    affectedResource = RESOURCE_PER_USER,
-                                    $ALLOWED_DPC_TYPES_SNIPPET
-                            )
-                    )
-                    public static final PolicyIdentifier<Boolean> UNDEFINED_SCOPE =
-                        new PolicyIdentifier<>("UNDEFINED_SCOPE");
-                """
-            )
-
-        compileExpectError(
-            policyIdentifier,
+        compiler.compileExpectError(
+            """
+                /**
+                * Unspecified (0) scope should fail.
+                */
+                @BooleanPolicyDefinition(
+                        base = @PolicyDefinition(
+                                allowedScopes = { 0 },
+                                affectedResource = RESOURCE_PER_USER,
+                                $ALLOWED_DPC_TYPES_SNIPPET
+                        )
+                )
+                public static final PolicyIdentifier<Boolean> UNDEFINED_SCOPE =
+                    new PolicyIdentifier<>("UNDEFINED_SCOPE");
+            """,
             expectedError = "allowedScopes contains an unknown value",
         )
     }
 
     @Test
     fun test_invalidAffectedResource_failsToCompile() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    /**
-                    * Invalid resource should fail.
-                    */
-                    @BooleanPolicyDefinition(
-                            base = @PolicyDefinition(
-                                    allowedScopes = { POLICY_SCOPE_USER },
-                                    affectedResource = 100,
-                                    $ALLOWED_DPC_TYPES_SNIPPET
-                            )
-                    )
-                    public static final PolicyIdentifier<Boolean> INVALID_AFFECTED_RESOURCE_POLICY =
-                        new PolicyIdentifier<>("INVALID_AFFECTED_RESOURCE");
-                """
-            )
-
-        compileExpectError(
-            policyIdentifier,
+        compiler.compileExpectError(
+            """
+                /**
+                * Invalid resource should fail.
+                */
+                @BooleanPolicyDefinition(
+                        base = @PolicyDefinition(
+                                allowedScopes = { POLICY_SCOPE_USER },
+                                affectedResource = 100,
+                                $ALLOWED_DPC_TYPES_SNIPPET
+                        )
+                )
+                public static final PolicyIdentifier<Boolean> INVALID_AFFECTED_RESOURCE_POLICY =
+                    new PolicyIdentifier<>("INVALID_AFFECTED_RESOURCE");
+            """,
             expectedError = "affectedResource is set to an unknown value",
         )
     }
 
     @Test
     fun test_undefinedAffectedResource_failsToCompile() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    /**
-                    * Unspecified (0) resource should fail.
-                    */
-                    @BooleanPolicyDefinition(
-                            base = @PolicyDefinition(
-                                    allowedScopes = { POLICY_SCOPE_USER },
-                                    affectedResource = 0,
-                                    $ALLOWED_DPC_TYPES_SNIPPET
-                            )
-                    )
-                    public static final PolicyIdentifier<Boolean> UNSPECIFIED_AFFECTED_RESOURCE_POLICY =
-                        new PolicyIdentifier<>("UNSPECIFIED_AFFECTED_RESOURCE");
-                """
-            )
-
-        compileExpectError(
-            policyIdentifier,
+        compiler.compileExpectError(
+            """
+                /**
+                * Unspecified (0) resource should fail.
+                */
+                @BooleanPolicyDefinition(
+                        base = @PolicyDefinition(
+                                allowedScopes = { POLICY_SCOPE_USER },
+                                affectedResource = 0,
+                                $ALLOWED_DPC_TYPES_SNIPPET
+                        )
+                )
+                public static final PolicyIdentifier<Boolean> UNSPECIFIED_AFFECTED_RESOURCE_POLICY =
+                    new PolicyIdentifier<>("UNSPECIFIED_AFFECTED_RESOURCE");
+            """,
             expectedError = "affectedResource is set to an unknown value",
         )
     }
 
     @Test
     fun test_invalidCrossUserPermission_failsToCompile() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    /**
-                    * requiredCrossUserPermission only allows one of the 3 permissions.
-                    */
-                    @BooleanPolicyDefinition(
-                            base = @PolicyDefinition(
-                                    allowedScopes = { POLICY_SCOPE_USER },
-                                    affectedResource = RESOURCE_DEVICE_WIDE,
-                                    requiredCrossUserPermission = "my.custom.PERMISSION",
-                                    $ALLOWED_DPC_TYPES_SNIPPET
-                            )
-                    )
-                    public static final PolicyIdentifier<Boolean> INVALID_PERMISSION =
-                        new PolicyIdentifier<>("INVALID_PERMISSION");
-                """
-            )
-
-        compileExpectError(
-            policyIdentifier,
+        compiler.compileExpectError(
+            """
+                /**
+                * requiredCrossUserPermission only allows one of the 3 permissions.
+                */
+                @BooleanPolicyDefinition(
+                        base = @PolicyDefinition(
+                                allowedScopes = { POLICY_SCOPE_USER },
+                                affectedResource = RESOURCE_DEVICE_WIDE,
+                                requiredCrossUserPermission = "my.custom.PERMISSION",
+                                $ALLOWED_DPC_TYPES_SNIPPET
+                        )
+                )
+                public static final PolicyIdentifier<Boolean> INVALID_PERMISSION =
+                    new PolicyIdentifier<>("INVALID_PERMISSION");
+            """,
             expectedError = "requiredCrossUserPermission was set to",
         )
     }
 
     @Test
     fun test_missingModifiers_failsToCompile() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    /**
-                    * field must be public, static and final.
-                    */
-                    @BooleanPolicyDefinition(
-                            base = @PolicyDefinition(
-                                    allowedScopes = { POLICY_SCOPE_USER },
-                                    affectedResource = RESOURCE_DEVICE_WIDE,
-                                    $ALLOWED_DPC_TYPES_SNIPPET
-                            )
-                    )
-                    private PolicyIdentifier<Boolean> MISSING_MODIFIERS =
-                        new PolicyIdentifier<>("MISSING_MODIFIERS");
-                """
-            )
-
-        val compilation: Compilation = mCompiler.compile(policyIdentifier)
-
-        assertThat(mCompilerWithoutProcessor.compile(policyIdentifier)).succeeded()
-        assertThat(compilation).failed()
-        assertThat(compilation).hadErrorContaining("Field must be static")
-        assertThat(compilation).hadErrorContaining("Field must be public")
-        assertThat(compilation).hadErrorContaining("Field must be final")
-    }
-
-    @Test
-    fun test_invalidInitializer_failsToCompile() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    private static final String INVALID_INITIALIZER_KEY = "INVALID_INITIALIZER";
-                    /**
-                    * Initializer must use a literal String.
-                    */
-                    @BooleanPolicyDefinition(
-                            base = @PolicyDefinition(
-                                    allowedScopes = { POLICY_SCOPE_USER },
-                                    affectedResource = RESOURCE_DEVICE_WIDE,
-                                    $ALLOWED_DPC_TYPES_SNIPPET
-                            )
-                    )
-                    public static final PolicyIdentifier<Boolean> INVALID_INITIALIZER =
-                        new PolicyIdentifier<>(INVALID_INITIALIZER_KEY);
-                """
-            )
-
-        compileExpectError(
-            policyIdentifier,
-            expectedError = "the argument to the constructor is not a literal",
-        )
-    }
-
-    @Test
-    fun test_wrongKey_failsToCompile() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    /**
-                    * Initializer and keys must match.
-                    */
-                    @BooleanPolicyDefinition(
-                            base = @PolicyDefinition(
-                                    allowedScopes = { POLICY_SCOPE_USER },
-                                    affectedResource = RESOURCE_DEVICE_WIDE,
-                                    $ALLOWED_DPC_TYPES_SNIPPET
-                            )
-                    )
-                    public static final PolicyIdentifier<Boolean> INVALID_KEY_POLICY =
-                        new PolicyIdentifier<>("WRONG_KEY_POLICY");
-                """
-            )
-
-        compileExpectError(
-            policyIdentifier,
-            expectedError = "the argument to the constructor should be \"INVALID_KEY_POLICY\"",
-        )
-    }
-
-    @Test
-    fun test_enum_missingResolutionMechanism_failsToCompile() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    // The intdef used for the policy values.
-                    /** First entry */
-                    public static final int ENUM_ENTRY_1 = 1;
-                    /** Second entry */
-                    public static final int ENUM_ENTRY_2 = 2;
-                    /** Intdef for an enum. */
-                    @Retention(RetentionPolicy.SOURCE)
-                    @IntDef(
-                            prefix = {"ENUM_ENTRY_"},
-                            value = {ENUM_ENTRY_1, ENUM_ENTRY_2})
-                    public @interface EnumIntDef {}
-
-                    /**
-                    * ResolutionMechanism can not be empty.
-                    */
-                    @EnumPolicyDefinition(
-                            base = @PolicyDefinition(
-                                    allowedScopes = { POLICY_SCOPE_USER },
-                                    affectedResource = RESOURCE_DEVICE_WIDE,
-                                    $ALLOWED_DPC_TYPES_SNIPPET
-                            ),
-                            defaultValue = ENUM_ENTRY_2,
-                            intDef = EnumIntDef.class,
-                            resolutionMechanism = @EnumResolutionMechanism()
-                    )
-                    public static final PolicyIdentifier<Integer> POLICY_KEY =
-                        new PolicyIdentifier<>("POLICY_KEY");
-                """
-            )
-
-        compileExpectError(
-            policyIdentifier,
-            expectedError =
-                "In @EnumResolutionMechanism, a resolution mechanism must " +
-                "be set.",
-        )
-    }
-
-    @Test
-    fun test_enum_twoResolutionMechanisms_failsToCompile() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    // The intdef used for the policy values.
-                    /** First entry */
-                    public static final int ENUM_ENTRY_1 = 1;
-                    /** Second entry */
-                    public static final int ENUM_ENTRY_2 = 2;
-                    /** Intdef for an enum. */
-                    @Retention(RetentionPolicy.SOURCE)
-                    @IntDef(
-                            prefix = {"ENUM_ENTRY_"},
-                            value = {ENUM_ENTRY_1, ENUM_ENTRY_2})
-                    public @interface EnumIntDef {}
-
-                    /**
-                    * ResolutionMechanism can not be empty.
-                    */
-                    @EnumPolicyDefinition(
-                            base = @PolicyDefinition(
-                                    allowedScopes = { POLICY_SCOPE_USER },
-                                    affectedResource = RESOURCE_DEVICE_WIDE,
-                                    $ALLOWED_DPC_TYPES_SNIPPET
-                            ),
-                            defaultValue = ENUM_ENTRY_2,
-                            intDef = EnumIntDef.class,
-                            resolutionMechanism = @EnumResolutionMechanism(
-                            custom=true,
-                                mostRestrictive={
-                                    ENUM_ENTRY_1,
-                                    ENUM_ENTRY_2,
-                                }
-                            )
-                    )
-                    public static final PolicyIdentifier<Integer> POLICY_KEY =
-                        new PolicyIdentifier<>("POLICY_KEY");
-                """
-            )
-
-        compileExpectError(
-            policyIdentifier,
-            expectedError =
-                "In @EnumResolutionMechanism, a single resolution mechanism " +
-                "can be selected.",
-        )
-    }
-
-    @Test
-    fun test_enum_mostRestrictiveResolutionMechanism_duplicates_failsToCompile() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    // The intdef used for the policy values.
-                    /** First entry */
-                    public static final int ENUM_ENTRY_FIRST = 1;
-                    /** Second entry */
-                    public static final int ENUM_ENTRY_LAST = 2;
-                    /** Intdef for an enum. */
-                    @Retention(RetentionPolicy.SOURCE)
-                    @IntDef(
-                            prefix = {"ENUM_ENTRY_"},
-                            value = {ENUM_ENTRY_FIRST, ENUM_ENTRY_LAST})
-                    public @interface EnumIntDef {}
-
-                    /**
-                    * MostRestrictive ResolutionMechanism can not contain duplicates.
-                    */
-                    @EnumPolicyDefinition(
-                            base = @PolicyDefinition(
-                                    allowedScopes = { POLICY_SCOPE_USER },
-                                    affectedResource = RESOURCE_DEVICE_WIDE,
-                                    $ALLOWED_DPC_TYPES_SNIPPET
-                            ),
-                            defaultValue = ENUM_ENTRY_FIRST,
-                            intDef = EnumIntDef.class,
-                            resolutionMechanism = @EnumResolutionMechanism(mostRestrictive={
-                                ENUM_ENTRY_FIRST,
-                                ENUM_ENTRY_FIRST,
-                                ENUM_ENTRY_FIRST,
-                                ENUM_ENTRY_LAST,
-                            })
-                    )
-                    public static final PolicyIdentifier<Integer> POLICY_KEY =
-                        new PolicyIdentifier<>("POLICY_KEY");
-                """
-            )
-
-        compileExpectError(
-            policyIdentifier,
-            expectedError = "mostRestrictive contains duplicate values: ENUM_ENTRY_FIRST",
-        )
-    }
-
-    @Test
-    fun test_enum_mostRestrictiveResolutionMechanism_unexpectedValues_failsToCompile() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    // The intdef used for the policy values.
-                    /** First entry */
-                    public static final int ENUM_ENTRY_FIRST = 1;
-                    /** Second entry */
-                    public static final int ENUM_ENTRY_LAST = 2;
-                    /** Intdef for an enum. */
-                    @Retention(RetentionPolicy.SOURCE)
-                    @IntDef(
-                            prefix = {"ENUM_ENTRY_"},
-                            value = {ENUM_ENTRY_FIRST, ENUM_ENTRY_LAST})
-                    public @interface EnumIntDef {}
-
-                    /**
-                    * MostRestrictive ResolutionMechanism must contain all values.
-                    */
-                    @EnumPolicyDefinition(
-                            base = @PolicyDefinition(
-                                    allowedScopes = { POLICY_SCOPE_USER },
-                                    affectedResource = RESOURCE_DEVICE_WIDE,
-                                    $ALLOWED_DPC_TYPES_SNIPPET
-                            ),
-                            defaultValue = ENUM_ENTRY_FIRST,
-                            intDef = EnumIntDef.class,
-                            resolutionMechanism = @EnumResolutionMechanism(mostRestrictive={
-                                ENUM_ENTRY_FIRST,
-                                5,
-                                ENUM_ENTRY_LAST,
-                                9,
-                            })
-                    )
-                    public static final PolicyIdentifier<Integer> POLICY_KEY =
-                        new PolicyIdentifier<>("POLICY_KEY");
-                """
-            )
-
-        compileExpectError(
-            policyIdentifier,
-            expectedError = "mostRestrictive contains unexpected values: 5,9",
-        )
-    }
-
-    @Test
-    fun test_enum_mostRestrictiveResolutionMechanism_missingValues_failsToCompile() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    // The intdef used for the policy values.
-                    /** First entry */
-                    public static final int ENUM_ENTRY_FIRST = 1;
-                    /** Second entry */
-                    public static final int ENUM_ENTRY_LAST = 2;
-                    /** Intdef for an enum. */
-                    @Retention(RetentionPolicy.SOURCE)
-                    @IntDef(
-                            prefix = {"ENUM_ENTRY_"},
-                            value = {ENUM_ENTRY_FIRST, ENUM_ENTRY_LAST})
-                    public @interface EnumIntDef {}
-
-                    /**
-                    * MostRestrictive ResolutionMechanism must contain all values.
-                    */
-                    @EnumPolicyDefinition(
-                            base = @PolicyDefinition(
-                                    allowedScopes = { POLICY_SCOPE_USER },
-                                    affectedResource = RESOURCE_DEVICE_WIDE,
-                                    $ALLOWED_DPC_TYPES_SNIPPET
-                            ),
-                            defaultValue = ENUM_ENTRY_FIRST,
-                            intDef = EnumIntDef.class,
-                            resolutionMechanism = @EnumResolutionMechanism(mostRestrictive={
-                                ENUM_ENTRY_FIRST,
-                            })
-                    )
-                    public static final PolicyIdentifier<Integer> POLICY_KEY =
-                        new PolicyIdentifier<>("POLICY_KEY");
-                """
-            )
-
-        compileExpectError(
-            policyIdentifier,
-            expectedError = "mostRestrictive must also contain: ENUM_ENTRY_LAST",
-        )
-    }
-
-    @Test
-    fun test_minGreaterThanMax_failsToCompile() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
+        compiler.compileExpectErrors(
+            """
                 /**
-                * min cannot be > max.
+                * field must be public, static and final.
                 */
-                @IntegerPolicyDefinition(
-                        minValue = 101,
-                        maxValue = 100,
+                @BooleanPolicyDefinition(
                         base = @PolicyDefinition(
                                 allowedScopes = { POLICY_SCOPE_USER },
                                 affectedResource = RESOURCE_DEVICE_WIDE,
                                 $ALLOWED_DPC_TYPES_SNIPPET
                         )
                 )
-                public static final PolicyIdentifier<Integer> MIN_GREATER_MAX =
-                    new PolicyIdentifier<>("MIN_GREATER_MAX");
+                private PolicyIdentifier<Boolean> MISSING_MODIFIERS =
+                    new PolicyIdentifier<>("MISSING_MODIFIERS");
+            """,
+            expectedErrors =
+                listOf("Field must be static", "Field must be public", "Field must be final"),
+        )
+    }
+
+    @Test
+    fun test_invalidInitializer_failsToCompile() {
+        compiler.compileExpectError(
             """
-            )
-
-        compileExpectError(
-            policyIdentifier,
-            expectedError = "minValue cannot be larger than maxValue",
+                private static final String INVALID_INITIALIZER_KEY = "INVALID_INITIALIZER";
+                /**
+                * Initializer must use a literal String.
+                */
+                @BooleanPolicyDefinition(
+                        base = @PolicyDefinition(
+                                allowedScopes = { POLICY_SCOPE_USER },
+                                affectedResource = RESOURCE_DEVICE_WIDE,
+                                $ALLOWED_DPC_TYPES_SNIPPET
+                        )
+                )
+                public static final PolicyIdentifier<Boolean> INVALID_INITIALIZER =
+                    new PolicyIdentifier<>(INVALID_INITIALIZER_KEY);
+            """,
+            expectedError = "the argument to the constructor is not a literal",
         )
     }
 
     @Test
-    fun test_enum_zeroValue_failsToCompile() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    // The intdef used for the policy values.
-                    /** First entry */
-                    public static final int ENUM_ENTRY_FIRST = 0;
-                    /** Second entry */
-                    public static final int ENUM_ENTRY_LAST = 1;
-                    /** Intdef for an enum. */
-                    @Retention(RetentionPolicy.SOURCE)
-                    @IntDef(
-                            prefix = {"ENUM_ENTRY_"},
-                            value = {ENUM_ENTRY_FIRST, ENUM_ENTRY_LAST})
-                    public @interface EnumIntDef {}
-
-                    /**
-                    * Enum values must not be 0.
-                    */
-                    @EnumPolicyDefinition(
-                            base = @PolicyDefinition(
-                                    allowedScopes = { POLICY_SCOPE_USER },
-                                    affectedResource = RESOURCE_DEVICE_WIDE,
-                                    $ALLOWED_DPC_TYPES_SNIPPET
-                            ),
-                            defaultValue = ENUM_ENTRY_LAST,
-                            intDef = EnumIntDef.class,
-                            resolutionMechanism = @EnumResolutionMechanism(custom = true)
-                    )
-                    public static final PolicyIdentifier<Integer> POLICY_KEY =
-                        new PolicyIdentifier<>("POLICY_KEY");
-                """
-            )
-
-        compileExpectError(
-            policyIdentifier,
-            expectedError =
-                "The Protobuf enum value '0' is reserved for the default *_UNSPECIFIED case (https://google.aip.dev/126) and should not be used for any other enum value. Found in: ENUM_ENTRY_FIRST",
+    fun test_wrongKey_failsToCompile() {
+        compiler.compileExpectError(
+            """
+                /**
+                * Initializer and keys must match.
+                */
+                @BooleanPolicyDefinition(
+                        base = @PolicyDefinition(
+                                allowedScopes = { POLICY_SCOPE_USER },
+                                affectedResource = RESOURCE_DEVICE_WIDE,
+                                $ALLOWED_DPC_TYPES_SNIPPET
+                        )
+                )
+                public static final PolicyIdentifier<Boolean> INVALID_KEY_POLICY =
+                    new PolicyIdentifier<>("WRONG_KEY_POLICY");
+            """,
+            expectedError = "the argument to the constructor should be \"INVALID_KEY_POLICY\"",
         )
-    }
-
-    @Test
-    fun test_allowedZeroValue_compiles() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    // The intdef used for the policy values.
-                    /** First entry */
-                    public static final int AUTO_TIME_USER_CHOICE = 0;
-                    /** Second entry */
-                    public static final int AUTO_TIME_DISABLED = 1;
-                    /** Intdef for an enum. */
-                    @Retention(RetentionPolicy.SOURCE)
-                    @IntDef(
-                            prefix = {"AUTO_TIME_"},
-                            value = {AUTO_TIME_USER_CHOICE, AUTO_TIME_DISABLED})
-                    public @interface AutoTimeValue {}
-
-                    /**
-                    * Enum values can be 0 if allowed.
-                    */
-                    @EnumPolicyDefinition(
-                            base = @PolicyDefinition(
-                                    allowedScopes = { POLICY_SCOPE_USER },
-                                    affectedResource = RESOURCE_DEVICE_WIDE,
-                                    $ALLOWED_DPC_TYPES_SNIPPET
-                            ),
-                            defaultValue = AUTO_TIME_DISABLED,
-                            intDef = AutoTimeValue.class,
-                            resolutionMechanism = @EnumResolutionMechanism(custom = true)
-                    )
-                    public static final PolicyIdentifier<Integer> AUTO_TIME =
-                        new PolicyIdentifier<>("AUTO_TIME");
-                """
-            )
-
-        val compilation: Compilation = mCompiler.compile(policyIdentifier)
-
-        assertThat(mCompilerWithoutProcessor.compile(policyIdentifier)).succeeded()
-        assertThat(compilation).succeeded()
-    }
-
-    @Test
-    fun test_packageProcessorWithoutPackageType_failsToCompile() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    /**
-                     * PackagePolicyDefinition can only be applied to policies of type PackageIdentifier.
-                     */
-                    @PackagePolicyDefinition(
-                            base = @PolicyDefinition(
-                                    allowedScopes = { POLICY_SCOPE_USER },
-                                    affectedResource = RESOURCE_DEVICE_WIDE,
-                                    $ALLOWED_DPC_TYPES_SNIPPET
-                            )
-                    )
-                    public static final PolicyIdentifier<String> POLICY_KEY =
-                        new PolicyIdentifier<>("POLICY_KEY");
-                """
-            )
-
-        compileExpectError(
-            policyIdentifier,
-            expectedError =
-                "@PackagePolicyDefinition can only be applied to policies of type " +
-                    "android.app.admin.PackageIdentifier",
-        )
-    }
-
-    @Test
-    fun test_listOfString_twoResolutionMechanisms_failsToCompile() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    /** Only one ResolutionMechanism can be selected.  */
-                    @ListOfStringPolicyDefinition(
-                            base = @StringPolicyDefinition(
-                                    base = @PolicyDefinition(
-                                        allowedScopes = { POLICY_SCOPE_USER },
-                                        affectedResource = RESOURCE_DEVICE_WIDE,
-                                        $ALLOWED_DPC_TYPES_SNIPPET
-                                    )
-                            ),
-                            resolutionMechanism = @ListResolutionMechanism(
-                                custom=true,
-                                union=true
-                            )
-                    )
-                    public static final PolicyIdentifier<List<String>> POLICY_KEY =
-                        new PolicyIdentifier<>("POLICY_KEY");
-                """
-            )
-
-        compileExpectError(
-            policyIdentifier,
-            expectedError = "Only one resolution mechanism can be selected",
-        )
-    }
-
-    @Test
-    fun test_listOfString_emptyResolutionMechanism_failsToCompile() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    /** ResolutionMechanism must not be empty.  */
-                    @ListOfStringPolicyDefinition(
-                            base = @StringPolicyDefinition(
-                                    base = @PolicyDefinition(
-                                        allowedScopes = { POLICY_SCOPE_USER },
-                                        affectedResource = RESOURCE_DEVICE_WIDE,
-                                        $ALLOWED_DPC_TYPES_SNIPPET
-                                    )
-                            ),
-                            resolutionMechanism = @ListResolutionMechanism()
-                    )
-                    public static final PolicyIdentifier<List<String>> POLICY_KEY =
-                        new PolicyIdentifier<>("POLICY_KEY");
-                """
-            )
-
-        compileExpectError(
-            policyIdentifier,
-            expectedError = "Resolution mechanism can not be empty",
-        )
-    }
-
-    @Test
-    fun test_listOfString_resolutionMechanism_custom_addedToTextProto() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    /** ResolutionMechanism custom */
-                    @ListOfStringPolicyDefinition(
-                            base = @StringPolicyDefinition(
-                                    base = @PolicyDefinition(
-                                        allowedScopes = { POLICY_SCOPE_USER },
-                                        affectedResource = RESOURCE_DEVICE_WIDE,
-                                        $ALLOWED_DPC_TYPES_SNIPPET
-                                    )
-                            ),
-                            resolutionMechanism = @ListResolutionMechanism(custom=true)
-                    )
-                    public static final PolicyIdentifier<List<String>> POLICY_KEY =
-                        new PolicyIdentifier<>("POLICY_KEY");
-                """
-            )
-
-        val generatedResolutionMechanism =
-            compileExpectSuccess(policyIdentifier).generatedProto()?.getListResolutionMechanism()
-
-        val expectedResolutionMechanism =
-            ListPolicyMetadata.ResolutionMechanism.newBuilder().setCustom(true).build()
-
-        assertThat(generatedResolutionMechanism).isEqualTo(expectedResolutionMechanism)
-    }
-
-    @Test
-    fun test_listOfString_resolutionMechanism_union_addedToTextProto() {
-        val policyIdentifier =
-            buildPolicyIdentifier(
-                """
-                    /** ResolutionMechanism union.  */
-                    @ListOfStringPolicyDefinition(
-                            base = @StringPolicyDefinition(
-                                    base = @PolicyDefinition(
-                                        allowedScopes = { POLICY_SCOPE_USER },
-                                        affectedResource = RESOURCE_DEVICE_WIDE,
-                                        $ALLOWED_DPC_TYPES_SNIPPET
-                                    )
-                            ),
-                            resolutionMechanism = @ListResolutionMechanism(union=true)
-                    )
-                    public static final PolicyIdentifier<List<String>> POLICY_KEY =
-                        new PolicyIdentifier<>("POLICY_KEY");
-                """
-            )
-
-        val generatedResolutionMechanism =
-            compileExpectSuccess(policyIdentifier).generatedProto()?.getListResolutionMechanism()
-
-        val expectedResolutionMechanism =
-            ListPolicyMetadata.ResolutionMechanism.newBuilder().setUnion(true).build()
-
-        assertThat(generatedResolutionMechanism).isEqualTo(expectedResolutionMechanism)
-    }
-
-    private fun PolicyMetadataList.getListResolutionMechanism():
-        ListPolicyMetadata.ResolutionMechanism? =
-        this.getPolicyMetadataList()
-            ?.getOrNull(0)
-            ?.getTypeSpecificMetadata()
-            ?.getListMetadata()
-            ?.getResolutionMechanism()
-
-    private fun compileExpectSuccess(file: JavaFileObject): Compilation {
-        val compilation: Compilation = mCompiler.compile(file)
-        assertThat(mCompilerWithoutProcessor.compile(file)).succeeded()
-        assertThat(compilation).succeeded()
-        return compilation
-    }
-
-    private fun compileExpectError(
-        vararg files: JavaFileObject,
-        expectedError: String,
-    ): Compilation {
-        val compilation: Compilation = mCompiler.compile(files.asList())
-        assertThat(mCompilerWithoutProcessor.compile(files.asList())).succeeded()
-        assertThat(compilation).failed()
-        assertThat(compilation).hadErrorContaining(expectedError)
-        return compilation
     }
 
     private fun <T : Message> CharSequence.parseProto(kClass: KClass<T>) =
         TextFormat.parse(this, kClass.java)
-
-    private fun Compilation.generatedProto(): PolicyMetadataList? {
-        return this.generatedFile(SOURCE_OUTPUT, POLICIES_TEXTPROTO_LOCATION)
-            .getOrNull()
-            ?.getCharContent(true)
-            ?.parseProto(PolicyMetadataList::class)
-    }
 }
