@@ -1489,7 +1489,7 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"音频输出的可用设备。"</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"音量"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <string name="media_output_dialog_missing_permissions_warning" msgid="4312830846174995199">"如需查看更多设备，您可能需要为“<xliff:g id="MEDIA_APP_NAME">%1$s</xliff:g>”授予相应权限"</string>
+    <string name="media_output_dialog_missing_permissions_warning" msgid="4312830846174995199">"如需查看更多设备，您可能需要向“<xliff:g id="MEDIA_APP_NAME">%1$s</xliff:g>”授予相应权限"</string>
     <string name="media_output_dialog_warning_button_fix" msgid="3650735180540135181">"打开“<xliff:g id="MEDIA_APP_NAME">%1$s</xliff:g>”"</string>
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"已连接的音箱"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"扬声器和显示屏"</string>
@@ -1841,8 +1841,8 @@
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"精确位置"</string>
     <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"使用精确位置"</string>
     <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"共享精确位置"</string>
-    <string name="location_button_text_near_my_precise_location" msgid="7590342799002942963">"靠近我的精确位置"</string>
-    <string name="location_button_text_near_your_precise_location" msgid="3792598666253599055">"靠近您的精确位置"</string>
+    <string name="location_button_text_near_my_precise_location" msgid="7590342799002942963">"在我的精确位置附近"</string>
+    <string name="location_button_text_near_your_precise_location" msgid="3792598666253599055">"在您的精确位置附近"</string>
     <string name="privacy_chip_use_string" msgid="979159484631969073">"<xliff:g id="SENSOR">%1$s</xliff:g> 正在使用中"</string>
     <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"<xliff:g id="APP">%2$s</xliff:g> 正在使用 <xliff:g id="SENSOR">%1$s</xliff:g>"</string>
     <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"相机和麦克风"</string>
@@ -1886,18 +1886,11 @@
     <string name="dream_setup_title" msgid="7996530071414508238">"设置屏保"</string>
     <string name="dream_setup_button_not_now" msgid="8028385323668620805">"以后再说"</string>
     <string name="dream_setup_button_setup" msgid="4755361016017554826">"设置"</string>
-    <!-- no translation found for ace_attribution_dialog_settings_label (8898211593287114433) -->
-    <skip />
-    <!-- no translation found for ace_attribution_dialog_title (5236154464063969824) -->
-    <skip />
-    <!-- no translation found for ace_attribution_dialog_description (1431906058759687758) -->
-    <skip />
-    <!-- no translation found for ace_attribution_header_icon_accessibility_description (7385840112370423581) -->
-    <skip />
-    <!-- no translation found for ace_attribution_settings_button_accessibility_description (8426163772933746374) -->
-    <skip />
-    <!-- no translation found for ace_attribution_thumbs_up_button_accessibility_description (3561722934830934360) -->
-    <skip />
-    <!-- no translation found for ace_attribution_thumbs_down_button_accessibility_description (5471283747650437662) -->
-    <skip />
+    <string name="ace_attribution_dialog_settings_label" msgid="8898211593287114433">"设置"</string>
+    <string name="ace_attribution_dialog_title" msgid="5236154464063969824">"魔力锦囊建议"</string>
+    <string name="ace_attribution_dialog_description" msgid="1431906058759687758">"此建议参考的项目"</string>
+    <string name="ace_attribution_header_icon_accessibility_description" msgid="7385840112370423581">"Android Device Intelligence 图标"</string>
+    <string name="ace_attribution_settings_button_accessibility_description" msgid="8426163772933746374">"“设置”按钮"</string>
+    <string name="ace_attribution_thumbs_up_button_accessibility_description" msgid="3561722934830934360">"“我喜欢”反馈按钮"</string>
+    <string name="ace_attribution_thumbs_down_button_accessibility_description" msgid="5471283747650437662">"“不喜欢”反馈按钮"</string>
 </resources>

@@ -1835,8 +1835,7 @@
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"다음"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"다음 페이지로 이동"</string>
     <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"뒤로 이동"</string>
-    <!-- no translation found for accessibility_close_overlay_box_description (8399871568780893724) -->
-    <skip />
+    <string name="accessibility_close_overlay_box_description" msgid="8399871568780893724">"뒤로"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"자동 완성"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"펼치기"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"정확한 위치"</string>
@@ -1887,18 +1886,11 @@
     <string name="dream_setup_title" msgid="7996530071414508238">"화면 보호기 설정"</string>
     <string name="dream_setup_button_not_now" msgid="8028385323668620805">"나중에"</string>
     <string name="dream_setup_button_setup" msgid="4755361016017554826">"설정"</string>
-    <!-- no translation found for ace_attribution_dialog_settings_label (8898211593287114433) -->
-    <skip />
-    <!-- no translation found for ace_attribution_dialog_title (5236154464063969824) -->
-    <skip />
-    <!-- no translation found for ace_attribution_dialog_description (1431906058759687758) -->
-    <skip />
-    <!-- no translation found for ace_attribution_header_icon_accessibility_description (7385840112370423581) -->
-    <skip />
-    <!-- no translation found for ace_attribution_settings_button_accessibility_description (8426163772933746374) -->
-    <skip />
-    <!-- no translation found for ace_attribution_thumbs_up_button_accessibility_description (3561722934830934360) -->
-    <skip />
-    <!-- no translation found for ace_attribution_thumbs_down_button_accessibility_description (5471283747650437662) -->
-    <skip />
+    <string name="ace_attribution_dialog_settings_label" msgid="8898211593287114433">"설정"</string>
+    <string name="ace_attribution_dialog_title" msgid="5236154464063969824">"매직 큐 추천"</string>
+    <string name="ace_attribution_dialog_description" msgid="1431906058759687758">"이 추천에서 고려된 항목"</string>
+    <string name="ace_attribution_header_icon_accessibility_description" msgid="7385840112370423581">"Android 기기 인텔리전스 아이콘"</string>
+    <string name="ace_attribution_settings_button_accessibility_description" msgid="8426163772933746374">"설정 버튼"</string>
+    <string name="ace_attribution_thumbs_up_button_accessibility_description" msgid="3561722934830934360">"좋아요 의견 버튼"</string>
+    <string name="ace_attribution_thumbs_down_button_accessibility_description" msgid="5471283747650437662">"싫어요 의견 버튼"</string>
 </resources>

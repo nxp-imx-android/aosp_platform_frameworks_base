@@ -317,7 +317,7 @@
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"認証をキャンセルします"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"その他のオプション"</string>
     <string name="biometric_dialog_fallback_title" msgid="2337887849267443214">"別の方法で確認"</string>
-    <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"別の方法で検証"</string>
+    <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"別の方法で確認"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"ID チェックの管理"</string>
     <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"ID チェックの詳細"</string>
     <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"ID チェックが ON になっているため、指紋または顔でのみ本人確認ができます。%1$s"</string>
@@ -1888,18 +1888,11 @@
     <string name="dream_setup_title" msgid="7996530071414508238">"スクリーン セーバーを設定する"</string>
     <string name="dream_setup_button_not_now" msgid="8028385323668620805">"後で"</string>
     <string name="dream_setup_button_setup" msgid="4755361016017554826">"設定"</string>
-    <!-- no translation found for ace_attribution_dialog_settings_label (8898211593287114433) -->
-    <skip />
-    <!-- no translation found for ace_attribution_dialog_title (5236154464063969824) -->
-    <skip />
-    <!-- no translation found for ace_attribution_dialog_description (1431906058759687758) -->
-    <skip />
-    <!-- no translation found for ace_attribution_header_icon_accessibility_description (7385840112370423581) -->
-    <skip />
-    <!-- no translation found for ace_attribution_settings_button_accessibility_description (8426163772933746374) -->
-    <skip />
-    <!-- no translation found for ace_attribution_thumbs_up_button_accessibility_description (3561722934830934360) -->
-    <skip />
-    <!-- no translation found for ace_attribution_thumbs_down_button_accessibility_description (5471283747650437662) -->
-    <skip />
+    <string name="ace_attribution_dialog_settings_label" msgid="8898211593287114433">"設定"</string>
+    <string name="ace_attribution_dialog_title" msgid="5236154464063969824">"マジックサジェストからの提案"</string>
+    <string name="ace_attribution_dialog_description" msgid="1431906058759687758">"この提案で考慮されたアイテム"</string>
+    <string name="ace_attribution_header_icon_accessibility_description" msgid="7385840112370423581">"Android Device Intelligence のアイコン"</string>
+    <string name="ace_attribution_settings_button_accessibility_description" msgid="8426163772933746374">"設定ボタン"</string>
+    <string name="ace_attribution_thumbs_up_button_accessibility_description" msgid="3561722934830934360">"高評価のフィードバック ボタン"</string>
+    <string name="ace_attribution_thumbs_down_button_accessibility_description" msgid="5471283747650437662">"低評価のフィードバック ボタン"</string>
 </resources>

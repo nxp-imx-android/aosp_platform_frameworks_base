@@ -1245,7 +1245,7 @@
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"یہ اسکرین پر موجود تمام مواد کو پڑھ سکتا ہے اور دیگر ایپس پر مواد ڈسپلے کر سکتا ہے۔"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"کارروائیاں دیکھیں اور انجام دیں"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"یہ آپ کے تعاملات کو ایپ یا ہارڈویئر سینسر کے ذریعے ٹریک کر سکتا ہے اور آپ کی طرف سے ایپ کے ساتھ تعامل کر سکتا ہے۔"</string>
-    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861">"‫<xliff:g id="ID_4">^4</xliff:g> کا استعمال کرنے کیلئے <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"آئیکن"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> کی بورڈ شارٹ کٹ ہے۔ یہ آپ کو فونٹ اور اسپیسنگ کو حسب ضرورت بنانے اور براہ راست اپنے آلے پر بلند آواز میں پڑھے گئے ٹیکسٹ کو سننے کی اجازت دیتا ہے۔"</string>
+    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861">"‫<xliff:g id="ID_4">^4</xliff:g> کا استعمال کرنے کیلئے <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"آئیکن"</annotation>" + <xliff:g id="ID_3">^3</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> کی بورڈ شارٹ کٹ ہے۔ یہ آپ کو فونٹ اور اسپیسنگ کو حسب ضرورت بنانے اور براہ راست اپنے آلے پر بلند آواز میں پڑھے گئے ٹیکسٹ کو سننے کی اجازت دیتا ہے۔"</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"‫<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"آئیکن"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> کو دبانے سے <xliff:g id="ID_4">^4</xliff:g>، ایک ایکسیسبیلٹی خصوصیت آن ہو جاتی ہے۔ یہ آپ کو اپنے آلے کو ہینڈز فری کنٹرول کرنے دیتی ہے۔"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"ایکسیسبیلٹی کلید"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"آپ ایکسیسبیلٹی خصوصیات کا استعمال شروع کرنے کے لیے ایکسیسبیلٹی کلید کو دبا سکتے ہیں۔"</string>
@@ -1886,18 +1886,11 @@
     <string name="dream_setup_title" msgid="7996530071414508238">"اسکرین سیور سیٹ اپ کریں"</string>
     <string name="dream_setup_button_not_now" msgid="8028385323668620805">"ابھی نہیں"</string>
     <string name="dream_setup_button_setup" msgid="4755361016017554826">"سیٹ اپ کریں"</string>
-    <!-- no translation found for ace_attribution_dialog_settings_label (8898211593287114433) -->
-    <skip />
-    <!-- no translation found for ace_attribution_dialog_title (5236154464063969824) -->
-    <skip />
-    <!-- no translation found for ace_attribution_dialog_description (1431906058759687758) -->
-    <skip />
-    <!-- no translation found for ace_attribution_header_icon_accessibility_description (7385840112370423581) -->
-    <skip />
-    <!-- no translation found for ace_attribution_settings_button_accessibility_description (8426163772933746374) -->
-    <skip />
-    <!-- no translation found for ace_attribution_thumbs_up_button_accessibility_description (3561722934830934360) -->
-    <skip />
-    <!-- no translation found for ace_attribution_thumbs_down_button_accessibility_description (5471283747650437662) -->
-    <skip />
+    <string name="ace_attribution_dialog_settings_label" msgid="8898211593287114433">"ترتیبات"</string>
+    <string name="ace_attribution_dialog_title" msgid="5236154464063969824">"‏‫Magic Cue کی تجاویز"</string>
+    <string name="ace_attribution_dialog_description" msgid="1431906058759687758">"اس تجویز میں آئٹمز پر غور کیا گیا ہے"</string>
+    <string name="ace_attribution_header_icon_accessibility_description" msgid="7385840112370423581">"‏‫Android ڈیوائس انٹیلی جنس کا آئیکن"</string>
+    <string name="ace_attribution_settings_button_accessibility_description" msgid="8426163772933746374">"ترتیبات کا بٹن"</string>
+    <string name="ace_attribution_thumbs_up_button_accessibility_description" msgid="3561722934830934360">"اظہار پسندیدگی کے تاثرات کا بٹن"</string>
+    <string name="ace_attribution_thumbs_down_button_accessibility_description" msgid="5471283747650437662">"اظہار ناپسندیدگی کے تاثرات کا بٹن"</string>
 </resources>
