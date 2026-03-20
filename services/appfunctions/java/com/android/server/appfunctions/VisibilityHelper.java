@@ -29,17 +29,6 @@ import java.util.Set;
 /** Helper for handling AppFunction visibility. */
 public interface VisibilityHelper {
     /**
-     * Applies the visible package filter to {@link AppFunctionSearchSpec}.
-     *
-     * @param aidlSearchSpec The original {@link AppFunctionAidlSearchSpec} from calling app.
-     * @return {@link AppFunctionSearchSpec} with visible package filter applied. Null if the
-     *     provided {@code aidlSearchSpec} cannot search anything that is visible to the caller.
-     */
-    @Nullable
-    AppFunctionSearchSpec applyVisiblePackageFilter(
-            @NonNull AppFunctionAidlSearchSpec aidlSearchSpec, int callingUid, int callingPid);
-
-    /**
      * Filters the {@code functionNames} to only return the visible ones.
      *
      * @param functionNames The list of {@link AppFunctionName}.
