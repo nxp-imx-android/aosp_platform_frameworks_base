@@ -45,9 +45,6 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 
 class ScreenCaptureShareScreenViewModel
 @AssistedInject
@@ -227,11 +224,6 @@ constructor(
             launchTraced("AppContentsViewModel") { appContentsViewModel.activate() }
             launchTraced("RecentTasksViewModel") { recentTasksViewModel.activate() }
             launchTraced("DisplaysViewModel") { displaysViewModel.activate() }
-
-            shareScreenUiInteractor.isHostAppDead
-                .filter { it }
-                .onEach { onCloseClicked() }
-                .launchIn(this)
         }
     }
 
