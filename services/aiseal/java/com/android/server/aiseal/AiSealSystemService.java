@@ -58,6 +58,7 @@ public class AiSealSystemService extends SystemService {
 
     @Override
     public void onStart() {
+        Slog.i(TAG, "AiSealSystemService has started, connecting to AiSeal internal service");
         connectAiSealInternalService();
     }
 
@@ -86,7 +87,7 @@ public class AiSealSystemService extends SystemService {
         // Reset the service to null if we are currently connected to it.
         mAiSealInternalService = null;
 
-        Slog.i(TAG, "Connecting to AiSeal internal service");
+        Slog.d(TAG, "Connecting to AiSeal internal service");
         IBinder binder = ServiceManager.getService("aiseal_internal");
         if (binder != null) {
             try {
@@ -94,7 +95,7 @@ public class AiSealSystemService extends SystemService {
                         new DeathRecipient() {
                             @Override
                             public void binderDied() {
-                                Slog.w(TAG, "AiSeal died; reconnecting");
+                                Slog.wtf(TAG, "AiSeal died; reconnecting");
                                 connectAiSealInternalService();
                             }
                         },
@@ -107,7 +108,7 @@ public class AiSealSystemService extends SystemService {
         if (binder != null) {
             mAiSealInternalService = IAiSealInternalService.Stub.asInterface(binder);
         } else {
-            Slog.w(TAG, "AiSeal internal service not yet available; trying again");
+            Slog.d(TAG, "AiSeal internal service not yet available; trying again");
         }
 
         if (mAiSealInternalService == null) {
@@ -124,6 +125,7 @@ public class AiSealSystemService extends SystemService {
 
     @GuardedBy("sLock")
     private void onAiSealInternalServiceConnectedLocked() {
+        Slog.i(TAG, "Connected to AiSeal internal service");
         for (int userId : mUnlockedUsers) {
             notifyUserUnlockingLocked(userId);
         }
@@ -136,7 +138,7 @@ public class AiSealSystemService extends SystemService {
             notifyUserUnlockingLocked(userId);
         } else {
             // The user will be unlocked in onAiSealInternalServiceConnected().
-            Slog.i(TAG, "Not yet connected to AiSeal to unlock user " + userId);
+            Slog.w(TAG, "Not yet connected to AiSeal to unlock user " + userId);
         }
     }
 
@@ -146,13 +148,14 @@ public class AiSealSystemService extends SystemService {
         if (mAiSealInternalService != null) {
             notifyUserStoppedLocked(userId);
         } else {
-            Slog.i(TAG, "Not yet connected to AiSeal to stop user " + userId);
+            Slog.w(TAG, "Not yet connected to AiSeal to stop user " + userId);
         }
     }
 
     /** AiSeal notifyUserUnlockingLocked */
     @GuardedBy("sLock")
     public void notifyUserUnlockingLocked(int userId) {
+        Slog.i(TAG, "Unlocking user " + userId);
         try {
             File kekFile = Environment.buildPath(Environment.getDataSystemCeDirectory(userId),
                     AISEAL_PRIVATE_FOLDER, KEK_FILENAME);
@@ -167,6 +170,7 @@ public class AiSealSystemService extends SystemService {
     /** AiSeal notifyUserStoppedLocked */
     @GuardedBy("sLock")
     public void notifyUserStoppedLocked(int userId) {
+        Slog.i(TAG, "Stopping user " + userId);
         try {
             mAiSealInternalService.onUserStopped(userId);
         } catch (Exception e) {
