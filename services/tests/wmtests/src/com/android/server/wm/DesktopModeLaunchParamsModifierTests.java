@@ -125,6 +125,8 @@ public class DesktopModeLaunchParamsModifierTests extends
     public TestRule compatChangeRule = new PlatformCompatChangeRule();
 
     public PackageManager mPackageManager = mock(PackageManager.class);
+    private static final ComponentName LAUNCH_IN_FULLSCREEN_BY_ALLOWLIST = new ComponentName(
+            "com.allowlist.package", "");
 
     @Before
     public void setUp() throws Exception {
@@ -143,6 +145,8 @@ public class DesktopModeLaunchParamsModifierTests extends
         doReturn(mPackageManager).when(spyContext).getPackageManager();
         doReturn(HOME_ACTIVITIES.getPackageName()).when(desktopModeCompatPolicy)
                 .getDefaultHomePackage(anyInt());
+        doReturn(true).when(desktopModeCompatPolicy)
+                .isPackageLaunchInFullscreen(eq(LAUNCH_IN_FULLSCREEN_BY_ALLOWLIST));
     }
 
     @Test
@@ -314,6 +318,182 @@ public class DesktopModeLaunchParamsModifierTests extends
         assertEquals(RESULT_DONE, new CalculateRequestBuilder().setTask(task).setActivity(
                 activity).calculate());
         assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
+    }
+
+    @Test
+    @EnableFlags({
+        Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
+        Flags.FLAG_LAUNCH_GAMES_IN_FULLSCREEN_BY_ALLOWLIST
+    })
+    public void testFullscreenLaunchByAllowlist_inAllowlist_activityWithTask_touchFirstInDesktopMode_launchesInFullscreen() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any(), any())).thenCallRealMethod();
+        // Set up a touch-first display with an active desk.
+        final TestDisplayContent display = createNewDisplayContent(WINDOWING_MODE_FULLSCREEN);
+        final Task deskRoot = setUpActiveDeskRootTask(display);
+        // Create a desktop task to simulate being in desktop mode
+        final Task desktopTask = new TaskBuilder(mSupervisor)
+                .setCreateActivity(true)
+                .setDisplay(display)
+                .setParentTask(deskRoot)
+                .setWindowingMode(WINDOWING_MODE_UNDEFINED)
+                .build();
+
+        // Create an activity and task from a package in the fullscreen-by-default allowlist.
+        final Task task = new TaskBuilder(mSupervisor).setDisplay(display).build();
+        final ActivityOptions options = ActivityOptions.makeBasic();
+        options.setLaunchDisplayId(display.mDisplayId);
+        final ActivityRecord activity = new ActivityBuilder(mAtm)
+                .setComponent(LAUNCH_IN_FULLSCREEN_BY_ALLOWLIST)
+                .setTask(task)
+                .build();
+
+        // Verify it's forced to launch in fullscreen, despite being in desktop mode.
+        assertEquals(RESULT_DONE, new CalculateRequestBuilder().setTask(task).setActivity(
+                activity).setOptions(options).calculate());
+        assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
+    }
+
+    @Test
+    @EnableFlags({
+        Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
+        Flags.FLAG_LAUNCH_GAMES_IN_FULLSCREEN_BY_ALLOWLIST
+    })
+    public void testFullscreenLaunchByAllowlist_inAllowlist_activityWithTask_desktopFirst_launchesInFullscreen() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any(), any())).thenCallRealMethod();
+        // Set up a desktop-first display.
+        final TestDisplayContent display = createNewDisplayContent(WINDOWING_MODE_FREEFORM);
+
+        // Create an activity and task from a package in the fullscreen-by-default allowlist.
+        final Task task = new TaskBuilder(mSupervisor).setDisplay(display).build();
+        final ActivityOptions options = ActivityOptions.makeBasic();
+        options.setLaunchDisplayId(display.mDisplayId);
+        final ActivityRecord activity = new ActivityBuilder(mAtm)
+                .setComponent(LAUNCH_IN_FULLSCREEN_BY_ALLOWLIST)
+                .setTask(task)
+                .build();
+
+        // Verify it's forced to launch in fullscreen, despite being a desktop-first display.
+        assertEquals(RESULT_DONE, new CalculateRequestBuilder().setTask(task).setActivity(
+                activity).setOptions(options).calculate());
+        assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
+    }
+
+    @Test
+    @EnableFlags({
+        Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
+        Flags.FLAG_LAUNCH_GAMES_IN_FULLSCREEN_BY_ALLOWLIST
+    })
+    public void testFullscreenLaunchByAllowlist_inAllowlist_activityWithoutTask_touchFirstInDesktopMode_launchesInFullscreen() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any(), any())).thenCallRealMethod();
+        // Set up a touch-first display with an active desk.
+        final TestDisplayContent display = createNewDisplayContent(WINDOWING_MODE_FULLSCREEN);
+        final Task deskRoot = setUpActiveDeskRootTask(display);
+        // Create a desktop task to simulate being in desktop mode
+        final Task desktopTask = new TaskBuilder(mSupervisor)
+                .setCreateActivity(true)
+                .setDisplay(display)
+                .setParentTask(deskRoot)
+                .setWindowingMode(WINDOWING_MODE_UNDEFINED)
+                .build();
+
+        // Create an activity from a package in the fullscreen-by-default allowlist.
+        final ActivityOptions options = ActivityOptions.makeBasic();
+        options.setLaunchDisplayId(display.mDisplayId);
+        final ActivityRecord activity = new ActivityBuilder(mAtm)
+                .setComponent(LAUNCH_IN_FULLSCREEN_BY_ALLOWLIST)
+                .build();
+
+        // Verify it's forced to launch in fullscreen, despite being in desktop mode.
+        assertEquals(RESULT_DONE, new CalculateRequestBuilder().setTask(null).setActivity(
+                activity).setOptions(options).calculate());
+        assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
+    }
+
+    @Test
+    @EnableFlags({
+        Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
+        Flags.FLAG_LAUNCH_GAMES_IN_FULLSCREEN_BY_ALLOWLIST
+    })
+    public void testFullscreenLaunchByAllowlist_inAllowlist_activityWithoutTask_desktopFirst_launchesInFullscreen() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any(), any())).thenCallRealMethod();
+        // Set up a desktop-first display.
+        final TestDisplayContent display = createNewDisplayContent(WINDOWING_MODE_FREEFORM);
+
+        // Create an activity from a package in the fullscreen-by-default allowlist.
+        final ActivityOptions options = ActivityOptions.makeBasic();
+        options.setLaunchDisplayId(display.mDisplayId);
+        final ActivityRecord activity = new ActivityBuilder(mAtm)
+                .setComponent(LAUNCH_IN_FULLSCREEN_BY_ALLOWLIST)
+                .build();
+
+        // Verify it's forced to launch in fullscreen, despite being a desktop-first display.
+        assertEquals(RESULT_DONE, new CalculateRequestBuilder().setTask(null).setOptions(options)
+                .setActivity(activity).calculate());
+        assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
+    }
+
+    @Test
+    @EnableFlags({
+        Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
+        Flags.FLAG_LAUNCH_GAMES_IN_FULLSCREEN_BY_ALLOWLIST
+    })
+    public void testFullscreenLaunchByAllowlist_notInAllowlist_touchFirstInDesktopMode_launchesInDesktop() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any(), any())).thenCallRealMethod();
+        // Set up a touch-first display with an active desk.
+        final TestDisplayContent display = createNewDisplayContent(WINDOWING_MODE_FULLSCREEN);
+        final Task deskRoot = setUpActiveDeskRootTask(display);
+        // Create a desktop task to simulate being in desktop mode
+        final Task desktopTask = new TaskBuilder(mSupervisor)
+                .setCreateActivity(true)
+                .setDisplay(display)
+                .setParentTask(deskRoot)
+                .setWindowingMode(WINDOWING_MODE_UNDEFINED)
+                .build();
+
+        // Create an activity from a package not in the fullscreen-by-default allowlist.
+        final Task task = new TaskBuilder(mSupervisor).setDisplay(display).build();
+        final ActivityOptions options = ActivityOptions.makeBasic();
+        options.setLaunchDisplayId(display.mDisplayId);
+        final ActivityRecord activity = new ActivityBuilder(mAtm)
+                .setComponent(new ComponentName("com.normal.package", "NormalClass"))
+                .setTask(task)
+                .build();
+
+        // Does not force launch in fullscreen, it launches undefined to inherit from parent desk.
+        assertEquals(RESULT_CONTINUE, new CalculateRequestBuilder().setTask(task).setOptions(options)
+                .setActivity(activity).calculate());
+        assertEquals(WINDOWING_MODE_UNDEFINED, mResult.mWindowingMode);
+    }
+
+    @Test
+    @EnableFlags({
+        Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM,
+        Flags.FLAG_LAUNCH_GAMES_IN_FULLSCREEN_BY_ALLOWLIST
+    })
+    public void testFullscreenLaunchByAllowlist_notInAllowlist_activityWithoutTask_desktopFirst_launchesInDesktop() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any(), any())).thenCallRealMethod();
+        // Set up a desktop-first display with an active desk.
+        final TestDisplayContent display = createNewDisplayContent(WINDOWING_MODE_FREEFORM);
+        final Task deskRoot = setUpActiveDeskRootTask(display);
+
+        // Create an activity from a package not in the fullscreen-by-default allowlist.
+        final ActivityOptions options = ActivityOptions.makeBasic();
+        options.setLaunchDisplayId(display.mDisplayId);
+        final ActivityRecord activity = new ActivityBuilder(mAtm)
+                .setComponent(new ComponentName("com.normal.package", "NormalClass"))
+                .build();
+
+        // Does not force launch in fullscreen, it launches freeform because it's a desktop-first
+        // display.
+        assertEquals(RESULT_DONE, new CalculateRequestBuilder().setTask(null).setOptions(options)
+                .setActivity(activity).calculate());
+        assertEquals(WINDOWING_MODE_FREEFORM, mResult.mWindowingMode);
     }
 
     @Test
@@ -2582,6 +2762,16 @@ public class DesktopModeLaunchParamsModifierTests extends
         display.getDefaultTaskDisplayArea().setWindowingMode(windowingMode);
 
         return display;
+    }
+
+    private Task setUpActiveDeskRootTask(DisplayContent display) {
+        final Task deskRoot = new TaskBuilder(mSupervisor).setActivityType(ACTIVITY_TYPE_STANDARD)
+                .setWindowingMode(WINDOWING_MODE_FREEFORM).setDisplay(display)
+                .setCreatedByOrganizer(true).build();
+        display.getDefaultTaskDisplayArea().setLaunchRootTask(deskRoot,
+                new int[]{WINDOWING_MODE_FREEFORM, WINDOWING_MODE_UNDEFINED},
+                new int[]{ACTIVITY_TYPE_STANDARD});
+        return deskRoot;
     }
 
     private void setupDesktopModeLaunchParamsModifier() {

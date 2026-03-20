@@ -59,6 +59,7 @@ public class DesktopModeCompatPolicy {
     private final Map<String, Boolean> mPackageInfoCache = new HashMap<>();
     private PackageManager mPackageManager = null;
     @NonNull private final List<String> mConfigHomeFreeformActivities;
+    @NonNull private final List<String> mConfigLaunchInFullscreenPackages;
 
     public Supplier<String> mDefaultHomePackageSupplier;
 
@@ -74,6 +75,9 @@ public class DesktopModeCompatPolicy {
                         context.getResources()
                                 .getStringArray(
                                         R.array.config_desktopHomePackageFreeformActivities));
+        mConfigLaunchInFullscreenPackages =
+                Arrays.asList(context.getResources().getStringArray(
+                        R.array.config_desktopLaunchInFullscreenPackages));
     }
 
     public void setDefaultHomePackageSupplier(
@@ -247,6 +251,15 @@ public class DesktopModeCompatPolicy {
      */
     public boolean isTransparentTask(@NonNull TaskInfo task) {
         return isTransparentTask(task.isActivityStackTransparent, task.numActivities);
+    }
+
+    /** Returns true if the package should be launched in fullscreen by default when in desktop. */
+    public boolean isPackageLaunchInFullscreen(@Nullable ComponentName baseActivity) {
+        if (!Flags.launchGamesInFullscreenByAllowlist()) return false;
+        if (baseActivity == null) return false;
+        final String packageName = baseActivity.getPackageName();
+        if (packageName == null) return false;
+        return mConfigLaunchInFullscreenPackages.contains(packageName);
     }
 
     private boolean isTransparentTask(boolean isActivityStackTransparent, int numActivities) {
