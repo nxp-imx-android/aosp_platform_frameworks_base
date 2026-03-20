@@ -22,10 +22,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.collectValues
 import com.android.systemui.kosmos.runTest
-import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.qs.flags.QsSplitInternetTile
+import com.android.systemui.qs.pipeline.data.model.RestoreData
+import com.android.systemui.qs.pipeline.data.model.cellTileRestoreProcessor
 import com.android.systemui.qs.pipeline.data.repository.tileSpecRepository
 import com.android.systemui.qs.pipeline.domain.model.AutoAddSignal
 import com.android.systemui.qs.pipeline.domain.model.AutoAddTracking
@@ -43,10 +45,7 @@ import org.junit.runner.RunWith
 class CellAutoAddableTest : SysuiTestCase() {
     private val kosmos = testKosmos()
 
-    private val Kosmos.underTest by
-        Kosmos.Fixture {
-            CellAutoAddable(connectivityConstants, tileSpecRepository, testDispatcher)
-        }
+    private val Kosmos.underTest by Kosmos.Fixture { cellAutoAddable }
 
     @Test
     fun tracking_always() =
@@ -93,14 +92,14 @@ class CellAutoAddableTest : SysuiTestCase() {
     @Test
     @EnableFlags(QsSplitInternetTile.FLAG_NAME)
     @DisableFlags(QsSplitInternetTile.SUPPRESSION_FLAG_NAME)
-    fun flagEnabled_tileCurrent_hasDataCapabilities_noAddSignal() =
+    fun flagEnabled_tileCurrent_hasDataCapabilities_markAddedSignal() =
         kosmos.runTest {
             tileSpecRepository.setTiles(USER, listOf(TileSpec.create("a"), cellTileSpec))
             connectivityConstants.fake.hasDataCapabilities = true
 
             val signals by collectValues(underTest.autoAddSignal(USER))
 
-            assertThat(signals).isEmpty()
+            assertThat(signals.single()).isEqualTo(AutoAddSignal.AddTracking(cellTileSpec))
         }
 
     @Test
@@ -114,6 +113,25 @@ class CellAutoAddableTest : SysuiTestCase() {
             val signals by collectValues(underTest.autoAddSignal(USER))
 
             assertThat(signals).isEmpty()
+        }
+
+    @Test
+    @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.SUPPRESSION_FLAG_NAME)
+    fun flagEnabled_tileCurrent_restoredWithoutMarked_removeSignal() =
+        kosmos.runTest {
+            tileSpecRepository.setTiles(USER, listOf(TileSpec.create("a"), cellTileSpec))
+            val signal by collectLastValue(underTest.autoAddSignal(USER))
+
+            val restoreData =
+                RestoreData(
+                    userId = USER,
+                    restoredTiles = listOf(TileSpec.create("b")),
+                    restoredAutoAddedTiles = emptySet(),
+                )
+            cellTileRestoreProcessor.postProcessRestore(restoreData)
+
+            assertThat(signal).isEqualTo(AutoAddSignal.Remove(cellTileSpec))
         }
 
     private companion object {

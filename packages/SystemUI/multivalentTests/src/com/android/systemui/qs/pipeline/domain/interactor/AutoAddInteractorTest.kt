@@ -205,6 +205,22 @@ class AutoAddInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    fun autoAddable_addTrackingSignal_notAddedButMarked() =
+        testScope.runTest {
+            autoAddRepository.unmarkTileAdded(USER, SPEC)
+            val autoAddedTiles by collectLastValue(autoAddRepository.autoAddedTiles(USER))
+            val fakeAutoAddable = FakeAutoAddable(SPEC, AutoAddTracking.Always)
+
+            underTest = createInteractor(setOf(fakeAutoAddable))
+
+            fakeAutoAddable.sendAddTrackingSignal(USER)
+            runCurrent()
+
+            verify(currentTilesInteractor, never()).addTile(any(), anyInt())
+            assertThat(autoAddedTiles).contains(SPEC)
+        }
+
+    @Test
     fun autoAddable_trackIfNotAdded_currentTile_markedAsAdded() =
         testScope.runTest {
             val fakeTile = FakeQSTile(USER).apply { tileSpec = SPEC.spec }

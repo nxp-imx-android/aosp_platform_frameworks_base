@@ -19,6 +19,7 @@ package com.android.systemui.qs.pipeline.domain.autoaddable
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.qs.flags.QsSplitInternetTile
 import com.android.systemui.qs.pipeline.data.repository.TileSpecRepository
+import com.android.systemui.qs.pipeline.data.restoreprocessors.CellTileRestoreProcessor
 import com.android.systemui.qs.pipeline.domain.autoaddable.CellAutoAddable.Companion.cellTileSpec
 import com.android.systemui.qs.pipeline.domain.model.AutoAddSignal
 import com.android.systemui.qs.pipeline.domain.model.AutoAddSignal.AutoAddSize
@@ -30,9 +31,12 @@ import com.android.systemui.statusbar.pipeline.shared.ConnectivityConstants
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 
 /**
  * AutoAddable for [cellTileSpec] tile.
@@ -51,6 +55,7 @@ class CellAutoAddable
 constructor(
     private val connectivityConstants: ConnectivityConstants,
     private val tileSpecRepository: TileSpecRepository,
+    private val restoreProcessor: CellTileRestoreProcessor,
     @param:Background private val backgroundDispatcher: CoroutineDispatcher,
 ) : AutoAddable {
 
@@ -62,25 +67,47 @@ constructor(
              * 1. Device that was never migrated (never had [QsSplitInternetTile] enabled): in this case,
              *   we will add the tile once, large, at the end of the list for that user. This will happen
              *   because there's no other way that [cellTileSpec] can be in the list of tiles.
-             * 2. Device performed the previous type migration (splitting the Internet tile into wifi +
+             *   will add the tile once, large, at the end of the list for that user.
+             * 2. Device performed a restore from a backup from a build that does not contain this
+             *   logic: in this case, we use the [CellTileRestoreProcessor] to indicate this, remove the
+             *   cellular tile from where it got inserted (due to it being in the default set) and
+             *   insert it at the end.
+             * 3. Device was started from SUW with this new code: in this case, we will mark the tile
+             *   as added, so it won't be auto-added in the future (if the user removes it).
+             * 4. Device performed the previous type migration (splitting the Internet tile into wifi +
              *   cell) and the user still has the `cell` tile in their current set: in this case, nothing
              *   will happen. The tile will not move or change size.
-             * 3. Device performed the previous type migration (splitting the Internet tile into wifi +
+             * 5. Device performed the previous type migration (splitting the Internet tile into wifi +
              *   cell) and the user removed the `cell` tile (or it never got added): in this case, we
-             *   will add the tile once, large, at the end of the list for that user.
+             *   will add it at the end once.
              *
-             * Note that case 1 is the desired case for this re-written migration. In the cases 2 and 3,
-             * this will only be experienced by early users (not in the public release) and it's done this
-             * way to minimize the disruption to their current list of tiles (case 2).
-             *
+             * Note that cases 1, 2, and 3 are the desired cases for this re-written migration.
+             * In the cases 4, and 5, this will only be experienced by early users (not in the public
+             * release) and it's done this way to minimize the disruption to their current list of
+             * tiles (case 5).
              */
-            flow {
-                    tileSpecRepository.tilesSpecs(userId).collect { tiles ->
-                        if (cellTileSpec !in tiles && connectivityConstants.hasDataCapabilities) {
-                            emit(AutoAddSignal.Add(cellTileSpec, size = AutoAddSize.LARGE))
+            merge(
+                    flow {
+                        tileSpecRepository
+                            .tilesSpecs(userId)
+                            .map { tiles -> cellTileSpec in tiles }
+                            .distinctUntilChanged()
+                            .collect { cellTilePresent ->
+                                if (!cellTilePresent && connectivityConstants.hasDataCapabilities) {
+                                    emit(AutoAddSignal.Add(cellTileSpec, size = AutoAddSize.LARGE))
+                                } else if (
+                                    cellTilePresent && connectivityConstants.hasDataCapabilities
+                                ) {
+                                    emit(AutoAddSignal.AddTracking(cellTileSpec))
+                                }
+                            }
+                    },
+                    flow {
+                        restoreProcessor.restoredWithoutAutoAddedCell(userId).collect {
+                            emit(AutoAddSignal.Remove(cellTileSpec))
                         }
-                    }
-                }
+                    },
+                )
                 .flowOn(backgroundDispatcher)
         } else {
             flowOf(AutoAddSignal.RemoveTracking(cellTileSpec))
