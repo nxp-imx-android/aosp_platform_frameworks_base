@@ -1126,6 +1126,9 @@ public class WindowManagerService extends IWindowManager.Stub
     @NonNull
     final AppCompatConfiguration mAppCompatConfiguration;
 
+    @NonNull
+    final AppCompatCameraPolicy mAppCompatCameraPolicy;
+
     private boolean mIsIgnoreOrientationRequestDisabled;
 
     @NonNull
@@ -1388,6 +1391,8 @@ public class WindowManagerService extends IWindowManager.Stub
         mPolicy = policy;
         mAnimator = new WindowAnimator(this);
         mRoot = new RootWindowContainer(this);
+        mAppCompatCameraPolicy = new AppCompatCameraPolicy(this);
+        mAppCompatCameraPolicy.start();
 
         final ContentResolver resolver = context.getContentResolver();
 

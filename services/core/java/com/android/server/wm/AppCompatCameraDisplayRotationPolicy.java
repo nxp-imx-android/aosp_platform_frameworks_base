@@ -42,6 +42,7 @@ import android.annotation.StringRes;
 import android.content.pm.ActivityInfo.ScreenOrientation;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.util.SparseArray;
 import android.widget.Toast;
 
 import com.android.internal.R;
@@ -69,8 +70,6 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
     private static final String TAG = TAG_WITH_CLASS_NAME ? "AppCompatCameraDRPolicy" : TAG_WM;
 
     @NonNull
-    private final DisplayContent mDisplayContent;
-    @NonNull
     private final WindowManagerService mWmService;
     @NonNull
     private final CameraStateMonitor mCameraStateMonitor;
@@ -87,14 +86,18 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
      */
     private boolean mIsRunning;
 
-    AppCompatCameraDisplayRotationPolicy(@NonNull DisplayContent displayContent,
+    // Display id which is currently affected by the treatment. This structure is used to revert the
+    // treatment in case a task is moved to another display, or activity is destroyed, therefore no
+    // longer attached to a display when camera is closed.
+    // Key is the taskId that opened camera.
+    // TODO(b/492518230): notify the policy when display changes and update mActiveCameraCompat.
+    private final SparseArray<Integer> mActiveCameraCompat = new SparseArray<>();
+    AppCompatCameraDisplayRotationPolicy(@NonNull WindowManagerService wmService,
             @NonNull CameraStateMonitor cameraStateMonitor,
             @NonNull AppCompatCameraStateSource cameraStateNotifier,
             @NonNull ActivityRefresher activityRefresher) {
-        // This constructor is called from DisplayContent constructor. Don't use any fields in
-        // DisplayContent here since they aren't guaranteed to be set.
-        mDisplayContent = displayContent;
-        mWmService = displayContent.mWmService;
+        // This constructor is called from WindowManagerService constructor.
+        mWmService = wmService;
         mCameraStateMonitor = cameraStateMonitor;
         mCameraStateNotifier = cameraStateNotifier;
         mActivityRefresher = activityRefresher;
@@ -118,11 +121,11 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
         return mIsRunning;
     }
 
-    static boolean isPolicyEnabled(@NonNull DisplayContent displayContent) {
+    static boolean isPolicyEnabled(@NonNull WindowManagerService wmService) {
         return !(Flags.cameraCompatUnifyCameraPolicies()
-                && displayContent.mWmService.mAppCompatConfiguration
+                && wmService.mAppCompatConfiguration
                         .isCameraCompatSimReqOrientationTreatmentEnabled())
-                && displayContent.mWmService.mAppCompatConfiguration
+                && wmService.mAppCompatConfiguration
                         .isCameraCompatForceRotateTreatmentEnabled();
     }
 
@@ -139,12 +142,12 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
      * #isTreatmentEnabledForDisplay} for conditions enabling the treatment.
      */
     @ScreenOrientation
-    int getOrientation() {
-        mLastReportedOrientation = getOrientationInternal();
+    int getOrientation(@NonNull DisplayContent displayContent) {
+        mLastReportedOrientation = getOrientationInternal(displayContent);
         if (mLastReportedOrientation != SCREEN_ORIENTATION_UNSPECIFIED) {
-            rememberOverriddenOrientationIfNeeded();
+            rememberOverriddenOrientationIfNeeded(displayContent);
         } else {
-            restoreOverriddenOrientationIfNeeded();
+            restoreOverriddenOrientationIfNeeded(displayContent);
         }
         return mLastReportedOrientation;
     }
@@ -155,11 +158,11 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
     }
 
     @ScreenOrientation
-    private synchronized int getOrientationInternal() {
-        if (!isTreatmentEnabledForDisplay()) {
+    private synchronized int getOrientationInternal(@NonNull DisplayContent displayContent) {
+        if (!isTreatmentEnabledForDisplay(displayContent)) {
             return SCREEN_ORIENTATION_UNSPECIFIED;
         }
-        final ActivityRecord topActivity = mDisplayContent.topRunningActivity(
+        final ActivityRecord topActivity = displayContent.topRunningActivity(
                 /* considerKeyguardState= */ true);
         if (!isTreatmentEnabledForActivity(topActivity)) {
             return SCREEN_ORIENTATION_UNSPECIFIED;
@@ -167,7 +170,7 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
         boolean isPortraitActivity =
                 topActivity.getRequestedConfigurationOrientation() == ORIENTATION_PORTRAIT;
         boolean isNaturalDisplayOrientationPortrait =
-                topActivity.getDisplayContent().getNaturalOrientation() == ORIENTATION_PORTRAIT;
+                displayContent.getNaturalOrientation() == ORIENTATION_PORTRAIT;
         // Rotate portrait-only activity in the natural orientation of the displays (and in the
         // opposite to natural orientation for landscape-only) since many apps assume that those
         // are aligned when they compute orientation of the preview.
@@ -187,7 +190,7 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
                         + "and the top activity is eligible for force rotation, return %s,"
                         + "portrait activity: %b, is natural orientation portrait: %b.",
                 TAG_CAMERA_COMPAT,
-                topActivity.getDisplayContent().mDisplayId, screenOrientationToString(orientation),
+                displayContent.mDisplayId, screenOrientationToString(orientation),
                 isPortraitActivity, isNaturalDisplayOrientationPortrait);
         return orientation;
     }
@@ -198,10 +201,10 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
      * <p>This class uses this signal as a trigger for notifying the user about forced rotation
      * reason with the {@link Toast}.
      */
-    void onScreenRotationAnimationFinished() {
-        final ActivityRecord topActivity = mDisplayContent.topRunningActivity(
+    void onScreenRotationAnimationFinished(@NonNull DisplayContent displayContent) {
+        final ActivityRecord topActivity = displayContent.topRunningActivity(
                 /* considerKeyguardState= */ true);
-        if (!isTreatmentEnabledForDisplay()
+        if (!isTreatmentEnabledForDisplay(displayContent)
                 || !isTreatmentEnabledForActivity(topActivity)) {
             return;
         }
@@ -210,7 +213,8 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
 
     void dump(@NonNull ActivityRecord activity, @NonNull PrintWriter pw, @NonNull String prefix) {
         pw.println(prefix + "AppCompatCameraDisplayRotationPolicy:");
-        final boolean isTreatmentEnabledForDisplay = isTreatmentEnabledForDisplay();
+        final boolean isTreatmentEnabledForDisplay = isTreatmentEnabledForDisplay(
+                activity.getDisplayContent());
         pw.println(prefix + "  isTreatmentEnabledForDisplay=" + isTreatmentEnabledForDisplay);
         if (isTreatmentEnabledForDisplay) {
             pw.println(prefix + "  mLastReportedOrientation="
@@ -220,10 +224,10 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
         }
     }
 
-    String getSummaryForDisplayRotationHistoryRecord() {
+    String getSummaryForDisplayRotationHistoryRecord(@NonNull DisplayContent displayContent) {
         String summaryIfEnabled = "";
-        if (isTreatmentEnabledForDisplay()) {
-            ActivityRecord topActivity = mDisplayContent.topRunningActivity(
+        if (isTreatmentEnabledForDisplay(displayContent)) {
+            ActivityRecord topActivity = displayContent.topRunningActivity(
                     /* considerKeyguardState= */ true);
             summaryIfEnabled =
                     " mLastReportedOrientation="
@@ -235,37 +239,37 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
                             + "mCameraStateMonitor=" + mCameraStateMonitor;
         }
         return "DisplayRotationCompatPolicy{"
-                + " isTreatmentEnabledForDisplay=" + isTreatmentEnabledForDisplay()
+                + " isTreatmentEnabledForDisplay=" + isTreatmentEnabledForDisplay(displayContent)
                 + summaryIfEnabled
                 + " }";
     }
 
-    private void restoreOverriddenOrientationIfNeeded() {
-        if (!isOrientationOverridden()) {
+    private void restoreOverriddenOrientationIfNeeded(@NonNull DisplayContent displayContent) {
+        if (!isOrientationOverridden(displayContent)) {
             return;
         }
-        if (mDisplayContent.getRotationReversionController().revertOverride(
+        if (displayContent.getRotationReversionController().revertOverride(
                 REVERSION_TYPE_CAMERA_COMPAT)) {
             ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
                     "%s: Reverting orientation after camera compat force rotation",
                     TAG_CAMERA_COMPAT);
             // Reset last orientation source since we have reverted the orientation.
-            mDisplayContent.mLastOrientationSource = null;
+            displayContent.mLastOrientationSource = null;
         }
     }
 
-    private boolean isOrientationOverridden() {
-        return mDisplayContent.getRotationReversionController().isOverrideActive(
+    private boolean isOrientationOverridden(@NonNull DisplayContent displayContent) {
+        return displayContent.getRotationReversionController().isOverrideActive(
                 REVERSION_TYPE_CAMERA_COMPAT);
     }
 
-    private void rememberOverriddenOrientationIfNeeded() {
-        if (!isOrientationOverridden()) {
-            mDisplayContent.getRotationReversionController().beforeOverrideApplied(
+    private void rememberOverriddenOrientationIfNeeded(@NonNull DisplayContent displayContent) {
+        if (!isOrientationOverridden(displayContent)) {
+            displayContent.getRotationReversionController().beforeOverrideApplied(
                     REVERSION_TYPE_CAMERA_COMPAT);
             ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
                     "%s: Saving original orientation before camera compat, last orientation is %d",
-                    TAG_CAMERA_COMPAT, mDisplayContent.getLastOrientation());
+                    TAG_CAMERA_COMPAT, displayContent.getLastOrientation());
         }
     }
 
@@ -274,9 +278,10 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
     @Override
     public boolean shouldRefreshActivity(@NonNull ActivityRecord activity,
             @NonNull Configuration newConfig, @NonNull Configuration lastReportedConfig) {
-        final boolean displayRotationChanged = (newConfig.windowConfiguration.getDisplayRotation()
-                != lastReportedConfig.windowConfiguration.getDisplayRotation());
-        return isTreatmentEnabledForDisplay()
+        final boolean displayRotationChanged = newConfig.windowConfiguration.getDisplayRotation()
+                != lastReportedConfig.windowConfiguration.getDisplayRotation();
+        return activity.getDisplayContent() != null
+                && isTreatmentEnabledForDisplay(activity.getDisplayContent())
                 && isTreatmentEnabledForActivity(activity)
                 && activity.mAppCompatController.getCameraOverrides()
                 .shouldRefreshActivityForCameraCompat()
@@ -296,14 +301,15 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
      *     that tracks supporting external displays in the future.
      * </ul>
      */
-    private boolean isTreatmentEnabledForDisplay() {
+    private boolean isTreatmentEnabledForDisplay(@NonNull DisplayContent displayContent) {
         return mWmService.mAppCompatConfiguration.isCameraCompatForceRotateTreatmentEnabled()
-                && mDisplayContent.getIgnoreOrientationRequest()
-                && mDisplayContent.getDisplay().getType() == TYPE_INTERNAL;
+                && displayContent.getIgnoreOrientationRequest()
+                && displayContent.getDisplay().getType() == TYPE_INTERNAL;
     }
 
     boolean isActivityEligibleForOrientationOverride(@NonNull ActivityRecord activity) {
-        return isTreatmentEnabledForDisplay()
+        return activity.getDisplayContent() != null
+                && isTreatmentEnabledForDisplay(activity.getDisplayContent())
                 && isCameraRunningAndWindowingModeEligible(activity, /* mustBeFullscreen */ true)
                 && activity.mAppCompatController.getCameraOverrides()
                 .shouldForceRotateForCameraCompat();
@@ -367,8 +373,9 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
         // Checking whether an activity in fullscreen rather than the task as this camera
         // compat treatment doesn't cover activity embedding.
         if (cameraActivity.getWindowingMode() == WINDOWING_MODE_FULLSCREEN) {
+            mActiveCameraCompat.put(cameraAppInfo.mTaskId, cameraActivity.getDisplayId());
             recomputeConfigurationForCameraCompatIfNeeded(cameraActivity);
-            mDisplayContent.updateOrientation();
+            cameraActivity.getDisplayContent().updateOrientation();
             return;
         }
         // Checking that the whole app is in multi-window mode as we shouldn't show toast
@@ -417,9 +424,8 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
         synchronized (this) {
             if (isActivityForCameraIdRefreshing(topActivity, cameraAppInfo.mCameraId)) {
                 ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
-                        "%s: Display id=%d is notified that camera is closed but activity is"
-                                + " still refreshing. Rescheduling an update.",
-                        TAG_CAMERA_COMPAT, mDisplayContent.mDisplayId);
+                        "%s: Policy notified that camera is closed but activity is"
+                                + " still refreshing. Rescheduling an update.", TAG_CAMERA_COMPAT);
                 return false;
             }
         }
@@ -429,21 +435,27 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
     @Override
     public void onCameraClosed(@NonNull CameraAppInfo cameraAppInfo,
             @Nullable WindowProcessController appProcess, @Nullable Task task) {
-        final ActivityRecord topActivity = getTopActivity(task);
-        if (topActivity == null) {
-            return;
-        }
-
         ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
-                "%s: Display id=%d is notified that Camera is closed, updating rotation.",
-                TAG_CAMERA_COMPAT, mDisplayContent.mDisplayId);
+                "%s: Display rotation policy is notified that Camera is closed, updating rotation.",
+                TAG_CAMERA_COMPAT);
+
+        final ActivityRecord topActivity = getTopActivity(task);
         // Checking whether an activity in fullscreen rather than the task as this camera compat
         // treatment doesn't cover activity embedding.
-        if (topActivity.getWindowingMode() != WINDOWING_MODE_FULLSCREEN) {
+        if (topActivity == null || topActivity.getWindowingMode() != WINDOWING_MODE_FULLSCREEN) {
+            mActiveCameraCompat.remove(cameraAppInfo.mTaskId);
             return;
         }
         recomputeConfigurationForCameraCompatIfNeeded(topActivity);
-        mDisplayContent.updateOrientation();
+        if (mActiveCameraCompat.contains(cameraAppInfo.mTaskId)) {
+            final int displayId = mActiveCameraCompat.removeReturnOld(cameraAppInfo.mTaskId);
+            final DisplayContent displayContent = mWmService.mRoot.getDisplayContent(displayId);
+            if (displayContent != null) {
+                ProtoLog.v(WM_DEBUG_CAMERA_COMPAT, "%s: Display id=%d is notified that Camera"
+                        + " is closed, updating rotation.", TAG_CAMERA_COMPAT, displayId);
+                displayContent.updateOrientation();
+            }
+        }
     }
 
     // TODO(b/336474959): Do we need cameraId here?

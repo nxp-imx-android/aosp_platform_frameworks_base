@@ -49,20 +49,19 @@ class AppCompatCameraRotationState {
     OrientationEventListener mOrientationEventListener;
 
     @NonNull
-    private final DisplayContent mDisplayContent;
+    private final WindowManagerService mWmService;
 
     private int mDisplayRotationIfExternal = ROTATION_UNDEFINED;
 
-    AppCompatCameraRotationState(@NonNull DisplayContent displayContent) {
-        mDisplayContent = displayContent;
+    AppCompatCameraRotationState(@NonNull WindowManagerService wmService) {
+        mWmService = wmService;
     }
 
     /** Sets up listening to the orientation of the primary device if on an external display. */
     void start() {
-        if (isExternalDisplay()) {
-            // Listen to orientation changes of the host device.
-            setupSensorOrientationListener();
-        }
+        // TODO(b/495372418): start the listener only while external display is connected.
+        // Listen to orientation changes of the host device.
+        setupSensorOrientationListener();
     }
 
     /** Disables {@link OrientationEventListener} if set up. */
@@ -76,11 +75,10 @@ class AppCompatCameraRotationState {
 
     /** Creates and enables {@link OrientationEventListener}.  */
     void setupSensorOrientationListener() {
-        mOrientationEventListener = new OrientationEventListener(
-                mDisplayContent.mWmService.mContext) {
+        mOrientationEventListener = new OrientationEventListener(mWmService.mContext) {
             @Override
             public void onOrientationChanged(int orientation) {
-                synchronized (mDisplayContent.mWmService.mGlobalLock) {
+                synchronized (mWmService.mGlobalLock) {
                     mDisplayRotationIfExternal = transformSensorOrientationToDisplayRotation(
                             orientation);
                 }
@@ -96,14 +94,15 @@ class AppCompatCameraRotationState {
      * <p>This orientation is equal to the natural orientation of the display it is tied to
      * (built-in display).
      */
-    boolean isCameraDeviceNaturalOrientationPortrait() {
+    boolean isCameraDeviceNaturalOrientationPortrait(@NonNull DisplayContent displayContent) {
         // Per CDD (7.5.5 C-1-1), camera sensor orientation and display natural orientation have to
         // be the same (portrait or landscape).
         // TODO(b/444213250): this is not always correct, for example for some landscape foldables,
         //  natural orientation of some displays and camera sensors may differ. Instead, query the
         //  camera sensors for their natural orientation. Also make sure no camera sensor sandboxing
         //  affects that.
-        return getDisplayContentTiedToCamera().getNaturalOrientation() == ORIENTATION_PORTRAIT;
+        return getDisplayContentTiedToCamera(displayContent).getNaturalOrientation()
+                == ORIENTATION_PORTRAIT;
     }
 
     /**
@@ -113,8 +112,9 @@ class AppCompatCameraRotationState {
      * value and what the app expects given their requested orientation informs camera compat setup.
      */
     @Surface.Rotation
-    int getCameraDeviceRotation() {
-        return isExternalDisplay() ? mDisplayRotationIfExternal : mDisplayContent.getRotation();
+    int getCameraDeviceRotation(@NonNull DisplayContent displayContent) {
+        return isExternalDisplay(displayContent)
+                ? mDisplayRotationIfExternal : displayContent.getRotation();
     }
 
     // TODO(b/425599049): support external cameras.
@@ -124,15 +124,16 @@ class AppCompatCameraRotationState {
      * <p>This is either the display rotation when running on an internal display, or the camera
      * rotation when running on an external display.
      */
-    boolean isCameraDeviceOrientationPortrait() {
-        final int cameraDisplayRotation = getCameraDeviceRotation();
+    boolean isCameraDeviceOrientationPortrait(@NonNull DisplayContent displayContent) {
+        final int cameraDisplayRotation = getCameraDeviceRotation(displayContent);
         final boolean isDisplayInItsNaturalOrientation = (cameraDisplayRotation == ROTATION_0
                 || cameraDisplayRotation == ROTATION_180);
         // Display is in portrait if and only if: portrait device is in its natural orientation,
         // or landscape device is not in its natural orientation.
         // `isPortraitCamera <=> isDisplayInItsNaturalOrientation` is equivalent to
         // `isPortraitCamera XOR !isDisplayInItsNaturalOrientation`.
-        return isCameraDeviceNaturalOrientationPortrait() ^ !isDisplayInItsNaturalOrientation;
+        return isCameraDeviceNaturalOrientationPortrait(displayContent)
+                ^ !isDisplayInItsNaturalOrientation;
     }
 
     @Surface.Rotation
@@ -155,15 +156,15 @@ class AppCompatCameraRotationState {
     }
 
     @NonNull
-    private DisplayContent getDisplayContentTiedToCamera() {
-        return isExternalDisplay()
+    private DisplayContent getDisplayContentTiedToCamera(@NonNull DisplayContent displayContent) {
+        return isExternalDisplay(displayContent)
                 // If camera app is on the external display, the display rotation should be
                 // overridden to use the primary device rotation which the camera sensor is tied to.
-                ? mDisplayContent.mWmService.getDefaultDisplayContentLocked()
-                : mDisplayContent;
+                ? mWmService.getDefaultDisplayContentLocked()
+                : displayContent;
     }
 
-    private boolean isExternalDisplay() {
-        return mDisplayContent.getDisplay().getType() == Display.TYPE_EXTERNAL;
+    private boolean isExternalDisplay(@NonNull DisplayContent displayContent) {
+        return displayContent.getDisplay().getType() == Display.TYPE_EXTERNAL;
     }
 }

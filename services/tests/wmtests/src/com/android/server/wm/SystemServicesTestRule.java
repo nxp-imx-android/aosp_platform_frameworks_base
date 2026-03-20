@@ -39,7 +39,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.nullable;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spy;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
@@ -63,7 +62,6 @@ import android.content.pm.PackageManagerInternal;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
 import android.hardware.devicestate.DeviceStateManager;
-import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.DisplayManagerInternal;
 import android.net.Uri;
 import android.os.Handler;
@@ -75,7 +73,6 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.DeviceConfig;
 import android.util.Log;
-import android.view.DisplayInfo;
 import android.view.InputChannel;
 import android.view.SurfaceControl;
 
@@ -478,8 +475,8 @@ public class SystemServicesTestRule implements TestRule {
                 dc.getDisplayPolicy().release();
                 // Unregister SensorEventListener (foldable device may register for hinge angle).
                 dc.getDisplayRotation().onDisplayRemoved();
-                dc.mAppCompatCameraPolicy.dispose();
             }
+            mWmService.mAppCompatCameraPolicy.dispose();
         }
 
         for (int i = mDeviceConfigListeners.size() - 1; i >= 0; i--) {

@@ -5598,12 +5598,13 @@ public class SizeCompatTests extends WindowTestsBase {
      */
     private void allowDesktopMode() {
         doReturn(true).when(() -> DesktopModeHelper.canEnterDesktopMode(any()));
+        mWm.mAppCompatCameraPolicy.reInit();
     }
 
     private void setupCameraCompatAspectRatio(float cameraCompatAspectRatio,
             @NonNull DisplayContent display) {
-        AppCompatCameraSimReqOrientationPolicy cameraPolicy = display.mAppCompatCameraPolicy
-                .mSimReqOrientationPolicy;
+        AppCompatCameraSimReqOrientationPolicy cameraPolicy = display.mWmService
+                .mAppCompatCameraPolicy.mSimReqOrientationPolicy;
         spyOn(cameraPolicy);
         doReturn(true).when(cameraPolicy).shouldCameraCompatControlAspectRatio(any());
         doReturn(cameraCompatAspectRatio).when(cameraPolicy).getCameraCompatAspectRatio(any());

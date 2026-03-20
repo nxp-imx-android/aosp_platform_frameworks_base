@@ -24,7 +24,6 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.content.pm.ActivityInfo.CONFIG_COLOR_MODE;
-import static android.content.pm.ActivityInfo.CONFIG_DENSITY;
 import static android.content.pm.ActivityInfo.CONFIG_KEYBOARD;
 import static android.content.pm.ActivityInfo.CONFIG_KEYBOARD_HIDDEN;
 import static android.content.pm.ActivityInfo.CONFIG_NAVIGATION;
@@ -2824,8 +2823,7 @@ public class ActivityRecordTests extends WindowTestsBase {
         spyOn(displayRotation);
         // Set initial rotation.
         performRotation(displayRotation, Surface.ROTATION_0);
-        final AppCompatCameraPolicy cameraPolicy = AppCompatCameraPolicy
-                .getAppCompatCameraPolicy(activity);
+        final AppCompatCameraPolicy cameraPolicy = activity.mWmService.mAppCompatCameraPolicy;
         spyOn(cameraPolicy.mSimReqOrientationPolicy);
 
         final WindowManager.LayoutParams attrs = new WindowManager.LayoutParams(
@@ -3789,9 +3787,7 @@ public class ActivityRecordTests extends WindowTestsBase {
     private ActivityRecord setupDisplayAndActivityForCameraCompat(boolean isCameraRunning,
             int windowingMode) {
         doReturn(true).when(() -> DesktopModeHelper.canEnterDesktopMode(any()));
-        // Create a new DisplayContent so that the flag values create the camera freeform policy.
-        mDisplayContent = new TestDisplayContent.Builder(mAtm, mDisplayContent.getSurfaceWidth(),
-                mDisplayContent.getSurfaceHeight()).build();
+        mWm.mAppCompatCameraPolicy.reInit();
         mDisplayContent.setIgnoreOrientationRequest(true);
         setupCameraRunning(isCameraRunning);
         final TaskDisplayArea tda = mDisplayContent.getDefaultTaskDisplayArea();
@@ -3817,12 +3813,12 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     private void setupCameraRunning(boolean isCameraRunning) {
-        final CameraStateMonitor cameraStateMonitor = mDisplayContent.mAppCompatCameraPolicy
+        final CameraStateMonitor cameraStateMonitor = mWm.mAppCompatCameraPolicy
                 .mCameraStateMonitor;
         spyOn(cameraStateMonitor);
         doReturn(isCameraRunning).when(cameraStateMonitor).isCameraRunningForActivity(any());
-        final AppCompatCameraSimReqOrientationPolicy cameraPolicy = mDisplayContent
-                .mAppCompatCameraPolicy.mSimReqOrientationPolicy;
+        final AppCompatCameraSimReqOrientationPolicy cameraPolicy = mWm.mAppCompatCameraPolicy
+                .mSimReqOrientationPolicy;
         if (cameraPolicy == null) {
             return;
         }
