@@ -18,6 +18,8 @@ package com.android.server.audio;
 import static com.android.server.audio.AudioServerPermissionProvider.MONITORED_PERMS;
 import static com.android.server.audio.AudioService.generatePackageMap;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalMatchers.aryEq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyByte;
@@ -435,6 +437,7 @@ public final class AudioServerPermissionProviderTest {
         verify(mMockPc).populatePermissionState(eq((byte) 0), aryEq(new int[] {10000, 110001}));
         verify(mMockPc).populatePermissionState(eq((byte) 1), aryEq(new int[] {10001, 110000}));
         for (int i = 2; i < MONITORED_PERMS.length; i++) {
+            if (i == PermissionEnum.SCHEDULE_EXACT_ALARM) continue;
             verify(mMockPc).populatePermissionState(eq((byte) i), aryEq(new int[] {}));
         }
         verify(mMockPc, times(MONITORED_PERMS.length)).populatePermissionState(anyByte(), any());
@@ -556,6 +559,62 @@ public final class AudioServerPermissionProviderTest {
 
         // 4. Verify the native controller gets BOTH the normal App ID and the PCC ID
         verify(mMockPc).populatePermissionState(eq((byte) 0), aryEq(new int[]{10002, 30002}));
+    }
+
+    @Test
+    public void testOnCheckScheduleExactAlarms() throws Exception {
+        var initPackageListData = List.of(mMockPackageState_10000_one_sdk33_captrue,
+                mMockPackageState_10001_two_sdk33_capfalse);
+        mPermissionProvider = new AudioServerPermissionProvider(
+                generatePackageMap(initPackageListData), mMockPermPred, mMockUserIdSupplier);
+        mPermissionProvider.onServiceStart(mMockPc);
+        clearInvocations(mMockPc);
+
+        // initially, neither has the permission
+        assertFalse(mPermissionProvider.hasScheduleExactAlarm(1_10000));
+
+        // check adds the perm
+        mPermissionProvider.addScheduleExactAlarm(1_10000);
+        verify(mMockPc).populatePermissionState(
+                eq(PermissionEnum.SCHEDULE_EXACT_ALARM), argThat(array -> {
+                    for (int uid : array) {
+                        if (uid == 1_10000) return true;
+                    }
+                    return false;
+                }));
+        clearInvocations(mMockPc);
+        assertTrue(mPermissionProvider.hasScheduleExactAlarm(1_10000));
+
+        // check adding again does nothing
+        mPermissionProvider.addScheduleExactAlarm(1_10000);
+        verify(mMockPc, never()).populatePermissionState(anyByte(), any());
+
+        // after a permission update, the added perm is still there
+        mPermissionProvider.onPermissionStateChanged();
+        assertTrue(mPermissionProvider.hasScheduleExactAlarm(1_10000));
+    }
+
+    @Test
+    public void testHasScheduleExactAlarm() throws Exception {
+        var initPackageListData = List.of(mMockPackageState_10000_one_sdk33_captrue,
+                mMockPackageState_10001_two_sdk33_capfalse);
+        mPermissionProvider = new AudioServerPermissionProvider(
+                generatePackageMap(initPackageListData), mMockPermPred, mMockUserIdSupplier);
+        mPermissionProvider.onServiceStart(mMockPc);
+        clearInvocations(mMockPc);
+
+        // Test modifying state to add USE_EXACT_ALARM
+        when(mMockPermPred.test(1_10001, android.Manifest.permission.USE_EXACT_ALARM))
+                .thenReturn(true);
+        mPermissionProvider.onPermissionStateChanged();
+        assertTrue(mPermissionProvider.hasScheduleExactAlarm(1_10001));
+
+        // Test modifying state to add MODIFY_AUDIO_SETTINGS_PRIVILEGED to a different uid
+        when(mMockPermPred.test(
+                     1_10000, android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED))
+                .thenReturn(true);
+        mPermissionProvider.onPermissionStateChanged();
+        assertTrue(mPermissionProvider.hasScheduleExactAlarm(1_10000));
     }
 
     private static UidPackageState.PackageState createPackageState(String packageName,

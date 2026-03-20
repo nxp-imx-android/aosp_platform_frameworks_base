@@ -112,6 +112,7 @@ import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
+import android.app.AlarmManager;
 import android.app.AppGlobals;
 import android.app.AppOpsManager;
 import android.app.BroadcastOptions;
@@ -1845,7 +1846,8 @@ public class AudioService extends IAudioService.Stub
                 mHardeningOverride,
                 mAppOps,
                 context.getPackageManager(),
-                mHardeningLogger);
+                mHardeningLogger,
+                mPermissionProvider);
     }
 
     private boolean isMultiFocus() {
@@ -17220,20 +17222,25 @@ public class AudioService extends IAudioService.Stub
     /** @see AudioManager#permissionUpdateBarrier() */
     public void permissionUpdateBarrier(boolean forRecord) {
         if (!forRecord) {
-            return;
-        }
-        mCacheWatcher.doCheck();
-        List<Future> snapshot;
-        synchronized (mScheduledPermissionTasks) {
-            snapshot = List.copyOf(mScheduledPermissionTasks);
-        }
-        for (var x : snapshot) {
-            try {
-                x.get();
-            } catch (CancellationException e) {
-                // Task completed
-            } catch (InterruptedException | ExecutionException e) {
-                Log.wtf(TAG, "Exception which should never occur", e);
+            int uid = Binder.getCallingUid();
+            if (uid >= Process.FIRST_APPLICATION_UID) {
+                var pack = mPermissionProvider.getPackageName(uid);
+                mHardeningEnforcer.updateScheduleExactAlarmCache(uid, pack);
+            }
+        } else {
+            mCacheWatcher.doCheck();
+            List<Future> snapshot;
+            synchronized (mScheduledPermissionTasks) {
+                snapshot = List.copyOf(mScheduledPermissionTasks);
+            }
+            for (var x : snapshot) {
+                try {
+                    x.get();
+                } catch (CancellationException e) {
+                    // Task completed
+                } catch (InterruptedException | ExecutionException e) {
+                    Log.wtf(TAG, "Exception which should never occur", e);
+                }
             }
         }
     }

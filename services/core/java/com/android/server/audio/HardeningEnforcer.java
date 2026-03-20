@@ -56,6 +56,7 @@ import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
+import android.app.AlarmManager;
 import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.PermissionChecker;
@@ -74,6 +75,8 @@ import android.util.SparseArray;
 
 import com.android.media.audio.metrics.AudioAtomsLog;
 import com.android.modules.expresslog.Counter;
+import com.android.server.DeviceIdleInternal;
+import com.android.server.LocalServices;
 import com.android.server.utils.EventLogger;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -94,6 +97,7 @@ public class HardeningEnforcer {
 
     final ActivityManager mActivityManager;
     final PackageManager mPackageManager;
+    final AudioServerPermissionProvider mPermissionProvider;
 
     final EventLogger mEventLogger;
 
@@ -153,7 +157,7 @@ public class HardeningEnforcer {
 
     public HardeningEnforcer(Context ctxt, boolean isAutomotive,
             AtomicInteger hardeningOverride, AppOpsManager appOps, PackageManager pm,
-            EventLogger logger) {
+            EventLogger logger, AudioServerPermissionProvider permissionProvider) {
         mContext = ctxt;
         mIsAutomotive = isAutomotive;
         mHardeningOverride = hardeningOverride;
@@ -161,6 +165,7 @@ public class HardeningEnforcer {
         mActivityManager = ctxt.getSystemService(ActivityManager.class);
         mPackageManager = pm;
         mEventLogger = logger;
+        mPermissionProvider = permissionProvider;
     }
 
     /**
@@ -238,6 +243,31 @@ public class HardeningEnforcer {
         };
     }
 
+    public void updateScheduleExactAlarmCache(int uid, String packageName) {
+        if (!mPermissionProvider.hasScheduleExactAlarm(uid)) {
+            if (packageName != null) {
+                long ident = Binder.clearCallingIdentity();
+                try {
+                    boolean canScheduleExactAlarms = mContext.getSystemService(AlarmManager.class)
+                            .hasScheduleExactAlarm(packageName, UserHandle.getUserId(uid));
+
+                    if (!canScheduleExactAlarms) {
+                        DeviceIdleInternal deviceIdle = LocalServices.getService(DeviceIdleInternal.class);
+                        if (deviceIdle != null && deviceIdle.isAppOnWhitelist(UserHandle.getAppId(uid))) {
+                            canScheduleExactAlarms = true;
+                        }
+                    }
+
+                    if (canScheduleExactAlarms) {
+                        mPermissionProvider.addScheduleExactAlarm(uid);
+                    }
+                } finally {
+                    Binder.restoreCallingIdentity(ident);
+                }
+            }
+        }
+    }
+
     /**
      * Checks whether the call in the current thread should be allowed or blocked
      * @param volumeMethod name of the method to check, for logging purposes
@@ -248,6 +278,10 @@ public class HardeningEnforcer {
         // Regardless of flag state, always permit callers with privileged audio permissions
         // Prevent them from showing up in metrics as well
         boolean isPrivileged = isPrivileged(uid);
+        if (packageName == null || packageName.isEmpty()) {
+            packageName = getPackNameForUid(uid);
+        }
+
         // for Auto, volume methods require MODIFY_AUDIO_SETTINGS_PRIVILEGED
         if (mIsAutomotive) {
             if (!autoPublicVolumeApiHardening()) {
@@ -298,6 +332,8 @@ public class HardeningEnforcer {
             var overrideState = mHardeningOverride.get();
             boolean isPreCinnamonBun = targetSdk < Build.VERSION_CODES.CINNAMON_BUN;
 
+            updateScheduleExactAlarmCache(uid, packageName);
+
             int[] enforcedState = switch (overrideState) {
                 case HardeningOverride.ENABLE, AudioManager.HARDENING_THROW ->
                     new int[]{DENIED_IF_FULL,
@@ -309,10 +345,8 @@ public class HardeningEnforcer {
                     if (isPrivileged) {
                         yield new int[]{ALLOWED,
                             AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_PRIVILEGED_APP};
-                    } else if (holdsPermission(USE_EXACT_ALARM, uid)
-                            || PermissionChecker.checkPermissionForPreflight(mContext,
-                                    SCHEDULE_EXACT_ALARM, PermissionChecker.PID_UNKNOWN,
-                                    uid, packageName) == PermissionChecker.PERMISSION_GRANTED) {
+                    } else if (holdsPermission(USE_EXACT_ALARM, uid) ||
+                            mPermissionProvider.hasScheduleExactAlarm(uid)) {
                         yield new int[]{DENIED_IF_PARTIAL,
                             AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_ALARM};
                     } else if (!hardeningPartialVolume()) {
@@ -341,7 +375,7 @@ public class HardeningEnforcer {
                     + volumeMethod
                     + (!blocked ? " would be " : " ")
                     + "ignored for "
-                    + getPackNameForUid(uid) + " (" + uid + "), "
+                    + packageName + " (" + uid + "), "
                     + "level: " + (isStrict ? "full" : "partial")
                     + " usage: " + usage + " exemption: " + exemption;
             mEventLogger.enqueueAndSlog(msg, EventLogger.Event.ALOGW, TAG);
@@ -394,6 +428,8 @@ public class HardeningEnforcer {
         boolean isPreCinnamonBun = targetSdk < Build.VERSION_CODES.CINNAMON_BUN;
         boolean isPrivileged = isPrivileged(callingUid);
 
+        updateScheduleExactAlarmCache(callingUid, packageName);
+
         int[] enforcedState = switch (overrideState) {
             case HardeningOverride.ENABLE, AudioManager.HARDENING_THROW ->
                 new int[]{DENIED_IF_FULL,
@@ -407,9 +443,7 @@ public class HardeningEnforcer {
                         AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_PRIVILEGED_APP};
                 } else if (aa.getUsage() == AudioAttributes.USAGE_ALARM &&
                         (holdsPermission(USE_EXACT_ALARM, callingUid) ||
-                             PermissionChecker.checkPermissionForPreflight(mContext,
-                                SCHEDULE_EXACT_ALARM, PermissionChecker.PID_UNKNOWN,
-                                callingUid, packageName) == PermissionChecker.PERMISSION_GRANTED)) {
+                            mPermissionProvider.hasScheduleExactAlarm(callingUid))) {
                     yield new int[]{DENIED_IF_PARTIAL,
                         AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_ALARM};
                 } else if (!hardeningPartial() && isPreVic) {
