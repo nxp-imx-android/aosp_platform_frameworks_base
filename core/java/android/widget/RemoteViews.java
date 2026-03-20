@@ -21,6 +21,7 @@ import static android.appwidget.flags.Flags.FLAG_REMOTE_VIEWS_PROTO;
 import static android.appwidget.flags.Flags.drawDataParcel;
 import static android.appwidget.flags.Flags.remoteAdapterConversion;
 import static android.content.res.Flags.FLAG_SELF_TARGETING_ANDROID_RESOURCE_FRRO;
+import static android.server.Flags.FLAG_ENABLE_THEME_SERVICE;
 import static android.util.TypedValue.COMPLEX_UNIT_PX;
 import static android.util.TypedValue.TYPE_INT_COLOR_ARGB8;
 import static android.util.proto.ProtoInputStream.NO_MORE_FIELDS;
@@ -47,6 +48,7 @@ import android.app.ActivityThread;
 import android.app.Application;
 import android.app.PendingIntent;
 import android.app.RemoteInput;
+import android.app.ThemeManager;
 import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetManager.ServiceCollectionCache;
 import android.appwidget.flags.Flags;
@@ -57,6 +59,7 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.om.FabricatedOverlay;
+import android.content.om.OverlayIdentifier;
 import android.content.om.OverlayInfo;
 import android.content.om.OverlayManager;
 import android.content.om.OverlayManagerTransaction;
@@ -68,9 +71,12 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.loader.ResourcesLoader;
 import android.content.res.loader.ResourcesProvider;
+import android.content.theming.ThemeInfo;
+import android.content.theming.ThemeStyle;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BlendMode;
+import android.graphics.Color;
 import android.graphics.Outline;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
@@ -9292,16 +9298,77 @@ public class RemoteViews implements Parcelable, Filter {
         @Nullable
         public static ColorResources createWithOverlay(Context context,
                 SparseIntArray colorMapping) {
-            try {
-                String owningPackage = context.getPackageName();
-                FabricatedOverlay overlay = new FabricatedOverlay.Builder(owningPackage,
-                        OVERLAY_NAME, OVERLAY_TARGET_PACKAGE_NAME).build();
+            String owningPackage = context.getPackageName();
+            FabricatedOverlay overlay = new FabricatedOverlay.Builder(owningPackage,
+                    OVERLAY_NAME, OVERLAY_TARGET_PACKAGE_NAME).build();
+            for (int i = 0; i < colorMapping.size(); i++) {
+                overlay.setResourceValue(
+                        context.getResources().getResourceName(colorMapping.keyAt(i)),
+                        TYPE_INT_COLOR_ARGB8, colorMapping.valueAt(i), null);
+            }
+            ResourcesLoader colorsLoader = createLoaderWithOverlay(context, overlay);
+            if (colorsLoader == null) return null;
+            return new ColorResources(colorsLoader, colorMapping.clone());
+        }
 
-                for (int i = 0; i < colorMapping.size(); i++) {
-                    overlay.setResourceValue(
-                            context.getResources().getResourceName(colorMapping.keyAt(i)),
-                            TYPE_INT_COLOR_ARGB8, colorMapping.valueAt(i), null);
-                }
+        /**
+         *  Creates a fabricate overlay (FRRO) using a list of seed colors and style, then adds the
+         *  theme colors to the given context using a resource loader.
+         *
+         *  <p>The created class can overlay any color resources, private or public, at runtime.</p>
+         *
+         * @param context Context of the view hosting the widget.
+         * @param seedColors List of seed colors for generating the overlay.
+         * @param style The ThemeStyle for generating the overlay.
+         *
+         * @hide
+         */
+        @FlaggedApi(FLAG_ENABLE_THEME_SERVICE)
+        @Nullable
+        public static ColorResources createWithOverlay(@NonNull Context context,
+                @NonNull int[] seedColors, @ThemeStyle.Type int style) {
+            if (seedColors.length < 1) {
+                return null;
+            }
+            ThemeManager themeManager = context.getSystemService(ThemeManager.class);
+            if (themeManager == null) {
+                return null;
+            }
+            Color[] colors = Arrays.stream(seedColors).mapToObj(Color::valueOf).toArray(
+                    Color[]::new);
+            ThemeInfo.Builder themeInfo = new ThemeInfo.Builder().setSeedColors(colors);
+            if (style != -1) {
+                themeInfo.setStyle(style);
+            }
+            FabricatedOverlay overlay = themeManager.generateDynamicColorOverlay(
+                    themeInfo.build());
+
+            try {
+                ResourcesLoader colorsLoader = createLoaderWithOverlay(context, overlay);
+
+                Map<String, Color> resNameToColor = ThemeManager.extractColorPairs(overlay);
+                SparseIntArray resIdToColorInt = new SparseIntArray();
+                resNameToColor.forEach((resName, color) -> {
+                    resIdToColorInt.put(
+                            context.getResources().getIdentifier(resName, null, null),
+                            color.toArgb()
+                    );
+                });
+                return new ColorResources(colorsLoader, resIdToColorInt);
+            } catch (Exception e) {
+                Log.e(LOG_TAG, "Failed to add theme color overlay into loader", e);
+                return null;
+            }
+        }
+
+        @Nullable
+        private static ResourcesLoader createLoaderWithOverlay(@NonNull Context context,
+                @NonNull FabricatedOverlay overlay) {
+            try {
+                overlay.setOwningPackage(context.getPackageName());
+                overlay.setTargetOverlayable(OVERLAY_TARGET_PACKAGE_NAME);
+
+                OverlayIdentifier overlayId = overlay.getIdentifier();
                 OverlayManager overlayManager = context.getSystemService(OverlayManager.class);
                 OverlayManagerTransaction.Builder transaction =
                         new OverlayManagerTransaction.Builder()
@@ -9312,8 +9379,7 @@ public class RemoteViews implements Parcelable, Filter {
                 OverlayInfo overlayInfo =
                         overlayManager.getOverlayInfosForTarget(OVERLAY_TARGET_PACKAGE_NAME)
                                 .stream()
-                                .filter(info -> TextUtils.equals(info.overlayName, OVERLAY_NAME)
-                                        && TextUtils.equals(info.packageName, owningPackage))
+                                .filter(info -> info.getOverlayIdentifier().equals(overlayId))
                                 .findFirst()
                                 .orElse(null);
                 if (overlayInfo == null) {
@@ -9322,11 +9388,11 @@ public class RemoteViews implements Parcelable, Filter {
                 }
                 ResourcesLoader colorsLoader = new ResourcesLoader();
                 colorsLoader.addProvider(ResourcesProvider.loadOverlay(overlayInfo));
-                return new ColorResources(colorsLoader, colorMapping.clone());
+                return colorsLoader;
             } catch (Exception e) {
                 Log.e(LOG_TAG, "Failed to add theme color overlay into loader", e);
+                return null;
             }
-            return null;
         }
     }
 
