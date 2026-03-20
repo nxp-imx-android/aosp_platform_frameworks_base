@@ -1333,6 +1333,8 @@ class DividerPresenter implements View.OnTouchListener {
             params.gravity = Gravity.CENTER;
             button.setLayoutParams(params);
             button.setBackgroundColor(Color.TRANSPARENT);
+            button.setContentDescription(context.getString(
+                    R.string.activity_embedding_divider_drag_handle_description));
 
             final Drawable handle = context.getResources().getDrawable(
                     R.drawable.activity_embedding_divider_handle, context.getTheme());
