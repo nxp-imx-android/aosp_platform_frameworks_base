@@ -513,16 +513,6 @@ flag {
 }
 
 flag {
-  name: "fix_disabled_by_admin_short_message_not_shown"
-  namespace: "enterprise"
-  description: "[HSUM]Test Issues Review Request for 1TCs fail at Device Owner Tests -> Policy transparency test -> Disallow config tethering test [run-on-secondary-user]"
-  bug: "448569510"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "secure_adb_role_bypassing"
   namespace: "enterprise"
   description: "Making sure that the existing `adb shell cmd role set-bypassing-role-qualification` command is protected against abuse on MUM devices."

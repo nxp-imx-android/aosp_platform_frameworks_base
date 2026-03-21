@@ -923,9 +923,36 @@ public class ComputerControlSessionImplTest {
 
     @Test
     public void sessionCloses_afterGlobalTimeout() throws Exception {
-        createComputerControlSession(mDefaultParams, /* globalSessionTimeoutDurationMs = */ 100L);
+        final long timeoutMs = 100L;
+        createComputerControlSession(
+                mDefaultParams, /* globalSessionTimeoutDurationMs= */ timeoutMs);
 
-        verify(mLifecycleCallback, timeout(2 * 100L)).onClosed(eq(CLOSE_REASON_SESSION_TIMED_OUT));
+        verify(mLifecycleCallback, timeout(2 * timeoutMs))
+                .onClosed(eq(CLOSE_REASON_SESSION_TIMED_OUT));
+    }
+
+    @Test
+    public void sessionCloses_afterGlobalTimeout_timerPausedWhenBlocked() throws Exception {
+        final long timeoutMs = 50L;
+        createComputerControlSession(
+                mDefaultParams, /* globalSessionTimeoutDurationMs= */ timeoutMs);
+
+        // Enter blocked state, which should pause the timer.
+        mSession.notifyBlocked();
+        waitForIdle();
+
+        // Verify the session does NOT time out while blocked, even after waiting longer than the
+        // global timeout.
+        verify(mLifecycleCallback, after(timeoutMs * 2).never())
+                .onClosed(eq(CLOSE_REASON_SESSION_TIMED_OUT));
+
+        // Exit blocked state, which should resume the timer.
+        mSession.requestUnblock();
+        waitForIdle();
+
+        // Verify that the session does time out after being resumed.
+        verify(mLifecycleCallback, timeout(timeoutMs * 2))
+                .onClosed(eq(CLOSE_REASON_SESSION_TIMED_OUT));
     }
 
     @Test
@@ -1969,6 +1996,30 @@ public class ComputerControlSessionImplTest {
         waitForIdle();
 
         verify(mTransaction).setDropInputMode(any(), eq(DropInputMode.ALL));
+    }
+
+    @Test
+    public void isSessionActive_activeState_returnsTrue() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        assertThat(mSession.isSessionActive()).isTrue();
+    }
+
+    @Test
+    public void isSessionActive_blockedState_returnsFalse() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        mSession.notifyBlocked();
+        waitForIdle();
+
+        assertThat(mSession.isSessionActive()).isFalse();
+    }
+
+    @Test
+    public void isSessionActive_closedState_returnsFalse() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        mSession.close();
+        waitForIdle();
+
+        assertThat(mSession.isSessionActive()).isFalse();
     }
 
     private void setupMockMirror() {

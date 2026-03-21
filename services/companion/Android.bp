@@ -39,6 +39,7 @@ java_library_static {
         extra_check_modules: ["//external/nullaway:nullaway_plugin"],
         javacflags: [
             "-XepOpt:NullAway:AnnotatedPackages=com.android.server.companion.virtual",
+            "-Xep:GuardedBy:ERROR",
             "-Xep:NullAway:ERROR",
             // Exclude @AutoValue generated code.
             "-XepExcludedPaths:.*/virtual/.*AutoValue_.*",

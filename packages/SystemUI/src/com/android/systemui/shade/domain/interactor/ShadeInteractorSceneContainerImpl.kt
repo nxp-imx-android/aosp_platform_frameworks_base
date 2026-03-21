@@ -36,6 +36,7 @@ import com.android.systemui.scene.shared.model.TransitionKeys.ToSplitShade
 import com.android.systemui.shade.ShadeOverlayBoundsListener
 import com.android.systemui.shade.data.repository.ShadeRepository
 import com.android.systemui.shade.shared.model.ShadeMode
+import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -140,12 +141,14 @@ constructor(
 
     override fun expandNotificationsShade(loggingReason: String, transitionKey: TransitionKey?) {
         if (shadeModeInteractor.isDualShade) {
-            // Collapse the quick settings shade if it's expanded (no-op if it isn't).
-            sceneInteractor.hideOverlay(
-                overlay = Overlays.QuickSettingsShade,
-                loggingReason = loggingReason,
-                transitionKey = transitionKey,
-            )
+            // Hide all overlays that can not be displayed with the notifications overlay.
+            notificationsMutuallyExclusiveOverlays.forEach {
+                sceneInteractor.hideOverlay(
+                    overlay = it,
+                    loggingReason = loggingReason,
+                    transitionKey = transitionKey,
+                )
+            }
             // Expand the notifications shade.
             sceneInteractor.showOverlay(
                 overlay = Overlays.NotificationsShade,
@@ -176,12 +179,14 @@ constructor(
 
     override fun expandQuickSettingsShade(loggingReason: String, transitionKey: TransitionKey?) {
         if (shadeModeInteractor.isDualShade) {
-            // Collapse the notifications shade if it's expanded (no-op if it isn't).
-            sceneInteractor.hideOverlay(
-                overlay = Overlays.NotificationsShade,
-                loggingReason = loggingReason,
-                transitionKey = transitionKey,
-            )
+            // Hide all overlays that cannot be displayed with the quick settings overlays.
+            qsMutuallyExclusiveOverlays.forEach {
+                sceneInteractor.hideOverlay(
+                    overlay = it,
+                    loggingReason = loggingReason,
+                    transitionKey = transitionKey,
+                )
+            }
             // Expand the quick settings shade.
             sceneInteractor.showOverlay(
                 overlay = Overlays.QuickSettingsShade,
@@ -481,4 +486,16 @@ constructor(
                 ShadeMode.Dual -> Overlays.QuickSettingsShade
             }
         }
+
+    private val notificationsMutuallyExclusiveOverlays =
+        setOfNotNull(
+            Overlays.QuickSettingsShade,
+            Overlays.QuickActions.takeIf { StatusBarPopupChips.isEnabled },
+        )
+
+    private val qsMutuallyExclusiveOverlays =
+        setOfNotNull(
+            Overlays.NotificationsShade,
+            Overlays.QuickActions.takeIf { StatusBarPopupChips.isEnabled },
+        )
 }

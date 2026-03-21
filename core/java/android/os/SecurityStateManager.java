@@ -96,6 +96,11 @@ public class SecurityStateManager {
      * mitigated the vulnerability. The accuracy of this information is critical, as it is used to
      * determine the device's security posture.
      *
+     * <p>The CVE data is aggregated from {@code supplemental_security_patches.xml} files located
+     * across multiple device partitions (e.g., {@code /system}, {@code /vendor}, {@code
+     * /product}), ensuring that patches from both the framework and hardware-specific components
+     * are accounted for.
+     *
      * @return A {@code Bundle} that contains the global security state information as
      * string-to-string key-value pairs.
      */

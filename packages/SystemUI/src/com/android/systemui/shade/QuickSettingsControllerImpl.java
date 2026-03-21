@@ -21,6 +21,7 @@ import static android.view.WindowInsets.Type.ime;
 
 import static com.android.systemui.Flags.shadeQsvisibleLogic;
 import static com.android.systemui.classifier.Classifier.QS_COLLAPSE;
+import static com.android.systemui.navigationbar.gestural.Utilities.isTrackpadThreeFingerSwipe;
 import static com.android.systemui.shade.NotificationPanelViewController.COUNTER_PANEL_OPEN_QS;
 import static com.android.systemui.shade.NotificationPanelViewController.FLING_COLLAPSE;
 import static com.android.systemui.shade.NotificationPanelViewController.FLING_EXPAND;
@@ -52,6 +53,7 @@ import android.view.accessibility.AccessibilityManager;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.android.app.animation.Interpolators;
 import com.android.app.displaylib.PerDisplayRepository;
@@ -692,7 +694,11 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
      * Returns Whether we should intercept a gesture to open Quick Settings.
      */
     @Override
-    public boolean shouldQuickSettingsIntercept(float x, float y, float yDiff) {
+    public boolean shouldQuickSettingsIntercept(float x, float y, float yDiff,
+            @Nullable MotionEvent event) {
+        if (event != null && isTrackpadThreeFingerSwipe(event)) {
+            return false;
+        }
         boolean keyguardShowing = mBarState == KEYGUARD;
         if (!isExpansionEnabled() || mCollapsedOnDown || (keyguardShowing
                 && mKeyguardBypassController.getBypassEnabled() && !Flags.expandQsBypassEnabled())
@@ -1642,6 +1648,9 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
     /** handles touches in Qs panel area */
     boolean handleTouch(MotionEvent event, boolean isFullyCollapsed,
             boolean isShadeOrQsHeightAnimationRunning) {
+        if (isTrackpadThreeFingerSwipe(event)) {
+            return false;
+        }
         if (isSplitShadeAndTouchXOutsideQs(event.getX())) {
             mShadeLog.logMotionEvent(event, "handleQsTouch: touch outside QS");
             return false;
@@ -1728,7 +1737,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
                     return;
                 }
             }
-            if (shouldQuickSettingsIntercept(event.getX(), event.getY(), -1)) {
+            if (shouldQuickSettingsIntercept(event.getX(), event.getY(), -1, event)) {
                 mShadeLog.logMotionEvent(event,
                         "handleQsDown: down action, QS tracking enabled");
                 setTracking(true);
@@ -1879,7 +1888,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
                 if ((h > touchSlop || (h < -touchSlop && getExpanded()))
                         && Math.abs(h) > Math.abs(x - mInitialTouchX)
                         && shouldQuickSettingsIntercept(
-                        mInitialTouchX, mInitialTouchY, h)) {
+                        mInitialTouchX, mInitialTouchY, h, event)) {
                     mShadeLog.onQsInterceptMoveQsTrackingEnabled(h);
                     setTracking(true);
                     traceQsJank(true, false);

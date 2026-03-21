@@ -851,6 +851,40 @@ public class PowerGroupTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(android.view.accessibility.Flags.FLAG_FIX_A11Y_LOCK_SCREEN_JANK)
+    public void testUpdateWhileAsleepAccessibility_UpdatesDisplayPowerRequest() {
+        final boolean batterySaverEnabled = false;
+        float brightnessFactor = 0.3f;
+        PowerSaveState powerSaveState = new PowerSaveState.Builder()
+                .setBatterySaverEnabled(batterySaverEnabled)
+                .setBrightnessFactor(brightnessFactor)
+                .build();
+        mPowerGroup.sleepLocked(TIMESTAMP1, UID, PowerManager.GO_TO_SLEEP_REASON_ACCESSIBILITY);
+        assertThat(mPowerGroup.getWakefulnessLocked()).isEqualTo(WAKEFULNESS_ASLEEP);
+        mPowerGroup.updateLocked(/* screenBrightnessOverride= */ BRIGHTNESS,
+                /* overrideTag= */ null,
+                /* useProximitySensor= */ true,
+                /* boostScreenBrightness= */ true,
+                /* dozeScreenStateOverride= */ Display.STATE_ON,
+                /* dozeScreenStateReason= */ Display.STATE_REASON_DEFAULT_POLICY,
+                /* dozeScreenBrightness= */ BRIGHTNESS_DOZE,
+                /* useNormalBrightnessForDoze= */ false,
+                /* overrideDrawWakeLock= */ false,
+                powerSaveState,
+                /* quiescent= */ false,
+                /* dozeAfterScreenOff= */ false,
+                /* bootCompleted= */ true,
+                /* screenBrightnessBoostInProgress= */ false,
+                /* waitForNegativeProximity= */ false,
+                /* brightWhenDozing= */ false,
+                /* allAdjacentGroupsAreNonInteractive= */ false);
+        DisplayManagerInternal.DisplayPowerRequest displayPowerRequest =
+                mPowerGroup.mDisplayPowerRequest;
+        assertThat(displayPowerRequest.policy).isEqualTo(POLICY_OFF);
+        assertThat(displayPowerRequest.policyReason).isEqualTo(Display.STATE_REASON_ACCESSIBILITY);
+    }
+
+    @Test
     public void testTimeoutsOverride_defaultGroup_noOverride() {
         assertThat(mPowerGroup.getScreenDimDurationOverrideLocked(DEFAULT_TIMEOUT))
                 .isEqualTo(DEFAULT_TIMEOUT);

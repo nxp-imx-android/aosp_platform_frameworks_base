@@ -23,6 +23,7 @@ import static com.android.server.wm.ActivityTaskManagerService.getInputDispatchi
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.AnrTypes;
 import android.os.Build;
 import android.os.IBinder;
@@ -38,6 +39,8 @@ import com.android.internal.os.TimeoutRecord;
 import com.android.server.FgThread;
 import com.android.server.am.StackTracesDumpHelper;
 import com.android.server.criticalevents.CriticalEventLog;
+import com.android.server.utils.LongMethodTracer;
+import com.android.window.flags.Flags;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -58,6 +61,8 @@ class AnrController {
     private static final long PRE_DUMP_MONITOR_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(1);
     /** The last time pre-dump was executed. */
     private volatile long mLastPreDumpTimeMs;
+    /**  The duration which a process should have its long method tracing turned on . */
+    private static final int LONG_METHOD_TRACING_DURATION_MS = (int) TimeUnit.SECONDS.toMillis(3);
 
     private final SparseArray<ActivityRecord> mUnresponsiveAppByDisplay = new SparseArray<>();
 
@@ -147,6 +152,7 @@ class AnrController {
         Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "notifyPreAppUnresponsive()");
 
         final ActivityRecord activity;
+        final InputTarget focusTargetToBlame;
         synchronized (mService.mGlobalLock) {
             activity = ActivityRecord.forTokenLocked(applicationHandle.token);
             if (activity == null || activity.mAppStopped) {
@@ -154,6 +160,12 @@ class AnrController {
                         "Dropping notifyPreAppUnresponsive for app=" + applicationHandle.name);
                 return;
             }
+            focusTargetToBlame = Flags.enableInputDispatcherLongMethodTracing()
+                    ? calculateInputFocusBlameTarget(activity)
+                    : null;
+        }
+        if (Flags.enableInputDispatcherLongMethodTracing()) {
+            triggerTracingForActivity(activity, applicationHandle.name, focusTargetToBlame);
         }
         if (activity.hasProcess()) {
             mService.mAmInternal.inputDispatchingTimedOutWarning(
@@ -164,6 +176,65 @@ class AnrController {
                     timeoutDurationMs);
         }
         Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
+    }
+
+    /**
+     * Maybe trigger tracing for activity.
+     * @param activity The activity to trigger tracing for.
+     * @param name The name of the activity.
+     * @param focusTargetToBlame The input target to blame, or null if no target should be blamed.
+     */
+    void triggerTracingForActivity(ActivityRecord activity, String name,
+            @Nullable InputTarget focusTargetToBlame) {
+        int pid = Process.INVALID_PID;
+        if (focusTargetToBlame != null) {
+            pid = focusTargetToBlame.getPid();
+        } else if (activity.hasProcess()) {
+            pid = activity.app.getPid();
+        }
+        if (pid != Process.INVALID_PID) {
+            Slog.i(TAG_WM, "Triggering tracing for pid " + pid);
+            // Call the signalling code.
+            LongMethodTracer.trigger(pid, LONG_METHOD_TRACING_DURATION_MS);
+        } else {
+            // Can't blame any pids , log and return.
+            Slog.e(TAG_WM, "Can't trigger tracing for appToken:" + name
+                    + ": Unknown application");
+        }
+    }
+
+    /**
+     * Calculates the input target to blame for an ANR. If the current focus holder has held focus
+     * for longer than the dispatching timeout, it is likely blocking the focus transition to the
+     * unresponsive app. In that case, we blame the focus holder rather than the unresponsive app
+     * itself.
+     *
+     * @param activity The activity being checked for unresponsiveness.
+     * @return The input target to blame, or null if no target should be blamed.
+     */
+    private @Nullable InputTarget calculateInputFocusBlameTarget(
+            ActivityRecord activity) {
+        final DisplayContent display = mService.mRoot.getDisplayContent(activity.getDisplayId());
+        if (display == null) return null;
+
+        final IBinder focusToken = display.getInputMonitor().mInputFocus;
+        final InputTarget focusTarget = mService.getInputTargetFromToken(focusToken);
+        if (focusTarget == null) return null;
+
+        final WindowState targetWindowState = focusTarget.getWindowState();
+        if (targetWindowState == null) return null;
+
+        // Check if we have a recent focus request, newer than the dispatch timeout,
+        // then ignore the focus request.
+        final long focusRequestAge = SystemClock.uptimeMillis()
+                - display.getInputMonitor().mInputFocusRequestTimeMillis;
+        final long timeout = getInputDispatchingTimeoutMillisLocked(
+                targetWindowState.getActivityRecord());
+
+        if (focusRequestAge >= timeout) {
+            return focusTarget;
+        }
+        return null;
     }
 
     /**

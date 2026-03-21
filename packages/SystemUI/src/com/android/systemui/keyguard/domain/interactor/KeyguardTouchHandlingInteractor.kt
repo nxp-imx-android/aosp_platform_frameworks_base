@@ -203,19 +203,13 @@ constructor(
 
     /**
      * Notifies that the user has long-pressed on the lock screen.
-     *
-     * @param isA11yAction: Whether the action was performed as an a11y action
      */
-    fun onLongPress(isA11yAction: Boolean = false) {
+    fun onLongPress() {
         if (!isLongPressHandlingEnabled.value) {
             return
         }
 
-        if (isA11yAction) {
-            showSettings()
-        } else {
-            showMenu()
-        }
+        showMenu()
     }
 
     /** Notifies that the user has touched outside of the pop-up. */

@@ -70,7 +70,10 @@ class StatusBarVisibilityInteractorTest(flags: FlagsParameterization) : SysuiTes
             val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
 
             kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
-            kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(false, taskInfo = null)
+            kosmos.keyguardOcclusionRepository.setOccludedFromRemoteAnimation(
+                false,
+                taskInfo = null,
+            )
 
             assertThat(latest).isFalse()
         }
@@ -82,7 +85,7 @@ class StatusBarVisibilityInteractorTest(flags: FlagsParameterization) : SysuiTes
             val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
 
             kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
-            kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(true, taskInfo = null)
+            kosmos.keyguardOcclusionRepository.setOccludedFromRemoteAnimation(true, taskInfo = null)
 
             assertThat(latest).isTrue()
         }
@@ -263,69 +266,21 @@ class StatusBarVisibilityInteractorTest(flags: FlagsParameterization) : SysuiTes
         }
 
     @Test
-    fun isShadeVisibleOnThisDisplay_shadeVisibleOnThisDisplay_true() =
+    fun isShadeWindowOnThisDisplay_thisDisplayIsPending_true() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.isShadeVisibleOnThisDisplay)
+            val latest by collectLastValue(underTest.isShadeWindowOnThisDisplay)
 
-            if (SceneContainerFlag.isEnabled) {
-                kosmos.sceneContainerRepository.showOverlay(Overlays.QuickSettingsShade)
-                kosmos.shadeTestUtil.setQsExpansion(1f)
-            } else {
-                kosmos.shadeTestUtil.setShadeExpansion(1f)
-            }
             kosmos.fakeShadeDisplaysRepository.setPendingDisplayId(DEFAULT_DISPLAY)
-            runCurrent()
 
             assertThat(latest).isTrue()
         }
 
     @Test
-    fun isShadeVisibleOnThisDisplay_shadeNotExpanded_false() =
+    fun isShadeWindowOnThisDisplay_otherDisplayIsPending_false() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.isShadeVisibleOnThisDisplay)
+            val latest by collectLastValue(underTest.isShadeWindowOnThisDisplay)
 
-            if (SceneContainerFlag.isEnabled) {
-                kosmos.sceneContainerRepository.hideOverlay(Overlays.QuickSettingsShade)
-                kosmos.shadeTestUtil.setQsExpansion(0f)
-            } else {
-                kosmos.shadeTestUtil.setShadeExpansion(0f)
-            }
-            kosmos.fakeShadeDisplaysRepository.setPendingDisplayId(DEFAULT_DISPLAY)
-            runCurrent()
-
-            assertThat(latest).isFalse()
-        }
-
-    @Test
-    fun isShadeVisibleOnThisDisplay_shadeVisibleOnAnotherDisplay_false() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isShadeVisibleOnThisDisplay)
-
-            if (SceneContainerFlag.isEnabled) {
-                kosmos.sceneContainerRepository.showOverlay(Overlays.QuickSettingsShade)
-                kosmos.shadeTestUtil.setQsExpansion(1f)
-            } else {
-                kosmos.shadeTestUtil.setShadeExpansion(1f)
-            }
             kosmos.fakeShadeDisplaysRepository.setPendingDisplayId(EXTERNAL_DISPLAY)
-            runCurrent()
-
-            assertThat(latest).isFalse()
-        }
-
-    @Test
-    fun isShadeVisibleOnThisDisplay_nothingVisible_false() =
-        kosmos.runTest {
-            val latest by collectLastValue(underTest.isShadeVisibleOnThisDisplay)
-
-            if (SceneContainerFlag.isEnabled) {
-                kosmos.sceneContainerRepository.hideOverlay(Overlays.QuickSettingsShade)
-                kosmos.shadeTestUtil.setQsExpansion(0f)
-            } else {
-                kosmos.shadeTestUtil.setShadeExpansion(0f)
-            }
-            kosmos.fakeShadeDisplaysRepository.setPendingDisplayId(EXTERNAL_DISPLAY)
-            runCurrent()
 
             assertThat(latest).isFalse()
         }
@@ -337,7 +292,10 @@ class StatusBarVisibilityInteractorTest(flags: FlagsParameterization) : SysuiTes
 
             // home status bar not allowed
             kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
-            kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(false, taskInfo = null)
+            kosmos.keyguardOcclusionRepository.setOccludedFromRemoteAnimation(
+                false,
+                taskInfo = null,
+            )
 
             assertThat(latest).isFalse()
         }
@@ -403,7 +361,10 @@ class StatusBarVisibilityInteractorTest(flags: FlagsParameterization) : SysuiTes
 
             // GIVEN home status bar is NOT allowed by Scene(e.g. on lockscreen)
             kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
-            kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(false, taskInfo = null)
+            kosmos.keyguardOcclusionRepository.setOccludedFromRemoteAnimation(
+                false,
+                taskInfo = null,
+            )
 
             // WHEN desktop status bar is in use
             overrideResource(R.bool.config_useDesktopStatusBar, true)

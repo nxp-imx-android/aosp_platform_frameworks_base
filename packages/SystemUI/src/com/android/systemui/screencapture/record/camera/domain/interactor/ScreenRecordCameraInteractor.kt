@@ -35,6 +35,7 @@ import com.android.systemui.screencapture.record.camera.data.model.isValid
 import com.android.systemui.screencapture.record.camera.data.repository.ScreenRecordCameraRepository
 import com.android.systemui.screencapture.record.camera.shared.model.CameraState
 import com.android.systemui.screencapture.record.shared.ScreenRecordingLogger
+import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -59,6 +60,7 @@ constructor(
     @Main resources: Resources,
     @ScreenCapture private val coroutineScope: CoroutineScope,
     private val repository: ScreenRecordCameraRepository,
+    private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
     private val logger: ScreenRecordingLogger,
 ) : ScreenCaptureStartable {
 
@@ -94,9 +96,12 @@ constructor(
                 null,
             )
             .filterNotNull()
-    val isOnTapSupported: StateFlow<Boolean> =
-        isCameraSupported
-            .map { it && repository.isOnTapSupported() }
+    val canTap: StateFlow<Boolean> =
+        combine(isCameraSupported, screenRecordingServiceInteractor.status) {
+                isCameraSupported,
+                recordingStatus ->
+                !recordingStatus.isRecording && isCameraSupported && repository.isOnTapSupported()
+            }
             .stateInTraced(
                 "ScreenRecordCameraInteractor#isOnTapSupported",
                 coroutineScope,
@@ -220,8 +225,10 @@ constructor(
     }
 
     suspend fun onTap() {
-        repository.onTap()
-        logger.cameraTapped()
+        if (canTap.value) {
+            repository.onTap()
+        }
+        logger.cameraTapped(canTap.value)
     }
 }
 

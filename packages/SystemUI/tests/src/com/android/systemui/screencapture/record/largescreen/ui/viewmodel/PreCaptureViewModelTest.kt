@@ -195,21 +195,38 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.SCREENSHOT)
             assertThat(viewModel.snackbarHostState.currentSnackbarData).isNull()
 
+            // Select APP_WINDOW recording (treated as single app message)
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
             viewModel.updateCaptureType(ScreenCaptureType.RECORDING)
             runCurrent()
 
-            assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.RECORDING)
-            assertThat(viewModel.snackbarHostState.currentSnackbarData).isNotNull()
+            assertThat(viewModel.snackbarHostState.currentSnackbarData?.visuals?.message)
+                .isEqualTo(
+                    context.getString(R.string.screenrecord_permission_dialog_warning_single_app)
+                )
+        }
+
+    @Test
+    fun disclaimer_updatesWhenRecordingTargetChanges() =
+        kosmos.runTest {
+            setupViewModel()
+            viewModel.updateCaptureType(ScreenCaptureType.RECORDING)
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN)
+            runCurrent()
+
             assertThat(viewModel.snackbarHostState.currentSnackbarData?.visuals?.message)
                 .isEqualTo(
                     context.getString(R.string.screenrecord_permission_dialog_warning_entire_screen)
                 )
 
-            viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT)
+            // Switch to APP_WINDOW while recording mode is still active
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
             runCurrent()
 
-            assertThat(viewModel.captureType).isEqualTo(ScreenCaptureType.SCREENSHOT)
-            assertThat(viewModel.snackbarHostState.currentSnackbarData).isNull()
+            assertThat(viewModel.snackbarHostState.currentSnackbarData?.visuals?.message)
+                .isEqualTo(
+                    context.getString(R.string.screenrecord_permission_dialog_warning_single_app)
+                )
         }
 
     @Test

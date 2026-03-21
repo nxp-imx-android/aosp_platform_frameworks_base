@@ -53,7 +53,6 @@ public class InteractionProviderServiceInternal extends InteractionProviderInter
             new SparseArray<>();
 
     // Handler for the service runnable.
-    @GuardedBy("mServiceLock")
     private final Handler mHandler = new Handler(Objects.requireNonNull(Looper.myLooper()));
 
     // Service will periodically check sources only if there is at least one subscriber.
@@ -140,12 +139,16 @@ public class InteractionProviderServiceInternal extends InteractionProviderInter
 
     private void pauseService() {
         synchronized (mServiceLock) {
-            if (!mIsServiceActive) {
-                return;
-            }
-            mHandler.removeCallbacks(mServiceRunnable);
-            mIsServiceActive = false;
+            pauseServiceLocked();
         }
+    }
+
+    private void pauseServiceLocked() {
+        if (!mIsServiceActive) {
+            return;
+        }
+        mHandler.removeCallbacks(mServiceRunnable);
+        mIsServiceActive = false;
     }
 
     private static final class InteractionSession {
@@ -189,8 +192,7 @@ public class InteractionProviderServiceInternal extends InteractionProviderInter
     }
 
     private final class AttentionServicePeriodicRunnable implements Runnable {
-        private static final long LOW_ACTIVITY_PERIOD_DELAY_MILLIS = 1000;
-        private static final long HIGH_ACTIVITY_PERIOD_DELAY_MILLIS = 100;
+        private static final long POLL_DELAY_MILLIS = 100;
         private static final long INACTIVITY_DELAY_MILLIS = 3000;
 
         // latest interaction time by interaction-type.
@@ -200,13 +202,17 @@ public class InteractionProviderServiceInternal extends InteractionProviderInter
         public void run() {
             boolean isDeviceIdle = fetchInteractionData();
             boolean hasActiveSessions = notifyListeners();
+            boolean pauseService = false;
             synchronized (mServiceLock) {
                 if (mIsServiceActive) {
                     // Schedule next run
-                    final boolean isHighActivityPeriod = (!isDeviceIdle) || hasActiveSessions;
-                    mHandler.postDelayed(this,
-                            isHighActivityPeriod ? HIGH_ACTIVITY_PERIOD_DELAY_MILLIS
-                                    : LOW_ACTIVITY_PERIOD_DELAY_MILLIS);
+                    pauseService = isDeviceIdle && (!hasActiveSessions);
+                    if (pauseService) {
+                        requestWakeBeforePause();
+                        pauseServiceLocked();
+                    } else {
+                        mHandler.postDelayed(this, POLL_DELAY_MILLIS);
+                    }
                 }
             }
         }
@@ -332,6 +338,15 @@ public class InteractionProviderServiceInternal extends InteractionProviderInter
                 listenerRecord.mListener.onInteractionStateChanged(stateToNotify);
             } catch (RemoteException e) {
                 throw new RuntimeException(e);
+            }
+        }
+
+        private void requestWakeBeforePause() {
+            synchronized (mInteractionProviders) {
+                for (InteractionProvider provider : mInteractionProviders) {
+                    provider.requestWakeupCallback(() -> mHandler.post(
+                            InteractionProviderServiceInternal.this::resumeService));
+                }
             }
         }
     }

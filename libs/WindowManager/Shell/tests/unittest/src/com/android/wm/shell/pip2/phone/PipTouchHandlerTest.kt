@@ -265,7 +265,7 @@ class PipTouchHandlerTest : ShellTestCase() {
 
         pipTouchHandler.handleTouchEvent(mockMotionEvent)
 
-        verify(mockMenuPhoneController, never()).showMenu(any(), any(), any(), any(), any())
+        verify(mockMenuPhoneController, never()).showMenu(any(), any(), any(), any())
     }
 
     @Test
@@ -276,7 +276,7 @@ class PipTouchHandlerTest : ShellTestCase() {
 
         pipTouchHandler.handleTouchEvent(mockMotionEvent)
 
-        verify(mockMenuPhoneController).showMenu(any(), any(), any(), any(), any())
+        verify(mockMenuPhoneController).showMenu(any(), any(), any(), any())
     }
 
     @Test
@@ -408,15 +408,11 @@ class PipTouchHandlerTest : ShellTestCase() {
         whenever(mockPipBoundsState.bounds).thenReturn(PIP_BOUNDS)
 
         pipTouchGesture.onUp(pipTouchState)
-        verify(mockPipMotionHelper, never()).stashToEdge(
-            any(), any(), anyOrNull()
-        )
+        verify(mockPipMotionHelper, never()).stashToEdge(any(), any(), anyOrNull())
 
         whenever(mockPipDesktopState.isFreeFloatingPipEnabled()).thenReturn(false)
         pipTouchGesture.onUp(pipTouchState)
-        verify(mockPipMotionHelper).stashToEdge(
-            any(), any(), anyOrNull()
-        )
+        verify(mockPipMotionHelper).stashToEdge(any(), any(), anyOrNull())
     }
 
     @Test

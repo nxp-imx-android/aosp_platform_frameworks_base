@@ -311,15 +311,28 @@ public class PersonalContextManagerServiceTest {
     }
 
     @Test
-    public void testIsPersonalContextModeEnabled_modeUnset_returnsTrue() {
+    public void testIsPersonalContextModeEnabled_modeUnset_returnsDefault() {
         when(mPackageManagerInternal.getPersonalContextMode(any(), anyInt(), anyInt()))
                 .thenReturn(PackageManager.PERSONAL_CONTEXT_MODE_UNSET);
 
+        // Set default to disabled.
+        Settings.Secure.putIntForUser(
+                mContext.getContentResolver(),
+                Settings.Secure.PERSONAL_CONTEXT_MODE_ENABLED_DEFAULT,
+                0,
+                USER_ID_1);
         boolean result = mBinderService.isPersonalContextModeEnabled(TEST_PACKAGE_NAME, USER_ID_1);
-        assertThat(result).isTrue();
+        assertThat(result).isFalse();
 
-        verify(mPackageManagerInternal)
-                .getPersonalContextMode(TEST_PACKAGE_NAME, Process.myUid(), USER_ID_1);
+        // Set default to enabled.
+        Settings.Secure.putIntForUser(
+                mContext.getContentResolver(),
+                Settings.Secure.PERSONAL_CONTEXT_MODE_ENABLED_DEFAULT,
+                1,
+                USER_ID_1);
+
+        result = mBinderService.isPersonalContextModeEnabled(TEST_PACKAGE_NAME, USER_ID_1);
+        assertThat(result).isTrue();
     }
 
     @Test

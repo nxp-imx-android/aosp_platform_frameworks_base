@@ -32,6 +32,7 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 @SysUISingleton
@@ -41,6 +42,14 @@ class FakePowerRepository @Inject constructor() : PowerRepository {
 
     private val _wakefulness = MutableStateFlow(WakefulnessModel())
     override val wakefulness = _wakefulness.asStateFlow()
+
+    private val _wakefulnessEvents =
+        MutableSharedFlow<WakefulnessModel>(
+            replay = 1,
+            extraBufferCapacity = 3,
+            onBufferOverflow = BufferOverflow.DROP_OLDEST,
+        )
+    override val wakefulnessEvents = _wakefulnessEvents.asSharedFlow()
 
     private val _screenPowerState = MutableStateFlow(ScreenPowerState.SCREEN_OFF)
     override val screenPowerState = _screenPowerState.asStateFlow()
@@ -78,7 +87,7 @@ class FakePowerRepository @Inject constructor() : PowerRepository {
         powerButtonLaunchGestureTriggered: Boolean,
         asleepOrWakingFromPreviouslyEnteredDevice: Boolean,
     ) {
-        _wakefulness.value =
+        val wakefulness =
             WakefulnessModel(
                 rawState,
                 lastWakeReason,
@@ -86,6 +95,9 @@ class FakePowerRepository @Inject constructor() : PowerRepository {
                 powerButtonLaunchGestureTriggered,
                 asleepOrWakingFromPreviouslyEnteredDevice,
             )
+
+        _wakefulnessEvents.tryEmit(wakefulness)
+        _wakefulness.value = wakefulness
     }
 
     override fun setScreenPowerState(state: ScreenPowerState) {

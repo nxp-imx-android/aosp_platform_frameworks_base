@@ -178,8 +178,8 @@ public class ViewRootInsetsControllerHost implements InsetsController.Host {
     }
 
     @Override
-    public boolean allowsAdditionalSyncedAnimation() {
-        return true;
+    public boolean usesSyncedInsetsAnimationByDefault() {
+        return mViewRoot.usesSyncedInsetsAnimationByDefault();
     }
 
     @Override

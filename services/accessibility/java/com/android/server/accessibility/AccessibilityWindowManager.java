@@ -74,7 +74,7 @@ import java.util.stream.Collectors;
  * {@link WindowInfo}s.
  */
 public class AccessibilityWindowManager {
-    private static final String LOG_TAG = "AccessibilityWindowManager";
+    private static final String LOG_TAG = AccessibilityWindowManager.class.getSimpleName();
     private static final boolean DEBUG = AccessibilityLogUtil.isDebugEnabled(LOG_TAG);
     private static final boolean VERBOSE = false;
 

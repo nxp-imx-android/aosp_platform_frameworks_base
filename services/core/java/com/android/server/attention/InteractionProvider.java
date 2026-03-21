@@ -32,4 +32,11 @@ public interface InteractionProvider {
      * when it happened. The list should include at most one entry per user activity type.
      */
     List<InteractionState> getSourceInteractions();
+
+    /**
+     * Called by the attention-service to request a notification when new interaction-data is
+     * available to wake the attention-service.
+     * In response attention-service may call {@link #getSourceInteractions()} asynchronously.
+     */
+    void requestWakeupCallback(InteractionWakeupCallback callback);
 }

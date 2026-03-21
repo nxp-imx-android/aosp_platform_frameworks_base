@@ -18,8 +18,10 @@ package com.android.internal.widget.remotecompose.core.operations.layout.manager
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
+import com.android.internal.widget.remotecompose.core.Operation;
 import com.android.internal.widget.remotecompose.core.PaintContext;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
+import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 import com.android.internal.widget.remotecompose.core.operations.layout.LayoutComponent;
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.ComponentMeasure;
@@ -35,8 +37,9 @@ public abstract class LayoutManager extends LayoutComponent implements Measurabl
     @NonNull Size mCachedWrapSize = new Size(0f, 0f);
 
     private static final int INSET_WRAP_MEASURE = 2;
+    private static final int INLINE_EXPRESSION_MEASURE = 3;
 
-    public static final int DEFAULT_MEASURE_TYPE = INSET_WRAP_MEASURE;
+    public static final int DEFAULT_MEASURE_TYPE = INLINE_EXPRESSION_MEASURE;
 
     public static final int FIX_TOUCH_EVENT = 1;
     public static final int DEFAULT_TOUCH_VERSION = FIX_TOUCH_EVENT;
@@ -408,6 +411,11 @@ public abstract class LayoutManager extends LayoutComponent implements Measurabl
             measuredHeight = maxHeight;
         }
 
+        if (measureVersion >= INLINE_EXPRESSION_MEASURE) {
+            // Update component values with current computed sizes
+            updateComponentValues(context, measuredWidth, measuredHeight);
+        }
+
         if (hasHorizontalWrap || hasVerticalWrap) {
             mCachedWrapSize.setWidth(0f);
             mCachedWrapSize.setHeight(0f);
@@ -562,6 +570,20 @@ public abstract class LayoutManager extends LayoutComponent implements Measurabl
         m.setVisibility(mScheduledVisibility);
 
         internalLayoutMeasure(context, measure);
+    }
+
+    private void updateComponentValues(@NonNull PaintContext context, float measuredWidth,
+            float measuredHeight) {
+        Component prev = context.getContext().mLastComponent;
+        context.getContext().mLastComponent = this;
+        updateComponentValues(context.getContext(), measuredWidth, measuredHeight);
+        for (Operation operation : mList) {
+            if (operation.isDirty() && operation instanceof VariableSupport) {
+                ((VariableSupport) operation).updateVariables(context.getContext());
+                operation.apply(context.getContext());
+            }
+        }
+        context.getContext().mLastComponent = prev;
     }
 
     /** Base implementation of the measure resolution */

@@ -580,6 +580,10 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             throw new IllegalArgumentException(
                     "callback must be provided when registering a data flow offload sink");
         }
+        if (!hasEndpointPermissions(sink)) {
+            throw new SecurityException(
+                    "Insufficient permission to register a data flow offload sink: " + sink);
+        }
 
         if (Flags.fmcqShareDataFlowMessageFix() && msg != null) {
             // The incoming message is forced to be reliable since we utilize the transaction
@@ -846,6 +850,18 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                     TAG,
                     "Received data flow host consumer registration for unknown session: id="
                             + sessionId);
+            return;
+        }
+
+        if (!hasEndpointPermissions(source)) {
+            Log.w(
+                    TAG,
+                    "onDataFlowHostSinkRegistered: "
+                            + mEndpointInfo
+                            + " doesn't have permission for "
+                            + source
+                            + " - dropping");
+            unregisterDataFlowHostSink(context.id);
             return;
         }
 

@@ -91,6 +91,7 @@ import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERL
 import static android.view.WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS;
 import static android.view.WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_STARTING;
+import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_SUB_PANEL;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG;
 import static android.view.WindowManager.LayoutParams.TYPE_PRESENTATION;
@@ -369,7 +370,6 @@ import com.android.server.pm.UserManagerInternal;
 import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.policy.WindowManagerPolicy.ScreenOffListener;
 import com.android.server.power.ShutdownThread;
-import com.android.server.theming.ThemeManagerInternal;
 import com.android.server.utils.PriorityDump;
 import com.android.window.flags.Flags;
 
@@ -712,6 +712,7 @@ public class WindowManagerService extends IWindowManager.Stub
     boolean mSystemReady = false;
     boolean mBootAnimationStopped = false;
     long mBootWaitForWindowsStartTime = -1;
+    boolean mThemeReady = true;
 
     // Cache whether to Magnify the IME.
     private boolean mMagnifyIme = false;
@@ -2028,6 +2029,7 @@ public class WindowManagerService extends IWindowManager.Stub
             @NonNull ActivityRecord activity, @NonNull DisplayContent displayContent,
             @NonNull IWindow client, @NonNull LayoutParams attrs, int uid,
             @NonNull WindowRelayoutResult result) {
+        result.usesSyncedInsetsAnimation = win.isSyncedInsetsAnimationEnabled();
         int res = 0;
         final int type = attrs.type;
         boolean imMayMove = true;
@@ -2530,6 +2532,9 @@ public class WindowManagerService extends IWindowManager.Stub
             final WindowState win = windowForClient(session, client);
             if (win == null) {
                 return 0;
+            }
+            if (outRelayoutResult != null) {
+                outRelayoutResult.usesSyncedInsetsAnimation = win.isSyncedInsetsAnimationEnabled();
             }
             if (win.mRelayoutSeq < seq) {
                 win.mRelayoutSeq = seq;
@@ -4331,14 +4336,6 @@ public class WindowManagerService extends IWindowManager.Stub
 
             if (!mBootAnimationStopped) {
                 Trace.asyncTraceBegin(TRACE_TAG_WINDOW_MANAGER, "Stop bootanim", 0);
-
-                // Notifies ThemeManagerService that the boot animation is being dismissed.
-                // No more color palette updates at boot.
-                ThemeManagerInternal themeService = LocalServices.getService(
-                        ThemeManagerInternal.class);
-                if (themeService != null) {
-                    themeService.onBootAnimationDismissing();
-                }
 
                 // stop boot animation
                 // formerly we would just kill the process, but we now ask it to exit so it
@@ -8922,6 +8919,16 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         @Override
+        public void setThemeReady(boolean ready) {
+            synchronized (mGlobalLock) {
+                mThemeReady = ready;
+                if (mThemeReady) {
+                    WindowManagerService.this.enableScreenIfNeededLocked();
+                }
+            }
+        }
+
+        @Override
         @ImeClientFocusResult
         public int hasInputMethodClientFocus(IBinder windowToken, int uid, int pid, int displayId) {
             if (displayId == Display.INVALID_DISPLAY) {
@@ -11032,7 +11039,8 @@ public class WindowManagerService extends IWindowManager.Stub
         return mPolicy.isGlobalKey(keyCode);
     }
 
-    private int sanitizeWindowType(Session session, int displayId, IBinder windowToken, int type) {
+    @VisibleForTesting
+    int sanitizeWindowType(Session session, int displayId, IBinder windowToken, int type) {
         // Determine whether this window type is valid for this process.
         final boolean isTypeValid;
         if (type == TYPE_ACCESSIBILITY_OVERLAY && windowToken != null) {
@@ -11048,7 +11056,9 @@ public class WindowManagerService extends IWindowManager.Stub
             } else {
                 isTypeValid = false;
             }
-        } else if (!session.mCanAddInternalSystemWindow && type != 0) {
+        } else if (!session.mCanAddInternalSystemWindow && type != 0
+                // TODO(b/494332596) Revisit allowed window types.
+                && type != TYPE_APPLICATION_SUB_PANEL) {
             Slog.w(
                     TAG_WM,
                     "Requires INTERNAL_SYSTEM_WINDOW permission if assign type to"

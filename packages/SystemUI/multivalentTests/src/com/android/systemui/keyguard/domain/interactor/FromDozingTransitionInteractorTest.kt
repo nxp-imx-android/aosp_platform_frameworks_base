@@ -145,7 +145,7 @@ class FromDozingTransitionInteractorTest(flags: FlagsParameterization?) : SysuiT
                 ActivityManager.RunningTaskInfo().apply {
                     topActivityType = WindowConfiguration.ACTIVITY_TYPE_DREAM
                 }
-            kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(
+            kosmos.keyguardOcclusionRepository.setOccludedFromRemoteAnimation(
                 onTop = true,
                 taskInfo = taskInfo,
             )

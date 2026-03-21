@@ -114,6 +114,10 @@ public class LockPatternUtils {
 
     // NOTE: When modifying this, make sure credential sufficiency validation logic is intact.
     public static final int CREDENTIAL_TYPE_NONE = -1;
+    // "UNKNOWN" is a distinct value used only internally in LockSettingsService and its unit tests.
+    // Its value is arbitrary, but since the 'int' default of 0 is unused elsewhere it was chosen.
+    // getCredentialType() never returns the UNKNOWN type.
+    public static final int CREDENTIAL_TYPE_UNKNOWN = 0;
     public static final int CREDENTIAL_TYPE_PATTERN = 1;
     // This is the legacy value persisted on disk. Never return it to clients, but internally
     // we still need it to handle upgrade cases.

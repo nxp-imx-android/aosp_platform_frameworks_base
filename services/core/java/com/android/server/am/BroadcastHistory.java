@@ -257,8 +257,10 @@ public class BroadcastHistory {
             summary.append("  ")
                     .append(entry.getKey())
                     .append(": ")
-                    .append(entry.getValue())
-                    .append("\n");
+                    .append(entry.getValue());
+            if (i < limit - 1) {
+                summary.append("\n");
+            }
         }
     }
 

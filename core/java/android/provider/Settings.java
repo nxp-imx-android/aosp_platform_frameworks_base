@@ -14206,6 +14206,19 @@ public final class Settings {
         @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
         public static final String PERSONAL_CONTEXT_ENABLED = "personal_context_enabled";
 
+        /**
+         * Default value for whether or not per-app personal context capture is enabled. This value
+         * is used as the default for any application for which the setting is unset.
+         * 1 = On, 0 = Off
+         *
+         * @see android.service.personalcontext.PersonalContextManager#isPersonalContextModeEnabled
+         * @hide
+         */
+        @Readable
+        @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+        public static final String PERSONAL_CONTEXT_MODE_ENABLED_DEFAULT =
+                "personal_context_mode_enabled_default";
+
        /**
          * Setting to determine if the wallet service is available.
          * 1 = available, 0 = unavailable
@@ -14543,7 +14556,7 @@ public final class Settings {
          *
          * @hide
          */
-        public static final String USER_HOME_TIME_ZONE_ID = "user_home_time_zone_id";
+        public static final String HOME_TIME_ZONE_ID = "home_time_zone_id";
 
         /**
          * URI for the car dock "in" event sound.

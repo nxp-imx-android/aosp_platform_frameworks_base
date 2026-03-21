@@ -1,3 +1,5 @@
+# Hi, if you are looking for OWNERS, please first see OWNERS.md.
+
 # This top-level list should remain narrowly defined as team leads; individual
 # teams are strongly encouraged to define narrower OWNERS files at deeper
 # levels within the source tree; see OWNERS.md for more details
@@ -15,7 +17,6 @@ narayan@google.com #{LAST_RESORT_SUGGESTION}
 ogunwale@google.com #{LAST_RESORT_SUGGESTION}
 omakoto@google.com #{LAST_RESORT_SUGGESTION}
 roosa@google.com #{LAST_RESORT_SUGGESTION}
-smoreland@google.com #{LAST_RESORT_SUGGESTION}
 yamasani@google.com #{LAST_RESORT_SUGGESTION}
 timmurray@google.com #{LAST_RESORT_SUGGESTION}
 

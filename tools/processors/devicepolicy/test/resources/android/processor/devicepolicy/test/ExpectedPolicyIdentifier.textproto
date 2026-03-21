@@ -29,7 +29,7 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Test policy 2 "
+  documentation: "Test policy 2"
   type_specific_metadata {
     enum_metadata {
       default_value: 2
@@ -42,7 +42,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 1
-        documentation: "First entry "
+        documentation: "First entry"
       }
       values {
         field_name {
@@ -51,7 +51,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 2
-        documentation: "Second entry "
+        documentation: "Second entry"
       }
       values {
         field_name {
@@ -60,7 +60,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 3
-        documentation: "Third entry "
+        documentation: "Third entry"
       }
       resolution_mechanism {
         custom: true
@@ -83,7 +83,7 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Enum policy with mostRestrictive resolution mechanism. "
+  documentation: "Enum policy with mostRestrictive resolution mechanism."
   type_specific_metadata {
     enum_metadata {
       default_value: 2
@@ -96,7 +96,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 1
-        documentation: "First entry "
+        documentation: "First entry"
       }
       values {
         field_name {
@@ -105,7 +105,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 2
-        documentation: "Second entry "
+        documentation: "Second entry"
       }
       values {
         field_name {
@@ -114,7 +114,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 3
-        documentation: "Third entry "
+        documentation: "Third entry"
       }
       resolution_mechanism {
         most_restrictive {
@@ -141,7 +141,7 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Enum policy with notCoexistent resolution mechanism. "
+  documentation: "Enum policy with notCoexistent resolution mechanism."
   type_specific_metadata {
     enum_metadata {
       default_value: 2
@@ -154,7 +154,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 1
-        documentation: "First entry "
+        documentation: "First entry"
       }
       values {
         field_name {
@@ -163,7 +163,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 2
-        documentation: "Second entry "
+        documentation: "Second entry"
       }
       values {
         field_name {
@@ -172,7 +172,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 3
-        documentation: "Third entry "
+        documentation: "Third entry"
       }
       resolution_mechanism {
         not_coexistable: true
@@ -195,7 +195,7 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Test policy 3 "
+  documentation: "Test policy 3"
   type_specific_metadata {
     integer_metadata {
     }
@@ -213,7 +213,7 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Test policy with an integer range. "
+  documentation: "Test policy with an integer range."
   type_specific_metadata {
     integer_metadata {
       min_value: -100
@@ -233,7 +233,7 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Test policy verifying processing of DEFAULT_DEVICE_OWNER allowed. "
+  documentation: "Test policy verifying processing of DEFAULT_DEVICE_OWNER allowed."
   type_specific_metadata {
     integer_metadata {
     }
@@ -252,7 +252,7 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Test policy verifying processing of FINANCED_DEVICE_OWNER allowed. "
+  documentation: "Test policy verifying processing of FINANCED_DEVICE_OWNER allowed."
   type_specific_metadata {
     integer_metadata {
     }
@@ -271,7 +271,7 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Test policy verifying processing of PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE allowed. "
+  documentation: "Test policy verifying processing of PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE allowed."
   type_specific_metadata {
     integer_metadata {
     }
@@ -290,7 +290,7 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Test policy verifying processing of PROFILE_OWNER_ON_USER0 allowed. "
+  documentation: "Test policy verifying processing of PROFILE_OWNER_ON_USER0 allowed."
   type_specific_metadata {
     integer_metadata {
     }
@@ -309,7 +309,7 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Test policy verifying processing of PROFILE_OWNER allowed. "
+  documentation: "Test policy verifying processing of PROFILE_OWNER allowed."
   type_specific_metadata {
     integer_metadata {
     }
@@ -328,7 +328,7 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Test policy verifying processing of PROFILE_OWNER_ON_USER allowed. "
+  documentation: "Test policy verifying processing of PROFILE_OWNER_ON_USER allowed."
   type_specific_metadata {
     integer_metadata {
     }
@@ -348,7 +348,7 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Test policy verifying processing of AFFILIATED_PROFILE_OWNER_ON_USER allowed. "
+  documentation: "Test policy verifying processing of AFFILIATED_PROFILE_OWNER_ON_USER allowed."
   type_specific_metadata {
     integer_metadata {
     }
@@ -405,7 +405,7 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Test policy verifying processing of multiple allowed DPC types. "
+  documentation: "Test policy verifying processing of multiple allowed DPC types."
   type_specific_metadata {
     integer_metadata {
     }
@@ -427,7 +427,7 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Test policy that is flagged. "
+  documentation: "Test policy that is flagged."
   type_specific_metadata {
     integer_metadata {
     }
@@ -446,7 +446,7 @@ policy_metadata {
     class_name: "Long"
     package_name: "java.lang"
   }
-  documentation: "Test policy for Long "
+  documentation: "Test policy for Long"
   type_specific_metadata {
     long_metadata {
     }
@@ -464,7 +464,7 @@ policy_metadata {
     class_name: "Long"
     package_name: "java.lang"
   }
-  documentation: "Test long policy with min and max values. "
+  documentation: "Test long policy with min and max values."
   type_specific_metadata {
     long_metadata {
       min_value: 10
@@ -484,7 +484,7 @@ policy_metadata {
     class_name: "String"
     package_name: "java.lang"
   }
-  documentation: "Test policy 4 "
+  documentation: "Test policy 4"
   type_specific_metadata {
     string_metadata {
     }
@@ -502,7 +502,7 @@ policy_metadata {
     class_name: "String"
     package_name: "java.lang"
   }
-  documentation: "Test policy verifying a string policy with unprintable characters allowed. "
+  documentation: "Test policy verifying a string policy with unprintable characters allowed."
   type_specific_metadata {
     string_metadata {
       unprintable_characters_allowed: true
@@ -521,7 +521,7 @@ policy_metadata {
     class_name: "List<java.lang.String>"
     package_name: "java.util"
   }
-  documentation: "Test policy 5 "
+  documentation: "Test policy 5"
   type_specific_metadata {
     list_metadata {
       string_metadata {
@@ -545,7 +545,7 @@ policy_metadata {
     class_name: "List<java.lang.String>"
     package_name: "java.util"
   }
-  documentation: "Test policy verifying a string list policy with unprintable characters allowed. "
+  documentation: "Test policy verifying a string list policy with unprintable characters allowed."
   type_specific_metadata {
     list_metadata {
       string_metadata {
@@ -570,7 +570,7 @@ policy_metadata {
     class_name: "PackageIdentifier"
     package_name: "android.app.admin"
   }
-  documentation: "Test policy for Package "
+  documentation: "Test policy for Package"
   type_specific_metadata {
     package_metadata {
     }

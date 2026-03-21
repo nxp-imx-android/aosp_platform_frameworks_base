@@ -1395,6 +1395,7 @@
   <java-symbol type="drawable" name="default_lock_wallpaper" />
   <java-symbol type="drawable" name="indicator_input_error" />
   <java-symbol type="drawable" name="ic_file_copy" />
+  <java-symbol type="drawable" name="reboot_safe_mode_focus_indicator" />
   <java-symbol type="drawable" name="popup_bottom_dark" />
   <java-symbol type="drawable" name="popup_bottom_bright" />
   <java-symbol type="drawable" name="popup_bottom_medium" />
@@ -2254,6 +2255,7 @@
   <java-symbol type="integer" name="config_vibratorControlServiceDumpAggregationTimeMillisLimit" />
   <java-symbol type="integer" name="config_defaultVibrationAmplitude" />
   <java-symbol type="array" name="config_vibrationIntensityScaleFactors" />
+  <java-symbol type="array" name="config_keyboardVibrationIntensityScaleFactors" />
   <java-symbol type="array" name="config_externalVibrationIntensityScaleFactors" />
   <java-symbol type="dimen" name="config_hapticChannelMaxVibrationAmplitude" />
   <java-symbol type="dimen" name="config_keyboardHapticFeedbackFixedAmplitude" />

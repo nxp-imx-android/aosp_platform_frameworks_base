@@ -964,6 +964,7 @@ public final class ViewRootImpl implements ViewParent,
 
     boolean mHandlesWindowInsetsAnimation = false;
     private int mWindowInsetsAnimationCount = 0;
+    private boolean mUsesSyncedInsetsAnimationByDefault = false;
 
     // Insets types hidden by legacy window flags or system UI flags.
     private @InsetsType int mTypesHiddenByFlags = 0;
@@ -1783,6 +1784,7 @@ public final class ViewRootImpl implements ViewParent,
                     res = mWindowSession.addToDisplayAsUser(mWindow, mWindowAttributes,
                             getHostVisibility(), mDisplay.getDisplayId(), userId,
                             mInsetsController.getRequestedVisibleTypes(), inputChannel, addResult);
+                    mUsesSyncedInsetsAnimationByDefault = addResult.usesSyncedInsetsAnimation;
                     if (mTranslator != null) {
                         mTranslator.translateRectInScreenToAppWindow(
                                 addResult.frames.attachedFrame);
@@ -3821,8 +3823,8 @@ public final class ViewRootImpl implements ViewParent,
                             ignoringTypes).toRect());
             mScrollMayChange = true;
             mImmediateScrolling = true;
-            mLastInsetsDuringAnimationProgress = insets;
             if (dispatchesApplyInsetsDuringAnimationProgress()) {
+                mLastInsetsDuringAnimationProgress = insets;
                 notifyInsetsChanged();
             }
             return null;
@@ -3863,7 +3865,7 @@ public final class ViewRootImpl implements ViewParent,
                 // The synced animation might take more resources, thus disabling on low-end devices
                 && ActivityManager.isHighEndGfx()
                 && !mHandlesWindowInsetsAnimation
-                && CompatChanges.isChangeEnabled(ActivityInfo.ENABLE_SYNCHRONIZED_INSETS_ANIMATION);
+                && usesSyncedInsetsAnimationByDefault();
     }
 
     public void dispatchApplyInsets(View host) {
@@ -10525,6 +10527,20 @@ public final class ViewRootImpl implements ViewParent,
             outLocation[0] -= bounds.left;
             outLocation[1] -= bounds.top;
         }
+    }
+
+
+    /**
+     * @return whether the synchronized insets animation is allowed for this window.
+     */
+    public boolean usesSyncedInsetsAnimationByDefault() {
+        return mUsesSyncedInsetsAnimationByDefault;
+    }
+
+    /** @hide */
+    @VisibleForTesting
+    public void setUsesSyncedInsetsAnimationByDefault(boolean allowed) {
+        mUsesSyncedInsetsAnimationByDefault = allowed;
     }
 
     private boolean getViewBoundsSandboxingEnabled() {

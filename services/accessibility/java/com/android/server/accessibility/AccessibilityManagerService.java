@@ -260,7 +260,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         AccessibilitySecurityPolicy.AccessibilityUserManager,
         SystemActionPerformer.SystemActionsChangedListener,
         SystemActionPerformer.DisplayUpdateCallBack, ProxyManager.SystemSupport {
-    private static final String LOG_TAG = "AccessibilityManagerService";
+    private static final String LOG_TAG = AccessibilityManagerService.class.getSimpleName();
 
     private static final boolean DEBUG = AccessibilityLogUtil.isDebugEnabled(LOG_TAG);
 

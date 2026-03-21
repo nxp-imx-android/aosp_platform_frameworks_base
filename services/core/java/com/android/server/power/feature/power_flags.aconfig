@@ -136,3 +136,14 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_inset_focus_rings_in_suw"
+    namespace: "power"
+    description: "Decides whether to enable inset focus rings in the reboot into safe mode dialog during the SuW."
+    bug: "484084632"
+    is_fixed_read_only: true
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}

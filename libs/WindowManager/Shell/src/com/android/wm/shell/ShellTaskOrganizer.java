@@ -33,9 +33,11 @@ import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_TASK_ORG
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_TRANSITIONS;
 
 import android.annotation.IntDef;
+import android.annotation.MainThread;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager.RunningTaskInfo;
+import android.app.ActivityTaskManager;
 import android.app.TaskInfo;
 import android.app.WindowConfiguration;
 import android.content.LocusId;
@@ -247,6 +249,23 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     }
 
     /**
+     * Callbacks for when the top task occluding the Keyguard has changed.
+     *
+     * <p>This listener is executed on the main thread.
+     */
+    @MainThread
+    public interface KeyguardOccludingTaskListener {
+        /**
+         * Called when the top task occluding the Keyguard has changed.
+         *
+         * @param displayId The ID of the display where the occlusion state has changed.
+         * @param taskInfo The {@link RunningTaskInfo} of the task that is now occluding the
+         *     Keyguard, or {@code null} if no task is occluding it.
+         */
+        void onKeyguardOccludingTaskChanged(int displayId, @Nullable RunningTaskInfo taskInfo);
+    }
+
+    /**
      * Callbacks for events on tasks that are going through package update.
      */
     public interface PackageUpdateListener {
@@ -303,6 +322,10 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     // Listeners that should be notified when a task is updated
     private final CopyOnWriteArrayList<PackageUpdateListener> mPackageUpdateListeners =
             new CopyOnWriteArrayList<>();
+
+    // Listeners that should be notified when the top task occluding the keyguard changes
+    private final CopyOnWriteArrayList<KeyguardOccludingTaskListener>
+            mKeyguardOccludingTaskListeners = new CopyOnWriteArrayList<>();
 
     // Listener for when root tasks are created
     private ContainerHierarchyRootTaskListener mRootTaskListener;
@@ -775,6 +798,36 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     public void removePackageUpdateListener(PackageUpdateListener listener) {
         synchronized (mLock) {
             mPackageUpdateListeners.remove(listener);
+        }
+    }
+
+    /** Adds a listener to be notified when the top task occluding the keyguard changes. */
+    public void addKeyguardOccludingTaskListener(@NonNull KeyguardOccludingTaskListener listener) {
+        Objects.requireNonNull(listener, "listener cannot be null");
+        synchronized (mLock) {
+            mKeyguardOccludingTaskListeners.add(listener);
+        }
+    }
+
+    /** Removes a keyguard-occluding-task listener. */
+    public void removeKeyguardOccludingTaskListener(
+            @NonNull KeyguardOccludingTaskListener listener) {
+        Objects.requireNonNull(listener, "listener cannot be null");
+        synchronized (mLock) {
+            mKeyguardOccludingTaskListeners.remove(listener);
+        }
+    }
+
+    @Override
+    @MainThread
+    public void onKeyguardOccludingTaskChanged(int displayId, @Nullable RunningTaskInfo taskInfo) {
+        ProtoLog.d(
+                WM_SHELL_TRANSITIONS,
+                "onKeyguardOccludingTaskChanged displayId=%d taskId=%d",
+                displayId,
+                taskInfo != null ? taskInfo.taskId : ActivityTaskManager.INVALID_TASK_ID);
+        for (KeyguardOccludingTaskListener listener : mKeyguardOccludingTaskListeners) {
+            listener.onKeyguardOccludingTaskChanged(displayId, taskInfo);
         }
     }
 

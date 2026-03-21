@@ -50,6 +50,12 @@ interface WindowDecorationActions {
      */
     fun onImmersiveOrRestore(taskInfo: RunningTaskInfo)
 
+    /**
+     * On any caption views received user interactions. This likely brings the relevant task to
+     * front.
+     */
+    fun onCaptionViewReceivedInteraction(taskInfo: RunningTaskInfo)
+
     /** Snaps task to left half of the screen. */
     fun onLeftSnap(taskId: Int, inputMethod: InputMethod)
 

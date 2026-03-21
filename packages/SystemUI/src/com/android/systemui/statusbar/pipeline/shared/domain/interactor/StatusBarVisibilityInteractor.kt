@@ -89,10 +89,12 @@ constructor(
      * Whether the display of this statusbar has the shade window (that is hosting shade container
      * and lockscreen, among other things).
      */
-    private val isShadeWindowOnThisDisplay: Flow<Boolean> =
-        shadeDisplaysInteractor.get().pendingDisplayId.map { shadeDisplayId ->
-            thisDisplayId == shadeDisplayId
-        }
+    val isShadeWindowOnThisDisplay: StateFlow<Boolean> =
+        shadeDisplaysInteractor
+            .get()
+            .pendingDisplayId
+            .map { shadeDisplayId -> thisDisplayId == shadeDisplayId }
+            .stateIn(bgDisplayScope, SharingStarted.WhileSubscribed(), initialValue = false)
 
     private val isShadeExpandedEnough: StateFlow<Boolean> =
         // Keep the status bar visible while the shade is just starting to open or while a HUN is
@@ -115,7 +117,7 @@ constructor(
             isShadeExpandedEnough
         }
 
-    val isShadeVisibleOnThisDisplay: Flow<Boolean> =
+    private val isShadeVisibleOnThisDisplay: Flow<Boolean> =
         combine(isShadeWindowOnThisDisplay, isShadeVisibleOnAnyDisplay) {
             hasShade,
             isShadeVisibleOnAnyDisplay ->

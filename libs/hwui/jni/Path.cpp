@@ -18,7 +18,7 @@
 #include "Path.h"
 
 #include <map>
-#include <optional>
+#include <mutex>
 #include <vector>
 
 #include "GraphicsJNI.h"
@@ -44,32 +44,43 @@ namespace android {
 class PathWrapper {
 public:
     PathWrapper() = default;
-    explicit PathWrapper(const SkPath& path) : mPath(path) {}
+    explicit PathWrapper(const SkPath& path) : mPath(path), mState(State::kPath) {}
 
     PathWrapper& operator=(const SkPath& path) {
         mBuilder = SkPathBuilder();
         mPath = path;
+        mState.store(State::kPath, std::memory_order_relaxed);
         return *this;
     }
 
-    // These are supported in either form.
-    bool isEmpty() const { return mPath ? mPath->isEmpty() : mBuilder.isEmpty(); }
-    SkPathFillType getFillType() const {
-        return mPath ? mPath->getFillType() : mBuilder.fillType();
+    // All const methods require a path for const thread safety.
+    bool isEmpty() const { return this->ensurePath().isEmpty(); }
+    SkPathFillType getFillType() const { return this->ensurePath().getFillType(); }
+    SkPathIter iter() const { return this->ensurePath().iter(); }
+    SkSpan<const SkPathVerb> verbs() const { return this->ensurePath().verbs(); }
+    SkSpan<const SkPoint> points() const { return this->ensurePath().points(); }
+    const SkRect& getBounds() const { return this->ensurePath().getBounds(); }
+    bool isRect(SkRect* rect) const { return this->ensurePath().isRect(rect); }
+    bool isConvex() const { return this->ensurePath().isConvex(); }
+    uint32_t getGenerationID() const { return this->ensurePath().getGenerationID(); }
+    bool isInterpolatable(const PathWrapper& other) const {
+        return this->ensurePath().isInterpolatable(other.getPath());
     }
+    bool interpolate(const PathWrapper& ending, float weight, PathWrapper* result) const {
+        return this->ensurePath().interpolate(ending.getPath(), weight, &result->getPath());
+    }
+
+    // These are supported in either form.
     void setFillType(SkPathFillType ft) {
-        if (mPath) {
-            mPath->setFillType(ft);
+        if (mState.load(std::memory_order_relaxed) == State::kPath) {
+            mPath.setFillType(ft);
         } else {
             mBuilder.setFillType(ft);
         }
     }
-    SkPathIter iter() const { return mPath ? mPath->iter() : mBuilder.iter(); }
-    SkSpan<const SkPathVerb> verbs() const { return mPath ? mPath->verbs() : mBuilder.verbs(); }
-    SkSpan<const SkPoint> points() const { return mPath ? mPath->points() : mBuilder.points(); }
     void offset(float dx, float dy) {
-        if (mPath) {
-            mPath = mPath->makeOffset(dx, dy);
+        if (mState.load(std::memory_order_relaxed) == State::kPath) {
+            mPath = mPath.makeOffset(dx, dy);
         } else {
             mBuilder.offset(dx, dy);
         }
@@ -80,8 +91,8 @@ public:
             *dst = this->ensurePath().makeTransform(matrix);
         } else {
             // Otherwise, transform in place.
-            if (mPath) {
-                mPath = mPath->makeTransform(matrix);
+            if (mState.load(std::memory_order_relaxed) == State::kPath) {
+                mPath = mPath.makeTransform(matrix);
             } else {
                 mBuilder.transform(matrix);
             }
@@ -137,21 +148,6 @@ public:
     }
     void setLastPt(float x, float y) { this->ensureBuilder().setLastPt(x, y); }
 
-    // Some of these queries could be answered while in builder form, but
-    // 1) SkPathBuilder doesn't cache the result, and 2) calling these is
-    // a good indication that the client is about to do something interesting
-    // with the path (done building), which is well aligned with an SkPath transition.
-    const SkRect& getBounds() const { return this->ensurePath().getBounds(); }
-    bool isRect(SkRect* rect) const { return this->ensurePath().isRect(rect); }
-    bool isConvex() const { return this->ensurePath().isConvex(); }
-    uint32_t getGenerationID() const { return this->ensurePath().getGenerationID(); }
-    bool isInterpolatable(const PathWrapper& other) const {
-        return this->ensurePath().isInterpolatable(other.getPath());
-    }
-    bool interpolate(const PathWrapper& ending, float weight, PathWrapper* result) const {
-        return this->ensurePath().interpolate(ending.getPath(), weight, &result->getPath());
-    }
-
     void reset() {
         mBuilder = SkPathBuilder();
         mPath.reset();
@@ -168,28 +164,46 @@ private:
     PathWrapper(const PathWrapper&) = delete;
     PathWrapper& operator=(const PathWrapper&) = delete;
 
+    // The current path data is either in the builder (mutable state), or in the SkPath snapshot
+    // (immutable state).  We transition between states lazily, as required by the API entry point
+    // (const -> immutable vs non-const -> mutable).  The optimal sequence, involving a single
+    // transition, is a finite mutable phase (path construction) followed by const-only operations
+    // (immutable path use).
+    enum class State {
+        kBuilder,
+        kPath,
+    };
+
     SkPath& ensurePath() const {
-        if (!mPath) {
-            mPath = mBuilder.detach();
-            // detach() clears the builder but (at the moment) does not deallocate its storage.
-            mBuilder = SkPathBuilder();
+        // The builder -> path transition is synchronized, to preserve thread safety for const
+        // public methods.  Using DCLP to minimize locking overhead.
+        if (mState.load(std::memory_order_acquire) != State::kPath) {
+            std::lock_guard lg(mStateMutex);
+            if (mState.load(std::memory_order_relaxed) != State::kPath) {
+                mPath = mBuilder.detach();
+                // detach() clears the builder but (at the moment) does not deallocate its storage.
+                mBuilder = SkPathBuilder();
+                mState.store(State::kPath, std::memory_order_release);
+            }
         }
-        return *mPath;
+        return mPath;
     }
 
     SkPathBuilder& ensureBuilder() const {
-        if (mPath) {
-            mBuilder = *mPath;
+        // The path -> builder transition is not synchronized since non-const operations are
+        // inherently racy, and there is no point in pretending to be thread-safe at this level.
+        if (mState.load(std::memory_order_relaxed) != State::kBuilder) {
+            mBuilder = mPath;
             mPath.reset();
+            mState.store(State::kBuilder, std::memory_order_relaxed);
         }
         return mBuilder;
     }
 
-    // The current path data is either in the builder (mutable state,
-    // when mPath is uninitialized), or in the cached SkPath snapshot
-    // (immutable state, when mPath is initialized).
     mutable SkPathBuilder mBuilder;
-    mutable std::optional<SkPath> mPath;
+    mutable SkPath mPath;
+    mutable std::atomic<State> mState = State::kBuilder;
+    mutable std::mutex mStateMutex;
 };
 
 static PathWrapper* AsPathWrapper(jlong objHandle) {

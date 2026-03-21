@@ -25,6 +25,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.util.Arrays;
+import java.util.HexFormat;
 import java.util.Objects;
 
 /**
@@ -115,8 +116,9 @@ public final class SignedPackage implements Parcelable {
     @Override
     public String toString() {
         return "SignedPackage{"
-                + "packageName='" + mPackageName
-                + ", certificateDigest=" + Arrays.toString(mCertificateDigest) + "}";
+                + "packageName=" + mPackageName
+                + ", certificateDigest=" + (mCertificateDigest == null ? "null"
+                : HexFormat.of().formatHex(mCertificateDigest)) + "}";
     }
 
     @Override

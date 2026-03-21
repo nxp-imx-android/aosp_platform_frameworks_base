@@ -345,24 +345,17 @@ public final class PolicyIdentifier<T> {
     @NonNull
     @ListOfStringPolicyDefinition(
             base =
-                    @StringPolicyDefinition(
-                            base =
-                                    @PolicyDefinition(
-                                            allowedScopes = {POLICY_SCOPE_USER},
-                                            affectedResource = RESOURCE_PER_USER,
-                                            requiredPermission =
-                                                    MANAGE_DEVICE_POLICY_CONTENT_RESTRICTION_APPS,
-                                            requiredCrossUserPermission =
-                                                    MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL,
-                                            allowedDpcTypes =
-                                            @AllowedDpcTypes(
-                                                    deviceOwner = ALLOWED,
-                                                    managedProfileOwnerOfOrganizationOwnedDevice =
-                                                            ALLOWED,
-                                                    managedProfileOwnerOfPersonalOwnedDevice =
-                                                            DISALLOWED,
-                                                    unaffiliatedFullUserProfileOwner =
-                                                            DISALLOWED))),
+                    @PolicyDefinition(
+                            allowedScopes = {POLICY_SCOPE_USER},
+                            affectedResource = RESOURCE_PER_USER,
+                            requiredPermission = MANAGE_DEVICE_POLICY_CONTENT_RESTRICTION_APPS,
+                            requiredCrossUserPermission = MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL,
+                            allowedDpcTypes =
+                                    @AllowedDpcTypes(
+                                            deviceOwner = ALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice = ALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                            unaffiliatedFullUserProfileOwner = DISALLOWED)),
             resolutionMechanism = @ListResolutionMechanism(custom = true))
     public static final PolicyIdentifier<List<String>> CONTENT_RESTRICTION_APPS =
             new PolicyIdentifier<>("CONTENT_RESTRICTION_APPS");

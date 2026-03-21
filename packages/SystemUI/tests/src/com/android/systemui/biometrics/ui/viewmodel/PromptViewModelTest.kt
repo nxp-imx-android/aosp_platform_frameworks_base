@@ -154,10 +154,6 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
         context.resources.getDimensionPixelSize(
             R.dimen.biometric_prompt_two_pane_udfps_shorter_horizontal_guideline_padding
         )
-    private val mediumTopGuidelinePadding =
-        context.resources.getDimensionPixelSize(
-            R.dimen.biometric_prompt_one_pane_medium_top_guideline_padding
-        )
     private val mediumHorizontalGuidelinePadding =
         context.resources.getDimensionPixelSize(
             R.dimen.biometric_prompt_two_pane_medium_horizontal_guideline_padding
@@ -1682,7 +1678,7 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
     fun guideline_bottom() = runGenericTest {
         kosmos.displayStateRepository.setCurrentRotation(DisplayRotation.ROTATION_0)
         val guidelineBounds by collectLastValue(kosmos.promptViewModel.guidelineBounds)
-        assertThat(guidelineBounds).isEqualTo(Rect(0, mediumTopGuidelinePadding, 0, 0))
+        assertThat(guidelineBounds).isEqualTo(Rect(0, 0, 0, 0))
     } // TODO(b/335278136): Add test for no sensor landscape
 
     @Test

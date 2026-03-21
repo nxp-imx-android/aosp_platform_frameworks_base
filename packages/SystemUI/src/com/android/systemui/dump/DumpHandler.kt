@@ -159,7 +159,7 @@ constructor(
     private fun dumpNormal(pw: PrintWriter, args: ParsedArgs) {
         val targets = dumpManager.getDumpables()
         for (target in targets) {
-            if (target.priority == DumpPriority.NORMAL) {
+            if (DUMP_ALL_WHEN_NORMAL || target.priority == DumpPriority.NORMAL) {
                 dumpDumpable(target, pw, args.rawArgs)
             }
         }
@@ -426,6 +426,14 @@ constructor(
          */
         const val DUMPSYS_DUMPABLE_DIVIDER =
             "----------------------------------------------------------------------------"
+
+        /**
+         * Whether to dump all dumpables when the command is "bugreport-normal" and no targets are
+         * specified. This will result in duplicating the critical dumpables in the normal dump to
+         * ensure that even when the critical dump is cut short for time, we should always have a
+         * backup in the normal dump.
+         */
+        const val DUMP_ALL_WHEN_NORMAL = true
 
         private fun DumpsysEntry.matches(target: String) = name.endsWith(target)
         private fun DumpsysEntry.matchesAny(targets: Collection<String>) =

@@ -1666,6 +1666,19 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         verify(decor).requestFocusMaximizeButton()
     }
 
+    @Test
+    fun testMoveTaskToFrontViaWindowDecorationActions() {
+        val windowDecorationActions = createDefaultWindowActions()
+        val decor = createOpenTaskDecoration(windowingMode = WINDOWING_MODE_FREEFORM)
+
+        whenever(mockFocusTransitionObserver.hasGlobalFocus(decor.taskInfo)).thenReturn(false)
+        whenever(mockPinnedLayerController.isPinned(decor.taskInfo.taskId)).thenReturn(false)
+
+        windowDecorationActions.onCaptionViewReceivedInteraction(decor.taskInfo)
+
+        verify(mockDesktopTasksController).moveTaskToFront(decor.taskInfo)
+    }
+
     private fun createOpenTaskDecoration(
         @WindowingMode windowingMode: Int,
         taskSurface: SurfaceControl = SurfaceControl(),

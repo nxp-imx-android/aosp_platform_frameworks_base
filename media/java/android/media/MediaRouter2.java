@@ -4414,6 +4414,9 @@ public final class MediaRouter2 {
         public Map<String, List<SuggestedDeviceInfo>> getDeviceSuggestions() {
             synchronized (mLock) {
                 try {
+                    if (mStub == null) {
+                        return Collections.emptyMap();
+                    }
                     return mMediaRouterService.getDeviceSuggestionsWithRouter2(mStub);
                 } catch (RemoteException ex) {
                     throw ex.rethrowFromSystemServer();

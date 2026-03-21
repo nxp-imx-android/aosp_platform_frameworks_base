@@ -438,10 +438,11 @@ flag {
 }
 
 flag {
-    name: "enable_inset_focus_rings_in_suw"
+    name: "enable_inset_focus_rings"
     namespace: "systemui"
-    description: "Decides whether to enable inset focus rings in the global actions dialog during the SuW."
+    description: "Decides whether to enable inset focus rings in the global actions dialog."
     bug: "484084632"
+    is_fixed_read_only: true
     metadata {
       purpose: PURPOSE_BUGFIX
     }
@@ -1690,6 +1691,13 @@ flag {
 }
 
 flag {
+    name: "status_bar_is_connected_display_chip_controlled_by_config"
+    namespace: "systemui"
+    description: "Enable config to control the connected display chip"
+    bug: "400404040"
+}
+
+flag {
    name: "status_bar_long_press_gesture_detector_per_display"
    namespace: "systemui"
    description: "Makes StatusBarLongPressGestureDetector per-display"
@@ -1875,6 +1883,16 @@ flag {
   namespace: "systemui"
   description: "Use compose's AndroidUiDispatcher as default"
   bug: "460414443"
+}
+
+flag {
+    name: "wakefulness_events_shared_flow"
+    namespace: "systemui"
+    description: "Add/use wakefulnessEvents SharedFlow in PowerInteractor"
+    bug: "489790572"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {

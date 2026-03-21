@@ -166,6 +166,15 @@ public class StatusBarManagerServiceTest {
         when(mMockStatusBar.asBinder()).thenReturn(mMockStatusBar);
         when(mMockStatusBar.isBinderAlive()).thenReturn(true);
         when(mApplicationInfo.loadLabel(any())).thenReturn(APP_NAME);
+        when(mPackageManagerInternal.isSameApp(anyString(), anyInt(), anyInt()))
+                .thenAnswer(inv -> {
+                    String pkg = inv.getArgument(0);
+                    int uid = inv.getArgument(1);
+                    int userId = inv.getArgument(2);
+                    PackageManagerInternal pm = (PackageManagerInternal) inv.getMock();
+                    return UserHandle.getAppId(uid) == UserHandle.getAppId(
+                            pm.getPackageUid(pkg, 0, userId));
+                });
         mockHandleIncomingUser();
 
         mStatusBarManagerService = new StatusBarManagerService(mContext);

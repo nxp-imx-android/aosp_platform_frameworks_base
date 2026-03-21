@@ -107,7 +107,7 @@ public final class FrameInfo {
 
     /** checkstyle */
     public void setVsync(long intendedVsync, long usedVsync, long frameTimelineVsyncId,
-            long frameDeadline, long frameStartTime, long frameInterval) {
+            long frameDeadline, long frameStartTime, long frameInterval, long animationTime) {
         frameInfo[FRAME_TIMELINE_VSYNC_ID] = frameTimelineVsyncId;
         frameInfo[INTENDED_VSYNC] = intendedVsync;
         frameInfo[VSYNC] = usedVsync;
@@ -116,7 +116,7 @@ public final class FrameInfo {
         frameInfo[FRAME_START_TIME] = frameStartTime;
         frameInfo[FRAME_INTERVAL] = frameInterval;
         frameInfo[WORKLOAD_TARGET] = frameDeadline - intendedVsync;
-        frameInfo[ANIMATION_TIME] = -1; // TODO(b/481376194)
+        frameInfo[ANIMATION_TIME] = animationTime;
     }
 
     /** checkstyle */

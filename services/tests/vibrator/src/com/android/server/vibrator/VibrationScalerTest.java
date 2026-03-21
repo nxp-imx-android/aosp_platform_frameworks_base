@@ -16,6 +16,7 @@
 
 package com.android.server.vibrator;
 
+import static android.os.VibrationAttributes.USAGE_IME_FEEDBACK;
 import static android.os.VibrationAttributes.USAGE_NOTIFICATION;
 import static android.os.VibrationAttributes.USAGE_RINGTONE;
 import static android.os.VibrationAttributes.USAGE_TOUCH;
@@ -231,6 +232,51 @@ public class VibrationScalerTest {
         // OFF
         setUserSetting(Settings.System.HAPTIC_FEEDBACK_INTENSITY, VIBRATION_INTENSITY_OFF);
         assertEquals(1f, scaler.getScaleFactor(USAGE_TOUCH, true), TOLERANCE);
+    }
+
+    @Test
+    @EnableFlags(android.os.vibrator.Flags.FLAG_KEYBOARD_INTENSITY_SLIDER_ENABLED)
+    public void testGetScaleFactor_withKeyboardConfig_returnsKeyboardConfigForImeUsage() {
+        mConfigBuilder.setVibrationScaleFactors(new float[]{0.1f, 0.2f, 0.3f});
+        mConfigBuilder.setKeyboardVibrationScaleFactors(new float[]{0.4f, 0.5f, 0.6f});
+        mConfigBuilder.setDefaultKeyboardVibrationIntensity(VIBRATION_INTENSITY_MEDIUM);
+        mConfigBuilder.setKeyboardVibrationSettingsSupported(true);
+        mConfigBuilder.setKeyboardVibrationSettingsIntensitySupported(true);
+        VibrationScaler scaler = createSystemReadyScaler();
+
+        // IME usage uses keyboard config
+        setUserSetting(Settings.System.KEYBOARD_VIBRATION_INTENSITY, VIBRATION_INTENSITY_LOW);
+        assertEquals(0.4f, scaler.getScaleFactor(USAGE_IME_FEEDBACK, false), TOLERANCE);
+        setUserSetting(Settings.System.KEYBOARD_VIBRATION_INTENSITY, VIBRATION_INTENSITY_MEDIUM);
+        assertEquals(0.5f, scaler.getScaleFactor(USAGE_IME_FEEDBACK, false), TOLERANCE);
+        setUserSetting(Settings.System.KEYBOARD_VIBRATION_INTENSITY, VIBRATION_INTENSITY_HIGH);
+        assertEquals(0.6f, scaler.getScaleFactor(USAGE_IME_FEEDBACK, false), TOLERANCE);
+
+        // Other usage uses general config
+        setUserSetting(Settings.System.HAPTIC_FEEDBACK_INTENSITY, VIBRATION_INTENSITY_LOW);
+        assertEquals(0.1f, scaler.getScaleFactor(USAGE_TOUCH, false), TOLERANCE);
+    }
+
+    @Test
+    @EnableFlags(android.os.vibrator.Flags.FLAG_KEYBOARD_INTENSITY_SLIDER_ENABLED)
+    public void scale_withKeyboardConfig_scalesImeVibrationsCorrectly() {
+        mConfigBuilder.setKeyboardVibrationScaleFactors(new float[]{0.6f, 1.0f, 2.0f});
+        mConfigBuilder.setDefaultKeyboardVibrationIntensity(VIBRATION_INTENSITY_MEDIUM);
+        mConfigBuilder.setKeyboardVibrationSettingsSupported(true);
+        mConfigBuilder.setKeyboardVibrationSettingsIntensitySupported(true);
+        VibrationScaler scaler = createSystemReadyScaler();
+
+        // LOW intensity
+        setUserSetting(Settings.System.KEYBOARD_VIBRATION_INTENSITY, VIBRATION_INTENSITY_LOW);
+        StepSegment scaled = getFirstSegment(scaler.scale(
+                VibrationEffect.createOneShot(100, 100), USAGE_IME_FEEDBACK));
+        assertEquals(VibrationEffect.scale(100f / 255, 0.6f), scaled.getAmplitude(), TOLERANCE);
+
+        // HIGH intensity
+        setUserSetting(Settings.System.KEYBOARD_VIBRATION_INTENSITY, VIBRATION_INTENSITY_HIGH);
+        scaled = getFirstSegment(scaler.scale(
+                VibrationEffect.createOneShot(100, 100), USAGE_IME_FEEDBACK));
+        assertEquals(VibrationEffect.scale(100f / 255, 2.0f), scaled.getAmplitude(), TOLERANCE);
     }
 
     @Test

@@ -27,11 +27,11 @@ import static android.content.pm.ActivityInfo.CONFIG_COLOR_MODE;
 import static android.content.pm.ActivityInfo.CONFIG_KEYBOARD;
 import static android.content.pm.ActivityInfo.CONFIG_KEYBOARD_HIDDEN;
 import static android.content.pm.ActivityInfo.CONFIG_NAVIGATION;
-import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
 import static android.content.pm.ActivityInfo.CONFIG_ORIENTATION;
 import static android.content.pm.ActivityInfo.CONFIG_SCREEN_LAYOUT;
 import static android.content.pm.ActivityInfo.CONFIG_SCREEN_SIZE;
 import static android.content.pm.ActivityInfo.CONFIG_SMALLEST_SCREEN_SIZE;
+import static android.content.pm.ActivityInfo.CONFIG_TOUCHSCREEN;
 import static android.content.pm.ActivityInfo.FLAG_SUPPORTS_PICTURE_IN_PICTURE;
 import static android.content.pm.ActivityInfo.LOCK_TASK_LAUNCH_MODE_ALWAYS;
 import static android.content.pm.ActivityInfo.LOCK_TASK_LAUNCH_MODE_DEFAULT;
@@ -163,6 +163,7 @@ import com.android.internal.R;
 import com.android.server.LocalServices;
 import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.wm.ActivityRecord.State;
+import com.android.server.wm.utils.StubOrganizer;
 import com.android.window.flags.Flags;
 
 import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
@@ -179,7 +180,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-
 
 /**
  * Tests for the {@link ActivityRecord} class.
@@ -1753,6 +1753,8 @@ public class ActivityRecordTests extends WindowTestsBase {
      */
     @Test
     public void testCompleteFinishing_showWhenLocked() {
+        final StubOrganizer stubOrganizer = new StubOrganizer();
+        mWm.mAtmService.mTaskOrganizerController.registerTaskOrganizer(stubOrganizer);
         final ActivityRecord activity = createActivityWithTask();
         final Task task = activity.getTask();
         // Make keyguard locked and set the top activity show-when-locked.
@@ -1771,6 +1773,8 @@ public class ActivityRecordTests extends WindowTestsBase {
         // Verify the stack-top activity is occluded keyguard.
         assertEquals(topActivity, task.topRunningActivity());
         assertTrue(keyguardController.isKeyguardOccluded(displayId));
+        assertThat(stubOrganizer.mLastOccludingTaskInfo).isNotNull();
+        assertThat(stubOrganizer.mLastOccludingTaskInfo.taskId).isEqualTo(task.mTaskId);
 
         // Finish the top activity
         topActivity.setState(PAUSED, "true");
@@ -1780,6 +1784,7 @@ public class ActivityRecordTests extends WindowTestsBase {
         // Verify new top activity does not occlude keyguard.
         assertEquals(activity, task.topRunningActivity());
         assertFalse(keyguardController.isKeyguardOccluded(displayId));
+        assertThat(stubOrganizer.mLastOccludingTaskInfo).isNull();
     }
 
     /**

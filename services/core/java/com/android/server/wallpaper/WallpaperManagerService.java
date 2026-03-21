@@ -83,7 +83,6 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManager.DisplayListener;
-
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.FileObserver;
@@ -145,8 +144,8 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1609,6 +1608,13 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                 Handler handler) {
             synchronized (mLock) {
                 mColorsChangedListenersInternal.put(listener, handler);
+            }
+        }
+
+        @Override
+        public void removeOnColorsChangedListener(ColorsChangedCallbackInternal listener) {
+            synchronized (mLock) {
+                mColorsChangedListenersInternal.remove(listener);
             }
         }
 
@@ -3114,12 +3120,10 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             try {
                 Context context = mContext.createPackageContextAsUser(
                         callingPackage, 0, UserHandle.SYSTEM);
-                try (InputStream is = WallpaperManager.openRawDefaultWallpaper(context, which)) {
-                    if (is != null) {
-                        // TODO: b/491138113 - Implement cropping.
-                        FileUtils.copyToFile(is, cropFile);
-                    }
-                }
+                Slog.i(TAG, "getCroppedDefaultWallpaper: cropping for resolution "
+                        + maxSide + "x" + maxSide);
+                mWallpaperCropper.generateDefaultWallpaperCrop(context, cropFile, which,
+                        maxSide, maxSide);
                 SELinux.restorecon(cropFile);
 
                 return ParcelFileDescriptor.open(cropFile, MODE_READ_ONLY);

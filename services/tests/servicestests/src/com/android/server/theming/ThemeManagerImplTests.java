@@ -111,6 +111,8 @@ public class ThemeManagerImplTests {
     @Mock
     private ThemeUserLifecycle mUserLifecycle;
     @Mock
+    private ThemeEventObserver mEventObserver;
+    @Mock
     private KeyguardManager mKeyguardManager;
     @Mock
     private FabricatedOverlay mMockFabricatedOverlay;
@@ -199,8 +201,7 @@ public class ThemeManagerImplTests {
         mStateManager = spy(new ThemeStateManager(mContext, mSchedulerExecutor, mEnvironment));
         mUnderTest = new ThemeManagerImpl(mContext, mThemeSettingsManager,
                 mStateManager, mOverlayHelper, mEnvironment, themeWallpaperManager,
-                mHardwareColorRule.sysPropReader);
-        mUnderTest.setup(mUserLifecycle);
+                mHardwareColorRule.sysPropReader, mUserLifecycle, mEventObserver);
 
         mStateManager.onServicesReady();
         startUser(mUserId, true, List.of(TEST_SEED_COLOR), TEST_CONTRAST, TEST_STYLE);
@@ -501,13 +502,7 @@ public class ThemeManagerImplTests {
         // Re-instantiate ThemeManagerImpl with the booting environment
         ThemeManagerImpl bootingImpl = new ThemeManagerImpl(mContext, mThemeSettingsManager,
                 mStateManager, mOverlayHelper, bootingEnv, new ThemeWallpaperManager(),
-                mHardwareColorRule.sysPropReader) {
-            @Override
-            public boolean onBootAnimationDismissing() {
-                return false;
-            }
-        };
-        bootingImpl.setup(mUserLifecycle);
+                mHardwareColorRule.sysPropReader, mUserLifecycle, mEventObserver);
 
         assertThat(bootingImpl.getUserThemeInfo(mUserId)).isNull();
         assertThat(bootingImpl.getThemeSettings(mUserId)).isNull();
@@ -538,8 +533,7 @@ public class ThemeManagerImplTests {
                 mHardwareColorRule.sysPropReader);
         ThemeManagerImpl bootingImpl = new ThemeManagerImpl(mContext, mThemeSettingsManager,
                 mStateManager, mOverlayHelper, bootingEnv, new ThemeWallpaperManager(),
-                mHardwareColorRule.sysPropReader);
-        bootingImpl.setup(mUserLifecycle);
+                mHardwareColorRule.sysPropReader, mUserLifecycle, mEventObserver);
 
         // 2. Register callback during boot (should succeed now)
         final ThemeInfo[] returnedValue = {null};
@@ -553,7 +547,9 @@ public class ThemeManagerImplTests {
         assertThat(registered).isTrue();
 
         // 3. Initialize system (simulate boot complete)
-        bootingImpl.onBootAnimationDismissing();
+        bootingImpl.initializeThemingSystem();
+        bootingImpl.onThemingSystemReady(); // Manually signal ready for test
+
         // Manual fix: Trigger the side effect that the real lifecycle would do
         bootingEnv.setBootingComplete(mUserLifecycle);
         // Force state manager to process
@@ -567,17 +563,16 @@ public class ThemeManagerImplTests {
     }
 
     @Test
-    public void onBootAnimationDismissing_initializesSystem() {
+    public void initializeThemingSystem_initializesSystem() {
         // Create a fresh environment that is still booting
         ThemeEnvironment bootingEnv = new ThemeEnvironment(mContext,
                 mHardwareColorRule.sysPropReader);
         ThemeManagerImpl bootingImpl = new ThemeManagerImpl(mContext, mThemeSettingsManager,
                 mStateManager, mOverlayHelper, bootingEnv, new ThemeWallpaperManager(),
-                mHardwareColorRule.sysPropReader);
-        bootingImpl.setup(mUserLifecycle);
+                mHardwareColorRule.sysPropReader, mUserLifecycle, mEventObserver);
 
         // Act
-        boolean result = bootingImpl.onBootAnimationDismissing();
+        boolean result = bootingImpl.initializeThemingSystem();
 
         // Verify
         assertThat(result).isTrue();
@@ -635,6 +630,12 @@ public class ThemeManagerImplTests {
         // Verify: State UPDATED to GREEN
         assertThat(mStateManager.getState(userId).getCurrentState().seedColor()).isEqualTo(
                 Color.GREEN);
+
+        // Verify: Settings persisted
+        verify(mThemeSettingsManager).setSettings(eq(userId), any(),
+                org.mockito.ArgumentMatchers.argThat(settingsArgument ->
+                        settingsArgument.seedColors().getFirst().toArgb() == Color.GREEN
+                ));
     }
 
     @Test

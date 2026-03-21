@@ -28,6 +28,7 @@ import com.android.settingslib.metadata.FixedArrayMap
 import com.android.settingslib.metadata.IntRangeValuePreference
 import com.android.settingslib.metadata.PersistentPreference
 import com.android.settingslib.metadata.PreferenceAvailabilityProvider
+import com.android.settingslib.metadata.preferencesapi.preconditions.PreconditionStability
 import com.android.settingslib.metadata.PreferenceCategory
 import com.android.settingslib.metadata.PreferenceHierarchy
 import com.android.settingslib.metadata.PreferenceMetadata
@@ -250,6 +251,8 @@ object GraphTestUtils {
         override fun isAvailable(context: Context): Boolean =
             persistentPreferenceConfig.preferenceConfig.isAvailable
 
+        override fun getAvailabilityStability() = PreconditionStability.UNSTABLE
+
         override fun isRestricted(context: Context): Boolean =
             persistentPreferenceConfig.preferenceConfig.isRestricted
 
@@ -307,6 +310,7 @@ object GraphTestUtils {
             preferenceConfig.isEnabled
 
         override val availabilityDescription: String = "availability description"
+        override fun getAvailabilityStability() = PreconditionStability.UNSTABLE
 
         override fun isAvailable(context: Context): Boolean =
             preferenceConfig.isAvailable
@@ -379,6 +383,7 @@ object GraphTestUtils {
             }
 
         override val availabilityDescription: String = "availability description"
+        override fun getAvailabilityStability() = PreconditionStability.UNSTABLE
 
         override fun isAvailable(context: Context): Boolean =
             persistentPreferenceConfig.preferenceConfig.isAvailable

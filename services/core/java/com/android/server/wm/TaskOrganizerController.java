@@ -868,6 +868,27 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         }
     }
 
+    /**
+     * Called when the task that occludes the Keyguard has changed.
+     *
+     * <p>This method is called before the keyguard occlude/unocclude transition is requested.
+     *
+     * @param displayId The ID of the display where the occlusion state has changed.
+     * @param taskInfo The {@link ActivityManager.RunningTaskInfo} of the task that is now occluding
+     *     the Keyguard, or {@code null} if no task is occluding it.
+     */
+    void handleKeyguardOccludingTaskChanged(int displayId,
+            @Nullable ActivityManager.RunningTaskInfo taskInfo) {
+        final ITaskOrganizer organizer = getTaskOrganizer();
+        if (organizer != null) {
+            try {
+                organizer.onKeyguardOccludingTaskChanged(displayId, taskInfo);
+            } catch (RemoteException e) {
+                Slog.e(TAG, "Exception sending onKeyguardOccludingTaskChanged callback", e);
+            }
+        }
+    }
+
     void onTaskAppeared(ITaskOrganizer organizer, Task task) {
         final TaskOrganizerState state = mTaskOrganizerStates.get(organizer.asBinder());
         if (state != null && state.addTask(task)) {

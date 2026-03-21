@@ -32,8 +32,7 @@ import com.android.systemui.animation.Expandable
 import com.android.systemui.classifier.Classifier
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
-import com.android.systemui.lifecycle.ExclusiveActivatable
-import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.media.controls.shared.MediaLogger
 import com.android.systemui.media.controls.util.MediaUiEventLogger
 import com.android.systemui.media.remedia.domain.interactor.MediaInteractor
@@ -61,9 +60,7 @@ constructor(
     val mediaUiEventLogger: MediaUiEventLogger,
     @Assisted private val context: Context,
     @Assisted private val carouselVisibility: MediaCarouselVisibility,
-) : ExclusiveActivatable() {
-
-    private val hydrator = Hydrator("MediaViewModel.hydrator")
+) : HydratedActivatable() {
 
     /** Whether the user is actively moving the thumb of the seek bar. */
     private var isScrubbing: Boolean by mutableStateOf(false)
@@ -97,11 +94,7 @@ constructor(
     private var isVisible: () -> Boolean = { true }
 
     private val isOnLockscreen: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "isOnLockscreen",
-            initialValue = true,
-            source = interactor.isOnLockscreen,
-        )
+        interactor.isOnLockscreen.hydratedStateOf(initialValue = true)
 
     /** The current list of cards to show in the UI. */
     val cards: List<MediaCardViewModel> by derivedStateOf {
@@ -451,10 +444,6 @@ constructor(
     /** Notifies that the carousel is reordered and first card is now visible on screen. */
     fun onScrollToFirstCard() {
         interactor.resetScrollToFirst()
-    }
-
-    override suspend fun onActivated(): Nothing {
-        hydrator.activate()
     }
 
     private fun MediaActionModel.toPlayPauseActionViewModel(

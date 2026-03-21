@@ -51,6 +51,7 @@ import dagger.assisted.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -196,6 +197,19 @@ constructor(
                         }
                     }
                     false
+                }
+                .launchIn(this)
+
+            combine(snapshotFlow { safeGestureBounds }, snapshotFlow { surfaceScreenBounds }) {
+                    safeGestureBounds,
+                    surfaceScreenBounds ->
+                    if (!safeGestureBounds.isEmpty && !surfaceScreenBounds.isEmpty) {
+                        transformableState.transform {
+                            // Go through transformation for coercing logic to kick in
+                            transformBy()
+                        }
+                    }
+                    Unit
                 }
                 .launchIn(this)
         }

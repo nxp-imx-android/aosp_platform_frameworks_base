@@ -20,7 +20,11 @@ import androidx.annotation.StringRes
 
 /** The getter is unavailable due to some hardware issue, the reason should give details. */
 class HardwareUnsupported : Disallowed {
-    constructor(@StringRes reason: Int) : super(reason)
+    constructor(
+        @StringRes reason: Int
+    ) : super(reason, stability = PreconditionStability.STABLE_UNTIL_APK_UPDATE)
 
-    constructor(reason: String) : super(reason)
+    constructor(
+        reason: String
+    ) : super(reason, stability = PreconditionStability.STABLE_UNTIL_APK_UPDATE)
 }

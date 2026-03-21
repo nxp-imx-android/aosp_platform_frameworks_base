@@ -167,8 +167,7 @@ class MediaRouter2ServiceImpl {
     private int mCurrentActiveUserId = -1;
 
     @GuardedBy("mLock")
-    private static final MediaRouterMetricLogger mMediaRouterMetricLogger =
-            new MediaRouterMetricLogger();
+    private final MediaRouterMetricLogger mMediaRouterMetricLogger;
 
     private final ActivityManager.OnUidImportanceListener mOnUidImportanceListener =
             (uid, importance) -> {
@@ -235,9 +234,11 @@ class MediaRouter2ServiceImpl {
                 Manifest.permission.OBSERVE_GRANT_REVOKE_PERMISSIONS,
                 Manifest.permission.WATCH_APPOPS
             })
-    /* package */ MediaRouter2ServiceImpl(@NonNull Context context, @NonNull Looper looper) {
+    /* package */ MediaRouter2ServiceImpl(@NonNull Context context, @NonNull Looper looper,
+            @NonNull MediaRouterMetricLogger metricLogger) {
         mContext = context;
         mLooper = looper;
+        mMediaRouterMetricLogger = metricLogger;
         mActivityManager = mContext.getSystemService(ActivityManager.class);
         mActivityManager.addOnUidImportanceListener(mOnUidImportanceListener,
                 REQUIRED_PACKAGE_IMPORTANCE_FOR_SCANNING);

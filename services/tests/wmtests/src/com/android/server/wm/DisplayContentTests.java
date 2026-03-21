@@ -124,6 +124,7 @@ import android.app.WindowConfiguration;
 import android.content.Context;
 import android.content.pm.ActivityInfo.ScreenOrientation;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Insets;
 import android.graphics.Rect;
 import android.graphics.Region;
@@ -668,6 +669,33 @@ public class DisplayContentTests extends WindowTestsBase {
         // Verify not waiting for drawn windows on display with system decorations.
         setDrawnState(WindowStateAnimator.HAS_DRAWN, windows);
         assertFalse(secondaryDisplay.shouldWaitForSystemDecorWindowsOnBoot());
+    }
+
+    @Test
+    public void testShouldWaitForSystemDecorWindowsOnBoot_ThemeReady() {
+        mWm.mSystemBooted = true;
+        final DisplayContent defaultDisplay = mWm.getDefaultDisplayContentLocked();
+
+        // Drawn windows
+        final WindowState[] windows = createNotDrawnWindowsOn(defaultDisplay,
+                TYPE_WALLPAPER, TYPE_BASE_APPLICATION);
+        setDrawnState(WindowStateAnimator.HAS_DRAWN, windows);
+
+        // Set up wallpaper enabled
+        final Resources res = mWm.mContext.getResources();
+        spyOn(res);
+        doReturn(true).when(res).getBoolean(
+                com.android.internal.R.bool.config_enableWallpaperService);
+        doReturn(true).when(res).getBoolean(
+                com.android.internal.R.bool.config_checkWallpaperAtBoot);
+
+        // Theme not ready -> should wait
+        mWm.mThemeReady = false;
+        assertTrue(defaultDisplay.shouldWaitForSystemDecorWindowsOnBoot());
+
+        // Theme ready -> should not wait
+        mWm.mThemeReady = true;
+        assertFalse(defaultDisplay.shouldWaitForSystemDecorWindowsOnBoot());
     }
 
     @Test
@@ -1489,7 +1517,7 @@ public class DisplayContentTests extends WindowTestsBase {
         appWin.setHasSurface(true);
         dc.updateSystemGestureExclusion();
 
-        final boolean[] invoked = { false };
+        final boolean[] invoked = {false};
         final var verifier = new ISystemGestureExclusionListener.Stub() {
             @Override
             public void onSystemGestureExclusionChanged(int displayId, Region actual,
@@ -1633,7 +1661,7 @@ public class DisplayContentTests extends WindowTestsBase {
         appWin.setHasSurface(false);
     }
 
-    @SetupWindows(addWindows = { W_ABOVE_ACTIVITY, W_ACTIVITY })
+    @SetupWindows(addWindows = {W_ABOVE_ACTIVITY, W_ACTIVITY})
     @Test
     public void testRequestResizeForEmptyFrames() {
         final WindowState win = mChildAppWindowAbove;
@@ -1671,8 +1699,8 @@ public class DisplayContentTests extends WindowTestsBase {
         assertEquals(Configuration.ORIENTATION_PORTRAIT, logMakerCaptor.getValue().getSubtype());
     }
 
-    @SetupWindows(addWindows = { W_ACTIVITY, W_WALLPAPER, W_STATUS_BAR, W_NAVIGATION_BAR,
-            W_INPUT_METHOD, W_NOTIFICATION_SHADE })
+    @SetupWindows(addWindows = {W_ACTIVITY, W_WALLPAPER, W_STATUS_BAR, W_NAVIGATION_BAR,
+            W_INPUT_METHOD, W_NOTIFICATION_SHADE})
     @Test
     public void testApplyTopFixedRotationTransform() {
         mDisplayContent.setIgnoreOrientationRequest(false);
@@ -2429,7 +2457,7 @@ public class DisplayContentTests extends WindowTestsBase {
     @Test
     public void testEnsureActivitiesVisibleNotRecursive() {
         final TaskDisplayArea mockTda = mock(TaskDisplayArea.class);
-        final boolean[] called = { false };
+        final boolean[] called = {false};
         doAnswer(invocation -> {
             // The assertion will fail if DisplayArea#ensureActivitiesVisible is called twice.
             assertFalse(called[0]);
@@ -2535,7 +2563,7 @@ public class DisplayContentTests extends WindowTestsBase {
         verifySizes(dc, forcedWidth, forcedHeight, forcedDensity);
     }
 
-    @SetupWindows(addWindows = { W_ACTIVITY, W_INPUT_METHOD })
+    @SetupWindows(addWindows = {W_ACTIVITY, W_INPUT_METHOD})
     @Test
     public void testComputeImeLayeringTarget_shouldNotCheckOutdatedImeLayeringTargetWhenRemoved() {
         final var childWin1 = newWindowBuilder("childWin1", FIRST_SUB_WINDOW).setParent(mAppWindow)
@@ -3272,41 +3300,41 @@ public class DisplayContentTests extends WindowTestsBase {
         verify(mWm.mUmInternal, never()).isUserVisible(userId2, displayId);
     }
 
-  @Test
-  @EnableFlags(Flags.FLAG_CURRENT_USER_ACCESS_UNASSIGNED_DISPLAYS)
-  public void testHasAccessConsidersUserVisibilityForBackgroundVisibleUsers() {
-    doReturn(true).when(UserManager::isVisibleBackgroundUsersEnabled);
-    final int appId = 1234;
-    final int userId1 = 11;
-    final int userId2 = 12;
-    final int uid1 = UserHandle.getUid(userId1, appId);
-    final int uid2 = UserHandle.getUid(userId2, appId);
-    final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
-    final DisplayContent dc = createNewDisplay(displayInfo);
-    int displayId = dc.getDisplayId();
-    doReturn(userId1).when(mWm.mUmInternal).getUserAssignedToDisplay(displayId);
+    @Test
+    @EnableFlags(Flags.FLAG_CURRENT_USER_ACCESS_UNASSIGNED_DISPLAYS)
+    public void testHasAccessConsidersUserVisibilityForBackgroundVisibleUsers() {
+        doReturn(true).when(UserManager::isVisibleBackgroundUsersEnabled);
+        final int appId = 1234;
+        final int userId1 = 11;
+        final int userId2 = 12;
+        final int uid1 = UserHandle.getUid(userId1, appId);
+        final int uid2 = UserHandle.getUid(userId2, appId);
+        final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
+        final DisplayContent dc = createNewDisplay(displayInfo);
+        int displayId = dc.getDisplayId();
+        doReturn(userId1).when(mWm.mUmInternal).getUserAssignedToDisplay(displayId);
 
-    assertTrue(dc.hasAccess(uid1));
-    assertFalse(dc.hasAccess(uid2));
-  }
+        assertTrue(dc.hasAccess(uid1));
+        assertFalse(dc.hasAccess(uid2));
+    }
 
-  @Test
-  @EnableFlags(Flags.FLAG_CURRENT_USER_ACCESS_UNASSIGNED_DISPLAYS)
-  public void testHasAccessIgnoresUserVisibilityForPrivateDisplay() {
-    doReturn(true).when(UserManager::isVisibleBackgroundUsersEnabled);
-    final int appId = 1234;
-    final int userId2 = 12;
-    final int uid2 = UserHandle.getUid(userId2, appId);
-    final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
-    displayInfo.flags = FLAG_PRIVATE;
-    displayInfo.ownerUid = uid2;
-    final DisplayContent dc = createNewDisplay(displayInfo);
-    int displayId = dc.getDisplayId();
+    @Test
+    @EnableFlags(Flags.FLAG_CURRENT_USER_ACCESS_UNASSIGNED_DISPLAYS)
+    public void testHasAccessIgnoresUserVisibilityForPrivateDisplay() {
+        doReturn(true).when(UserManager::isVisibleBackgroundUsersEnabled);
+        final int appId = 1234;
+        final int userId2 = 12;
+        final int uid2 = UserHandle.getUid(userId2, appId);
+        final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
+        displayInfo.flags = FLAG_PRIVATE;
+        displayInfo.ownerUid = uid2;
+        final DisplayContent dc = createNewDisplay(displayInfo);
+        int displayId = dc.getDisplayId();
 
-    assertTrue(dc.hasAccess(uid2));
+        assertTrue(dc.hasAccess(uid2));
 
-    verify(mWm.mUmInternal, never()).getUserAssignedToDisplay(displayId);
-  }
+        verify(mWm.mUmInternal, never()).getUserAssignedToDisplay(displayId);
+    }
 
     @Test
     public void cameraCompatFreeformFlagEnabled_cameraCompatFreeformPolicyNotNull() {
@@ -3314,7 +3342,7 @@ public class DisplayContentTests extends WindowTestsBase {
                 DesktopModeHelper.canEnterDesktopMode(any(Context.class)));
 
         assertTrue(createNewDisplay().mAppCompatCameraPolicy.hasSimReqOrientationPolicy());
-  }
+    }
 
     @DisableFlags({FLAG_ENABLE_DESKTOP_WINDOWING_MODE, FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES})
     @Test

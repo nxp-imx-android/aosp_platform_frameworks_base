@@ -147,61 +147,6 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
         }
     }
 
-    @Nullable
-    @Override
-    public AppFunctionSearchSpec applyVisiblePackageFilter(
-            @NonNull AppFunctionAidlSearchSpec aidlSearchSpec, int callingUid, int callingPid) {
-        Objects.requireNonNull(aidlSearchSpec);
-
-        AppFunctionSearchSpec clientSearchSpec = aidlSearchSpec.getClientSearchSpec();
-        Set<String> originalSearchPackages = clientSearchSpec.getPackageNames();
-        Set<AppFunctionName> originalSearchFunctions = clientSearchSpec.getFunctionNames();
-
-        final long token = Binder.clearCallingIdentity();
-        try {
-            // First base case, if the caller doesn't have permissions to view
-            // AppFunctionRuntimeMetadata, it can only see the function from its own package
-            if (!hasPermissionsToQueryRuntimeMetadata(callingUid, callingPid)) {
-                Set<String> visiblePackages = new ArraySet<>();
-                visiblePackages.add(aidlSearchSpec.getCallingPackageName());
-                Set<String> filteredPackages =
-                        getFilteredPackages(visiblePackages, originalSearchPackages);
-                Set<AppFunctionName> filteredFunctionNames =
-                        getFilteredFunctionNames(visiblePackages, originalSearchFunctions);
-                if (isInvalidSearch(filteredPackages, filteredFunctionNames)) {
-                    return null;
-                }
-                return new AppFunctionSearchSpec.Builder(clientSearchSpec)
-                        .setPackageNames(filteredPackages)
-                        .setFunctionNames(filteredFunctionNames)
-                        .build();
-            }
-
-            // Second base case - If the caller has both EXECUTE_APP_FUNCTIONS and
-            // QUERY_ALL_PACKAGES permission, then it can see any AppFunctions
-            if (mContext.checkPermission(
-                            Manifest.permission.QUERY_ALL_PACKAGES, callingPid, callingUid)
-                    == PackageManager.PERMISSION_GRANTED) {
-                return clientSearchSpec;
-            }
-        } finally {
-            Binder.restoreCallingIdentity(token);
-        }
-
-        Set<String> visiblePackages =
-                getVisiblePackages(callingUid, aidlSearchSpec.getTargetUserId());
-        Set<String> filteredPackages = getFilteredPackages(visiblePackages, originalSearchPackages);
-        Set<AppFunctionName> filteredFunctionNames =
-                getFilteredFunctionNames(visiblePackages, originalSearchFunctions);
-        if (isInvalidSearch(filteredPackages, filteredFunctionNames)) {
-            return null;
-        }
-        return new AppFunctionSearchSpec.Builder(clientSearchSpec)
-                .setPackageNames(filteredPackages)
-                .setFunctionNames(filteredFunctionNames)
-                .build();
-    }
-
     @Override
     @NonNull
     public List<AppFunctionActivityState> filterVisibleAppFunctionActivityStates(

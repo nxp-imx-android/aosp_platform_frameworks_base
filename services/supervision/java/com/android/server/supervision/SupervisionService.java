@@ -1254,7 +1254,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
             mRoleManager.removeRoleHolderAsUser(
                     roleName,
                     packageName,
-                    0,
+                    RoleManager.MANAGE_HOLDERS_FLAG_DONT_KILL_APP,
                     user,
                     context.getMainExecutor(),
                     success -> {

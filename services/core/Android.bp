@@ -233,6 +233,7 @@ java_library_static {
         "android.security.aaid_aidl-java",
         "netd-client",
         "overlayable_policy_aidl-java",
+        "SettingsLibDisplayUtils",
         "SettingsLibDeviceStateRotationLock",
         "SurfaceFlingerProperties",
         "com.android.sysprop.watchdog",

@@ -20,9 +20,11 @@ import static android.service.personalcontext.embedded.InsightSurfaceSessionExce
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -123,6 +125,45 @@ public class InsightSurfaceClientTest {
         client.onSurfaceUpdated(mSurfacePackage);
         verify(mClientCallbacks).onSessionUpdated(any(InsightSurfaceSession.class));
     }
+
+    @Test
+    public void testSurfaceUpdated_nullSession() throws RemoteException {
+        mClient.register(mExecutor, mClientCallbacks);
+
+        final IInsightSurfaceClient client = mClient.getClientInfo().getClient();
+        assertThrows(IllegalStateException.class, () -> client.onSurfaceUpdated(mSurfacePackage));
+    }
+
+    @Test
+    public void testSurfaceUpdated_nullSurfaceControl() throws RemoteException {
+        mClient.register(mExecutor, mClientCallbacks);
+
+        when(mSurfacePackage.getSurfaceControl()).thenReturn(null);
+
+        final IInsightSurfaceClient client = mClient.getClientInfo().getClient();
+        client.onSurfaceCreated(mSurfacePackage, mSession);
+        client.onSurfaceUpdated(mSurfacePackage);
+        verify(mClientCallbacks, never()).onSessionUpdated(any(InsightSurfaceSession.class));
+    }
+
+    @Test
+    public void testSurfaceUpdated_wrongSurfaceControl() throws RemoteException {
+        mClient.register(mExecutor, mClientCallbacks);
+
+        final SurfaceControl wrongSurfaceControl = mock(SurfaceControl.class);
+        final SurfacePackage wrongSurfacePackage = mock(SurfacePackage.class);
+        when(wrongSurfacePackage.getSurfaceControl()).thenReturn(wrongSurfaceControl);
+
+        when(mSurfaceControl.isSameSurface(wrongSurfaceControl)).thenReturn(false);
+
+        final IInsightSurfaceClient client = mClient.getClientInfo().getClient();
+        client.onSurfaceCreated(mSurfacePackage, mSession);
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> client.onSurfaceUpdated(wrongSurfacePackage));
+    }
+
     @Test
     public void testInsightSurfaceClientCreation() {
         final InsightSurfaceClient client =

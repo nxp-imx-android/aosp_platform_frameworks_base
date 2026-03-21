@@ -109,6 +109,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.AllowComponentAccessPolicyInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.IPackageManager;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ServiceInfo;
 import android.content.pm.SignedPackage;
@@ -267,6 +268,10 @@ public class ActivityManagerServiceTest {
     private static final String SYSTEM_PKG = "android";
     private static final String CERT_A = "CERT_A"; // For Caller
     private static final String CERT_B = "CERT_B"; // For Target
+
+    // A different package name from TEST_PACKAGE for testing
+    private static final String TEST_OTHER_PACKAGE = "com.other.package";
+    private static final String TEST_CALLER_NAME = "test";
 
     private static ProcessList.ProcessListSettingsListener sProcessListSettingsListener;
 
@@ -2657,6 +2662,58 @@ public class ActivityManagerServiceTest {
     public void testisOutgoingTransactionsAuditable_flagEnabled_noManager() {
         LocalServices.removeServiceForTest(PccSandboxManagerInternal.class);
         assertFalse(mAms.mProcessList.isOutgoingTransactionsAuditable(REGULAR_UID));
+    }
+
+    @Test
+    public void testEnforceDumpPermissionForPackage_hasPermission() {
+        ActivityManagerService spyAms = spy(mAms);
+        spyAms.mPackageManagerInt = mPackageManagerInternal;
+        doReturn(PackageManager.PERMISSION_GRANTED)
+                .when(spyAms)
+                .checkCallingPermission(anyString());
+        final int testPackageUid = 12345;
+        doReturn(testPackageUid)
+                .when(mPackageManagerInternal)
+                .getPackageUid(eq(TEST_PACKAGE), anyLong(), anyInt());
+
+        int uid =
+                spyAms.enforceDumpPermissionForPackage(
+                        TEST_PACKAGE, TEST_USER_ID, TEST_UID, TEST_CALLER_NAME);
+        assertEquals(testPackageUid, uid);
+    }
+
+    @Test
+    public void testEnforceDumpPermissionForPackage_noPermission_ownPackage() {
+        ActivityManagerService spyAms = spy(mAms);
+        spyAms.mPackageManagerInt = mPackageManagerInternal;
+        doReturn(PackageManager.PERMISSION_DENIED).when(spyAms).checkCallingPermission(anyString());
+        spyOn(spyAms.mContext);
+        PackageManager pm = mock(PackageManager.class);
+        doReturn(pm).when(spyAms.mContext).getPackageManager();
+        doReturn(new String[] {TEST_PACKAGE}).when(pm).getPackagesForUid(TEST_UID);
+
+        int uid =
+                spyAms.enforceDumpPermissionForPackage(
+                        TEST_PACKAGE, TEST_USER_ID, TEST_UID, TEST_CALLER_NAME);
+        assertEquals(UserHandle.getUid(TEST_USER_ID, UserHandle.getAppId(TEST_UID)), uid);
+    }
+
+    @Test
+    public void testEnforceDumpPermissionForPackage_noPermission_otherPackage() {
+        ActivityManagerService spyAms = spy(mAms);
+        spyAms.mPackageManagerInt = mPackageManagerInternal;
+        doReturn(PackageManager.PERMISSION_DENIED).when(spyAms).checkCallingPermission(anyString());
+        spyOn(spyAms.mContext);
+        PackageManager pm = mock(PackageManager.class);
+        doReturn(pm).when(spyAms.mContext).getPackageManager();
+        doReturn(new String[] {TEST_OTHER_PACKAGE}).when(pm).getPackagesForUid(TEST_UID);
+
+        assertThrows(
+                SecurityException.class,
+                () -> {
+                    spyAms.enforceDumpPermissionForPackage(
+                            TEST_PACKAGE, TEST_USER_ID, TEST_UID, TEST_CALLER_NAME);
+                });
     }
 
     private static class TestHandler extends Handler {

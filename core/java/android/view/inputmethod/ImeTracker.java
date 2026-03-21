@@ -31,7 +31,6 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.content.Context;
-import android.os.Handler;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.Process;
@@ -951,15 +950,12 @@ public interface ImeTracker {
          * @param useSeparatedThread {@code true} if the animation is handled by the app,
          *                           {@code false} if the animation will be scheduled on the
          *                           {@link android.view.InsetsAnimationThread}.
-         * @param handler the handler for the thread used for running inset animations.
          */
         public void onRequestAnimation(@NonNull InputMethodJankContext jankContext,
-                @AnimationType int animType, boolean useSeparatedThread,
-                @Nullable Handler handler) {
+                @AnimationType int animType, boolean useSeparatedThread) {
             final int cujType = getImeInsetsCujFromAnimation(animType);
             if (jankContext.getDisplayContext() == null
                     || jankContext.getTargetSurfaceControl() == null
-                    || handler == null
                     || cujType == -1) {
                 return;
             }
@@ -967,10 +963,16 @@ public interface ImeTracker {
                             cujType,
                             jankContext.getDisplayContext(),
                             jankContext.getTargetSurfaceControl(),
-                            handler)
+                            jankContext.getDisplayContext().getMainThreadHandler())
                     .setTag(String.format(Locale.US, "%d@%d@%s", animType,
                             useSeparatedThread ? 0 : 1, jankContext.getHostPackageName()));
-            InteractionJankMonitor.getInstance().begin(builder);
+
+            Runnable task = () -> InteractionJankMonitor.getInstance().begin(builder);
+            if (Flags.fixJankTrackerImeAnimationDelay()) {
+                jankContext.getDisplayContext().getMainThreadHandler().post(task);
+            } else {
+                task.run();
+            }
         }
 
         /**

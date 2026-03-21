@@ -95,7 +95,7 @@ public class MagnificationController implements MagnificationConnectionManager.C
         FullScreenMagnificationController.MagnificationInfoChangedCallback,
         WindowManagerInternal.AccessibilityControllerInternal.UiChangesForAccessibilityCallbacks {
 
-    private static final String TAG = "MagnificationController";
+    private static final String TAG = MagnificationController.class.getSimpleName();
     private static final boolean DEBUG = AccessibilityLogUtil.isDebugEnabled(TAG);
 
     private final AccessibilityManagerService mAms;

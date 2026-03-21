@@ -12,11 +12,10 @@ flag {
 }
 
 flag {
-  name: "release_all_transition_surfaces"
+  name: "release_all_transition_surfaces_on_idle"
   namespace: "windowing_frontend"
   description: "Reduce offscreen layers which rely on GC to release"
   bug: "429548260"
-  is_fixed_read_only: true
   metadata {
     purpose: PURPOSE_BUGFIX
   }

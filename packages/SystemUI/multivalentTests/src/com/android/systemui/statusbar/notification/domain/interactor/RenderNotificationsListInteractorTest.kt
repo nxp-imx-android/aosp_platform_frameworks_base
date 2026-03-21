@@ -26,7 +26,6 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.statusbar.RankingBuilder
 import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
-import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 import com.android.systemui.statusbar.notification.shared.byKey
@@ -139,6 +138,60 @@ class RenderNotificationsListInteractorTest : SysuiTestCase() {
             val second = actual!![1]
             assertThat(second.key).isEqualTo("key2")
             assertThat(second.promotedContent).isNotNull()
+        }
+
+    @Test
+    fun setRenderList_withScreenShareNotification() =
+        kosmos.runTest {
+            val actual by collectLastValue(outputInteractor.topLevelRepresentativeNotifications)
+            val key = "mock"
+
+            val screenShareNotification =
+                mockNotificationEntry(key = key).apply {
+                    sbn.notification.extras.putBoolean(
+                        RenderNotificationListInteractor.IS_SCREEN_SHARE_NOTIFICATION,
+                        true,
+                    )
+                }
+            underTest.setRenderedList(listOf(screenShareNotification))
+
+            val renderedNotification = actual!!.single()
+            assertThat(renderedNotification.key).isEqualTo(key)
+            assertThat(renderedNotification.isScreenShareNotification).isTrue()
+        }
+
+    @Test
+    fun setRenderList_withoutScreenShareNotification() =
+        kosmos.runTest {
+            val actual by collectLastValue(outputInteractor.topLevelRepresentativeNotifications)
+            val key = "mock"
+
+            val screenShareNotification = mockNotificationEntry(key = key)
+            underTest.setRenderedList(listOf(screenShareNotification))
+
+            val renderedNotification = actual!!.single()
+            assertThat(renderedNotification.key).isEqualTo(key)
+            assertThat(renderedNotification.isScreenShareNotification).isFalse()
+        }
+
+    @Test
+    fun setRenderList_withFalseScreenShareNotification() =
+        kosmos.runTest {
+            val actual by collectLastValue(outputInteractor.topLevelRepresentativeNotifications)
+            val key = "mock"
+
+            val screenShareNotification =
+                mockNotificationEntry(key = key).apply {
+                    sbn.notification.extras.putBoolean(
+                        RenderNotificationListInteractor.IS_SCREEN_SHARE_NOTIFICATION,
+                        false,
+                    )
+                }
+            underTest.setRenderedList(listOf(screenShareNotification))
+
+            val renderedNotification = actual!!.single()
+            assertThat(renderedNotification.key).isEqualTo(key)
+            assertThat(renderedNotification.isScreenShareNotification).isFalse()
         }
 
     private fun mockNotificationEntry(

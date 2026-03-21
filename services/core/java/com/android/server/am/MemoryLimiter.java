@@ -57,6 +57,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -87,10 +89,18 @@ class MemoryLimiter implements AutoCloseable {
     // The limits that this feature monitors.
     // LINT.IfChange(limitTypes)
     // A limit has been breached but which limit is unknown.
-    static final int UNKNOWN_LIMIT_TYPE = 0;
+    static final int LIMIT_TYPE_UNKNOWN = 0;
     // The memory.high limit has been breached.
-    static final int MEMORY_LIMIT_TYPE = 1;
+    static final int LIMIT_TYPE_MEMORY = 1;
+    // The memory.swap.max limit has been breached.
+    static final int LIMIT_TYPE_SWAP = 2;
     // LINT.ThenChange(/services/core/jni/com_android_server_am_MemoryLimiter.cpp:limitTypes)
+
+    // Well-known memory limits.
+    // LINT.IfChange(limitSpecials)
+    private static final Long LIMIT_IS_DISABLED = -1L;         // Disable the limit.
+    private static final Long LIMIT_IS_IGNORED = -2L;          // Ignore (do not apply).
+    // LINT.ThenChange(/services/core/jni/com_android_server_am_MemoryLimiter.cpp:limitSpecials)
 
     // A discriminated value to mean "all UIDs".  It does not overlay INVALID_UID or any legal
     // UID.
@@ -101,8 +111,9 @@ class MemoryLimiter implements AutoCloseable {
      */
     static String limitTypeToString(int type) {
         return switch (type) {
-            case UNKNOWN_LIMIT_TYPE -> "unknown";
-            case MEMORY_LIMIT_TYPE -> "memory.high";
+            case LIMIT_TYPE_UNKNOWN -> "unknown";
+            case LIMIT_TYPE_MEMORY -> "memory.high";
+            case LIMIT_TYPE_SWAP -> "memory.swap.max";
             default -> "unexpected";
         };
     }
@@ -112,9 +123,9 @@ class MemoryLimiter implements AutoCloseable {
      */
     static int limitTypeToAtom(int type) {
         return switch (type) {
-            case UNKNOWN_LIMIT_TYPE ->
+            case LIMIT_TYPE_UNKNOWN ->
                     FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT__TYPE__UNKNOWN;
-            case MEMORY_LIMIT_TYPE ->
+            case LIMIT_TYPE_MEMORY ->
                     FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT__TYPE__HIGH;
             default -> FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT__TYPE__UNKNOWN;
         };
@@ -157,8 +168,35 @@ class MemoryLimiter implements AutoCloseable {
     // The system configuration information needed to construct limits.  The "valid" flag is false
     // if any of the values could not be determined.  The iteration count is used to track how
     // many times the limit initialization code has run.
+    // The memory attributes (memTotal, swapTotal, and pageSize) are in bytes.
     private record LimitConfig(long memTotal, long swapTotal, long pageSize, boolean valid,
-                               int iteration) {}
+                               int iteration) {
+
+        private long computeLimit(long maximum, int percentage) {
+            if (percentage >= 100) {
+                return LIMIT_IS_DISABLED;
+            } else if (maximum <= 0 || pageSize <= 0 || percentage < 0) {
+                return LIMIT_IS_IGNORED;
+            } else {
+                // Kernel accounting is based on pages, so ensure the computed limit is
+                // page-aligned.
+                long unalignedLimit = (percentage * maximum) / 100;
+                return  (unalignedLimit / pageSize) * pageSize;
+            }
+        }
+
+        Limits toLimits(int memPercent, int swapPercent) {
+            final long memHigh = computeLimit(memTotal, memPercent);
+            final long swapMax = computeLimit(swapTotal, swapPercent);
+            return new Limits(memHigh, swapMax);
+        }
+
+        @Override
+        public String toString() {
+            return formatSimple("mem=%dB swap=%dB page=%dB valid=%s",
+                    memTotal, swapTotal, pageSize, valid);
+        }
+    }
 
     // A single set of limits.  memHigh is applied to memory.high and swapMax is applied to
     // memory.swap.max.  See {@link memLimit()} for details on how special limit values are
@@ -261,6 +299,30 @@ class MemoryLimiter implements AutoCloseable {
             return Flags.memoryLimiterSwap();
         }
 
+        // 12GB
+        private static final long MEM_12GB = 12L * 1024 * 1024 * 1024;
+
+        // Return true if the native layer should continue applying limits to a process after an
+        // overlimit event.  If this is false, then the native layer sets the limits to "max"
+        // after an over-limit event and will not make any further changes.  When limitMode is
+        // false, the system is said to be in "senseMode": it uses cgroups to detect over-limit
+        // events but does not enforce limits.
+        boolean limitMode() {
+            if (!Files.exists(Paths.get(configFile()))) {
+                // There is no configuration file, so only check limits.
+                return false;
+            }
+
+            MemInfoReader memInfo = new MemInfoReader();
+            memInfo.readMemInfo();
+            if (memInfo.getTotalSize() < MEM_12GB) {
+                // This instance has less than 12GB of ram available, so only check limits.
+                return false;
+            }
+
+            return true;
+        }
+
         // True if running in test mode.  The default implementation assumes that test mode is
         // false if running under the system UID and true otherwise.
         boolean isTestMode() {
@@ -330,9 +392,6 @@ class MemoryLimiter implements AutoCloseable {
         // above, means system_server will try for 5 minutes total.
         private static final int MAX_LIMIT_INIT_ATTEMPTS = 30;
 
-        // Well-known memory limits.
-        private static final Long MAX_MEMORY = -1L;     // Maximum memory
-
         // The extracted system configuration values.
         private volatile LimitConfig mLimitConfig;
 
@@ -365,6 +424,7 @@ class MemoryLimiter implements AutoCloseable {
             mInjector = injector;
 
             mNative.set(initLimiter(ControllerEnabled.this, mInjector.isMonitoringEnabled(),
+                            mInjector.isSwapMonitoringEnabled(), mInjector.limitMode(),
                             mInjector.isTestMode()));
 
             mQueue = new Handler(BackgroundThread.getHandler().getLooper()) {
@@ -458,26 +518,22 @@ class MemoryLimiter implements AutoCloseable {
             boolean finalized = true;
 
             if (swapTotal <= 0) {
-                Slog.w(TAG, "swap not ready - assuming half of ram");
                 swapTotal = memTotal / 2;
                 finalized = false;
             }
 
-            Slog.i(TAG, formatSimple("vmem=%d swap=%d page=%d", memTotal, swapTotal, pageSize));
             mLimitConfig = new LimitConfig(memTotal, swapTotal, pageSize, finalized,
                     mLimitConfig == null ? 0 : mLimitConfig.iteration + 1);
+            Slog.i(TAG, mLimitConfig.toString());
 
             final int visiblePct = mConfiguration.visible;
             final int notVisiblePct = mConfiguration.notVisible;
-            final boolean setSwap = mInjector.isSwapMonitoringEnabled();
 
-            Limits noop = new Limits(0, 0);
-            Limits cached = new Limits(MAX_MEMORY,
-                    setSwap ? MAX_MEMORY : 0);
-            Limits notVisible = new Limits(memLimit(memTotal, pageSize, notVisiblePct),
-                    setSwap ? memLimit(swapTotal, pageSize, notVisiblePct) : 0);
-            Limits visible = new Limits(memLimit(memTotal, pageSize, visiblePct),
-                    setSwap ? memLimit(swapTotal, pageSize, visiblePct) : 0);
+            Limits ignored = new Limits(LIMIT_IS_IGNORED, LIMIT_IS_IGNORED);
+            // Lift the limit on swap but don't change the limit on memory.high.
+            Limits cached = new Limits(LIMIT_IS_IGNORED, LIMIT_IS_DISABLED);
+            Limits notVisible = mLimitConfig.toLimits(notVisiblePct, notVisiblePct);
+            Limits visible = mLimitConfig.toLimits(visiblePct, visiblePct);
 
             // Initialize the procstate/bucket map.
             for (int state = ActivityManager.MIN_PROCESS_STATE;
@@ -485,9 +541,10 @@ class MemoryLimiter implements AutoCloseable {
                     state++) {
                 if (state == ActivityManager.PROCESS_STATE_UNKNOWN
                         || state == ActivityManager.PROCESS_STATE_NONEXISTENT) {
-                    // Never try to configure a process that does not exist or is cached.
-                    mStateLimit.set(state, noop);
+                    // Do not try to configure a process that does not exist.
+                    mStateLimit.set(state, ignored);
                 } else if (ActivityManager.isProcStateCached(state)) {
+                    // Limits are lifted from cached processes.
                     mStateLimit.set(state, cached);
                 } else if (ActivityManager.isProcStateJankPerceptible(state)) {
                     mStateLimit.set(state, visible);
@@ -503,25 +560,6 @@ class MemoryLimiter implements AutoCloseable {
             // If the limits have not been finalized, cue up a retry.
             if (!finalized && mLimitConfig.iteration < MAX_LIMIT_INIT_ATTEMPTS) {
                 mQueue.sendMessageDelayed(mQueue.obtainMessage(MESSAGE_INIT_LIMITS), INIT_POLL_MS);
-            }
-        }
-
-        // A helper function that returns the correct memory limit given a total memory size and a
-        // percentage.  If the percentage is 100, then MAX_MEMORY is returned.  A non-positive
-        // percentage should not be seen but if it is, the function returns zero.  Return values
-        // are truncated to the kernel page size.  If either system configuration parameter (total
-        // and pageSize) is invalid, MAX_MEMORY is returned.
-        private static long memLimit(long total, long pageSize, int percentage) {
-            if (percentage >= 100) {
-                return MAX_MEMORY;
-            } else if (total <= 0 || pageSize <= 0) {
-                return MAX_MEMORY;
-            } else if (percentage <= 0) {
-                return 0;
-            } else {
-                long limit = (percentage * total) / 100;
-                limit = (limit / pageSize) * pageSize;
-                return limit;
             }
         }
 
@@ -602,22 +640,23 @@ class MemoryLimiter implements AutoCloseable {
             Slog.i(TAG, formatSimple("onLimitExceeded: pid=%d uid=%d type=%s limit=%d pkg=%s",
                     pid, uid, limitTypeToString(type), limit, pkg));
 
-            MemInfoReader memInfo = new MemInfoReader();
-            memInfo.readMemInfo();
-            long memTotal = memInfo.getTotalSize();
-            long swapTotal = memInfo.getSwapTotalSizeKb() * 1024;
+            long basis = switch (type) {
+                case LIMIT_TYPE_MEMORY -> mLimitConfig.memTotal;
+                case LIMIT_TYPE_SWAP -> mLimitConfig.swapTotal;
+                default -> 0;
+            };
 
-            // If memTotal is zero, something is badly wrong with the system.  The code should
-            // never reach this point, because an invalid memTotal should disable limits, but just
-            // in case we do reach this point, log and exit immediately.
-            if (memTotal <= 0) {
-                Slog.e(TAG, formatSimple("onLimitExceeded: invalid memTotal=%d", memTotal));
+            // If the basis is zero, something is badly wrong with the system.  The code should
+            // never reach this point; log and exit.
+            if (basis <= 0) {
+                Slog.e(TAG, formatSimple("onLimitExceeded: invalid type=%d basis=%d",
+                                type, basis));
                 return;
             }
 
             // Convert the limit into a percentage of available memory.  The next two lines
             // safely generate the percentage between 0 and 100.
-            final double ratio = (100.0D * limit) / memTotal;
+            final double ratio = (100.0D * limit) / basis;
             final int percent = (int) Math.round(Math.max(0.0, Math.min(100.0, ratio)));
 
             // statsd logging is throttled to at most 28 events per day.
@@ -659,11 +698,7 @@ class MemoryLimiter implements AutoCloseable {
 
         @Override
         public void setManualLimit(int pid, int uid, int limitPercent) {
-            final long memTotal = mLimitConfig.memTotal;
-            final long swapTotal = mLimitConfig.swapTotal;
-            final long pageSize = mLimitConfig.pageSize;
-            setLimit(pid, uid, new Limits(memLimit(memTotal, pageSize, limitPercent),
-                            memLimit(swapTotal, pageSize, limitPercent)));
+            setLimit(pid, uid, mLimitConfig.toLimits(limitPercent, limitPercent));
         }
 
         @Override
@@ -964,11 +999,13 @@ class MemoryLimiter implements AutoCloseable {
      *
      * @param controller is the Controller that receives over-limit events.
      * @param monitor is true if limit monitoring is enabled.
+     * @param monitorSwap is true if the feature is monitoring swap as well as memory.
+     * @param limitMode is true if limits are still honored after an over-limit event.
      * @param testMode is true if running in test mode.
      * @return the native service.
      */
     private static native long initLimiter(Controller controller, boolean monitor,
-            boolean testMode);
+            boolean monitorSwap, boolean limitMode, boolean testMode);
 
     /**
      * Release the native handler.
@@ -995,4 +1032,20 @@ class MemoryLimiter implements AutoCloseable {
      * separated by whitespace.
      */
     private static native @Nullable String getStatistics(long service);
+
+    /**
+     * This is a test interface to the native code.  The function takes a string that is the name
+     * of a supported cgroup file and a string that is the content of that file.  The function
+     * parses the data into an array of longs; the order is the order of the fields in the cgroup
+     * file.  There are no side-effects and the function does not read any cgroup files.
+     *
+     * Supported files are "memory.events", "memory.swap.events", and "memory.stat".  Note that
+     * "memory.stat" is not fully parsed.
+     *
+     * @param file The name of the cgroup file.
+     * @param data The contents of the cgroup file.
+     * @return An array of longs representing the parsed data.
+     */
+    @VisibleForTesting
+    static native @Nullable long[] testParseCgroup(String file, String data);
 }

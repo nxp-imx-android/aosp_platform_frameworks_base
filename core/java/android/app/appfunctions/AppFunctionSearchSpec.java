@@ -225,6 +225,21 @@ public final class AppFunctionSearchSpec implements Parcelable {
     }
 
     /**
+     * Returns a query expression to search AppFunction by package name.
+     *
+     * @hide
+     */
+    @NonNull
+    public String getPackageAppSearchQuery() {
+        String query = "";
+        if (mPackageNames == null || mPackageNames.isEmpty()) {
+            return query;
+        }
+        return TextUtils.formatSimple(
+                "packageName:(%s)", getOrStringQueryExpression(mPackageNames));
+    }
+
+    /**
      * Returns the list of qualified app function ids to filter for based on this {@link
      * AppFunctionSearchSpec}. Returns an empty list if the AppFunctionNames filter was not set.
      *

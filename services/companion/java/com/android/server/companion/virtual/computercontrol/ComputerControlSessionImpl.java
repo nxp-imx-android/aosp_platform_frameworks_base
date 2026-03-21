@@ -218,7 +218,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final InputManagerInternal mInputManagerInternal;
     private final DisplayManagerGlobal mDisplayManagerGlobal;
     private final ViewConfiguration mViewConfiguration;
-    private final long mGlobalSessionTimeoutDurationMs;
     private final Supplier<SurfaceControl.Transaction> mTransactionSupplier;
     private final ComputerControlAllowlistController mAllowlistController;
     private final ComputerControlStatsController mStatsController;
@@ -242,6 +241,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 public void onActive() {
                     handleStateTransition();
                     mStatsController.onSessionActive();
+                    mSessionTimeoutTimer.resume();
                 }
 
                 @Override
@@ -250,6 +250,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     cancelOngoingInteractions();
                     handleStateTransition();
                     mStatsController.onSessionBlocked(reason);
+                    mSessionTimeoutTimer.pause();
                 }
 
                 // Shared configuration updates when transitioning between non-closed states.
@@ -290,11 +291,11 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @Nullable
     private ScheduledFuture<?> mInsertTextFuture;
     @Nullable
-    private ScheduledFuture<?> mCloseSessionFuture;
-    @Nullable
     private ScheduledFuture<?> mDisplayEmptyScheduledAction;
     @Nullable
     private Surface mClientSurface;
+
+    private final PausableTimer mSessionTimeoutTimer;
 
     // Whether this is a session only intended for testing ComputerControl functionality.
     private final boolean mIsTestSession;
@@ -369,7 +370,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         Trace.asyncTraceForTrackBegin(mTraceTrack, "Session", TRACE_COOKIE_SESSION);
         mFgThreadExecutor = fgThreadExecutor;
         mViewConfiguration = viewConfiguration;
-        mGlobalSessionTimeoutDurationMs = globalSessionTimeoutDurationMs;
         mTransactionSupplier = transactionSupplier;
         mAllowlistController = allowlistController;
         mRequest = request;
@@ -480,7 +480,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mAudioCapture.startAudioCapture();
 
             request.appToken().linkToDeath(this, 0);
-            startSessionCloseGlobalTimeout();
+            mSessionTimeoutTimer = new PausableTimer(mScheduler, globalSessionTimeoutDurationMs,
+                    () -> close(CLOSE_REASON_SESSION_TIMED_OUT));
         } catch (RemoteException e) {
             if (virtualDevice != null) {
                 virtualDevice.close();
@@ -603,6 +604,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
         mLifecycle.monitor();
         mStatsController.monitor();
+        mSessionTimeoutTimer.monitor();
     }
 
     @Override
@@ -641,7 +643,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
         // TODO(b/444600407): Remove this once the consent model is per-target app. While the
         // consent is general, the caller can extend the list of target packages dynamically.
-        if (!(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
+        if (!isSessionActive()) {
             Slog.e(TAG, "Cannot launch application: Agent interaction is not available");
             return;
         }
@@ -895,6 +897,15 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         return mLifecycle.getCurrentState() instanceof LifecycleState.Blocked;
     }
 
+    /**
+     * Returns {@code true} if the agent is actively automating the session.
+     * This is the basis for various policies, such as whether autofill or
+     * camera, audio etc. is enabled for a session.
+     */
+    public boolean isSessionActive() {
+        return mLifecycle.getCurrentState() instanceof LifecycleState.Active;
+    }
+
     private boolean areAnyMirrorsInteractive() {
         synchronized (mInteractiveMirrors) {
             for (int i = 0; i < mInteractiveMirrors.size(); i++) {
@@ -1110,7 +1121,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private void releaseResources() {
         cancelOngoingInteractions();
-        cancelPendingCloseSession();
+        mSessionTimeoutTimer.close();
         mAudioInjector.stopAudioInjection();
         mAudioCapture.stopAudioCapture();
         mVirtualDevice.close(); // closes also the VirtualAudioDevice
@@ -1143,11 +1154,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 TOUCH_EVENT_DELAY_MS, TimeUnit.MILLISECONDS);
     }
 
-    private void startSessionCloseGlobalTimeout() {
-        mCloseSessionFuture = mScheduler.schedule(() -> close(CLOSE_REASON_SESSION_TIMED_OUT),
-                mGlobalSessionTimeoutDurationMs, TimeUnit.MILLISECONDS);
-    }
-
     private boolean performDefaultEditorAction(@Nullable EditorInfo editorInfo,
             @NonNull IRemoteComputerControlInputConnection ic) throws RemoteException {
         // Check if currently active input connection on CC display has a valid editor action
@@ -1170,13 +1176,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         if (mSwipeFuture != null && mSwipeFuture.cancel(false)) {
             mVirtualTouchscreen.sendTouchEvent(
                     createTouchEvent(0, 0, VirtualTouchEvent.ACTION_CANCEL));
-        }
-    }
-
-    private void cancelPendingCloseSession() {
-        if (mCloseSessionFuture != null) {
-            mCloseSessionFuture.cancel(false);
-            mCloseSessionFuture = null;
         }
     }
 
@@ -1248,7 +1247,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     private boolean shouldDisallowInteractions(String callSite) {
         // TODO: b/452428736 - Find a long term solution for blocking agent interactions.
-        if (!(mLifecycle.getCurrentState() instanceof LifecycleState.Active)) {
+        if (!isSessionActive()) {
             Slog.w(TAG, "Computer control interaction blocked since session is not active: "
                     + callSite);
             return true;

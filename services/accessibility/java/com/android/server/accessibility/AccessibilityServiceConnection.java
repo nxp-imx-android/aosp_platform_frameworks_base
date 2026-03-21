@@ -85,7 +85,7 @@ import java.util.Set;
  * connection for the service.
  */
 class AccessibilityServiceConnection extends AbstractAccessibilityServiceConnection {
-    private static final String LOG_TAG = "AccessibilityServiceConnection";
+    private static final String LOG_TAG = AccessibilityServiceConnection.class.getSimpleName();
     private static final int UID_UNKNOWN = -1;
 
     /*

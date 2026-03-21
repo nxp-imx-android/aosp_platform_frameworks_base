@@ -24,23 +24,12 @@ import android.os.SystemClock
 import android.view.Display
 import android.view.DisplayAddress
 import android.view.SurfaceControl
-import java.io.InputStream
-import java.io.OutputStream
 import kotlin.Int
 
 internal const val TEST_SENSOR_NAME = "test_sensor_name"
 internal const val TEST_SENSOR_TYPE_STRING = "test_sensor_type"
 internal const val TEST_SENSOR_TYPE = 0
 internal const val TEST_SENSOR_MAX_RANGE = 1f
-
-
-internal fun createInMemoryPersistentDataStore(): PersistentDataStore {
-    return PersistentDataStore(object : PersistentDataStore.Injector() {
-        override fun openRead(): InputStream = InputStream.nullInputStream()
-        override fun startWrite(): OutputStream = OutputStream.nullOutputStream()
-        override fun finishWrite(os: OutputStream?, success: Boolean) {}
-    })
-}
 
 /**
  * Create a custom {@link DisplayAddress} to ensure we're not relying on any specific

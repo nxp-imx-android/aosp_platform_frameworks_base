@@ -23,6 +23,8 @@ import android.window.TransitionInfo;
 import android.window.WindowAnimationState;
 import android.window.WindowContainerToken;
 
+import com.android.wm.shell.shared.annotations.ShellMainThread;
+
 import java.util.List;
 
 /**
@@ -51,6 +53,12 @@ public interface ITransitionAnimation {
     void start(@NonNull TransitionInfo info, @NonNull List<WindowAnimationState> from,
             @NonNull IFinishedCallback onFinished);
 
+    /**
+     * Applies a scale factor to the animation duration.
+     * Called just before {@link #start}.
+     */
+    default void setAnimScaleSetting(float scale) {}
+
     /** for debugging/logging */
     @NonNull String getDebugName();
 
@@ -61,6 +69,7 @@ public interface ITransitionAnimation {
          * Called when an animation has finished. Caller must not manipulate the corresponding
          * surfaces after calling this.
          */
+        @ShellMainThread
         void onFinished(@Nullable SurfaceControl.Transaction finishT);
     }
 }

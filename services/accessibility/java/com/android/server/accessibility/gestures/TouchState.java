@@ -36,7 +36,7 @@ import com.android.server.accessibility.AccessibilityManagerService;
  * dispatch.
  */
 public class TouchState {
-    private static final String LOG_TAG = "TouchState";
+    private static final String LOG_TAG = TouchState.class.getSimpleName();
     // Pointer-related constants
     // This constant captures the current implementation detail that
     // pointer IDs are between 0 and 31 inclusive (subject to change).

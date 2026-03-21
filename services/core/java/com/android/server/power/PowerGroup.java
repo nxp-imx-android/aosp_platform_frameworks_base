@@ -43,6 +43,7 @@ import android.os.Trace;
 import android.util.Slog;
 import android.util.TimeUtils;
 import android.view.Display;
+import android.view.accessibility.Flags;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.LatencyTracker;
@@ -683,6 +684,10 @@ public class PowerGroup {
             case PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON:
             case PowerManager.GO_TO_SLEEP_REASON_SLEEP_BUTTON:
                 return Display.STATE_REASON_KEY;
+            case PowerManager.GO_TO_SLEEP_REASON_ACCESSIBILITY:
+                if (Flags.fixA11yLockScreenJank()) {
+                    return Display.STATE_REASON_ACCESSIBILITY;
+                }
             default:
                 return Display.STATE_REASON_DEFAULT_POLICY;
         }

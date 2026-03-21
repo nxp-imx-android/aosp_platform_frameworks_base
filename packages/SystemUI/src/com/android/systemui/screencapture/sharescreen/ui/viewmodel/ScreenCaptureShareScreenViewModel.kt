@@ -45,9 +45,6 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 
 class ScreenCaptureShareScreenViewModel
 @AssistedInject
@@ -136,7 +133,13 @@ constructor(
     fun setTargetViewModel(type: ScreenCaptureTarget) {
         currentTargetsModel =
             when (type) {
-                is ScreenCaptureTarget.App -> recentTasksViewModel
+                is ScreenCaptureTarget.App -> {
+                    mediaProjectionMetricsLogger.notifyAppSelectorDisplayed(
+                        shareScreenUiInteractor.uid
+                    )
+                    recentTasksViewModel
+                }
+                // TODO(b/471059930) Extend metrics for large screen sharing.
                 is ScreenCaptureTarget.AppContent -> appContentsViewModel
                 is ScreenCaptureTarget.Fullscreen -> displaysViewModel
                 else ->
@@ -156,9 +159,6 @@ constructor(
         when (val currentModel = currentTargetsModel) {
             is RecentTasksViewModel -> {
                 currentModel.selectedTarget.value?.let {
-                    mediaProjectionMetricsLogger.notifyAppSelectorDisplayed(
-                        shareScreenUiInteractor.uid
-                    )
                     enqueueOnActivatedScope {
                         shareScreenUiInteractor.onAppSharingApproved(it.model.taskId)
                     }
@@ -169,7 +169,6 @@ constructor(
                 }
             }
             is AppContentsViewModel -> {
-                // TODO(b/471059930) Extend metrics for large screen sharing.
                 currentModel.selectedTarget.value?.let {
                     val callback = currentModel.projectionCallback.value?.get()
                     // The callback is retrieved from a [WeakReference] and may be null if it was
@@ -227,11 +226,6 @@ constructor(
             launchTraced("AppContentsViewModel") { appContentsViewModel.activate() }
             launchTraced("RecentTasksViewModel") { recentTasksViewModel.activate() }
             launchTraced("DisplaysViewModel") { displaysViewModel.activate() }
-
-            shareScreenUiInteractor.isHostAppDead
-                .filter { it }
-                .onEach { onCloseClicked() }
-                .launchIn(this)
         }
     }
 

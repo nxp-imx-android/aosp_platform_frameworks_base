@@ -26,6 +26,9 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.android.settingslib.metadata.preferencesapi.ApiPreference
 import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreen
+import com.android.settingslib.metadata.preferencesapi.preconditions.Allowed
+import com.android.settingslib.metadata.preferencesapi.preconditions.Disallowed
+import com.android.settingslib.metadata.preferencesapi.preconditions.PreconditionStability
 import com.android.settingslib.utils.applications.AppUtils
 
 /** Indicates how sensitive of the data. */
@@ -193,6 +196,15 @@ interface PreferenceMetadata {
     fun getEnabledDescription(): String? = null
 
     /**
+     * Returns the stability of the enabled state of the preference.
+     *
+     * This should describe whether the enabled state can be cached.
+     *
+     * It does not need to be set if [isEnabled] always returns `true`.
+     */
+    fun getEnabledStability() : PreconditionStability? = PreconditionStability.STABLE_UNTIL_APK_UPDATE
+
+    /**
      * Returns the keys of depended preferences.
      *
      * Keep in mind that the dependency is effective only on the same screen. For cross screen
@@ -324,6 +336,99 @@ fun PreferenceMetadata.accessPreconditionsAsString(context: Context): String? {
     return if (preconditions.isEmpty()) null else "Preconditions to accessing: $preconditions."
 }
 
+/** Returns a string describing the preconditions for accessing the preference as well as the status of them. */
+suspend fun PreferenceMetadata.resolvedAccessAndGetPreconditionsAsString(context: Context): String? {
+    return if (this is ApiPreference<*, *>) {
+            val operationContext = getApiOperationContext(context)
+
+            val screenPreconditionsResult = screenPreconditions?.check(operationContext)
+            val preconditionsResult = preconditions?.check(operationContext)
+            val getPreconditionsResult = get?.preconditions?.check(operationContext)
+
+            val preconditionFailures = listOfNotNull(
+                if (screenPreconditionsResult is Disallowed) screenPreconditionsResult.getReason(context) else null,
+                if (preconditionsResult is Disallowed) preconditionsResult.getReason(context) else null,
+                if (getPreconditionsResult is Disallowed) getPreconditionsResult.getReason(context) else null,
+            )
+
+            val preconditionPasses = listOfNotNull(
+                if (screenPreconditionsResult is Allowed) screenPreconditions?.getDescription(context) else null,
+                if (preconditionsResult is Allowed) preconditions?.getDescription(context) else null,
+                if (getPreconditionsResult is Allowed) get?.preconditions?.getDescription(context) else null,
+            )
+
+            val preconditionFailuresString = if (preconditionFailures.isEmpty()) {
+                null
+            } else {
+                "Failing read preconditions: ${preconditionFailures.joinToString(", ")}"
+            }
+
+            val preconditionPassesString = if (preconditionPasses.isEmpty()) {
+                null
+            } else {
+                "Passing read preconditions: ${preconditionPasses.joinToString(", ")}"
+            }
+
+            listOfNotNull(preconditionFailuresString, preconditionPassesString).joinToString(", ").takeIf { it.isNotEmpty() }
+        } else if (this is PreferencesApiScreen) {
+            val screenPreconditionsResult = evaluatePreconditions(context)
+
+            if (screenPreconditionsResult is Disallowed) "Failing screen access preconditions: ${screenPreconditionsResult.getReason(context)}"
+            else if (screenPreconditionsResult is Allowed) "Passing screen access preconditions: ${screenPreconditions?.getDescription(context)}"
+            else null
+        } else if (this is PreferenceAvailabilityProvider) {
+            if (isAvailable(context)) {
+                "Passing availability preconditions: ${availabilityDescription}"
+            } else {
+                "Failing availability preconditions: ${availabilityDescription}"
+            }
+        } else {
+            null
+        }
+}
+
+/** Returns a string describing the preconditions for setting the preference as well as the status of them. */
+suspend fun PreferenceMetadata.resolvedSetPreconditionsAsString(context: Context): String? {
+    return if (this is ApiPreference<*, *>) {
+            val operationContext = getApiOperationContext(context)
+            val setPreconditionsResult = set?.preconditions?.check(operationContext)
+
+            if (setPreconditionsResult is Disallowed) "Failing set preconditions: ${setPreconditionsResult.getReason(context)}"
+            else if (setPreconditionsResult is Allowed) "Passing set preconditions: ${set?.preconditions?.getDescription(context)}"
+            else null
+        } else if (getEnabledDescription() != null) {
+            if (isEnabled(context)) {
+                "Passing set preconditions: ${getEnabledDescription()}"
+            } else {
+                "Failing set preconditions: ${getEnabledDescription()}"
+            }
+        } else {
+            null
+        }
+}
+
+suspend fun PreferenceMetadata.stableAccessPreconditionFailuresAsString(context: Context): String? {
+    val preconditions =
+        if (this is ApiPreference<*, *>) {
+            val failure = this.evaluatePreconditions(context, this.get.preconditions)
+            if (failure is Disallowed && failure.stability == PreconditionStability.STABLE_UNTIL_APK_UPDATE) {
+                failure.getReason(context)
+            } else ""
+        } else if (this is PreferencesApiScreen) {
+            val failure = this.evaluatePreconditions(context)
+            if (failure is Disallowed && failure.stability == PreconditionStability.STABLE_UNTIL_APK_UPDATE) {
+                failure.getReason(context)
+            } else ""
+        } else if (this is PreferenceAvailabilityProvider) {
+            if (getAvailabilityStability() == PreconditionStability.STABLE_UNTIL_APK_UPDATE && !isAvailable(context)) {
+                "Failed precondition: ${availabilityDescription}"
+            } else ""
+        } else {
+            ""
+        }
+    return if (preconditions.isEmpty()) null else "This is permanently unavailable on this device due to: $preconditions."
+}
+
 /** Returns a string describing the preconditions for reading the preference. */
 fun PreferenceMetadata.getPreconditionsAsString(context: Context): String? {
     return (this as? ApiPreference<*, *>)?.get?.preconditions?.getDescription(context)?.let {
@@ -333,9 +438,36 @@ fun PreferenceMetadata.getPreconditionsAsString(context: Context): String? {
 
 /** Returns a string describing the preconditions for writing the preference. */
 fun PreferenceMetadata.setPreconditionsAsString(context: Context): String? {
-    return (this as? ApiPreference<*, *>)?.set?.preconditions?.getDescription(context)?.let {
-        "Preconditions to writing: $it."
+    if (this is ApiPreference<*, *>) {
+        val preconditions = listOfNotNull(
+                set?.preconditions?.getDescription(context),
+                set?.valuePreconditions?.getDescription(context),
+            )
+            .joinToString(", ")
+        return if (preconditions.isEmpty()) null else "Preconditions to writing: $preconditions."
+    } else {
+        if (getEnabledDescription() != null) {
+            return "Preconditions to writing: ${getEnabledDescription()}."
+        }
     }
+    return null
+}
+
+suspend fun PreferenceMetadata.stableSetPreconditionFailuresAsString(context: Context): String? {
+    val preconditions =
+        if (this is ApiPreference<*, *>) {
+            val failure = this.evaluatePreconditions(context, this.set?.preconditions)
+            if (failure is Disallowed && failure.stability == PreconditionStability.STABLE_UNTIL_APK_UPDATE) {
+                failure.getReason(context)
+            } else ""
+        } else if (getEnabledDescription() != null) {
+            if (getEnabledStability() == PreconditionStability.STABLE_UNTIL_APK_UPDATE && !isEnabled(context)) {
+                "Failed precondition: ${getEnabledDescription()}"
+            } else ""
+        } else {
+            ""
+        }
+    return if (preconditions.isEmpty()) null else "Setting this preference is permanently unavailable on this device due to: $preconditions."
 }
 
 /** Returns a string describing the warning for writing the preference. */

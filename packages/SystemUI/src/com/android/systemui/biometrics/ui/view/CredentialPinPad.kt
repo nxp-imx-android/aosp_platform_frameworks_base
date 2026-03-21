@@ -26,12 +26,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.android.systemui.bouncer.ui.composable.ActionButton
 import com.android.systemui.bouncer.ui.composable.DigitButton
@@ -53,73 +56,78 @@ fun CredentialPinPad(
 ) {
     val pinPadContent =
         @Composable {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(verticalSpacing),
-            ) {
-                // Rows 1-3 (Digits 1-9)
-                for (i in 0 until 3) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(horizontalSpacing)) {
-                        for (j in 1..3) {
-                            val digit = (i * 3) + j
-                            DigitButton(
-                                digit = digit,
-                                isInputEnabled = isInputEnabled,
-                                onClicked = { onDigitClick(digit.toString()) },
-                                onPointerDown = {}, // Hook up haptics here if needed
-                                scaling = { 1f },
-                                isAnimationEnabled = true,
-                                backgroundColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                            )
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(verticalSpacing),
+                ) {
+                    // Rows 1-3 (Digits 1-9)
+                    for (i in 0 until 3) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(horizontalSpacing)) {
+                            for (j in 1..3) {
+                                val digit = (i * 3) + j
+                                DigitButton(
+                                    digit = digit,
+                                    isInputEnabled = isInputEnabled,
+                                    onClicked = { onDigitClick(digit.toString()) },
+                                    onPointerDown = {}, // Hook up haptics here if needed
+                                    scaling = { 1f },
+                                    isAnimationEnabled = true,
+                                    backgroundColor =
+                                        MaterialTheme.colorScheme.surfaceContainerHighest,
+                                )
+                            }
                         }
                     }
-                }
 
-                // Row 4 (Delete, 0, Enter)
-                Row(horizontalArrangement = Arrangement.spacedBy(horizontalSpacing)) {
-                    ActionButton(
-                        icon =
-                            Icon.Resource(
-                                resId = R.drawable.pin_bouncer_delete_outline,
-                                contentDescription =
-                                    ContentDescription.Resource(
-                                        R.string.keyboardview_keycode_delete
-                                    ),
-                            ),
-                        isInputEnabled = isInputEnabled,
-                        onClicked = onDeleteClick,
-                        appearance = deleteButtonAppearance,
-                        scaling = { 1f },
-                        elementId = "delete_button",
-                        onPointerDown = {},
-                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                    )
+                    // Row 4 (Delete, 0, Enter)
+                    Row(horizontalArrangement = Arrangement.spacedBy(horizontalSpacing)) {
+                        ActionButton(
+                            icon =
+                                Icon.Resource(
+                                    resId = R.drawable.pin_bouncer_delete_outline,
+                                    contentDescription =
+                                        ContentDescription.Resource(
+                                            R.string.keyboardview_keycode_delete
+                                        ),
+                                ),
+                            isInputEnabled = isInputEnabled,
+                            onClicked = onDeleteClick,
+                            appearance = deleteButtonAppearance,
+                            scaling = { 1f },
+                            elementId = "delete_button",
+                            onPointerDown = {},
+                            backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                        )
 
-                    DigitButton(
-                        digit = 0,
-                        isInputEnabled = isInputEnabled,
-                        onClicked = { onDigitClick("0") },
-                        onPointerDown = {},
-                        scaling = { 1f },
-                        isAnimationEnabled = true,
-                        backgroundColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                    )
+                        DigitButton(
+                            digit = 0,
+                            isInputEnabled = isInputEnabled,
+                            onClicked = { onDigitClick("0") },
+                            onPointerDown = {},
+                            scaling = { 1f },
+                            isAnimationEnabled = true,
+                            backgroundColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        )
 
-                    ActionButton(
-                        icon =
-                            Icon.Resource(
-                                resId = R.drawable.pin_bouncer_confirm,
-                                contentDescription =
-                                    ContentDescription.Resource(R.string.keyboardview_keycode_enter),
-                            ),
-                        isInputEnabled = isInputEnabled,
-                        onClicked = onEnterClick,
-                        appearance = ActionButtonAppearance.Shown,
-                        scaling = { 1f },
-                        elementId = "key_enter",
-                        onPointerDown = {},
-                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                    )
+                        ActionButton(
+                            icon =
+                                Icon.Resource(
+                                    resId = R.drawable.pin_bouncer_confirm,
+                                    contentDescription =
+                                        ContentDescription.Resource(
+                                            R.string.keyboardview_keycode_enter
+                                        ),
+                                ),
+                            isInputEnabled = isInputEnabled,
+                            onClicked = onEnterClick,
+                            appearance = ActionButtonAppearance.Shown,
+                            scaling = { 1f },
+                            elementId = "key_enter",
+                            onPointerDown = {},
+                            backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                        )
+                    }
                 }
             }
         }

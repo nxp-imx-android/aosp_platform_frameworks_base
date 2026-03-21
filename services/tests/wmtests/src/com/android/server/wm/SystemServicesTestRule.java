@@ -31,6 +31,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.anyString;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doThrow;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.eq;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
@@ -57,6 +58,7 @@ import android.content.Context;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.IPackageManager;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.res.Configuration;
 import android.database.ContentObserver;
@@ -252,6 +254,14 @@ public class SystemServicesTestRule implements TestRule {
 
         mContext = getInstrumentation().getTargetContext();
         spyOn(mContext);
+
+        final PackageManager pm = spy(mContext.getPackageManager());
+        try {
+            doThrow(new PackageManager.NameNotFoundException()).when(pm).getPropertyAsUser(
+                    anyString(), nullable(String.class), nullable(String.class), anyInt());
+        } catch (PackageManager.NameNotFoundException e) {
+        }
+        doReturn(pm).when(mContext).getPackageManager();
 
         doReturn(null).when(mContext)
                 .registerReceiver(nullable(BroadcastReceiver.class), any(IntentFilter.class),

@@ -17,7 +17,9 @@
 package com.android.settingslib.metadata.preferencesapi
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import com.android.settingslib.datastore.Permissions
@@ -25,6 +27,7 @@ import com.android.settingslib.datastore.and
 import com.android.settingslib.datastore.or
 import com.android.settingslib.metadata.KeyParametersSchema
 import com.android.settingslib.metadata.PreferenceHierarchy
+import com.android.settingslib.metadata.PreferenceMetadata
 import com.android.settingslib.metadata.PreferenceScreenMetadata
 import com.android.settingslib.metadata.SensitivityLevel
 import com.android.settingslib.metadata.ValidatedKeyParameters
@@ -38,7 +41,9 @@ import com.android.settingslib.metadata.preferencesapi.multiusers.ManagementScop
 import com.android.settingslib.metadata.preferencesapi.multiusers.ManagementScope.OWN_USER
 import com.android.settingslib.metadata.preferencesapi.multiusers.PreferenceTarget
 import com.android.settingslib.metadata.preferencesapi.multiusers.PreferenceTarget.USER
+import com.android.settingslib.metadata.preferencesapi.preconditions.Allowed
 import com.android.settingslib.metadata.preferencesapi.preconditions.ApiPreconditions
+import com.android.settingslib.metadata.preferencesapi.preconditions.Disallowed
 import com.android.settingslib.metadata.preferencesapi.types.ApiType
 import com.android.settingslib.metadata.preferencesapi.types.FiniteOptionsType
 import kotlin.collections.mutableListOf
@@ -238,6 +243,42 @@ private constructor(
                 }
             }
         }
+
+    /**
+     * Evaluates preconditions in order: screen-level.
+     * Returns the first precondition that is not [Allowed], or [Allowed] if all preconditions
+     * are met.
+     */
+    suspend fun evaluatePreconditions(context: Context): ApiPreconditions {
+        val opContext =
+            ApiOperationContext(
+                context = context,
+                parameters = keyParameters ?: ValidatedKeyParameters.EMPTY,
+            )
+
+        screenPreconditions?.check(opContext)?.let {
+            if (it is Disallowed) {
+                Log.d(
+                    TAG,
+                    "Screen precondition failed: ${it.getReason(context)}",
+                )
+            }
+            if (it != Allowed) return it
+        }
+        return Allowed
+    }
+
+    override fun getLaunchIntent(context: Context, metadata: PreferenceMetadata?): Intent? {
+        val checkScreenPreconditions =
+            // TODO(b/469317113): This should run asynchronously
+            runBlocking { evaluatePreconditions(context) }
+
+        if (checkScreenPreconditions != Allowed) {
+            return null
+        }
+
+        return super.getLaunchIntent(context, metadata)
+    }
 
     var flag: FlagConfig? = null
     var parametersSchema: KeyParametersSchema? = null

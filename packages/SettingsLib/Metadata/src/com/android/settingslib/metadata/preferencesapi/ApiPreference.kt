@@ -236,7 +236,7 @@ abstract class ApiPreference<InternalType: Any, ExternalType : Any>(
      * @param context The application context to be used in the operation context.
      * @return An initialized [ApiOperationContext] instance.
      */
-    private fun getApiOperationContext(context: Context) =
+    fun getApiOperationContext(context: Context) =
         ApiOperationContext(context = context, parameters = cachedKeyParameters)
 
     /**
@@ -244,7 +244,7 @@ abstract class ApiPreference<InternalType: Any, ExternalType : Any>(
      * Returns the first precondition that is not [Allowed], or [Allowed] if all preconditions
      * are met.
      */
-    private suspend fun evaluatePreconditions(
+    suspend fun evaluatePreconditions(
         context: Context,
         operationPreconditions: PreconditionsConfig?
     ): ApiPreconditions {

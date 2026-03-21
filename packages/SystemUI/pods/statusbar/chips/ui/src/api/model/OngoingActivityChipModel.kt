@@ -64,6 +64,8 @@ sealed class OngoingActivityChipModel {
          * chips not associated with a notification, this is null.
          */
         val notificationKey: String? = null,
+        /** Notification claims to represent the app's active screenshare */
+        val isScreenShareNotification: Boolean = false,
         /** The package name of the app managing this chip. */
         val managingPackageName: String? = null,
         /**

@@ -1135,6 +1135,13 @@ flag {
 }
 
 flag {
+    name: "request_fullscreen_api_permission"
+    namespace: "lse_desktop_experience"
+    description: "Requires a permission to call Activity#requestFullscreenMode."
+    bug: "484320969"
+}
+
+flag {
     name: "respect_system_default_min_size"
     namespace: "lse_desktop_experience"
     description: "Enables the bug fix to respect system-default min size over app-requested."

@@ -52,7 +52,7 @@ import com.android.server.accessibility.Flags;
  */
 public class AutoclickTypePanel {
 
-    private final String TAG = AutoclickTypePanel.class.getSimpleName();
+    private static final String TAG = AutoclickTypePanel.class.getSimpleName();
 
     public static final int AUTOCLICK_TYPE_LEFT_CLICK = 0;
     public static final int AUTOCLICK_TYPE_RIGHT_CLICK = 1;

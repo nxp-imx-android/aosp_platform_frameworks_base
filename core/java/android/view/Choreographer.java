@@ -1183,7 +1183,7 @@ public final class Choreographer {
                 mFrameInfo.setVsync(intendedFrameTimeNanos, frameTimeNanos,
                         vsyncEventData.preferredFrameTimeline().vsyncId,
                         vsyncEventData.preferredFrameTimeline().deadline, startNanos,
-                        vsyncEventData.frameInterval);
+                        vsyncEventData.frameInterval, frameTimeNanos);
                 mFrameScheduled = false;
                 mLastFrameTimeNanos = frameTimeNanos;
                 mLastFrameIntervalNanos = frameIntervalNanos;

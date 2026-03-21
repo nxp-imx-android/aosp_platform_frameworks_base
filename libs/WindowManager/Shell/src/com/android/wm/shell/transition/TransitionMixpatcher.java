@@ -183,6 +183,12 @@ public class TransitionMixpatcher {
     /** List of {@link Runnable} instances to run when the last active transition has finished. */
     private final ArrayList<Runnable> mRunWhenIdleQueue = new ArrayList<>();
 
+    private float mAnimScaleSetting = 1.0f;
+
+    void setAnimScaleSetting(float scale) {
+        mAnimScaleSetting = scale;
+    }
+
     TransitionMixpatcher(@NonNull ShellTaskOrganizer organizer,
             @NonNull ShellExecutor mainExecutor) {
         mOrganizer = organizer;
@@ -464,16 +470,7 @@ public class TransitionMixpatcher {
             final TransitionInfo subInfo = start.mAnims.valueAt(i);
             final ArrayList<WindowAnimationState> startStates = new ArrayList<>();
             for (int c = 0; c < subInfo.getChanges().size(); ++c) {
-                // Record surfaces that need to be released later
                 final TransitionInfo.Change chg = subInfo.getChanges().get(c);
-                transit.mCleanupSurfaces.add(chg.getLeash());
-                if (chg.getSnapshot() != null) {
-                    transit.mCleanupSurfaces.add(chg.getSnapshot());
-                }
-                if (chg.getTopCompatActivityLeash() != null) {
-                    transit.mCleanupSurfaces.add(chg.getTopCompatActivityLeash());
-                }
-
                 // Get or initialize start state
                 WindowAnimationState state = start.mTransferStates.get(chg.getContainer());
                 if (state == null) {
@@ -483,9 +480,14 @@ public class TransitionMixpatcher {
                 startStates.add(state);
                 // TODO: leash management
             }
+            // Record surfaces that need to be released later.
+            Transitions.recordReleaseSurfaces(transit.mCleanupSurfaces, subInfo.getChanges());
+
             final ITransitionAnimation anim = start.mAnims.keyAt(i);
             ProtoLog.v(WM_SHELL_MIXPATCHER, "animating #%d| start %s", transit.mDebugId,
                     anim.getDebugName());
+
+            anim.setAnimScaleSetting(mAnimScaleSetting);
             anim.start(start.mAnims.valueAt(i), startStates,
                     (finishT) -> mMainExecutor.execute(() -> onFinish(anim, finishT)));
         }

@@ -274,6 +274,13 @@ flag {
 }
 
 flag {
+    name: "enable_bubble_pinning"
+    namespace: "multitasking"
+    description: "Enables pinning bubbles on laptops and tablets"
+    bug: "493912543"
+}
+
+flag {
     name: "consolidate_split_keyboard_shortcut_controllers"
     namespace: "multitasking"
     description: "Consolidate split desktop keyboard shortcuts handling on shell and launcher side"
@@ -468,6 +475,16 @@ flag {
     namespace: "multitasking"
     description: "Fixes an issue where user education didn't dismiss"
     bug: "490187640"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "fix_dismiss_flyout_persistent_taskbar"
+    namespace: "multitasking"
+    description: "Fixes a bug where bubble bar flyout is not hidden on persistent taskbars"
+    bug: "493963961"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -174,6 +175,7 @@ fun CredentialScreen(
                                 error = errorMessage,
                             )
                         }
+
                         PromptKind.Password -> {
                             CredentialPasswordView(
                                 onVerify = verifyPinPassAction,
@@ -183,6 +185,7 @@ fun CredentialScreen(
                                 userId = header.user.userIdForPasswordEntry,
                             )
                         }
+
                         PromptKind.Pattern -> {
                             CredentialPatternView(
                                 onVerify = verifyPatternAction,
@@ -193,6 +196,7 @@ fun CredentialScreen(
                                 error = errorMessage,
                             )
                         }
+
                         else -> {}
                     }
                 }
@@ -223,6 +227,7 @@ fun CredentialScreen(
                     content = credentialInput,
                     footer = footer,
                     onCancel = onCancel,
+                    isPin = credentialKind == PromptKind.Pin,
                     onContentViewMoreOptionsButtonPressed = onContentViewMoreOptionsButtonPressed,
                 )
             }
@@ -236,9 +241,10 @@ private fun PortraitCredentialLayout(
     content: @Composable () -> Unit,
     footer: @Composable () -> Unit,
     onCancel: () -> Unit,
+    isPin: Boolean = false,
     onContentViewMoreOptionsButtonPressed: () -> Unit,
 ) {
-    Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
+    Box(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier =
                 Modifier.fillMaxWidth().imePadding().padding(horizontal = 24.dp, vertical = 32.dp),
@@ -257,7 +263,17 @@ private fun PortraitCredentialLayout(
                     onContentViewMoreOptionsButtonPressed = onContentViewMoreOptionsButtonPressed,
                 )
             }
-            content()
+            if (isPin) {
+                // Pin is larger than the other credentials and requires some extra space
+                Box(
+                    modifier = Modifier.weight(3f, fill = false),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    content()
+                }
+            } else {
+                content()
+            }
             footer()
         }
 
@@ -288,7 +304,12 @@ private fun LandscapeCredentialLayout(
     onContentViewMoreOptionsButtonPressed: () -> Unit,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().fillMaxHeight().padding(24.dp).widthIn(max = 800.dp),
+        modifier =
+            Modifier.fillMaxWidth()
+                .fillMaxHeight()
+                .navigationBarsPadding()
+                .padding(24.dp)
+                .widthIn(max = 800.dp),
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {

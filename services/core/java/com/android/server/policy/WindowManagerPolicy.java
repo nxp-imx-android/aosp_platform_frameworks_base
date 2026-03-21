@@ -804,8 +804,13 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
      * @param pmWakeReason One of PowerManager.WAKE_REASON_*, detailing the specific reason this
      *                     display group is waking up, such as WAKE_REASON_POWER_BUTTON or
      *                     WAKE_REASON_GESTURE.
+     * @param anyDefaultOrAdjacentGroupInteractive {@code true} if the default display group or any
+     *     adjacent display group is interactive at the time this event has been registered.
      */
-    void startedWakingUp(int displayGroupId, @PowerManager.WakeReason int pmWakeReason);
+    void startedWakingUp(
+            int displayGroupId,
+            @PowerManager.WakeReason int pmWakeReason,
+            boolean anyDefaultOrAdjacentGroupInteractive);
 
     /**
      * Called when the device has finished waking up.
@@ -830,8 +835,13 @@ public interface WindowManagerPolicy extends WindowManagerPolicyConstants {
      * @param pmSleepReason One of PowerManager.GO_TO_SLEEP_REASON_*, detailing the specific reason
      *                      this display group is going to sleep, such as
      *                      GO_TO_SLEEP_REASON_POWER_BUTTON or GO_TO_SLEEP_REASON_TIMEOUT.
+     * @param anyDefaultOrAdjacentGroupInteractive {@code true} if the default display group or any
+     *     adjacent display group is interactive at the time this event has been registered.
      */
-    void startedGoingToSleep(int displayGroupId, @PowerManager.GoToSleepReason int pmSleepReason);
+    void startedGoingToSleep(
+            int displayGroupId,
+            @PowerManager.GoToSleepReason int pmSleepReason,
+            boolean anyDefaultOrAdjacentGroupInteractive);
 
     /**
      * Called when the device has finished going to sleep.

@@ -4,6 +4,13 @@ container: "system"
 # Important: Flags must be accessed through DisplayManagerFlags.
 
 flag {
+    name: "refactor_persistent_data_store"
+    namespace: "display_manager"
+    description: "Refactor the persistent data store to make it more usable and scalable."
+    bug: "425590769"
+}
+
+flag {
     name: "is_always_on_available_api"
     namespace: "display_manager"
     description: "Allows querying of AOD availability"

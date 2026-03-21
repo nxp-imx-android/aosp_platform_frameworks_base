@@ -80,7 +80,7 @@ public class CoreDocument implements Serializable {
 
     // We also keep a more fine-grained BUILD number, exposed as
     // ID_API_LEVEL = DOCUMENT_API_LEVEL + BUILD
-    static final float BUILD = 0.69f;
+    static final float BUILD = 0.71f;
 
     private static final boolean UPDATE_VARIABLES_BEFORE_LAYOUT = false;
 
@@ -1691,6 +1691,18 @@ public class CoreDocument implements Serializable {
         }
         mTimeVariables.updateTime(context);
         mRepaintNext = context.updateOps();
+
+        // Ensure that variables that are dirty are updated before we do the layout pass
+        for (Operation operation : mOperations) {
+            if (operation.isDirty() && operation instanceof VariableSupport) {
+                ((VariableSupport) operation).updateVariables(context);
+                operation.apply(context);
+            }
+            if (operation == mRootLayoutComponent) {
+                break;
+            }
+        }
+
         if (mRootLayoutComponent != null) {
             if (context.mWidth != mRootLayoutComponent.getWidth()
                     || context.mHeight != mRootLayoutComponent.getHeight()) {

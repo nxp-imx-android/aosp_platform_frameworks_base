@@ -16,6 +16,7 @@
 
 package com.android.server;
 
+import static android.app.admin.DevicePolicyManager.MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_UNMANAGED;
 import static android.app.lskfreset.flags.Flags.enableLskfResetManager;
 import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.media.tv.flags.Flags.mediaQualityFw;
@@ -3181,13 +3182,19 @@ public final class SystemServer implements Dumpable {
         mSystemServiceManager.startBootPhase(t, SystemService.PHASE_LOCK_SETTINGS_READY);
         t.traceEnd();
 
+        boolean requiresAdmin =
+                dpms.getMultiuserManagedDeviceProvisioningState()
+                    == MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_UNMANAGED;
+
         // Create initial user if needed, which should be done early since some system services rely
         // on it in their setup, but likely needs to be done after LockSettingsService is ready.
         final HsumBootUserInitializer hsumBootUserInitializer =
                 HsumBootUserInitializer.createInstance(mUserManagerService, mActivityManagerService,
                         // NOTE: there is no need to pass the whole dpms because it just need to
-                        // to check if the device is managed (at boot time).
-                        mPackageManagerService, dpms.isDeviceManaged(), mSystemContext);
+                        // to check if the device is unmanaged (at boot time).
+                        mPackageManagerService,
+                        requiresAdmin,
+                        mSystemContext);
         if (hsumBootUserInitializer != null) {
             t.traceBegin("HsumBootUserInitializer.init");
             hsumBootUserInitializer.init(t);

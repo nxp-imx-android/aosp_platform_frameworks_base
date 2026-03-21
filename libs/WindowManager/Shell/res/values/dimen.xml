@@ -62,11 +62,6 @@
     <!-- The touchable/draggable edge size for PIP resize. -->
     <dimen name="pip_resize_edge_size">48dp</dimen>
 
-    <!-- PIP Resize handle size, margin and padding. -->
-    <dimen name="pip_resize_handle_size">12dp</dimen>
-    <dimen name="pip_resize_handle_margin">4dp</dimen>
-    <dimen name="pip_resize_handle_padding">0dp</dimen>
-
     <!-- PIP stash offset size, which is the width of visible PIP region when stashed. -->
     <dimen name="pip_stash_offset">32dp</dimen>
 
@@ -104,8 +99,6 @@
     <!-- Divider handle size for split screen -->
     <dimen name="split_divider_handle_width">40dp</dimen>
     <dimen name="split_divider_handle_height">4dp</dimen>
-    <dimen name="split_divider_button_size">48dp</dimen>
-    <dimen name="split_divider_button_margin">16dp</dimen>
 
     <dimen name="split_divider_bar_width">10dp</dimen>
     <dimen name="split_divider_corner_size">42dp</dimen>

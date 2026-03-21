@@ -377,12 +377,7 @@ public final class AppFunctionMetadata implements AbstractAppFunctionMetadata, P
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         mAppFunctionName.writeToParcel(dest, flags);
         dest.writeTypedObject(mAppFunctionSchemaMetadata, flags);
-        final boolean prev = dest.allowSquashing();
-        try {
-            mAppFunctionPackageMetadata.writeToParcel(dest, flags);
-        } finally {
-            dest.restoreAllowSquashing(prev);
-        }
+        mAppFunctionPackageMetadata.writeToParcel(dest, flags);
         mAppFunctionMetadataDocumentWrapper.writeToParcel(dest, flags);
     }
 

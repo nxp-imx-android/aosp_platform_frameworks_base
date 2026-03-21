@@ -389,23 +389,6 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         rect.offset(-mRootBounds.left, -mRootBounds.top);
     }
 
-    /**
-     * Gets the actual expanded bounds of the divider leash in parent-based coordinates.
-     * This includes the expansion buffer added to avoid clipping accessibility buttons.
-     */
-    public void getDividerLeashBounds(Rect rect) {
-        getRefDividerBounds(rect);
-        if (mSplitWindowManager != null) {
-            final int expansionOffset = mSplitWindowManager.getWindowExpansion() / 2;
-            int offsetX = mIsLeftRightSplit ? expansionOffset : 0;
-            int offsetY = mIsLeftRightSplit ? 0 : expansionOffset;
-            rect.left -= offsetX;
-            rect.top -= offsetY;
-            rect.right += offsetX;
-            rect.bottom += offsetY;
-        }
-    }
-
     /** Gets bounds size equal to root bounds but outside of screen, used for position side stage
      * when split inactive to avoid flicker when next time active. */
     public void getInvisibleBounds(Rect rect) {
@@ -1127,31 +1110,14 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         endBounds2.offset(-mRootBounds.left, -mRootBounds.top);
         endDividerBounds.offset(-mRootBounds.left, -mRootBounds.top);
 
-        final Rect startDividerLeashBounds = new Rect();
-        getDividerLeashBounds(startDividerLeashBounds);
-
-        // The end bounds for the divider leash need to match the new divider position
-        // (endDividerBounds), but with our expansion offset applied so the expanded window is
-        // positioned correctly.
-        final Rect endDividerLeashBounds = new Rect(endDividerBounds);
-        if (mSplitWindowManager != null) {
-            final int expansionOffset = mSplitWindowManager.getWindowExpansion() / 2;
-            int offsetXD = mIsLeftRightSplit ? expansionOffset : 0;
-            int offsetYD = mIsLeftRightSplit ? 0 : expansionOffset;
-            endDividerLeashBounds.left -= offsetXD;
-            endDividerLeashBounds.top -= offsetYD;
-            endDividerLeashBounds.right += offsetXD;
-            endDividerLeashBounds.bottom += offsetYD;
-        }
-
         ValueAnimator animator1 = moveSurface(t, topLeftStage, getTopLeftRefBounds(), endBounds1,
                 -insets.left, -insets.top, true /* roundCorners */, true /* isGoingBehind */,
                 shouldVeil);
         ValueAnimator animator2 = moveSurface(t, bottomRightStage, getBottomRightRefBounds(),
                 endBounds2, insets.left, insets.top, true /* roundCorners */,
                 false /* isGoingBehind */, shouldVeil);
-        ValueAnimator animator3 = moveSurface(t, null /* stage */, startDividerLeashBounds,
-                endDividerLeashBounds, 0 /* offsetX */, 0 /* offsetY */, false /* roundCorners */,
+        ValueAnimator animator3 = moveSurface(t, null /* stage */, getRefDividerBounds(),
+                endDividerBounds, 0 /* offsetX */, 0 /* offsetY */, false /* roundCorners */,
                 false /* isGoingBehind */, false /* addVeil */);
 
         mSwapAnimator = new AnimatorSet();
@@ -1388,11 +1354,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         final SurfaceControl dividerLeash = getDividerLeash();
         if (dividerLeash != null) {
             getRefDividerBounds(mTempRect);
-            final int expansionOffset = mSplitWindowManager.getWindowExpansion() / 2;
-            int offsetX = mIsLeftRightSplit ? expansionOffset : 0;
-            int offsetY = mIsLeftRightSplit ? 0 : expansionOffset;
-            t.setPosition(dividerLeash, mTempRect.left - offsetX,
-                    mTempRect.top - offsetY);
+            t.setPosition(dividerLeash, mTempRect.left, mTempRect.top);
             // Resets layer of divider bar to make sure it is always on top.
             t.setLayer(dividerLeash, RESTING_DIVIDER_LAYER);
         }
@@ -1790,7 +1752,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
             boolean adjusted = false;
             if (mYOffsetForIme != 0) {
                 if (dividerLeash != null) {
-                    getDividerLeashBounds(mTempRect);
+                    getRefDividerBounds(mTempRect);
                     mTempRect.offset(0, mYOffsetForIme);
                     t.setPosition(dividerLeash, mTempRect.left, mTempRect.top);
                 }

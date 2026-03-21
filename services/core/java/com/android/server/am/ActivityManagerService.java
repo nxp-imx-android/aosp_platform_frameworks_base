@@ -3964,6 +3964,21 @@ public class ActivityManagerService extends IActivityManager.Stub
         return null;
     }
 
+    private void traceBinderDiedEvent(String processName, int uid, int pid) {
+        if (android.os.Flags.perfettoSdkTracingV3()) {
+            com.android.internal.dev.perfetto.sdk.PerfettoTrace
+                    .instant(PROC_LIFECYCLE_CATEGORY, "binder_died")
+                    .beginProto()
+                    .beginNested(BINDER_DIED_EVENT)
+                    .addField(AndroidBinderDiedEvent.UID, uid)
+                    .addField(AndroidBinderDiedEvent.PID, pid)
+                    .addField(AndroidBinderDiedEvent.PROCESS_NAME, processName)
+                    .endNested()
+                    .endProto()
+                    .emit();
+        }
+    }
+
     @GuardedBy("this")
     final void appDiedLocked(ProcessRecord app, String reason) {
         appDiedLocked(app, app.getPid(), app.getThread(), false, reason);
@@ -3977,8 +3992,21 @@ public class ActivityManagerService extends IActivityManager.Stub
         synchronized (mPidsSelfLocked) {
             curProc = mPidsSelfLocked.get(pid);
         }
+
         if (curProc != app) {
-            if (!fromBinderDied || !mProcessList.handleDyingAppDeathLocked(app, pid)) {
+            boolean isSpurious = false;
+
+            if (fromBinderDied) {
+                if (mProcessList.handleDyingAppDeathLocked(app, pid)) {
+                    traceBinderDiedEvent(app.processName, app.info.uid, pid);
+                } else {
+                    isSpurious = true;
+                }
+            } else {
+                isSpurious = true;
+            }
+
+            if (isSpurious) {
                 Slog.w(TAG, "Spurious death for " + app + ", curProc for " + pid + ": " + curProc);
             }
             return;
@@ -4004,19 +4032,6 @@ public class ActivityManagerService extends IActivityManager.Stub
         final @ActivityManager.ProcessState int setProcState = app.getSetProcState();
         if (app.getPid() == pid && (appThread = app.getThread()) != null
                 && appThread.asBinder() == thread.asBinder()) {
-            if (android.os.Flags.perfettoSdkTracingV3()) {
-                com.android.internal.dev.perfetto.sdk.PerfettoTrace
-                        .instant(PROC_LIFECYCLE_CATEGORY, "binder_died")
-                        .beginProto()
-                        .beginNested(BINDER_DIED_EVENT)
-                        .addField(AndroidBinderDiedEvent.UID, app.info.uid)
-                        .addField(AndroidBinderDiedEvent.PID, pid)
-                        .addField(AndroidBinderDiedEvent.PROCESS_NAME, app.processName)
-                        .endNested()
-                        .endProto()
-                        .emit();
-            }
-
             boolean doLowMem = app.getActiveInstrumentation() == null;
             boolean doOomAdj = doLowMem;
             if (!app.isKilledByAm()) {
@@ -4034,6 +4049,8 @@ public class ActivityManagerService extends IActivityManager.Stub
             if (doOomAdj) {
                 app.forEachConnectionHost((host) -> enqueueOomAdjTargetLocked(host));
             }
+
+            traceBinderDiedEvent(app.processName, app.info.uid, pid);
 
             EventLogTags.writeAmProcDied(app.userId, pid, app.processName, setAdj,
                     setProcState);
@@ -4054,6 +4071,8 @@ public class ActivityManagerService extends IActivityManager.Stub
             reportUidInfoMessageLocked(TAG,
                     "Process " + app.processName + " (pid " + pid
                             + ") has died and restarted (pid " + app.getPid() + ").", app.info.uid);
+
+            traceBinderDiedEvent(app.processName, app.info.uid, pid);
 
             EventLogTags.writeAmProcDied(app.userId, app.getPid(), app.processName,
                     setAdj, setProcState);
@@ -11008,21 +11027,27 @@ public class ActivityManagerService extends IActivityManager.Stub
         } catch (RemoteException e) {
             Log.e(TAG, "Could not get SDK sandbox package name");
         }
+
+        if (checkCallingPermission(android.Manifest.permission.DUMP)
+                != PackageManager.PERMISSION_GRANTED) {
+            // The caller does not have DUMP permission. They can only dump their own packages.
+            // Check if the requested package belongs to the caller.
+            // Using getPackageUid() would leak whether the package exists via timing.
+            // Instead, get the packages for the caller's UID and check if packageName is in it.
+            String[] pkgs = mContext.getPackageManager().getPackagesForUid(callingUid);
+            if (!ArrayUtils.contains(pkgs, packageName)) {
+                enforceCallingPermission(android.Manifest.permission.DUMP, function);
+            }
+            return UserHandle.getUid(userId, UserHandle.getAppId(callingUid));
+        }
+
         final long identity = Binder.clearCallingIdentity();
-        int uid = INVALID_UID;
         try {
-            uid = mPackageManagerInt.getPackageUid(packageName,
+            return mPackageManagerInt.getPackageUid(packageName,
                     MATCH_DIRECT_BOOT_AWARE | MATCH_DIRECT_BOOT_UNAWARE, userId);
         } finally {
             Binder.restoreCallingIdentity(identity);
         }
-        // If the uid is Process.INVALID_UID, the below 'if' check will be always true
-        if (UserHandle.getAppId(uid) != UserHandle.getAppId(callingUid)) {
-            // Requires the DUMP permission if the target package doesn't belong
-            // to the caller or it doesn't exist.
-            enforceCallingPermission(android.Manifest.permission.DUMP, function);
-        }
-        return uid;
     }
 
     @Override

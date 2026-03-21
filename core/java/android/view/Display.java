@@ -23,11 +23,11 @@ import static android.hardware.flags.Flags.FLAG_OVERLAYPROPERTIES_CLASS_API;
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 
 import static com.android.server.display.feature.flags.Flags.FLAG_DISPLAY_TOPOLOGY_API;
-import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_GET_SUPPORTED_REFRESH_RATES;
-import static com.android.server.display.feature.flags.Flags.FLAG_HIGHEST_HDR_SDR_RATIO_API;
-import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_HAS_ARR_SUPPORT;
 import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_GET_SUGGESTED_FRAME_RATE;
+import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_GET_SUPPORTED_REFRESH_RATES;
+import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_HAS_ARR_SUPPORT;
 import static com.android.server.display.feature.flags.Flags.FLAG_FRAME_RATE_MAPPING_API;
+import static com.android.server.display.feature.flags.Flags.FLAG_HIGHEST_HDR_SDR_RATIO_API;
 
 import android.Manifest;
 import android.annotation.FlaggedApi;
@@ -618,6 +618,14 @@ public final class Display {
      */
     public static final int STATE_REASON_MOTION = ViewProtoEnums.DISPLAY_STATE_REASON_MOTION;
 
+    /**
+     * The display state was changed due to an accessibility event.
+     *
+     * @hide
+     */
+    public static final int STATE_REASON_ACCESSIBILITY =
+            ViewProtoEnums.DISPLAY_STATE_REASON_ACCESSIBILITY;
+
     /** @hide */
     @IntDef(prefix = {"STATE_REASON_"}, value = {
         STATE_REASON_UNKNOWN,
@@ -628,6 +636,7 @@ public final class Display {
         STATE_REASON_DREAM_MANAGER,
         STATE_REASON_KEY,
         STATE_REASON_MOTION,
+        STATE_REASON_ACCESSIBILITY,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface StateReason {}
@@ -2411,6 +2420,8 @@ public final class Display {
                 return "KEY";
             case STATE_REASON_MOTION:
                 return "MOTION";
+            case STATE_REASON_ACCESSIBILITY:
+                return "ACCESSIBILITY";
             default:
                 return Integer.toString(reason);
         }

@@ -16,13 +16,11 @@
 
 package com.android.systemui.keyguard.ui.viewmodel
 
-import androidx.compose.runtime.getValue
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.keyguard.shared.transition.KeyguardTransitionAnimationCallback
 import com.android.systemui.keyguard.shared.transition.KeyguardTransitionAnimationCallbackDelegator
-import com.android.systemui.lifecycle.ExclusiveActivatable
-import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
@@ -30,7 +28,6 @@ import com.android.systemui.statusbar.notification.stack.domain.interactor.Notif
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 
 class LockscreenContentViewModel
@@ -43,12 +40,9 @@ constructor(
     private val lockscreenAlphaViewModelFactory: LockscreenAlphaViewModel.Factory,
     @Assisted private val keyguardTransitionAnimationCallback: KeyguardTransitionAnimationCallback,
     @Assisted private val viewStateAccessor: ViewStateAccessor,
-) : ExclusiveActivatable() {
-    private val hydrator = Hydrator("LockscreenContentViewModel.hydrator")
-
+) : HydratedActivatable() {
     /** @see ShadeModeInteractor.shadeMode */
-    val shadeMode: ShadeMode by
-        hydrator.hydratedStateOf(traceName = "shadeMode", source = shadeModeInteractor.shadeMode)
+    val shadeMode: ShadeMode by shadeModeInteractor.shadeMode.hydratedStateOf()
 
     /** Alpha value applied to all LockscreenElements. */
     val alpha: Float
@@ -62,20 +56,17 @@ constructor(
     val nonAuthUIAlpha: Float
         get() = lockscreenAlphaViewModel.nonAuthUIAlpha
 
-    override suspend fun onActivated(): Nothing {
+    override suspend fun onActivated() {
         coroutineScope {
-            try {
-                launch { hydrator.activate() }
-                launch { lockscreenAlphaViewModel.activate() }
+            launch { lockscreenAlphaViewModel.activate() }
 
-                keyguardTransitionAnimationCallbackDelegator.delegate =
-                    keyguardTransitionAnimationCallback
-
-                awaitCancellation()
-            } finally {
-                keyguardTransitionAnimationCallbackDelegator.delegate = null
-            }
+            keyguardTransitionAnimationCallbackDelegator.delegate =
+                keyguardTransitionAnimationCallback
         }
+    }
+
+    override suspend fun onDeactivated() {
+        keyguardTransitionAnimationCallbackDelegator.delegate = null
     }
 
     /** Sets the alpha to apply to the NSSL for fade-in on lockscreen */

@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.notification.headsup
 
 import com.android.systemui.log.LogBuffer
+import com.android.systemui.log.core.LogLevel.ERROR
 import com.android.systemui.log.core.LogLevel.INFO
 import com.android.systemui.log.core.LogLevel.VERBOSE
 import com.android.systemui.log.dagger.NotificationHeadsUpLog
@@ -338,6 +339,18 @@ constructor(@NotificationHeadsUpLog private val buffer: LogBuffer) {
 
     fun logDroppedHuns(entryList: String) {
         buffer.log(TAG, VERBOSE, { str1 = entryList }, { "[AC] dropped:\n $str1" })
+    }
+
+    fun logNotifEntryMismatch(method: String, entry: NotificationEntry) {
+        buffer.log(
+            TAG,
+            ERROR,
+            {
+                str1 = method
+                str2 = entry.logKey
+            },
+            { "NotificationEntry mismatch in $str1 for key $str2" },
+        )
     }
 }
 

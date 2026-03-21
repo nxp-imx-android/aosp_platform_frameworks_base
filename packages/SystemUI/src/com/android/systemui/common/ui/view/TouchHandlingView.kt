@@ -59,7 +59,7 @@ open class TouchHandlingView(
 
     interface Listener {
         /** Notifies that a long-press has been detected by the given view. */
-        fun onLongPressDetected(view: View, x: Int, y: Int, isA11yAction: Boolean = false)
+        fun onLongPressDetected(view: View, x: Int, y: Int)
 
         /** Notifies that the gesture was too short for a long press, it is actually a click. */
         fun onSingleTapDetected(view: View, x: Int, y: Int) = Unit

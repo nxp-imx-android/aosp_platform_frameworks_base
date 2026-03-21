@@ -24,10 +24,10 @@ import static android.view.MotionEvent.ACTION_UP;
 
 import android.accessibilityservice.AccessibilityTrace;
 import android.annotation.NonNull;
-import android.util.Log;
 import android.util.Slog;
 import android.view.MotionEvent;
 
+import com.android.server.accessibility.AccessibilityLogUtil;
 import com.android.server.accessibility.AccessibilityTraceManager;
 import com.android.server.accessibility.BaseEventStreamTransformation;
 
@@ -39,9 +39,9 @@ import java.util.Queue;
  */
 public abstract class MagnificationGestureHandler extends BaseEventStreamTransformation {
 
-    protected final String mLogTag = this.getClass().getSimpleName();
-    protected static final boolean DEBUG_ALL = Log.isLoggable("MagnificationGestureHandler",
-            Log.DEBUG);
+    protected final String mTag = getClass().getSimpleName();
+    protected static final boolean DEBUG_ALL = AccessibilityLogUtil.isDebugEnabled(
+            MagnificationGestureHandler.class.getSimpleName());
     protected static final boolean DEBUG_EVENT_STREAM = false | DEBUG_ALL;
     private final Queue<MotionEvent> mDebugInputEventHistory;
     private final Queue<MotionEvent> mDebugOutputEventHistory;
@@ -152,7 +152,7 @@ public abstract class MagnificationGestureHandler extends BaseEventStreamTransfo
     @Override
     public final void onMotionEvent(MotionEvent event, MotionEvent rawEvent, int policyFlags) {
         if (DEBUG_ALL) {
-            Slog.i(mLogTag, "onMotionEvent(" + event + ")");
+            Slog.i(mTag, "onMotionEvent(" + event + ")");
         }
         if (mTrace.isA11yTracingEnabledForTypes(
                 AccessibilityTrace.FLAGS_INPUT_FILTER | AccessibilityTrace.FLAGS_GESTURE)) {
@@ -234,7 +234,7 @@ public abstract class MagnificationGestureHandler extends BaseEventStreamTransfo
      */
     public void notifyShortcutTriggered() {
         if (DEBUG_ALL) {
-            Slog.i(mLogTag, "notifyShortcutTriggered():");
+            Slog.i(mTag, "notifyShortcutTriggered():");
         }
         if (mDetectShortcutTrigger) {
             handleShortcutTriggered();

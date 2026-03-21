@@ -164,6 +164,12 @@ class ProcessErrorStateRecord {
     @SubReason
     private int mPendingCrashSubReason = ApplicationExitInfo.SUBREASON_UNKNOWN;
 
+    /**
+     * Pending crash description, will be used when the app actually crashes.
+     */
+    @GuardedBy("mService")
+    private String mPendingCrashDescription;
+
     @GuardedBy(anyOf = {"mService", "mProcLock"})
     boolean isBad() {
         return mBad;
@@ -233,6 +239,25 @@ class ProcessErrorStateRecord {
     @GuardedBy("mService")
     void setPendingCrashSubReason(@SubReason int subReason) {
         mPendingCrashSubReason = subReason;
+    }
+
+    /**
+     * @return the pending crash description.
+     */
+    @GuardedBy("mService")
+    @Nullable
+    String getPendingCrashDescription() {
+        return mPendingCrashDescription;
+    }
+
+    /**
+     * Set the pending crash description.
+     *
+     * @param description the description for the crash.
+     */
+    @GuardedBy("mService")
+    void setPendingCrashDescription(String description) {
+        mPendingCrashDescription = description;
     }
 
     @GuardedBy(anyOf = {"mService", "mProcLock"})
@@ -900,6 +925,7 @@ class ProcessErrorStateRecord {
         setCrashing(false);
         setNotResponding(false);
         setPendingCrashSubReason(ApplicationExitInfo.SUBREASON_UNKNOWN);
+        setPendingCrashDescription(null);
     }
 
     void dump(PrintWriter pw, String prefix, long nowUptime) {

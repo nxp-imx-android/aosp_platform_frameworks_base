@@ -29,6 +29,27 @@
 namespace input_flags = com::android::input::flags;
 
 namespace android {
+namespace {
+
+/**
+ * A deleter for jobject global references.
+ */
+struct GlobalRefDeleter {
+    void operator()(jobject obj) {
+        if (obj) {
+            AndroidRuntime::getJNIEnv()->DeleteGlobalRef(obj);
+        }
+    }
+};
+
+using ScopedGlobalRef = std::shared_ptr<_jobject>;
+
+static ScopedGlobalRef makeScopedGlobalRef(JNIEnv* env, jobject obj) {
+    if (obj == nullptr) return nullptr;
+    return ScopedGlobalRef(MakeGlobalRefOrDie(env, obj), GlobalRefDeleter());
+}
+
+} // namespace
 
 static struct {
     jclass clazz;
@@ -39,8 +60,12 @@ static struct {
 static struct {
     jclass clazz;
     jmethodID constructor;
-    jfieldID mNativePtr;
 } gNativeInteractionProviderClassInfo;
+
+static struct {
+    jclass clazz;
+    jmethodID onInteractionsAvailable;
+} gInteractionCallbackClassInfo;
 
 static struct {
     jclass clazz;
@@ -62,6 +87,9 @@ NativeInteractionProviderServiceInternal::NativeInteractionProviderServiceIntern
 
 NativeInteractionProviderServiceInternal::~NativeInteractionProviderServiceInternal() {
     JNIEnv* env = jniEnv();
+    for (auto const& [provider, providerObj] : mRegisteredInteractionProviders) {
+        env->DeleteGlobalRef(providerObj);
+    }
     env->DeleteGlobalRef(mServiceObj);
 }
 
@@ -110,10 +138,9 @@ bool NativeInteractionProviderServiceInternal::unregisterInteractionProvider(
     return unregistered;
 }
 
-static jobject getSourceInteractions(JNIEnv* env, jobject thiz) {
+static jobject getSourceInteractions(JNIEnv* env, jobject thiz, jlong nativePtr) {
     attention::InteractionProvider* interactionProvider =
-            reinterpret_cast<attention::InteractionProvider*>(
-                    env->GetLongField(thiz, gNativeInteractionProviderClassInfo.mNativePtr));
+            reinterpret_cast<attention::InteractionProvider*>(nativePtr);
 
     const auto interactions = interactionProvider->getSourceInteractions();
 
@@ -135,9 +162,26 @@ static jobject getSourceInteractions(JNIEnv* env, jobject thiz) {
     return jInteractions;
 }
 
+static void requestWakeupCallback(JNIEnv* env, jobject thiz, jlong nativePtr, jobject jCallback) {
+    LOG_ALWAYS_FATAL_IF(jCallback == nullptr, "requestWakeupCallback: callback must not be null");
+
+    attention::InteractionProvider* interactionProvider =
+            reinterpret_cast<attention::InteractionProvider*>(nativePtr);
+
+    ScopedGlobalRef globalCallback = makeScopedGlobalRef(env, jCallback);
+    interactionProvider->requestWakeupCallback([globalCallback]() {
+        // New env is required for the lambda.
+        AndroidRuntime::getJNIEnv()
+                ->CallVoidMethod(globalCallback.get(),
+                                 gInteractionCallbackClassInfo.onInteractionsAvailable);
+    });
+}
+
 static const JNINativeMethod gNativeInteractionProviderMethods[] = {
         /* name, signature, funcPtr */
-        {"getSourceInteractions", "()Ljava/util/List;", (void*)getSourceInteractions},
+        {"getSourceInteractions", "(J)Ljava/util/List;", (void*)getSourceInteractions},
+        {"requestWakeupCallback", "(JLcom/android/server/attention/InteractionWakeupCallback;)V",
+         (void*)requestWakeupCallback},
 };
 
 static void registerInteractionProviderMethods(JNIEnv* env) {
@@ -168,13 +212,17 @@ int register_com_android_server_attention_InteractionProviderServiceInternal(JNI
             GetMethodIDOrDie(env, clazz, "unregisterInteractionProvider",
                              "(Lcom/android/server/attention/InteractionProvider;)Z");
 
+    // InteractionWakeupCallback
+    clazz = FindClassOrDie(env, "com/android/server/attention/InteractionWakeupCallback");
+    gInteractionCallbackClassInfo.clazz = reinterpret_cast<jclass>(env->NewGlobalRef(clazz));
+    gInteractionCallbackClassInfo.onInteractionsAvailable =
+            GetMethodIDOrDie(env, clazz, "onInteractionsAvailable", "()V");
+
     // NativeInteractionProvider
     clazz = FindClassOrDie(env, "com/android/server/attention/NativeInteractionProvider");
     gNativeInteractionProviderClassInfo.clazz = reinterpret_cast<jclass>(env->NewGlobalRef(clazz));
     gNativeInteractionProviderClassInfo.constructor =
             GetMethodIDOrDie(env, clazz, "<init>", "(J)V");
-    gNativeInteractionProviderClassInfo.mNativePtr =
-            GetFieldIDOrDie(env, gNativeInteractionProviderClassInfo.clazz, "mNativePtr", "J");
 
     // InteractionState
     clazz = FindClassOrDie(env, "android/attention/InteractionState");

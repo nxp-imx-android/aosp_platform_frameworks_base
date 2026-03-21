@@ -202,6 +202,16 @@ flag {
 }
 
 flag {
+    name: "fix_a11y_lock_screen_jank"
+    namespace: "accessibility"
+    description: "Improves the accessibility lock screen transition by locking immediately and using the smooth 'key' animation path."
+    bug: "436933192"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "fix_add_extra_data_to_accessibility_node_info_delegation"
     namespace: "accessibility"
     description: "Fix missing delegation to AccessibilityDelegate in View#addExtraDataToAccessibilityNodeInfo."

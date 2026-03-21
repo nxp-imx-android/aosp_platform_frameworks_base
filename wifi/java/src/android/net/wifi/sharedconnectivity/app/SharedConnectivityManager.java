@@ -421,7 +421,7 @@ public class SharedConnectivityManager {
         Objects.requireNonNull(executor, "executor cannot be null");
         Objects.requireNonNull(callback, "callback cannot be null");
 
-        if (mProxyMap.containsKey(callback) || mCallbackProxyCache.containsKey(callback)) {
+        if (isCallbackRegistered(callback)) {
             Log.e(TAG, "Callback already registered");
             callback.onRegisterCallbackFailed(new IllegalStateException(
                     "Callback already registered"));
@@ -459,7 +459,7 @@ public class SharedConnectivityManager {
             @NonNull SharedConnectivityClientCallback callback) {
         Objects.requireNonNull(callback, "callback cannot be null");
 
-        if (!mProxyMap.containsKey(callback) && !mCallbackProxyCache.containsKey(callback)) {
+        if (!isCallbackRegistered(callback)) {
             Log.e(TAG, "Callback not found, cannot unregister");
             return false;
         }
@@ -736,5 +736,14 @@ public class SharedConnectivityManager {
             Log.e(TAG, "Exception in getKnownNetworkConnectionStatus", e);
         }
         return null;
+    }
+
+    /**
+     * Returns true if the callback is currently registered or cached for registration.
+     */
+    private boolean isCallbackRegistered(@NonNull SharedConnectivityClientCallback callback) {
+        synchronized (mProxyDataLock) {
+            return mProxyMap.containsKey(callback) || mCallbackProxyCache.containsKey(callback);
+        }
     }
 }

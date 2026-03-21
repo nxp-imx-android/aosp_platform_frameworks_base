@@ -41,6 +41,7 @@ import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.WindowManagerGlobal;
 import android.view.accessibility.AccessibilityManager;
+import android.view.accessibility.Flags;
 
 import com.android.internal.R;
 import com.android.internal.accessibility.util.AccessibilityUtils;
@@ -544,12 +545,22 @@ public class SystemActions implements CoreStartable, ConfigurationController.Con
         IWindowManager windowManager = WindowManagerGlobal.getWindowManagerService();
 
         Log.d(TAG, "going to sleep for accessibility");
-        mContext.getSystemService(PowerManager.class).goToSleep(SystemClock.uptimeMillis(),
-                PowerManager.GO_TO_SLEEP_REASON_ACCESSIBILITY, 0);
-        try {
-            windowManager.lockNow(null);
-        } catch (RemoteException e) {
-            Log.e(TAG, "failed to lock screen.");
+        if (Flags.fixA11yLockScreenJank()) {
+            try {
+                windowManager.lockNow(null);
+            } catch (RemoteException e) {
+                Log.e(TAG, "failed to lock screen.");
+            }
+            mContext.getSystemService(PowerManager.class).goToSleep(SystemClock.uptimeMillis(),
+                    PowerManager.GO_TO_SLEEP_REASON_ACCESSIBILITY, 0);
+        } else {
+            mContext.getSystemService(PowerManager.class).goToSleep(SystemClock.uptimeMillis(),
+                    PowerManager.GO_TO_SLEEP_REASON_ACCESSIBILITY, 0);
+            try {
+                windowManager.lockNow(null);
+            } catch (RemoteException e) {
+                Log.e(TAG, "failed to lock screen.");
+            }
         }
     }
 
