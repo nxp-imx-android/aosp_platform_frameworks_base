@@ -1,7 +1,0 @@
-filegroup {
-    name: "crashrecovery-platform-adaptor-srcs",
-    srcs: [
-        "postModularization/java/**/*.java",
-    ],
-    visibility: ["//frameworks/base:__subpackages__"],
-}
