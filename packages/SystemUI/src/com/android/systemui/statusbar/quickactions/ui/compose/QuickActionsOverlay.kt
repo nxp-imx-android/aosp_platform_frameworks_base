@@ -48,6 +48,8 @@ import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.AvControlsPop
 import com.android.systemui.statusbar.quickactions.media.ui.compose.MediaControlPopup
 import com.android.systemui.statusbar.quickactions.media.ui.viewmodel.MediaControlPopupViewModel
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupViewModel
+import com.android.systemui.statusbar.quickactions.screenrecord.ui.compose.LargeScreenStopRecordingPopup
+import com.android.systemui.statusbar.quickactions.screenrecord.ui.viewmodel.LargeScreenStopRecordingPopupViewModel2
 import com.android.systemui.statusbar.quickactions.sharescreen.ui.compose.ShareScreenPrivacyIndicatorPopup
 import com.android.systemui.statusbar.quickactions.sharescreen.ui.viewmodel.ShareScreenPrivacyIndicatorPopupViewModel
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionOverlayViewModel
@@ -169,6 +171,9 @@ fun ContentScope.QuickActionsPanel(
             }
             is ShareScreenPrivacyIndicatorPopupViewModel -> {
                 ShareScreenPrivacyIndicatorPopup(viewModel = viewModel, modifier = panelModifier)
+            }
+            is LargeScreenStopRecordingPopupViewModel2 -> {
+                LargeScreenStopRecordingPopup(viewModel = viewModel, modifier = panelModifier)
             }
             else ->
                 error(
