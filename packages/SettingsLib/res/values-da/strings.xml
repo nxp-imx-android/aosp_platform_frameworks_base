@@ -199,6 +199,8 @@
     <string name="accessibility_wifi_three_bars" msgid="779895671061950234">"Wi-Fi har tre bjælker."</string>
     <string name="accessibility_wifi_signal_full" msgid="7165262794551355617">"Wi-Fi har fuldt signal."</string>
     <string name="accessibility_wifi_other_device" msgid="2815627624555795918">"Der er oprettet forbindelse til din enhed."</string>
+    <!-- no translation found for accessibility_wifi_shared_network_icon_message (7853291528081728631) -->
+    <skip />
     <string name="accessibility_wifi_security_type_none" msgid="162352241518066966">"Åbent netværk"</string>
     <string name="accessibility_wifi_security_type_secured" msgid="2399774097343238942">"Sikkert netværk"</string>
     <string name="process_kernel_label" msgid="950292573930336765">"Android OS"</string>
@@ -546,7 +548,7 @@
     <string name="battery_info_status_charging_on_hold" msgid="6364355145521694438">"Opladningen er blevet sat på pause"</string>
     <string name="battery_info_status_charging_v2" msgid="6118522107222245505">"Opladning"</string>
     <string name="battery_info_status_charging_fast_v2" msgid="1825439848151256589">"Lynopladning"</string>
-    <string name="disabled_by_admin_summary_text" msgid="5343911767402923057">"Kontrolleret af administratoren"</string>
+    <string name="disabled_by_admin_summary_text" msgid="5343911767402923057">"Administreret af administratoren"</string>
     <string name="disabled_by_app_ops_text" msgid="8373595926549098012">"Styres af en begrænset indstilling"</string>
     <string name="disabled_in_phone_call_text" msgid="6568931334337318320">"Kan ikke bruges under opkald"</string>
     <string name="disabled" msgid="8017887509554714950">"Deaktiveret"</string>
