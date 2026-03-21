@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This file allows MemoryLimiter to run on any device, for testing.  Not
+     for production.
+-->
+<MemoryLimiterConfig>
+  <version>1</version>
+  <configList>
+    <limitSet>
+      <!-- A required memTotal of 0G means the configuration will never be
+           excluded because of available memory on the test device.
+      -->
+      <minimumRequiredMemTotal>0</minimumRequiredMemTotal>
+      <memVisible>1024</memVisible>
+      <memNotVisible>512</memNotVisible>
+      <swapVisible>512</swapVisible>
+      <swapNotVisible>512</swapNotVisible>
+    </limitSet>
+  </configList>
+</MemoryLimiterConfig>

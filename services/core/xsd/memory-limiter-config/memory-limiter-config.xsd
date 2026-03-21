@@ -19,19 +19,34 @@
            elementFormDefault="qualified"
            xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-    <xs:simpleType name="PercentageType">
+    <xs:simpleType name="MemoryInMB">
         <xs:restriction base="xs:integer">
-            <xs:minInclusive value="1"/>
-            <xs:maxInclusive value="100"/>
+            <xs:minInclusive value="0"/>
         </xs:restriction>
     </xs:simpleType>
 
+    <xs:complexType name="LimitSet">
+      <xs:sequence>
+        <xs:element name="minimumRequiredMemTotal" type="MemoryInMB" />
+        <xs:element name="memVisible" type="MemoryInMB" />
+        <xs:element name="memNotVisible" type="MemoryInMB" />
+        <xs:element name="swapVisible" type="MemoryInMB" />
+        <xs:element name="swapNotVisible" type="MemoryInMB" />
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="ConfigList">
+      <xs:sequence>
+            <xs:element name="limitSet" type="LimitSet"
+                        minOccurs="1" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+
     <xs:element name="MemoryLimiterConfig">
         <xs:complexType>
-            <xs:sequence>
-                <xs:element name="version" type="xs:positiveInteger"/>
-                <xs:element name="visible" type="PercentageType"/>
-                <xs:element name="notVisible" type="PercentageType"/>
+          <xs:sequence>
+            <xs:element name="version" type="xs:positiveInteger" />
+            <xs:element name="configList" type="ConfigList" />
             </xs:sequence>
         </xs:complexType>
     </xs:element>

@@ -42,8 +42,7 @@ android_test {
     ],
     data: [
         ":MemoryLimiterTestApp",
-        "data/config-default.xml",
-        "data/config-error.xml",
+        "data/*",
     ],
     test_suites: ["device-tests"],
 }
