@@ -236,3 +236,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "use_settings_main_switch_for_scanning"
+    namespace: "location"
+    description: "Use SettingsMainSwitchPreference for Wi-Fi/Bluetooth scanning to fix b/467021844."
+    bug: "467021844"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
