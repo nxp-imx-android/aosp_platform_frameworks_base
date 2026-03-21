@@ -28,14 +28,14 @@
     <string name="chooser_title" msgid="2235819929238267637">"Ayarlamak için bir <xliff:g id="PROFILE_NAME">%1$s</xliff:g> seçin"</string>
     <string name="single_device_title" msgid="4199861437545438606">"<xliff:g id="PROFILE_NAME">%1$s</xliff:g> aranıyor"</string>
     <string name="summary_watch" msgid="8134580124808507407">"Bu uygulamanın arayan kişinin adı gibi bilgileri senkronize etmesine ve <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> cihazınızda aşağıdaki izinlere erişmesine izin verilir"</string>
-    <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"fitness takip cihazı"</string>
+    <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"Fitness takip cihazı"</string>
     <string name="confirmation_title_glasses" msgid="8288346850537727333">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; uygulamasına &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; cihazını yönetmesi için izin verilsin mi?"</string>
     <string name="profile_name_glasses" msgid="3506504967216601277">"Cihaz"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Bu uygulamanın <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> cihazınızda şu izinlere erişmesine izin verilecek:"</string>
     <string name="profile_name_medical" msgid="5617160509499466400">"tıbbi cihaz"</string>
     <string name="title_app_streaming" msgid="237666000400427614">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; uygulamasının, <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ve &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; cihazları arasında uygulama ve sistem özelliklerini aktarmasına izin verilsin mi?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> uygulamasına aşağıdaki izinler verilecek:"</string>
-    <string name="helper_summary_app_streaming" msgid="160149899100957545">"<xliff:g id="APP_NAME">%1$s</xliff:g> uygulaması, <xliff:g id="DEVICE_NAME">%2$s</xliff:g> için cihazlarınız arasında ses ve sistem özelliklerini aktarma izni istiyor."</string>
+    <string name="helper_summary_app_streaming" msgid="160149899100957545">"<xliff:g id="APP_NAME">%1$s</xliff:g>, <xliff:g id="DEVICE_NAME">%2$s</xliff:g> adına kendi aralarında ses ve sistem özelliklerini aktarma izni istiyor."</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
     <string name="title_computer" msgid="5040395223341777259">"&lt;strong&gt;<xliff:g id="DISPLAY_NAME">%3$s</xliff:g>&lt;/strong&gt; uygulamasının, <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> cihazınızdaki bu bilgilere erişmesine izin verin"</string>
@@ -69,7 +69,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"Medya çıkışını değiştir"</string>
     <string name="permission_storage" msgid="6831099350839392343">"Fotoğraflar ve medya"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"Bildirimler"</string>
-    <string name="permission_app_streaming" msgid="4488910074894929222">"Ekran ve uygulamaları yansıtın"</string>
+    <string name="permission_app_streaming" msgid="4488910074894929222">"Ekran ve uygulamaları yansıtma"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"Verileri <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> cihazınıza yayınlayın"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"Ekranınızı yansıtın"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"Uygulamaları yayınla"</string>
