@@ -34,6 +34,9 @@ inline fun <T> IndexedList<T>.anyIndexed(predicate: (Int, T) -> Boolean): Boolea
     return false
 }
 
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T> IndexedList<T>.first(): T = this[0]
+
 inline fun <T> IndexedList<T>.forEachIndexed(action: (Int, T) -> Unit) {
     for (index in 0 until size) {
         action(index, this[index])

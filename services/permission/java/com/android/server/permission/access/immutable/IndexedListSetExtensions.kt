@@ -34,6 +34,9 @@ inline fun <T> IndexedListSet<T>.anyIndexed(predicate: (Int, T) -> Boolean): Boo
     return false
 }
 
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T> IndexedListSet<T>.first(): T = elementAt(0)
+
 inline fun <T> IndexedListSet<T>.forEachIndexed(action: (Int, T) -> Unit) {
     for (index in 0 until size) {
         action(index, elementAt(index))
