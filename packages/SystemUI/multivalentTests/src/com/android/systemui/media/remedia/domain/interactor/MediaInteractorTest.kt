@@ -16,17 +16,26 @@
 
 package com.android.systemui.media.remedia.domain.interactor
 
+import android.media.session.MediaSession
+import android.os.UserHandle
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.test.annotation.UiThreadTest
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.media.flags.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.media.mediaOutputDialogManager
+import com.android.systemui.media.remedia.data.repository.fakeActiveMediaData
+import com.android.systemui.media.remedia.data.repository.setFakeCurrentMediaData
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.verify
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
@@ -68,5 +77,61 @@ class MediaInteractorTest : SysuiTestCase() {
 
             assertThat(underTest.isGutsVisible).isFalse()
             assertThat(underTest.currentCarouselIndex).isEqualTo(0)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
+    fun onOutputDeviceClick_multiUserFlagEnabled_showsOutputDialog() =
+        testScope.runTest {
+            val packageName = "com.test.app"
+            val appUid = 12345
+            val token = MediaSession(context, "TEST").sessionToken
+            val mediaData =
+                kosmos.fakeActiveMediaData.copy(
+                    packageName = packageName,
+                    appUid = appUid,
+                    token = token,
+                )
+            kosmos.setFakeCurrentMediaData(listOf(mediaData))
+
+            val session = underTest.sessions[0]
+            session.outputDevice.onClick(null)
+
+            verify(kosmos.mediaOutputDialogManager)
+                .createAndShowWithController(
+                    packageName = packageName,
+                    aboveStatusBar = true,
+                    controller = null,
+                    userHandle = UserHandle.getUserHandleForUid(appUid),
+                    token = token,
+                )
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
+    fun onOutputDeviceClick_multiUserFlagDisabled_showsOutputDialog() =
+        testScope.runTest {
+            val packageName = "com.test.app"
+            val appUid = 12345
+            val token = MediaSession(context, "TEST").sessionToken
+            val mediaData =
+                kosmos.fakeActiveMediaData.copy(
+                    packageName = packageName,
+                    appUid = appUid,
+                    token = token,
+                )
+            kosmos.setFakeCurrentMediaData(listOf(mediaData))
+
+            val session = underTest.sessions[0]
+            session.outputDevice.onClick(null)
+
+            verify(kosmos.mediaOutputDialogManager)
+                .createAndShowWithController(
+                    packageName = packageName,
+                    aboveStatusBar = true,
+                    controller = null,
+                    userHandle = null,
+                    token = token,
+                )
         }
 }
