@@ -2738,7 +2738,11 @@ public class ComputerEngine implements Computer {
         return getPackageUidInternal(packageName, flags, userId, callingUid, /*forPcc*/ false);
     }
 
-    private int getPackageUidInternal(String packageName,
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getPackageUidInternal(String packageName,
             @PackageManager.PackageInfoFlagsBits long flags, int userId, int callingUid,
             boolean forPcc) {
         // reader
