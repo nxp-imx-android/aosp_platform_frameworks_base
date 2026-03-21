@@ -25,7 +25,7 @@
     <string name="discovery_mixed" msgid="7071466134150760127">"Bluetooth y Wi-Fi"</string>
     <string name="profile_name_watch" msgid="576290739483672360">"reloj"</string>
     <string name="chooser_title_non_profile" msgid="6035023914517087400">"Elige un dispositivo para que lo gestione &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt;"</string>
-    <string name="chooser_title" msgid="2235819929238267637">"Elige <xliff:g id="PROFILE_NAME">%1$s</xliff:g> para configurar"</string>
+    <string name="chooser_title" msgid="2235819929238267637">"Elige qué <xliff:g id="PROFILE_NAME">%1$s</xliff:g> quieres configurar"</string>
     <string name="single_device_title" msgid="4199861437545438606">"Buscando <xliff:g id="PROFILE_NAME">%1$s</xliff:g>"</string>
     <string name="summary_watch" msgid="8134580124808507407">"Esta aplicación podrá sincronizar información, como el nombre de la persona que llama, y acceder a estos permisos de tu <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="profile_name_fitness_tracker" msgid="3107192493390199691">"pulsera de actividad física"</string>
@@ -33,14 +33,14 @@
     <string name="profile_name_glasses" msgid="3506504967216601277">"dispositivo"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"Esta aplicación podrá acceder a estos permisos de tu <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="profile_name_medical" msgid="5617160509499466400">"dispositivo médico"</string>
-    <string name="title_app_streaming" msgid="237666000400427614">"¿Permitir que &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; emita apps y funciones del sistema entre tu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> y tu &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
+    <string name="title_app_streaming" msgid="237666000400427614">"¿Permitir que &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; emita apps y funciones del sistema entre tu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> y &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> tendrá los siguientes permisos:"</string>
     <string name="helper_summary_app_streaming" msgid="160149899100957545">"<xliff:g id="APP_NAME">%1$s</xliff:g> está pidiendo permiso en nombre de <xliff:g id="DEVICE_NAME">%2$s</xliff:g> para emitir apps y funciones del sistema en otros dispositivos tuyos"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
     <string name="title_computer" msgid="5040395223341777259">"Permitir que &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%3$s</xliff:g>&lt;/strong&gt; acceda a esta información de tu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="helper_summary_computer" msgid="2298803016482139668">"<xliff:g id="APP_NAME">%1$s</xliff:g> está pidiendo permiso en nombre de tu <xliff:g id="DEVICE_NAME">%2$s</xliff:g> para acceder a las fotos, los archivos multimedia y las notificaciones de tu <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
-    <string name="title_nearby_device_streaming" msgid="5342768208699657581">"¿Permitir que &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; emita apps y funciones del sistema entre tu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> y tu &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
+    <string name="title_nearby_device_streaming" msgid="5342768208699657581">"¿Permitir que &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; emita apps y funciones del sistema entre tu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> y &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="summary_nearby_device_streaming" msgid="7940640272770197219">"<xliff:g id="APP_NAME">%1$s</xliff:g> tendrá los siguientes permisos:"</string>
     <string name="helper_summary_nearby_device_streaming" msgid="4712712177819370967">"<xliff:g id="APP_NAME">%1$s</xliff:g> está pidiendo permiso en nombre de <xliff:g id="DEVICE_NAME">%2$s</xliff:g> para emitir apps desde tu <xliff:g id="DEVICE_TYPE">%3$s</xliff:g>"</string>
     <string name="title_virtual_device" msgid="6556338763070329395">"¿Permitir que &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; emita audio y funciones del sistema entre tu <xliff:g id="DEVICE_TYPE">%3$s</xliff:g> y tu &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>

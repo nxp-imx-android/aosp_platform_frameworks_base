@@ -37,7 +37,6 @@ import androidx.test.filters.SmallTest
 import com.android.testing.wm.util.StubTransaction
 import com.android.testing.wm.util.TransitionInfoBuilder
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION
-import com.android.window.flags.Flags.FLAG_ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.ShellExecutor
@@ -797,83 +796,6 @@ class DesktopTasksLimiterTest : ShellTestCase() {
         onIdleArgumentCaptor.value.run()
         verify(desktopMixedTransitionHandler, never())
             .startTaskLimitMinimizeTransition(any(), any())
-    }
-
-    @Test
-    @DisableFlags(FLAG_ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS)
-    fun onTransitionReady_taskLimitTransition_taskTrampoline_doesntStartMinimizeTransition() {
-        desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
-        desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
-        val transition1 = Binder()
-        val transition2 = Binder()
-        (2..MAX_TASK_LIMIT).map { setUpFreeformTask() }
-        val task1 = setUpFreeformTask()
-        val task2 = setUpFreeformTask()
-        desktopTasksLimiter.addPendingTaskLimitTransition(
-            transition1,
-            deskId = 0,
-            taskId = task1.taskId,
-        )
-        desktopTasksLimiter.addPendingTaskLimitTransition(
-            transition2,
-            deskId = 0,
-            taskId = task2.taskId,
-        )
-        val transitionInfo1 =
-            TransitionInfoBuilder(TRANSIT_OPEN).addChange(TRANSIT_OPEN, task1).build()
-        val transitionInfo2 =
-            TransitionInfoBuilder(TRANSIT_OPEN)
-                .addChange(TRANSIT_OPEN, task2)
-                .addChange(TRANSIT_CLOSE, task1)
-                .build()
-
-        // Start the initial task launch transition - launching a trampoline task
-        callOnTransitionReady(transition1, transitionInfo1)
-        // Start the second task launch transition - launching the final task and closing the
-        // trampoline task
-        callOnTransitionReady(transition2, transitionInfo2)
-
-        val onIdleArgumentCaptor = argumentCaptor<Runnable>()
-        verify(transitions, times(2)).runOnIdle(onIdleArgumentCaptor.capture())
-        onIdleArgumentCaptor.allValues.forEach { runnable -> runnable.run() }
-        verify(desktopMixedTransitionHandler, never())
-            .startTaskLimitMinimizeTransition(any(), any())
-    }
-
-    @Test
-    @DisableFlags(FLAG_ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS)
-    fun onTransitionReady_taskLimitTransition_taskTrampoline_marksTramplineAsClosed() {
-        desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
-        desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
-        val transition1 = Binder()
-        val transition2 = Binder()
-        val task1 = setUpFreeformTask()
-        val task2 = setUpFreeformTask()
-        desktopTasksLimiter.addPendingTaskLimitTransition(
-            transition1,
-            deskId = 0,
-            taskId = task1.taskId,
-        )
-        desktopTasksLimiter.addPendingTaskLimitTransition(
-            transition2,
-            deskId = 0,
-            taskId = task2.taskId,
-        )
-        val transitionInfo1 =
-            TransitionInfoBuilder(TRANSIT_OPEN).addChange(TRANSIT_OPEN, task1).build()
-        val transitionInfo2 =
-            TransitionInfoBuilder(TRANSIT_OPEN)
-                .addChange(TRANSIT_OPEN, task2)
-                .addChange(TRANSIT_CLOSE, task1)
-                .build()
-
-        // Start the initial task launch transition - launching a trampoline task
-        callOnTransitionReady(transition1, transitionInfo1)
-        // Start the second task launch transition - launching the final task and closing the
-        // trampoline task
-        callOnTransitionReady(transition2, transitionInfo2)
-
-        assertThat(desktopTaskRepo.isClosingTask(task1.taskId)).isTrue()
     }
 
     private fun setUpFreeformTask(displayId: Int = DEFAULT_DISPLAY): RunningTaskInfo {

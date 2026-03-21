@@ -1483,7 +1483,7 @@
     <string name="media_output_dialog_group" msgid="5571251347877452212">"Gruppo"</string>
     <string name="media_output_item_connected_state" msgid="297439499870755458">"Connesso"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Non puoi cambiare. Tocca per riprovare."</string>
-    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Collega dispositivo"</string>
+    <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Connetti dispositivo"</string>
     <string name="media_output_dialog_unknown_launch_app_name" msgid="1084899329829371336">"App sconosciuta"</string>
     <string name="media_output_dialog_button_stop_casting" msgid="6581379537930199189">"Interrompi trasmissione"</string>
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Dispositivi disponibili per l\'uscita audio."</string>
@@ -1835,8 +1835,7 @@
     <string name="pager_dots_next_content_description" msgid="613943992626163120">"Avanti"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"vai alla pagina successiva"</string>
     <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"tornare indietro"</string>
-    <!-- no translation found for accessibility_close_overlay_box_description (8399871568780893724) -->
-    <skip />
+    <string name="accessibility_close_overlay_box_description" msgid="8399871568780893724">"indietro"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"compila automaticamente"</string>
     <string name="ambient_cue_expand_action" msgid="6803711089932959312">"espandi"</string>
     <string name="location_button_text_precise_location" msgid="4441259889842542799">"Posizione esatta"</string>
@@ -1887,18 +1886,11 @@
     <string name="dream_setup_title" msgid="7996530071414508238">"Configura il salvaschermo"</string>
     <string name="dream_setup_button_not_now" msgid="8028385323668620805">"Non ora"</string>
     <string name="dream_setup_button_setup" msgid="4755361016017554826">"Configura"</string>
-    <!-- no translation found for ace_attribution_dialog_settings_label (8898211593287114433) -->
-    <skip />
-    <!-- no translation found for ace_attribution_dialog_title (5236154464063969824) -->
-    <skip />
-    <!-- no translation found for ace_attribution_dialog_description (1431906058759687758) -->
-    <skip />
-    <!-- no translation found for ace_attribution_header_icon_accessibility_description (7385840112370423581) -->
-    <skip />
-    <!-- no translation found for ace_attribution_settings_button_accessibility_description (8426163772933746374) -->
-    <skip />
-    <!-- no translation found for ace_attribution_thumbs_up_button_accessibility_description (3561722934830934360) -->
-    <skip />
-    <!-- no translation found for ace_attribution_thumbs_down_button_accessibility_description (5471283747650437662) -->
-    <skip />
+    <string name="ace_attribution_dialog_settings_label" msgid="8898211593287114433">"Impostazioni"</string>
+    <string name="ace_attribution_dialog_title" msgid="5236154464063969824">"Suggerimenti di Suggerimenti proattivi"</string>
+    <string name="ace_attribution_dialog_description" msgid="1431906058759687758">"Elementi presi in considerazione in questo suggerimento"</string>
+    <string name="ace_attribution_header_icon_accessibility_description" msgid="7385840112370423581">"Icona di Android Device Intelligence"</string>
+    <string name="ace_attribution_settings_button_accessibility_description" msgid="8426163772933746374">"Pulsante Impostazioni"</string>
+    <string name="ace_attribution_thumbs_up_button_accessibility_description" msgid="3561722934830934360">"Pulsante di feedback \"Mi piace\""</string>
+    <string name="ace_attribution_thumbs_down_button_accessibility_description" msgid="5471283747650437662">"Pulsante di feedback \"Non mi piace\""</string>
 </resources>

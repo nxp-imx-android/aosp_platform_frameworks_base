@@ -45,11 +45,15 @@ import kotlinx.coroutines.launch
 /** Displays a popup for screen recording configurations. */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun LargeScreenStopRecordingPopup(viewModel: LargeScreenStopRecordingPopupViewModel2) {
+fun LargeScreenStopRecordingPopup(
+    viewModel: LargeScreenStopRecordingPopupViewModel2,
+    modifier: Modifier = Modifier,
+) {
     Surface(
         shape = FloatingToolbarDefaults.ContainerShape,
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 24.dp,
+        modifier = modifier,
     ) {
         Row(
             modifier = Modifier.height(64.dp).padding(horizontal = 12.dp),

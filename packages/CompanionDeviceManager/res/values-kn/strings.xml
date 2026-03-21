@@ -33,9 +33,9 @@
     <string name="profile_name_glasses" msgid="3506504967216601277">"ಸಾಧನ"</string>
     <string name="summary_glasses" msgid="5469208629679579157">"ನಿಮ್ಮ <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> ನಲ್ಲಿ ಈ ಅನುಮತಿಗಳನ್ನು ಆ್ಯಕ್ಸೆಸ್‌ ಮಾಡಲು ಈ ಆ್ಯಪ್‌ ಅನ್ನು ಅನುಮತಿಸಲಾಗುತ್ತದೆ"</string>
     <string name="profile_name_medical" msgid="5617160509499466400">"ವೈಧ್ಯಕೀಯ ಸಾಧನ"</string>
-    <string name="title_app_streaming" msgid="237666000400427614">"ನಿಮ್ಮ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ಮತ್ತು &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; ರ ನಡುವೆ ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ಸಿಸ್ಟಂ ಫೀಚರ್‌ಗಳನ್ನು ಸ್ಟ್ರೀಮ್ ಮಾಡಲು &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; ಅನ್ನು ಅನುಮತಿಸಬೇಕೆ?"</string>
+    <string name="title_app_streaming" msgid="237666000400427614">"ನಿಮ್ಮ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ಮತ್ತು &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; ನಡುವೆ ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ಸಿಸ್ಟಂ ಫೀಚರ್‌ಗಳನ್ನು ಸ್ಟ್ರೀಮ್ ಮಾಡಲು &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; ಅನ್ನು ಅನುಮತಿಸಬೇಕೆ?"</string>
     <string name="summary_app_streaming" msgid="8346968726357732862">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಗೆ ಈ ಕೆಳಗಿನ ಅನುಮತಿಗಳನ್ನು ನೀಡಲಾಗುತ್ತದೆ:"</string>
-    <string name="helper_summary_app_streaming" msgid="160149899100957545">"ನಿಮ್ಮ ಸಾಧನಗಳ ನಡುವೆ ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ಸಿಸ್ಟಂ ಫೀಚರ್‌ಗಳನ್ನು ಸ್ಟ್ರೀಮ್ ಮಾಡಲು <xliff:g id="DEVICE_NAME">%2$s</xliff:g> ನ ಪರವಾಗಿ <xliff:g id="APP_NAME">%1$s</xliff:g> ಅನುಮತಿಯನ್ನು ವಿನಂತಿಸುತ್ತಿದೆ"</string>
+    <string name="helper_summary_app_streaming" msgid="160149899100957545">"ನಿಮ್ಮ ಸಾಧನಗಳ ನಡುವೆ ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ಸಿಸ್ಟಂ ಫೀಚರ್‌ಗಳನ್ನು ಸ್ಟ್ರೀಮ್ ಮಾಡಲು <xliff:g id="DEVICE_NAME">%2$s</xliff:g> ಪರವಾಗಿ <xliff:g id="APP_NAME">%1$s</xliff:g> ಅನುಮತಿಯನ್ನು ವಿನಂತಿಸುತ್ತಿದೆ"</string>
     <string name="title_automotive_projection" msgid="3296005598978412847"></string>
     <string name="summary_automotive_projection" msgid="8683801274662496164"></string>
     <string name="title_computer" msgid="5040395223341777259">"ನಿಮ್ಮ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ನಿಂದ ಈ ಮಾಹಿತಿಯನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು &lt;strong&gt;<xliff:g id="DISPLAY_NAME">%3$s</xliff:g>&lt;/strong&gt; ಗೆ ಅನುಮತಿಸಿ"</string>

@@ -199,6 +199,8 @@
     <string name="accessibility_wifi_three_bars" msgid="779895671061950234">"ৱাই-ফাইৰ তিনিডাল দণ্ড।"</string>
     <string name="accessibility_wifi_signal_full" msgid="7165262794551355617">"ৱাই-ফাই সংকেত সৰ্বোচ্চ।"</string>
     <string name="accessibility_wifi_other_device" msgid="2815627624555795918">"আপোনাৰ ডিভাইচটোৰ সৈতে সংযোগ কৰা আছে।"</string>
+    <!-- no translation found for accessibility_wifi_shared_network_icon_message (7853291528081728631) -->
+    <skip />
     <string name="accessibility_wifi_security_type_none" msgid="162352241518066966">"মুক্ত নেটৱৰ্ক"</string>
     <string name="accessibility_wifi_security_type_secured" msgid="2399774097343238942">"সুৰক্ষিত নেটৱৰ্ক"</string>
     <string name="process_kernel_label" msgid="950292573930336765">"Android OS"</string>
@@ -257,7 +259,7 @@
     <string name="choose_profile" msgid="343803890897657450">"প্ৰ’ফাইল বাছনি কৰক"</string>
     <string name="category_personal" msgid="6236798763159385225">"ব্যক্তিগত"</string>
     <string name="category_work" msgid="4014193632325996115">"কৰ্মস্থান-সম্পৰ্কীয়"</string>
-    <string name="category_private" msgid="4244892185452788977">"প্ৰাইভেট"</string>
+    <string name="category_private" msgid="4244892185452788977">"ব্যক্তিগত"</string>
     <string name="category_clone" msgid="1554511758987195974">"ক্ল’ন"</string>
     <string name="development_settings_title" msgid="140296922921597393">"বিকাশকৰ্তাৰ বিকল্পসমূহ"</string>
     <string name="development_settings_enable" msgid="4285094651288242183">"বিকাশকৰ্তা বিষয়ক বিকল্পসমূহ সক্ষম কৰক"</string>
@@ -546,7 +548,7 @@
     <string name="battery_info_status_charging_on_hold" msgid="6364355145521694438">"চাৰ্জিং স্থগিত ৰখা হৈছে"</string>
     <string name="battery_info_status_charging_v2" msgid="6118522107222245505">"চাৰ্জ হৈ আছে"</string>
     <string name="battery_info_status_charging_fast_v2" msgid="1825439848151256589">"দ্ৰুত চাৰ্জিং"</string>
-    <string name="disabled_by_admin_summary_text" msgid="5343911767402923057">"এডমিনৰ দ্বাৰা নিয়ন্ত্ৰিত"</string>
+    <string name="disabled_by_admin_summary_text" msgid="5343911767402923057">"প্ৰশাসকৰ দ্বাৰা নিয়ন্ত্ৰিত"</string>
     <string name="disabled_by_app_ops_text" msgid="8373595926549098012">"প্ৰতিবন্ধিত ছেটিঙৰ দ্বাৰা নিয়ন্ত্ৰিত"</string>
     <string name="disabled_in_phone_call_text" msgid="6568931334337318320">"কল চলি থকাৰ সময়ত উপলব্ধ নহয়"</string>
     <string name="disabled" msgid="8017887509554714950">"নিষ্ক্ৰিয়"</string>

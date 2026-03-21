@@ -17,10 +17,12 @@
 package com.android.systemui.volume.panel.component.mediaoutput.domain.interactor
 
 import android.app.Dialog
+import android.os.UserHandle
 import android.view.Gravity
 import android.view.ViewTreeObserver
 import android.view.WindowManager
 import com.android.internal.jank.InteractionJankMonitor
+import com.android.media.flags.Flags.fixOutputSwitcherMultiuserSupport
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
@@ -29,6 +31,7 @@ import com.android.systemui.media.dialog.MediaOutputDialogDelegate
 import com.android.systemui.media.dialog.MediaOutputDialogManager
 import com.android.systemui.media.dialog.MediaSwitchingType
 import com.android.systemui.qs.panels.data.repository.QSPanelAppearanceRepository
+import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
 import com.android.systemui.volume.dialog.domain.interactor.ExpandedAudioTileDetailsFeatureInteractor
 import com.android.systemui.volume.panel.component.mediaoutput.domain.model.MediaOutputComponentModel
@@ -51,6 +54,7 @@ class MediaOutputActionsInteractor
 constructor(
     @VolumePanelScope private val coroutineScope: CoroutineScope,
     @Main private val mainDispatcher: CoroutineDispatcher,
+    private val userTracker: UserTracker,
     private val mediaOutputDialogManager: MediaOutputDialogManager,
     private val qsPanelAppearanceRepository: QSPanelAppearanceRepository,
     private val expandedAudioTileDetailsFeatureInteractor: ExpandedAudioTileDetailsFeatureInteractor,
@@ -100,23 +104,46 @@ constructor(
         coroutineScope.launch {
             if (model is MediaOutputComponentModel.MediaSession) {
                 suspendCancellableCoroutine { continuation ->
-                    mediaOutputDialogManager.createAndShowWithController(
-                        packageName = model.session.packageName,
-                        aboveStatusBar = false,
-                        controller = expandable?.dialogController(),
-                        onDialogEventListener = onDialogEventListener,
-                        mediaSwitchingType = mediaSwitchingType,
-                        useSystemColors = true,
-                    )
+                    if (fixOutputSwitcherMultiuserSupport()) {
+                        mediaOutputDialogManager.createAndShowWithController(
+                            packageName = model.session.packageName,
+                            aboveStatusBar = false,
+                            controller = expandable?.dialogController(),
+                            userHandle =
+                                UserHandle.getUserHandleForUid(model.session.sessionToken.uid),
+                            token = model.session.sessionToken,
+                            onDialogEventListener = onDialogEventListener,
+                            mediaSwitchingType = mediaSwitchingType,
+                            useSystemColors = true,
+                        )
+                    } else {
+                        mediaOutputDialogManager.createAndShowWithController(
+                            packageName = model.session.packageName,
+                            aboveStatusBar = false,
+                            controller = expandable?.dialogController(),
+                            onDialogEventListener = onDialogEventListener,
+                            mediaSwitchingType = mediaSwitchingType,
+                            useSystemColors = true,
+                        )
+                    }
                     continuation.invokeOnCancellation { mediaOutputDialogManager.dismiss() }
                 }
             } else {
                 suspendCancellableCoroutine { continuation ->
-                    mediaOutputDialogManager.createAndShowForSystemRouting(
-                        expandable?.dialogController(),
-                        onDialogEventListener,
-                        mediaSwitchingType,
-                    )
+                    if (fixOutputSwitcherMultiuserSupport()) {
+                        mediaOutputDialogManager.createAndShowForSystemRouting(
+                            expandable?.dialogController(),
+                            onDialogEventListener,
+                            mediaSwitchingType,
+                            userHandle = userTracker.userHandle,
+                        )
+                    } else {
+                        mediaOutputDialogManager.createAndShowForSystemRouting(
+                            expandable?.dialogController(),
+                            onDialogEventListener,
+                            mediaSwitchingType,
+                        )
+                    }
                     continuation.invokeOnCancellation { mediaOutputDialogManager.dismiss() }
                 }
             }

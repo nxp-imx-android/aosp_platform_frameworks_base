@@ -159,7 +159,6 @@ class DesktopTasksLimiter(
         ) {
             val launchDetails = pendingTaskLimitTransitionTokens.remove(transition) ?: return
             logV("handleTaskLimitTransitionReady, transition=%s, info=%s", transition, info)
-            markClosingTasks(taskRepository, info, launchDetails)
             transitions.runOnIdle {
                 val expandedTaskIds =
                     taskRepository.getExpandedTasksIdsInDeskOrdered(launchDetails.deskId).filter {
@@ -171,30 +170,6 @@ class DesktopTasksLimiter(
                     transition,
                 )
                 triggerMinimizeTransition(launchDetails.deskId, expandedTaskIds)
-            }
-        }
-
-        private fun markClosingTasks(
-            taskRepository: DesktopRepository,
-            info: TransitionInfo,
-            launchDetails: LaunchDetails,
-        ) {
-            // markClosingTasks() is a workaround while
-            // ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS is ramping up, so don't run this
-            // logic when that flag has been enabled.
-            if (DesktopExperienceFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue) {
-                return
-            }
-            info.changes.forEach { change ->
-                val taskInfo = change.taskInfo ?: return@forEach
-                if (change.mode != TRANSIT_CLOSE || !taskInfo.isFreeform) {
-                    return@forEach
-                }
-                taskRepository.addClosingTask(
-                    taskInfo.displayId,
-                    launchDetails.deskId,
-                    taskInfo.taskId,
-                )
             }
         }
 

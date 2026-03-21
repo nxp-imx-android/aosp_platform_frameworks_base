@@ -199,6 +199,8 @@
     <string name="accessibility_wifi_three_bars" msgid="779895671061950234">"Três barras de Wi-Fi."</string>
     <string name="accessibility_wifi_signal_full" msgid="7165262794551355617">"Sinal de Wi-Fi completo."</string>
     <string name="accessibility_wifi_other_device" msgid="2815627624555795918">"Com ligação ao dispositivo."</string>
+    <!-- no translation found for accessibility_wifi_shared_network_icon_message (7853291528081728631) -->
+    <skip />
     <string name="accessibility_wifi_security_type_none" msgid="162352241518066966">"Rede aberta"</string>
     <string name="accessibility_wifi_security_type_secured" msgid="2399774097343238942">"Rede segura"</string>
     <string name="process_kernel_label" msgid="950292573930336765">"SO Android"</string>
@@ -546,7 +548,7 @@
     <string name="battery_info_status_charging_on_hold" msgid="6364355145521694438">"Carregamento em espera"</string>
     <string name="battery_info_status_charging_v2" msgid="6118522107222245505">"A carregar"</string>
     <string name="battery_info_status_charging_fast_v2" msgid="1825439848151256589">"Carregamento rápido"</string>
-    <string name="disabled_by_admin_summary_text" msgid="5343911767402923057">"Controlado pelo gestor"</string>
+    <string name="disabled_by_admin_summary_text" msgid="5343911767402923057">"Definição gerida pelo administrador"</string>
     <string name="disabled_by_app_ops_text" msgid="8373595926549098012">"Controlado por uma definição restrita"</string>
     <string name="disabled_in_phone_call_text" msgid="6568931334337318320">"Indisponível durante as chamadas"</string>
     <string name="disabled" msgid="8017887509554714950">"Desativada"</string>

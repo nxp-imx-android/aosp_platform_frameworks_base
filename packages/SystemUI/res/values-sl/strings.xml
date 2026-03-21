@@ -1886,18 +1886,11 @@
     <string name="dream_setup_title" msgid="7996530071414508238">"Nastavitev ohranjevalnika zaslona"</string>
     <string name="dream_setup_button_not_now" msgid="8028385323668620805">"Ne zdaj"</string>
     <string name="dream_setup_button_setup" msgid="4755361016017554826">"Nastavi"</string>
-    <!-- no translation found for ace_attribution_dialog_settings_label (8898211593287114433) -->
-    <skip />
-    <!-- no translation found for ace_attribution_dialog_title (5236154464063969824) -->
-    <skip />
-    <!-- no translation found for ace_attribution_dialog_description (1431906058759687758) -->
-    <skip />
-    <!-- no translation found for ace_attribution_header_icon_accessibility_description (7385840112370423581) -->
-    <skip />
-    <!-- no translation found for ace_attribution_settings_button_accessibility_description (8426163772933746374) -->
-    <skip />
-    <!-- no translation found for ace_attribution_thumbs_up_button_accessibility_description (3561722934830934360) -->
-    <skip />
-    <!-- no translation found for ace_attribution_thumbs_down_button_accessibility_description (5471283747650437662) -->
-    <skip />
+    <string name="ace_attribution_dialog_settings_label" msgid="8898211593287114433">"Nastavitve"</string>
+    <string name="ace_attribution_dialog_title" msgid="5236154464063969824">"Predlogi funkcije Magični namigi"</string>
+    <string name="ace_attribution_dialog_description" msgid="1431906058759687758">"Elementi, upoštevani pri tem predlogu"</string>
+    <string name="ace_attribution_header_icon_accessibility_description" msgid="7385840112370423581">"Ikona funkcije Android Device Intelligence"</string>
+    <string name="ace_attribution_settings_button_accessibility_description" msgid="8426163772933746374">"Gumb za nastavitve"</string>
+    <string name="ace_attribution_thumbs_up_button_accessibility_description" msgid="3561722934830934360">"Gumb za pozitivno povratno informacijo"</string>
+    <string name="ace_attribution_thumbs_down_button_accessibility_description" msgid="5471283747650437662">"Gumb za negativno povratno informacijo"</string>
 </resources>

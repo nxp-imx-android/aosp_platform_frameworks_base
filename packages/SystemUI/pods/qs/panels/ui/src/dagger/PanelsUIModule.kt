@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package android.companion.datatransfer.continuity;
+package com.android.systemui.qs.panels.ui
 
-/**
- * Interface for communication with the Universal Clipboard service.
- * @hide
- */
-interface IUniversalClipboardManager {
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditModeTabs
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditModeTabsImpl
+import dagger.Binds
+import dagger.Module
 
+@Module
+public interface PanelsUIModule {
+    @Binds public fun bindEditModeTabs(impl: EditModeTabsImpl): EditModeTabs
 }

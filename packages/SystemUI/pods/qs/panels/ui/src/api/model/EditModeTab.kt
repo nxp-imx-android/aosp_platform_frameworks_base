@@ -41,7 +41,7 @@ sealed interface EditModeTab {
     /** Whether tiles can be resized and reordered. */
     val isTilesLayoutAllowed: Boolean
 
-    /** A tab where tiles can be removed/added only. */
+    /** A tab where tiles can be removed/added/resized. */
     data object EditingTab : EditModeTab {
         override val titleIcon: ImageVector = Edit
         override val titleResId: Int = R.string.qs_edit_edit_tab
@@ -50,7 +50,7 @@ sealed interface EditModeTab {
         override val isTilesLayoutAllowed: Boolean = false
     }
 
-    /** A tab where tiles can be resized/reordered only. */
+    /** A tab where the QS shade components can be reordered. */
     data object LayoutTab : EditModeTab {
         override val titleIcon: ImageVector = TileMedium
         override val titleResId: Int = R.string.qs_edit_layout_tab

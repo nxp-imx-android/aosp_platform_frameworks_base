@@ -22,10 +22,12 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.media.session.MediaSession
+import android.os.UserHandle
 import android.provider.Settings
 import android.util.Log
 import com.android.internal.jank.Cuj
 import com.android.internal.logging.InstanceId
+import com.android.media.flags.Flags.fixOutputSwitcherMultiuserSupport
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState
 import com.android.systemui.ActivityIntentHelper
 import com.android.systemui.Flags
@@ -430,20 +432,36 @@ constructor(
 
     private fun startOutputSwitcherClick(dataModel: MediaDataModel, expandable: Expandable?) {
         dataModel.outputDevice?.intent?.let { startDeviceIntent(dataModel.instanceId, it) }
-            ?: startMediaOutputDialog(expandable, dataModel.packageName, dataModel.token)
+            ?: startMediaOutputDialog(
+                expandable,
+                dataModel.packageName,
+                dataModel.appUid,
+                dataModel.token,
+            )
     }
 
     private fun startMediaOutputDialog(
         expandable: Expandable?,
         packageName: String,
+        appUid: Int,
         token: MediaSession.Token? = null,
     ) {
-        mediaOutputDialogManager.createAndShowWithController(
-            packageName,
-            aboveStatusBar = true,
-            expandable?.dialogController(),
-            token = token,
-        )
+        if (fixOutputSwitcherMultiuserSupport()) {
+            mediaOutputDialogManager.createAndShowWithController(
+                packageName,
+                aboveStatusBar = true,
+                expandable?.dialogController(),
+                token = token,
+                userHandle = UserHandle.getUserHandleForUid(appUid),
+            )
+        } else {
+            mediaOutputDialogManager.createAndShowWithController(
+                packageName,
+                aboveStatusBar = true,
+                expandable?.dialogController(),
+                token = token,
+            )
+        }
     }
 
     private fun Expandable.dialogController(): DialogTransitionAnimator.Controller? {

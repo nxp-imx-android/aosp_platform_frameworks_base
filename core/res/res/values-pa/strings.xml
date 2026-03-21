@@ -2706,8 +2706,7 @@
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"ਟੀਵੀ ਬੰਦ ਕਰਨ ਲਈ ਪਾਵਰ ਬਟਨ ਨੂੰ ਦਬਾਈ ਰੱਖੋ"</string>
     <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"ਸਿਸਟਮ ਸਰੋਤ ਸੰਬੰਧੀ ਅਲਰਟ"</string>
     <string name="tv_watchdog_notification_title" msgid="195239206215922517">"ਸਰੋਤ ਦੀ ਜ਼ਿਆਦਾ ਵਰਤੋਂ"</string>
-    <!-- no translation found for tv_watchdog_notification_content (8330578168178291921) -->
-    <skip />
+    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"ਐਪ ‘<xliff:g id="APP_NAME">%1$s</xliff:g> ਨੂੰ ਸਰੋਤਾਂ ਦੀ ਬਹੁਤ ਜ਼ਿਆਦਾ ਵਰਤੋਂ ਕਰਨ ਕਰਕੇ ਬੰਦ ਕਰ ਦਿੱਤਾ ਗਿਆ ਹੈ। ਤੁਸੀਂ ਇਸਨੂੰ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਐਪਾਂ ਮੀਨੂ ਤੋਂ ਮੁੜ-ਚਾਲੂ ਕਰ ਸਕਦੇ ਹੋ।\""</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"ਤੁਹਾਡੇ ਮਾਂ-ਪਿਓ ਵੱਲੋਂ ਅੱਪਡੇਟ"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> ਨੂੰ ਫ਼ਿਲਹਾਲ ਹਟਾਇਆ ਗਿਆ"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> ਹੁਣ ਉਪਲਬਧ ਹੈ"</string>

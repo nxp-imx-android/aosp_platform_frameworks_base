@@ -157,7 +157,6 @@ import com.android.server.camera.CameraServiceProxy;
 import com.android.server.clipboard.ClipboardService;
 import com.android.server.companion.CompanionDeviceManagerService;
 import com.android.server.companion.datatransfer.continuity.TaskContinuityManagerService;
-import com.android.server.companion.datatransfer.continuity.UniversalClipboardService;
 import com.android.server.companion.virtual.VirtualDeviceManagerService;
 import com.android.server.compat.PlatformCompat;
 import com.android.server.compat.PlatformCompatNative;
@@ -2717,12 +2716,6 @@ public final class SystemServer implements Dumpable {
             if (android.companion.Flags.taskContinuity()) {
                 t.traceBegin("StartTaskContinuityService");
                 mSystemServiceManager.startService(TaskContinuityManagerService.class);
-                t.traceEnd();
-            }
-
-            if (android.companion.Flags.universalClipboard()) {
-                t.traceBegin("StartUniversalClipboardService");
-                mSystemServiceManager.startService(UniversalClipboardService.class);
                 t.traceEnd();
             }
 

@@ -29,9 +29,11 @@ import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -71,13 +73,13 @@ constructor(
     toLockscreenEndStateTransitionViewModel: ToLockscreenEndStateTransitionViewModel,
     toAodEndStateTransitionViewModel: ToAodEndStateTransitionViewModel,
     toDozingEndStateTransitionViewModel: ToDozingEndStateTransitionViewModel,
+    windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
     private val sceneInteractor: Lazy<SceneInteractor>,
 ) {
     val color: Flow<Int> =
         deviceEntryIconViewModel.useBackgroundProtection.flatMapLatest { useBackground ->
-            when {
-                enableLockscreenBlur() -> flowOf(SurfaceEffectColors.surfaceEffect1(context))
-                useBackground ->
+            if (useBackground) {
+                if (!enableLockscreenBlur()) {
                     configurationInteractor.onAnyConfigurationChange
                         .map {
                             Utils.getColorAttrDefaultColor(
@@ -93,7 +95,22 @@ constructor(
                                 )
                             )
                         }
-                else -> flowOf(0)
+                } else {
+                    configurationInteractor.onAnyConfigurationChange.combine(
+                        windowRootViewBlurInteractor.isBlurCurrentlySupported
+                    ) { config, isSupported ->
+                        if (isSupported) {
+                            SurfaceEffectColors.surfaceEffect1(context)
+                        } else {
+                            Utils.getColorAttrDefaultColor(
+                                context,
+                                com.android.internal.R.attr.colorSurface,
+                            )
+                        }
+                    }
+                }
+            } else {
+                flowOf(0)
             }
         }
     val alpha: Flow<Float> =

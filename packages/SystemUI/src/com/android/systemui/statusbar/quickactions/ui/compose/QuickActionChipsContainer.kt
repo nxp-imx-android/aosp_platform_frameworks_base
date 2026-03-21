@@ -17,16 +17,21 @@
 package com.android.systemui.statusbar.quickactions.ui.compose
 
 import android.graphics.Rect
+import android.graphics.RectF
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -37,13 +42,11 @@ import androidx.compose.ui.unit.sp
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.compose.modifiers.sysuiResTag
-import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.shade.ui.composable.ChipHighlightModel
 import com.android.systemui.shade.ui.composable.ShadeHighlightChip
 import com.android.systemui.statusbar.chips.ui.viewmodel.rememberChronometerState
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.DesktopStatusBar
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.WithAdaptiveTint
-import com.android.systemui.statusbar.quickactions.popups.ui.compose.StatusBarPopup
 import com.android.systemui.statusbar.quickactions.shared.model.ChipContent
 import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipModel
 import com.android.systemui.statusbar.shared.ui.compose.StatusBarIcon
@@ -105,6 +108,7 @@ private fun Launch(chip: QuickActionChipModel.LaunchChip, isDarkProvider: (Rect)
                     .contentDescription(chip.contentDescription)
                     .sysuiResTag(chip.chipId.value),
             onClick = { chip.onClick(context) },
+            clickTargetModifier = Modifier.fillMaxHeight(),
             backgroundColor = chipHighlightModel.backgroundColor,
             hoverBackgroundColor = hoverColor,
             rippleColor = rippleColor,
@@ -114,7 +118,6 @@ private fun Launch(chip: QuickActionChipModel.LaunchChip, isDarkProvider: (Rect)
                     Alignment.CenterHorizontally,
                 ),
             includePadding = false,
-            isClickable = true,
         ) {
             when (val content = chip.chipContent) {
                 is ChipContent.IconOnly ->
@@ -155,24 +158,29 @@ private val chipTextStyle
         )
 
 @Composable
-private fun Popup(chip: QuickActionChipModel.PopupChip) {
+private fun Popup(chip: QuickActionChipModel.PopupChip, modifier: Modifier = Modifier) {
     val context = LocalContext.current
+
+    val boundsCache = remember { RectF() }
+
     QuickActionChip(
+        modifier =
+            modifier.onGloballyPositioned { coordinates ->
+                val boundsInWindow = coordinates.boundsInWindow()
+                boundsCache.set(
+                    boundsInWindow.left,
+                    boundsInWindow.top,
+                    boundsInWindow.right,
+                    boundsInWindow.bottom,
+                )
+            },
         isSelected = chip.isPopupShown,
         chipContent = chip.chipContent,
         icons = chip.icons,
         colors = chip.colors,
         contentDescription = chip.contentDescription,
-        onClick = { chip.showPopup(context) },
+        onClick = { chip.showPopup(context, RectF(boundsCache)) },
     )
-
-    if (chip.isPopupShown && chip.popupViewModelFactory != null) {
-        val popupViewModel =
-            rememberViewModel("StatusBarPopupViewModel-${chip.chipId}") {
-                chip.popupViewModelFactory.create()
-            }
-        StatusBarPopup(popupViewModel = popupViewModel, onDismiss = chip.hidePopup)
-    }
 }
 
 @Composable

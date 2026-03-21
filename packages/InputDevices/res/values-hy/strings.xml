@@ -59,6 +59,14 @@
     <string name="keyboard_layout_montenegrin_cyrillic" msgid="2391253952894077421">"չեռնոգորերեն (կյուրեղատառ)"</string>
     <string name="keyboard_layout_romanian" msgid="8698989892731726903">"Ռումիներեն"</string>
     <string name="keyboard_layout_english_india" msgid="7962353311188603367">"անգլերեն (Հնդկաստան)"</string>
+    <!-- no translation found for playstation_controller_circle_button (7568652559479549725) -->
+    <skip />
+    <!-- no translation found for playstation_controller_triangle_button (3965043076982375703) -->
+    <skip />
+    <!-- no translation found for playstation_controller_square_button (1023556625092062728) -->
+    <skip />
+    <!-- no translation found for playstation_controller_cross_button (8699108012800733863) -->
+    <skip />
     <string name="default_game_controller_down_button" msgid="230251187173899352">"«Ներքև» կոճակ"</string>
     <string name="default_game_controller_left_button" msgid="230625759940755272">"«Ձախ» կոճակ"</string>
     <string name="default_game_controller_right_button" msgid="6973117058284059868">"«Աջ» կոճակ"</string>
