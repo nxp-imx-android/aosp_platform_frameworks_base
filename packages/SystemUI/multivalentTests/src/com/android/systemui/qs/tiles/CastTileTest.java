@@ -31,6 +31,8 @@ import android.media.MediaRouter.RouteInfo;
 import android.media.projection.MediaProjectionInfo;
 import android.media.projection.StopReason;
 import android.os.Handler;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.service.quicksettings.Tile;
 import android.testing.TestableLooper;
 
@@ -125,6 +127,7 @@ public class CastTileTest extends SysuiTestCase {
     // All these tests for enabled/disabled wifi have hotspot not enabled
 
     @Test
+    @DisableFlags(com.android.systemui.Flags.FLAG_QS_CAST_TILE_SKIP_WIFI_CHECK)
     public void stateUnavailable_noDefaultNetworks_newPipeline() {
         createAndStartTile();
         mTestableLooper.processAllMessages();
@@ -133,12 +136,32 @@ public class CastTileTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags(com.android.systemui.Flags.FLAG_QS_CAST_TILE_SKIP_WIFI_CHECK)
+    public void stateInactive_noDefaultNetworks_skipWifiCheckEnabled() {
+        createAndStartTile();
+        mTestableLooper.processAllMessages();
+
+        assertEquals(Tile.STATE_INACTIVE, mCastTile.getState().state);
+    }
+
+    @Test
+    @DisableFlags(com.android.systemui.Flags.FLAG_QS_CAST_TILE_SKIP_WIFI_CHECK)
     public void stateUnavailable_mobileConnected_newPipeline() {
         createAndStartTile();
         mConnectivityRepository.setMobileConnected(true);
         mTestableLooper.processAllMessages();
 
         assertEquals(Tile.STATE_UNAVAILABLE, mCastTile.getState().state);
+    }
+
+    @Test
+    @EnableFlags(com.android.systemui.Flags.FLAG_QS_CAST_TILE_SKIP_WIFI_CHECK)
+    public void stateInactive_mobileConnected_skipWifiCheckEnabled() {
+        createAndStartTile();
+        mConnectivityRepository.setMobileConnected(true);
+        mTestableLooper.processAllMessages();
+
+        assertEquals(Tile.STATE_INACTIVE, mCastTile.getState().state);
     }
 
     @Test
@@ -194,6 +217,7 @@ public class CastTileTest extends SysuiTestCase {
     // -------------------------------------------------
     // All these tests for enabled/disabled hotspot have wifi not enabled
     @Test
+    @DisableFlags(com.android.systemui.Flags.FLAG_QS_CAST_TILE_SKIP_WIFI_CHECK)
     public void testStateUnavailable_hotspotDisabled() {
         createAndStartTile();
         mHotspotCallback.onHotspotChanged(false, 0);
@@ -203,12 +227,33 @@ public class CastTileTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableFlags(com.android.systemui.Flags.FLAG_QS_CAST_TILE_SKIP_WIFI_CHECK)
+    public void testStateInactive_hotspotDisabled_skipWifiCheckEnabled() {
+        createAndStartTile();
+        mHotspotCallback.onHotspotChanged(false, 0);
+        mTestableLooper.processAllMessages();
+
+        assertEquals(Tile.STATE_INACTIVE, mCastTile.getState().state);
+    }
+
+    @Test
+    @DisableFlags(com.android.systemui.Flags.FLAG_QS_CAST_TILE_SKIP_WIFI_CHECK)
     public void testStateUnavailable_hotspotEnabledNotConnected() {
         createAndStartTile();
         mHotspotCallback.onHotspotChanged(true, 0);
         mTestableLooper.processAllMessages();
 
         assertEquals(Tile.STATE_UNAVAILABLE, mCastTile.getState().state);
+    }
+
+    @Test
+    @EnableFlags(com.android.systemui.Flags.FLAG_QS_CAST_TILE_SKIP_WIFI_CHECK)
+    public void testStateInactive_hotspotEnabledNotConnected_skipWifiCheckEnabled() {
+        createAndStartTile();
+        mHotspotCallback.onHotspotChanged(true, 0);
+        mTestableLooper.processAllMessages();
+
+        assertEquals(Tile.STATE_INACTIVE, mCastTile.getState().state);
     }
 
     @Test
@@ -462,6 +507,7 @@ public class CastTileTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableFlags(com.android.systemui.Flags.FLAG_QS_CAST_TILE_SKIP_WIFI_CHECK)
     public void testDetailsViewUnavailableState_returnsNull() {
         createAndStartTile();
         mTestableLooper.processAllMessages();

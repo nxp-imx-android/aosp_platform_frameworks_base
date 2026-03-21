@@ -1286,6 +1286,16 @@ flag {
 }
 
 flag {
+    name: "qs_cast_tile_skip_wifi_check"
+    namespace: "systemui"
+    description: "Skip the wifi check for the cast tile."
+    bug: "431024325"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "qs_edit_mode_focus_fixes"
     namespace: "systemui"
     description: "Various fixes for the focus states of the quick settings edit mode"
