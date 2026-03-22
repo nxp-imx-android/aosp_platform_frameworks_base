@@ -827,8 +827,8 @@ package android.app.cloudsearch {
 package android.app.contentrestriction {
 
   @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public class ContentRestrictionManager {
-    method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public boolean isDevicePolicyBypassingEnabledForUser(int);
-    method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public void setDevicePolicyBypassingEnabledForUser(int, boolean);
+    method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public void setShouldAllowBypassingContentRestrictionSandboxingForUser(int, boolean);
+    method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public boolean shouldAllowBypassingContentRestrictionSandboxingForUser(int);
   }
 
 }
