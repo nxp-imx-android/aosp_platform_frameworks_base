@@ -16,18 +16,15 @@
 
 package com.android.systemui.shade.ui.composable
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.hoverable
-import androidx.compose.foundation.indication
+import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -37,8 +34,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.android.compose.modifiers.clickableWithoutFocus
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.shade.ui.composable.ShadeHeader.Dimensions.ChipPaddingHorizontal
@@ -131,56 +128,38 @@ fun ShadeHighlightChip(
     includePadding: Boolean = true,
     isClickable: Boolean = true,
     onClick: () -> Unit = {},
-    clickTargetModifier: Modifier = Modifier,
     content: @Composable RowScope.() -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
 
-    // Note: Intentionally assigning here instead of using `by`, which would unwrap the value and
-    // cause recomposition.
-    val animatedBackgroundColor =
-        animateColorAsState(
-            targetValue = if (isClickable && isHovered) hoverBackgroundColor else backgroundColor
-        )
-
-    // Wrapper for the rounded chip, intended to increase the click target.
-    Box(
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = horizontalArrangement,
         modifier =
-            if (isClickable)
-                Modifier.clickableWithoutFocus(
-                        interactionSource = interactionSource,
-                        indication = null, // The indication is applied in the Row below instead.
-                        onClick = onClick,
-                    )
-                    .then(clickTargetModifier)
-            else clickTargetModifier
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = horizontalArrangement,
-            modifier =
-                modifier
-                    .align(Alignment.CenterStart)
-                    .clip(CircleShape)
-                    .indication(
-                        interactionSource = interactionSource,
-                        indication = ripple(color = rippleColor),
-                    )
-                    .drawBehind {
-                        val bgColor = animatedBackgroundColor.value
-                        if (bgColor != Color.Unspecified) {
-                            drawRoundRect(color = bgColor)
-                        }
-                    }
-                    .thenIf(backgroundColor != Color.Unspecified && includePadding) {
-                        Modifier.padding(
-                            horizontal = ChipPaddingHorizontal,
-                            vertical = ChipPaddingVertical,
+            modifier
+                .clip(RoundedCornerShape(25.dp))
+                .thenIf(backgroundColor != Color.Unspecified) {
+                    Modifier.background(backgroundColor)
+                }
+                .thenIf(isClickable && isHovered && hoverBackgroundColor != Color.Unspecified) {
+                    Modifier.background(hoverBackgroundColor)
+                }
+                .then(
+                    if (isClickable)
+                        Modifier.clickableWithoutFocus(
+                            interactionSource = interactionSource,
+                            indication = ripple(color = rippleColor),
+                            onClick = onClick,
                         )
-                    }
-                    .hoverable(interactionSource = interactionSource),
-            content = content,
-        )
-    }
+                    else Modifier
+                )
+                .thenIf(backgroundColor != Color.Unspecified && includePadding) {
+                    Modifier.padding(
+                        horizontal = ChipPaddingHorizontal,
+                        vertical = ChipPaddingVertical,
+                    )
+                },
+        content = content,
+    )
 }

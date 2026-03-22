@@ -37,7 +37,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -253,8 +252,11 @@ fun ContentScope.CollapsedShadeHeader(
                         ShadeCarrierGroup(viewModel = viewModel)
                     }
                     ShadeHighlightChip(
-                        isClickable = isSplitShade,
-                        onClick = viewModel::onSystemIconChipClicked,
+                        onClick = {
+                            if (isSplitShade) {
+                                viewModel.onSystemIconChipClicked()
+                            }
+                        }
                     ) {
                         val paddingEnd = with(LocalDensity.current) { 3.sp.toDp() }
                         StatusIcons(
@@ -380,29 +382,32 @@ fun ContentScope.OverlayShadeHeader(
     val horizontalPadding =
         max(LocalScreenCornerRadius.current / 2f, Shade.Dimensions.HorizontalPadding)
 
-    // This layout assumes it is globally positioned at (0, 0) and is the same width as the screen.
+    // This layout assumes it is globally positioned at (0, 0) and is the same size as the screen.
     CutoutAwareShadeHeader(
         statusBarHeightPx = viewModel.statusBarHeightPx,
         modifier = modifier,
         startContent = {
-            Box(modifier = Modifier.layoutId(ShadeHeader.LayoutId.StartContent)) {
+            Box(
+                modifier =
+                    Modifier.padding(horizontal = horizontalPadding)
+                        .layoutId(ShadeHeader.LayoutId.StartContent)
+            ) {
                 ShadeHighlightChip(
                     backgroundColor = notificationsHighlight.backgroundColor,
                     hoverBackgroundColor = notificationsHighlight.hoverBackgroundColor,
                     horizontalArrangement = Arrangement.spacedBy(5.dp),
                     onClick = viewModel::onNotificationIconChipClicked,
-                    clickTargetModifier =
-                        Modifier.fillMaxHeight().padding(horizontal = horizontalPadding),
                     modifier =
-                        Modifier.bouncy(
-                            isEnabled = viewModel.animateNotificationsChipBounce,
-                            onBoundsChange = { bounds ->
-                                viewModel.onDualShadeEducationElementBoundsChange(
-                                    element = DualShadeEducationElement.Notifications,
-                                    bounds = bounds,
-                                )
-                            },
-                        ),
+                        Modifier.align(Alignment.CenterStart)
+                            .bouncy(
+                                isEnabled = viewModel.animateNotificationsChipBounce,
+                                onBoundsChange = { bounds ->
+                                    viewModel.onDualShadeEducationElementBoundsChange(
+                                        element = DualShadeEducationElement.Notifications,
+                                        bounds = bounds,
+                                    )
+                                },
+                            ),
                 ) {
                     if (showClock) {
                         Clock(textColor = notificationsHighlight.foregroundColor)
@@ -419,14 +424,14 @@ fun ContentScope.OverlayShadeHeader(
             Row(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.layoutId(ShadeHeader.LayoutId.EndContent),
+                modifier =
+                    Modifier.padding(horizontal = horizontalPadding)
+                        .layoutId(ShadeHeader.LayoutId.EndContent),
             ) {
                 ShadeHighlightChip(
                     backgroundColor = quickSettingsHighlight.backgroundColor,
                     hoverBackgroundColor = quickSettingsHighlight.hoverBackgroundColor,
                     onClick = viewModel::onSystemIconChipClicked,
-                    clickTargetModifier =
-                        Modifier.fillMaxHeight().padding(horizontal = horizontalPadding),
                     modifier =
                         Modifier.bouncy(
                             isEnabled = viewModel.animateSystemIconChipBounce,

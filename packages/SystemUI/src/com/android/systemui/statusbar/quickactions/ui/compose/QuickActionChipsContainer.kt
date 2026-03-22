@@ -21,7 +21,6 @@ import android.graphics.RectF
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.LocalTextStyle
@@ -108,7 +107,6 @@ private fun Launch(chip: QuickActionChipModel.LaunchChip, isDarkProvider: (Rect)
                     .contentDescription(chip.contentDescription)
                     .sysuiResTag(chip.chipId.value),
             onClick = { chip.onClick(context) },
-            clickTargetModifier = Modifier.fillMaxHeight(),
             backgroundColor = chipHighlightModel.backgroundColor,
             hoverBackgroundColor = hoverColor,
             rippleColor = rippleColor,
@@ -118,6 +116,7 @@ private fun Launch(chip: QuickActionChipModel.LaunchChip, isDarkProvider: (Rect)
                     Alignment.CenterHorizontally,
                 ),
             includePadding = false,
+            isClickable = true,
         ) {
             when (val content = chip.chipContent) {
                 is ChipContent.IconOnly ->
