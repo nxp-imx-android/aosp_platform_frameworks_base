@@ -2369,7 +2369,7 @@ public final class CameraCharacteristics extends CameraMetadata<CameraCharacteri
      *   {@link android.graphics.ImageFormat#RAW14 RAW14}</li>
      * <li>Processed (but not-stalling): any non-RAW format without a stall duration.  Typically
      *   {@link android.graphics.ImageFormat#YUV_420_888 YUV_420_888},
-     *   {@link android.graphics.ImageFormat#NV21 NV21}, {@link android.graphics.ImageFormat#YV12 YV12}, or {@link android.graphics.ImageFormat#Y8 Y8} .</li>
+     *   or {@link android.graphics.ImageFormat#Y8 Y8} .</li>
      * </ul>
      * <p><b>Range of valid values:</b><br></p>
      * <p>For processed (and stalling) format streams, &gt;= 1.</p>
@@ -2431,8 +2431,6 @@ public final class CameraCharacteristics extends CameraMetadata<CameraCharacteri
      * Typically:</p>
      * <ul>
      * <li>{@link android.graphics.ImageFormat#YUV_420_888 YUV_420_888}</li>
-     * <li>{@link android.graphics.ImageFormat#NV21 NV21}</li>
-     * <li>{@link android.graphics.ImageFormat#YV12 YV12}</li>
      * <li>Implementation-defined formats, i.e. {@link android.hardware.camera2.params.StreamConfigurationMap#isOutputSupportedFor(Class) }</li>
      * <li>{@link android.graphics.ImageFormat#Y8 Y8}</li>
      * </ul>
