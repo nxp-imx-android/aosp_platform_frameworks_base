@@ -23,8 +23,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.hasAnyDescendant
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -99,6 +104,48 @@ class ActionButtonsTest {
         actionButtonNode.performTouchInput { click(bottomCenter) } // where the text is
 
         assertThat(clicked).isFalse()
+    }
+
+    @Test
+    fun button_enabled_hasEnabledSemantics() {
+        composeTestRule.setContent {
+            ActionButtons(
+                listOf(
+                    ActionButton(
+                        text = "Open",
+                        imageVector = Icons.AutoMirrored.Outlined.Launch,
+                        enabled = true
+                    ) {},
+                )
+            )
+        }
+
+        // Verifies that the button node has the correct enabled semantics for accessibility
+        composeTestRule.onNode(
+            hasAnyDescendant(hasText("Open")) and hasClickAction(),
+            useUnmergedTree = true
+        ).assertIsEnabled()
+    }
+
+    @Test
+    fun button_disabled_hasDisabledSemantics() {
+        composeTestRule.setContent {
+            ActionButtons(
+                listOf(
+                    ActionButton(
+                        text = "Open",
+                        imageVector = Icons.AutoMirrored.Outlined.Launch,
+                        enabled = false
+                    ) {},
+                )
+            )
+        }
+
+        // Verifies that the button node has the correct disabled semantics for accessibility (e.g., TalkBack)
+        composeTestRule.onNode(
+            hasAnyDescendant(hasText("Open")) and hasClickAction(),
+            useUnmergedTree = true
+        ).assertIsNotEnabled()
     }
 
     @Test

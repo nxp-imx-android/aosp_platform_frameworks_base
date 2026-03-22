@@ -16,6 +16,7 @@
 package com.android.server.pm;
 
 import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.content.pm.PackageManager.MATCH_ALL;
 import static android.os.Process.INVALID_UID;
 
@@ -142,6 +143,18 @@ final class KillAppBlocker {
                                     mActiveUids.add(isolatedUid);
                                 }
                             }
+                        }
+                    }
+
+                    if (enablePccFrameworkSupport()) {
+                        final int pccUid = snapshot.getPackageUidInternal(
+                                packageName, MATCH_ALL, userId,
+                                Process.SYSTEM_UID, true /* forPcc */);
+                        if (pccUid != INVALID_UID
+                                && ami.getUidProcessState(pccUid) != PROCESS_STATE_NONEXISTENT) {
+                            Slog.d(TAG, "Adding pcc uid " + pccUid + " for package "
+                                    + packageName);
+                            mActiveUids.add(pccUid);
                         }
                     }
                 }

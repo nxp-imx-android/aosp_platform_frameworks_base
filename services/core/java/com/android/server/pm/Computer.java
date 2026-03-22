@@ -294,6 +294,20 @@ public interface Computer extends PackageDataSnapshot {
             int callingUid, int userId);
     int checkUidPermission(String permName, int uid);
     int getPackageUidInternal(String packageName, long flags, int userId, int callingUid);
+
+    /**
+     * Returns the UID associated with the given package name.
+     *
+     * @param packageName The full name of the desired package.
+     * @param flags Additional option flags to modify the data returned.
+     * @param userId The user handle identifier to look up the package under.
+     * @param callingUid The UID of the caller.
+     * @param forPcc Whether to return the PCC (Private Compute Core) UID or the regular app UID.
+     * @return Returns the UID for the given package name and user,
+     *  or {@link android.os.Process#INVALID_UID} if the package is not found or not accessible.
+     */
+    int getPackageUidInternal(String packageName, long flags, int userId, int callingUid,
+            boolean forPcc);
     long updateFlagsForApplication(long flags, int userId);
     long updateFlagsForComponent(long flags, int userId);
     long updateFlagsForPackage(long flags, int userId);
