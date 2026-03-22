@@ -706,6 +706,8 @@ fun PreferenceMetadata.toProto(
         enabled = metadata.isEnabled(context)
         if (metadata is PreferenceAvailabilityProvider) {
             available = metadata.isAvailable(context)
+        } else {
+            available = true
         }
         if (metadata is PreferenceRestrictionProvider) {
             restricted = metadata.isRestricted(context)
