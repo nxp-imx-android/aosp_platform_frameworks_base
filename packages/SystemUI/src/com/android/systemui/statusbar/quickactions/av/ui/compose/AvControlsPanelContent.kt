@@ -189,9 +189,10 @@ private fun SimpleButton(
     Column(
         modifier = modifier.then(semanticsModifier),
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.Top),
     ) {
         ToggleButton(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.height(56.dp).fillMaxWidth(),
             checked = viewModel.state.isEnabled,
             onCheckedChange = { scope.launch { viewModel.onClick() } },
         ) {
@@ -200,15 +201,13 @@ private fun SimpleButton(
             }
         }
         viewModel.state.subText?.let {
-            Row {
-                Text(
-                    text = stringResource(it),
-                    style = MaterialTheme.typography.labelSmall,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
+            Text(
+                text = stringResource(it),
+                style = MaterialTheme.typography.labelSmall,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 }
