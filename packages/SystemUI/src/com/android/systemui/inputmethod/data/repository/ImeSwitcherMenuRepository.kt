@@ -22,6 +22,7 @@ import android.annotation.RequiresPermission
 import android.annotation.UserIdInt
 import android.content.Intent
 import android.os.RemoteException
+import android.provider.Settings
 import android.util.Log
 import android.util.SparseArray
 import android.view.inputmethod.Flags
@@ -39,6 +40,8 @@ import com.android.systemui.inputmethod.shared.model.ImeSwitcherMenuModel.Compan
 import com.android.systemui.inputmethod.shared.model.ModelChangeListener
 import com.android.systemui.util.asIndenting
 import com.android.systemui.util.printSection
+import com.android.systemui.util.settings.GlobalSettings
+import com.android.systemui.util.settings.SecureSettings
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.ClassKey
@@ -98,6 +101,14 @@ interface ImeSwitcherMenuRepository {
      * @param userId the ID of the user that selected the IME and subtype.
      */
     fun notifyImeAndSubtypeSelected(imeId: String, subtypeIndex: Int, userId: Int)
+
+    /**
+     * Whether the settings button should be shown on the IME Switcher Menu based on the device and
+     * user state.
+     *
+     * @param userId the ID of the user to show the menu for.
+     */
+    fun shouldShowSettingsButton(@UserIdInt userId: Int): Boolean
 }
 
 /** Default implementation of [ImeSwitcherMenuRepository]. */
@@ -105,6 +116,8 @@ interface ImeSwitcherMenuRepository {
 class ImeSwitcherMenuRepositoryImpl
 @Inject
 constructor(
+    private val secureSettings: SecureSettings,
+    private val globalSettings: GlobalSettings,
     private val inputMethodManager: InputMethodManager,
     @param:Main private val mainExecutor: Executor,
 ) : ImeSwitcherMenuRepository, CoreStartable {
@@ -185,6 +198,21 @@ constructor(
                 e,
             )
         }
+    }
+
+    override fun shouldShowSettingsButton(@UserIdInt userId: Int): Boolean {
+        val isDeviceProvisioned =
+            globalSettings.getInt(
+                Settings.Global.DEVICE_PROVISIONED,
+                0,
+            ) != 0
+        val isUserSetUp =
+            secureSettings.getIntForUser(
+                Settings.Secure.USER_SETUP_COMPLETE,
+                0,
+                userId,
+            ) != 0
+        return isDeviceProvisioned && isUserSetUp
     }
 
     /**
