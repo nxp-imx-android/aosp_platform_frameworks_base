@@ -7068,6 +7068,126 @@ public interface WindowManager extends ViewManager {
     }
 
     /**
+     * An internal annotation for the engagement control flags.
+     *
+     * @hide
+     */
+    @IntDef(flag = true, value = {
+            ENGAGEMENT_CONTROL_FLAG_SUSTAIN_VISUALS
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    @interface EngagementControlFlags {}
+
+    /**
+     * Flags for requesting engagement visual state to be sustained.
+     */
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_ENGAGEMENT_CONTROL_API)
+    int ENGAGEMENT_CONTROL_FLAG_SUSTAIN_VISUALS = 1 << 0;
+
+    /**
+     * Requests an engagement control state.
+     *
+     * Allows applications to request physical display state behaviors, such as keeping the screen
+     * on for XR glasses.
+     *
+     * Note: This is a request. The system determines if the requested state will be respected.
+     * Applications should use `registerDisplayEngagementModeCallback` to observe the actual
+     * applied state.
+     *
+     * @param engagementControlFlags A bitmask of requested engagement states.
+     *                               Pass 0 to clear all requests.
+     */
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_ENGAGEMENT_CONTROL_API)
+    default void requestEngagementControlState(
+            @EngagementControlFlags int engagementControlFlags) {
+        throw new UnsupportedOperationException(
+                "requestEngagementControlState is not implemented");
+    }
+
+    /**
+     * Data object representing an engagement control request from an application.
+     * Allows applications to request physical display state behaviors, such as keeping the
+     * screen on for XR glasses.
+     *
+     * @hide
+     */
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_ENGAGEMENT_CONTROL_API)
+    @SystemApi
+    final class EngagementControlRequest {
+        private final int mDisplayId;
+        private final int mTaskId;
+        private final @EngagementControlFlags int mEngagementControlFlags;
+
+        /** @hide */
+        public EngagementControlRequest(int displayId, int taskId,
+                @EngagementControlFlags int engagementControlFlags) {
+            mDisplayId = displayId;
+            mTaskId = taskId;
+            mEngagementControlFlags = engagementControlFlags;
+        }
+
+
+        /**
+         * Returns the display ID.
+         */
+        public int getDisplayId() {
+            return mDisplayId;
+        }
+
+        /**
+         * Returns the task ID associated with the window making the request.
+         */
+        public int getTaskId() {
+            return mTaskId;
+        }
+
+        /**
+         * Returns the engagement control flags.
+         */
+        @EngagementControlFlags
+        public int getEngagementControlFlags() {
+            return mEngagementControlFlags;
+        }
+    }
+
+    /**
+     * Registers a consumer for engagement control requests.
+     *
+     * Allows applications to request physical display state behaviors, such as keeping the screen
+     * on for XR glasses.
+     *
+     * @hide
+     */
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_ENGAGEMENT_CONTROL_API)
+    @SystemApi
+    @SuppressLint("AndroidFrameworkRequiresPermission")
+    @RequiresPermission(permission.MANAGE_DISPLAYS)
+    default void addEngagementControlRequestConsumer(
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull Consumer<EngagementControlRequest> consumer) {
+        throw new UnsupportedOperationException(
+                "addEngagementControlRequestConsumer is not implemented");
+    }
+
+    /**
+     * Unregisters a previously registered engagement control request consumer.
+     *
+     * Allows applications to request physical display state behaviors, such as keeping the screen
+     * on for XR glasses.
+     *
+     * @hide
+     */
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_ENGAGEMENT_CONTROL_API)
+    @SystemApi
+    @SuppressLint("AndroidFrameworkRequiresPermission")
+    @RequiresPermission(permission.MANAGE_DISPLAYS)
+    default void removeEngagementControlRequestConsumer(
+            @NonNull Consumer<EngagementControlRequest> consumer) {
+        throw new UnsupportedOperationException(
+                "removeEngagementControlRequestConsumer is not implemented");
+    }
+
+    /**
      * Sets the parent window to this {@code WindowManager}.
      * This is necessary to attach sub-windows.
      *

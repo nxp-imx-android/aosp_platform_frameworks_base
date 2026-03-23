@@ -20890,11 +20890,13 @@ package android.view {
   }
 
   public interface WindowManager extends android.view.ViewManager {
+    method @FlaggedApi("com.android.window.flags.engagement_control_api") @RequiresPermission("android.permission.MANAGE_DISPLAYS") public default void addEngagementControlRequestConsumer(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<android.view.WindowManager.EngagementControlRequest>);
     method @RequiresPermission(android.Manifest.permission.RESTRICTED_VR_ACCESS) public android.graphics.Region getCurrentImeTouchRegion();
     method @FlaggedApi("com.android.window.flags.device_engagement_mode") public default int getDisplayEngagementMode(int);
     method @NonNull public default java.util.List<android.content.ComponentName> notifyScreenshotListeners(int);
     method @FlaggedApi("com.android.window.flags.device_engagement_mode") public default void registerDisplayEngagementModeCallback(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<android.view.WindowManager.DisplayEngagementModeState>);
     method public default void registerTaskFpsCallback(@IntRange(from=0) int, @NonNull java.util.concurrent.Executor, @NonNull android.window.TaskFpsCallback);
+    method @FlaggedApi("com.android.window.flags.engagement_control_api") @RequiresPermission("android.permission.MANAGE_DISPLAYS") public default void removeEngagementControlRequestConsumer(@NonNull java.util.function.Consumer<android.view.WindowManager.EngagementControlRequest>);
     method @FlaggedApi("com.android.window.flags.device_engagement_mode") @RequiresPermission("android.permission.MANAGE_DISPLAYS") public default void setDisplayEngagementMode(int, int);
     method @FlaggedApi("com.android.window.flags.device_engagement_mode") public default void unregisterDisplayEngagementModeCallback(@NonNull java.util.function.Consumer<android.view.WindowManager.DisplayEngagementModeState>);
     method public default void unregisterTaskFpsCallback(@NonNull android.window.TaskFpsCallback);
@@ -20908,6 +20910,12 @@ package android.view {
   @FlaggedApi("com.android.window.flags.device_engagement_mode") public static final class WindowManager.DisplayEngagementModeState {
     method public int getDisplayId();
     method public int getEngagementModeFlags();
+  }
+
+  @FlaggedApi("com.android.window.flags.engagement_control_api") public static final class WindowManager.EngagementControlRequest {
+    method public int getDisplayId();
+    method public int getEngagementControlFlags();
+    method public int getTaskId();
   }
 
   public static class WindowManager.InsetsParams {

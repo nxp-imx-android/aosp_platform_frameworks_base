@@ -332,6 +332,28 @@ public class WindowManagerWrapper implements WindowManager {
         mBase.unregisterDisplayEngagementModeCallback(callback);
     }
 
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_ENGAGEMENT_CONTROL_API)
+    @Override
+    public void requestEngagementControlState(int engagementControlFlags) {
+        mBase.requestEngagementControlState(engagementControlFlags);
+    }
+
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_ENGAGEMENT_CONTROL_API)
+    @RequiresPermission(Manifest.permission.MANAGE_DISPLAYS)
+    @Override
+    public void addEngagementControlRequestConsumer(
+            @NonNull Executor executor, @NonNull Consumer<EngagementControlRequest> consumer) {
+        mBase.addEngagementControlRequestConsumer(executor, consumer);
+    }
+
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_ENGAGEMENT_CONTROL_API)
+    @RequiresPermission(Manifest.permission.MANAGE_DISPLAYS)
+    @Override
+    public void removeEngagementControlRequestConsumer(
+            @NonNull Consumer<EngagementControlRequest> consumer) {
+        mBase.removeEngagementControlRequestConsumer(consumer);
+    }
+
     @Override
     public WindowManager createLocalWindowManager(@NonNull Window parentWindow) {
         final WindowManager newBase = mBase.createLocalWindowManager(parentWindow);

@@ -136,6 +136,7 @@ import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.compatibility.common.util.AdoptShellPermissionsRule;
+import com.android.internal.os.ApplicationSharedMemory;
 import com.android.internal.os.IResultReceiver;
 import com.android.server.LocalServices;
 import com.android.server.StorageManagerInternal;
@@ -178,6 +179,14 @@ public class WindowManagerServiceTests extends WindowTestsBase {
     private final IApplicationThread mAppThread = ActivityThread.currentActivityThread()
             .getApplicationThread();
 
+    private ApplicationSharedMemory mSavedSharedMemory;
+
+    @Override
+    protected void onBeforeSystemServicesCreated() {
+        mSavedSharedMemory = ApplicationSharedMemory.sInstance;
+        ApplicationSharedMemory.sInstance = ApplicationSharedMemory.create();
+    }
+
     @Rule
     public AdoptShellPermissionsRule mAdoptShellPermissionsRule = new AdoptShellPermissionsRule(
             InstrumentationRegistry.getInstrumentation().getUiAutomation(),
@@ -196,6 +205,10 @@ public class WindowManagerServiceTests extends WindowTestsBase {
 
     @After
     public void tearDown() {
+        if (ApplicationSharedMemory.sInstance != null) {
+            ApplicationSharedMemory.sInstance.close();
+        }
+        ApplicationSharedMemory.sInstance = mSavedSharedMemory;
         mWm.mSensitiveContentPackages.clearBlockedApps();
         Settings.System.clearProviderForTest();
     }
@@ -2190,6 +2203,34 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         assertEquals(defaultDisplayMode,
                 mWm.getDisplayEngagementMode(mDefaultDisplay.getDisplayId()));
         assertEquals(secondaryDisplayMode, mWm.getDisplayEngagementMode(dc.getDisplayId()));
+    }
+
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENGAGEMENT_CONTROL_API)
+    @Test
+    public void testEngagementControlRequestConsumer() throws RemoteException {
+        final WindowState win = newWindowBuilder("appWin", TYPE_BASE_APPLICATION)
+                .setOwnerId(Binder.getCallingUid())
+                .build();
+        final IBinder windowToken = win.mClient.asBinder();
+        mWm.mWindowMap.put(windowToken, win);
+
+        final int displayId = DEFAULT_DISPLAY;
+        final int flags = 1;
+        final int taskId = win.getTask().mTaskId;
+
+        android.window.IEngagementControlRequestConsumer consumer =
+                mock(android.window.IEngagementControlRequestConsumer.Stub.class);
+        when(consumer.asBinder()).thenReturn((IBinder) consumer);
+
+        mWm.registerEngagementControlRequestConsumer(consumer);
+        mWm.requestEngagementControlState(windowToken, flags);
+
+        verify(consumer).onEngagementControlRequest(displayId, taskId, flags);
+
+        mWm.unregisterEngagementControlRequestConsumer(consumer);
+        mWm.requestEngagementControlState(windowToken, 2);
+
+        verify(consumer, never()).onEngagementControlRequest(displayId, taskId, 2);
     }
 
     @Test
