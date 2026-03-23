@@ -18,7 +18,7 @@ package com.android.systemui.scene.domain.interactor
 
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
-import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.policy.domain.interactor.DeviceProvisioningInteractor
 import javax.inject.Inject
@@ -30,12 +30,12 @@ constructor(
     val deviceEntryInteractor: DeviceEntryInteractor,
     val deviceProvisioningInteractor: DeviceProvisioningInteractor,
     val sceneInteractor: SceneInteractor,
-    val keyguardInteractor: KeyguardInteractor,
+    val keyguardEnabledInteractor: KeyguardEnabledInteractor,
 ) {
 
     /** Whether the lockscreen should be showing when the device starts up for the first time. */
     fun showLockscreenOnBoot(): Boolean {
-        return keyguardInteractor.isKeyguardEnabled.value &&
+        return keyguardEnabledInteractor.isKeyguardEnabled.value &&
             (deviceProvisioningInteractor.isDeviceProvisioned() ||
                 deviceEntryInteractor.isAuthenticationRequired())
     }
