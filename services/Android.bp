@@ -209,28 +209,6 @@ art_profile_java_defaults {
     },
 }
 
-// Conditionally add crashrecovery stubs library
-soong_config_module_type {
-    name: "crashrecovery_java_defaults",
-    module_type: "java_defaults",
-    config_namespace: "ANDROID",
-    bool_variables: [
-        "release_crashrecovery_module",
-    ],
-    properties: [
-        "libs",
-    ],
-}
-
-crashrecovery_java_defaults {
-    name: "services_crashrecovery_stubs_conditionally",
-    soong_config_variables: {
-        release_crashrecovery_module: {
-            libs: ["service-crashrecovery.stubs.system_server"],
-        },
-    },
-}
-
 soong_config_module_type {
     name: "ondeviceintelligence_module_java_defaults",
     module_type: "java_defaults",
@@ -328,7 +306,6 @@ java_library {
 java_library {
     name: "services.impl",
     defaults: [
-        "services_crashrecovery_stubs_conditionally",
         "ondeviceintelligence_conditionally",
         "services_anomaly_detector_stubs_conditionally",
     ],
@@ -403,6 +380,7 @@ java_library {
         "framework-tethering.stubs.module_lib",
         "keepanno-annotations",
         "service-art.stubs.system_server",
+        "service-crashrecovery.stubs.system_server",
         "service-permission.stubs.system_server",
         "service-rkp.stubs.system_server",
         "service-sdksandbox.stubs.system_server",

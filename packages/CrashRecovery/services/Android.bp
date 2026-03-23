@@ -3,10 +3,7 @@ filegroup {
     srcs: [
         ":crashrecovery-platform-adaptor-srcs",
         ":statslog-crashrecovery-java-gen",
-    ] + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
-        "true": [],
-        default: ["platform/java/**/*.java"],
-    }),
+    ],
     visibility: ["//frameworks/base:__subpackages__"],
 }
 

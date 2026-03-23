@@ -69,6 +69,7 @@ android_test {
         "services.companion",
         "services.contentrestriction",
         "services.core",
+        "service-crashrecovery-pre-jarjar",
         "services.devicepolicy",
         "services.net",
         "services.supervision",
@@ -87,10 +88,7 @@ android_test {
         "am_flags_lib",
         "device_policy_aconfig_flags_lib",
         "android.content.pm.flags-aconfig-java",
-    ] + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
-        "true": ["service-crashrecovery-pre-jarjar"],
-        default: [],
-    }),
+    ],
 
     libs: [
         "android.test.mock.stubs.system",

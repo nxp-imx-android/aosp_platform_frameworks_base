@@ -453,11 +453,6 @@ java_library {
         default: [
             "framework-telecom.impl",
         ],
-    }) + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
-        "true": [],
-        default: [
-            "framework-platformcrashrecovery.impl",
-        ],
     }) + select(release_flag("RELEASE_ONDEVICE_INTELLIGENCE_MODULE"), {
         true: [],
         default: ["framework-ondeviceintelligence-platform.impl"],
@@ -658,12 +653,7 @@ java_library {
         "calendar-provider-compat-config",
         "contacts-provider-platform-compat-config",
         "SystemUI-application-compat-config",
-    ] + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
-        "true": [],
-        default: [
-            "framework-platformcrashrecovery-compat-config",
-        ],
-    }) + select(release_flag("RELEASE_ONDEVICE_INTELLIGENCE_MODULE"), {
+    ] + select(release_flag("RELEASE_ONDEVICE_INTELLIGENCE_MODULE"), {
         true: [],
         default: ["framework-ondeviceintelligence-platform-compat-config"],
     }) + select(release_flag("RELEASE_TELEPHONY_MODULE"), {
