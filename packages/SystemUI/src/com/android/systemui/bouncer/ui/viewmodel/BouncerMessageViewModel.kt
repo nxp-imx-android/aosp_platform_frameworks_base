@@ -434,6 +434,8 @@ constructor(
                 )
             DeviceEntryRestrictionReason.UserLockdown ->
                 BouncerMessageStrings.authRequiredAfterUserLockdown(authMethod)
+            DeviceEntryRestrictionReason.UserNotUnlockedSinceSignOut ->
+                BouncerMessageStrings.authRequiredToSignIn(authMethod)
             DeviceEntryRestrictionReason.DeviceNotUnlockedSinceReboot ->
                 BouncerMessageStrings.authRequiredAfterReboot(authMethod)
             DeviceEntryRestrictionReason.PolicyLockdown ->

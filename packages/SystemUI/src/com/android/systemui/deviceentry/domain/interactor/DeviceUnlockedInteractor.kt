@@ -20,6 +20,7 @@ import android.security.Flags.secureLockDevice
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import com.android.systemui.CoreStartable
+import com.android.systemui.Flags.strongAuthRequiredAfterSignOutMessageFix
 import com.android.systemui.authentication.domain.interactor.AuthenticationInteractor
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.dagger.SysUISingleton
@@ -46,6 +47,7 @@ import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
 import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
+import com.android.systemui.user.data.repository.UserSwitcherRepository
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import dagger.Lazy
 import javax.inject.Inject
@@ -89,6 +91,7 @@ constructor(
     biometricUnlockInteractor: BiometricUnlockInteractor,
     private val keyguardEnabledInteractor: KeyguardEnabledInteractor,
     private val lockAfterDelayInteractor: LockAfterDelayInteractor,
+    private val userSwitcherRepository: UserSwitcherRepository,
 ) : ExclusiveActivatable() {
     private val faceEnrolledAndEnabled = biometricSettingsInteractor.isFaceAuthEnrolledAndEnabled
     private val fingerprintEnrolledAndEnabled =
@@ -461,6 +464,7 @@ constructor(
             DeviceEntryRestrictionReason.DeviceNotUnlockedSinceMainlineUpdate -> false
             DeviceEntryRestrictionReason.UnattendedUpdate -> false
             DeviceEntryRestrictionReason.NonStrongFaceLockedOut -> false
+            DeviceEntryRestrictionReason.UserNotUnlockedSinceSignOut -> false
         }
     }
 
@@ -479,6 +483,10 @@ constructor(
                 DeviceEntryRestrictionReason.SecureLockDevicePrimaryAuth
             isStrongBiometricAuthRequiredForSecureLockDevice ->
                 DeviceEntryRestrictionReason.SecureLockDeviceStrongBiometricOnlyAuth
+            strongAuthRequiredAfterSignOutMessageFix() &&
+                isPrimaryAuthRequiredAfterReboot &&
+                userSwitcherRepository.isUserSwitchingMustGoThroughLoginScreen ->
+                DeviceEntryRestrictionReason.UserNotUnlockedSinceSignOut
             isPrimaryAuthRequiredAfterReboot && wasRebootedForMainlineUpdate() ->
                 DeviceEntryRestrictionReason.DeviceNotUnlockedSinceMainlineUpdate
             isPrimaryAuthRequiredAfterReboot ->
