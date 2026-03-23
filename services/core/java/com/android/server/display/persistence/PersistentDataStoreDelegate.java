@@ -74,8 +74,11 @@ public final class PersistentDataStoreDelegate {
      */
     public PersistentDataStoreDelegate() {
         mOldStore = new LegacyPersistentDataStore();
-        if (Flags.refactorPersistentDataStore()) {
-            mNewStore = new PersistentDataStore();
+        Injector injectorForNewStore = new Injector(PersistentDataStore.FILE_NAME);
+        // TODO(b/494473504): Migrate the old store to the new store if the file for the new
+        //  store does not exist
+        if (Flags.refactorPersistentDataStore() && injectorForNewStore.mAtomicFile.exists()) {
+            mNewStore = new PersistentDataStore(injectorForNewStore);
         }
     }
 
