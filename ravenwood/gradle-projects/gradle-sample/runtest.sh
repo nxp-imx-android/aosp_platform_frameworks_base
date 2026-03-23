@@ -36,3 +36,6 @@ run ./gradlew :app:testDebugUnitTest --info -PenableRavenwood=true --rerun
 
 # Run tests on Robolectric
 run ./gradlew :app:testDebugUnitTest --info -PenableRavenwood=false --rerun
+
+# Run TestLibrary's test (which runs on Robolectric)
+run ./gradlew :TestLibrary:testDebugUnitTest --info --rerun
