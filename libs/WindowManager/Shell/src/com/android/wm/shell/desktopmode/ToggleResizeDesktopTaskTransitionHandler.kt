@@ -33,6 +33,7 @@ import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_TOGGLE_RESIZE
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
+import com.android.wm.shell.shared.animation.Interpolators
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.OnTaskResizeAnimationListener
 import java.util.Optional
@@ -160,6 +161,7 @@ class ToggleResizeDesktopTaskTransitionHandler(
                             tx.apply()
                         }
                     }
+                    interpolator = Interpolators.EMPHASIZED
                     start()
                 }
         return true
