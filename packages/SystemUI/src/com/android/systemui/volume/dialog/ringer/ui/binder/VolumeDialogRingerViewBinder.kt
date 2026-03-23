@@ -371,7 +371,6 @@ constructor(
                 uiModel.availableButtons.indexOfFirst {
                     it.ringerMode == uiModel.drawerState.previousMode
                 }
-            val unselectedButton = getChildAt(count - previousIndex) as ImageButton
             // We only need to execute on roundness animation end and volume dialog background
             // progress update once because these changes should be applied once on volume dialog
             // background and ringer drawer views.
@@ -389,17 +388,21 @@ constructor(
                         )
                     }
                 }
-                val unselectedCornerRadius = unselectedButton.backgroundShape().cornerRadius
-                if (unselectedCornerRadius.toInt() != unselectedButtonUiModel.cornerRadius) {
-                    launchTraced("VDRVB#unselectedButtonAnimation") {
-                        unselectedButton.animateTo(
-                            unselectedButtonUiModel,
-                            if (previousIndex == count - 1) {
-                                onProgressChanged
-                            } else {
-                                { _, _ -> }
-                            },
-                        )
+                if (previousIndex > 0) {
+                    val unselectedButton = getChildAt(count - previousIndex) as ImageButton
+
+                    val unselectedCornerRadius = unselectedButton.backgroundShape().cornerRadius
+                    if (unselectedCornerRadius.toInt() != unselectedButtonUiModel.cornerRadius) {
+                        launchTraced("VDRVB#unselectedButtonAnimation") {
+                            unselectedButton.animateTo(
+                                unselectedButtonUiModel,
+                                if (previousIndex == count - 1) {
+                                    onProgressChanged
+                                } else {
+                                    { _, _ -> }
+                                },
+                            )
+                        }
                     }
                 }
                 launchTraced("VDRVB#bindButtons") {
