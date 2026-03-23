@@ -2095,6 +2095,15 @@ public class UsbService extends IUsbManager.Stub {
 
             return false;
         }
+
+        @Override
+        public boolean pinAuthorizationMode(int reason) {
+            if (mAuthManager != null) {
+                return mAuthManager.pinAuthorizationMode(reason);
+            }
+
+            return false;
+        }
     }
 
     @VisibleForTesting
