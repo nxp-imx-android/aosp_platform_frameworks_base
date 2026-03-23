@@ -100,6 +100,7 @@ import dagger.Lazy;
 import kotlin.Unit;
 
 import kotlinx.coroutines.CoroutineDispatcher;
+import kotlinx.coroutines.DisposableHandle;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -161,6 +162,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
 
     @Nullable private ComposeView mBatteryComposeView;
     private ViewGroup mSystemIconsContainer;
+    @Nullable private DisposableHandle mHoverListenerDisposableHandle;
     private final StatusOverlayHoverListenerFactory mStatusOverlayHoverListenerFactory;
 
     private final ConfigurationController.ConfigurationListener mConfigurationListener =
@@ -491,6 +493,9 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         mSystemIconsContainer = mView.findViewById(R.id.system_icons);
         StatusOverlayHoverListener hoverListener = mStatusOverlayHoverListenerFactory
                 .createDarkAwareListener(mSystemIconsContainer, mView.darkChangeFlow());
+        if (hoverListener != null) {
+            mHoverListenerDisposableHandle = hoverListener.start();
+        }
         mSystemIconsContainer.setOnHoverListener(hoverListener);
         mView.setOnApplyWindowInsetsListener(
                 (view, windowInsets) -> mView.updateWindowInsets(windowInsets, insetsProvider()));
@@ -543,6 +548,10 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     @Override
     protected void onViewDetached() {
         mSystemIconsContainer.setOnHoverListener(null);
+        if (mHoverListenerDisposableHandle != null) {
+            mHoverListenerDisposableHandle.dispose();
+            mHoverListenerDisposableHandle = null;
+        }
         mConfigurationController.removeCallback(mConfigurationListener);
         if (mAnimationScheduler != null) {
             mAnimationScheduler.removeCallback(mAnimationCallback);
