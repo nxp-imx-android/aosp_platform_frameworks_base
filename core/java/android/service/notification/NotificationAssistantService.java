@@ -30,6 +30,7 @@ import android.app.Flags;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.NotificationRule;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -438,6 +439,50 @@ public abstract class NotificationAssistantService extends NotificationListenerS
     }
 
     /**
+     * Implement this method to be informed when a {@link NotificationRule} is added.
+     *
+     * @param rule The newly added {@link NotificationRule}.
+     */
+    @FlaggedApi(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void onNotificationRuleAdded(@NonNull NotificationRule rule) {
+        // optional
+    }
+
+    /**
+     * Implement this method to be informed when a {@link NotificationRule} is modified.
+     *
+     * @param rule The modified {@link NotificationRule}.
+     */
+    @FlaggedApi(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void onNotificationRuleModified(@NonNull NotificationRule rule) {
+        // optional
+    }
+
+    /**
+     * Implement this method to be informed when a {@link NotificationRule} is removed.
+     *
+     * @param ruleId The ID of the removed {@link NotificationRule}.
+     */
+    @FlaggedApi(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void onNotificationRuleRemoved(int ruleId) {
+        // optional
+    }
+
+    /**
+     * Returns the list of {@link android.app.NotificationRule}s for the current user.
+     */
+    @FlaggedApi(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public final @NonNull List<NotificationRule> getNotificationRules() {
+        try {
+            return getNotificationInterface().getNotificationRules(mWrapper,
+                    getContext() != null ? getContext().getUserId()
+                            : mSystemContext.getUserId()).getList();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Updates existing notifications. Re-ranking won't occur until all adjustments are applied.
      * N.B. this won’t cause an existing notification to alert, but might allow a future update to
      * these notifications to alert.
@@ -614,6 +659,28 @@ public abstract class NotificationAssistantService extends NotificationListenerS
             mHandler.obtainMessage(MyHandler.MSG_ON_SYSTEM_ADJUSTMENTS_RECEIVED, args)
                     .sendToTarget();
         }
+
+        @Override
+        public void onNotificationRuleAdded(NotificationRule rule) {
+            SomeArgs args = SomeArgs.obtain();
+            args.arg1 = rule;
+            mHandler.obtainMessage(MyHandler.MSG_ON_NOTIFICATION_RULE_ADDED, args).sendToTarget();
+        }
+
+        @Override
+        public void onNotificationRuleModified(NotificationRule rule) {
+            SomeArgs args = SomeArgs.obtain();
+            args.arg1 = rule;
+            mHandler.obtainMessage(MyHandler.MSG_ON_NOTIFICATION_RULE_MODIFIED,
+                    args).sendToTarget();
+        }
+
+        @Override
+        public void onNotificationRuleRemoved(int ruleId) {
+            SomeArgs args = SomeArgs.obtain();
+            args.argi1 = ruleId;
+            mHandler.obtainMessage(MyHandler.MSG_ON_NOTIFICATION_RULE_REMOVED, args).sendToTarget();
+        }
     }
 
     private void setAdjustmentIssuer(@Nullable Adjustment adjustment) {
@@ -637,6 +704,9 @@ public abstract class NotificationAssistantService extends NotificationListenerS
         public static final int MSG_ON_NOTIFICATION_CLICKED = 12;
         public static final int MSG_ON_NOTIFICATION_FEEDBACK_RECEIVED = 13;
         public static final int MSG_ON_SYSTEM_ADJUSTMENTS_RECEIVED = 14;
+        static final int MSG_ON_NOTIFICATION_RULE_ADDED = 15;
+        static final int MSG_ON_NOTIFICATION_RULE_MODIFIED = 16;
+        static final int MSG_ON_NOTIFICATION_RULE_REMOVED = 17;
 
         public MyHandler(Looper looper) {
             super(looper, null, false);
@@ -764,6 +834,30 @@ public abstract class NotificationAssistantService extends NotificationListenerS
                     List<Adjustment> adjustments = (List<Adjustment>) args.arg1;
                     args.recycle();
                     onSystemAdjustmentsReceived(adjustments);
+                    break;
+                }
+
+                case MSG_ON_NOTIFICATION_RULE_ADDED: {
+                    SomeArgs args = (SomeArgs) msg.obj;
+                    NotificationRule rule = (NotificationRule) args.arg1;
+                    onNotificationRuleAdded(rule);
+                    args.recycle();
+                    break;
+                }
+
+                case MSG_ON_NOTIFICATION_RULE_MODIFIED: {
+                    SomeArgs args = (SomeArgs) msg.obj;
+                    NotificationRule rule = (NotificationRule) args.arg1;
+                    onNotificationRuleModified(rule);
+                    args.recycle();
+                    break;
+                }
+
+                case MSG_ON_NOTIFICATION_RULE_REMOVED: {
+                    SomeArgs args = (SomeArgs) msg.obj;
+                    int ruleId = args.argi1;
+                    onNotificationRuleRemoved(ruleId);
+                    args.recycle();
                     break;
                 }
             }

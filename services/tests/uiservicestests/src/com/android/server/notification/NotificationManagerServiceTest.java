@@ -105,7 +105,6 @@ import static android.service.notification.Flags.FLAG_NOTIFICATION_BITMAP_OFFLOA
 import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION;
-import static com.android.server.notification.Flags.FLAG_FAVORITES_INCOMING_CALL_LIGHTS;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_SILENT_FLAG;
 import static android.service.notification.Flags.FLAG_REDACT_SENSITIVE_NOTIFICATIONS_FROM_UNTRUSTED_LISTENERS;
 import static android.service.notification.NotificationListenerService.FLAG_FILTER_TYPE_ALERTING;
@@ -126,6 +125,7 @@ import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STR
 import static com.android.server.am.PendingIntentRecord.FLAG_ACTIVITY_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_BROADCAST_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_SERVICE_SENDER;
+import static com.android.server.notification.Flags.FLAG_FAVORITES_INCOMING_CALL_LIGHTS;
 import static com.android.server.notification.Flags.FLAG_MANAGED_SERVICES_CONCURRENT_MULTIUSER;
 import static com.android.server.notification.GroupHelper.AUTOGROUP_KEY;
 import static com.android.server.notification.NotificationManagerService.BITMAP_DURATION;
@@ -250,7 +250,6 @@ import android.media.AudioManager;
 import android.media.session.MediaSession;
 import android.net.Uri;
 import android.os.Binder;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -20400,6 +20399,71 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         assertThat(mBinderService.removeNotificationRule(mUserId, 101)).isTrue();
         assertThat(mBinderService.getNotificationRules(null, mUserId).getList()).doesNotContain(
                 rule);
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void addNotificationRule_notifiesAssistants() throws Exception {
+        NotificationRule rule = new NotificationRule.Builder(123,
+                new NotificationRule.Action(PRIMARY_ACTION_HIGHLIGHT)).build();
+        mBinderService.addNotificationRule(mUserId, rule, 0);
+
+        verify(mAssistants, times(1)).notifyNotificationRuleAdded(mUserId, rule);
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void updateNotificationRule_notifiesAssistants() throws Exception {
+        // First add a rule to be able to modify it
+        NotificationRule rule = new NotificationRule.Builder(123,
+                new NotificationRule.Action(PRIMARY_ACTION_HIGHLIGHT)).build();
+        mBinderService.addNotificationRule(mUserId, rule, 0);
+
+        // Updated
+        NotificationRule updated = new NotificationRule.Builder(123,
+                new NotificationRule.Action(PRIMARY_ACTION_LOW)).build();
+        mBinderService.updateNotificationRule(mUserId, updated);
+
+        verify(mAssistants, times(1)).notifyNotificationRuleModified(mUserId, updated);
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void updateNotificationRule_doesNotNotifyOnInvalidUpdate() throws Exception {
+        // Try to update a rule that doesn't exist
+        NotificationRule invalid = new NotificationRule.Builder(135,
+                new NotificationRule.Action(PRIMARY_ACTION_HIGHLIGHT)).build();
+        mBinderService.updateNotificationRule(mUserId, invalid);
+
+        verify(mAssistants, never()).notifyNotificationRuleModified(anyInt(), any());
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void removeNotificationRule_notifiesAssistants() throws Exception {
+        // Add rule to be able to remove it
+        NotificationRule rule = new NotificationRule.Builder(123,
+                new NotificationRule.Action(PRIMARY_ACTION_HIGHLIGHT)).build();
+        mBinderService.addNotificationRule(mUserId, rule, 0);
+
+        // now remove
+        mBinderService.removeNotificationRule(mUserId, 123);
+
+        verify(mAssistants, times(1)).notifyNotificationRuleRemoved(mUserId, 123);
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void removeNotificationRule_doesNotNotifyOnInvalidInput() throws Exception {
+        // Try to update a rule that doesn't exist
+        NotificationRule rule = new NotificationRule.Builder(123,
+                new NotificationRule.Action(PRIMARY_ACTION_HIGHLIGHT)).build();
+        mBinderService.addNotificationRule(mUserId, rule, 0);
+
+        // Try to remove a different rule than the one that exists
+        mBinderService.removeNotificationRule(mUserId, 135);
+
+        verify(mAssistants, never()).notifyNotificationRuleRemoved(anyInt(), anyInt());
     }
 
     @Test
