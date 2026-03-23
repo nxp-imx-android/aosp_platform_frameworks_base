@@ -240,6 +240,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
@@ -4877,6 +4878,8 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                             }
                         }
                     }
+                } catch (NoSuchFileException e) {
+                    // The oat directory does not exist. This is expected.
                 } catch (IOException | UncheckedIOException e) {
                     Slog.e(TAG, "Error walking directory " + oatDir, e);
                 }
