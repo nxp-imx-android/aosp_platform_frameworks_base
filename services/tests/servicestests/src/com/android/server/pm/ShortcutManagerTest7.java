@@ -111,7 +111,8 @@ public class ShortcutManagerTest7 extends BaseShortcutManagerTest {
         assertEquals(99, mService.mMaxUpdatesPerInterval);
     }
 
-    public void disabled_testRoot() throws Exception {
+    @Test
+    public void testRoot() throws Exception {
         mService.mMaxUpdatesPerInterval = 99;
 
         mInjectedCallingUid = Process.ROOT_UID;
@@ -120,7 +121,8 @@ public class ShortcutManagerTest7 extends BaseShortcutManagerTest {
         assertEquals(3, mService.mMaxUpdatesPerInterval);
     }
 
-    public void disabled_testRestConfig() throws Exception {
+    @Test
+    public void testRestConfig() throws Exception {
         mService.mMaxUpdatesPerInterval = 99;
 
         mInjectedCallingUid = Process.SHELL_UID;
@@ -140,7 +142,8 @@ public class ShortcutManagerTest7 extends BaseShortcutManagerTest {
         assertEquals(1, mService.mMaxUpdatesPerInterval);
     }
 
-    public void disabled_testResetThrottling() throws Exception {
+    @Test
+    public void testResetThrottling() throws Exception {
         prepareCrossProfileDataSet();
 
         runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
@@ -161,7 +164,8 @@ public class ShortcutManagerTest7 extends BaseShortcutManagerTest {
         });
     }
 
-    public void disabled_testResetThrottling_user_not_running() throws Exception {
+    @Test
+    public void testResetThrottling_user_not_running() throws Exception {
         prepareCrossProfileDataSet();
 
         runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
@@ -189,7 +193,8 @@ public class ShortcutManagerTest7 extends BaseShortcutManagerTest {
         });
     }
 
-    public void disabled_testResetThrottling_user_running() throws Exception {
+    @Test
+    public void testResetThrottling_user_running() throws Exception {
         prepareCrossProfileDataSet();
 
         runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
@@ -213,7 +218,8 @@ public class ShortcutManagerTest7 extends BaseShortcutManagerTest {
         });
     }
 
-    public void disabled_testResetAllThrottling() throws Exception {
+    @Test
+    public void testResetAllThrottling() throws Exception {
         prepareCrossProfileDataSet();
 
         runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
@@ -235,7 +241,8 @@ public class ShortcutManagerTest7 extends BaseShortcutManagerTest {
     }
 
     // This command is deprecated. Will remove the test later.
-    public void disabled_testLauncherCommands() throws Exception {
+    @Test
+    public void testLauncherCommands() throws Exception {
         prepareGetRoleHoldersAsUser(getSystemLauncher().activityInfo.packageName, USER_10);
         prepareGetHomeActivitiesAsUser(
                 /* preferred */ getSystemLauncher().activityInfo.getComponentName(),
@@ -274,7 +281,8 @@ public class ShortcutManagerTest7 extends BaseShortcutManagerTest {
                 "Launcher: ComponentInfo{com.android.test.1/name}");
     }
 
-    public void disabled_testUnloadUser() throws Exception {
+    @Test
+    public void testUnloadUser() throws Exception {
         prepareCrossProfileDataSet();
 
         assertNotNull(mService.getShortcutsForTest().get(USER_11));
@@ -414,7 +422,8 @@ public class ShortcutManagerTest7 extends BaseShortcutManagerTest {
 
     }
 
-    public void disabled_testDumpsysArgs() {
+    @Test
+    public void testDumpsysArgs() {
         checkDumpsysArgs(null, true, false, false);
         checkDumpsysArgs(array("-u"), true, true, false);
         checkDumpsysArgs(array("--uid"), true, true, false);
