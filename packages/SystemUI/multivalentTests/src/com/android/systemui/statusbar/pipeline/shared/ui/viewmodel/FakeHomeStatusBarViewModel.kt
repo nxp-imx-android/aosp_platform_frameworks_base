@@ -35,6 +35,7 @@ import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewM
 import com.android.systemui.statusbar.pipeline.shared.ui.model.ChipsVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombinedVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
+import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityState
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipModel
 import com.android.systemui.statusbar.systemstatusicons.domain.interactor.SystemStatusIconBlocklistInteractor
@@ -104,21 +105,32 @@ class FakeHomeStatusBarViewModel(
                 mock(AppHandlesViewModel::class.java)
         }
 
-    override val shouldShowOperatorNameView = MutableStateFlow(false)
+    private val shouldShowOperatorNameViewSource = MutableStateFlow(false)
+    override val shouldShowOperatorNameView: Boolean by
+        shouldShowOperatorNameViewSource.hydratedStateOf()
 
-    override val isClockVisible =
-        MutableStateFlow(VisibilityModel(visibility = View.GONE, shouldAnimateChange = false))
+    private val isClockVisibleSource =
+        MutableStateFlow(
+            VisibilityModel(visibility = VisibilityState.GONE, shouldAnimateChange = false)
+        )
+    override val isClockVisible by isClockVisibleSource.hydratedStateOf()
 
-    override val isNotificationIconContainerVisible =
-        MutableStateFlow(VisibilityModel(visibility = View.GONE, shouldAnimateChange = false))
+    private val isNotificationIconContainerVisibleSource =
+        MutableStateFlow(
+            VisibilityModel(visibility = VisibilityState.GONE, shouldAnimateChange = false)
+        )
+    override val isNotificationIconContainerVisible: VisibilityModel by
+        isNotificationIconContainerVisibleSource.hydratedStateOf()
 
-    override val systemInfoCombinedVis =
+    private val systemInfoCombinedVisSource =
         MutableStateFlow(
             SystemInfoCombinedVisibilityModel(
-                VisibilityModel(visibility = View.GONE, shouldAnimateChange = false),
+                VisibilityModel(visibility = VisibilityState.GONE, shouldAnimateChange = false),
                 Idle,
             )
         )
+    override val systemInfoCombinedVis: SystemInfoCombinedVisibilityModel by
+        systemInfoCombinedVisSource.hydratedStateOf()
 
     override val iconBlockList: MutableStateFlow<List<String>> = MutableStateFlow(listOf())
 
