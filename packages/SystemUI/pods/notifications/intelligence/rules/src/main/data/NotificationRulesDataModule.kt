@@ -24,8 +24,6 @@ import com.android.systemui.notifications.intelligence.rules.data.repository.Con
 import com.android.systemui.notifications.intelligence.rules.data.repository.ContactsRepositoryImpl
 import com.android.systemui.notifications.intelligence.rules.data.repository.ConversationPartnersRepository
 import com.android.systemui.notifications.intelligence.rules.data.repository.ConversationPartnersRepositoryImpl
-import com.android.systemui.notifications.intelligence.rules.data.repository.FreeformRuleRepository
-import com.android.systemui.notifications.intelligence.rules.data.repository.FreeformRuleRepositoryImpl
 import com.android.systemui.notifications.intelligence.rules.data.repository.InstalledAppsRepository
 import com.android.systemui.notifications.intelligence.rules.data.repository.InstalledAppsRepositoryImpl
 import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRulesRepository
@@ -55,9 +53,6 @@ interface NotificationRulesDataModule {
     public fun bindRulesRepository(
         impl: NotificationRulesRepositoryImpl
     ): NotificationRulesRepository
-
-    @Binds
-    public fun bindFreeformRepository(impl: FreeformRuleRepositoryImpl): FreeformRuleRepository
 
     @Binds
     @IntoMap
