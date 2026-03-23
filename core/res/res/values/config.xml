@@ -7788,6 +7788,9 @@
         <item>com.android.launcher3.settings.SettingsActivity</item>
     </string-array>
 
+    <!-- List of packages which default to launch in fullscreen on desktop. -->
+    <string-array name="config_desktopLaunchInFullscreenPackages" translatable="false"/>
+
     <!-- Frame rate compatibility value for Wallpaper
          FRAME_RATE_COMPATIBILITY_MIN (102) is used by default for lower power consumption -->
     <integer name="config_wallpaperFrameRateCompatibility">102</integer>

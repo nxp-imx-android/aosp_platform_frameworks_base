@@ -119,6 +119,7 @@ class DesktopModeLaunchParamsModifier extends DefaultLaunchParamsModifier {
         boolean hasLaunchWindowingMode = false;
         final boolean inDesktopMode = suggestedDisplayArea.inFreeformWindowingMode()
                 || suggestedDisplayArea.getTopMostVisibleFreeformActivity() != null;
+        appendLog("inDesktopMode=" + inDesktopMode);
         if (task == null && (isRequestingFreeformWindowMode(null, options) || inDesktopMode)) {
             if (activity != null) {
                 if (mDesktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
@@ -126,6 +127,12 @@ class DesktopModeLaunchParamsModifier extends DefaultLaunchParamsModifier {
                         !activity.occludesParent(), /* numActivities */ 1, activity.mUserId,
                         activity.info, activity.getActivityType())) {
                     appendLog("activity exempt from desktop, launching in fullscreen");
+                    outParams.mWindowingMode = WINDOWING_MODE_FULLSCREEN;
+                    return RESULT_DONE;
+                }
+                if (mDesktopModeCompatPolicy.isPackageLaunchInFullscreen(
+                        activity.mActivityComponent)) {
+                    appendLog("force-launch-in-fullscreen-by-allowlist");
                     outParams.mWindowingMode = WINDOWING_MODE_FULLSCREEN;
                     return RESULT_DONE;
                 }
@@ -199,6 +206,12 @@ class DesktopModeLaunchParamsModifier extends DefaultLaunchParamsModifier {
                     isActivityStackTransparent, numActivities.get(), task.getUserId(),
                     targetActivity.info, targetActivity.getActivityType())) {
                 appendLog("activity exempt from desktop, launching in fullscreen");
+                outParams.mWindowingMode = WINDOWING_MODE_FULLSCREEN;
+                return RESULT_DONE;
+            }
+            if (mDesktopModeCompatPolicy.isPackageLaunchInFullscreen(
+                    targetActivity.mActivityComponent)) {
+                appendLog("force-launch-in-fullscreen-by-allowlist");
                 outParams.mWindowingMode = WINDOWING_MODE_FULLSCREEN;
                 return RESULT_DONE;
             }
