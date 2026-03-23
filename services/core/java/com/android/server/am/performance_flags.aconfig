@@ -2,13 +2,6 @@ package: "com.android.server.am"
 container: "system"
 
 flag {
-    name: "memory_limiter_force_on"
-    namespace: "system_performance"
-    description: "Force the memory limiter on, using a default configuration."
-    bug: "491137082"
-}
-
-flag {
     name: "memory_limiter_swap"
     namespace: "system_performance"
     description: "The memory limiter configures swap max."
