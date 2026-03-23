@@ -40,3 +40,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Ravenwood Gradle Sample"
 include(":app")
+include(":TestLibrary")
