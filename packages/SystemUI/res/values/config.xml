@@ -1238,4 +1238,10 @@
     revealing the blur underneath, or fully opaque.
     -->
     <bool name="config_translucentStandalonePowerMenu">true</bool>
+
+    <!--
+    Certain devices may not ever want to show lockscreen content, and should be directed
+    immediately to a bouncer.
+    -->
+    <bool name="config_alwaysShowBouncerWhenLocked">false</bool>
 </resources>
