@@ -39,6 +39,7 @@ java_library_static {
         "android.hardware.usb-V1.3-java",
         "android.hardware.usb-V4-java",
         "usb_flags_lib",
+        "android.hardware.usb.aoa-java",
     ],
     lint: {
         baseline_filename: "lint-baseline.xml",
