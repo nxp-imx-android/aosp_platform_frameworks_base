@@ -30,14 +30,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.annotation.Nullable;
+import android.app.ApplicationPackageManager;
+import android.app.PropertyInvalidatedCache;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.Signature;
 import android.content.pm.SigningDetails;
 import android.content.pm.UserInfo;
-import android.app.PropertyInvalidatedCache;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
@@ -51,8 +53,6 @@ import android.util.SparseArray;
 
 import androidx.annotation.NonNull;
 
-import android.app.ApplicationPackageManager;
-import android.content.pm.PackageManager;
 import com.android.internal.pm.parsing.pkg.PackageImpl;
 import com.android.internal.pm.parsing.pkg.ParsedPackage;
 import com.android.internal.pm.pkg.component.ParsedActivity;
@@ -1772,6 +1772,7 @@ public class AppsFilterImplTest {
             boolean isInitiatingPackageUninstalled) {
         final InstallSource installSource = InstallSource.create(initiatingPackageName,
                 originatingPackageName, installerPackageName, installerPackageUid,
+                installerPackageUid /* originalInstallerUid */,
                 updateOwnerPackageName, installerAttributionTag, /* isOrphaned= */ false,
                 isInitiatingPackageUninstalled);
         return setting -> setting.setInstallSource(installSource);
