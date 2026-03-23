@@ -233,7 +233,14 @@ public class BitmapOffloadProvider extends ContentProvider {
 
         synchronized (mLock) {
             BitmapEntry entry = mEntries.remove(uri);
-            return entry != null ? 1 : 0;
+            if (entry != null) {
+                if (!new File(entry.mBitmapData.filePath).delete()) {
+                    Slog.w(TAG, "Failed to delete offloaded bitmap file: "
+                            + entry.mBitmapData.filePath);
+                }
+                return 1;
+            }
+            return 0;
         }
     }
 
