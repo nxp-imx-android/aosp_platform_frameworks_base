@@ -44,8 +44,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -56,6 +58,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onLayoutRectChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.dimensionResource
@@ -275,6 +278,8 @@ private fun ContentScope.QuickSettingsContainer(
 
     val focusRequester = remember { FocusRequester() }
 
+    var currentHeight by remember { mutableStateOf(0) }
+
     LaunchedEffectWithLifecycle(focusRequester) {
         // Request focus on the `QuickSettingsContainer` without user interaction so that the user
         // can press the tab key once to enter the Quick Settings area. Without this line, the user
@@ -286,6 +291,7 @@ private fun ContentScope.QuickSettingsContainer(
         modifier =
             Modifier.focusRequester(focusRequester)
                 .focusable()
+                .onLayoutRectChanged { currentHeight = it.height }
                 .semantics { paneTitle = accessibilityTitle }
                 .sysuiResTag("quick_settings_container"),
         targetState =
@@ -311,7 +317,11 @@ private fun ContentScope.QuickSettingsContainer(
             }
 
             ShadeBodyState.TileDetails -> {
-                TileDetails(modifier = modifier, containerViewModel.detailsViewModel)
+                TileDetails(
+                    modifier = modifier,
+                    containerViewModel.detailsViewModel,
+                    initialHeight = { currentHeight },
+                )
             }
 
             ShadeBodyState.Default -> {

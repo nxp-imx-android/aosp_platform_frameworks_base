@@ -45,6 +45,8 @@ constructor(
     override val subTitle: String
         get() = internetDetailsContentManager.subTitle
 
+    override val requiresAsyncLoading: Boolean = true
+
     override fun clickOnSettingsButton() {
         qsTileIntentUserActionHandler.handle(
             /* expandable= */ null,
