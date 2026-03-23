@@ -383,7 +383,6 @@
   <java-symbol type="bool" name="config_restartRadioAfterProvisioning" />
   <java-symbol type="bool" name="config_speed_up_audio_on_mt_calls" />
   <java-symbol type="bool" name="config_useFixedVolume" />
-  <java-symbol type="bool" name="config_supportProfilesOnNonMainUser"/>
   <java-symbol type="bool" name="config_isMainUserPermanentAdmin"/>
   <java-symbol type="bool" name="config_disallowRemovingLastAdminUser"/>
   <java-symbol type="bool" name="config_supportManagedProfileOnNonMainUser"/>
