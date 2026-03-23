@@ -42,9 +42,13 @@ fun <T1, T2> pair(s1: T1, s2: SafetyAnnotated<T2>) = Pair(s1, SafetyAnnotated.Un
  * If the value is unsafe, then the string will be wrapped in <external_data>
  * tags.
  */
-fun extractSafety(v: Any): Any? {
+fun extractSafety(v: Any, markup: Boolean = true): Any? {
     return if (v is SafetyAnnotated.Unsafe<*>) {
+      if (markup) {
         markStringAsExternalData(v.value.toString())
+      } else {
+        v.value.toString()
+      }
     } else if (v is SafetyAnnotated<*>) {
         v.value
     } else {

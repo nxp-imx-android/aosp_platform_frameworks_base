@@ -141,7 +141,7 @@ private constructor(
     fun build(): PreferenceGraphProto {
         for ((key, screenBuilder) in screens) builder.putScreens(key, screenBuilder.build())
         builder.putAllValueDescriptors(valueDescriptors)
-        return PreferenceGraphCompressor.shrink(builder.build())
+        return builder.build()
     }
 
     /**
@@ -896,7 +896,7 @@ fun PreferenceMetadata.toProto(
                     if (failure is Disallowed) {
                         failure.getReason(context)
                     } else {
-                        "read precondition not met: missing readPermit with unknown reason - ${failure}"
+                        "read precondition not met: missing readPermit with unknown reason - ${failure} - ${readPermit}"
                     }
                 } else {
                     "read precondition not met: missing readPermit with unknown reason - ${readPermit}"
@@ -1054,7 +1054,7 @@ fun <T> PersistentPreference<T>.evalReadPermit(
     callingUid: Int,
 ): Int =
     when {
-        sensitivityLevel == DO_NOT_EXPOSE -> ReadWritePermit.DISALLOW
+        !isExposable(context) -> ReadWritePermit.DISALLOW
         getReadPermissions(context)?.check(context, callingPid, callingUid) == false ->
             ReadWritePermit.REQUIRE_APP_PERMISSION
 
@@ -1191,28 +1191,28 @@ private fun ApiType<*, *>.toProto(
                                 when (this@toProto.getType()) {
                                     Int::class.java,
                                     Int::class.javaObjectType -> intValue =
-                                        extractSafety(it.first) as Int
+                                        extractSafety(it.first, markup = false) as Int
 
                                     Boolean::class.java,
                                     Boolean::class.javaObjectType -> booleanValue =
-                                        extractSafety(it.first) as Boolean
+                                        extractSafety(it.first, markup = false) as Boolean
 
                                     Float::class.java,
                                     Float::class.javaObjectType -> floatValue =
-                                        extractSafety(it.first) as Float
+                                        extractSafety(it.first, markup = false) as Float
 
                                     Long::class.java,
                                     Long::class.javaObjectType -> longValue =
-                                        extractSafety(it.first) as Long
+                                        extractSafety(it.first, markup = false) as Long
 
                                     String::class.java,
                                     String::class.javaObjectType -> stringValue =
-                                        extractSafety(it.first) as String
+                                        extractSafety(it.first, markup = false) as String
 
                                     else -> error("Error: Unsupported type ${this@toProto.getType()}")
                                 }
                             }
-                            description = extractSafety(it.second) as String
+                            description = extractSafety(it.second, markup = false) as String
                         }
                     )
                 }
