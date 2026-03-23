@@ -1191,28 +1191,28 @@ private fun ApiType<*, *>.toProto(
                                 when (this@toProto.getType()) {
                                     Int::class.java,
                                     Int::class.javaObjectType -> intValue =
-                                        extractSafety(it.first) as Int
+                                        extractSafety(it.first, markup = false) as Int
 
                                     Boolean::class.java,
                                     Boolean::class.javaObjectType -> booleanValue =
-                                        extractSafety(it.first) as Boolean
+                                        extractSafety(it.first, markup = false) as Boolean
 
                                     Float::class.java,
                                     Float::class.javaObjectType -> floatValue =
-                                        extractSafety(it.first) as Float
+                                        extractSafety(it.first, markup = false) as Float
 
                                     Long::class.java,
                                     Long::class.javaObjectType -> longValue =
-                                        extractSafety(it.first) as Long
+                                        extractSafety(it.first, markup = false) as Long
 
                                     String::class.java,
                                     String::class.javaObjectType -> stringValue =
-                                        extractSafety(it.first) as String
+                                        extractSafety(it.first, markup = false) as String
 
                                     else -> error("Error: Unsupported type ${this@toProto.getType()}")
                                 }
                             }
-                            description = extractSafety(it.second) as String
+                            description = extractSafety(it.second, markup = false) as String
                         }
                     )
                 }
