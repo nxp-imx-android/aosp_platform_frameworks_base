@@ -1815,6 +1815,18 @@ public final class ActivityThread extends ClientTransactionHandler
         }
 
         @NeverCompile
+        private void dumpMemInfoMappedBitmaps(PrintWriter pw, Debug.MemoryInfo memInfo) {
+            pw.println(" ");
+            pw.println(" Mapped Bitmaps");
+            printRow(pw, TWO_COUNT_COLUMN_HEADER, "", "Count", "", "Size(KB)");
+            printRow(pw, TWO_COUNT_COLUMN_HEADER, "", "------", "", "------");
+            printRow(pw, TWO_COUNT_COLUMNS,
+                    "Mapped:", memInfo.totalBitmapCount, "", memInfo.totalBitmapSize);
+            printRow(pw, TWO_COUNT_COLUMNS,
+                    "Unique:", memInfo.uniqueBitmapCount, "", memInfo.uniqueBitmapSize);
+        }
+
+        @NeverCompile
         private void dumpMemInfoNativeAllocations(PrintWriter pw) {
             pw.println(" ");
             pw.println(" Native Allocations");
@@ -1941,6 +1953,7 @@ public final class ActivityThread extends ClientTransactionHandler
             if (com.android.libcore.readonly.Flags.nativeMetrics()) {
                 dumpMemInfoNativeAllocations(pw);
             }
+            dumpMemInfoMappedBitmaps(pw, memInfo);
 
             // SQLite mem info
             pw.println(" ");
@@ -4139,6 +4152,16 @@ public final class ActivityThread extends ClientTransactionHandler
                 memInfo.getSummaryGraphicsRss());
         proto.write(MemInfoDumpProto.ProcessMemory.AppSummary.UNKNOWN_RSS_KB,
                 memInfo.getSummaryUnknownRss());
+
+        // Mapped Bitmaps
+        proto.write(MemInfoDumpProto.ProcessMemory.AppSummary.TOTAL_BITMAP_COUNT,
+                memInfo.totalBitmapCount);
+        proto.write(MemInfoDumpProto.ProcessMemory.AppSummary.TOTAL_BITMAP_SIZE_KB,
+                memInfo.totalBitmapSize);
+        proto.write(MemInfoDumpProto.ProcessMemory.AppSummary.UNIQUE_BITMAP_COUNT,
+                memInfo.uniqueBitmapCount);
+        proto.write(MemInfoDumpProto.ProcessMemory.AppSummary.UNIQUE_BITMAP_SIZE_KB,
+                memInfo.uniqueBitmapSize);
 
         proto.end(asToken);
     }
