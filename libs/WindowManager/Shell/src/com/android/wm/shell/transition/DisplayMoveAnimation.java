@@ -19,8 +19,6 @@ package com.android.wm.shell.transition;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.annotation.NonNull;
 import android.content.Context;
@@ -142,23 +140,21 @@ class DisplayMoveAnimation {
             mTransactionPool.release(t);
         });
 
-        final WindowAnimation winAnim = new WindowAnimation(change, cornerRadius);
-
-        moveAnimation.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                final SurfaceControl.Transaction t = mTransactionPool.acquire();
-                if (hasSrcAnimation) {
-                    t.remove(snapshotLeash);
-                }
-                t.setAlpha(change.getLeash(), 1f);
-                t.setPosition(change.getLeash(), endPos.x, endPos.y);
-                t.apply();
-                mTransactionPool.release(t);
-                mainExecutor.execute(() -> finishCallback.accept(winAnim));
+        Consumer<WindowAnimation> onFinish = (animation) -> {
+            final SurfaceControl.Transaction t = mTransactionPool.acquire();
+            if (hasSrcAnimation) {
+                t.remove(snapshotLeash);
             }
-        });
-        winAnim.setAnimator(moveAnimation);
+            t.setAlpha(change.getLeash(), 1f);
+            t.setPosition(change.getLeash(), endPos.x, endPos.y);
+            t.apply();
+            mTransactionPool.release(t);
+            mainExecutor.execute(() -> finishCallback.accept(animation));
+        };
+
+        final WindowAnimation winAnim = new WindowAnimation(change, cornerRadius, null,
+                moveAnimation);
+        winAnim.addFinishCallback(onFinish, mainExecutor);
         return Optional.of(winAnim);
     }
 

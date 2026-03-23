@@ -41,6 +41,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.testing.wm.util.ChangeBuilder;
 import com.android.wm.shell.ShellTestCase;
+import com.android.wm.shell.TestShellExecutor;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -71,6 +72,7 @@ public class WindowAnimationTest extends ShellTestCase {
     private Animator mSiblingAnimator2;
     @Mock
     private Consumer<WindowAnimation> mFinishCallback;
+    private final TestShellExecutor mTestShellExecutor = new TestShellExecutor();
 
     private static TransitionInfo.Change createChange() {
         final TransitionInfo.Change change = new ChangeBuilder(
@@ -82,8 +84,7 @@ public class WindowAnimationTest extends ShellTestCase {
 
     @Test
     public void testWindowAnimation_startEnd_delegatesToAnimator() {
-        final WindowAnimation anim = new WindowAnimation(mChange, 0);
-        anim.setAnimator(mAnimator);
+        final WindowAnimation anim = new WindowAnimation(mChange, 0f, mAnimation, mAnimator);
 
         anim.start();
         verify(mAnimator).start();
@@ -173,12 +174,11 @@ public class WindowAnimationTest extends ShellTestCase {
 
     @Test
     public void testMultiPartWindowAnimation_runsAllAnimators() {
-        final WindowAnimation mainAnim = new WindowAnimation(mChange, 0);
-        mainAnim.setAnimator(mAnimator);
+        final WindowAnimation mainAnim = new WindowAnimation(mChange, 0f, mAnimation, mAnimator);
         final var siblings = List.of(mSiblingAnimator);
 
-        final var multiAnim = new MultiPartWindowAnimation(mainAnim, siblings,
-                mFinishCallback);
+        final var multiAnim = new MultiPartWindowAnimation(mainAnim, siblings);
+        multiAnim.addFinishCallback(mFinishCallback, mTestShellExecutor);
 
         multiAnim.start();
 
@@ -193,12 +193,11 @@ public class WindowAnimationTest extends ShellTestCase {
 
     @Test
     public void testMultiPartWindowAnimation_callbackOnlyWhenAllFinished() {
-        final WindowAnimation mainAnim = new WindowAnimation(mChange, 0);
-        mainAnim.setAnimator(mAnimator);
+        final WindowAnimation mainAnim = new WindowAnimation(mChange, 0f, mAnimation, mAnimator);
         final var siblings = List.of(mSiblingAnimator);
 
-        final var multiAnim = new MultiPartWindowAnimation(mainAnim, siblings,
-                mFinishCallback);
+        final var multiAnim = new MultiPartWindowAnimation(mainAnim, siblings);
+        multiAnim.addFinishCallback(mFinishCallback, mTestShellExecutor);
 
         final var mainListenerCaptor = ArgumentCaptor.forClass(
                 AnimatorListenerAdapter.class);
@@ -209,20 +208,21 @@ public class WindowAnimationTest extends ShellTestCase {
         verify(mSiblingAnimator).addListener(siblingListenerCaptor.capture());
 
         mainListenerCaptor.getValue().onAnimationEnd(mAnimator);
+        mTestShellExecutor.flushAll();
         verify(mFinishCallback, never()).accept(any());
 
         siblingListenerCaptor.getValue().onAnimationEnd(mSiblingAnimator);
+        mTestShellExecutor.flushAll();
         verify(mFinishCallback, times(1)).accept(multiAnim);
     }
 
     @Test
     public void testMultiPartWindowAnimation_end_multipleSiblings_someFinished() {
-        final WindowAnimation mainAnim = new WindowAnimation(mChange, 0);
-        mainAnim.setAnimator(mAnimator);
+        final WindowAnimation mainAnim = new WindowAnimation(mChange, 0f, mAnimation, mAnimator);
         final var siblings = List.of(mSiblingAnimator, mSiblingAnimator2);
 
-        final var multiAnim = new MultiPartWindowAnimation(mainAnim, siblings,
-                mFinishCallback);
+        final var multiAnim = new MultiPartWindowAnimation(mainAnim, siblings);
+        multiAnim.addFinishCallback(mFinishCallback, mTestShellExecutor);
 
         final var mainListenerCaptor = ArgumentCaptor.forClass(
                 AnimatorListenerAdapter.class);
@@ -237,6 +237,7 @@ public class WindowAnimationTest extends ShellTestCase {
         verify(mSiblingAnimator2).addListener(sibling2ListenerCaptor.capture());
 
         sibling1ListenerCaptor.getValue().onAnimationEnd(mSiblingAnimator);
+        mTestShellExecutor.flushAll();
         verify(mFinishCallback, never()).accept(any());
 
         multiAnim.end();
@@ -246,10 +247,11 @@ public class WindowAnimationTest extends ShellTestCase {
         verify(mSiblingAnimator, never()).end(); // Sibling 1 was already finished
 
         mainListenerCaptor.getValue().onAnimationEnd(mAnimator);
+        mTestShellExecutor.flushAll();
         verify(mFinishCallback, never()).accept(any()); // Still waiting for Sibling 2
 
         sibling2ListenerCaptor.getValue().onAnimationEnd(mSiblingAnimator2);
-
+        mTestShellExecutor.flushAll();
         verify(mFinishCallback, times(1)).accept(multiAnim);
     }
 }

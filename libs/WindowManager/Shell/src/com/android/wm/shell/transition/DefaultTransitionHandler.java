@@ -973,13 +973,13 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         final SizeChangeAnimation sca = new SizeChangeAnimation(change.getStartAbsBounds(),
                 change.getEndAbsBounds(), /* initialScale= */ 1f, /* scaleFactor= */ 1f);
         sca.initialize(change.getLeash(), change.getSnapshot(), startT);
-        final WindowAnimation winAnim = new WindowAnimation(change, 0 /* cornerRadius */,
-                sca.getAnimation(), null /* animator */);
         final ValueAnimator va = sca.buildAnimator(change.getLeash(), change.getSnapshot(),
-                (animation) -> mainExecutor.execute(() -> finishCallback.accept(winAnim)));
+                (animation) -> { /* cleanups handled in sca.buildAnimator internally */ });
         va.setDuration(SIZE_CHANGE_ANIMATION_DURATION);
         va.setInterpolator(Interpolators.EMPHASIZED);
-        winAnim.setAnimator(va);
+        final WindowAnimation winAnim = new WindowAnimation(change, 0 /* cornerRadius */,
+                sca.getAnimation(), va);
+        winAnim.addFinishCallback(finishCallback, mainExecutor);
         return Optional.of(winAnim);
     }
 
