@@ -20,6 +20,7 @@ import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.TransitionKey
+import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.deviceentry.shared.model.DeviceUnlockStatus
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
@@ -110,7 +111,16 @@ fun Kosmos.setSceneTransition(
     if (!skipChangeScene) {
         runCurrent()
         testScope.backgroundScope
-        sceneInteractor.changeScene(getCurrentCurrentScene(transition), "Kosmos.setSceneTransition")
+        if (transition.isIdle()) {
+            sceneInteractor.changeScene(
+                getCurrentCurrentScene(transition),
+                "Kosmos.setSceneTransition",
+            )
+        } else {
+            sceneInteractor.startTransitionImmediately(
+                transition.toTransitionState() as TransitionState.Transition
+            )
+        }
     }
     if (unlockDevice) {
         lockDevice()
