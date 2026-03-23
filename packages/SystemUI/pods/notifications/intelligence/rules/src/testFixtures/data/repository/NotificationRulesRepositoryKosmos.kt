@@ -30,6 +30,7 @@ val Kosmos.realNotificationRulesRepository by
             notificationManager,
             installedAppsRepository = fakeInstalledAppsRepository,
             contactsRepository = fakeContactsRepository,
+            conversationPartnersRepository = fakeConversationPartnersRepository,
             contentResolver = mockContentResolver,
             freeformRuleRepository = realFreeformRuleRepository,
             applicationContext = applicationContext,

@@ -26,9 +26,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.ContactsInteractor
+import com.android.systemui.notifications.intelligence.rules.domain.interactor.ConversationPartnersInteractor
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.InstalledAppsInteractor
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.NotificationRulesInteractor
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
@@ -43,8 +45,12 @@ import com.android.systemui.notifications.intelligence.rules.shared.model.RuleVa
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class NotificationRuleEditViewModelImpl
 @AssistedInject
@@ -53,7 +59,9 @@ constructor(
     @Assisted private val onNavigateToCurrentRulesScreen: () -> Unit,
     private val rulesInteractor: NotificationRulesInteractor,
     private val contactsInteractor: ContactsInteractor,
+    private val conversationPartnersInteractor: ConversationPartnersInteractor,
     private val installedAppsInteractor: InstalledAppsInteractor,
+    @Background private val backgroundDispatcher: CoroutineDispatcher,
     @Application private val applicationScope: CoroutineScope,
     @NotificationRulesLog logBuffer: LogBuffer,
 ) : NotificationRuleEditViewModel {
@@ -133,7 +141,20 @@ constructor(
         if (!NmContextualDisplayLaunch.isEnabled) {
             return emptyList()
         }
-        return contactsInteractor.fetchContacts(searchQuery, contentResolver)
+        val contacts: Deferred<List<PersonModel.Contact>> =
+            withContext(backgroundDispatcher) {
+                async { contactsInteractor.fetchContacts(searchQuery, contentResolver) }
+            }
+        val conversationPartners: Deferred<List<PersonModel.ConversationPartner>> =
+            withContext(backgroundDispatcher) {
+                async {
+                    conversationPartnersInteractor.fetchRecentConversationPartners(searchQuery)
+                }
+            }
+        return buildList {
+            addAll(contacts.await())
+            addAll(conversationPartners.await())
+        }
     }
 
     override suspend fun loadContactBitmapFromUri(

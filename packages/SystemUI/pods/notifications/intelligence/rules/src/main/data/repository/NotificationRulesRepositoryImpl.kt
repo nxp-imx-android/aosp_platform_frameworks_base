@@ -57,6 +57,7 @@ constructor(
     private val freeformRuleRepository: FreeformRuleRepository,
     private val installedAppsRepository: InstalledAppsRepository,
     private val contactsRepository: ContactsRepository,
+    private val conversationPartnersRepository: ConversationPartnersRepository,
     private val contentResolver: ContentResolver,
     @Application private val applicationContext: Context,
     @Application private val applicationScope: CoroutineScope,
@@ -191,7 +192,11 @@ constructor(
     private suspend fun NotificationRule.Filter.toInternalModel(): FilterModel? {
         val filterModel =
             FilterModel(
-                people = this.contacts.toContactsModel(),
+                people =
+                    createPeopleModel(
+                        contacts = this.contacts,
+                        conversationPartnerIds = this.shortcutIds,
+                    ),
                 includedApps = this.includedPackageUids.toIncludedAppsModel(),
                 keywords = this.keywords.toKeywordsModel(),
             )
@@ -202,12 +207,19 @@ constructor(
         }
     }
 
-    private suspend fun List<Uri>.toContactsModel(): PeopleModel? {
-        val contacts = this.mapNotNull { contactsRepository.lookupContact(it, contentResolver) }
-        if (contacts.isEmpty()) {
+    private suspend fun createPeopleModel(
+        contacts: List<Uri>,
+        conversationPartnerIds: List<String>,
+    ): PeopleModel? {
+        val contacts = contacts.mapNotNull { contactsRepository.lookupContact(it, contentResolver) }
+        val conversationPartners =
+            conversationPartnerIds.mapNotNull {
+                conversationPartnersRepository.lookupConversationPartner(it)
+            }
+        if (contacts.isEmpty() && conversationPartners.isEmpty()) {
             return null
         }
-        return PeopleModel(contacts)
+        return PeopleModel(contacts + conversationPartners)
     }
 
     private suspend fun List<Int>.toIncludedAppsModel(): IncludedAppsModel? {

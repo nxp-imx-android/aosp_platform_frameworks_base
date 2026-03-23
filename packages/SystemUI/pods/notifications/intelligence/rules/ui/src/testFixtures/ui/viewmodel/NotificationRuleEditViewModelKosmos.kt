@@ -18,6 +18,8 @@ package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.notifications.intelligence.rules.domain.interactor.conversationPartnersInteractor
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.fakeContactsInteractor
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.fakeInstalledAppsInteractor
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.notificationRulesInteractor
@@ -36,7 +38,9 @@ val Kosmos.notificationRuleEditViewModelFactory by
                     onNavigateToCurrentRulesScreen,
                     notificationRulesInteractor,
                     fakeContactsInteractor,
+                    conversationPartnersInteractor,
                     fakeInstalledAppsInteractor,
+                    backgroundDispatcher = testDispatcher,
                     applicationCoroutineScope,
                     notificationRulesLogBuffer,
                 )

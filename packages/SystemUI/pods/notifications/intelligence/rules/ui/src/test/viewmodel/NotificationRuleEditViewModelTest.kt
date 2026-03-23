@@ -18,6 +18,8 @@ package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
 import android.content.applicationContext
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.Icon
+import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -109,6 +111,55 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
             assertThat(ruleDisplay.textChunks[3]).isInstanceOf(TextChunk.ClickableText::class.java)
             val clickableChunk = ruleDisplay.textChunks[3] as TextChunk.ClickableText
             assertThat(clickableChunk.text).isEqualTo("Meowth")
+            assertThat(clickableChunk.isAmbiguous).isFalse()
+
+            clickableChunk.onClick()
+            assertThat(lastEnteredEditField)
+                .isInstanceOf(RulesScreenViewState.EditField.People::class.java)
+        }
+
+    @Test
+    fun buildRuleText_singleConversationPartner() =
+        kosmos.runTest {
+            var lastEnteredEditField: RulesScreenViewState.EditField? = null
+
+            val conversationPartner =
+                PersonModel.ConversationPartner(
+                    id = "skitty",
+                    displayLabel = "Conversation with Skitty",
+                    avatarIcon = Icon.createWithBitmap(createBitmap(10, 10)),
+                    appBadgeIcon = null,
+                )
+            val underTest =
+                notificationRuleEditViewModelFactory.create(
+                    DraftRuleModel.New(
+                        action = ActionModel.Highlight,
+                        filter =
+                            DraftFilterModel(
+                                people =
+                                    RuleValue.Specified(PeopleModel(listOf(conversationPartner))),
+                                includedApps = null,
+                            ),
+                    ),
+                    onNavigateToCurrentRulesScreen = {},
+                )
+
+            val ruleDisplay =
+                underTest.buildRuleText(
+                    onEnterEditField = { lastEnteredEditField = it },
+                    onExitEditField = {},
+                    resources = applicationContext.resources,
+                )
+
+            assertThat(ruleDisplay.textChunks).hasSize(4)
+            assertThat(ruleDisplay.textChunks[0]).isEqualTo(TextChunk.BasicText("Notifications"))
+            assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" from "))
+            assertThat(ruleDisplay.textChunks[2])
+                .isEqualTo(TextChunk.Icon(conversationPartner, "skitty"))
+
+            assertThat(ruleDisplay.textChunks[3]).isInstanceOf(TextChunk.ClickableText::class.java)
+            val clickableChunk = ruleDisplay.textChunks[3] as TextChunk.ClickableText
+            assertThat(clickableChunk.text).isEqualTo("Conversation with Skitty")
             assertThat(clickableChunk.isAmbiguous).isFalse()
 
             clickableChunk.onClick()
@@ -221,6 +272,98 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                             DraftFilterModel(
                                 people =
                                     RuleValue.Specified(PeopleModel(listOf(contact, CONTACT_CAT))),
+                                includedApps = null,
+                            ),
+                    ),
+                    onNavigateToCurrentRulesScreen = {},
+                )
+
+            val ruleDisplay =
+                underTest.buildRuleText(
+                    onEnterEditField = {},
+                    onExitEditField = {},
+                    resources = applicationContext.resources,
+                )
+
+            assertThat(ruleDisplay.textChunks).hasSize(4)
+            assertThat(ruleDisplay.textChunks[0]).isEqualTo(TextChunk.BasicText("Notifications"))
+            assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" from "))
+            assertThat(ruleDisplay.textChunks[2]).isEqualTo(TextChunk.Icon(contact, "mom-uri"))
+
+            assertThat(ruleDisplay.textChunks[3]).isInstanceOf(TextChunk.ClickableText::class.java)
+            val clickableChunk = ruleDisplay.textChunks[3] as TextChunk.ClickableText
+            assertThat(clickableChunk.text).isEqualTo("Mom Cell +1 more")
+            assertThat(clickableChunk.isAmbiguous).isFalse()
+        }
+
+    @Test
+    fun buildRuleText_twoConversationPartners() =
+        kosmos.runTest {
+            val conversationPartner =
+                PersonModel.ConversationPartner(
+                    id = "persian",
+                    displayLabel = "Conversation with Persian",
+                    avatarIcon = Icon.createWithBitmap(createBitmap(10, 10)),
+                    appBadgeIcon = null,
+                )
+
+            val underTest =
+                notificationRuleEditViewModelFactory.create(
+                    DraftRuleModel.New(
+                        action = ActionModel.Highlight,
+                        filter =
+                            DraftFilterModel(
+                                people =
+                                    RuleValue.Specified(
+                                        PeopleModel(
+                                            listOf(conversationPartner, CONVERSATION_PARTNER_SKITTY)
+                                        )
+                                    ),
+                                includedApps = null,
+                            ),
+                    ),
+                    onNavigateToCurrentRulesScreen = {},
+                )
+
+            val ruleDisplay =
+                underTest.buildRuleText(
+                    onEnterEditField = {},
+                    onExitEditField = {},
+                    resources = applicationContext.resources,
+                )
+
+            assertThat(ruleDisplay.textChunks).hasSize(4)
+            assertThat(ruleDisplay.textChunks[0]).isEqualTo(TextChunk.BasicText("Notifications"))
+            assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" from "))
+            assertThat(ruleDisplay.textChunks[2])
+                .isEqualTo(TextChunk.Icon(conversationPartner, "persian"))
+
+            assertThat(ruleDisplay.textChunks[3]).isInstanceOf(TextChunk.ClickableText::class.java)
+            val clickableChunk = ruleDisplay.textChunks[3] as TextChunk.ClickableText
+            assertThat(clickableChunk.text).isEqualTo("Conversation with Persian +1 more")
+            assertThat(clickableChunk.isAmbiguous).isFalse()
+        }
+
+    @Test
+    fun buildRuleText_contactAndConversationPartner() =
+        kosmos.runTest {
+            val contact =
+                PersonModel.Contact(
+                    lookupUri = "mom-uri".toUri(),
+                    name = "Mom Cell",
+                    photoUri = "mom-photo".toUri(),
+                )
+
+            val underTest =
+                notificationRuleEditViewModelFactory.create(
+                    DraftRuleModel.New(
+                        action = ActionModel.Highlight,
+                        filter =
+                            DraftFilterModel(
+                                people =
+                                    RuleValue.Specified(
+                                        PeopleModel(listOf(contact, CONVERSATION_PARTNER_SKITTY))
+                                    ),
                                 includedApps = null,
                             ),
                     ),
@@ -495,10 +638,16 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                     onNavigateToCurrentRulesScreen = {},
                 )
 
-            underTest.onPeopleSaved(listOf(CONTACT_CAT)) { onExitInvoked = true }
+            underTest.onPeopleSaved(listOf(CONTACT_CAT, CONVERSATION_PARTNER_SKITTY)) {
+                onExitInvoked = true
+            }
 
             assertThat(underTest.rule.filter.people)
-                .isEqualTo(RuleValue.Specified(PeopleModel(listOf(CONTACT_CAT))))
+                .isEqualTo(
+                    RuleValue.Specified(
+                        PeopleModel(listOf(CONTACT_CAT, CONVERSATION_PARTNER_SKITTY))
+                    )
+                )
             assertThat(onExitInvoked).isTrue()
         }
 
@@ -567,6 +716,14 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                 lookupUri = "cat-uri".toUri(),
                 name = "Meowth",
                 photoUri = "cat-photo".toUri(),
+            )
+
+        private val CONVERSATION_PARTNER_SKITTY =
+            PersonModel.ConversationPartner(
+                id = "skitty",
+                displayLabel = "Conversation with Skitty",
+                avatarIcon = Icon.createWithBitmap(createBitmap(1, 1)),
+                appBadgeIcon = null,
             )
 
         private val APP_CHAT_CAT =
