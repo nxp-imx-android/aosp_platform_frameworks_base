@@ -7774,10 +7774,6 @@
          root TaskDisplayArea is set to WINDOWING_MODE_FREEFORM. -->
     <bool name="config_enterDesktopByDefaultOnFreeformDisplay">false</bool>
 
-    <!-- Whether a desktop window should be maximized when it's dragged to the top edge of the
-         screen. -->
-    <bool name="config_dragToMaximizeInDesktopMode">false</bool>
-
     <!-- Whether the home screen should be shown behind freeform tasks in desktop mode. -->
     <bool name="config_showHomeBehindDesktop">false</bool>
 

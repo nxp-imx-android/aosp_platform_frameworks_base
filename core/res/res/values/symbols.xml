@@ -6291,10 +6291,6 @@
        root TaskDisplayArea is set to WINDOWING_MODE_FREEFORM. -->
   <java-symbol type="bool" name="config_enterDesktopByDefaultOnFreeformDisplay" />
 
-  <!-- Whether a desktop window should be maximized when it's dragged to the top edge of the
-       screen. -->
-  <java-symbol type="bool" name="config_dragToMaximizeInDesktopMode" />
-
   <!-- Whether the home screen should be shown behind freeform tasks in desktop mode. -->
   <java-symbol type="bool" name="config_showHomeBehindDesktop" />
 
