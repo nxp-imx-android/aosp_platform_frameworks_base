@@ -81,7 +81,7 @@ fun ImeSwitcherMenuContent(
     if (InputMethodFlags.imeSwitcherMenuSystemuiStyleUpdate()) {
         containerModifier =
             containerModifier
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                .background(MaterialTheme.colorScheme.surfaceContainer)
                 .padding(vertical = 24.dp)
     }
 
