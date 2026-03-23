@@ -553,36 +553,13 @@ public class PersonalContextManagerServiceTest {
                                 hints, mock(InsightSurfaceClientInfo.class), USER_ID_1));
     }
 
+    // TODO(b/495521356): remove test when permission is removed entirely.
     @Test
-    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
-    public void testIsEnabled_permissionsDenied_throwsSecurityException() {
+    public void testIsEnabled_doesNotEnforcePermission() {
         mFakePermissionEnforcer.revoke(Manifest.permission.PERSONAL_CONTEXT_READ_SETTINGS);
 
-        assertThrows(SecurityException.class, () -> mBinderService.isEnabled(mContext.getUserId()));
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
-    public void testIsEnabled_permissionFlagDisabled() {
-        mFakePermissionEnforcer.revoke(Manifest.permission.PERSONAL_CONTEXT_READ_SETTINGS);
-
-        mBinderService.setEnabled(mContext.getUserId(), /* enabled= */ true);
+        // Read succeeds.
         assertThat(mBinderService.isEnabled(mContext.getUserId())).isTrue();
-
-        mBinderService.setEnabled(mContext.getUserId(), /* enabled= */ false);
-        assertThat(mBinderService.isEnabled(mContext.getUserId())).isFalse();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
-    public void testIsEnabled_permissionFlagEnabled() {
-        // Read/write permissions were granted in setUp().
-
-        mBinderService.setEnabled(mContext.getUserId(), /* enabled= */ true);
-        assertThat(mBinderService.isEnabled(mContext.getUserId())).isTrue();
-
-        mBinderService.setEnabled(mContext.getUserId(), /* enabled= */ false);
-        assertThat(mBinderService.isEnabled(mContext.getUserId())).isFalse();
     }
 
     @Test
