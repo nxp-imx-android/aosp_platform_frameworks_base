@@ -406,8 +406,12 @@ private constructor(
                 { keyParametersSchema },
                 { keyParameters },
             )
-        builder.lambda()
-        preferences.add(builder.build())
+        try {
+            builder.lambda()
+            preferences.add(builder.build())
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to build preference: $key for screen: $key", e)
+        }
     }
 
     /** Initializes the [ValidatedKeyParameters] if this preference screen is parameterized. */

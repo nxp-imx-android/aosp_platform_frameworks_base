@@ -913,7 +913,6 @@ class ApiPreferenceConfigBuilder<InternalType : Any, ExternalType : Any>(
         lambda: ApiOperationContext.() -> ApiPreconditions
     ) {
         setPreconditions(PreconditionsConfig(description = description, check = lambda))
-
     }
 
     /**
