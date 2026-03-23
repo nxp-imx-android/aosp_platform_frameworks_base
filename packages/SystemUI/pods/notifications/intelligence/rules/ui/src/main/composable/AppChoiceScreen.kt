@@ -50,7 +50,7 @@ fun AppChoiceScreen(viewState: RulesScreenViewState.EditField.Apps, onDismissReq
             value = viewModel.fetchInstalledApps(context)
         }
 
-    EditScreen(
+    EditScreenWithSearch(
         title = stringResource(R.string.notification_rules_field_app),
         initialSelection = initialSelection,
         onSelectionSaved = { viewState.onAppsSaved(it) },
