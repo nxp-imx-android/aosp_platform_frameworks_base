@@ -6011,6 +6011,9 @@ public class NotificationStackScrollLayout
     public void setAlphaForLockscreenFadeIn(float alphaForLockscreenFadeIn) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
         mAmbientState.setLockscreenStackFadeInProgress(alphaForLockscreenFadeIn);
+        if (alphaForLockscreenFadeIn == 0f || alphaForLockscreenFadeIn == 1f) {
+            requestChildrenUpdate();
+        }
     }
 
     void onStatePostChange(boolean fromShadeLocked) {

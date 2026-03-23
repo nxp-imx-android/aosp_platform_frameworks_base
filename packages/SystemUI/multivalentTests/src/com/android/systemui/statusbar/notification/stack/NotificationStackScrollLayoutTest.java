@@ -2439,6 +2439,24 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     }
 
     @Test
+    @EnableSceneContainer
+    public void testAlphaForLockscreenFadeIn_callsRequestChildrenUpdate() {
+        // Check that for 0f, requestChildrenUpdate is called
+        mStackScroller.setAlphaForLockscreenFadeIn(0f);
+        verify(mStackScroller).requestChildrenUpdate();
+
+        // Check that for 1f, requestChildrenUpdate is called
+        clearInvocations(mStackScroller);
+        mStackScroller.setAlphaForLockscreenFadeIn(1f);
+        verify(mStackScroller).requestChildrenUpdate();
+
+        // Check that for other values, requestChildrenUpdate is not called
+        clearInvocations(mStackScroller);
+        mStackScroller.setAlphaForLockscreenFadeIn(0.5f);
+        verify(mStackScroller, never()).requestChildrenUpdate();
+    }
+
+    @Test
     public void dump_justCreatedNssl_noCrash() {
         StringWriter stringWriter = new StringWriter();
 
