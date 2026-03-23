@@ -100,7 +100,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito
@@ -1689,7 +1688,6 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
     )
     @DisableFlags(FLAG_DREAMS_SWITCHER_LONG_PRESS_ENABLED)
     @Test
-    @Ignore("TODO: enable these tests after the flags have been implemented in DreamOverlayService")
     fun testAmbientTouchHandlersRegistration_dreamsSwitcher_longPressDisabled() {
         kosmos.setCommunalV2ConfigEnabled(true)
         whenever(mDreamInteractor.isDreamSwitcherEnabled).thenReturn(true)
@@ -1719,7 +1717,6 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
     )
     @DisableFlags(FLAG_DREAMS_SWITCHER_EDGE_SWIPE_ENABLED)
     @Test
-    @Ignore("TODO: enable these tests after the flags have been implemented in DreamOverlayService")
     fun testAmbientTouchHandlersRegistration_dreamsSwitcher_edgeSwipeDisabled() {
         kosmos.setCommunalV2ConfigEnabled(true)
         whenever(mDreamInteractor.isDreamSwitcherEnabled).thenReturn(true)
