@@ -28,11 +28,11 @@ public data class RuleModel(
     /** The action to apply to the notification. See [android.app.NotificationRule.getAction]. */
     public val action: ActionModel,
     /**
-     * The filter for which notifications this rule applies to.
+     * The filter for which notifications this rule applies to. Null if no filters are included.
      *
      * TODO: b/478225883 - Support a list of filters.
      */
-    public val filter: FilterModel,
+    public val filter: FilterModel?,
 )
 
 /** Represents a specific filter on a rule. See [android.app.NotificationRule.Filter]. */

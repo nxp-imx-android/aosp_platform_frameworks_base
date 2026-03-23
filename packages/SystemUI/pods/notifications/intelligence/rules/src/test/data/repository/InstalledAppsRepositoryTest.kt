@@ -48,9 +48,53 @@ class InstalledAppsRepositoryTest : SysuiTestCase() {
     private val Kosmos.underTest by Kosmos.Fixture { realInstalledAppsRepository }
 
     @Test
+    fun lookupApp_notAvailable_null() =
+        kosmos.runTest {
+            whenever(packageManager.getNameForUid(any())).thenReturn(null)
+
+            val result = underTest.lookupApp(uid = 1, applicationContext)
+
+            assertThat(result).isNull()
+        }
+
+    @Test
+    fun lookupApp_hasApp_returnsModel() =
+        kosmos.runTest {
+            val uid = 1
+            val packageName = "app.1"
+            whenever(packageManager.getNameForUid(uid)).thenReturn(packageName)
+
+            val drawable1 = mock<Drawable>()
+            val appInfo1 =
+                mock<ApplicationInfo>().apply {
+                    this.uid = uid
+                    whenever(this.loadLabel(eq(packageManager))).thenReturn("App 1")
+                    this.packageName = packageName
+                }
+            whenever(
+                    packageManager.getApplicationInfoAsUser(eq(packageName), any<Int>(), any<Int>())
+                )
+                .thenReturn(appInfo1)
+            whenever(mockAppIconProvider.getOrFetchAppIcon(eq(packageName), any(), any<String>()))
+                .thenReturn(drawable1)
+
+            val result = underTest.lookupApp(uid, applicationContext)
+
+            assertThat(result)
+                .isEqualTo(
+                    AppModel(
+                        uid = uid,
+                        label = "App 1",
+                        icon = drawable1,
+                        packageName = packageName,
+                    )
+                )
+        }
+
+    @Test
     fun fetchInstalledApps_getsAll_forUser() =
         kosmos.runTest {
-            fakeUserRepository.selectedUser.value =
+            kosmos.fakeUserRepository.selectedUser.value =
                 SelectedUserModel(SELECTED_USER_INFO, SelectionStatus.SELECTION_COMPLETE)
 
             val drawable1 = mock<Drawable>()

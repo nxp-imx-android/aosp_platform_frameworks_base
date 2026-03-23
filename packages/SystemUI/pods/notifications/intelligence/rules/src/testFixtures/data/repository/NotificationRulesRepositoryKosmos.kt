@@ -17,17 +17,25 @@
 package com.android.systemui.notifications.intelligence.rules.data.repository
 
 import android.app.notificationManager
+import android.content.applicationContext
+import android.content.mockContentResolver
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.notifications.intelligence.rules.shared.notificationRulesLogBuffer
 
 val Kosmos.realNotificationRulesRepository by
     Kosmos.Fixture {
         NotificationRulesRepositoryImpl(
             notificationManager,
+            installedAppsRepository = fakeInstalledAppsRepository,
+            contactsRepository = fakeContactsRepository,
+            contentResolver = mockContentResolver,
             freeformRuleRepository = realFreeformRuleRepository,
+            applicationContext = applicationContext,
             applicationScope = applicationCoroutineScope,
             mainDispatcher = testDispatcher,
             backgroundDispatcher = testDispatcher,
+            logBuffer = notificationRulesLogBuffer,
         )
     }

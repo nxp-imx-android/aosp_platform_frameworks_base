@@ -34,7 +34,7 @@ internal fun buildReadOnlyRuleText(
     logger: Logger,
 ): RuleDisplayModel {
     val appsText: SingleFieldTextModel<AppModel>? =
-        rule.filter.includedApps?.let {
+        rule.filter?.includedApps?.let {
             createReadOnlyIncludedAppsText(
                 selectedIncludedApps = it,
                 resources = resources,
@@ -43,7 +43,7 @@ internal fun buildReadOnlyRuleText(
         }
 
     val contactsText: SingleFieldTextModel<ContactModel>? =
-        rule.filter.contacts?.let {
+        rule.filter?.contacts?.let {
             createReadOnlyContactsText(
                 selectedContacts = it,
                 resources = resources,
