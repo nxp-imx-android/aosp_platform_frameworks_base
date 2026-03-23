@@ -492,6 +492,10 @@ final class VerifyingSession {
                 requiredIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 requiredIntent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
                 requiredIntent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                // Allow the broadcast to be sent before boot complete.
+                // This is needed when committing the apk part of a staged
+                // session in early boot.
+                requiredIntent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY_BEFORE_BOOT);
                 requiredIntent.setDataAndType(Uri.fromFile(new File(mOriginInfo.mResolvedPath)),
                         PACKAGE_MIME_TYPE);
                 requiredIntent.putExtra(PackageInstaller.EXTRA_SESSION_ID, mSessionId);
