@@ -917,7 +917,8 @@
         android:permissionGroup="android.permission-group.UNDEFINED"
         android:label="@string/permlab_writeContacts"
         android:description="@string/permdesc_writeContacts"
-      android:protectionLevel="dangerous" />
+        android:protectionLevel="dangerous"
+        android:permissionFlags="allowedInPrivateComputeCore" />
 
     <!--Allows privileged applications to get details about contact picker sessions,
         including reading and writing sessions.
@@ -2619,7 +2620,8 @@
         android:permissionGroup="android.permission-group.UNDEFINED"
         android:description="@string/permdesc_bluetooth_connect"
         android:label="@string/permlab_bluetooth_connect"
-        android:protectionLevel="dangerous" />
+        android:protectionLevel="dangerous"
+        android:permissionFlags="allowedInPrivateComputeCore" />
 
     <!-- Required to be able to advertise to nearby Bluetooth devices.
          <p>Protection level: dangerous -->
