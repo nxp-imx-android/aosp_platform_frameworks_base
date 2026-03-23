@@ -399,7 +399,7 @@
   <java-symbol type="bool" name="config_omnipresentCommunalUser"/>
   <java-symbol type="bool" name="config_enableNewAutoSelectNetworkUI"/>
   <java-symbol type="bool" name="config_disableUsbPermissionDialogs"/>
-  <java-symbol type="bool" name="config_allowContentRestrictionDevicePolicyBypassing"/>
+  <java-symbol type="bool" name="config_allowBypassingContentRestrictionSandboxing"/>
   <java-symbol type="dimen" name="config_highResTaskSnapshotScale" />
   <java-symbol type="dimen" name="config_lowResTaskSnapshotScale" />
   <java-symbol type="dimen" name="config_resActivitySnapshotScale" />

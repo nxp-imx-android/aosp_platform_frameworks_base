@@ -144,17 +144,17 @@ public class ContentRestrictionManager {
     }
 
     /**
-     * Returns whether content restriction device policy bypassing is allowed.
+     * Returns whether content restriction sandbox bypassing is allowed.
      *
      * @hide
      */
     @TestApi
     @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
     @UserHandleAware(requiresPermissionIfNotCaller = INTERACT_ACROSS_USERS)
-    public boolean isDevicePolicyBypassingEnabledForUser(@UserIdInt int userId) {
+    public boolean shouldAllowBypassingContentRestrictionSandboxingForUser(@UserIdInt int userId) {
         if (mService != null) {
             try {
-                return mService.isDevicePolicyBypassingEnabledForUser(userId);
+                return mService.shouldAllowBypassingContentRestrictionSandboxingForUser(userId);
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
@@ -163,17 +163,18 @@ public class ContentRestrictionManager {
     }
 
     /**
-     * Sets whether content restriction device policy bypassing is allowed.
+     * Sets whether content restriction sandbox bypassing is allowed.
      *
      * @hide
      */
     @TestApi
     @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
     @UserHandleAware(requiresPermissionIfNotCaller = INTERACT_ACROSS_USERS)
-    public void setDevicePolicyBypassingEnabledForUser(@UserIdInt int userId, boolean enabled) {
+    public void setShouldAllowBypassingContentRestrictionSandboxingForUser(
+            @UserIdInt int userId, boolean enabled) {
         if (mService != null) {
             try {
-                mService.setDevicePolicyBypassingEnabledForUser(userId, enabled);
+                mService.setShouldAllowBypassingContentRestrictionSandboxingForUser(userId, enabled);
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
