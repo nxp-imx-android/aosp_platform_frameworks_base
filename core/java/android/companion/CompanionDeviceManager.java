@@ -744,6 +744,7 @@ public final class CompanionDeviceManager {
      *   <li>{@link #FLAG_AIRPLANE_MODE}</li>
      * </ul>
      * </p>}
+     * }
      *
      * <p>Calling this API requires a uses-feature
      * {@link PackageManager#FEATURE_COMPANION_DEVICE_SETUP} declaration in the manifest</p>
@@ -785,6 +786,7 @@ public final class CompanionDeviceManager {
      *   <li>{@link #FLAG_AIRPLANE_MODE}</li>
      * </ul>
      * </p>}
+     * }
      *
      * <p>Calling this API requires a uses-feature
      * {@link PackageManager#FEATURE_COMPANION_DEVICE_SETUP} declaration in the manifest</p>
