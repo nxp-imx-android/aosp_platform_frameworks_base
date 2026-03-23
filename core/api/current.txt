@@ -36866,7 +36866,6 @@ package android.os.multisensory {
   }
 
   @FlaggedApi("android.os.multisensory.enable_multisensory_feedback") public class MultisensoryManager {
-    method @NonNull public static int[] getMultisensoryTokens();
     method public void playToken(int);
     field public static final int TOKEN_CANCEL = 6; // 0x6
     field public static final int TOKEN_DRAG_INDICATOR_CONTINUOUS = 17; // 0x11

@@ -3013,6 +3013,14 @@ package android.os.health {
 
 }
 
+package android.os.multisensory {
+
+  @FlaggedApi("android.os.multisensory.enable_multisensory_feedback") public class MultisensoryManager {
+    method @NonNull public static int[] getMultisensoryTokens();
+  }
+
+}
+
 package android.os.storage {
 
   public final class CrateInfo implements android.os.Parcelable {
