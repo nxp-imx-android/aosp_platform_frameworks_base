@@ -230,7 +230,7 @@ flag {
 flag {
      name: "profiles_for_all"
      namespace: "multiuser"
-     description: "Allows any regular user to have profiles"
+     description: "Allows any regular user to have **managed** profiles"
      bug: "374832167"
 }
 

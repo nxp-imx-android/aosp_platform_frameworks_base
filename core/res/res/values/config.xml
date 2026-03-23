@@ -3350,6 +3350,11 @@
         frameworks/base/services/core/java/com/android/server/pm/UserSystemPackageInstaller.java -->
     <integer name="config_userTypePackageWhitelistMode">13</integer> <!-- 1+4+8 -->
 
+    <!-- TODO(b/488421414). This is deprecated and only here temporarily to prevent breakage.
+         It will be immediately removed.
+    -->
+    <bool name="config_supportProfilesOnNonMainUser">false</bool>
+
     <!-- Whether the device will automatically (at first boot) have a designated main user and treat
          it as a permanent admin.
          Since the main user is a permanent admin user it can't be deleted or downgraded to
@@ -3365,12 +3370,12 @@
          since then the main user is a permanent admin. -->
     <bool name="config_disallowRemovingLastAdminUser">true</bool>
 
-    <!-- Whether all secondary users (and a full system user) are eligible to have profiles.
-         If false, only the MainUser is eligible to have profiles.
+    <!-- Whether all secondary users (and a full system user) are eligible to have managed profiles.
+         If false, only the MainUser is eligible to have managed profiles.
           NOTE: this feature not supported yet, and CTS will fail if it's set to
           true.
     -->
-    <bool name="config_supportProfilesOnNonMainUser">false</bool>
+    <bool name="config_supportManagedProfileOnNonMainUser">false</bool>
 
     <!-- Whether to automatically create a full Admin user on boot if none currently exists.
          If false, the system will not automatically create an initial secondary user.
