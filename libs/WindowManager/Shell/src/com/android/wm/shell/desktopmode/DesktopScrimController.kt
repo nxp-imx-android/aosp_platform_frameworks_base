@@ -52,6 +52,9 @@ class DesktopScrimController(
     private val wallpaperDimAmount: Float =
         SystemProperties.getInt("persist.wm.debug.wallpaper_dim_amount", 100).toFloat() / 100
 
+    private val lastAppliedScrimState =
+        mutableMapOf<Int, Boolean>() // displayId to applyLightOutEffect
+
     fun onInit() {
         if (Flags.updateDesktopScrimWhenLockedBugfix()) {
             keyguardManager.addKeyguardLockedStateListener(mainExecutor, this)
@@ -120,6 +123,10 @@ class DesktopScrimController(
      */
     @VisibleForTesting
     fun updateDesktopScrim(displayId: Int, applyLightOutEffect: Boolean) {
+        if (lastAppliedScrimState[displayId] == applyLightOutEffect) {
+            return
+        }
+        lastAppliedScrimState[displayId] = applyLightOutEffect
         if (com.android.systemui.Flags.opaqueStatusBar()) {
             mDesktopScrimListeners.forEach { (listener, executor) ->
                 executor.execute {
