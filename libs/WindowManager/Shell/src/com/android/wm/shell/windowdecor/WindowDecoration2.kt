@@ -272,7 +272,7 @@ abstract class WindowDecoration2<T>(
                 )
             }
 
-            val controller = getOrCreateCaptionController(params.captionType)
+            val controller = getOrCreateCaptionController(params.captionType, wct, startT)
             if (controller == null) {
                 logD(TAG, "relayout(task=%d) null caption controller, skipping", taskInfo.taskId)
                 return null
@@ -305,36 +305,50 @@ abstract class WindowDecoration2<T>(
         }
 
     private fun getOrCreateCaptionController(
-        captionType: CaptionController.CaptionType
+        captionType: CaptionController.CaptionType,
+        wct: WindowContainerTransaction? = null,
+        startT: SurfaceControl.Transaction? = null,
     ): CaptionController<T>? {
         if (captionController == null) {
             captionController = createCaptionController(captionType)
         } else if (captionController?.captionType != captionType) {
-            releaseCaptionController()
+            releaseCaptionController(wct, startT)
             captionController = createCaptionController(captionType)
         }
         return captionController
     }
 
-    private fun releaseCaptionController() {
-        val wct = windowContainerTransactionSupplier()
-        val t = surfaceControlTransactionSupplier()
-        releaseCaptionController(wct, t)
+    /**
+     * Releases current caption controller. When [wct] and [startT] are not-null then a caller is
+     * expected to apply both of them, otherwise a new change transition is started and a [startT]
+     * is applied. Returns `true` when the controller and its view is release, otherwise `false`.
+     */
+    private fun releaseCaptionController(
+        wct: WindowContainerTransaction? = null,
+        startT: SurfaceControl.Transaction? = null,
+    ): Boolean {
+        val shouldApplyTransactions =
+            when {
+                wct != null && startT != null -> false // Let the upper layer apply them.
+                wct == null && startT == null -> true
+                else -> error("Unsupported null and non-null transactions")
+            }
+        val finalWct = wct ?: windowContainerTransactionSupplier()
+        val t = startT ?: surfaceControlTransactionSupplier()
+
+        val released = captionController?.close(finalWct, t) == true
+        captionController = null
+
+        if (shouldApplyTransactions) {
+            return released
+        }
+
         t.apply()
-        if (!wct.isEmpty) {
+        if (!finalWct.isEmpty) {
             mainScope.launch {
-                transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
+                transitions.startTransition(TRANSIT_CHANGE, finalWct, /* handler= */ null)
             }
         }
-    }
-
-    /** Releases the caption controller. Returns [true] if a caption view was actually released. */
-    private fun releaseCaptionController(
-        wct: WindowContainerTransaction,
-        t: SurfaceControl.Transaction,
-    ): Boolean {
-        val released = captionController?.close(wct, t) == true
-        captionController = null
         return released
     }
 
