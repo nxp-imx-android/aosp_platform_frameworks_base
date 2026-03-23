@@ -82,6 +82,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.notNull;
+import static org.mockito.Mockito.clearInvocations;
 
 import android.app.ActivityOptions;
 import android.app.AppOpsManager;
@@ -108,6 +109,7 @@ import android.util.Size;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.RemoteAnimationAdapter;
+import android.view.WindowManager;
 import android.window.TaskFragmentOrganizerToken;
 
 import androidx.test.filters.SmallTest;
@@ -1448,6 +1450,42 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
         assertThat(controller.isCollecting(top.getTask())).isTrue();
         assertThat(transition.isTransientLaunch(target)).isTrue();
         assertThat(transition.isInTransientHide(top.getTask())).isTrue();
+    }
+
+    @Test
+    public void testTransitionSetReady() {
+        final Task task = new TaskBuilder(mSupervisor).setCreateActivity(true).build();
+        final ActivityRecord[] overlayActivity = new ActivityRecord[1];
+        final ActivityOptions options = ActivityOptions.makeBasic();
+        options.setTaskOverlay(true /* taskOverlay */, true /* canResume */);
+        options.setLaunchTaskId(task.mTaskId);
+        requestTransition(mDisplayContent, WindowManager.TRANSIT_OPEN);
+        final Transition transition =
+                mRootWindowContainer.mTransitionController.getCollectingTransition();
+        spyOn(transition);
+        final ActivityStarter starter = prepareStarter(0 /* flags */, false /* mockGetRootTask */);
+        starter.setActivityOptions(options.toBundle(),
+                        Binder.getCallingPid(), Binder.getCallingUid())
+                .setInTask(task)
+                .setOutActivity(overlayActivity)
+                .execute();
+
+        assertTrue(overlayActivity[0].isAlwaysOnTop());
+        // Expect setReady(false) because it is usually the case: prev paused -> resume next.
+        verify(transition).setReady(eq(overlayActivity[0]), eq(false));
+
+        clearInvocations(transition);
+        final ActivityStarter starter2 = prepareStarter(0 /* flags */, false /* mockGetRootTask */);
+        spyOn(starter2);
+        doReturn(START_SUCCESS).when(starter2).isAllowedToStart(any(), anyBoolean(), any());
+        starter2.getIntent().setComponent(
+                ComponentName.createRelative(DEFAULT_COMPONENT_PACKAGE_NAME, "RegularActivity"));
+        starter2.setInTask(task).execute();
+
+        assertEquals(3, overlayActivity[0].getParent().getChildCount());
+        assertEquals(overlayActivity[0], overlayActivity[0].getParent().getChildAt(2));
+        // The started activity is not the top child, so setReady(false) should NOT be called.
+        verify(transition, never()).setReady(any(), eq(false));
     }
 
     /**
