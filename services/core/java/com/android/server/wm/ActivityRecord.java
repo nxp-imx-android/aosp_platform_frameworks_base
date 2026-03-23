@@ -6518,7 +6518,6 @@ final class ActivityRecord extends WindowToken {
         // stop tracking
         mSplashScreenStyleSolidColor = true;
 
-        mAtmService.mBackNavigationController.removePredictiveSurfaceIfNeeded(this);
         if (mStartingWindow != null) {
             ProtoLog.v(WM_DEBUG_STARTING_WINDOW, "Finish starting %s"
                     + ": first real window is shown, no animation", win.mToken);
@@ -6546,6 +6545,7 @@ final class ActivityRecord extends WindowToken {
         }
 
         updateReportedVisibilityLocked();
+        mAtmService.mBackNavigationController.removePredictiveSurfaceIfNeeded(this);
     }
 
     /** Sets whether something has been visible in the task. */
