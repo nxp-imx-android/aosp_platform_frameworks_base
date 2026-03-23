@@ -249,6 +249,13 @@ constructor(
                     println("isAodAvailable", keyguardInteractor.isAodAvailable.value)
                     println("isInteractive", powerInteractor.isInteractive.value)
                 }
+
+                printSection("Other") {
+                    println(
+                        "isDeviceProvisioned",
+                        deviceProvisioningInteractor.isDeviceProvisioned(),
+                    )
+                }
             }
         }
     }
@@ -260,6 +267,7 @@ constructor(
             launch { faceUnlockInteractor.hydrateTableLogBuffer(tableLogBuffer) }
             launch { powerInteractor.hydrateTableLogBuffer(tableLogBuffer) }
             launch { keyguardInteractor.hydrateTableLogBuffer(tableLogBuffer) }
+            launch { deviceProvisioningInteractor.hydrateTableLogBuffer(tableLogBuffer) }
         }
     }
 
