@@ -63,6 +63,7 @@ fun StudioLookDrillIn(
             buttonFactory = { shape: Shape, buttonViewModel: ButtonViewModel ->
                 StudioLookSwitch(shape = shape, viewModel = buttonViewModel)
             },
+            splitSections = false,
         )
     }
 }
