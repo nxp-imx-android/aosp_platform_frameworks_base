@@ -104,7 +104,7 @@ class MemoryLimiter implements AutoCloseable {
     static final int ALL_UIDS = -2;
 
     // Two convenient constants.
-    private static final int MB = 1024 * 1024;
+    private static final long MB = 1024L * 1024;
     private static final long GB = 1024L * MB;
 
     /**
@@ -162,12 +162,11 @@ class MemoryLimiter implements AutoCloseable {
     @VisibleForTesting
     public record Limits(long memHigh, long swapMax) {}
 
-    // Return the available memory in MB.
-    private static int availableMemoryMB() {
+    // Return the available memory in the system.  This is memTotal from /proc/meminfo.
+    private static long memTotal() {
         MemInfoReader memInfo = new MemInfoReader();
         memInfo.readMemInfo();
-        long memTotal = memInfo.getTotalSize();
-        return (int) (memTotal / MB);
+        return memInfo.getTotalSize();
     }
 
     /**
@@ -199,10 +198,9 @@ class MemoryLimiter implements AutoCloseable {
          *
          * @param pid The pid of the process to set the limit for.
          * @param uid The uid of the process to set the limit for.
-         * @param limitPercent The limit percentage (1-100) to set for the process. A negative value
-         *     sets the limit to the maximum value (i.e. unlimited).
+         * @param limit The limit, in bytes, for memHigh and swapMax.
          */
-        void setManualLimit(int pid, int uid, int limitPercent);
+        void setManualLimit(int pid, int uid, long limit);
 
         // The controller status, for debug and reports.
         void dump(PrintWriter pw);
@@ -235,7 +233,7 @@ class MemoryLimiter implements AutoCloseable {
         }
 
         @Override
-        public void setManualLimit(int pid, int uid, int limitPercent) {
+        public void setManualLimit(int pid, int uid, long limit) {
         }
 
         @Override
@@ -593,8 +591,7 @@ class MemoryLimiter implements AutoCloseable {
         }
 
         @Override
-        public void setManualLimit(int pid, int uid, int limitMB) {
-            long limit = limitMB * (long) MB;
+        public void setManualLimit(int pid, int uid, long limit) {
             setLimit(pid, uid, new Limits(limit, limit));
         }
 
@@ -675,16 +672,16 @@ class MemoryLimiter implements AutoCloseable {
      * NumberFormatException if any required attribute is not present or is invalid.
      */
     @Nullable
-    private static Configuration getConfiguration(List<LimitSet> sets, int availableMemMB) {
-        int minRequiredMem = 0;
+    private static Configuration getConfiguration(List<LimitSet> sets, long memTotal) {
+        long minRequiredMem = 0;
         Configuration result = null;
         for (int i = 0; i < sets.size(); i++) {
             LimitSet cfg = sets.get(i);
-            int minMem = cfg.getMinimumRequiredMemTotal().intValue();
-            if (minMem > availableMemMB || minMem < minRequiredMem) {
+            long minMemTotal = cfg.getMinimumRequiredMemTotal().longValue() * MB;
+            if (minMemTotal > memTotal || minMemTotal < minRequiredMem) {
                 continue;
             }
-            minRequiredMem = minMem;
+            minRequiredMem = minMemTotal;
             result = new Configuration(
                 cfg.getMemVisible().longValue() * MB,
                 cfg.getMemNotVisible().longValue() * MB,
@@ -701,7 +698,7 @@ class MemoryLimiter implements AutoCloseable {
      * errors are converted to an IllegalArgumentException.
      */
     @VisibleForTesting
-    static Configuration getConfiguration(@Nullable String file, int availableMemoryMB)
+    static Configuration getConfiguration(@Nullable String file, long memTotal)
             throws FileNotFoundException {
         if (file == null) {
             // A null file is a special case that is only used for testing.
@@ -724,7 +721,7 @@ class MemoryLimiter implements AutoCloseable {
             }
             // Return the best match configuration.  A null return means the XML was valid but
             // there was no matching limit set.
-            return getConfiguration(clist, availableMemoryMB);
+            return getConfiguration(clist, memTotal);
 
         } catch (FileNotFoundException e) {
             // Override the configuration file limits and let the memory limiter run.  This is for
@@ -751,7 +748,7 @@ class MemoryLimiter implements AutoCloseable {
     @Nullable
     private static Configuration getConfiguration(@Nullable String file)
             throws FileNotFoundException {
-        return getConfiguration(file, availableMemoryMB());
+        return getConfiguration(file, memTotal());
     }
 
     /**
@@ -948,8 +945,8 @@ class MemoryLimiter implements AutoCloseable {
     /**
      * Manually set a limit for a process (for testing).
      */
-    void setManualLimit(int pid, int uid, int limitPercent) {
-        mController.setManualLimit(pid, uid, limitPercent);
+    void setManualLimit(int pid, int uid, int limitInMB) {
+        mController.setManualLimit(pid, uid, limitInMB * MB);
     }
 
     /**

@@ -41,7 +41,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import com.android.internal.util.MemInfoReader;
 import com.android.server.am.MemoryLimiter.Configuration;
 import com.android.server.am.MemoryLimiter.Limits;
 
@@ -118,13 +117,8 @@ public class MemoryLimiterTest {
     }
 
     // Two convenience constants, 1MB and 1GB, and a function to express GB as MB.
-    static final int MB = 1024 * 1024;
-    static final long MBL = 1024L * 1024;
-    static final long GB = 1024L * 1024 * 1024;
-
-    static int gbToMB(int gb) {
-        return gb * 1024;
-    }
+    static final long MB = 1024L * 1024;
+    static final long GB = 1024L * MB;
 
     // The mapping between process states and sizes is arbitrary.  Constants are declared to
     // make it more obvious in the test routine just what the memory limit will be.
@@ -144,15 +138,6 @@ public class MemoryLimiterTest {
     // The memory assigned to a process in PROCESS_STATE_MAX.  Any negative value turns into
     // maximum memory in the native handlers, but the test uses -1 for consistency.
     private static final Long sProcessMemoryMax = (long) (-1);
-
-    // The available system memory nad the system swap.
-    private static final long sSystemMemory = getMemTotal();
-
-    private static long getMemTotal() {
-        MemInfoReader memInfo = new MemInfoReader();
-        memInfo.readMemInfo();
-        return memInfo.getTotalSize();
-    }
 
     // Return true if MemoryLimiter is running in system_server.
     private static boolean isMemoryLimiterRunning() {
@@ -177,7 +162,7 @@ public class MemoryLimiterTest {
         }
 
         TestInjector() {
-            this("config-default.xml");
+            this("config-testing.xml");
         }
 
         @Override
@@ -672,21 +657,16 @@ public class MemoryLimiterTest {
         testConfig(cfg, MemoryLimiter.sDefaultConfig);
 
         // A valid configuration file that specifies the defaults.
-        cfg = MemoryLimiter.getConfiguration(dataFile("config-default.xml"), gbToMB(10));
+        cfg = MemoryLimiter.getConfiguration(dataFile("config-default.xml"), 10 * GB);
         testConfig(cfg, 6 * GB, 3 * GB);
-        cfg = MemoryLimiter.getConfiguration(dataFile("config-default.xml"), gbToMB(14));
+        cfg = MemoryLimiter.getConfiguration(dataFile("config-default.xml"), 14 * GB);
         testConfig(cfg, 8 * GB, 4 * GB);
-        cfg = MemoryLimiter.getConfiguration(dataFile("config-default.xml"), gbToMB(8));
+        cfg = MemoryLimiter.getConfiguration(dataFile("config-default.xml"), 8 * GB);
         assertThat(cfg).isNull();
-
-        // A test configuration file matches any amount of memory. This configuration file is also
-        // used by other test cases.
-        cfg = MemoryLimiter.getConfiguration(dataFile("config-testing.xml"), 1 /* 1MB */);
-        testConfig(cfg, 1024 * MBL, 512 * MBL);
 
         // Parse an invalid XML file.  There must be an error.
         try {
-            cfg = MemoryLimiter.getConfiguration(dataFile("config-error.xml"), gbToMB(10));
+            cfg = MemoryLimiter.getConfiguration(dataFile("config-error.xml"), 10 * GB);
             fail("failed to detect XML parse error");
         } catch (IllegalArgumentException e) {
             // Success.
@@ -733,6 +713,25 @@ public class MemoryLimiterTest {
         } else {
             Thread.sleep(200);
             assertThat(helper.currentSwapMax()).isEqualTo(sProcessMemoryMax);
+        }
+
+        // Now test the manual shell command.  This goes through system_server so it cannot be done
+        // locally.  Set the limit to 975MB, which is unlikely to be confused with a valid from the
+        // currently running configuration file.
+        int limitInMB = 975;
+        shellCommand(String.format("am memory-limiter manual %d %d", helper.getPid(), limitInMB));
+        long expected = limitInMB * MB;
+        for (int i = 0; i < 100 && helper.currentMemHigh() != expected; i++) {
+            Thread.sleep(100); // Wait a bit before polling again.
+        }
+        assertThat(helper.currentMemHigh()).isEqualTo(expected);
+
+        if (Flags.memoryLimiterSwap()) {
+            // Poll until the limit is set by system_server.
+            for (int i = 0; i < 100 && helper.currentSwapMax() != expected; i++) {
+                Thread.sleep(100); // Wait a bit before polling again.
+            }
+            assertThat(helper.currentSwapMax()).isEqualTo(expected * MB);
         }
     }
 
