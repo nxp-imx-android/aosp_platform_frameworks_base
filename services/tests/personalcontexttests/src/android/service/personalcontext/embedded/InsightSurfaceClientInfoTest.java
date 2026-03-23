@@ -18,14 +18,19 @@ package android.service.personalcontext.embedded;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.os.Bundle;
 import android.os.RemoteException;
+import android.service.personalcontext.hint.BundleHint;
+import android.service.personalcontext.hint.PublishedContextHint;
 import android.service.personalcontext.insight.BundleInsight;
+import android.service.personalcontext.insight.ContextInsight;
+import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.insight.InsightCollection;
 import android.view.SurfaceControlViewHost.SurfacePackage;
 import android.view.View;
 
@@ -35,10 +40,15 @@ import androidx.test.runner.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.security.GeneralSecurityException;
+import java.util.Random;
 import java.util.UUID;
+
+import javax.crypto.spec.SecretKeySpec;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -115,7 +125,12 @@ public class InsightSurfaceClientInfoTest {
     }
 
     @Test
-    public void testOnReceiveInsight() throws RemoteException {
+    public void testOnReceiveInsight() throws RemoteException, GeneralSecurityException {
+        final String key = "key";
+        final String value = "value";
+        final String hintKey = "hintKey";
+        final String hintValue = "hintValue";
+
         final InsightSurfaceClientInfo clientInfo =
                 new InsightSurfaceClientInfo(
                         UUID.randomUUID(),
@@ -130,8 +145,83 @@ public class InsightSurfaceClientInfoTest {
                         "package.name",
                         new Configuration(),
                         mClient);
-        clientInfo.onReceiveInsight(new BundleInsight.Builder().build());
-        verify(mClient).onReceiveInsight(any());
+
+        final Bundle insightData = new Bundle();
+        insightData.putString(key, value);
+        final Bundle hintData = new Bundle();
+        hintData.putString(hintKey, hintValue);
+
+        final BundleHint hint = new BundleHint.Builder().setDataBundle(hintData).build();
+        final PublishedContextHint signedHint =
+                new PublishedContextHint.Builder(hint, generateSignedHintKey()).build();
+
+        final BundleInsight originalInsight = new BundleInsight.Builder()
+                .setDataBundle(insightData).addOriginHint(signedHint).build();
+        clientInfo.onReceiveInsight(originalInsight);
+
+        final ArgumentCaptor<ContextInsightWrapper> insightArgumentCaptor =
+                ArgumentCaptor.forClass(ContextInsightWrapper.class);
+        verify(mClient).onReceiveInsight(insightArgumentCaptor.capture());
+
+        final ContextInsight receivedInsight = insightArgumentCaptor.getValue().getContextInsight();
+
+        assertThat(receivedInsight.getInsightType()).isEqualTo(ContextInsight.INSIGHT_TYPE_BUNDLE);
+
+        final BundleInsight asBundleInsight = (BundleInsight) receivedInsight;
+        assertThat(asBundleInsight.getDataBundle().getString(key)).isEqualTo(value);
+
+        // Make sure the origin hints have been stripped.
+        assertThat(receivedInsight.getOriginHints()).isEmpty();
+    }
+
+    @Test
+    public void testOnReceiveCollectionInsight() throws RemoteException, GeneralSecurityException {
+        final InsightSurfaceClientInfo clientInfo =
+                new InsightSurfaceClientInfo(
+                        UUID.randomUUID(),
+                        0,
+                        0,
+                        0,
+                        Color.valueOf(Color.BLACK),
+                        View.SCROLL_AXIS_NONE,
+                        false,
+                        false,
+                        Resources.ID_NULL,
+                        "package.name",
+                        new Configuration(),
+                        mClient);
+
+        final BundleHint hint1 = new BundleHint.Builder().build();
+        final BundleHint hint2 = new BundleHint.Builder().build();
+
+        final PublishedContextHint signedHint1 =
+                new PublishedContextHint.Builder(hint1, generateSignedHintKey()).build();
+        final PublishedContextHint signedHint2 =
+                new PublishedContextHint.Builder(hint2, generateSignedHintKey()).build();
+
+        final BundleInsight insight1 =
+                new BundleInsight.Builder().addOriginHint(signedHint1).build();
+        final BundleInsight insight2 =
+                new BundleInsight.Builder().addOriginHint(signedHint2).build();
+
+        final InsightCollection insightCollection = new InsightCollection.Builder()
+                .addInsight(insight1).addInsight(insight2).build();
+
+        clientInfo.onReceiveInsight(insightCollection);
+
+        final ArgumentCaptor<ContextInsightWrapper> insightArgumentCaptor =
+                ArgumentCaptor.forClass(ContextInsightWrapper.class);
+        verify(mClient).onReceiveInsight(insightArgumentCaptor.capture());
+
+        final ContextInsight receivedInsight = insightArgumentCaptor.getValue().getContextInsight();
+
+        // Make sure the origin hints have been stripped from the received insight.
+        assertThat(receivedInsight.getOriginHints()).isEmpty();
+
+        // Make sure the origin hints have been stripped from the insights in the collection.
+        final InsightCollection asInsightCollection = (InsightCollection) receivedInsight;
+        assertThat(asInsightCollection.getInsights().get(0).getOriginHints()).isEmpty();
+        assertThat(asInsightCollection.getInsights().get(1).getOriginHints()).isEmpty();
     }
 
     @Test
@@ -156,5 +246,13 @@ public class InsightSurfaceClientInfoTest {
                 .build();
         final InsightSurfaceClientInfo updatedInfo = clientInfo.createInfoFromUpdate(update);
         assertThat(updatedInfo.shouldBlur()).isTrue();
+    }
+
+
+    /** Generates a key to use when signing hints. */
+    private static SecretKeySpec generateSignedHintKey() {
+        byte[] key = new byte[64];
+        new Random().nextBytes(key);
+        return new SecretKeySpec(key, PublishedContextHint.HMAC_ALGORITHM);
     }
 }

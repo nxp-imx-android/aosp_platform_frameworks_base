@@ -68,7 +68,7 @@ public final class HintInvalidationInsight extends ContextInsight {
 
     @NonNull
     @Override
-    Bundle toBundleImpl() {
+    Bundle toBundleImpl(boolean includeHints) {
         return new Bundle();
     }
 
