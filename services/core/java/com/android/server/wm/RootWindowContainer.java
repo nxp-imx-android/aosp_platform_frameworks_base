@@ -229,6 +229,8 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     DisplayManagerInternal mDisplayManagerInternal;
     @Nullable
     DisplayUpdater mDisplayUpdater;
+    @Nullable
+    DisplayUnblocker mDisplayUnblocker;
     @NonNull
     private final DeviceStateController mDeviceStateController;
     @NonNull
@@ -1155,7 +1157,8 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         mDisplayManagerInternal = LocalServices.getService(DisplayManagerInternal.class);
 
         if (com.android.window.flags.Flags.syncedDisplayModeUpdates()) {
-            mDisplayUpdater = new DisplayUpdater(this);
+            mDisplayUnblocker = new DisplayUnblocker(this);
+            mDisplayUpdater = new DisplayUpdater(this, mDisplayUnblocker);
         } else {
             mDisplayManager.registerDisplayListener(this, mService.mUiHandler);
         }

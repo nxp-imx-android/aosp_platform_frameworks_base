@@ -839,7 +839,11 @@ public class DisplayPolicy {
     }
 
     private void onDisplaySwitchFinished() {
-        mDisplayContent.mDisplayUpdater.onDisplaySwitching(false);
+        if (com.android.window.flags.Flags.syncedDisplayModeUpdates()) {
+            mService.mRoot.mDisplayUnblocker.onDefaultDisplaySwitching(false);
+        } else {
+            mDisplayContent.mDisplayUpdater.onDisplaySwitching(false);
+        }
     }
 
     public void setAwake(boolean awake) {
@@ -2392,7 +2396,11 @@ public class DisplayPolicy {
 
     /** If this is called, expect that there will be an onDisplayChanged about unique id. */
     public void onDisplaySwitchStart() {
-        mDisplayContent.mDisplayUpdater.onDisplaySwitching(true);
+        if (com.android.window.flags.Flags.syncedDisplayModeUpdates()) {
+            mService.mRoot.mDisplayUnblocker.onDefaultDisplaySwitching(true);
+        } else {
+            mDisplayContent.mDisplayUpdater.onDisplaySwitching(true);
+        }
     }
 
     /**
@@ -2403,7 +2411,11 @@ public class DisplayPolicy {
      * to this display switch from the DisplayManager like onScreenTurningOn or onDisplayChanged.
      */
     public boolean isDisplaySwitching() {
-        return mDisplayContent.mDisplayUpdater.isDisplaySwitching();
+        if (com.android.window.flags.Flags.syncedDisplayModeUpdates()) {
+            return mService.mRoot.mDisplayUnblocker.isDefaultDisplaySwitching();
+        } else {
+            return mDisplayContent.mDisplayUpdater.isDisplaySwitching();
+        }
     }
 
     boolean hasBottomNavigationBar() {
