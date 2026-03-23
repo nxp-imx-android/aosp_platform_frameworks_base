@@ -395,8 +395,12 @@ constructor(
             onBufferOverflow = BufferOverflow.DROP_OLDEST,
         )
 
-    private val _isKeyguardEnabled =
-        MutableStateFlow(!lockPatternUtils.isLockScreenDisabled(userTracker.userId))
+    /**
+     * This represents whether the keyguard is enabled according to KeyguardService. This is `true`
+     * on initialization, because the framework will only notify systemui of false after it is
+     * initialized / systemui has restarted.
+     */
+    private val _isKeyguardEnabled = MutableStateFlow(true)
     override val isKeyguardEnabled: StateFlow<Boolean> = _isKeyguardEnabled.asStateFlow()
 
     private val _canIgnoreAuthAndReturnToGone = MutableStateFlow(false)
