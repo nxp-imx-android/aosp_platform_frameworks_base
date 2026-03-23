@@ -1539,6 +1539,50 @@ public class VibrationEffectXmlSerializationTest {
     }
 
     @Test
+    public void testStartTimeMillis_allSucceed() throws Exception {
+        long startTime = 1234L;
+        String xml = """
+                <vibration-effect>
+                    <predefined-effect name="click" startTimeMs="1234"/>
+                </vibration-effect>
+                """;
+        VibrationEffect effect =
+                parseVibrationEffect(xml, VibrationXmlParser.FLAG_ALLOW_HIDDEN_APIS);
+        assertThat(effect).isInstanceOf(VibrationEffect.Composed.class);
+        VibrationEffect.Composed composed = (VibrationEffect.Composed) effect;
+        assertThat(composed.getSegments().get(0).getStartTimeMillis()).isEqualTo(startTime);
+
+        assertHiddenApisRoundTrip(effect);
+
+        xml = """
+                <vibration-effect>
+                    <waveform-effect>
+                        <waveform-entry durationMs="10" amplitude="255" startTimeMs="5678"/>
+                    </waveform-effect>
+                </vibration-effect>
+                """;
+        effect = parseVibrationEffect(xml, VibrationXmlParser.FLAG_ALLOW_HIDDEN_APIS);
+        composed = (VibrationEffect.Composed) effect;
+        assertThat(composed.getSegments().get(0).getStartTimeMillis()).isEqualTo(5678L);
+
+        assertHiddenApisRoundTrip(effect);
+
+        xml = """
+                <vibration-effect>
+                    <waveform-envelope-effect startTimeMs="9999">
+                        <control-point amplitude="0.2" frequencyHz="80.0" durationMs="10" />
+                        <control-point amplitude="0.5" frequencyHz="150.0" durationMs="10" />
+                    </waveform-envelope-effect>
+                </vibration-effect>
+                """;
+        effect = parseVibrationEffect(xml, VibrationXmlParser.FLAG_ALLOW_HIDDEN_APIS);
+        composed = (VibrationEffect.Composed) effect;
+        assertThat(composed.getSegments().get(0).getStartTimeMillis()).isEqualTo(9999L);
+
+        assertHiddenApisRoundTrip(effect);
+    }
+
+    @Test
     public void testPrimitiveDelayType_allSucceed() throws Exception {
         VibrationEffect effect = VibrationEffect.startComposition()
                 .addPrimitive(PRIMITIVE_TICK, 1.0f, 0, DELAY_TYPE_RELATIVE_START_OFFSET)
