@@ -192,8 +192,8 @@ constructor(
                 publicBuilder.subText = publicNotification.subText()
                 // The standard public version is extracted as a collapsed notification,
                 //  so avoid using bigTitle or bigText, and instead get the collapsed versions.
-                publicBuilder.title = publicNotification.title(notificationStyle, expanded = false)
-                publicBuilder.text = publicNotification.text(notificationStyle, expanded = false)
+                publicBuilder.title = publicNotification.title(expanded = false)
+                publicBuilder.text = publicNotification.text(expanded = false)
                 publicBuilder.skeletonLargeIcon =
                     publicNotification.skeletonLargeIcon(imageModelProvider)
                 // Only CallStyle has styled content that shows in the collapsed version.
@@ -231,9 +231,9 @@ constructor(
             contentBuilder.shortCriticalText = notification.shortCriticalText
         }
         contentBuilder.lastAudiblyAlertedMs = lastAudiblyAlertedMs
-        contentBuilder.profileBadgeBitmap = recoveredBuilder.getProfileBadge()
-        contentBuilder.title = notification.title(recoveredBuilder.style?.javaClass)
-        contentBuilder.text = notification.text(recoveredBuilder.style?.javaClass)
+        contentBuilder.profileBadgeBitmap = recoveredBuilder.profileBadge
+        contentBuilder.title = notification.title(expanded = true)
+        contentBuilder.text = notification.text(expanded = true)
         contentBuilder.skeletonLargeIcon = notification.skeletonLargeIcon(imageModelProvider)
         contentBuilder.oldProgress = recoveredBuilder.oldProgress(notification)
         val colorsFromNotif = recoveredBuilder.getColors(/* isHeader= */ false)
