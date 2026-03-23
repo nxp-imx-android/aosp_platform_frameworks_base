@@ -50,8 +50,8 @@ object Overlays {
 
     /**
      * The quick actions overlay hosts QuickActionPanels. These are anchored panels that are shown
-     * when a [QuickActionChip] is selected in the status bar. Examples include: IME Panel, Media
-     * Controls, Video Conferencing controls. This feature is only available on large screens.
+     * when a [QuickActionChip] is selected in the status bar. Examples include: Media Controls,
+     * Video Conferencing controls. This feature is only available on large screens.
      */
     @JvmField val QuickActions = OverlayKey("quick_actions")
 
