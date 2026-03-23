@@ -18,6 +18,8 @@ package android.view;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
+import android.annotation.TestApi;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -25,9 +27,18 @@ import android.os.Parcelable;
  *
  * @hide
  */
+// @TestApi without associated feature.
+@SuppressLint({"UnflaggedApi", "ParcelNotFinal", "ParcelCreator"})
+@TestApi
 public abstract class DisplayAddress implements Parcelable {
 
+    /**
+     * @hide
+     */
     public static final int INVALID_PORT = -1;
+    /**
+     * @hide
+     */
     public static final int INVALID_DISPLAY_ID = -1;
 
     /**
@@ -38,6 +49,8 @@ public abstract class DisplayAddress implements Parcelable {
      * @param physicalDisplayId A physical display ID.
      * @return The {@link Physical} address.
      * @see com.android.server.display.DisplayControl#getPhysicalDisplayIds
+     *
+     * @hide
      */
     @NonNull
     public static Physical fromPhysicalDisplayId(long physicalDisplayId) {
@@ -51,6 +64,8 @@ public abstract class DisplayAddress implements Parcelable {
      * @param physicalDisplayId used to identify the display uniquely.
      * @param port              the connection point of this display
      * @return DisplayAddress
+     *
+     * @hide
      */
     @NonNull
     public static DisplayAddress fromPhysicalDisplayId(long physicalDisplayId, int port,
@@ -68,6 +83,8 @@ public abstract class DisplayAddress implements Parcelable {
      * @param port A port in the range [0, 255].
      * @param model A positive integer, or {@code null} if the model cannot be identified.
      * @return The {@link Physical} address.
+     *
+     * @hide
      */
     @NonNull
     public static Physical fromPortAndModel(int port, Long model) {
@@ -79,6 +96,8 @@ public abstract class DisplayAddress implements Parcelable {
      *
      * @param macAddress A MAC address in colon notation.
      * @return The {@link Network} address.
+     *
+     * @hide
      */
     @NonNull
     public static Network fromMacAddress(String macAddress) {
@@ -90,6 +109,8 @@ public abstract class DisplayAddress implements Parcelable {
      * is not physically connected to the device - e.g. when the display is a Network display -
      * then {@link #INVALID_PORT} is returned.
      * @return The port of the display.
+     *
+     * @hide
      */
     public int getPort() {
         return INVALID_PORT;
@@ -99,7 +120,11 @@ public abstract class DisplayAddress implements Parcelable {
      * If the display is not physically connected - it will not have a physical display id and
      * therefore {@link #INVALID_DISPLAY_ID} will be returned.
      * @return The physical display id of the display.
+     *
+     * @hide
      */
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
+    @TestApi
     public long getPhysicalDisplayId() {
         return INVALID_DISPLAY_ID;
     }
@@ -109,6 +134,8 @@ public abstract class DisplayAddress implements Parcelable {
      * @param two second display address to compare
      * @return whether the displays are equal - if using Physical display addresses, allow ports to
      * be used instead to match. If using StablePhysical, match only their physical display ids.
+     *
+     * @hide
      */
     public static boolean matchInternalDisplays(DisplayAddress one, DisplayAddress two,
             boolean stableEdidsFlag) {
@@ -126,6 +153,9 @@ public abstract class DisplayAddress implements Parcelable {
         return false;
     }
 
+    /**
+     * @hide
+     */
     public static final class StablePhysical extends DisplayAddress {
         private final long mPhysicalDisplayId;
         private final int mPort;
@@ -194,6 +224,8 @@ public abstract class DisplayAddress implements Parcelable {
      * bits, uniquely identifies a display model across manufacturers by encoding EDID information.
      * While the port is always stable, the model may not be available if EDID identification is not
      * supported by the platform, in which case the address is not unique.
+     *
+     * @hide
      */
     public static final class Physical extends DisplayAddress {
         private static final long UNKNOWN_MODEL = 0;
@@ -313,6 +345,8 @@ public abstract class DisplayAddress implements Parcelable {
 
     /**
      * Address for a network-connected display.
+     *
+     * @hide
      */
     public static final class Network extends DisplayAddress {
         private final String mMacAddress;
@@ -355,6 +389,10 @@ public abstract class DisplayAddress implements Parcelable {
                 };
     }
 
+    /**
+     * @hide
+     */
+    @SuppressLint("UnflaggedApi")
     @Override
     public int describeContents() {
         return 0;
