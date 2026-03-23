@@ -311,6 +311,10 @@ constructor(
                 println("    volumeControlId=$volumeControlId cached= $playbackVolumeControlId")
                 println("    routingSession=$routingSession")
                 println("    selectedRoutes=$selectedRoutes")
+                if (fixOutputSwitcherMultiuserSupport()) {
+                    val selectedDevices = localMediaManager.mediaDevices.filter { it.isSelected }
+                    println("    selectedDevices=$selectedDevices")
+                }
                 println("    currentConnectedDevice=${localMediaManager.currentConnectedDevice}")
             }
         }
@@ -413,30 +417,41 @@ constructor(
             val connectedDevice = localMediaManager.currentConnectedDevice?.toMediaDeviceData()
             val newCurrent =
                 if (controller?.playbackInfo?.playbackType == PlaybackInfo.PLAYBACK_TYPE_REMOTE) {
-                    val routingSession =
-                        mr2manager.get().getRoutingSessionForMediaController(controller)
+                    if (fixOutputSwitcherMultiuserSupport()) {
+                        val sessionName = localMediaManager.getSessionName()
+                        (getRemoteDevice(connectedDevice, sessionName) ?: getRemoteDeviceFallback())
+                            .also { logger.logRemoteDevice(sessionName, connectedDevice) }
+                    } else {
+                        val routingSession =
+                            mr2manager.get().getRoutingSessionForMediaController(controller)
 
-                    routingSession?.let {
-                        val icon =
-                            if (it.selectedRoutes.size > 1) {
-                                MediaControlDrawables.getGroupDevice(context)
-                            } else {
-                                connectedDevice?.icon // Single route. We don't change the icon.
-                            }
-                        // For a remote session, always use the current device from
-                        // LocalMediaManager. Override with routing session information
-                        // if available:
-                        //   - Name: To show the dynamic group name.
-                        //   - Icon: To show the group icon if there's more than one
-                        // selected route.
-                        connectedDevice?.copy(name = it.name ?: connectedDevice.name, icon = icon)
-                    }
-                        ?: MediaDeviceData(
-                                enabled = false,
-                                icon = MediaControlDrawables.getHomeDevices(context),
-                                name = context.getString(R.string.media_seamless_other_device),
+                        routingSession?.let {
+                            val icon =
+                                if (it.selectedRoutes.size > 1) {
+                                    MediaControlDrawables.getGroupDevice(context)
+                                } else {
+                                    connectedDevice?.icon // Single route. We don't change the icon.
+                                }
+                            // For a remote session, always use the current device from
+                            // LocalMediaManager. Override with routing session information
+                            // if available:
+                            //   - Name: To show the dynamic group name.
+                            //   - Icon: To show the group icon if there's more than one
+                            // selected route.
+                            connectedDevice?.copy(
+                                name = it.name ?: connectedDevice.name,
+                                icon = icon,
                             )
-                            .also { logger.logRemoteDevice(routingSession?.name, connectedDevice) }
+                        }
+                            ?: MediaDeviceData(
+                                    enabled = false,
+                                    icon = MediaControlDrawables.getHomeDevices(context),
+                                    name = context.getString(R.string.media_seamless_other_device),
+                                )
+                                .also {
+                                    logger.logRemoteDevice(routingSession?.name, connectedDevice)
+                                }
+                    }
                 } else {
                     // Prefer broadcast, then SASS, if available when playback is local.
                     val broadcastDevice = getBroadcastDevice()
@@ -458,6 +473,37 @@ constructor(
                 }
             }
         }
+
+        private fun getRemoteDevice(
+            connectedDevice: MediaDeviceData?,
+            sessionName: CharSequence?,
+        ): MediaDeviceData? {
+            if (connectedDevice == null) {
+                return null
+            }
+            val isGroup = localMediaManager.mediaDevices.count { it.isSelected } > 1
+            val icon =
+                if (isGroup) {
+                    MediaControlDrawables.getGroupDevice(context)
+                } else {
+                    connectedDevice.icon // Single route. We don't change the icon.
+                }
+            val name = sessionName ?: connectedDevice.name
+            // For a remote session, always use the current device from
+            // LocalMediaManager. Override with routing session information
+            // if available:
+            //   - Name: To show the dynamic group name.
+            //   - Icon: To show the group icon if there's more than one
+            // selected route.
+            return connectedDevice.copy(name = name, icon = icon)
+        }
+
+        private fun getRemoteDeviceFallback() =
+            MediaDeviceData(
+                enabled = false,
+                icon = MediaControlDrawables.getHomeDevices(context),
+                name = context.getString(R.string.media_seamless_other_device),
+            )
 
         private fun getBroadcastDevice(): MediaDeviceData? =
             if (inBroadcast())
