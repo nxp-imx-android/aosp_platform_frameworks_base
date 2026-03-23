@@ -109,6 +109,9 @@ public class AccessController {
     /** Access to register a visualizer. */
     public static final int ACCESS_REGISTER_VISUALIZER = 1 << 11;
 
+    /** Access to bind context via permissions. */
+    public static final int ACCESS_BIND_CONTEXT_PERMISSION = 1 << 12;
+
     /** Interface to inject dependencies. */
     public interface Injector {
         /** Get {@link Resources}. */
@@ -280,6 +283,9 @@ public class AccessController {
             result &= checkPccFlag(serviceInfo);
         } else if ((accessFlags & ACCESS_PCC_OR_AUTO_COMPANION_ROLE) != 0) {
             result &= checkPccOrAutoCompanionFlag(serviceInfo);
+        } else if ((accessFlags & ACCESS_BIND_CONTEXT_PERMISSION) != 0) {
+            result &= Manifest.permission.BIND_CONTEXT_COMPONENT_SERVICE.equals(
+                    serviceInfo.permission);
         }
 
         return result & isPackageAllowed(

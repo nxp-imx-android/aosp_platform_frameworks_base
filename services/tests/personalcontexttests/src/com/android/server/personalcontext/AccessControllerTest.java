@@ -27,7 +27,9 @@ import static org.mockito.Mockito.when;
 
 import android.Manifest;
 import android.app.role.RoleManager;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
 import android.content.res.Resources;
 import android.os.UserHandle;
 import android.permission.PermissionManager;
@@ -248,6 +250,42 @@ public class AccessControllerTest {
                         | AccessController.ACCESS_RECEIVE_HINTS_ALLOWLIST
                         | AccessController.ACCESS_RECEIVE_INSIGHTS_ALLOWLIST))
                 .isFalse();
+    }
+
+    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
+    @Test
+    public void testServiceBindContextPermissionEnforced() {
+        final ServiceInfo allowedService = serviceInfo("com.foo.baz", "good_service", true);
+        final ServiceInfo deniedService = serviceInfo("com.foo.bar", "bad_service", false);
+
+        final AccessController controller = new AccessControllerBuilder().build();
+
+        assertThat(controller.isServiceAllowed(allowedService,
+                AccessController.ACCESS_BIND_CONTEXT_PERMISSION)).isTrue();
+
+        assertThat(controller.isServiceAllowed(deniedService,
+                AccessController.ACCESS_BIND_CONTEXT_PERMISSION)).isFalse();
+    }
+
+    private static ServiceInfo serviceInfo(
+            String packageName,
+            String name,
+            boolean permitBindContext
+    ) {
+        ApplicationInfo applicationInfo = new ApplicationInfo();
+        applicationInfo.packageName = packageName;
+        applicationInfo.enabled = true;
+
+        ServiceInfo serviceInfo = new ServiceInfo();
+        serviceInfo.applicationInfo = applicationInfo;
+        serviceInfo.packageName = packageName;
+        serviceInfo.name = name;
+        if (permitBindContext) {
+            serviceInfo.permission = Manifest.permission.BIND_CONTEXT_COMPONENT_SERVICE;
+        }
+        serviceInfo.enabled = true;
+
+        return serviceInfo;
     }
 
     private static class AccessControllerBuilder {

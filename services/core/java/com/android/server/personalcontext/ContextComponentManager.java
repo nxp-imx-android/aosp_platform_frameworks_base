@@ -111,7 +111,8 @@ class ContextComponentManager
                     serviceInfo,
                     AccessController.ACCESS_PCC
                             | AccessController.ACCESS_RECEIVE_HINTS_ALLOWLIST
-                            | AccessController.ACCESS_RECEIVE_HINTS_PERMISSION)) {
+                            | AccessController.ACCESS_RECEIVE_HINTS_PERMISSION
+                            | AccessController.ACCESS_BIND_CONTEXT_PERMISSION)) {
                 continue;
             }
 
@@ -135,7 +136,8 @@ class ContextComponentManager
                             | AccessController.ACCESS_RECEIVE_HINTS_ALLOWLIST
                             | AccessController.ACCESS_RECEIVE_HINTS_PERMISSION
                             | AccessController.ACCESS_PUBLISH_INSIGHTS_ALLOWLIST
-                            | AccessController.ACCESS_PUBLISH_INSIGHTS_PERMISSION)) {
+                            | AccessController.ACCESS_PUBLISH_INSIGHTS_PERMISSION
+                            | AccessController.ACCESS_BIND_CONTEXT_PERMISSION)) {
                 continue;
             }
 
@@ -159,7 +161,8 @@ class ContextComponentManager
             if (!mAccessController.isServiceAllowed(
                     serviceInfo,
                     AccessController.ACCESS_RECEIVE_INSIGHTS_ALLOWLIST
-                            | AccessController.ACCESS_RECEIVE_INSIGHTS_PERMISSION)) {
+                            | AccessController.ACCESS_RECEIVE_INSIGHTS_PERMISSION
+                            | AccessController.ACCESS_BIND_CONTEXT_PERMISSION)) {
                 continue;
             }
 

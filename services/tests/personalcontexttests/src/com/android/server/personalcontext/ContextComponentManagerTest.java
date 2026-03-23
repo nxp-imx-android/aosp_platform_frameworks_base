@@ -188,7 +188,8 @@ public class ContextComponentManagerTest {
         when(mAccessController.isServiceAllowed(eq(resolve.serviceInfo), eq(
                 AccessController.ACCESS_PCC
                         | AccessController.ACCESS_RECEIVE_HINTS_ALLOWLIST
-                        | AccessController.ACCESS_RECEIVE_HINTS_PERMISSION)))
+                        | AccessController.ACCESS_RECEIVE_HINTS_PERMISSION
+                        | AccessController.ACCESS_BIND_CONTEXT_PERMISSION)))
                 .thenReturn(true);
 
         when(mAccessController.isServiceAllowed(eq(resolve.serviceInfo), eq(
@@ -196,7 +197,8 @@ public class ContextComponentManagerTest {
                         | AccessController.ACCESS_RECEIVE_HINTS_ALLOWLIST
                         | AccessController.ACCESS_RECEIVE_HINTS_PERMISSION
                         | AccessController.ACCESS_PUBLISH_INSIGHTS_ALLOWLIST
-                        | AccessController.ACCESS_PUBLISH_INSIGHTS_PERMISSION)))
+                        | AccessController.ACCESS_PUBLISH_INSIGHTS_PERMISSION
+                        | AccessController.ACCESS_BIND_CONTEXT_PERMISSION)))
                 .thenReturn(true);
 
         when(mAccessController.isClientAllowed(any(), anyInt())).thenReturn(false);
@@ -207,7 +209,8 @@ public class ContextComponentManagerTest {
 
         when(mAccessController.isServiceAllowed(eq(resolve.serviceInfo), eq(
                 AccessController.ACCESS_RECEIVE_INSIGHTS_ALLOWLIST
-                        | AccessController.ACCESS_RECEIVE_INSIGHTS_PERMISSION)))
+                        | AccessController.ACCESS_RECEIVE_INSIGHTS_PERMISSION
+                        | AccessController.ACCESS_BIND_CONTEXT_PERMISSION)))
                 .thenReturn(true);
 
         manager.registerComponentsForAllPackages();
