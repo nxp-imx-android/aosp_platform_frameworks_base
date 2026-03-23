@@ -1944,12 +1944,15 @@ package android.app.admin {
     ctor public ProvisioningException(@NonNull Exception, int, @Nullable String);
     method public int getProvisioningError();
     field public static final int ERROR_ADMIN_PACKAGE_INSTALLATION_FAILED = 3; // 0x3
+    field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final int ERROR_INTERRUPTED = 10; // 0xa
     field public static final int ERROR_PRE_CONDITION_FAILED = 1; // 0x1
     field public static final int ERROR_PROFILE_CREATION_FAILED = 2; // 0x2
     field public static final int ERROR_REMOVE_NON_REQUIRED_APPS_FAILED = 6; // 0x6
     field public static final int ERROR_SETTING_PROFILE_OWNER_FAILED = 4; // 0x4
+    field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final int ERROR_SET_DEVICE_CONTROLLER_FAILED = 8; // 0x8
     field public static final int ERROR_SET_DEVICE_OWNER_FAILED = 7; // 0x7
     field public static final int ERROR_STARTING_PROFILE_FAILED = 5; // 0x5
+    field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final int ERROR_TIMEOUT = 9; // 0x9
     field public static final int ERROR_UNKNOWN = 0; // 0x0
   }
 

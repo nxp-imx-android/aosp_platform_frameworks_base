@@ -20,7 +20,9 @@ import static android.app.admin.DevicePolicyManager.STATUS_OK;
 import android.annotation.FlaggedApi;
 import android.app.ActivityManager;
 import android.app.admin.DevicePolicyManager;
+import android.app.admin.MultiuserDeviceProvisioningCompletion;
 import android.app.admin.MultiuserManagedDeviceProvisioningParamsTransport;
+import android.app.admin.ProvisioningException;
 import android.app.admin.flags.Flags;
 import android.content.ComponentName;
 import android.os.Binder;
@@ -323,10 +325,13 @@ final class DevicePolicyManagerServiceShellCommand extends ShellCommand {
         }
 
         final long identity = Binder.clearCallingIdentity();
+        MultiuserDeviceProvisioningCompletion completion =
+                new MultiuserDeviceProvisioningCompletion();
         try {
             mService.provisionMultiuserManagedDevice(paramsTransport,
-                    mService.mContext.getPackageName());
-        } catch (ServiceSpecificException e) {
+                    mService.mContext.getPackageName(), completion);
+            completion.waitForCompletion(/* timeoutSeconds= */ 30);
+        } catch (ProvisioningException e) {
             pw.printf("Failed to provision multiuser managed device: %s", e.getMessage());
             return 1;
         } finally {
