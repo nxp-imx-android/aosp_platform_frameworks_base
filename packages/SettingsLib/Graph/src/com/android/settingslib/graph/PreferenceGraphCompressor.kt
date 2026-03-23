@@ -181,16 +181,16 @@ object PreferenceGraphCompressor {
         if (hasParametersSchema()) setParametersSchema(mapStringsInSchema(parametersSchema, parameters, stringMapper))
         if (hasKeyParameters()) setKeyParameters(mapKeyParameterStrings(keyParameters, parameters, stringMapper))
         if (hasValueDescriptor()) setValueDescriptor(mapStringsInDescriptor(valueDescriptor, parameters, stringMapper))
-        
+
         if (hasReadPermissions()) setReadPermissions(mapStringsInPermissions(readPermissions, parameters, stringMapper))
         if (hasWritePermissions()) setWritePermissions(mapStringsInPermissions(writePermissions, parameters, stringMapper))
 
         val mappedTags = tagsList.map { stringMapper(it, parameters) }
         clearTags().addAllTags(mappedTags)
-        
+
         val mappedGetPre = getPreconditionsList.map { stringMapper(it, parameters) }
         clearGetPreconditions().addAllGetPreconditions(mappedGetPre)
-        
+
         val mappedSetPre = setPreconditionsList.map { stringMapper(it, parameters) }
         clearSetPreconditions().addAllSetPreconditions(mappedSetPre)
     }.build()

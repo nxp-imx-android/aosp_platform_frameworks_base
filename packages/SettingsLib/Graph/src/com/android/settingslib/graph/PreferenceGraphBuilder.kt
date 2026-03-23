@@ -141,7 +141,7 @@ private constructor(
     fun build(): PreferenceGraphProto {
         for ((key, screenBuilder) in screens) builder.putScreens(key, screenBuilder.build())
         builder.putAllValueDescriptors(valueDescriptors)
-        return PreferenceGraphCompressor.shrink(builder.build())
+        return builder.build()
     }
 
     /**
@@ -896,7 +896,7 @@ fun PreferenceMetadata.toProto(
                     if (failure is Disallowed) {
                         failure.getReason(context)
                     } else {
-                        "read precondition not met: missing readPermit with unknown reason - ${failure}"
+                        "read precondition not met: missing readPermit with unknown reason - ${failure} - ${readPermit}"
                     }
                 } else {
                     "read precondition not met: missing readPermit with unknown reason - ${readPermit}"
@@ -1054,7 +1054,7 @@ fun <T> PersistentPreference<T>.evalReadPermit(
     callingUid: Int,
 ): Int =
     when {
-        sensitivityLevel == DO_NOT_EXPOSE -> ReadWritePermit.DISALLOW
+        !isExposable(context) -> ReadWritePermit.DISALLOW
         getReadPermissions(context)?.check(context, callingPid, callingUid) == false ->
             ReadWritePermit.REQUIRE_APP_PERMISSION
 
