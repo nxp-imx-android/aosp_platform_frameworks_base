@@ -16,6 +16,8 @@
 
 package com.android.server.personalcontext.embedded;
 
+import static android.service.personalcontext.embedded.InsightSurfaceSessionException.ERROR_FAILED_TO_CREATE_SESSION;
+
 import android.content.Context;
 import android.os.RemoteException;
 import android.service.personalcontext.RenderToken;
@@ -80,7 +82,17 @@ public class EmbeddedInsightRenderer implements Renderer {
         }
 
         // The visualizer registry already pushes this work to the executor's thread.
-        mVisualizerRegistry.startRegisteringVisualizers();
+        mVisualizerRegistry.startRegisteringVisualizers(clientIds -> {
+            for (UUID id : clientIds) {
+                final InsightSurfaceClientInfo clientInfo = mClientRegistry.getClient(id);
+                if (clientInfo != null) {
+                    // Note that we don't unregister a client just because its connected visualizer
+                    // died.
+                    // TODO(b/485873401): Create a better error code for this case.
+                    clientInfo.onVisualizationError(ERROR_FAILED_TO_CREATE_SESSION);
+                }
+            }
+        });
 
         mIsRegistered = true;
     }

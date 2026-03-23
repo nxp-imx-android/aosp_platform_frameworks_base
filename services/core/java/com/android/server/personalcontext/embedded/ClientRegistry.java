@@ -20,6 +20,7 @@ import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.io.PrintWriter;
 import java.util.HashMap;
@@ -59,6 +60,17 @@ class ClientRegistry {
         mRenderTokensByClientId.put(clientId, renderToken);
         mClientIdsByRenderToken.put(renderToken, clientId);
         clientInfo.onRegistered();
+    }
+
+    /**
+     * Get the client with the given id.
+     *
+     * @param clientId the client to get
+     * @return the client with the given id, or {@code null} if the client was not found
+     */
+    @Nullable
+    public InsightSurfaceClientInfo getClient(UUID clientId) {
+        return mClients.get(clientId);
     }
 
     /**
