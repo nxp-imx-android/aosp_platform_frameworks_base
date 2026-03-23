@@ -31,3 +31,13 @@ flag {
     description: "Set a timeout for keyguard drawn on boot based on the config value."
     bug: "446797835"
 }
+
+flag {
+    name: "brightness_override_toast"
+    namespace: "window_manager"
+    description: "Show a toast when brightness is overridden by a window."
+    bug: "489266560"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

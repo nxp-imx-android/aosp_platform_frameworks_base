@@ -98,6 +98,7 @@ import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.autofill.AutofillManagerInternal;
+import android.widget.Toast;
 
 import com.android.dx.mockito.inline.extended.StaticMockitoSession;
 import com.android.internal.logging.MetricsLogger;
@@ -281,6 +282,7 @@ class TestPhoneWindowManager {
                 .mockStatic(KeyCharacterMap.class)
                 .mockStatic(GestureLauncherService.class)
                 .mockStatic(SystemProperties.class)
+                .mockStatic(Toast.class)
                 .strictness(Strictness.LENIENT)
                 .startMocking();
 
@@ -394,6 +396,10 @@ class TestPhoneWindowManager {
                 .when(mWindowManagerInternal).getTargetWindowTokenFromInputToken(mInputToken);
 
         doReturn(null).when(mContext).registerReceiver(any(), any());
+
+        Toast mockToast = mock(Toast.class);
+        doReturn(mockToast).when(() -> Toast.makeText(any(), any(), anyString(), anyInt()));
+        doReturn(mockToast).when(() -> Toast.makeText(any(), anyInt(), anyInt()));
 
         mPhoneWindowManager.init(new TestInjector(mContext, mWindowManagerFuncsImpl));
         mPhoneWindowManager.systemReady();
@@ -548,6 +554,23 @@ class TestPhoneWindowManager {
                 DEFAULT_DISPLAY, PowerManager.BRIGHTNESS_CONSTRAINT_TYPE_MAXIMUM);
         doReturn(currentBrightness).when(mDisplayManager)
                 .getBrightness(DEFAULT_DISPLAY);
+
+        android.hardware.display.BrightnessInfo brightnessInfo =
+                new android.hardware.display.BrightnessInfo(currentBrightness, currentBrightness,
+                        0.0f, 1.0f,
+                        android.hardware.display.BrightnessInfo.HIGH_BRIGHTNESS_MODE_OFF, 0.8f,
+                        android.hardware.display.BrightnessInfo.BRIGHTNESS_MAX_REASON_NONE,
+                        false /* isBrightnessOverrideByWindow */);
+        doReturn(brightnessInfo).when(mDisplay).getBrightnessInfo();
+    }
+
+    void prepareBrightnessOverride() {
+        android.hardware.display.BrightnessInfo brightnessInfo =
+                new android.hardware.display.BrightnessInfo(0.5f, 0.5f, 0.0f, 1.0f,
+                android.hardware.display.BrightnessInfo.HIGH_BRIGHTNESS_MODE_OFF, 0.8f,
+                android.hardware.display.BrightnessInfo.BRIGHTNESS_MAX_REASON_NONE,
+                true /* isBrightnessOverrideByWindow */);
+        doReturn(brightnessInfo).when(mDisplay).getBrightnessInfo();
     }
 
     void verifyNewBrightness(float newBrightness) {
@@ -970,5 +993,11 @@ class TestPhoneWindowManager {
         mTestLooper.dispatchAll();
         verify(mContext, never()).startActivityAsUser(any(), any(), any());
         verify(mContext, never()).startActivityAsUser(any(), any());
+    }
+
+    void assertToastShown(int resId) {
+        mTestLooper.dispatchAll();
+        String message = mContext.getString(resId);
+        verify(() -> Toast.makeText(any(), any(), eq(message), anyInt()));
     }
 }

@@ -7300,4 +7300,7 @@
 
     <!-- The label of cast to others button for Share Cast feature.  [CHAR LIMIT=30] -->
     <string name="media_route_chooser_share_cast_others">Cast to others</string>
+
+    <!-- Toast message shown when brightness is overridden by the top app and user tries to adjust it. [CHAR LIMIT=NONE] -->
+    <string name="brightness_unable_adjust_msg">Can\'t adjust brightness because it\'s being controlled by the top app</string>
 </resources>
