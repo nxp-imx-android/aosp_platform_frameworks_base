@@ -18,6 +18,14 @@ package com.android.systemui.deviceentry.domain.interactor
 
 import com.android.systemui.bouncer.domain.interactor.simBouncerInteractor
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.power.domain.interactor.powerInteractor
+import com.android.systemui.scene.domain.interactor.sceneInteractor
 
 val Kosmos.restrictedModeInteractor by
-    Kosmos.Fixture { RestrictedModeInteractor(simBouncerInteractor = { simBouncerInteractor }) }
+    Kosmos.Fixture {
+        RestrictedModeInteractor(
+            simBouncerInteractor = { simBouncerInteractor },
+            powerInteractor = powerInteractor,
+            sceneInteractor = { sceneInteractor },
+        )
+    }
