@@ -163,7 +163,7 @@ class PerDisplayInstanceRepositoryImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun allowedDisplays_lifecycleManagerReturnsEmpty_fallsBackToDefaultDisplay() =
+    fun allowedDisplays_lifecycleManagerReturnsEmpty_returnsNull() =
         testScope.runTest {
             val underTest =
                 kosmos.createPerDisplayInstanceRepository(
@@ -172,7 +172,7 @@ class PerDisplayInstanceRepositoryImplTest : SysuiTestCase() {
 
             lifecycleManager.displayIds.value = emptySet()
 
-            assertThat(underTest[DEFAULT_DISPLAY_ID]).isNotNull()
+            assertThat(underTest[DEFAULT_DISPLAY_ID]).isNull()
             assertThat(underTest[NON_DEFAULT_DISPLAY_ID]).isNull()
         }
 
@@ -192,6 +192,30 @@ class PerDisplayInstanceRepositoryImplTest : SysuiTestCase() {
             lifecycleManager.displayIds.value = setOf(DEFAULT_DISPLAY_ID, NON_DEFAULT_DISPLAY_ID)
 
             assertThat(underTest[NON_DEFAULT_DISPLAY_ID]).isNotNull()
+        }
+
+    @Test
+    fun initialValue_lifecycleManagerAllowsOnlyNonDefault_defaultIsNotAllowed() =
+        testScope.runTest {
+            lifecycleManager.displayIds.value = setOf(NON_DEFAULT_DISPLAY_ID)
+
+            val underTestWithLifecycle =
+                kosmos.createPerDisplayInstanceRepository(
+                    overrideLifecycleManager = lifecycleManager
+                )
+
+            assertThat(underTestWithLifecycle[DEFAULT_DISPLAY_ID]).isNull()
+            assertThat(underTestWithLifecycle[NON_DEFAULT_DISPLAY_ID]).isNotNull()
+        }
+
+    @Test
+    fun initialValue_noLifecycleManager_containsAllDisplaysFromRepository() =
+        testScope.runTest {
+            val underTestWithoutLifecycle =
+                kosmos.createPerDisplayInstanceRepository(overrideLifecycleManager = null)
+
+            assertThat(underTestWithoutLifecycle[DEFAULT_DISPLAY_ID]).isNotNull()
+            assertThat(underTestWithoutLifecycle[NON_DEFAULT_DISPLAY_ID]).isNotNull()
         }
 
     @Test
