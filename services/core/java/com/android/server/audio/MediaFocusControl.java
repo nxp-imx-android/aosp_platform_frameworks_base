@@ -424,7 +424,7 @@ public class MediaFocusControl implements PlayerFocusEnforcer {
      */
     private static final int MAX_STACK_SIZE = 100;
 
-    private static final EventLogger
+    private final EventLogger
             mEventLogger = new EventLogger(50,
             "focus commands as seen by MediaFocusControl");
 
