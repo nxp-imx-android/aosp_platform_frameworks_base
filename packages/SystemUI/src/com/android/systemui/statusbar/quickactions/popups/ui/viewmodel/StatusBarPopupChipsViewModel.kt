@@ -19,7 +19,8 @@ package com.android.systemui.statusbar.quickactions.popups.ui.viewmodel
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
-import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.statusbar.pipeline.shared.domain.interactor.StatusBarVisibilityInteractor
 import com.android.systemui.statusbar.quickactions.assistant.StatusBarAssistantIcon
 import com.android.systemui.statusbar.quickactions.assistant.ui.viewmodel.AssistantIconViewModel
 import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.AvControlsChipViewModel
@@ -48,13 +49,14 @@ class StatusBarPopupChipsViewModel
 constructor(
     @Assisted private val displayId: Int,
     private val quickActionsInteractor: QuickActionsInteractor,
+    private val statusBarVisibilityInteractor: StatusBarVisibilityInteractor,
     mediaControlChipFactory: MediaControlChipViewModel.Factory,
     avControlsChipFactory: AvControlsChipViewModel.Factory,
     shareScreenPrivacyIndicatorFactory: ShareScreenPrivacyIndicatorViewModel.Factory,
     assistantIconFactory: AssistantIconViewModel.Factory,
     imeIndicatorChipFactory: ImeIndicatorChipViewModel.Factory,
     largeScreenRecordingChipViewModelFactory: LargeScreenRecordingChipViewModel.Factory,
-) : ExclusiveActivatable() {
+) : HydratedActivatable() {
 
     private val mediaControlChip by lazy { mediaControlChipFactory.create() }
     private val avControlsChip by lazy { avControlsChipFactory.create() }
@@ -67,7 +69,12 @@ constructor(
 
     /** The ID of the current chip that is currently active, or `null` if no chip is active. */
     private val currentActiveQuickActionId: QuickActionChipId?
-        get() = quickActionsInteractor.activePanel?.chipId
+        get() = quickActionsInteractor.activePanel?.chipId.takeIf { isShadeWindowOnThisDisplay }
+
+    private val isShadeWindowOnThisDisplay by
+        statusBarVisibilityInteractor.isShadeWindowOnThisDisplay.hydratedStateOf(
+            traceName = "isShadeWindowOnThisDisplay"
+        )
 
     private val incomingQuickActionChipBundle: QuickActionChipBundle by derivedStateOf {
         QuickActionChipBundle(
