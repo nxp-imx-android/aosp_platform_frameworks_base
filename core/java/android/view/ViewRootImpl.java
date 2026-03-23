@@ -3143,7 +3143,8 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     private void destroySurface() {
-        if (mBoundsLayer != null) {
+        // Keep bounds layer if it's currently nested within a cached surface.
+        if (mBoundsLayer != null && mCachedSurfaceControl == null) {
             mBoundsLayer.release();
             mBoundsLayer = null;
         }
@@ -10898,6 +10899,10 @@ public final class ViewRootImpl implements ViewParent,
             mOnBackInvokedDispatcher.detachFromWindow();
             removeVrrMessages();
 
+            if (mCachedSurfaceControl != null) {
+                mCachedSurfaceControl.release();
+                mCachedSurfaceControl = null;
+            }
             if (mAdded) {
                 dispatchDetachedFromWindow();
             }
@@ -10923,10 +10928,6 @@ public final class ViewRootImpl implements ViewParent,
                     }
 
                     destroySurface();
-                    if (mCachedSurfaceControl != null) {
-                        mCachedSurfaceControl.release();
-                        mCachedSurfaceControl = null;
-                    }
                 }
             }
 
