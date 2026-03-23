@@ -67,7 +67,12 @@ constructor(
             verticalChange,
         )
         val finalBounds = wmHelper.getWindowRegion(mailAppHelper).bounds
-        assertWindowExpandedFromTopRight(initialBounds, finalBounds)
+        assertWindowResizedFromTopRight(
+            initialBounds,
+            finalBounds,
+            horizontalChange,
+            verticalChange,
+        )
     }
 
     @After
