@@ -37,7 +37,6 @@ import static org.mockito.Mockito.when;
 import android.graphics.Insets;
 import android.graphics.Point;
 import android.os.Looper;
-import android.platform.test.annotations.EnableFlags;
 import android.view.IWindowManager;
 import android.view.InsetsSource;
 import android.view.InsetsSourceControl;
@@ -47,7 +46,6 @@ import android.view.inputmethod.ImeTracker;
 
 import androidx.test.filters.SmallTest;
 
-import com.android.wm.shell.Flags;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.shared.TransactionPool;
 import com.android.wm.shell.sysui.ShellInit;
@@ -175,7 +173,6 @@ public class DisplayImeControllerTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_RETRY_IME_ANIMATION_ON_LEASH_READY)
     public void insetsControlChanged_retryAnimationIfLeashReady() {
         Looper.prepare();
         var mockPp = mock(DisplayImeController.ImePositionProcessor.class);

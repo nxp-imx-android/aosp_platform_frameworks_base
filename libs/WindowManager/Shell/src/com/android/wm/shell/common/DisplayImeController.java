@@ -409,14 +409,12 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
             }
             mImeSourceControl = imeSourceControl;
 
-            if (com.android.wm.shell.Flags.retryImeAnimationOnLeashReady()) {
-                final boolean shouldRetry = mAnimationDirection == DIRECTION_NONE
-                        && mImeRequestedVisible && !hadImeLeash && hasImeLeash;
-                if (shouldRetry) {
-                    ProtoLog.i(WM_SHELL_IME_CONTROLLER,
-                            "IME leash was null but became non-null, retrying startAnimation");
-                    pendingImeStartAnimation = true;
-                }
+            final boolean shouldRetry = mAnimationDirection == DIRECTION_NONE
+                    && mImeRequestedVisible && !hadImeLeash && hasImeLeash;
+            if (shouldRetry) {
+                ProtoLog.i(WM_SHELL_IME_CONTROLLER,
+                        "IME leash was null but became non-null, retrying startAnimation");
+                pendingImeStartAnimation = true;
             }
 
             if (pendingImeStartAnimation) {
