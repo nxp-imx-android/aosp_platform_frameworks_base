@@ -106,6 +106,7 @@ import java.util.UUID;
 @SystemApi
 public final class PersonalContextManager {
     /** The name of the Personal Context service. */
+    // TODO(b/492278434): deprecate then remove this redundant constant
     public static final String PERSONAL_CONTEXT_SERVICE = "personal_context";
 
     private static final String TAG = "PersonalContextManager";
