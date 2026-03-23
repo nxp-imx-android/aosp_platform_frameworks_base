@@ -291,7 +291,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
     // === Test for app side APIs ===
 
     /** Test for {@link android.content.pm.ShortcutManager#getMaxShortcutCountForActivity()} */
-    public void disabled_testGetMaxDynamicShortcutCount() {
+    @Test
+    public void testGetMaxDynamicShortcutCount() {
         assertEquals(MAX_SHORTCUTS, mManager.getMaxShortcutCountForActivity());
     }
 
@@ -828,7 +829,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         assertEquals(2, mManager.getRemainingCallCount());
     }
 
-    public void disabled_testDeleteAllDynamicShortcuts() {
+    @Test
+    public void testDeleteAllDynamicShortcuts() {
         final ShortcutInfo si1 = makeShortcut("shortcut1");
         final ShortcutInfo si2 = makeShortcut("shortcut2");
         final ShortcutInfo si3 = makeShortcut("shortcut3");
@@ -1072,7 +1074,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
 */
     }
 
-    public void disabled_testCleanupDanglingBitmaps() throws Exception {
+    @Test
+    public void testCleanupDanglingBitmaps() throws Exception {
         assertBitmapDirectories(USER_10, EMPTY_STRINGS);
         assertBitmapDirectories(USER_11, EMPTY_STRINGS);
 
@@ -1740,7 +1743,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
                 "s2");
     }
 
-    public void disabled_testCachedShortcuts_accessShortcutsPermission() {
+    @Test
+    public void testCachedShortcuts_accessShortcutsPermission() {
         runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
             assertTrue(mManager.setDynamicShortcuts(list(makeShortcut("s1"),
                     makeLongLivedShortcut("s2"), makeLongLivedShortcut("s3"),
@@ -1782,7 +1786,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         assertShortcutIds(mManager.getShortcuts(ShortcutManager.FLAG_MATCH_CACHED), "s3");
     }
 
-    public void disabled_testCachedShortcuts_canPassShortcutLimit() {
+    @Test
+    public void testCachedShortcuts_canPassShortcutLimit() {
         // Change the max number of shortcuts.
         mService.updateConfigurationLocked(ConfigConstants.KEY_MAX_SHORTCUTS + "=4");
 
@@ -2404,7 +2409,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
      * This is similar to the above test, except it used "disable" instead of "remove".  It also
      * does "enable".
      */
-    public void disabled_testDisableAndEnableShortcuts() {
+    @Test
+    public void testDisableAndEnableShortcuts() {
         runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
             final ShortcutInfo s1_1 = makeShortcutWithTimestamp("s1", 1000);
             final ShortcutInfo s1_2 = makeShortcutWithTimestamp("s2", 2000);
@@ -2529,7 +2535,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void disabled_testDisableShortcuts_thenRepublish() {
+    @Test
+    public void testDisableShortcuts_thenRepublish() {
         runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
             assertTrue(mManager.setDynamicShortcuts(list(
                     makeShortcut("s1"), makeShortcut("s2"), makeShortcut("s3"))));
@@ -4787,7 +4794,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
                 ShortcutQuery.FLAG_GET_DYNAMIC), "s10_1", "s10_2");
     }
 
-    public void disabled_testCleanupPackage() {
+    @Test
+    public void testCleanupPackage() {
         runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
             assertTrue(mManager.setDynamicShortcuts(list(
                     makeShortcut("s0_1"))));
@@ -5064,7 +5072,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         mService.saveDirtyInfo();
     }
 
-    public void disabled_testCleanupPackage_republishManifests() {
+    @Test
+    public void testCleanupPackage_republishManifests() {
         addManifestShortcutResource(
                 new ComponentName(CALLING_PACKAGE_1, ShortcutActivity.class.getName()),
                 R.xml.shortcut_2);
@@ -5405,7 +5414,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         assertEquals(expected, spi.canRestoreTo(mService, pi, true));
     }
 
-    public void disabled_testCanRestoreTo() {
+    @Test
+    public void testCanRestoreTo() {
         addPackage(CALLING_PACKAGE_1, CALLING_UID_1, 10, "sig1");
         addPackage(CALLING_PACKAGE_2, CALLING_UID_2, 10, "sig1", "sig2");
         addPackage(CALLING_PACKAGE_3, CALLING_UID_3, 10, "sig1");
@@ -6355,7 +6365,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         checkBackupAndRestore_success(/*firstRestore=*/ true);
     }
 
-    public void disabled_testBackupAndRestore_restoreToSuperSetSignatures() {
+    @Test
+    public void testBackupAndRestore_restoreToSuperSetSignatures() {
         prepareForBackupTest();
 
         // Change package signatures.
