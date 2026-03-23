@@ -35,6 +35,7 @@ import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper
 import androidx.test.filters.SmallTest
 import com.android.media.flags.Flags.FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT
+import com.android.media.flags.Flags.fixOutputSwitcherMultiuserSupport
 import com.android.settingslib.bluetooth.LocalBluetoothLeBroadcast
 import com.android.settingslib.bluetooth.LocalBluetoothManager
 import com.android.settingslib.bluetooth.LocalBluetoothProfileManager
@@ -49,6 +50,7 @@ import com.android.systemui.Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI
 import com.android.systemui.Flags.enableSuggestedDeviceUi
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.media.controls.MediaTestUtils
+import com.android.systemui.media.controls.shared.MediaControlDrawables
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.controls.shared.model.MediaDeviceData
 import com.android.systemui.media.controls.shared.model.SuggestionData
@@ -74,6 +76,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.clearInvocations
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -129,6 +132,7 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
     @Mock private lateinit var listener: MediaDeviceManager.Listener
     @Mock private lateinit var device: MediaDevice
     @Mock private lateinit var icon: Drawable
+    @Mock private lateinit var groupDrawable: Drawable
     @Mock private lateinit var routingSession: RoutingSessionInfo
     @Mock private lateinit var selectedRoute: MediaRoute2Info
     @Mock private lateinit var controller: MediaController
@@ -199,6 +203,10 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         context.orCreateTestableResources.addOverride(
             com.android.settingslib.R.drawable.ic_media_speaker_device,
             icon,
+        )
+        context.orCreateTestableResources.addOverride(
+            com.android.settingslib.R.drawable.ic_media_group_device,
+            groupDrawable,
         )
         whenever(sdm.getSuggestedDevice()).thenReturn(suggestedDeviceState1)
 
@@ -322,7 +330,11 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         // WHEN media data is loaded with a different token
         // AND that token results in a null route
         whenever(playbackInfo.playbackType).thenReturn(PlaybackInfo.PLAYBACK_TYPE_REMOTE)
-        whenever(mr2.getRoutingSessionForMediaController(any())).thenReturn(null)
+        if (fixOutputSwitcherMultiuserSupport()) {
+            whenever(lmm.currentConnectedDevice).thenReturn(null)
+        } else {
+            whenever(mr2.getRoutingSessionForMediaController(any())).thenReturn(null)
+        }
         val data = loadMediaAndCaptureDeviceData()
 
         // THEN the device should be disabled
@@ -591,6 +603,72 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
     }
 
     @Test
+    @EnableFlags(FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
+    fun onMediaDataLoaded_withRemotePlaybackType_noCurrentDevice_returnsOtherDevice() {
+        whenever(playbackInfo.playbackType).thenReturn(PlaybackInfo.PLAYBACK_TYPE_REMOTE)
+        whenever(lmm.getCurrentConnectedDevice()).thenReturn(null)
+
+        val data = loadMediaAndCaptureDeviceData()
+
+        assertThat(data.enabled).isFalse()
+        assertThat(data.name).isEqualTo(context.getString(R.string.media_seamless_other_device))
+    }
+
+    @Test
+    @EnableFlags(FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
+    fun onMediaDataLoaded_withRemotePlaybackType_singleDevicePlayback_usesDeviceIcon() {
+        whenever(playbackInfo.playbackType).thenReturn(PlaybackInfo.PLAYBACK_TYPE_REMOTE)
+        // Only 1 selected device - no group playback
+        val device1 = mock<MediaDevice> { on { isSelected } doReturn true }
+        whenever(lmm.mediaDevices).thenReturn(listOf(device1))
+
+        val data = loadMediaAndCaptureDeviceData()
+
+        assertThat(data.enabled).isTrue()
+        assertThat(data.icon).isEqualTo(icon) // A device icon, not the group one.
+    }
+
+    @Test
+    @EnableFlags(FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
+    fun onMediaDataLoaded_withRemotePlaybackType_groupDevicePlayback_usesGroupIcon() {
+        whenever(playbackInfo.playbackType).thenReturn(PlaybackInfo.PLAYBACK_TYPE_REMOTE)
+        // 2 selected devices - group playback
+        val device1 = mock<MediaDevice> { on { isSelected } doReturn true }
+        val device2 = mock<MediaDevice> { on { isSelected } doReturn true }
+        whenever(lmm.mediaDevices).thenReturn(listOf(device1, device2))
+
+        val data = loadMediaAndCaptureDeviceData()
+
+        assertThat(data.enabled).isTrue()
+        assertThat(data.icon).isEqualTo(MediaControlDrawables.getGroupDevice(context))
+    }
+
+    @Test
+    @EnableFlags(FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
+    fun onMediaDataLoaded_withRemotePlaybackType_hasSessionName_usesSessionName() {
+        whenever(playbackInfo.playbackType).thenReturn(PlaybackInfo.PLAYBACK_TYPE_REMOTE)
+        whenever(lmm.sessionName).thenReturn("Session name")
+
+        val data = loadMediaAndCaptureDeviceData()
+
+        assertThat(data.enabled).isTrue()
+        assertThat(data.name).isEqualTo("Session name")
+    }
+
+    @Test
+    @EnableFlags(FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
+    fun onMediaDataLoaded_withRemotePlaybackType_noSessionName_usesDeviceName() {
+        whenever(playbackInfo.playbackType).thenReturn(PlaybackInfo.PLAYBACK_TYPE_REMOTE)
+        whenever(lmm.sessionName).thenReturn(null)
+
+        val data = loadMediaAndCaptureDeviceData()
+
+        assertThat(data.enabled).isTrue()
+        assertThat(data.name).isEqualTo(DEVICE_NAME)
+    }
+
+    @Test
+    @DisableFlags(FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
     fun onMediaDataLoaded_withRemotePlaybackType_usesNonNullRoutingSessionName() {
         // GIVEN that MR2Manager returns a valid routing session
         whenever(routingSession.name).thenReturn(REMOTE_DEVICE_NAME)
@@ -603,6 +681,7 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
     }
 
     @Test
+    @DisableFlags(FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
     fun onMediaDataLoaded_withRemotePlaybackType_usesNonNullRoutingSessionName_drawableReused() {
         whenever(routingSession.name).thenReturn(REMOTE_DEVICE_NAME)
         whenever(routingSession.selectedRoutes).thenReturn(listOf("selectedRoute", "selectedRoute"))
@@ -616,6 +695,7 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
     }
 
     @Test
+    @DisableFlags(FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
     fun onMediaDataLoaded_withRemotePlaybackInfo_noMatchingRoutingSession_returnsOtherDevice() {
         // GIVEN that MR2Manager returns null for routing session
         whenever(playbackInfo.playbackType).thenReturn(PlaybackInfo.PLAYBACK_TYPE_REMOTE)
@@ -628,6 +708,7 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
     }
 
     @Test
+    @DisableFlags(FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
     fun onMediaDataLoaded_withRemotePlaybackInfo_noMatchingRoutingSession() {
         whenever(playbackInfo.playbackType).thenReturn(PlaybackInfo.PLAYBACK_TYPE_REMOTE)
         whenever(mr2.getRoutingSessionForMediaController(any())).thenReturn(null)
@@ -641,6 +722,7 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
     }
 
     @Test
+    @DisableFlags(FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
     fun onSelectedDeviceStateChanged_withRemotePlaybackInfo_noMatchingRoutingSession_returnOtherDevice() {
         // GIVEN a notif is added
         loadMediaAndCaptureDeviceData()
@@ -660,6 +742,7 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
     }
 
     @Test
+    @DisableFlags(FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
     fun onDeviceListUpdate_withRemotePlaybackInfo_noMatchingRoutingSession_returnsOtherDevice() {
         // GIVEN a notif is added
         loadMediaAndCaptureDeviceData()
@@ -680,6 +763,7 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_LE_AUDIO_SHARING)
+    @DisableFlags(FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
     fun onDeviceListUpdate_withBroadcastOnAndRemotePlaybackType_usesNonNullRoutingSessionName() {
         // GIVEN a notif is added
         loadMediaAndCaptureDeviceData()
@@ -738,24 +822,33 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         whenever(controller.getPlaybackInfo()).thenReturn(playbackInfo)
         // GIVEN a controller with local playback type
         loadMediaAndCaptureDeviceData()
-        reset(mr2)
+        if (!fixOutputSwitcherMultiuserSupport()) {
+            reset(mr2)
+        }
         // WHEN onAudioInfoChanged fires with remote playback type
         whenever(playbackInfo.getPlaybackType()).thenReturn(PlaybackInfo.PLAYBACK_TYPE_REMOTE)
         val captor = argumentCaptor<MediaController.Callback>()
         verify(controller).registerCallback(captor.capture())
         captor.firstValue.onAudioInfoChanged(playbackInfo)
         // THEN the route is checked
-        verify(mr2).getRoutingSessionForMediaController(eq(controller))
+        if (fixOutputSwitcherMultiuserSupport()) {
+            verify(lmm).getSessionName()
+        } else {
+            verify(mr2).getRoutingSessionForMediaController(eq(controller))
+        }
     }
 
     @Test
+    @DisableFlags(FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
     fun onAudioInfoChanged_withRemotePlaybackInfo_queriesRoutingSession() {
         whenever(playbackInfo.getPlaybackType()).thenReturn(PlaybackInfo.PLAYBACK_TYPE_LOCAL)
         whenever(playbackInfo.getVolumeControlId()).thenReturn(null)
         whenever(controller.getPlaybackInfo()).thenReturn(playbackInfo)
         // GIVEN a controller with local playback type
         loadMediaAndCaptureDeviceData()
-        reset(mr2)
+        if (!fixOutputSwitcherMultiuserSupport()) {
+            reset(mr2)
+        }
         // WHEN onAudioInfoChanged fires with a volume control id change
         whenever(playbackInfo.getVolumeControlId()).thenReturn("placeholder id")
         whenever(playbackInfo.playbackType).thenReturn(PlaybackInfo.PLAYBACK_TYPE_REMOTE)
@@ -763,7 +856,11 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         verify(controller).registerCallback(captor.capture())
         captor.firstValue.onAudioInfoChanged(playbackInfo)
         // THEN the routing session is checked
-        verify(mr2).getRoutingSessionForMediaController(eq(controller))
+        if (fixOutputSwitcherMultiuserSupport()) {
+            verify(lmm).getSessionName()
+        } else {
+            verify(mr2).getRoutingSessionForMediaController(eq(controller))
+        }
     }
 
     @Test
@@ -772,13 +869,21 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         whenever(controller.getPlaybackInfo()).thenReturn(playbackInfo)
         // GIVEN a controller with remote playback type
         loadMediaAndCaptureDeviceData()
-        reset(mr2)
+        if (fixOutputSwitcherMultiuserSupport()) {
+            clearInvocations(lmm)
+        } else {
+            reset(mr2)
+        }
         // WHEN onAudioInfoChanged fires with remote playback type
         val captor = argumentCaptor<MediaController.Callback>()
         verify(controller).registerCallback(captor.capture())
         captor.firstValue.onAudioInfoChanged(playbackInfo)
         // THEN the route is not checked
-        verify(mr2, never()).getRoutingSessionForMediaController(eq(controller))
+        if (fixOutputSwitcherMultiuserSupport()) {
+            verify(lmm, never()).getSessionName()
+        } else {
+            verify(mr2, never()).getRoutingSessionForMediaController(eq(controller))
+        }
     }
 
     @Test
