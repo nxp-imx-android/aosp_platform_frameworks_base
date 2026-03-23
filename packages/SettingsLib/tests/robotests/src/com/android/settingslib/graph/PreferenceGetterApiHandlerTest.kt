@@ -115,12 +115,12 @@ class PreferenceGetterApiHandlerTest {
             key = "preference_key"
             enabled = true
             available = true
-            indexable = true
             restricted = false
             purpose = R.string.preference_purpose
             persistent = true
             sensitivityLevel = SensitivityLevel.NO_SENSITIVITY
             writable = true
+            addGetPreconditions("availability description")
             readPermissions = Permissions.allOf(
                 INTERACT_ACROSS_USERS
             ).toProto()
