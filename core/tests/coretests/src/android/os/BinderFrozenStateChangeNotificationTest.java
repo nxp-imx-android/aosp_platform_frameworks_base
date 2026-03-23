@@ -50,6 +50,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Queue;
+import java.util.concurrent.Executor;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -220,6 +221,23 @@ public class BinderFrozenStateChangeNotificationTest {
         assertThrows(IllegalArgumentException.class, () -> {
             mBfsccTestAppCmdService.asBinder().removeFrozenStateChangeCallback(callback);
         });
+    }
+
+    @Test
+    public void reproduceWeakReferenceOverflow() throws Exception {
+        Assume.assumeTrue(BinderProxy.isFrozenStateChangeCallbackSupported());
+        final IBinder binder = mBfsccTestAppCmdService.asBinder();
+        IBinder.FrozenStateChangeCallback callback = (IBinder who, int state) -> {};
+        Executor executor = new HandlerExecutor(Handler.getMain());
+
+        // The JNI weak global reference table has a limit of 51,200.
+        // Adding the same callback 70,000 times should trigger an overflow if not de-duped.
+        for (int i = 0; i < 70000; i++) {
+            if (i % 1000 == 0) {
+                Log.i(TAG, "Registered " + i + " callbacks");
+            }
+            binder.addFrozenStateChangeCallback(executor, callback);
+        }
     }
 
     @After

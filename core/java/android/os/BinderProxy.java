@@ -710,7 +710,9 @@ public final class BinderProxy implements IBinder {
     public void addFrozenStateChangeCallback(Executor executor, FrozenStateChangeCallback callback)
             throws RemoteException {
         if (sUseExecutorForFrozenStateChangeCallback) {
-            mFrozenStateChangeCallbackExecutors.put(callback, executor);
+            if (mFrozenStateChangeCallbackExecutors.put(callback, executor) != null) {
+                return;
+            }
             try {
                 addFrozenStateChangeCallbackNative(callback);
             } catch (Throwable e) {
