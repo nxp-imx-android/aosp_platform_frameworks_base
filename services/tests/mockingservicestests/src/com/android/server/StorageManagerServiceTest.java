@@ -31,10 +31,15 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.ActivityManager;
+import android.app.AppOpsManager;
+import android.app.IActivityManager;
 import android.app.PropertyInvalidatedCache;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.IVold;
 import android.os.SystemProperties;
 import android.os.UserManager;
@@ -61,6 +66,7 @@ public class StorageManagerServiceTest {
     private StorageManagerInternal mStorageManagerInternal;
     private UserManager mUserManager;
     private IVold mVold;
+    private PackageManager mPackageManager;
 
     private static final int TEST_USER_ID = 1001;
     private static final int SECOND_TEST_USER_ID = 1002;
@@ -69,6 +75,7 @@ public class StorageManagerServiceTest {
     public final ExtendedMockitoRule mExtendedMockitoRule = new ExtendedMockitoRule.Builder(this)
             .spyStatic(UserManager.class)
             .spyStatic(SystemProperties.class)
+            .spyStatic(ActivityManager.class)
             .build();
 
     @Before
@@ -79,7 +86,12 @@ public class StorageManagerServiceTest {
         doNothing().when(() -> UserManager.invalidateIsUserUnlockedCache());
 
         mVold = mock(IVold.class);
-        mStorageManagerService = spy(new StorageManagerService(mRealContext));
+
+        Context contextSpy = spy(mRealContext);
+        mPackageManager = mock(PackageManager.class);
+        when(contextSpy.getPackageManager()).thenReturn(mPackageManager);
+
+        mStorageManagerService = spy(new StorageManagerService(contextSpy));
         // Inject mock vold
         doReturn(mVold).when(mStorageManagerService).getVold();
 
@@ -183,5 +195,46 @@ public class StorageManagerServiceTest {
                 .thenReturn(true);
 
         mStorageManagerService.mount(watchedVolumeInfo.getId());
+    }
+
+    @Test
+    public void testOnAppOpsChanged_killAppForOpChange_normalUid() throws Exception {
+        IActivityManager am = mock(IActivityManager.class);
+        doReturn(am).when(() -> ActivityManager.getService());
+
+        int normalUid = 10050;
+        when(mPackageManager.getAppUidForPrivateComputeCoreUid(normalUid))
+                .thenReturn(android.os.Process.INVALID_UID);
+
+        mStorageManagerInternal.onAppOpsChanged(
+                AppOpsManager.OP_MANAGE_EXTERNAL_STORAGE,
+                normalUid,
+                "com.example.app",
+                AppOpsManager.MODE_IGNORED,
+                AppOpsManager.MODE_ALLOWED);
+
+        // getAppId(10050) should return 10050
+        verify(am).killUid(eq(10050), eq(android.os.UserHandle.USER_ALL), anyString());
+    }
+
+    @Test
+    public void testOnAppOpsChanged_killAppForOpChange_pccUid() throws Exception {
+        IActivityManager am = mock(IActivityManager.class);
+        doReturn(am).when(() -> ActivityManager.getService());
+
+        int pccUid = 30000;
+        int appUid = 10050;
+        when(mPackageManager.getAppUidForPrivateComputeCoreUid(pccUid))
+                .thenReturn(appUid);
+
+        mStorageManagerInternal.onAppOpsChanged(
+                AppOpsManager.OP_MANAGE_EXTERNAL_STORAGE,
+                pccUid,
+                "com.example.app",
+                AppOpsManager.MODE_IGNORED,
+                AppOpsManager.MODE_ALLOWED);
+
+        // getAppId(30000) should return UserHandle.getAppId(10050) = 10050
+        verify(am).killUid(eq(10050), eq(android.os.UserHandle.USER_ALL), anyString());
     }
 }
