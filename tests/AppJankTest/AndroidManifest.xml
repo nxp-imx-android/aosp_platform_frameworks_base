@@ -18,7 +18,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="android.app.jank.tests">
 
-    <application android:appCategory="news">
+    <application android:appCategory="news"
+                 android:debuggable="true">
         <activity android:name=".JankTrackerActivity"
                   android:exported="true"
                   android:label="JankTrackerActivity"
