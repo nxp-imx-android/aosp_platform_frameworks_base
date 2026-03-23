@@ -193,7 +193,7 @@ constructor(
                 // The standard public version is extracted as a collapsed notification,
                 //  so avoid using bigTitle or bigText, and instead get the collapsed versions.
                 publicBuilder.title = publicNotification.title(notificationStyle, expanded = false)
-                publicBuilder.text = publicNotification.text()
+                publicBuilder.text = publicNotification.text(notificationStyle, expanded = false)
                 publicBuilder.skeletonLargeIcon =
                     publicNotification.skeletonLargeIcon(imageModelProvider)
                 // Only CallStyle has styled content that shows in the collapsed version.
