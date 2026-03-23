@@ -539,14 +539,12 @@ constructor(
                     insetSourceFlags = insetSourceFlags or FLAG_FORCE_CONSUMING
                 }
             }
-            if (DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS.isTrue) {
-                if (shouldExcludeCaptionFromAppBounds) {
-                    shouldSetAppBounds = true
-                } else {
-                    // Always force-consume the caption bar insets for maximum app compatibility,
-                    // including non-immersive apps that just don't handle caption insets properly.
-                    insetSourceFlags = insetSourceFlags or FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR
-                }
+            if (shouldExcludeCaptionFromAppBounds) {
+                shouldSetAppBounds = true
+            } else {
+                // Always force-consume the caption bar insets for maximum app compatibility,
+                // including non-immersive apps that just don't handle caption insets properly.
+                insetSourceFlags = insetSourceFlags or FLAG_FORCE_CONSUMING_OPAQUE_CAPTION_BAR
             }
             inputFeatures =
                 inputFeatures or WindowManager.LayoutParams.INPUT_FEATURE_DISPLAY_TOPOLOGY_AWARE
