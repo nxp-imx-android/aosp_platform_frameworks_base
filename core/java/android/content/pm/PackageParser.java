@@ -2624,7 +2624,8 @@ public class PackageParser {
             return Build.VERSION_CODES.CUR_DEVELOPMENT;
         }
 
-        // STOPSHIP: hack for the pre-release SDK
+        // TODO(b/493868910): hack for the pre-release SDK, we will remove the incompatible
+        // pre-release SDK check completely after CinnamonBun is released.
         if (platformSdkCodenames.length == 0 && "CinnamonBun".equals(targetCode)) {
             Slog.w(TAG, "Package requires development platform " + targetCode
                     + ", returning current version " + Build.VERSION.SDK_INT);
@@ -2702,7 +2703,8 @@ public class PackageParser {
             return Build.VERSION_CODES.CUR_DEVELOPMENT;
         }
 
-        // STOPSHIP: hack for the pre-release SDK
+        // TODO(b/493868910): hack for the pre-release SDK, we will remove the incompatible
+        // pre-release SDK check completely after CinnamonBun is released.
         if (platformSdkCodenames.length == 0 && "CinnamonBun".equals(minCode)) {
             Slog.w(TAG, "Package requires min development platform " + minCode
                     + ", returning current version " + Build.VERSION.SDK_INT);
