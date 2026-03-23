@@ -537,7 +537,7 @@ private constructor(
             val parameterToUse = scope.parameters.values.first()
 
             this@PreferencesApiScreen.allPossibleParameters = { context ->
-                parameterToUse.type.getOptions(context).mapNotNull { parameterOption ->
+                parameterToUse.type.getCachedOptions(context).mapNotNull { parameterOption ->
                     parameterOption.first?.let {
                         this@PreferencesApiScreen.parametersSchema!!.prepare(
                             parameterToUse.name.safe() to it

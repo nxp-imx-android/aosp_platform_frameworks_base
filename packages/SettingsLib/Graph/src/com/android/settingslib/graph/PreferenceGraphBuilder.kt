@@ -1184,7 +1184,7 @@ private fun ApiType<*, *>.toProto(
 
         if (this@toProto is FiniteOptionsType<*, *>) {
             runBlocking {
-                this@toProto.getOptions(context).forEach {
+                this@toProto.getCachedOptions(context).forEach {
                     addPossibleValues(
                         possibleValueProto {
                             value = preferenceValueProto {
