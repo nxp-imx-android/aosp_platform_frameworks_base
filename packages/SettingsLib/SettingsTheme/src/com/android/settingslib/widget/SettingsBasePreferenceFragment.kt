@@ -114,7 +114,7 @@ abstract class SettingsBasePreferenceFragment : PreferenceFragmentCompat() {
      fun attachFooter(
         preferenceKey: String,
         text: CharSequence,
-        listener: View.OnClickListener,
+        listener: View.OnClickListener?,
     ) {
         val data = FooterData(text = FooterData.TextContent(text, listener))
         attachFooter(preferenceKey, data)
@@ -189,7 +189,7 @@ abstract class SettingsBasePreferenceFragment : PreferenceFragmentCompat() {
         @DrawableRes imageRes: Int,
         description: String? = null,
         text: CharSequence,
-        listener: View.OnClickListener,
+        listener: View.OnClickListener?,
     ) {
         val imageContent = FooterData.ImageContent(imageRes = imageRes, description = description)
         val textContent = FooterData.TextContent(text, listener)
@@ -218,7 +218,7 @@ abstract class SettingsBasePreferenceFragment : PreferenceFragmentCompat() {
         drawable: Drawable,
         description: String? = null,
         text: CharSequence,
-        listener: View.OnClickListener,
+        listener: View.OnClickListener?,
     ) {
         val imageContent = FooterData.ImageContent(imageDrawable = drawable, description = description)
         val textContent = FooterData.TextContent(text, listener)

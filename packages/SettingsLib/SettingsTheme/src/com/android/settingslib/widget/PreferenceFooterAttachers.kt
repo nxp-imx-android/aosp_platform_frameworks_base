@@ -63,7 +63,7 @@ data class FooterData(
      * @property text The character sequence to display.
      * @property listener The click listener for the text.
      */
-    data class TextContent(val text: CharSequence, val listener: View.OnClickListener)
+    data class TextContent(val text: CharSequence, val listener: View.OnClickListener?)
 }
 
 /**
@@ -80,7 +80,7 @@ fun bindFooter(holder: PreferenceViewHolder, data: FooterData?) {
     }
 
     val hasImage = data?.image != null
-    val hasText = data?.text != null
+    val hasText = data?.text != null && data.text.text.isNotEmpty()
 
     if (hasImage) {
         data.image.let {
