@@ -26,12 +26,12 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftFilterModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.KeywordsModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PeopleModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PersonModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
@@ -54,7 +54,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                     DraftRuleModel.PreExisting(
                         id = 10,
                         action = ActionModel.Highlight,
-                        filter = DraftFilterModel(contacts = null, includedApps = null),
+                        filter = DraftFilterModel(people = null, includedApps = null),
                     ),
                     onNavigateToCurrentRulesScreen = {},
                 )
@@ -76,7 +76,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
             var lastEnteredEditField: RulesScreenViewState.EditField? = null
 
             val contact =
-                ContactModel(
+                PersonModel.Contact(
                     lookupUri = "cat-uri".toUri(),
                     name = "Meowth",
                     photoUri = "cat-photo".toUri(),
@@ -87,7 +87,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                         action = ActionModel.Highlight,
                         filter =
                             DraftFilterModel(
-                                contacts = RuleValue.Specified(ContactsModel(listOf(contact))),
+                                people = RuleValue.Specified(PeopleModel(listOf(contact))),
                                 includedApps = null,
                             ),
                     ),
@@ -113,7 +113,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
 
             clickableChunk.onClick()
             assertThat(lastEnteredEditField)
-                .isInstanceOf(RulesScreenViewState.EditField.Contacts::class.java)
+                .isInstanceOf(RulesScreenViewState.EditField.People::class.java)
         }
 
     @Test
@@ -127,7 +127,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                         action = ActionModel.Highlight,
                         filter =
                             DraftFilterModel(
-                                contacts = RuleValue.Ambiguous("who is it?"),
+                                people = RuleValue.Ambiguous("who is it?"),
                                 includedApps = null,
                             ),
                     ),
@@ -152,7 +152,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
 
             clickableChunk.onClick()
             assertThat(lastEnteredEditField)
-                .isInstanceOf(RulesScreenViewState.EditField.Contacts::class.java)
+                .isInstanceOf(RulesScreenViewState.EditField.People::class.java)
         }
 
     @Test
@@ -174,7 +174,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                         action = ActionModel.Highlight,
                         filter =
                             DraftFilterModel(
-                                contacts = null,
+                                people = null,
                                 includedApps = RuleValue.Specified(IncludedAppsModel(listOf(app))),
                             ),
                     ),
@@ -208,7 +208,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
     fun buildRuleText_twoContacts() =
         kosmos.runTest {
             val contact =
-                ContactModel(
+                PersonModel.Contact(
                     lookupUri = "mom-uri".toUri(),
                     name = "Mom Cell",
                     photoUri = "mom-photo".toUri(),
@@ -219,10 +219,8 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                         action = ActionModel.Highlight,
                         filter =
                             DraftFilterModel(
-                                contacts =
-                                    RuleValue.Specified(
-                                        ContactsModel(listOf(contact, CONTACT_CAT))
-                                    ),
+                                people =
+                                    RuleValue.Specified(PeopleModel(listOf(contact, CONTACT_CAT))),
                                 includedApps = null,
                             ),
                     ),
@@ -267,7 +265,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                                     RuleValue.Specified(
                                         IncludedAppsModel(listOf(app, APP_CHAT_CAT, APP_POST_CAT))
                                     ),
-                                contacts = null,
+                                people = null,
                             ),
                     ),
                     onNavigateToCurrentRulesScreen = {},
@@ -375,7 +373,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
     fun buildRuleText_allFields() =
         kosmos.runTest {
             val contact =
-                ContactModel(
+                PersonModel.Contact(
                     lookupUri = "mom-uri".toUri(),
                     name = "Mom Cell",
                     photoUri = "mom-photo".toUri(),
@@ -393,7 +391,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                         action = ActionModel.Highlight,
                         filter =
                             DraftFilterModel(
-                                contacts = RuleValue.Specified(ContactsModel(listOf(contact))),
+                                people = RuleValue.Specified(PeopleModel(listOf(contact))),
                                 includedApps =
                                     RuleValue.Specified(
                                         IncludedAppsModel(listOf(app, APP_CHAT_CAT, APP_POST_CAT))
@@ -488,7 +486,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun onContactsSaved_storesNewList() =
+    fun onPeopleSaved_storesNewList() =
         kosmos.runTest {
             var onExitInvoked = false
             val underTest =
@@ -497,15 +495,15 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                     onNavigateToCurrentRulesScreen = {},
                 )
 
-            underTest.onContactsSaved(listOf(CONTACT_CAT)) { onExitInvoked = true }
+            underTest.onPeopleSaved(listOf(CONTACT_CAT)) { onExitInvoked = true }
 
-            assertThat(underTest.rule.filter.contacts)
-                .isEqualTo(RuleValue.Specified(ContactsModel(listOf(CONTACT_CAT))))
+            assertThat(underTest.rule.filter.people)
+                .isEqualTo(RuleValue.Specified(PeopleModel(listOf(CONTACT_CAT))))
             assertThat(onExitInvoked).isTrue()
         }
 
     @Test
-    fun onContactsSaved_emptyList_resetsToNull() =
+    fun onPeopleSaved_emptyList_resetsToNull() =
         kosmos.runTest {
             var onExitInvoked = false
             val underTest =
@@ -515,15 +513,15 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                         action = ActionModel.Highlight,
                         filter =
                             DraftFilterModel(
-                                contacts = RuleValue.Specified(ContactsModel(listOf(CONTACT_CAT)))
+                                people = RuleValue.Specified(PeopleModel(listOf(CONTACT_CAT)))
                             ),
                     ),
                     onNavigateToCurrentRulesScreen = {},
                 )
 
-            underTest.onContactsSaved(newContacts = emptyList()) { onExitInvoked = true }
+            underTest.onPeopleSaved(newPeople = emptyList()) { onExitInvoked = true }
 
-            assertThat(underTest.rule.filter.contacts).isNull()
+            assertThat(underTest.rule.filter.people).isNull()
             assertThat(onExitInvoked).isTrue()
         }
 
@@ -565,7 +563,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
 
     companion object {
         private val CONTACT_CAT =
-            ContactModel(
+            PersonModel.Contact(
                 lookupUri = "cat-uri".toUri(),
                 name = "Meowth",
                 photoUri = "cat-photo".toUri(),

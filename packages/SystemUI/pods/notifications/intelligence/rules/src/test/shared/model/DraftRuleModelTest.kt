@@ -40,7 +40,7 @@ class DraftRuleModelTest : SysuiTestCase() {
         assertThat(draftRule).isInstanceOf(DraftRuleModel.PreExisting::class.java)
         assertThat((draftRule as DraftRuleModel.PreExisting).id).isEqualTo(1)
         assertThat(draftRule.action).isEqualTo(ActionModel.Bundle)
-        assertThat(draftRule.filter.contacts).isNull()
+        assertThat(draftRule.filter.people).isNull()
         assertThat(draftRule.filter.includedApps).isNull()
         assertThat(draftRule.filter.keywords).isNull()
     }
@@ -51,7 +51,7 @@ class DraftRuleModelTest : SysuiTestCase() {
             RuleModel(
                 id = 1,
                 action = ActionModel.Bundle,
-                filter = FilterModel(contacts = null, includedApps = null, keywords = null),
+                filter = FilterModel(people = null, includedApps = null, keywords = null),
             )
 
         val draftRule = rule.toDraft()
@@ -59,14 +59,14 @@ class DraftRuleModelTest : SysuiTestCase() {
         assertThat(draftRule).isInstanceOf(DraftRuleModel.PreExisting::class.java)
         assertThat((draftRule as DraftRuleModel.PreExisting).id).isEqualTo(1)
         assertThat(draftRule.action).isEqualTo(ActionModel.Bundle)
-        assertThat(draftRule.filter.contacts).isNull()
+        assertThat(draftRule.filter.people).isNull()
         assertThat(draftRule.filter.includedApps).isNull()
         assertThat(draftRule.filter.keywords).isNull()
     }
 
     @Test
     fun toDraft_allFilledIn() {
-        val contacts = ContactsModel(listOf(FAKE_CONTACT))
+        val contacts = PeopleModel(listOf(FAKE_CONTACT))
         val includedApps = IncludedAppsModel(listOf(FAKE_APP))
         val keywords = KeywordsModel(listOf("cat", "dog", "fish"))
         val rule =
@@ -74,17 +74,13 @@ class DraftRuleModelTest : SysuiTestCase() {
                 id = 2,
                 action = ActionModel.Silence,
                 filter =
-                    FilterModel(
-                        contacts = contacts,
-                        includedApps = includedApps,
-                        keywords = keywords,
-                    ),
+                    FilterModel(people = contacts, includedApps = includedApps, keywords = keywords),
             )
 
         val draftRule = rule.toDraft()
 
         assertThat(draftRule.action).isEqualTo(ActionModel.Silence)
-        assertThat(draftRule.filter.contacts).isEqualTo(RuleValue.Specified(contacts))
+        assertThat(draftRule.filter.people).isEqualTo(RuleValue.Specified(contacts))
         assertThat(draftRule.filter.includedApps).isEqualTo(RuleValue.Specified(includedApps))
         assertThat(draftRule.filter.keywords).isEqualTo(keywords)
     }
@@ -94,7 +90,7 @@ class DraftRuleModelTest : SysuiTestCase() {
         val draft =
             DraftRuleModel.New(
                 ActionModel.HighlightAndAlert,
-                DraftFilterModel(contacts = RuleValue.Ambiguous("test")),
+                DraftFilterModel(people = RuleValue.Ambiguous("test")),
             )
 
         val copy = draft.copyDraft()
@@ -107,7 +103,7 @@ class DraftRuleModelTest : SysuiTestCase() {
         val draft =
             DraftRuleModel.New(
                 ActionModel.HighlightAndAlert,
-                DraftFilterModel(contacts = RuleValue.Ambiguous("test")),
+                DraftFilterModel(people = RuleValue.Ambiguous("test")),
             )
 
         val copy = draft.copyDraft(action = ActionModel.Silence)
@@ -116,7 +112,7 @@ class DraftRuleModelTest : SysuiTestCase() {
             .isEqualTo(
                 DraftRuleModel.New(
                     action = ActionModel.Silence,
-                    filter = DraftFilterModel(contacts = RuleValue.Ambiguous("test")),
+                    filter = DraftFilterModel(people = RuleValue.Ambiguous("test")),
                 )
             )
     }
@@ -126,10 +122,10 @@ class DraftRuleModelTest : SysuiTestCase() {
         val draft =
             DraftRuleModel.New(
                 ActionModel.HighlightAndAlert,
-                DraftFilterModel(contacts = RuleValue.Ambiguous("test")),
+                DraftFilterModel(people = RuleValue.Ambiguous("test")),
             )
 
-        val newFilter = DraftFilterModel(contacts = RuleValue.Ambiguous("new"))
+        val newFilter = DraftFilterModel(people = RuleValue.Ambiguous("new"))
         val copy = draft.copyDraft(filter = newFilter)
 
         assertThat(copy)
@@ -146,7 +142,7 @@ class DraftRuleModelTest : SysuiTestCase() {
                 filter =
                     DraftFilterModel(
                         includedApps = RuleValue.Ambiguous("social media apps"),
-                        contacts = RuleValue.Specified(ContactsModel(listOf(FAKE_CONTACT))),
+                        people = RuleValue.Specified(PeopleModel(listOf(FAKE_CONTACT))),
                     ),
             )
 
@@ -161,7 +157,7 @@ class DraftRuleModelTest : SysuiTestCase() {
                 filter =
                     DraftFilterModel(
                         includedApps = null,
-                        contacts = RuleValue.Specified(ContactsModel(listOf(FAKE_CONTACT))),
+                        people = RuleValue.Specified(PeopleModel(listOf(FAKE_CONTACT))),
                         keywords = KeywordsModel(listOf("example")),
                     ),
             )
@@ -172,7 +168,7 @@ class DraftRuleModelTest : SysuiTestCase() {
         assertThat(fullRule.action).isEqualTo(ActionModel.Bundle)
         assertThat(fullRule.filter).isNotNull()
         assertThat(fullRule.filter!!.includedApps).isNull()
-        assertThat(fullRule.filter!!.contacts).isEqualTo(ContactsModel(listOf(FAKE_CONTACT)))
+        assertThat(fullRule.filter!!.people).isEqualTo(PeopleModel(listOf(FAKE_CONTACT)))
         assertThat(fullRule.filter!!.keywords).isEqualTo(KeywordsModel(listOf("example")))
     }
 
@@ -185,7 +181,7 @@ class DraftRuleModelTest : SysuiTestCase() {
                 filter =
                     DraftFilterModel(
                         includedApps = RuleValue.Specified(IncludedAppsModel(listOf(FAKE_APP))),
-                        contacts = RuleValue.Ambiguous("siblings"),
+                        people = RuleValue.Ambiguous("siblings"),
                     ),
             )
 
@@ -201,7 +197,7 @@ class DraftRuleModelTest : SysuiTestCase() {
                 filter =
                     DraftFilterModel(
                         includedApps = RuleValue.Specified(IncludedAppsModel(listOf(FAKE_APP))),
-                        contacts = null,
+                        people = null,
                         keywords = KeywordsModel(listOf("example")),
                     ),
             )
@@ -212,7 +208,7 @@ class DraftRuleModelTest : SysuiTestCase() {
         assertThat(fullRule.action).isEqualTo(ActionModel.Bundle)
         assertThat(fullRule.filter).isNotNull()
         assertThat(fullRule.filter!!.includedApps).isEqualTo(IncludedAppsModel(listOf(FAKE_APP)))
-        assertThat(fullRule.filter!!.contacts).isNull()
+        assertThat(fullRule.filter!!.people).isNull()
         assertThat(fullRule.filter!!.keywords).isEqualTo(KeywordsModel(listOf("example")))
     }
 
@@ -221,7 +217,7 @@ class DraftRuleModelTest : SysuiTestCase() {
         val newRule =
             DraftRuleModel.New(
                 action = ActionModel.Bundle,
-                filter = DraftFilterModel(includedApps = null, contacts = null, keywords = null),
+                filter = DraftFilterModel(includedApps = null, people = null, keywords = null),
             )
 
         val fullRule = newRule.toFullRule(id = 10)
@@ -237,7 +233,7 @@ class DraftRuleModelTest : SysuiTestCase() {
             DraftRuleModel.PreExisting(
                 id = 10,
                 action = ActionModel.Bundle,
-                filter = DraftFilterModel(includedApps = null, contacts = null, keywords = null),
+                filter = DraftFilterModel(includedApps = null, people = null, keywords = null),
             )
 
         val fullRule = preExistingRule.toFullRule()
@@ -249,7 +245,7 @@ class DraftRuleModelTest : SysuiTestCase() {
 
     companion object {
         private val FAKE_CONTACT =
-            ContactModel(lookupUri = "key".toUri(), name = "name", photoUri = "uri".toUri())
+            PersonModel.Contact(lookupUri = "key".toUri(), name = "name", photoUri = "uri".toUri())
         private val FAKE_APP =
             AppModel(
                 uid = 13,

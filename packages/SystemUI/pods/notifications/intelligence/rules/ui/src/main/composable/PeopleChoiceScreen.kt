@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ *st
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -22,6 +22,7 @@ import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -30,23 +31,23 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PersonModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RulesScreenViewState
 import com.android.systemui.res.R
 
-/** Renders a fullscreen page to select 1 or more contacts matching a search string. */
+/** Renders a fullscreen page to select 1 or more people matching a search string. */
 @Composable
-fun ContactChoiceScreen(
-    viewState: RulesScreenViewState.EditField.Contacts,
+fun PeopleChoiceScreen(
+    viewState: RulesScreenViewState.EditField.People,
     onDismissRequest: () -> Unit,
 ) {
     val viewModel = viewState.viewModel
     val contentResolver = LocalContext.current.contentResolver
 
     val initialSelection =
-        when (val contacts = viewModel.rule.filter.contacts) {
-            is RuleValue.Specified -> contacts.value.contacts
+        when (val people = viewModel.rule.filter.people) {
+            is RuleValue.Specified -> people.value.people
             is RuleValue.Ambiguous -> emptyList()
             null -> emptyList()
         }
@@ -54,24 +55,41 @@ fun ContactChoiceScreen(
     EditScreenWithSearch(
         title = stringResource(R.string.notification_rules_field_people),
         initialSelection = initialSelection,
-        onSelectionSaved = { viewState.onContactsSaved(it) },
+        onSelectionSaved = { viewState.onPeopleSaved(it) },
         onDismissRequest = onDismissRequest,
-        fetchSearchResults = { query -> viewModel.fetchContacts(query, contentResolver) },
+        fetchSearchResults = { query -> viewModel.fetchPeople(query, contentResolver) },
         sortKey = { it.displayLabel },
         uniqueId = { it.id },
-        icon = { ContactIcon(it, EditScreenDimens.iconSize, viewModel::loadContactBitmapFromUri) },
-        text = { it.name },
+        icon = { PersonIcon(it, EditScreenDimens.iconSize, viewModel::loadContactBitmapFromUri) },
+        text = { it.displayLabel },
     )
 }
 
 @Composable
-fun ContactIcon(model: ContactModel, size: Dp, loadBitmap: suspend (Uri, Context, Int) -> Bitmap?) {
+fun PersonIcon(
+    model: PersonModel,
+    size: Dp,
+    loadContactBitmap: suspend (Uri, Context, Int) -> Bitmap?,
+    modifier: Modifier = Modifier,
+) {
+    when (model) {
+        is PersonModel.Contact -> ContactIcon(model, size, loadContactBitmap, modifier.size(size))
+    }
+}
+
+@Composable
+private fun ContactIcon(
+    model: PersonModel.Contact,
+    size: Dp,
+    loadContactBitmap: suspend (Uri, Context, Int) -> Bitmap?,
+    modifier: Modifier = Modifier,
+) {
     AsyncUriImage(
         uri = model.photoUri,
-        loadBitmap = loadBitmap,
+        loadBitmap = loadContactBitmap,
         contentDescription = model.displayLabel,
         size = size,
-        modifier = Modifier.clip(CircleShape),
+        modifier = modifier.clip(CircleShape),
         // TODO: b/478225883 - Use a better default placeholder, like the first letter of the
         // contact.
         placeholderContent = {

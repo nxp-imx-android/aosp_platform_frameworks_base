@@ -18,6 +18,7 @@ package com.android.systemui.notifications.intelligence.rules.data.repository
 
 import android.app.NotificationRule
 import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRuleConversionHelper.toExternalModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PersonModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 
 object NotificationRuleToExternalHelpers {
@@ -28,8 +29,9 @@ object NotificationRuleToExternalHelpers {
             if (internalFilter != null && internalFilter.hasContent) {
                 NotificationRule.Filter.Builder()
                     .apply {
-                        internalFilter.contacts?.let { contacts ->
-                            contacts.contacts.forEach { addContact(it.lookupUri) }
+                        internalFilter.people?.let { people ->
+                            val contacts = people.people.filterIsInstance<PersonModel.Contact>()
+                            contacts.forEach { addContact(it.lookupUri) }
                         }
                         internalFilter.includedApps?.let { apps ->
                             apps.apps.forEach { addIncludedPackageUid(it.uid) }

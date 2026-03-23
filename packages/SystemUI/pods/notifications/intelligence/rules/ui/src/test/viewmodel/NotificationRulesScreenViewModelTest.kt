@@ -27,13 +27,13 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftFilterModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.FilterModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.KeywordsModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PeopleModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PersonModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
@@ -59,7 +59,7 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
                 DraftRuleModel.PreExisting(
                     id = 9,
                     action = ActionModel.Highlight,
-                    filter = DraftFilterModel(contacts = null, includedApps = null),
+                    filter = DraftFilterModel(people = null, includedApps = null),
                 )
 
             backStack.add(
@@ -92,7 +92,7 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
     fun buildRuleText_singleContact() =
         kosmos.runTest {
             val contact =
-                ContactModel(
+                PersonModel.Contact(
                     lookupUri = "cat-uri".toUri(),
                     name = "Meowth",
                     photoUri = "cat-photo".toUri(),
@@ -101,7 +101,7 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
                 RuleModel(
                     id = ID,
                     action = ActionModel.Highlight,
-                    filter = FilterModel(contacts = ContactsModel(listOf(contact))),
+                    filter = FilterModel(people = PeopleModel(listOf(contact))),
                 )
 
             val ruleDisplay = underTest.buildRuleText(rule, applicationContext.resources)
@@ -152,7 +152,7 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
     fun buildRuleText_twoContacts() =
         kosmos.runTest {
             val contact =
-                ContactModel(
+                PersonModel.Contact(
                     lookupUri = "mom-uri".toUri(),
                     name = "Mom Cell",
                     photoUri = "mom-photo".toUri(),
@@ -161,7 +161,7 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
                 RuleModel(
                     id = ID,
                     action = ActionModel.Highlight,
-                    filter = FilterModel(contacts = ContactsModel(listOf(contact, CONTACT_CAT))),
+                    filter = FilterModel(people = PeopleModel(listOf(contact, CONTACT_CAT))),
                 )
 
             val ruleDisplay = underTest.buildRuleText(rule, applicationContext.resources)
@@ -253,7 +253,7 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
     fun buildRuleText_allFields() =
         kosmos.runTest {
             val contact =
-                ContactModel(
+                PersonModel.Contact(
                     lookupUri = "mom-uri".toUri(),
                     name = "Mom Cell",
                     photoUri = "mom-photo".toUri(),
@@ -273,7 +273,7 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
                         FilterModel(
                             includedApps =
                                 IncludedAppsModel(listOf(app, APP_CHAT_CAT, APP_POST_CAT)),
-                            contacts = ContactsModel(listOf(contact)),
+                            people = PeopleModel(listOf(contact)),
                             keywords = KeywordsModel(listOf("cat", "dog", "pet", "animal")),
                         ),
                 )
@@ -307,7 +307,7 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
         private const val ID = 10
 
         private val CONTACT_CAT =
-            ContactModel(
+            PersonModel.Contact(
                 lookupUri = "cat-uri".toUri(),
                 name = "Meowth",
                 photoUri = "cat-photo".toUri(),

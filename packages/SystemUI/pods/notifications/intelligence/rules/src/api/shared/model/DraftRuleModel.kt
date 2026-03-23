@@ -25,10 +25,11 @@ package com.android.systemui.notifications.intelligence.rules.shared.model
  */
 data class DraftFilterModel(
     /**
-     * The contacts that this rule applies to. Null if contacts are not part of the rule filter. See
-     * [android.app.NotificationRule.Filter.getContacts].
+     * The people that this rule applies to. Null if people are not part of the rule filter. See
+     * [android.app.NotificationRule.Filter.getContacts] and
+     * [android.app.NotificationRule.Filter.getShortcutIds].
      */
-    val contacts: RuleValue<ContactsModel>? = null,
+    val people: RuleValue<PeopleModel>? = null,
     /**
      * The apps that this rule applies to. Null if included apps are not part of the rule filter.
      * [android.app.NotificationRule.Filter.getIncludedPackageUids].
@@ -47,7 +48,7 @@ data class DraftFilterModel(
     /** True if any parts of the filter are still ambiguous. */
     val hasAmbiguousValues: Boolean
         get() {
-            return contacts is RuleValue.Ambiguous || includedApps is RuleValue.Ambiguous
+            return people is RuleValue.Ambiguous || includedApps is RuleValue.Ambiguous
         }
 }
 
@@ -100,7 +101,7 @@ sealed interface DraftRuleModel {
 
         private fun FilterModel?.toDraft(): DraftFilterModel {
             return DraftFilterModel(
-                contacts = this?.contacts.toDraft(),
+                people = this?.people.toDraft(),
                 includedApps = this?.includedApps.toDraft(),
                 keywords = this?.keywords,
             )
@@ -138,9 +139,9 @@ sealed interface DraftRuleModel {
         }
 
         private fun DraftFilterModel.toFullFilter(): FilterModel? {
-            if (this.contacts != null || this.includedApps != null || this.keywords != null) {
+            if (this.people != null || this.includedApps != null || this.keywords != null) {
                 return FilterModel(
-                    contacts = this.contacts.toFullValue(),
+                    people = this.people.toFullValue(),
                     includedApps = this.includedApps.toFullValue(),
                     keywords = this.keywords,
                 )
