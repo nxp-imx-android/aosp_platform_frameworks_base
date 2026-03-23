@@ -17,6 +17,8 @@
 package com.android.systemui.notifications.intelligence.rules.data.repository
 
 import android.content.ContentResolver
+import android.database.Cursor
+import android.net.Uri
 import android.provider.ContactsContract
 import androidx.core.net.toUri
 import com.android.systemui.dagger.SysUISingleton
@@ -37,6 +39,28 @@ constructor(
     @NotificationRulesLog logBuffer: LogBuffer,
 ) : ContactsRepository {
     private val logger = Logger(logBuffer, "ContactsRepository")
+
+    override suspend fun lookupContact(
+        lookupUri: Uri,
+        contentResolver: ContentResolver,
+    ): ContactModel? {
+        return withContext(backgroundDispatcher) {
+            try {
+                contentResolver.query(lookupUri, CONTACT_LOOKUP_PROJECTION, null, null, null).use {
+                    cursor ->
+                    if (cursor != null && cursor.moveToNext()) {
+                        getContactFromCursor(cursor)
+                    } else {
+                        logger.e({ "Unable to find contact $str1" }) { str1 = lookupUri.toString() }
+                        null
+                    }
+                }
+            } catch (e: Throwable) {
+                logger.e({ "Error while finding contact $str1" }, e) { str1 = lookupUri.toString() }
+                null
+            }
+        }
+    }
 
     override suspend fun fetchContacts(
         searchQuery: String,
@@ -59,29 +83,8 @@ constructor(
                     )
                     .use { cursor ->
                         while (cursor != null && cursor.moveToNext()) {
-                            val id: Long? =
-                                cursor.getString(cursor.getColumnIndex(ID_FIELD)).toLongOrNull()
-                            val lookupKey: String? =
-                                cursor.getString(cursor.getColumnIndex(LOOKUP_KEY_FIELD))
-                            val name: String? = cursor.getString(cursor.getColumnIndex(NAME_FIELD))
-                            val photoUri: String? =
-                                cursor.getString(cursor.getColumnIndex(PHOTO_URI_FIELD))
-
-                            if (id == null || lookupKey == null || name == null) {
-                                continue
-                            }
-
-                            // TODO: b/478225883 - Add a wrapper around #getLookupUri so it's
-                            // testable.
-                            val lookupUri =
-                                ContactsContract.Contacts.getLookupUri(id, lookupKey) ?: continue
-                            foundContacts.add(
-                                ContactModel(
-                                    lookupUri = lookupUri,
-                                    name = name,
-                                    photoUri = photoUri?.toUri(),
-                                )
-                            )
+                            val newContact = getContactFromCursor(cursor)
+                            newContact?.let { foundContacts.add(it) }
                         }
                     }
             } catch (e: Throwable) {
@@ -90,6 +93,20 @@ constructor(
 
             foundContacts.toList()
         }
+    }
+
+    private fun getContactFromCursor(cursor: Cursor): ContactModel? {
+        val id: Long? = cursor.getString(cursor.getColumnIndex(ID_FIELD)).toLongOrNull()
+        val lookupKey: String? = cursor.getString(cursor.getColumnIndex(LOOKUP_KEY_FIELD))
+        val name: String? = cursor.getString(cursor.getColumnIndex(NAME_FIELD))
+        val photoUri: String? = cursor.getString(cursor.getColumnIndex(PHOTO_URI_FIELD))
+
+        if (id == null || lookupKey == null || name == null) {
+            return null
+        }
+
+        val lookupUri = ContactsContract.Contacts.getLookupUri(id, lookupKey) ?: return null
+        return ContactModel(lookupUri = lookupUri, name = name, photoUri = photoUri?.toUri())
     }
 
     companion object {

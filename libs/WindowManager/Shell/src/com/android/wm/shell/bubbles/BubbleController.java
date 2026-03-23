@@ -3049,7 +3049,7 @@ public class BubbleController implements ConfigurationChangeListener,
         if (mStackView == null && mLayerView == null) {
             return;
         }
-        BubbleLog.v("BubbleController.updateBubbleViews() mIsStatusBarShade=%s hasBubbles=%b",
+        BubbleLog.v("BubbleController.updateBubbleViews() mIsStatusBarShade=%b hasBubbles=%b",
                 mIsStatusBarShade, hasBubbles());
         if (!mIsStatusBarShade) {
             // Bubbles don't appear when the device is locked.

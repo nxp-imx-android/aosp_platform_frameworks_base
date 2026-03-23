@@ -30,12 +30,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExpandedFullScreenSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingToolbarColors
@@ -44,45 +41,42 @@ import androidx.compose.material3.FloatingToolbarDefaults.ScreenOffset
 import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SearchBar
-import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.android.compose.PlatformButton
 import com.android.compose.PlatformOutlinedButton
 import com.android.systemui.res.R
-import kotlinx.coroutines.launch
+
+/** Handler for when an item is selected or un-selected. */
+fun interface SelectionHandler<T> {
+    /** Invoked whenever an item is selected or un-selected. */
+    fun onSelectionToggled(item: T, isSelected: Boolean)
+}
 
 /**
  * A generic composable supporting an edit screen for a particular type [T]. The screen shows the
- * currently-selected set of items and lets the user search for items to add or remove them.
+ * currently-selected set of items.
  *
  * @param title a string shown in the header explaining the type of item being edited.
  * @param initialSelection the currently selected items when the screen first loads.
  * @param onSelectionSaved invoked when the user saves their selected items.
  * @param onDismissRequest invoked when the user leaves the page without saving.
- * @param allSearchResults an list of full search results, shown when the user first opens the
- *   search box but hasn't typed a query yet. If null, no default results will be shown.
- * @param fetchSearchResults a function that fetches the relevant search results based on the given
- *   [query]. [allSearchResults] is provided as the second parameter.
  * @param sortKey a function used to sort items as they're added to the list.
  * @param uniqueId a function that should return a unique identifier for an item.
  * @param icon a composable rendering an icon for a particular item.
  * @param text a function that should return the main text for a particular item.
+ * @param inputSlot a text box of some sort that will let users search for new items to add.
+ * @param additionalContentSlot an optional composable that will also be included underneath the
+ *   [inputSlot] and above the list of currently selected items.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,89 +85,44 @@ fun <T> EditScreen(
     initialSelection: List<T>,
     onSelectionSaved: (List<T>) -> Unit,
     onDismissRequest: () -> Unit,
-    allSearchResults: List<T>? = null,
-    fetchSearchResults: suspend (query: String) -> List<T>?,
     sortKey: (T) -> String,
     uniqueId: (T) -> Any,
-    icon: (@Composable (T) -> Unit),
+    icon: (@Composable (T) -> Unit)?,
     text: (T) -> String,
+    inputSlot: @Composable (selectionHandler: SelectionHandler<T>) -> Unit,
+    additionalContentSlot:
+        @Composable
+        ((currentSelection: List<T>, selectionHandler: SelectionHandler<T>) -> Unit)?,
 ) {
-    val scope = rememberCoroutineScope()
 
     val currentSelection: MutableList<T> = remember {
         mutableStateListOf<T>().apply { addAll(initialSelection.sortedBy { sortKey(it) }) }
     }
 
-    val searchBarState = rememberSearchBarState()
-    val textFieldState = rememberTextFieldState()
-    val searchResults: List<T>? by
-        // allSearchResults might change from null to non-null when results are loaded, so
-        // `searchResults` should be re-calculated when that value changes.
-        produceState<List<T>?>(emptyList(), textFieldState.text, allSearchResults) {
-            value = fetchSearchResults(textFieldState.text.toString())
+    val selectionHandler =
+        object : SelectionHandler<T> {
+            override fun onSelectionToggled(item: T, isSelected: Boolean) {
+                if (isSelected) {
+                    if (!currentSelection.contains(item)) {
+                        currentSelection.add(item)
+                    }
+                } else {
+                    currentSelection.remove(item)
+                }
+            }
         }
-    val inputField =
-        @Composable {
-            SearchBarDefaults.InputField(
-                textFieldState = textFieldState,
-                searchBarState = searchBarState,
-                onSearch = { scope.launch { searchBarState.animateToCollapsed() } },
-                placeholder = {
-                    Text(
-                        text = stringResource(R.string.notification_rules_search),
-                        // Use `clearAndSetSemantics` because `ExpandedFullScreenSearchBar` will
-                        // handle accessibility for us.
-                        modifier = Modifier.clearAndSetSemantics {},
-                    )
-                },
-            )
-        }
-
-    val onSelectionToggled: (T, Boolean) -> Unit = { model: T, isSelectedNew: Boolean ->
-        if (isSelectedNew) {
-            currentSelection.add(model)
-        } else {
-            currentSelection.remove(model)
-        }
-    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Header(title = title, onDismissRequest = onDismissRequest)
 
-            SearchBar(state = searchBarState, inputField = inputField)
-            ExpandedFullScreenSearchBar(state = searchBarState, inputField = inputField) {
-                Box {
-                    val currentSearchResults = searchResults
-                    if (currentSearchResults != null) {
-                        SearchResults(
-                            searchResults = currentSearchResults,
-                            onSelectionToggled = onSelectionToggled,
-                            currentSelection = currentSelection,
-                            uniqueId = uniqueId,
-                            icon = icon,
-                            text = text,
-                        )
-                    } else {
-                        LoadingIcon(Modifier.fillMaxSize())
-                    }
-
-                    // The floating save button has to be included both in the search results and
-                    // outside the search results because the search results do a fullscreen
-                    // takeover.
-                    FloatingSaveButton(
-                        currentSelection = currentSelection,
-                        onSelectionSaved = onSelectionSaved,
-                        sortKey = sortKey,
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                    )
-                }
-            }
+            inputSlot(selectionHandler)
+            additionalContentSlot?.let { it(currentSelection, selectionHandler) }
 
             if (currentSelection.isNotEmpty()) {
                 SelectedItems(
                     currentSelection = currentSelection,
-                    onSelectionToggled = onSelectionToggled,
+                    selectionHandler = selectionHandler,
                     onClearSelection = { currentSelection.clear() },
                     uniqueId = uniqueId,
                     icon = icon,
@@ -192,53 +141,15 @@ fun <T> EditScreen(
     }
 }
 
-/**
- * Renders the current search results with affordances to add or remove items from the selection.
- */
-@Composable
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-private fun <T> SearchResults(
-    searchResults: List<T>,
-    onSelectionToggled: (T, Boolean) -> Unit,
-    currentSelection: List<T>,
-    uniqueId: (T) -> Any,
-    icon: (@Composable (T) -> Unit),
-    text: (T) -> String,
-) {
-    LazyColumn(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        // fillMaxSize ensures that the FloatingSaveButton is always at the bottom.
-        modifier = Modifier.fillMaxSize().padding(top = 8.dp),
-    ) {
-        item(key = "Search results") {
-            Text(
-                stringResource(R.string.notification_rules_search_results),
-                color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.titleLargeEmphasized,
-                modifier = Modifier.fillMaxWidth().padding(start = 8.dp),
-            )
-        }
-        items(searchResults, key = uniqueId) {
-            Item(
-                model = it,
-                isSelected = it in currentSelection,
-                onSelectionToggled = onSelectionToggled,
-                icon = icon,
-                text = text,
-            )
-        }
-    }
-}
-
 /** Renders the list of items that are currently selected to be part of the rule filter. */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun <T> SelectedItems(
     currentSelection: List<T>,
-    onSelectionToggled: (T, Boolean) -> Unit,
+    selectionHandler: SelectionHandler<T>,
     onClearSelection: () -> Unit,
     uniqueId: (T) -> Any,
-    icon: (@Composable (T) -> Unit),
+    icon: (@Composable (T) -> Unit)?,
     text: (T) -> String,
 ) {
     LazyColumn(modifier = Modifier.fillMaxWidth()) {
@@ -265,7 +176,7 @@ private fun <T> SelectedItems(
             Item(
                 model = it,
                 isSelected = true,
-                onSelectionToggled = onSelectionToggled,
+                selectionHandler = selectionHandler,
                 icon = icon,
                 text = text,
             )
@@ -279,11 +190,11 @@ private fun <T> SelectedItems(
  * @param isSelected true if the item is currently selected to be part of the rule
  */
 @Composable
-private fun <T> Item(
+fun <T> Item(
     model: T,
     isSelected: Boolean,
-    onSelectionToggled: (T, Boolean) -> Unit,
-    icon: @Composable (T) -> Unit,
+    selectionHandler: SelectionHandler<T>,
+    icon: (@Composable (T) -> Unit)?,
     text: (T) -> String,
 ) {
     Row(
@@ -296,7 +207,7 @@ private fun <T> Item(
                 .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(Modifier.size(EditScreenDimens.iconSize)) { icon(model) }
+        icon?.let { Box(Modifier.size(EditScreenDimens.iconSize)) { icon(model) } }
 
         Text(
             text = text(model),
@@ -308,7 +219,7 @@ private fun <T> Item(
         )
 
         val buttonIconModifier = Modifier.size(18.dp)
-        val onClick = { onSelectionToggled(model, !isSelected) }
+        val onClick = { selectionHandler.onSelectionToggled(model, !isSelected) }
         if (isSelected) {
             PlatformOutlinedButton(onClick = onClick) {
                 Icon(
@@ -337,19 +248,9 @@ private fun NoSelection() {
     )
 }
 
-@Composable
-private fun LoadingIcon(modifier: Modifier = Modifier) {
-    Box(contentAlignment = Alignment.Center, modifier = modifier) {
-        CircularProgressIndicator(
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(top = 32.dp).size(32.dp),
-        )
-    }
-}
-
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun <T> BoxScope.FloatingSaveButton(
+fun <T> BoxScope.FloatingSaveButton(
     currentSelection: List<T>,
     onSelectionSaved: (List<T>) -> Unit,
     sortKey: (T) -> String,

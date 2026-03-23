@@ -21,6 +21,9 @@ import com.android.systemui.notifications.intelligence.rules.shared.model.AppMod
 
 /** A repository to fetch installed app information for notification rules. */
 interface InstalledAppsRepository {
+    /** Returns the app associated with the given [uid], or null if it couldn't be found. */
+    suspend fun lookupApp(uid: Int, context: Context): AppModel?
+
     /**
      * Fetches all apps installed on the device.
      *

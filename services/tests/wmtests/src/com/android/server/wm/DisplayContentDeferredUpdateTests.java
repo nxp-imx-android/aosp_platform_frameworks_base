@@ -65,7 +65,8 @@ import org.mockito.ArgumentCaptor;
 import java.util.List;
 
 /**
- * Tests for the {@link DisplayContent} class when FLAG_DEFER_DISPLAY_UPDATES is enabled.
+ * Tests for the {@link DisplayContent} class when FLAG_SYNCED_DISPLAY_MODE_UPDATES is disabled.
+ * Tests with FLAG_SYNCED_DISPLAY_MODE_UPDATES enabled could be found in {@link DisplayUpdateTests}.
  *
  * Build/Install/Run:
  * atest WmTests:DisplayContentDeferredUpdateTests
@@ -73,6 +74,7 @@ import java.util.List;
 @SmallTest
 @Presubmit
 @RunWith(WindowTestRunner.class)
+@DisableFlags(com.android.window.flags.Flags.FLAG_SYNCED_DISPLAY_MODE_UPDATES)
 public class DisplayContentDeferredUpdateTests extends WindowTestsBase {
 
     // The fields to override the current DisplayInfo.

@@ -18,13 +18,17 @@ package com.android.systemui.notifications.intelligence.rules.data.repository
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.NameNotFoundException
 import android.graphics.drawable.Drawable
 import android.os.UserHandle
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.log.LogBuffer
+import com.android.systemui.log.core.Logger
 import com.android.systemui.notifications.content.icon.AppIconProvider
+import com.android.systemui.notifications.intelligence.rules.shared.NotificationRulesLog
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 import com.android.systemui.user.data.repository.UserRepository
 import javax.inject.Inject
@@ -39,21 +43,40 @@ constructor(
     private val packageManager: PackageManager,
     private val appIconProvider: AppIconProvider,
     private val userRepository: UserRepository,
+    @NotificationRulesLog logBuffer: LogBuffer,
 ) : InstalledAppsRepository {
+    private val logger = Logger(logBuffer, "InstalledAppsRepository")
+
+    override suspend fun lookupApp(uid: Int, context: Context): AppModel? {
+        val packageName = packageManager.getNameForUid(uid)
+        if (packageName == null) {
+            logger.e({ "Unable to find app with uid=$int1" }) { int1 = uid }
+            return null
+        }
+        val userId = UserHandle.getUserId(uid)
+        val userHandle = UserHandle.getUserHandleForUid(uid)
+        return packageManager
+            .getApplicationInfoAsUser(packageName, 0, userId)
+            .toAppModel(userHandle, context)
+    }
 
     @SuppressLint("QueryPermissionsNeeded")
     override suspend fun fetchInstalledApps(context: Context): List<AppModel> {
         return withContext(backgroundDispatcher) {
             val currentUser = userRepository.selectedUser.value.userInfo
             packageManager.getInstalledApplicationsAsUser(0, currentUser.id).map {
-                AppModel(
-                    uid = it.uid,
-                    label = it.loadLabel(packageManager).toString(),
-                    icon = fetchAppIcon(it.packageName, currentUser.userHandle, context),
-                    packageName = it.packageName,
-                )
+                it.toAppModel(currentUser.userHandle, context)
             }
         }
+    }
+
+    private fun ApplicationInfo.toAppModel(userHandle: UserHandle, context: Context): AppModel {
+        return AppModel(
+            uid = this.uid,
+            label = this.loadLabel(packageManager).toString(),
+            icon = fetchAppIcon(this.packageName, userHandle, context),
+            packageName = this.packageName,
+        )
     }
 
     private fun fetchAppIcon(
@@ -68,7 +91,7 @@ constructor(
                 instanceKey = "notificationRule",
             )
         } catch (_: NameNotFoundException) {
-            // TODO: b/478225883 - Log error.
+            logger.w({ "Unable to fetch app icon for package $str1" }) { str1 = packageName }
             context.getDrawable(android.R.drawable.sym_def_app_icon)!!
         }
     }

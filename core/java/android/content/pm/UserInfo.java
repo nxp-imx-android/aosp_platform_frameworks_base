@@ -536,10 +536,11 @@ public class UserInfo implements Parcelable {
         // NOTE: profiles used to be restricted just to the system user (and later to the main
         // user), but from the framework point of view there is no need for such restriction, hence
         // it's lifted
+        // TODO(b/488421414): Update the logic so that config_ is properly tied to profile type.
         return isMainUnlogged()
                 || (android.multiuser.Flags.profilesForAll()
-                        && Resources.getSystem().getBoolean(
-                                com.android.internal.R.bool.config_supportProfilesOnNonMainUser));
+                        && Resources.getSystem().getBoolean(com.android.internal.R.bool
+                                .config_supportManagedProfileOnNonMainUser));
     }
 
     /**

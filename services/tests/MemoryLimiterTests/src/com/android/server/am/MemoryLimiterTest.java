@@ -41,7 +41,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import com.android.internal.util.MemInfoReader;
 import com.android.server.am.MemoryLimiter.Configuration;
 import com.android.server.am.MemoryLimiter.Limits;
 
@@ -97,6 +96,11 @@ public class MemoryLimiterTest {
     // The location of data files on the device.
     private static final String DATA_DIR = "/data/local/tmp/cts/memorylimiter/";
 
+    // Return the path to a data file.
+    private static String dataFile(String file) {
+        return DATA_DIR + file;
+    }
+
     // The UID of the test application.  This can change every time the package is installed but
     // should not change for the duration of the test.
     private int mUid;
@@ -112,8 +116,9 @@ public class MemoryLimiterTest {
         return null;
     }
 
-    // A convenience constant: 1MB.
-    static final int MEG = 1024 * 1024;
+    // Two convenience constants, 1MB and 1GB, and a function to express GB as MB.
+    static final long MB = 1024L * 1024;
+    static final long GB = 1024L * MB;
 
     // The mapping between process states and sizes is arbitrary.  Constants are declared to
     // make it more obvious in the test routine just what the memory limit will be.
@@ -125,22 +130,19 @@ public class MemoryLimiterTest {
     private static final int PROCESS_STATE_MAX = ActivityManager.PROCESS_STATE_TOP;
 
     // The memory assigned to a process in PROCESS_STATE_10M.
-    private static final Long sProcessMemory10M = (long) (10 * MEG);
+    private static final Long sProcessMemory10M = (long) (10 * MB);
 
     // The memory assigned to a process in PROCESS_STATE_100M.
-    private static final Long sProcessMemory100M = (long) (100 * MEG);
+    private static final Long sProcessMemory100M = (long) (100 * MB);
 
     // The memory assigned to a process in PROCESS_STATE_MAX.  Any negative value turns into
     // maximum memory in the native handlers, but the test uses -1 for consistency.
     private static final Long sProcessMemoryMax = (long) (-1);
 
-    // The available system memory nad the system swap.
-    private static final long sSystemMemory = getMemTotal();
-
-    private static long getMemTotal() {
-        MemInfoReader memInfo = new MemInfoReader();
-        memInfo.readMemInfo();
-        return memInfo.getTotalSize();
+    // Return true if MemoryLimiter is running in system_server.
+    private static boolean isMemoryLimiterRunning() {
+        String response = shellCommand("am memory-limiter status");
+        return response.contains("enabled");
     }
 
     // An Injector for testing.
@@ -151,7 +153,7 @@ public class MemoryLimiterTest {
         private final boolean mLimitMode;
 
         TestInjector(String config, boolean limitMode) {
-            mConfigFile = (config != null) ? DATA_DIR + config : super.configFile();
+            mConfigFile = (config != null) ? dataFile(config) : super.configFile();
             mLimitMode = limitMode;
         }
 
@@ -160,7 +162,7 @@ public class MemoryLimiterTest {
         }
 
         TestInjector() {
-            this(null);
+            this("config-testing.xml");
         }
 
         @Override
@@ -205,21 +207,14 @@ public class MemoryLimiterTest {
         // The events received by this counter.
         final ArrayList<Event> mEvents = new ArrayList<>();
 
-        // The instance is created with the expected number of events.  Do not load any
-        // configuration file.
+        // The instance is created with the expected number of events.
         EventCounter(int expected) {
-            this(expected, null);
+            this(expected, true);
         }
 
-        // The instance is created with the expected number of events.  The supplied configuration
-        // file is parsed.  To simplify life, this method accepts the basename of the
-        // configuration file.  It quietly prepends the path component.
-        EventCounter(int expected, String config) {
-            this(expected, config, true);
-        }
-
-        EventCounter(int expected, String config, boolean limitMode) {
-            super(new TestInjector(config, limitMode));
+        // The instance is created with the expected number of events and the limit mode.
+        EventCounter(int expected, boolean limitMode) {
+            super(new TestInjector("config-testing.xml", limitMode));
             mLatch = new CountDownLatch(expected);
         }
 
@@ -246,12 +241,6 @@ public class MemoryLimiterTest {
             assertThat(event.pid).isEqualTo(helper.getPid());
             assertThat(event.uid).isEqualTo(helper.getUid());
             assertThat(event.limit).isEqualTo(limit);
-
-            // The computation of percent may have rounding errors, and this code is slightly
-            // different from the code in MemoryLimiter (by design).  The test therefore checks
-            // that the two values are within 1 of each other.
-            int ratio = Math.round((float) (((double) limit / (double) sSystemMemory) * 100));
-            assertThat(event.percent).isWithin(1).of(ratio);
         }
 
         // A tiny convenience function that creates a Limits object with three fields set to the
@@ -557,7 +546,7 @@ public class MemoryLimiterTest {
     @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
     @Test
     public void testLimiterSenseMode() throws Exception {
-        try (EventCounter counter = new EventCounter(1, null, false)) {
+        try (EventCounter counter = new EventCounter(1, false)) {
             try (MemoryLimiter controller = new MemoryLimiter(counter)) {
                 MemoryLimiter.Limiter limiter = controller.newLimiter();
 
@@ -602,13 +591,13 @@ public class MemoryLimiterTest {
     }
 
     // Compare the two fields of a Configuration to the inputs.
-    private static void testConfig(Configuration cfg, int visible, int notVisible) {
-        assertThat(cfg.visible()).isEqualTo(visible);
-        assertThat(cfg.notVisible()).isEqualTo(notVisible);
+    private static void testConfig(Configuration cfg, long visible, long notVisible) {
+        assertThat(cfg.memVisible()).isEqualTo(visible);
+        assertThat(cfg.memNotVisible()).isEqualTo(notVisible);
     }
 
     private static void testConfig(Configuration cfg, Configuration ref) {
-        testConfig(cfg, ref.visible(), ref.notVisible());
+        testConfig(cfg, ref.memVisible(), ref.memNotVisible());
     }
 
     /**
@@ -660,32 +649,24 @@ public class MemoryLimiterTest {
 
     @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
     @Test
-    public void testConfigDefaults() throws Exception {
-        // Fetch the default configuration and verify its fields.
-        Configuration cfg = MemoryLimiter.sDefaultConfig;
-        if (Flags.memoryLimiterDefaultAppLimits()) {
-            testConfig(cfg, 50, 25);
-        } else {
-            testConfig(cfg, 100, 100);
-        }
-    }
-
-    @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
-    @Test
     public void testXmlConfig() throws Exception {
         Configuration cfg;
 
         // The default case.
-        cfg = MemoryLimiter.getConfiguration(null);
+        cfg = MemoryLimiter.getConfiguration(null, 0);
         testConfig(cfg, MemoryLimiter.sDefaultConfig);
 
         // A valid configuration file that specifies the defaults.
-        cfg = MemoryLimiter.getConfiguration(DATA_DIR + "config-default.xml");
-        testConfig(cfg, 40, 30);
+        cfg = MemoryLimiter.getConfiguration(dataFile("config-default.xml"), 10 * GB);
+        testConfig(cfg, 6 * GB, 3 * GB);
+        cfg = MemoryLimiter.getConfiguration(dataFile("config-default.xml"), 14 * GB);
+        testConfig(cfg, 8 * GB, 4 * GB);
+        cfg = MemoryLimiter.getConfiguration(dataFile("config-default.xml"), 8 * GB);
+        assertThat(cfg).isNull();
 
         // Parse an invalid XML file.  There must be an error.
         try {
-            cfg = MemoryLimiter.getConfiguration(DATA_DIR + "config-error.xml");
+            cfg = MemoryLimiter.getConfiguration(dataFile("config-error.xml"), 10 * GB);
             fail("failed to detect XML parse error");
         } catch (IllegalArgumentException e) {
             // Success.
@@ -702,6 +683,8 @@ public class MemoryLimiterTest {
             Flags.FLAG_MEMORY_LIMITER_DEFAULT_APP_LIMITS})
     @Test
     public void testOperation() throws Exception {
+        assumeTrue(isMemoryLimiterRunning());
+
         // Use the default "enabled" controller to fetch the limit.  There is no need for a full
         // MemoryLimiter.
         final Limits expectedLimit;
@@ -731,6 +714,25 @@ public class MemoryLimiterTest {
             Thread.sleep(200);
             assertThat(helper.currentSwapMax()).isEqualTo(sProcessMemoryMax);
         }
+
+        // Now test the manual shell command.  This goes through system_server so it cannot be done
+        // locally.  Set the limit to 975MB, which is unlikely to be confused with a valid from the
+        // currently running configuration file.
+        int limitInMB = 975;
+        shellCommand(String.format("am memory-limiter manual %d %d", helper.getPid(), limitInMB));
+        long expected = limitInMB * MB;
+        for (int i = 0; i < 100 && helper.currentMemHigh() != expected; i++) {
+            Thread.sleep(100); // Wait a bit before polling again.
+        }
+        assertThat(helper.currentMemHigh()).isEqualTo(expected);
+
+        if (Flags.memoryLimiterSwap()) {
+            // Poll until the limit is set by system_server.
+            for (int i = 0; i < 100 && helper.currentSwapMax() != expected; i++) {
+                Thread.sleep(100); // Wait a bit before polling again.
+            }
+            assertThat(helper.currentSwapMax()).isEqualTo(expected * MB);
+        }
     }
 
     /**
@@ -743,6 +745,8 @@ public class MemoryLimiterTest {
             Flags.FLAG_MEMORY_LIMITER_DEFAULT_APP_LIMITS})
     @Test
     public void testStatsdAtom() throws Exception {
+        assumeTrue(isMemoryLimiterRunning());
+
         // Start by enabling system_server control over the app.
         blockSystemLimiter(mUid, false);
 

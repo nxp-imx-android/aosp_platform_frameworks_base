@@ -28,8 +28,10 @@ import android.os.vibrator.PwleSegment;
 import android.os.vibrator.StepSegment;
 import android.os.vibrator.VibrationEffectSegment;
 
+import com.android.internal.vibrator.persistence.SerializedComposedEffect.SerializedSegment;
+import com.android.internal.vibrator.persistence.SerializedAmplitudeStepWaveform.StepSegmentBuilder;
+
 import java.util.List;
-import java.util.function.BiConsumer;
 
 /**
  * Serializer implementation for {@link VibrationEffect}.
@@ -189,9 +191,12 @@ public class VibrationEffectSerializer {
                     "Unsupported segment for waveform envelope effect %s", segments.get(i));
             PwleSegment segment = (PwleSegment) segments.get(i);
 
-            if (i == 0 && segment.getStartFrequencyHz() != segment.getEndFrequencyHz()) {
-                // Initial frequency explicitly defined.
-                builder.setInitialFrequencyHz(segment.getStartFrequencyHz());
+            if (i == 0) {
+                if (segment.getStartFrequencyHz() != segment.getEndFrequencyHz()) {
+                    // Initial frequency explicitly defined.
+                    builder.setInitialFrequencyHz(segment.getStartFrequencyHz());
+                }
+                builder.setStartTimeMillis(segment.getStartTimeMillis());
             }
 
             builder.addControlPoint(segment.getEndAmplitude(), segment.getEndFrequencyHz(),
@@ -209,9 +214,12 @@ public class VibrationEffectSerializer {
                     "Unsupported segment for basic envelope effect %s", segments.get(i));
             BasicPwleSegment segment = (BasicPwleSegment) segments.get(i);
 
-            if (i == 0 && segment.getStartSharpness() != segment.getEndSharpness()) {
-                // Initial sharpness explicitly defined.
-                builder.setInitialSharpness(segment.getStartSharpness());
+            if (i == 0) {
+                if (segment.getStartSharpness() != segment.getEndSharpness()) {
+                    // Initial sharpness explicitly defined.
+                    builder.setInitialSharpness(segment.getStartSharpness());
+                }
+                builder.setStartTimeMillis(segment.getStartTimeMillis());
             }
 
             builder.addControlPoint(segment.getEndIntensity(), segment.getEndSharpness(),
@@ -231,7 +239,7 @@ public class VibrationEffectSerializer {
                 builder.setRepeatIndexToCurrentEntry();
             }
             try {
-                serializeStepSegment(segments.get(i), builder::addDurationAndAmplitude);
+                serializeStepSegment(segments.get(i), builder);
             } catch (XmlSerializerException e) {
                 return null;
             }
@@ -245,7 +253,7 @@ public class VibrationEffectSerializer {
         SerializedAmplitudeStepWaveform.Builder builder =
                 new SerializedAmplitudeStepWaveform.Builder();
         for (int i = 0; i < segments.size(); i++) {
-            serializeStepSegment(segments.get(i), builder::addDurationAndAmplitude);
+            serializeStepSegment(segments.get(i), builder);
         }
 
         return new SerializedComposedEffect(builder.build());
@@ -256,19 +264,20 @@ public class VibrationEffectSerializer {
         SerializedWaveformEffectEntries.Builder builder =
                 new SerializedWaveformEffectEntries.Builder();
         for (int i = 0; i < segments.size(); i++) {
-            serializeStepSegment(segments.get(i), builder::addDurationAndAmplitude);
+            serializeStepSegment(segments.get(i), builder);
         }
 
         return new SerializedComposedEffect(builder.build());
     }
 
     private static void serializeStepSegment(VibrationEffectSegment segment,
-            BiConsumer<Long, Integer> builder) throws XmlSerializerException {
+            StepSegmentBuilder builder) throws XmlSerializerException {
         XmlValidator.checkSerializerCondition(segment instanceof StepSegment,
                 "Unsupported segment for waveform effect %s", segment);
 
-        builder.accept(segment.getDuration(),
-                toAmplitudeInt(((StepSegment) segment).getAmplitude()));
+        builder.addDurationAmplitudeAndStartTime(segment.getDuration(),
+                toAmplitudeInt(((StepSegment) segment).getAmplitude()),
+                segment.getStartTimeMillis());
     }
 
     private static SerializedPredefinedEffect serializePrebakedSegment(
@@ -292,7 +301,8 @@ public class VibrationEffectSerializer {
                     prebaked.shouldFallback());
         }
 
-        return new SerializedPredefinedEffect(effectName, prebaked.shouldFallback());
+        return new SerializedPredefinedEffect(effectName, prebaked.shouldFallback(),
+                prebaked.getStartTimeMillis());
     }
 
     private static SerializedCompositionPrimitive serializePrimitiveSegment(

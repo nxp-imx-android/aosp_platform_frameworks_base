@@ -439,7 +439,10 @@ fun BrightnessSliderContainer(
             hapticsViewModelFactory = viewModel.hapticsViewModelFactory,
             overriddenByAppState = overriddenByAppState,
             showToast = {
-                viewModel.showToast(context, R.string.quick_settings_brightness_unable_adjust_msg)
+                viewModel.showToast(
+                    context,
+                    com.android.internal.R.string.brightness_unable_adjust_msg,
+                )
             },
             dimensions = dimensions,
         )

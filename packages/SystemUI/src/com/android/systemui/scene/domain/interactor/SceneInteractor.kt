@@ -350,6 +350,7 @@ constructor(
             }
             HideOverlayCommand.HideNone -> {}
         }
+        restrictedModeInteractor.get().modifyOverlaysOnSceneChange(toScene)
 
         if (
             !validateSceneChange(
@@ -846,18 +847,6 @@ constructor(
             return false
         }
 
-        if (!restrictedModeInteractor.get().isSceneChangeAllowed(toScene = to)) {
-            logger.logContentChangeRejection(
-                from = from,
-                to = to,
-                originalChangeReason = loggingReason,
-                rejectionReason =
-                    "Only scene changes to Lockscreen and Occluded are allowed " +
-                        "when the device is in restricted mode",
-            )
-            return false
-        }
-
         val inMidTransitionFromGone =
             (transitionStateFlow.value as? ObservableTransitionState.Transition)?.fromContent ==
                 Scenes.Gone
@@ -961,17 +950,6 @@ constructor(
                     to = to,
                     originalChangeReason = loggingReason,
                     rejectionReason = "Cannot show Bouncer when device already unlocked",
-                )
-                false
-            }
-
-            !restrictedModeInteractor.get().isOverlayChangeAllowed(to) -> {
-                logger.logContentChangeRejection(
-                    from = from,
-                    to = to,
-                    originalChangeReason = loggingReason,
-                    rejectionReason =
-                        "Cannot show any other overlays when device is in restricted mode.",
                 )
                 false
             }

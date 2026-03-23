@@ -25,6 +25,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.widget.LockPatternUtils
 import com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_NOT_REQUIRED
+import com.android.systemui.Flags.FLAG_STRONG_AUTH_REQUIRED_AFTER_SIGN_OUT_MESSAGE_FIX
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
@@ -54,6 +55,7 @@ import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.model.SelectionStatus
 import com.android.systemui.user.data.repository.fakeUserRepository
+import com.android.systemui.user.data.repository.userSwitcherRepository
 import com.android.systemui.user.domain.interactor.selectedUserInteractor
 import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
@@ -643,6 +645,49 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
 
             assertThat(deviceEntryRestrictionReason)
                 .isEqualTo(DeviceEntryRestrictionReason.DeviceNotUnlockedSinceMainlineUpdate)
+        }
+
+    @EnableFlags(FLAG_STRONG_AUTH_REQUIRED_AFTER_SIGN_OUT_MESSAGE_FIX)
+    @Test
+    fun deviceEntryRestrictionReason_whenUserNotUnlockedSinceSignOut_mapsToTheCorrectReason() =
+        testScope.runTest {
+            val deviceEntryRestrictionReason by
+                collectLastValue(underTest.deviceEntryRestrictionReason)
+            kosmos.userSwitcherRepository.isUserSwitchingMustGoThroughLoginScreen = true
+            kosmos.fakeBiometricSettingsRepository.setAuthenticationFlags(
+                AuthenticationFlags(
+                    userId = 1,
+                    flag = LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_BOOT,
+                )
+            )
+            runCurrent()
+
+            kosmos.fakeBiometricSettingsRepository.setIsFaceAuthEnrolledAndEnabled(false)
+            kosmos.fakeBiometricSettingsRepository.setIsFingerprintAuthEnrolledAndEnabled(false)
+            kosmos.fakeTrustRepository.setTrustUsuallyManaged(false)
+            runCurrent()
+
+            assertThat(deviceEntryRestrictionReason).isNull()
+
+            kosmos.fakeBiometricSettingsRepository.setIsFaceAuthEnrolledAndEnabled(true)
+            runCurrent()
+
+            assertThat(deviceEntryRestrictionReason)
+                .isEqualTo(DeviceEntryRestrictionReason.UserNotUnlockedSinceSignOut)
+
+            kosmos.fakeBiometricSettingsRepository.setIsFaceAuthEnrolledAndEnabled(false)
+            kosmos.fakeBiometricSettingsRepository.setIsFingerprintAuthEnrolledAndEnabled(true)
+            runCurrent()
+
+            assertThat(deviceEntryRestrictionReason)
+                .isEqualTo(DeviceEntryRestrictionReason.UserNotUnlockedSinceSignOut)
+
+            kosmos.fakeBiometricSettingsRepository.setIsFingerprintAuthEnrolledAndEnabled(false)
+            kosmos.fakeTrustRepository.setTrustUsuallyManaged(true)
+            runCurrent()
+
+            assertThat(deviceEntryRestrictionReason)
+                .isEqualTo(DeviceEntryRestrictionReason.UserNotUnlockedSinceSignOut)
         }
 
     @Test

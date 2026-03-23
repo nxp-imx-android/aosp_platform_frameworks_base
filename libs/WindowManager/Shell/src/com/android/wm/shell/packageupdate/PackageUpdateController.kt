@@ -152,8 +152,23 @@ class PackageUpdateController(
         val userId = task.userId
         val userHandle = UserHandle.of(userId)
         val userContext = userProfileContexts[userId]
+        val originalIntent = task.baseIntent
+        val freshIntent = Intent()
 
-        task.baseIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        freshIntent.component = originalIntent.component
+        freshIntent.action = originalIntent.action
+        freshIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
+        originalIntent.categories?.forEach { category -> freshIntent.addCategory(category) }
+        originalIntent.extras?.let { freshIntent.putExtras(it) }
+
+        val data = originalIntent.data
+        val type = originalIntent.type
+        when {
+            (data != null && type != null) -> freshIntent.setDataAndType(data, type)
+            data != null -> freshIntent.data = data
+            type != null -> freshIntent.type = type
+        }
 
         val options =
             ActivityOptions.makeBasic().apply {
@@ -166,7 +181,7 @@ class PackageUpdateController(
             PendingIntent.getActivityAsUser(
                 userContext,
                 /* requestCode= */ 0,
-                task.baseIntent,
+                freshIntent,
                 PendingIntent.FLAG_IMMUTABLE,
                 /* options= */ null,
                 userHandle,

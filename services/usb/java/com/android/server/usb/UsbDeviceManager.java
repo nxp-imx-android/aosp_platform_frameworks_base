@@ -25,6 +25,7 @@ import static android.hardware.usb.UsbPortStatus.POWER_ROLE_SOURCE;
 import static com.android.internal.usb.DumpUtils.writeAccessory;
 import static com.android.internal.util.dump.DumpUtils.writeStringIfNotNull;
 
+import android.annotation.RequiresNoPermission;
 import android.app.ActivityManager;
 import android.app.KeyguardManager;
 import android.app.Notification;
@@ -54,6 +55,11 @@ import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 import android.hardware.usb.UsbPort;
 import android.hardware.usb.UsbPortStatus;
+import android.hardware.usb.aoa.AccessoryHandshakeState;
+import android.hardware.usb.aoa.AccessoryMetadata;
+import android.hardware.usb.aoa.AoaInitializationStatus;
+import android.hardware.usb.aoa.IUsbAoa;
+import android.hardware.usb.aoa.IUsbAoaCallback;
 import android.hardware.usb.gadget.V1_0.GadgetFunction;
 import android.hardware.usb.gadget.V1_0.Status;
 import android.hardware.usb.gadget.V1_2.UsbSpeed;
@@ -69,6 +75,7 @@ import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.os.SELinux;
+import android.os.ServiceManager;
 import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.os.UEventObserver;
@@ -255,6 +262,49 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
      */
     private static final AtomicInteger sUsbOperationCount = new AtomicInteger();
 
+    private IUsbAoa mUsbAoaService;
+    private final IUsbAoaCallback mUsbAoaCallback = new IUsbAoaCallback.Stub() {
+        @Override
+        @RequiresNoPermission
+        public void onAccessoryStateChanged(int status) {
+            if (DEBUG) Slog.d(TAG, "Received AOA status change: " + status);
+            mHandler.post(() -> updateAccessoryState(status));
+        }
+    };
+    private IUsbAoa getUsbAoaService() {
+        if (mUsbAoaService != null) {
+            return mUsbAoaService;
+        }
+
+        try {
+            IBinder b = ServiceManager.getService("aoad");
+            if (b != null) {
+                mUsbAoaService = IUsbAoa.Stub.asInterface(b);
+                try {
+                    Slog.i(TAG, "Registering AOA callback with new service connection");
+                    mUsbAoaService.setCallback(mUsbAoaCallback);
+
+                    //Register a linkToDeath to clear the variable if the daemon crashes
+                    b.linkToDeath(() -> {
+                        Slog.w(TAG, "aoad died! Clearing service handle.");
+                        mUsbAoaService = null;
+                    }, 0);
+
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Failed to register callback or linkToDeath", e);
+                    mUsbAoaService = null;
+                }
+
+            } else {
+                Slog.e(TAG, "aoad service not found!");
+            }
+        } catch (Exception e) {
+            Slog.e(TAG, "Error getting aoad service", e);
+        }
+
+        return mUsbAoaService;
+    }
+
     static {
         sDenyInterfaces = new HashSet<>();
         sDenyInterfaces.add(UsbConstants.USB_CLASS_AUDIO);
@@ -374,20 +424,31 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
                 SystemProperties.getBoolean(DEVICE_UAOA_ENABLED_PROPERTY, false);
         Slog.i(TAG, "Device enabled userspace AOA: " + deviceEnabledUserspaceAoa);
 
-        boolean checkAccessoryFfsDirectories = nativeCheckAccessoryFfsDirectories();
         boolean featureEnabledUserspaceAoa =
                 android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation();
+        boolean checkAccessoryFfsDirectories = false;
 
         mEnableAoaUserspaceImplementation =
                 featureEnabledUserspaceAoa
-                && deviceEnabledUserspaceAoa
-                && checkAccessoryFfsDirectories;
+                && deviceEnabledUserspaceAoa;
 
         Slog.i(TAG, "Initial userspace AOA enablement: " + mEnableAoaUserspaceImplementation);
 
         int openControlResult = UsbStatsEnums.UNSPECIFIED;
         if (mEnableAoaUserspaceImplementation) {
-            openControlResult = nativeOpenAccessoryControl();
+            try {
+                IUsbAoa service = getUsbAoaService();
+                if (service != null) {
+                    AoaInitializationStatus status = service.getInitializationStatus();
+                    checkAccessoryFfsDirectories = status.isFfsDirectoryPresent;
+                    openControlResult = status.openControlResult;
+                } else {
+                    Slog.i(TAG, "No service: aoad");
+                }
+            } catch (RemoteException e) {
+                Slog.e(TAG, "RemoteException calling openAccessoryControl", e);
+            }
+            Slog.i(TAG, "openControlResult AOA enablement: " + openControlResult);
 
             if (UsbStatsEnums.SUCCESS != openControlResult) {
                 Slog.e(TAG, "Failed to open control for accessory, disabling userspace AOA");
@@ -553,10 +614,6 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
             mUEventObserver.startObserving(USB_STATE_MATCH);
         }
 
-        if (mEnableAoaUserspaceImplementation) {
-            nativeStartVendorControlRequestMonitor();
-        }
-
         sEventLogger = new EventLogger(DUMPSYS_LOG_BUFFER, "UsbDeviceManager activity");
     }
 
@@ -619,7 +676,32 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
 
         int operationId = sUsbOperationCount.incrementAndGet();
 
-        mAccessoryStrings = nativeGetAccessoryStrings();
+        if (mEnableAoaUserspaceImplementation) {
+            try {
+                IUsbAoa service = getUsbAoaService();
+                if (service != null) {
+                    AccessoryMetadata metadata = service.getAccessoryStrings();
+                    if (metadata != null) {
+                        mAccessoryStrings = new String[6];
+                        // Map fields to the standard AOA string indexes
+                        mAccessoryStrings[0] = metadata.manufacturer;
+                        mAccessoryStrings[1] = metadata.model;
+                        mAccessoryStrings[2] = metadata.description;
+                        mAccessoryStrings[3] = metadata.version;
+                        mAccessoryStrings[4] = metadata.uri;
+                        mAccessoryStrings[5] = metadata.serial;
+                    } else {
+                        mAccessoryStrings = null;
+                    }
+                } else {
+                    Slog.e(TAG, " no aoad service");
+                }
+            } catch (RemoteException e) {
+                Slog.e(TAG, "RemoteException calling getAccessoryStrings", e);
+            }
+        } else {
+            mAccessoryStrings = nativeGetAccessoryStrings();
+        }
 
         // don't start accessory mode if our mandatory strings have not been set
         boolean enableAccessory = (mAccessoryStrings != null &&
@@ -2705,7 +2787,21 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
             throw new IllegalArgumentException(error);
         }
         permissions.checkPermission(accessory, packageName, pid, uid);
-        return nativeOpenAccessory();
+
+        ParcelFileDescriptor fd = null;
+        if (mEnableAoaUserspaceImplementation) {
+            try {
+                IUsbAoa service = getUsbAoaService();
+                if (service != null) {
+                    fd = service.openAccessory();
+                }
+            } catch (RemoteException e) {
+                Slog.e(TAG, "RemoteException calling openAccessory", e);
+            }
+        } else {
+            fd = nativeOpenAccessory();
+        }
+        return fd;
     }
 
     /**
@@ -2729,7 +2825,20 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
             throw new IllegalArgumentException(error);
         }
         permissions.checkPermission(accessory, packageName, pid, uid);
-        return nativeOpenAccessoryForInputStream();
+
+        ParcelFileDescriptor fd = null;
+
+        if (mEnableAoaUserspaceImplementation) {
+            try {
+                IUsbAoa service = getUsbAoaService();
+                if (service != null) {
+                    fd =  service.openAccessoryForInputStream();
+                }
+            } catch (RemoteException e) {
+                Slog.e(TAG, "RemoteException calling openAccessoryForInputStream", e);
+            }
+        }
+        return fd;
     }
 
     /**
@@ -2753,10 +2862,24 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
             throw new IllegalArgumentException(error);
         }
         permissions.checkPermission(accessory, packageName, pid, uid);
-        return nativeOpenAccessoryForOutputStream();
+
+        ParcelFileDescriptor fd = null;
+        if (mEnableAoaUserspaceImplementation) {
+            try {
+                IUsbAoa service = getUsbAoaService();
+                if (service != null) {
+                    fd = service.openAccessoryForOutputStream();
+                }
+            } catch (RemoteException e) {
+                Slog.e(TAG, "RemoteException calling openAccessoryForOutputStream", e);
+            }
+        }
+        return fd;
     }
 
     public int getMaxPacketSize(UsbAccessory accessory) {
+        int maxPacketSize = -1;
+        if (!mEnableAoaUserspaceImplementation) return maxPacketSize;
         UsbAccessory currentAccessory = mHandler.getCurrentAccessory();
         if (currentAccessory == null) {
             throw new IllegalArgumentException("no accessory attached");
@@ -2766,8 +2889,17 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
                     accessory.toString() + " does not match current accessory " + currentAccessory;
             throw new IllegalArgumentException(error);
         }
-
-        return nativeGetMaxPacketSize();
+        try {
+            IUsbAoa service = getUsbAoaService();
+            if (service != null) {
+                maxPacketSize = service.getMaxPacketSize();
+            } else {
+                Slog.e(TAG, "aoad service not available");
+            }
+        } catch (RemoteException e) {
+            Slog.e(TAG, "RemoteException calling getMaxPacketSize", e);
+        }
+        return maxPacketSize;
     }
 
     public boolean isAccessoryFfsEnabled() {
@@ -2908,7 +3040,7 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
 
     /** Update accessory control state (Called by native code). */
     @Keep
-    private void updateAccessoryState(String state) {
+    private void updateAccessoryState(int state) {
         if (!mEnableAoaUserspaceImplementation) {
             Slog.w(TAG, "Accessory state update from userspace is not supported!");
             return;
@@ -2916,15 +3048,15 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
 
         Slog.d(TAG, "Accessory state update " + state);
 
-        if ("GETPROTOCOL".equals(state)) {
+        if (state == AccessoryHandshakeState.GET_PROTOCOL) {
             if (DEBUG) Slog.d(TAG, "got accessory get protocol");
             mHandler.setAccessoryUEventTime(SystemClock.elapsedRealtime());
             resetAccessoryHandshakeTimeoutHandler();
-        } else if ("SENDSTRING".equals(state)) {
+        } else if (state == AccessoryHandshakeState.SEND_STRING) {
             if (DEBUG) Slog.d(TAG, "got accessory send string");
             mHandler.sendEmptyMessage(MSG_INCREASE_SENDSTRING_COUNT);
             resetAccessoryHandshakeTimeoutHandler();
-        } else if ("START".equals(state)) {
+        } else if (state == AccessoryHandshakeState.START) {
             if (DEBUG) Slog.d(TAG, "got accessory start");
             mHandler.removeMessages(MSG_ACCESSORY_HANDSHAKE_TIMEOUT);
             mHandler.setStartAccessoryTrue();
@@ -2934,13 +3066,7 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
 
     private native String[] nativeGetAccessoryStrings();
 
-    private native int nativeGetMaxPacketSize();
-
     private native ParcelFileDescriptor nativeOpenAccessory();
-
-    private native ParcelFileDescriptor nativeOpenAccessoryForInputStream();
-
-    private native ParcelFileDescriptor nativeOpenAccessoryForOutputStream();
 
     private native String nativeWaitAndGetProperty(String propName);
 
@@ -2951,11 +3077,5 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
     private native boolean nativeStartGadgetMonitor(String udcName);
 
     private native void nativeStopGadgetMonitor();
-
-    private native boolean nativeStartVendorControlRequestMonitor();
-
-    private native int nativeOpenAccessoryControl();
-
-    private native boolean nativeCheckAccessoryFfsDirectories();
 
 }

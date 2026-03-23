@@ -225,9 +225,11 @@ import static android.app.admin.ProvisioningException.ERROR_ADMIN_PACKAGE_INSTAL
 import static android.app.admin.ProvisioningException.ERROR_PRE_CONDITION_FAILED;
 import static android.app.admin.ProvisioningException.ERROR_PROFILE_CREATION_FAILED;
 import static android.app.admin.ProvisioningException.ERROR_REMOVE_NON_REQUIRED_APPS_FAILED;
+import static android.app.admin.ProvisioningException.ERROR_SET_DEVICE_CONTROLLER_FAILED;
 import static android.app.admin.ProvisioningException.ERROR_SETTING_PROFILE_OWNER_FAILED;
 import static android.app.admin.ProvisioningException.ERROR_SET_DEVICE_OWNER_FAILED;
 import static android.app.admin.ProvisioningException.ERROR_STARTING_PROFILE_FAILED;
+import static android.app.admin.ProvisioningException.ERROR_UNKNOWN;
 import static android.content.Context.RECEIVER_NOT_EXPORTED;
 import static android.content.Intent.ACTION_MANAGED_PROFILE_AVAILABLE;
 import static android.content.Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE;
@@ -339,6 +341,7 @@ import android.app.admin.FactoryResetProtectionPolicy;
 import android.app.admin.FullyManagedDeviceProvisioningParams;
 import android.app.admin.IAuditLogEventsCallback;
 import android.app.admin.IDevicePolicyManager;
+import android.app.admin.IDeviceProvisioningCallback;
 import android.app.admin.IntegerPolicyValue;
 import android.app.admin.IntentFilterPolicyKey;
 import android.app.admin.LockTaskPolicy;
@@ -362,6 +365,7 @@ import android.app.admin.PolicySizeVerifier;
 import android.app.admin.PolicyValue;
 import android.app.admin.PolicyValueTransport;
 import android.app.admin.PreferentialNetworkServiceConfig;
+import android.app.admin.ProvisioningException;
 import android.app.admin.SecurityLog;
 import android.app.admin.SecurityLog.SecurityEvent;
 import android.app.admin.StartInstallingUpdateCallback;
@@ -21958,7 +21962,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     @Override
     public void provisionMultiuserManagedDevice(
             @NonNull MultiuserManagedDeviceProvisioningParamsTransport provisioningParams,
-            @NonNull String callerPackage) {
+            @NonNull String callerPackage,
+            @NonNull IDeviceProvisioningCallback deviceProvisioningCallback) {
         Objects.requireNonNull(provisioningParams, "provisioningParams is null.");
         Objects.requireNonNull(callerPackage, "callerPackage is null.");
         Objects.requireNonNull(
@@ -21985,25 +21990,61 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                         + provisioningParams.deviceControllerPackageName
                         + ") pre-conditions failed: "
                         + computeProvisioningErrorString(result, caller.getUserId()));
-                throw new ServiceSpecificException(
-                        ERROR_PRE_CONDITION_FAILED,
-                        PROVISIONING_PRECONDITIONS_FAILED_WITH_RESULT + result);
+                try {
+                    deviceProvisioningCallback.onFailure(
+                            ProvisioningException.ERROR_PRE_CONDITION_FAILED);
+                } catch (RemoteException re) {
+                    Slogf.e(LOG_TAG, "Failed to notify failure to caller", re);
+                }
+                return;
             }
 
             onProvisionMultiuserManagedDeviceStarted(provisioningParams);
 
-            // TODO(b/390162247): Remove this after fully migrating to AdminRecord.
-            enableAndSetActiveAdmin(UserHandle.USER_SYSTEM, UserHandle.USER_SYSTEM, deviceAdmin);
-
-            mDeviceAdmins.getOwners().setDeviceManaged(true);
-            mDeviceAdmins.getOwners().setMultiuserManagedDeviceProvisioningState(
-                    MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_COMPLETED);
-            mDeviceAdmins.getOwners().writeDeviceOwner();
-            if (Flags.managedDeviceDefinitionExtended()) {
-                invalidateBinderCaches();
-            }
-
-            onProvisionMultiuserManagedDeviceCompleted(provisioningParams);
+            // The DEVICE_CONTROLLER role is granted asynchronously and the rest is executed after
+            // the callback is triggered. Anything else that needs to be done in this method should
+            // be done after the role assignment is completed, in the method
+            // continueProvisionMultiuserManagedDevice().
+            // This allows us to be sure if the role assignment fails, then we fail gracefully
+            // without additional changes to the system.
+            Slogf.d(
+                    LOG_TAG,
+                    "setDeviceControllerRole(packageName=%s)",
+                    provisioningParams.deviceControllerPackageName);
+            Consumer<Boolean> addRoleCallback =
+                    successful -> {
+                        try {
+                            if (successful) {
+                                continueProvisionMultiuserManagedDevice(
+                                        provisioningParams, deviceAdmin);
+                                deviceProvisioningCallback.onSuccess();
+                            } else {
+                                Slogf.e(
+                                        LOG_TAG,
+                                        "Role assignment failed for %s",
+                                        provisioningParams.deviceControllerPackageName);
+                                deviceProvisioningCallback.onFailure(
+                                        ProvisioningException.ERROR_SET_DEVICE_CONTROLLER_FAILED);
+                            }
+                        } catch (RemoteException re) {
+                            Slogf.e(LOG_TAG, "Failed to notify caller", re);
+                        } catch (Exception e) {
+                            Slogf.e(LOG_TAG, "Failed to complete provisioning", e);
+                            try {
+                                deviceProvisioningCallback.onFailure(
+                                        ProvisioningException.ERROR_UNKNOWN);
+                            } catch (RemoteException re) {
+                                Slogf.e(LOG_TAG, "Failed to notify failure to caller", re);
+                            }
+                        }
+                    };
+            mRoleManager.addRoleHolderAsUser(
+                    RoleManager.ROLE_DEVICE_CONTROLLER,
+                    provisioningParams.deviceControllerPackageName,
+                    /* grantFlags= */ 0,
+                    UserHandle.of(UserHandle.USER_SYSTEM),
+                    AsyncTask.THREAD_POOL_EXECUTOR,
+                    addRoleCallback);
         } catch (Exception e) {
             DevicePolicyEventLogger.createEvent(DevicePolicyEnums.PLATFORM_PROVISIONING_ERROR)
                     .setStrings(callerPackage)
@@ -22012,6 +22053,23 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         } finally {
             Binder.restoreCallingIdentity(identity);
         }
+    }
+
+    private void continueProvisionMultiuserManagedDevice(
+            MultiuserManagedDeviceProvisioningParamsTransport provisioningParams,
+            ComponentName deviceAdmin) {
+        // TODO(b/390162247): Remove this after fully migrating to AdminRecord.
+        enableAndSetActiveAdmin(UserHandle.USER_SYSTEM, UserHandle.USER_SYSTEM, deviceAdmin);
+
+        mDeviceAdmins.getOwners().setDeviceManaged(true);
+        mDeviceAdmins.getOwners().setMultiuserManagedDeviceProvisioningState(
+                MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_COMPLETED);
+        mDeviceAdmins.getOwners().writeDeviceOwner();
+        if (Flags.managedDeviceDefinitionExtended()) {
+            invalidateBinderCaches();
+        }
+
+        onProvisionMultiuserManagedDeviceCompleted(provisioningParams);
     }
 
     @SuppressWarnings("UnusedVariable")

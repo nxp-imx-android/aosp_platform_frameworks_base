@@ -81,6 +81,7 @@ import com.android.systemui.navigationbar.TaskbarDelegate;
 import com.android.systemui.navigationbar.views.NavigationBarView;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
+import com.android.systemui.res.R;
 import com.android.systemui.scene.domain.interactor.SceneInteractor;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.scene.shared.model.Overlays;
@@ -1895,6 +1896,11 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
      * Returns if bouncer needs fullscreen bouncer. i.e. sim pin security method
      */
     public boolean needsFullscreenBouncer() {
+        // Non scene_container code path to always show the bouncer without lockscreen
+        if (mContext.getResources().getBoolean(R.bool.config_alwaysShowBouncerWhenLocked)) {
+            return true;
+        }
+
         KeyguardSecurityModel.SecurityMode mode = mKeyguardSecurityModel.getSecurityMode(
                 mSelectedUserInteractor.getSelectedUserId());
         return mode == KeyguardSecurityModel.SecurityMode.SimPin

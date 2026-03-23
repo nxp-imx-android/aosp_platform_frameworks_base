@@ -33,6 +33,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -137,9 +138,11 @@ public class ComputerControlAllowlistControllerTest {
     public void setUp() throws Exception {
         mMockitoSession = MockitoAnnotations.openMocks(this);
         mSpyContext = spy(new ContextWrapper(mContext));
-        when(mSpyContext.getResources()).thenReturn(mResources);
+        doReturn(mResources).when(mSpyContext).getResources();
         doNothing().when(mSpyContext).enforceCallingOrSelfPermission(anyString(), anyString());
-        when(mSpyContext.getSystemService(RoleManager.class)).thenReturn(mRoleManager);
+        doReturn(mRoleManager).when(mSpyContext).getSystemService(RoleManager.class);
+        doReturn(mSpyContext).when(mSpyContext).createContextAsUser(any(), anyInt());
+        doReturn(mPackageManager).when(mSpyContext).getPackageManager();
 
         final Signature signature = generateSignature((byte) 42);
         final String superAgentCertificateDigest = preparePackage(SUPER_AGENT_PACKAGE, signature);
@@ -961,6 +964,77 @@ public class ComputerControlAllowlistControllerTest {
 
         assertTrue(mAllowlistController.doesAgentHaveConsentToAutomateTargetApp(agentUid, agentPkg,
                 targetPkg));
+    }
+
+    @Test
+    public void isPackageApprovedToRunAutomation_notAllowlisted_returnsFalse() throws Exception {
+        final String packageName = "com.not.allowlisted";
+        preparePackage(packageName, generateSignature((byte) 1));
+
+        assertFalse(mAllowlistController.isPackageApprovedToRunAutomation(packageName,
+                UserHandle.SYSTEM.getIdentifier()));
+    }
+
+    @Test
+    public void isPackageApprovedToRunAutomation_allowlisted_returnsTrue() throws Exception {
+        final String packageName = "com.allowlisted.agent";
+        final Signature signature = generateSignature((byte) 1);
+        final String certificateDigest = preparePackage(packageName, signature);
+
+        mDeviceConfigWriter.allowlistSessionOwner(packageName, certificateDigest);
+        SystemClock.sleep(TIMEOUT_MILLIS);
+
+        assertTrue(mAllowlistController.isPackageApprovedToRunAutomation(packageName,
+                UserHandle.SYSTEM.getIdentifier()));
+    }
+
+    @Test
+    public void isPackageApprovedToRunAutomation_superAgent_debuggableBuild_returnsTrue() {
+        assertTrue(mAllowlistController.isPackageApprovedToRunAutomation(SUPER_AGENT_PACKAGE,
+                UserHandle.SYSTEM.getIdentifier()));
+    }
+
+    @Test
+    public void isPackageApprovedToRunAutomation_superAgent_nonDebuggableBuild_throws() {
+        createAllowlistController(/* buildIsDebuggable */ false);
+        assertFalse(mAllowlistController.isPackageApprovedToRunAutomation(SUPER_AGENT_PACKAGE,
+                UserHandle.SYSTEM.getIdentifier()));
+    }
+
+    @Test
+    public void isPackageTargetableForAutomation_notAllowlisted_returnsFalse() throws Exception {
+        final String packageName = "com.not.allowlisted.target";
+        preparePackage(packageName, generateSignature((byte) 1));
+
+        assertFalse(mAllowlistController.isPackageTargetableForAutomation(packageName,
+                UserHandle.SYSTEM.getIdentifier()));
+    }
+
+    @Test
+    public void isPackageTargetableForAutomation_allowlisted_returnsTrue() throws Exception {
+        final String packageName = "com.allowlisted.target";
+        final Signature signature = generateSignature((byte) 1);
+        final String certificateDigest = preparePackage(packageName, signature);
+
+        mDeviceConfigWriter.allowlistAutomatableApp(packageName, certificateDigest);
+        SystemClock.sleep(TIMEOUT_MILLIS);
+
+        assertTrue(mAllowlistController.isPackageTargetableForAutomation(packageName,
+                UserHandle.SYSTEM.getIdentifier()));
+    }
+
+    @Test
+    public void isPackageTargetableForAutomation_denylisted_returnsFalse() throws Exception {
+        final String packageName = "com.denylisted.target";
+        final Signature signature = generateSignature((byte) 1);
+        final String certificateDigest = preparePackage(packageName, signature);
+
+        mDeviceConfigWriter.allowlistAutomatableApp(packageName, certificateDigest);
+        mDeviceConfigWriter.denylistAutomatableApp(packageName, certificateDigest);
+        SystemClock.sleep(TIMEOUT_MILLIS);
+
+        assertFalse(mAllowlistController.isPackageTargetableForAutomation(packageName,
+                UserHandle.SYSTEM.getIdentifier()));
     }
 
     @Test

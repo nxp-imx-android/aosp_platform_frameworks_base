@@ -24,7 +24,11 @@ import android.testing.AndroidTestingRunner
 import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.SurfaceControl
+import android.view.WindowInsets
+import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
+import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_ADD_INSETS_FRAME_PROVIDER
+import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_INSETS_FRAME_PROVIDER
 import androidx.test.filters.SmallTest
 import com.android.testing.wm.util.StubTransaction
 import com.android.wm.shell.ShellTaskOrganizer
@@ -121,6 +125,61 @@ class WindowDecoration2Tests : ShellTestCase() {
             }
         }
 
+    @Test
+    fun captionTypeChanged_swapInsetSources_shouldHappenInASingleTransaction() =
+        testScope.runTest {
+            val taskInfo = createFreeformTask().apply { isVisible = true }
+            TestWindowDecoration(taskInfo).use {
+                it.relayout(
+                    taskInfo = taskInfo,
+                    captionType = CaptionController.CaptionType.APP_HEADER,
+                    hasGlobalFocus = true,
+                    isCaptionVisible = true,
+                    displayExclusionRegion = Region.obtain(),
+                )
+                val appHeaderController = it.captionController as TestCaptionController
+
+                val pinnedWct = WindowContainerTransaction()
+                it.relayout(
+                    taskInfo = taskInfo,
+                    captionType = CaptionController.CaptionType.APP_PINNED,
+                    hasGlobalFocus = true,
+                    isCaptionVisible = true,
+                    wct = pinnedWct,
+                    displayExclusionRegion = Region.obtain(),
+                )
+                val appPinnedController = it.captionController as TestCaptionController
+
+                assertThat(appHeaderController).isNotEqualTo(appPinnedController)
+                assertThat(appHeaderController.closed).isTrue()
+                assertThat(appPinnedController.closed).isFalse()
+                pinnedWct.assertRemoveInsetsSource(taskInfo.token)
+                pinnedWct.assertAddInsetsSource(taskInfo.token)
+            }
+        }
+
+    private fun WindowContainerTransaction.assertAddInsetsSource(token: WindowContainerToken) {
+        assertThat(
+                hierarchyOps.any { op ->
+                    op.type == HIERARCHY_OP_TYPE_ADD_INSETS_FRAME_PROVIDER &&
+                        op.container == token.asBinder() &&
+                        op.insetsFrameProvider?.type == WindowInsets.Type.captionBar()
+                }
+            )
+            .isTrue()
+    }
+
+    private fun WindowContainerTransaction.assertRemoveInsetsSource(token: WindowContainerToken) {
+        assertThat(
+                hierarchyOps.any { op ->
+                    op.type == HIERARCHY_OP_TYPE_REMOVE_INSETS_FRAME_PROVIDER &&
+                        op.container == token.asBinder() &&
+                        op.insetsFrameProvider?.type == WindowInsets.Type.captionBar()
+                }
+            )
+            .isTrue()
+    }
+
     private inner class TestWindowDecoration(taskInfo: RunningTaskInfo) :
         WindowDecoration2<WindowDecorLinearLayout>(
             taskInfo,
@@ -162,6 +221,8 @@ class WindowDecoration2Tests : ShellTestCase() {
             captionType: CaptionController.CaptionType = CaptionController.CaptionType.NO_CAPTION,
             hasGlobalFocus: Boolean = true,
             displayExclusionRegion: Region = Region.obtain(),
+            isCaptionVisible: Boolean = false,
+            wct: WindowContainerTransaction = WindowContainerTransaction(),
         ) {
             relayout(
                 RelayoutParams(
@@ -169,10 +230,11 @@ class WindowDecoration2Tests : ShellTestCase() {
                     captionType = captionType,
                     hasGlobalFocus = hasGlobalFocus,
                     displayExclusionRegion = displayExclusionRegion,
+                    isCaptionVisible = isCaptionVisible,
                 ),
                 stubStartTransaction,
                 stubFinishTransaction,
-                WindowContainerTransaction(),
+                wct,
                 mockTaskSurface,
             )
         }

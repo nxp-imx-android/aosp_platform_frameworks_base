@@ -406,8 +406,12 @@ private constructor(
                 { keyParametersSchema },
                 { keyParameters },
             )
-        builder.lambda()
-        preferences.add(builder.build())
+        try {
+            builder.lambda()
+            preferences.add(builder.build())
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to build preference: $key for screen: $key", e)
+        }
     }
 
     /** Initializes the [ValidatedKeyParameters] if this preference screen is parameterized. */
@@ -533,7 +537,7 @@ private constructor(
             val parameterToUse = scope.parameters.values.first()
 
             this@PreferencesApiScreen.allPossibleParameters = { context ->
-                parameterToUse.type.getOptions(context).mapNotNull { parameterOption ->
+                parameterToUse.type.getCachedOptions(context).mapNotNull { parameterOption ->
                     parameterOption.first?.let {
                         this@PreferencesApiScreen.parametersSchema!!.prepare(
                             parameterToUse.name.safe() to it

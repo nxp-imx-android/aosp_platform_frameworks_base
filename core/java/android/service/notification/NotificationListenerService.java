@@ -31,6 +31,7 @@ import android.app.Notification.Builder;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
+import android.app.NotificationRule;
 import android.app.Person;
 import android.app.Service;
 import android.companion.CompanionDeviceManager;
@@ -1754,6 +1755,21 @@ public abstract class NotificationListenerService extends Service {
 
         @Override
         public void onSystemAdjustmentsReceived(List<Adjustment> adjustment) {
+            // no-op in the listener
+        }
+
+        @Override
+        public void onNotificationRuleAdded(NotificationRule rule) {
+            // no-op in the listener
+        }
+
+        @Override
+        public void onNotificationRuleModified(NotificationRule rule) {
+            // no-op in the listener
+        }
+
+        @Override
+        public void onNotificationRuleRemoved(int ruleId) {
             // no-op in the listener
         }
     }

@@ -65,6 +65,7 @@ fun SensorActivityDrillIn(
 
     DrillIn(
         drillInTitle = stringResource(R.string.av_panel_title),
+        subtitle = stringResource(R.string.sensor_activity_header),
         returnToMainPage = { setCurrentPage(PageType.MAIN) },
         modifier = modifier,
     ) {
@@ -73,14 +74,6 @@ fun SensorActivityDrillIn(
             verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
             modifier = modifier,
         ) {
-            Text(
-                text = stringResource(R.string.sensor_activity_header),
-                modifier = Modifier.height(32.dp).width(256.dp),
-                style = typography.labelMedium,
-                textAlign = TextAlign.Center,
-                color = colorScheme.onSurfaceVariant,
-            )
-
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.Top),
@@ -121,6 +114,8 @@ fun SensorActivityDrillIn(
                 },
                 modifier =
                     Modifier.clip(shape = RoundedCornerShape(size = 1000.dp)) // Make it a circle
+                        .width(348.dp)
+                        .height(36.dp)
                         .clickable(onClick = { viewModel.openPrivacyDashboard() }),
                 colors =
                     ListItemDefaults.colors()

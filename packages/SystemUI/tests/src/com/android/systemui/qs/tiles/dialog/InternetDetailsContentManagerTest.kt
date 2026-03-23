@@ -202,7 +202,7 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
     fun hideWifiViews_WifiViewsGone() {
         internetDetailsContentManager.hideWifiViews()
 
-        assertThat(internetDetailsContentManager.isProgressBarVisible).isFalse()
+        assertThat(internetDetailsContentManager.isProgressBarAnimating).isFalse()
         assertThat(wifiToggle!!.visibility).isEqualTo(View.GONE)
         assertThat(connectedWifi!!.visibility).isEqualTo(View.GONE)
         assertThat(wifiList!!.visibility).isEqualTo(View.GONE)
@@ -853,21 +853,53 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
     }
 
     @Test
-    fun onWifiScan_isScanTrue_setProgressBarVisibleTrue() {
-        internetDetailsContentManager.isProgressBarVisible = false
+    fun onWifiScan_isScanTrue_setProgressBarAnimatingTrue() {
+        val progressBar =
+            contentView.requireViewById<android.widget.ProgressBar>(R.id.wifi_searching_progress)
+        internetDetailsContentManager.isProgressBarAnimating = false
 
         internetDetailsContentManager.internetDetailsCallback.onWifiScan(true)
 
-        assertThat(internetDetailsContentManager.isProgressBarVisible).isTrue()
+        assertThat(internetDetailsContentManager.isProgressBarAnimating).isTrue()
+        assertThat(progressBar.visibility).isEqualTo(View.VISIBLE)
+        assertThat(progressBar.isIndeterminate).isTrue()
     }
 
     @Test
-    fun onWifiScan_isScanFalse_setProgressBarVisibleFalse() {
-        internetDetailsContentManager.isProgressBarVisible = true
+    fun onWifiScan_isScanFalse_setProgressBarAnimatingFalse() {
+        val progressBar =
+            contentView.requireViewById<android.widget.ProgressBar>(R.id.wifi_searching_progress)
+        internetDetailsContentManager.isProgressBarAnimating = true
 
         internetDetailsContentManager.internetDetailsCallback.onWifiScan(false)
 
-        assertThat(internetDetailsContentManager.isProgressBarVisible).isFalse()
+        assertThat(internetDetailsContentManager.isProgressBarAnimating).isFalse()
+        assertThat(progressBar.visibility).isEqualTo(View.VISIBLE)
+        assertThat(progressBar.isIndeterminate).isFalse()
+        assertThat(progressBar.progress).isEqualTo(progressBar.max)
+    }
+
+    @Test
+    fun onWifiScan_isScanFalse_applyStaticColorTint() {
+        val progressBar =
+            contentView.requireViewById<android.widget.ProgressBar>(R.id.wifi_searching_progress)
+
+        internetDetailsContentManager.internetDetailsCallback.onWifiScan(true)
+        internetDetailsContentManager.internetDetailsCallback.onWifiScan(false)
+
+        assertThat(progressBar.progressTintList).isNotNull()
+    }
+
+    @Test
+    fun onWifiScan_isScanTrue_removeStaticColorTint() {
+        val progressBar =
+            contentView.requireViewById<android.widget.ProgressBar>(R.id.wifi_searching_progress)
+
+        internetDetailsContentManager.internetDetailsCallback.onWifiScan(true)
+        internetDetailsContentManager.internetDetailsCallback.onWifiScan(false)
+        internetDetailsContentManager.internetDetailsCallback.onWifiScan(true)
+
+        assertThat(progressBar.progressTintList).isNull()
     }
 
     @Test
@@ -929,7 +961,7 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
     @Test
     fun turnOffProgressBarWhenWifiDisabled() {
         whenever(internetDetailsContentController.isWifiEnabled).thenReturn(false)
-        internetDetailsContentManager.isProgressBarVisible = true
+        internetDetailsContentManager.isProgressBarAnimating = true
 
         internetDetailsContentManager.updateContent(false)
 
@@ -937,7 +969,7 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
         internetDetailsContentManager.internetContentData.observe(
             internetDetailsContentManager.lifecycleOwner!!
         ) {
-            assertThat(internetDetailsContentManager.isProgressBarVisible).isFalse()
+            assertThat(internetDetailsContentManager.isProgressBarAnimating).isFalse()
         }
     }
 

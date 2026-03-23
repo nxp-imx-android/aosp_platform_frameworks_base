@@ -448,7 +448,10 @@ policy_metadata {
   required_permission: "android.permission.MANAGE_DEVICE_POLICY_FACTORY_RESET"
   required_cross_user_permission: "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS"
   allowed_dpc_types: DPC_TYPE_DEVICE_OWNER
+  allowed_dpc_types: DPC_TYPE_FINANCED_DEVICE_OWNER
+  allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
   allowed_dpc_types: DPC_TYPE_PROFILE_OWNER_ON_USER0
+  allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
   flag: "android.app.admin.flags.policy_streamlining_disallow_factory_reset"
 }
 policy_metadata {

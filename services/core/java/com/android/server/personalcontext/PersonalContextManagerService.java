@@ -239,7 +239,7 @@ public class PersonalContextManagerService extends SystemService {
     @Override
     public void onStart() {
         publishBinderService(
-                PersonalContextManager.PERSONAL_CONTEXT_SERVICE,
+                Context.PERSONAL_CONTEXT_SERVICE,
                 new BinderService(this, mPackageManager));
         publishLocalService(PersonalContextManagerInternal.class, mInternalService);
         Slog.i(TAG, "Personal Context Service started");

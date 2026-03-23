@@ -894,6 +894,9 @@ public final class Display {
      * @return The display address.
      * @hide
      */
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
+    @TestApi
+    @Nullable
     public DisplayAddress getAddress() {
         synchronized (mLock) {
             updateDisplayInfoLocked();

@@ -94,6 +94,7 @@ import static com.android.hardware.input.Flags.useEventDisplayIdForKeyWakeup;
 import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_DISPLAY_SWITCH;
 import static com.android.internal.policy.IKeyguardService.SCREEN_TURNING_ON_REASON_UNKNOWN;
 import static com.android.server.policy.Flags.wearKeyguardDrawnTimeoutOnBootConfig;
+import static com.android.server.policy.Flags.brightnessOverrideToast;
 import static com.android.server.policy.SingleKeyGestureEvent.ACTION_CANCEL;
 import static com.android.server.policy.SingleKeyGestureEvent.ACTION_COMPLETE;
 import static com.android.server.policy.SingleKeyGestureEvent.ACTION_START;
@@ -148,6 +149,7 @@ import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.graphics.Rect;
 import android.hardware.SensorPrivacyManager;
+import android.hardware.display.BrightnessInfo;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerInternal;
 import android.hardware.hdmi.HdmiAudioSystemClient;
@@ -3597,8 +3599,18 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             case KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_UP:
             case KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_DOWN:
                 if (complete) {
+                    if (brightnessOverrideToast()) {
+                        BrightnessInfo info =
+                                mDisplayManager.getDisplay(displayId).getBrightnessInfo();
+                        if (info != null && info.isBrightnessOverrideByWindow) {
+                            showBrightnessOverrideToast();
+                            break;
+                        }
+                    }
+
                     int direction =
-                            gestureType == KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_UP ? 1 : -1;
+                            gestureType == KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_UP ? 1
+                                    : -1;
                     changeDisplayBrightnessValue(displayId, direction);
                 }
                 break;
@@ -3676,6 +3688,15 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         + " that was not registered by this handler");
                 break;
         }
+    }
+
+    private void showBrightnessOverrideToast() {
+        Toast.makeText(
+                mContext,
+                UiThread.get().getLooper(),
+                mContext.getString(R.string.brightness_unable_adjust_msg),
+                Toast.LENGTH_SHORT)
+                .show();
     }
 
     private void changeDisplayBrightnessValue(int displayId, int direction) {

@@ -105,7 +105,6 @@ import static android.service.notification.Flags.FLAG_NOTIFICATION_BITMAP_OFFLOA
 import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_DELETION;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_CONVERSATION_CHANNEL_MANAGEMENT;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_REGROUP_ON_CLASSIFICATION;
-import static com.android.server.notification.Flags.FLAG_FAVORITES_INCOMING_CALL_LIGHTS;
 import static android.service.notification.Flags.FLAG_NOTIFICATION_SILENT_FLAG;
 import static android.service.notification.Flags.FLAG_REDACT_SENSITIVE_NOTIFICATIONS_FROM_UNTRUSTED_LISTENERS;
 import static android.service.notification.NotificationListenerService.FLAG_FILTER_TYPE_ALERTING;
@@ -126,6 +125,7 @@ import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STR
 import static com.android.server.am.PendingIntentRecord.FLAG_ACTIVITY_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_BROADCAST_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_SERVICE_SENDER;
+import static com.android.server.notification.Flags.FLAG_FAVORITES_INCOMING_CALL_LIGHTS;
 import static com.android.server.notification.Flags.FLAG_MANAGED_SERVICES_CONCURRENT_MULTIUSER;
 import static com.android.server.notification.GroupHelper.AUTOGROUP_KEY;
 import static com.android.server.notification.NotificationManagerService.BITMAP_DURATION;
@@ -250,7 +250,6 @@ import android.media.AudioManager;
 import android.media.session.MediaSession;
 import android.net.Uri;
 import android.os.Binder;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -15579,6 +15578,10 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         waitForPost();
     }
 
+    private void triggerDeferredCleanup() {
+        mService.mCleanupOffloadedBitmaps.run();
+    }
+
     @Test
     public void testRemoveBitmaps_canRemoveRevokedDelegate() throws Exception {
         Notification n = createBigPictureNotification(true, true, true);
@@ -20399,6 +20402,71 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void addNotificationRule_notifiesAssistants() throws Exception {
+        NotificationRule rule = new NotificationRule.Builder(123,
+                new NotificationRule.Action(PRIMARY_ACTION_HIGHLIGHT)).build();
+        mBinderService.addNotificationRule(mUserId, rule, 0);
+
+        verify(mAssistants, times(1)).notifyNotificationRuleAdded(mUserId, rule);
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void updateNotificationRule_notifiesAssistants() throws Exception {
+        // First add a rule to be able to modify it
+        NotificationRule rule = new NotificationRule.Builder(123,
+                new NotificationRule.Action(PRIMARY_ACTION_HIGHLIGHT)).build();
+        mBinderService.addNotificationRule(mUserId, rule, 0);
+
+        // Updated
+        NotificationRule updated = new NotificationRule.Builder(123,
+                new NotificationRule.Action(PRIMARY_ACTION_LOW)).build();
+        mBinderService.updateNotificationRule(mUserId, updated);
+
+        verify(mAssistants, times(1)).notifyNotificationRuleModified(mUserId, updated);
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void updateNotificationRule_doesNotNotifyOnInvalidUpdate() throws Exception {
+        // Try to update a rule that doesn't exist
+        NotificationRule invalid = new NotificationRule.Builder(135,
+                new NotificationRule.Action(PRIMARY_ACTION_HIGHLIGHT)).build();
+        mBinderService.updateNotificationRule(mUserId, invalid);
+
+        verify(mAssistants, never()).notifyNotificationRuleModified(anyInt(), any());
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void removeNotificationRule_notifiesAssistants() throws Exception {
+        // Add rule to be able to remove it
+        NotificationRule rule = new NotificationRule.Builder(123,
+                new NotificationRule.Action(PRIMARY_ACTION_HIGHLIGHT)).build();
+        mBinderService.addNotificationRule(mUserId, rule, 0);
+
+        // now remove
+        mBinderService.removeNotificationRule(mUserId, 123);
+
+        verify(mAssistants, times(1)).notifyNotificationRuleRemoved(mUserId, 123);
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public void removeNotificationRule_doesNotNotifyOnInvalidInput() throws Exception {
+        // Try to update a rule that doesn't exist
+        NotificationRule rule = new NotificationRule.Builder(123,
+                new NotificationRule.Action(PRIMARY_ACTION_HIGHLIGHT)).build();
+        mBinderService.addNotificationRule(mUserId, rule, 0);
+
+        // Try to remove a different rule than the one that exists
+        mBinderService.removeNotificationRule(mUserId, 135);
+
+        verify(mAssistants, never()).notifyNotificationRuleRemoved(anyInt(), anyInt());
+    }
+
+    @Test
     public void getAllowedClassificationTypes_defaults() throws RemoteException {
         assertThat(mBinderService.getAllowedClassificationTypes()).asList()
                 .containsExactlyElementsIn(List.of(TYPE_PROMOTION, TYPE_NEWS));
@@ -20553,4 +20621,260 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         verify(mAttentionHelper, never()).evaluateLateCallLightLocked(eq(r), any());
     }
 
+    @EnableFlags(FLAG_NOTIFICATION_BITMAP_OFFLOADING)
+    public void verifyOffloadedBitmapRemovedOnNLSRelease() throws Exception {
+        final Uri offloadUri = ContentUris.withAppendedId(BitmapOffloadContract.CONTENT_URI, 0);
+
+        when(mBitmapOffloader.offloadBitmap(anyInt(), any())).thenReturn(offloadUri);
+
+        final Notification ntf = createBigPictureNotification(true, true, true);
+        final long timePostedMs = System.currentTimeMillis();
+
+        StatusBarNotification sbn = new StatusBarNotification(mPkg, "pkg", 1481, "tag",
+                mUid, 0, ntf, UserHandle.getUserHandleForUid(mUid), null, timePostedMs);
+
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, sbn.getTag(),
+                sbn.getId(), sbn.getNotification(),
+                sbn.getUserId());
+
+        waitForPost();
+
+        String[] keys = new String[] { sbn.getKey() };
+        mBinderService.cancelNotificationsFromListener(mListener, keys);
+
+        waitForPost();
+        triggerDeferredCleanup();
+
+        verify(mBitmapOffloader).removeBitmap(eq(offloadUri));
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_BITMAP_OFFLOADING)
+    public void verifyOffloadedBitmapRemovedOnUpdate() throws Exception {
+        final Uri offloadUri1 = ContentUris.withAppendedId(BitmapOffloadContract.CONTENT_URI, 1);
+        final Uri offloadUri2 = ContentUris.withAppendedId(BitmapOffloadContract.CONTENT_URI, 2);
+
+        when(mBitmapOffloader.offloadBitmap(anyInt(), any())).thenReturn(offloadUri1);
+
+        final Notification ntf1 = createBigPictureNotification(true, true, true);
+        final long timePostedMs1 = System.currentTimeMillis();
+
+        StatusBarNotification sbn1 = new StatusBarNotification(mPkg, "pkg", 1481, "tag",
+                mUid, 0, ntf1, UserHandle.getUserHandleForUid(mUid), null, timePostedMs1);
+
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, sbn1.getTag(),
+                sbn1.getId(), sbn1.getNotification(),
+                sbn1.getUserId());
+
+        waitForPost();
+
+        when(mBitmapOffloader.offloadBitmap(anyInt(), any())).thenReturn(offloadUri2);
+
+        final Notification ntf2 = createBigPictureNotification(true, true, true);
+        final long timePostedMs2 = System.currentTimeMillis();
+
+        StatusBarNotification sbn2 = new StatusBarNotification(mPkg, "pkg", 1481, "tag",
+                mUid, 0, ntf2, UserHandle.getUserHandleForUid(mUid), null, timePostedMs2);
+
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, sbn2.getTag(),
+                sbn2.getId(), sbn2.getNotification(),
+                sbn2.getUserId());
+
+        waitForPost();
+        triggerDeferredCleanup();
+
+        verify(mBitmapOffloader).removeBitmap(eq(offloadUri1));
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_BITMAP_OFFLOADING)
+    public void verifyOffloadedBitmapNotRemovedOnUpdateWithSameBitmap() throws Exception {
+        final Uri offloadUri = ContentUris.withAppendedId(BitmapOffloadContract.CONTENT_URI, 1);
+
+        when(mBitmapOffloader.offloadBitmap(anyInt(), any())).thenReturn(offloadUri);
+
+        final Notification ntf = createBigPictureNotification(true, true, true);
+        final long timePostedMs = System.currentTimeMillis();
+
+        StatusBarNotification sbn = new StatusBarNotification(mPkg, "pkg", 1481, "tag",
+                mUid, 0, ntf, UserHandle.getUserHandleForUid(mUid), null, timePostedMs);
+
+        // First post
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, sbn.getTag(),
+                sbn.getId(), sbn.getNotification(),
+                sbn.getUserId());
+        waitForPost();
+
+        // Verify NOT removed yet
+        triggerDeferredCleanup();
+        verify(mBitmapOffloader, never()).removeBitmap(any());
+
+        // Update with same notification (same bitmap/Uri)
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, sbn.getTag(),
+                sbn.getId(), sbn.getNotification(),
+                sbn.getUserId());
+        waitForPost();
+
+        // Verify still NOT removed
+        triggerDeferredCleanup();
+        verify(mBitmapOffloader, never()).removeBitmap(any());
+        // Verify offload was only called once (for the first post)
+        verify(mBitmapOffloader, times(1)).offloadBitmap(anyInt(), any());
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_BITMAP_OFFLOADING)
+    public void verifyOffloadedBitmapRemovedOnUpdateWithFreshNotification() throws Exception {
+        final Uri offloadUri1 = ContentUris.withAppendedId(BitmapOffloadContract.CONTENT_URI, 1);
+        final Uri offloadUri2 = ContentUris.withAppendedId(BitmapOffloadContract.CONTENT_URI, 2);
+
+        // First post
+        when(mBitmapOffloader.offloadBitmap(anyInt(), any())).thenReturn(offloadUri1);
+        final Notification ntf1 = createBigPictureNotification(true, true, true);
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, "tag", 1, ntf1, mUserId);
+        waitForPost();
+
+        // Second post with a NEW notification object (simulating a real app
+        // update) Even if the Bitmap is "the same", NMS will offload it again
+        // because it's a new Bitmap object
+        when(mBitmapOffloader.offloadBitmap(anyInt(), any())).thenReturn(offloadUri2);
+        final Notification ntf2 = createBigPictureNotification(true, true, true);
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, "tag", 1, ntf2, mUserId);
+        waitForPost();
+        triggerDeferredCleanup();
+
+        // Verify Bitmap 1 was removed because it was replaced by Bitmap 2
+        verify(mBitmapOffloader).removeBitmap(eq(offloadUri1));
+        verify(mBitmapOffloader, never()).removeBitmap(eq(offloadUri2));
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_BITMAP_OFFLOADING)
+    public void verifyOffloadedBitmapRemovedOnUpdateWithDifferentBitmap() throws Exception {
+        final Uri offloadUri1 = ContentUris.withAppendedId(BitmapOffloadContract.CONTENT_URI, 1);
+        final Uri offloadUri2 = ContentUris.withAppendedId(BitmapOffloadContract.CONTENT_URI, 2);
+
+        // First post with Bitmap 1
+        when(mBitmapOffloader.offloadBitmap(anyInt(), any())).thenReturn(offloadUri1);
+
+        final Notification ntf1 = createBigPictureNotification(true, true, true);
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, "tag", 1, ntf1, mUserId);
+        waitForPost();
+
+        // Second post with Bitmap 2 (different bitmap)
+        when(mBitmapOffloader.offloadBitmap(anyInt(), any())).thenReturn(offloadUri2);
+
+        final Notification ntf2 = createBigPictureNotification(true, true, true);
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, "tag", 1, ntf2, mUserId);
+        waitForPost();
+        triggerDeferredCleanup();
+
+        // Verify Bitmap 1 was removed
+        verify(mBitmapOffloader).removeBitmap(eq(offloadUri1));
+        // Verify Bitmap 2 was NOT removed
+        verify(mBitmapOffloader, never()).removeBitmap(eq(offloadUri2));
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_BITMAP_OFFLOADING)
+    public void verifyOffloadedBitmapNotRemovedIfShared() throws Exception {
+        final Uri offloadUri = ContentUris.withAppendedId(BitmapOffloadContract.CONTENT_URI, 1);
+
+        when(mBitmapOffloader.offloadBitmap(anyInt(), any())).thenReturn(offloadUri);
+
+        // Post notification 1
+        final Notification ntf1 = createBigPictureNotification(true, true, true);
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, "tag1", 1, ntf1, mUserId);
+        waitForPost();
+
+        // Post notification 2 using the SAME notification object (and thus SAME offloaded Uri)
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, "tag2", 2, ntf1, mUserId);
+        waitForPost();
+
+        // Cancel notification 1
+        mBinderService.cancelNotificationWithTag(mPkg, mPkg, "tag1", 1, mUserId);
+        waitForPost();
+        triggerDeferredCleanup();
+
+        // Verify Bitmap was NOT removed because notification 2 still uses it
+        verify(mBitmapOffloader, never()).removeBitmap(any());
+
+        // Cancel notification 2
+        mBinderService.cancelNotificationWithTag(mPkg, mPkg, "tag2", 2, mUserId);
+        waitForPost();
+        triggerDeferredCleanup();
+
+        // Verify Bitmap WAS removed now that the last reference is gone
+        verify(mBitmapOffloader).removeBitmap(eq(offloadUri));
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_BITMAP_OFFLOADING)
+    public void verifyOffloadedBitmapNotRemovedIfSnoozed() throws Exception {
+        final Uri offloadUri = ContentUris.withAppendedId(BitmapOffloadContract.CONTENT_URI, 1);
+
+        when(mBitmapOffloader.offloadBitmap(anyInt(), any())).thenReturn(offloadUri);
+
+        final Notification ntf = createBigPictureNotification(true, true, true);
+        final StatusBarNotification sbn = new StatusBarNotification(mPkg, "pkg", 1, "tag",
+                mUid, 0, ntf, UserHandle.getUserHandleForUid(mUid), null,
+                System.currentTimeMillis());
+
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, sbn.getTag(),
+                sbn.getId(), sbn.getNotification(),
+                sbn.getUserId());
+        waitForPost();
+
+        // Simulate notification being snoozed (it's removed from active list in NMS)
+        mService.mNotificationList.remove(0);
+
+        // Mock SnoozeHelper to say this Uri is still referenced
+        doAnswer(invocation -> {
+            Consumer<Uri> visitor = invocation.getArgument(0);
+            visitor.accept(offloadUri);
+            return null;
+        }).when(mSnoozeHelper).visitUris(any());
+
+        // Cancel the notification (simulate NLS cancellation while snoozed)
+        mBinderService.cancelNotificationWithTag(mPkg, mPkg, "tag", 1, mUserId);
+        waitForPost();
+        triggerDeferredCleanup();
+
+        // Verify Bitmap was NOT removed because SnoozeHelper says it's still in use
+        verify(mBitmapOffloader, never()).removeBitmap(any());
+
+        // Now simulate SnoozeHelper discarding the record (e.g. timeout or manual cancel)
+        reset(mSnoozeHelper); // No longer references the Uri
+        // When mSnoozeHelper.cancel is called, it returns the record
+        NotificationRecord r = new NotificationRecord(mContext, sbn, mTestNotificationChannel);
+        when(mSnoozeHelper.cancel(anyInt(), anyString(), anyString(), anyInt())).thenReturn(r);
+
+        mBinderService.cancelNotificationWithTag(mPkg, mPkg, "tag", 1, mUserId);
+        waitForPost();
+        triggerDeferredCleanup();
+
+        // Verify Bitmap WAS removed now that SnoozeHelper returned the record to NMS for cleanup
+        verify(mBitmapOffloader).removeBitmap(eq(offloadUri));
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_BITMAP_OFFLOADING)
+    public void verifyOrphanedBitmapRemovedIfNotificationDropped() throws Exception {
+        final Uri offloadUri = ContentUris.withAppendedId(BitmapOffloadContract.CONTENT_URI, 1);
+
+        when(mBitmapOffloader.offloadBitmap(anyInt(), any())).thenReturn(offloadUri);
+
+        // Make notification blocked so it's dropped in checkDisqualifyingFeatures
+        when(mPermissionHelper.hasPermission(mUid)).thenReturn(false);
+        mBinderService.setNotificationsEnabledForPackage(mPkg, mUid, false);
+
+        final Notification ntf = createBigPictureNotification(true, true, true);
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, "tag", 1, ntf, mUserId);
+
+        // Disqualifying features check will return false, triggering immediate marking
+        triggerDeferredCleanup();
+
+        // Verify Bitmap WAS removed because it's not reachable in any list
+        verify(mBitmapOffloader).removeBitmap(eq(offloadUri));
+    }
 }

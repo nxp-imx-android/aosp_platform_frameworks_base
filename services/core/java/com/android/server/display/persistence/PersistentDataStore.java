@@ -102,7 +102,7 @@ import java.util.function.Function;
  */
 public final class PersistentDataStore extends GenericStore {
     private static final String TAG = "DisplayManager.PersistentDataStore";
-    private static final String FILE_NAME = "/data/system/display-manager-state-v2.xml";
+    static final String FILE_NAME = "/data/system/display-manager-state-v2.xml";
     private static final String XML_TAG_DISPLAY_MANAGER_STATE = "display-manager-state";
 
     interface XmlProcessor<T> {
@@ -311,11 +311,6 @@ public final class PersistentDataStore extends GenericStore {
     private final Handler mHandler;
     private final Object mFileAccessLock = new Object();
 
-    public PersistentDataStore() {
-        this(new PersistentDataStoreDelegate.Injector(FILE_NAME));
-    }
-
-    @VisibleForTesting
     PersistentDataStore(PersistentDataStoreDelegate.Injector injector) {
         this(injector, new Handler(BackgroundThread.getHandler().getLooper()));
     }

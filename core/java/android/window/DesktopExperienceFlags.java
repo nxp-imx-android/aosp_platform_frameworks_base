@@ -77,8 +77,6 @@ public enum DesktopExperienceFlags {
     ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX(
             Flags::enableDesktopFirstBasedDefaultToDesktopBugfix, true,
             Flags.FLAG_ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX),
-    ENABLE_DESKTOP_FIRST_BASED_DRAG_TO_MAXIMIZE(Flags::enableDesktopFirstBasedDragToMaximize, true,
-            Flags.FLAG_ENABLE_DESKTOP_FIRST_BASED_DRAG_TO_MAXIMIZE),
     ENABLE_DESKTOP_FIRST_POLICY_IN_LPM(Flags::enableDesktopFirstPolicyInLpm, false,
             Flags.FLAG_ENABLE_DESKTOP_FIRST_POLICY_IN_LPM),
     ENABLE_DESKTOP_FIRST_TOP_FULLSCREEN_BUGFIX(Flags::enableDesktopFirstTopFullscreenBugfix,

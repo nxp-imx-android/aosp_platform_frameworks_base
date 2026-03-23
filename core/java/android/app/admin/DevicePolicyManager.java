@@ -101,6 +101,7 @@ import android.annotation.WorkerThread;
 import android.app.Activity;
 import android.app.IServiceConnection;
 import android.app.KeyguardManager;
+import android.app.admin.MultiuserDeviceProvisioningCompletion;
 import android.app.admin.SecurityLog.SecurityEvent;
 import android.app.admin.flags.Flags;
 import android.app.admin.metadata.PolicyTransportValueConvertor;
@@ -18181,11 +18182,14 @@ public class DevicePolicyManager {
             @NonNull MultiuserManagedDeviceProvisioningParams provisioningParams)
             throws ProvisioningException {
         if (mService != null) {
+            MultiuserDeviceProvisioningCompletion completion =
+                    new MultiuserDeviceProvisioningCompletion();
             try {
                 mService.provisionMultiuserManagedDevice(
-                        provisioningParams.getTransportParams(), mContext.getPackageName());
-            } catch (ServiceSpecificException e) {
-                throw new ProvisioningException(e, e.errorCode, getErrorMessage(e));
+                        provisioningParams.getTransportParams(), mContext.getPackageName(),
+                        completion);
+                completion.waitForCompletion(/* timeoutSeconds= */ 30);
+                Log.i(TAG, "Multiuser managed device provisioning completed.");
             } catch (RemoteException re) {
                 throw re.rethrowFromSystemServer();
             }

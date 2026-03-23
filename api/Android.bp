@@ -401,6 +401,7 @@ android_non_updatable_stubs_libs = [
     "android.hardware.usb-V1.1-java-constants",
     "android.hardware.usb.gadget-V1.0-java",
     "framework-protos",
+    "DevicePolicyAnnotation",
 ]
 
 java_defaults {

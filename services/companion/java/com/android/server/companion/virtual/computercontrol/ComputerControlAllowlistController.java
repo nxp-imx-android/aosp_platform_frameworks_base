@@ -24,6 +24,7 @@ import static com.android.server.companion.virtual.computercontrol.ComputerContr
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
+import android.annotation.UserIdInt;
 import android.app.KeyguardManager;
 import android.app.role.RoleManager;
 import android.companion.virtual.VirtualDeviceManager;
@@ -270,19 +271,40 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
                 }
             }
         }
+        return isPackageApprovedToRunAutomation(packageName, ownerUser.getIdentifier());
+    }
 
+    /**
+     * Returns whether the given package is an approved computer control agent.
+     * @param packageName package name of the agent package
+     * @param userId user id of the agent package
+     */
+    public boolean isPackageApprovedToRunAutomation(@NonNull String packageName,
+            @UserIdInt int userId) {
+        final PackageManager packageManager = getPackageManagerForUser(userId);
+        final SigningDetails signingDetails = getSigningDetails(packageName, packageManager);
         if (signingDetails == null) {
             Slog.e(TAG, "isPackageAllowedToCreateSession: Failed to fetch signing details for "
                     + packageName);
             return false;
         }
-
+        if (isSuperAgent(packageName, signingDetails)) {
+            Slog.i(TAG, "isPackageAllowedToCreateSession: Found super agent " + packageName);
+            return true;
+        }
         final boolean isInAllowlist = mSessionOwnerAllowlist.anyMatch(packageName, signingDetails);
         Slog.i(TAG, "isPackageAllowedToCreateSession: Is there any allowlist entry for "
                 + packageName + " : " + isInAllowlist);
         return isInAllowlist;
     }
 
+    /**
+     * Returns whether the given {@code targetPackage} is automatable in the provided computer
+     * control session.
+     *
+     * @param targetPackage package name of the package that is being automated
+     * @param session computer control session that is trying to automate the target app
+     */
     boolean isPackageAutomatable(@Nullable String targetPackage,
             @NonNull ComputerControlSessionImpl session) {
         if (session.isTestSession()) {
@@ -309,27 +331,51 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
     }
 
     /**
-     * Returns whether the given {@code targetPackage} is automatable. This returns if
-     * {@param targetPackage} is automatable by an agent if user gives consent for it.
-     * Apps that are denylisted or not in the global allowlist are not automatable by any agent even
-     * if user consents to it.
-     * @return
+     * Returns whether the given {@code targetPackage} is automatable by the provided agent package.
+     *
+     * @param agentPackage package name of the package that is automating {@code targetPackage}
+     * @param targetPackage package name of the package that is being automated
+     * @param packageManager package manager for the user of the agent package that is initiating
+     *                       the automation request
      */
     boolean isPackageAutomatable(@Nullable String targetPackage,
-            @Nullable String sessionOwnerPackage, @NonNull PackageManager packageManager) {
-        if (targetPackage == null || sessionOwnerPackage == null) {
+            @Nullable String agentPackage, @NonNull PackageManager packageManager) {
+        if (targetPackage == null || agentPackage == null) {
             return false;
         }
 
         final SigningDetails sessionOwnerPackageSigningDetails =
-                getSigningDetails(sessionOwnerPackage, packageManager);
-        if (isSuperAgent(sessionOwnerPackage, sessionOwnerPackageSigningDetails)) {
-            Slog.i(TAG, "isPackageAutomatable: Found super agent " + sessionOwnerPackage);
+                getSigningDetails(agentPackage, packageManager);
+        if (isSuperAgent(agentPackage, sessionOwnerPackageSigningDetails)) {
+            Slog.i(TAG, "isPackageAutomatable: Found super agent " + agentPackage);
             return true;
         }
 
+        final int sessionOwnerUid = getPackageUid(agentPackage, packageManager);
+        final boolean isTestAgent = isTestAgent(sessionOwnerUid, agentPackage, packageManager);
+        return isPackageTargetableForAutomation(targetPackage,
+                Binder.getCallingUserHandle().getIdentifier(), isTestAgent);
+    }
+
+    /**
+     * Returns whether the given {@code targetPackage} is an approved computer control session
+     * target. This method checks whether the target package is a launchable app, is not
+     * denylisted and is part of device allowlist of automatable apps.
+     *
+     * @param targetPackage package name of the package that is being automated
+     * @param userId user id of the target package
+     */
+    public boolean isPackageTargetableForAutomation(@NonNull String targetPackage,
+            @UserIdInt int userId) {
+        return isPackageTargetableForAutomation(targetPackage, userId, /* isTestAgent= */false);
+    }
+
+    boolean isPackageTargetableForAutomation(@NonNull String targetPackage,
+            @UserIdInt int userId, boolean isTestAgent) {
+        final PackageManager packageManager = getPackageManagerForUser(userId);
         if (packageManager.getLaunchIntentForPackage(targetPackage) == null) {
-            Slog.i(TAG, "isPackageAutomatable: No launch intent for package " + targetPackage);
+            Slog.i(TAG, "isPackageAutomatable: No launch intent for package "
+                    + targetPackage);
             return false;
         }
 
@@ -337,9 +383,7 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
             Slog.i(TAG, "isPackageAutomatable: Cannot automate permission controller");
             return false;
         }
-
-        final int sessionOwnerUid = getPackageUid(sessionOwnerPackage, packageManager);
-        if (isTestAgent(sessionOwnerUid, sessionOwnerPackage, packageManager)) {
+        if (isTestAgent) {
             final ApplicationInfo appInfo = getApplicationInfo(targetPackage, packageManager);
             if (appInfo == null || !isPackageTestOnly(appInfo)) {
                 Slog.e(TAG, "isPackageAutomatable: Test automation requires testOnly target "
@@ -349,7 +393,11 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
                 return true;
             }
         }
+        return isPackageInAutomatableAppList(targetPackage, packageManager);
+    }
 
+    private boolean isPackageInAutomatableAppList(@NonNull String targetPackage,
+            @NonNull PackageManager packageManager) {
         final SigningDetails targetPackageSigningDetails =
                 getSigningDetails(targetPackage, packageManager);
         if (targetPackageSigningDetails == null) {
@@ -381,7 +429,7 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
 
     /**
      * Returns whether the given {@param agentUid} and {@param agentPackageName} have consent to
-     * automated {@param targetPackage}
+     * automate the {@param targetPackage}
      */
     boolean doesAgentHaveConsentToAutomateTargetApp(int agentUid, @Nullable String agentPackageName,
             @Nullable String targetPackage) {
@@ -412,6 +460,16 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
                 return new String[0];
             }
             return allowlist.toArray(new String[0]);
+        }
+    }
+
+    private PackageManager getPackageManagerForUser(int userId) {
+        final UserHandle user = UserHandle.of(userId);
+        final long token = Binder.clearCallingIdentity();
+        try {
+            return mContext.createContextAsUser(user, /* flags = */ 0).getPackageManager();
+        } finally {
+            Binder.restoreCallingIdentity(token);
         }
     }
 

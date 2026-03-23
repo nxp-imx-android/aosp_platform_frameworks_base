@@ -252,6 +252,7 @@ object SceneWindowRootViewBinder {
                         view.addView(
                             createBouncerSceneContainerView(
                                 context = view.context,
+                                viewModel = viewModel,
                                 state = bouncerSceneContainerState,
                                 bouncerOverlay = bouncerOverlay,
                                 windowInsets = windowInsets,
@@ -368,6 +369,7 @@ object SceneWindowRootViewBinder {
 
     private fun createBouncerSceneContainerView(
         context: Context,
+        viewModel: SceneContainerViewModel,
         state: HoistedSceneTransitionLayoutState,
         bouncerOverlay: Overlay,
         windowInsets: State<WindowInsets?>,
@@ -381,6 +383,7 @@ object SceneWindowRootViewBinder {
                     tintedIconManagerFactory = tintedIconManagerFactory,
                 ) { modifier ->
                     BouncerSceneContainer(
+                        viewModel = viewModel,
                         state = state,
                         bouncerOverlay = bouncerOverlay,
                         modifier = modifier,

@@ -2052,7 +2052,6 @@ public class ViewRootImplTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_PREDICTIVE_BACK_FIX_IME_EVENTS_SKIP_BACK_DISPATCHER)
     public void imeDispatchesBack_eventGoesToTopBackCallback() throws Exception {
         mView = new View(sContext);
         attachViewToWindow(mView);

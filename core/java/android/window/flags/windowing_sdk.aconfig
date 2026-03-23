@@ -244,6 +244,14 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
+    name: "engagement_control_api"
+    description: "Engagement Control APIs for requesting visual state changes."
+    bug: "477386067"
+    is_exported: true
+}
+
+flag {
+    namespace: "windowing_sdk"
     name: "activity_start_interceptor_speedbumps"
     is_exported: true
     description: "Feature flag for Activity Start Interceptor Speedbumps"

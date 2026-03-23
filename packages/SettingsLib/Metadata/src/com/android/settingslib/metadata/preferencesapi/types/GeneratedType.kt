@@ -124,5 +124,5 @@ class GeneratedType<ExternalType : Any> constructor(
         it.value to it.description
     }
 
-    override fun getKey(): String = "GeneratedType:${System.identityHashCode(lambda)}"
+    override fun getKey(): String = "GeneratedType:${descriptionRes ?: description?.hashCode() ?: 0}"
 }

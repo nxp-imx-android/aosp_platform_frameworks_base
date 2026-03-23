@@ -20,6 +20,7 @@ import com.android.internal.logging.uiEventLogger
 import com.android.keyguard.logging.DeviceEntryLogger
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
 import com.android.systemui.bouncer.domain.interactor.alternateBouncerInteractor
+import com.android.systemui.bouncer.domain.interactor.simBouncerInteractor
 import com.android.systemui.deviceentry.data.repository.deviceEntryRepository
 import com.android.systemui.keyguard.dismissCallbackRegistry
 import com.android.systemui.keyguard.domain.interactor.keyguardDismissActionInteractor
@@ -55,5 +56,6 @@ val Kosmos.deviceEntryInteractor by
             shadeInteractor = { shadeInteractor },
             shadeModeInteractor = shadeModeInteractor,
             deviceEntryLogger = mock<DeviceEntryLogger>(),
+            simBouncerInteractor = simBouncerInteractor,
         )
     }

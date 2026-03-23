@@ -490,6 +490,9 @@ public class WindowManagerService extends IWindowManager.Stub
     private final RemoteCallbackList<IDisplayEngagementModeCallback>
             mDisplayEngagementModeCallbacks = new RemoteCallbackList<>();
 
+    private final RemoteCallbackList<android.window.IEngagementControlRequestConsumer>
+            mEngagementControlConsumers = new RemoteCallbackList<>();
+
     private final List<OnWindowRemovedListener> mOnWindowRemovedListeners = new ArrayList<>();
 
     /**
@@ -8461,10 +8464,14 @@ public class WindowManagerService extends IWindowManager.Stub
                 // The waiting container doesn't exist, no need to wait. Treat as drawn.
                 return true;
             }
-            if (displayId == INVALID_DISPLAY
-                    && mRoot.getDefaultDisplay().mDisplayUpdater.waitForTransition(message)) {
-                // Use the ready-to-play of transition as the signal.
-                return false;
+            if (displayId == INVALID_DISPLAY) {
+                final boolean useTransitionToUnblock = Flags.syncedDisplayModeUpdates() ?
+                        mRoot.mDisplayUnblocker.waitForDefaultDisplayTransition(message)
+                        : mRoot.getDefaultDisplay().mDisplayUpdater.waitForTransition(message);
+                if (useTransitionToUnblock) {
+                    // Use the ready-to-play of transition as the signal.
+                    return false;
+                }
             }
             container.waitForAllWindowsDrawn();
             mWindowPlacerLocked.requestTraversal();
@@ -11213,6 +11220,89 @@ public class WindowManagerService extends IWindowManager.Stub
     @Override
     public void unregisterDisplayEngagementModeCallback(IDisplayEngagementModeCallback callback) {
         mDisplayEngagementModeCallbacks.unregister(callback);
+    }
+
+    @Override
+    public void requestEngagementControlState(
+            IBinder windowToken, int engagementControlFlags) {
+        if (!Flags.engagementControlApi()) {
+            return;
+        }
+
+        final int callingUid = Binder.getCallingUid();
+        final int resolvedDisplayId;
+        final int resolvedTaskId;
+
+        synchronized (mGlobalLock) {
+            final WindowState w = mWindowMap.get(windowToken);
+            final WindowToken wt = mRoot.getWindowToken(windowToken);
+
+            // Validates against View tokens (w) OR unforgeable Context tokens (wt)
+            if ((w == null || w.mOwnerUid != callingUid) && wt == null) {
+                Slog.w(TAG, "Attempted to dispatch engagement control for invalid token");
+                return;
+            }
+
+            // Securely resolve the display ID on the server side
+            final DisplayContent displayContent = (w != null ? w : wt).getDisplayContent();
+            if (displayContent == null) {
+                Slog.w(TAG, "Attempted to dispatch engagement control for token without a display");
+                return;
+            }
+            resolvedDisplayId = displayContent.getDisplayId();
+
+            // Securely resolve the Task ID on the server side
+            if (w != null && w.getTask() != null) {
+                resolvedTaskId = w.getTask().mTaskId;
+            } else if (wt != null && wt.asActivityRecord() != null
+                    && wt.asActivityRecord().getTask() != null) {
+                resolvedTaskId = wt.asActivityRecord().getTask().mTaskId;
+            } else {
+                resolvedTaskId = -1;
+            }
+
+            if (resolvedTaskId == -1) {
+                Slog.w(TAG, "Attempted to dispatch engagement control from a non-Activity "
+                        + "window. WindowState=" + w + ", WindowToken=" + wt);
+                return;
+            }
+        }
+
+        final int n = mEngagementControlConsumers.beginBroadcast();
+        try {
+            for (int i = 0; i < n; i++) {
+                try {
+                    mEngagementControlConsumers.getBroadcastItem(i).onEngagementControlRequest(
+                            resolvedDisplayId, resolvedTaskId, engagementControlFlags);
+                } catch (RemoteException e) {
+                    // Ignore, RemoteCallbackList will handle cleanup.
+                }
+            }
+        } finally {
+            mEngagementControlConsumers.finishBroadcast();
+        }
+    }
+
+    @EnforcePermission(android.Manifest.permission.MANAGE_DISPLAYS)
+    @Override
+    public void registerEngagementControlRequestConsumer(
+            android.window.IEngagementControlRequestConsumer consumer) {
+        registerEngagementControlRequestConsumer_enforcePermission();
+        if (!Flags.engagementControlApi()) {
+            return;
+        }
+        mEngagementControlConsumers.register(consumer);
+    }
+
+    @EnforcePermission(android.Manifest.permission.MANAGE_DISPLAYS)
+    @Override
+    public void unregisterEngagementControlRequestConsumer(
+            android.window.IEngagementControlRequestConsumer consumer) {
+        unregisterEngagementControlRequestConsumer_enforcePermission();
+        if (!Flags.engagementControlApi()) {
+            return;
+        }
+        mEngagementControlConsumers.unregister(consumer);
     }
 
     /**

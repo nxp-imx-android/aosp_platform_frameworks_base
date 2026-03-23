@@ -612,16 +612,18 @@ static void android_view_RenderNode_requestPositionUpdates(JNIEnv* env, jobject,
             Matrix4 transform;
             SkIRect clipBounds;
             uirenderer::Rect initialClipBounds;
+            // Disable auto clip if the RenderNode has an mParentCount greater than 1.
+            bool shouldDisableClip = false;
             if (enableClip) {
                 // SurfaceView never draws beyond its bounds regardless of if it can or not,
                 // so if clip-to-bounds is disabled just use the bounds as the starting point
                 // regardless
                 const auto clipFlags = props.getClippingFlags();
                 props.getClippingRectForFlags(clipFlags | CLIP_TO_BOUNDS, &initialClipBounds);
-                clipBounds =
-                        info.damageAccumulator
-                                ->computeClipAndTransform(initialClipBounds.toSkRect(), &transform)
-                                .roundOut();
+                clipBounds = info.damageAccumulator
+                                     ->computeClipAndTransform(initialClipBounds.toSkRect(),
+                                                               &transform, &shouldDisableClip)
+                                     .roundOut();
                 clipBounds.intersect(initialClipBounds.toSkIRect());
             } else {
                 info.damageAccumulator->computeCurrentTransform(&transform);
@@ -677,7 +679,8 @@ static void android_view_RenderNode_requestPositionUpdates(JNIEnv* env, jobject,
                         static_cast<jint>(bounds.right), static_cast<jint>(bounds.bottom),
                         static_cast<jint>(clipBounds.fLeft), static_cast<jint>(clipBounds.fTop),
                         static_cast<jint>(clipBounds.fRight), static_cast<jint>(clipBounds.fBottom),
-                        static_cast<jint>(props.getWidth()), static_cast<jint>(props.getHeight()));
+                        static_cast<jint>(props.getWidth()), static_cast<jint>(props.getHeight()),
+                        static_cast<jboolean>(shouldDisableClip));
             }
             if (!keepListening) {
                 env->DeleteGlobalRef(mListener);
@@ -932,7 +935,7 @@ int register_android_view_RenderNode(JNIEnv* env) {
     gPositionListener.callPositionChanged = GetStaticMethodIDOrDie(
             env, clazz, "callPositionChanged", "(Ljava/lang/ref/WeakReference;JIIII)Z");
     gPositionListener.callPositionChanged2 = GetStaticMethodIDOrDie(
-            env, clazz, "callPositionChanged2", "(Ljava/lang/ref/WeakReference;JIIIIIIIIII)Z");
+            env, clazz, "callPositionChanged2", "(Ljava/lang/ref/WeakReference;JIIIIIIIIIIZ)Z");
     gPositionListener.callApplyStretch = GetStaticMethodIDOrDie(
             env, clazz, "callApplyStretch", "(Ljava/lang/ref/WeakReference;JFFFFFFFFFF)Z");
     gPositionListener.callPositionLost = GetStaticMethodIDOrDie(

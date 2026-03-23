@@ -77,6 +77,7 @@ import android.window.IScreenRecordingCallback;
 import android.window.ISurfaceSyncGroupCompletedListener;
 import android.window.ITaskFpsCallback;
 import android.window.IDisplayEngagementModeCallback;
+import android.window.IEngagementControlRequestConsumer;
 import android.window.ITrustedPresentationListener;
 import android.window.InputTransferToken;
 import android.window.ScreenCapture;
@@ -1210,6 +1211,27 @@ interface IWindowManager
      * @see android.view.WindowManager#unregisterDisplayEngagementModeCallback
      */
     void unregisterDisplayEngagementModeCallback(in IDisplayEngagementModeCallback callback);
+
+    /**
+     * Requests an engagement state.
+     *
+     * @param windowToken The IBinder token identifying the window making the request.
+     * @param engagementControlFlags A bitmask of requested engagement states.
+     *                               Pass 0 to clear all requests.
+     */
+    void requestEngagementControlState(in IBinder windowToken, int engagementControlFlags);
+
+    /**
+     * Registers a consumer for engagement control requests.
+     */
+    @EnforcePermission("MANAGE_DISPLAYS")
+    void registerEngagementControlRequestConsumer(in IEngagementControlRequestConsumer callback);
+
+    /**
+     * Unregisters a previously registered engagement control request consumer.
+     */
+    @EnforcePermission("MANAGE_DISPLAYS")
+    void unregisterEngagementControlRequestConsumer(in IEngagementControlRequestConsumer callback);
 
     /**
      * Sets the listener to be called back when a cross-window drag and drop operation happens.

@@ -617,6 +617,11 @@ class TransitionController {
         return false;
     }
 
+    /** Returns {@code true} if the `wc` is a participant of a collection or playing transition. */
+    boolean isParticipant(@NonNull WindowContainer<?> wc) {
+        return isCollecting(wc) || isParticipantOfPlayingTransition(wc);
+    }
+
     /** Returns {@code true} if the finishing transition contains `wc`. */
     boolean inFinishingTransition(WindowContainer<?> wc) {
         return mFinishingTransition != null && mFinishingTransition.isInTransition(wc);

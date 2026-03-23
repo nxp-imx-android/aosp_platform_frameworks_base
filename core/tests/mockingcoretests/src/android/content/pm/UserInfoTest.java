@@ -136,11 +136,11 @@ public final class UserInfoTest {
         expectCannotHaveProfile("headless system user that's not main user",
                 createTestUserInfo(USER_TYPE_SYSTEM_HEADLESS, FLAG_SYSTEM));
 
-        // Non-main user depends on config_supportProfilesOnNonMainUser, but should be disabled
+        // Non-mainUser depends on config_supportManagedProfileOnNonMainUser, but should be disabled
         // anyways because of the flag
-        mockConfigSupportProfilesOnNonMainUser(false);
+        mockConfigSupportManagedProfileOnNonMainUser(false);
         expectCannotHaveProfile("non-main user", createTestUserInfo(FLAG_FULL));
-        mockConfigSupportProfilesOnNonMainUser(true);
+        mockConfigSupportManagedProfileOnNonMainUser(true);
         expectCannotHaveProfile("non-main user", createTestUserInfo(FLAG_FULL));
     }
 
@@ -159,10 +159,10 @@ public final class UserInfoTest {
         expectCannotHaveProfile("headless system user that's not main user",
                 createTestUserInfo(USER_TYPE_SYSTEM_HEADLESS, FLAG_SYSTEM));
 
-        // Non-main user depends on config_supportProfilesOnNonMainUser
-        mockConfigSupportProfilesOnNonMainUser(false);
+        // Non-main user depends on config_supportManagedProfileOnNonMainUser
+        mockConfigSupportManagedProfileOnNonMainUser(false);
         expectCannotHaveProfile("non-main user (config disabled)", createTestUserInfo(FLAG_FULL));
-        mockConfigSupportProfilesOnNonMainUser(true);
+        mockConfigSupportManagedProfileOnNonMainUser(true);
         expectCanHaveProfile("non-main user (config enabled)", createTestUserInfo(FLAG_FULL));
     }
 
@@ -299,9 +299,9 @@ public final class UserInfoTest {
                 .that(user.canHaveProfile()).isFalse();
     }
 
-    private void mockConfigSupportProfilesOnNonMainUser(boolean value) {
+    private void mockConfigSupportManagedProfileOnNonMainUser(boolean value) {
         Resources resources = mock(Resources.class);
-        int config = com.android.internal.R.bool.config_supportProfilesOnNonMainUser;
+        int config = com.android.internal.R.bool.config_supportManagedProfileOnNonMainUser;
         when(resources.getBoolean(config)).thenReturn(value);
         doReturn(resources).when(Resources::getSystem);
     }

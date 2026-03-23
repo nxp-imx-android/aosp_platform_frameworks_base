@@ -175,26 +175,26 @@
     <string name="keyboard_layout_english_india">English (India)</string>
 
     <!-- Sony Playstation game controller button with circle drawn on it. [CHAR LIMIT=35] -->
-    <string name="playstation_controller_circle_button">Circle Button</string>
+    <string name="playstation_controller_circle_button">Circle button</string>
 
     <!-- Sony Playstation game controller button with triangle drawn on it. [CHAR LIMIT=35] -->
-    <string name="playstation_controller_triangle_button">Triangle Button</string>
+    <string name="playstation_controller_triangle_button">Triangle button</string>
 
     <!-- Sony Playstation game controller button with square drawn on it. [CHAR LIMIT=35] -->
-    <string name="playstation_controller_square_button">Square Button</string>
+    <string name="playstation_controller_square_button">Square button</string>
 
     <!-- Sony Playstation game controller button with cross drawn on it. [CHAR LIMIT=35] -->
-    <string name="playstation_controller_cross_button">Cross Button</string>
+    <string name="playstation_controller_cross_button">Cross button</string>
 
     <!-- Default game controller down button. [CHAR LIMIT=35] -->
-    <string name="default_game_controller_down_button">Down Button</string>
+    <string name="default_game_controller_down_button">Down button</string>
 
     <!-- Default game controller left button. [CHAR LIMIT=35] -->
-    <string name="default_game_controller_left_button">Left Button</string>
+    <string name="default_game_controller_left_button">Left button</string>
 
     <!-- Default game controller right button. [CHAR LIMIT=35] -->
-    <string name="default_game_controller_right_button">Right Button</string>
+    <string name="default_game_controller_right_button">Right button</string>
 
     <!-- Default game controller up button. [CHAR LIMIT=35] -->
-    <string name="default_game_controller_up_button">Up Button</string>
+    <string name="default_game_controller_up_button">Up button</string>
 </resources>

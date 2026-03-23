@@ -166,11 +166,11 @@ fun DesktopStatusBar(
                 )
             }
 
-            // The wrapper box prevents application of ElementSpacing between the chips. Instead,
+            // The wrapper row prevents application of ElementSpacing between the chips. Instead,
             // they will internally allocate the same padding space to their touch targets.
             // TODO(b/489444201): Remove this wrapper and `spacedBy` above once all the elements in
             //  this row have expanded touch targets.
-            Box {
+            Row {
                 NotificationsChip(viewModel = viewModel)
 
                 QuickSettingsChip(

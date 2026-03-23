@@ -165,14 +165,10 @@ constructor(
 
         val (pressed, setPressed) = remember { mutableStateOf(false) }
 
-        val isBlurSupported by
-            windowRootViewBlurInteractor.isBlurCurrentlySupported.collectAsStateWithLifecycle()
         // Tint of the foreground drawable
         val foregroundTint =
             if (quickAffordanceViewModel.isActivated) {
                 MaterialTheme.colorScheme.onPrimaryFixed
-            } else if (enableLockscreenBlur() && isBlurSupported) {
-                LocalAndroidColorScheme.current.surfaceEffect1
             } else {
                 MaterialTheme.colorScheme.onSurface
             }

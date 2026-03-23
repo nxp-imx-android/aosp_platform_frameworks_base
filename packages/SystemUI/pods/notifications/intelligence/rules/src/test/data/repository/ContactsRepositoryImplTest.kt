@@ -17,7 +17,9 @@
 package com.android.systemui.notifications.intelligence.rules.data.repository
 
 import android.content.ContentResolver
+import android.content.mockContentResolver
 import android.database.Cursor
+import android.net.Uri
 import android.provider.ContactsContract
 import androidx.core.net.toUri
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -45,17 +47,166 @@ import org.mockito.kotlin.whenever
 class ContactsRepositoryImplTest : SysuiTestCase() {
     private val kosmos = testKosmosNew()
 
-    // TODO: b/478225883 - Put ContactsRepository in a test fixture.
     private val Kosmos.underTest by
         Kosmos.Fixture { ContactsRepositoryImpl(kosmos.testDispatcher, notificationRulesLogBuffer) }
 
     @Test
+    fun lookupContact_nullCursor_returnsNull() =
+        kosmos.runTest {
+            whenever(mockContentResolver.query(any(), any(), any(), any(), eq(null)))
+                .thenReturn(null)
+
+            val result = underTest.lookupContact(LOOKUP_URI, mockContentResolver)
+
+            assertThat(result).isNull()
+        }
+
+    @Test
+    fun lookupContact_exception_returnsNull() =
+        kosmos.runTest {
+            doAnswer { _: InvocationOnMock -> throw SQLException() }
+                .whenever(mockContentResolver)
+                .query(any(), any(), any(), any(), eq(null))
+
+            val result = underTest.lookupContact(LOOKUP_URI, mockContentResolver)
+
+            assertThat(result).isNull()
+        }
+
+    @Test
+    fun lookupContact_emptyCursor_returnsNull_andCursorClosed() =
+        kosmos.runTest {
+            val cursor = mock<Cursor>()
+            whenever(cursor.moveToNext()).thenReturn(false)
+            setUpCursorForSingleLookup(
+                lookupUri = LOOKUP_URI,
+                mockContentResolver = mockContentResolver,
+                cursor = cursor,
+            )
+
+            val result = underTest.lookupContact(LOOKUP_URI, mockContentResolver)
+
+            assertThat(result).isNull()
+            verify(cursor).close()
+        }
+
+    @Test
+    fun lookupContact_contactMissingId_returnsNull_andCursorClosed() =
+        kosmos.runTest {
+            val cursor =
+                createCursorWithEntries(
+                    entries =
+                        listOf(FakeContactEntry(id = null, lookupKey = "lookup", name = "Sys UI"))
+                )
+            setUpCursorForSingleLookup(
+                lookupUri = LOOKUP_URI,
+                mockContentResolver = mockContentResolver,
+                cursor = cursor,
+            )
+
+            val result = underTest.lookupContact(LOOKUP_URI, mockContentResolver)
+
+            assertThat(result).isNull()
+            verify(cursor).close()
+        }
+
+    @Test
+    fun lookupContact_contactMissingLookupKey_returnsNull_andCursorClosed() =
+        kosmos.runTest {
+            val cursor =
+                createCursorWithEntries(
+                    entries = listOf(FakeContactEntry(id = 3, lookupKey = null, name = "Sys UI"))
+                )
+            setUpCursorForSingleLookup(
+                lookupUri = LOOKUP_URI,
+                mockContentResolver = mockContentResolver,
+                cursor = cursor,
+            )
+
+            val result = underTest.lookupContact(LOOKUP_URI, mockContentResolver)
+
+            assertThat(result).isNull()
+            verify(cursor).close()
+        }
+
+    @Test
+    fun lookupContact_contactMissingName_returnsNull_andCursorClosed() =
+        kosmos.runTest {
+            val cursor =
+                createCursorWithEntries(
+                    entries = listOf(FakeContactEntry(id = 4, lookupKey = "fake", name = null))
+                )
+            setUpCursorForSingleLookup(
+                lookupUri = LOOKUP_URI,
+                mockContentResolver = mockContentResolver,
+                cursor = cursor,
+            )
+
+            val result = underTest.lookupContact(LOOKUP_URI, mockContentResolver)
+
+            assertThat(result).isNull()
+            verify(cursor).close()
+        }
+
+    @Test
+    fun lookupContact_contactMissingPhotoUri_returnsContact_andCursorClosed() =
+        kosmos.runTest {
+            val cursor =
+                createCursorWithEntries(
+                    entries =
+                        listOf(
+                            FakeContactEntry(
+                                id = 5,
+                                lookupKey = "fake",
+                                name = "name",
+                                photoUri = null,
+                            )
+                        )
+                )
+            setUpCursorForSingleLookup(
+                lookupUri = LOOKUP_URI,
+                mockContentResolver = mockContentResolver,
+                cursor = cursor,
+            )
+
+            val result = underTest.lookupContact(LOOKUP_URI, mockContentResolver)
+
+            assertThat(result).isNotNull()
+            assertThat(result!!.name).isEqualTo("name")
+            verify(cursor).close()
+        }
+
+    @Test
+    fun lookupContact_multipleContactsInCursor_returnsFirstContact_andCursorClosed() =
+        kosmos.runTest {
+            val cursor =
+                createCursorWithEntries(
+                    entries =
+                        listOf(
+                            FakeContactEntry(id = 1, name = "Sys UI"),
+                            FakeContactEntry(id = 2, name = "Frameworks Base"),
+                        )
+                )
+            setUpCursorForSingleLookup(
+                lookupUri = LOOKUP_URI,
+                mockContentResolver = mockContentResolver,
+                cursor = cursor,
+            )
+
+            val result = underTest.lookupContact(LOOKUP_URI, mockContentResolver)
+
+            assertThat(result).isNotNull()
+            assertThat(result!!.name).isEqualTo("Sys UI")
+            verify(cursor).close()
+        }
+
+    @Test
     fun fetchContacts_nullCursor_returnsEmptyList() =
         kosmos.runTest {
-            val contentResolver = mock<ContentResolver>()
-            whenever(contentResolver.query(any(), any(), any(), any(), eq(null))).thenReturn(null)
+            whenever(mockContentResolver.query(any(), any(), any(), any(), eq(null)))
+                .thenReturn(null)
 
-            val result = underTest.fetchContacts(searchQuery = "s", contentResolver)
+            val result = underTest.fetchContacts(searchQuery = "s", mockContentResolver)
 
             assertThat(result).isEmpty()
         }
@@ -63,13 +214,11 @@ class ContactsRepositoryImplTest : SysuiTestCase() {
     @Test
     fun fetchContacts_exception_returnsEmptyList() =
         kosmos.runTest {
-            val contentResolver = mock<ContentResolver>()
-
             doAnswer { _: InvocationOnMock -> throw SQLException() }
-                .whenever(contentResolver)
+                .whenever(mockContentResolver)
                 .query(any(), any(), any(), any(), eq(null))
 
-            val result = underTest.fetchContacts(searchQuery = "s", contentResolver)
+            val result = underTest.fetchContacts(searchQuery = "s", mockContentResolver)
 
             assertThat(result).isEmpty()
         }
@@ -79,10 +228,9 @@ class ContactsRepositoryImplTest : SysuiTestCase() {
         kosmos.runTest {
             val cursor = mock<Cursor>()
             whenever(cursor.moveToNext()).thenReturn(false)
-            val contentResolver = mock<ContentResolver>()
-            setUpCursor(contentResolver = contentResolver, cursor = cursor)
+            setUpCursorForFetchAll(mockContentResolver = mockContentResolver, cursor = cursor)
 
-            val result = underTest.fetchContacts(searchQuery = "s", contentResolver)
+            val result = underTest.fetchContacts(searchQuery = "s", mockContentResolver)
 
             assertThat(result).isEmpty()
             verify(cursor).close()
@@ -96,10 +244,9 @@ class ContactsRepositoryImplTest : SysuiTestCase() {
                     entries =
                         listOf(FakeContactEntry(id = null, lookupKey = "lookup", name = "Sys UI"))
                 )
-            val contentResolver = mock<ContentResolver>()
-            setUpCursor(contentResolver = contentResolver, cursor = cursor)
+            setUpCursorForFetchAll(mockContentResolver = mockContentResolver, cursor = cursor)
 
-            val result = underTest.fetchContacts(searchQuery = "s", contentResolver)
+            val result = underTest.fetchContacts(searchQuery = "s", mockContentResolver)
 
             assertThat(result).isEmpty()
             verify(cursor).close()
@@ -112,10 +259,9 @@ class ContactsRepositoryImplTest : SysuiTestCase() {
                 createCursorWithEntries(
                     entries = listOf(FakeContactEntry(id = 3, lookupKey = null, name = "Sys UI"))
                 )
-            val contentResolver = mock<ContentResolver>()
-            setUpCursor(contentResolver = contentResolver, cursor = cursor)
+            setUpCursorForFetchAll(mockContentResolver = mockContentResolver, cursor = cursor)
 
-            val result = underTest.fetchContacts(searchQuery = "s", contentResolver)
+            val result = underTest.fetchContacts(searchQuery = "s", mockContentResolver)
 
             assertThat(result).isEmpty()
             verify(cursor).close()
@@ -128,10 +274,9 @@ class ContactsRepositoryImplTest : SysuiTestCase() {
                 createCursorWithEntries(
                     entries = listOf(FakeContactEntry(id = 4, lookupKey = "fake", name = null))
                 )
-            val contentResolver = mock<ContentResolver>()
-            setUpCursor(contentResolver = contentResolver, cursor = cursor)
+            setUpCursorForFetchAll(mockContentResolver = mockContentResolver, cursor = cursor)
 
-            val result = underTest.fetchContacts(searchQuery = "s", contentResolver)
+            val result = underTest.fetchContacts(searchQuery = "s", mockContentResolver)
 
             assertThat(result).isEmpty()
             verify(cursor).close()
@@ -152,10 +297,9 @@ class ContactsRepositoryImplTest : SysuiTestCase() {
                             )
                         )
                 )
-            val contentResolver = mock<ContentResolver>()
-            setUpCursor(contentResolver = contentResolver, cursor = cursor)
+            setUpCursorForFetchAll(mockContentResolver = mockContentResolver, cursor = cursor)
 
-            val result = underTest.fetchContacts(searchQuery = "s", contentResolver)
+            val result = underTest.fetchContacts(searchQuery = "s", mockContentResolver)
 
             assertThat(result).hasSize(1)
             verify(cursor).close()
@@ -168,10 +312,9 @@ class ContactsRepositoryImplTest : SysuiTestCase() {
                 createCursorWithEntries(
                     entries = listOf(FakeContactEntry(name = "Sys UI", photoUri = "fakeUri"))
                 )
-            val contentResolver = mock<ContentResolver>()
-            setUpCursor(contentResolver = contentResolver, cursor = cursor)
+            setUpCursorForFetchAll(mockContentResolver = mockContentResolver, cursor = cursor)
 
-            val result = underTest.fetchContacts(searchQuery = "s", contentResolver)
+            val result = underTest.fetchContacts(searchQuery = "s", mockContentResolver)
 
             assertThat(result).hasSize(1)
             assertThat(result.first().name).isEqualTo("Sys UI")
@@ -190,10 +333,9 @@ class ContactsRepositoryImplTest : SysuiTestCase() {
                             FakeContactEntry(id = 2, name = "Frameworks Base"),
                         )
                 )
-            val contentResolver = mock<ContentResolver>()
-            setUpCursor(contentResolver = contentResolver, cursor = cursor)
+            setUpCursorForFetchAll(mockContentResolver = mockContentResolver, cursor = cursor)
 
-            val result = underTest.fetchContacts(searchQuery = "s", contentResolver)
+            val result = underTest.fetchContacts(searchQuery = "s", mockContentResolver)
 
             assertThat(result).hasSize(2)
             assertThat(result.map { it.name }).containsExactly("Sys UI", "Frameworks Base")
@@ -239,8 +381,17 @@ class ContactsRepositoryImplTest : SysuiTestCase() {
         return cursor
     }
 
-    private fun setUpCursor(contentResolver: ContentResolver, cursor: Cursor) {
-        whenever(contentResolver.query(any(), any(), any(), any(), eq(null))).thenReturn(cursor)
+    private fun setUpCursorForSingleLookup(
+        lookupUri: Uri,
+        mockContentResolver: ContentResolver,
+        cursor: Cursor,
+    ) {
+        whenever(mockContentResolver.query(eq(lookupUri), any(), eq(null), eq(null), eq(null)))
+            .thenReturn(cursor)
+    }
+
+    private fun setUpCursorForFetchAll(mockContentResolver: ContentResolver, cursor: Cursor) {
+        whenever(mockContentResolver.query(any(), any(), any(), any(), eq(null))).thenReturn(cursor)
     }
 
     private data class FakeContactEntry(
@@ -249,4 +400,8 @@ class ContactsRepositoryImplTest : SysuiTestCase() {
         val lookupKey: String? = "fakeLookupKey",
         val photoUri: String? = null,
     )
+
+    companion object {
+        private val LOOKUP_URI = "lookupUri".toUri()
+    }
 }

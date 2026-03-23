@@ -56700,10 +56700,12 @@ package android.view {
     method public default void removeProposedRotationListener(@NonNull java.util.function.IntConsumer);
     method @FlaggedApi("com.android.window.flags.screen_recording_callbacks") @RequiresPermission(android.Manifest.permission.DETECT_SCREEN_RECORDING) public default void removeScreenRecordingCallback(@NonNull java.util.function.Consumer<Integer>);
     method public void removeViewImmediate(android.view.View);
+    method @FlaggedApi("com.android.window.flags.engagement_control_api") public default void requestEngagementControlState(int);
     method public default boolean transferTouchGesture(@NonNull android.window.InputTransferToken, @NonNull android.window.InputTransferToken);
     method public default void unregisterSurfaceControlInputReceiver(@NonNull android.view.SurfaceControl);
     method public default void unregisterTrustedPresentationListener(@NonNull java.util.function.Consumer<Boolean>);
     field @FlaggedApi("com.android.window.flags.cover_display_opt_in") public static final int COMPAT_SMALL_COVER_SCREEN_OPT_IN = 1; // 0x1
+    field @FlaggedApi("com.android.window.flags.engagement_control_api") public static final int ENGAGEMENT_CONTROL_FLAG_SUSTAIN_VISUALS = 1; // 0x1
     field public static final String PROPERTY_ACTIVITY_EMBEDDING_ALLOW_SYSTEM_OVERRIDE = "android.window.PROPERTY_ACTIVITY_EMBEDDING_ALLOW_SYSTEM_OVERRIDE";
     field public static final String PROPERTY_ACTIVITY_EMBEDDING_SPLITS_ENABLED = "android.window.PROPERTY_ACTIVITY_EMBEDDING_SPLITS_ENABLED";
     field public static final String PROPERTY_CAMERA_COMPAT_ALLOW_FORCE_ROTATION = "android.window.PROPERTY_CAMERA_COMPAT_ALLOW_FORCE_ROTATION";

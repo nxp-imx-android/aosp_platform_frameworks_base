@@ -49,9 +49,20 @@ such as capturing a memory profile or logging an anomaly to `statsd`.
 MemoryLimiter is configured via an XML file located on the vendor partition.
 
 -   **File Path**: `/vendor/etc/memory-limiter-config.xml`
--   **Default Configuration**: If no config file is found, it defaults to:
-    -   Visible processes: 50% of total available RAM.
-    -   Not Visible processes: 25% of total available RAM.
+
+The configuration file is optional but if it does not exist, MemoryLimiter is
+disabled. If the file does exist but is unreadable or invalid, MemoryLimiter
+throws a fatal exception.
+
+The configuration file contains metadata (such as the minimum required RAM)
+that is used to determine which, if any, of its parts apply to the current
+system.  If no parts apply to the current system, MemoryLimiter is disabled.
+This is not an error.
+
+NOTE: A developer can locally bypass the need for a configuration file on the
+vendor partition by enabling the trunk-stable flag
+
+-    `com.android.serve.am.memory_limiter_force_on`.
 
 ### XML Format
 
@@ -60,17 +71,41 @@ The configuration file follows the schema defined in
 
 ```xml
 <MemoryLimiterConfig>
-    <version>1</version>
-    <visible>50</visible>
-    <notVisible>25</notVisible>
+  <version>1</version>
+  <configList>
+    <limitSet>
+      <!-- Limits for a phone with at least 14G of ram: 8G/4G/4G/4G -->
+      <minimumRequiredMemTotal>14336</minimumRequiredMemTotal>
+      <memVisible>8192</memVisible>
+      <memNotVisible>4096</memNotVisible>
+      <swapVisible>4096</swapVisible>
+      <swapNotVisible>4096</swapNotVisible>
+    </limitSet>
+    <limitSet>
+      <!-- Limits for a phone with at least 10G of ram: 6G/3G/3G/3G -->
+      <minimumRequiredMemTotal>10240</minimumRequiredMemTotal>
+      <memVisible>6144</memVisible>
+      <memNotVisible>3072</memNotVisible>
+      <swapVisible>3072</swapVisible>
+      <swapNotVisible>3072</swapNotVisible>
+    </limitSet>
+  </configList>
 </MemoryLimiterConfig>
 ```
+-   **version**: A positive integer identifying the configuration version.  This
+    must be 1.
+-   **configList**: The list of **LimitSet** elements.  There must be at least
+    one element.
 
--   **version**: A positive integer identifying the configuration version.
--   **visible**: Percentage (1-100) of total memory allowed for visible
-    processes.
--   **notVisible**: Percentage (1-100) of total memory allowed for non-visible
-    processes.
+Each **LimitSet** element contains the following elements.  All memory values
+are in units of MiB.
+
+-   **minimumRequiredMemTotal**: The minimum required available memory for this
+    entry to be valid.
+-   **memVisible**: The memory allowed to visible processes.
+-   **memNotVisible**: The memory allowed to not-visible processes.
+-   **swapVisible**: The amount of swap allowed to visible processes.
+-   **swapNotVisible**: The  amount of swap allowed to not-visible processes.
 
 ### Modifying Configuration
 
@@ -78,6 +113,10 @@ To change the system-wide limits:
 
 1.  Modify `/vendor/etc/memory-limiter-config.xml`.
 2.  Reboot the device or restart `system_server` for the changes to take effect.
+
+Tip: Use the unit test `MemoryLimiterTests#testXmlConfig` to validate the format
+of a new configuration file.  Temporarily replace `data/config-default.xml` with
+the new configuration file and run the test.
 
 ## Shell Commands
 

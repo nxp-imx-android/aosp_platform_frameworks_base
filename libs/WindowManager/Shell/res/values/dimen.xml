@@ -511,7 +511,7 @@
     <dimen name="desktop_mode_pinned_header_button_corner_radius">16dp</dimen>
 
     <!-- Inset for button ripples -->
-    <dimen name="desktop_mode_pinned_header_button_inset">4dp</dimen>
+    <dimen name="desktop_mode_pinned_header_button_inset">8dp</dimen>
 
     <!-- The default minimum allowed window width when resizing a window in desktop mode. -->
     <dimen name="desktop_mode_minimum_window_width">386dp</dimen>

@@ -27,11 +27,14 @@ import android.media.SuggestedDeviceInfo
 import android.media.session.MediaController
 import android.media.session.MediaController.PlaybackInfo
 import android.media.session.MediaSession
+import android.os.UserHandle
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper
 import androidx.test.filters.SmallTest
+import com.android.media.flags.Flags.FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT
 import com.android.settingslib.bluetooth.LocalBluetoothLeBroadcast
 import com.android.settingslib.bluetooth.LocalBluetoothManager
 import com.android.settingslib.bluetooth.LocalBluetoothProfileManager
@@ -170,6 +173,7 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         whenever(device.name).thenReturn(DEVICE_NAME)
         whenever(device.iconWithoutBackground).thenReturn(icon)
         whenever(lmmFactory.create(PACKAGE)).thenReturn(lmm)
+        whenever(lmmFactory.createForAppRouting(any(), eq(PACKAGE), anyOrNull())).thenReturn(lmm)
         whenever(sdmFactory.create(lmm)).thenReturn(sdm)
         whenever(muteAwaitFactory.create(lmm)).thenReturn(muteAwaitManager)
         whenever(lmm.getCurrentConnectedDevice()).thenReturn(device)
@@ -221,11 +225,26 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
     }
 
     @Test
+    @DisableFlags(FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
     fun loadMediaData() {
         manager.onMediaDataLoaded(KEY, null, mediaData)
         fakeBgExecutor.runAllReady()
         fakeFgExecutor.runAllReady()
         verify(lmmFactory).create(PACKAGE)
+    }
+
+    @Test
+    @EnableFlags(FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
+    fun loadMediaData_multiuserFlagEnabled() {
+        whenever(controller.sessionToken).thenReturn(session.sessionToken)
+        val uid = 42
+
+        manager.onMediaDataLoaded(KEY, null, mediaData.copy(appUid = uid))
+        fakeBgExecutor.runAllReady()
+        fakeFgExecutor.runAllReady()
+
+        verify(lmmFactory)
+            .createForAppRouting(UserHandle.getUserHandleForUid(uid), PACKAGE, session.sessionToken)
     }
 
     @Test

@@ -1944,12 +1944,15 @@ package android.app.admin {
     ctor public ProvisioningException(@NonNull Exception, int, @Nullable String);
     method public int getProvisioningError();
     field public static final int ERROR_ADMIN_PACKAGE_INSTALLATION_FAILED = 3; // 0x3
+    field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final int ERROR_INTERRUPTED = 10; // 0xa
     field public static final int ERROR_PRE_CONDITION_FAILED = 1; // 0x1
     field public static final int ERROR_PROFILE_CREATION_FAILED = 2; // 0x2
     field public static final int ERROR_REMOVE_NON_REQUIRED_APPS_FAILED = 6; // 0x6
     field public static final int ERROR_SETTING_PROFILE_OWNER_FAILED = 4; // 0x4
+    field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final int ERROR_SET_DEVICE_CONTROLLER_FAILED = 8; // 0x8
     field public static final int ERROR_SET_DEVICE_OWNER_FAILED = 7; // 0x7
     field public static final int ERROR_STARTING_PROFILE_FAILED = 5; // 0x5
+    field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final int ERROR_TIMEOUT = 9; // 0x9
     field public static final int ERROR_UNKNOWN = 0; // 0x0
   }
 
@@ -14967,6 +14970,7 @@ package android.service.notification {
     method @FlaggedApi("android.app.nm_contextual_display") public final void createDynamicBundle(@IntRange(from=0x64, to=0xc8) int, @NonNull CharSequence);
     method @FlaggedApi("android.app.nm_contextual_display") public final void deleteDynamicBundle(@IntRange(from=0x64, to=0xc8) int);
     method @FlaggedApi("android.app.nm_contextual_display") @NonNull public final java.util.Set<android.service.notification.DynamicBundle> getDynamicBundles();
+    method @FlaggedApi("android.app.nm_contextual_display_launch") @NonNull public final java.util.List<android.app.NotificationRule> getNotificationRules();
     method public void onActionInvoked(@NonNull String, @NonNull android.app.Notification.Action, int);
     method public void onAllowedAdjustmentsChanged();
     method @NonNull public final android.os.IBinder onBind(@Nullable android.content.Intent);
@@ -14977,6 +14981,9 @@ package android.service.notification {
     method @Nullable public android.service.notification.Adjustment onNotificationEnqueued(@NonNull android.service.notification.StatusBarNotification, @NonNull android.app.NotificationChannel, @NonNull android.service.notification.NotificationListenerService.RankingMap);
     method public void onNotificationExpansionChanged(@NonNull String, boolean, boolean);
     method public void onNotificationFeedbackReceived(@NonNull String, @NonNull android.service.notification.NotificationListenerService.RankingMap, @NonNull android.os.Bundle);
+    method @FlaggedApi("android.app.nm_contextual_display_launch") public void onNotificationRuleAdded(@NonNull android.app.NotificationRule);
+    method @FlaggedApi("android.app.nm_contextual_display_launch") public void onNotificationRuleModified(@NonNull android.app.NotificationRule);
+    method @FlaggedApi("android.app.nm_contextual_display_launch") public void onNotificationRuleRemoved(int);
     method public abstract void onNotificationSnoozedUntilContext(@NonNull android.service.notification.StatusBarNotification, @NonNull String);
     method public void onNotificationVisibilityChanged(@NonNull String, boolean);
     method public void onNotificationsSeen(@NonNull java.util.List<String>);
@@ -20886,11 +20893,13 @@ package android.view {
   }
 
   public interface WindowManager extends android.view.ViewManager {
+    method @FlaggedApi("com.android.window.flags.engagement_control_api") @RequiresPermission("android.permission.MANAGE_DISPLAYS") public default void addEngagementControlRequestConsumer(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<android.view.WindowManager.EngagementControlRequest>);
     method @RequiresPermission(android.Manifest.permission.RESTRICTED_VR_ACCESS) public android.graphics.Region getCurrentImeTouchRegion();
     method @FlaggedApi("com.android.window.flags.device_engagement_mode") public default int getDisplayEngagementMode(int);
     method @NonNull public default java.util.List<android.content.ComponentName> notifyScreenshotListeners(int);
     method @FlaggedApi("com.android.window.flags.device_engagement_mode") public default void registerDisplayEngagementModeCallback(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<android.view.WindowManager.DisplayEngagementModeState>);
     method public default void registerTaskFpsCallback(@IntRange(from=0) int, @NonNull java.util.concurrent.Executor, @NonNull android.window.TaskFpsCallback);
+    method @FlaggedApi("com.android.window.flags.engagement_control_api") @RequiresPermission("android.permission.MANAGE_DISPLAYS") public default void removeEngagementControlRequestConsumer(@NonNull java.util.function.Consumer<android.view.WindowManager.EngagementControlRequest>);
     method @FlaggedApi("com.android.window.flags.device_engagement_mode") @RequiresPermission("android.permission.MANAGE_DISPLAYS") public default void setDisplayEngagementMode(int, int);
     method @FlaggedApi("com.android.window.flags.device_engagement_mode") public default void unregisterDisplayEngagementModeCallback(@NonNull java.util.function.Consumer<android.view.WindowManager.DisplayEngagementModeState>);
     method public default void unregisterTaskFpsCallback(@NonNull android.window.TaskFpsCallback);
@@ -20904,6 +20913,12 @@ package android.view {
   @FlaggedApi("com.android.window.flags.device_engagement_mode") public static final class WindowManager.DisplayEngagementModeState {
     method public int getDisplayId();
     method public int getEngagementModeFlags();
+  }
+
+  @FlaggedApi("com.android.window.flags.engagement_control_api") public static final class WindowManager.EngagementControlRequest {
+    method public int getDisplayId();
+    method public int getEngagementControlFlags();
+    method public int getTaskId();
   }
 
   public static class WindowManager.InsetsParams {

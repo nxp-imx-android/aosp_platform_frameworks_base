@@ -17,7 +17,6 @@
 package com.android.systemui.notifications.intelligence.rules.data.repository
 
 import android.annotation.FlaggedApi
-import android.annotation.SuppressLint
 import android.app.NotificationRule
 import android.app.NotificationRule.Action.PRIMARY_ACTION_BLOCK
 import android.app.NotificationRule.Action.PRIMARY_ACTION_BUNDLE
@@ -43,7 +42,6 @@ import com.android.systemui.notifications.intelligence.rules.shared.model.Contac
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftFilterModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.FilterModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ResponseModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
@@ -63,7 +61,6 @@ import org.mockito.kotlin.whenever
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @FlaggedApi(NmContextualDisplayLaunch.FLAG_NAME)
-@SuppressLint("RunBlockingUsage") // TODO: b/493190684 - Don't run linters on pod tests.
 class NotificationRulesRepositoryTest : SysuiTestCase() {
     private val kosmos = testKosmosNew()
 
@@ -71,6 +68,9 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
+        kosmos.fakeContactsRepository.contacts = listOf(FAKE_CONTACT_1, FAKE_CONTACT_2)
+        kosmos.fakeInstalledAppsRepository.installedApps = listOf(FAKE_APP)
+
         // By default, return the rule that was passed in
         whenever(kosmos.notificationManager.addNotificationRule(any(), any())).thenAnswer {
             invocation ->
@@ -220,6 +220,130 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
+    fun fetchInitialRules_noFilters_filterIsNull() =
+        kosmos.runTest {
+            val rule =
+                createRule(action = NotificationRule.Action.Builder(PRIMARY_ACTION_BLOCK).build())
+            putRulesIntoNotificationManager(listOf(rule))
+
+            underTest.start()
+            val result = underTest.rules
+
+            assertThat(result).hasSize(1)
+            assertThat(result[0].filter).isNull()
+        }
+
+    @Test
+    @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
+    fun fetchInitialRules_contacts_hasOnlyFoundContacts() =
+        kosmos.runTest {
+            val filter =
+                NotificationRule.Filter.Builder()
+                    .apply {
+                        addContact(CONTACT_1_URI)
+                        addContact(CONTACT_2_URI)
+                        addContact("unknownContact".toUri())
+                    }
+                    .build()
+            val rule =
+                NotificationRule.Builder(
+                        300,
+                        NotificationRule.Action.Builder(PRIMARY_ACTION_BLOCK).build(),
+                    )
+                    .addFilter(filter)
+                    .build()
+            putRulesIntoNotificationManager(listOf(rule))
+
+            underTest.start()
+            val result = underTest.rules
+
+            assertThat(result).hasSize(1)
+            assertThat(result[0].filter).isNotNull()
+            assertThat(result[0].filter!!.contacts!!.contacts)
+                .containsExactly(FAKE_CONTACT_1, FAKE_CONTACT_2)
+                .inOrder()
+        }
+
+    @Test
+    @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
+    fun fetchInitialRules_includedApps_hasOnlyFoundApps() =
+        kosmos.runTest {
+            val filter =
+                NotificationRule.Filter.Builder()
+                    .apply {
+                        addIncludedPackageUid(FAKE_APP_UID)
+                        addIncludedPackageUid(FAKE_APP_UID + 1)
+                    }
+                    .build()
+            val rule =
+                NotificationRule.Builder(
+                        300,
+                        NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT).build(),
+                    )
+                    .addFilter(filter)
+                    .build()
+            putRulesIntoNotificationManager(listOf(rule))
+
+            underTest.start()
+            val result = underTest.rules
+
+            assertThat(result).hasSize(1)
+            assertThat(result[0].filter).isNotNull()
+            assertThat(result[0].filter!!.includedApps!!.apps).containsExactly(FAKE_APP)
+        }
+
+    @Test
+    @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
+    fun fetchInitialRules_noContacts_isNull() =
+        kosmos.runTest {
+            // WHEN there's apps but not contacts
+            val filter =
+                NotificationRule.Filter.Builder()
+                    .apply { addIncludedPackageUid(FAKE_APP_UID) }
+                    .build()
+            val rule =
+                NotificationRule.Builder(
+                        300,
+                        NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT).build(),
+                    )
+                    .addFilter(filter)
+                    .build()
+            putRulesIntoNotificationManager(listOf(rule))
+
+            underTest.start()
+            val result = underTest.rules
+
+            assertThat(result).hasSize(1)
+            // THEN contacts is null
+            assertThat(result[0].filter!!.contacts).isNull()
+        }
+
+    @Test
+    @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
+    fun fetchInitialRules_noIncludedApps_isNull() =
+        kosmos.runTest {
+            // WHEN there's contacts but not apps
+            val filter =
+                NotificationRule.Filter.Builder().apply { addContact(CONTACT_1_URI) }.build()
+            val rule =
+                NotificationRule.Builder(
+                        300,
+                        NotificationRule.Action.Builder(PRIMARY_ACTION_BLOCK).build(),
+                    )
+                    .addFilter(filter)
+                    .build()
+            putRulesIntoNotificationManager(listOf(rule))
+
+            underTest.start()
+            val result = underTest.rules
+
+            assertThat(result).hasSize(1)
+            // THEN included apps are null
+            assertThat(result[0].filter!!.includedApps).isNull()
+        }
+
+    @Test
+    @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
     fun fetchInitialRules_multipleRules_inOrder() =
         kosmos.runTest {
             putRulesIntoNotificationManager(
@@ -287,9 +411,11 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
             val savedRule = underTest.rules[0]
             assertThat(savedRule.id).isEqualTo(100)
             assertThat(savedRule.action).isEqualTo(ActionModel.Silence)
-            assertThat(savedRule.filter.contacts)
+            assertThat(savedRule.filter).isNotNull()
+            assertThat(savedRule.filter!!.contacts)
                 .isEqualTo(ContactsModel(listOf(FAKE_CONTACT_1, FAKE_CONTACT_2)))
-            assertThat(savedRule.filter.includedApps).isEqualTo(IncludedAppsModel(listOf(FAKE_APP)))
+            assertThat(savedRule.filter!!.includedApps)
+                .isEqualTo(IncludedAppsModel(listOf(FAKE_APP)))
         }
 
     @Test
@@ -335,9 +461,119 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
             val savedRule = underTest.rules[1]
             assertThat(savedRule.id).isEqualTo(34)
             assertThat(savedRule.action).isEqualTo(ActionModel.Block)
-            assertThat(savedRule.filter.contacts)
+            assertThat(savedRule.filter).isNotNull()
+            assertThat(savedRule.filter!!.contacts)
                 .isEqualTo(ContactsModel(listOf(FAKE_CONTACT_1, FAKE_CONTACT_2)))
-            assertThat(savedRule.filter.includedApps).isEqualTo(IncludedAppsModel(listOf(FAKE_APP)))
+            assertThat(savedRule.filter!!.includedApps)
+                .isEqualTo(IncludedAppsModel(listOf(FAKE_APP)))
+        }
+
+    // This should never happen, but if NotificationManager returns a different rule than
+    // what was passed in, we should treat NotificationManager as the source of truth
+    @Test
+    @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
+    fun saveRule_newRule_usesReturnedRuleValues() =
+        kosmos.runTest {
+            underTest.start()
+
+            // WHEN the rule sent to NotificationManager has contacts...
+            val newRuleDraft =
+                DraftRuleModel.New(
+                    action = ActionModel.Block,
+                    filter =
+                        DraftFilterModel(
+                            contacts =
+                                RuleValue.Specified(
+                                    ContactsModel(listOf(FAKE_CONTACT_1, FAKE_CONTACT_2))
+                                )
+                        ),
+                )
+
+            // ... BUT the rule returned from NotificationManager has apps instead
+            val returnedRule =
+                NotificationRule.Builder(
+                        34,
+                        NotificationRule.Action.Builder(PRIMARY_ACTION_BLOCK).build(),
+                    )
+                    .addFilter(
+                        NotificationRule.Filter.Builder()
+                            .addIncludedPackageUid(FAKE_APP_UID)
+                            .build()
+                    )
+                    .build()
+            whenever(kosmos.notificationManager.addNotificationRule(any(), any())).thenAnswer { _ ->
+                returnedRule
+            }
+
+            testScope.launch { underTest.saveRule(newRuleDraft) }
+
+            verify(notificationManager).addNotificationRule(any(), any())
+
+            assertThat(underTest.rules).hasSize(1)
+            val savedRule = underTest.rules[0]
+            assertThat(savedRule.id).isEqualTo(34)
+            assertThat(savedRule.filter).isNotNull()
+
+            // THEN the returned rule values (with just apps) are used
+            assertThat(savedRule.filter!!.contacts).isNull()
+            assertThat(savedRule.filter!!.includedApps)
+                .isEqualTo(IncludedAppsModel(listOf(FAKE_APP)))
+        }
+
+    // This should never happen, but if NotificationManager returns a different rule than
+    // what was passed in, we should treat NotificationManager as the source of truth
+    @Test
+    @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
+    fun saveRule_preExistingRule_usesReturnedRuleValues() =
+        kosmos.runTest {
+            putRulesIntoNotificationManager(listOf(createRule(id = 12), createRule(id = 34)))
+            underTest.start()
+
+            // WHEN the rule sent to NotificationManager has contacts...
+            val updatedRuleDraft =
+                DraftRuleModel.PreExisting(
+                    id = 34,
+                    action = ActionModel.Block,
+                    filter =
+                        DraftFilterModel(
+                            contacts =
+                                RuleValue.Specified(
+                                    ContactsModel(listOf(FAKE_CONTACT_1, FAKE_CONTACT_2))
+                                )
+                        ),
+                )
+
+            // ... BUT the rule returned from NotificationManager has apps instead
+            val returnedRule =
+                NotificationRule.Builder(
+                        34,
+                        NotificationRule.Action.Builder(PRIMARY_ACTION_BLOCK).build(),
+                    )
+                    .addFilter(
+                        NotificationRule.Filter.Builder()
+                            .addIncludedPackageUid(FAKE_APP_UID)
+                            .build()
+                    )
+                    .build()
+            whenever(kosmos.notificationManager.updateNotificationRule(any())).thenAnswer { _ ->
+                returnedRule
+            }
+
+            testScope.launch { underTest.saveRule(updatedRuleDraft) }
+
+            verify(notificationManager).updateNotificationRule(any())
+
+            assertThat(underTest.rules).hasSize(2)
+            assertThat(underTest.rules[0].id).isEqualTo(12)
+            val savedRule = underTest.rules[1]
+            assertThat(savedRule.id).isEqualTo(34)
+            assertThat(savedRule.action).isEqualTo(ActionModel.Block)
+            assertThat(savedRule.filter).isNotNull()
+
+            // THEN returned rule values (with just apps) are used
+            assertThat(savedRule.filter!!.contacts).isNull()
+            assertThat(savedRule.filter!!.includedApps)
+                .isEqualTo(IncludedAppsModel(listOf(FAKE_APP)))
         }
 
     @Test
@@ -606,8 +842,7 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
             // Verify the rule was sent to the manager, but we didn't update the internal rule
             verify(notificationManager).updateNotificationRule(any())
             assertThat(underTest.rules).hasSize(2)
-            assertThat(underTest.rules[1].filter)
-                .isEqualTo(FilterModel(contacts = null, includedApps = null))
+            assertThat(underTest.rules[1].filter).isNull()
         }
 
     private fun createRule(

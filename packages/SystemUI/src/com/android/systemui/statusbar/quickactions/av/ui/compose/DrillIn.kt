@@ -19,7 +19,10 @@ package com.android.systemui.statusbar.quickactions.av.ui.compose
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -43,6 +46,7 @@ import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.ButtonViewMod
 fun DrillIn(
     drillInTitle: String,
     returnToMainPage: () -> Unit,
+    subtitle: String? = null,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
@@ -69,6 +73,17 @@ fun DrillIn(
                 color = MaterialTheme.colorScheme.onSurface,
             )
         }
+        subtitle?.let {
+            Text(
+                text = it,
+                modifier = Modifier.height(32.dp).width(256.dp),
+                style = MaterialTheme.typography.labelMedium,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        val verticalOffset = if (subtitle != null) 16.dp else 11.dp
+        Spacer(modifier = Modifier.height(verticalOffset))
         content()
     }
 }
@@ -77,6 +92,8 @@ fun DrillIn(
 fun DrillInButtonColumn(
     buttonViewModels: List<ButtonViewModel>,
     buttonFactory: @Composable (Shape, ButtonViewModel) -> Unit,
+    // Whether to split the buttons into sections based on active buttons.
+    splitSections: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -98,8 +115,8 @@ fun DrillInButtonColumn(
             val isFirst = (index == 0)
             val isLast = (index == buttonViewModels.size - 1)
 
-            val isFirstInBlock = isFirst || isActive || previousIsActive
-            val isLastInBlock = isLast || isActive || subsequentIsActive
+            val isFirstInBlock = isFirst || (splitSections && (isActive || previousIsActive))
+            val isLastInBlock = isLast || (splitSections && (isActive || subsequentIsActive))
 
             val topCornerRadius = if (isFirstInBlock) bigRadius else smallRadius
             val bottomCornerRadius = if (isLastInBlock) bigRadius else smallRadius

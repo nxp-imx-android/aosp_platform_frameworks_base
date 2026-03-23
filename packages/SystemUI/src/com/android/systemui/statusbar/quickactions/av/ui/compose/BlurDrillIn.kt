@@ -59,6 +59,7 @@ fun BlurDrillIn(
             buttonFactory = { shape: Shape, buttonViewModel: ButtonViewModel ->
                 BlurSelectionButton(shape = shape, viewModel = buttonViewModel)
             },
+            splitSections = true,
         )
     }
 }

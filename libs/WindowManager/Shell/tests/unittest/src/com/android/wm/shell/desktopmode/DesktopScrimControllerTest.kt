@@ -117,9 +117,35 @@ class DesktopScrimControllerTest : ShellTestCase() {
 
         clearInvocations(desktopScrimListener)
         controller.removeDesktopScrimListener(desktopScrimListener)
+        controller.updateDesktopScrim(DEFAULT_DISPLAY, false /* applyLightOutEffect */)
+        shellExecutor.flushAll()
+        verify(desktopScrimListener, never()).onDesktopScrimEffectChanged(any(), any())
+    }
+
+    @Test
+    @EnableFlags(com.android.systemui.Flags.FLAG_OPAQUE_STATUS_BAR)
+    fun updateDesktopScrim_cacheRedundantUpdates() {
+        controller.addDesktopScrimListener(desktopScrimListener, shellExecutor)
         controller.updateDesktopScrim(DEFAULT_DISPLAY, true /* applyLightOutEffect */)
         shellExecutor.flushAll()
-        verify(desktopScrimListener, never()).onDesktopScrimEffectChanged(DEFAULT_DISPLAY, true)
+        verify(desktopScrimListener).onDesktopScrimEffectChanged(DEFAULT_DISPLAY, true)
+
+        clearInvocations(desktopScrimListener)
+        // Redundant update, should be cached
+        controller.updateDesktopScrim(DEFAULT_DISPLAY, true /* applyLightOutEffect */)
+        shellExecutor.flushAll()
+        verify(desktopScrimListener, never()).onDesktopScrimEffectChanged(any(), any())
+
+        // Different display ID, should not be cached
+        val secondDisplayId = DEFAULT_DISPLAY + 1
+        controller.updateDesktopScrim(secondDisplayId, true /* applyLightOutEffect */)
+        shellExecutor.flushAll()
+        verify(desktopScrimListener).onDesktopScrimEffectChanged(secondDisplayId, true)
+
+        // Different value, should not be cached
+        controller.updateDesktopScrim(DEFAULT_DISPLAY, false /* applyLightOutEffect */)
+        shellExecutor.flushAll()
+        verify(desktopScrimListener).onDesktopScrimEffectChanged(DEFAULT_DISPLAY, false)
     }
 
     @Test

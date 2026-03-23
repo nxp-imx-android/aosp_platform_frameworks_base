@@ -176,4 +176,16 @@ interface IVirtualDeviceManager {
      * no separate audio focus environment for the device.
      */
     @nullable IBinder getAudioFocusEnvironment(int deviceId);
+
+    /**
+     * Returns whether the given package is allowed to be a computer control agent.
+     */
+    @EnforcePermission("MANAGE_COMPUTER_CONTROL_CONSENT")
+    boolean isPackageApprovedToRunComputerControlAutomation(in String packageName, int userId);
+
+    /**
+     * Returns whether the given package is allowed to be automated by a computer control agent.
+     */
+    @EnforcePermission("MANAGE_COMPUTER_CONTROL_CONSENT")
+    boolean isPackageTargetableForComputerControlAutomation(in String packageName, int userId);
 }

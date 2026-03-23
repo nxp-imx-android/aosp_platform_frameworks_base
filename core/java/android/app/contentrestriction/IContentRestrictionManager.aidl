@@ -29,7 +29,7 @@ import android.content.LocusId;
 interface IContentRestrictionManager {
     oneway void requestClassification(int userId, in ClassifiableContent content, in IContentRestrictionCallback callback);
     boolean isContentRestrictionEnabledForUser(int userId);
-    boolean isDevicePolicyBypassingEnabledForUser(int userId);
-    void setDevicePolicyBypassingEnabledForUser(int userId, boolean enabled);
+    boolean shouldAllowBypassingContentRestrictionSandboxingForUser(int userId);
+    void setShouldAllowBypassingContentRestrictionSandboxingForUser(int userId, boolean enabled);
     Intent createContentRestrictedIntent(in LocusId locusId);
 }

@@ -33,6 +33,7 @@ import android.app.admin.PackagePolicy;
 import android.app.admin.PasswordMetrics;
 import android.app.admin.FactoryResetProtectionPolicy;
 import android.app.admin.IAuditLogEventsCallback;
+import android.app.admin.IDeviceProvisioningCallback;
 import android.app.admin.ManagedProfileProvisioningParams;
 import android.app.admin.FullyManagedDeviceProvisioningParams;
 import android.app.admin.ManagedSubscriptionsPolicy;
@@ -589,7 +590,7 @@ interface IDevicePolicyManager {
     UserHandle createManagedProfile(in ManagedProfileProvisioningParams provisioningParams, in String callerPackage);
     void finalizeCreateManagedProfile(in ManagedProfileProvisioningParams provisioningParams, in UserHandle managedProfileUser);
     void provisionFullyManagedDevice(in FullyManagedDeviceProvisioningParams provisioningParams, in String callerPackage);
-    void provisionMultiuserManagedDevice(in MultiuserManagedDeviceProvisioningParamsTransport provisioningParamsTransport, in String callerPackage);
+    void provisionMultiuserManagedDevice(in MultiuserManagedDeviceProvisioningParamsTransport provisioningParamsTransport, in String callerPackage, in IDeviceProvisioningCallback callback);
     void provisionMultiuserManagedUser(in MultiuserManagedUserProvisioningParamsTransport provisioningParamsTransport, in String callerPackage);
 
     void finalizeWorkProfileProvisioning(in UserHandle managedProfileUser, in Account migratedAccount);

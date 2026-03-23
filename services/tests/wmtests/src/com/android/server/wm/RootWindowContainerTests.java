@@ -1005,6 +1005,49 @@ public class RootWindowContainerTests extends WindowTestsBase {
         verify(rootTask, never()).executeAppTransition(any());
     }
 
+    @Test
+    public void testResumeFocusedTasksTopActivities_skipsRemovingDisplay() {
+        final DisplayContent secondDisplay = addNewDisplayContentAt(DisplayContent.POSITION_TOP);
+        spyOn(secondDisplay);
+        doReturn(true).when(secondDisplay).isRemoving();
+
+        createActivityRecord(secondDisplay);
+
+        mRootWindowContainer.resumeFocusedTasksTopActivities();
+
+        // Verify the loop continued early by ensuring topRunningActivity() was never called
+        verify(secondDisplay, never()).topRunningActivity();
+    }
+
+    @Test
+    public void testResumeFocusedTasksTopActivities_skipsInvalidDisplay() {
+        final DisplayContent secondDisplay = addNewDisplayContentAt(DisplayContent.POSITION_TOP);
+        spyOn(secondDisplay);
+        doReturn(true).when(secondDisplay).isRemovedOrInvalid();
+
+        createActivityRecord(secondDisplay);
+
+        mRootWindowContainer.resumeFocusedTasksTopActivities();
+
+        // Verify the loop continued early by ensuring topRunningActivity() was never called
+        verify(secondDisplay, never()).topRunningActivity();
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    public void testResumeFocusedTasksTopActivities_skipsDisplayCannotHostTasks() {
+        final DisplayContent secondDisplay = addNewDisplayContentAt(DisplayContent.POSITION_TOP);
+        spyOn(secondDisplay.mDisplay);
+        doReturn(false).when(secondDisplay.mDisplay).canHostTasks();
+
+        createActivityRecord(secondDisplay);
+
+        mRootWindowContainer.resumeFocusedTasksTopActivities();
+
+        // Verify the loop continued early by ensuring topRunningActivity() was never called
+        verify(secondDisplay, never()).topRunningActivity();
+    }
+
     /**
      * Tests that home activities can be started on the displays that supports system decorations.
      */
