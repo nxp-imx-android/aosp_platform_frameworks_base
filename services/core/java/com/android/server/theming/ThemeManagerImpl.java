@@ -369,8 +369,7 @@ public class ThemeManagerImpl implements ThemeManagerInternal, ThemeEventDispatc
 
         // 4. Force color evaluation for everyone (handles OTAs and initial boot).
         // If an update is needed, it will trigger it synchronously.
-        boolean updateRequested = mStateManager.evaluateAllUsers(
-                hasPaletteOutdated(), /*isSynchronous*/ true);
+        boolean updateRequested = mStateManager.evaluateAllUsers(hasPaletteOutdated());
 
         // 5. Register steady-state listeners now that initial state is resolved.
         // We post this to ensure we don't hold any locks if these registrations

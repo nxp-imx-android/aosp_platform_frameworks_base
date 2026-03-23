@@ -333,11 +333,10 @@ public class ThemeStateManager {
      *
      * @param isPaletteOutdated A boolean indicating the palette version is outdated and should be
      *                          recalculated.
-     * @param isSynchronous     Whether to perform the update synchronously.
      * @return {@code true} if an update was requested for at least one user; {@code false}
      * otherwise.
      */
-    boolean evaluateAllUsers(boolean isPaletteOutdated, boolean isSynchronous) {
+    boolean evaluateAllUsers(boolean isPaletteOutdated) {
         boolean shouldEvaluate = false;
 
         for (ThemeStatePair statePair : getPairsSnapshot()) {
@@ -359,7 +358,7 @@ public class ThemeStateManager {
 
         if (shouldEvaluate) {
             Slog.d(TAG, "One or more users have outdated color palettes; update requested.");
-            reevaluateSystemTheme(isSynchronous);
+            reevaluateSystemTheme();
         }
         return shouldEvaluate;
     }
@@ -393,17 +392,6 @@ public class ThemeStateManager {
      */
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
     void reevaluateSystemTheme() {
-        reevaluateSystemTheme(false);
-    }
-
-    /**
-     * Re-evaluates the current system theme for all users and updates overlays if necessary.
-     *
-     * @param isSynchronous Whether to perform the update synchronously.
-     */
-    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
-    void reevaluateSystemTheme(boolean isSynchronous) {
-
         for (ThemeStatePair statePair : getPairsSnapshot()) {
             if (!statePair.shouldUpdate()) {
                 continue;
@@ -415,15 +403,11 @@ public class ThemeStateManager {
                 Slog.d(TAG, "Debouncing update for user " + statePair.userId);
             }
 
-            if (isSynchronous) {
+            ScheduledFuture<?> scheduled = mSchedulerExecutor.schedule(() -> {
                 applyUpdate(statePair);
-            } else {
-                ScheduledFuture<?> scheduled = mSchedulerExecutor.schedule(() -> {
-                    applyUpdate(statePair);
-                }, DEBOUNCE_MS, TimeUnit.MILLISECONDS);
+            }, DEBOUNCE_MS, TimeUnit.MILLISECONDS);
 
-                statePair.setFuture(scheduled);
-            }
+            statePair.setFuture(scheduled);
         }
     }
 
