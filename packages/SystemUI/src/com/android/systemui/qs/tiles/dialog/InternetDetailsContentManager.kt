@@ -74,6 +74,7 @@ import com.android.systemui.Prefs
 import com.android.systemui.accessibility.floatingmenu.AnnotationLinkSpan
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.dynamiccolors.R as DynamicColorsR
 import com.android.systemui.qs.flags.QsWifiConfig
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.SystemUIDialog
@@ -113,7 +114,7 @@ constructor(
     @VisibleForTesting internal val internetContentData = MutableLiveData<InternetContent>()
     @VisibleForTesting internal var connectedWifiEntry: WifiEntry? = null
     private var dialog: SystemUIDialog? = null
-    @VisibleForTesting internal var isProgressBarVisible = false
+    @VisibleForTesting internal var isProgressBarAnimating = false
 
     // UI Components
     private lateinit var contentView: View
@@ -248,7 +249,10 @@ constructor(
         }
 
         // Network layouts
-        progressBar = contentView.requireViewById(R.id.wifi_searching_progress)
+        progressBar =
+            contentView.requireViewById<ProgressBar>(R.id.wifi_searching_progress).apply {
+                visibility = View.VISIBLE
+            }
 
         // Background drawables
         entryBackgroundActive =
@@ -525,7 +529,7 @@ constructor(
     }
 
     private fun getSubtitleText(): String {
-        return internetDetailsContentController.getSubtitleText(isProgressBarVisible).toString()
+        return internetDetailsContentController.getSubtitleText(isProgressBarAnimating).toString()
     }
 
     // Add Accessibility Role for layout view so that they can be announced as "Button"
@@ -562,7 +566,7 @@ constructor(
         }
 
         if (!internetContent.isWifiEnabled) {
-            setProgressBarVisible(false)
+            setProgressBarAnimating(false)
         }
 
         updateEthernetUI(internetContent)
@@ -581,7 +585,7 @@ constructor(
 
     @VisibleForTesting
     internal fun hideWifiViews() {
-        setProgressBarVisible(false)
+        setProgressBarAnimating(false)
         turnWifiOnLayout.visibility = View.GONE
         connectedWifiListLayout.visibility = View.GONE
         wifiRecyclerView.visibility = View.GONE
@@ -590,16 +594,24 @@ constructor(
         addNetworkButton?.visibility = View.GONE
     }
 
-    private fun setProgressBarVisible(visible: Boolean) {
-        if (isProgressBarVisible == visible) {
+    private fun setProgressBarAnimating(isAnimating: Boolean) {
+        if (isProgressBarAnimating == isAnimating) {
             return
         }
+        isProgressBarAnimating = isAnimating
 
-        // Set the indeterminate value from false to true each time to ensure that the progress bar
-        // resets its animation and starts at the leftmost starting point each time it is displayed.
-        isProgressBarVisible = visible
-        progressBar.visibility = if (visible) View.VISIBLE else View.GONE
-        progressBar.isIndeterminate = visible
+        // The progress bar when not animating,
+        // changes color and fills to maximum to act as a static background.
+        if (isAnimating) {
+            progressBar.isIndeterminate = true
+            progressBar.progressTintList = null
+        } else {
+            progressBar.isIndeterminate = false
+            progressBar.progress = progressBar.max
+
+            progressBar.progressTintList =
+                context.getColorStateList(DynamicColorsR.color.materialColorSurfaceContainerHigh)
+        }
     }
 
     private fun showTurnOffAutoDataSwitchDialog(subId: Int) {
@@ -1298,7 +1310,7 @@ constructor(
             }
 
             override fun onWifiScan(isScan: Boolean) {
-                setProgressBarVisible(isScan)
+                setProgressBarAnimating(isScan)
             }
 
             override fun onSatelliteModemStateChanged(state: Int) {
