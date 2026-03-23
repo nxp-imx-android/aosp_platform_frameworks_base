@@ -24,10 +24,12 @@ import android.media.RoutingChangeInfo.ENTRY_POINT_SYSTEM_MEDIA_CONTROLS
 import android.media.RoutingSessionInfo
 import android.media.session.MediaController
 import android.media.session.MediaController.PlaybackInfo
+import android.os.UserHandle
 import android.util.Log
 import androidx.annotation.AnyThread
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
+import com.android.media.flags.Flags.fixOutputSwitcherMultiuserSupport
 import com.android.settingslib.bluetooth.LocalBluetoothManager
 import com.android.settingslib.flags.Flags.enableLeAudioSharing
 import com.android.settingslib.media.LocalMediaManager
@@ -135,7 +137,15 @@ constructor(
             }
             val controller = data.token?.let { controllerFactory.create(it) }
             val localMediaManager =
-                localMediaManagerFactory.create(data.packageName, controller?.sessionToken)
+                if (fixOutputSwitcherMultiuserSupport()) {
+                    localMediaManagerFactory.createForAppRouting(
+                        UserHandle.getUserHandleForUid(data.appUid),
+                        data.packageName,
+                        controller?.sessionToken,
+                    )
+                } else {
+                    localMediaManagerFactory.create(data.packageName, controller?.sessionToken)
+                }
             val muteAwaitConnectionManager =
                 muteAwaitConnectionManagerFactory.create(localMediaManager)
             val suggestedDeviceManager = suggestedDeviceManagerFactory.create(localMediaManager)
