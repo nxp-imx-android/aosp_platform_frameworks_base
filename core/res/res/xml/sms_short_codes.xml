@@ -317,7 +317,7 @@
     <shortcode country="pt" premium="6[1289]\\d{3}" free="116\\d{3}|1262|12666" />
 
     <!-- Qatar: 1-5 digits (standard system default, not country specific) -->
-    <shortcode country="qa" pattern="\\d{1,5}" free="92451|92159" />
+    <shortcode country="qa" pattern="\\d{1,5}" free="92451|92159|97097" />
 
     <!-- Reunion (French Territory): 1-5 digits (not confirmed) -->
     <shortcode country="re" pattern="\\d{1,5}" free="38600,36300,36303,959" />
