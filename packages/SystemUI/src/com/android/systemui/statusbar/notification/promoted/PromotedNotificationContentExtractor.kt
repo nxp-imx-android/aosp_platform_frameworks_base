@@ -23,11 +23,9 @@ import android.app.Notification.CallStyle
 import android.app.Notification.EXTRA_PROGRESS
 import android.app.Notification.EXTRA_PROGRESS_INDETERMINATE
 import android.app.Notification.EXTRA_PROGRESS_MAX
-import android.app.Notification.EXTRA_VERIFICATION_ICON
 import android.app.Notification.MetricStyle
 import android.app.Notification.ProgressStyle
 import android.content.Context
-import android.graphics.drawable.Icon
 import android.os.UserHandle
 import android.service.notification.StatusBarNotification
 import android.view.LayoutInflater
@@ -40,6 +38,7 @@ import com.android.systemui.notifications.content.preferSmallIcon
 import com.android.systemui.notifications.content.subText
 import com.android.systemui.notifications.content.text
 import com.android.systemui.notifications.content.title
+import com.android.systemui.notifications.content.verificationIcon
 import com.android.systemui.notifications.content.verificationText
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_NONE
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.RedactionType
@@ -356,7 +355,7 @@ constructor(
     private fun Notification.skeletonVerificationIcon(
         imageModelProvider: ImageModelProvider
     ): ImageModel? =
-        extras.getParcelable(EXTRA_VERIFICATION_ICON, Icon::class.java)?.let {
+        verificationIcon()?.let {
             imageModelProvider.getImageModel(it, SmallSquare, skeletonImageTransform)
         }
 

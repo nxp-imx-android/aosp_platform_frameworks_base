@@ -28,10 +28,12 @@ import android.app.Notification.EXTRA_SUB_TEXT
 import android.app.Notification.EXTRA_TEXT
 import android.app.Notification.EXTRA_TITLE
 import android.app.Notification.EXTRA_TITLE_BIG
+import android.app.Notification.EXTRA_VERIFICATION_ICON
 import android.app.Notification.EXTRA_VERIFICATION_TEXT
 import android.app.Notification.InboxStyle
 import android.app.Notification.MetricStyle
 import android.app.Person
+import android.graphics.drawable.Icon
 
 private fun Notification.titleExtra(): CharSequence? = getCharSequenceExtraUnlessEmpty(EXTRA_TITLE)
 
@@ -68,9 +70,15 @@ public fun Notification.text(expanded: Boolean): CharSequence? {
 
 public fun Notification.subText(): CharSequence? = getCharSequenceExtraUnlessEmpty(EXTRA_SUB_TEXT)
 
-// TODO(aioana): This should only return the text for CallStyle.
 public fun Notification.verificationText(): CharSequence? =
-    getCharSequenceExtraUnlessEmpty(EXTRA_VERIFICATION_TEXT)
+    extras?.getCharSequence(EXTRA_VERIFICATION_TEXT)?.takeIf {
+        it.isNotEmpty() && notificationStyle == CallStyle::class.java
+    }
+
+public fun Notification.verificationIcon(): Icon? =
+    extras.getParcelable(EXTRA_VERIFICATION_ICON, Icon::class.java)?.takeIf {
+        notificationStyle == CallStyle::class.java
+    }
 
 public fun Notification.chronometerCountDown(): Boolean =
     extras?.getBoolean(EXTRA_CHRONOMETER_COUNT_DOWN) ?: false
