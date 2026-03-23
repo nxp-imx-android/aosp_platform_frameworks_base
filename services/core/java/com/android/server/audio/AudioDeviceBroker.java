@@ -1400,6 +1400,11 @@ public class AudioDeviceBroker {
             mAudioService.updateBtCommDeviceActive(
                     isBluetoothScoActive() ? BT_COMM_DEVICE_ACTIVE_SCO : btCommDeviceActiveType);
         }
+
+        AudioService.sDeviceLogger.enqueue((new EventLogger.StringEvent(
+                "Dispatch onCommunicationDeviceChanged: "
+                + device)).printLog(TAG));
+
         mBrokerHandler.post(() -> {
             synchronized (mAudioModeSessions) {
                 for (AudioModeSession session : mAudioModeSessions) {
@@ -2465,7 +2470,7 @@ public class AudioDeviceBroker {
         }
         AudioService.sDeviceLogger.enqueue((new EventLogger.StringEvent(
                 "updateCommunicationRoute, preferredCommunicationDevice: "
-                + preferredCommunicationDevice + " eventSource: " + eventSource)));
+                + preferredCommunicationDevice + " eventSource: " + eventSource)).printLog(TAG));
 
         if (mCommunicationStrategyId == -1) {
             initRoutingStrategyIds();
