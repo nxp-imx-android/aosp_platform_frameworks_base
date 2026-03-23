@@ -433,7 +433,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                 // unless the task is changing displays.
                 if (isTask && change.getParent() != null
                         && info.getChange(change.getParent()).getTaskInfo() != null
-                        && !(com.android.window.flags.Flags.crossDisplayTransition()
+                        && !(com.android.window.flags.Flags.crossDisplayTransitionV2()
                                 && change.isCrossDisplay())) {
                     final Point positionInParent = change.getTaskInfo().positionInParent;
                     startTransaction.setPosition(change.getLeash(),
@@ -478,7 +478,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                 }
 
                 // Display move
-                if (com.android.window.flags.Flags.crossDisplayTransition()
+                if (com.android.window.flags.Flags.crossDisplayTransitionV2()
                         && change.isCrossDisplay()) {
                     startDisplayMoveAnimation(startTransaction, change, info,
                             onAnimFinish, mMainExecutor).ifPresent(animations::add);

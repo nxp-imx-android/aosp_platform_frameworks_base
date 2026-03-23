@@ -664,7 +664,7 @@ public class Transitions implements RemoteCallable<Transitions>,
                 continue;
             }
             boolean isOpening;
-            if (com.android.window.flags.Flags.crossDisplayTransition()) {
+            if (com.android.window.flags.Flags.crossDisplayTransitionV2()) {
                 // If a window is closing or moving to another display, it reveals the content
                 // behind it.
                 if (isClosingType(mode) || change.getStartDisplayId() != change.getEndDisplayId()) {

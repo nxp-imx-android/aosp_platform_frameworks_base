@@ -429,7 +429,7 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
     }
 
     @Test
-    @RequiresFlagsEnabled(com.android.window.flags.Flags.FLAG_CROSS_DISPLAY_TRANSITION)
+    @RequiresFlagsEnabled(com.android.window.flags.Flags.FLAG_CROSS_DISPLAY_TRANSITION_V2)
     public void startAnimation_crossDisplayMoveAnimation() {
         final int startDisplayId = 0;
         final int endDisplayId = 1;
@@ -467,7 +467,7 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
     }
 
     @Test
-    @RequiresFlagsEnabled(com.android.window.flags.Flags.FLAG_CROSS_DISPLAY_TRANSITION)
+    @RequiresFlagsEnabled(com.android.window.flags.Flags.FLAG_CROSS_DISPLAY_TRANSITION_V2)
     public void startAnimation_crossDisplayMoveWithoutSnapshot() {
         final int startDisplayId = 0;
         final int endDisplayId = 1;
@@ -501,7 +501,7 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
     }
 
     @Test
-    @RequiresFlagsEnabled(com.android.window.flags.Flags.FLAG_CROSS_DISPLAY_TRANSITION)
+    @RequiresFlagsEnabled(com.android.window.flags.Flags.FLAG_CROSS_DISPLAY_TRANSITION_V2)
     public void startAnimation_childTask() {
         // 1. Cross-display move
         final int startDisplayId = 0;
