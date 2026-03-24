@@ -9398,8 +9398,12 @@ public class NotificationManagerService extends SystemService {
         if (js != null) {
             stripUijFlag = !js.isNotificationAssociatedWithAnyUserInitiatedJobs(id, userId, pkg);
         }
+        if (mComputerControlHelper == null) {
+            mComputerControlHelper = ComputerControlHelper.forLocalService();
+        }
         final boolean stripComputerControlFlag =
                 !android.companion.virtualdevice.flags.Flags.computerControlAccess()
+                        || mComputerControlHelper == null
                         || !mComputerControlHelper.isUidEligibleToSetComputerControlFlag(
                                 callingUid);
 
