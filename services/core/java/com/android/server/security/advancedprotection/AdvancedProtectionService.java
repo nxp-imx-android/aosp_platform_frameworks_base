@@ -395,15 +395,6 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
         }
 
         boolean isProvisionedByDefault = PROVISIONED_BY_DEFAULT.contains(featureId);
-
-        // TODO(b/475513456): These are provisioned for 26Q2 early testing. Remove when provisioning
-        // via Feature Admin is ready.
-        if (featureId == AdvancedProtectionManager.FEATURE_ID_DISALLOW_INSECURE_WIFI_AUTOJOIN
-                || featureId
-                        == AdvancedProtectionManager.FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES) {
-            isProvisionedByDefault = true;
-        }
-
         return isProvisionedByDefault
                 ? AdvancedProtectionFeature.PROVISIONING_MODE_PROVISIONED_BY_DEFAULT
                 : AdvancedProtectionFeature.PROVISIONING_MODE_DEPROVISIONED_BY_DEFAULT;
