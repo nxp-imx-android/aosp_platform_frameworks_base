@@ -68,54 +68,45 @@ public class MultisensoryManager {
     @Retention(RetentionPolicy.SOURCE)
     public @interface Token {}
 
-    /* Inform the user with emphasis that their current action FAILED to complete */
+    /* Inform the user with emphasis that their current action failed to complete */
     public static final int TOKEN_FAILURE_HIGH_EMPHASIS = 0;
 
-    /* Inform the user that their current action FAILED to complete */
+    /* Inform the user that their current action failed to complete */
     public static final int TOKEN_FAILURE = 1;
 
-    /* Inform the user their current action was completed SUCCESSFULLY */
+    /* Inform the user their current action was completed successfully */
     public static final int TOKEN_SUCCESS = 2;
 
-    /* Inform the user that an ongoing activity has started */
+    /* Inform the user that their intended action has started */
     public static final int TOKEN_START = 3;
 
-    /* Inform the user that an ongoing activity has paused */
+    /* Inform the user that an ongoing action has paused */
     public static final int TOKEN_PAUSE = 4;
 
-    /* Inform the user that their previously started activity has stopped SUCCESSFULLY */
+    /* Inform the user that their previously started action has stopped */
     public static final int TOKEN_STOP = 5;
 
-    /* Inform the user that their previously started activity has canceled SUCCESSFULLY */
+    /* Inform the user that their previously started action was canceled */
     public static final int TOKEN_CANCEL = 6;
 
-    /**
-     * Inform the user that the state of an interactive component has been switched to on
-     * successfully
-     */
+    /* Inform the user that the state of an interactive component has been switched to on */
     public static final int TOKEN_SWITCH_ON = 7;
 
-    /**
-     * Inform the user that the state of an interactive component has been switched to off
-     * successfully
-     */
+    /* Inform the user that the state of an interactive component has been switched to off */
     public static final int TOKEN_SWITCH_OFF = 8;
 
-    /* Inform the user the state of their device changed to unlocked SUCCESSFULLY */
+    /* Inform the user the state of their device changed to unlocked */
     public static final int TOKEN_UNLOCK = 9;
 
-    /* Inform the user the state of their device changed to locked SUCCESSFULLY */
+    /* Inform the user the state of their device changed to locked */
     public static final int TOKEN_LOCK = 10;
 
-    /**
-     * Inform the user that their long-press gesture has resulted in the revealing of more
-     * contextual information
-     */
+    /* Inform the user that their long-press gesture has resulted in an action */
     public static final int TOKEN_LONG_PRESS = 11;
 
     /**
-     * Inform the user that their swipe gesture has reached a threshold that confirms navigation or
-     * the reveal of additional information.
+     * Inform the user that their swipe gesture has crossed a threshold. This indicates that the
+     * swipe action beyond the threshold will activate when the swipe is completed.
      */
     public static final int TOKEN_SWIPE_INDICATOR_THRESHOLD_LIMIT = 12;
 
@@ -163,7 +154,6 @@ public class MultisensoryManager {
     public static final int TOKEN_KEYPRESS_DELETE = 22;
 
     /** @hide */
-    @TestApi
     private static final @NonNull @Token int[] MULTISENSORY_TOKENS = {
         TOKEN_FAILURE_HIGH_EMPHASIS,
         TOKEN_FAILURE,
@@ -193,8 +183,9 @@ public class MultisensoryManager {
     /**
      * Get a list of all the Multisensory tokens supported by the Multisensory Design System.
      *
-     * @return An array with all the available tokens
+     * @hide
      */
+    @TestApi
     public static @NonNull @Token int[] getMultisensoryTokens() {
         return MULTISENSORY_TOKENS.clone();
     }
