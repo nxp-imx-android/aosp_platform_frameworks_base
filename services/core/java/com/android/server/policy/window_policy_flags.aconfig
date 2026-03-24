@@ -33,8 +33,8 @@ flag {
 }
 
 flag {
-    name: "brightness_override_toast"
-    namespace: "window_manager"
+    name: "brightness_dialog_override_toast"
+    namespace: "systemui"
     description: "Show a toast when brightness is overridden by a window."
     bug: "489266560"
     metadata {
