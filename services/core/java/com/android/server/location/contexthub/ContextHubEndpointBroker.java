@@ -428,6 +428,8 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                         "sendMessage called on inactive session (id= " + sessionId + ")");
             }
 
+            PccAccessList.getInstance()
+                    .maybeNotePccAccessForEndpoint(mUid, session.getRemoteEndpointInfo());
             Message halMessage = ContextHubServiceUtil.createHalMessage(message);
             if (callback == null) {
                 try {
@@ -1007,6 +1009,17 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             if (mSessionMap.get(sessionId).isInReliableMessageHistory(message)) {
                 Log.e(TAG, "Dropping duplicate message: " + message);
                 return ErrorCode.TRANSIENT_ERROR;
+            }
+
+            if (!PccAccessList.getInstance().checkPccAccessForEndpoint(mUid, remote)) {
+                Log.w(
+                        TAG,
+                        "Dropping message from "
+                                + remote.getIdentifier()
+                                + ". Target client "
+                                + mPackageName
+                                + " is not PCC");
+                return ErrorCode.PERMISSION_DENIED;
             }
 
             try {
