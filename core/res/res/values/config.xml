@@ -2059,6 +2059,9 @@
      <!-- Whether to create scaled versions of the default wallpaper image to match the display size -->
     <bool name="config_optimizeDefaultWallpaper">false</bool>
 
+    <!-- True if the default wallpaper should be used until the user is unlocked. -->
+    <bool name="config_useDefaultWallpaperUntilUnlocked">false</bool>
+
     <!-- Specifies priority of automatic time sources. Suggestions from higher entries in the list
          take precedence over lower ones.
          See com.android.server.timedetector.TimeDetectorStrategy for available sources. -->

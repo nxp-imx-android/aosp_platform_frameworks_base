@@ -131,6 +131,7 @@ import com.android.server.LocalServices;
 import com.android.server.ServiceThread;
 import com.android.server.SystemService;
 import com.android.server.pm.UserManagerInternal;
+import com.android.server.utils.Slogf;
 import com.android.server.utils.TimingsTraceAndSlog;
 import com.android.server.wallpaper.WallpaperData.BindSource;
 import com.android.server.wm.ActivityTaskManagerInternal;
@@ -208,6 +209,8 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             }
         }
     }
+
+    private boolean mCurrentUserIsUnlocked;
 
     private final Object mLock = new Object();
     /** Tracks wallpaper being migrated from system+lock to lock when setting static wp. */
@@ -1800,6 +1803,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
     @Override
     public void onUnlockUser(final int userId) {
         synchronized (mLock) {
+            mCurrentUserIsUnlocked = true;
             if (mCurrentUserId == userId) {
                 if (mHomeWallpaperWaitingForUnlock) {
                     final WallpaperData systemWallpaper =
@@ -1875,6 +1879,9 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                 if (mCurrentUserId == userId) {
                     return;
                 }
+                KeyguardManager km = mContext.getSystemService(KeyguardManager.class);
+                boolean isDeviceSecure = km != null && km.isDeviceSecure(userId);
+                mCurrentUserIsUnlocked = !isDeviceSecure;
                 mCurrentUserId = userId;
                 systemWallpaper = getWallpaperSafeLocked(userId, FLAG_SYSTEM);
                 lockWallpaper =
@@ -1896,8 +1903,6 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                 if (lockWallpaper == systemWallpaper) {
                     switchWallpaper(systemWallpaper, systemReply);
                 } else {
-                    KeyguardManager km = mContext.getSystemService(KeyguardManager.class);
-                    boolean isDeviceSecure = km != null && km.isDeviceSecure(userId);
                     switchWallpaper(isDeviceSecure ? lockWallpaper : systemWallpaper, systemReply);
                     switchWallpaper(isDeviceSecure ? systemWallpaper : lockWallpaper, null);
                 }
@@ -1913,10 +1918,20 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             if ((wallpaper.mWhich & FLAG_SYSTEM) != 0) mHomeWallpaperWaitingForUnlock = false;
             if ((wallpaper.mWhich & FLAG_LOCK) != 0) mLockWallpaperWaitingForUnlock = false;
 
+            final boolean delayApplyingWallpaperUntilUnlocked =
+                    android.app.Flags.useDefaultWallpaperUntilUnlocked()
+                            && !mCurrentUserIsUnlocked
+                            && mContext.getResources()
+                                    .getBoolean(R.bool.config_useDefaultWallpaperUntilUnlocked);
+            if (delayApplyingWallpaperUntilUnlocked) {
+                onSwitchWallpaperDelayedLocked(wallpaper, reply);
+                return;
+            }
+
             final WallpaperDescription description = wallpaper.getDescription();
             if (!bindWallpaperDescriptionLocked(description, true, false, wallpaper, reply)) {
-                // We failed to bind the desired wallpaper, but that might
-                // happen if the wallpaper isn't direct-boot aware
+                // We failed to bind the desired wallpaper, but that might happen if the wallpaper
+                // isn't direct-boot aware
                 ServiceInfo si = null;
                 try {
                     si = mIPackageManager.getServiceInfo(description.getComponent(),
@@ -1968,6 +1983,22 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
         if ((wallpaper.mWhich & FLAG_SYSTEM) != 0) mHomeWallpaperWaitingForUnlock = true;
         if ((wallpaper.mWhich & FLAG_LOCK) != 0) mLockWallpaperWaitingForUnlock = true;
     }
+
+    /** Delay applying the wallpaper until the user is unlocked. */
+    private void onSwitchWallpaperDelayedLocked(WallpaperData wallpaper, IRemoteCallback reply) {
+        Slogf.i(
+                TAG,
+                "Wallpaper loading intentionally delayed for user %d; using fallback until"
+                    + " unlocked",
+                wallpaper.userId);
+        final WallpaperData fallback = new WallpaperData(wallpaper.userId, wallpaper.mWhich);
+        fallback.mBindSource = BindSource.SWITCH_WALLPAPER_DELAYED;
+
+        bindWallpaperComponentLocked(mImageWallpaper, true, false, fallback, reply);
+        if ((wallpaper.mWhich & FLAG_SYSTEM) != 0) mHomeWallpaperWaitingForUnlock = true;
+        if ((wallpaper.mWhich & FLAG_LOCK) != 0) mLockWallpaperWaitingForUnlock = true;
+    }
+
 
     @Override
     public void clearWallpaper(String callingPackage, int which, int userId) {
@@ -2304,6 +2335,14 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                 // user switch)
                 return null;
             }
+            if (android.app.Flags.useDefaultWallpaperUntilUnlocked()) {
+                if ((which == FLAG_SYSTEM && mHomeWallpaperWaitingForUnlock)
+                        || (which == FLAG_LOCK && mLockWallpaperWaitingForUnlock)) {
+                    Slogf.i(TAG, "Wallpaper for user %d is waiting for unlock", wallpaperUserId);
+                    return null;
+                }
+            }
+
             // Only for default display.
             final DisplayData wpdData =
                     mWallpaperDisplayHelper.getDisplayDataOrCreate(DEFAULT_DISPLAY);
@@ -4236,8 +4275,8 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
         pw.print("  mSampleSize="); pw.println(wallpaper.mSampleSize);
         pw.print("  mName=");  pw.println(wallpaper.name);
         pw.print("  mAllowBackup="); pw.println(wallpaper.allowBackup);
+        pw.print("  isColorExtracted="); pw.println(wallpaper.mIsColorExtractedFromDim);
         pw.print("  mWallpaperComponent="); pw.println(wallpaper.getComponent());
-        pw.print("  mWallpaperDimAmount="); pw.println(wallpaper.mWallpaperDimAmount);
         pw.print("  isColorExtracted="); pw.println(wallpaper.mIsColorExtractedFromDim);
         pw.println("  mUidToDimAmount:");
         for (int j = 0; j < wallpaper.mUidToDimAmount.size(); j++) {
@@ -4274,6 +4313,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
 
         pw.print("mDefaultWallpaperComponent="); pw.println(mDefaultWallpaperComponent);
         pw.print("mImageWallpaper="); pw.println(mImageWallpaper);
+        pw.print("mCurrentUserIsUnlocked="); pw.println(mCurrentUserIsUnlocked);
 
         synchronized (mLock) {
             pw.println("System wallpaper state:");

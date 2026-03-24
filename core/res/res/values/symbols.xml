@@ -6608,6 +6608,9 @@
   <!-- Wallpaper Local Color Extraction configuration -->
   <java-symbol type="bool" name="config_enableWallpaperLocalColorExtraction"/>
 
+  <!-- True if the default wallpaper should be used until the user is unlocked. -->
+  <java-symbol type="bool" name="config_useDefaultWallpaperUntilUnlocked"/>
+
   <!-- Whether the Wear-specific charging experience is enabled -->
   <java-symbol type="bool" name="config_wearChargingExperienceEnabled" />
 
