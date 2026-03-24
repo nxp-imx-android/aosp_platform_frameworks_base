@@ -52,7 +52,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.res.Configuration;
 import android.content.res.Resources.Theme;
-import android.crashrecovery.flags.Flags;
 import android.credentials.CredentialManager;
 import android.database.sqlite.SQLiteCompatibilityWalFlags;
 import android.database.sqlite.SQLiteGlobal;
@@ -1327,12 +1326,6 @@ public final class SystemServer implements Dumpable {
         t.traceBegin("StartRecoverySystemService");
         mSystemServiceManager.startService(RecoverySystemService.Lifecycle.class);
         t.traceEnd();
-
-        if (!Flags.refactorCrashrecovery()) {
-            // Initialize RescueParty.
-            CrashRecoveryAdaptor.rescuePartyRegisterHealthObserver(mSystemContext);
-        }
-
 
         // Manages LEDs and display backlight so we need it to bring up the display.
         t.traceBegin("StartLightsService");
@@ -3269,17 +3262,9 @@ public final class SystemServer implements Dumpable {
         mPackageManagerService.systemReady();
         t.traceEnd();
 
-        if (Flags.refactorCrashrecovery()) {
-            t.traceBegin("StartCrashRecoveryModule");
-            CrashRecoveryAdaptor.initializeCrashrecoveryModuleService(mSystemServiceManager);
-            t.traceEnd();
-        } else {
-            // Now that we have the essential services needed for mitigations, register the boot
-            // with package watchdog.
-            // Note that we just booted, which might send out a rescue party if we're stuck in a
-            // runtime restart loop.
-            CrashRecoveryAdaptor.packageWatchdogNoteBoot(mSystemContext);
-        }
+        t.traceBegin("StartCrashRecoveryModule");
+        CrashRecoveryAdaptor.initializeCrashrecoveryModuleService(mSystemServiceManager);
+        t.traceEnd();
 
         t.traceBegin("MakeDisplayManagerServiceReady");
         try {

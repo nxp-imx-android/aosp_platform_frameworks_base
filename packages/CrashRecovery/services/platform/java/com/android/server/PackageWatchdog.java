@@ -349,9 +349,6 @@ public class PackageWatchdog {
                     this::onSyncRequestNotified);
             setPropertyChangedListenerLocked();
             updateConfigs();
-            if (!Flags.refactorCrashrecovery()) {
-                registerConnectivityModuleHealthListener();
-            }
         }
     }
 

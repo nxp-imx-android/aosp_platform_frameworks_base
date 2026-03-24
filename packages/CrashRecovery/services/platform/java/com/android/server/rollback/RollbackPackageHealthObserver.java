@@ -504,7 +504,7 @@ public final class RollbackPackageHealthObserver implements PackageHealthObserve
     private boolean isModule(String packageName) {
         PackageManager pm = mContext.getPackageManager();
 
-        if (Flags.refactorCrashrecovery() && provideInfoOfApkInApex()) {
+        if (provideInfoOfApkInApex()) {
             // Check if the package is listed among the system modules or is an
             // APK inside an updatable APEX.
             try {
@@ -605,43 +605,33 @@ public final class RollbackPackageHealthObserver implements PackageHealthObserve
                 }
             }
         };
-
-        if (Flags.refactorCrashrecovery()) {
-            // Define a BroadcastReceiver to handle the result
-            BroadcastReceiver rollbackReceiver = new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context context, Intent result) {
-                    mHandler.post(() -> onResult.accept(result));
-                }
-            };
-
-            String intentActionName = CLASS_NAME + rollback.getRollbackId();
-            // Register the BroadcastReceiver
-            mContext.registerReceiver(rollbackReceiver,
-                    new IntentFilter(intentActionName),
-                    Context.RECEIVER_NOT_EXPORTED);
-
-            Intent intentReceiver = new Intent(intentActionName);
-            intentReceiver.putExtra("rollbackId", rollback.getRollbackId());
-            intentReceiver.setPackage(mContext.getPackageName());
-            intentReceiver.setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
-
-            PendingIntent rollbackPendingIntent = PendingIntent.getBroadcast(mContext,
-                    rollback.getRollbackId(),
-                    intentReceiver,
-                    PendingIntent.FLAG_MUTABLE);
-
-            rollbackManager.commitRollback(rollback.getRollbackId(),
-                    Collections.singletonList(failedPackage),
-                    rollbackPendingIntent.getIntentSender());
-        } else {
-            final LocalIntentReceiver rollbackReceiver = new LocalIntentReceiver(result -> {
+        // Define a BroadcastReceiver to handle the result
+        BroadcastReceiver rollbackReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent result) {
                 mHandler.post(() -> onResult.accept(result));
-            });
+            }
+        };
 
-            rollbackManager.commitRollback(rollback.getRollbackId(),
-                    Collections.singletonList(failedPackage), rollbackReceiver.getIntentSender());
-        }
+        String intentActionName = CLASS_NAME + rollback.getRollbackId();
+        // Register the BroadcastReceiver
+        mContext.registerReceiver(rollbackReceiver,
+                new IntentFilter(intentActionName),
+                Context.RECEIVER_NOT_EXPORTED);
+
+        Intent intentReceiver = new Intent(intentActionName);
+        intentReceiver.putExtra("rollbackId", rollback.getRollbackId());
+        intentReceiver.setPackage(mContext.getPackageName());
+        intentReceiver.setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
+
+        PendingIntent rollbackPendingIntent = PendingIntent.getBroadcast(mContext,
+                rollback.getRollbackId(),
+                intentReceiver,
+                PendingIntent.FLAG_MUTABLE);
+
+        rollbackManager.commitRollback(rollback.getRollbackId(),
+                Collections.singletonList(failedPackage),
+                rollbackPendingIntent.getIntentSender());
     }
 
     /**
