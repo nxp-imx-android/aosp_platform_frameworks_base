@@ -19,6 +19,7 @@ package android.app;
 import static android.Manifest.permission.MANAGE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.READ_WALLPAPER_INTERNAL;
 import static android.Manifest.permission.SET_WALLPAPER_DIM_AMOUNT;
+import static android.app.Flags.FLAG_POSTPONE_WALLPAPER_CHANGE_NOTIFICATION_ON_UNLOCK_USER;
 import static android.app.Flags.optimizeDefaultWallpaper;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.ParcelFileDescriptor.MODE_READ_ONLY;
@@ -2793,6 +2794,25 @@ public class WallpaperManager {
             Resources resources = mContext.getResources();
             String name = "res:" + resources.getResourceName(resid);
             return sGlobals.mService.hasNamedWallpaper(name);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Returns whether any wallpaper has been set yet. Will be false until the first wallpaper is
+     * set during boot.
+     *
+     * @hide
+     */
+    @FlaggedApi(FLAG_POSTPONE_WALLPAPER_CHANGE_NOTIFICATION_ON_UNLOCK_USER)
+    public boolean hasSetWallpaper() {
+        if (sGlobals.mService == null) {
+            Log.w(TAG, "WallpaperManagerService not running");
+            throw new RuntimeException(new DeadSystemException());
+        }
+        try {
+            return sGlobals.mService.hasSetWallpaper();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

@@ -155,6 +155,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -608,6 +609,8 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
     @VisibleForTesting
     final WallpaperDisplayHelper mWallpaperDisplayHelper;
     final WallpaperCropper mWallpaperCropper;
+
+    private AtomicBoolean mHasSetWallpaper = new AtomicBoolean(false);
 
     @VisibleForTesting
     boolean isWallpaperCompatibleForDisplay(int displayId, WallpaperConnection connection) {
@@ -1999,6 +2002,15 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
         if ((wallpaper.mWhich & FLAG_LOCK) != 0) mLockWallpaperWaitingForUnlock = true;
     }
 
+
+    /**
+     * Returns whether any wallpaper has been set yet. Will be false until the first wallpaper is
+     * set during boot.
+     */
+    @Override
+    public boolean hasSetWallpaper() {
+        return mHasSetWallpaper.get();
+    }
 
     @Override
     public void clearWallpaper(String callingPackage, int which, int userId) {
@@ -3897,6 +3909,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
     }
 
     private void notifyWallpaperChanged(WallpaperData wallpaper) {
+        mHasSetWallpaper.set(true);
         final Intent intent = new Intent(Intent.ACTION_WALLPAPER_CHANGED);
         intent.putExtra(WallpaperManager.EXTRA_FROM_FOREGROUND_APP, wallpaper.fromForegroundApp);
         intent.putExtra(WallpaperManager.EXTRA_WHICH_WALLPAPER_CHANGED, wallpaper.mWhich);
