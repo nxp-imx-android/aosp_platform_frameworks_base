@@ -769,14 +769,9 @@ public class PersonalContextManagerService extends SystemService {
                     });
         }
 
-        // Suppressing warning as enforcement is currently behind a flag
-        @SuppressWarnings("MissingEnforcePermissionHelper")
-        @EnforcePermission(android.Manifest.permission.PERSONAL_CONTEXT_READ_SETTINGS)
+        @RequiresNoPermission
         @Override
         public boolean isEnabled(int userId) {
-            if (android.service.personalcontext.Flags.enforcePersonalContextPermissions()) {
-                isEnabled_enforcePermission();
-            }
             verifyUser(userId);
             return Boolean.TRUE.equals(
                     Binder.withCleanCallingIdentity(
