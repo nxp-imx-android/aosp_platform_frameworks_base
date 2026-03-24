@@ -248,3 +248,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "resources_manager_cache_leak_cleanup"
+    namespace: "resource_manager"
+    description: "Clean up the expired resource impls and apk assets on each retrieval in ResourcesManager"
+    bug: "489647127"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

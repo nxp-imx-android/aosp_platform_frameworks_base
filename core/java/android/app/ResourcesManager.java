@@ -30,6 +30,7 @@ import android.content.res.AssetManager;
 import android.content.res.CompatResources;
 import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
+import android.content.res.Flags;
 import android.content.res.Resources;
 import android.content.res.ResourcesImpl;
 import android.content.res.ResourcesKey;
@@ -109,12 +110,24 @@ public class ResourcesManager {
     private ArrayList<Pair<String[], ApplicationInfo>> mPendingAppInfoUpdates;
 
     /**
-     * A mapping of ResourceImpls and their configurations. These are heavy weight objects
+     * A mapping of ResourceImpls and their configurations. These are heavyweight objects
      * which should be reused as much as possible.
      */
     @UnsupportedAppUsage
     private final ArrayMap<ResourcesKey, WeakReference<ResourcesImpl>> mResourceImpls =
             new ArrayMap<>();
+
+    private final ReferenceQueue<ResourcesImpl> mResourcesImplQueue = new ReferenceQueue<>();
+
+    private static class ResourcesImplWeakReference extends WeakReference<ResourcesImpl> {
+        final ResourcesKey key;
+
+        ResourcesImplWeakReference(ResourcesImpl referent, ReferenceQueue<? super ResourcesImpl> q,
+                ResourcesKey key) {
+            super(referent, q);
+            this.key = key;
+        }
+    }
 
     /**
      * A list of Resource references that can be reused.
@@ -271,6 +284,18 @@ public class ResourcesManager {
      * Used as a lock for itself as well.
      */
     private final ArrayMap<ApkKey, WeakReference<ApkAssets>> mCachedApkAssets = new ArrayMap<>();
+
+    private final ReferenceQueue<ApkAssets> mApkAssetsQueue = new ReferenceQueue<>();
+
+    private static class ApkAssetsWeakReference extends WeakReference<ApkAssets> {
+        final ApkKey key;
+
+        ApkAssetsWeakReference(ApkAssets referent, ReferenceQueue<? super ApkAssets> q,
+                ApkKey key) {
+            super(referent, q);
+            this.key = key;
+        }
+    }
 
     /**
      * Class containing the base configuration override and set of resources associated with an
@@ -562,6 +587,17 @@ public class ResourcesManager {
         return RESOURCE_CACHE_DIR + path.substring(1).replace('/', '@') + "@idmap";
     }
 
+    private void cleanupApkAssetsLocked() {
+        Reference<? extends ApkAssets> ref;
+        while ((ref = mApkAssetsQueue.poll()) != null) {
+            final ApkAssetsWeakReference weakRef = (ApkAssetsWeakReference) ref;
+            final int index = mCachedApkAssets.indexOfKey(weakRef.key);
+            if (index >= 0 && mCachedApkAssets.valueAt(index) == weakRef) {
+                mCachedApkAssets.removeAt(index);
+            }
+        }
+    }
+
     /**
      * Loads the ApkAssets object for the passed key, or picks the one from the cache if available.
      */
@@ -587,17 +623,30 @@ public class ResourcesManager {
         if (mApplicationOwnedApks.contains(key.path)) {
             flags |= ApkAssets.PROPERTY_DISABLE_INCREMENTAL_HARDENING;
         }
-        if (key.overlay) {
-            apkAssets = ApkAssets.loadOverlayFromPath(overlayPathToIdmapPath(key.path), flags);
-        } else {
-            apkAssets = ApkAssets.loadFromPath(key.path, flags);
-        }
+        apkAssets = loadApkAssetsRaw(key, flags);
 
         synchronized (mCachedApkAssets) {
-            mCachedApkAssets.put(key, new WeakReference<>(apkAssets));
+            if (Flags.resourcesManagerCacheLeakCleanup()) {
+                cleanupApkAssetsLocked();
+                mCachedApkAssets.put(key, new ApkAssetsWeakReference(apkAssets,
+                        mApkAssetsQueue, key));
+            } else {
+                mCachedApkAssets.put(key, new WeakReference<>(apkAssets));
+            }
         }
 
         return apkAssets;
+    }
+
+    // This is the raw file loading function, make it separate so the unit test can mock it
+    // and test all other methods without hitting the disk.
+    @VisibleForTesting
+    @NonNull
+    protected ApkAssets loadApkAssetsRaw(@NonNull ApkKey key, int flags) throws IOException {
+        if (key.overlay) {
+            return ApkAssets.loadOverlayFromPath(overlayPathToIdmapPath(key.path), flags);
+        }
+        return ApkAssets.loadFromPath(key.path, flags);
     }
 
     /**
@@ -787,6 +836,20 @@ public class ResourcesManager {
         return impl;
     }
 
+    private void cleanupResourceImplsLocked() {
+        if (!Flags.resourcesManagerCacheLeakCleanup()) {
+            return;
+        }
+        Reference<? extends ResourcesImpl> ref;
+        while ((ref = mResourcesImplQueue.poll()) != null) {
+            final var weakRef = (ResourcesImplWeakReference) ref;
+            final int index = mResourceImpls.indexOfKey(weakRef.key);
+            if (index >= 0 && mResourceImpls.valueAt(index) == weakRef) {
+                mResourceImpls.removeAt(index);
+            }
+        }
+    }
+
     /**
      * Finds a cached ResourcesImpl object that matches the given ResourcesKey.
      *
@@ -820,12 +883,19 @@ public class ResourcesManager {
      */
     private @Nullable ResourcesImpl findOrCreateResourcesImplForKeyLocked(
             @NonNull ResourcesKey key, @Nullable ApkAssetsSupplier apkSupplier) {
+        cleanupResourceImplsLocked();
+
         ResourcesImpl impl = findResourcesImplPairForKeyLocked(key);
         // ResourcesImpl also need to be recreated if its shared library hash is not up-to-date.
         if (impl == null || impl.getAppliedSharedLibsHash() != mSharedLibAssetsMap.size()) {
             impl = createResourcesImpl(key, apkSupplier);
             if (impl != null) {
-                mResourceImpls.put(key, new WeakReference<>(impl));
+                if (Flags.resourcesManagerCacheLeakCleanup()) {
+                    mResourceImpls.put(key, new ResourcesImplWeakReference(impl,
+                            mResourcesImplQueue, key));
+                } else {
+                    mResourceImpls.put(key, new WeakReference<>(impl));
+                }
             }
         }
         return impl;
