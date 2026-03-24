@@ -630,7 +630,7 @@ interface IDevicePolicyManager {
     void resetShouldAllowBypassingDevicePolicyManagementRoleQualificationState();
     boolean shouldAllowBypassingDevicePolicyManagementRoleQualification();
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.MANAGE_ROLE_HOLDERS)")
-    boolean isPackageQualifiedForDevicePolicyManagementRole(String packageName, int user);
+    boolean isPackageAllowedToBypassDevicePolicyManagementRoleQualification(String packageName, int user);
 
     List<UserHandle> getPolicyManagedProfiles(in UserHandle userHandle);
 

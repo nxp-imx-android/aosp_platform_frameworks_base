@@ -1612,7 +1612,7 @@ package android.app.admin {
     method @RequiresPermission(android.Manifest.permission.MANAGE_USERS) public boolean isDeviceProvisioningConfigApplied();
     method @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public boolean isDpcDownloaded();
     method @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS}) public boolean isManagedKiosk();
-    method @FlaggedApi("android.app.admin.flags.secure_adb_role_bypassing") @RequiresPermission(android.Manifest.permission.MANAGE_ROLE_HOLDERS) public boolean isPackageQualifiedForDevicePolicyManagementRole(@NonNull String);
+    method @FlaggedApi("android.app.admin.flags.secure_adb_role_bypassing") @RequiresPermission(android.Manifest.permission.MANAGE_ROLE_HOLDERS) public boolean isPackageAllowedToBypassDevicePolicyManagementRoleQualification(@NonNull String);
     method public boolean isSecondaryLockscreenEnabled(@NonNull android.os.UserHandle);
     method @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS}) public boolean isUnattendedManagedKiosk();
     method @RequiresPermission("android.permission.NOTIFY_PENDING_SYSTEM_UPDATE") public void notifyPendingSystemUpdate(long);
