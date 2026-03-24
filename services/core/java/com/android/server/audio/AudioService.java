@@ -94,8 +94,6 @@ import static com.android.media.audio.Flags.ringerModeAffectsAlarm;
 import static com.android.media.audio.Flags.stereoSpatializationBinauralTransaural;
 import static com.android.media.audio.Flags.streamAssistantNotAliasedToMusic;
 import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__API_TYPE__AUDIO_HARDENING_API_TYPE_PLAYBACK;
-import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_UNKNOWN;
-import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_NONE;
 import static com.android.media.flags.Flags.enableAudioInputDeviceRoutingAndVolumeControl;
 import static com.android.server.audio.SoundDoseHelper.ACTION_CHECK_MUSIC_ACTIVE;
 import static com.android.server.utils.EventLogger.Event.ALOGE;
@@ -1018,8 +1016,8 @@ public class AudioService extends IAudioService.Stub
             AudioAtomsLog.write(AudioAtomsLog.AUDIO_HARDENING_REPORTED, uid,
                     AUDIO_HARDENING_REPORTED__API_TYPE__AUDIO_HARDENING_API_TYPE_PLAYBACK,
                     type == HardeningType.FULL, !bypassed,
-                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_UNKNOWN,
-                    AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_NONE);
+                    HardeningEnforcer.getUsageForProtoLog(usage),
+                    HardeningEnforcer.getExemptionReasonForProtoLog(reason));
         }
 
         @Override
