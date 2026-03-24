@@ -92,7 +92,6 @@ import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.server.LocalManagerRegistry;
 import com.android.server.LocalServices;
-import com.android.server.crashrecovery.CrashRecoveryAdaptor;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.sdksandbox.SdkSandboxManagerLocal;
@@ -1398,9 +1397,6 @@ public class ContentProviderHelper {
         SettingsToPropertiesMapper.start(mService.mContext.getContentResolver());
         mService.getCachedAppOptimizer().init();
         mService.setupServicePrewarmingOnUserSwitch();
-
-        // Now that the settings provider is published we can consider sending in a rescue party.
-        CrashRecoveryAdaptor.rescuePartyOnSettingsProviderPublished(mService.mContext);
     }
 
     /**

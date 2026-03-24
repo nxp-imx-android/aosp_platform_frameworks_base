@@ -16,8 +16,6 @@
 
 package com.android.server.rollback;
 
-import static android.crashrecovery.flags.Flags.deprecateFlagsAndSettingsResets;
-
 import static com.android.server.rollback.RollbackManagerServiceImpl.sendFailure;
 
 import android.Manifest;
@@ -53,7 +51,6 @@ import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.IndentingPrintWriter;
 import com.android.internal.util.Preconditions;
 import com.android.server.LocalServices;
-import com.android.server.crashrecovery.CrashRecoveryAdaptor;
 import com.android.server.pm.pkg.AndroidPackage;
 
 import java.io.File;
@@ -622,11 +619,6 @@ class Rollback {
                     }
                 }
                 parentSession.addChildSessionId(sessionId);
-            }
-
-            if (!deprecateFlagsAndSettingsResets()) {
-                // Clear flags.
-                CrashRecoveryAdaptor.rescuePartyResetDeviceConfigForPackages(packageNames);
             }
 
             Consumer<Intent> onResult = result -> {
