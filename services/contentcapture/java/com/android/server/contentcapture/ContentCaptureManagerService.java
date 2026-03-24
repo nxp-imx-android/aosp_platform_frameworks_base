@@ -219,9 +219,6 @@ public class ContentCaptureManagerService extends
     int mDevCfgIdleUnbindTimeoutMs;
 
     @GuardedBy("mLock")
-    boolean mDevCfgDisableFlushForViewTreeAppearing;
-
-    @GuardedBy("mLock")
     boolean mDevCfgEnableContentProtectionReceiver;
 
     @GuardedBy("mLock")
@@ -453,8 +450,6 @@ public class ContentCaptureManagerService extends
                 case ContentCaptureManager.DEVICE_CONFIG_PROPERTY_LOG_HISTORY_SIZE:
                 case ContentCaptureManager.DEVICE_CONFIG_PROPERTY_TEXT_CHANGE_FLUSH_FREQUENCY:
                 case ContentCaptureManager.DEVICE_CONFIG_PROPERTY_IDLE_UNBIND_TIMEOUT:
-                case ContentCaptureManager
-                        .DEVICE_CONFIG_PROPERTY_DISABLE_FLUSH_FOR_VIEW_TREE_APPEARING:
                     // Content protection below
                 case DEVICE_CONFIG_PROPERTY_ENABLE_CONTENT_PROTECTION_RECEIVER:
                 case DEVICE_CONFIG_PROPERTY_CONTENT_PROTECTION_BUFFER_SIZE:
@@ -513,12 +508,6 @@ public class ContentCaptureManagerService extends
                             DeviceConfig.NAMESPACE_CONTENT_CAPTURE,
                             ContentCaptureManager.DEVICE_CONFIG_PROPERTY_IDLE_UNBIND_TIMEOUT,
                             (int) AbstractRemoteService.PERMANENT_BOUND_TIMEOUT_MS);
-            mDevCfgDisableFlushForViewTreeAppearing =
-                    DeviceConfig.getBoolean(
-                            DeviceConfig.NAMESPACE_CONTENT_CAPTURE,
-                            ContentCaptureManager
-                                    .DEVICE_CONFIG_PROPERTY_DISABLE_FLUSH_FOR_VIEW_TREE_APPEARING,
-                            false);
 
             enableContentProtectionReceiverOld = mDevCfgEnableContentProtectionReceiver;
             enableContentProtectionReceiverNew = getDeviceConfigEnableContentProtectionReceiver();
@@ -577,8 +566,6 @@ public class ContentCaptureManagerService extends
                                 + mDevCfgLogHistorySize
                                 + ", idleUnbindTimeoutMs="
                                 + mDevCfgIdleUnbindTimeoutMs
-                                + ", disableFlushForViewTreeAppearing="
-                                + mDevCfgDisableFlushForViewTreeAppearing
                                 + ", enableContentProtectionReceiver="
                                 + enableContentProtectionReceiverNew
                                 + ", contentProtectionBufferSize="
@@ -907,9 +894,6 @@ public class ContentCaptureManagerService extends
         pw.print(prefix2);
         pw.print("idleUnbindTimeoutMs: ");
         pw.println(mDevCfgIdleUnbindTimeoutMs);
-        pw.print(prefix2);
-        pw.print("disableFlushForViewTreeAppearing: ");
-        pw.println(mDevCfgDisableFlushForViewTreeAppearing);
         pw.print(prefix2);
         pw.print("enableContentProtectionReceiver: ");
         pw.println(mDevCfgEnableContentProtectionReceiver);
@@ -1644,7 +1628,6 @@ public class ContentCaptureManagerService extends
                                 mDevCfgIdleFlushingFrequencyMs,
                                 mDevCfgTextChangeFlushingFrequencyMs,
                                 mDevCfgLogHistorySize,
-                                mDevCfgDisableFlushForViewTreeAppearing,
                                 isContentCaptureReceiverEnabled || whitelistedComponents != null,
                                 new ContentCaptureOptions.ContentProtectionOptions(
                                         isContentProtectionReceiverEnabled,

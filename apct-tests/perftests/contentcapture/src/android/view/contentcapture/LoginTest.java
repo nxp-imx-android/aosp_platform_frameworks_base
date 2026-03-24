@@ -389,8 +389,7 @@ public class LoginTest extends AbstractContentCapturePerfTestCase {
     }
 
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_REDUCE_BINDER_TRANSACTION_ENABLED)
-    public void testBatchFlushMetrics_flagEnabled() throws Throwable {
+    public void testBatchFlushMetrics() throws Throwable {
         // Arrange
         MyContentCaptureService service = enableService();
         CustomTestActivity activity =
