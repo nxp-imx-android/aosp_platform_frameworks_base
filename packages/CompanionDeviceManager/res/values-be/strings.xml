@@ -48,6 +48,8 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"прылада"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Гэта праграма зможа сінхранізаваць інфармацыю (напрыклад, імя таго, хто звоніць) паміж тэлефонам і выбранай прыладай"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Праграма &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; зможа сінхранізаваць інфармацыю (напрыклад, даныя пра абанента) і выконваць разумныя дзеянні з прылады \"<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>\""</string>
+    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
+    <skip />
     <string name="consent_yes" msgid="8344487259618762872">"Дазволіць"</string>
     <string name="consent_no" msgid="2640796915611404382">"Не дазваляць"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Скасаваць"</string>
@@ -91,8 +93,10 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Запіс экрана прылады \"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>\", а таксама яго трансляцыя на прыладу &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; або абагульванне з ёй.&lt;br/&gt;&lt;br/&gt;Праграма \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" будзе мець доступ да ўсяго, што паказваецца ці прайграецца на прыладзе \"<xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>\", у тым ліку да аўдыя, фота, плацежнай інфармацыі, пароляў і паведамленняў."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Трансляцыя праграм з прылады \"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>\" на прыладу &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Праграма \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" будзе мець доступ да ўсяго, што паказваецца ці прайграецца на прыладзе \"<xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>\", у тым ліку да аўдыя, фота, плацежнай інфармацыі, пароляў і паведамленняў, нават калі прылада \"<xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g>\" заблакіравана."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Прагляд спіса даступных прылад і кіраванне тым, на якой з іх будзе трансліравацца аўдыя і відэа з іншых праграм"</string>
-    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
-    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
+    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
+    <skip />
+    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
+    <skip />
     <string name="device_type" product="default" msgid="8268703872070046263">"тэлефон"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"планшэт"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"тэлевізар"</string>

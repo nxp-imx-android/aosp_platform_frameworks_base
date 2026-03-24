@@ -48,6 +48,8 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"डिभाइस"</string>
     <string name="summary_generic" msgid="1761976003668044801">"यो एपले तपाईंको फोन र छनौट गरिएको डिभाइसका बिचमा कल गर्ने व्यक्तिको नाम जस्ता जानकारी सिंक गर्न सक्ने छ"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; लाई कलरसम्बन्धी जानकारी जस्ता जानकारी सिंक गर्ने र तपाईंको <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> बाट स्मार्ट कारबाहीहरू गर्ने अनुमति दिनुहोस्"</string>
+    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
+    <skip />
     <string name="consent_yes" msgid="8344487259618762872">"अनुमति दिनुहोस्"</string>
     <string name="consent_no" msgid="2640796915611404382">"अनुमति नदिनुहोस्"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"रद्द गर्नुहोस्"</string>
@@ -91,8 +93,10 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"&lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; मा तपाईंको <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> को स्क्रिन रेकर्ड, कास्ट वा सेयर गर्ने।&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> सँग अडियो, फोटो, भुक्तानीसम्बन्धी जानकारी, पासवर्ड र म्यासेजलगायतका तपाईंको <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> मा देखिने वा प्ले गरिने सबै कुराको एक्सेस हुने छ।"</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"&lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; मा तपाईंको <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> का एपहरू स्ट्रिम गर्ने।&lt;br/&gt;&lt;br/&gt;तपाईंको <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> लक भएका बेलामा पनि <xliff:g id="APP_NAME">%1$s</xliff:g> सँग अडियो, फोटो, भुक्तानीसम्बन्धी जानकारी, पासवर्ड र म्यासेजलगायतका तपाईंको <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> मा देखिने वा प्ले गरिने सबै कुराको एक्सेस हुने छ।"</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"उपलब्ध डिभाइसहरूको सूची एक्सेस गर्नुहोस् र अन्य एपका अडियो वा भिडियो कुन डिभाइसबाट कास्ट गर्ने भन्ने कुरा नियन्त्रण गर्नुहोस्"</string>
-    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
-    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
+    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
+    <skip />
+    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
+    <skip />
     <string name="device_type" product="default" msgid="8268703872070046263">"फोन"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"ट्याब्लेट"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"टिभी"</string>

@@ -48,6 +48,8 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"ଡିଭାଇସ୍"</string>
     <string name="summary_generic" msgid="1761976003668044801">"ଆପଣଙ୍କ ଫୋନ ଏବଂ ବଛାଯାଇଥିବା ଡିଭାଇସ ମଧ୍ୟରେ, କଲ କରୁଥିବା ଯେ କୌଣସି ବ୍ୟକ୍ତିଙ୍କ ନାମ ପରି ସୂଚନା ସିଙ୍କ କରିବାକୁ ଏହି ଆପ ସକ୍ଷମ ହେବ"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"କଲର ସୂଚନା ପରି ସୂଚନା ସିଙ୍କ କରିବା ଏବଂ ଆପଣଙ୍କ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>ରୁ ସ୍ମାର୍ଟ କାର୍ଯ୍ୟଗୁଡ଼ିକ ଚଲାଇବା ପାଇଁ &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt;କୁ ଅନୁମତି ଦିଅନ୍ତୁ"</string>
+    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
+    <skip />
     <string name="consent_yes" msgid="8344487259618762872">"ଅନୁମତି ଦିଅନ୍ତୁ"</string>
     <string name="consent_no" msgid="2640796915611404382">"ଅନୁମତି ଦିଅନ୍ତୁ ନାହିଁ"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"ବାତିଲ କରନ୍ତୁ"</string>
@@ -91,8 +93,10 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"&lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;ରେ ଆପଣଙ୍କ <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>ର ସ୍କ୍ରିନ ରେକର୍ଡ, କାଷ୍ଟ କିମ୍ବା ସେୟାର କରନ୍ତୁ।&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>ର ଅଡିଓ, ଫଟୋ, ପେମେଣ୍ଟ ସୂଚନା, ପାସୱାର୍ଡ ଏବଂ ମେସେଜ ସମେତ ଆପଣଙ୍କ <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>ରେ ଦୃଶ୍ୟମାନ ହେଉଥିବା କିମ୍ବା ଚାଲୁଥିବା ଯେ କୌଣସି ଜିନିଷକୁ ଆକ୍ସେସ ରହିବ।"</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"&lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;ରେ ଆପଣଙ୍କ <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>ର ଆପ୍ସକୁ ଷ୍ଟ୍ରିମ କରନ୍ତୁ।&lt;br/&gt;&lt;br/&gt;ଆପଣଙ୍କ <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> ଲକ ଥିବା ସମୟରେ ମଧ୍ୟ, <xliff:g id="APP_NAME">%1$s</xliff:g>ର ଅଡିଓ, ଫଟୋ, ପେମେଣ୍ଟ ସୂଚନା, ପାସୱାର୍ଡ ଏବଂ ମେସେଜ ପରି ଆପଣଙ୍କ <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>ରେ ଦୃଶ୍ୟମାନ ହେଉଥିବା କିମ୍ବା ଚାଲୁଥିବା ଯେ କୌଣସି ଜିନିଷକୁ ଆକ୍ସେସ ରହିବ।"</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"ଉପଲବ୍ଧ ଡିଭାଇସଗୁଡ଼ିକର ଏକ ତାଲିକାକୁ ଆକ୍ସେସ କରନ୍ତୁ ଏବଂ କେଉଁ ଡିଭାଇସ ଅନ୍ୟ ଆପ୍ସରୁ ଅଡିଓ କିମ୍ୱା ଭିଡିଓ ଷ୍ଟ୍ରିମ ବା କାଷ୍ଟ କରିବ ତାହା ନିୟନ୍ତ୍ରଣ କରନ୍ତୁ"</string>
-    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
-    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
+    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
+    <skip />
+    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
+    <skip />
     <string name="device_type" product="default" msgid="8268703872070046263">"ଫୋନ"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"ଟାବଲେଟ"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"ଟିଭି"</string>

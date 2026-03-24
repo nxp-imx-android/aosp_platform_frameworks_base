@@ -48,6 +48,8 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"උපාංගය"</string>
     <string name="summary_generic" msgid="1761976003668044801">"මෙම යෙදුමට ඔබේ දුරකථනය සහ තෝරා ගත් උපාංගය අතර, අමතන කෙනෙකුගේ නම වැනි, තතු සමමුහුර්ත කිරීමට හැකි වනු ඇත"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; හට ඇමතුම්කරු තොරතුරු වැනි තතු සමමුහුර්ත කිරීමට සහ ඔබේ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> වෙතින් ස්මාර්ට් ක්‍රියා ධාවනය කිරීමට ඉඩ දෙන්න"</string>
+    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
+    <skip />
     <string name="consent_yes" msgid="8344487259618762872">"ඉඩ දෙන්න"</string>
     <string name="consent_no" msgid="2640796915611404382">"ඉඩ නොදෙන්න"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"අවලංගු කරන්න"</string>
@@ -91,8 +93,10 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"ඔබේ <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> හි තිරය &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; වෙත පටිගත කරන්න, විකාශය කරන්න හෝ බෙදා ගන්න.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> හට ශ්‍රව්‍ය, ඡායාරූප, ගෙවීම් තතු, මුරපද සහ පණිවිඩ ඇතුළුව, ඔබේ <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> හි දෘශ්‍යමාන හෝ වාදනය වන ඕනෑම දෙයකට ප්‍රවේශය ලැබෙනු ඇත."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"ඔබේ <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> හි යෙදුම් &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; වෙත ප්‍රවාහය කරන්න.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> හට ඔබේ <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> අගුළු දමා තිබිය දී පවා, ශ්‍රව්‍ය, ඡායාරූප, ගෙවීම් තතු, මුරපද සහ පණිවිඩ ඇතුළුව, ඔබේ <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> හි දෘශ්‍යමාන හෝ වාදනය වන ඕනෑම දෙයකට ප්‍රවේශය ලැබෙනු ඇත."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"පවතින උපාංග ලැයිස්තුවකට ප්‍රවේශ වන්න සහ වෙනත් යෙදුම් වෙතින් ශ්‍රව්‍ය හෝ වීඩියෝ ප්‍රවාහ කරන්නේ කුමන එකක් ද යන්න පාලනය කරන්න"</string>
-    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
-    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
+    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
+    <skip />
+    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
+    <skip />
     <string name="device_type" product="default" msgid="8268703872070046263">"දුරකථනය"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"ටැබ්ලටය"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"රූපවාහිනිය"</string>
