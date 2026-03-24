@@ -198,7 +198,8 @@ public class PersonalContextManagerService extends SystemService {
     /** Factory interface for creating {@link AccessController} instances. */
     public interface AccessControllerFactory {
         /** Create an {@link AccessController} instance. */
-        AccessController createAccessController(Context context, UserHandle user);
+        AccessController createAccessController(
+                Context context, AccessController.EventListener eventListener, UserHandle user);
     }
 
     // TODO(b/454430085): Inject these fields.
@@ -260,7 +261,7 @@ public class PersonalContextManagerService extends SystemService {
             Context userContext = getContext().createContextAsUser(user.getUserHandle(), 0);
             final AccessController accessController =
                     mAccessControllerFactory.createAccessController(
-                            getContext(), user.getUserHandle());
+                            getContext(), mLogger, user.getUserHandle());
             final ContextComponentManager componentManager =
                     new ContextComponentManager(userContext, user.getUserHandle(),
                             accessController);

@@ -160,7 +160,7 @@ public class PersonalContextManagerServiceTest {
         mService = spy(new PersonalContextManagerService(
                 mContext,
                 (userContext, mAccessController, executor) -> mEmbeddedInsightRenderer,
-                (context, user) -> mAccessController));
+                (context, eventListener, user) -> mAccessController));
 
         mLocalService = mService.new LocalService();
 

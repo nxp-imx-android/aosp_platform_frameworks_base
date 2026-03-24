@@ -109,24 +109,107 @@ public class AccessController {
     /** Access to register a visualizer. */
     public static final int ACCESS_REGISTER_VISUALIZER = 1 << 11;
 
+    /** Interface to inject dependencies. */
+    public interface Injector {
+        /** Get {@link Resources}. */
+        Resources getResources();
+
+        /** Get {@link PackageManager}. */
+        PackageManager getPackageManager();
+
+        /** Get {@link PermissionManager}. */
+        PermissionManager getPermissionManager();
+
+        /** Get {@link RoleManager}. */
+        RoleManager getRoleManager();
+
+        /** Get {@link EventListener}. */
+        EventListener getEventListener();
+    }
+
+    private static Injector defaultInjector(Context context, EventListener eventListener) {
+        return new Injector() {
+            @Override
+            public Resources getResources() {
+                return context.getResources();
+            }
+
+            @Override
+            public PackageManager getPackageManager() {
+                return context.getPackageManager();
+            }
+
+            @Override
+            public PermissionManager getPermissionManager() {
+                return context.getSystemService(PermissionManager.class);
+            }
+
+            @Override
+            public RoleManager getRoleManager() {
+                return context.getSystemService(RoleManager.class);
+            }
+
+            @Override
+            public EventListener getEventListener() {
+                return eventListener;
+            }
+        };
+    }
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = {"RESULT_"}, value = {
+            RESULT_ALLOWED,
+            RESULT_DENIED,
+            RESULT_BYPASSED,
+    })
+    public @interface AccessResult {
+    }
+
+    /** Allowed. */
+    public static final int RESULT_ALLOWED = 0;
+
+    /** Allowed. */
+    public static final int RESULT_DENIED = 1;
+
+    /** Allowed. */
+    public static final int RESULT_BYPASSED = 2;
+
+    /** Listener for access checks. */
+    public interface EventListener {
+        /** Called whenever an access determination is made. */
+        void onAccessChecked(
+                String packageName,
+                UserHandle user,
+                String description,
+                @AccessResult int result);
+    }
+
     private final Resources mResources;
     private final PackageManager mPackageManager;
     private final PermissionManager mPermissionManager;
     private final RoleManager mRoleManager;
     private final UserHandle mUser;
     private final SparseArray<Set<String>> mAllowLists = new SparseArray<>();
+    private final EventListener mEventListener;
 
     /**
      * Creates an {@link AccessController} from the given {@link Context}, which is used to
      * retrieve the configured allowlists for the device.
-     *
-     * @param context {@link Context} to access resources from.
      */
-    public AccessController(Context context, UserHandle user) {
-        mResources = context.getResources();
-        mPackageManager = context.getPackageManager();
-        mPermissionManager = context.getSystemService(PermissionManager.class);
-        mRoleManager = context.getSystemService(RoleManager.class);
+    public AccessController(Context context, EventListener eventListener, UserHandle user) {
+        this(defaultInjector(context, eventListener), user);
+    }
+
+    /**
+     * Creates an {@link AccessController} from the given {@link Context}, which is used to
+     * retrieve the configured allowlists for the device.
+     */
+    AccessController(Injector injector, UserHandle user) {
+        mResources = injector.getResources();
+        mPackageManager = injector.getPackageManager();
+        mPermissionManager = injector.getPermissionManager();
+        mRoleManager = injector.getRoleManager();
+        mEventListener = injector.getEventListener();
         mUser = user;
     }
 
@@ -287,42 +370,33 @@ public class AccessController {
     /** Performs checks for PCC. */
     private boolean checkPccFlag(ServiceInfo serviceInfo) {
         if (!Flags.enforcePersonalContextPccAccessControl()) {
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "PCC check: disabled");
-            }
-            return true;
+            return makeAccessDecision(serviceInfo.packageName, "PCC", RESULT_BYPASSED);
         }
 
-        final boolean valid = (serviceInfo.flags & ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX) != 0;
-        if (Log.isLoggable(TAG, Log.DEBUG))  {
-            Log.d(TAG, "PCC check: " + (valid ? "allowed" : "not allowed"));
-        }
-        return valid;
+        return makeAccessDecision(
+                serviceInfo.packageName,
+                "PCC",
+                (serviceInfo.flags & ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX) != 0
+                        ? RESULT_ALLOWED : RESULT_DENIED);
     }
 
     /** Performs checks for a role. */
     private boolean checkRoleFlag(String packageName, String role) {
         if (!Flags.enforcePersonalContextRoleAccessControl()) {
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "Role " + role + " check: disabled");
-            }
-            return true;
+            return makeAccessDecision(packageName, "Role " + role, RESULT_BYPASSED);
         }
 
-        final boolean valid = mRoleManager.getRoleHolders(role).contains(packageName);
-        if (Log.isLoggable(TAG, Log.DEBUG)) {
-            Log.d(TAG, "Role " + role + " check: " + (valid ? "allowed" : "not allowed"));
-        }
-        return valid;
+        return makeAccessDecision(
+                packageName,
+                "Role " + role,
+                mRoleManager.getRoleHolders(role).contains(packageName)
+                        ? RESULT_ALLOWED : RESULT_DENIED);
     }
 
     /** Performs checks for a permission. */
     private boolean checkPermission(String packageName, String permission) {
         if (!Flags.enforcePersonalContextPermissions()) {
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                Log.d(TAG, "Permission " + permission + " check: disabled");
-            }
-            return true;
+            return makeAccessDecision(packageName, "Permission " + permission, RESULT_BYPASSED);
         }
 
         final int permissionResult = mPermissionManager.checkPackageNamePermission(
@@ -331,37 +405,53 @@ public class AccessController {
                 Context.DEVICE_ID_DEFAULT,
                 mUser.getIdentifier());
 
-        final boolean valid = permissionResult == PackageManager.PERMISSION_GRANTED;
-        if (Log.isLoggable(TAG, Log.DEBUG)) {
-            Log.d(TAG,
-                    "Permission " + permission + " check: " + (valid ? "allowed" : "not allowed"));
-        }
-        return valid;
+        return makeAccessDecision(
+                packageName,
+                "Permission " + permission,
+                permissionResult == PackageManager.PERMISSION_GRANTED
+                        ? RESULT_ALLOWED : RESULT_DENIED);
     }
 
     /** Performs checks for an allowlist. */
     private boolean checkAllowList(String packageName, @ArrayRes int allowListResId) {
+        final String description = "AllowList " + (mResources == null
+                ? "[unknown]"
+                : mResources.getResourceName(allowListResId));
         if (!Flags.enforcePersonalContextAllowlistAccessControl()) {
-            if (Log.isLoggable(TAG, Log.DEBUG)) {
-                final String name = mResources == null
-                        ? "unknown"
-                        : mResources.getResourceName(allowListResId);
-                Log.d(TAG, "AllowList " + name + " check: disabled");
-            }
-            return true;
+            return makeAccessDecision(packageName, description, RESULT_BYPASSED);
         }
 
         if (!mAllowLists.contains(allowListResId)) {
             mAllowLists.put(allowListResId, Set.of(mResources.getStringArray(allowListResId)));
         }
 
-        final boolean valid = mAllowLists.get(allowListResId).contains(packageName);
+        return makeAccessDecision(
+                packageName,
+                description,
+                mAllowLists.get(allowListResId).contains(packageName)
+                        ? RESULT_ALLOWED : RESULT_DENIED);
+    }
+
+    private boolean makeAccessDecision(
+            String packageName,
+            String description,
+            @AccessResult int result) {
         if (Log.isLoggable(TAG, Log.DEBUG)) {
-            final String name = mResources == null
-                    ? "unknown"
-                    : mResources.getResourceName(allowListResId);
-            Log.d(TAG, "AllowList " + name + " check: " + (valid ? "allowed" : "not allowed"));
+            Log.d(TAG, String.format(
+                    "%s check: %s",
+                    description,
+                    result == RESULT_ALLOWED
+                            ? "allowed" : result == RESULT_DENIED ? "denied" : "bypassed"));
         }
-        return valid;
+
+        if (mEventListener != null) {
+            mEventListener.onAccessChecked(
+                    packageName,
+                    mUser,
+                    description,
+                    result);
+        }
+
+        return result != RESULT_DENIED;
     }
 }

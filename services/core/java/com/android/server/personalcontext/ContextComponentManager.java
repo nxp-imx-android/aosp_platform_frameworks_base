@@ -116,7 +116,12 @@ class ContextComponentManager
             }
 
             registerComponent(
-                    new ServiceClientRefiner(mContext, UUID.randomUUID(), serviceInfo, mUserHandle),
+                    new ServiceClientRefiner(
+                            mContext,
+                            mAccessController,
+                            UUID.randomUUID(),
+                            serviceInfo,
+                            mUserHandle),
                     mRefiners,
                     serviceInfo.packageName,
                     mRefinersByPackage);
@@ -135,7 +140,11 @@ class ContextComponentManager
             }
 
             registerComponent(
-                    new ServiceClientUnderstander(mContext, UUID.randomUUID(), serviceInfo,
+                    new ServiceClientUnderstander(
+                            mContext,
+                            mAccessController,
+                            UUID.randomUUID(),
+                            serviceInfo,
                             mUserHandle),
                     mRefiners,
                     serviceInfo.packageName,
@@ -156,7 +165,11 @@ class ContextComponentManager
 
             registerComponent(
                     new ServiceClientRenderer(
-                            mContext, UUID.randomUUID(), serviceInfo, mUserHandle),
+                            mContext,
+                            mAccessController,
+                            UUID.randomUUID(),
+                            serviceInfo,
+                            mUserHandle),
                     mRenderers,
                     serviceInfo.packageName,
                     mRenderersByPackage);
