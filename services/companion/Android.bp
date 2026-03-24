@@ -11,10 +11,7 @@ filegroup {
     name: "services.companion-sources",
     srcs: [
         "java/**/*.java",
-    ],
-    // TODO(b/485250240): enable cross device sync when it's ready.
-    exclude_srcs: [
-        "java/com/android/server/companion/datatransfer/crossdevicesync/**/*.java",
+        "java/**/*.proto",
     ],
     path: "java",
     visibility: ["//frameworks/base/services"],
@@ -27,6 +24,9 @@ java_library_static {
         ":services.companion-sources",
         ":statslog-computercontrol-java-gen",
     ],
+    proto: {
+        type: "stream",
+    },
     libs: [
         "androidx.annotation_annotation",
         "app-compat-annotations",
@@ -35,6 +35,10 @@ java_library_static {
     static_libs: [
         "ukey2_jni",
         "virtual_camera_service_aidl-java",
+        "com_android_crossdevicesync_flags_lib",
+        "connectivity_flags_lib",
+        "submerge_java",
+        "android.service.notification.flags-aconfig-java",
     ],
     lint: {
         baseline_filename: "lint-baseline.xml",

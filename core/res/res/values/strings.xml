@@ -7303,4 +7303,20 @@
 
     <!-- Toast message shown when brightness is overridden by the top app and user tries to adjust it. [CHAR LIMIT=NONE] -->
     <string name="brightness_unable_adjust_msg">Can\'t adjust brightness because it\'s being controlled by the top app</string>
+
+    <!-- CrossDeviceSync strings -->
+    <!-- Notification channel name for Airplane mode sync [CHAR LIMIT=NONE] -->
+    <string name="airplane_mode_sync_notification_channel_name">Airplane mode sync</string>
+    <!-- Notification title for Airplane mode sync [CHAR LIMIT=NONE] -->
+    <string name="airplane_mode_sync_notification_title">Airplane mode</string>
+    <!-- Notification content for Airplane mode sync [CHAR LIMIT=NONE] -->
+    <string name="airplane_mode_sync_notification_content">Airplane mode will now sync across your phone and watch.\n\nManage mode sync preferences on your watch and phone settings.</string>
+    <!-- Action label on the Notification for Airplane mode sync that opens the Airplane mode Settings Page [CHAR LIMIT=35]-->
+    <string name="apm_sync_notification_settings_action">Manage Settings</string>
+    <!-- Notification channel name for Do not disturb sync [CHAR LIMIT=NONE] -->
+    <string name="do_not_disturb_sync_notification_channel_name">Do not disturb sync</string>
+    <!-- Notification title for Do not disturb sync [CHAR LIMIT=NONE] -->
+    <string name="do_not_disturb_sync_notification_title">Do not disturb</string>
+    <!-- Notification content for Do not disturb sync [CHAR LIMIT=NONE] -->
+    <string name="do_not_disturb_sync_notification_content">Synced from your nearby device</string>
 </resources>
