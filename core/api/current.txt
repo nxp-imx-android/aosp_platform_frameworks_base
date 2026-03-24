@@ -359,7 +359,7 @@ package android {
     field public static final String USE_FULL_SCREEN_INTENT = "android.permission.USE_FULL_SCREEN_INTENT";
     field public static final String USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER = "android.permission.USE_ICC_AUTH_WITH_DEVICE_IDENTIFIER";
     field @FlaggedApi("android.permission.flags.location_button_enabled") public static final String USE_LOCATION_BUTTON = "android.permission.USE_LOCATION_BUTTON";
-    field @FlaggedApi("android.permission.flags.use_loopback_interface_permission_enabled") public static final String USE_LOOPBACK_INTERFACE = "android.permission.USE_LOOPBACK_INTERFACE";
+    field @FlaggedApi("android.permission.flags.full_loopback_protections_enabled") public static final String USE_LOOPBACK_INTERFACE = "android.permission.USE_LOOPBACK_INTERFACE";
     field @FlaggedApi("com.android.window.flags.enable_interactive_picture_in_picture") public static final String USE_PINNED_WINDOWING_LAYER = "android.permission.USE_PINNED_WINDOWING_LAYER";
     field public static final String USE_SIP = "android.permission.USE_SIP";
     field public static final String UWB_RANGING = "android.permission.UWB_RANGING";
