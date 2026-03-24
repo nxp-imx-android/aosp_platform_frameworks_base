@@ -113,6 +113,10 @@ public final class AllowlistService extends SystemService {
             }
 
             dispatchAllowlistServiceEvent(getContext().getUserId(), service -> {
+                if (service == null) {
+                    Slog.w(LOG_TAG, "AllowlistProviderService connection is null after binderDied");
+                    return;
+                }
                 // Link to death on the new binder object.
                 try {
                     service.asBinder().linkToDeath(mProviderDeathRecipient, 0);
