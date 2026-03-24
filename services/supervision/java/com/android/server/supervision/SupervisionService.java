@@ -864,9 +864,11 @@ public class SupervisionService extends ISupervisionManager.Stub {
                                     packageName -> removeSupervisionRoleHolder(userId, packageName)
                             ));
                     if (Flags.appBindingServiceRework()) {
-                        Objects.requireNonNull(mInjector.getAppBindingService())
-                                .unbindAndRemoveInvalidConnections(
-                                        userId, SupervisionAppServiceFinder.class);
+                        AppBindingService abs = mInjector.getAppBindingService();
+                        if (abs != null) {
+                            abs.unbindAndRemoveInvalidConnections(
+                                    userId, SupervisionAppServiceFinder.class);
+                        }
                     }
                     clearAllPolicies(userId);
                 });
@@ -879,9 +881,11 @@ public class SupervisionService extends ISupervisionManager.Stub {
                     dispatchSupervisionEvent(
                             userId, listener -> listener.onSetSupervisionEnabled(userId, false));
                     if (Flags.appBindingServiceRework()) {
-                        Objects.requireNonNull(mInjector.getAppBindingService())
-                                .unbindAndRemoveInvalidConnections(
-                                        userId, SupervisionAppServiceFinder.class);
+                        AppBindingService abs = mInjector.getAppBindingService();
+                        if (abs != null) {
+                            abs.unbindAndRemoveInvalidConnections(
+                                    userId, SupervisionAppServiceFinder.class);
+                        }
                     }
                     clearAllDevicePoliciesAndSuspendedPackages(userId);
                     clearAllPolicies(userId);
