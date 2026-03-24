@@ -509,3 +509,14 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fix_bubble_insets_when_invisible"
+    namespace: "multitasking"
+    description: "Fixes a bug where bubbles would still be in the insets even when invisible"
+    bug: "494114931"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
