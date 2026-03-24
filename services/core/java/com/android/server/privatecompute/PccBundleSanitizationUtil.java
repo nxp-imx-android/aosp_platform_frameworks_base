@@ -60,7 +60,9 @@ class PccBundleSanitizationUtil {
             if (baseBundle instanceof Bundle) {
                 Bundle bundle = (Bundle) baseBundle;
                 if (bundle.hasBinders() != Bundle.STATUS_BINDERS_NOT_PRESENT) {
-                    throw new IllegalArgumentException("Binders not permitted in the bundle.");
+                    throw new IllegalArgumentException(
+                            "Bundle contains unresolved Parcelables or Binders which are not"
+                                    + " permitted.");
                 }
             }
 

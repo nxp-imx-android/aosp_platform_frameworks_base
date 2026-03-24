@@ -213,14 +213,20 @@ public class FileService extends SystemService {
                     mDispatcher.dispatch(
                             ctx,
                             result -> {
-                                // Update result map on status changes.
-                                mResults.put(requestId, result);
-                                if (result.getStatus() == FileOperationResult.STATUS_FINISHED
-                                        || result.getStatus()
-                                                == FileOperationResult.STATUS_FAILED) {
-                                    // Request is done, remove from active set and notify listeners.
-                                    mPendingRequests.remove(requestId);
-                                    notifySubscribers(requestId, result);
+                                final long callbackToken = Binder.clearCallingIdentity();
+                                try {
+                                    // Update result map on status changes.
+                                    mResults.put(requestId, result);
+                                    if (result.getStatus() == FileOperationResult.STATUS_FINISHED
+                                            || result.getStatus()
+                                                    == FileOperationResult.STATUS_FAILED) {
+                                        // Request is done, remove from active set and notify
+                                        // listeners.
+                                        mPendingRequests.remove(requestId);
+                                        notifySubscribers(requestId, result);
+                                    }
+                                } finally {
+                                    Binder.restoreCallingIdentity(callbackToken);
                                 }
                             });
                     mPendingRequests.put(requestId, ctx);
