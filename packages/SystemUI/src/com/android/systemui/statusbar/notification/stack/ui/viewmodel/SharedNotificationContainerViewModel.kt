@@ -296,8 +296,9 @@ constructor(
                 combine(
                     shadeModeInteractor.notificationStackHorizontalAlignment,
                     shadeModeInteractor.shadeMode,
+                    shadeModeInteractor.isFullWidthShade,
                     configurationInteractor.onAnyConfigurationChange,
-                ) { horizontalAlignment, shadeMode, _ ->
+                ) { horizontalAlignment, shadeMode, isFullWidthShade, _ ->
                     with(context.resources) {
                         val marginHorizontal =
                             getDimensionPixelSize(
@@ -308,16 +309,24 @@ constructor(
                                 }
                             )
 
+                        val (insetStart, insetEnd) =
+                            if (shadeMode is Dual && !isFullWidthShade) {
+                                // No need to add insets in the "floating" shade design, since
+                                // they are already applied to the shade panel (container).
+                                0 to 0
+                            } else {
+                                val isRtl =
+                                    configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
+                                // All inset types combined, except the IME.
+                                with(getInsetsOf(context, defaultVisible())) {
+                                    if (isRtl) right to left else left to right
+                                }
+                            }
+
                         val (marginStart, marginEnd) =
                             if (shadeMode is Single) {
                                 marginHorizontal to marginHorizontal
                             } else {
-                                val isRtl =
-                                    configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
-                                // all insets types combined, except the IME
-                                val insets = getInsetsOf(context, defaultVisible()).toRect()
-                                val (insetStart, insetEnd) =
-                                    with(insets) { if (isRtl) right to left else left to right }
                                 when (horizontalAlignment) {
                                     Alignment.Start ->
                                         marginHorizontal.coerceAtLeast(insetStart) to 0
