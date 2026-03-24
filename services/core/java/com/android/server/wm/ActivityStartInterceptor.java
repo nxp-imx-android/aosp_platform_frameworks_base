@@ -515,7 +515,8 @@ class ActivityStartInterceptor {
 
         // Do not intercept if the intent is launched from the wellbeing app itself,
         // otherwise it would result in an infinite interception loop.
-        if (wellbeingPkg.equals(mCallingPackage)) {
+        final int wellbeingUid = pmi.getPackageUid(wellbeingPkg, 0, mUserId);
+        if (wellbeingUid < 0 || UserHandle.isSameApp(mRealCallingUid, wellbeingUid)) {
             return false;
         }
 

@@ -748,6 +748,8 @@ public class ActivityStartInterceptorTest {
         android.content.pm.PackageManager mockPm = mock(android.content.pm.PackageManager.class);
         when(mContext.getPackageManager()).thenReturn(mockPm);
         when(mockPm.getWellbeingPackageName()).thenReturn(TEST_CALLING_PACKAGE);
+        when(mPackageManagerInternal.getPackageUid(TEST_CALLING_PACKAGE, 0, TEST_USER_ID))
+                .thenReturn(TEST_REAL_CALLING_UID);
 
         mInterceptor.setStates(TEST_USER_ID, TEST_REAL_CALLING_PID, TEST_REAL_CALLING_UID,
                 0 /* startFlags */, TEST_CALLING_PACKAGE, null /* callingFeatureId */,
