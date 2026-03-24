@@ -5263,7 +5263,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             // The control target could be the RemoteInsetsControlTarget if the focussed
             // view is on a virtual display that can not show the IME (and therefore it will
             // be shown on the default display)
-            if (isUserMainDisplay() && mRemoteInsetsControlTarget != null) {
+            final boolean isFocusedOnAnotherDisplay =
+                    mWmService.mRoot.getTopFocusedDisplayContent() != this;
+            if (isFocusedOnAnotherDisplay && mRemoteInsetsControlTarget != null
+                    && isUserMainDisplay()) {
                 return mRemoteInsetsControlTarget;
             }
             return null;
