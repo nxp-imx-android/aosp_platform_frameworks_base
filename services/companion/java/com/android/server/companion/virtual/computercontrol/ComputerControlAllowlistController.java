@@ -439,6 +439,18 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
         if (targetPackage == null || agentPackageName == null) {
             return false;
         }
+        // TODO(b/483624078): Consider making per app consent APIs @TestApis and create
+        //  appropriate tests and CTS
+        // Allow test agents to automate test targets regardless of formal consent records.
+        final PackageManager pm = getPackageManagerForUser(UserHandle.getUserId(agentUid));
+        if (isTestAgent(agentUid, agentPackageName, pm)) {
+            final ApplicationInfo targetAppInfo = getApplicationInfo(targetPackage, pm);
+            if (targetAppInfo != null && isPackageTestOnly(targetAppInfo)) {
+                Slog.i(TAG, "doesAgentHaveConsentToAutomateTargetApp: Allowing test automation "
+                        + "for test agent " + agentPackageName + " on target " + targetPackage);
+                return true;
+            }
+        }
         synchronized (mPerAgentAutomatableAppList) {
             final Map<String, Set<String>> agentMap = mPerAgentAutomatableAppList.get(agentUid);
             if (agentMap == null) {
