@@ -80,6 +80,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.IIntentReceiver;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ConfigurationInfo;
 import android.content.pm.FeatureInfo;
 import android.content.pm.IPackageManager;
@@ -774,7 +775,7 @@ final class ActivityManagerShellCommand extends ShellCommand {
         final String mimeType = intent.resolveType(mInternal.mContext);
 
         if (mDebugLink && isWebUri(intent)) {
-            pw.println("--- App Link Resolution Debug ---");
+            pw.println("--- App Link Resolution Debug ---\n");
             printAppLinkDebugInfo(pw, intent, mimeType);
             pw.println("---------------------------------\n");
         }
@@ -997,12 +998,9 @@ final class ActivityManagerShellCommand extends ShellCommand {
     }
 
     private boolean isWebUri(Intent intent) {
-        if (intent == null || intent.getData() == null) {
-            return false;
-        }
-
-        return ("http".equalsIgnoreCase(intent.getData().getScheme())
-                || "https".equalsIgnoreCase(intent.getData().getScheme()));
+        return (intent != null)
+                && ("http".equalsIgnoreCase(intent.getScheme())
+                    || "https".equalsIgnoreCase(intent.getScheme()));
     }
 
     private void printAppLinkDebugInfo(PrintWriter pw, Intent intent, String mimeType) {
@@ -1043,7 +1041,7 @@ final class ActivityManagerShellCommand extends ShellCommand {
 
             pw.println("\nAll Matching Candidates:");
             for (ResolveInfo candidate : candidates) {
-                printResolveInfoDetail(pw, candidate);
+                printResolveInfoDetail(pw, candidate, intent);
             }
         } catch (RemoteException e) {
             pw.println("Error resolving intent: " + e);
@@ -1051,10 +1049,17 @@ final class ActivityManagerShellCommand extends ShellCommand {
         pw.println("");
     }
 
-    private void printResolveInfoDetail(PrintWriter pw, ResolveInfo resolveInfo) {
+    private void printResolveInfoDetail(PrintWriter pw, ResolveInfo resolveInfo, Intent intent) {
         pw.println("\nTarget:");
         pw.println("  Package: " + resolveInfo.activityInfo.packageName);
         pw.println("  Activity: " + resolveInfo.activityInfo.name);
+
+        IntentFilter filter = resolveInfo.filter;
+        if (filter == null) {
+            return;
+        }
+
+        filter.printIntentFilterMatchDetails(pw, intent);
     }
 
     private String getResolverActivityName() {
