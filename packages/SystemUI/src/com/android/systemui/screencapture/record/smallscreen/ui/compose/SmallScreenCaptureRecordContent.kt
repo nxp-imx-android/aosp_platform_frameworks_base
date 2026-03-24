@@ -86,7 +86,6 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -539,7 +538,6 @@ private fun Modifier.dim(isVisible: Boolean, onClick: () -> Unit, region: Region
     val backgroundScrim = MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f)
     val backgroundOpacity by animateFloatAsState(if (isVisible) 1f else 0f)
     return animatedBackground(color = { backgroundScrim }, alpha = { backgroundOpacity })
-        .clearAndSetSemantics {}
         .clickable(
             enabled = isVisible,
             interactionSource = null,
