@@ -124,6 +124,12 @@
     <string name="kg_prompt_reason_restart_pattern" msgid="3321211830602827742">"ડિવાઇસ ફરી ચાલુ થયા પછી પૅટર્ન આવશ્યક છે"</string>
     <string name="kg_prompt_reason_restart_pin" msgid="2672166323886110512">"ડિવાઇસ ફરી ચાલુ થયા પછી પિન આવશ્યક છે"</string>
     <string name="kg_prompt_reason_restart_password" msgid="3967993994418885887">"ડિવાઇસ ફરી ચાલુ થયા પછી પાસવર્ડ આવશ્યક છે"</string>
+    <!-- no translation found for kg_prompt_reason_signin_pattern (1650886553162854395) -->
+    <skip />
+    <!-- no translation found for kg_prompt_reason_signin_pin (636031498838532631) -->
+    <skip />
+    <!-- no translation found for kg_prompt_reason_signin_password (1020939174735616114) -->
+    <skip />
     <string name="kg_prompt_reason_timeout_pattern" msgid="5514969660010197363">"વધારાની સુરક્ષા માટે, તેના બદલે પૅટર્નનો ઉપયોગ કરો"</string>
     <string name="kg_prompt_reason_timeout_pin" msgid="4227962059353859376">"વધારાની સુરક્ષા માટે, તેના બદલે પિનનો ઉપયોગ કરો"</string>
     <string name="kg_prompt_reason_timeout_password" msgid="8810879144143933690">"વધારાની સુરક્ષા માટે, તેના બદલે પાસવર્ડનો ઉપયોગ કરો"</string>
