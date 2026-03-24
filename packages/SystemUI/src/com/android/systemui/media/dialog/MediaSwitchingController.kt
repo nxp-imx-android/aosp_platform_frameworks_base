@@ -50,6 +50,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.core.content.getSystemService
 import androidx.core.graphics.drawable.IconCompat
 import com.android.media.flags.Flags
+import com.android.media.flags.Flags.fixOutputSwitcherMultiuserSupport
 import com.android.settingslib.RestrictedLockUtilsInternal
 import com.android.settingslib.Utils
 import com.android.settingslib.bluetooth.BluetoothUtils
@@ -99,7 +100,7 @@ class MediaSwitchingController
 constructor(
     private val mContext: Context,
     @Assisted private val mPackageName: String?,
-    @Assisted userHandle: UserHandle?,
+    @Assisted private val userHandle: UserHandle?,
     @Assisted private val mToken: MediaSession.Token?,
     @Assisted mediaSwitchingType: MediaSwitchingType?,
     private val mMediaSessionManager: MediaSessionManager,
@@ -380,7 +381,11 @@ constructor(
         }
         try {
             Log.d(TAG, "try to get app icon")
-            return mContext.getPackageManager().getApplicationIcon(packageName)
+            return if (fixOutputSwitcherMultiuserSupport() && userHandle != null) {
+                getPackageManagerForUser(userHandle).getApplicationIcon(packageName)
+            } else {
+                mContext.getPackageManager().getApplicationIcon(packageName)
+            }
         } catch (_: PackageManager.NameNotFoundException) {
             Log.d(TAG, "icon not found")
             return null
@@ -410,12 +415,22 @@ constructor(
         )
     }
 
+    private fun getPackageManagerForUser(userHandle: UserHandle): PackageManager {
+        return mContext.createContextAsUser(userHandle, /* flags= */ 0).packageManager
+    }
+
     fun getAppLaunchIntent(): Intent? {
         val packageName = mPackageName
         if (packageName.isNullOrEmpty()) {
             return null
         }
-        return mContext.getPackageManager().getLaunchIntentForPackage(packageName)
+        val packageManager =
+            if (fixOutputSwitcherMultiuserSupport() && userHandle != null) {
+                getPackageManagerForUser(userHandle)
+            } else {
+                mContext.getPackageManager()
+            }
+        return packageManager.getLaunchIntentForPackage(packageName)
     }
 
     fun tryToLaunchInAppRoutingIntent(routeId: String?, view: View) {
@@ -427,7 +442,11 @@ constructor(
             launchIntent.putExtra(RouteListingPreference.EXTRA_ROUTE_ID, routeId)
             launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             mCallback.dismissDialog()
-            startActivity(launchIntent, controller)
+            if (fixOutputSwitcherMultiuserSupport()) {
+                startMediaAppActivity(launchIntent, animationController = controller)
+            } else {
+                startActivity(launchIntent, controller)
+            }
         }
     }
 
@@ -436,24 +455,33 @@ constructor(
         getAppLaunchIntent()?.apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             mCallback.dismissDialog()
-            startActivity(this, controller)
+            if (fixOutputSwitcherMultiuserSupport()) {
+                startMediaAppActivity(intent = this, animationController = controller)
+            } else {
+                startActivity(this, controller)
+            }
         }
     }
 
     fun tryToLaunchMissingPermissionsResolveIntent() {
         getMissingPermissionsResolveIntent()?.apply {
             mCallback.dismissDialog()
-            try {
-                mContext.startActivityAsUser(this, mLocalMediaManager.userHandle)
-            } catch (_: ActivityNotFoundException) {
-                // Checks for the intent to match an activity in the calling app are done at
-                // registration time, but in theory the app could be uninstalled just before this
-                // code runs.
-                Log.e(
-                    TAG,
-                    "No activity found to handle intent $this on user " +
-                        mLocalMediaManager.userHandle,
-                )
+            if (fixOutputSwitcherMultiuserSupport()) {
+                startMediaAppActivity(intent = this)
+            } else {
+                try {
+                    mContext.startActivityAsUser(this, mLocalMediaManager.userHandle)
+                } catch (_: ActivityNotFoundException) {
+                    // Checks for the intent to match an activity in the calling app are done at
+                    // registration time, but in theory the app could be uninstalled just before
+                    // this
+                    // code runs.
+                    Log.e(
+                        TAG,
+                        "No activity found to handle intent $this on user " +
+                            mLocalMediaManager.userHandle,
+                    )
+                }
             }
         }
     }
@@ -732,8 +760,13 @@ constructor(
      */
     fun getMissingPermissionsWarning(): MissingPermissionsWarning? {
         val permissionsInfo = getMissingPermissionsInfo() ?: return null
-        val userHandle = mLocalMediaManager.userHandle
-        val pm = mContext.createContextAsUser(userHandle, 0).packageManager
+        val pm =
+            if (fixOutputSwitcherMultiuserSupport() && userHandle != null) {
+                getPackageManagerForUser(userHandle)
+            } else {
+                val userHandle = mLocalMediaManager.userHandle
+                mContext.createContextAsUser(userHandle, 0).packageManager
+            }
         val appName =
             getAppName(
                 pm,
@@ -999,11 +1032,36 @@ constructor(
         }
     }
 
-    private fun startActivity(intent: Intent, controller: ActivityTransitionAnimator.Controller?) {
+    /**
+     * Starts an activity within the media application. It explicitly sets the userHandle of that
+     * application.
+     */
+    private fun startMediaAppActivity(
+        intent: Intent,
+        animationController: ActivityTransitionAnimator.Controller? = null,
+    ) {
+        startActivity(intent, animationController, userHandle)
+    }
+
+    private fun startActivity(
+        intent: Intent,
+        animationController: ActivityTransitionAnimator.Controller? = null,
+        userHandle: UserHandle? = null,
+    ) {
         // Media Output dialog can be shown from the volume panel. This makes sure the panel is
-        // closed when navigating to another activity, so it doesn't stays on top of it
+        // closed when navigating to another activity, so it doesn't stay on top of it
         mVolumePanelGlobalStateInteractor.setVisible(false)
-        mActivityStarter.startActivity(intent, true, controller)
+        if (fixOutputSwitcherMultiuserSupport()) {
+            mActivityStarter.startActivity(
+                intent,
+                /* dismissShade= */ true,
+                animationController,
+                /* showOverLockscreenWhenLocked= */ false,
+                userHandle,
+            )
+        } else {
+            mActivityStarter.startActivity(intent, /* dismissShade= */ true, animationController)
+        }
     }
 
     @Throws(RemoteException::class)
