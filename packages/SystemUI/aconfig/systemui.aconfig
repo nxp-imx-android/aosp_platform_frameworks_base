@@ -730,6 +730,16 @@ flag {
 }
 
 flag {
+    name: "handle_boot_completed_on_separate_thread"
+    namespace: "systemui"
+    description: "Don't block LOCKED_BOOT_COMPLETED broadcast handling just because SysUI is busy on MT"
+    bug: "482256950"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "hardware_color_styles"
     namespace: "systemui"
     description: "Enables loading initial colors based ion hardware color"

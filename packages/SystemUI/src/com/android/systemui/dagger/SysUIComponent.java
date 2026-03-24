@@ -16,6 +16,8 @@
 
 package com.android.systemui.dagger;
 
+import android.os.Handler;
+
 import com.android.internal.widget.LockPatternUtils;
 import com.android.systemui.BootCompleteCacheImpl;
 import com.android.systemui.CoreStartable;
@@ -23,6 +25,7 @@ import com.android.systemui.Dependency;
 import com.android.systemui.InitController;
 import com.android.systemui.SystemUIAppComponentFactoryBase;
 import com.android.systemui.controls.dagger.StartControlsStartableModule;
+import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dagger.qualifiers.PerUser;
 import com.android.systemui.dump.DumpManager;
@@ -59,6 +62,7 @@ import dagger.Subcomponent;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import javax.inject.Provider;
 
@@ -167,6 +171,20 @@ public interface SysUIComponent {
      */
     @SysUISingleton
     ContextComponentHelper getContextComponentHelper();
+
+    /**
+     * Background task handler.
+     */
+    @SysUISingleton
+    @Background
+    Handler getBackgroundHandler();
+
+    /**
+     * Main thread executor.
+     */
+    @SysUISingleton
+    @Main
+    Executor getMainExecutor();
 
     /**
      * Main dependency providing module.
