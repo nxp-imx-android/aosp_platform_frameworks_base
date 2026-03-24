@@ -569,7 +569,7 @@ public class ShellTaskOrganizer extends TaskOrganizer {
      */
     public void addListenerForTaskId(TaskListener listener, int taskId) {
         synchronized (mLock) {
-            ProtoLog.v(WM_SHELL_TASK_ORG, "addListenerForTaskId taskId=%s", taskId);
+            ProtoLog.v(WM_SHELL_TASK_ORG, "addListenerForTaskId taskId=%d", taskId);
             final TaskListener existingListener = mTaskListeners.get(taskId);
             if (existingListener != null) {
                 if (existingListener == listener) {

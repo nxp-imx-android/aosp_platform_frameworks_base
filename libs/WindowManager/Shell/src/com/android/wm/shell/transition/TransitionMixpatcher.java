@@ -425,7 +425,7 @@ public class TransitionMixpatcher {
             throw new IllegalStateException("Can't start non-existent transfer");
         }
         if (!state.mPlan.mPendingDetachments.isEmpty()) {
-            ProtoLog.v(WM_SHELL_MIXPATCHER, "transferring| ongoing %s to #%d",
+            ProtoLog.v(WM_SHELL_MIXPATCHER, "transferring| ongoing %d to #%d",
                     state.mPlan.mPendingDetachments.size(), state.mDebugId);
         }
         ArrayMap<ITransitionAnimation, ArrayList<WindowContainerToken>> detaches =

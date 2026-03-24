@@ -598,7 +598,7 @@ public class BubbleTransitions {
             } else {
                 mExpandedViewAnimator = stackView;
             }
-            BubbleLog.d("LaunchNewTaskBubbleForExistingTransition() expanded=%s",
+            BubbleLog.d("LaunchNewTaskBubbleForExistingTransition() expanded=%b",
                     mExpandedViewAnimator.isExpanded());
             mBubble = bubble;
             mTransition = transition;
@@ -1291,7 +1291,7 @@ public class BubbleTransitions {
             wct.setBounds(bubbleRootTask, bounds);
             wct.setAlwaysOnTop(bubbleRootTask, true);
 
-            BubbleLog.d("LaunchOrConvertToBubble.handleRequest(), set root bounds " + bounds);
+            BubbleLog.d("LaunchOrConvertToBubble.handleRequest(), set root bounds %s", bounds);
             if (BubbleFlagHelper.isBubbleTransitionPlannerEnabled()) {
                 return new Transitions.RequestResult(wct,
                         Collections.singletonList(mBubbleTransitionsPlanner));
@@ -1568,7 +1568,7 @@ public class BubbleTransitions {
             if (token == null) {
                 String reason = change == null ? "change not found" : "no container for change";
                 BubbleLog.e("Expected a TaskView conversion in this transition but didn't get "
-                        + "one - " + reason + ", cleaning up the task view");
+                        + "one - %s, cleaning up the task view", reason);
                 mBubble.getTaskView().getController().setTaskNotFound();
                 cleanup();
                 return;
@@ -1698,7 +1698,7 @@ public class BubbleTransitions {
             } else {
                 mExpandedViewAnimator = stackView;
             }
-            BubbleLog.d("ConvertToBubble() expanded=%s",
+            BubbleLog.d("ConvertToBubble() expanded=%b",
                     mExpandedViewAnimator.isExpanded());
             mBubble = bubble;
             mTransitionProgress = new TransitionProgress();

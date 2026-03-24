@@ -938,7 +938,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             return;
         }
         boolean triggerBack = activeTouchTracker.getTriggerBack();
-        ProtoLog.d(WM_SHELL_BACK_PREVIEW, "onGestureFinished() mTriggerBack == %s", triggerBack);
+        ProtoLog.d(WM_SHELL_BACK_PREVIEW, "onGestureFinished() mTriggerBack == %b", triggerBack);
 
         if (triggerBack) {
             mBackTransitionObserver.update(mBackNavigationInfo != null

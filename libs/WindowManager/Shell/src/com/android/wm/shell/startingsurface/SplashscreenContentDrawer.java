@@ -1249,7 +1249,7 @@ public class SplashscreenContentDrawer {
         final long minimumShowingDuration = getShowingDuration(iconShowDuration, appReadyDuration);
         final long delayed = minimumShowingDuration - appReadyDuration;
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_STARTING_WINDOW,
-                "applyExitAnimation delayed: %s", delayed);
+                "applyExitAnimation delayed: %d", delayed);
         if (delayed > 0) {
             view.postDelayed(playAnimation, delayed);
         } else {

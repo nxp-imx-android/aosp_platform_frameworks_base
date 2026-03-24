@@ -157,7 +157,7 @@ public class UnfoldTransitionHandler implements TransitionHandler, UnfoldListene
             info.getChanges().forEach(change -> {
                 if (change.getTaskInfo() != null) {
                     ProtoLog.v(WM_SHELL_TRANSITIONS,
-                            "startAnimation, check taskInfo: %s, mode: %s, isApplicableTask: %s",
+                            "startAnimation, check taskInfo: %s, mode: %s, isApplicableTask: %b",
                             change.getTaskInfo(), TransitionInfo.modeToString(change.getMode()),
                             animator.isApplicableTask(change.getTaskInfo()));
                 }

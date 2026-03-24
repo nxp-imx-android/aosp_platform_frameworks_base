@@ -345,6 +345,7 @@ public class BubbleBarLayerView extends FrameLayout
      *
      * @return previous open bubble if there was one.
      */
+    @SuppressWarnings("ProtoLogNonConstantFormat")
     private BubbleViewProvider prepareExpandedView(BubbleViewProvider b) {
         if (!canExpandView(b)) {
             throw new IllegalStateException("Can't prepare expand. Check canExpandView(b) first.");
