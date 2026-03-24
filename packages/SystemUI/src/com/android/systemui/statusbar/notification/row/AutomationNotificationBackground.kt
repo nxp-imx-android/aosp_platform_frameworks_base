@@ -41,4 +41,6 @@ constructor(
     attrs: AttributeSet? = null,
     @AttrRes defStyleAttr: Int = 0,
     @StyleRes defStyleRes: Int = 0,
-) : View(context, attrs, defStyleAttr, defStyleRes) {}
+) : View(context, attrs, defStyleAttr, defStyleRes) {
+    abstract fun animateEnter()
+}
