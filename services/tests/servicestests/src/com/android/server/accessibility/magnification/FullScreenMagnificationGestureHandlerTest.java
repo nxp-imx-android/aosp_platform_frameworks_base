@@ -31,6 +31,7 @@ import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentat
 import static com.android.server.testutils.TestUtils.strictMock;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -510,6 +511,68 @@ public class FullScreenMagnificationGestureHandlerTest {
         assertThat(firstDownEvent.getDownTime()).isNotEqualTo(secondDownEvent.getDownTime());
         assertThat(firstDownEvent.getEventTime()).isEqualTo(firstDownEvent.getDownTime());
         assertThat(secondDownEvent.getEventTime()).isEqualTo(secondDownEvent.getDownTime());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FIX_FULL_SCREEN_MAGNIFICATION_EVENT_TIME_CORRUPTION)
+    public void testSendDelayedMotionEvents_quickSwipeGesture_ensuresIncreasingEventTime() {
+        final EventCaptor eventCaptor = new EventCaptor();
+        mMgh.setNext(eventCaptor);
+
+        send(downEvent());
+        fastForward(50);
+        for (int i = 1; i <= 5; i++) {
+            send(moveEvent(DEFAULT_X + i * 10, DEFAULT_Y + i * 10));
+            fastForward(50);
+        }
+        send(upEvent());
+
+        for (int i = 0; i < eventCaptor.mEvents.size() - 1; i++) {
+            MotionEvent current = eventCaptor.mEvents.get(i);
+            MotionEvent next = eventCaptor.mEvents.get(i + 1);
+
+            // Verify EventTime is strictly increasing.
+            assertThat(current.getEventTime()).isLessThan(next.getEventTime());
+            // Verify EventTime is always greater than or equal to its DownTime.
+            assertThat(next.getDownTime()).isLessThan(next.getEventTime());
+        }
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_FIX_FULL_SCREEN_MAGNIFICATION_EVENT_TIME_CORRUPTION)
+    public void testSendDelayedMotionEvents_quickSwipeGesture_nonIncreasingEventTime() {
+        final EventCaptor eventCaptor = new EventCaptor();
+        mMgh.setNext(eventCaptor);
+
+        send(downEvent());
+        fastForward(50);
+        for (int i = 1; i <= 5; i++) {
+            send(moveEvent(DEFAULT_X + i * 10, DEFAULT_Y + i * 10));
+            fastForward(50);
+        }
+        send(upEvent());
+
+        boolean foundNonIncreasingEventTime = false;
+        boolean foundDownTimeGreaterEventTime = false;
+        for (int i = 0; i < eventCaptor.mEvents.size() - 1; i++) {
+            MotionEvent current = eventCaptor.mEvents.get(i);
+            MotionEvent next = eventCaptor.mEvents.get(i + 1);
+
+            if (current.getEventTime() > next.getEventTime()) {
+                foundNonIncreasingEventTime = true;
+            }
+
+            if (next.getDownTime() > next.getEventTime()) {
+                foundDownTimeGreaterEventTime = true;
+            }
+        }
+
+        // Verify that when the flag is off, the EventTime of ACTION_MOVE events
+        // is not adjusted correctly, violating input event consistency.
+        assertWithMessage("Should find non-increasing event time when flag is disabled")
+                .that(foundNonIncreasingEventTime).isTrue();
+        assertWithMessage("Should find DownTime > EventTime when flag is disabled")
+                .that(foundDownTimeGreaterEventTime).isTrue();
     }
 
     @Test
