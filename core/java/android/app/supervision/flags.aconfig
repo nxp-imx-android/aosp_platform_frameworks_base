@@ -199,3 +199,10 @@ flag {
   description: "Enables the package usage APIs in Supervision Service"
   bug: "482399702"
 }
+
+flag {
+  name: "remove_role_holder_after_event_dispatch"
+  namespace: "supervision"
+  description: "Removes supervision role only after the 'disable supervision' event has been dispatched."
+  bug: "495425956"
+}
