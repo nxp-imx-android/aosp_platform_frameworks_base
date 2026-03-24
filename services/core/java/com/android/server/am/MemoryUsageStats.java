@@ -48,6 +48,9 @@ public final class MemoryUsageStats {
     long cachedSwapPss;
     private long mDmabufMapped;
 
+    long totalMappedBitmapCount;
+    long totalMappedBitmapSize;
+
     public MemoryUsageStats() {
         // Cache this value since it's expensive to calculate.
         mDmabufMapped = Debug.getDmabufMappedSizeKb();

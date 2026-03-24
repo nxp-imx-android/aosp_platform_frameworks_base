@@ -102,6 +102,11 @@ static stat_field_names stat_field_names[_NUM_CORE_HEAP] = {
 static jfieldID otherStats_field;
 static jfieldID hasSwappedOutPss_field;
 
+static jfieldID totalBitmapCount_field;
+static jfieldID totalBitmapSize_field;
+static jfieldID uniqueBitmapCount_field;
+static jfieldID uniqueBitmapSize_field;
+
 #define BINDER_STATS "/proc/binder/stats"
 
 static jlong android_os_Debug_getNativeHeapSize(CRITICAL_JNI_PARAMS)
@@ -190,8 +195,9 @@ static jboolean android_os_Debug_getDirtyPagesPid(JNIEnv *env, jobject clazz,
     bool foundSwapPss;
     AndroidHeapStats stats[_NUM_HEAP];
     memset(&stats, 0, sizeof(stats));
+    AndroidBitmapStats bitmap_stats;
 
-    if (!ExtractAndroidHeapStats(pid, stats, &foundSwapPss)) {
+    if (!ExtractAndroidHeapStats(pid, stats, &foundSwapPss, &bitmap_stats)) {
         return JNI_FALSE;
     }
 
@@ -234,6 +240,11 @@ static jboolean android_os_Debug_getDirtyPagesPid(JNIEnv *env, jobject clazz,
 
 
     env->SetBooleanField(object, hasSwappedOutPss_field, foundSwapPss);
+    env->SetLongField(object, totalBitmapCount_field, (jlong)bitmap_stats.total_count);
+    env->SetLongField(object, totalBitmapSize_field, (jlong)bitmap_stats.total_size_kb);
+    env->SetLongField(object, uniqueBitmapCount_field, (jlong)bitmap_stats.unique_count);
+    env->SetLongField(object, uniqueBitmapSize_field, (jlong)bitmap_stats.unique_size_kb);
+
     jintArray otherIntArray = (jintArray)env->GetObjectField(object, otherStats_field);
 
     jint* otherArray = (jint*)env->GetPrimitiveArrayCritical(otherIntArray, 0);
@@ -862,6 +873,11 @@ int register_android_os_Debug(JNIEnv *env)
 
     otherStats_field = env->GetFieldID(clazz, "otherStats", "[I");
     hasSwappedOutPss_field = env->GetFieldID(clazz, "hasSwappedOutPss", "Z");
+
+    totalBitmapCount_field = env->GetFieldID(clazz, "totalBitmapCount", "J");
+    totalBitmapSize_field = env->GetFieldID(clazz, "totalBitmapSize", "J");
+    uniqueBitmapCount_field = env->GetFieldID(clazz, "uniqueBitmapCount", "J");
+    uniqueBitmapSize_field = env->GetFieldID(clazz, "uniqueBitmapSize", "J");
 
     for (int i=0; i<_NUM_CORE_HEAP; i++) {
         stat_fields[i].pss_field =

@@ -225,6 +225,15 @@ public final class Debug
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
         public boolean hasSwappedOutPss;
 
+        /** @hide */
+        public long totalBitmapCount;
+        /** @hide */
+        public long totalBitmapSize;
+        /** @hide */
+        public long uniqueBitmapCount;
+        /** @hide */
+        public long uniqueBitmapSize;
+
         // LINT.IfChange
         /** @hide */
         public static final int HEAP_UNKNOWN = 0;
@@ -402,6 +411,10 @@ public final class Debug
             otherSwappedOutPss = other.otherSwappedOutPss;
 
             hasSwappedOutPss = other.hasSwappedOutPss;
+            totalBitmapCount = other.totalBitmapCount;
+            totalBitmapSize = other.totalBitmapSize;
+            uniqueBitmapCount = other.uniqueBitmapCount;
+            uniqueBitmapSize = other.uniqueBitmapSize;
 
             System.arraycopy(other.otherStats, 0, otherStats, 0, otherStats.length);
         }
@@ -952,6 +965,10 @@ public final class Debug
             dest.writeInt(otherSwappedOut);
             dest.writeInt(hasSwappedOutPss ? 1 : 0);
             dest.writeInt(otherSwappedOutPss);
+            dest.writeLong(totalBitmapCount);
+            dest.writeLong(totalBitmapSize);
+            dest.writeLong(uniqueBitmapCount);
+            dest.writeLong(uniqueBitmapSize);
             dest.writeIntArray(otherStats);
         }
 
@@ -984,6 +1001,10 @@ public final class Debug
             otherSwappedOut = source.readInt();
             hasSwappedOutPss = source.readInt() != 0;
             otherSwappedOutPss = source.readInt();
+            totalBitmapCount = source.readLong();
+            totalBitmapSize = source.readLong();
+            uniqueBitmapCount = source.readLong();
+            uniqueBitmapSize = source.readLong();
             otherStats = source.createIntArray();
         }
 

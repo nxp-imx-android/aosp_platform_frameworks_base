@@ -13265,6 +13265,10 @@ public class ActivityManagerService extends IActivityManager.Stub
                     memUsageStats.totalPrivateDirty += myTotalPrivateDirty;
                     memUsageStats.totalMemtrackGraphics += memtrackGraphics;
                     memUsageStats.totalMemtrackGl += memtrackGl;
+
+                    memUsageStats.totalMappedBitmapCount += mi.totalBitmapCount;
+                    memUsageStats.totalMappedBitmapSize += mi.totalBitmapSize;
+
                     MemItem pssItem = new MemItem(r.processName + " (pid " + pid +
                             (hasActivities ? " / activities)" : ")"), r.processName, myTotalPss,
                             myTotalSwapPss, myTotalRss, myTotalPrivateDirty,
@@ -13545,6 +13549,12 @@ public class ActivityManagerService extends IActivityManager.Stub
             }
             if (!brief) {
                 if (!opts.isCompact) {
+                    pw.println("Global Mapped Bitmaps:");
+                    pw.print("  Mapped: "); pw.print(memUsageStats.totalMappedBitmapCount);
+                    pw.print(" bitmaps, ");
+                    pw.println(stringifyKBSize(memUsageStats.totalMappedBitmapSize));
+                    pw.println();
+
                     pw.print("Total RAM: "); pw.print(stringifyKBSize(memInfo.getTotalSizeKb()));
                     pw.print(" (status ");
                     mAppProfiler.dumpLastMemoryLevelLocked(pw);
