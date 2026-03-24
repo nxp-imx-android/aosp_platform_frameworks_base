@@ -160,10 +160,8 @@ object PreferenceScreenRegistry {
             if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
                 val firstKeyParameter = runBlocking {
                     factory.keyParameters(context).firstOrNull()
-                }
-                if (firstKeyParameter == null)
-                    null
-                else factory.createWithKeyParameters(context, firstKeyParameter)
+                } ?: ValidatedKeyParameters(factory.parametersSchema, emptyMap())
+                factory.createWithKeyParameters(context, firstKeyParameter)
             } else {
                 val firstParameter = runBlocking {
                     factory.parameters(context).firstOrNull()
