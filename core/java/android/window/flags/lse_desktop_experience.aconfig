@@ -733,6 +733,16 @@ flag {
 }
 
 flag {
+    name: "enable_open_by_default_dialog_focus_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables a bugfix to ensure the open by default dialog requests and releases input focus correctly."
+    bug: "489615986"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_overflow_button_for_taskbar_pinned_items"
     namespace: "lse_desktop_experience"
     description: "Add an overflow button to accommodate pinned items that can't be fit into the taskbar."

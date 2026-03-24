@@ -21,12 +21,14 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.pm.verify.domain.DomainVerificationManager
 import android.graphics.Bitmap
+import android.platform.test.annotations.EnableFlags
 import android.view.Display
 import android.view.SurfaceControl
 import android.view.SurfaceControlViewHost
 import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.common.DisplayController
@@ -43,6 +45,7 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 /**
@@ -111,6 +114,16 @@ class BaseOpenByDefaultDialogTest : ShellTestCase() {
         testDialog.show()
 
         assertNull(testDialog.viewHost)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_OPEN_BY_DEFAULT_DIALOG_FOCUS_BUGFIX)
+    fun showAndCloseMenu_requestInputFocus() {
+        testDialog.show()
+        verify(surfaceControlViewHost).requestInputFocus(true)
+
+        testDialog.close()
+        verify(surfaceControlViewHost).requestInputFocus(false)
     }
 
     private inner class TestableOpenByDefaultDialog :
