@@ -675,4 +675,7 @@ interface IDevicePolicyManager {
     PolicyValueTransport getPolicy(in String callerPackageName, in String policy, in int scope);
     PolicyValueTransport getResolvedDeviceWidePolicy(in String callerPackageName, in String policy);
     PolicyValueTransport getResolvedPerUserPolicy(in String callerPackageName, in int userId, in String policy);
+
+    KeymasterCertificateChain generateKeyPairWithScope(in String callerPackage, in String algorithm, in ParcelableKeyGenParameterSpec keySpec,
+            in int idAttestationFlags, int scope);
 }
