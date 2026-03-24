@@ -547,8 +547,7 @@ public class ComputerControlSessionProcessorTest {
     }
 
     @Test
-    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_MANAGED_PROFILES)
-    public void validateParams_flagEnabled_deviceOwner_policyAllowed_sessionCreated()
+    public void validateParams_deviceOwner_policyAllowed_sessionCreated()
             throws RemoteException {
         when(mDevicePolicyManagerInternal.getDeviceOwnerComponent(anyBoolean()))
                 .thenReturn(new ComponentName("com.test.admin", "DeviceOwner"));
@@ -563,8 +562,7 @@ public class ComputerControlSessionProcessorTest {
     }
 
     @Test
-    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_MANAGED_PROFILES)
-    public void validateParams_flagEnabled_deviceOwner_policyDisallowed_throwsSecurityException() {
+    public void validateParams_deviceOwner_policyDisallowed_throwsSecurityException() {
         when(mDevicePolicyManagerInternal.getDeviceOwnerComponent(anyBoolean()))
                 .thenReturn(new ComponentName("com.test.admin", "DeviceOwner"));
         when(mDevicePolicyManager.getNearbyAppStreamingPolicy(anyInt()))
@@ -576,8 +574,7 @@ public class ComputerControlSessionProcessorTest {
     }
 
     @Test
-    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_MANAGED_PROFILES)
-    public void validateParams_flagEnabled_managedProfile_throwsSecurityException() {
+    public void validateParams_managedProfile_throwsSecurityException() {
         when(mUserManager.isManagedProfile(CALLING_USER_ID)).thenReturn(true);
 
         assertThrows(SecurityException.class, () ->
@@ -586,8 +583,7 @@ public class ComputerControlSessionProcessorTest {
     }
 
     @Test
-    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_MANAGED_PROFILES)
-    public void validateParams_flagEnabled_copeDevice_policyAllowed_sessionCreated()
+    public void validateParams_copeDevice_policyAllowed_sessionCreated()
             throws RemoteException {
         when(mDevicePolicyManager.isOrganizationOwnedDeviceWithManagedProfile()).thenReturn(true);
         UserInfo userInfo = new UserInfo(CALLING_USER_ID, "name", UserInfo.FLAG_MANAGED_PROFILE);
@@ -605,8 +601,7 @@ public class ComputerControlSessionProcessorTest {
     }
 
     @Test
-    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_MANAGED_PROFILES)
-    public void validateParams_flagEnabled_copeDevice_policyDisallowed_throwsSecurityException() {
+    public void validateParams_copeDevice_policyDisallowed_throwsSecurityException() {
         when(mDevicePolicyManager.isOrganizationOwnedDeviceWithManagedProfile()).thenReturn(true);
         UserInfo userInfo = new UserInfo(CALLING_USER_ID, "name", UserInfo.FLAG_MANAGED_PROFILE);
         when(mUserManager.getUserInfo(CALLING_USER_ID)).thenReturn(userInfo);
@@ -614,17 +609,6 @@ public class ComputerControlSessionProcessorTest {
         when(mDevicePolicyManager.getParentProfileInstance(userInfo)).thenReturn(parentDpm);
         when(parentDpm.getNearbyAppStreamingPolicy())
                 .thenReturn(DevicePolicyManager.NEARBY_STREAMING_DISABLED);
-
-        assertThrows(SecurityException.class, () ->
-                mProcessor.processNewSessionRequest(
-                        mAppThread, ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback));
-    }
-
-    @Test
-    @DisableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_MANAGED_PROFILES)
-    public void validateParams_flagDisabled_userManaged_throwsSecurityException() {
-        when(mDevicePolicyManagerInternal.isUserOrganizationManaged(CALLING_USER_ID))
-                .thenReturn(true);
 
         assertThrows(SecurityException.class, () ->
                 mProcessor.processNewSessionRequest(
