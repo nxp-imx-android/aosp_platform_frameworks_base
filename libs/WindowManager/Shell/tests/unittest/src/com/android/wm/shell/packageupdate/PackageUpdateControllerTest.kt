@@ -17,6 +17,7 @@
 package com.android.wm.shell.packageupdate
 
 import android.app.ActivityManager.RunningTaskInfo
+import android.app.ApplicationPackageManager
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.content.ComponentName
 import android.content.Intent
@@ -72,6 +73,7 @@ class PackageUpdateControllerTest : ShellTestCase() {
     private val taskResourceLoader = mock<WindowDecorTaskResourceLoader>()
     private val viewModel = mock<DesktopModeWindowDecorViewModel>()
     private val transitionHandler = mock<PackageUpdateTransitionHandler>()
+    private val packageManager = mock<ApplicationPackageManager>()
     private val testScope = TestScope()
     private val testDispatcher = StandardTestDispatcher(testScope.testScheduler)
     private lateinit var packageUpdateController: PackageUpdateController
@@ -87,12 +89,15 @@ class PackageUpdateControllerTest : ShellTestCase() {
                 taskResourceLoader,
                 Optional.of(viewModel),
                 transitionHandler,
+                packageManager,
                 testScope,
             )
 
         whenever(userProfileContexts[anyInt()]).thenReturn(context)
         whenever(userProfileContexts.getOrCreate(anyInt())).thenReturn(context)
         whenever(viewModel.hasWindowDecoration(anyInt())).thenReturn(true)
+        whenever(packageManager.resolveActivityAsUser(any(), anyInt(), anyInt())).thenReturn(mock())
+
         taskResourceLoader.stub {
             onBlocking { getVeilIcon(any()) }.thenReturn(mock<Bitmap>())
             onBlocking { getNameAndHeaderIcon(any()) }.thenReturn(Pair("appName", mock<Bitmap>()))
@@ -179,6 +184,19 @@ class PackageUpdateControllerTest : ShellTestCase() {
 
         assertThat(launchedIntent?.data).isNull()
         assertThat(launchedIntent?.type).isEqualTo(task.baseIntent.type)
+    }
+
+    @Test
+    fun onPackageUpdateFinished_activityNotResolved_removesTask() {
+        whenever(packageManager.resolveActivityAsUser(any(), anyInt(), anyInt())).thenReturn(null)
+        val task = createTaskInfo(1)
+        packageUpdateController.onPackageUpdateRequested(listOf(task))
+
+        packageUpdateController.onPackageUpdateFinished(listOf(task))
+
+        val wct = getLatestWct(type = TRANSIT_CHANGE)
+        assertThat(wct.hierarchyOps.map { it.type }).containsExactly(HIERARCHY_OP_TYPE_REMOVE_TASK)
+        wct.assertRemoveTask(task, removeFromRecents = true)
     }
 
     @Test
