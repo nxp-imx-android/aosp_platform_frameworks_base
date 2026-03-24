@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.notification.row;
 
 import static android.app.Notification.FLAG_FSI_REQUESTED_BUT_DENIED;
 import static android.app.NotificationChannel.NEWS_ID;
+import static android.app.Flags.FLAG_ENABLE_AUTOMATION_NOTIFICATION_UI;
 
 import static com.android.systemui.Flags.FLAG_DEFAULT_HUN_EXPANSION;
 
@@ -57,6 +58,7 @@ import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -81,6 +83,7 @@ import com.android.systemui.statusbar.notification.row.ExpandableView.OnHeightCh
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainer;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -103,17 +106,28 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     private KosmosJavaAdapter mKosmos;
     @Rule public MockitoRule mockito = MockitoJUnit.rule();
 
+    private AutomationNotificationBackground mAutomationNotificationBackground =
+            mock(AutomationNotificationBackground.class);
+    private AutomationNotificationBackgroundProvider mAutomationNotificationBackgroundProvider =
+            new AutomationNotificationBackgroundProvider() {
+                @Override
+                public AutomationNotificationBackground get(Context context) {
+                    return mAutomationNotificationBackground;
+                }
+            };
+
     @Before
     public void setUp() throws Exception {
         allowTestableLooperAsMainThread();
         mKosmos = new KosmosJavaAdapter(this);
 
-        mKosmos.getGroupExpansionManager().registerGroupExpansionChangeListener(
-                (changedRow, expanded) -> {
-                    if (changedRow.isGroupRoot()) {
-                        changedRow.setChildrenExpanded(expanded);
-                    }
-                });
+        mKosmos.getGroupExpansionManager()
+                .registerGroupExpansionChangeListener(
+                        (changedRow, expanded) -> {
+                            if (changedRow.isGroupRoot()) {
+                                changedRow.setChildrenExpanded(expanded);
+                            }
+                        });
     }
 
     @Test
@@ -1169,6 +1183,58 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
                 row.isUserExpanded());
     }
 
+    @Test
+    @DisableFlags(FLAG_ENABLE_AUTOMATION_NOTIFICATION_UI)
+    public void automationBgFlagOff_setAutomationBgEnabled_noAutomationBg() {
+        mKosmos.setAutomationNotificationBackgroundProvider(
+                mAutomationNotificationBackgroundProvider);
+
+        ExpandableNotificationRow row = mKosmos.createRow();
+
+        row.setAutomationBackgroundEnabled(true);
+
+        assertThat(hasChildWithType(row, AutomationNotificationBackground.class)).isFalse();
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_AUTOMATION_NOTIFICATION_UI)
+    public void automationBgFlagOn_setAutomationBgDisabled_noAutomationBg() {
+        mKosmos.setAutomationNotificationBackgroundProvider(
+                mAutomationNotificationBackgroundProvider);
+
+        ExpandableNotificationRow row = mKosmos.createRow();
+
+        row.setAutomationBackgroundEnabled(false);
+
+        assertThat(hasChildWithType(row, AutomationNotificationBackground.class)).isFalse();
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_AUTOMATION_NOTIFICATION_UI)
+    public void automationBgFlagOn_setAutomationBgEnabled_hasAutomationBg() {
+        mKosmos.setAutomationNotificationBackgroundProvider(
+                mAutomationNotificationBackgroundProvider);
+
+        ExpandableNotificationRow row = mKosmos.createRow();
+
+        row.setAutomationBackgroundEnabled(true);
+
+        assertThat(hasChildWithType(row, AutomationNotificationBackground.class)).isTrue();
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_AUTOMATION_NOTIFICATION_UI)
+    public void automationBgFlagOn_setAutomationBgEnabledThenDisabled_hasNoAutomationBg() {
+        mKosmos.setAutomationNotificationBackgroundProvider(
+                mAutomationNotificationBackgroundProvider);
+
+        ExpandableNotificationRow row = mKosmos.createRow();
+
+        row.setAutomationBackgroundEnabled(true);
+        row.setAutomationBackgroundEnabled(false);
+
+        assertThat(hasChildWithType(row, AutomationNotificationBackground.class)).isFalse();
+    }
 
     private void setDrawableIconsInImageView(CachingIconView icon, Drawable iconDrawable,
             Drawable rightIconDrawable) {
@@ -1189,5 +1255,14 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
         when(mockContainer.getAttachedChildren()).thenReturn(rowList);
         parentRow.setChildrenContainer(mockContainer);
         return mockContainer;
+    }
+
+    private boolean hasChildWithType(ViewGroup parent, Class childClss) {
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            if (childClss.isInstance(parent.getChildAt(i))) {
+                return true;
+            }
+        }
+        return false;
     }
 }
