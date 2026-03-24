@@ -89,6 +89,8 @@ import android.content.pm.ParceledListSlice;
 import android.content.pm.ResolveInfo;
 import android.content.pm.SharedLibraryInfo;
 import android.content.pm.UserInfo;
+import android.content.pm.verify.domain.DomainVerificationInfo;
+import android.content.pm.verify.domain.DomainVerificationManager;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -1041,7 +1043,7 @@ final class ActivityManagerShellCommand extends ShellCommand {
 
             pw.println("\nAll Matching Candidates:");
             for (ResolveInfo candidate : candidates) {
-                printResolveInfoDetail(pw, candidate, intent);
+                printResolveInfoDetail(pw, candidate, intent, userIdForQuery);
             }
         } catch (RemoteException e) {
             pw.println("Error resolving intent: " + e);
@@ -1049,7 +1051,8 @@ final class ActivityManagerShellCommand extends ShellCommand {
         pw.println("");
     }
 
-    private void printResolveInfoDetail(PrintWriter pw, ResolveInfo resolveInfo, Intent intent) {
+    private void printResolveInfoDetail(
+            PrintWriter pw, ResolveInfo resolveInfo, Intent intent, int userId) {
         pw.println("\nTarget:");
         pw.println("  Package: " + resolveInfo.activityInfo.packageName);
         pw.println("  Activity: " + resolveInfo.activityInfo.name);
@@ -1060,6 +1063,70 @@ final class ActivityManagerShellCommand extends ShellCommand {
         }
 
         filter.printIntentFilterMatchDetails(pw, intent);
+
+        if (filter.getAutoVerify()) {
+            printAppLinkVerification(
+                    pw, resolveInfo.activityInfo.packageName, intent.getData(), userId);
+        }
+    }
+
+    private void printAppLinkVerification(
+            PrintWriter pw, String packageName, android.net.Uri data, int userId) {
+        pw.println("\nApp Link Verification:");
+        DomainVerificationManager dvm =
+                mInternal.mContext.getSystemService(DomainVerificationManager.class);
+        if (dvm == null) {
+            pw.println("  Error: DomainVerificationManager not available.");
+            return;
+        }
+
+        try {
+            DomainVerificationInfo info = dvm.getDomainVerificationInfo(packageName);
+            if (info == null) {
+                pw.println("  Status: No domain verification info found for package.");
+                return;
+            }
+
+            String host = data.getHost();
+            if (host == null) return;
+
+            Integer state = info.getHostToStateMap().get(host);
+            if (state == null) {
+                pw.println("  Status: Domain '" + host + "' not declared in autoVerify.");
+                return;
+            }
+
+            pw.println("  Verification status: " + DomainVerificationInfo.stateToString(state));
+
+            if (state != DomainVerificationInfo.STATE_SUCCESS) {
+                return;
+            }
+
+            try {
+                List<android.content.UriRelativeFilterGroup> groups =
+                        dvm.getUriRelativeFilterGroups(packageName, java.util.Arrays.asList(host))
+                                .get(host);
+                if (groups == null || groups.isEmpty()) {
+                    pw.println("  Dynamic App Links: None stored for this domain.");
+                    return;
+                }
+
+                pw.println("  Dynamic App Links:");
+                for (int i = 0; i < groups.size(); i++) {
+                    android.content.UriRelativeFilterGroup group = groups.get(i);
+                    if (!group.matchData(data)) {
+                        pw.println("    -> Did not match rule " + i + ": " + group.toString());
+                    } else {
+                        pw.println("    -> Matched Rule " + i + ": " + group.toString());
+                    }
+                }
+            } catch (Exception groupEx) {
+                pw.println("  Error retrieving dynamic rules: " + groupEx);
+            }
+
+        } catch (Exception e) {
+            pw.println("  Error retrieving verification info: " + e);
+        }
     }
 
     private String getResolverActivityName() {
