@@ -135,6 +135,7 @@ message TypeSpecificPolicyMetadata {
       IntegerPolicyMetadata integer_metadata = 1;
       EnumPolicyMetadata enum_metadata = 2;
       StringPolicyMetadata string_metadata = 3;
+      PackagePolicyMetadata package_metadata = 6;
     }
 
     bool empty_list_allowed = 4;
