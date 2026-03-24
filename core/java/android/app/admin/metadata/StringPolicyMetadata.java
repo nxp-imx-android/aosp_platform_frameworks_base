@@ -29,6 +29,7 @@ import java.util.Set;
 public class StringPolicyMetadata extends PolicyMetadata<String> {
     private final boolean mEmptyStringAllowed;
     private final boolean mUnprintableCharactersAllowed;
+    private final int mMaxLength;
 
     public StringPolicyMetadata(
             @NonNull PolicyIdentifier<String> id,
@@ -38,7 +39,8 @@ public class StringPolicyMetadata extends PolicyMetadata<String> {
             @Nullable String requiredCrossUserPermission,
             @NonNull Set<Integer> allowedDpcTypes,
             boolean emptyStringAllowed,
-            boolean unprintableCharactersAllowed) {
+            boolean unprintableCharactersAllowed,
+            int maxLength) {
         this(
                 id,
                 allowedScopes,
@@ -48,7 +50,8 @@ public class StringPolicyMetadata extends PolicyMetadata<String> {
                 allowedDpcTypes,
                 null,
                 emptyStringAllowed,
-                unprintableCharactersAllowed);
+                unprintableCharactersAllowed,
+                maxLength);
     }
 
     public StringPolicyMetadata(
@@ -60,7 +63,8 @@ public class StringPolicyMetadata extends PolicyMetadata<String> {
             @NonNull Set<Integer> allowedDpcTypes,
             @Nullable ResolutionMechanismMetadata<String> resolutionMechanism,
             boolean emptyStringAllowed,
-            boolean unprintableCharactersAllowed) {
+            boolean unprintableCharactersAllowed,
+            int maxLength) {
         super(
                 id,
                 allowedScopes,
@@ -72,6 +76,7 @@ public class StringPolicyMetadata extends PolicyMetadata<String> {
 
         mEmptyStringAllowed = emptyStringAllowed;
         mUnprintableCharactersAllowed = unprintableCharactersAllowed;
+        mMaxLength = maxLength;
     }
 
     public boolean isEmptyStringAllowed() {
@@ -80,5 +85,9 @@ public class StringPolicyMetadata extends PolicyMetadata<String> {
 
     public boolean isUnprintableCharactersAllowed() {
         return mUnprintableCharactersAllowed;
+    }
+
+    public int getMaxLength() {
+        return mMaxLength;
     }
 }

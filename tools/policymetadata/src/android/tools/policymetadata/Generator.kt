@@ -359,12 +359,20 @@ object Generator {
 
     private fun CodeBlock.Builder.addStringMetadataInformation(
         stringMetadata: StringPolicyMetadata
-    ) =
-        this.add("/* emptyStringAllowed= */ \$L,\n", stringMetadata.emptyStringAllowed)
-            .add(
-                "/* unprintableCharactersAllowed= */ \$L",
-                stringMetadata.unprintableCharactersAllowed,
-            )
+    ): CodeBlock.Builder {
+        add("/* emptyStringAllowed= */ \$L,\n", stringMetadata.emptyStringAllowed)
+        add(
+            "/* unprintableCharactersAllowed= */ \$L,\n",
+            stringMetadata.unprintableCharactersAllowed,
+        )
+        val maxLength = if (stringMetadata.hasMaxLength()) {
+            CodeBlock.of("\$L", stringMetadata.maxLength)
+        } else {
+            CodeBlock.of("Integer.MAX_VALUE")
+        }
+        add("/* maxLength= */ \$L", maxLength)
+        return this
+    }
 
     // Returns a CodeBlock containing `new StringPolicyMetadata(<policy-id>, ....)` .
     private fun generateStringPolicyMetadata(

@@ -74,9 +74,14 @@ class StringProcessor(processingEnv: ProcessingEnvironment) :
 
     fun extractTypeSpecificMetadata(
         definition: StringPolicyDefinition
-    ): TypeSpecificPolicyMetadata.StringPolicyMetadata =
-        TypeSpecificPolicyMetadata.StringPolicyMetadata.newBuilder()
-            .setEmptyStringAllowed(definition.emptyStringAllowed)
-            .setUnprintableCharactersAllowed(definition.unprintableCharactersAllowed)
-            .build()
+    ): TypeSpecificPolicyMetadata.StringPolicyMetadata {
+        val builder =
+            TypeSpecificPolicyMetadata.StringPolicyMetadata.newBuilder()
+                .setEmptyStringAllowed(definition.emptyStringAllowed)
+                .setUnprintableCharactersAllowed(definition.unprintableCharactersAllowed)
+        if (definition.maxLength != Integer.MAX_VALUE) {
+            builder.setMaxLength(definition.maxLength)
+        }
+        return builder.build()
+    }
 }
