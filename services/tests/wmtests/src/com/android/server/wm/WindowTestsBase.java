@@ -1833,6 +1833,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
             if (mCreateActivity) {
                 ActivityRecord activity = new ActivityBuilder(mSupervisor.mService)
                         .setTask(task)
+                        .setUid(task.mUserId * UserHandle.PER_USER_RANGE)
                         .setComponent(mComponent)
                         .build();
                 if (mOnTop) {
