@@ -378,7 +378,11 @@ fun ContentScope.OverlayShadeHeader(
     modifier: Modifier = Modifier,
 ) {
     val horizontalPadding =
-        max(LocalScreenCornerRadius.current / 2f, Shade.Dimensions.HorizontalPadding)
+        maxOf(
+            LocalScreenCornerRadius.current / 2f,
+            Shade.Dimensions.HorizontalPadding,
+            OverlayShade.Dimensions.PanelPaddingHorizontal,
+        )
 
     // This layout assumes it is globally positioned at (0, 0) and is the same width as the screen.
     CutoutAwareShadeHeader(
