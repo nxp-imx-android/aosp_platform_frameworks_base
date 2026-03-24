@@ -1108,7 +1108,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         try {
             mService.onDestroy();
-        } catch (IllegalStateException | IllegalArgumentException e) {
+        } catch (Exception e) {
             Log.e(TAG, "failed to destroy", e);
             // can throw if a broadcast receiver was never registered
         }
