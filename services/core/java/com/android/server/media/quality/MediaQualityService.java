@@ -1522,6 +1522,7 @@ public class MediaQualityService extends SystemService {
                     sp.soundParameters = soundParameters;
 
                     mMediaQuality.sendDefaultSoundParameters(sp);
+                    parcel.recycle();
                     if (mMediaQuality.getInterfaceVersion() > 1) {
                         mMediaQuality.sendDefaultSoundProfile(
                                 mHalNotifier.convertToHalSoundProfile(longId, params));
@@ -2703,6 +2704,7 @@ public class MediaQualityService extends SystemService {
             toReturn.soundProfileId = id;
             toReturn.parameters = soundParameters;
 
+            parcel.recycle();
             return toReturn;
         }
 
