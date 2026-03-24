@@ -1845,7 +1845,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         }
 
         capability |= getDefaultCapability(app, procState);
-        capability |= getCpuCapability(app, foregroundActivities);
+        capability |= getCpuCapability(app, procState, foregroundActivities);
         capability |= getImplicitCpuCapability(app, adj);
 
         // Procstates below BFGS should never have this capability.
