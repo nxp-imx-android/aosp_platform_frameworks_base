@@ -4685,6 +4685,7 @@ public abstract class Context {
                 TASK_CONTINUITY_SERVICE,
                 NPU_SERVICE,
                 WEB_APP_SERVICE,
+                D2D_CONNECTIVITY_SERVICE,
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ServiceName {}
