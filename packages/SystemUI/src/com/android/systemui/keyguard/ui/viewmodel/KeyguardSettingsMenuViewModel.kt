@@ -60,6 +60,10 @@ constructor(
         interactor.onMenuTouchGestureEnded(isClick = true)
     }
 
+    fun openKeyguardSettingsPopupMenu() {
+        interactor.onLongPress()
+    }
+
     fun onSettingsShown() {
         interactor.onSettingsShown()
     }
