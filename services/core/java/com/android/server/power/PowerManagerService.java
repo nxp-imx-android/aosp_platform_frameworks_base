@@ -1966,13 +1966,15 @@ public final class PowerManagerService extends SystemService
     }
 
     private void addFrozenStateChangeCallbacksLocked(WakeLock wakelock) {
-        if (mFeatureFlags.isDisableFrozenProcessWakelocksEnabled()) {
+        if (mFeatureFlags.isDisableFrozenProcessWakelocksEnabled()
+                && !wakelock.mFrozenStateCallbackRegistered) {
             // The callback is never supported for local binders.
             if (wakelock.mLock instanceof Binder) {
                 return;
             }
             try {
                 wakelock.mLock.addFrozenStateChangeCallback(wakelock);
+                wakelock.mFrozenStateCallbackRegistered = true;
             } catch (UnsupportedOperationException e) {
                 // Ignore the exception.  The callback is not supported on this platform or on
                 // this binder.  There is no error. A log message is provided for debug.
@@ -1987,13 +1989,15 @@ public final class PowerManagerService extends SystemService
     }
 
     private void removeFrozenStateChangeCallbacksLocked(WakeLock wakelock) {
-        if (mFeatureFlags.isDisableFrozenProcessWakelocksEnabled()) {
+        if (mFeatureFlags.isDisableFrozenProcessWakelocksEnabled()
+                && wakelock.mFrozenStateCallbackRegistered) {
             // The callback is never supported for local binders.
             if (wakelock.mLock instanceof Binder) {
                 return;
             }
             try {
                 wakelock.mLock.removeFrozenStateChangeCallback(wakelock);
+                wakelock.mFrozenStateCallbackRegistered = false;
             } catch (UnsupportedOperationException e) {
                 if (DEBUG_SPEW) {
                     Slog.v(TAG, "FrozenStateChangeCallback not supported for this wakelock "
@@ -5945,6 +5949,7 @@ public final class PowerManagerService extends SystemService
         public boolean mNotifiedAcquired;
         public boolean mNotifiedLong;
         public boolean mDisabled;
+        public boolean mFrozenStateCallbackRegistered;
         private boolean mIsFrozen;
         public IWakeLockCallback mCallback;
 

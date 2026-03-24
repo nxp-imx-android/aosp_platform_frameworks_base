@@ -4474,6 +4474,48 @@ public class PowerManagerServiceTest {
 
     @Test
     @RequiresFlagsEnabled({Flags.FLAG_DISABLE_FROZEN_PROCESS_WAKELOCKS})
+    public void testAddFrozenStateChangeCallback_notCalledIfAlreadyRegistered()
+            throws RemoteException {
+        createService();
+        startSystem();
+
+        IBinder mockBinder = mock(IBinder.class);
+        doNothing().when(mockBinder).addFrozenStateChangeCallback(any());
+
+        // First acquire
+        WakeLock wakeLock = acquireWakeLock("frozenTestWakeLock",
+                PowerManager.PARTIAL_WAKE_LOCK, mockBinder, Display.INVALID_DISPLAY);
+        verify(mockBinder, times(1)).addFrozenStateChangeCallback(any());
+        assertThat(wakeLock.mFrozenStateCallbackRegistered).isTrue();
+
+        // Second acquire with same binder
+        acquireWakeLock("frozenTestWakeLock",
+                PowerManager.PARTIAL_WAKE_LOCK, mockBinder, Display.INVALID_DISPLAY);
+        // Should not be called again
+        verify(mockBinder, times(1)).addFrozenStateChangeCallback(any());
+    }
+
+    @Test
+    @RequiresFlagsEnabled({Flags.FLAG_DISABLE_FROZEN_PROCESS_WAKELOCKS})
+    public void testRemoveFrozenStateChangeCallback_notCalledIfAlreadyUnregistered()
+            throws RemoteException {
+        createService();
+        startSystem();
+
+        IBinder mockBinder = mock(IBinder.class);
+        when(mockBinder.removeFrozenStateChangeCallback(any())).thenReturn(true);
+
+        WakeLock wakeLock = acquireWakeLock("frozenTestWakeLock",
+                PowerManager.PARTIAL_WAKE_LOCK, mockBinder, Display.INVALID_DISPLAY);
+        assertThat(wakeLock.mFrozenStateCallbackRegistered).isTrue();
+
+        mService.getBinderServiceInstance().releaseWakeLock(mockBinder, 0);
+        verify(mockBinder, times(1)).removeFrozenStateChangeCallback(any());
+        assertThat(wakeLock.mFrozenStateCallbackRegistered).isFalse();
+    }
+
+    @Test
+    @RequiresFlagsEnabled({Flags.FLAG_DISABLE_FROZEN_PROCESS_WAKELOCKS})
     public void testDisableWakelocks_whenBinderDies() {
         createService();
         startSystem();
