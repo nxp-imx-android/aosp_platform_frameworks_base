@@ -230,6 +230,17 @@ private fun ContentScope.ShadeScene(
     modifier: Modifier = Modifier,
     shadeSession: SaveableSession,
 ) {
+    val onEmptySpaceClick by
+        remember(viewModel) {
+            derivedStateOf {
+                if (viewModel.isEmptySpaceClickable(layoutState.transitionState)) {
+                    { viewModel.onEmptySpaceClicked(layoutState.transitionState) }
+                } else {
+                    null
+                }
+            }
+        }
+
     if (viewModel.shadeMode is ShadeMode.Split) {
         SplitShade(
             tag = "ShadeScene",
@@ -241,6 +252,7 @@ private fun ContentScope.ShadeScene(
             modifier = modifier,
             shadeSession = shadeSession,
             jankMonitor = jankMonitor,
+            onEmptySpaceClick = onEmptySpaceClick,
         )
     } else {
         // Compose SingleShade even if we're in Dual shade mode; the view-model will take care of
@@ -255,6 +267,7 @@ private fun ContentScope.ShadeScene(
             modifier = modifier,
             shadeSession = shadeSession,
             jankMonitor = jankMonitor,
+            onEmptySpaceClick = onEmptySpaceClick,
         )
     }
 }
@@ -270,8 +283,11 @@ private fun ContentScope.SingleShade(
     jankMonitor: InteractionJankMonitor,
     modifier: Modifier = Modifier,
     shadeSession: SaveableSession,
+    onEmptySpaceClick: (() -> Unit)?,
 ) {
+
     val cutoutLocation = LocalDisplayCutout.current().location
+
     val cutoutInsets = WindowInsets.Companion.displayCutout
 
     val tileSquishiness by
@@ -332,9 +348,9 @@ private fun ContentScope.SingleShade(
         ShadePanelScrim(viewModel.isTransparencyEnabled)
         SingleShadeNestedScrollLayout(
             modifier =
-                Modifier.thenIf(viewModel.isEmptySpaceClickable) {
+                Modifier.thenIf(onEmptySpaceClick != null) {
                     Modifier.clickable(interactionSource = null, indication = null) {
-                        viewModel.onEmptySpaceClicked()
+                        onEmptySpaceClick?.invoke()
                     }
                 },
             shadeSession = shadeSession,
@@ -432,8 +448,7 @@ private fun ContentScope.SingleShade(
                     contentScrollState = scrollState,
                     scrollingContentOverscrollEffect = scrollingContentOverscrollEffect,
                     shortContentOverscrollEffect = shortContentOverscrollEffect,
-                    onEmptySpaceClick =
-                        viewModel::onEmptySpaceClicked.takeIf { viewModel.isEmptySpaceClickable },
+                    onEmptySpaceClick = onEmptySpaceClick,
                     modifier = Modifier.padding(horizontal = shadeHorizontalPadding),
                     onStackHeightChanged = onContentHeightChanged,
                     allowSwipeToExpandChildren = isScrimAtRest,
@@ -496,6 +511,7 @@ private fun ContentScope.SplitShade(
     modifier: Modifier = Modifier,
     shadeSession: SaveableSession,
     jankMonitor: InteractionJankMonitor,
+    onEmptySpaceClick: (() -> Unit)?,
 ) {
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -674,8 +690,7 @@ private fun ContentScope.SplitShade(
                     shouldPunchHoleBehindScrim = false,
                     useVerticalOverscrollEffect = false,
                     isTransparencyEnabled = viewModel.isTransparencyEnabled,
-                    onEmptySpaceClick =
-                        viewModel::onEmptySpaceClicked.takeIf { viewModel.isEmptySpaceClickable },
+                    onEmptySpaceClick = onEmptySpaceClick,
                     modifier =
                         Modifier.weight(weight = 1f)
                             .fillMaxHeight()
