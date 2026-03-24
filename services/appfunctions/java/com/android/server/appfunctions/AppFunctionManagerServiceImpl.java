@@ -27,6 +27,7 @@ import static android.app.appfunctions.AppFunctionRuntimeMetadata.APP_FUNCTION_R
 
 import static com.android.server.appfunctions.AppFunctionExecutors.THREAD_POOL_EXECUTOR;
 import static com.android.server.appfunctions.CallerValidator.CAN_EXECUTE_APP_FUNCTIONS_DENIED;
+import static com.android.server.appfunctions.CallerValidator.CAN_EXECUTE_APP_FUNCTIONS_DENIED_NOT_ALLOWLISTED;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -459,6 +460,15 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                         new SecurityException(
                                                 "Caller does not have permission to execute the"
                                                         + " appfunction"));
+                            }
+                            if (canExecuteResult
+                                    == CAN_EXECUTE_APP_FUNCTIONS_DENIED_NOT_ALLOWLISTED) {
+                                return AndroidFuture.failedFuture(
+                                        new SecurityException(
+                                                "Caller "
+                                                        + requestInternal.getCallingPackage()
+                                                        + " is not allowed to call "
+                                                        + targetPackageName));
                             }
 
                             if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
