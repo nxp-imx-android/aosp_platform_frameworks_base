@@ -66,6 +66,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
@@ -730,10 +731,18 @@ private fun ContentScope.CardForegroundContent(
                     DeviceChip(
                         viewModel = viewModel.outputSwitcherChip,
                         style =
-                            DeviceChipStyle(
-                                fillColor = colorScheme.primary,
-                                contentColor = colorScheme.onPrimary,
-                            ),
+                            if (viewModel.outputSwitcherChip.text.isNullOrBlank()) {
+                                DeviceChipStyle(
+                                    fillColor = Color.Transparent,
+                                    contentColor = colorScheme.primary,
+                                    borderColor = colorScheme.primary,
+                                )
+                            } else {
+                                DeviceChipStyle(
+                                    fillColor = colorScheme.primary,
+                                    contentColor = colorScheme.onPrimary,
+                                )
+                            },
                         modifier =
                             Modifier
                                 // The chip must be limited to 40% of the width of the card at
@@ -1509,15 +1518,15 @@ private fun DeviceChip(
     val expandable = remember { Expandable() }
     Box(
         modifier =
-            modifier.padding(top = 16.dp, bottom = 0.dp).heightIn(min = 48.dp).clickable(
-                interactionSource = clickInteractionSource,
-                indication = null,
-            ) {
-                viewModel.onClick(expandable)
-            }
-            .clearAndSetSemantics {
-                contentDescription = viewModel.text ?: viewModel.defaultDescription
-            }
+            modifier
+                .padding(top = 16.dp, bottom = 0.dp)
+                .heightIn(min = 48.dp)
+                .clickable(interactionSource = clickInteractionSource, indication = null) {
+                    viewModel.onClick(expandable)
+                }
+                .clearAndSetSemantics {
+                    contentDescription = viewModel.text?.toString() ?: viewModel.defaultDescription
+                }
     ) {
         Expandable(
             expandable = expandable,
@@ -1526,8 +1535,9 @@ private fun DeviceChip(
                     color = style.fillColor,
                     shape = RoundedCornerShape(12.dp),
                 ),
-            useModifierBasedImplementation = true,
+            useModifierBasedImplementation = false,
             defaultMinSize = false,
+            modifier = Modifier.wrapContentSize(),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -1560,7 +1570,7 @@ private fun DeviceChip(
                 AnimatedVisibility(visible = viewModel.text != null) {
                     rememberLastNonNull(viewModel.text)?.let {
                         Text(
-                            text = it,
+                            text = it.toString(),
                             style = MaterialTheme.typography.labelMedium,
                             color = style.contentColor,
                             maxLines = 1,

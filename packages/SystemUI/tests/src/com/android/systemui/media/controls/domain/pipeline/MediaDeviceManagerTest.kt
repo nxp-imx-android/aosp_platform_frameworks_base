@@ -47,6 +47,7 @@ import com.android.settingslib.media.MediaDevice
 import com.android.settingslib.media.SuggestedDeviceManager
 import com.android.settingslib.media.SuggestedDeviceState
 import com.android.systemui.Flags.FLAG_ENABLE_SUGGESTED_DEVICE_UI
+import com.android.systemui.Flags.FLAG_MEDIA_CONTROLS_IN_COMPOSE
 import com.android.systemui.Flags.enableSuggestedDeviceUi
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.media.controls.MediaTestUtils
@@ -814,6 +815,18 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
         val data = loadMediaAndCaptureDeviceData()
         assertThat(data.name).isEqualTo(DEVICE_NAME)
         assertThat(data.enabled).isTrue()
+    }
+
+    @EnableFlags(FLAG_MEDIA_CONTROLS_IN_COMPOSE)
+    @Test
+    fun audioInfoLocalPlaybackType_composeEnabled() {
+        whenever(playbackInfo.playbackType).thenReturn(PlaybackInfo.PLAYBACK_TYPE_LOCAL)
+        whenever(device.deviceType).thenReturn(MediaDevice.MediaDeviceType.TYPE_PHONE_DEVICE)
+        whenever(controller.playbackInfo).thenReturn(playbackInfo)
+        // GIVEN a controller with local playback type
+        val data = loadMediaAndCaptureDeviceData()
+        assertThat(data.name).isNull()
+        assertThat(data.icon).isNotEqualTo(icon)
     }
 
     @Test

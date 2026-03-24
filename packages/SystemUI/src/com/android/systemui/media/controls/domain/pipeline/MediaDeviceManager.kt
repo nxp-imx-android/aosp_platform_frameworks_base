@@ -50,6 +50,7 @@ import com.android.systemui.media.controls.util.MediaControllerFactory
 import com.android.systemui.media.controls.util.SuggestedDeviceManagerFactory
 import com.android.systemui.media.muteawait.MediaMuteAwaitConnectionManager
 import com.android.systemui.media.muteawait.MediaMuteAwaitConnectionManagerFactory
+import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.policy.ConfigurationController
 import dagger.Lazy
@@ -454,10 +455,24 @@ constructor(
                     }
                 } else {
                     // Prefer broadcast, then SASS, if available when playback is local.
+                    val localDevice =
+                        if (
+                            MediaControlsInComposeFlag.isEnabled &&
+                                localMediaManager.currentConnectedDevice?.deviceType ==
+                                    MediaDevice.MediaDeviceType.TYPE_PHONE_DEVICE
+                        ) {
+                            connectedDevice?.copy(
+                                icon = context.getDrawable(R.drawable.ic_cast),
+                                name = null,
+                            )
+                        } else {
+                            connectedDevice
+                        }
+
                     val broadcastDevice = getBroadcastDevice()
                     val sassDevice = getSassDevice()
                     broadcastDevice
-                        ?: (sassDevice ?: connectedDevice).also {
+                        ?: (sassDevice ?: localDevice).also {
                             logger.logLocalDevice(broadcastDevice, sassDevice, connectedDevice)
                         }
                 }

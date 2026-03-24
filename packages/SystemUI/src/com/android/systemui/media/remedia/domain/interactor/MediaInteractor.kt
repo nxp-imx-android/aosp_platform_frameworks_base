@@ -280,7 +280,7 @@ constructor(
                 get() =
                     with(dataModel.outputDevice) {
                         MediaOutputDeviceModel(
-                            name = this?.name.toString(),
+                            name = this?.name,
                             // Set home devices icon as default.
                             icon =
                                 this?.icon?.let { Icon.Loaded(it, contentDescription = null) }
