@@ -109,18 +109,11 @@ class CallerValidatorImpl implements CallerValidator {
         }
 
         if (Flags.enableAppFunctionPermissionV2()) {
-            if (mContext.checkPermission(
-                            Manifest.permission.EXECUTE_APP_FUNCTIONS_SYSTEM,
-                            callingPid,
-                            callingUid)
-                    == PackageManager.PERMISSION_GRANTED) {
-                // System permission does not require allowlist validation.
-                return AndroidFuture.completedFuture(
-                        CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION);
-            }
-
             return Objects.requireNonNull(mAllowlistReader)
-                    .isAllowlisted(callerPackageName, targetPackageName, targetUser.getIdentifier())
+                    .isAllowlisted(
+                            callerPackageName,
+                            targetPackageName,
+                            targetUser.getIdentifier())
                     .thenCompose(
                             (isAllowlisted) ->
                                     verifyCallerCanExecuteAppFunctionWithAllowlist(
@@ -141,6 +134,13 @@ class CallerValidatorImpl implements CallerValidator {
             @NonNull String callerPackageName,
             @NonNull String targetPackageName,
             boolean isAllowlisted) {
+        final boolean hasSystemPermission =
+                mContext.checkPermission(
+                                Manifest.permission.EXECUTE_APP_FUNCTIONS_SYSTEM,
+                                callingPid,
+                                callingUid)
+                        == PackageManager.PERMISSION_GRANTED;
+
         final boolean hasPermission =
                 mContext.checkPermission(
                                 Manifest.permission.EXECUTE_APP_FUNCTIONS, callingPid, callingUid)
@@ -148,7 +148,7 @@ class CallerValidatorImpl implements CallerValidator {
 
         final boolean isSamePackage = callerPackageName.equals(targetPackageName);
 
-        if (hasPermission) {
+        if (hasSystemPermission || hasPermission) {
             if (isSamePackage) {
                 return AndroidFuture.completedFuture(
                         CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION);
@@ -156,8 +156,7 @@ class CallerValidatorImpl implements CallerValidator {
             return isAllowlisted
                     ? AndroidFuture.completedFuture(
                             CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION)
-                    : AndroidFuture.completedFuture(
-                            CAN_EXECUTE_APP_FUNCTIONS_DENIED_NOT_ALLOWLISTED);
+                    : AndroidFuture.completedFuture(CAN_EXECUTE_APP_FUNCTIONS_DENIED);
         }
 
         if (isSamePackage) {

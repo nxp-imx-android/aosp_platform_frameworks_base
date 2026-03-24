@@ -69,13 +69,15 @@ import java.util.function.Consumer;
 public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistReader {
     private static final String TAG = "AppFunctionAllowlistReader";
     private static final boolean DEBUG = Build.TYPE.equals("eng");
-    private static final String WILDCARD_PACKAGE_NAME = "*";
 
     private static SystemAppFunctionAllowlistReader sInstance = null;
 
     private final Object mCacheLock = new Object();
 
     private final AtomicBoolean mEnable = new AtomicBoolean(false);
+
+    @GuardedBy("mCacheLock")
+    private final ArrayMap<SignedPackage, ArraySet<String>> mTestAllowlist = new ArrayMap<>();
 
     @GuardedBy("mCacheLock")
     private final LruCache<SignedPackage, ArraySet<String>> mCache;
@@ -119,14 +121,20 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
         mEnable.set(false);
     }
 
-    /**
-     * Purge the cache.
-     *
-     * <p>This should only be used by shell command for testing.
-     */
-    public void purgeCache() {
+    // TODO(b/457349791): Remove once allowlist service is ready
+    /** Sets test allowlist. */
+    public void setTestAllowlist(
+            @NonNull SignedPackage agentPackage, @NonNull List<String> packages) {
         synchronized (mCacheLock) {
-            mCache.evictAll();
+            mTestAllowlist.put(agentPackage, new ArraySet<String>(packages));
+        }
+    }
+
+    // TODO(b/457349791): Remove once allowlist service is ready
+    /** Clear test allowlist. */
+    public void clearTestAllowlist() {
+        synchronized (mCacheLock) {
+            mTestAllowlist.clear();
         }
     }
 
@@ -139,68 +147,78 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
             })
     public CompletableFuture<Boolean> isAllowlisted(
             @NonNull String agentPackageName, @NonNull String targetPackageName, int userId) {
-        if (!mEnable.get()) {
-            return AndroidFuture.completedFuture(true);
-        }
+        if (mEnable.get()) {
+            if (agentPackageName.equals(targetPackageName)) {
+                // Interaction with the app's own AppFunction is implicitly allowed.
+                return AndroidFuture.completedFuture(true);
+            }
 
-        if (agentPackageName.equals(targetPackageName)) {
-            // Interaction with the app's own AppFunction is implicitly allowed.
-            return AndroidFuture.completedFuture(true);
-        }
+            PackageInfo agentPackageInfo = getPackageInfo(agentPackageName, userId);
+            if (agentPackageInfo == null) {
+                return AndroidFuture.completedFuture(false);
+            }
 
-        PackageInfo agentPackageInfo = getPackageInfo(agentPackageName, userId);
-        if (agentPackageInfo == null) {
-            return AndroidFuture.completedFuture(false);
-        }
+            byte[] agentLatestCertificate = getLatestCertificateDigest(agentPackageInfo);
+            if (agentLatestCertificate == null) {
+                return AndroidFuture.completedFuture(false);
+            }
+            SignedPackage agentSignedPackage =
+                    new SignedPackage(
+                            agentPackageName,
+                            PackageUtils.computeSha256DigestBytes(agentLatestCertificate));
 
-        byte[] agentLatestCertificate = getLatestCertificateDigest(agentPackageInfo);
-        if (agentLatestCertificate == null) {
-            return AndroidFuture.completedFuture(false);
-        }
-        SignedPackage agentSignedPackage =
-                new SignedPackage(
-                        agentPackageName,
-                        PackageUtils.computeSha256DigestBytes(agentLatestCertificate));
-
-        maybeStartAlowlistListener();
-        return getValidTargetPackages(agentSignedPackage)
-                .thenApply(
-                        (allowlistTargets) -> {
-                            if (DEBUG) {
-                                Slog.d(
-                                        TAG,
-                                        "Allowlist targets for "
-                                                + agentPackageName
-                                                + " in user "
-                                                + userId
-                                                + " are: "
-                                                + allowlistTargets.toString());
-                            }
-                            if (allowlistTargets.contains(WILDCARD_PACKAGE_NAME)) {
-                                return true;
-                            }
-                            return allowlistTargets.contains(targetPackageName);
-                        })
-                .exceptionally(
-                        (exception) -> {
-                            Slog.w(
-                                    TAG,
-                                    "Fail to validate allowlist for "
-                                            + agentPackageName
-                                            + " to "
-                                            + targetPackageName
-                                            + " in user "
-                                            + userId,
-                                    exception);
-                            if (exception instanceof AllowlistResponseException) {
-                                int status = ((AllowlistResponseException) exception).getStatus();
-                                if (status == RESPONSE_STATUS_ERROR_PROVIDER
-                                        || status == RESPONSE_STATUS_ERROR_NETWORK) {
-                                    return true;
+            maybeStartAlowlistListener();
+            return getValidTargetPackages(agentSignedPackage)
+                    // TODO(b/457349791): Remove once the AppBinding hanging issue is fixed.
+                    .orTimeout(500, TimeUnit.MILLISECONDS)
+                    .thenApply(
+                            (allowlistTargets) -> {
+                                if (DEBUG) {
+                                    Slog.d(
+                                            TAG,
+                                            "Allowlist targets for "
+                                                    + agentPackageName
+                                                    + " in user "
+                                                    + userId
+                                                    + " are: "
+                                                    + allowlistTargets.toString());
                                 }
-                            }
-                            return false;
-                        });
+                                return allowlistTargets.contains(targetPackageName)
+                                        || isInTestAllowlist(agentSignedPackage, targetPackageName);
+                            })
+                    .exceptionally(
+                            (exception) -> {
+                                Slog.w(
+                                        TAG,
+                                        "Fail to validate allowlist for "
+                                                + agentPackageName
+                                                + " to "
+                                                + targetPackageName
+                                                + " in user "
+                                                + userId,
+                                        exception);
+                                if (exception instanceof AllowlistResponseException) {
+                                    int status =
+                                            ((AllowlistResponseException) exception).getStatus();
+                                    if (status == RESPONSE_STATUS_ERROR_PROVIDER
+                                            || status == RESPONSE_STATUS_ERROR_NETWORK) {
+                                        // TODO(b/457349791): Once the Shell command is available
+                                        // to override the allowlist in AllowlistService, remove
+                                        // this to return true.
+                                        return isInTestAllowlist(
+                                                agentSignedPackage, targetPackageName);
+                                    }
+                                }
+                                if (exception instanceof TimeoutException) {
+                                    // TODO(b/457349791): Remove once the AppBinding hanging issue
+                                    // is fixed.
+                                    return isInTestAllowlist(agentSignedPackage, targetPackageName);
+                                }
+                                return false;
+                            });
+        } else {
+            return AndroidFuture.completedFuture(true);
+        }
     }
 
     @RequiresPermission(android.Manifest.permission.QUERY_ALLOWLIST)
@@ -416,7 +434,6 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
             }
             return null;
         }
-        // Multi-signer packages are not supported.
         Signature[] histories = signingInfo.getSigningCertificateHistory();
         if (histories == null || histories.length == 0) {
             if (DEBUG) {
@@ -427,6 +444,20 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
             return null;
         }
         return histories[histories.length - 1].toByteArray();
+    }
+
+    private boolean isInTestAllowlist(
+            @NonNull SignedPackage agentPackage, @NonNull String targetPackage) {
+        Objects.requireNonNull(agentPackage);
+        Objects.requireNonNull(targetPackage);
+
+        synchronized (mCacheLock) {
+            ArraySet<String> testAllowlistTargets = mTestAllowlist.get(agentPackage);
+            if (testAllowlistTargets == null) {
+                return false;
+            }
+            return testAllowlistTargets.contains(targetPackage);
+        }
     }
 
     private static final class AllowlistResponseException extends Exception {
