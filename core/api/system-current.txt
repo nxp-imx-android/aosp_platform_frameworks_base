@@ -347,6 +347,7 @@ package android {
     field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String PERSONAL_CONTEXT_WRITE_SETTINGS = "android.permission.PERSONAL_CONTEXT_WRITE_SETTINGS";
     field @FlaggedApi("android.app.bridged_notifications") public static final String POST_BRIDGED_NOTIFICATIONS = "android.permission.POST_BRIDGED_NOTIFICATIONS";
     field public static final String POWER_SAVER = "android.permission.POWER_SAVER";
+    field @FlaggedApi("com.android.window.flags.enable_fullscreen_in_new_task_preference") public static final String PREFER_FULLSCREEN_IN_NEW_TASK = "android.permission.PREFER_FULLSCREEN_IN_NEW_TASK";
     field @FlaggedApi("android.permission.flags.factory_reset_prep_permission_apis") public static final String PREPARE_FACTORY_RESET = "android.permission.PREPARE_FACTORY_RESET";
     field public static final String PROVIDE_DEFAULT_ENABLED_CREDENTIAL_SERVICE = "android.permission.PROVIDE_DEFAULT_ENABLED_CREDENTIAL_SERVICE";
     field @FlaggedApi("android.permission.flags.health_connect_provide_device_data_permission_enabled") public static final String PROVIDE_HEALTH_CONNECT_DEVICE_DATA = "android.permission.PROVIDE_HEALTH_CONNECT_DEVICE_DATA";
@@ -20908,6 +20909,7 @@ package android.view {
     field public static final int DISPLAY_IME_POLICY_LOCAL = 0; // 0x0
     field @FlaggedApi("com.android.window.flags.device_engagement_mode") public static final int ENGAGEMENT_MODE_FLAG_AUDIO_ON = 2; // 0x2
     field @FlaggedApi("com.android.window.flags.device_engagement_mode") public static final int ENGAGEMENT_MODE_FLAG_VISUALS_ON = 1; // 0x1
+    field @FlaggedApi("com.android.window.flags.enable_fullscreen_in_new_task_preference") @RequiresPermission(android.Manifest.permission.PREFER_FULLSCREEN_IN_NEW_TASK) public static final String PROPERTY_PREFER_FULLSCREEN_IN_NEW_TASK = "android.window.PROPERTY_PREFER_FULLSCREEN_IN_NEW_TASK";
   }
 
   @FlaggedApi("com.android.window.flags.device_engagement_mode") public static final class WindowManager.DisplayEngagementModeState {
