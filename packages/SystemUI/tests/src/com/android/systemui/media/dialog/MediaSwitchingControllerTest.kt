@@ -223,7 +223,7 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
                     .doReturn(mMediaSessionManager)
             }
 
-        mMediaSwitchingController = createDefaultMediaSwitchingController()
+        mMediaSwitchingController = createMediaSwitchingController()
 
         mLocalMediaManager =
             spy(mMediaSwitchingController.mLocalMediaManager) {
@@ -274,30 +274,7 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
 
     @Test
     fun start_withoutPackageName_verifyMediaControllerInit() {
-        mMediaSwitchingController =
-            MediaSwitchingController(
-                mSpyContext,
-                mPackageName = null,
-                mContext.user,
-                mToken = null,
-                mediaSwitchingType = null,
-                mMediaSessionManager,
-                mLocalBluetoothManager,
-                mStarter,
-                mNotifCollection,
-                mDialogTransitionAnimator,
-                mNearbyMediaDevicesManager,
-                mAudioManager,
-                mPowerExemptionManager,
-                mKeyguardManager,
-                mClock,
-                mFakeBackgroundExecutor,
-                mVolumePanelGlobalStateInteractor,
-                mUserTracker,
-                mJavaAdapter,
-                mAudioSharingRepository,
-                mExpandedAudioTileDetailsFeatureInteractor,
-            )
+        mMediaSwitchingController = createMediaSwitchingController(packageName = null)
 
         mMediaSwitchingController.start(mCb)
 
@@ -323,31 +300,7 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
 
     @Test
     fun stop_withoutPackageName_verifyMediaControllerDeinit() {
-        mMediaSwitchingController =
-            MediaSwitchingController(
-                mSpyContext,
-                mPackageName = null,
-                mSpyContext.user,
-                mToken = null,
-                mediaSwitchingType = null,
-                mMediaSessionManager,
-                mLocalBluetoothManager,
-                mStarter,
-                mNotifCollection,
-                mDialogTransitionAnimator,
-                mNearbyMediaDevicesManager,
-                mAudioManager,
-                mPowerExemptionManager,
-                mKeyguardManager,
-                mClock,
-                mFakeBackgroundExecutor,
-                mVolumePanelGlobalStateInteractor,
-                mUserTracker,
-                mJavaAdapter,
-                mAudioSharingRepository,
-                mExpandedAudioTileDetailsFeatureInteractor,
-            )
-
+        mMediaSwitchingController = createMediaSwitchingController(packageName = null)
         mMediaSwitchingController.start(mCb)
 
         mMediaSwitchingController.stop()
@@ -562,7 +515,7 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
     @Test
     fun onDeviceListUpdate_verifyDeviceListCallback_inputRouting() {
         enableInputRoutingConfig()
-        mMediaSwitchingController = createDefaultMediaSwitchingController()
+        mMediaSwitchingController = createMediaSwitchingController()
         mMediaSwitchingController.start(mCb)
         reset(mCb)
 
@@ -603,7 +556,7 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
         enableInputRoutingConfig()
         whenever(mMediaDevice1.features).thenReturn(listOf(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK))
         whenever(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1)
-        mMediaSwitchingController = createDefaultMediaSwitchingController()
+        mMediaSwitchingController = createMediaSwitchingController()
         mMediaSwitchingController.start(mCb)
         reset(mCb)
 
@@ -625,29 +578,7 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
     fun onInputDeviceListUpdateWithInputType_verifyDeviceListCallback_inputRouting() {
         enableInputRoutingConfig()
         mMediaSwitchingController =
-            MediaSwitchingController(
-                mSpyContext,
-                mPackageName,
-                mContext.user,
-                mToken = null,
-                MediaSwitchingType.INPUT,
-                mMediaSessionManager,
-                mLocalBluetoothManager,
-                mStarter,
-                mNotifCollection,
-                mDialogTransitionAnimator,
-                mNearbyMediaDevicesManager,
-                mAudioManager,
-                mPowerExemptionManager,
-                mKeyguardManager,
-                mClock,
-                mFakeBackgroundExecutor,
-                mVolumePanelGlobalStateInteractor,
-                mUserTracker,
-                mJavaAdapter,
-                mAudioSharingRepository,
-                mExpandedAudioTileDetailsFeatureInteractor,
-            )
+            createMediaSwitchingController(mediaSwitchingType = MediaSwitchingType.INPUT)
         val audioDeviceInfos = arrayOf<AudioDeviceInfo>()
         whenever(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS))
             .thenReturn(audioDeviceInfos)
@@ -685,29 +616,7 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
     fun onInputDeviceListUpdateWithOutputType_verifyDeviceListCallback_inputRouting() {
         enableInputRoutingConfig()
         mMediaSwitchingController =
-            MediaSwitchingController(
-                mSpyContext,
-                mPackageName,
-                mContext.user,
-                mToken = null,
-                MediaSwitchingType.OUTPUT,
-                mMediaSessionManager,
-                mLocalBluetoothManager,
-                mStarter,
-                mNotifCollection,
-                mDialogTransitionAnimator,
-                mNearbyMediaDevicesManager,
-                mAudioManager,
-                mPowerExemptionManager,
-                mKeyguardManager,
-                mClock,
-                mFakeBackgroundExecutor,
-                mVolumePanelGlobalStateInteractor,
-                mUserTracker,
-                mJavaAdapter,
-                mAudioSharingRepository,
-                mExpandedAudioTileDetailsFeatureInteractor,
-            )
+            createMediaSwitchingController(mediaSwitchingType = MediaSwitchingType.OUTPUT)
         val audioDeviceInfos = arrayOf<AudioDeviceInfo>()
         whenever(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS))
             .thenReturn(audioDeviceInfos)
@@ -751,7 +660,7 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
         val audioDeviceInfos = arrayOf<AudioDeviceInfo>()
         whenever(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS))
             .thenReturn(audioDeviceInfos)
-        mMediaSwitchingController = createDefaultMediaSwitchingController()
+        mMediaSwitchingController = createMediaSwitchingController()
         mMediaSwitchingController.start(mCb)
 
         // Output devices have changed.
@@ -1001,31 +910,8 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
     }
 
     @Test
-    fun getAppSourceName_packageNameIsNull_returnsNull() {
-        val testMediaSwitchingController =
-            MediaSwitchingController(
-                mSpyContext,
-                mPackageName = "",
-                mSpyContext.user,
-                mToken = null,
-                mediaSwitchingType = null,
-                mMediaSessionManager,
-                mLocalBluetoothManager,
-                mStarter,
-                mNotifCollection,
-                mDialogTransitionAnimator,
-                mNearbyMediaDevicesManager,
-                mAudioManager,
-                mPowerExemptionManager,
-                mKeyguardManager,
-                mClock,
-                mFakeBackgroundExecutor,
-                mVolumePanelGlobalStateInteractor,
-                mUserTracker,
-                mJavaAdapter,
-                mAudioSharingRepository,
-                mExpandedAudioTileDetailsFeatureInteractor,
-            )
+    fun getAppSourceName_packageNameIsEmpty_returnsNull() {
+        val testMediaSwitchingController = createMediaSwitchingController(packageName = "")
         testMediaSwitchingController.start(mCb)
         reset(mCb)
 
@@ -1035,31 +921,8 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
     }
 
     @Test
-    fun getAppIcon_packageNameIsNull_returnsNull() {
-        val testMediaSwitchingController =
-            MediaSwitchingController(
-                mSpyContext,
-                mPackageName = "",
-                mSpyContext.user,
-                mToken = null,
-                mediaSwitchingType = null,
-                mMediaSessionManager,
-                mLocalBluetoothManager,
-                mStarter,
-                mNotifCollection,
-                mDialogTransitionAnimator,
-                mNearbyMediaDevicesManager,
-                mAudioManager,
-                mPowerExemptionManager,
-                mKeyguardManager,
-                mClock,
-                mFakeBackgroundExecutor,
-                mVolumePanelGlobalStateInteractor,
-                mUserTracker,
-                mJavaAdapter,
-                mAudioSharingRepository,
-                mExpandedAudioTileDetailsFeatureInteractor,
-            )
+    fun getAppIcon_packageNameIsEmpty_returnsNull() {
+        val testMediaSwitchingController = createMediaSwitchingController(packageName = "")
         testMediaSwitchingController.start(mCb)
         reset(mCb)
 
@@ -1128,8 +991,7 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
     @DisableFlags(Flags.FLAG_MOVE_OUTPUT_SWITCHER_CALLS_TO_BACKGROUND_THREAD)
     @Test
     fun addDeviceToPlayMedia_callsLocalMediaManagerOnMainThread() {
-        val testMediaSwitchingController: MediaSwitchingController =
-            createTestMediaSwitchingController()
+        val testMediaSwitchingController = createMediaSwitchingController()
         val mockLocalMediaManager = mock<LocalMediaManager>()
         testMediaSwitchingController.mLocalMediaManager = mockLocalMediaManager
         val captor = argumentCaptor<RoutingChangeInfo>()
@@ -1145,7 +1007,7 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
     @DisableFlags(Flags.FLAG_MOVE_OUTPUT_SWITCHER_CALLS_TO_BACKGROUND_THREAD)
     @Test
     fun removeDeviceFromPlayMedia_callsLocalMediaManagerOnMainThread() {
-        val testMediaSwitchingController = createTestMediaSwitchingController()
+        val testMediaSwitchingController = createMediaSwitchingController()
         val mockLocalMediaManager = mock<LocalMediaManager>()
         testMediaSwitchingController.mLocalMediaManager = mockLocalMediaManager
         val captor = argumentCaptor<RoutingChangeInfo>()
@@ -1171,8 +1033,7 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
     @EnableFlags(Flags.FLAG_MOVE_OUTPUT_SWITCHER_CALLS_TO_BACKGROUND_THREAD)
     @Test
     fun addDeviceToPlayMedia_callsLocalMediaManagerOnBackgroundThread() {
-        val testMediaSwitchingController: MediaSwitchingController =
-            createTestMediaSwitchingController()
+        val testMediaSwitchingController = createMediaSwitchingController()
         val mockLocalMediaManager = mock<LocalMediaManager>()
         testMediaSwitchingController.mLocalMediaManager = mockLocalMediaManager
         val captor = argumentCaptor<RoutingChangeInfo>()
@@ -1190,7 +1051,7 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
     @EnableFlags(Flags.FLAG_MOVE_OUTPUT_SWITCHER_CALLS_TO_BACKGROUND_THREAD)
     @Test
     fun removeDeviceFromPlayMedia_callsLocalMediaManagerOnBackgroundThread() {
-        val testMediaSwitchingController = createTestMediaSwitchingController()
+        val testMediaSwitchingController = createMediaSwitchingController()
         val mockLocalMediaManager = mock<LocalMediaManager>()
         testMediaSwitchingController.mLocalMediaManager = mockLocalMediaManager
         val captor = argumentCaptor<RoutingChangeInfo>()
@@ -1406,30 +1267,7 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
 
     @Test
     fun getNotificationLargeIcon_withoutPackageName_returnsNull() {
-        mMediaSwitchingController =
-            MediaSwitchingController(
-                mSpyContext,
-                mPackageName = null,
-                mSpyContext.user,
-                mToken = null,
-                mediaSwitchingType = null,
-                mMediaSessionManager,
-                mLocalBluetoothManager,
-                mStarter,
-                mNotifCollection,
-                mDialogTransitionAnimator,
-                mNearbyMediaDevicesManager,
-                mAudioManager,
-                mPowerExemptionManager,
-                mKeyguardManager,
-                mClock,
-                mFakeBackgroundExecutor,
-                mVolumePanelGlobalStateInteractor,
-                mUserTracker,
-                mJavaAdapter,
-                mAudioSharingRepository,
-                mExpandedAudioTileDetailsFeatureInteractor,
-            )
+        mMediaSwitchingController = createMediaSwitchingController(packageName = null)
 
         assertThat(mMediaSwitchingController.getNotificationIcon()).isNull()
     }
@@ -1558,30 +1396,7 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
 
     @Test
     fun setTemporaryAllowListExceptionIfNeeded_packageNameIsNull_NoAction() {
-        val testMediaSwitchingController =
-            MediaSwitchingController(
-                mSpyContext,
-                mPackageName = null,
-                mSpyContext.user,
-                mToken = null,
-                mediaSwitchingType = null,
-                mMediaSessionManager,
-                mLocalBluetoothManager,
-                mStarter,
-                mNotifCollection,
-                mDialogTransitionAnimator,
-                mNearbyMediaDevicesManager,
-                mAudioManager,
-                mPowerExemptionManager,
-                mKeyguardManager,
-                mClock,
-                mFakeBackgroundExecutor,
-                mVolumePanelGlobalStateInteractor,
-                mUserTracker,
-                mJavaAdapter,
-                mAudioSharingRepository,
-                mExpandedAudioTileDetailsFeatureInteractor,
-            )
+        val testMediaSwitchingController = createMediaSwitchingController(packageName = null)
 
         testMediaSwitchingController.setTemporaryAllowListExceptionIfNeeded()
 
@@ -1874,7 +1689,8 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
 
     @Test
     fun getAudioSharingButtonState_mediaSwitchingTypeIsInput_returnsNull() {
-        mMediaSwitchingController = createDefaultMediaSwitchingController(MediaSwitchingType.INPUT)
+        mMediaSwitchingController =
+            createMediaSwitchingController(mediaSwitchingType = MediaSwitchingType.INPUT)
         mAssistantProfile.stub {
             on { allConnectedDevices } doReturn listOf(mock<BluetoothDevice>())
         }
@@ -1955,41 +1771,18 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
         whenever(spyResources.getBoolean(R.bool.config_enableInputRouting)).thenReturn(true)
     }
 
-    private fun createDefaultMediaSwitchingController(
-        mediaSwitchingType: MediaSwitchingType? = null
+    private fun createMediaSwitchingController(
+        userHandle: UserHandle? = mContext.user,
+        packageName: String? = mPackageName,
+        token: MediaSession.Token? = null,
+        mediaSwitchingType: MediaSwitchingType? = null,
     ): MediaSwitchingController {
         return MediaSwitchingController(
             mSpyContext,
-            mPackageName,
-            mContext.user,
-            mToken = null,
-            mediaSwitchingType,
-            mMediaSessionManager,
-            mLocalBluetoothManager,
-            mStarter,
-            mNotifCollection,
-            mDialogTransitionAnimator,
-            mNearbyMediaDevicesManager,
-            mAudioManager,
-            mPowerExemptionManager,
-            mKeyguardManager,
-            mClock,
-            mFakeBackgroundExecutor,
-            mVolumePanelGlobalStateInteractor,
-            mUserTracker,
-            mJavaAdapter,
-            mAudioSharingRepository,
-            mExpandedAudioTileDetailsFeatureInteractor,
-        )
-    }
-
-    private fun createTestMediaSwitchingController(): MediaSwitchingController {
-        return MediaSwitchingController(
-            mSpyContext,
-            null, /* packageName */
-            mUserHandle, /* userHandle */
-            null, /* token */
-            null, /* mediaSwitchingType */
+            mPackageName = packageName,
+            userHandle = userHandle,
+            mToken = token,
+            mediaSwitchingType = mediaSwitchingType,
             mMediaSessionManager,
             mLocalBluetoothManager,
             mStarter,
