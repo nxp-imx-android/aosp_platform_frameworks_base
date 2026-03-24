@@ -31,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
 import androidx.core.view.isVisible
-import com.android.compose.animation.scene.DelegatingTransition
 import com.android.compose.animation.scene.HoistedSceneTransitionLayoutState
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
@@ -60,7 +59,6 @@ import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneContainerConfig
 import com.android.systemui.scene.shared.model.SceneDataSourceDelegator
-import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.composable.DualShadeEducationalTooltips
 import com.android.systemui.scene.ui.composable.Overlay
 import com.android.systemui.scene.ui.composable.Scene
@@ -136,37 +134,8 @@ object SceneWindowRootViewBinder {
                     )
 
                     val bouncerOverlay = unsortedOverlayByKey[Overlays.Bouncer]
-                    val bouncerSceneContainerState =
-                        bouncerOverlay?.let {
-                            HoistedSceneTransitionLayoutState(
-                                initialScene = Scenes.Gone,
-                                onTransitionStart = { transition ->
-                                    // Here, we check if the transition that was started is
-                                    // specifically meant to hide the bouncer overlay. If so, we
-                                    // must also ask the real scene container to start a parallel
-                                    // transition to hide the bouncer overlay from within itself.
-                                    // While it's true that the real scene container doesn't render
-                                    // the bouncer overlay (as that's actually handled by the
-                                    // dedicated bouncer scene container - the one that uses this
-                                    // state), it still needs to be logically hidden so both scene
-                                    // containers remain in sync.
-                                    if (
-                                        transition is
-                                            TransitionState.Transition.ShowOrHideOverlay &&
-                                            transition.isTransitioning(from = Overlays.Bouncer)
-                                    ) {
-                                        viewModel.startTransitionImmediately(
-                                            DelegatingTransition.ShowOrHideOverlay(
-                                                delegate = transition,
-                                                fromOrToScene = viewModel.currentScene,
-                                                overlay = Overlays.Bouncer,
-                                            )
-                                        )
-                                    }
-                                },
-                                deferTransitionProgress = true,
-                            )
-                        }
+                    val bouncerSceneTransitionCoordinator =
+                        bouncerOverlay?.let { BouncerSceneTransitionCoordinator(viewModel) }
 
                     view.addView(
                         createSceneContainerView(
@@ -180,45 +149,14 @@ object SceneWindowRootViewBinder {
                                 sceneJankMonitorFactory = sceneJankMonitorFactory,
                                 sceneTransitionLatencyMonitor = sceneTransitionLatencyMonitor,
                                 tintedIconManagerFactory = tintedIconManagerFactory,
-                                showOrHideBouncer = { transition, animationScope ->
-                                    // This is invoked when the logic in the scene container wants
-                                    // to show or hide the bouncer overlay. The transition is routed
-                                    // to the dedicated bouncer scene container so it runs there and
-                                    // even tracks the user drag/fling, if needed.
-                                    bouncerSceneContainerState
-                                        ?.uiBoundState
-                                        ?.startTransitionImmediately(
-                                            animationScope = animationScope,
-                                            transition =
-                                                DelegatingTransition.ShowOrHideOverlay(
-                                                    delegate = transition,
-                                                    fromOrToScene =
-                                                        bouncerSceneContainerState.currentScene,
-                                                    overlay = Overlays.Bouncer,
-                                                ),
-                                        )
+                                onTransitionStart = { transition, animationScope ->
+                                    bouncerSceneTransitionCoordinator
+                                        ?.onMainContainerTransitionStart(transition, animationScope)
                                 },
-                                snapBouncer = { isShowing ->
-                                    // This is invoked when the logic in the scene container wants
-                                    // to snap the bouncer overlay to show or to hide. The snapping
-                                    // is done on the dedicated bouncer scene container so it shows
-                                    // or hides as needed.
-                                    val isBouncerCurrentlyShowing =
-                                        bouncerSceneContainerState
-                                            ?.currentOverlays
-                                            ?.contains(Overlays.Bouncer) == true
-                                    if (isShowing != isBouncerCurrentlyShowing) {
-                                        bouncerSceneContainerState
-                                            ?.uiBoundState
-                                            ?.snapTo(
-                                                overlays =
-                                                    if (isShowing) {
-                                                        setOf(Overlays.Bouncer)
-                                                    } else {
-                                                        emptySet()
-                                                    }
-                                            )
-                                    }
+                                onSnap = { idle ->
+                                    bouncerSceneTransitionCoordinator?.onMainContainerSnap(
+                                        idle.currentOverlays.contains(Overlays.Bouncer)
+                                    )
                                 },
                             )
                             .also { it.id = R.id.scene_container_root_composable }
@@ -248,12 +186,13 @@ object SceneWindowRootViewBinder {
                     // If the Bouncer overlay is present in the build, add a view to host it so it
                     // renders above the notifications view. The scene container that shows all
                     // scenes and overlays knows to skip the rendering of the bouncer overlay.
-                    if (bouncerOverlay != null && bouncerSceneContainerState != null) {
+                    if (bouncerOverlay != null && bouncerSceneTransitionCoordinator != null) {
                         view.addView(
                             createBouncerSceneContainerView(
                                 context = view.context,
                                 viewModel = viewModel,
-                                state = bouncerSceneContainerState,
+                                state =
+                                    bouncerSceneTransitionCoordinator.bouncerSceneContainerState,
                                 bouncerOverlay = bouncerOverlay,
                                 windowInsets = windowInsets,
                                 tintedIconManagerFactory = tintedIconManagerFactory,
@@ -292,12 +231,9 @@ object SceneWindowRootViewBinder {
         sceneJankMonitorFactory: SceneJankMonitor.Factory,
         sceneTransitionLatencyMonitor: SceneTransitionLatencyMonitor,
         tintedIconManagerFactory: TintedIconManager.Factory,
-        showOrHideBouncer:
-            (
-                transition: TransitionState.Transition.ShowOrHideOverlay,
-                animationScope: CoroutineScope,
-            ) -> Unit,
-        snapBouncer: (isShowing: Boolean) -> Unit,
+        onTransitionStart:
+            (transition: TransitionState.Transition, animationScope: CoroutineScope) -> Unit,
+        onSnap: (idle: TransitionState.Idle) -> Unit,
     ): View {
         return ComposeView(context).apply {
             setSnapshotBinding {
@@ -324,21 +260,8 @@ object SceneWindowRootViewBinder {
                         dataSourceDelegator = dataSourceDelegator,
                         sceneJankMonitorFactory = sceneJankMonitorFactory,
                         sceneTransitionLatencyMonitor = sceneTransitionLatencyMonitor,
-                        onTransitionStart = { transition, animationScope ->
-                            // If the transition that started is specifically meant to show or hide
-                            // the bouncer overlay, that needs to be delegated out to the dedicated
-                            // bouncer scene container external to this scene container.
-                            if (
-                                transition is TransitionState.Transition.ShowOrHideOverlay &&
-                                    transition !is DelegatingTransition &&
-                                    transition.isTransitioningFromOrTo(Overlays.Bouncer)
-                            ) {
-                                showOrHideBouncer(transition, animationScope)
-                            }
-                        },
-                        onSnap = { idle ->
-                            snapBouncer(idle.currentOverlays.contains(Overlays.Bouncer))
-                        },
+                        onTransitionStart = onTransitionStart,
+                        onSnap = onSnap,
                         modifier = modifier,
                     )
                 }
