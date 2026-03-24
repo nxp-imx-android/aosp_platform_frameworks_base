@@ -563,7 +563,52 @@ class GeneratorTest {
                     /* requiredCrossUserPermission= */ null,
                     /* allowedDpcTypes= */ Set.of(),
                     /* emptyStringAllowed= */ false,
-                    /* unprintableCharactersAllowed= */ false
+                    /* unprintableCharactersAllowed= */ false,
+                    /* maxLength= */ Integer.MAX_VALUE
+                ));
+                """,
+                )
+            )
+    }
+
+    @Test
+    fun test_stringPolicyWithMaxLength_outputMatches() {
+        val policyList =
+            PolicyMetadataList.newBuilder()
+                .addPolicyMetadata(
+                    stringTestPolicy("test.package.PolicyContainer.MY_TEST_STRING_POLICY")
+                        .setTypeSpecificMetadata(
+                            TypeSpecificPolicyMetadata.newBuilder()
+                                .setStringMetadata(
+                                    TypeSpecificPolicyMetadata.StringPolicyMetadata.newBuilder()
+                                        .setMaxLength(10)
+                                )
+                        )
+                        .addAllAllowedScopes(listOf(PolicyMetadata.PolicyScope.POLICY_SCOPE_DEVICE))
+                        .setAffectedResource(PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE)
+                )
+                .build()
+
+        val javaFile = Generator.generate(policyList)
+
+        assertThat(javaFileToString(javaFile))
+            .isEqualTo(
+                fillInFile(
+                    staticImports = listOf("test.package.PolicyContainer.MY_TEST_STRING_POLICY"),
+                    code =
+                        """
+                policies.add(new StringPolicyMetadata(
+                    /* id= */ MY_TEST_STRING_POLICY,
+                    /* allowedScopes= */ Set.of(
+                        2
+                    ),
+                    /* affectedResource= */ 1,
+                    /* requiredPermission= */ null,
+                    /* requiredCrossUserPermission= */ null,
+                    /* allowedDpcTypes= */ Set.of(),
+                    /* emptyStringAllowed= */ false,
+                    /* unprintableCharactersAllowed= */ false,
+                    /* maxLength= */ 10
                 ));
                 """,
                 )
@@ -667,7 +712,8 @@ class GeneratorTest {
                                   /* requiredCrossUserPermission= */ null,
                                   /* allowedDpcTypes= */ Set.of(),
                                   /* emptyStringAllowed= */ false,
-                                  /* unprintableCharactersAllowed= */ false
+                                  /* unprintableCharactersAllowed= */ false,
+                                  /* maxLength= */ Integer.MAX_VALUE
                               ),
                               /* resolutionMechanism= */ null,
                               /* emptyListAllowed= */ false
@@ -716,7 +762,8 @@ class GeneratorTest {
                                   /* requiredCrossUserPermission= */ null,
                                   /* allowedDpcTypes= */ Set.of(),
                                   /* emptyStringAllowed= */ false,
-                                  /* unprintableCharactersAllowed= */ false
+                                  /* unprintableCharactersAllowed= */ false,
+                                  /* maxLength= */ Integer.MAX_VALUE
                               ),
                               /* resolutionMechanism= */ new ResolutionMechanismMetadata.ListUnion<List<String>>(),
                               /* emptyListAllowed= */ false

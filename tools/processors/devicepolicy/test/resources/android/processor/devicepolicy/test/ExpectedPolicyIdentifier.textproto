@@ -513,6 +513,25 @@ policy_metadata {
 }
 policy_metadata {
   identifier {
+    field_name: "STRING_POLICY_WITH_MAX_LENGTH"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "String"
+    package_name: "java.lang"
+  }
+  documentation: "Test policy verifying a string policy with max length."
+  type_specific_metadata {
+    string_metadata {
+      max_length: 10
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+}
+policy_metadata {
+  identifier {
     field_name: "SIMPLE_STRING_LIST_POLICY"
     class_name: "PolicyIdentifier"
     package_name: "android.app.admin"

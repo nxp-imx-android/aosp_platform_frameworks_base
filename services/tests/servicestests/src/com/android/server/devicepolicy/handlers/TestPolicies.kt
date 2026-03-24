@@ -116,6 +116,7 @@ object StringPolicy {
             /*resolutionMechanism=*/ ResolutionMechanismMetadata.MostRestrictive<String>(),
             /*emptyStringAllowed=*/ false,
             /*unprintableCharactersAllowed=*/ false,
+            /*maxLength=*/ Integer.MAX_VALUE,
         )
     val anyTransportValue: PolicyValueTransport = PolicyValueTransport.stringField("a string value")
 
@@ -137,6 +138,7 @@ fun StringPolicyMetadata.copy(
     allowedDpcTypes: Set<Int>? = null,
     emptyStringAllowed: Boolean? = null,
     unprintableCharactersAllowed: Boolean? = null,
+    maxLength: Int? = null,
 ) =
     StringPolicyMetadata(
         id ?: this.id,
@@ -148,6 +150,7 @@ fun StringPolicyMetadata.copy(
         this.resolutionMechanism,
         emptyStringAllowed ?: this.isEmptyStringAllowed,
         unprintableCharactersAllowed ?: this.isUnprintableCharactersAllowed,
+        maxLength ?: this.maxLength,
     )
 
 object ListOfStringPolicy {
@@ -165,6 +168,7 @@ object ListOfStringPolicy {
                 /* allowedDpcTypes= */ setOf(),
                 /* emptyStringAllowed= */ false,
                 /* unprintableCharactersAllowed= */ false,
+                /* maxLength= */ Integer.MAX_VALUE,
             ),
             /* resolutionMechanism= */ null,
             /* emptyListAllowed= */ false,
@@ -190,6 +194,7 @@ fun ListPolicyMetadata<String>.copy(
     allowedDpcTypes: Set<Int>? = null,
     emptyStringAllowed: Boolean? = null,
     unprintableCharactersAllowed: Boolean? = null,
+    maxLength: Int? = null,
     emptyListAllowed: Boolean? = null,
     resolutionMechanism: ResolutionMechanismMetadata<List<String>>? = null,
 ) =
@@ -208,6 +213,8 @@ fun ListPolicyMetadata<String>.copy(
                 ?: (this.elementMetadata as StringPolicyMetadata).isEmptyStringAllowed,
             /* unprintableCharactersAllowed= */ unprintableCharactersAllowed
                 ?: (this.elementMetadata as StringPolicyMetadata).isUnprintableCharactersAllowed,
+            /* maxLength= */ maxLength
+                ?: (this.elementMetadata as StringPolicyMetadata).maxLength,
         ),
         /* resolutionMechanism= */ resolutionMechanism ?: this.resolutionMechanism,
         /* emptyListAllowed= */ emptyListAllowed ?: this.isEmptyListAllowed,

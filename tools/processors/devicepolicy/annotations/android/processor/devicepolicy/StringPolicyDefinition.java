@@ -46,4 +46,10 @@ public @interface StringPolicyDefinition {
      * terminal functionality) are the only unprintable characters being checked.
      */
     boolean unprintableCharactersAllowed() default false;
+
+    /**
+     * The maximum length allowed (inclusive) for the string. If not set, no maximum length is
+     * enforced. The length is equal to the number of Unicode code units in the string.
+     */
+    int maxLength() default Integer.MAX_VALUE;
 }
