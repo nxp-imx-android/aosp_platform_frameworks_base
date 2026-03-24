@@ -16,7 +16,6 @@
 
 package com.android.server.personalcontext.component.client;
 
-import android.Manifest;
 import android.annotation.EnforcePermission;
 import android.annotation.PermissionManuallyEnforced;
 import android.content.Context;
@@ -43,6 +42,7 @@ import android.util.Slog;
 
 import androidx.annotation.NonNull;
 
+import com.android.server.personalcontext.AccessController;
 import com.android.server.personalcontext.RefinerWorkflow;
 import com.android.server.personalcontext.component.Refiner;
 
@@ -121,14 +121,8 @@ public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> i
             @NonNull Set<PublishedContextHint> inputHints,
             @NonNull Consumer<Set<ContextHint>> callback,
             @NonNull RefinerWorkflow.InsightConsumer insightCallback) {
-        if (android.service.personalcontext.Flags.enforcePersonalContextPermissions()
-                && !checkPermission(Manifest.permission.PERSONAL_CONTEXT_RECEIVE_HINTS)) {
-            Slog.e(
-                    TAG,
-                    "Service "
-                            + getComponentName()
-                            + " missing permission "
-                            + Manifest.permission.PERSONAL_CONTEXT_RECEIVE_HINTS);
+        if (!isAllowed(AccessController.ACCESS_RECEIVE_HINTS_PERMISSION)) {
+            Slog.w(TAG, getComponentName() + " is not allowed to receive hints.");
             callback.accept(Collections.emptySet());
             return;
         }

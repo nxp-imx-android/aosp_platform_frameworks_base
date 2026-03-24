@@ -124,7 +124,7 @@ public class ServiceClientRefinerTest {
         BundleHint bundleHint = new BundleHint.Builder().build();
         PublishedContextHint hint =
                 new PublishedContextHint.Builder(
-                                bundleHint, ContextHintTestUtils.generateSignedHintKey())
+                        bundleHint, ContextHintTestUtils.generateSignedHintKey())
                         .build();
         final Set<PublishedContextHint> signedHints = Set.of(hint);
 
