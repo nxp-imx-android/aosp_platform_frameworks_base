@@ -1823,22 +1823,22 @@ public class CachedAppOptimizer {
                 FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_OTHER_REASONS;
         String processNameForLogging =
                 (processName != null && processName.equals(packageName)) ? null : processName;
-        long graphicsMemKb = 0;
+        long graphicsMemKbVal = 0;
         final KernelAllocationStats.ProcessGpuMem[] gpuAllocations =
                 mKernelAllocationStats.getGpuAllocations();
         if (gpuAllocations != null) {
             for (final KernelAllocationStats.ProcessGpuMem pgm : gpuAllocations) {
                 if (pgm.pid == pid) {
-                    graphicsMemKb = pgm.gpuMemoryKb;
+                    graphicsMemKbVal = pgm.gpuMemoryKb;
                     break;
                 }
             }
         }
+        final long graphicsMemKb = graphicsMemKbVal;
         final boolean gpuMemoryTooHigh =
                 graphicsMemKb > mZramWritebackGpuMemThresholdKb;
-        final boolean dmaBufMemTooHigh =
-                mKernelAllocationStats.getDmabufSizeForProcessKb(pid)
-                        > mZramWritebackDmabufMemThresholdKb;
+        final long dmaBufSizeKb = mKernelAllocationStats.getDmabufSizeForProcessKb(pid);
+        final boolean dmaBufMemTooHigh = dmaBufSizeKb > mZramWritebackDmabufMemThresholdKb;
         try {
             if (zramUsedDeltaKb >= mZramWritebackThresholdKb) {
                 eventTypeToLog =
@@ -1855,13 +1855,13 @@ public class CachedAppOptimizer {
             if (gpuMemoryTooHigh) {
                 eventTypeToLog =
                         FrameworkStatsLog
-                                .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_HAS_GPU_MEMORY;
+                                .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_GPU_MEMORY_TOO_HIGH;
                 return;
             }
             if (dmaBufMemTooHigh) {
                 eventTypeToLog =
                         FrameworkStatsLog
-                                .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_HAS_DMA_BUF;
+                                .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_DMA_BUF_TOO_HIGH;
                 return;
             }
             final IMmd mmd = getMmd();
@@ -1924,7 +1924,9 @@ public class CachedAppOptimizer {
                                         getZramWritebackEventType(status), uid, processName,
                                         hasActivities, zramUsedDeltaKb, bytesWritten,
                                         // the following should both be true if we reach this point.
-                                        dmaBufMemTooHigh, gpuMemoryTooHigh);
+                                        dmaBufMemTooHigh, gpuMemoryTooHigh,
+                                        dmaBufSizeKb,
+                                        graphicsMemKb);
                             }
                         };
                 try {
@@ -1968,7 +1970,7 @@ public class CachedAppOptimizer {
             }
             FrameworkStatsLog.write(FrameworkStatsLog.ZRAM_WRITEBACK_EVENT, eventTypeToLog, uid,
                     processName, hasActivities, zramUsedDeltaKb, /* zramBytesWritten= */ 0,
-                    dmaBufMemTooHigh, gpuMemoryTooHigh);
+                    dmaBufMemTooHigh, gpuMemoryTooHigh, dmaBufSizeKb, graphicsMemKb);
         }
     }
 
@@ -3061,6 +3063,12 @@ public class CachedAppOptimizer {
             }
 
             final int pid = app.getPid();
+            FrameworkStatsLog.write(FrameworkStatsLog.ZRAM_WRITEBACK_EVENT,
+                    FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__PREFETCHED,
+                    app.uid, app.processName, app.hasActivities(),
+                    /* rss_swap_kb */ 0, /* zram_bytes_written */ 0,
+                    /* has_dma_buf */ false, /* has_gpu_memory */ false,
+                    /* dma_buf_size_kb */ 0, /* gpu_memory_size_kb */ 0);
             Trace.instantForTrack(
                     Trace.TRACE_TAG_ACTIVITY_MANAGER,
                     ATRACE_ZRAM_WRITEBACK_TRACK,
