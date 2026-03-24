@@ -312,7 +312,7 @@ public class KeyguardService extends Service {
                         finishTransaction = new SurfaceControl.Transaction();
                         mCounterRotator.cleanUp(finishTransaction);
                     }
-                    mLeashMap.clear();
+                    TransitionUtil.releaseLeashMap(mLeashMap);
                     finishCallback = mFinishCallbacks.remove(transition);
                 }
 

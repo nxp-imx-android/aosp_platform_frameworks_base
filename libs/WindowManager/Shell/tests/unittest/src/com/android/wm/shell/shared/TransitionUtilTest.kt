@@ -19,6 +19,7 @@ package com.android.wm.shell.shared
 import android.app.WindowConfiguration.ACTIVITY_TYPE_HOME
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.graphics.Rect
+import android.util.ArrayMap
 import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
 import android.view.WindowManager.TRANSIT_CHANGE
@@ -345,6 +346,28 @@ class TransitionUtilTest {
                 .addChange(TRANSIT_CHANGE, FLAG_CHANGED_INTERACTIVE)
                 .build()
         assertTrue(TransitionUtil.isAllStationary(info))
+    }
+
+    @Test
+    fun testReleaseLeashMap() {
+        val leash1 = mock<SurfaceControl>()
+        val leash2 = mock<SurfaceControl>()
+        val leash3 = mock<SurfaceControl>()
+        `when`(leash1.isValid).thenReturn(true)
+        `when`(leash2.isValid).thenReturn(false)
+        `when`(leash3.isValid).thenReturn(true)
+
+        val leashMap = ArrayMap<SurfaceControl, SurfaceControl>()
+        leashMap[mock<SurfaceControl>()] = leash1
+        leashMap[mock<SurfaceControl>()] = leash2
+        leashMap[mock<SurfaceControl>()] = leash3
+
+        TransitionUtil.releaseLeashMap(leashMap)
+
+        verify(leash1).release()
+        verify(leash2, never()).release()
+        verify(leash3).release()
+        assertTrue(leashMap.isEmpty())
     }
 
     private fun createTransitionInfoWithTask(activityType: Int, endDisplayId: Int): TransitionInfo {

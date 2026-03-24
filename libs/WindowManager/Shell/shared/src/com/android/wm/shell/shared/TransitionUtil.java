@@ -479,6 +479,23 @@ public class TransitionUtil {
     }
 
     /**
+     * Releases all leashes in the provided leash map and clears the map.
+     */
+    public static void releaseLeashMap(
+            @Nullable ArrayMap<SurfaceControl, SurfaceControl> leashMap) {
+        if (leashMap == null) {
+            return;
+        }
+        for (int i = leashMap.size() - 1; i >= 0; --i) {
+            SurfaceControl leash = leashMap.valueAt(i);
+            if (leash != null && leash.isValid()) {
+                leash.release();
+            }
+        }
+        leashMap.clear();
+    }
+
+    /**
      * Creates a new RemoteAnimationTarget from the provided change info
      */
     public static RemoteAnimationTarget newTarget(TransitionInfo.Change change, int order,
