@@ -317,7 +317,7 @@
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Anulo vërtetimin"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Opsione të tjera"</string>
     <string name="biometric_dialog_fallback_title" msgid="2337887849267443214">"Kryej verifikimin në një mënyrë tjetër"</string>
-    <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Verifiko një mënyrë tjetër"</string>
+    <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Verifiko në një mënyrë tjetër"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Menaxho \"Kontrollin e identitetit\""</string>
     <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"Mëso më shumë rreth \"Kontrollit të identitetit\""</string>
     <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"\"Kontrolli i identitetit\" është aktiv dhe mund të të verifikojë vetëm nëpërmjet gjurmës së gishtit ose fytyrës. %1$s"</string>
@@ -467,7 +467,6 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"Hyrja"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"Aparatet e dëgjimit"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"Po aktivizohet…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="4124028416057617517">"Ndriçimi nuk mund të rregullohet pasi po kontrollohet nga aplikacioni lart"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"Rrotullim automatik"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Rrotullimi automatik i ekranit"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Vendndodhja"</string>
