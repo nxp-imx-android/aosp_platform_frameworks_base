@@ -16,7 +16,10 @@
 
 package com.android.systemui.scene.domain.resolver
 
-import androidx.test.ext.junit.runners.AndroidJUnit4
+import android.app.ActivityManager.RunningTaskInfo
+import android.app.WindowConfiguration
+import android.platform.test.flag.junit.FlagsParameterization
+import android.service.dreams.Flags.FLAG_DRIVE_DREAM_STATE_FROM_OCCLUSION
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
@@ -28,6 +31,7 @@ import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.keyguardOcclusionRepository
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.keyguard.shared.DriveDreamStateFromOcclusion
 import com.android.systemui.keyguard.shared.model.DozeStateModel
 import com.android.systemui.keyguard.shared.model.DozeTransitionModel
 import com.android.systemui.kosmos.Kosmos
@@ -48,24 +52,45 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceTimeBy
 import org.junit.Test
 import org.junit.runner.RunWith
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(AndroidJUnit4::class)
+@RunWith(ParameterizedAndroidJunit4::class)
 @EnableSceneContainer
 @OptIn(ExperimentalCoroutinesApi::class)
-class HomeSceneFamilyResolverTest : SysuiTestCase() {
+class HomeSceneFamilyResolverTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
+
+    companion object {
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams(): List<FlagsParameterization> {
+            return FlagsParameterization.allCombinationsOf(FLAG_DRIVE_DREAM_STATE_FROM_OCCLUSION)
+        }
+    }
+
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
 
     @Test
     fun resolvesToDream() =
         kosmos.runTest {
             val resolvedScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
-            fakeKeyguardRepository.setDreaming(true)
-            fakeKeyguardRepository.setDozeTransitionModel(
-                DozeTransitionModel(from = DozeStateModel.DOZE, to = DozeStateModel.FINISH)
-            )
-            testScope.advanceTimeBy(KeyguardInteractor.IS_DREAMING_NOT_DOZING_DELAY_MS + 100L)
+            val dreamTaskInfo =
+                RunningTaskInfo().apply {
+                    topActivityType = WindowConfiguration.ACTIVITY_TYPE_DREAM
+                }
+            keyguardOcclusionRepository.setOccludedFromRemoteAnimation(true, dreamTaskInfo)
+            if (!DriveDreamStateFromOcclusion.isEnabled) {
+                fakeKeyguardRepository.setDreaming(true)
+                fakeKeyguardRepository.setDozeTransitionModel(
+                    DozeTransitionModel(from = DozeStateModel.DOZE, to = DozeStateModel.FINISH)
+                )
+                testScope.advanceTimeBy(KeyguardInteractor.IS_DREAMING_NOT_DOZING_DELAY_MS + 100L)
+            }
 
             assertThat(resolvedScene).isEqualTo(Scenes.Dream)
         }
@@ -74,6 +99,11 @@ class HomeSceneFamilyResolverTest : SysuiTestCase() {
     fun resolvesToOccluded() =
         kosmos.runTest {
             val resolvedScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
+            val appTaskInfo =
+                RunningTaskInfo().apply {
+                    topActivityType = WindowConfiguration.ACTIVITY_TYPE_STANDARD
+                }
+            keyguardOcclusionRepository.setOccludedFromRemoteAnimation(true, appTaskInfo)
             keyguardOcclusionRepository.setOccludedFromWm(true)
 
             assertThat(resolvedScene).isEqualTo(Scenes.Occluded)
@@ -154,6 +184,30 @@ class HomeSceneFamilyResolverTest : SysuiTestCase() {
             assertThat(deviceEntryInteractor.isDeviceEntered.value).isEqualTo(true)
             assertThat(deviceEntryInteractor.isUnlocked.value).isEqualTo(true)
             assertThat(resolvedScene).isEqualTo(Scenes.Gone)
+        }
+
+    @Test
+    fun resolvesToDream_whenUnlocked_butIsDreaming() =
+        kosmos.runTest {
+            val resolvedScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
+            setupSwipeDeviceEntryMethod()
+            switchToScene(Scenes.Gone)
+
+            val dreamTaskInfo =
+                RunningTaskInfo().apply {
+                    topActivityType = WindowConfiguration.ACTIVITY_TYPE_DREAM
+                }
+            keyguardOcclusionRepository.setOccludedFromRemoteAnimation(true, dreamTaskInfo)
+
+            if (!DriveDreamStateFromOcclusion.isEnabled) {
+                fakeKeyguardRepository.setDreaming(true)
+                fakeKeyguardRepository.setDozeTransitionModel(
+                    DozeTransitionModel(from = DozeStateModel.DOZE, to = DozeStateModel.FINISH)
+                )
+                testScope.advanceTimeBy(KeyguardInteractor.IS_DREAMING_NOT_DOZING_DELAY_MS + 100L)
+            }
+
+            assertThat(resolvedScene).isEqualTo(Scenes.Dream)
         }
 
     private fun Kosmos.setupSwipeDeviceEntryMethod() {

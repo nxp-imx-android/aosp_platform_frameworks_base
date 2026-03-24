@@ -44,6 +44,7 @@ import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor
 import com.android.systemui.keyguard.DismissCallbackRegistry
 import com.android.systemui.keyguard.WindowManagerLockscreenVisibilityManager
+import com.android.systemui.keyguard.data.model.ShowWhenLockedActivityInfoModel
 import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardOcclusionInteractor
@@ -52,6 +53,8 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardSurfaceBehindInte
 import com.android.systemui.keyguard.domain.interactor.KeyguardWakeDirectlyToGoneInteractor
 import com.android.systemui.keyguard.domain.interactor.ShowWhileAwakeReason
 import com.android.systemui.keyguard.domain.interactor.TrustInteractor
+import com.android.systemui.keyguard.domain.model.OcclusionStateModel
+import com.android.systemui.keyguard.shared.DriveDreamStateFromOcclusion
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.model.SceneContainerPlugin
@@ -190,7 +193,11 @@ constructor(
             respondToFalsingDetections()
             hydrateInteractionState()
             handleBouncerOverscroll()
-            handleOcclusion()
+            if (DriveDreamStateFromOcclusion.isEnabled) {
+                handleOcclusionAndDreaming()
+            } else {
+                handleOcclusion()
+            }
             handleDeviceEntryHapticsWhileDeviceNotGone()
             hydrateWindowController()
             hydrateBackStack()
@@ -268,6 +275,7 @@ constructor(
             launch { powerInteractor.hydrateTableLogBuffer(tableLogBuffer) }
             launch { keyguardInteractor.hydrateTableLogBuffer(tableLogBuffer) }
             launch { deviceProvisioningInteractor.hydrateTableLogBuffer(tableLogBuffer) }
+            launch { occlusionInteractor.hydrateTableLogBuffer(tableLogBuffer) }
         }
     }
 
@@ -791,6 +799,7 @@ constructor(
     }
 
     private fun handleOcclusion() {
+        DriveDreamStateFromOcclusion.assertInLegacyMode()
         applicationScope.launch {
             occlusionInteractor.isKeyguardOccluded
                 .sample(
@@ -847,6 +856,117 @@ constructor(
                         sceneBackInteractor.removeOccludedSceneOnBackStack(
                             reason = "removing occluded from backstack, if present"
                         )
+                    }
+                }
+        }
+    }
+
+    private fun getOcclusionTargetScene(
+        showWhenLockedActivityInfo: ShowWhenLockedActivityInfoModel,
+        occlusionState: OcclusionStateModel,
+    ): SceneKey? {
+        // Use showWhenLocked activity info instead of OcclusionStateModel here to also
+        // handle the case where the dream is showing and the device is unlocked / keyguard
+        // is not showing.
+        val isDream = showWhenLockedActivityInfo.isDream()
+        val isAppOccluded = occlusionState == OcclusionStateModel.APP
+
+        return when {
+            isDream -> Scenes.Dream
+            isAppOccluded -> Scenes.Occluded
+            else -> null
+        }
+    }
+
+    private fun transitionToDream() {
+        val currentScene = sceneInteractor.currentScene.value
+        val currentOverlays = sceneInteractor.currentOverlays.value
+
+        if (currentScene == Scenes.Lockscreen && Overlays.Bouncer in currentOverlays) {
+            switchToScene(
+                targetSceneKey = Scenes.Dream,
+                loggingReason = "Snap to dream behind bouncer",
+                hideOverlays = HideOverlayCommand.HideNone,
+                instantlySnapScenes = true,
+            )
+            sceneInteractor.hideOverlay(
+                overlay = Overlays.Bouncer,
+                loggingReason = "Hiding bouncer to reveal dream",
+            )
+        } else {
+            switchToScene(targetSceneKey = Scenes.Dream, loggingReason = "Dream started")
+        }
+    }
+
+    private fun handleUnocclude(backScene: SceneKey?, isAwake: Boolean) {
+        val currentScene = sceneInteractor.currentScene.value
+        val currentOverlays = sceneInteractor.currentOverlays.value
+        val isDeviceEntered = deviceEntryInteractor.isDeviceEntered.value
+        val isDream = currentScene == Scenes.Dream
+        val isOccluded = currentScene == Scenes.Occluded
+
+        if (isDream || isOccluded) {
+            val targetScene =
+                when {
+                    isDeviceEntered -> Scenes.Gone
+                    backScene == Scenes.Communal -> Scenes.Communal
+                    else -> Scenes.Lockscreen
+                }
+
+            val instantlySnapScenes = Overlays.Bouncer in currentOverlays
+            val hideOverlays =
+                if (instantlySnapScenes) {
+                    HideOverlayCommand.HideNone
+                    // TODO(b/495429533): Refactor to remove usage of legacy
+                    // isKeyguardShowing flow.
+                } else if (isDream && keyguardInteractor.isKeyguardShowing.value) {
+                    HideOverlayCommand.HideNone
+                } else {
+                    HideOverlayCommand.HideAll
+                }
+
+            switchToScene(
+                targetSceneKey = targetScene,
+                loggingReason = if (isDream) "Dream stopped" else "App occlusion stopped",
+                instantlySnapScenes = instantlySnapScenes,
+                hideOverlays = hideOverlays,
+                keyguardState =
+                    if (!isDeviceEntered) getKeyguardStateForWakefulness(isAwake) else null,
+            )
+        }
+
+        sceneBackInteractor.removeOccludedSceneOnBackStack(
+            reason = "removing occluded from backstack, if present"
+        )
+    }
+
+    private fun handleOcclusionAndDreaming() {
+        if (DriveDreamStateFromOcclusion.isUnexpectedlyInLegacyMode()) {
+            return
+        }
+        applicationScope.launch {
+            combine(
+                    occlusionInteractor.showWhenLockedActivityInfo,
+                    occlusionInteractor.occlusionState,
+                    ::getOcclusionTargetScene,
+                )
+                .distinctUntilChanged()
+                .sample(
+                    combine(sceneBackInteractor.backScene, powerInteractor.isAwake, ::Pair),
+                    ::Pair,
+                )
+                .collect { (nextTarget, sampledValues) ->
+                    val (backScene, isAwake) = sampledValues
+
+                    when (nextTarget) {
+                        Scenes.Dream -> transitionToDream()
+                        Scenes.Occluded -> {
+                            switchToScene(
+                                targetSceneKey = Scenes.Occluded,
+                                loggingReason = "occlusionState is APP",
+                            )
+                        }
+                        null -> handleUnocclude(backScene, isAwake)
                     }
                 }
         }
@@ -986,15 +1106,26 @@ constructor(
                     it == ShowWhileAwakeReason.KEYGUARD_TIMEOUT_WHILE_SCREEN_ON ||
                         it == ShowWhileAwakeReason.KEYGUARD_REENABLED
                 }
-                .collect {
+                .collect { reason ->
                     // If keyguard is enabled, lock and switch to Lockscreen scene if needed.
                     // If it's not enabled, it'll be re-shown when it's enabled again.
                     if (keyguardEnabledInteractor.isKeyguardEnabled.value) {
                         deviceEntryInteractor.lockNow("Screen timed out or WM#lockNow() called")
 
-                        // If we're dreaming, DreamStartable will take us to Scenes.Dream.
-                        if (!keyguardInteractor.isDreamingNotDozing.value) {
-                            switchToScene(Scenes.Lockscreen, "Not dreaming, and $it")
+                        val isDreaming =
+                            if (DriveDreamStateFromOcclusion.isEnabled) {
+                                getOcclusionTargetScene(
+                                    occlusionInteractor.showWhenLockedActivityInfo.value,
+                                    occlusionInteractor.occlusionState.value,
+                                ) == Scenes.Dream
+                            } else {
+                                keyguardInteractor.isDreamingNotDozing.value
+                            }
+
+                        // If we're dreaming, DreamStartable (or handleOcclusionAndDreaming) will
+                        // take us to Scenes.Dream.
+                        if (!isDreaming) {
+                            switchToScene(Scenes.Lockscreen, "Not dreaming, and $reason")
                         }
                     }
                 }

@@ -18,15 +18,18 @@
 
 package com.android.systemui.scene.domain.startable
 
+import android.app.ActivityManager.RunningTaskInfo
 import android.app.StatusBarManager
+import android.app.WindowConfiguration
 import android.hardware.face.FaceManager
 import android.os.PowerManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.FlagsParameterization
 import android.security.Flags.FLAG_SECURE_LOCK_DEVICE
+import android.service.dreams.Flags.FLAG_DRIVE_DREAM_STATE_FROM_OCCLUSION
 import android.view.Display
 import android.view.SurfaceControl
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
@@ -90,6 +93,7 @@ import com.android.systemui.keyguard.domain.interactor.keyguardSurfaceBehindInte
 import com.android.systemui.keyguard.domain.interactor.keyguardWakeDirectlyToGoneInteractor
 import com.android.systemui.keyguard.domain.interactor.lockAfterDelayInteractor
 import com.android.systemui.keyguard.domain.interactor.scenetransition.lockscreenSceneTransitionInteractor
+import com.android.systemui.keyguard.shared.DriveDreamStateFromOcclusion
 import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.keyguard.shared.model.DozeStateModel
 import com.android.systemui.keyguard.shared.model.DozeTransitionModel
@@ -160,11 +164,27 @@ import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.whenever
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(AndroidJUnit4::class)
+@RunWith(ParameterizedAndroidJunit4::class)
 @EnableSceneContainer
-class SceneContainerStartableTest : SysuiTestCase() {
+class SceneContainerStartableTest(flags: FlagsParameterization) : SysuiTestCase() {
+
+    companion object {
+        const val SECONDARY_DISPLAY = Display.DEFAULT_DISPLAY + 1
+
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams(): List<FlagsParameterization> {
+            return FlagsParameterization.allCombinationsOf(FLAG_DRIVE_DREAM_STATE_FROM_OCCLUSION)
+        }
+    }
+
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
 
     private val kosmos = testKosmos()
     private val authInteractionProperties = AuthInteractionProperties()
@@ -2421,6 +2441,185 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DRIVE_DREAM_STATE_FROM_OCCLUSION)
+    fun handleOcclusionAndDreaming_switchesToDream() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val dreamTaskInfo =
+                RunningTaskInfo().apply {
+                    topActivityType = WindowConfiguration.ACTIVITY_TYPE_DREAM
+                }
+            prepareState()
+            underTest.start()
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+
+            keyguardOcclusionInteractor.setOccludedFromRemoteAnimation(true, dreamTaskInfo)
+
+            assertThat(currentScene).isEqualTo(Scenes.Dream)
+        }
+
+    @Test
+    @EnableFlags(FLAG_DRIVE_DREAM_STATE_FROM_OCCLUSION)
+    fun handleOcclusionAndDreaming_switchesToDream_whenNoneButDreaming() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            prepareState()
+            underTest.start()
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+
+            val dreamTaskInfo =
+                RunningTaskInfo().apply {
+                    topActivityType = WindowConfiguration.ACTIVITY_TYPE_DREAM
+                }
+            keyguardOcclusionRepository.setOccludedFromRemoteAnimation(true, dreamTaskInfo)
+
+            assertThat(currentScene).isEqualTo(Scenes.Dream)
+        }
+
+    @Test
+    @EnableFlags(FLAG_DRIVE_DREAM_STATE_FROM_OCCLUSION)
+    fun handleOcclusionAndDreaming_switchesToOccluded() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val appTaskInfo =
+                RunningTaskInfo().apply {
+                    topActivityType = WindowConfiguration.ACTIVITY_TYPE_STANDARD
+                }
+            prepareState()
+            underTest.start()
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+
+            keyguardOcclusionInteractor.setOccludedFromRemoteAnimation(true, appTaskInfo)
+
+            assertThat(currentScene).isEqualTo(Scenes.Occluded)
+        }
+
+    @Test
+    @EnableFlags(FLAG_DRIVE_DREAM_STATE_FROM_OCCLUSION)
+    fun handleOcclusionAndDreaming_unoccludeFromDreamToLockscreen() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val dreamTaskInfo =
+                RunningTaskInfo().apply {
+                    topActivityType = WindowConfiguration.ACTIVITY_TYPE_DREAM
+                }
+            prepareState()
+            underTest.start()
+            runCurrent()
+
+            keyguardOcclusionInteractor.setOccludedFromRemoteAnimation(true, dreamTaskInfo)
+            assertThat(currentScene).isEqualTo(Scenes.Dream)
+
+            keyguardOcclusionInteractor.setOccludedFromWm(false)
+
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+        }
+
+    @Test
+    @EnableFlags(FLAG_DRIVE_DREAM_STATE_FROM_OCCLUSION)
+    fun handleOcclusionAndDreaming_unoccludeFromDreamToGone_whenUnlocked() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val dreamTaskInfo =
+                RunningTaskInfo().apply {
+                    topActivityType = WindowConfiguration.ACTIVITY_TYPE_DREAM
+                }
+            prepareState(isDeviceUnlocked = true)
+            underTest.start()
+            assertThat(currentScene).isEqualTo(Scenes.Gone)
+
+            // Start dreaming
+            keyguardOcclusionInteractor.setOccludedFromRemoteAnimation(true, dreamTaskInfo)
+            assertThat(currentScene).isEqualTo(Scenes.Dream)
+
+            // Stop dreaming
+            keyguardOcclusionInteractor.setOccludedFromWm(false)
+
+            assertThat(currentScene).isEqualTo(Scenes.Gone)
+        }
+
+    @Test
+    @EnableFlags(FLAG_DRIVE_DREAM_STATE_FROM_OCCLUSION)
+    fun handleOcclusionAndDreaming_switchesToDream_hidesBouncer() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+            val dreamTaskInfo =
+                RunningTaskInfo().apply {
+                    topActivityType = WindowConfiguration.ACTIVITY_TYPE_DREAM
+                }
+            prepareState()
+            underTest.start()
+            runCurrent()
+
+            // Show bouncer
+            sceneInteractor.showOverlay(Overlays.Bouncer, "test")
+            assertThat(currentOverlays).contains(Overlays.Bouncer)
+
+            // Start dream
+            keyguardOcclusionInteractor.setOccludedFromRemoteAnimation(true, dreamTaskInfo)
+
+            // Should transition to Dream and hide bouncer
+            assertThat(currentScene).isEqualTo(Scenes.Dream)
+            assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
+        }
+
+    @Test
+    @EnableFlags(FLAG_DRIVE_DREAM_STATE_FROM_OCCLUSION)
+    fun handleOcclusionAndDreaming_unoccludeFromAppToCommunal() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val appTaskInfo =
+                RunningTaskInfo().apply {
+                    topActivityType = WindowConfiguration.ACTIVITY_TYPE_STANDARD
+                }
+            prepareState()
+            underTest.start()
+            runCurrent()
+
+            // Go to communal, then occlude
+            sceneInteractor.changeScene(Scenes.Communal, "test")
+            assertThat(currentScene).isEqualTo(Scenes.Communal)
+
+            keyguardOcclusionInteractor.setOccludedFromRemoteAnimation(true, appTaskInfo)
+            assertThat(currentScene).isEqualTo(Scenes.Occluded)
+
+            // Unocclude
+            keyguardOcclusionInteractor.setOccludedFromWm(false)
+
+            assertThat(currentScene).isEqualTo(Scenes.Communal)
+        }
+
+    @Test
+    fun handleOcclusionAndDreaming_unoccludeFromAppBehindBouncer_bouncerStays() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+            val appTaskInfo =
+                RunningTaskInfo().apply {
+                    topActivityType = WindowConfiguration.ACTIVITY_TYPE_STANDARD
+                }
+            prepareState()
+            underTest.start()
+            runCurrent()
+
+            // Occlude
+            keyguardOcclusionInteractor.setOccludedFromRemoteAnimation(true, appTaskInfo)
+            assertThat(currentScene).isEqualTo(Scenes.Occluded)
+
+            // Show bouncer
+            sceneInteractor.showOverlay(Overlays.Bouncer, "test")
+            assertThat(currentOverlays).contains(Overlays.Bouncer)
+
+            // Unocclude
+            keyguardOcclusionInteractor.setOccludedFromWm(false)
+
+            // Should stay on Lockscreen with Bouncer
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(currentOverlays).contains(Overlays.Bouncer)
+        }
+
+    @Test
     fun switchToLockscreen_whenShadeBecomesNotTouchable() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
@@ -2541,11 +2740,19 @@ class SceneContainerStartableTest : SysuiTestCase() {
     fun switchToDream_whenKeyguardBecomesEnabled_afterHidingWhenDisabled_ifDreaming() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
-            keyguardInteractor.setDreaming(true)
-            fakeKeyguardRepository.setDozeTransitionModel(
-                DozeTransitionModel(from = DozeStateModel.DOZE, to = DozeStateModel.FINISH)
-            )
-            advanceTimeBy(600L)
+            val dreamTaskInfo =
+                RunningTaskInfo().apply {
+                    topActivityType = WindowConfiguration.ACTIVITY_TYPE_DREAM
+                }
+            if (DriveDreamStateFromOcclusion.isEnabled) {
+                keyguardOcclusionRepository.setOccludedFromRemoteAnimation(true, dreamTaskInfo)
+            } else {
+                keyguardInteractor.setDreaming(true)
+                fakeKeyguardRepository.setDozeTransitionModel(
+                    DozeTransitionModel(from = DozeStateModel.DOZE, to = DozeStateModel.FINISH)
+                )
+                advanceTimeBy(600L)
+            }
             runCurrent()
             prepareState()
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
@@ -3223,9 +3430,5 @@ class SceneContainerStartableTest : SysuiTestCase() {
                 }
             )
         }
-    }
-
-    private companion object {
-        const val SECONDARY_DISPLAY = Display.DEFAULT_DISPLAY + 1
     }
 }

@@ -61,6 +61,7 @@ import javax.inject.Provider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -83,6 +84,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.launch
 
 /**
  * Encapsulates business-logic related to the keyguard but not to a more specific part within it.
@@ -613,20 +615,26 @@ constructor(
     }
 
     suspend fun hydrateTableLogBuffer(tableLogBuffer: TableLogBuffer) {
-        isDozing
-            .logDiffsForTable(
-                tableLogBuffer = tableLogBuffer,
-                columnName = "isDozing",
-                initialValue = isDozing.value,
-            )
-            .collect()
-        isSecureCameraActive
-            .logDiffsForTable(
-                tableLogBuffer = tableLogBuffer,
-                columnName = "isSecureCameraActive",
-                initialValue = false,
-            )
-            .collect()
+        coroutineScope {
+            launch {
+                isDozing
+                    .logDiffsForTable(
+                        tableLogBuffer = tableLogBuffer,
+                        columnName = "isDozing",
+                        initialValue = isDozing.value,
+                    )
+                    .collect()
+            }
+            launch {
+                isSecureCameraActive
+                    .logDiffsForTable(
+                        tableLogBuffer = tableLogBuffer,
+                        columnName = "isSecureCameraActive",
+                        initialValue = false,
+                    )
+                    .collect()
+            }
+        }
     }
 
     companion object {
