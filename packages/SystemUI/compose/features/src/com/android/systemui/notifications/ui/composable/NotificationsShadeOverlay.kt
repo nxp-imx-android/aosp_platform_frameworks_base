@@ -134,6 +134,7 @@ constructor(
         OverlayShade(
             panelElement = NotificationsShade.Elements.Panel,
             alignmentOnWideScreens = viewModel.alignmentOnWideScreens,
+            statusBarHeightPx = viewModel.statusBarHeightPx,
             enableTransparency = viewModel.isTransparencyEnabled,
             modifier = modifier.blur(with(LocalDensity.current) { animatedBlurRadiusPx.toDp() }),
             onScrimClicked = viewModel::onScrimClicked,

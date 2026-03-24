@@ -202,6 +202,7 @@ constructor(
             OverlayShade(
                 panelElement = QuickSettingsShade.Elements.Panel,
                 alignmentOnWideScreens = Alignment.End,
+                statusBarHeightPx = contentViewModel.statusBarHeightPx,
                 enableTransparency = contentViewModel.isTransparencyEnabled,
                 onScrimClicked = contentViewModel::onScrimClicked,
                 onBackgroundPlaced = { bounds, topCornerRadius, bottomCornerRadius ->
