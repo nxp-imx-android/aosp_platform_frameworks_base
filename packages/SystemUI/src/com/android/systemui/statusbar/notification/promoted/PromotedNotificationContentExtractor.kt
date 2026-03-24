@@ -23,11 +23,9 @@ import android.app.Notification.CallStyle
 import android.app.Notification.EXTRA_PROGRESS
 import android.app.Notification.EXTRA_PROGRESS_INDETERMINATE
 import android.app.Notification.EXTRA_PROGRESS_MAX
-import android.app.Notification.EXTRA_VERIFICATION_ICON
 import android.app.Notification.MetricStyle
 import android.app.Notification.ProgressStyle
 import android.content.Context
-import android.graphics.drawable.Icon
 import android.os.UserHandle
 import android.service.notification.StatusBarNotification
 import android.view.LayoutInflater
@@ -40,6 +38,7 @@ import com.android.systemui.notifications.content.preferSmallIcon
 import com.android.systemui.notifications.content.subText
 import com.android.systemui.notifications.content.text
 import com.android.systemui.notifications.content.title
+import com.android.systemui.notifications.content.verificationIcon
 import com.android.systemui.notifications.content.verificationText
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_NONE
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.RedactionType
@@ -192,8 +191,8 @@ constructor(
                 publicBuilder.subText = publicNotification.subText()
                 // The standard public version is extracted as a collapsed notification,
                 //  so avoid using bigTitle or bigText, and instead get the collapsed versions.
-                publicBuilder.title = publicNotification.title(notificationStyle, expanded = false)
-                publicBuilder.text = publicNotification.text(notificationStyle, expanded = false)
+                publicBuilder.title = publicNotification.title(expanded = false)
+                publicBuilder.text = publicNotification.text(expanded = false)
                 publicBuilder.skeletonLargeIcon =
                     publicNotification.skeletonLargeIcon(imageModelProvider)
                 // Only CallStyle has styled content that shows in the collapsed version.
@@ -231,9 +230,9 @@ constructor(
             contentBuilder.shortCriticalText = notification.shortCriticalText
         }
         contentBuilder.lastAudiblyAlertedMs = lastAudiblyAlertedMs
-        contentBuilder.profileBadgeBitmap = recoveredBuilder.getProfileBadge()
-        contentBuilder.title = notification.title(recoveredBuilder.style?.javaClass)
-        contentBuilder.text = notification.text(recoveredBuilder.style?.javaClass)
+        contentBuilder.profileBadgeBitmap = recoveredBuilder.profileBadge
+        contentBuilder.title = notification.title(expanded = true)
+        contentBuilder.text = notification.text(expanded = true)
         contentBuilder.skeletonLargeIcon = notification.skeletonLargeIcon(imageModelProvider)
         contentBuilder.oldProgress = recoveredBuilder.oldProgress(notification)
         val colorsFromNotif = recoveredBuilder.getColors(/* isHeader= */ false)
@@ -356,7 +355,7 @@ constructor(
     private fun Notification.skeletonVerificationIcon(
         imageModelProvider: ImageModelProvider
     ): ImageModel? =
-        extras.getParcelable(EXTRA_VERIFICATION_ICON, Icon::class.java)?.let {
+        verificationIcon()?.let {
             imageModelProvider.getImageModel(it, SmallSquare, skeletonImageTransform)
         }
 

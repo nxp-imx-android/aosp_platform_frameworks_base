@@ -28,10 +28,12 @@ import android.app.Notification.EXTRA_SUB_TEXT
 import android.app.Notification.EXTRA_TEXT
 import android.app.Notification.EXTRA_TITLE
 import android.app.Notification.EXTRA_TITLE_BIG
+import android.app.Notification.EXTRA_VERIFICATION_ICON
 import android.app.Notification.EXTRA_VERIFICATION_TEXT
 import android.app.Notification.InboxStyle
 import android.app.Notification.MetricStyle
 import android.app.Person
+import android.graphics.drawable.Icon
 
 private fun Notification.titleExtra(): CharSequence? = getCharSequenceExtraUnlessEmpty(EXTRA_TITLE)
 
@@ -41,12 +43,9 @@ private fun Notification.bigTitleExtra(): CharSequence? =
 private fun Notification.callPersonExtra(): Person? =
     extras?.getParcelable(EXTRA_CALL_PERSON, Person::class.java)
 
-public fun Notification.title(
-    styleClass: Class<out Notification.Style>?,
-    expanded: Boolean = true,
-): CharSequence? {
+public fun Notification.title(expanded: Boolean): CharSequence? {
     // bigTitle is only used in the expanded form of 3 styles.
-    return when (styleClass) {
+    return when (notificationStyle) {
         BigTextStyle::class.java,
         BigPictureStyle::class.java,
         InboxStyle::class.java -> if (expanded) bigTitleExtra() else null
@@ -60,12 +59,9 @@ private fun Notification.textExtra(): CharSequence? = getCharSequenceExtraUnless
 private fun Notification.bigTextExtra(): CharSequence? =
     getCharSequenceExtraUnlessEmpty(EXTRA_BIG_TEXT)
 
-public fun Notification.text(
-    styleClass: Class<out Notification.Style>?,
-    expanded: Boolean = true,
-): CharSequence? {
+public fun Notification.text(expanded: Boolean): CharSequence? {
+    val styleClass = notificationStyle
     if (styleClass == MetricStyle::class.java) return null
-
     return when (styleClass) {
         BigTextStyle::class.java -> if (expanded) bigTextExtra() else null
         else -> null
@@ -74,9 +70,15 @@ public fun Notification.text(
 
 public fun Notification.subText(): CharSequence? = getCharSequenceExtraUnlessEmpty(EXTRA_SUB_TEXT)
 
-// TODO(aioana): This should only return the text for CallStyle.
 public fun Notification.verificationText(): CharSequence? =
-    getCharSequenceExtraUnlessEmpty(EXTRA_VERIFICATION_TEXT)
+    extras?.getCharSequence(EXTRA_VERIFICATION_TEXT)?.takeIf {
+        it.isNotEmpty() && notificationStyle == CallStyle::class.java
+    }
+
+public fun Notification.verificationIcon(): Icon? =
+    extras.getParcelable(EXTRA_VERIFICATION_ICON, Icon::class.java)?.takeIf {
+        notificationStyle == CallStyle::class.java
+    }
 
 public fun Notification.chronometerCountDown(): Boolean =
     extras?.getBoolean(EXTRA_CHRONOMETER_COUNT_DOWN) ?: false
