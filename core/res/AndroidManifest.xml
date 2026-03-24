@@ -10350,20 +10350,6 @@
         android:protectionLevel="signature|privileged"
         android:featureFlag="android.companion.task_continuity" />
 
-    <!-- Permission required to access TV Watchdog Metrics
-     <p>Not for use by third-party applications.</p>
-     @hide -->
-    <permission android:name="android.permission.COLLECT_TV_WATCHDOG_METRICS"
-        android:protectionLevel="signature|privileged"
-        android:featureFlag="android.media.tv.flags.enable_tv_watchdog_emmc_protection" />
-
-    <!-- Permission required to control configuration for TV Watchdog Metrics
-     <p>Not for use by third-party applications.</p>
-     @hide -->
-    <permission android:name="android.permission.CONTROL_TV_WATCHDOG_CONFIG"
-        android:protectionLevel="signature|privileged"
-        android:featureFlag="android.media.tv.flags.enable_tv_watchdog_emmc_protection" />
-
     <!-- Permission required to set or update the anomaly detector configuration via
          {@link android.os.AnomalyDetectorManager}.
          Only one app per device is permitted to hold this permission and set or update the config.
