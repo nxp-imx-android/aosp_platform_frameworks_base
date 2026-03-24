@@ -47,29 +47,26 @@ import java.util.stream.Collectors;
  * <p>This logic uses the information provided in the PolicyDefinition annotation applied to the key
  * (of type {@link PolicyIdentifier}).
  *
- * <p>To add support for a new policy, simply add it to the {@link PolicyHandlerList.HANDLERS} list:
+ * <p>To add support for a new policy, you need a {@link PolicyHandler} and a {@link
+ * PolicyDefinition}. Both are generated automatically, but can be overridden if your policy needs
+ * some special handling.
+ *
+ * <p>If handling of your policy needs to do something extra, you can achieve that by overriding the
+ * corresponding `protected` function in your policy handler in the {@code
+ * PolicyHandlerFactory.build()} list. For example, to completely overrule the permission checks you
+ * can override the checkPermissions() method:
  *
  * {@snippet :
- *     public static List<PolicyHandler<?>> HANDLERS;
- *     static {
+ *     public static List<PolicyHandler<?>> build() {
+ *         List<PolicyHandler<?>> handlers = new ArrayList<>();
  *         // <snip other handlers>
- *         HANDLERS.add(new PolicyHandler<>(PolicyIdentifier.MY_POLICY));
- *     }
- * }
- *
- * If handling of your policy needs to do something extra, you can achieve that by overriding the
- * corresponding `protected` function in your policy handler. For example, to completely overrule
- * the permission checks you can override the checkPermissions() method:
- *
- * {@snippet :
- *     public static List<PolicyHandler<?>> HANDLERS;
- *     static {
- *         // <snip other handlers>
- *         HANDLERS.add(new PolicyHandler<>(PolicyIdentifier.MY_POLICY) {
- *            protected void checkPermissions(CallerIdentity caller, int scope) {
+ *         handlers.add(new PolicyHandler<>(PolicyIdentifier.MY_POLICY) {
+ *            @Override
+ *            public void checkPermissions(CallerIdentity caller, int scope) {
  *                 // Your custom permission checks go here.
  *            }
- *         })
+ *         });
+ *         return handlers;
  *     }
  * }
  *
@@ -77,16 +74,18 @@ import java.util.stream.Collectors;
  * version:
  *
  * {@snippet :
- *     public static List<PolicyHandler<?>> HANDLERS;
- *     static {
+ *     public static List<PolicyHandler<?>> build() {
+ *         List<PolicyHandler<?>> handlers = new ArrayList<>();
  *         // <snip other handlers>
- *         HANDLERS.add(new PolicyHandler<>(PolicyIdentifier.MY_POLICY) {
- *             protected void checkPermissions(CallerIdentity caller, int scope) {
+ *         handlers.add(new PolicyHandler<>(PolicyIdentifier.MY_POLICY) {
+ *            @Override
+ *            public void checkPermissions(CallerIdentity caller, int scope) {
  *                  // Invoke normal permission checks
  *                  super.checkPermissions(caller, scope);
  *                 // Your custom permission checks go here.
  *             }
- *         })
+ *         });
+ *         return handlers;
  *     }
  * }
  *
