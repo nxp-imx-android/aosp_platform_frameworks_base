@@ -444,10 +444,11 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
     /** Resize a desktop app from its edges. */
     fun edgeResize(
         wmHelper: WindowManagerStateHelper,
-        motionEvent: MotionEventHelper,
+        inputMethod: MotionEventHelper.InputMethod = MotionEventHelper.InputMethod.TOUCH,
         edge: Edges
     ) {
         val displayId = wmHelper.getWindow(innerHelper)?.displayId ?: DEFAULT_DISPLAY
+        val motionEvent = MotionEventHelper(getInstrumentation(), inputMethod, displayId)
         val windowRect = wmHelper.getWindowRegion(innerHelper).bounds
         val (startX, startY) = getStartCoordinatesForEdgeResize(windowRect, edge)
         val verticalChange = when (edge) {
