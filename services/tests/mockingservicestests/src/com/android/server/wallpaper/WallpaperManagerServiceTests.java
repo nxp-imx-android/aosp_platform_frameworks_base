@@ -55,6 +55,7 @@ import static org.mockito.Mockito.verify;
 
 import android.app.AppGlobals;
 import android.app.AppOpsManager;
+import android.app.KeyguardManager;
 import android.app.WallpaperColors;
 import android.app.WallpaperManager;
 import android.app.wallpaper.WallpaperDescription;
@@ -78,6 +79,8 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.os.TestLooperManager;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.service.wallpaper.IWallpaperConnection;
@@ -1345,6 +1348,93 @@ public class WallpaperManagerServiceTests {
 
         assertThat(mService.isWallpaperCompatibleForDisplay(displayId,
                 mService.mLastWallpaper.connection)).isTrue();
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_USE_DEFAULT_WALLPAPER_UNTIL_UNLOCKED)
+    public void testSwitchUser_delayApplyingLockWallpaperUntilUnlocked_flagEnabled()
+            throws Exception {
+        Resources resources = sContext.getResources();
+        spyOn(resources);
+        doReturn(true).when(resources).getBoolean(R.bool.config_useDefaultWallpaperUntilUnlocked);
+
+        KeyguardManager km = mock(KeyguardManager.class);
+        sContext.addMockSystemService(KeyguardManager.class, km);
+
+        final int newUserId = MIN_SECONDARY_USER_ID;
+        doReturn(true).when(km).isDeviceSecure(newUserId);
+        doReturn(false).when(km).isDeviceSecure(USER_SYSTEM);
+
+        // Set up TEST_WALLPAPER_COMPONENT for both system and lock wallpaper for newUserId.
+        mService.switchUser(newUserId, null);
+        mService.onUnlockUser(newUserId);
+        mService.setWallpaperComponent(
+                TEST_WALLPAPER_COMPONENT, sContext.getOpPackageName(), FLAG_SYSTEM, newUserId);
+        mService.setWallpaperComponent(
+                TEST_WALLPAPER_COMPONENT, sContext.getOpPackageName(), FLAG_LOCK, newUserId);
+        verifyLastWallpaperData(newUserId, TEST_WALLPAPER_COMPONENT);
+        verifyLastLockWallpaperData(newUserId, TEST_WALLPAPER_COMPONENT);
+
+        // Switch away
+        mService.switchUser(USER_SYSTEM, null);
+        mService.onUnlockUser(USER_SYSTEM);
+
+        // Switch back to newUserId. Device is locked at first.
+        mService.switchUser(newUserId, null);
+
+        // Verify delayed
+        verifyLastWallpaperData(newUserId, sImageWallpaperComponentName);
+        verifyLastLockWallpaperData(newUserId, sImageWallpaperComponentName);
+        assertWithMessage("Home wallpaper bind source")
+                .that(mService.mLastWallpaper.mBindSource)
+                .isEqualTo(WallpaperData.BindSource.SWITCH_WALLPAPER_DELAYED);
+        assertWithMessage("Lock wallpaper bind source")
+                .that(mService.mLastLockWallpaper.mBindSource)
+                .isEqualTo(WallpaperData.BindSource.SWITCH_WALLPAPER_DELAYED);
+
+        // Unlock device
+        mService.onUnlockUser(newUserId);
+
+        // verify original wallpaper is bound
+        verifyLastWallpaperData(newUserId, TEST_WALLPAPER_COMPONENT);
+        verifyLastLockWallpaperData(newUserId, TEST_WALLPAPER_COMPONENT);
+    }
+
+    @Test
+    @DisableFlags(android.app.Flags.FLAG_USE_DEFAULT_WALLPAPER_UNTIL_UNLOCKED)
+    public void testSwitchUser_delayApplyingLockWallpaperUntilUnlocked_flagDisabled()
+            throws Exception {
+        Resources resources = sContext.getResources();
+        spyOn(resources);
+        doReturn(true).when(resources).getBoolean(R.bool.config_useDefaultWallpaperUntilUnlocked);
+
+        KeyguardManager km = mock(KeyguardManager.class);
+        sContext.addMockSystemService(KeyguardManager.class, km);
+
+        final int newUserId = MIN_SECONDARY_USER_ID;
+        doReturn(true).when(km).isDeviceSecure(newUserId);
+        doReturn(false).when(km).isDeviceSecure(USER_SYSTEM);
+
+        // Set up TEST_WALLPAPER_COMPONENT for both system and lock wallpaper for newUserId.
+        mService.switchUser(newUserId, null);
+        mService.onUnlockUser(newUserId);
+        mService.setWallpaperComponent(
+                TEST_WALLPAPER_COMPONENT, sContext.getOpPackageName(), FLAG_SYSTEM, newUserId);
+        mService.setWallpaperComponent(
+                TEST_WALLPAPER_COMPONENT, sContext.getOpPackageName(), FLAG_LOCK, newUserId);
+        verifyLastWallpaperData(newUserId, TEST_WALLPAPER_COMPONENT);
+        verifyLastLockWallpaperData(newUserId, TEST_WALLPAPER_COMPONENT);
+
+        // Switch away
+        mService.switchUser(USER_SYSTEM, null);
+        mService.onUnlockUser(USER_SYSTEM);
+
+        // Switch back to newUserId. Device is locked at first.
+        mService.switchUser(newUserId, null);
+
+        // Verify NOT delayed
+        verifyLastWallpaperData(newUserId, TEST_WALLPAPER_COMPONENT);
+        verifyLastLockWallpaperData(newUserId, TEST_WALLPAPER_COMPONENT);
     }
 
     @Test
