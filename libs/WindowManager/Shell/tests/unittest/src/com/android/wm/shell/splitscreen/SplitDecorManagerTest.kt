@@ -20,13 +20,11 @@ import android.animation.AnimatorTestRule
 import android.app.ActivityManager
 import android.content.res.Configuration
 import android.graphics.Rect
-import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper
 import android.view.SurfaceControl
 import androidx.test.filters.SmallTest
 import com.android.launcher3.icons.IconProvider
-import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.split.SplitDecorManager
 import java.util.function.Consumer
@@ -55,7 +53,6 @@ class SplitDecorManagerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CLOSE_SPLIT_TASK_INSTEAD_OF_MOVING_TO_BACK)
     fun testAnimateResized_whileFadeOutRunning_invokesCallbackWithTrue() {
         val taskInfo =
             ActivityManager.RunningTaskInfo().apply {
