@@ -863,12 +863,10 @@ public class SupervisionService extends ISupervisionManager.Stub {
                                     listener -> listener.onSetSupervisionEnabled(userId, false),
                                     packageName -> removeSupervisionRoleHolder(userId, packageName)
                             ));
-                    if (Flags.appBindingServiceRework()) {
-                        AppBindingService abs = mInjector.getAppBindingService();
-                        if (abs != null) {
-                            abs.unbindAndRemoveInvalidConnections(
-                                    userId, SupervisionAppServiceFinder.class);
-                        }
+                    AppBindingService abs = mInjector.getAppBindingService();
+                    if (abs != null) {
+                        abs.unbindAndRemoveInvalidConnections(
+                                userId, SupervisionAppServiceFinder.class);
                     }
                     clearAllPolicies(userId);
                 });
@@ -880,12 +878,10 @@ public class SupervisionService extends ISupervisionManager.Stub {
                     updateWebContentFilters(userId, false);
                     dispatchSupervisionEvent(
                             userId, listener -> listener.onSetSupervisionEnabled(userId, false));
-                    if (Flags.appBindingServiceRework()) {
-                        AppBindingService abs = mInjector.getAppBindingService();
-                        if (abs != null) {
-                            abs.unbindAndRemoveInvalidConnections(
-                                    userId, SupervisionAppServiceFinder.class);
-                        }
+                    AppBindingService abs = mInjector.getAppBindingService();
+                    if (abs != null) {
+                        abs.unbindAndRemoveInvalidConnections(
+                                userId, SupervisionAppServiceFinder.class);
                     }
                     clearAllDevicePoliciesAndSuspendedPackages(userId);
                     clearAllPolicies(userId);
