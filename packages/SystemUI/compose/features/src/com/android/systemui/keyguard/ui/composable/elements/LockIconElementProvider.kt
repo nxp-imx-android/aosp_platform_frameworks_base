@@ -22,6 +22,7 @@ import android.view.WindowManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -66,6 +67,7 @@ import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DisposableHandle
 
 @SysUISingleton
 class LockIconElementProvider
@@ -101,6 +103,7 @@ constructor(
     @Composable
     fun LockIcon(modifier: Modifier = Modifier, overrideColor: Color? = null) {
         val lockIconBounds = rememberLockIconBounds()
+        val (disposable, setDisposable) = remember { mutableStateOf<DisposableHandle?>(null) }
 
         AndroidView(
             factory = { context ->
@@ -111,18 +114,19 @@ constructor(
                     )
                     .apply {
                         id = R.id.device_entry_icon_view
-                        DeviceEntryIconViewBinder.bind(
-                            applicationScope,
-                            mainDispatcher,
-                            windowRootViewBlurInteractor,
-                            this,
-                            deviceEntryIconViewModel.get(),
-                            deviceEntryForegroundViewModel.get(),
-                            deviceEntryBackgroundViewModel.get(),
-                            falsingManager.get(),
-                            vibratorHelper.get(),
-                            msdlPlayer.get(),
-                            overrideColor,
+                        setDisposable(
+                            DeviceEntryIconViewBinder.bind(
+                                applicationScope,
+                                mainDispatcher,
+                                windowRootViewBlurInteractor,this,
+                                deviceEntryIconViewModel.get(),
+                                deviceEntryForegroundViewModel.get(),
+                                deviceEntryBackgroundViewModel.get(),
+                                falsingManager.get(),
+                                vibratorHelper.get(),
+                                msdlPlayer.get(),
+                                overrideColor,
+                            )
                         )
                     }
             },
@@ -149,6 +153,7 @@ constructor(
                         placeable.place(0, 0)
                     }
                 },
+            onRelease = { disposable?.dispose() },
         )
     }
 
