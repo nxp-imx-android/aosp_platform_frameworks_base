@@ -48,6 +48,8 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"appareil"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Cette appli pourra synchroniser des infos, comme le nom de l\'appelant, entre votre téléphone et l\'appareil choisi"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Autoriser &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; à synchroniser des informations telles que les infos sur l\'appelant et à exécuter des actions intelligentes depuis votre <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
+    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
+    <skip />
     <string name="consent_yes" msgid="8344487259618762872">"Autoriser"</string>
     <string name="consent_no" msgid="2640796915611404382">"Ne pas autoriser"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Annuler"</string>
@@ -91,8 +93,10 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Enregistrez, castez ou partagez l\'écran de votre <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> sur &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> aura accès à tout ce qui est visible ou lu sur votre <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, y compris les contenus audio, les photos, les infos de paiement, les mots de passe et les messages."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Castez les applis de votre <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> sur &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> aura accès à tout ce qui est visible ou lu sur <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, y compris les contenus audio, les photos, les infos de paiement, les mots de passe et les messages, même lorsque votre <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> est verrouillé."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Accédez à une liste d\'appareils disponibles et choisissez lequel caste ou lit en streaming une piste audio ou une vidéo à partir d\'autres applis."</string>
-    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
-    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
+    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
+    <skip />
+    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
+    <skip />
     <string name="device_type" product="default" msgid="8268703872070046263">"téléphone"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablette"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"tv"</string>

@@ -48,6 +48,8 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"裝置"</string>
     <string name="summary_generic" msgid="1761976003668044801">"這個應用程式可在手機和指定裝置間同步資訊，例如來電者名稱"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"允許「<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>」&lt;strong&gt;&lt;/strong&gt;同步處理來電者資訊等資料，並可在「<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>」上執行智慧操作"</string>
+    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
+    <skip />
     <string name="consent_yes" msgid="8344487259618762872">"允許"</string>
     <string name="consent_no" msgid="2640796915611404382">"不允許"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"取消"</string>
@@ -91,8 +93,10 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"錄製、投放<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>畫面或分享到「<xliff:g id="DEVICE_NAME">%3$s</xliff:g>」&lt;strong&gt;&lt;/strong&gt;。&lt;br/&gt;&lt;br/&gt;「<xliff:g id="APP_NAME">%1$s</xliff:g>」將可存取<xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>顯示或播放的所有內容，包括音訊、相片、付款資訊、密碼和訊息。"</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"將<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>的應用程式串流傳輸到 &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>;&lt;/strong&gt;。&lt;br/&gt;&lt;br/&gt;「<xliff:g id="APP_NAME">%1$s</xliff:g>」將可存取 <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> 顯示或播放的所有內容，包括音訊、相片、付款資訊、密碼和訊息，即使<xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g>處於鎖定狀態也一樣。"</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"存取可用裝置清單，並控制哪一部裝置可串流播放或投放其他應用程式的音訊或影片"</string>
-    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
-    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
+    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
+    <skip />
+    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
+    <skip />
     <string name="device_type" product="default" msgid="8268703872070046263">"手機"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"平板電腦"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"電視"</string>
