@@ -25,7 +25,12 @@ import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPO
 import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__API_TYPE__AUDIO_HARDENING_API_TYPE_RINGER;
 import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__API_TYPE__AUDIO_HARDENING_API_TYPE_VOLUME;
 import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_ALARM;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_FLAG_DISABLED;
 import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_NONE;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_OVERRIDE;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_PRIVILEGED_APP;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_SYSTEM_USAGE;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_TARGET_SDK;
 import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_ALARM;
 import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_ANNOUNCEMENT;
 import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_ASSISTANCE_ACCESSIBILITY;
@@ -57,6 +62,7 @@ import android.content.pm.PackageManager;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
+import android.media.IAudioManagerNative.HardeningExemptionReason;
 import android.media.IAudioPolicyService.HardeningOverride;
 import android.os.Binder;
 import android.os.Build;
@@ -204,6 +210,31 @@ public class HardeningEnforcer {
             case AudioAttributes.USAGE_ANNOUNCEMENT ->
                     AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_ANNOUNCEMENT;
             default -> AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_UNKNOWN;
+        };
+    }
+
+    /**
+     * Translates the HardeningExemptionReason to the corresponding proto usage enum
+     * @param exemption the exemption reason from IAudioManagerNative
+     * @return the proto usage enum
+     */
+    public static int getExemptionReasonForProtoLog(int exemption) {
+        return switch (exemption) {
+            case HardeningExemptionReason.NONE ->
+                    AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_NONE;
+            case HardeningExemptionReason.SYSTEM_USAGE ->
+                    AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_SYSTEM_USAGE;
+            case HardeningExemptionReason.PRIVILEGED_APP ->
+                    AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_PRIVILEGED_APP;
+            case HardeningExemptionReason.FLAG_DISABLED ->
+                    AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_FLAG_DISABLED;
+            case HardeningExemptionReason.ALARM ->
+                    AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_ALARM;
+            case HardeningExemptionReason.OVERRIDE ->
+                    AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_OVERRIDE;
+            case HardeningExemptionReason.TARGET_SDK ->
+                    AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_TARGET_SDK;
+            default -> AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_NONE;
         };
     }
 
