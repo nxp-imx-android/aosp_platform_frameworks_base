@@ -42,6 +42,7 @@ import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
 import com.android.wm.shell.pip2.tv.TvPipController;
 import com.android.wm.shell.pip2.tv.TvPipScheduler;
+import com.android.wm.shell.pip2.tv.TvPipTaskListener;
 import com.android.wm.shell.pip2.tv.TvPipTransition;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.pip.PipFlags;
@@ -73,10 +74,11 @@ public abstract class TvPip2Module {
             TvPipBoundsState tvPipBoundsState,
             TvPipMenuController tvPipMenuController,
             TvPipBoundsAlgorithm tvPipBoundsAlgorithm,
+            TvPipTaskListener tvPipTaskListener,
             PipTransitionState pipTransitionState) {
         return new TvPipTransition(context, pipSurfaceTransactionHelper, shellInit,
                 shellTaskOrganizer, transitions, tvPipBoundsState, tvPipMenuController,
-                tvPipBoundsAlgorithm, pipTransitionState);
+                tvPipBoundsAlgorithm, tvPipTaskListener, pipTransitionState);
     }
 
     @WMSingleton
@@ -126,6 +128,20 @@ public abstract class TvPip2Module {
                             mainHandler,
                             mainExecutor));
         }
+    }
+
+    @WMSingleton
+    @Provides
+    static TvPipTaskListener provideTvPipTaskListener(
+            Context context,
+            ShellTaskOrganizer shellTaskOrganizer,
+            PipTransitionState pipTransitionState,
+            TvPipBoundsState tvPipBoundsState,
+            TvPipBoundsAlgorithm tvPipBoundsAlgorithm,
+            PipParamsChangedForwarder pipParamsChangedForwarder,
+            @ShellMainThread ShellExecutor mainExecutor) {
+        return new TvPipTaskListener(context, shellTaskOrganizer, pipTransitionState,
+                tvPipBoundsState, tvPipBoundsAlgorithm, pipParamsChangedForwarder, mainExecutor);
     }
 
     @WMSingleton
