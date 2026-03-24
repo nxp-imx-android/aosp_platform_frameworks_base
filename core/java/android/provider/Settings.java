@@ -12174,6 +12174,13 @@ public final class Settings {
                 "mandatory_biometrics_requirements_satisfied";
 
         /**
+         * The current default component to use the Raise Trigger feature.
+         * @hide
+         */
+        public static final String RAISE_TRIGGER_DEFAULT_ASSISTANT =
+                "raise_trigger_default_assistant";
+
+        /**
          * Number of trusted locations added by the user.
          * @hide
          */
