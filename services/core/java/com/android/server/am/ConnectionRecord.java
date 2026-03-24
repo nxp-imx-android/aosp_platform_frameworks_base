@@ -25,6 +25,7 @@ import android.app.IServiceConnection;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.PackageManagerInternal;
 import android.os.SystemClock;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.IndentingPrintWriter;
@@ -34,6 +35,7 @@ import android.util.proto.ProtoUtils;
 
 import com.android.internal.app.procstats.AssociationState;
 import com.android.internal.app.procstats.ProcessStats;
+import com.android.server.LocalServices;
 import com.android.server.am.psc.ConnectionRecordInternal;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
 
@@ -173,7 +175,8 @@ final class ConnectionRecord extends ConnectionRecordInternal {
         // is an association between two different processes.
         if (ActivityManagerService.TRACK_PROCSTATS_ASSOCIATIONS
                 && association == null && binding.service.getHostProcess() != null
-                && (binding.service.appInfo.uid != clientUid
+                && (!LocalServices.getService(PackageManagerInternal.class).isSameApp(
+                        binding.service.appInfo.packageName, clientUid, binding.service.userId)
                         || !binding.service.processName.equals(clientProcessName))) {
             ProcessStats.ProcessStateHolder holder = binding.service.getHostProcess().getPkgList()
                     .get(binding.service.instanceName.getPackageName());
