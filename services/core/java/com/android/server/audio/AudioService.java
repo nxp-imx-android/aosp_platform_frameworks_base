@@ -12829,22 +12829,9 @@ public class AudioService extends IAudioService.Stub
             return AudioManager.AUDIOFOCUS_REQUEST_FAILED;
         }
 
-        // does caller have system privileges to bypass HardeningEnforcer
-        boolean permissionOverridesCheck = false;
-        if (hasAudioSettingsPrivilegedOrAudioRoutingPermission(/*withSelf=*/true)) {
-            permissionOverridesCheck = true;
-        } else if (uid < UserHandle.AID_APP_START) {
-            permissionOverridesCheck = true;
-        }
-
         final long token = Binder.clearCallingIdentity();
         try {
-            //TODO move inside HardeningEnforcer after refactor that moves permission checks
-            //     in the blockFocusMethod
-            if (permissionOverridesCheck) {
-                mHardeningEnforcer.metricsLogFocusReq(/*blocked*/ false, focusReqType, uid);
-            }
-            if (!permissionOverridesCheck && mHardeningEnforcer.blockFocusMethod(uid,
+            if (mHardeningEnforcer.blockFocusMethod(uid,
                     HardeningEnforcer.METHOD_AUDIO_MANAGER_REQUEST_AUDIO_FOCUS,
                     clientId, focusReqType, callingPackageName, attributionTag, sdk, aa)) {
                 final String reason = "Audio focus request blocked by hardening";
@@ -12863,7 +12850,7 @@ public class AudioService extends IAudioService.Stub
         return getMediaFocusControlForEnvironment(focusEnvToken).requestAudioFocus(uid, aa,
                 focusReqType, cb, fd, clientId, callingPackageName, flags, sdk,
                 forceFocusDuckingForAccessibility(aa, focusReqType, uid), -1 /*testUid, ignored*/,
-                permissionOverridesCheck, isForCall);
+                isForCall);
     }
 
     /** see {@link AudioManager#requestAudioFocusForTest(AudioFocusRequest, String, int, int)} */
@@ -12881,7 +12868,6 @@ public class AudioService extends IAudioService.Stub
         return getMediaFocusControlForEnvironment(focusEnvToken)
                 .requestAudioFocus(Binder.getCallingUid(), aa, focusReqType, cb, fd, clientId,
                         callingPackageName, flags, sdk, false /*forceDuck*/, fakeUid,
-                        true /*permissionOverridesCheck*/,
                         false /*isForCall*/);
     }
 
@@ -13015,7 +13001,7 @@ public class AudioService extends IAudioService.Stub
         return getMediaFocusControlForEnvironment(null).requestAudioFocus(
                 uid, aa, focusChangeHint, cb, fd, clientId,
                 attrSource.getPackageName(), flags, Build.VERSION_CODES.CUR_DEVELOPMENT,
-                false /* forceDuck */, -1 /* testUid */, true /* permissionOverridesCheck */,
+                false /* forceDuck */, -1 /* testUid */,
                 true /* isForCall */);
     }
 

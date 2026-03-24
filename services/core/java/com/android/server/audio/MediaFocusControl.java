@@ -325,7 +325,6 @@ public class MediaFocusControl implements PlayerFocusEnforcer {
                             fr.getSdkTarget(),
                             /*forceDuck*/ false,
                             /*testUid*/ 0,
-                            /*permissionOverridesCheck*/ false,
                             /*isForCall*/ false);
                     if (result == AUDIOFOCUS_REQUEST_GRANTED) {
                         return true;
@@ -1411,15 +1410,12 @@ public class MediaFocusControl implements PlayerFocusEnforcer {
      *                  accessibility.
      * @param testUid ignored if flags doesn't contain AudioManager.AUDIOFOCUS_FLAG_TEST
      *                otherwise the UID being injected for testing
-     * @param permissionOverridesCheck true if permission checks guaranteed that the call should
-     *                                 go through, false otherwise (e.g. non-privileged caller)
      * @return
      */
     protected int requestAudioFocus(int callerUid, @NonNull AudioAttributes aa, int focusChangeHint,
             IBinder cb, IAudioFocusDispatcher fd, @NonNull String clientId,
             @NonNull String callingPackageName,
             int flags, int sdk, boolean forceDuck, int testUid,
-            boolean permissionOverridesCheck,
             boolean isForCall) {
         // Call focus should always be treated as having focus lock (it should already be set
         // directly, but just in case)
