@@ -37,6 +37,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,6 +48,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.systemui.clock.ClockModernization
 import com.android.systemui.clock.ui.composable.Clock
@@ -61,6 +63,7 @@ import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
 import com.android.systemui.shade.ui.composable.ChipHighlightModel
+import com.android.systemui.shade.ui.composable.OverlayShade
 import com.android.systemui.shade.ui.composable.ShadeHighlightChip
 import com.android.systemui.shade.ui.composable.VariableDayDate
 import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChips
@@ -83,6 +86,9 @@ import com.android.systemui.statusbar.systemstatusicons.ui.compose.movableSystem
 
 object DesktopStatusBar {
     object Dimensions {
+        val PaddingHorizontal: Dp
+            @Composable @ReadOnlyComposable get() = OverlayShade.Dimensions.PanelPaddingHorizontal
+
         val ElementSpacing = 12.dp
         val ChipInternalSpacing = 6.dp
         val ChipHeight = 24.dp
@@ -104,7 +110,8 @@ fun DesktopStatusBar(
     // TODO(433589833): Update padding values to match UX specs.
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.fillMaxSize().padding(start = 16.dp),
+        modifier =
+            modifier.fillMaxSize().padding(start = DesktopStatusBar.Dimensions.PaddingHorizontal),
     ) {
         WithAdaptiveTint(
             highlightModel = ChipHighlightModel.Transparent,
@@ -305,7 +312,7 @@ private fun QuickSettingsChip(
                         // Divide by two, since the spacing between this chip and the previous one
                         // is divided among the corresponding touch targets.
                         start = DesktopStatusBar.Dimensions.ElementSpacing / 2,
-                        end = DesktopStatusBar.Dimensions.ElementSpacing,
+                        end = DesktopStatusBar.Dimensions.PaddingHorizontal,
                     ),
             backgroundColor = chipHighlightModel.backgroundColor,
             hoverBackgroundColor = hoverColor,
@@ -386,8 +393,8 @@ private fun QuickSettingsChip(
 private fun SignOutButton(onSignOut: () -> Unit) {
     Button(
         onClick = onSignOut,
-        contentPadding = PaddingValues(start = 6.dp, end = 6.dp),
-        modifier = Modifier.heightIn(min = 24.dp),
+        contentPadding = PaddingValues(horizontal = DesktopStatusBar.Dimensions.ElementSpacing / 2),
+        modifier = Modifier.heightIn(min = DesktopStatusBar.Dimensions.ChipHeight),
     ) {
         Icon(
             icon =
