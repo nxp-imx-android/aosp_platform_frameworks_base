@@ -28,15 +28,19 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardTouchHandlingViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.plugins.keyguard.VRectF
+import com.android.systemui.res.R
 
 /** Container for lockscreen content that handles inputs including long-press and double tap. */
 @Composable
@@ -48,6 +52,10 @@ fun LockscreenTouchHandling(
     val viewModel = rememberViewModel("LockscreenLongPress") { viewModelFactory.create() }
     val (settingsMenuBounds, setSettingsMenuBounds) = remember { mutableStateOf(VRectF.ZERO) }
     val interactionSource = remember { MutableInteractionSource() }
+    val openCommunalHubA11yActionLabel =
+        stringResource(R.string.accessibility_action_open_communal_hub)
+    val customizeLockscreenA11yActionLabel =
+        stringResource(R.string.accessibility_action_customize_lock_screen)
 
     Box(
         modifier =
@@ -84,6 +92,27 @@ fun LockscreenTouchHandling(
                 }
                 // Passing null for the indication removes the ripple effect.
                 .indication(interactionSource, null)
+                .semantics {
+                    val actions = mutableListOf<CustomAccessibilityAction>()
+                    if (viewModel.isLongPressHandlingEnabled) {
+                        actions.add(
+                            CustomAccessibilityAction(customizeLockscreenA11yActionLabel) {
+                                viewModel.openKeyguardSettingsPopupMenu()
+                                true
+                            }
+                        )
+                    }
+
+                    if (viewModel.isCommunalAvailable) {
+                        actions.add(
+                            CustomAccessibilityAction(openCommunalHubA11yActionLabel) {
+                                viewModel.goToCommunalSceneViaA11yInteraction()
+                                true
+                            }
+                        )
+                    }
+                    customActions = actions
+                }
     ) {
         content(setSettingsMenuBounds)
     }
