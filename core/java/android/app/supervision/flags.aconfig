@@ -201,10 +201,13 @@ flag {
 }
 
 flag {
-  name: "remove_role_holder_after_event_dispatch"
+  name: "remove_role_after_event_dispatch"
   namespace: "supervision"
   description: "Removes supervision role only after the 'disable supervision' event has been dispatched."
   bug: "495425956"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
