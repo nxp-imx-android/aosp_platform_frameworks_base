@@ -46,6 +46,8 @@ abstract class AltTabSwitchOutDesktopMode : TestScenarioBase() {
     @Test
     fun switchBetweenFullscreenAppAndDesktopApp() {
         firstApp.launchViaIntent(wmHelper)
+        // Ensure firstApp starts from fullscreen to verify fullscreen switch back from secondApp
+        firstApp.exitDesktopModeToFullScreenIfNeeded(wmHelper, device)
         secondApp.enterDesktopMode(wmHelper, device)
 
         tapl.launchedAppState.showQuickSwitchView().launchFocusedAppTask(firstApp.packageName)

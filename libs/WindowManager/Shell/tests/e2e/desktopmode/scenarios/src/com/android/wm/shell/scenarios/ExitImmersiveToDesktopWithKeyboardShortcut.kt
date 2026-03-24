@@ -46,7 +46,8 @@ abstract class ExitImmersiveToDesktopWithKeyboardShortcut(
     @Before
     fun setup() {
         immersiveAppHelper.launchViaIntent(wmHelper)
-        immersiveApp.enterDesktopModeFromAppHandleMenu(wmHelper, device, true)
+        // Ensure app starts from immersive to verify the switch to desktop
+        immersiveApp.enterDesktopMode(wmHelper, device, isImmersiveApp = true)
         immersiveApp.enterImmersiveMode(wmHelper, device)
     }
 
