@@ -24,6 +24,7 @@ import android.annotation.Nullable;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.companion.virtual.computercontrol.ComputerControlSessionParams.NotificationParams;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -791,7 +792,12 @@ public final class ComputerControlSession implements AutoCloseable {
      * {@link android.app.NotificationManager#notify(String, int, Notification)}
      *
      * @throws IllegalStateException if a notification was already attached.
+     *
+     * @deprecated with ComputerControl v5, use
+     * {@link ComputerControlSessionParams.Builder#setNotificationParams(NotificationParams)}
+     * instead.
      */
+    @Deprecated
     public void attachNotificationInfo(int notificationId, @Nullable String notificationTag) {
         try {
             mSession.attachNotificationInfo(notificationId, notificationTag);

@@ -19,6 +19,7 @@ package com.android.server.companion.virtual.computercontrol;
 import android.annotation.NonNull;
 import android.annotation.UserIdInt;
 import android.app.IApplicationThread;
+import android.app.NotificationManager;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
 import android.content.AttributionSource;
@@ -49,7 +50,8 @@ public record ComputerControlSessionRequest(
         int ownerUid,
         @NonNull String ownerPackageName,
         @NonNull Context ownerContext,
-        @NonNull PackageManager ownerPackageManager) {
+        @NonNull PackageManager ownerPackageManager,
+        @NonNull NotificationManager ownerNotificationManager) {
 
     /** Creates a new request. */
     public static ComputerControlSessionRequest create(
@@ -74,6 +76,8 @@ public record ComputerControlSessionRequest(
                 /* ownerUid= */ attributionSource.getUid(),
                 /* ownerPackageName= */ Objects.requireNonNull(attributionSource.getPackageName()),
                 ownerContext,
-                /* ownerPackageManager= */ ownerContext.getPackageManager());
+                /* ownerPackageManager= */ ownerContext.getPackageManager(),
+                /* ownerNotificationManager= */ ownerContext.getSystemService(
+                        NotificationManager.class));
     }
 }

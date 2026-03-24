@@ -20,6 +20,7 @@ import static android.app.PendingIntent.FLAG_CANCEL_CURRENT;
 import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_ONE_SHOT;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_USER_INITIATED;
+import static android.companion.virtual.computercontrol.ComputerControlSessionParams.MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17;
 
 import static com.android.server.companion.virtual.computercontrol.ComputerControlStatsLog.COMPUTER_CONTROL_FAILED_SESSION_REPORTED__REASON__CALLER_NOT_ALLOWED;
 import static com.android.server.companion.virtual.computercontrol.ComputerControlStatsLog.COMPUTER_CONTROL_FAILED_SESSION_REPORTED__REASON__INVALID_TARGET_APPLICATION;
@@ -90,8 +91,6 @@ public final class ComputerControlSessionProcessor {
     // TODO(b/419548594): Make this configurable.
     @VisibleForTesting
     static final int MAXIMUM_CONCURRENT_SESSIONS = 1;
-    @VisibleForTesting
-    static final int MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17 = 5;
 
     @Nullable
     private final String mReferenceDisplayAddress;

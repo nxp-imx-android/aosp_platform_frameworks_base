@@ -4674,6 +4674,10 @@ public class Notification implements Parcelable
             flagStrings.add("PROMOTED_ONGOING");
             flags &= ~FLAG_PROMOTED_ONGOING;
         }
+        if ((flags & FLAG_COMPUTER_CONTROL) != 0) {
+            flagStrings.add("COMPUTER_CONTROL");
+            flags &= ~FLAG_COMPUTER_CONTROL;
+        }
 
         if (android.service.notification.Flags.notificationSilentFlag()) {
             if ((flags & FLAG_SILENT) != 0) {
@@ -8841,6 +8845,14 @@ public class Notification implements Parcelable
      */
     public boolean isFgsOrUij() {
         return isForegroundService() || isUserInitiatedJob();
+    }
+
+    /**
+     * @return whether this notification is associated with a computer control session.
+     * @hide
+     */
+    public boolean isComputerControl() {
+        return (flags & FLAG_COMPUTER_CONTROL) != 0;
     }
 
     /**

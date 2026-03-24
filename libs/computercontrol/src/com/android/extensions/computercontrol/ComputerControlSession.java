@@ -575,7 +575,12 @@ public final class ComputerControlSession implements AutoCloseable {
      * {@link android.app.NotificationManager#notify(String, int, Notification)}
      *
      * @throws IllegalStateException if a notification was already attached.
+     *
+     * @deprecated with ComputerControl v5, use
+     * {@link ComputerControlSession.Params.Builder#setNotificationParams(NotificationParams)}
+     * instead.
      */
+    @Deprecated
     public void attachNotificationInfo(int notificationId, @Nullable String notificationTag) {
         mSession.attachNotificationInfo(notificationId, notificationTag);
     }
@@ -632,6 +637,7 @@ public final class ComputerControlSession implements AutoCloseable {
         @Nullable private final PendingIntent mPreviewIntent;
         @Nullable private final AppInteractionAttribution mAppInteractionAttribution;
         @Nullable private final DeviceId mCompanionDeviceId;
+        @Nullable private final NotificationParams mNotificationParams;
 
         private Params(
                 @NonNull Context context,
@@ -639,13 +645,15 @@ public final class ComputerControlSession implements AutoCloseable {
                 @NonNull List<String> targetPackageNames,
                 @Nullable PendingIntent previewIntent,
                 @Nullable AppInteractionAttribution appInteractionAttribution,
-                @Nullable DeviceId companionDeviceId) {
+                @Nullable DeviceId companionDeviceId,
+                @Nullable NotificationParams notificationParams) {
             mContext = context;
             mName = name;
             mTargetPackageNames = targetPackageNames;
             mPreviewIntent = previewIntent;
             mAppInteractionAttribution = appInteractionAttribution;
             mCompanionDeviceId = companionDeviceId;
+            mNotificationParams = notificationParams;
         }
 
         /**
@@ -706,6 +714,14 @@ public final class ComputerControlSession implements AutoCloseable {
             return mCompanionDeviceId;
         }
 
+        /*
+         * Returns the notification parameters for this session.
+         */
+        @Nullable
+        public NotificationParams getNotificationParams() {
+            return mNotificationParams;
+        }
+
         /**
          * Builder for {@link Params}.
          */
@@ -716,6 +732,7 @@ public final class ComputerControlSession implements AutoCloseable {
             private PendingIntent mPreviewIntent;
             private AppInteractionAttribution mAppInteractionAttribution;
             private DeviceId mCompanionDeviceId;
+            private NotificationParams mNotificationParams;
 
             /**
              * Create a new Builder.
@@ -778,6 +795,29 @@ public final class ComputerControlSession implements AutoCloseable {
                 return this;
             }
 
+            /**
+             * Sets the notification parameters for this session.
+             *
+             * <p>The notification gets posted when the session is created, and canceled when the
+             * session is closed. It cannot be dismissed by the user, or canceled by the caller.
+             * However, the caller can update the contents of the notification at any time,
+             * by using {@link android.app.NotificationManager#notify}. In fact, callers should
+             * re-use the same notification for their own foreground service (if any), to avoid any
+             * duplicate notifications.
+             *
+             * <p>{@link Notification#hasPromotableCharacteristics()} must return {@code true} for
+             * the notification that is passed, otherwise {@link IllegalArgumentException} is
+             * thrown.
+             *
+             * @param notificationParams The notification parameters.
+             * @return This builder.
+             */
+            @NonNull
+            public Builder setNotificationParams(@Nullable NotificationParams notificationParams) {
+                mNotificationParams = notificationParams;
+                return this;
+            }
+
             /** Build a computer control session. */
             @NonNull
             public Params build() {
@@ -787,7 +827,82 @@ public final class ComputerControlSession implements AutoCloseable {
                         mTargetPackageNames,
                         mPreviewIntent,
                         mAppInteractionAttribution,
-                        mCompanionDeviceId);
+                        mCompanionDeviceId,
+                        mNotificationParams);
+            }
+        }
+    }
+
+    /**
+     * Parameters for the notification associated with this session.
+     */
+    public static final class NotificationParams {
+        @NonNull private final Notification mNotification;
+        private final int mNotificationId;
+        @Nullable private final String mNotificationTag;
+
+        private NotificationParams(@NonNull Notification notification, int notificationId,
+                @Nullable String notificationTag) {
+            mNotification = notification;
+            mNotificationId = notificationId;
+            mNotificationTag = notificationTag;
+        }
+
+        /**
+         * Returns the notification to be posted.
+         */
+        @NonNull
+        public Notification getNotification() {
+            return mNotification;
+        }
+
+        /**
+         * Returns the id of the notification.
+         */
+        public int getNotificationId() {
+            return mNotificationId;
+        }
+
+        /**
+         * Returns the tag of the notification.
+         */
+        @Nullable
+        public String getNotificationTag() {
+            return mNotificationTag;
+        }
+
+        /** Builder for {@link NotificationParams}. */
+        public static final class Builder {
+            @NonNull private final Notification mNotification;
+            private final int mNotificationId;
+            @Nullable private String mNotificationTag;
+
+            /**
+             * @param notification the {@link Notification} associated with this session
+             * @param notificationId the identifier for the notification, as per
+             * {@link android.app.NotificationManager#notify(String, int, Notification)}
+             */
+            public Builder(@NonNull Notification notification, int notificationId) {
+                mNotification = notification;
+                mNotificationId = notificationId;
+            }
+
+            /**
+             * Sets the optional tag for the notification.
+             *
+             * @param notificationTag the tag for the notification, as per
+             * {@link android.app.NotificationManager#notify(String, int, Notification)}
+             */
+            @NonNull
+            public Builder setNotificationTag(@Nullable String notificationTag) {
+                mNotificationTag = notificationTag;
+                return this;
+            }
+
+            /** Builds the {@link NotificationParams} instance. */
+            @NonNull
+            public NotificationParams build() {
+                return new NotificationParams(mNotification, mNotificationId, mNotificationTag);
             }
         }
     }
