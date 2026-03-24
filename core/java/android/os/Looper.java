@@ -36,8 +36,6 @@ import android.util.Printer;
 import android.util.Slog;
 import android.util.proto.ProtoOutputStream;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
 import java.util.Objects;
 
 /**
@@ -287,11 +285,6 @@ public final class Looper {
             token = observer.messageDispatchStarting();
         }
         long origWorkSource = ThreadLocalWorkSource.setUid(msg.workSourceUid);
-
-        final LooperDoctor doctor = Flags.messageQueueMonitoringEnabled() ? me.mLooperDoctor : null;
-        if (doctor != null) {
-            doctor.startMessageTimer(me.mAlarm);
-        }
         try {
             msg.target.dispatchMessage(msg);
             if (isLooperClearsThreadInterruptedEnabled()) {
@@ -309,9 +302,6 @@ public final class Looper {
             }
             throw exception;
         } finally {
-            if (doctor != null) {
-                doctor.stopMessageTimer(me.mAlarm);
-            }
             ThreadLocalWorkSource.restore(origWorkSource);
             if (traceTag != 0) {
                 Trace.traceEnd(traceTag);
@@ -560,7 +550,6 @@ public final class Looper {
      * @see #quitSafely
      */
     public void quit() {
-        clearLooperDoctor();
         mQueue.quit(false);
     }
 
@@ -580,7 +569,6 @@ public final class Looper {
      * </p>
      */
     public void quitSafely() {
-        clearLooperDoctor();
         mQueue.quit(true);
     }
 
@@ -600,48 +588,6 @@ public final class Looper {
      */
     public @NonNull MessageQueue getQueue() {
         return mQueue;
-    }
-
-    private static final VarHandle sLooperDoctor;
-    private volatile LooperDoctor mLooperDoctor;
-    private LooperDoctor.LooperDoctorAlarm mAlarm;
-
-    static {
-        try {
-            MethodHandles.Lookup l = MethodHandles.lookup();
-            sLooperDoctor = l.findVarHandle(Looper.class, "mLooperDoctor", LooperDoctor.class);
-        } catch (ReflectiveOperationException e) {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
-
-    /**
-     * Set a Looper Doctor for this Looper.
-     *
-     * This method is NOT thread-safe. It must be called ideally at most once, and never
-     * concurrently on the same looper instance.
-     *
-     * @hide
-     */
-    public void setLooperDoctor(LooperDoctor d) {
-        if (mLooperDoctor == null) {
-            mAlarm = d.notifyLooperStartedLooping(mThread);
-            mLooperDoctor = d;
-            mQueue.setLooperDoctor(d);
-        }
-    }
-
-    /**
-     * Clear the Looper Doctor for this Looper.
-     *
-     * @hide
-     */
-    public void clearLooperDoctor() {
-        LooperDoctor doctor = mLooperDoctor;
-        if (doctor != null && sLooperDoctor.compareAndSet(this, doctor, null)) {
-            doctor.notifyLooperQuit(mAlarm);
-            mQueue.setLooperDoctor(null);
-        }
     }
 
     /**
