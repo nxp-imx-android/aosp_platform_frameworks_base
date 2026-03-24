@@ -46,6 +46,7 @@ class DividerResizeMenu(context: Context) : FrameLayout(context) {
     private var mButtonSize = 0
     private var mButtonGap = 0
     private var mVisibilityCallback: (() -> Unit)? = null
+    private val mHideRunnable = Runnable { hide() }
 
     init {
         setupButton(prevButton)
@@ -97,7 +98,10 @@ class DividerResizeMenu(context: Context) : FrameLayout(context) {
 
     /** Updates button positions and fades in the resize menu buttons. */
     fun show() {
-        if (isShowing) return
+        if (isShowing) {
+            resetHideTimer()
+            return
+        }
         ProtoLog.d(ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN, "Showing DividerResizeMenu")
         updateButtons()
 
@@ -116,6 +120,7 @@ class DividerResizeMenu(context: Context) : FrameLayout(context) {
                     prevButton.alpha = 0f
                     nextButton.alpha = 0f
                     mVisibilityCallback?.invoke()
+                    resetHideTimer()
                 }
             }
         )
@@ -125,6 +130,7 @@ class DividerResizeMenu(context: Context) : FrameLayout(context) {
     /** Fades out the resize menu buttons. */
     fun hide() {
         if (!isShowing) return
+        removeCallbacks(mHideRunnable)
         ProtoLog.d(ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN, "Hiding DividerResizeMenu")
 
         val set = AnimatorSet()
@@ -151,6 +157,7 @@ class DividerResizeMenu(context: Context) : FrameLayout(context) {
      */
     fun updateButtons() {
         val layout = mSplitLayout ?: return
+        resetHideTimer()
         val isLeftRightSplit = layout.isLeftRightSplit
         val position = layout.dividerPosition
         val snapAlgorithm = layout.mDividerSnapAlgorithm
@@ -213,6 +220,7 @@ class DividerResizeMenu(context: Context) : FrameLayout(context) {
 
     /** Snaps the divider to the previous valid split target (e.g., left or top). */
     private fun snapToPrev() {
+        resetHideTimer()
         val layout = mSplitLayout ?: return
         ProtoLog.d(ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN, "DividerResizeMenu: Snap to previous")
         val position = layout.dividerPosition
@@ -222,6 +230,7 @@ class DividerResizeMenu(context: Context) : FrameLayout(context) {
 
     /** Snaps the divider to the next valid split target (e.g., right or bottom). */
     private fun snapToNext() {
+        resetHideTimer()
         val layout = mSplitLayout ?: return
         ProtoLog.d(ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN, "DividerResizeMenu: Snap to next")
         val position = layout.dividerPosition
@@ -247,6 +256,16 @@ class DividerResizeMenu(context: Context) : FrameLayout(context) {
         return mTempRect.contains(x.toInt(), y.toInt())
     }
 
+    private fun resetHideTimer() {
+        removeCallbacks(mHideRunnable)
+        postDelayed(mHideRunnable, HIDE_TIMEOUT_MS)
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        removeCallbacks(mHideRunnable)
+    }
+
     @VisibleForTesting
     fun setVisible(visible: Boolean) {
         isShowing = visible
@@ -254,5 +273,6 @@ class DividerResizeMenu(context: Context) : FrameLayout(context) {
 
     companion object {
         private const val TOUCH_ANIMATION_DURATION: Long = 150
+        private const val HIDE_TIMEOUT_MS: Long = 3000
     }
 }
