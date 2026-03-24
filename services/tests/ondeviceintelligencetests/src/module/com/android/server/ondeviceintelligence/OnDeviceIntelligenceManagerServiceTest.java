@@ -22,10 +22,25 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.Manifest;
+import android.app.ondeviceintelligence.Content;
+import android.app.ondeviceintelligence.Feature;
+import android.app.ondeviceintelligence.IOnDeviceIntelligenceManager;
+import android.app.ondeviceintelligence.IResponseCallback;
+import android.app.ondeviceintelligence.IStreamingResponseCallback;
+import android.app.ondeviceintelligence.ITokenInfoCallback;
+import android.app.ondeviceintelligence.embedding.EmbeddingRequest;
+import android.app.ondeviceintelligence.embedding.IEmbeddingCallback;
+import android.app.ondeviceintelligence.imagedescription.IImageDescriptionCallback;
+import android.app.ondeviceintelligence.imagedescription.ImageDescriptionRequest;
+import android.graphics.Bitmap;
+import android.os.Binder;
+import android.os.Bundle;
+import android.os.IBinder;
 import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -47,6 +62,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -218,6 +234,57 @@ public class OnDeviceIntelligenceManagerServiceTest {
         waitForForegroundThread();
         assertNull(mService.mHighPriorityConnection);
         assertTrue(mService.mHighPriorityUids.isEmpty());
+    }
+
+    @Test
+    public void testInferenceMethods_trackJobs() throws Exception {
+        IBinder binder = mService.getOnDeviceIntelligenceManagerService();
+        IOnDeviceIntelligenceManager service =
+                IOnDeviceIntelligenceManager.Stub.asInterface(binder);
+
+        int callingUid = Binder.getCallingUid();
+        Feature feature = new Feature.Builder(1).build();
+
+        // 1. requestTokenInfo
+        service.requestTokenInfo(feature, new Bundle(), null, mock(ITokenInfoCallback.class));
+        assertTrue(mService.mJobCountsByUid.containsKey(callingUid));
+        mService.mJobCountsByUid.clear();
+
+        // 2. requestTokenInfoWithContent
+        service.requestTokenInfoWithContent(
+                feature, new Content(new ArrayList<>()), null, mock(ITokenInfoCallback.class));
+        assertTrue(mService.mJobCountsByUid.containsKey(callingUid));
+        mService.mJobCountsByUid.clear();
+
+        // 3. processRequest
+        service.processRequest(feature, new Bundle(), 0, null, null, mock(IResponseCallback.class));
+        assertTrue(mService.mJobCountsByUid.containsKey(callingUid));
+        mService.mJobCountsByUid.clear();
+
+        // 4. processRequestStreaming
+        service.processRequestStreaming(
+                feature, new Bundle(), 0, null, null, mock(IStreamingResponseCallback.class));
+        assertTrue(mService.mJobCountsByUid.containsKey(callingUid));
+        mService.mJobCountsByUid.clear();
+
+        // 5. generateEmbeddings
+        service.generateEmbeddings(
+                feature,
+                new EmbeddingRequest(new ArrayList<>()),
+                null,
+                mock(IEmbeddingCallback.class));
+        assertTrue(mService.mJobCountsByUid.containsKey(callingUid));
+        mService.mJobCountsByUid.clear();
+
+        // 6. generateImageDescription
+        Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+        service.generateImageDescription(
+                feature,
+                new ImageDescriptionRequest(bitmap, null),
+                null,
+                mock(IImageDescriptionCallback.class));
+        assertTrue(mService.mJobCountsByUid.containsKey(callingUid));
+        mService.mJobCountsByUid.clear();
     }
 
     private void waitForForegroundThread() throws InterruptedException, TimeoutException {
