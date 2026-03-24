@@ -1529,7 +1529,11 @@ public class CachedAppOptimizer {
 
             opt.setFreezeUnfreezeTime(SystemClock.uptimeMillis());
             opt.setFrozen(false);
+            final boolean wasZramWrittenBack = app.isZramWrittenBack();
             mAm.mProcessStateController.setIsZramWrittenBack(app, false);
+            if (wasZramWrittenBack) {
+                prefetchZram(app, reason);
+            }
             mFrozenProcesses.delete(pid);
             mAm.mProcessStateController.setFrozenProcessCount(mFrozenProcesses.size());
         } catch (Exception e) {
@@ -1871,7 +1875,7 @@ public class CachedAppOptimizer {
                 if (mHasZramWritebackSupport == null) {
                     mHasZramWritebackSupport = mmd.supportsProcessMemoryZramOps();
                 }
-                if (!mHasZramWritebackSupport) {
+                if (!Boolean.TRUE.equals(mHasZramWritebackSupport)) {
                     eventTypeToLog =
                             FrameworkStatsLog
                                     .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_UNSUPPORTED_BY_MMD;
@@ -2902,12 +2906,20 @@ public class CachedAppOptimizer {
      */
     @VisibleForTesting
     void forceFreezeForTest(ProcessRecord proc, boolean freeze) {
+        forceFreezeForTest(proc, freeze, UNFREEZE_REASON_NONE);
+    }
+
+    /**
+     * Freeze or unfreeze a process.  This should only be used for testing.
+     */
+    @VisibleForTesting
+    void forceFreezeForTest(ProcessRecord proc, boolean freeze, @UnfreezeReason int reason) {
         synchronized (mAm) {
             synchronized (mProcLock) {
                 if (freeze) {
                     forceFreezeAppAsyncLSP(proc);
                 } else {
-                    unfreezeAppLSP(proc, UNFREEZE_REASON_NONE, true);
+                    unfreezeAppLSP(proc, reason, true);
                 }
             }
         }
@@ -3024,5 +3036,49 @@ public class CachedAppOptimizer {
 
     public int getFrozenProcessCount() {
         return mFrozenProcesses.size();
+    }
+
+    private void prefetchZram(ProcessRecord app, @UnfreezeReason int reason) {
+        if (reason != UNFREEZE_REASON_ACTIVITY) {
+            return;
+        }
+        final boolean zramWritebackEnabled = Flags.enableZramWriteback() && mZramWritebackEnabled;
+        if (!zramWritebackEnabled) {
+            return;
+        }
+
+        final IMmd mmd = getMmd();
+        if (mmd == null) {
+            return;
+        }
+
+        try {
+            if (mHasZramWritebackSupport == null) {
+                mHasZramWritebackSupport = mmd.supportsProcessMemoryZramOps();
+            }
+            if (!Boolean.TRUE.equals(mHasZramWritebackSupport)) {
+                return;
+            }
+
+            final int pid = app.getPid();
+            Trace.instantForTrack(
+                    Trace.TRACE_TAG_ACTIVITY_MANAGER,
+                    ATRACE_ZRAM_WRITEBACK_TRACK,
+                    "ZramWriteback: prefetch for "
+                            + app.processName
+                            + ":"
+                            + pid);
+            try {
+                final FileDescriptor fd = Process.openPidFd(pid, 0);
+                try (final ParcelFileDescriptor pfd =
+                        ParcelFileDescriptor.adoptFd(fd.getInt$())) {
+                    mmd.asyncPrefetchProcessZramMemory(pfd);
+                }
+            } catch (IOException e) {
+                Slog.w(TAG_AM, "Failed to get pidfd for " + pid, e);
+            }
+        } catch (RemoteException e) {
+            Slog.w(TAG_AM, "Failed to call mmd.", e);
+        }
     }
 }
