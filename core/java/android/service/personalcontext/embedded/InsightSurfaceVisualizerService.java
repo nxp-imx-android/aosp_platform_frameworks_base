@@ -382,7 +382,15 @@ public abstract class InsightSurfaceVisualizerService extends Service {
                             final RootView rootView =
                                     serviceInstance.mInjector.createRootView(
                                             mContext, clientInfo, newSurfaceHost);
-                            newSurfaceHost.setView(rootView, 0, 0);
+                            // Set the SCVH to not focusable in order to avoid the keyboard being
+                            // incorrectly dismissed in certain situations (e.g. when users
+                            // long-press on the embedded view).
+                            newSurfaceHost.setView(
+                                    rootView,
+                                    new SurfaceControlViewHost.LayoutParams(
+                                            /* width= */ 0,
+                                            /* height= */ 0,
+                                            /* focusable= */ false));
                             rootView.setContentView(view);
 
                             final SurfaceInfo newSurface =
