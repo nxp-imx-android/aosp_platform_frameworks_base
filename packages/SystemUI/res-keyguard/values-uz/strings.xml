@@ -124,6 +124,12 @@
     <string name="kg_prompt_reason_restart_pattern" msgid="3321211830602827742">"Qayta yongandan keyin grafik kalit talab etiladi"</string>
     <string name="kg_prompt_reason_restart_pin" msgid="2672166323886110512">"Qayta yongandan keyin PIN kod talab etiladi"</string>
     <string name="kg_prompt_reason_restart_password" msgid="3967993994418885887">"Qayta yongandan keyin parol talab etiladi"</string>
+    <!-- no translation found for kg_prompt_reason_signin_pattern (1650886553162854395) -->
+    <skip />
+    <!-- no translation found for kg_prompt_reason_signin_pin (636031498838532631) -->
+    <skip />
+    <!-- no translation found for kg_prompt_reason_signin_password (1020939174735616114) -->
+    <skip />
     <string name="kg_prompt_reason_timeout_pattern" msgid="5514969660010197363">"Qoʻshimcha xavfsizlik maqsadida oʻrniga grafik kalitdan foydalaning"</string>
     <string name="kg_prompt_reason_timeout_pin" msgid="4227962059353859376">"Qoʻshimcha xavfsizlik maqsadida oʻrniga PIN koddan foydalaning"</string>
     <string name="kg_prompt_reason_timeout_password" msgid="8810879144143933690">"Qoʻshimcha xavfsizlik maqsadida oʻrniga paroldan foydalaning"</string>
