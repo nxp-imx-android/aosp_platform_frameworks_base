@@ -58,8 +58,6 @@ import com.android.systemui.qs.PageIndicator
 import com.android.systemui.res.R
 import com.android.systemui.securelockdevice.data.repository.fakeSecureLockDeviceRepository
 import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
-import com.android.systemui.statusbar.notification.collection.provider.OnReorderingAllowedListener
-import com.android.systemui.statusbar.notification.collection.provider.VisualStabilityProvider
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.quickactions.media.domain.interactor.mediaControlChipInteractor
 import com.android.systemui.testKosmos
@@ -113,7 +111,7 @@ class MediaCarouselControllerTest : SysuiTestCase() {
 
     @Mock lateinit var mediaControlPanelFactory: Provider<MediaControlPanel>
     @Mock lateinit var panel: MediaControlPanel
-    @Mock lateinit var visualStabilityProvider: VisualStabilityProvider
+    @Mock lateinit var mediaReorderController: MediaReorderController
     @Mock lateinit var mediaHostStatesManager: MediaHostStatesManager
     @Mock lateinit var mediaHostState: MediaHostState
     @Mock lateinit var activityStarter: ActivityStarter
@@ -132,7 +130,7 @@ class MediaCarouselControllerTest : SysuiTestCase() {
     @Captor lateinit var listener: ArgumentCaptor<MediaDataManager.Listener>
     @Captor
     lateinit var configListener: ArgumentCaptor<ConfigurationController.ConfigurationListener>
-    @Captor lateinit var visualStabilityCallback: ArgumentCaptor<OnReorderingAllowedListener>
+    @Captor lateinit var reorderCallback: ArgumentCaptor<() -> Unit>
     @Captor lateinit var keyguardCallback: ArgumentCaptor<KeyguardUpdateMonitorCallback>
     @Captor lateinit var hostStateCallback: ArgumentCaptor<MediaHostStatesManager.Callback>
     @Captor lateinit var settingsObserverCaptor: ArgumentCaptor<ContentObserver>
@@ -157,7 +155,7 @@ class MediaCarouselControllerTest : SysuiTestCase() {
                 applicationScope = kosmos.applicationCoroutineScope,
                 context = context,
                 mediaControlPanelFactory = mediaControlPanelFactory,
-                visualStabilityProvider = visualStabilityProvider,
+                mediaReorderController = mediaReorderController,
                 mediaHostStatesManager = mediaHostStatesManager,
                 activityStarter = activityStarter,
                 systemClock = clock,
@@ -180,8 +178,7 @@ class MediaCarouselControllerTest : SysuiTestCase() {
             )
         verify(configurationController).addCallback(capture(configListener))
         if (!MediaControlsInComposeFlag.isEnabled) {
-            verify(visualStabilityProvider)
-                .addPersistentReorderingAllowedListener(capture(visualStabilityCallback))
+            verify(mediaReorderController).setCallback(capture(reorderCallback))
         }
         verify(keyguardUpdateMonitor).registerCallback(capture(keyguardCallback))
         verify(mediaHostStatesManager).addCallback(capture(hostStateCallback))
@@ -959,7 +956,7 @@ class MediaCarouselControllerTest : SysuiTestCase() {
             mediaCarouselController.onSwipeToDismiss()
 
             // When it can be removed immediately on update
-            whenever(visualStabilityProvider.isReorderingAllowed).thenReturn(true)
+            whenever(mediaReorderController.isReorderingAllowed()).thenReturn(true)
             val inactiveMedia = pausedMedia.copy(active = false)
             listener.value.onMediaDataLoaded(PAUSED_LOCAL, PAUSED_LOCAL, inactiveMedia)
             runAllReady()
@@ -983,11 +980,11 @@ class MediaCarouselControllerTest : SysuiTestCase() {
         mediaCarouselController.onSwipeToDismiss()
 
         // When it can't be removed immediately on update
-        whenever(visualStabilityProvider.isReorderingAllowed).thenReturn(false)
+        whenever(mediaReorderController.isReorderingAllowed()).thenReturn(false)
         val inactiveMedia = pausedMedia.copy(active = false)
         listener.value.onMediaDataLoaded(PAUSED_LOCAL, PAUSED_LOCAL, inactiveMedia)
         runAllReady()
-        visualStabilityCallback.value.onReorderingAllowed()
+        reorderCallback.value.invoke()
 
         // This is processed as a user-initiated dismissal
         verify(mediaDataManager).dismissMediaData(eq(PAUSED_LOCAL), anyLong(), eq(true))
