@@ -731,7 +731,7 @@ public class MemoryLimiterTest {
             for (int i = 0; i < 100 && helper.currentSwapMax() != expected; i++) {
                 Thread.sleep(100); // Wait a bit before polling again.
             }
-            assertThat(helper.currentSwapMax()).isEqualTo(expected * MB);
+            assertThat(helper.currentSwapMax()).isEqualTo(expected);
         }
     }
 
