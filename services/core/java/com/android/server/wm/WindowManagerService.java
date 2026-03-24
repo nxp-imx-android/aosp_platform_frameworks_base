@@ -2093,12 +2093,24 @@ public class WindowManagerService extends IWindowManager.Stub
 
         if (imMayMove) {
             displayContent.computeImeLayeringTarget(true /* update */);
+            if (!com.android.window.flags.Flags.showImeLayeringTargetWhenAdding()) {
+                final WindowState imeWindow = displayContent.getImeWindow();
+                if (WindowManager.useClientSurface() && displayContent.getImeLayeringTarget() == win
+                        && imeWindow != null && imeWindow.isVisible()) {
+                    displayContent.getPendingTransaction().show(win.mSurfaceControl);
+                }
+            }
+        }
+        if (com.android.window.flags.Flags.showImeLayeringTargetWhenAdding()
+                && WindowManager.useClientSurface() && displayContent.getImeLayeringTarget() == win
+                && win.mLegacyPolicyVisibilityAfterAnim) {
             final WindowState imeWindow = displayContent.getImeWindow();
-            if (WindowManager.useClientSurface() && displayContent.getImeLayeringTarget() == win
-                    && imeWindow != null && imeWindow.isVisible()) {
+            if (imeWindow != null && imeWindow.isVisible()) {
                 // Since WindowState#showSurfaceOnCreation is false, explicitly show the surface if
                 // it is the IME layering target.
                 displayContent.getPendingTransaction().show(win.mSurfaceControl);
+                // Hide client surface until performShowLocked to sync with enter animation.
+                winAnimator.mAlpha = 0;
             }
         }
 
