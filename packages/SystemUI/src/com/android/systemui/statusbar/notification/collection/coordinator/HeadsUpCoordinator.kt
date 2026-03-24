@@ -110,6 +110,12 @@ constructor(
     @VisibleForTesting
     val mNotifsExtendingLifetime = ArrayMap<NotificationEntry, Runnable?>()
 
+    private fun checkForMismatchedEntry(location: String, entry: NotificationEntry) {
+        if (mHeadsUpManager.hasMismatchedEntry(entry)) {
+            mLogger.logNotifEntryMismatch(location, entry.key)
+        }
+    }
+
     override fun attach(pipeline: NotifPipeline) {
         mNotifPipeline = pipeline
         mHeadsUpManager.addListener(mOnHeadsUpChangedListener)
@@ -702,6 +708,8 @@ constructor(
 
             /** Stop showing as heads up once removed from the notification collection */
             override fun onEntryRemoved(entry: NotificationEntry, reason: Int) {
+                checkForMismatchedEntry("onEntryRemoved", entry)
+
                 mPostedEntries.remove(entry.key)
                 mEntriesUpdateTimes.remove(entry.key)
                 cancelHeadsUpBind(entry)
@@ -907,6 +915,8 @@ constructor(
             }
 
             override fun maybeExtendLifetime(entry: NotificationEntry, reason: Int): Boolean {
+                checkForMismatchedEntry("maybeExtendLifetime", entry)
+
                 if (mHeadsUpManager.canRemoveImmediately(entry.key)) {
                     return false
                 }
@@ -915,6 +925,8 @@ constructor(
                     mNotifsExtendingLifetime[entry] =
                         mExecutor.executeDelayed(
                             {
+                                checkForMismatchedEntry("removeNotification timeout", entry)
+
                                 mHeadsUpManager.removeNotification(
                                     entry.key, /* releaseImmediately */
                                     true,
@@ -926,6 +938,8 @@ constructor(
                         )
                 } else {
                     mExecutor.execute {
+                        checkForMismatchedEntry("removeNotification execute", entry)
+
                         mHeadsUpManager.removeNotification(
                             entry.key, /* releaseImmediately */
                             false,
