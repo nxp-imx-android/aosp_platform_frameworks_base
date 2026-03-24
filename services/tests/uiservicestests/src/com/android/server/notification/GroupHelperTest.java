@@ -1029,7 +1029,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         for (int i = 0; i < AUTOGROUP_BUNDLES_AT_COUNT; i++) {
             NotificationRecord r = getNotificationRecord(pkg, i, String.valueOf(i),
                     UserHandle.SYSTEM);
-            r.updateNotificationChannel(socialChannel);
+            r.updateSystemNotificationChannel(socialChannel);
             posted.add(r);
             mGroupHelper.onNotificationPosted(r, false);
         }
@@ -1046,7 +1046,7 @@ public class GroupHelperTest extends UiServiceTestCase {
             final NotificationRecord r = getNotificationRecord(pkg, i, String.valueOf(i),
                     UserHandle.SYSTEM, "app group", false);
             r.getSbn().setOverrideGroupKey(expectedGroupKey_social);
-            r.updateNotificationChannel(socialChannel);
+            r.updateSystemNotificationChannel(socialChannel);
             mGroupHelper.onNotificationPosted(r, true);
         }
         verify(mCallback, never()).removeAutoGroup(anyString());
@@ -2373,7 +2373,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         final NotificationSectioner initialSection = GroupHelper.getSection(notifToInvalidate);
         final NotificationChannel updatedChannel = new NotificationChannel("TEST_CHANNEL_ID2",
                 "TEST_CHANNEL_ID2", IMPORTANCE_LOW);
-        notifToInvalidate.updateNotificationChannel(updatedChannel);
+        notifToInvalidate.updateSystemNotificationChannel(updatedChannel);
         assertThat(GroupHelper.getSection(notifToInvalidate)).isNotEqualTo(initialSection);
         boolean needsAutogrouping = mGroupHelper.onNotificationPosted(notifToInvalidate, false);
         assertThat(needsAutogrouping).isTrue();
@@ -2419,7 +2419,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         final NotificationSectioner initialSection = GroupHelper.getSection(notifToInvalidate);
         final NotificationChannel updatedChannel = new NotificationChannel("TEST_CHANNEL_ID2",
                 "TEST_CHANNEL_ID2", IMPORTANCE_LOW);
-        notifToInvalidate.updateNotificationChannel(updatedChannel);
+        notifToInvalidate.updateSystemNotificationChannel(updatedChannel);
         assertThat(GroupHelper.getSection(notifToInvalidate)).isNotEqualTo(initialSection);
         boolean needsAutogrouping = mGroupHelper.onNotificationPosted(notifToInvalidate, false);
 
@@ -2487,7 +2487,7 @@ public class GroupHelperTest extends UiServiceTestCase {
             AGGREGATE_GROUP_KEY + "SilentSection", UserHandle.SYSTEM.getIdentifier());
         channel.setImportance(IMPORTANCE_LOW);
         for (NotificationRecord r: notificationList) {
-            r.updateNotificationChannel(channel);
+            r.updateSystemNotificationChannel(channel);
         }
         mGroupHelper.onChannelUpdated(UserHandle.SYSTEM.getIdentifier(), pkg, channel,
                 notificationList, summaryByGroup);
@@ -2530,7 +2530,7 @@ public class GroupHelperTest extends UiServiceTestCase {
                 AGGREGATE_GROUP_KEY + "SilentSection", UserHandle.SYSTEM.getIdentifier());
         channel.setImportance(IMPORTANCE_LOW);
         for (NotificationRecord r: notificationList) {
-            r.updateNotificationChannel(channel);
+            r.updateSystemNotificationChannel(channel);
         }
         mGroupHelper.onChannelUpdated(UserHandle.SYSTEM.getIdentifier(), pkg, channel,
                 notificationList, summaryByGroup);
@@ -2563,7 +2563,7 @@ public class GroupHelperTest extends UiServiceTestCase {
                 AGGREGATE_GROUP_KEY + "SilentSection", UserHandle.SYSTEM.getIdentifier());
         channel.setImportance(IMPORTANCE_LOW);
         for (NotificationRecord r: notificationList) {
-            r.updateNotificationChannel(channel);
+            r.updateSystemNotificationChannel(channel);
         }
         mGroupHelper.onChannelUpdated(notificationList.get(0));
 
@@ -2614,7 +2614,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         channel1.setImportance(IMPORTANCE_LOW);
         for (NotificationRecord record: notificationList) {
             if (record.getChannel().getId().equals(channel1.getId())) {
-                record.updateNotificationChannel(channel1);
+                record.updateSystemNotificationChannel(channel1);
             }
         }
         mGroupHelper.onChannelUpdated(UserHandle.SYSTEM.getIdentifier(), pkg, channel1,
@@ -2689,7 +2689,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         channel1.setImportance(IMPORTANCE_LOW);
         for (NotificationRecord record: notificationList) {
             if (record.getChannel().getId().equals(channel1.getId())) {
-                record.updateNotificationChannel(channel1);
+                record.updateSystemNotificationChannel(channel1);
             }
         }
         mGroupHelper.onChannelUpdated(UserHandle.SYSTEM.getIdentifier(), pkg, channel1,
@@ -2761,13 +2761,13 @@ public class GroupHelperTest extends UiServiceTestCase {
             if (record.getChannel().getId().equals(channel1.getId())
                     && record.getNotification().isGroupChild()
                     && record.getSbn().getId() % 2 == 0) {
-                record.updateNotificationChannel(socialChannel);
+                record.updateSystemNotificationChannel(socialChannel);
                 mGroupHelper.onChannelUpdated(record);
             }
             if (record.getChannel().getId().equals(channel1.getId())
                     && record.getNotification().isGroupChild()
                     && record.getSbn().getId() % 2 != 0) {
-                record.updateNotificationChannel(newsChannel);
+                record.updateSystemNotificationChannel(newsChannel);
                 mGroupHelper.onChannelUpdated(record);
             }
         }
@@ -2828,12 +2828,12 @@ public class GroupHelperTest extends UiServiceTestCase {
         for (NotificationRecord record: notificationList) {
             if (record.getChannel().getId().equals(channel1.getId())
                     && record.getSbn().getId() % 2 == 0) {
-                record.updateNotificationChannel(socialChannel);
+                record.updateSystemNotificationChannel(socialChannel);
                 mGroupHelper.onChannelUpdated(record);
             }
             if (record.getChannel().getId().equals(channel1.getId())
                     && record.getSbn().getId() % 2 != 0) {
-                record.updateNotificationChannel(newsChannel);
+                record.updateSystemNotificationChannel(newsChannel);
                 mGroupHelper.onChannelUpdated(record);
             }
         }
@@ -2891,7 +2891,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         for (NotificationRecord record: notificationList) {
             if (record.getChannel().getId().equals(channel1.getId())
                     && record.getNotification().isGroupChild()) {
-                record.updateNotificationChannel(socialChannel);
+                record.updateSystemNotificationChannel(socialChannel);
                 mGroupHelper.onChannelUpdated(record);
             }
         }
@@ -2948,7 +2948,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         for (NotificationRecord record: notificationList) {
             if (record.getOriginalGroupKey().contains("testGrp")
                     && record.getNotification().isGroupChild()) {
-                record.updateNotificationChannel(socialChannel);
+                record.updateSystemNotificationChannel(socialChannel);
                 mGroupHelper.onChannelUpdated(record);
             }
         }
@@ -3042,7 +3042,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         for (NotificationRecord record: notificationList) {
             if (record.getOriginalGroupKey().contains("testGrp")
                     && record.getNotification().isGroupChild()) {
-                record.updateNotificationChannel(socialChannel);
+                record.updateSystemNotificationChannel(socialChannel);
                 mGroupHelper.onChannelUpdated(record);
             }
         }
@@ -3095,7 +3095,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         for (NotificationRecord record: notificationList) {
             if (record.getOriginalGroupKey().contains("testGrp")
                     && record.getNotification().isGroupChild()) {
-                record.updateNotificationChannel(socialChannel);
+                record.updateSystemNotificationChannel(socialChannel);
             }
         }
 
@@ -3153,7 +3153,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         for (NotificationRecord record: notificationList) {
             if (record.getOriginalGroupKey().contains("testGrp")
                     && record.getNotification().isGroupChild()) {
-                record.updateNotificationChannel(socialChannel);
+                record.updateSystemNotificationChannel(socialChannel);
                 mGroupHelper.onChannelUpdated(record);
             }
         }
@@ -3192,7 +3192,7 @@ public class GroupHelperTest extends UiServiceTestCase {
             if (record.getNotification().isGroupChild()
                     && record.getOriginalGroupKey().contains("testGrp")
                     && record.getChannel().isBundleChannel()) {
-                record.updateNotificationChannel(originalChannel);
+                record.updateSystemNotificationChannel(originalChannel);
                 mGroupHelper.onNotificationUnbundled(record, false);
             }
         }
@@ -3247,7 +3247,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         for (NotificationRecord record: notificationList) {
             if (record.getOriginalGroupKey().contains("testGrp")
                     && record.getNotification().isGroupChild()) {
-                record.updateNotificationChannel(socialChannel);
+                record.updateSystemNotificationChannel(socialChannel);
                 mGroupHelper.onChannelUpdated(record);
             }
         }
@@ -3285,7 +3285,7 @@ public class GroupHelperTest extends UiServiceTestCase {
             if (record.getNotification().isGroupChild()
                     && record.getOriginalGroupKey().contains("testGrp")
                     && record.getChannel().isBundleChannel()) {
-                record.updateNotificationChannel(originalChannel);
+                record.updateSystemNotificationChannel(originalChannel);
                 mGroupHelper.onNotificationUnbundled(record, false);
             }
         }
@@ -3342,7 +3342,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         for (NotificationRecord record: notificationList) {
             if (record.getOriginalGroupKey().contains("testGrp")
                     && record.getNotification().isGroupChild()) {
-                record.updateNotificationChannel(socialChannel);
+                record.updateSystemNotificationChannel(socialChannel);
                 mGroupHelper.onChannelUpdated(record);
                 numChildrenBundled++;
                 if (numChildrenBundled == AUTOGROUP_BUNDLES_AT_COUNT) {
@@ -3390,7 +3390,7 @@ public class GroupHelperTest extends UiServiceTestCase {
             if (record.getNotification().isGroupChild()
                     && record.getOriginalGroupKey().contains("testGrp")
                     && record.getChannel().isBundleChannel()) {
-                record.updateNotificationChannel(originalChannel);
+                record.updateSystemNotificationChannel(originalChannel);
                 mGroupHelper.onNotificationUnbundled(record, true);
             }
         }
@@ -3452,7 +3452,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         for (NotificationRecord record: notificationList) {
             if (record.getOriginalGroupKey().contains("testGrp")
                     && record.getNotification().isGroupChild()) {
-                record.updateNotificationChannel(socialChannel);
+                record.updateSystemNotificationChannel(socialChannel);
                 mGroupHelper.onChannelUpdated(record);
                 numChildrenBundled++;
                 if (numChildrenBundled == AUTOGROUP_BUNDLES_AT_COUNT) {
@@ -3500,7 +3500,7 @@ public class GroupHelperTest extends UiServiceTestCase {
             if (record.getNotification().isGroupChild()
                     && record.getOriginalGroupKey().contains("testGrp")
                     && record.getChannel().isBundleChannel()) {
-                record.updateNotificationChannel(socialChannel);
+                record.updateSystemNotificationChannel(socialChannel);
             }
         }
         mGroupHelper.onChannelUpdated(UserHandle.SYSTEM.getIdentifier(), pkg, socialChannel,
@@ -3562,7 +3562,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         for (NotificationRecord record: notificationList) {
             if (record.getOriginalGroupKey().contains("testGrp")
                     && record.getNotification().isGroupChild()) {
-                record.updateNotificationChannel(socialChannel);
+                record.updateSystemNotificationChannel(socialChannel);
                 mGroupHelper.onChannelUpdated(record);
                 numChildrenBundled++;
                 if (numChildrenBundled == (numChildren - 1)) {
@@ -3614,7 +3614,7 @@ public class GroupHelperTest extends UiServiceTestCase {
             if (record.getNotification().isGroupChild()
                     && record.getOriginalGroupKey().contains("testGrp")
                     && record.getChannel().isBundleChannel()) {
-                record.updateNotificationChannel(socialChannel);
+                record.updateSystemNotificationChannel(socialChannel);
             }
         }
         mGroupHelper.onChannelUpdated(UserHandle.SYSTEM.getIdentifier(), pkg, socialChannel,
@@ -3668,7 +3668,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         for (NotificationRecord record: notificationList) {
             if (record.getOriginalGroupKey().contains("testGrp")
                     && record.getNotification().isGroupChild()) {
-                record.updateNotificationChannel(socialChannel);
+                record.updateSystemNotificationChannel(socialChannel);
                 mGroupHelper.onChannelUpdated(record);
                 numChildrenBundled++;
                 if (numChildrenBundled == AUTOGROUP_AT_COUNT) {
@@ -3700,7 +3700,7 @@ public class GroupHelperTest extends UiServiceTestCase {
             if (record.getNotification().isGroupChild()
                     && record.getOriginalGroupKey().contains("testGrp")
                     && record.getChannel().isBundleChannel()) {
-                record.updateNotificationChannel(socialChannel);
+                record.updateSystemNotificationChannel(socialChannel);
             }
         }
         mGroupHelper.onChannelUpdated(UserHandle.SYSTEM.getIdentifier(), pkg, socialChannel,
@@ -3770,7 +3770,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         final int numSilentGroupNotifications = AUTOGROUP_AT_COUNT + numUngrouped;
         channel.setImportance(IMPORTANCE_LOW);
         for (NotificationRecord r: notificationList) {
-            r.updateNotificationChannel(channel);
+            r.updateSystemNotificationChannel(channel);
         }
         mGroupHelper.onChannelUpdated(UserHandle.SYSTEM.getIdentifier(), pkg, channel,
                 notificationList, summaryByGroup);
@@ -3825,7 +3825,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         channel1.setImportance(IMPORTANCE_LOW);
         for (NotificationRecord record: notificationList) {
             if (record.getChannel().getId().equals(channel1.getId())) {
-                record.updateNotificationChannel(channel1);
+                record.updateSystemNotificationChannel(channel1);
             }
         }
         mGroupHelper.onChannelUpdated(UserHandle.SYSTEM.getIdentifier(), pkg, channel1,
@@ -4613,7 +4613,7 @@ public class GroupHelperTest extends UiServiceTestCase {
             NotificationRecord child = getNotificationRecord(mPkg, i, "", mUser, groupName, false,
                     IMPORTANCE_DEFAULT);
             notifList.add(child);
-            child.updateNotificationChannel(socialChannel);
+            child.updateSystemNotificationChannel(socialChannel);
             mGroupHelper.onNotificationPostedWithDelay(child, notifList, summaryByGroupKey);
         }
 

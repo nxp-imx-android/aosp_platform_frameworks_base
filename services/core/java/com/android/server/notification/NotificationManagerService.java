@@ -1179,7 +1179,7 @@ public class NotificationManagerService extends SystemService {
             NotificationChannel newChannel = mPreferencesHelper.getNotificationChannel(pkg,
                     summary.getUid(), summaryAttr.channelId, false);
             if (newChannel != null) {
-                summary.updateNotificationChannel(newChannel);
+                summary.updateSystemNotificationChannel(newChannel);
                 attributesUpdated = true;
             }
         }
@@ -2946,16 +2946,6 @@ public class NotificationManagerService extends SystemService {
     }
 
     @VisibleForTesting
-    void setHandler(WorkerHandler handler) {
-        mHandler = handler;
-    }
-
-    @VisibleForTesting
-    void setRankingHelper(RankingHelper rankingHelper) {
-        mRankingHelper = rankingHelper;
-    }
-
-    @VisibleForTesting
     void setPreferencesHelper(PreferencesHelper prefHelper) { mPreferencesHelper = prefHelper; }
 
     @VisibleForTesting
@@ -3022,7 +3012,8 @@ public class NotificationManagerService extends SystemService {
             UiEventLogger uiEventLogger, BitmapOffloadInternal bitmapOffloader,
             NotificationListenerStats notificationListenerStats,
             NotificationRecordLogger notificationRecordLogger,
-            InstanceIdSequence instanceIdSequence) {
+            InstanceIdSequence instanceIdSequence,
+            PreferencesHelperFactory preferencesHelperFactory) {
         mHandler = handler;
         mBroadcastsHandler = broadcastsHandler;
         Resources resources = getContext().getResources();
@@ -3145,7 +3136,7 @@ public class NotificationManagerService extends SystemService {
         mPermissionHelper = permissionHelper;
         mNotificationChannelLogger = channelLogger;
         mUserProfiles.updateCache(getContext());
-        mPreferencesHelper = new PreferencesHelper(getContext(),
+        mPreferencesHelper = preferencesHelperFactory.newHelper(getContext(),
                 mPackageManagerClient,
                 mRankingHandler,
                 mZenModeHelper,
@@ -3420,10 +3411,12 @@ public class NotificationManagerService extends SystemService {
                 new NotificationChannelLoggerImpl(), SystemUiSystemPropertiesFlags.getResolver(),
                 getContext().getSystemService(PermissionManager.class),
                 getContext().getSystemService(PowerManager.class),
-                new PostNotificationTrackerFactory() {}, new UiEventLoggerImpl(),
+                new PostNotificationTrackerFactory() {
+                }, new UiEventLoggerImpl(),
                 bitmapOffloader, new NotificationListenerStats(),
                 new NotificationRecordLoggerImpl(),
-                new InstanceIdSequence(NOTIFICATION_INSTANCE_ID_MAX));
+                new InstanceIdSequence(NOTIFICATION_INSTANCE_ID_MAX),
+                new PreferencesHelperFactory() {});
 
         publishBinderService(Context.NOTIFICATION_SERVICE, mService, /* allowIsolated= */ false,
                 DUMP_FLAG_PRIORITY_CRITICAL | DUMP_FLAG_PRIORITY_NORMAL);
@@ -7668,11 +7661,13 @@ public class NotificationManagerService extends SystemService {
                                 ? new Adjustment(adjustment)
                                 : adjustment;
                         applyAdjustmentLocked(r, recordAdjustment, false);
-                        r.applyAdjustments();
-                        // importance is checked at the beginning of the
-                        // PostNotificationRunnable, before the signal extractors are run, so
-                        // calculate the final importance here
-                        r.calculateImportance();
+                        if (!nmContextualDisplayLaunch()) {
+                            r.applyAdjustments();
+                            // importance is checked at the beginning of the
+                            // PostNotificationRunnable, before the signal extractors are run, so
+                            // calculate the final importance here
+                            r.calculateImportance();
+                        }
                     }
 
                     if (enqueuedRecords.isEmpty()) {
@@ -8058,6 +8053,7 @@ public class NotificationManagerService extends SystemService {
             }
 
             if (mNotificationRuleManager.removeNotificationRule(userId, ruleId)) {
+                onNotificationRuleRemoved(userId, ruleId);
                 handleSaveRulesFile();
                 mAssistants.notifyNotificationRuleRemoved(userId, ruleId);
                 return true;
@@ -9493,11 +9489,11 @@ public class NotificationManagerService extends SystemService {
                 mPreferencesHelper.updateNotificationChannel(
                         pkg, notificationUid, channel, false, callingUid,
                         isCallerSystemOrSystemUi());
-                r.updateNotificationChannel(channel);
+                r.updateSystemNotificationChannel(channel);
             } else if (!channel.isUserVisibleTaskShown() && !TextUtils.isEmpty(channelId)
                     && !NotificationChannel.DEFAULT_CHANNEL_ID.equals(channelId)) {
                 channel.setUserVisibleTaskShown(true);
-                r.updateNotificationChannel(channel);
+                r.updateSystemNotificationChannel(channel);
             }
         }
 
@@ -10377,8 +10373,14 @@ public class NotificationManagerService extends SystemService {
     boolean isRecordBlockedLocked(NotificationRecord r) {
         final String pkg = r.getSbn().getPackageName();
         final int callingUid = r.getSbn().getUid();
-        return mPreferencesHelper.isGroupBlocked(pkg, callingUid, r.getChannel().getGroup())
-                || r.getImportance() == IMPORTANCE_NONE;
+        boolean groupBlocked = mPreferencesHelper.isGroupBlocked(
+                pkg, callingUid, r.getChannel().getGroup());
+        if (nmContextualDisplayLaunch()) {
+            return groupBlocked || r.getImportance() == IMPORTANCE_NONE
+                    || r.hasPendingBlockAdjustment(mNotificationRuleManager);
+        } else {
+            return groupBlocked || r.getImportance() == IMPORTANCE_NONE;
+        }
     }
 
     /**
@@ -11733,9 +11735,16 @@ public class NotificationManagerService extends SystemService {
                 if (!extractorDataBefore.containsKey(r.getKey())) {
                     // This shouldn't happen given that we just built this with all the
                     // notifications, but check just to be safe.
+                    Slog.wtf(TAG, "Missing extractor data");
                     continue;
                 }
-                if (extractorDataBefore.get(r.getKey()).hasDiffForRankingLocked(r, i)) {
+                NotificationRecordExtractorData before = extractorDataBefore.get(r.getKey());
+
+                if (nmContextualDisplayLaunch() && before.hasBeenUnbundled(r)) {
+                    mGroupHelper.onNotificationUnbundled(r, true);
+                }
+
+                if (before.hasDiffForRankingLocked(r, i)) {
                     mHandler.scheduleSendRankingUpdate();
                 }
 
@@ -11899,7 +11908,8 @@ public class NotificationManagerService extends SystemService {
         }
     }
 
-    private final class RankingHandlerWorker extends Handler implements RankingHandler
+    @VisibleForTesting
+    final class RankingHandlerWorker extends Handler implements RankingHandler
     {
         public RankingHandlerWorker(Looper looper) {
             super(looper);
@@ -12713,6 +12723,49 @@ public class NotificationManagerService extends SystemService {
      */
     private boolean isPromotedOutOfGroup(NotificationRecord r) {
         return r.getChannel().isImportantConversation() || r.getNotification().isPromotedOngoing();
+    }
+
+    /**
+     * Updates all notifications potentially affected by a rule when that rule is deleted.
+     */
+    private void onNotificationRuleRemoved(@UserIdInt int userId, int ruleId) {
+        synchronized (mNotificationLock) {
+            List<NotificationRecord> affectedRecords = findNotificationsLocked(
+                    notificationRecord -> {
+                        if (notificationRecord.getUserId() == userId) {
+                            Adjustment a = notificationRecord.getMatchingRulesAdjustment();
+                            return a != null && a.getSignals().containsKey(KEY_NOTIFICATION_RULES)
+                                    && a.getSignals().getIntegerArrayList(
+                                    KEY_NOTIFICATION_RULES).contains(ruleId);
+                        }
+                        return false;
+                    });
+            if (!affectedRecords.isEmpty()) {
+                for (NotificationRecord record : affectedRecords) {
+                    record.getMatchingRulesAdjustment().getSignals().getIntegerArrayList(
+                            KEY_NOTIFICATION_RULES).remove(new Integer(ruleId));
+                }
+                mRankingHandler.requestSort();
+            }
+        }
+    }
+
+    @GuardedBy("mNotificationLock")
+    @NonNull
+    List<NotificationRecord> findNotificationsLocked(Predicate<NotificationRecord> filter) {
+        List<NotificationRecord> records = new ArrayList<>();
+        for (NotificationRecord record : mEnqueuedNotifications) {
+            if (filter.test(record)) {
+                records.add(record);
+            }
+        }
+        for (NotificationRecord record : mNotificationList) {
+            if (filter.test(record)) {
+                records.add(record);
+            }
+        }
+
+        return records;
     }
 
     @GuardedBy("mNotificationLock")
@@ -16371,6 +16424,19 @@ public class NotificationManagerService extends SystemService {
             // trampolines are blocked.
             return tokens.contains(ALLOWLIST_TOKEN)
                     && !CompatChanges.isChangeEnabled(NOTIFICATION_TRAMPOLINE_BLOCK, uid);
+        }
+    }
+
+    interface PreferencesHelperFactory {
+        default PreferencesHelper newHelper(Context context, PackageManager pm,
+                RankingHandler rankingHandler, ZenModeHelper zenHelper, PermissionHelper permHelper,
+                PermissionManager permManager, NotificationChannelLogger notificationChannelLogger,
+                AppOpsManager appOpsManager, ManagedServices.UserProfiles userProfiles,
+                UriGrantsManagerInternal ugmInternal, boolean showReviewPermissionsNotification,
+                Clock clock, NotificationManagerPrivate nmPrivate) {
+            return new PreferencesHelper(context, pm, rankingHandler, zenHelper, permHelper,
+                    permManager, notificationChannelLogger, appOpsManager, userProfiles,
+                    ugmInternal, showReviewPermissionsNotification, clock, nmPrivate);
         }
     }
 

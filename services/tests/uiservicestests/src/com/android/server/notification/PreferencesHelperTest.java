@@ -6453,7 +6453,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 new NotificationChannel("id2", "name1", NotificationManager.IMPORTANCE_HIGH);
         mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, channel, true, false,
                 UID_N_MR1, false);
-        // modifying same object, don't need to call updateNotificationChannel
+        // modifying same object, don't need to call updateSystemNotificationChannel
         channel.setImportance(IMPORTANCE_NONE);
 
         NotificationChannel channel2 =
@@ -6482,7 +6482,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
                 new NotificationChannel("id2", "name1", NotificationManager.IMPORTANCE_HIGH);
         mHelper.createNotificationChannel(PKG_N_MR1, UID_N_MR1, channel, true, false,
                 UID_N_MR1, false);
-        // modifying same object, don't need to call updateNotificationChannel
+        // modifying same object, don't need to call updateSystemNotificationChannel
         channel.setImportance(IMPORTANCE_NONE);
 
         NotificationChannel channel2 =

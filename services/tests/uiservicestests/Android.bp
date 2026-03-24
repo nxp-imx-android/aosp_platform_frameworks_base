@@ -104,6 +104,8 @@ filegroup {
         "src/com/android/server/notification/NotificationRecordLoggerFake.java",
         "src/com/android/server/notification/NotificationChannelLoggerFake.java",
         "src/com/android/server/notification/TestableNotificationManagerService.java",
+        "src/com/android/server/notification/TestPreferencesHelper.java",
+        "src/com/android/server/notification/TestPreferencesHelperFactory.java",
         "src/com/android/server/notification/ZenChangeOrigin.java",
         "src/com/android/server/notification/ZenModeEventLoggerFake.java",
     ],
