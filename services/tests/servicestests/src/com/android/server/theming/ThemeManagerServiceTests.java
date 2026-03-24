@@ -104,6 +104,7 @@ public class ThemeManagerServiceTests {
     private ThemeManagerService mThemeManagerService;
     private ThemeStateManager mThemeStateManager;
     private ThemeEnvironment mEnvironment;
+    private FakeScheduledExecutorService mSchedulerExecutor;
 
     private final HashMap<Integer, Object> mUserResourceOverrides = new HashMap<>(
             new ImmutableMap.Builder<Integer, Object>()
@@ -162,8 +163,8 @@ public class ThemeManagerServiceTests {
 
         mEnvironment = new ThemeEnvironment(mMainContext, mHardwareColorRule.sysPropReader);
 
-        FakeScheduledExecutorService schedulerExecutor = new FakeScheduledExecutorService();
-        mThemeStateManager = new ThemeStateManager(mMainContext, schedulerExecutor, mEnvironment);
+        mSchedulerExecutor = new FakeScheduledExecutorService();
+        mThemeStateManager = new ThemeStateManager(mMainContext, mSchedulerExecutor, mEnvironment);
         mThemeStateManager.onServicesReady();
     }
 
@@ -190,6 +191,7 @@ public class ThemeManagerServiceTests {
 
         // Ensure asynchronous initialization completes
         waitForBackgroundThread();
+        mSchedulerExecutor.fastForwardTime(ThemeStateManager.DEBOUNCE_MS + 100L);
 
         assertThat(pair.getPendingState()).isNull(); // there is an update
         assertThat(pair.getCurrentState().timeStamp()).isNotEqualTo(originalTime);
