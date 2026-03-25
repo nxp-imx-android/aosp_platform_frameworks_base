@@ -461,7 +461,7 @@ public class SafeActivityOptions {
             final int uid = AppGlobals.getPackageManager().getPackageUid(assistantPackage,
                     PackageManager.MATCH_DIRECT_BOOT_AUTO,
                     UserHandle.getUserId(callingUid));
-            if (uid == callingUid) {
+            if (UserHandle.isSameAppIdWithPcc(callingUid, uid)) {
                 return true;
             }
         } catch (RemoteException e) {
