@@ -17,6 +17,7 @@
 package com.android.systemui.qs.panels.ui.compose
 
 import android.os.Trace
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -40,8 +41,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -70,14 +76,37 @@ private val TileDetailsViewModel.traceName
             Trace.MAX_SECTION_NAME_LEN
         )
 
+/**
+ * Renders the detailed view for a Quick Settings tile.
+ *
+ * This composable displays the title, subtitle, and specific content for the currently active tile.
+ * It also provides navigation buttons to close the details view or open the corresponding settings
+ * page.
+ *
+ * @param modifier Modifier to be applied to the layout.
+ * @param detailsViewModel ViewModel managing the state of the tile details view.
+ * @param initialHeight Optional initial height for the detailed view.
+ */
 @Composable
-fun TileDetails(modifier: Modifier = Modifier, detailsViewModel: DetailsViewModel) {
+fun TileDetails(
+    modifier: Modifier = Modifier,
+    detailsViewModel: DetailsViewModel,
+    initialHeight: () -> Int? = { null },
+) {
 
     if (!QsDetailedView.isEnabled) {
         throw IllegalStateException("QsDetailedView should be enabled")
     }
 
     val tileDetailedViewModel = detailsViewModel.activeTileDetails ?: return
+
+    // State to track if the detailed content has finished loading.
+    // If the tile requires async loading, it starts as false and should be set to true
+    // once the content is ready; Otherwise, it is always true.
+    var isContentReady by
+        remember(tileDetailedViewModel) {
+            mutableStateOf(!tileDetailedViewModel.requiresAsyncLoading)
+        }
 
     trace(tileDetailedViewModel.traceName) {
         DisposableEffect(Unit) { onDispose { detailsViewModel.closeDetailedView() } }
@@ -90,6 +119,22 @@ fun TileDetails(modifier: Modifier = Modifier, detailsViewModel: DetailsViewMode
             modifier =
                 modifier
                     .fillMaxWidth()
+                    .animateContentSize()
+                    .then(
+                        // Keep the detailed view at its initial height while async content loads.
+                        // This prevents the view from briefly collapsing before the content is
+                        // fully rendered.
+                        if (tileDetailedViewModel.requiresAsyncLoading) {
+                            initialHeight()?.let { height ->
+                                Modifier.lockHeightUntilLoaded(
+                                    targetHeight = height,
+                                    isLoaded = isContentReady,
+                                )
+                            } ?: Modifier
+                        } else {
+                            Modifier
+                        }
+                    )
                     .heightIn(
                         min = TileDetailsDefaults.DetailsMinHeight,
                         max = TileDetailsDefaults.DetailsMaxHeight,
@@ -171,24 +216,51 @@ fun TileDetails(modifier: Modifier = Modifier, detailsViewModel: DetailsViewMode
             }
 
             Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
-                MapTileDetailsContent(tileDetailedViewModel)
+                MapTileDetailsContent(tileDetailedViewModel) { isContentReady = true }
             }
         }
     }
 }
 
 @Composable
-private fun MapTileDetailsContent(tileDetailsViewModel: TileDetailsViewModel) {
+private fun MapTileDetailsContent(
+    tileDetailsViewModel: TileDetailsViewModel,
+    onContentReady: () -> Unit,
+) {
     when (tileDetailsViewModel) {
-        is InternetDetailsViewModel -> InternetDetailsContent(tileDetailsViewModel)
+        is InternetDetailsViewModel -> InternetDetailsContent(tileDetailsViewModel, onContentReady)
         is BluetoothDetailsViewModel ->
-            BluetoothDetailsContent(tileDetailsViewModel.detailsContentViewModel)
+            BluetoothDetailsContent(tileDetailsViewModel.detailsContentViewModel, onContentReady)
 
         is ModesDetailsViewModel -> ModesDetailsContent(tileDetailsViewModel)
         is CastDetailsViewModel -> CastDetailsContent(tileDetailsViewModel)
         is AudioDetailsViewModel -> AudioDetailsContent(tileDetailsViewModel)
     }
 }
+
+/**
+ * A [Modifier] that locks the layout to a specific [targetHeight] until [isLoaded] becomes true.
+ *
+ * This is useful for maintaining a consistent size while asynchronous content (like an inflated
+ * AndroidView) is loading, preventing the UI from jumping or flickering. Once [isLoaded] is true,
+ * it allows the layout to size itself normally based on its content.
+ */
+private fun Modifier.lockHeightUntilLoaded(targetHeight: Int, isLoaded: Boolean): Modifier =
+    this.layout { measurable, constraints ->
+        val placeable = measurable.measure(constraints)
+
+        val lockedHeight =
+            if (!isLoaded) {
+                // If we have a target height and we aren't loaded yet, force the height.
+                // We respect constraints.maxHeight (from heightIn) to avoid breaking the layout
+                // rules.
+                targetHeight.coerceAtMost(constraints.maxHeight)
+            } else {
+                placeable.height
+            }
+
+        layout(placeable.width, lockedHeight) { placeable.place(0, 0) }
+    }
 
 private object TileDetailsDefaults {
     val TitleRowButtonSize: Dp

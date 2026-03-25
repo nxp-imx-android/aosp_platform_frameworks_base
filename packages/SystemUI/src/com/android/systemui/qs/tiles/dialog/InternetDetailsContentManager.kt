@@ -80,6 +80,7 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.user.data.repository.UserRepository
+import com.android.systemui.util.ListenerSet
 import com.android.wifitrackerlib.WifiEntry
 import com.google.common.annotations.VisibleForTesting
 import dagger.assisted.Assisted
@@ -234,6 +235,23 @@ constructor(
         lifecycleRegistry.currentState = Lifecycle.State.CREATED
     }
 
+    interface Listener {
+        /**
+         * Called when the Internet details UI content is updated.
+         */
+        fun onContentDataUpdated()
+    }
+
+    private val listeners = ListenerSet<Listener>()
+
+    fun addListener(listener: Listener) {
+        listeners.addIfAbsent(listener)
+    }
+
+    fun removeListener(listener: Listener) {
+        listeners.remove(listener)
+    }
+
     private fun initializeViews() {
         // Set accessibility properties
         contentView.accessibilityPaneTitle =
@@ -246,6 +264,7 @@ constructor(
         // Initialize LiveData observer
         internetContentData.observe(lifecycleOwner!!) { internetContent ->
             internetContent?.let { updateDetailsUI(it) }
+            listeners.forEach { it.onContentDataUpdated() }
         }
 
         // Network layouts
@@ -1148,6 +1167,7 @@ constructor(
         if (DEBUG) {
             Log.d(TAG, "unBind")
         }
+        listeners.forEach { listeners.remove(it) }
         lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
         connectedMobileLayout?.setOnClickListener(null)
         mobileNetworkLayout.setOnClickListener(null)

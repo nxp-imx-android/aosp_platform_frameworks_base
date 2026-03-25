@@ -106,8 +106,9 @@ constructor(
      * Binds the bluetooth details view with BluetoothDetailsContentManager.
      *
      * @param view The view from which the bluetooth details content is shown.
+     * @param listener The listener to be notified when the content is updated.
      */
-    fun bindDetailsView(view: View) {
+    fun bindDetailsView(view: View, listener: BluetoothDetailsContentManager.Listener? = null) {
         // If `QsDetailedView` is not enabled, it should show the dialog.
         if (QsDetailedView.isUnexpectedlyInLegacyMode()) return
 
@@ -117,6 +118,7 @@ constructor(
             coroutineScope.launch(context = mainDispatcher) {
                 val detailsUIState = createInitialDetailsUIState()
                 contentManager = createContentManager()
+                listener?.let { contentManager.addListener(it) }
                 contentManager.bind(
                     contentView = view,
                     dialog = null,
@@ -186,7 +188,12 @@ constructor(
     /** Unbinds the details view when it goes away. */
     fun unbindDetailsView() {
         cancelJob()
-        contentManager.releaseView()
+
+        // contentManager is initialized asynchronously in bindDetailsView.
+        // It might not be initialized if the view is quickly detached.
+        if (::contentManager.isInitialized) {
+            contentManager.releaseView()
+        }
     }
 
     private fun createInitialDetailsUIState(): DetailsUIState =

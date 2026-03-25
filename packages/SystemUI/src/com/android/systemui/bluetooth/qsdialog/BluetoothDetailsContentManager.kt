@@ -51,6 +51,7 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.SystemUIDialog
+import com.android.systemui.util.ListenerSet
 import com.android.systemui.util.annotations.DeprecatedSysuiVisibleForTesting
 import com.android.systemui.util.time.SystemClock
 import dagger.assisted.Assisted
@@ -130,6 +131,23 @@ constructor(
     private var lastConnectedDeviceIndex: Int = -1
 
     private lateinit var coroutineScope: CoroutineScope
+
+    interface Listener {
+        /**
+         * Called when the Bluetooth details UI content is updated.
+         */
+        fun onContentUpdated()
+    }
+
+    private val listeners = ListenerSet<Listener>()
+
+    fun addListener(listener: Listener) {
+        listeners.addIfAbsent(listener)
+    }
+
+    fun removeListener(listener: Listener) {
+        listeners.remove(listener)
+    }
 
     // UI Components
     private lateinit var contentView: View
@@ -312,6 +330,7 @@ constructor(
     }
 
     fun releaseView() {
+        listeners.forEach { listeners.remove(it) }
         mutableContentHeight.value = scrollViewContent.measuredHeight
     }
 
@@ -388,6 +407,7 @@ constructor(
                         deviceListView.invalidateItemDecorations()
                     }
                     logger.logDeviceUiUpdate(lastUiUpdateMs - start, deviceItem)
+                    listeners.forEach { it.onContentUpdated() }
                 }
             }
         }
