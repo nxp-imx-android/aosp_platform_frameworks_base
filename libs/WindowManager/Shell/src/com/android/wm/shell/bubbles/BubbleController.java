@@ -861,17 +861,10 @@ public class BubbleController implements ConfigurationChangeListener,
         mIsStatusBarShade = isShade;
         if (!mIsStatusBarShade && didChange) {
             if (mBubbleData.isExpanded()) {
-                // If the IME is visible, hide it first and then collapse.
                 if (mBubblePositioner.isImeVisible()) {
-                    if (Flags.fixBubbleSwipeUpGesture()) {
-                        hideCurrentInputMethod(/* onImeHidden= */ null);
-                        collapseStack();
-                    } else {
-                        hideCurrentInputMethod(this::collapseStack);
-                    }
-                } else {
-                    collapseStack();
+                    hideCurrentInputMethod(/* onImeHidden= */ null);
                 }
+                collapseStack();
             } else if (mOnImeHidden != null) {
                 // a request to collapse started before we're notified that the device is locking.
                 // we're currently waiting for the IME to collapse, before mOnImeHidden can be
