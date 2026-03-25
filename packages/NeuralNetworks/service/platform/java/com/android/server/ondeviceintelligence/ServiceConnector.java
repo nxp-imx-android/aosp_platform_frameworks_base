@@ -611,6 +611,12 @@ public interface ServiceConnector<I extends IInterface> {
                     task.cancel(/* mayInterruptWhileRunning= */ false);
                 }
             }
+
+            List<CompletionAwareJob<I, ?>> unfinishedToCancel = new ArrayList<>(mUnfinishedJobs);
+            for (CompletionAwareJob<I, ?> task : unfinishedToCancel) {
+                task.cancel(/* mayInterruptWhileRunning= */ false);
+            }
+            mUnfinishedJobs.clear();
         }
 
         @Override
@@ -782,9 +788,11 @@ public interface ServiceConnector<I extends IInterface> {
             @Override
             protected void onCompleted(R res, Throwable err) {
                 super.onCompleted(res, err);
-                if (mUnfinishedJobs.remove(this)) {
-                    maybeScheduleUnbindTimeout();
-                }
+                getJobHandler().post(() -> {
+                    if (mUnfinishedJobs.remove(this)) {
+                        maybeScheduleUnbindTimeout();
+                    }
+                });
             }
         }
     }
