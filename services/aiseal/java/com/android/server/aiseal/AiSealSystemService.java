@@ -16,13 +16,18 @@
 
 package com.android.server.aiseal;
 
+import android.annotation.NonNull;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Environment;
 import android.os.IBinder;
 import android.os.IBinder.DeathRecipient;
 import android.os.RemoteException;
 import android.os.SELinux;
 import android.os.ServiceManager;
+import android.os.UserHandle;
 import android.text.format.DateUtils;
 import android.util.ArraySet;
 import android.util.Slog;
@@ -34,6 +39,7 @@ import com.android.server.SystemService;
 import com.android.server.SystemService.TargetUser;
 
 import java.io.File;
+import java.util.Objects;
 import java.util.Set;
 
 /** AiSeal system service. */
@@ -42,6 +48,8 @@ public class AiSealSystemService extends SystemService {
     private static final String TAG = "AiSealSystemService";
     private static final String AISEAL_PRIVATE_FOLDER = "AiSeal";
     private static final String KEK_FILENAME = "kek";
+
+    private final Context mContext;
 
     // Synchronizes user state changes with the AiSeal internal service connection.
     private static final Object sLock = new Object();
@@ -54,12 +62,18 @@ public class AiSealSystemService extends SystemService {
 
     public AiSealSystemService(Context context) {
         super(context);
+        mContext = Objects.requireNonNull(context);
     }
 
     @Override
     public void onStart() {
         Slog.i(TAG, "AiSealSystemService has started, connecting to AiSeal internal service");
         connectAiSealInternalService();
+        mContext.registerReceiverForAllUsers(
+            new UserActionReceiver(),
+            new IntentFilter(Intent.ACTION_USER_REMOVED),
+            /* broadcastPermission= */ null,
+            /* scheduler= */ null);
     }
 
     @Override
@@ -160,8 +174,7 @@ public class AiSealSystemService extends SystemService {
     public void notifyUserUnlockingLocked(int userId) {
         Slog.i(TAG, "Unlocking user " + userId);
         try {
-            File kekFile = Environment.buildPath(Environment.getDataSystemCeDirectory(userId),
-                    AISEAL_PRIVATE_FOLDER, KEK_FILENAME);
+            File kekFile = getKekFile(userId);
             kekFile.getParentFile().mkdirs();
             SELinux.restorecon(kekFile.getParentFile());
             mAiSealInternalService.onUserUnlocking(userId, kekFile.getAbsolutePath());
@@ -179,5 +192,42 @@ public class AiSealSystemService extends SystemService {
         } catch (Exception e) {
             Slog.wtf(TAG, "Unable to stop user " + userId, e);
         }
+    }
+
+    private class UserActionReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(@NonNull Context context, @NonNull Intent intent) {
+            Objects.requireNonNull(context);
+            Objects.requireNonNull(intent);
+            if (Intent.ACTION_USER_REMOVED.equals(intent.getAction())) {
+                UserHandle userHandle = intent.getParcelableExtra(Intent.EXTRA_USER);
+                if (userHandle == null) {
+                    Slog.e(TAG,
+                            "Extra " + Intent.EXTRA_USER + " is missing in the intent: " + intent);
+                    return;
+                }
+                onUserRemoved(userHandle);
+            } else {
+                Slog.e(TAG, "Received unknown intent: " + intent);
+            }
+        }
+    }
+
+    // Delete all AiSeal data to ensure the user data is properly destroyed when a user profile is
+    // removed.
+    private void onUserRemoved(@NonNull UserHandle userHandle) {
+        Objects.requireNonNull(userHandle);
+        try {
+            synchronized (sLock) {
+                mAiSealInternalService.onUserRemoved(userHandle.getIdentifier());
+            }
+        } catch (Exception e) {
+            Slog.wtf(TAG, "Failed to remove AiSeal data for user " + userHandle);
+        }
+    }
+
+    private File getKekFile(int userId) {
+        return Environment.buildPath(Environment.getDataSystemCeDirectory(userId),
+                AISEAL_PRIVATE_FOLDER, KEK_FILENAME);
     }
 }
