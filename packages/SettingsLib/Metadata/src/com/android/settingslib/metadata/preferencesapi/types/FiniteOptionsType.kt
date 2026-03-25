@@ -55,6 +55,14 @@ interface FiniteOptionsType<InternalType, ExternalType : Any> : ApiType<Internal
     }
 }
 
+/**
+ * Clears the options cache. Should only be used to prevent state leakage
+ * in Robolectric/JUnit test suites.
+ */
+fun clearCache() {
+    optionsCache.clear()
+}
+
 /** FiniteOptionsType for types which have the same internal and external type. */
 interface DirectFiniteOptionsType<ExternalType : Any> : FiniteOptionsType<ExternalType, ExternalType> {
     override fun convertInternalToExternal(internalValue: ExternalType): ExternalType = internalValue
