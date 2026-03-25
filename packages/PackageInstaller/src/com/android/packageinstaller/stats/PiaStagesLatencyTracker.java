@@ -30,7 +30,7 @@ import java.util.List;
  */
 public class PiaStagesLatencyTracker {
 
-    private @PiaInstallStage int mCurrentStage = PIA_INSTALL_STAGE_UNKNOWN;
+    private @PiaInstallStage int mCurrentStage;
     private long mCurrentStageStartTime;
     private int mSessionId;
     private int mApkSize;
@@ -52,6 +52,7 @@ public class PiaStagesLatencyTracker {
         mStagesList = new ArrayList<>();
         mStagesLatencyList = new ArrayList<>();
         mApkSize = apkSize;
+        mCurrentStage = PIA_INSTALL_STAGE_UNKNOWN;
     }
 
     public PiaStagesLatencyTracker(StatsdLogger statsdLogger) {
@@ -107,6 +108,9 @@ public class PiaStagesLatencyTracker {
      * latencies to the StatsD logger.
      */
     public void stopRecordingAndLog() {
+        if (mCurrentStageStartTime == PIA_INSTALL_STAGE_UNKNOWN) {
+            return;
+        }
         endAndStorePreviousStage();
 
         PiaInstallStagesReportedStats stats = PiaInstallStagesReportedStats.builder()
