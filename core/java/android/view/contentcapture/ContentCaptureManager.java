@@ -361,14 +361,6 @@ public final class ContentCaptureManager {
     public static final String DEVICE_CONFIG_PROPERTY_IDLE_UNBIND_TIMEOUT = "idle_unbind_timeout";
 
     /**
-     * Sets to disable flush when receiving a VIEW_TREE_APPEARING event.
-     *
-     * @hide
-     */
-    public static final String DEVICE_CONFIG_PROPERTY_DISABLE_FLUSH_FOR_VIEW_TREE_APPEARING =
-            "disable_flush_for_view_tree_appearing";
-
-    /**
      * Enables the content protection receiver.
      *
      * @hide
@@ -471,8 +463,6 @@ public final class ContentCaptureManager {
     public static final int DEFAULT_TEXT_CHANGE_FLUSHING_FREQUENCY_MS = 1_000;
     /** @hide */
     public static final int DEFAULT_LOG_HISTORY_SIZE = 10;
-    /** @hide */
-    public static final boolean DEFAULT_DISABLE_FLUSH_FOR_VIEW_TREE_APPEARING = false;
     /** @hide */
     public static final boolean DEFAULT_ENABLE_CONTENT_CAPTURE_RECEIVER = true;
     /** @hide */
@@ -585,7 +575,6 @@ public final class ContentCaptureManager {
         mOptions = Objects.requireNonNull(options, "options cannot be null");
 
         ContentCaptureHelper.setLoggingLevel(mOptions.loggingLevel);
-        setFlushViewTreeAppearingEventDisabled(mOptions.disableFlushForViewTreeAppearing);
 
         if (sVerbose) Log.v(TAG, "Constructor for " + context.getPackageName());
 
@@ -887,38 +876,6 @@ public final class ContentCaptureManager {
         // Prevent overriding the status of disabling by app
         if (mainSession != null && !alreadyDisabledByApp) {
             mainSession.setDisabled(flagSecureEnabled);
-        }
-    }
-
-    /**
-     * Explicitly sets enable or disable flush for view tree appearing event.
-     *
-     * @hide
-     */
-    @VisibleForTesting
-    public void setFlushViewTreeAppearingEventDisabled(boolean disabled) {
-        if (sDebug) {
-            Log.d(TAG, "setFlushViewTreeAppearingEventDisabled(): setting to " + disabled);
-        }
-
-        synchronized (mLock) {
-            if (disabled) {
-                mFlags |= ContentCaptureContext.FLAG_DISABLED_FLUSH_FOR_VIEW_TREE_APPEARING;
-            } else {
-                mFlags &= ~ContentCaptureContext.FLAG_DISABLED_FLUSH_FOR_VIEW_TREE_APPEARING;
-            }
-        }
-    }
-
-    /**
-     * Gets whether content capture is needed to flush for view tree appearing event.
-     *
-     * @hide
-     */
-    public boolean getFlushViewTreeAppearingEventDisabled() {
-        synchronized (mLock) {
-            return (mFlags & ContentCaptureContext.FLAG_DISABLED_FLUSH_FOR_VIEW_TREE_APPEARING)
-                    != 0;
         }
     }
 

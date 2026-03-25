@@ -46,6 +46,7 @@ import android.content.pm.UserInfo;
 import android.hardware.usb.DeviceFilter;
 import android.hardware.usb.IUsbAuthManager;
 import android.hardware.usb.IUsbSerialReader;
+import android.hardware.usb.InternalAuthorizationPinModeReason;
 import android.hardware.usb.UsbAuthDeviceInfo;
 import android.hardware.usb.UsbAuthorizationSystemState;
 import android.hardware.usb.UsbConfiguration;
@@ -1043,5 +1044,27 @@ public class UsbAuthManagerTest {
         // The fingerprint is gone again once loaded from disk.
         fingerprints = mUsbAuthManager.getPersistedFingerprintsCopyForTesting();
         assertEquals(2, fingerprints.size());
+    }
+
+    @Test
+    public void testPinAuthorizationMode() throws Exception {
+        // We start in booted state.
+        assertEquals(UsbAuthorizationSystemState.BOOTED, mUsbAuthManager.getSystemState());
+
+        // First try an invalid reason.
+        assertFalse(mUsbAuthManager.pinAuthorizationMode(9999));
+        assertEquals(UsbAuthorizationSystemState.BOOTED, mUsbAuthManager.getSystemState());
+
+        // Valid reasons should pin the state.
+        assertTrue(
+                mUsbAuthManager.pinAuthorizationMode(
+                        InternalAuthorizationPinModeReason.REPAIR_MODE));
+        assertEquals(mUsbAuthManager.getPinnedState(), mUsbAuthManager.getSystemState());
+        assertEquals(UsbAuthorizationSystemState.SET_UP, mUsbAuthManager.getSystemState());
+
+        assertTrue(
+                mUsbAuthManager.pinAuthorizationMode(
+                        InternalAuthorizationPinModeReason.FACTORY_MODE));
+        assertEquals(mUsbAuthManager.getPinnedState(), mUsbAuthManager.getSystemState());
     }
 }

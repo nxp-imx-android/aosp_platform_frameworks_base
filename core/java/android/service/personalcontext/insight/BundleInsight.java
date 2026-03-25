@@ -93,7 +93,7 @@ public final class BundleInsight extends ContextInsight {
 
     @Override
     @NonNull
-    Bundle toBundleImpl() {
+    Bundle toBundleImpl(boolean includeHints) {
         Bundle result = new Bundle();
         result.putString(KEY_TYPE, getInsightTypeName());
         result.putBundle(KEY_DATA, mDataBundle);

@@ -18,6 +18,8 @@ package com.android.server.security;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.security.KeyChainException;
+import android.security.keymaster.KeymasterCertificateChain;
 import android.security.keystore.KeyGenParameterSpec;
 
 /**
@@ -37,7 +39,7 @@ public final class KeyChainLocalService extends KeyChainManagerInternal {
     }
 
     @Override
-    boolean installUserKeyPair(
+    public boolean installUserKeyPair(
             @NonNull byte[] pkcs8PrivateKey,
             @NonNull byte[] certificate,
             @Nullable byte[][] certificateChain,
@@ -48,7 +50,7 @@ public final class KeyChainLocalService extends KeyChainManagerInternal {
     }
 
     @Override
-    boolean installDeviceKeyPair(
+    public boolean installDeviceKeyPair(
             @NonNull byte[] pkcs8PrivateKey,
             @NonNull byte[] certificate,
             @Nullable byte[][] certificateChain,
@@ -57,20 +59,21 @@ public final class KeyChainLocalService extends KeyChainManagerInternal {
     }
 
     @Override
-    int generateUserKeyPair(
+    public KeymasterCertificateChain generateUserKeyPair(
             @NonNull String algorithm,
             @NonNull KeyGenParameterSpec keySpec,
-            int userId) {
+            int userId) throws KeyChainException {
         return mService.generateUserKeyPair(algorithm, keySpec, userId);
     }
 
     @Override
-    int generateDeviceKeyPair(@NonNull String algorithm, @NonNull KeyGenParameterSpec keySpec) {
+    public KeymasterCertificateChain generateDeviceKeyPair(@NonNull String algorithm,
+            @NonNull KeyGenParameterSpec keySpec) throws KeyChainException {
         return mService.generateDeviceKeyPair(algorithm, keySpec);
     }
 
     @Override
-    boolean setUserKeyPairCertificate(
+    public boolean setUserKeyPairCertificate(
             @NonNull String alias,
             @NonNull byte[] clientCertificate,
             @NonNull byte[] clientCertificateChain,
@@ -80,11 +83,21 @@ public final class KeyChainLocalService extends KeyChainManagerInternal {
     }
 
     @Override
-    boolean setDeviceKeyPairCertificate(
+    public boolean setDeviceKeyPairCertificate(
             @NonNull String alias,
             @NonNull byte[] clientCertificate,
             @NonNull byte[] clientCertificateChain) {
         return mService.setDeviceKeyPairCertificate(
                 alias, clientCertificate, clientCertificateChain);
+    }
+
+    @Override
+    public boolean setUserGrant(int uid, @NonNull String alias, int userId, boolean granted) {
+        return mService.setUserGrant(uid, alias, userId, granted);
+    }
+
+    @Override
+    public boolean setDeviceGrant(int uid, @NonNull String alias, boolean granted) {
+        return mService.setDeviceGrant(uid, alias, granted);
     }
 }

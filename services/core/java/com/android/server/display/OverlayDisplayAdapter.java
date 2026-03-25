@@ -181,6 +181,7 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
     private final ArrayList<OverlayDisplayHandle> mOverlays = new ArrayList<>();
     private String mCurrentOverlaySetting = "";
     private boolean mStopped;
+    private ModeRequestManager mModeRequestManager;
     private final ContentObserver mSettingsObserver = new ContentObserver(getHandler()) {
         @Override
         public void onChange(boolean selfChange) {
@@ -191,9 +192,10 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
     // Called with SyncRoot lock held.
     public OverlayDisplayAdapter(DisplayManagerService.SyncRoot syncRoot,
             Context context, Handler handler, Listener listener, Handler uiHandler,
-            DisplayManagerFlags featureFlags) {
+            DisplayManagerFlags featureFlags, ModeRequestManager modeRequestManager) {
         super(syncRoot, context, handler, listener, TAG, featureFlags);
         mUiHandler = uiHandler;
+        mModeRequestManager = modeRequestManager;
     }
 
     @Override
@@ -382,7 +384,7 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
         };
     }
 
-    private abstract class OverlayDisplayDevice extends DisplayDevice {
+    abstract class OverlayDisplayDevice extends DisplayDevice {
         private final String mName;
         private final float mRefreshRate;
         private final long mDisplayPresentationDeadlineNanos;
@@ -452,6 +454,7 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
                 }
                 setSurfaceLocked(t, mSurface);
             }
+            mModeRequestManager.overlayReady(mUserPreferredModeId);
         }
 
         public void setStateLocked(int state) {
@@ -557,6 +560,12 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
                     mUserPreferredModeId == Display.Mode.INVALID_MODE_ID
                             ? displayModeSpecs.baseModeId
                             : mUserPreferredModeId);
+        }
+
+        void applyDisplayModeUpdateLocked(int defaultMode) {
+            setDisplayMode(mUserPreferredModeId == -1
+                    ? defaultMode
+                    : mUserPreferredModeId);
         }
 
         private void setDisplayMode(int displayModeId) {

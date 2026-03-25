@@ -75,6 +75,7 @@ combined_apis {
         "framework-connectivity",
         "framework-connectivity-b",
         "framework-connectivity-t",
+        "framework-crashrecovery",
         "framework-devicelock",
         "framework-graphics",
         "framework-healthfitness",
@@ -99,14 +100,7 @@ combined_apis {
         "framework-virtualization",
         "framework-wifi",
         "i18n.module.public.api",
-    ] + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
-        "true": [
-            "framework-crashrecovery",
-        ],
-        default: [
-            "framework-platformcrashrecovery",
-        ],
-    }) + select(release_flag("RELEASE_ONDEVICE_INTELLIGENCE_MODULE"), {
+    ] + select(release_flag("RELEASE_ONDEVICE_INTELLIGENCE_MODULE"), {
         true: [
             "framework-ondeviceintelligence",
         ],
@@ -156,6 +150,7 @@ combined_apis {
     system_server_classpath: [
         "service-art",
         "service-configinfrastructure",
+        "service-crashrecovery",
         "service-healthfitness",
         "service-media-s",
         "service-permission",
@@ -164,11 +159,6 @@ combined_apis {
     ] + select(release_flag("RELEASE_ONDEVICE_INTELLIGENCE_MODULE"), {
         true: [
             "service-ondeviceintelligence",
-        ],
-        default: [],
-    }) + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
-        "true": [
-            "service-crashrecovery",
         ],
         default: [],
     }) + select(release_flag("RELEASE_ANOMALY_DETECTOR"), {

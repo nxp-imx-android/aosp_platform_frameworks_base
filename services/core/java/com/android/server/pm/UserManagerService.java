@@ -34,6 +34,11 @@ import static android.os.UserManager.DISALLOW_USER_SWITCH;
 import static android.os.UserManager.SYSTEM_USER_MODE_EMULATION_PROPERTY;
 import static android.os.UserManager.USER_OPERATION_ERROR_UNKNOWN;
 import static android.os.UserManager.USER_OPERATION_ERROR_USER_RESTRICTED;
+import static android.os.UserManager.USER_TYPE_FULL_GUEST;
+import static android.os.UserManager.USER_TYPE_FULL_RESTRICTED;
+import static android.os.UserManager.USER_TYPE_FULL_SYSTEM;
+import static android.os.UserManager.USER_TYPE_PROFILE_MANAGED;
+import static android.os.UserManager.USER_TYPE_SYSTEM_HEADLESS;
 import static android.provider.Settings.Secure.HIDE_PRIVATESPACE_ENTRY_POINT;
 
 import static com.android.internal.util.ConcurrentUtils.DIRECT_EXECUTOR;
@@ -3408,7 +3413,7 @@ public class UserManagerService extends IUserManager.Stub {
         }
         synchronized (mUsersLock) {
             final UserInfo userInfo = getUserInfoLU(userId);
-            if (userInfo == null || !userInfo.canHaveProfile()) {
+            if (userInfo == null || !userInfo.canHaveProfile(USER_TYPE_FULL_RESTRICTED)) {
                 return false;
             }
             if (!userInfo.isAdmin()) {
@@ -3758,7 +3763,7 @@ public class UserManagerService extends IUserManager.Stub {
     private void initDefaultGuestRestrictions() {
         synchronized (mGuestRestrictions) {
             if (mGuestRestrictions.isEmpty()) {
-                UserTypeDetails guestType = mUserTypes.get(UserManager.USER_TYPE_FULL_GUEST);
+                UserTypeDetails guestType = mUserTypes.get(USER_TYPE_FULL_GUEST);
                 if (guestType == null) {
                     Slog.wtf(LOG_TAG, "Can't set default guest restrictions: type doesn't exist.");
                     return;
@@ -4588,7 +4593,7 @@ public class UserManagerService extends IUserManager.Stub {
                     + "MANAGE_HEADLESS_SYSTEM_USER_ALLOWLISTS permission to: "
                     + message);
         }
-        if (!UserManager.USER_TYPE_SYSTEM_HEADLESS.equals(userType)) {
+        if (!USER_TYPE_SYSTEM_HEADLESS.equals(userType)) {
             throw new SecurityException("Only modifying the allowlists of the type "
                     + "USER_TYPE_SYSTEM_HEADLESS is currently supported");
         }
@@ -4827,11 +4832,11 @@ public class UserManagerService extends IUserManager.Stub {
                 final int newSysFlags;
                 final String newUserType;
                 if (newHeadlessSystemUserMode) {
-                    newUserType = UserManager.USER_TYPE_SYSTEM_HEADLESS;
+                    newUserType = USER_TYPE_SYSTEM_HEADLESS;
                     newSysFlags = oldSysFlags & ~UserInfo.FLAG_FULL & ~UserInfo.FLAG_MAIN
                             & (android.multiuser.Flags.hsuNotAdmin() ? ~UserInfo.FLAG_ADMIN : ~0);
                 } else {
-                    newUserType = UserManager.USER_TYPE_FULL_SYSTEM;
+                    newUserType = USER_TYPE_FULL_SYSTEM;
                     newSysFlags = oldSysFlags | UserInfo.FLAG_FULL | UserInfo.FLAG_MAIN
                             | (android.multiuser.Flags.hsuNotAdmin() ? UserInfo.FLAG_ADMIN : 0);
                 }
@@ -5247,9 +5252,9 @@ public class UserManagerService extends IUserManager.Stub {
                     final int flags = userData.info.flags;
                     if ((flags & UserInfo.FLAG_SYSTEM) != 0) {
                         if ((flags & UserInfo.FLAG_FULL) != 0) {
-                            userData.info.userType = UserManager.USER_TYPE_FULL_SYSTEM;
+                            userData.info.userType = USER_TYPE_FULL_SYSTEM;
                         } else {
-                            userData.info.userType = UserManager.USER_TYPE_SYSTEM_HEADLESS;
+                            userData.info.userType = USER_TYPE_SYSTEM_HEADLESS;
                         }
                     } else {
                         try {
@@ -5581,8 +5586,8 @@ public class UserManagerService extends IUserManager.Stub {
     private void fallbackToSingleUserLP() {
         // Create the system user
         final String sysUserTypeString = isDefaultHeadlessSystemUserMode()
-                ? UserManager.USER_TYPE_SYSTEM_HEADLESS
-                : UserManager.USER_TYPE_FULL_SYSTEM;
+                ? USER_TYPE_SYSTEM_HEADLESS
+                : USER_TYPE_FULL_SYSTEM;
         final UserTypeDetails sysUserTypeDetails = mUserTypes.get(sysUserTypeString);
         final int flags = sysUserTypeDetails.getDefaultUserInfoFlags() | UserInfo.FLAG_INITIALIZED;
         final UserInfo system = new UserInfo(UserHandle.USER_SYSTEM,
@@ -6856,7 +6861,7 @@ public class UserManagerService extends IUserManager.Stub {
             return false;
         }
         return !userTypeDetails.isProfile()
-                && !userTypeDetails.getName().equals(UserManager.USER_TYPE_FULL_RESTRICTED);
+                && !userTypeDetails.getName().equals(USER_TYPE_FULL_RESTRICTED);
     }
 
     /** Register callbacks for statsd pulled atoms. */
@@ -6957,7 +6962,7 @@ public class UserManagerService extends IUserManager.Stub {
 
         checkCreateUsersPermission("setupRestrictedProfile");
         final UserInfo user = createProfileForUserWithThrow(
-                name, UserManager.USER_TYPE_FULL_RESTRICTED, 0, parentUserId, null);
+                name, USER_TYPE_FULL_RESTRICTED, 0, parentUserId, null);
         final long identity = Binder.clearCallingIdentity();
         try {
             setUserRestriction(UserManager.DISALLOW_MODIFY_ACCOUNTS, true, user.id);
@@ -7471,7 +7476,7 @@ public class UserManagerService extends IUserManager.Stub {
      *     the aforementioned generalized broadcast.
      */
     private void sendProfileRemovedBroadcast(int parentUserId, int removedUserId, String userType) {
-        if (Objects.equals(userType, UserManager.USER_TYPE_PROFILE_MANAGED)) {
+        if (Objects.equals(userType, USER_TYPE_PROFILE_MANAGED)) {
             sendManagedProfileRemovedBroadcast(parentUserId, removedUserId);
         }
         sendProfileBroadcast(
@@ -8505,9 +8510,6 @@ public class UserManagerService extends IUserManager.Stub {
                 pw.println();
             }
         }
-
-        pw.print("    Can have profile: ");
-        pw.println(userInfo.canHaveProfile());
 
         if (userData.userProperties != null) {
             userData.userProperties.println(pw, "    ");

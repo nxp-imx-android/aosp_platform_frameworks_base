@@ -1095,21 +1095,12 @@ final class AutofillManagerServiceImpl
             }
 
             Event event =
-                    new Event(
-                            Event.TYPE_AUTHENTICATION_SELECTED,
-                            null,
-                            clientState,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            NO_SAVE_UI_REASON_NONE,
-                            uiType,
-                            focusedId);
+                    new Event.Builder(Event.TYPE_AUTHENTICATION_SELECTED)
+                            .setClientState(clientState)
+                            .setSaveDialogNotShowReason(NO_SAVE_UI_REASON_NONE)
+                            .setUiType(uiType)
+                            .setFocusedId(focusedId)
+                            .build();
 
             addEventToHistory(methodName, sessionId, event);
         }
@@ -1133,9 +1124,14 @@ final class AutofillManagerServiceImpl
                 return;
             }
 
-            Event event = new Event(Event.TYPE_DATASET_AUTHENTICATION_SELECTED, selectedDataset,
-                                clientState, null, null, null, null, null, null, null, null,
-                                NO_SAVE_UI_REASON_NONE, uiType, focusedId);
+            Event event =
+                    new Event.Builder(Event.TYPE_DATASET_AUTHENTICATION_SELECTED)
+                            .setDatasetId(selectedDataset)
+                            .setClientState(clientState)
+                            .setSaveDialogNotShowReason(NO_SAVE_UI_REASON_NONE)
+                            .setUiType(uiType)
+                            .setFocusedId(focusedId)
+                            .build();
             addEventToHistory(methodName, sessionId, event);
         }
     }
@@ -1154,8 +1150,8 @@ final class AutofillManagerServiceImpl
                 return;
             }
 
-            Event event = new Event(Event.TYPE_SAVE_SHOWN, null, clientState, null,
-                        null, null, null, null, null, null, null, /* focusedId= */ null);
+            Event event =
+                    new Event.Builder(Event.TYPE_SAVE_SHOWN).setClientState(clientState).build();
 
             addEventToHistory(methodName, sessionId, event);
         }
@@ -1179,9 +1175,13 @@ final class AutofillManagerServiceImpl
                 return;
             }
 
-            Event event = new Event(Event.TYPE_DATASET_SELECTED, selectedDataset, clientState, null,
-                                null, null, null, null, null, null, null, NO_SAVE_UI_REASON_NONE,
-                                uiType, focusedId);
+            Event event = new Event.Builder(Event.TYPE_DATASET_SELECTED)
+                    .setDatasetId(selectedDataset)
+                    .setClientState(clientState)
+                    .setSaveDialogNotShowReason(NO_SAVE_UI_REASON_NONE)
+                    .setUiType(uiType)
+                    .setFocusedId(focusedId)
+                    .build();
             addEventToHistory(methodName, sessionId, event);
         }
     }
@@ -1201,9 +1201,12 @@ final class AutofillManagerServiceImpl
                 return;
             }
 
-            Event event = new Event(Event.TYPE_DATASETS_SHOWN, null, clientState, null, null, null,
-                                null, null, null, null, null, NO_SAVE_UI_REASON_NONE,
-                                uiType, focusedId);
+            Event event = new Event.Builder(Event.TYPE_DATASETS_SHOWN)
+                    .setClientState(clientState)
+                    .setSaveDialogNotShowReason(NO_SAVE_UI_REASON_NONE)
+                    .setUiType(uiType)
+                    .setFocusedId(focusedId)
+                    .build();
             addEventToHistory(methodName, sessionId, event);
         }
     }
@@ -1226,8 +1229,10 @@ final class AutofillManagerServiceImpl
         }
 
         history.addEvent(
-                new Event(Event.TYPE_VIEW_REQUESTED_AUTOFILL, null, clientState, null,
-                        null, null, null, null, null, null, null, focusedId));
+                new Event.Builder(Event.TYPE_VIEW_REQUESTED_AUTOFILL)
+                        .setClientState(clientState)
+                        .setFocusedId(focusedId)
+                        .build());
     }
 
     /**
@@ -1270,9 +1275,10 @@ final class AutofillManagerServiceImpl
                 return;
             }
             mAugmentedAutofillEventHistory.addEvent(
-                    new Event(Event.TYPE_DATASET_AUTHENTICATION_SELECTED, selectedDataset,
-                            clientState, null, null, null, null, null, null, null, null,
-                            /* focusedId= */ null));
+                    new Event.Builder(Event.TYPE_DATASET_AUTHENTICATION_SELECTED)
+                            .setDatasetId(selectedDataset)
+                            .setClientState(clientState)
+                            .build());
         }
     }
 
@@ -1284,8 +1290,10 @@ final class AutofillManagerServiceImpl
                 return;
             }
             mAugmentedAutofillEventHistory.addEvent(
-                    new Event(Event.TYPE_DATASET_SELECTED, suggestionId, clientState, null, null,
-                            null, null, null, null, null, null, /* focusedId= */ null));
+                    new Event.Builder(Event.TYPE_DATASET_SELECTED)
+                            .setDatasetId(suggestionId)
+                            .setClientState(clientState)
+                            .build());
         }
     }
 
@@ -1298,9 +1306,11 @@ final class AutofillManagerServiceImpl
             // Augmented Autofill only logs for inline now, so set UI_TYPE_INLINE here.
             // Ideally should not hardcode here and should also log for menu presentation.
             mAugmentedAutofillEventHistory.addEvent(
-                    new Event(Event.TYPE_DATASETS_SHOWN, null, clientState, null, null, null,
-                            null, null, null, null, null, NO_SAVE_UI_REASON_NONE,
-                            UI_TYPE_INLINE, /* focusedId= */ null));
+                    new Event.Builder(Event.TYPE_DATASETS_SHOWN)
+                            .setClientState(clientState)
+                            .setSaveDialogNotShowReason(NO_SAVE_UI_REASON_NONE)
+                            .setUiType(UI_TYPE_INLINE)
+                            .build());
         }
     }
 
@@ -1311,8 +1321,9 @@ final class AutofillManagerServiceImpl
                 return;
             }
             mAugmentedAutofillEventHistory.addEvent(
-                    new Event(Event.TYPE_RESPONSE_DISCARDED, null, clientState, null, null,
-                            null, null, null, null, null, null, /* focusedId= */ null));
+                    new Event.Builder(Event.TYPE_RESPONSE_DISCARDED)
+                            .setClientState(clientState)
+                            .build());
         }
     }
 
@@ -1406,20 +1417,18 @@ final class AutofillManagerServiceImpl
                             .addTaggedData(MetricsEvent.FIELD_AUTOFILL_MATCH_SCORE, averageScore));
         }
         Event event =
-                new Event(
-                        Event.TYPE_CONTEXT_COMMITTED,
-                        null,
-                        clientState,
-                        selectedDatasets,
-                        ignoredDatasets,
-                        changedFieldIds,
-                        changedDatasetIds,
-                        manuallyFilledFieldIds,
-                        manuallyFilledDatasetIds,
-                        detectedFieldsIds,
-                        detectedFieldClassifications,
-                        saveDialogNotShowReason,
-                        /* focusedId= */ null);
+                new Event.Builder(Event.TYPE_CONTEXT_COMMITTED)
+                        .setClientState(clientState)
+                        .setSelectedDatasetIds(selectedDatasets)
+                        .setIgnoredDatasetIds(ignoredDatasets)
+                        .setChangedFieldIds(changedFieldIds)
+                        .setChangedDatasetIds(changedDatasetIds)
+                        .setManuallyFilledFieldIds(manuallyFilledFieldIds)
+                        .setManuallyFilledDatasetIds(manuallyFilledDatasetIds)
+                        .setDetectedFieldIds(detectedFieldsIds)
+                        .setDetectedFieldClassifications(detectedFieldClassifications)
+                        .setSaveDialogNotShowReason(saveDialogNotShowReason)
+                        .build();
 
         addEventToHistory(methodName, sessionId, event);
     }

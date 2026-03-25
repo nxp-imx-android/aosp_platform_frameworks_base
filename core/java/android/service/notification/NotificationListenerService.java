@@ -1819,7 +1819,7 @@ public abstract class NotificationListenerService extends Service {
          */
         public static final int USER_SENTIMENT_POSITIVE = 1;
 
-       /** @hide */
+        /** @hide */
         @IntDef(prefix = { "USER_SENTIMENT_" }, value = {
                 USER_SENTIMENT_NEGATIVE, USER_SENTIMENT_NEUTRAL, USER_SENTIMENT_POSITIVE
         })
@@ -2292,8 +2292,9 @@ public abstract class NotificationListenerService extends Service {
                 case NotificationManager.IMPORTANCE_DEFAULT:
                     return "DEFAULT";
                 case NotificationManager.IMPORTANCE_HIGH:
-                case NotificationManager.IMPORTANCE_MAX:
                     return "HIGH";
+                case NotificationManager.IMPORTANCE_MAX:
+                    return "MAX";
                 default:
                     return "UNKNOWN(" + String.valueOf(importance) + ")";
             }

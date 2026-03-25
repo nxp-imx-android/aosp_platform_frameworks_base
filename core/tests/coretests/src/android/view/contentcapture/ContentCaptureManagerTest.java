@@ -158,19 +158,6 @@ public class ContentCaptureManagerTest {
     }
 
     @Test
-    @SuppressWarnings("GuardedBy")
-    public void testFlushViewTreeAppearingEventDisabled_setAndGet() {
-        final ContentCaptureManager manager =
-                new ContentCaptureManager(mMockContext, mMockContentCaptureManager, EMPTY_OPTIONS);
-
-        assertThat(manager.getFlushViewTreeAppearingEventDisabled()).isFalse();
-        manager.setFlushViewTreeAppearingEventDisabled(true);
-        assertThat(manager.getFlushViewTreeAppearingEventDisabled()).isTrue();
-        manager.setFlushViewTreeAppearingEventDisabled(false);
-        assertThat(manager.getFlushViewTreeAppearingEventDisabled()).isFalse();
-    }
-
-    @Test
     public void testUpdateWindowAttribute_setFlagSecure() {
         final ContentCaptureManager manager =
                 new ContentCaptureManager(mMockContext, mMockContentCaptureManager, EMPTY_OPTIONS);
@@ -272,7 +259,6 @@ public class ContentCaptureManagerTest {
                 /* idleFlushingFrequencyMs= */ 0,
                 /* textChangeFlushingFrequencyMs= */ 0,
                 /* logHistorySize= */ 0,
-                /* disableFlushForViewTreeAppearing= */ false,
                 /* enableReceiver= */ true,
                 contentProtectionOptions,
                 /* whitelistedComponents= */ null);

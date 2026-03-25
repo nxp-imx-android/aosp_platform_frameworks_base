@@ -60,14 +60,26 @@ public final class AllowlistManager {
     public static final int ALLOWLIST_ID_TEST = 1;
     /** An allowlist ID representing the AppFunctions allowlist */
     public static final int ALLOWLIST_ID_APP_FUNCTION = 2;
-    /** An allowlist ID representing the Computer Control allowlist */
+    /** An allowlist ID representing the Computer Control target apps allowlist */
     public static final int ALLOWLIST_ID_COMPUTER_CONTROL = 3;
+    /**
+     * An allowlist ID representing the Computer Control agent allowlist.
+     * @hide
+     */
+    public static final int ALLOWLIST_ID_COMPUTER_CONTROL_AGENTS = 4;
+    /**
+     * An allowlist ID representing the Computer Control target apps denylist
+     * @hide
+     */
+    public static final int ALLOWLIST_ID_COMPUTER_CONTROL_DENIED_TARGETS = 5;
 
     /** @hide */
     @IntDef(prefix = { "ALLOWLIST_ID" }, value = {
             ALLOWLIST_ID_TEST,
             ALLOWLIST_ID_APP_FUNCTION,
             ALLOWLIST_ID_COMPUTER_CONTROL,
+            ALLOWLIST_ID_COMPUTER_CONTROL_AGENTS,
+            ALLOWLIST_ID_COMPUTER_CONTROL_DENIED_TARGETS,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface AllowlistId {}
@@ -98,7 +110,9 @@ public final class AllowlistManager {
     public static final int[] ALLOWLIST_IDS = {
             ALLOWLIST_ID_TEST,
             ALLOWLIST_ID_APP_FUNCTION,
-            ALLOWLIST_ID_COMPUTER_CONTROL
+            ALLOWLIST_ID_COMPUTER_CONTROL,
+            ALLOWLIST_ID_COMPUTER_CONTROL_AGENTS,
+            ALLOWLIST_ID_COMPUTER_CONTROL_DENIED_TARGETS
     };
 
     /** @hide */
@@ -113,16 +127,35 @@ public final class AllowlistManager {
     public @interface ResponseStatus {}
 
     /**
-     * {@link AllowlistRequest} data bundle key. It specifies packages to query for.
-     * The value should be a list of {@link SignedPackage}.
+     * {@link AllowlistRequest} data bundle key used to specify a list of packages to query against
+     * the allowlist. The value associated with this key must be a list of {@link SignedPackage}.
+     *
+     * <p>If this key is provided, the query result will be filtered to include only information
+     * pertaining to the specified packages.
+     *
+     * <p>When the allowlist is in the format of a list of packages, the response will contain
+     * {@link #RESPONSE_KEY_ALLOWED_PACKAGES} with the filtered list of packages.
+     *
+     * <p>When the allowlist is in the format of a mapping from packages to
+     * target apps, this key can be used either independently or together with
+     * {@link #REQUEST_KEY_FILTER_TARGETS}, and the response
+     * will contain {@link #RESPONSE_KEY_ALLOWED_PACKAGE_MULTI_MAP} with the filtered mapping.
      */
     public static final String REQUEST_KEY_FILTER_PACKAGES =
             "android.allowlist.request.key.FILTER_PACKAGES";
 
     /**
-     * {@link AllowlistRequest} data bundle key. Used by {@link #ALLOWLIST_ID_APP_FUNCTION}. It
-     * specifies targets apps to query for. The value should be a list of {@link SignedPackage}
-     * as target apps.
+     * {@link AllowlistRequest} data bundle key used to specify a list of target apps for each agent
+     * to query against the allowlist. The value associated with this key must be a list of
+     * {@link SignedPackage}.
+     *
+     * <p>This key should only be used when the allowlist is in the format of a mapping from
+     * packages to target apps. If this key is provided, the query result will be filtered to
+     * include only information pertaining to the specified target apps.
+     *
+     * <p>This key can be used independently or together with {@link #REQUEST_KEY_FILTER_PACKAGES},
+     * and the response will contain {@link #RESPONSE_KEY_ALLOWED_PACKAGE_MULTI_MAP} with the
+     * filtered mapping.
      */
     public static final String REQUEST_KEY_FILTER_TARGETS =
             "android.allowlist.request.key.FILTER_TARGETS";
@@ -145,19 +178,30 @@ public final class AllowlistManager {
             "android.allowlist.request.key.TEST_RESPONSE_STATUS";
 
     /**
-     * {@link AllowlistResponse} data bundle key. When
-     * {@link AllowlistManager#REQUEST_KEY_FILTER_PACKAGES} or
-     * {@link AllowlistManager#REQUEST_KEY_INSTALLED_PACKAGES_ONLY} is provided in the request, the
-     * response will contain a list of allowed packages. The value is a list of
-     * {@link SignedPackage}
+     * {@link AllowlistResponse} data bundle key. The value associated with this key is a list of
+     * {@link SignedPackage}.
+     *
+     * <p>When the allowlist is in the format of a list of packages, this key holds the result of an
+     * allowlist query.
+     *
+     * <p>A {@link SignedPackage} in the response list with a package name of "*" indicates that all
+     * packages are allowed for the given context.
      */
     public static final String RESPONSE_KEY_ALLOWED_PACKAGES =
             "android.allowlist.response.key.ALLOWED_PACKAGES";
 
     /**
-     * {@link AllowlistResponse} data bundle key. Used by {@link #ALLOWLIST_ID_APP_FUNCTION}. It
-     * specifies allowed targets for each agent. The value is an instance of
-     * {@link SignedPackageMultiMap}.
+     * {@link AllowlistResponse} data bundle key. The value associated with this key is a
+     * {@link SignedPackageMultiMap}, which maps each package to a list of its allowed target apps.
+     *
+     * <p>When the allowlist is in the format of a mapping from packages to target apps. This key
+     * holds the result of an allowlist query.
+     *
+     * <p>A {@link SignedPackage} in the keys of the multimap with a package name of "*" indicates
+     * that all packages are allowed for the associated targets.
+     *
+     * <p>A {@link SignedPackage} in the values of the multimap with a package name of "*" indicates
+     * that all packages are allowed as targets for the associated key package.
      */
     public static final String RESPONSE_KEY_ALLOWED_PACKAGE_MULTI_MAP =
             "android.allowlist.response.key.ALLOWED_PACKAGE_MULTI_MAP";

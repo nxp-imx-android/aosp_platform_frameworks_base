@@ -16,10 +16,13 @@
 
 package com.android.server.security.trusttoken;
 
+import com.android.internal.annotations.Keep;
+
 import java.security.spec.EncodedKeySpec;
 
 /** The KeySpec that are just raw bytes. */
 public class RawEncodedKeySpec extends EncodedKeySpec {
+    @Keep
     public RawEncodedKeySpec(byte[] bytes) {
         super(bytes);
     }

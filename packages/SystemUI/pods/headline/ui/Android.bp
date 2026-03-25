@@ -76,3 +76,8 @@ android_library {
         "//vendor:__subpackages__",
     ],
 }
+
+filegroup {
+    name: "com.android.systemui.headline.ui_fixtureFiles",
+    defaults: ["sysui_fixtureFiles"],
+}

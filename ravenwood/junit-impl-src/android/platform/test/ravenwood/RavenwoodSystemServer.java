@@ -279,7 +279,9 @@ public class RavenwoodSystemServer {
         public static final IActivityClientController sACC =
                 newExperimentalProxy(IActivityClientController.class, (proxy, method, args) -> {
                     return switch (method.getName()) {
-                        case "finishActivity", "setTaskDescription" -> true;
+                        case "finishActivity" -> true;
+                        case "setTaskDescription",
+                             "setTaskDescriptionOneWay" -> null;
                         default -> sNotImplementedHandler.invoke(proxy, method, args);
                     };
                 });

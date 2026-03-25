@@ -2355,7 +2355,9 @@ class DesktopTasksController(
         } else {
             moveTaskToFront(task, remoteTransition, unminimizeReason)
         }
-        if (!Flags.updateDesktopScrimWhenMoveTaskToFrontBugfix() || task == null) {
+        if (!Flags.updateDesktopScrimWhenMoveTaskToFrontBugfix()
+            || Flags.updateDesktopScrimOnDesktopTaskLaunch()
+            || task == null ) {
             return
         }
         desktopScrimController.updateDesktopScrimIfNeeded(task.displayId, userId)

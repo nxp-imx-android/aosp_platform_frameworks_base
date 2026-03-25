@@ -2612,6 +2612,7 @@ package android.net.wifi.sharedconnectivity.app {
 
   public class SharedConnectivityManager {
     method @Nullable public static android.net.wifi.sharedconnectivity.app.SharedConnectivityManager create(@NonNull android.content.Context, @NonNull String, @NonNull String);
+    method @Nullable public android.os.Handler getBackgroundHandler();
     method @NonNull public android.content.BroadcastReceiver getBroadcastReceiver();
     method @Nullable public android.content.ServiceConnection getServiceConnection();
     method public void setService(@Nullable android.os.IInterface);
@@ -3009,6 +3010,14 @@ package android.os.health {
     method public void addTimer(int, int, long);
     method public void addTimers(int, String, android.os.health.TimerStat);
     method public void flattenToParcel(android.os.Parcel);
+  }
+
+}
+
+package android.os.multisensory {
+
+  @FlaggedApi("android.os.multisensory.enable_multisensory_feedback") public class MultisensoryManager {
+    method @NonNull public static int[] getMultisensoryTokens();
   }
 
 }

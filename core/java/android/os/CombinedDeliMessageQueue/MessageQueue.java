@@ -111,7 +111,7 @@ public final class MessageQueue {
     private final Object mIdleHandlersLock = new Object();
     private final Object mFileDescriptorRecordsLock = new Object();
 
-    MessageStack mStack = new MessageStack();
+    private final MessageStack mStack = new MessageStack();
 
     /*
      * This helps us ensure that messages with the same timestamp are inserted in FIFO order.

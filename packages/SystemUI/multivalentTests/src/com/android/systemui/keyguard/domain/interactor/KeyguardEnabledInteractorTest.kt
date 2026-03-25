@@ -17,6 +17,8 @@
 
 package com.android.systemui.keyguard.domain.interactor
 
+import android.content.pm.UserInfo
+import android.os.UserManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
@@ -35,6 +37,7 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.testKosmos
+import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -53,7 +56,7 @@ class KeyguardEnabledInteractorTest : SysuiTestCase() {
     private val underTest = kosmos.keyguardEnabledInteractor
 
     @Test
-    fun keyguardDisabledByLockPatternUtils() =
+    fun keyguardDisabledByLockPatternUtils_updatesOnTransitionToLockscreen() =
         kosmos.runTest {
             biometricUnlockInteractor.setBiometricUnlockState(
                 unlockStateInt = BiometricUnlockController.MODE_DISMISS,
@@ -90,6 +93,55 @@ class KeyguardEnabledInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    fun keyguardDisabledByLockPatternUtils_updates_onSwitchToUserWithNoLockscreen() =
+        kosmos.runTest {
+            kosmos.fakeUserRepository.setUserInfos(listOf(systemUser, primaryUser))
+            kosmos.fakeUserRepository.setSelectedUserInfo(primaryUser)
+
+            biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+
+            underTest.start()
+
+            val isKeyguardEnabled by collectLastValue(underTest.isKeyguardEnabled)
+            assertThat(isKeyguardEnabled).isTrue()
+
+            // Now switch to a user that has lockscreen disabled as if by Settings -> None security
+            whenever(lockPatternUtils.isLockScreenDisabled(anyInt())).thenReturn(true)
+            kosmos.fakeUserRepository.setSelectedUserInfo(systemUser)
+
+            runCurrent()
+            assertThat(isKeyguardEnabled).isFalse()
+        }
+
+    @Test
+    fun keyguardDisabledByLockPatternUtils_updates_onSwitchToUserWithLockscreen() =
+        kosmos.runTest {
+            kosmos.fakeUserRepository.setUserInfos(listOf(systemUser, primaryUser))
+            whenever(lockPatternUtils.isLockScreenDisabled(anyInt())).thenReturn(true)
+            kosmos.fakeUserRepository.setSelectedUserInfo(systemUser)
+
+            biometricUnlockInteractor.setBiometricUnlockState(
+                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
+                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
+            )
+
+            underTest.start()
+
+            val isKeyguardEnabled by collectLastValue(underTest.isKeyguardEnabled)
+            assertThat(isKeyguardEnabled).isFalse()
+
+            // Now switch to a user that has lockscreen enabled
+            whenever(lockPatternUtils.isLockScreenDisabled(anyInt())).thenReturn(false)
+            kosmos.fakeUserRepository.setSelectedUserInfo(primaryUser)
+
+            runCurrent()
+            assertThat(isKeyguardEnabled).isTrue()
+        }
+
+    @Test
     fun keyguardEnabledAndNotSuppressed_isEnabled() =
         kosmos.runTest {
             fakeKeyguardRepository.setKeyguardEnabled(true)
@@ -118,4 +170,22 @@ class KeyguardEnabledInteractorTest : SysuiTestCase() {
             whenever(lockPatternUtils.isLockScreenDisabled(anyInt())).thenReturn(false)
             assertThat(underTest.isKeyguardEnabledAndNotSuppressed()).isFalse()
         }
+
+    companion object {
+        private val systemUser =
+            UserInfo(
+                /* id =*/ 0,
+                "system user",
+                /* iconPath =*/ null,
+                UserInfo.FLAG_SYSTEM,
+                UserManager.USER_TYPE_SYSTEM_HEADLESS,
+            )
+
+        private val primaryUser =
+            UserInfo(
+                /* id =*/ 10,
+                "user with lockscreen",
+                UserInfo.FLAG_FULL or UserInfo.FLAG_PRIMARY,
+            )
+    }
 }

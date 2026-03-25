@@ -3427,6 +3427,10 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         if (installSource.mInstallerPackageUid != INVALID_UID) {
             serializer.attributeInt(null, "installerUid", installSource.mInstallerPackageUid);
         }
+        if (installSource.mOriginalInstallerUid != INVALID_UID) {
+            serializer.attributeInt(null, "originalInstallerUid",
+                    installSource.mOriginalInstallerUid);
+        }
         if (installSource.mUpdateOwnerPackageName != null) {
             serializer.attribute(null, "updateOwner", installSource.mUpdateOwnerPackageName);
         }
@@ -4278,6 +4282,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         String systemStr = null;
         String installerPackageName = null;
         int installerPackageUid = INVALID_UID;
+        int originalInstallerUid = INVALID_UID;
         String updateOwnerPackageName = null;
         String installerAttributionTag = null;
         int packageSource = PackageInstaller.PACKAGE_SOURCE_UNSPECIFIED;
@@ -4342,6 +4347,8 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
             restrictUpdateHash = parser.getAttributeBytesBase64(null, "restrictUpdateHash", null);
             installerPackageName = parser.getAttributeValue(null, "installer");
             installerPackageUid = parser.getAttributeInt(null, "installerUid", INVALID_UID);
+            originalInstallerUid = parser.getAttributeInt(null, "originalInstallerUid",
+                    INVALID_UID);
             updateOwnerPackageName = parser.getAttributeValue(null, "updateOwner");
             installerAttributionTag = parser.getAttributeValue(null, "installerAttributionTag");
             packageSource = parser.getAttributeInt(null, "packageSource",
@@ -4510,8 +4517,8 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         if (packageSetting != null) {
             InstallSource installSource = InstallSource.create(
                     installInitiatingPackageName, installOriginatingPackageName,
-                    installerPackageName, installerPackageUid, updateOwnerPackageName,
-                    installerAttributionTag, packageSource, isOrphaned,
+                    installerPackageName, installerPackageUid, originalInstallerUid,
+                    updateOwnerPackageName, installerAttributionTag, packageSource, isOrphaned,
                     installInitiatorUninstalled);
             packageSetting.setInstallSource(installSource)
                     .setPccId(pccId)

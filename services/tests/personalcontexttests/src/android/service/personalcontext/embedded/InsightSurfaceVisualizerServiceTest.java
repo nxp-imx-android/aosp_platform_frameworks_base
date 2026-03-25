@@ -347,6 +347,20 @@ public class InsightSurfaceVisualizerServiceTest {
         verify(mClientInfo).onSizeChanged(anyInt(), anyInt());
     }
 
+    @Test
+    public void testSetView_setsFocusableFalse() throws RemoteException {
+        final TestInsightSurfaceVisualizerService service = createVisualizer(mock(View.class));
+        final IInsightSurfaceVisualizer visualizer = bind(service);
+        visualizer.createVisualizationForClient(mInsight, mClientInfo, mRenderToken, mResult,
+                mOpCallback);
+        mFakeExecutor.runAll();
+
+        ArgumentCaptor<SurfaceControlViewHost.LayoutParams> layoutParamsCaptor =
+                ArgumentCaptor.forClass(SurfaceControlViewHost.LayoutParams.class);
+        verify(mSurfaceControlViewHost).setView(any(), layoutParamsCaptor.capture());
+        assertThat(layoutParamsCaptor.getValue().isFocusable()).isFalse();
+    }
+
     private TestInsightSurfaceVisualizerService createVisualizer() {
         return createVisualizer(null);
     }

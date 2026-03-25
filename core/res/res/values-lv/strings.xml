@@ -282,7 +282,7 @@
     <string name="global_action_power_options" msgid="1185286119330160073">"Barošana"</string>
     <string name="global_action_restart" msgid="4678451019561687074">"Restartēt"</string>
     <string name="global_action_emergency" msgid="1387617624177105088">"Ārkārtas situācija"</string>
-    <string name="global_action_bug_report" msgid="5127867163044170003">"Kļūdu ziņojums"</string>
+    <string name="global_action_bug_report" msgid="5127867163044170003">"Ziņot par kļūdu"</string>
     <string name="global_action_feedback" msgid="3480836834202300036">"Atsauksmes"</string>
     <string name="global_action_logout" msgid="6093581310002476511">"Beigt sesiju"</string>
     <string name="global_action_screenshot" msgid="2610053466156478564">"Ekrānuzņēmums"</string>
@@ -2712,4 +2712,6 @@
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"Lietotne <xliff:g id="APP_NAME">%1$s</xliff:g> tika noņemta."</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"Lietotne <xliff:g id="APP_NAME">%1$s</xliff:g> tagad ir pieejama."</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Apraidīt citām ierīcēm"</string>
+    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
+    <skip />
 </resources>

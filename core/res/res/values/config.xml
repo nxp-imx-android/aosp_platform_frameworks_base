@@ -2059,6 +2059,9 @@
      <!-- Whether to create scaled versions of the default wallpaper image to match the display size -->
     <bool name="config_optimizeDefaultWallpaper">false</bool>
 
+    <!-- True if the default wallpaper should be used until the user is unlocked. -->
+    <bool name="config_useDefaultWallpaperUntilUnlocked">false</bool>
+
     <!-- Specifies priority of automatic time sources. Suggestions from higher entries in the list
          take precedence over lower ones.
          See com.android.server.timedetector.TimeDetectorStrategy for available sources. -->
@@ -3349,11 +3352,6 @@
         Note: This list must be kept current with PACKAGE_WHITELIST_MODE_PROP in
         frameworks/base/services/core/java/com/android/server/pm/UserSystemPackageInstaller.java -->
     <integer name="config_userTypePackageWhitelistMode">13</integer> <!-- 1+4+8 -->
-
-    <!-- TODO(b/488421414). This is deprecated and only here temporarily to prevent breakage.
-         It will be immediately removed.
-    -->
-    <bool name="config_supportProfilesOnNonMainUser">false</bool>
 
     <!-- Whether the device will automatically (at first boot) have a designated main user and treat
          it as a permanent admin.

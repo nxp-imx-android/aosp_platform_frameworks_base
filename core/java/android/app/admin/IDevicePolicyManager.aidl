@@ -630,7 +630,7 @@ interface IDevicePolicyManager {
     void resetShouldAllowBypassingDevicePolicyManagementRoleQualificationState();
     boolean shouldAllowBypassingDevicePolicyManagementRoleQualification();
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.MANAGE_ROLE_HOLDERS)")
-    boolean isPackageQualifiedForDevicePolicyManagementRole(String packageName, int user);
+    boolean isPackageAllowedToBypassDevicePolicyManagementRoleQualification(String packageName, int user);
 
     List<UserHandle> getPolicyManagedProfiles(in UserHandle userHandle);
 
@@ -675,4 +675,7 @@ interface IDevicePolicyManager {
     PolicyValueTransport getPolicy(in String callerPackageName, in String policy, in int scope);
     PolicyValueTransport getResolvedDeviceWidePolicy(in String callerPackageName, in String policy);
     PolicyValueTransport getResolvedPerUserPolicy(in String callerPackageName, in int userId, in String policy);
+
+    KeymasterCertificateChain generateKeyPairWithScope(in String callerPackage, in String algorithm, in ParcelableKeyGenParameterSpec keySpec,
+            in int idAttestationFlags, int scope);
 }

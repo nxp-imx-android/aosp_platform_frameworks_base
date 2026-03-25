@@ -88,6 +88,9 @@ interface HeadsUpManager : Dumpable {
      */
     fun hasNotifications(): Boolean = false
 
+    /** Returns if HeadsUpManager tracks a different NotificationEntry instance for same key. */
+    fun hasMismatchedEntry(entry: NotificationEntry): Boolean
+
     /** Returns whether there are any pinned Heads Up Notifications or not. */
     fun hasPinnedHeadsUp(): Boolean
 
@@ -284,6 +287,8 @@ class HeadsUpManagerEmptyImpl @Inject constructor() : HeadsUpManager {
     override fun getTouchableRegion(): Region? = null
 
     override fun getTopEntry() = null
+
+    override fun hasMismatchedEntry(entry: NotificationEntry) = false
 
     override fun hasPinnedHeadsUp() = false
 

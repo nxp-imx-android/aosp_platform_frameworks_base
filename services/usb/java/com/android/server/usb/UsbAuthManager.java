@@ -33,6 +33,7 @@ import android.content.pm.UserInfo;
 import android.database.ContentObserver;
 import android.hardware.usb.IUsbAuthEventsListener;
 import android.hardware.usb.IUsbAuthManager;
+import android.hardware.usb.InternalAuthorizationPinModeReason;
 import android.hardware.usb.UsbAuthDeviceInfo;
 import android.hardware.usb.UsbAuthorizationStatus;
 import android.hardware.usb.UsbAuthorizationSystemState;
@@ -110,6 +111,9 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
 
     @GuardedBy("mLock")
     private SparseBooleanArray mFullUsersLoggedIn = new SparseBooleanArray();
+
+    @GuardedBy("mLock")
+    private @UsbAuthorizationSystemState int mPinnedSystemState = -1;
 
     @GuardedBy("mLock")
     private @UsbAuthorizationSystemState int mCurrentState = -1;
@@ -394,6 +398,28 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
         }
     }
 
+    boolean pinAuthorizationMode(@InternalAuthorizationPinModeReason int reason) {
+        @UsbAuthorizationSystemState int state;
+
+        // Check for a valid reason or return false right away.
+        switch (reason) {
+            case InternalAuthorizationPinModeReason.REPAIR_MODE:
+            case InternalAuthorizationPinModeReason.FACTORY_MODE:
+                state = UsbAuthorizationSystemState.SET_UP;
+                break;
+            default:
+                return false;
+
+        }
+
+        synchronized (mLock) {
+            mPinnedSystemState = state;
+        }
+
+        updateSystemStateInternal();
+        return true;
+    }
+
     private IUsbAuthManager getService() {
         synchronized (mLock) {
             if (mService == null) {
@@ -403,6 +429,20 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
                 setAndLinkService(service);
             }
             return mService;
+        }
+    }
+
+    @VisibleForTesting
+    int getPinnedState() {
+        synchronized (mLock) {
+            return mPinnedSystemState;
+        }
+    }
+
+    @VisibleForTesting
+    int getSystemState() {
+        synchronized (mLock) {
+            return mCurrentState;
         }
     }
 
@@ -535,7 +575,9 @@ public class UsbAuthManager implements IBinder.DeathRecipient {
     private void updateSystemStateInternal() {
         @UsbAuthorizationSystemState int state;
         synchronized (mLock) {
-            if (mDeviceProvisionedListener.isDeviceInSetup()) {
+            if (mPinnedSystemState != -1) {
+                state = mPinnedSystemState;
+            } else if (mDeviceProvisionedListener.isDeviceInSetup()) {
                 // Set-up wizard has not completed.
                 state = UsbAuthorizationSystemState.SET_UP;
             } else if (mFullUsersLoggedIn.size() == 0) {

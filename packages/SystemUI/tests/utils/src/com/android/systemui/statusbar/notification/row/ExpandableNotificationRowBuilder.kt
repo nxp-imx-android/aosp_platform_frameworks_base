@@ -274,13 +274,12 @@ class ExpandableNotificationRowBuilder(
     ): ExpandableNotificationRow {
         val children = ArrayList<NotificationEntry>()
         for (i in 0..<childCount) {
-            val childEntry =
-                kosmos.buildNotificationEntry {
-                    Notification.Builder(context, "channel")
-                        .setSmallIcon(R.drawable.ic_person)
-                        .setGroup("group")
-                    channel?.let { setChannel(channel) }
-                }
+            val childEntry = kosmos.buildNotificationEntry {
+                Notification.Builder(context, "channel")
+                    .setSmallIcon(R.drawable.ic_person)
+                    .setGroup("group")
+                channel?.let { setChannel(channel) }
+            }
             childEntry.row = kosmos.createRowWithEntry(childEntry)
             children.add(childEntry)
         }
@@ -435,6 +434,7 @@ class ExpandableNotificationRowBuilder(
             Mockito.mock(BundleInteractionLogger::class.java, STUB_ONLY),
             Mockito.mock(NotificationActivityStarter::class.java, STUB_ONLY),
             kosmos.notificationUiEligibilityChecker,
+            kosmos.automationNotificationBackgroundProvider,
         )
         row.setAboveShelfChangedListener {}
         return row

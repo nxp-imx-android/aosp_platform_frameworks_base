@@ -589,7 +589,7 @@ public class ThemeStateManagerTest {
                 true);
         when(mThemeOverlayHelper.isOverlayEnabled(anyInt())).thenReturn(true);
 
-        mThemeStateManager.evaluateAllUsers(false, false);
+        mThemeStateManager.evaluateAllUsers(false);
         assertThat(pair.getPendingState()).isNull(); // there is no update
     }
 
@@ -602,7 +602,7 @@ public class ThemeStateManagerTest {
         when(mThemeOverlayHelper.isColorSchemeApplied(any(), anyInt(), any(), any())).thenReturn(
                 false);
 
-        mThemeStateManager.evaluateAllUsers(false, false);
+        mThemeStateManager.evaluateAllUsers(false);
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
         assertThat(pair.getPendingState().timeStamp()).isNotEqualTo(
                 pair.getCurrentState().timeStamp());
@@ -615,7 +615,7 @@ public class ThemeStateManagerTest {
                 DEFAULT_CONTRAST, DEFAULT_STYLE);
         ThemeStatePair pair = mThemeStateManager.getState(DEFAULT_USER_ID);
 
-        mThemeStateManager.evaluateAllUsers(true, false);
+        mThemeStateManager.evaluateAllUsers(true);
 
         assertThat(pair.getPendingState()).isNotNull(); // there is an update
         assertThat(pair.getPendingState().timeStamp()).isNotEqualTo(

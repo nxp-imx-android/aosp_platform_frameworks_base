@@ -467,7 +467,6 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"បញ្ចូល"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"ឧបករណ៍ជំនួយការស្ដាប់"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"កំពុង​បើក..."</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="4124028416057617517">"មិនអាចកែតម្រូវកម្រិតពន្លឺបានទេ ដោយសារវាកំពុងស្ថិតក្រោមការគ្រប់គ្រងរបស់កម្មវិធីខាងលើគេ"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"បង្វិល​ស្វ័យ​ប្រវត្តិ"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"បង្វិលអេក្រង់ស្វ័យប្រវត្តិ"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"ទី​តាំង​"</string>

@@ -124,6 +124,12 @@
     <string name="kg_prompt_reason_restart_pattern" msgid="3321211830602827742">"设备重启后，必须绘制解锁图案才能解锁"</string>
     <string name="kg_prompt_reason_restart_pin" msgid="2672166323886110512">"设备重启后，必须输入 PIN 码才能解锁"</string>
     <string name="kg_prompt_reason_restart_password" msgid="3967993994418885887">"设备重启后，必须输入密码才能解锁"</string>
+    <!-- no translation found for kg_prompt_reason_signin_pattern (1650886553162854395) -->
+    <skip />
+    <!-- no translation found for kg_prompt_reason_signin_pin (636031498838532631) -->
+    <skip />
+    <!-- no translation found for kg_prompt_reason_signin_password (1020939174735616114) -->
+    <skip />
     <string name="kg_prompt_reason_timeout_pattern" msgid="5514969660010197363">"为增强安全性，请改用解锁图案"</string>
     <string name="kg_prompt_reason_timeout_pin" msgid="4227962059353859376">"为增强安全性，请改用 PIN 码"</string>
     <string name="kg_prompt_reason_timeout_password" msgid="8810879144143933690">"为增强安全性，请改用密码"</string>

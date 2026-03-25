@@ -738,7 +738,9 @@ public class NotificationManager {
     public static final int IMPORTANCE_HIGH = 4;
 
     /**
-     * Unused.
+     * Higher notification importance: shows everywhere, makes noise and peeks. May use full screen
+     * intents. May have elevated prominence in appearance or shade ranking. Usage is reserved by
+     * OS; app usage is capped at {@link #IMPORTANCE_HIGH}.
      */
     public static final int IMPORTANCE_MAX = 5;
 

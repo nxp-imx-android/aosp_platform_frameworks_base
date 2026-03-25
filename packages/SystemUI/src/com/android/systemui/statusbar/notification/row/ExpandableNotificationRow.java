@@ -151,6 +151,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -353,15 +354,15 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     // this value will reset when the view is completely removed from the shade (ie: filtered out)
     private long initializationTime = -1;
 
+    // Checks whether this notification is eligible for the automation background.
     private NotificationUiEligibilityChecker mNotificationUiEligibilityChecker;
-
-    /** Automation-specific background for the notification. */
+    // Used to create a {@link AutomationNotificationBackground}
+    private Optional<AutomationNotificationBackgroundProvider>
+            mAutomationNotificationBackgroundProvider;
+    // Automation-specific background for the notification.
     @Nullable private AutomationNotificationBackground mAutomationNotificationBackground = null;
 
-    /**
-     * It is added for unit testing purpose.
-     * Please do not use it for other purposes.
-     */
+    /** It is added for unit testing purpose. Please do not use it for other purposes. */
     @VisibleForTesting
     public void setIgnoreLockscreenConstraints(boolean ignoreLockscreenConstraints) {
         mIgnoreLockscreenConstraints = ignoreLockscreenConstraints;
@@ -526,13 +527,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
     }
 
-    private void setAutomationBackgroundEnabled(boolean enabled) {
-        if (!enableAutomationNotificationUi()) {
-            return;
-        }
-        // TODO(b/484385191) - Set/re-set/clear automation background based on whether enabled.
-    }
-
     public NotificationContentView getPrivateLayout() {
         return mPrivateLayout;
     }
@@ -547,6 +541,30 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     public String getKey() {
         return mKey;
+    }
+
+    @VisibleForTesting
+    void setAutomationBackgroundEnabled(boolean enabled) {
+        if (!enableAutomationNotificationUi()) {
+            return;
+        }
+
+        // We will re-create the background if still enabled, so remove.
+        if (mAutomationNotificationBackground != null) {
+            removeView(mAutomationNotificationBackground);
+        }
+
+        // Re-creating when set as enabled again will reset all the states.
+        mAutomationNotificationBackground =
+                enabled
+                        ? mAutomationNotificationBackgroundProvider
+                                .map(provider -> provider.get(mContext))
+                                .orElse(null)
+                        : null;
+
+        if (mAutomationNotificationBackground != null) {
+            addView(mAutomationNotificationBackground, 0);
+        }
     }
 
     /**
@@ -2153,7 +2171,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             NotificationRebindingTracker notificationRebindingTracker,
             BundleInteractionLogger bundleInteractionLogger,
             NotificationActivityStarter notificationActivityStarter,
-            NotificationUiEligibilityChecker notificationUiEligibilityChecker) {
+            NotificationUiEligibilityChecker notificationUiEligibilityChecker,
+            Optional<AutomationNotificationBackgroundProvider>
+                    automationNotificationBackgroundProvider) {
         mEntryAdapter = entryAdapter;
         mIsBundle = entryAdapter instanceof BundleEntryAdapter;
         if (isBundle()) {
@@ -2206,6 +2226,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         mDismissibilityProvider = dismissibilityProvider;
         mBundleInteractionLogger = bundleInteractionLogger;
         mNotificationUiEligibilityChecker = notificationUiEligibilityChecker;
+        mAutomationNotificationBackgroundProvider = automationNotificationBackgroundProvider;
         // Haptics are handled in the ExpandableNotificationRowController
         setHapticFeedbackEnabled(false);
     }

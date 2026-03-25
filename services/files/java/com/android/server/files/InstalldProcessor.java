@@ -16,6 +16,11 @@
 
 package com.android.server.files;
 
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_DATA_MIGRATION_STATE_CHANGED__MIGRATION_STATE__DATA_MIGRATION_COMPLETE;
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_DATA_MIGRATION_STATE_CHANGED__MIGRATION_STATE__DATA_MIGRATION_FAILED;
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_DATA_MIGRATION_STATE_CHANGED__SOURCE_TYPE__APP_DATA_FILE_SOURCE;
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_DATA_MIGRATION_STATE_CHANGED__TARGET_TYPE__TARGET_PCC;
+
 import android.annotation.RequiresNoPermission;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -35,6 +40,7 @@ import android.util.Slog;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.pm.Installer;
 import com.android.server.pm.Installer.InstallerException;
+import com.android.server.privatecompute.PrivateComputeStatsLogUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -175,7 +181,26 @@ public class InstalldProcessor implements FileOperationProcessor {
             return;
         }
         try {
-            final InstalldCallback installdCallback = new InstalldCallback(ctx, callback);
+            final StatusCallback loggingWrapperCallback = new StatusCallback() {
+                @Override
+                public void onResult(FileOperationResult res) {
+                    if (res.getStatus() == FileOperationResult.STATUS_FINISHED) {
+                        PrivateComputeStatsLogUtil.logPccDataMigrationStateChanged(
+                                PCC_DATA_MIGRATION_STATE_CHANGED__MIGRATION_STATE__DATA_MIGRATION_COMPLETE,
+                                PCC_DATA_MIGRATION_STATE_CHANGED__SOURCE_TYPE__APP_DATA_FILE_SOURCE,
+                                PCC_DATA_MIGRATION_STATE_CHANGED__TARGET_TYPE__TARGET_PCC);
+                    } else if (res.getStatus() == FileOperationResult.STATUS_FAILED) {
+                        PrivateComputeStatsLogUtil.logPccDataMigrationStateChanged(
+                                PCC_DATA_MIGRATION_STATE_CHANGED__MIGRATION_STATE__DATA_MIGRATION_FAILED,
+                                PCC_DATA_MIGRATION_STATE_CHANGED__SOURCE_TYPE__APP_DATA_FILE_SOURCE,
+                                PCC_DATA_MIGRATION_STATE_CHANGED__TARGET_TYPE__TARGET_PCC);
+                    }
+                    callback.onResult(res);
+                }
+            };
+
+            final InstalldCallback installdCallback = new InstalldCallback(ctx,
+                    loggingWrapperCallback);
             final int appId = UserHandle.getAppId(aInfo.pccUid);
             switch (req.getMode()) {
                 case FileOperationRequest.OPERATION_MOVE -> {

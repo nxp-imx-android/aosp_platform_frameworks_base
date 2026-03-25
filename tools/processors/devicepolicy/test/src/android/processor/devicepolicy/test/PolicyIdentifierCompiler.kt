@@ -92,6 +92,7 @@ class PolicyIdentifierCompiler() {
                 import android.processor.devicepolicy.EnumPolicyDefinition;
                 import android.processor.devicepolicy.EnumResolutionMechanism;
                 import android.processor.devicepolicy.IntegerPolicyDefinition;
+                import android.processor.devicepolicy.ListOfPackagePolicyDefinition;
                 import android.processor.devicepolicy.ListOfStringPolicyDefinition;
                 import android.processor.devicepolicy.ListResolutionMechanism;
                 import android.processor.devicepolicy.LongPolicyDefinition;

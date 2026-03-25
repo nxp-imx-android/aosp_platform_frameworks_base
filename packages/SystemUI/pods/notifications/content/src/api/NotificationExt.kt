@@ -28,52 +28,57 @@ import android.app.Notification.EXTRA_SUB_TEXT
 import android.app.Notification.EXTRA_TEXT
 import android.app.Notification.EXTRA_TITLE
 import android.app.Notification.EXTRA_TITLE_BIG
+import android.app.Notification.EXTRA_VERIFICATION_ICON
 import android.app.Notification.EXTRA_VERIFICATION_TEXT
 import android.app.Notification.InboxStyle
 import android.app.Notification.MetricStyle
 import android.app.Person
+import android.graphics.drawable.Icon
 
-private fun Notification.title(): CharSequence? = getCharSequenceExtraUnlessEmpty(EXTRA_TITLE)
+private fun Notification.titleExtra(): CharSequence? = getCharSequenceExtraUnlessEmpty(EXTRA_TITLE)
 
-private fun Notification.bigTitle(): CharSequence? =
+private fun Notification.bigTitleExtra(): CharSequence? =
     getCharSequenceExtraUnlessEmpty(EXTRA_TITLE_BIG)
 
-private fun Notification.callPerson(): Person? =
+private fun Notification.callPersonExtra(): Person? =
     extras?.getParcelable(EXTRA_CALL_PERSON, Person::class.java)
 
-public fun Notification.title(
-    styleClass: Class<out Notification.Style>?,
-    expanded: Boolean = true,
-): CharSequence? {
+public fun Notification.title(expanded: Boolean): CharSequence? {
     // bigTitle is only used in the expanded form of 3 styles.
-    return when (styleClass) {
+    return when (notificationStyle) {
         BigTextStyle::class.java,
         BigPictureStyle::class.java,
-        InboxStyle::class.java -> if (expanded) bigTitle() else null
-        CallStyle::class.java -> callPerson()?.name?.takeUnlessEmpty()
+        InboxStyle::class.java -> if (expanded) bigTitleExtra() else null
+        CallStyle::class.java -> callPersonExtra()?.name?.takeUnlessEmpty()
         else -> null
-    } ?: title()
+    } ?: titleExtra()
 }
 
-// TODO(aioana): This should be private.
-public fun Notification.text(): CharSequence? = getCharSequenceExtraUnlessEmpty(EXTRA_TEXT)
+private fun Notification.textExtra(): CharSequence? = getCharSequenceExtraUnlessEmpty(EXTRA_TEXT)
 
-private fun Notification.bigText(): CharSequence? = getCharSequenceExtraUnlessEmpty(EXTRA_BIG_TEXT)
+private fun Notification.bigTextExtra(): CharSequence? =
+    getCharSequenceExtraUnlessEmpty(EXTRA_BIG_TEXT)
 
-public fun Notification.text(styleClass: Class<out Notification.Style>?): CharSequence? {
+public fun Notification.text(expanded: Boolean): CharSequence? {
+    val styleClass = notificationStyle
     if (styleClass == MetricStyle::class.java) return null
-
     return when (styleClass) {
-        BigTextStyle::class.java -> bigText()
+        BigTextStyle::class.java -> if (expanded) bigTextExtra() else null
         else -> null
-    } ?: text()
+    } ?: textExtra()
 }
 
 public fun Notification.subText(): CharSequence? = getCharSequenceExtraUnlessEmpty(EXTRA_SUB_TEXT)
 
-// TODO(aioana): This should only return the text for CallStyle.
 public fun Notification.verificationText(): CharSequence? =
-    getCharSequenceExtraUnlessEmpty(EXTRA_VERIFICATION_TEXT)
+    extras?.getCharSequence(EXTRA_VERIFICATION_TEXT)?.takeIf {
+        it.isNotEmpty() && notificationStyle == CallStyle::class.java
+    }
+
+public fun Notification.verificationIcon(): Icon? =
+    extras.getParcelable(EXTRA_VERIFICATION_ICON, Icon::class.java)?.takeIf {
+        notificationStyle == CallStyle::class.java
+    }
 
 public fun Notification.chronometerCountDown(): Boolean =
     extras?.getBoolean(EXTRA_CHRONOMETER_COUNT_DOWN) ?: false

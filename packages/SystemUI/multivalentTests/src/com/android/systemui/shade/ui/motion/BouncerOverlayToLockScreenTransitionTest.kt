@@ -20,14 +20,12 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.MotionTest
 import android.testing.TestableLooper.RunWithLooper
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.swipeDown
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import com.android.compose.animation.scene.DelegatingTransition
 import com.android.compose.animation.scene.FeatureCaptures.elementAlpha
-import com.android.compose.animation.scene.HoistedSceneTransitionLayoutState
-import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.animation.scene.featureOfElement
 import com.android.compose.snapshot.ObserveReadsRoot
 import com.android.compose.theme.PlatformTheme
@@ -60,9 +58,9 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.sceneDataSourceDelegator
 import com.android.systemui.scene.ui.composable.SceneContainer
+import com.android.systemui.scene.ui.view.BouncerSceneTransitionCoordinator
 import com.android.systemui.scene.ui.view.sceneJankMonitorFactory
 import com.android.systemui.scene.ui.view.sceneTransitionLatencyMonitor
-import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
 import com.android.systemui.scene.ui.viewmodel.toBouncerTransitionViewModel
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.ui.composable.WithStatusIconContext
@@ -72,7 +70,6 @@ import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
 import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.CoroutineScope
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -150,7 +147,7 @@ class BouncerOverlayToLockScreenTransitionTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
-    fun swipeDownFromBouncerToLockscreen_recordingBouncerAndLockScreenContentAplha() {
+    fun swipeDownFromBouncerToLockscreen_recordingBouncerAndLockScreenContentAlpha() {
         motionTestRule.runTest(60.seconds) {
             kosmos.enableSingleShade()
             kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = true
@@ -172,14 +169,21 @@ class BouncerOverlayToLockScreenTransitionTest : SysuiTestCase() {
                                         )
                                     }
                                     awaitCondition {
-                                        kosmos.sceneInteractor.transitionState.isIdle()
+                                        kosmos.sceneInteractor.transitionState.isIdle(
+                                            Overlays.Bouncer
+                                        )
                                     }
+                                    awaitIdle()
                                 }
                             ) {
                                 // perform swipe down gesture to invoke BouncerOverlay->LS
                                 // transition
                                 performTouchInputAsync(onRoot()) { swipeDown(durationMillis = 500) }
-                                awaitCondition { kosmos.sceneInteractor.transitionState.isIdle() }
+                                awaitCondition {
+                                    with(kosmos.sceneInteractor.transitionState) {
+                                        isIdle(Scenes.Lockscreen) && currentOverlays.isEmpty()
+                                    }
+                                }
                             }
                         ) {
                             featureOfElement(Bouncer.Elements.Background, elementAlpha)
@@ -196,26 +200,14 @@ class BouncerOverlayToLockScreenTransitionTest : SysuiTestCase() {
     @Composable
     private fun SceneContainerUnderTest() {
         val vm =
-            rememberViewModel("HomeScreenShadeTest") {
+            rememberViewModel("BouncerOverlayToLockScreenTransitionTest") {
                 kosmos.sceneContainerViewModelFactory.create {}
             }
-        val bouncerSceneContainerState = getBouncerSceneContainerState(vm)
-        val snapBouncer: (isShowing: Boolean) -> Unit = snapBouncer(bouncerSceneContainerState)
-        val showOrHideBouncer:
-            (
-                transition: TransitionState.Transition.ShowOrHideOverlay,
-                animationScope: CoroutineScope,
-            ) -> Unit =
-            showOrHideBouncer(bouncerSceneContainerState)
+        val coordinator = remember { BouncerSceneTransitionCoordinator(vm) }
+
         PlatformTheme {
             WithStatusIconContext(kosmos.tintedIconManagerFactory) {
                 ObserveReadsRoot {
-                    BouncerSceneContainer(
-                        viewModel = vm,
-                        state = bouncerSceneContainerState,
-                        bouncerOverlay = bouncerOverlay,
-                        toBouncerTransitionViewModel = kosmos.toBouncerTransitionViewModel,
-                    )
                     SceneContainer(
                         viewModel = vm,
                         sceneByKey = mapOf(Scenes.Lockscreen to lockscreenScene),
@@ -226,111 +218,22 @@ class BouncerOverlayToLockScreenTransitionTest : SysuiTestCase() {
                         sceneJankMonitorFactory = kosmos.sceneJankMonitorFactory,
                         sceneTransitionLatencyMonitor = kosmos.sceneTransitionLatencyMonitor,
                         onTransitionStart = { transition, animationScope ->
-                            // If the transition that started is specifically meant to show or hide
-                            // the bouncer overlay, that needs to be delegated out to the dedicated
-                            // bouncer scene container external to this scene container.
-                            if (
-                                transition is TransitionState.Transition.ShowOrHideOverlay &&
-                                    transition !is DelegatingTransition &&
-                                    transition.isTransitioningFromOrTo(Overlays.Bouncer)
-                            ) {
-                                showOrHideBouncer(transition, animationScope)
-                            }
+                            coordinator.onMainContainerTransitionStart(transition, animationScope)
                         },
                         onSnap = { idle ->
-                            snapBouncer(idle.currentOverlays.contains(Overlays.Bouncer))
+                            coordinator.onMainContainerSnap(
+                                idle.currentOverlays.contains(Overlays.Bouncer)
+                            )
                         },
+                    )
+                    BouncerSceneContainer(
+                        viewModel = vm,
+                        state = coordinator.bouncerSceneContainerState,
+                        bouncerOverlay = bouncerOverlay,
+                        toBouncerTransitionViewModel = kosmos.toBouncerTransitionViewModel,
                     )
                 }
             }
-        }
-    }
-
-    private fun getBouncerSceneContainerState(
-        vm: SceneContainerViewModel
-    ): HoistedSceneTransitionLayoutState {
-        return HoistedSceneTransitionLayoutState(
-            initialScene = Scenes.Gone,
-            onTransitionStart = onTransitionStart(vm),
-            deferTransitionProgress = true,
-        )
-    }
-
-    private fun showOrHideBouncer(
-        bouncerSceneContainerState: HoistedSceneTransitionLayoutState
-    ): (
-        transition: TransitionState.Transition.ShowOrHideOverlay, animationScope: CoroutineScope,
-    ) -> Unit {
-        val showOrHideBouncer:
-            (
-                transition: TransitionState.Transition.ShowOrHideOverlay,
-                animationScope: CoroutineScope,
-            ) -> Unit =
-            { transition, animationScope ->
-                // This is invoked when the logic in the scene container wants
-                // to show or hide the bouncer overlay. The transition is routed
-                // to the dedicated bouncer scene container so it runs there and
-                // even tracks the user drag/fling, if needed.
-                bouncerSceneContainerState.uiBoundState?.startTransitionImmediately(
-                    animationScope = animationScope,
-                    transition =
-                        DelegatingTransition.ShowOrHideOverlay(
-                            delegate = transition,
-                            fromOrToScene = bouncerSceneContainerState.currentScene,
-                            overlay = Overlays.Bouncer,
-                        ),
-                )
-            }
-        return showOrHideBouncer
-    }
-
-    private fun snapBouncer(
-        bouncerSceneContainerState: HoistedSceneTransitionLayoutState
-    ): (isShowing: Boolean) -> Unit {
-        val snapBouncer: (isShowing: Boolean) -> Unit = { isShowing ->
-            // This is invoked when the logic in the scene container wants
-            // to snap the bouncer overlay to show or to hide. The snapping
-            // is done on the dedicated bouncer scene container so it shows
-            // or hides as needed.
-            val isBouncerCurrentlyShowing =
-                bouncerSceneContainerState.currentOverlays.contains(Overlays.Bouncer)
-            if (isShowing != isBouncerCurrentlyShowing) {
-                bouncerSceneContainerState.uiBoundState?.snapTo(
-                    overlays =
-                        if (isShowing) {
-                            setOf(Overlays.Bouncer)
-                        } else {
-                            emptySet()
-                        }
-                )
-            }
-        }
-        return snapBouncer
-    }
-
-    private fun onTransitionStart(
-        vm: SceneContainerViewModel
-    ): (TransitionState.Transition) -> Unit = { transition ->
-        // Here, we check if the transition that was started is
-        // specifically meant to hide the bouncer overlay. If so, we
-        // must also ask the real scene container to start a parallel
-        // transition to hide the bouncer overlay from within itself.
-        // While it's true that the real scene container doesn't render
-        // the bouncer overlay (as that's actually handled by the
-        // dedicated bouncer scene container - the one that uses this
-        // state), it still needs to be logically hidden so both scene
-        // containers remain in sync.
-        if (
-            transition is TransitionState.Transition.ShowOrHideOverlay &&
-                transition.isTransitioning(from = Overlays.Bouncer)
-        ) {
-            vm.startTransitionImmediately(
-                DelegatingTransition.ShowOrHideOverlay(
-                    delegate = transition,
-                    fromOrToScene = vm.currentScene,
-                    overlay = Overlays.Bouncer,
-                )
-            )
         }
     }
 }

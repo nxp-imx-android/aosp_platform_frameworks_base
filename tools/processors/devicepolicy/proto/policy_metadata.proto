@@ -121,6 +121,7 @@ message TypeSpecificPolicyMetadata {
   message StringPolicyMetadata {
     bool empty_string_allowed = 1;
     bool unprintable_characters_allowed = 2;
+    optional int32 max_length = 3;
   }
 
   message ListPolicyMetadata {
@@ -135,6 +136,7 @@ message TypeSpecificPolicyMetadata {
       IntegerPolicyMetadata integer_metadata = 1;
       EnumPolicyMetadata enum_metadata = 2;
       StringPolicyMetadata string_metadata = 3;
+      PackagePolicyMetadata package_metadata = 6;
     }
 
     bool empty_list_allowed = 4;

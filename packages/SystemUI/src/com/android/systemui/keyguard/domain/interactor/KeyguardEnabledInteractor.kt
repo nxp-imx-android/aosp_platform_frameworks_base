@@ -34,6 +34,7 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.util.kotlin.sample
+import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import dagger.Binds
 import dagger.Lazy
 import dagger.multibindings.ClassKey
@@ -86,6 +87,21 @@ constructor(
 ) : CoreStartable {
 
     /**
+     * Whether the keyguard is enabled for the current user. Since there is no way to listen for
+     * events when this changes, check any time the device is going to lockscreen or switching
+     * users.
+     */
+    private val isKeyguardEnabledForUser: Flow<Boolean> =
+        selectedUserInteractor.selectedUser.flatMapLatestConflated { selectedUser ->
+            sceneInteractor
+                .get()
+                .transitionStateFlow
+                .map { it.isTransitioning(to = Scenes.Lockscreen) }
+                .distinctUntilChanged()
+                .map { !lockPatternUtils.isLockScreenDisabled(selectedUser) }
+        }
+
+    /**
      * Whether the keyguard is enabled, per [KeyguardService]. If the keyguard is not enabled, the
      * lockscreen cannot be shown and the device will go from AOD/DOZING directly to GONE.
      *
@@ -99,23 +115,19 @@ constructor(
      * Even if the keyguard is enabled, it's possible for it to be suppressed temporarily via adb.
      */
     val isKeyguardEnabled: StateFlow<Boolean> =
-        combine(
-                repository.isKeyguardEnabled,
-                // Since there is no way to listen for suppression events, check any time the device
-                // is going to lockscreen
-                sceneInteractor
-                    .get()
-                    .transitionStateFlow
-                    .map { it.isTransitioning(to = Scenes.Lockscreen) }
-                    .distinctUntilChanged()
-                    .map { isKeyguardSuppressed() },
-            ) { enabled, suppressed ->
-                enabled && !suppressed
+        combine(repository.isKeyguardEnabled, isKeyguardEnabledForUser) {
+                enabledPerKeyguardService,
+                enabledForUser ->
+                enabledPerKeyguardService && enabledForUser
             }
             .stateIn(
                 scope = scope,
                 started = SharingStarted.WhileSubscribed(),
-                initialValue = repository.isKeyguardEnabled.value,
+                initialValue =
+                    repository.isKeyguardEnabled.value &&
+                        !lockPatternUtils.isLockScreenDisabled(
+                            selectedUserInteractor.getSelectedUserId()
+                        ),
             )
 
     /** Whether we need to show the keyguard when the keyguard is re-enabled. */

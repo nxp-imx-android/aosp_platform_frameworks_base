@@ -4442,9 +4442,7 @@ final class ActivityRecord extends WindowToken {
         getDisplayContent().mUnknownAppVisibilityController.appRemovedOrHidden(this);
         mWmService.mSnapshotController.onAppRemoved(this);
         mAtmService.mStartingProcessActivities.remove(this);
-
-        mTaskSupervisor.getActivityMetricsLogger().notifyActivityRemoved(this);
-        mTaskSupervisor.mStoppingActivities.remove(this);
+        mTaskSupervisor.onActivityRemovedFromDisplay(this);
 
         mAppCompatController.getLetterboxPolicy().stop();
         mAppCompatController.getTransparentPolicy().stop();

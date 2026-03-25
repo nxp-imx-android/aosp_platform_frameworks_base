@@ -112,6 +112,7 @@ constructor(
     private val keyguardStateController: KeyguardStateController,
     private val bypassController: KeyguardBypassController,
     private val mediaCarouselController: MediaCarouselController,
+    private val mediaReorderController: MediaReorderController,
     private val mediaManager: MediaDataManager,
     private val dreamOverlayStateController: DreamOverlayStateController,
     private val keyguardInteractor: KeyguardInteractor,
@@ -604,6 +605,7 @@ constructor(
             }
         )
 
+        mediaReorderController.isCarouselCurrentlyVisible = this::isCarouselCurrentlyVisible
         mediaCarouselController.updateUserVisibility = this::updateUserVisibility
         mediaCarouselController.updateHostVisibility = {
             mediaHosts.forEach { it?.updateViewVisibility() }
@@ -1359,22 +1361,35 @@ constructor(
         return isCrossFadeAnimatorRunning
     }
 
-    /** Update whether or not the media carousel could be visible to the user */
-    private fun updateUserVisibility() {
-        if (MediaControlsInComposeFlag.isEnabled) return
+    internal fun isCarouselCurrentlyVisible(): Boolean {
+        return isCarouselCurrentlyVisible(false)
+    }
 
+    private fun isCarouselCurrentlyVisible(logUpdate: Boolean = false): Boolean {
         val shadeVisible =
             isLockScreenVisibleToUser() ||
                 isHomeScreenShadeVisibleToUser() ||
                 isGlanceableHubVisibleToUser()
         val mediaVisible = qsExpanded || hasActiveMedia
-        logger.logUserVisibilityChange(shadeVisible, mediaVisible)
         val carouselVisible = shadeVisible && mediaVisible
+        if (logUpdate) logger.logUserVisibilityChange(shadeVisible, mediaVisible)
+        return carouselVisible
+    }
+
+    /** Update whether or not the media carousel could be visible to the user */
+    private fun updateUserVisibility() {
+        if (MediaControlsInComposeFlag.isEnabled) return
+
+        val carouselVisible = isCarouselCurrentlyVisible(logUpdate = true)
         mediaCarouselController.mediaCarouselScrollHandler.visibleToUser = carouselVisible
-        if (carouselVisible && !previousCarouselVisible) {
+        val prevVisible = previousCarouselVisible
+        previousCarouselVisible = carouselVisible
+        if (carouselVisible && !prevVisible) {
             mediaCarouselController.onCarouselVisibleToUser()
         }
-        previousCarouselVisible = carouselVisible
+        if (!carouselVisible && prevVisible) {
+            mediaReorderController.onReorderingAllowed()
+        }
     }
 
     private fun isLockScreenVisibleToUser(): Boolean {

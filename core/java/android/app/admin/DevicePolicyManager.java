@@ -148,6 +148,7 @@ import android.security.AttestedKeyPair;
 import android.security.Credentials;
 import android.security.KeyChain;
 import android.security.KeyChainException;
+import android.security.KeyChainManager;
 import android.security.keymaster.KeymasterCertificateChain;
 import android.security.keystore.AttestationUtils;
 import android.security.keystore.KeyAttestationException;
@@ -8206,6 +8207,12 @@ public class DevicePolicyManager {
      * creating a key in KeyChain that never left the secure hardware. Access to the key is
      * controlled the same way as in {@link #installKeyPair}.
      *
+     * <p>This method generates a key pair within the scope of the calling user
+     * (equivalent to using {@link KeyChainManager#KEYPAIR_SCOPE_USER} with the overloaded
+     * {@link #generateKeyPair(String, KeyGenParameterSpec, int, int)} method).
+     * To generate device-scoped key pairs ({@link KeyChainManager#KEYPAIR_SCOPE_DEVICE}),
+     * the new overload must be used.
+     *
      * <p>From Android {@link android.os.Build.VERSION_CODES#S}, the credential management app
      * can call this API. If called by the credential management app, the componentName must be
      * {@code null}. Note, there can only be a credential management app on an unmanaged device.
@@ -8294,21 +8301,101 @@ public class DevicePolicyManager {
             @NonNull String algorithm, @NonNull KeyGenParameterSpec keySpec,
             @AttestationIdType int idAttestationFlags) {
         throwIfParentInstance("generateKeyPair");
+        // Legacy implementation defaults to USER scope
+        try {
+            return generateKeyPairInternal(admin, algorithm, keySpec, idAttestationFlags,
+                    KeyChainManager.KEYPAIR_SCOPE_USER);
+        } catch (KeyChainException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Generates a new private/public key pair with a specified scope.
+     *
+     * <p>This method extends {@link #generateKeyPair(ComponentName, String, KeyGenParameterSpec,
+     * int)}, adding the {@code scope} parameter to determine if the key pair is user-specific or
+     * device-wide.
+     *
+     * <p>Please refer to the documentation of {@link #generateKeyPair(ComponentName, String,
+     * KeyGenParameterSpec, int)} for complete details on general functionality, permissions, caller
+     * types, attestation, secure hardware usage, and exceptions.
+     *
+     * <p>Key differences in this overload:
+     *
+     * <ul>
+     *   <li>The {@code scope} parameter MUST be provided to define the key's visibility.
+     *   <li>Using {@link KeyChainManager#KEYPAIR_SCOPE_DEVICE}: The key pair will be accessible
+     *       across all affiliated users on the device. See {@link #isAffiliatedUser}. The caller
+     *       MUST be running in an affiliated user to use this scope.
+     *   <li>Using {@link KeyChainManager#KEYPAIR_SCOPE_USER}: The key pair is private to the
+     *       calling user. This mirrors the behavior of the base {@code generateKeyPair} method.
+     * </ul>
+     *
+     * <p><b>Note:</b> Like the base method, this may take several seconds and should not be called
+     * on the main thread. It is not thread-safe.
+     *
+     * @param algorithm The key generation algorithm, see {@link java.security.KeyPairGenerator}.
+     * @param keySpec Specification of the key to generate, see {@link
+     *     java.security.KeyPairGenerator}.
+     * @param idAttestationFlags A bitmask of the identifiers that should be included in the
+     *     attestation record. See base method for details.
+     * @param scope The scope of the key pair: {@link KeyChainManager#KEYPAIR_SCOPE_USER} or {@link
+     *     KeyChainManager#KEYPAIR_SCOPE_DEVICE}.
+     * @return A non-null {@code AttestedKeyPair}.
+     * @throws SecurityException if the caller is not authorized (see base method), or if {@code
+     *     KEYPAIR_SCOPE_DEVICE} is requested by a non-affiliated user.
+     * @throws IllegalArgumentException if parameters are invalid.
+     * @throws UnsupportedOperationException if Device ID attestation or individual attestation
+     *         was requested but the underlying hardware does not support it.
+     * @throws StrongBoxUnavailableException if StrongBox was requested but is unavailable.
+     * @throws KeyChainException if key pair generation fails for other internal system
+     *     reasons.
+     */
+    @RequiresPermission(value = MANAGE_DEVICE_POLICY_CERTIFICATES, conditional = true)
+    @FlaggedApi(android.security.Flags.FLAG_ENABLE_DEVICE_CERTIFICATES)
+    @NonNull
+    public AttestedKeyPair generateKeyPair(
+            @NonNull String algorithm,
+            @NonNull KeyGenParameterSpec keySpec,
+            @AttestationIdType int idAttestationFlags,
+            @KeyChainManager.KeyPairScope int scope) throws KeyChainException {
+        throwIfParentInstance("generateKeyPair");
+        return generateKeyPairInternal(null, algorithm, keySpec, idAttestationFlags, scope);
+    }
+
+    @NonNull
+    private AttestedKeyPair generateKeyPairInternal(@Nullable ComponentName admin,
+            @NonNull String algorithm, @NonNull KeyGenParameterSpec keySpec,
+            @AttestationIdType int idAttestationFlags,
+            @KeyChainManager.KeyPairScope int scope) throws KeyChainException {
         try {
             final ParcelableKeyGenParameterSpec parcelableSpec =
                     new ParcelableKeyGenParameterSpec(keySpec);
             KeymasterCertificateChain attestationChain = new KeymasterCertificateChain();
 
-            // Translate ID attestation flags to values used by AttestationUtils
-            final boolean success = mService.generateKeyPair(
-                    admin, mContext.getPackageName(), algorithm, parcelableSpec,
-                    idAttestationFlags, attestationChain);
+            boolean success;
+
+            if (android.security.Flags.enableDeviceCertificates()) {
+                KeymasterCertificateChain chain = mService.generateKeyPairWithScope(
+                        mContext.getPackageName(), algorithm, parcelableSpec,
+                        idAttestationFlags, scope);
+                success = true; // `generateKeyPairWithScope` throws exceptions in case of error
+                attestationChain.shallowCopyFrom(chain);
+            } else {
+                success = mService.generateKeyPair(
+                        admin, mContext.getPackageName(), algorithm, parcelableSpec,
+                        idAttestationFlags, attestationChain);
+            }
+
             if (!success) {
                 Log.e(TAG, "Error generating key via DevicePolicyManagerService.");
-                return null;
+                throw new KeyChainException(
+                        "Error generating key via DevicePolicyManagerService.");
             }
 
             final String alias = keySpec.getKeystoreAlias();
+            // TODO(b/491158432): Move all KeyChain operations inside DevicePolicyManagerService.
             final KeyPair keyPair = KeyChain.getKeyPair(mContext, alias);
             Certificate[] outputChain = null;
             try {
@@ -8318,28 +8405,27 @@ public class DevicePolicyManager {
             } catch (KeyAttestationException e) {
                 Log.e(TAG, "Error parsing attestation chain for alias " + alias, e);
                 mService.removeKeyPair(admin, mContext.getPackageName(), alias);
-                return null;
+                throw new KeyChainException("Error parsing attestation chain", e);
             }
             return new AttestedKeyPair(keyPair, outputChain);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
-        } catch (KeyChainException e) {
-            Log.w(TAG, "Failed to generate key", e);
         } catch (InterruptedException e) {
             Log.w(TAG, "Interrupted while generating key", e);
             Thread.currentThread().interrupt();
+            throw new KeyChainException("Interrupted while generating key", e);
         } catch (ServiceSpecificException e) {
             Log.w(TAG, String.format("Key Generation failure: %d", e.errorCode));
             switch (e.errorCode) {
                 case KEY_GEN_STRONGBOX_UNAVAILABLE:
                     throw new StrongBoxUnavailableException("No StrongBox for key generation.");
                 default:
-                    throw new RuntimeException(
+                    throw new KeyChainException(
                             String.format("Unknown error while generating key: %d", e.errorCode));
             }
         }
-        return null;
     }
+
 
     /**
      * Called by a device or profile owner, or delegated certificate chooser (an app that has been
@@ -18831,10 +18917,11 @@ public class DevicePolicyManager {
     @RequiresPermission(android.Manifest.permission.MANAGE_ROLE_HOLDERS)
     @UserHandleAware
     @FlaggedApi(FLAG_SECURE_ADB_ROLE_BYPASSING)
-    public boolean isPackageQualifiedForDevicePolicyManagementRole(@NonNull String packageName) {
+    public boolean isPackageAllowedToBypassDevicePolicyManagementRoleQualification(
+            @NonNull String packageName) {
         if (mService != null) {
             try {
-                return mService.isPackageQualifiedForDevicePolicyManagementRole(
+                return mService.isPackageAllowedToBypassDevicePolicyManagementRoleQualification(
                         packageName, myUserId());
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();

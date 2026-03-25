@@ -6,5 +6,5 @@ flag {
   namespace: "enterprise"
   description: "Enables support for device-scoped certificates in KeyChainSystemService."
   bug: "475733339"
-  is_exported: false
+  is_exported: true
 }

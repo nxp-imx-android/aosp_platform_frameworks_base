@@ -43,7 +43,7 @@ import com.android.systemui.statusbar.phone.ui.TintedIconManager
 import com.android.systemui.statusbar.phone.ui.statusBarIconController
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinder
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.defaultDisplayHomeStatusBarViewModelFactory
-import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.headlineViewModelImplFactory
+import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.displayAwareHeadlineViewModelImplFactory
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.homeStatusBarViewModel
 import com.android.systemui.statusbar.ui.viewmodel.statusBarRegionSamplingViewModelFactory
 import com.android.systemui.testKosmosNew
@@ -127,7 +127,7 @@ class StatusBarRootTest : SysuiTestCase() {
                 clockViewModelFactory = kosmos.clockViewModelFactory,
                 darkIconManagerFactory = darkIconManagerFactory,
                 tintedIconManagerFactory = tintedIconManagerFactory,
-                headlineViewModelFactory = kosmos.headlineViewModelImplFactory,
+                headlineViewModelFactory = kosmos.displayAwareHeadlineViewModelImplFactory,
                 headlineComposer = mock(),
                 iconController = kosmos.statusBarIconController,
                 darkIconDispatcher = kosmos.fakeDarkIconDispatcher,

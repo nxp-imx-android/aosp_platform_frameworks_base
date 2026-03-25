@@ -70,9 +70,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -109,28 +107,29 @@ final class LocalDisplayAdapter extends DisplayAdapter {
     private ColorDisplayService.ColorDisplayServiceInternal mCdsi;
     private Spline mNitsToEvenDimmerStrength;
     private final boolean mStableEdidsFlag;
-    private final Map<LocalDisplayDevice, SurfaceControl.DesiredDisplayModeSpecs>
-            mDisplayModeUpdateItems = new HashMap<>();
+    private final ModeRequestManager mModeRequestManager;
 
     // Called with SyncRoot lock held.
     LocalDisplayAdapter(DisplayManagerService.SyncRoot syncRoot, Context context,
             Handler handler, Listener listener, DisplayManagerFlags flags,
-            DisplayNotificationManager displayNotificationManager, boolean stableEdidsFlag) {
+            DisplayNotificationManager displayNotificationManager, boolean stableEdidsFlag,
+                        ModeRequestManager modeRequestManager) {
         this(syncRoot, context, handler, listener, flags, displayNotificationManager,
-                new Injector(), stableEdidsFlag);
+                new Injector(), stableEdidsFlag, modeRequestManager);
     }
 
     @VisibleForTesting
     LocalDisplayAdapter(DisplayManagerService.SyncRoot syncRoot, Context context, Handler handler,
             Listener listener, DisplayManagerFlags flags,
             DisplayNotificationManager displayNotificationManager,
-            Injector injector, boolean stableEdidsFlag) {
+            Injector injector, boolean stableEdidsFlag, ModeRequestManager modeRequestManager) {
         super(syncRoot, context, handler, listener, TAG, flags);
         mDisplayNotificationManager = displayNotificationManager;
         mInjector = injector;
         mSurfaceControlProxy = mInjector.getSurfaceControlProxy();
         mIsBootDisplayModeSupported = mSurfaceControlProxy.getBootDisplayModeSupport();
         mStableEdidsFlag = stableEdidsFlag;
+        mModeRequestManager = modeRequestManager;
     }
 
     @Override
@@ -215,7 +214,20 @@ final class LocalDisplayAdapter extends DisplayAdapter {
         }
     }
 
-    private final class LocalDisplayDevice extends DisplayDevice {
+    private ModeRequestManager getModeRequestManager() {
+        return mModeRequestManager;
+    }
+
+
+    void setDesiredDisplayModeSpecsAsync(
+            IBinder applyToken,
+            SurfaceControl.DesiredDisplayModeSpecs[] modeSpecs) {
+        // Do not lock when calling these SurfaceControl methods because they are sync
+        // operations that may block for a while when setting display power mode.
+        mSurfaceControlProxy.setDesiredDisplayModeSpecs(applyToken, modeSpecs);
+    }
+
+    final class LocalDisplayDevice extends DisplayDevice {
         private final long mPhysicalDisplayId;
         private final SparseArray<DisplayModeRecord> mSupportedModes = new SparseArray<>();
         private final ArrayList<Integer> mSupportedColorModes = new ArrayList<>();
@@ -1181,15 +1193,15 @@ final class LocalDisplayAdapter extends DisplayAdapter {
         @Override
         public void setDesiredDisplayModeSpecsLocked(
                 DisplayModeDirector.DesiredDisplayModeSpecs displayModeSpecs) {
-            setDesiredDisplayModeSpecsLocked(displayModeSpecs, false);
-        }
-
-        @Override
-        public void setDesiredDisplayModeSpecsLocked(
-                DisplayModeDirector.DesiredDisplayModeSpecs displayModeSpecs, boolean isInBatch) {
             if (displayModeSpecs.baseModeId == 0) {
                 // Bail if the caller is requesting a null mode. We'll get called again shortly with
                 // a valid mode.
+                return;
+            }
+            LocalDisplayAdapter adapter = (LocalDisplayAdapter) getAdapterLocked();
+
+            // if any of the supported modes are currently being applied bail
+            if (adapter.getModeRequestManager().isAnyModeInProgress(mSupportedModes)) {
                 return;
             }
 
@@ -1230,29 +1242,24 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                             + "sfModeId = " + baseSfModeId);
                 }
                 SurfaceControl.DesiredDisplayModeSpecs spec =
-                        new SurfaceControl.DesiredDisplayModeSpecs(
-                                getDisplayTokenLocked(), baseSfModeId,
-                                mDisplayModeSpecs.allowGroupSwitching,
-                                mDisplayModeSpecs.primary,
-                                mDisplayModeSpecs.appRequest,
-                                mDisplayModeSpecs.mIdleScreenRefreshRateConfig,
-                                mDisplayModeSpecs.workDurationsData);
-                if (isInBatch) {
-                    mDisplayModeUpdateItems.put(this, spec);
-                } else {
-                    getHandler().sendMessage(PooledLambda.obtainMessage(
-                            LocalDisplayDevice::setDesiredDisplayModeSpecsAsync, this, applyToken,
-                            new SurfaceControl.DesiredDisplayModeSpecs[] {spec}));
-                }
+                        getDisplayModeSpecs(mDisplayModeSpecs);
+
+                getHandler().sendMessage(PooledLambda.obtainMessage(
+                        LocalDisplayAdapter::setDesiredDisplayModeSpecsAsync,
+                        (LocalDisplayAdapter) getAdapterLocked(), applyToken,
+                        new SurfaceControl.DesiredDisplayModeSpecs[] {spec}));
             }
         }
 
-        private void setDesiredDisplayModeSpecsAsync(
-                IBinder applyToken,
-                SurfaceControl.DesiredDisplayModeSpecs[] modeSpecs) {
-            // Do not lock when calling these SurfaceControl methods because they are sync
-            // operations that may block for a while when setting display power mode.
-            mSurfaceControlProxy.setDesiredDisplayModeSpecs(applyToken, modeSpecs);
+        SurfaceControl.DesiredDisplayModeSpecs getDisplayModeSpecs(
+                DisplayModeDirector.DesiredDisplayModeSpecs specs) {
+            return new SurfaceControl.DesiredDisplayModeSpecs(
+                            getDisplayTokenLocked(), getBaseSfModeId(specs.baseModeId),
+                            specs.allowGroupSwitching,
+                            specs.primary,
+                            specs.appRequest,
+                            specs.mIdleScreenRefreshRateConfig,
+                            specs.workDurationsData);
         }
 
         @Override
@@ -1561,6 +1568,10 @@ final class LocalDisplayAdapter extends DisplayAdapter {
             }
             return false;
         }
+
+        public int getBaseSfModeId(int baseModeId) {
+            return findSfDisplayModeIdLocked(baseModeId, mDefaultModeGroup);
+        }
     }
 
     private static boolean hdrTypesEqual(int[] modeHdrTypes, int[] recordHdrTypes) {
@@ -1578,17 +1589,6 @@ final class LocalDisplayAdapter extends DisplayAdapter {
         return mOverlayContext;
     }
 
-    @Override
-    public void applyBatchDisplayModeUpdatesLocked() {
-        IBinder applyToken = new Binder();
-        for (LocalDisplayDevice device : mDisplayModeUpdateItems.keySet()) {
-            SurfaceControl.DesiredDisplayModeSpecs specs = mDisplayModeUpdateItems.get(device);
-            getHandler().sendMessage(PooledLambda.obtainMessage(
-                    LocalDisplayDevice::setDesiredDisplayModeSpecsAsync, device, applyToken,
-                    new SurfaceControl.DesiredDisplayModeSpecs[] {specs}));
-        }
-        mDisplayModeUpdateItems.clear();
-    }
 
     /**
      * Dispose of the allocated resources.

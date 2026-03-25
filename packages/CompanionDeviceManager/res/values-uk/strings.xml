@@ -48,6 +48,8 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"пристрій"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Цей додаток зможе синхронізувати інформацію (наприклад, імена людей, які телефонують) між телефоном і вибраним пристроєм"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Дозвольте додатку &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; синхронізувати інформацію, зокрема дані про абонента, і виконувати розумні дії на вашому пристрої типу \"<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>\""</string>
+    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
+    <skip />
     <string name="consent_yes" msgid="8344487259618762872">"Дозволити"</string>
     <string name="consent_no" msgid="2640796915611404382">"Не дозволяти"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Скасувати"</string>
@@ -91,8 +93,10 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Записуйте відео з екрана, транслюйте або показуйте екран пристрою (<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>) на пристрій &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Додаток <xliff:g id="APP_NAME">%1$s</xliff:g> матиме доступ до контенту, що відображається чи відтворюється на пристрої (<xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>), зокрема до аудіо, фото, платіжної інформації, паролів і повідомлень."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Ваш <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> транслюватиме додатки на пристрій &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;.br/&gt;&lt;br/&gt;Додаток <xliff:g id="APP_NAME">%1$s</xliff:g> матиме доступ до контенту, що відображається чи відтворюється на пристрої <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, зокрема до аудіо, фото, платіжної інформації, паролів і повідомлень, навіть коли <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> заблоковано."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Отримувати доступ до списку доступних пристроїв і вибирати, з якого з них транслюватиметься аудіо або відео з інших додатків"</string>
-    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
-    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
+    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
+    <skip />
+    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
+    <skip />
     <string name="device_type" product="default" msgid="8268703872070046263">"телефоні"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"планшеті"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"телевізорі"</string>

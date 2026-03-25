@@ -64,6 +64,7 @@ import static android.app.AppOpsManager.opAllowSystemBypassRestriction;
 import static android.app.AppOpsManager.opRestrictsRead;
 import static android.app.AppOpsManager.opToName;
 import static android.app.AppOpsManager.opToPublicName;
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.companion.virtual.VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT;
 import static android.content.Intent.ACTION_PACKAGE_REMOVED;
 import static android.content.Intent.EXTRA_REPLACING;
@@ -2148,6 +2149,12 @@ public class AppOpsService extends IAppOpsService.Stub {
 
         enforceManageAppOpsModes(Binder.getCallingPid(), Binder.getCallingUid(), uid);
         verifyIncomingOp(code);
+
+        if (enablePccFrameworkSupport() && Process.isPrivateComputeCoreUid(uid)) {
+            Slog.wtf(TAG, "setUidMode() must not be called for PCC UIDs. uid: " + uid
+                    + ". Please use the app UID instead.");
+            return;
+        }
 
         if (isDeviceProvisioningPackage(uid, null)) {
             Slog.w(TAG, "Cannot set uid mode for device provisioning app by Shell");

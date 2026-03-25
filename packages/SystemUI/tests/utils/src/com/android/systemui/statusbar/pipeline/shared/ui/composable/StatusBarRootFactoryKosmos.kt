@@ -24,7 +24,7 @@ import com.android.systemui.statusbar.events.domain.interactor.systemStatusEvent
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.connectedDisplaysStatusBarNotificationIconViewStoreFactory
 import com.android.systemui.statusbar.phone.ui.statusBarIconController
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.defaultDisplayHomeStatusBarViewModelFactory
-import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.headlineViewModelImplFactory
+import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.displayAwareHeadlineViewModelImplFactory
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.homeStatusBarViewBinder
 import com.android.systemui.statusbar.ui.viewmodel.statusBarRegionSamplingViewModelFactory
 import org.mockito.kotlin.mock
@@ -45,6 +45,6 @@ val Kosmos.statusBarRootFactory by
             homeStatusBarViewBinder = homeStatusBarViewBinder,
             homeStatusBarViewModelFactory = defaultDisplayHomeStatusBarViewModelFactory,
             statusBarRegionSamplingViewModelFactory = statusBarRegionSamplingViewModelFactory,
-            headlineViewModelFactory = headlineViewModelImplFactory,
+            headlineViewModelFactory = displayAwareHeadlineViewModelImplFactory,
         )
     }

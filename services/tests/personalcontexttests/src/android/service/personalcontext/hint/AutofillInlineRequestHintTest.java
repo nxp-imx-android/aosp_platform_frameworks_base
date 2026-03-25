@@ -187,21 +187,10 @@ public class AutofillInlineRequestHintTest {
 
     private static FillEventHistory getFillEventHistory(AutofillId focusedId, int sessionId) {
         FillEventHistory.Event event =
-                new FillEventHistory.Event(
-                        FillEventHistory.Event.TYPE_AUTHENTICATION_SELECTED,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        0,
-                        0,
-                        focusedId);
+                new FillEventHistory.Event.Builder(
+                                FillEventHistory.Event.TYPE_AUTHENTICATION_SELECTED)
+                        .setFocusedId(focusedId)
+                        .build();
         final FillEventHistory fillEventHistory = new FillEventHistory(sessionId, null);
         fillEventHistory.addEvent(event);
         return fillEventHistory;

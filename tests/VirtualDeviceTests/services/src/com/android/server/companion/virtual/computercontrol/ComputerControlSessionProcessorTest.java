@@ -16,8 +16,9 @@
 
 package com.android.server.companion.virtual.computercontrol;
 
+import static android.companion.virtual.computercontrol.ComputerControlSessionParams.MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17;
+
 import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionProcessor.MAXIMUM_CONCURRENT_SESSIONS;
-import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionProcessor.MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
@@ -40,6 +41,8 @@ import android.app.AppInteractionAttribution;
 import android.app.AppOpsManager;
 import android.app.IApplicationThread;
 import android.app.KeyguardManager;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.companion.DeviceId;
@@ -59,6 +62,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.UserInfo;
+import android.graphics.Color;
 import android.hardware.display.VirtualDisplay;
 import android.os.Binder;
 import android.os.RemoteException;
@@ -120,6 +124,24 @@ public class ComputerControlSessionProcessorTest {
             .build();
     private static final CompanionDeviceId COMPANION_DEVICE_ID =
             new CompanionDeviceId(COMP_DEVICE_ID);
+    private static final String NOTIFICATION_CHANNEL_ID = "TEST_CHANNEL_ID";
+    private static final int NOTIFICATION_ID = 5;
+    private static final String NOTIFICATION_TAG = "TEST_NOTIFICATION_TAG";
+    private static final Notification NOTIFICATION =
+            new Notification.Builder(
+                    InstrumentationRegistry.getInstrumentation().getTargetContext(),
+                    NOTIFICATION_CHANNEL_ID)
+                    .setOngoing(true)
+                    .setRequestPromotedOngoing(true)
+                    .setContentTitle("Hello")
+                    .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                    .setColor(Color.WHITE)
+                    .build();
+    private static final ComputerControlSessionParams.NotificationParams NOTIFICATION_PARAMS =
+            new ComputerControlSessionParams.NotificationParams.Builder(
+                    NOTIFICATION, NOTIFICATION_ID)
+                    .setNotificationTag(NOTIFICATION_TAG)
+                    .build();
     private static final ComputerControlSessionParams PARAMS =
             new ComputerControlSessionParams.Builder()
                     .setName(ComputerControlSessionImplTest.class.getSimpleName())
@@ -127,6 +149,7 @@ public class ComputerControlSessionProcessorTest {
                     .setTargetComputerControlVersion(MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17)
                     .setAppInteractionAttribution(APP_INTERACTION_ATTRIBUTION)
                     .setCompanionDeviceId(COMPANION_DEVICE_ID)
+                    .setNotificationParams(NOTIFICATION_PARAMS)
                     .build();
 
     @Rule
@@ -138,6 +161,8 @@ public class ComputerControlSessionProcessorTest {
     private KeyguardManager mKeyguardManager;
     @Mock
     private IAuthenticationPolicyService mAuthenticationPolicyService;
+    @Mock
+    private NotificationManager mNotificationManager;
     @Mock
     private AppOpsManager mAppOpsManager;
     @Mock
@@ -223,6 +248,8 @@ public class ComputerControlSessionProcessorTest {
         when(context.getSystemService(Context.AUTHENTICATION_POLICY_SERVICE))
                 .thenReturn(new AuthenticationPolicyManager(context, mAuthenticationPolicyService));
         when(context.getSystemService(Context.APP_OPS_SERVICE)).thenReturn(mAppOpsManager);
+        when(context.getSystemService(Context.NOTIFICATION_SERVICE))
+                .thenReturn(mNotificationManager);
         when(context.getSystemService(DevicePolicyManager.class)).thenReturn(mDevicePolicyManager);
         when(context.getSystemService(UserManager.class)).thenReturn(mUserManager);
 

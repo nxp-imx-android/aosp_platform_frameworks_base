@@ -18,8 +18,7 @@ package com.android.server.companion.virtual.computercontrol;
 
 import static android.Manifest.permission.ACCESS_COMPUTER_CONTROL;
 import static android.Manifest.permission.POST_NOTIFICATIONS;
-
-import static com.android.server.companion.virtual.computercontrol.ComputerControlSessionProcessor.MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17;
+import static android.companion.virtual.computercontrol.ComputerControlSessionParams.MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -438,6 +437,18 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
         }
         if (targetPackage == null || agentPackageName == null) {
             return false;
+        }
+        // TODO(b/483624078): Consider making per app consent APIs @TestApis and create
+        //  appropriate tests and CTS
+        // Allow test agents to automate test targets regardless of formal consent records.
+        final PackageManager pm = getPackageManagerForUser(UserHandle.getUserId(agentUid));
+        if (isTestAgent(agentUid, agentPackageName, pm)) {
+            final ApplicationInfo targetAppInfo = getApplicationInfo(targetPackage, pm);
+            if (targetAppInfo != null && isPackageTestOnly(targetAppInfo)) {
+                Slog.i(TAG, "doesAgentHaveConsentToAutomateTargetApp: Allowing test automation "
+                        + "for test agent " + agentPackageName + " on target " + targetPackage);
+                return true;
+            }
         }
         synchronized (mPerAgentAutomatableAppList) {
             final Map<String, Set<String>> agentMap = mPerAgentAutomatableAppList.get(agentUid);

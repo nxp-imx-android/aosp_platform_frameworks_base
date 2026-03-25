@@ -48,6 +48,8 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"uređaj"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Ova aplikacija će moći da sinhronizuje podatke, poput imena osobe koja upućuje poziv, između telefona i odabranog uređaja"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Dozvolite da &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; sinhronizuje informacije kao što su informacije o pozivaocu i pokreće pametne radnje sa uređaja <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
+    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
+    <skip />
     <string name="consent_yes" msgid="8344487259618762872">"Dozvoli"</string>
     <string name="consent_no" msgid="2640796915611404382">"Ne dozvoli"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Otkaži"</string>
@@ -91,8 +93,10 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Snimajte, prebacujte ili delite ekran uređaja <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> na uređaju &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> će imati pristup svemu što se vidi ili pušta na uređaju <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, uključujući zvuk, slike, informacije o plaćanju, lozinke i poruke."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Strimujte aplikacije uređaja <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> na uređaju &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> će imati pristup svemu što se vidi ili pušta na uređaju <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, uključujući zvuk, slike, informacije o plaćanju, lozinke i poruke, čak i kada je uređaj <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> zaključan."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Pristup listi dostupnih uređaja i kontrola uređaja koji strimuje ili prebacuje audio ili video iz drugih aplikacija"</string>
-    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
-    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
+    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
+    <skip />
+    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
+    <skip />
     <string name="device_type" product="default" msgid="8268703872070046263">"telefonu"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tabletu"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"tv"</string>

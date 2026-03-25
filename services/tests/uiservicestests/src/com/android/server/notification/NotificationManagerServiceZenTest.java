@@ -582,7 +582,7 @@ public class NotificationManagerServiceZenTest extends UiServiceTestCase {
                 mock(PostNotificationTrackerFactory.class), mUiEventLogger, mBitmapOffloader,
                 new NotificationListenerStats(MAX_CHANNELS_CREATED_BY_NLS_FOR_TESTING),
                 mNotificationRecordLogger,
-                mNotificationInstanceIdSequence);
+                mNotificationInstanceIdSequence, new TestPreferencesHelperFactory());
 
         mService.setAttentionHelper(mAttentionHelper);
         mService.setLockPatternUtils(mock(LockPatternUtils.class));

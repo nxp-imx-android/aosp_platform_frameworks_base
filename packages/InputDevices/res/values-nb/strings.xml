@@ -59,16 +59,20 @@
     <string name="keyboard_layout_montenegrin_cyrillic" msgid="2391253952894077421">"Montenegrisk (kyrillisk)"</string>
     <string name="keyboard_layout_romanian" msgid="8698989892731726903">"Rumensk"</string>
     <string name="keyboard_layout_english_india" msgid="7962353311188603367">"Engelsk (India)"</string>
-    <!-- no translation found for playstation_controller_circle_button (7568652559479549725) -->
+    <!-- no translation found for playstation_controller_circle_button (3436949457993997215) -->
     <skip />
-    <!-- no translation found for playstation_controller_triangle_button (3965043076982375703) -->
+    <!-- no translation found for playstation_controller_triangle_button (7058016183388142515) -->
     <skip />
-    <!-- no translation found for playstation_controller_square_button (1023556625092062728) -->
+    <!-- no translation found for playstation_controller_square_button (1611460593522078301) -->
     <skip />
-    <!-- no translation found for playstation_controller_cross_button (8699108012800733863) -->
+    <!-- no translation found for playstation_controller_cross_button (5263132258994089833) -->
     <skip />
-    <string name="default_game_controller_down_button" msgid="230251187173899352">"Ned-knapp"</string>
-    <string name="default_game_controller_left_button" msgid="230625759940755272">"Venstreknapp"</string>
-    <string name="default_game_controller_right_button" msgid="6973117058284059868">"Høyreknapp"</string>
-    <string name="default_game_controller_up_button" msgid="793659885012306267">"Opp-knapp"</string>
+    <!-- no translation found for default_game_controller_down_button (5298575601656661456) -->
+    <skip />
+    <!-- no translation found for default_game_controller_left_button (8135197345326445929) -->
+    <skip />
+    <!-- no translation found for default_game_controller_right_button (7213665536684737133) -->
+    <skip />
+    <!-- no translation found for default_game_controller_up_button (5466016771871639338) -->
+    <skip />
 </resources>

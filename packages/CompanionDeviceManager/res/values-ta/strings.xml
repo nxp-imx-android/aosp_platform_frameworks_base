@@ -48,6 +48,8 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"சாதனம்"</string>
     <string name="summary_generic" msgid="1761976003668044801">"அழைப்பவரின் பெயர் போன்ற தகவலை உங்கள் மொபைல் மற்றும் தேர்வுசெய்த சாதனத்திற்கு இடையில் இந்த ஆப்ஸால் ஒத்திசைக்க முடியும்"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"அழைப்பாளர் தகவல் போன்ற தகவல்களை ஒத்திசைக்கவும் உங்கள் <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> சாதனத்தில் இருந்து ஸ்மார்ட் செயல்களை இயக்கவும் &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; சாதனத்தை அனுமதிக்கும்"</string>
+    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
+    <skip />
     <string name="consent_yes" msgid="8344487259618762872">"அனுமதி"</string>
     <string name="consent_no" msgid="2640796915611404382">"அனுமதிக்க வேண்டாம்"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"ரத்துசெய்"</string>
@@ -91,8 +93,10 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"&lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt; உடன் உங்கள் <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> சாதனத்தின் திரையைப் பகிரலாம், அலைபரப்பலாம், ரெக்கார்டு செய்யலாம். உங்கள் <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> சாதனத்தில் காட்டப்படும்/பிளே செய்யப்படும் எதுவாக இருந்தாலும் (ஆடியோ, படங்கள், பேமெண்ட் தகவல், கடவுச்சொற்கள், மெசேஜ்கள் உட்பட) அதற்கான அணுகல் <xliff:g id="APP_NAME">%1$s</xliff:g> ஆப்ஸுக்கு இருக்கும்."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"&lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; உடன் உங்கள் <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> இன் ஆப்ஸை ஸ்ட்ரீம் செய்யலாம்.&lt;br/&gt;&lt;br/&gt;உங்கள் <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> சாதனம் பூட்டப்பட்டிருக்கும்போதும் ஆடியோ, படங்கள், பேமெண்ட் தகவல், கடவுச்சொற்கள், மெசேஜ்கள் உட்பட <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> இல் காட்டப்படுகின்ற/பிளே செய்யப்படுகின்ற அனைத்திற்குமான அணுகல் <xliff:g id="APP_NAME">%1$s</xliff:g> ஆப்ஸுக்கு இருக்கும்."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"கிடைக்கக்கூடிய சாதனங்களின் பட்டியலை அணுகி, அவற்றில் எது பிற ஆப்ஸின் ஆடியோ/வீடியோவைப் பிளே செய்யலாம் அல்லது அலைபரப்பலாம் என்பதைக் கட்டுப்படுத்தும்"</string>
-    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
-    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
+    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
+    <skip />
+    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
+    <skip />
     <string name="device_type" product="default" msgid="8268703872070046263">"மொபைல்"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"டேப்லெட்"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"டிவி"</string>

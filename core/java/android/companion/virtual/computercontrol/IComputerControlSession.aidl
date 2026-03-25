@@ -68,6 +68,8 @@ interface IComputerControlSession {
     void performAction(int actionCode);
 
     /** Attaches a notification to the session, to make it non-dismissable. */
+    // TODO(b/483645569): Remove when agents start passing a notification as part of the
+    // ComputerControlSessionParams.
     void attachNotificationInfo(int notificationId, in String notificationTag);
 
     /**

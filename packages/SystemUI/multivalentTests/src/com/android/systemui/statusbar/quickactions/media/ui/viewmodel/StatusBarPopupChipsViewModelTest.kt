@@ -30,6 +30,7 @@ import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.remedia.data.repository.mediaRepository
 import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
+import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.statusbar.quickactions.media.domain.interactor.mediaControlChipInteractor
 import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.statusBarPopupChipsViewModelFactory
@@ -122,6 +123,37 @@ class StatusBarPopupChipsViewModelTest : SysuiTestCase() {
             mediaChip =
                 assertIs<QuickActionChipModel.PopupChip>(underTest.shownQuickActionChips.first())
             assertThat(mediaChip.isPopupShown).isFalse()
+        }
+
+    @Test
+    fun isPopupShown_shadeWindowNotOnThisDisplay_popupNotShown() =
+        kosmos.runTest {
+            val userMedia = MediaData(active = true, song = "test")
+            updateMedia(userMedia)
+
+            assertThat(underTest.shownQuickActionChips).hasSize(1)
+            var mediaChip =
+                assertIs<QuickActionChipModel.PopupChip>(underTest.shownQuickActionChips.first())
+
+            mediaChip.showPopup.invoke(context, RectF())
+
+            var shownChip =
+                assertIs<QuickActionChipModel.PopupChip>(underTest.shownQuickActionChips.first())
+            assertThat(shownChip.isPopupShown).isTrue()
+
+            // Move the shade to a different display. The popup should no longer be shown here.
+            fakeShadeDisplaysRepository.setPendingDisplayId(Display.DEFAULT_DISPLAY + 1)
+
+            shownChip =
+                assertIs<QuickActionChipModel.PopupChip>(underTest.shownQuickActionChips.first())
+            assertThat(shownChip.isPopupShown).isFalse()
+
+            // Move the shade back to this display. The popup should be shown again.
+            fakeShadeDisplaysRepository.setPendingDisplayId(Display.DEFAULT_DISPLAY)
+
+            shownChip =
+                assertIs<QuickActionChipModel.PopupChip>(underTest.shownQuickActionChips.first())
+            assertThat(shownChip.isPopupShown).isTrue()
         }
 
     private fun Kosmos.updateMedia(mediaData: MediaData) {

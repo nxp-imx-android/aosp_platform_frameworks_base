@@ -19,6 +19,7 @@ package android.companion.virtual.computercontrol;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.AppInteractionAttribution;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.companion.virtual.CompanionDeviceId;
 import android.os.Parcel;
@@ -26,6 +27,7 @@ import android.os.Parcelable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Parameters for creating a {@link ComputerControlSession}.
@@ -34,12 +36,18 @@ import java.util.List;
  */
 public final class ComputerControlSessionParams implements Parcelable {
 
+    private static final int MAX_TARGET_PACKAGES = 6;
+
+    public static final int MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17 = 5;
+
     private final String mName;
     private final int mTargetComputerControlVersion;
     private final List<String> mTargetPackageNames;
     private final PendingIntent mPreviewIntent;
     private final AppInteractionAttribution mAppInteractionAttribution;
     private final CompanionDeviceId mCompanionDeviceId;
+    @Nullable
+    private final NotificationParams mNotificationParams;
 
     private ComputerControlSessionParams(
             @NonNull String name,
@@ -47,13 +55,15 @@ public final class ComputerControlSessionParams implements Parcelable {
             @NonNull List<String> targetPackageNames,
             @Nullable PendingIntent previewIntent,
             @Nullable AppInteractionAttribution appInteractionAttribution,
-            @Nullable CompanionDeviceId companionDeviceId) {
+            @Nullable CompanionDeviceId companionDeviceId,
+            @Nullable NotificationParams notificationParams) {
         mName = name;
         mTargetComputerControlVersion = targetComputerControlVersion;
         mTargetPackageNames = targetPackageNames;
         mPreviewIntent = previewIntent;
         mAppInteractionAttribution = appInteractionAttribution;
         mCompanionDeviceId = companionDeviceId;
+        mNotificationParams = notificationParams;
     }
 
     private ComputerControlSessionParams(Parcel parcel) {
@@ -64,6 +74,7 @@ public final class ComputerControlSessionParams implements Parcelable {
         mAppInteractionAttribution = parcel.readTypedObject(AppInteractionAttribution.CREATOR);
         mTargetComputerControlVersion = parcel.readInt();
         mCompanionDeviceId = parcel.readTypedObject(CompanionDeviceId.CREATOR);
+        mNotificationParams = parcel.readTypedObject(NotificationParams.CREATOR);
     }
 
     /** Returns the name of this computer control session. */
@@ -108,6 +119,12 @@ public final class ComputerControlSessionParams implements Parcelable {
         return mCompanionDeviceId;
     }
 
+    /** Returns the notification parameters for this session. */
+    @Nullable
+    public NotificationParams getNotificationParams() {
+        return mNotificationParams;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -121,6 +138,7 @@ public final class ComputerControlSessionParams implements Parcelable {
         dest.writeTypedObject(mAppInteractionAttribution, flags);
         dest.writeInt(mTargetComputerControlVersion);
         dest.writeTypedObject(mCompanionDeviceId, flags);
+        dest.writeTypedObject(mNotificationParams, flags);
     }
 
     @NonNull
@@ -147,6 +165,7 @@ public final class ComputerControlSessionParams implements Parcelable {
         private PendingIntent mPreviewIntent;
         private AppInteractionAttribution mAppInteractionAttribution;
         private CompanionDeviceId mCompanionDeviceId = null;
+        private NotificationParams mNotificationParams = null;
 
         /**
          * Sets the name of this computer control session.
@@ -232,6 +251,28 @@ public final class ComputerControlSessionParams implements Parcelable {
         }
 
         /**
+         * Sets the notification parameters for this session.
+         *
+         * <p>The notification gets posted when the session is created, and canceled when the
+         * session is closed. It cannot be dismissed by the user, or canceled by the caller.
+         * However, the caller can update the contents of the notification at any time,
+         * by using {@link android.app.NotificationManager#notify}. In fact, callers should re-use
+         * the same notification for their own foreground service (if any), to avoid any duplicate
+         * notifications.
+         *
+         * <p>{@link Notification#hasPromotableCharacteristics()} must return {@code true} for the
+         * notification that is passed, otherwise {@link IllegalArgumentException} is thrown.
+         *
+         * @param notificationParams The notification parameters.
+         * @return This builder.
+         */
+        @NonNull
+        public Builder setNotificationParams(@Nullable NotificationParams notificationParams) {
+            mNotificationParams = notificationParams;
+            return this;
+        }
+
+        /**
          * Builds the {@link ComputerControlSessionParams} instance.
          *
          * @return The built {@link ComputerControlSessionParams}.
@@ -246,16 +287,29 @@ public final class ComputerControlSessionParams implements Parcelable {
                 throw new IllegalArgumentException("Target package names must be set");
             }
 
-            if (mTargetComputerControlVersion >= 5
-                    && android.app.appfunctions.flags.Flags.enableAppInteractionApi()
-                    && mAppInteractionAttribution == null) {
-                throw new IllegalArgumentException("App interaction attribution must be set");
+            if (mTargetComputerControlVersion >= MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17) {
+                if (android.app.appfunctions.flags.Flags.enableAppInteractionApi()
+                        && mAppInteractionAttribution == null) {
+                    throw new IllegalArgumentException(
+                            "App interaction attribution must be set");
+                }
+                if (mNotificationParams == null) {
+                    throw new IllegalArgumentException(
+                            "Notification parameters must be set");
+                }
+                if (mTargetPackageNames.size() > MAX_TARGET_PACKAGES) {
+                    throw new IllegalArgumentException(
+                            "Number of target package names must not exceed "
+                                    + MAX_TARGET_PACKAGES);
+                }
             }
 
-            if (mCompanionDeviceId != null && mTargetComputerControlVersion < 5) {
+            if (mCompanionDeviceId != null
+                    && mTargetComputerControlVersion
+                    < MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17) {
                 throw new IllegalArgumentException(
-                        "companionDeviceId can only be used with targetComputerControlVersion 5 "
-                                + "or above");
+                        "companionDeviceId can only be used with targetComputerControlVersion "
+                                + MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17 + " or above");
             }
 
             return new ComputerControlSessionParams(
@@ -264,7 +318,120 @@ public final class ComputerControlSessionParams implements Parcelable {
                     mTargetPackageNames,
                     mPreviewIntent,
                     mAppInteractionAttribution,
-                    mCompanionDeviceId);
+                    mCompanionDeviceId,
+                    mNotificationParams);
+        }
+    }
+
+    /**
+     * Parameters for the notification associated with this session.
+     */
+    public static final class NotificationParams implements Parcelable {
+        @NonNull
+        private final Notification mNotification;
+        private final int mNotificationId;
+        @Nullable
+        private final String mNotificationTag;
+
+        private NotificationParams(@NonNull Notification notification, int notificationId,
+                @Nullable String notificationTag) {
+            mNotification = notification;
+            mNotificationId = notificationId;
+            mNotificationTag = notificationTag;
+        }
+
+        private NotificationParams(Parcel in) {
+            mNotification = in.readTypedObject(Notification.CREATOR);
+            mNotificationId = in.readInt();
+            mNotificationTag = in.readString8();
+        }
+
+        /** Returns the notification to be posted. */
+        @NonNull
+        public Notification getNotification() {
+            return mNotification;
+        }
+
+        /** Returns the id of the notification. */
+        public int getNotificationId() {
+            return mNotificationId;
+        }
+
+        /** Returns the tag of the notification. */
+        @Nullable
+        public String getNotificationTag() {
+            return mNotificationTag;
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(@NonNull Parcel dest, int flags) {
+            dest.writeTypedObject(mNotification, flags);
+            dest.writeInt(mNotificationId);
+            dest.writeString8(mNotificationTag);
+        }
+
+        @NonNull
+        public static final Creator<NotificationParams> CREATOR = new Creator<>() {
+            @Override
+            @NonNull
+            public NotificationParams createFromParcel(@NonNull Parcel in) {
+                return new NotificationParams(in);
+            }
+
+            @Override
+            @NonNull
+            public NotificationParams[] newArray(int size) {
+                return new NotificationParams[size];
+            }
+        };
+
+        /** Builder for {@link NotificationParams}. */
+        public static final class Builder {
+            @NonNull
+            private final Notification mNotification;
+            private final int mNotificationId;
+            @Nullable
+            private String mNotificationTag;
+
+            /**
+             * @param notification the {@link Notification} associated with this session
+             * @param notificationId the identifier for the notification, as per
+             * {@link android.app.NotificationManager#notify(String, int, Notification)}
+             */
+            public Builder(@NonNull Notification notification, int notificationId) {
+                Objects.requireNonNull(notification, "Notification must not be null");
+                if (!notification.hasPromotableCharacteristics()) {
+                    throw new IllegalArgumentException(
+                            "Notification must have promotable characteristics,"
+                                    + " i.e., notification.hasPromotableCharacteristics() must"
+                                    + " return true");
+                }
+                mNotification = notification;
+                mNotificationId = notificationId;
+            }
+
+            /**
+             * Sets the optional tag for the notification.
+             *
+             * @param notificationTag the tag for the notification, as per
+             * {@link android.app.NotificationManager#notify(String, int, Notification)}
+             */
+            @NonNull
+            public Builder setNotificationTag(@Nullable String notificationTag) {
+                mNotificationTag = notificationTag;
+                return this;
+            }
+
+            /** Builds the {@link NotificationParams} instance. */
+            @NonNull
+            public NotificationParams build() {
+                return new NotificationParams(mNotification, mNotificationId, mNotificationTag);
+            }
         }
     }
 }

@@ -574,12 +574,6 @@ public class NotificationListenersTest extends UiServiceTestCase {
 
         doReturn(ImmutableList.of(info1, info2)).when(mListeners).getServices();
 
-        mNm.setHandler(mock(NotificationManagerService.WorkerHandler.class));
-        when(mNm.mHandler.post(any(Runnable.class))).thenAnswer(inv -> {
-            final Runnable r = inv.getArgument(0);
-            r.run();
-            return true;
-        });
         mListeners.onStatusBarIconsBehaviorChanged(false);
 
         verify(iBinderSession1).binderTransactionStarting(
@@ -1217,7 +1211,6 @@ public class NotificationListenersTest extends UiServiceTestCase {
                 otherInfo2);
         when(mListeners.getServices()).thenReturn(services);
 
-        mNm.setHandler(mock(NotificationManagerService.WorkerHandler.class));
         doReturn(true).when(mNm).isVisibleToListener(any(), anyInt(), any());
         doReturn(mock(NotificationRankingUpdate.class)).when(mNm)
                 .makeRankingUpdateLocked(sysuiInfo);
@@ -1300,7 +1293,6 @@ public class NotificationListenersTest extends UiServiceTestCase {
                 otherInfo2);
         when(mListeners.getServices()).thenReturn(services);
 
-        mNm.setHandler(mock(NotificationManagerService.WorkerHandler.class));
         doReturn(true).when(mNm).isVisibleToListener(any(), anyInt(), any());
         doReturn(mock(NotificationRankingUpdate.class)).when(mNm)
                 .makeRankingUpdateLocked(sysuiInfo);
@@ -1387,7 +1379,6 @@ public class NotificationListenersTest extends UiServiceTestCase {
                 otherInfo2);
         when(mListeners.getServices()).thenReturn(services);
 
-        mNm.setHandler(mock(NotificationManagerService.WorkerHandler.class));
         doReturn(true).when(mNm).isVisibleToListener(any(), anyInt(), any());
         doReturn(mock(NotificationRankingUpdate.class)).when(mNm)
                 .makeRankingUpdateLocked(sysuiInfo);

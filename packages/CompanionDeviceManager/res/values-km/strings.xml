@@ -48,6 +48,8 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"ឧបករណ៍"</string>
     <string name="summary_generic" msgid="1761976003668044801">"កម្មវិធីនេះនឹងអាច​ធ្វើសមកាលកម្មព័ត៌មាន ដូចជាឈ្មោះមនុស្សដែលហៅទូរសព្ទជាដើម​ រវាងឧបករណ៍ដែលបានជ្រើសរើស និងទូរសព្ទរបស់អ្នក"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"អនុញ្ញាតឱ្យ &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; ធ្វើសមកាលកម្មព័ត៌មាន ដូចជាព័ត៌មានអ្នកហៅទូរសព្ទ និងដំណើរការសកម្មភាពឆ្លាតវៃពី<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>របស់អ្នក"</string>
+    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
+    <skip />
     <string name="consent_yes" msgid="8344487259618762872">"អនុញ្ញាត"</string>
     <string name="consent_no" msgid="2640796915611404382">"មិនអនុញ្ញាត"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"បោះបង់"</string>
@@ -91,8 +93,10 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"ថត បញ្ជូន ឬបង្ហាញអេក្រង់<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>របស់អ្នកទៅ &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;។&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> នឹងមានសិទ្ធិចូលប្រើអ្វីៗដែលអាចមើលឃើញ ឬចាក់នៅលើ<xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>របស់អ្នក រួមទាំងសំឡេង រូបថត ព័ត៌មាននៃការទូទាត់ប្រាក់ ពាក្យសម្ងាត់ និងសារ។"</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"ផ្សាយកម្មវិធី<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>របស់អ្នកទៅ &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;។&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> នឹងមានសិទ្ធិចូលប្រើអ្វីៗដែលអាចមើលឃើញ ឬចាក់នៅលើ <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> រួមទាំងសំឡេង រូបថត ព័ត៌មាននៃការទូទាត់ប្រាក់ ពាក្យសម្ងាត់ និងសារ ទោះបីជា<xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g>របស់អ្នកត្រូវបានចាក់សោក៏ដោយ។"</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"ចូលប្រើប្រាស់បញ្ជីឧបករណ៍ដែលអាចប្រើបាន និងគ្រប់គ្រងថាតើឧបករណ៍ណាចាក់ ឬបញ្ជូនសំឡេង ឬវីដេអូពីកម្មវិធីផ្សេងទៀត"</string>
-    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
-    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
+    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
+    <skip />
+    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
+    <skip />
     <string name="device_type" product="default" msgid="8268703872070046263">"ទូរសព្ទ"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"ថេប្លេត"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"ទូរទស្សន៍"</string>

@@ -18,6 +18,9 @@ package com.android.systemui.headline.ui
 
 import com.android.systemui.headline.ui.compose.Headline
 import com.android.systemui.headline.ui.compose.HeadlineImpl
+import com.android.systemui.headline.ui.viewmodel.HeadlineViewModel
+import com.android.systemui.headline.ui.viewmodel.MutableHeadlineViewModel
+import com.android.systemui.headline.ui.viewmodel.MutableHeadlineViewModelImpl
 import dagger.Binds
 import dagger.Module
 
@@ -26,4 +29,10 @@ import dagger.Module
 public interface HeadlineModule {
     /** Binds [HeadlineImpl] to [Headline]. */
     @Binds public fun bindHeadline(impl: HeadlineImpl): Headline
+
+    /** Binds [MutableHeadlineViewModelImpl] to [HeadlineViewModel] */
+    @Binds
+    public fun bindMutableHeadlineViewModel(
+        impl: MutableHeadlineViewModelImpl
+    ): MutableHeadlineViewModel
 }

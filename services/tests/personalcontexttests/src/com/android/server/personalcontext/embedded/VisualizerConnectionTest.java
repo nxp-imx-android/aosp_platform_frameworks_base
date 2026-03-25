@@ -59,6 +59,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -80,6 +81,8 @@ public class VisualizerConnectionTest {
     private PermissionManager mPermissionManager;
     @Mock
     private Consumer<Boolean> mCallback;
+    @Mock
+    private Consumer<Set<UUID>> mOnVisualizerDiedCallback;
 
     private final TestInjector mTestInjector = new TestInjector();
     private VisualizerConnection mVisualizerConnection;
@@ -122,6 +125,11 @@ public class VisualizerConnectionTest {
         @Override
         public void executeAction(Runnable action) {
             action.run();
+        }
+
+        @Override
+        public void onVisualizerDied(Set<UUID> connectedClientIds) {
+            mOnVisualizerDiedCallback.accept(connectedClientIds);
         }
     }
 
@@ -226,7 +234,7 @@ public class VisualizerConnectionTest {
             throws RemoteException  {
         // Use the constructor that creates a DefaultInjector to test its behavior.
         final VisualizerConnection connection = new VisualizerConnection(
-                mComponentName, mContext, Runnable::run);
+                mComponentName, mContext, mOnVisualizerDiedCallback, Runnable::run);
         final ContextInsight insight = new BundleInsight.Builder().build();
         final RenderToken renderToken = new RenderToken(UUID.randomUUID(), null);
 
@@ -283,6 +291,22 @@ public class VisualizerConnectionTest {
         createVisualizationForClient(client, false);
         mVisualizerConnection.onClientDisconnected(client);
         assertThat(mTestInjector.getDisconnectCount()).isEqualTo(1);
+    }
+
+    @Test
+    public void testServiceConnected_linksToDeath_callsOnVisualizerDiedCallback()
+            throws RemoteException {
+        // Trigger the service connection.
+        createVisualizationForClient(createClient(), true);
+
+        // Verify that linkToDeath was called on the binder.
+        ArgumentCaptor<IBinder.DeathRecipient> deathRecipientCaptor =
+                ArgumentCaptor.forClass(IBinder.DeathRecipient.class);
+        verify(mBinder).linkToDeath(deathRecipientCaptor.capture(), eq(0));
+
+        // Verify the onVisualizerDiedCallback is called.
+        deathRecipientCaptor.getValue().binderDied();
+        verify(mOnVisualizerDiedCallback).accept(any());
     }
 
     private InsightSurfaceClientInfo createClient() {

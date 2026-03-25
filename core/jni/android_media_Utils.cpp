@@ -25,12 +25,17 @@
 #include <ui/GraphicBufferMapper.h>
 #include <ui/GraphicTypes.h>
 #endif
+#include <hardware/gralloc.h>
+#include <ui/Fence.h>
 #include <utils/Log.h>
 
 #define ALIGN(x, mask) ( ((x) + (mask) - 1) & ~((mask) - 1) )
 
 // Must be in sync with the value in HeicCompositeStream.cpp
 #define CAMERA3_HEIC_BLOB_ID 0x00FE
+
+// Explicit definition for HEIC components that require the footer to be cleared upon image release
+#define CAMERA3_HEIC_BLOB_ID_CLEAR_ON_RELEASE 0x00FD
 
 namespace android {
 
@@ -145,8 +150,8 @@ uint32_t Image_getBlobSize(LockedImage* buffer, bool usingRGBAOverride) {
     struct camera3_jpeg_blob_v2 blob;
     memcpy(&blob, header, sizeof(struct camera3_jpeg_blob_v2));
 
-    if (blob.jpeg_blob_id == CAMERA3_JPEG_BLOB_ID ||
-            blob.jpeg_blob_id == CAMERA3_HEIC_BLOB_ID) {
+    if (blob.jpeg_blob_id == CAMERA3_JPEG_BLOB_ID || blob.jpeg_blob_id == CAMERA3_HEIC_BLOB_ID ||
+        blob.jpeg_blob_id == CAMERA3_HEIC_BLOB_ID_CLEAR_ON_RELEASE) {
         size = blob.jpeg_size;
         ALOGV("%s: Jpeg/Heic size = %d", __FUNCTION__, size);
     }
@@ -809,6 +814,41 @@ int getBufferHeight(BufferItem* buffer) {
 
     ALOGV("%s: buffer->mGraphicBuffer: %p", __FUNCTION__, buffer->mGraphicBuffer.get());
     return buffer->mGraphicBuffer->getHeight();
+}
+
+void checkAndClearBlobFooter(BufferItem* buffer, sp<Fence>& releaseFence) {
+    if (buffer == nullptr || buffer->mGraphicBuffer == nullptr) {
+        return;
+    }
+
+    android_dataspace dataspace = static_cast<android_dataspace>(buffer->mDataSpace);
+    bool cleanBlobFooter = buffer->mGraphicBuffer->getPixelFormat() == HAL_PIXEL_FORMAT_BLOB &&
+            dataspace == static_cast<android_dataspace>(HAL_DATASPACE_HEIF);
+
+    if (cleanBlobFooter) {
+        void* vaddr = nullptr;
+        int lockFence = releaseFence.get() != nullptr ? releaseFence->dup() : -1;
+        if (buffer->mGraphicBuffer->lockAsync(GRALLOC_USAGE_SW_WRITE_OFTEN,
+                                              buffer->mGraphicBuffer->getBounds(), &vaddr,
+                                              lockFence) == OK) {
+            uint32_t width = buffer->mGraphicBuffer->getWidth();
+            struct camera3_jpeg_blob_v2* blob_footer =
+                    reinterpret_cast<struct camera3_jpeg_blob_v2*>(
+                            static_cast<uint8_t*>(vaddr) + width -
+                            sizeof(struct camera3_jpeg_blob_v2));
+
+            // If detected, clear the HEIC/JPEG footer padding before releasing.
+            if (blob_footer->jpeg_blob_id == CAMERA3_HEIC_BLOB_ID_CLEAR_ON_RELEASE) {
+                memset(blob_footer, 0, sizeof(struct camera3_jpeg_blob_v2));
+            }
+
+            int outFenceFd = -1;
+            buffer->mGraphicBuffer->unlockAsync(&outFenceFd);
+            releaseFence = sp<Fence>::make(outFenceFd);
+        } else {
+            if (lockFence >= 0) close(lockFence);
+        }
+    }
 }
 
 }  // namespace android

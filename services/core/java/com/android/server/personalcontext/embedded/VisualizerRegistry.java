@@ -48,6 +48,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
@@ -66,11 +68,12 @@ public class VisualizerRegistry {
 
     private final Injector mInjector;
     private final Map<ComponentName, VisualizerConnection> mVisualizers = new HashMap<>();
+    private Consumer<Set<UUID>> mOnVisualizerDiedCallback;
 
     private final PackageMonitor mMonitor = new PackageMonitor() {
         @Override
         public void onPackageAdded(String packageName, int uid) {
-            registerVisualizers(packageName);
+            registerVisualizers(packageName, mOnVisualizerDiedCallback);
         }
 
         @Override
@@ -81,7 +84,7 @@ public class VisualizerRegistry {
         @Override
         public boolean onPackageChanged(String packageName, int uid, String[] components) {
             unregisterVisualizers(packageName);
-            registerVisualizers(packageName);
+            registerVisualizers(packageName, mOnVisualizerDiedCallback);
             return false;
         }
     };
@@ -96,9 +99,11 @@ public class VisualizerRegistry {
          * Create a new {@link VisualizerConnection} with the given {@link ComponentName}.
          *
          * @param componentName the {@link ComponentName} of the connection
+         * @param onVisualizerDiedCallback a callback to be called if the visualizer dies
          * @return the newly created {@link VisualizerConnection}
          */
-        VisualizerConnection createVisualizerConnection(ComponentName componentName);
+        VisualizerConnection createVisualizerConnection(
+                ComponentName componentName, Consumer<Set<UUID>> onVisualizerDiedCallback);
 
         /**
          * Return a list {@link ServiceInfo} objects for the visualizer services in the given
@@ -129,15 +134,20 @@ public class VisualizerRegistry {
         private final AccessController mAccessController;
         private final Executor mExecutor;
 
-        DefaultInjector(Context context, AccessController accessController, Executor executor) {
+        DefaultInjector(
+                Context context,
+                AccessController accessController,
+                Executor executor) {
             mContext = context;
             mAccessController = accessController;
             mExecutor = executor;
         }
 
         @Override
-        public VisualizerConnection createVisualizerConnection(ComponentName componentName) {
-            return new VisualizerConnection(componentName, mContext, mExecutor);
+        public VisualizerConnection createVisualizerConnection(
+                ComponentName componentName, Consumer<Set<UUID>> onVisualizerDiedCallback) {
+            return new VisualizerConnection(
+                    componentName, mContext, onVisualizerDiedCallback, mExecutor);
         }
 
         @Override
@@ -191,7 +201,10 @@ public class VisualizerRegistry {
         }
     }
 
-    VisualizerRegistry(Context context, AccessController accessController, Executor executor) {
+    VisualizerRegistry(
+            Context context,
+            AccessController accessController,
+            Executor executor) {
         this(new DefaultInjector(context, accessController, executor));
     }
 
@@ -209,12 +222,15 @@ public class VisualizerRegistry {
     /**
      * Tell the registry to start registering visualizers. The registry will also begin monitoring
      * package changes so that visualizers can be automatically added and removed as necessary.
+     *
+     * @param onVisualizerDiedCallback a callback to be called if a visualizer dies
      */
-    public void startRegisteringVisualizers() {
+    public void startRegisteringVisualizers(Consumer<Set<UUID>> onVisualizerDiedCallback) {
+        mOnVisualizerDiedCallback = onVisualizerDiedCallback;
         mInjector.queueAction(() -> {
             mVisualizers.clear();
 
-            registerVisualizers(null);
+            registerVisualizers(null, mOnVisualizerDiedCallback);
             mInjector.registerPackageMonitor(mMonitor);
         });
     }
@@ -255,7 +271,8 @@ public class VisualizerRegistry {
         }
     }
 
-    private void registerVisualizers(@Nullable String packageName) {
+    private void registerVisualizers(
+            @Nullable String packageName, Consumer<Set<UUID>> onVisualizerDiedCallback) {
         mInjector.queueAction(() -> {
             for (ServiceInfo serviceInfo :
                     mInjector.fetchVisualizerServiceInfos(packageName)) {
@@ -267,7 +284,8 @@ public class VisualizerRegistry {
                 }
 
                 final VisualizerConnection visualizer =
-                        mInjector.createVisualizerConnection(visualizerComponentName);
+                        mInjector.createVisualizerConnection(
+                                visualizerComponentName, onVisualizerDiedCallback);
                 mVisualizers.put(visualizerComponentName, visualizer);
 
                 visualizer.onRegistered();

@@ -62,6 +62,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -81,6 +82,8 @@ public class VisualizerRegistryTest {
     private VisualizerConnection mVisualizerConnection;
     @Mock
     private InsightSurfaceClientInfo mClient;
+    @Mock
+    private Consumer<Set<UUID>> mOnVisualizerDiedCallback;
 
     private VisualizerRegistry mVisualizerRegistry;
     private final TestInjector mTestInjector = new TestInjector();
@@ -99,7 +102,8 @@ public class VisualizerRegistryTest {
         }
 
         @Override
-        public VisualizerConnection createVisualizerConnection(ComponentName componentName) {
+        public VisualizerConnection createVisualizerConnection(
+                ComponentName componentName, Consumer<Set<UUID>> onVisualizerDiedCallback) {
             return mInstalledServices.get(componentName);
         }
 
@@ -148,7 +152,7 @@ public class VisualizerRegistryTest {
         final ComponentName componentName =
                 new ComponentName(VISUALIZER_PACKAGE_NAME, VISUALIZER_SERVICE_NAME);
         mTestInjector.addInstalledService(componentName, mVisualizerConnection);
-        mVisualizerRegistry.startRegisteringVisualizers();
+        mVisualizerRegistry.startRegisteringVisualizers(mOnVisualizerDiedCallback);
         assertThat(mVisualizerRegistry.isEmpty()).isFalse();
         verify(mVisualizerConnection).onRegistered();
     }
@@ -156,7 +160,7 @@ public class VisualizerRegistryTest {
     @Test
     public void testPackageInstalled() {
         // No visualizer services exist at first.
-        mVisualizerRegistry.startRegisteringVisualizers();
+        mVisualizerRegistry.startRegisteringVisualizers(mOnVisualizerDiedCallback);
         assertThat(mVisualizerRegistry.isEmpty()).isTrue();
 
         final ComponentName componentName =
@@ -171,7 +175,7 @@ public class VisualizerRegistryTest {
         final ComponentName componentName =
                 new ComponentName(VISUALIZER_PACKAGE_NAME, VISUALIZER_SERVICE_NAME);
         mTestInjector.addInstalledService(componentName, mVisualizerConnection);
-        mVisualizerRegistry.startRegisteringVisualizers();
+        mVisualizerRegistry.startRegisteringVisualizers(mOnVisualizerDiedCallback);
         assertThat(mVisualizerRegistry.isEmpty()).isFalse();
 
         mTestInjector.getPackageMonitor().onPackageRemoved(VISUALIZER_PACKAGE_NAME, 0);
@@ -188,7 +192,7 @@ public class VisualizerRegistryTest {
         final ComponentName componentName =
                 new ComponentName(VISUALIZER_PACKAGE_NAME, VISUALIZER_SERVICE_NAME);
         mTestInjector.addInstalledService(componentName, mVisualizerConnection);
-        mVisualizerRegistry.startRegisteringVisualizers();
+        mVisualizerRegistry.startRegisteringVisualizers(mOnVisualizerDiedCallback);
         mVisualizerRegistry.createVisualizationForClient(insight, mClient, renderToken);
         verify(mVisualizerConnection).createVisualizationForClient(
                 eq(insight), eq(mClient), eq(renderToken), any(Consumer.class));
@@ -198,7 +202,7 @@ public class VisualizerRegistryTest {
     public void testStopRegisteringVisualizers() {
         final TestInjector testInjectorSpy = spy(mTestInjector);
         final VisualizerRegistry visualizerRegistry = new VisualizerRegistry(testInjectorSpy);
-        visualizerRegistry.startRegisteringVisualizers();
+        visualizerRegistry.startRegisteringVisualizers(mOnVisualizerDiedCallback);
         verify(testInjectorSpy).registerPackageMonitor(any(PackageMonitor.class));
         visualizerRegistry.stopMonitoringPackagesForVisualizers();
         verify(testInjectorSpy).unregisterPackageMonitor(any(PackageMonitor.class));

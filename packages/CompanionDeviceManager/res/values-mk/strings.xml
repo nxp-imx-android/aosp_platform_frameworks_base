@@ -48,6 +48,8 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"уред"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Оваа апликација ќе може да ги синхронизира податоците како што се имињата на јавувачите помеѓу вашиот телефон и избраниот уред"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Дозволете &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; да синхронизира податоци како што се податоците за повикувачот и да извршува паметни дејства од вашиот <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
+    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
+    <skip />
     <string name="consent_yes" msgid="8344487259618762872">"Дозволи"</string>
     <string name="consent_no" msgid="2640796915611404382">"Не дозволувај"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Откажи"</string>
@@ -91,8 +93,10 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Снимајте, емитувајте или споделувајте го екранот на <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> со &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> ќе има пристап до сѐ што е видливо или пуштено на вашиот уред <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, вклучително и аудио, фотографии, податоци за плаќање, лозинки и пораки."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Стримувајте ги апликациите од <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> на &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> ќе има пристап до сѐ што е видливо или пуштено на <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, вклучително и аудио, фотографии, податоци за плаќање, лозинки и пораки, дури и кога вашиот уред <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> е заклучен."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Пристап до списокот со достапни уреди и контрола кои стримуваат или емитуваат аудио или видео од други апликации"</string>
-    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
-    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
+    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
+    <skip />
+    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
+    <skip />
     <string name="device_type" product="default" msgid="8268703872070046263">"телефон"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"таблет"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"ТВ"</string>

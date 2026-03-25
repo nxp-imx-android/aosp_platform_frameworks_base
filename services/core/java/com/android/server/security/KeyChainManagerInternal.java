@@ -18,6 +18,8 @@ package com.android.server.security;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.security.KeyChainException;
+import android.security.keymaster.KeymasterCertificateChain;
 import android.security.keystore.KeyGenParameterSpec;
 
 /**
@@ -35,7 +37,7 @@ public abstract class KeyChainManagerInternal {
      * @param userId The id of the user for whom to install the key pair.
      * @return true on success, false otherwise.
      */
-    abstract boolean installUserKeyPair(
+    public abstract boolean installUserKeyPair(
             @NonNull byte[] pkcs8PrivateKey,
             @NonNull byte[] certificate,
             @Nullable byte[][] certificateChain,
@@ -52,7 +54,7 @@ public abstract class KeyChainManagerInternal {
      *     KeyChain.KEY_ALIAS_SELECTION_DENIED}.
      * @return true on success, false otherwise.
      */
-    abstract boolean installDeviceKeyPair(
+    public abstract boolean installDeviceKeyPair(
             @NonNull byte[] pkcs8PrivateKey,
             @NonNull byte[] certificate,
             @Nullable byte[][] certificateChain,
@@ -64,22 +66,25 @@ public abstract class KeyChainManagerInternal {
      * @param algorithm The key algorithm (e.g., "RSA", "EC").
      * @param keySpec Parameters for key generation.
      * @param userId The id of the user for whom to generate the key pair.
-     * @return {@code KeyChain.KEY_GEN_SUCCESS} on success, or an appropriate error code otherwise.
+     * @return The {@link KeymasterCertificateChain} for the generated key pair, or {@code null}
+     *         if generation failed.
      */
-    abstract int generateUserKeyPair(
+    public abstract KeymasterCertificateChain generateUserKeyPair(
             @NonNull String algorithm,
             @NonNull KeyGenParameterSpec keySpec,
-            int userId);
+            int userId) throws KeyChainException;
 
     /**
      * Generates a key pair within KeyChain device-wide.
      *
      * @param algorithm The key algorithm (e.g., "RSA", "EC").
      * @param keySpec Parameters for key generation.
-     * @return {@code KeyChain.KEY_GEN_SUCCESS} on success, or an appropriate error code otherwise.
+     * @return The {@link KeymasterCertificateChain} for the generated key pair, or {@code null}
+     *         if generation failed.
      */
-    abstract int generateDeviceKeyPair(
-            @NonNull String algorithm, @NonNull KeyGenParameterSpec keySpec);
+    public abstract KeymasterCertificateChain generateDeviceKeyPair(
+            @NonNull String algorithm, @NonNull KeyGenParameterSpec keySpec)
+            throws KeyChainException;
 
     /**
      * Sets the certificate chain for an existing key pair for the specified user.
@@ -90,7 +95,7 @@ public abstract class KeyChainManagerInternal {
      * @param userId The id of the user whose key pair to update.
      * @return true on success, false otherwise.
      */
-    abstract boolean setUserKeyPairCertificate(
+    public abstract boolean setUserKeyPairCertificate(
             @NonNull String alias,
             @NonNull byte[] clientCertificate,
             @NonNull byte[] clientCertificateChain,
@@ -104,8 +109,30 @@ public abstract class KeyChainManagerInternal {
      * @param clientCertificateChain Array of DER-encoded intermediate/CA certificates bytes.
      * @return true on success, false otherwise.
      */
-    abstract boolean setDeviceKeyPairCertificate(
+    public abstract boolean setDeviceKeyPairCertificate(
             @NonNull String alias,
             @NonNull byte[] clientCertificate,
             @NonNull byte[] clientCertificateChain);
+
+    /**
+     * Set a grant for the specified UID for an existing user-scoped key pair.
+     *
+     * @param uid The UID of the grantee.
+     * @param alias The alias of the existing user-scoped key pair.
+     * @param userId The ID of the user whose key pair access is being managed.
+     * @param granted {@code true} to grant access, {@code false} to revoke.
+     * @return {@code true} on success, {@code false} otherwise.
+     */
+    public abstract boolean setUserGrant(
+            int uid, @NonNull String alias, int userId, boolean granted);
+
+    /**
+     * Set a grant for the specified UID for an existing device-wide key pair.
+     *
+     * @param uid The UID of the grantee.
+     * @param alias The alias of the existing device-wide key pair.
+     * @param granted {@code true} to grant access, {@code false} to revoke.
+     * @return {@code true} on success, {@code false} otherwise.
+     */
+    public abstract boolean setDeviceGrant(int uid, @NonNull String alias, boolean granted);
 }

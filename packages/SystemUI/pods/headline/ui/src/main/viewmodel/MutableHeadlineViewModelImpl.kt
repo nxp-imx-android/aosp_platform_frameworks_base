@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.pipeline.shared.ui.viewmodel
+package com.android.systemui.headline.ui.viewmodel
 
 import android.widget.ImageView
 import androidx.compose.runtime.getValue
@@ -28,32 +28,10 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.util.fastAny
 import com.android.compose.animation.scene.HoistedSceneTransitionLayoutState
 import com.android.compose.animation.scene.SceneKey
-import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
-import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayId
-import com.android.systemui.headline.ui.viewmodel.HeadlineItem
-import com.android.systemui.headline.ui.viewmodel.HeadlineItemKey
-import com.android.systemui.headline.ui.viewmodel.HeadlineItemsAdapter
-import com.android.systemui.headline.ui.viewmodel.HeadlineViewModel
 import com.android.systemui.headline.ui.viewmodel.HeadlineViewModel.Companion.GoneScene
-import com.android.systemui.headline.ui.viewmodel.toHeadlineItemKey
-import com.android.systemui.lifecycle.HydratedActivatable
-import com.android.systemui.statusbar.notification.icon.ui.viewbinder.ConnectedDisplaysStatusBarNotificationIconViewStore
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class HeadlineViewModelImpl
-@AssistedInject
-constructor(
-    @field:DisplayId @DisplayAware thisDisplayId: Int,
-    @DisplayAware private val adapter: HeadlineItemsAdapter,
-    iconViewStoreFactory: ConnectedDisplaysStatusBarNotificationIconViewStore.Factory,
-) : HeadlineViewModel, HydratedActivatable() {
-
-    private val iconViewStore: ConnectedDisplaysStatusBarNotificationIconViewStore =
-        iconViewStoreFactory.create(thisDisplayId)
-
+class MutableHeadlineViewModelImpl @Inject constructor() : MutableHeadlineViewModel {
     override val state: HoistedSceneTransitionLayoutState =
         HoistedSceneTransitionLayoutState(
             initialScene = GoneScene,
@@ -61,13 +39,11 @@ constructor(
             onTransitionEnd = { pruneItems() },
             onSnap = { pruneItems() },
         )
-
     private val _items: SnapshotStateList<HeadlineItem> = mutableStateListOf()
+    private val keysToPrune: SnapshotStateSet<HeadlineItemKey> = mutableStateSetOf()
     override val items: List<HeadlineItem> = _items
 
-    private val keysToPrune: SnapshotStateSet<HeadlineItemKey> = mutableStateSetOf()
-
-    private fun updateItems(items: List<HeadlineItem>) {
+    override fun updateItems(items: List<HeadlineItem>) {
         val newKeys = items.map { it.key }.toSet()
 
         // Find the items that are deleted but still composed
@@ -88,6 +64,17 @@ constructor(
         // Transition to the first new item
         animateOrSnapTo(items.firstOrNull()?.key?.toSceneKey() ?: GoneScene)
     }
+
+    override fun onItemClicked(item: HeadlineItem) {
+        animateOrSnapTo(item.key.toSceneKey())
+    }
+
+    override fun iconView(key: String): ImageView? {
+        // Unsupported for this implementation
+        return null
+    }
+
+    override var uiBounds: Rect by mutableStateOf(Rect.Zero)
 
     private fun animateOrSnapTo(scene: SceneKey?) {
         val targetScene = scene ?: GoneScene
@@ -116,27 +103,5 @@ constructor(
         val scene = item.key.toSceneKey()
         return scene == state.currentScene ||
             state.currentTransitions.fastAny { it.fromContent == scene || it.toContent == scene }
-    }
-
-    override fun onItemClicked(item: HeadlineItem) {
-        animateOrSnapTo(item.key.toSceneKey())
-    }
-
-    override fun iconView(key: String): ImageView? {
-        return iconViewStore.iconView(key)
-    }
-
-    override var uiBounds: Rect by mutableStateOf(Rect.Zero)
-
-    override suspend fun onActivated() {
-        coroutineScope {
-            launch { iconViewStore.activate() }
-            launch { adapter.headlineItems.collect { updateItems(it) } }
-        }
-    }
-
-    @AssistedFactory
-    interface Factory : HeadlineViewModel.Factory {
-        override fun create(): HeadlineViewModelImpl
     }
 }

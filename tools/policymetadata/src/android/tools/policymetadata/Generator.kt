@@ -359,12 +359,20 @@ object Generator {
 
     private fun CodeBlock.Builder.addStringMetadataInformation(
         stringMetadata: StringPolicyMetadata
-    ) =
-        this.add("/* emptyStringAllowed= */ \$L,\n", stringMetadata.emptyStringAllowed)
-            .add(
-                "/* unprintableCharactersAllowed= */ \$L",
-                stringMetadata.unprintableCharactersAllowed,
-            )
+    ): CodeBlock.Builder {
+        add("/* emptyStringAllowed= */ \$L,\n", stringMetadata.emptyStringAllowed)
+        add(
+            "/* unprintableCharactersAllowed= */ \$L,\n",
+            stringMetadata.unprintableCharactersAllowed,
+        )
+        val maxLength = if (stringMetadata.hasMaxLength()) {
+            CodeBlock.of("\$L", stringMetadata.maxLength)
+        } else {
+            CodeBlock.of("Integer.MAX_VALUE")
+        }
+        add("/* maxLength= */ \$L", maxLength)
+        return this
+    }
 
     // Returns a CodeBlock containing `new StringPolicyMetadata(<policy-id>, ....)` .
     private fun generateStringPolicyMetadata(
@@ -434,6 +442,8 @@ object Generator {
                 generateIntegerPolicyMetadata(policy, policyId, listMetadata.integerMetadata)
             ListElementMetadataCase.STRING_METADATA ->
                 generateStringPolicyMetadata(policy, listMetadata.stringMetadata, policyId)
+            ListElementMetadataCase.PACKAGE_METADATA ->
+                generatePackagePolicyMetadata(policy, policyId)
             ListElementMetadataCase.LISTELEMENTMETADATA_NOT_SET ->
                 throw IllegalArgumentException("List Element type specific metadata unset")
         }
@@ -444,6 +454,8 @@ object Generator {
             ListElementMetadataCase.ENUM_METADATA -> ClassName.get(Integer::class.javaObjectType)
             ListElementMetadataCase.INTEGER_METADATA -> ClassName.get(Integer::class.javaObjectType)
             ListElementMetadataCase.STRING_METADATA -> ClassName.get(String::class.java)
+            ListElementMetadataCase.PACKAGE_METADATA ->
+                ClassName.get("android.app.admin", "PackageIdentifier")
             ListElementMetadataCase.LISTELEMENTMETADATA_NOT_SET ->
                 throw IllegalArgumentException("List Element type specific metadata unset")
         }

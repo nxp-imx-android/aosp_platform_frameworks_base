@@ -186,4 +186,19 @@ public class RemoteServiceException extends AndroidRuntimeException {
             super(msg);
         }
     }
+
+    /**
+     * Exception used to crash an app process when the system finds an error in a computer control
+     * notification.
+     *
+     * @hide
+     */
+    public static class BadComputerControlNotificationException extends RemoteServiceException {
+        /** The type ID passed to {@link IApplicationThread#scheduleCrash}. */
+        public static final int TYPE_ID = 9;
+
+        public BadComputerControlNotificationException(String msg) {
+            super(msg);
+        }
+    }
 }

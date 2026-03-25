@@ -328,16 +328,6 @@ flag {
 }
 
 flag {
-    name: "dream_input_session_pilfer_once"
-    namespace: "systemui"
-    description: "Pilfer at most once per input session"
-    bug: "333596426"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
   name: "dream_overlay_bouncer_swipe_direction_filtering"
   namespace: "systemui"
   description: "do not initiate bouncer swipe when the direction is opposite of the expansion"
@@ -730,6 +720,16 @@ flag {
 }
 
 flag {
+    name: "handle_boot_completed_on_separate_thread"
+    namespace: "systemui"
+    description: "Don't block LOCKED_BOOT_COMPLETED broadcast handling just because SysUI is busy on MT"
+    bug: "482256950"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "hardware_color_styles"
     namespace: "systemui"
     description: "Enables loading initial colors based ion hardware color"
@@ -737,6 +737,13 @@ flag {
     metadata {
       purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+  name: "headline_backend"
+  namespace: "systemui"
+  description: "New alerting backend for headline."
+  bug: "494327226"
 }
 
 flag {
@@ -962,6 +969,16 @@ flag {
   namespace: "systemui"
   description: "Runs media controls in compose"
   bug: "397989775"
+}
+
+flag {
+    name: "media_controls_reorder_fix"
+    namespace: "systemui"
+    description: "Use new provider to determine when to reorder media controls"
+    bug: "433331357"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -1280,6 +1297,16 @@ flag {
     namespace: "systemui"
     description: "Adds an intent action to the intent used to launch the QR code scanner from the quick settings tile."
     bug: "461701811"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "qs_cast_tile_skip_wifi_check"
+    namespace: "systemui"
+    description: "Skip the wifi check for the cast tile."
+    bug: "431024325"
     metadata {
       purpose: PURPOSE_BUGFIX
     }

@@ -233,6 +233,11 @@ public abstract class BaseShortcutManagerTest {
         public void startActivityAsUser(Intent intent, UserHandle user) {
             // ignore, use spy to intercept it.
         }
+
+        @Override
+        public IBinder getActivityToken() {
+            return null;
+        }
     }
 
     /** Context used in the client side */

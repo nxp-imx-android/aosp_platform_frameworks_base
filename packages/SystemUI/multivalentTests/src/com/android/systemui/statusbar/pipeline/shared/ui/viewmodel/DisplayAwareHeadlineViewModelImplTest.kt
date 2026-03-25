@@ -33,11 +33,11 @@ import org.junit.Before
 import org.junit.Test
 
 @SmallTest
-class HeadlineViewModelImplTest : SysuiTestCase() {
+class DisplayAwareHeadlineViewModelImplTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val Kosmos.underTest by
-        Kosmos.Fixture { headlineViewModelImpl.also { it.activateIn(testScope) } }
+        Kosmos.Fixture { displayAwareHeadlineViewModelImpl.also { it.activateIn(testScope) } }
 
     @Before fun setUp() = kosmos.run { headlineItemsAdapter = fakeHeadlineItemsAdapter }
 

@@ -124,4 +124,8 @@ public final class NotificationRecordExtractorData {
                 || mSensitiveContent != r.hasSensitiveContent()
                 || !Objects.equals(mSummarization, r.getSummarization());
     }
+
+    boolean hasBeenUnbundled(NotificationRecord r) {
+        return mChannel.isBundleChannel() && !r.getChannel().isBundleChannel();
+    }
 }

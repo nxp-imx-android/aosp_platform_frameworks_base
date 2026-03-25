@@ -43,6 +43,8 @@ import com.android.systemui.media.remedia.data.repository.mediaPipelineRepositor
 import com.android.systemui.qs.panels.domain.interactor.tileSquishinessInteractor
 import com.android.systemui.res.R
 import com.android.systemui.scene.SceneHelper.setDeviceEntered
+import com.android.systemui.scene.data.repository.Transition
+import com.android.systemui.scene.data.repository.setSceneTransition
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
@@ -89,7 +91,7 @@ class ShadeSceneContentViewModelTest : SysuiTestCase() {
             fakeAuthenticationRepository.setAuthenticationMethod(Pin)
             setDeviceEntered(true)
 
-            assertThat(underTest.isEmptySpaceClickable).isFalse()
+            assertThat(underTest.isEmptySpaceClickable(sceneInteractor.transitionState)).isFalse()
         }
 
     @Test
@@ -98,7 +100,7 @@ class ShadeSceneContentViewModelTest : SysuiTestCase() {
             enableSingleShade()
             fakeAuthenticationRepository.setAuthenticationMethod(Pin)
 
-            assertThat(underTest.isEmptySpaceClickable).isTrue()
+            assertThat(underTest.isEmptySpaceClickable(sceneInteractor.transitionState)).isTrue()
         }
 
     @Test
@@ -108,9 +110,22 @@ class ShadeSceneContentViewModelTest : SysuiTestCase() {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             fakeAuthenticationRepository.setAuthenticationMethod(Pin)
 
-            underTest.onEmptySpaceClicked()
+            underTest.onEmptySpaceClicked(sceneInteractor.transitionState)
 
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+        }
+
+    @Test
+    fun isEmptySpaceClickable_deviceLocked_transitioningToQs_false() =
+        kosmos.runTest {
+            enableSingleShade()
+            fakeAuthenticationRepository.setAuthenticationMethod(Pin)
+            setDeviceEntered(false)
+            runCurrent()
+            assertThat(underTest.isEmptySpaceClickable(sceneInteractor.transitionState)).isTrue()
+
+            setSceneTransition(Transition(Scenes.Shade, Scenes.QuickSettings))
+            assertThat(underTest.isEmptySpaceClickable(sceneInteractor.transitionState)).isFalse()
         }
 
     @Test

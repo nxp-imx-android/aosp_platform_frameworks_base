@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.server.notification;
 
-public class FakeComputerControlHelper implements ComputerControlHelper {
-    boolean mDefaultResponse = false;
+class FakeComputerControlHelper implements ComputerControlHelper {
+    private boolean mDefaultResponse = false;
 
     // this simple fake is sufficient for our current testing.
-    public void setDefaultResponse(boolean defaultResponse) {
+    void setDefaultResponse(boolean defaultResponse) {
         mDefaultResponse = defaultResponse;
     }
 
@@ -27,5 +28,10 @@ public class FakeComputerControlHelper implements ComputerControlHelper {
     public boolean isComputerControlNotification(
             int notificationId, String notificationTag, String packageName) {
         return mDefaultResponse;
+    }
+
+    @Override
+    public boolean isUidEligibleToSetComputerControlFlag(int uid) {
+        return true;
     }
 }

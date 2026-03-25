@@ -163,6 +163,11 @@ class FakeSceneDataSource(initialSceneKey: SceneKey, val testScope: TestScope) :
     }
 
     override fun startTransitionImmediately(transition: TransitionState.Transition) {
+        if (isPaused) {
+            _pendingScene = transition.currentScene
+        } else {
+            _currentScene.value = transition.currentScene
+        }
         transitionState = transition
     }
 

@@ -53,6 +53,8 @@ public interface NotificationManagerInternal {
 
     void removeUserInitiatedJobFlagFromNotification(String pkg, int notificationId, int userId);
 
+    void removeComputerControlFlagFromNotification(String pkg, int notificationId, int userId);
+
     void onConversationRemoved(String pkg, int uid, Set<String> shortcuts);
 
     /** Get the number of app created notification channels for a given package */

@@ -184,6 +184,7 @@ import static android.service.personalcontext.Flags.enablePersonalContextService
 import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.contentprotection.flags.Flags.rapidClearNotificationsByListenerAppOpEnabled;
 
+import static com.android.server.notification.Flags.favoritesIncomingCallLights;
 import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.NLS_COMPLETION_DURATION_MS;
 import static com.android.internal.util.FrameworkStatsLog.DND_MODE_RULE;
 import static com.android.internal.util.FrameworkStatsLog.NOTIFICATION_ADJUSTMENT_PREFERENCES;
@@ -249,6 +250,7 @@ import android.app.NotificationManager.Policy;
 import android.app.NotificationRule;
 import android.app.PendingIntent;
 import android.app.Person;
+import android.app.RemoteServiceException.BadComputerControlNotificationException;
 import android.app.RemoteServiceException.BadForegroundServiceNotificationException;
 import android.app.RemoteServiceException.BadUserInitiatedJobNotificationException;
 import android.app.StatsManager;
@@ -1177,7 +1179,7 @@ public class NotificationManagerService extends SystemService {
             NotificationChannel newChannel = mPreferencesHelper.getNotificationChannel(pkg,
                     summary.getUid(), summaryAttr.channelId, false);
             if (newChannel != null) {
-                summary.updateNotificationChannel(newChannel);
+                summary.updateSystemNotificationChannel(newChannel);
                 attributesUpdated = true;
             }
         }
@@ -1750,20 +1752,27 @@ public class NotificationManagerService extends SystemService {
                 int id, int uid, int initialPid, String message, int userId) {
             final boolean fgService;
             final boolean uiJob;
+            final boolean computerControl;
             synchronized (mNotificationLock) {
                 NotificationRecord r = findNotificationLocked(pkg, tag, id, userId);
-                fgService = r != null && (r.getNotification().flags & FLAG_FOREGROUND_SERVICE) != 0;
-                uiJob = r != null && (r.getNotification().flags & FLAG_USER_INITIATED_JOB) != 0;
+                fgService = r != null && r.getNotification().isForegroundService();
+                uiJob = r != null && r.getNotification().isUserInitiatedJob();
+                computerControl =
+                        android.companion.virtualdevice.flags.Flags.computerControlAccess()
+                                && r != null
+                                && r.getNotification().isComputerControl();
             }
             cancelNotification(callingUid, callingPid, pkg, tag, id, 0, null, false, userId,
                     REASON_ERROR, null);
-            if (fgService || uiJob) {
-                // Still crash for foreground services or user-initiated jobs, preventing the
-                // not-crash behaviour abused by apps to give us a garbage notification and
-                // silently start a fg service or user-initiated job.
-                final int exceptionTypeId = fgService
-                        ? BadForegroundServiceNotificationException.TYPE_ID
-                        : BadUserInitiatedJobNotificationException.TYPE_ID;
+            if (fgService || uiJob || computerControl) {
+                // Still crash for foreground services or user-initiated jobs or computer control
+                // sessions, preventing the not-crash behaviour abused by apps to give us a garbage
+                // notification and silently start a fg service or user-initiated job or a computer
+                // control session.
+                final int exceptionTypeId = computerControl
+                        ? BadComputerControlNotificationException.TYPE_ID
+                        : (fgService ? BadForegroundServiceNotificationException.TYPE_ID
+                                : BadUserInitiatedJobNotificationException.TYPE_ID);
                 Binder.withCleanCallingIdentity(
                         () -> mAm.crashApplicationWithType(uid, initialPid, pkg, -1,
                             "Bad notification(tag=" + tag + ", id=" + id + ") posted from package "
@@ -2357,7 +2366,7 @@ public class NotificationManagerService extends SystemService {
             if (foundNotification) {
                 cancelNotification(uid, pid, packageName, tag, id, 0,
                         FlagChecker.mustNotHave(FLAG_FOREGROUND_SERVICE | FLAG_USER_INITIATED_JOB
-                                | FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY),
+                                | FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY | FLAG_COMPUTER_CONTROL),
                         true, userId, REASON_TIMEOUT, null);
             }
         }
@@ -2937,16 +2946,6 @@ public class NotificationManagerService extends SystemService {
     }
 
     @VisibleForTesting
-    void setHandler(WorkerHandler handler) {
-        mHandler = handler;
-    }
-
-    @VisibleForTesting
-    void setRankingHelper(RankingHelper rankingHelper) {
-        mRankingHelper = rankingHelper;
-    }
-
-    @VisibleForTesting
     void setPreferencesHelper(PreferencesHelper prefHelper) { mPreferencesHelper = prefHelper; }
 
     @VisibleForTesting
@@ -3013,7 +3012,8 @@ public class NotificationManagerService extends SystemService {
             UiEventLogger uiEventLogger, BitmapOffloadInternal bitmapOffloader,
             NotificationListenerStats notificationListenerStats,
             NotificationRecordLogger notificationRecordLogger,
-            InstanceIdSequence instanceIdSequence) {
+            InstanceIdSequence instanceIdSequence,
+            PreferencesHelperFactory preferencesHelperFactory) {
         mHandler = handler;
         mBroadcastsHandler = broadcastsHandler;
         Resources resources = getContext().getResources();
@@ -3136,7 +3136,7 @@ public class NotificationManagerService extends SystemService {
         mPermissionHelper = permissionHelper;
         mNotificationChannelLogger = channelLogger;
         mUserProfiles.updateCache(getContext());
-        mPreferencesHelper = new PreferencesHelper(getContext(),
+        mPreferencesHelper = preferencesHelperFactory.newHelper(getContext(),
                 mPackageManagerClient,
                 mRankingHandler,
                 mZenModeHelper,
@@ -3411,10 +3411,12 @@ public class NotificationManagerService extends SystemService {
                 new NotificationChannelLoggerImpl(), SystemUiSystemPropertiesFlags.getResolver(),
                 getContext().getSystemService(PermissionManager.class),
                 getContext().getSystemService(PowerManager.class),
-                new PostNotificationTrackerFactory() {}, new UiEventLoggerImpl(),
+                new PostNotificationTrackerFactory() {
+                }, new UiEventLoggerImpl(),
                 bitmapOffloader, new NotificationListenerStats(),
                 new NotificationRecordLoggerImpl(),
-                new InstanceIdSequence(NOTIFICATION_INSTANCE_ID_MAX));
+                new InstanceIdSequence(NOTIFICATION_INSTANCE_ID_MAX),
+                new PreferencesHelperFactory() {});
 
         publishBinderService(Context.NOTIFICATION_SERVICE, mService, /* allowIsolated= */ false,
                 DUMP_FLAG_PRIORITY_CRITICAL | DUMP_FLAG_PRIORITY_NORMAL);
@@ -3594,9 +3596,10 @@ public class NotificationManagerService extends SystemService {
                     String groupKey, int cancelReason) {
                 synchronized (mNotificationLock) {
                     final int mustNotHaveFlags;
-                    // Also don't allow client apps to cancel lifetime extended notifs.
+                    // Also don't allow client apps to cancel FGS, UIJ, computer control or lifetime
+                    // extended notifs.
                     mustNotHaveFlags = (FLAG_FOREGROUND_SERVICE | FLAG_USER_INITIATED_JOB
-                            | FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY);
+                                | FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY | FLAG_COMPUTER_CONTROL);
 
                     FlagChecker childrenFlagChecker = (flags) -> {
                             if (cancelReason == REASON_CANCEL
@@ -4619,10 +4622,11 @@ public class NotificationManagerService extends SystemService {
         public void cancelNotificationWithTag(String pkg, String opPkg, String tag, int id,
                 @CanBeALL @CanBeCURRENT @UserIdInt int userId) {
             // Don't allow client applications to cancel foreground service notifs, user-initiated
-            // job notifs, autobundled summaries, or notifs that have been replied to.
+            // job notifs, computer control notifs, autobundled summaries, or notifs that have been
+            // replied to.
             int mustNotHaveFlags = isCallingUidSystem() ? 0 :
                     (FLAG_FOREGROUND_SERVICE | FLAG_USER_INITIATED_JOB | FLAG_AUTOGROUP_SUMMARY
-                            | FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY);
+                            | FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY | FLAG_COMPUTER_CONTROL);
 
             cancelNotificationInternal(pkg, opPkg, Binder.getCallingUid(), Binder.getCallingPid(),
                     tag, id, userId, mustNotHaveFlags);
@@ -4636,10 +4640,10 @@ public class NotificationManagerService extends SystemService {
             userId = ActivityManager.handleIncomingUser(Binder.getCallingPid(),
                     Binder.getCallingUid(), userId, true, false, "cancelAllNotifications", pkg);
 
-            // Don't allow the app to cancel active FGS or UIJ notifications
+            // Don't allow the app to cancel active FGS, UIJ or computer control notifications.
             cancelAllNotificationsInt(Binder.getCallingUid(), Binder.getCallingPid(),
                     pkg, null, 0, FLAG_FOREGROUND_SERVICE | FLAG_USER_INITIATED_JOB
-                            | FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY,
+                            | FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY | FLAG_COMPUTER_CONTROL,
                     userId, REASON_APP_CANCEL_ALL);
             final int packageImportance = getPackageImportanceWithIdentity(pkg);
             // If cancellation will be prevented due to lifetime extension, we send updates
@@ -7657,11 +7661,13 @@ public class NotificationManagerService extends SystemService {
                                 ? new Adjustment(adjustment)
                                 : adjustment;
                         applyAdjustmentLocked(r, recordAdjustment, false);
-                        r.applyAdjustments();
-                        // importance is checked at the beginning of the
-                        // PostNotificationRunnable, before the signal extractors are run, so
-                        // calculate the final importance here
-                        r.calculateImportance();
+                        if (!nmContextualDisplayLaunch()) {
+                            r.applyAdjustments();
+                            // importance is checked at the beginning of the
+                            // PostNotificationRunnable, before the signal extractors are run, so
+                            // calculate the final importance here
+                            r.calculateImportance();
+                        }
                     }
 
                     if (enqueuedRecords.isEmpty()) {
@@ -8047,6 +8053,7 @@ public class NotificationManagerService extends SystemService {
             }
 
             if (mNotificationRuleManager.removeNotificationRule(userId, ruleId)) {
+                onNotificationRuleRemoved(userId, ruleId);
                 handleSaveRulesFile();
                 mAssistants.notifyNotificationRuleRemoved(userId, ruleId);
                 return true;
@@ -8880,9 +8887,10 @@ public class NotificationManagerService extends SystemService {
         public void cancelNotification(String pkg, String opPkg, int callingUid, int callingPid,
                 String tag, int id, int userId) {
             // Don't allow client applications to cancel foreground service notifs,
-            // user-initiated job notifs or autobundled summaries.
+            // user-initiated job notifs, computer control notifs or autobundled summaries.
             final int mustNotHaveFlags = isCallingUidSystem() ? 0 :
-                    (FLAG_FOREGROUND_SERVICE | FLAG_USER_INITIATED_JOB | FLAG_AUTOGROUP_SUMMARY);
+                    (FLAG_FOREGROUND_SERVICE | FLAG_USER_INITIATED_JOB | FLAG_AUTOGROUP_SUMMARY
+                            | FLAG_COMPUTER_CONTROL);
             cancelNotificationInternal(pkg, opPkg, callingUid, callingPid, tag, id, userId,
                     mustNotHaveFlags);
         }
@@ -8916,6 +8924,18 @@ public class NotificationManagerService extends SystemService {
             });
         }
 
+        @Override
+        public void removeComputerControlFlagFromNotification(String pkg, int notificationId,
+                int userId) {
+            checkCallerIsSystem();
+            mHandler.post(() -> {
+                synchronized (mNotificationLock) {
+                    removeFlagFromNotificationLocked(pkg, notificationId, userId,
+                            FLAG_COMPUTER_CONTROL);
+                }
+            });
+        }
+
         @GuardedBy("mNotificationLock")
         private void removeFlagFromNotificationLocked(String pkg, int notificationId, int userId,
                 int flag) {
@@ -8929,7 +8949,16 @@ public class NotificationManagerService extends SystemService {
                 NotificationRecord r = findNotificationLocked(pkg, null, notificationId, userId);
                 if (r != null) {
                     if (DBG) {
-                        final String type = (flag == FLAG_FOREGROUND_SERVICE) ? "FGS" : "UIJ";
+                        final String type;
+                        if (flag == FLAG_FOREGROUND_SERVICE) {
+                            type = "FGS";
+                        } else if (flag == FLAG_USER_INITIATED_JOB) {
+                            type = "UIJ";
+                        } else if (flag == FLAG_COMPUTER_CONTROL) {
+                            type = "Computer Control";
+                        } else {
+                            type = "Unknown";
+                        }
                         Slog.d(TAG, "Remove " + type + " flag not allow. "
                                 + "Cancel " + type + " notification");
                     }
@@ -8938,6 +8967,11 @@ public class NotificationManagerService extends SystemService {
                             null, SystemClock.elapsedRealtime());
                 }
             } else {
+                // Notifications with FLAG_COMPUTER_CONTROL are non-dismissible, so remove
+                // FLAG_NO_DISMISS as well when removing FLAG_COMPUTER_CONTROL.
+                if (flag == FLAG_COMPUTER_CONTROL) {
+                    flag |= FLAG_NO_DISMISS;
+                }
                 List<NotificationRecord> enqueued = findNotificationsByListLocked(
                         mEnqueuedNotifications, pkg, null, notificationId, userId);
                 for (int i = 0; i < enqueued.size(); i++) {
@@ -9364,11 +9398,19 @@ public class NotificationManagerService extends SystemService {
         if (js != null) {
             stripUijFlag = !js.isNotificationAssociatedWithAnyUserInitiatedJobs(id, userId, pkg);
         }
+        if (mComputerControlHelper == null) {
+            mComputerControlHelper = ComputerControlHelper.forLocalService();
+        }
+        final boolean stripComputerControlFlag =
+                !android.companion.virtualdevice.flags.Flags.computerControlAccess()
+                        || mComputerControlHelper == null
+                        || !mComputerControlHelper.isUidEligibleToSetComputerControlFlag(
+                                callingUid);
 
         // Fix the notification as best we can.
         try {
             fixNotification(notification, pkg, tag, id, userId, notificationUid,
-                    policy, stripUijFlag);
+                    policy, stripUijFlag, stripComputerControlFlag);
         } catch (Exception e) {
             if (notification.isForegroundService()) {
                 throw new SecurityException("Invalid FGS notification", e);
@@ -9451,11 +9493,11 @@ public class NotificationManagerService extends SystemService {
                 mPreferencesHelper.updateNotificationChannel(
                         pkg, notificationUid, channel, false, callingUid,
                         isCallerSystemOrSystemUi());
-                r.updateNotificationChannel(channel);
+                r.updateSystemNotificationChannel(channel);
             } else if (!channel.isUserVisibleTaskShown() && !TextUtils.isEmpty(channelId)
                     && !NotificationChannel.DEFAULT_CHANNEL_ID.equals(channelId)) {
                 channel.setUserVisibleTaskShown(true);
-                r.updateNotificationChannel(channel);
+                r.updateSystemNotificationChannel(channel);
             }
         }
 
@@ -9583,8 +9625,8 @@ public class NotificationManagerService extends SystemService {
     @VisibleForTesting
     protected void fixNotification(Notification notification, String pkg, String tag, int id,
             @UserIdInt int userId, int notificationUid,
-            ServiceNotificationPolicy fgsPolicy, boolean stripUijFlag)
-            throws NameNotFoundException, RemoteException {
+            ServiceNotificationPolicy fgsPolicy, boolean stripUijFlag,
+            boolean stripComputerControlFlag) throws NameNotFoundException, RemoteException {
         final ApplicationInfo ai = mPackageManagerClient.getApplicationInfoAsUser(
                 pkg, PackageManager.MATCH_DEBUG_TRIAGED_MISSING,
                 (userId == USER_ALL) ? USER_SYSTEM : userId);
@@ -9599,20 +9641,14 @@ public class NotificationManagerService extends SystemService {
         if (notification.isUserInitiatedJob() && stripUijFlag) {
             notification.flags &= ~FLAG_USER_INITIATED_JOB;
         }
-
-        // Remove FLAG_AUTO_CANCEL from notifications that are associated with a FGS or UIJ.
-        if (notification.isFgsOrUij()) {
-            notification.flags &= ~FLAG_AUTO_CANCEL;
+        if (notification.isComputerControl() && stripComputerControlFlag) {
+            notification.flags &= ~FLAG_COMPUTER_CONTROL;
         }
 
-        if (android.app.Flags.notificationFlagComputerControl()) {
-            // Apply or set FLAG_COMPUTER_CONTROL based on the existence of a ComputerControlSession
-            // which references this notification.
-            if (isComputerControlNotification(id, tag, pkg)) {
-                notification.flags |= FLAG_COMPUTER_CONTROL;
-            } else {
-                notification.flags &= ~FLAG_COMPUTER_CONTROL;
-            }
+        // Remove FLAG_AUTO_CANCEL from notifications that are associated with a FGS or UIJ or
+        // a computer control session.
+        if (notification.isFgsOrUij() || notification.isComputerControl()) {
+            notification.flags &= ~FLAG_AUTO_CANCEL;
         }
 
         // Only notifications that can be non-dismissible can have the flag FLAG_NO_DISMISS
@@ -9862,13 +9898,16 @@ public class NotificationManagerService extends SystemService {
                 || notification.isStyle(Notification.CallStyle.class)
                 || isDefaultSearchSelectorPackage(ai.packageName)
                 || isDefaultAdservicesPackage(ai.packageName)
-                || (android.app.Flags.notificationFlagComputerControl()
-                        ? hasFlag(notification.flags, FLAG_COMPUTER_CONTROL)
-                        : isComputerControlNotification(id, tag, ai.packageName));
+                || hasFlag(notification.flags, FLAG_COMPUTER_CONTROL)
+                || isNotificationAttachedToComputerControlSession(id, tag, ai.packageName);
     }
 
-    private boolean isComputerControlNotification(int notificationId, String notificationTag,
-            String packageName) {
+    /**
+     * Whether the given notification id and tag are associated with a computer control session
+     * using the method {@link android.companion.virtual.computercontrol.ComputerControlSession#attachNotificationInfo(int, String)}.
+     */
+    private boolean isNotificationAttachedToComputerControlSession(int notificationId,
+            String notificationTag, String packageName) {
         if (mComputerControlHelper == null) {
             mComputerControlHelper = ComputerControlHelper.forLocalService();
         }
@@ -10338,8 +10377,14 @@ public class NotificationManagerService extends SystemService {
     boolean isRecordBlockedLocked(NotificationRecord r) {
         final String pkg = r.getSbn().getPackageName();
         final int callingUid = r.getSbn().getUid();
-        return mPreferencesHelper.isGroupBlocked(pkg, callingUid, r.getChannel().getGroup())
-                || r.getImportance() == IMPORTANCE_NONE;
+        boolean groupBlocked = mPreferencesHelper.isGroupBlocked(
+                pkg, callingUid, r.getChannel().getGroup());
+        if (nmContextualDisplayLaunch()) {
+            return groupBlocked || r.getImportance() == IMPORTANCE_NONE
+                    || r.hasPendingBlockAdjustment(mNotificationRuleManager);
+        } else {
+            return groupBlocked || r.getImportance() == IMPORTANCE_NONE;
+        }
     }
 
     /**
@@ -10925,7 +10970,6 @@ public class NotificationManagerService extends SystemService {
                         return false;
                     }
 
-
                     final boolean isPackageSuspended =
                             isPackagePausedOrSuspended(r.getSbn().getPackageName(), r.getUid());
                     r.setHidden(isPackageSuspended);
@@ -10952,6 +10996,11 @@ public class NotificationManagerService extends SystemService {
                         // Make sure we don't lose the foreground service state.
                         notification.flags |=
                                 old.getNotification().flags & FLAG_FOREGROUND_SERVICE;
+                        // Make sure we don't lose the computer control flag state.
+                        if (android.companion.virtualdevice.flags.Flags.computerControlAccess()) {
+                            notification.flags |=
+                                    old.getNotification().flags & FLAG_COMPUTER_CONTROL;
+                        }
                         r.isUpdate = true;
                         final boolean isInterruptive = isVisuallyInterruptive(old, r);
                         r.setTextChanged(isInterruptive);
@@ -10965,8 +11014,16 @@ public class NotificationManagerService extends SystemService {
 
                     // Ensure if this is a foreground service that the proper additional
                     // flags are set.
-                    if ((notification.flags & FLAG_FOREGROUND_SERVICE) != 0) {
+                    if (notification.isForegroundService()) {
                         notification.flags |= FLAG_NO_CLEAR;
+                    }
+
+                    // Ensure if this is a computer control notification that the proper additional
+                    // flags are set.
+                    if (android.companion.virtualdevice.flags.Flags.computerControlAccess()
+                            && notification.isComputerControl()) {
+                        notification.flags |= FLAG_NO_CLEAR | FLAG_NO_DISMISS;
+                        notification.flags &= ~FLAG_AUTO_CANCEL;
                     }
 
                     // Posts the notification if it has a small icon, and potentially autogroup
@@ -11310,12 +11367,9 @@ public class NotificationManagerService extends SystemService {
             mSummaryByGroupKey.put(group, r);
         }
 
-        FlagChecker childrenFlagChecker = (flags) -> {
-            if ((flags & FLAG_FOREGROUND_SERVICE) != 0 || (flags & FLAG_USER_INITIATED_JOB) != 0) {
-                return false;
-            }
-            return true;
-        };
+        FlagChecker childrenFlagChecker = (flags) -> ((flags & FLAG_FOREGROUND_SERVICE) == 0)
+                && ((flags & FLAG_USER_INITIATED_JOB) == 0)
+                && ((flags & FLAG_COMPUTER_CONTROL) == 0);
 
         // Clear out group children of the old notification if the update
         // causes the group summary to go away. This happens when the old
@@ -11685,9 +11739,16 @@ public class NotificationManagerService extends SystemService {
                 if (!extractorDataBefore.containsKey(r.getKey())) {
                     // This shouldn't happen given that we just built this with all the
                     // notifications, but check just to be safe.
+                    Slog.wtf(TAG, "Missing extractor data");
                     continue;
                 }
-                if (extractorDataBefore.get(r.getKey()).hasDiffForRankingLocked(r, i)) {
+                NotificationRecordExtractorData before = extractorDataBefore.get(r.getKey());
+
+                if (nmContextualDisplayLaunch() && before.hasBeenUnbundled(r)) {
+                    mGroupHelper.onNotificationUnbundled(r, true);
+                }
+
+                if (before.hasDiffForRankingLocked(r, i)) {
                     mHandler.scheduleSendRankingUpdate();
                 }
 
@@ -11851,7 +11912,8 @@ public class NotificationManagerService extends SystemService {
         }
     }
 
-    private final class RankingHandlerWorker extends Handler implements RankingHandler
+    @VisibleForTesting
+    final class RankingHandlerWorker extends Handler implements RankingHandler
     {
         public RankingHandlerWorker(Looper looper) {
             super(looper);
@@ -12665,6 +12727,49 @@ public class NotificationManagerService extends SystemService {
      */
     private boolean isPromotedOutOfGroup(NotificationRecord r) {
         return r.getChannel().isImportantConversation() || r.getNotification().isPromotedOngoing();
+    }
+
+    /**
+     * Updates all notifications potentially affected by a rule when that rule is deleted.
+     */
+    private void onNotificationRuleRemoved(@UserIdInt int userId, int ruleId) {
+        synchronized (mNotificationLock) {
+            List<NotificationRecord> affectedRecords = findNotificationsLocked(
+                    notificationRecord -> {
+                        if (notificationRecord.getUserId() == userId) {
+                            Adjustment a = notificationRecord.getMatchingRulesAdjustment();
+                            return a != null && a.getSignals().containsKey(KEY_NOTIFICATION_RULES)
+                                    && a.getSignals().getIntegerArrayList(
+                                    KEY_NOTIFICATION_RULES).contains(ruleId);
+                        }
+                        return false;
+                    });
+            if (!affectedRecords.isEmpty()) {
+                for (NotificationRecord record : affectedRecords) {
+                    record.getMatchingRulesAdjustment().getSignals().getIntegerArrayList(
+                            KEY_NOTIFICATION_RULES).remove(new Integer(ruleId));
+                }
+                mRankingHandler.requestSort();
+            }
+        }
+    }
+
+    @GuardedBy("mNotificationLock")
+    @NonNull
+    List<NotificationRecord> findNotificationsLocked(Predicate<NotificationRecord> filter) {
+        List<NotificationRecord> records = new ArrayList<>();
+        for (NotificationRecord record : mEnqueuedNotifications) {
+            if (filter.test(record)) {
+                records.add(record);
+            }
+        }
+        for (NotificationRecord record : mNotificationList) {
+            if (filter.test(record)) {
+                records.add(record);
+            }
+        }
+
+        return records;
     }
 
     @GuardedBy("mNotificationLock")
@@ -16323,6 +16428,19 @@ public class NotificationManagerService extends SystemService {
             // trampolines are blocked.
             return tokens.contains(ALLOWLIST_TOKEN)
                     && !CompatChanges.isChangeEnabled(NOTIFICATION_TRAMPOLINE_BLOCK, uid);
+        }
+    }
+
+    interface PreferencesHelperFactory {
+        default PreferencesHelper newHelper(Context context, PackageManager pm,
+                RankingHandler rankingHandler, ZenModeHelper zenHelper, PermissionHelper permHelper,
+                PermissionManager permManager, NotificationChannelLogger notificationChannelLogger,
+                AppOpsManager appOpsManager, ManagedServices.UserProfiles userProfiles,
+                UriGrantsManagerInternal ugmInternal, boolean showReviewPermissionsNotification,
+                Clock clock, NotificationManagerPrivate nmPrivate) {
+            return new PreferencesHelper(context, pm, rankingHandler, zenHelper, permHelper,
+                    permManager, notificationChannelLogger, appOpsManager, userProfiles,
+                    ugmInternal, showReviewPermissionsNotification, clock, nmPrivate);
         }
     }
 

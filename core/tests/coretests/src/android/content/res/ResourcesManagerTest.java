@@ -28,10 +28,12 @@ import android.app.ResourcesManager;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.res.loader.AssetsProvider;
 import android.os.Binder;
 import android.os.LocaleList;
 import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.Postsubmit;
+import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.util.DisplayMetrics;
@@ -649,6 +651,67 @@ public class ResourcesManagerTest {
         } finally {
             Files.deleteIfExists(tmpName.toPath());
         }
+    }
+
+    @Test
+    @SmallTest
+    @RequiresFlagsEnabled(Flags.FLAG_RESOURCES_MANAGER_CACHE_LEAK_CLEANUP)
+    public void testCleanupResourceImpl() {
+        final var hash1 = System.identityHashCode(
+                mResourcesManager.getResources(
+                        null, APP_ONE_RES_DIR, null, null, null, null, null, null,
+                        CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null, null).getImpl());
+        final var hash2 = System.identityHashCode(
+                mResourcesManager.getResources(
+                        null, APP_ONE_RES_DIR, null, null, null, null, null, null,
+                        CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null, null).getImpl());
+
+        // Should be the same impl object.
+        assertEquals(hash1, hash2);
+
+        // Force GC to collect the WeakReference referent
+        Runtime.getRuntime().gc();
+        Runtime.getRuntime().runFinalization();
+        Runtime.getRuntime().gc();
+
+        // This call should trigger the cleanup and return a new impl object.
+        final var hash3 = System.identityHashCode(
+                mResourcesManager.getResources(
+                        null, APP_ONE_RES_DIR, null, null, null, null, null, null,
+                        CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO, null, null).getImpl());
+        assertNotEquals(hash1, hash3);
+    }
+
+    @Test
+    @SmallTest
+    @RequiresFlagsEnabled(Flags.FLAG_RESOURCES_MANAGER_CACHE_LEAK_CLEANUP)
+    public void testCleanupApkAssets() throws IOException {
+        final var resourcesManager = new ResourcesManager() {
+            @Override
+            @NonNull
+            protected ApkAssets loadApkAssetsRaw(@NonNull ResourcesManager.ApkKey key, int flags) {
+                return ApkAssets.loadEmptyForLoader(flags, new AssetsProvider() {
+                });
+            }
+        };
+
+        final var hash1 = System.identityHashCode(resourcesManager.loadApkAssets(
+                new ResourcesManager.ApkKey(APP_ONE_RES_DIR, false, false)));
+
+        // Load again, should hit the cache and return the same object.
+        final var hash2 = System.identityHashCode(resourcesManager.loadApkAssets(
+                new ResourcesManager.ApkKey(APP_ONE_RES_DIR, false, false)));
+        assertEquals(hash1, hash2);
+
+        // Force GC to collect the WeakReference referent
+        Runtime.getRuntime().gc();
+        Runtime.getRuntime().runFinalization();
+        Runtime.getRuntime().gc();
+
+        // This call should trigger the cleanup and then load the assets again.
+        final var hash3 = System.identityHashCode(resourcesManager.loadApkAssets(
+                new ResourcesManager.ApkKey(APP_ONE_RES_DIR, false, false)));
+        assertNotEquals(hash1, hash3);
     }
 
     private static boolean containsPath(String substring, ApkAssets[] assets) {

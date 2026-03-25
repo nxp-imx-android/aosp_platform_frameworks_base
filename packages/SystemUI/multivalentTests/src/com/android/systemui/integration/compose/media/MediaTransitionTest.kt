@@ -78,6 +78,8 @@ import org.junit.runner.RunWith
 @TestableLooper.RunWithLooper
 @EnableSceneContainer
 @DisableFlags(Flags.FLAG_DUAL_SHADE)
+// TODO(b/494578600) Remove DisableFlags once fixed
+@DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
 @SystemUiIntegrationTest
 class MediaTransitionTest : SysuiTestCase() {
     @get:Rule val composeTestRule = createComposeRule()
@@ -120,7 +122,6 @@ class MediaTransitionTest : SysuiTestCase() {
             jankMonitor = kosmos.interactionJankMonitor,
         )
 
-    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
     @Test
     fun transitFromShadeToQuickSettings() {
         kosmos.runTest {
@@ -147,7 +148,6 @@ class MediaTransitionTest : SysuiTestCase() {
         }
     }
 
-    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
     @FlakyTest(bugId = 491434743)
     @Test
     fun resumableMediaPersistsInQuickSettings() =
@@ -172,7 +172,6 @@ class MediaTransitionTest : SysuiTestCase() {
                 .assertIsDisplayed()
         }
 
-    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
     @Test
     fun testResumeMedia() =
         kosmos.runTest {

@@ -449,7 +449,7 @@ public final class Adjustment implements Parcelable {
     @Override
     public String toString() {
         return "Adjustment{"
-                + "mSignals=" + mSignals
+                + "mSignals=" + mSignals.keySet()
                 + ", mUser=" + mUser
                 + ", mRuleId=" + mRuleId
                 + ", mRuleOrder=" + mRuleOrder

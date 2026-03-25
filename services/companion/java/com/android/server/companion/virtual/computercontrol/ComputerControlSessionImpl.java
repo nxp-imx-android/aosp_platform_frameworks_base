@@ -16,6 +16,7 @@
 
 package com.android.server.companion.virtual.computercontrol;
 
+import static android.app.Notification.FLAG_COMPUTER_CONTROL;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_AUDIO;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_BLOCKED_ACTIVITY;
@@ -33,12 +34,14 @@ import android.annotation.UserIdInt;
 import android.app.ActivityOptions;
 import android.app.AppOpsManager;
 import android.app.KeyguardManager;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.audio.VirtualAudioDevice;
 import android.companion.virtual.computercontrol.ComputerControlSession;
+import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IComputerControlLifecycleCallback;
 import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.computercontrol.IInteractiveMirror;
@@ -91,6 +94,7 @@ import com.android.server.UiThread;
 import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.inputmethod.InputMethodManagerInternal;
+import com.android.server.notification.NotificationManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.ActivityAssistInfo;
 import com.android.server.wm.ActivityTaskManagerInternal;
@@ -210,7 +214,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     /** Executor for the shared FgThread. */
     private final Executor mFgThreadExecutor;
     private final AppOpsManager mOwnerAppOpsManager;
-
     private final WindowManagerInternal mWindowManagerInternal;
     private final InputMethodManagerInternal mInputMethodManagerInternal;
     private final UserManagerInternal mUserManagerInternal;
@@ -488,6 +491,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             }
             throw e.rethrowFromSystemServer();
         }
+
+        postSessionNotification();
 
         mOwnerAppOpsManager = request.ownerContext().getSystemService(AppOpsManager.class);
         mOwnerAppOpsManager.startWatchingMode(AppOpsManager.OP_COMPUTER_CONTROL,
@@ -1126,9 +1131,33 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mAudioCapture.stopAudioCapture();
         mVirtualDevice.close(); // closes also the VirtualAudioDevice
         mRequest.appToken().unlinkToDeath(this, 0);
+        makeSessionNotificationCancellable();
         removeAllInteractiveMirrorsOnSessionClose();
         mOnClosedListener.accept(this);
         mOwnerAppOpsManager.stopWatchingMode(this);
+    }
+
+    private void postSessionNotification() {
+        ComputerControlSessionParams.NotificationParams notificationParams =
+                mRequest.params().getNotificationParams();
+        if (notificationParams != null) {
+            Notification notification = notificationParams.getNotification();
+            notification.flags |= FLAG_COMPUTER_CONTROL;
+            mRequest.ownerNotificationManager().notifyAsPackage(mRequest.ownerPackageName(),
+                    notificationParams.getNotificationTag(),
+                    notificationParams.getNotificationId(),
+                    notification);
+        }
+    }
+
+    private void makeSessionNotificationCancellable() {
+        ComputerControlSessionParams.NotificationParams notificationParams =
+                mRequest.params().getNotificationParams();
+        if (notificationParams != null) {
+            LocalServices.getService(NotificationManagerInternal.class)
+                    .removeComputerControlFlagFromNotification(mRequest.ownerPackageName(),
+                            notificationParams.getNotificationId(), mRequest.ownerUserId());
+        }
     }
 
     private void performSwipeStep(int fromX, int fromY, int toX, int toY, int step, int stepCount) {

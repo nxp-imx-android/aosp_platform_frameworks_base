@@ -48,6 +48,8 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"seade"</string>
     <string name="summary_generic" msgid="1761976003668044801">"See rakendus saab sünkroonida teavet (näiteks helistaja nime) teie telefoni ja valitud seadme vahel."</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Seadmel &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; lubatakse sünkroonida teavet, näiteks helistaja teavet, ja käitada nutikaid toiminguid teie seadmest <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>."</string>
+    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
+    <skip />
     <string name="consent_yes" msgid="8344487259618762872">"Luba"</string>
     <string name="consent_no" msgid="2640796915611404382">"Ära luba"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Tühista"</string>
@@ -91,8 +93,10 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Seadme <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> ekraanikuva salvestamine, ülekandmine või jagamine seadmega &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt; Rakendus saab <xliff:g id="APP_NAME">%1$s</xliff:g> juurdepääsu kõigele, mis on seadmes <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> nähtav või mida seal esitatakse, sh heli, fotod, makseteave, paroolid ja sõnumid."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Seadme <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> rakenduste voogesitamine seadmesse &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> saab juurdepääsu kõigele, mida teie seadmes <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> saab kuvada või esitada, sh helile, fotodele, makseteabele, paroolidele ja sõnumitele, isegi kui seade <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> on lukus."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Juurdepääs saadaolevate seadmete loendile ja juhtida, milline neist voogesitab või edastab heli või videot teistest rakendustest"</string>
-    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
-    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
+    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
+    <skip />
+    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
+    <skip />
     <string name="device_type" product="default" msgid="8268703872070046263">"telefon"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tahvelarvuti"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"teler"</string>

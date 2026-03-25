@@ -103,7 +103,6 @@ public class ComputerControlExtensions {
         return new ComputerControlExtensions(targetComputerControlVersion);
     }
 
-
     /**
      * Requests a new {@link ComputerControlSession} for the given parameters. When the session is
      * no longer used it should be closed by calling {@link ComputerControlSession#close()}.
@@ -115,7 +114,8 @@ public class ComputerControlExtensions {
     @RequiresPermission(allOf = {Manifest.permission.ACCESS_COMPUTER_CONTROL,
             Manifest.permission.POST_NOTIFICATIONS})
     public void requestSession(@NonNull ComputerControlSession.Params params,
-            @NonNull Executor executor, @NonNull ComputerControlSession.Callback callback) {
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull ComputerControlSession.Callback callback) {
         Objects.requireNonNull(params, "Missing ComputerControlSession.Params");
         Objects.requireNonNull(executor, "Missing Executor");
         Objects.requireNonNull(callback, "Missing ComputerControlSession.Callback");
@@ -125,6 +125,15 @@ public class ComputerControlExtensions {
             companionDeviceId = new CompanionDeviceId(params.getCompanionDeviceId());
         }
 
+        ComputerControlSession.NotificationParams notificationParams =
+                params.getNotificationParams();
+        ComputerControlSessionParams.NotificationParams systemNotificationParams =
+                notificationParams == null ? null
+                        : new ComputerControlSessionParams.NotificationParams.Builder(
+                                notificationParams.getNotification(),
+                                notificationParams.getNotificationId())
+                                .setNotificationTag(notificationParams.getNotificationTag())
+                                .build();
         ComputerControlSessionParams sessionParams =
                 new ComputerControlSessionParams.Builder()
                         .setName(params.getName())
@@ -133,6 +142,7 @@ public class ComputerControlExtensions {
                         .setPreviewIntent(params.getPreviewIntent())
                         .setAppInteractionAttribution(params.getAppInteractionAttribution())
                         .setCompanionDeviceId(companionDeviceId)
+                        .setNotificationParams(systemNotificationParams)
                         .build();
 
         var sessionCallback =

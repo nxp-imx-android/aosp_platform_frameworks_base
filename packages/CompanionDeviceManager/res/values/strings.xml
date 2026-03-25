@@ -129,8 +129,11 @@
     <!-- Description of the privileges the application will get if associated with the companion device of unspecified profile (type) [CHAR LIMIT=NONE] -->
     <string name="summary_generic">This app will be able to sync info, like the name of someone calling, between your phone and the chosen device</string>
 
-    <!-- Description of the privileges the app will get if associated with remote AI agent capability [CHAR LIMIT=NONE] -->
+    <!-- Description of the privileges the app will get if associated with permissions and remote AI agent capability [CHAR LIMIT=NONE] -->
     <string name="summary_generic_with_remote_ai_capability">Allow &lt;strong&gt;<xliff:g id="companion_device_name" example="Test Device">%1$s</xliff:g>&lt;/strong&gt; to sync info such as caller info and run smart actions from your <xliff:g id="device_type" example="phone">%2$s</xliff:g></string>
+
+    <!-- Description of the privileges the app will get if associated with remote AI agent capability [CHAR LIMIT=NONE] -->
+    <string name="summary_with_permissions_and_remote_ai_capability">Give &lt;strong&gt;<xliff:g id="companion_device_name" example="Test Device">%1$s</xliff:g>&lt;/strong&gt; permissions to sync info such as caller info and run smart actions from your <xliff:g id="device_type" example="phone">%2$s</xliff:g></string>
 
     <!-- ================= Buttons ================= -->
 
@@ -267,10 +270,10 @@
     <string name="permission_media_routing_control_summary">Access a list of available devices and control which one streams or casts audio or video from other apps</string>
 
     <!-- Description of schedule exact alarm permission to be granted to the corresponding profile [CHAR LIMIT=NONE] -->
-    <string name="permission_schedule_exact_alarm_summary"></string>
+    <string name="permission_schedule_exact_alarm_summary">Send you alerts</string>
 
     <!-- Description of bypass DND permission to be granted to the corresponding profile [CHAR LIMIT=NONE] -->
-    <string name="permission_bypass_dnd_summary"></string>
+    <string name="permission_bypass_dnd_summary">Send you alerts even when Do Not Disturb mode is on</string>
 
     <!-- The type of the device for phone [CHAR LIMIT=30] -->
     <string name="device_type" product="default">phone</string>

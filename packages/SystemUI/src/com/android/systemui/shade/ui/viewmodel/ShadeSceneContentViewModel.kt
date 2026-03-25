@@ -96,11 +96,13 @@ constructor(
 
     val shadeMode: ShadeMode by shadeModeInteractor.shadeMode.hydratedStateOf()
 
-    /** Whether clicking on the empty area of the shade should do something. */
-    val isEmptySpaceClickable: Boolean by
-        deviceEntryInteractor.isDeviceEntered
-            .map { !it }
-            .hydratedStateOf(initialValue = !deviceEntryInteractor.isDeviceEntered.value)
+    val isDeviceEntered: Boolean by deviceEntryInteractor.isDeviceEntered.hydratedStateOf()
+
+    fun isEmptySpaceClickable(transitionState: TransitionState): Boolean {
+        val isTransitioningToQs =
+            transitionState.isTransitioningBetween(Scenes.Shade, Scenes.QuickSettings)
+        return !isDeviceEntered && !isTransitioningToQs
+    }
 
     val showMediaInRow: Boolean
         get() = qqsMediaInRowViewModel.shouldMediaShowInRow
@@ -185,8 +187,8 @@ constructor(
     }
 
     /** Notifies that the empty space in the shade has been clicked. */
-    fun onEmptySpaceClicked() {
-        if (!isEmptySpaceClickable) {
+    fun onEmptySpaceClicked(transitionState: TransitionState) {
+        if (!isEmptySpaceClickable(transitionState)) {
             return
         }
 

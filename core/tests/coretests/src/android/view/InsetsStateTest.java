@@ -72,8 +72,6 @@ import android.view.WindowInsets.Type;
 import androidx.annotation.NonNull;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import com.android.window.flags.Flags;
-
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.junit.Rule;
@@ -1196,7 +1194,6 @@ public class InsetsStateTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS)
     public void testCalculateInsets_forceConsumingCaptionBar() {
         mState.getOrCreateSource(ID_CAPTION_BAR, captionBar())
                 .setFrame(new Rect(0, 0, 100, 100))

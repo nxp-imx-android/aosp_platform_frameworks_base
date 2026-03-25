@@ -322,7 +322,8 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                 KEY_SERVICE_ENABLED, DEFAULT_SERVICE_ENABLED);
     }
 
-    private IBinder getOnDeviceIntelligenceManagerService() {
+    @VisibleForTesting
+    IBinder getOnDeviceIntelligenceManagerService() {
         return new IOnDeviceIntelligenceManager.Stub() {
             @Override
             public String getRemoteServicePackageName() {
@@ -698,11 +699,21 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                             .build();
                     result = executor.execute(service -> {
                                 AndroidFuture<Void> future = new AndroidFuture<>();
-                                service.requestTokenInfoWithContent(callerUid, feature,
-                                        content,
-                                        wrapCancellationFuture(cancellationSignalFuture),
-                                        wrapWithValidation(tokenInfoCallback, future,
-                                                mInferenceInfoStore));
+                                try {
+                                    service.requestTokenInfoWithContent(callerUid, feature,
+                                            content,
+                                            wrapCancellationFuture(cancellationSignalFuture),
+                                            wrapWithValidation(tokenInfoCallback, future,
+                                                    mInferenceInfoStore));
+                                } finally {
+                                    resourceClosingExecutor.execute(() -> {
+                                        try {
+                                            content.close();
+                                        } catch (Exception e) {
+                                            Slog.w(TAG, "Error closing Content", e);
+                                        }
+                                    });
+                                }
                                 return future.orTimeout(getIdleTimeoutMs(),
                                         TimeUnit.MILLISECONDS);
                             });
@@ -949,9 +960,10 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                                 .build();
                 var unused = executor.execute(
                         service -> {
-                            // TODO: b/479090677 - Handle timeouts and resource closing.
-                            service.listEmbeddingModels(callerUid, callback);
-                            return AndroidFuture.completedFuture(null);
+                            AndroidFuture<Void> future = new AndroidFuture<>();
+                            service.listEmbeddingModels(callerUid,
+                                    CallbackUtil.wrapWithCompletion(callback, future));
+                            return future.orTimeout(getIdleTimeoutMs(), TimeUnit.MILLISECONDS);
                         });
             }
 
@@ -990,9 +1002,10 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                                 .build();
                 var unused = executor.execute(
                         service -> {
-                            // TODO: b/479090677 - Handle timeouts and resource closing.
-                            service.fetchEmbeddingModel(callerUid, modelSignature, callback);
-                            return AndroidFuture.completedFuture(null);
+                            AndroidFuture<Void> future = new AndroidFuture<>();
+                            service.fetchEmbeddingModel(callerUid, modelSignature,
+                                    CallbackUtil.wrapWithCompletion(callback, future));
+                            return future.orTimeout(getIdleTimeoutMs(), TimeUnit.MILLISECONDS);
                         });
             }
 
@@ -1030,9 +1043,10 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                                 .build();
                 executor.execute(
                         service -> {
-                            // TODO: b/479090677 - Handle timeouts and resource closing.
-                            service.fetchImageDescriptionModel(callerUid, modelSignature, callback);
-                            return AndroidFuture.completedFuture(null);
+                            AndroidFuture<Void> future = new AndroidFuture<>();
+                            service.fetchImageDescriptionModel(callerUid, modelSignature,
+                                    CallbackUtil.wrapWithCompletion(callback, future));
+                            return future.orTimeout(getIdleTimeoutMs(), TimeUnit.MILLISECONDS);
                         });
             }
 
@@ -1070,9 +1084,10 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                                 .build();
                 var unused = executor.execute(
                         service -> {
-                            // TODO: b/479090677 - Handle timeouts and resource closing.
-                            service.listImageDescriptionModels(callerUid, callback);
-                            return AndroidFuture.completedFuture(null);
+                            AndroidFuture<Void> future = new AndroidFuture<>();
+                            service.listImageDescriptionModels(callerUid,
+                                    CallbackUtil.wrapWithCompletion(callback, future));
+                            return future.orTimeout(getIdleTimeoutMs(), TimeUnit.MILLISECONDS);
                         });
             }
 
@@ -1083,48 +1098,70 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                     AndroidFuture cancellationSignalFuture,
                     IEmbeddingCallback callback)
                     throws RemoteException {
-                mContext.enforceCallingPermission(
-                        Manifest.permission.USE_ON_DEVICE_INTELLIGENCE, TAG);
+                AndroidFuture<?> result = null;
                 int callerUid = Binder.getCallingUid();
-                Slog.i(TAG, "OnDeviceIntelligenceManagerInternal generateEmbeddings");
-                Objects.requireNonNull(feature);
-                Objects.requireNonNull(request);
-                Objects.requireNonNull(callback);
-                var executor =
-                        new InferenceServiceExecutor.Builder()
-                                .onFailure(
-                                        type -> {
-                                            switch (type) {
-                                                case SERVICE_UNAVAILABLE ->
-                                                        callback.onFailure(
-                                                                STATUS_UNAVAILABLE,
+                try {
+                    Slog.i(TAG, "OnDeviceIntelligenceManagerInternal generateEmbeddings");
+                    Objects.requireNonNull(feature);
+                    Objects.requireNonNull(request);
+                    Objects.requireNonNull(callback);
+                    var executor =
+                            new InferenceServiceExecutor.Builder()
+                                    .onFailure(
+                                            type -> {
+                                                switch (type) {
+                                                    case SERVICE_UNAVAILABLE ->
+                                                            callback.onFailure(
+                                                                    STATUS_UNAVAILABLE,
                                                                 "OnDeviceIntelligenceManagerService"
-                                                                    + " is unavailable",
-                                                                PersistableBundle.EMPTY);
-                                                case REMOTE_FAILURE ->
-                                                        callback.onFailure(
-                                                                STATUS_CONNECTION_FAILED,
-                                                                "Remote call failed",
-                                                                PersistableBundle.EMPTY);
-                                                case TIMEOUT ->
-                                                        callback.onFailure(
-                                                                STATUS_TIMEOUT,
-                                                                "Remote call timed out",
-                                                                PersistableBundle.EMPTY);
-                                            }
-                                        })
-                                .build();
-                var unused = executor.execute(
-                        service -> {
-                            // TODO: b/479090677 - Handle timeouts and resource closing.
-                            service.generateEmbeddings(
-                                    callerUid,
-                                    feature,
-                                    request,
-                                    wrapCancellationFuture(cancellationSignalFuture),
-                                    callback);
-                            return AndroidFuture.completedFuture(null);
+                                                                        + " is unavailable",
+                                                                    PersistableBundle.EMPTY);
+                                                    case REMOTE_FAILURE ->
+                                                            callback.onFailure(
+                                                                    STATUS_CONNECTION_FAILED,
+                                                                    "Remote call failed",
+                                                                    PersistableBundle.EMPTY);
+                                                    case TIMEOUT ->
+                                                            callback.onFailure(
+                                                                    STATUS_TIMEOUT,
+                                                                    "Remote call timed out",
+                                                                    PersistableBundle.EMPTY);
+                                                }
+                                            })
+                                    .build();
+                    result = executor.execute(
+                            service -> {
+                                AndroidFuture<Void> future = new AndroidFuture<>();
+                                try {
+                                    service.generateEmbeddings(
+                                            callerUid,
+                                            feature,
+                                            request,
+                                            wrapCancellationFuture(cancellationSignalFuture),
+                                            CallbackUtil.wrapWithCompletion(callback, future));
+                                } finally {
+                                    resourceClosingExecutor.execute(() -> {
+                                        try {
+                                            request.close();
+                                        } catch (Exception e) {
+                                            Slog.w(TAG, "Error closing EmbeddingRequest", e);
+                                        }
+                                    });
+                                }
+                                return future.orTimeout(getIdleTimeoutMs(), TimeUnit.MILLISECONDS);
+                            });
+                    trackInferenceJob(callerUid, result);
+                } finally {
+                    if (result == null) {
+                        resourceClosingExecutor.execute(() -> {
+                            try {
+                                request.close();
+                            } catch (Exception e) {
+                                Slog.w(TAG, "Error closing EmbeddingRequest", e);
+                            }
                         });
+                    }
+                }
             }
 
             @Override
@@ -1134,48 +1171,70 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                     AndroidFuture cancellationSignalFuture,
                     IImageDescriptionCallback callback)
                     throws RemoteException {
-                mContext.enforceCallingPermission(
-                        Manifest.permission.USE_ON_DEVICE_INTELLIGENCE, TAG);
+                AndroidFuture<?> result = null;
                 int callerUid = Binder.getCallingUid();
                 Slog.i(TAG, "OnDeviceIntelligenceManagerInternal generateImageDescription");
-                Objects.requireNonNull(feature);
-                Objects.requireNonNull(request);
-                Objects.requireNonNull(callback);
-                var executor =
-                        new InferenceServiceExecutor.Builder()
-                                .onFailure(
-                                        type -> {
-                                            switch (type) {
-                                                case SERVICE_UNAVAILABLE ->
-                                                        callback.onFailure(
-                                                                STATUS_UNAVAILABLE,
+                try {
+                    Objects.requireNonNull(feature);
+                    Objects.requireNonNull(request);
+                    Objects.requireNonNull(callback);
+                    var executor =
+                            new InferenceServiceExecutor.Builder()
+                                    .onFailure(
+                                            type -> {
+                                                switch (type) {
+                                                    case SERVICE_UNAVAILABLE ->
+                                                            callback.onFailure(
+                                                                    STATUS_UNAVAILABLE,
                                                                 "OnDeviceIntelligenceManagerService"
-                                                                    + " is unavailable",
-                                                                PersistableBundle.EMPTY);
-                                                case REMOTE_FAILURE ->
-                                                        callback.onFailure(
-                                                                STATUS_CONNECTION_FAILED,
-                                                                "Remote call failed",
-                                                                PersistableBundle.EMPTY);
-                                                case TIMEOUT ->
-                                                        callback.onFailure(
-                                                                STATUS_TIMEOUT,
-                                                                "Remote call timed out",
-                                                                PersistableBundle.EMPTY);
-                                            }
-                                        })
-                                .build();
-                var unused = executor.execute(
-                        service -> {
-                            // TODO: b/479090677 - Handle timeouts and resource closing.
-                            service.generateImageDescription(
-                                    callerUid,
-                                    feature,
-                                    request,
-                                    wrapCancellationFuture(cancellationSignalFuture),
-                                    callback);
-                            return AndroidFuture.completedFuture(null);
+                                                                        + " is unavailable",
+                                                                    PersistableBundle.EMPTY);
+                                                    case REMOTE_FAILURE ->
+                                                            callback.onFailure(
+                                                                    STATUS_CONNECTION_FAILED,
+                                                                    "Remote call failed",
+                                                                    PersistableBundle.EMPTY);
+                                                    case TIMEOUT ->
+                                                            callback.onFailure(
+                                                                    STATUS_TIMEOUT,
+                                                                    "Remote call timed out",
+                                                                    PersistableBundle.EMPTY);
+                                                }
+                                            })
+                                    .build();
+                    result = executor.execute(
+                            service -> {
+                                AndroidFuture<Void> future = new AndroidFuture<>();
+                                try {
+                                    service.generateImageDescription(
+                                            callerUid,
+                                            feature,
+                                            request,
+                                            wrapCancellationFuture(cancellationSignalFuture),
+                                            CallbackUtil.wrapWithCompletion(callback, future));
+                                } finally {
+                                    resourceClosingExecutor.execute(() -> {
+                                        try {
+                                            request.close();
+                                        } catch (Exception e) {
+                                            Slog.w(TAG, "Error closing ImageDescriptionRequest", e);
+                                        }
+                                    });
+                                }
+                                return future.orTimeout(getIdleTimeoutMs(), TimeUnit.MILLISECONDS);
+                            });
+                    trackInferenceJob(callerUid, result);
+                } finally {
+                    if (result == null) {
+                        resourceClosingExecutor.execute(() -> {
+                            try {
+                                request.close();
+                            } catch (Exception e) {
+                                Slog.w(TAG, "Error closing ImageDescriptionRequest", e);
+                            }
                         });
+                    }
+                }
             }
         };
     }

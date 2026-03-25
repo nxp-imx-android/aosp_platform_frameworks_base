@@ -967,6 +967,71 @@ public class ComputerControlAllowlistControllerTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_PER_APP_CONSENT)
+    public void doesAgentHaveConsent_testAgentAndTestTarget_returnsTrueWithoutExplicitConsent()
+            throws Exception {
+        int agentUid = Process.myUid();
+        String agentPkg = "com.test.agent";
+        String targetPkg = "com.test.target";
+
+        Signature agentSignature = generateSignature((byte) 10);
+        preparePackage(agentPkg, agentSignature, /* preinstalled= */ false, /* testOnly= */ true);
+        when(mPermissionManager.checkUidPermission(
+                eq(agentUid), eq(ACCESS_COMPUTER_CONTROL), any()))
+                .thenReturn(PackageManager.PERMISSION_DENIED);
+
+        Signature targetSignature = generateSignature((byte) 11);
+        preparePackage(targetPkg, targetSignature, /* preinstalled= */ false, /* testOnly= */ true);
+
+        assertTrue("Test agent should be allowed to automate test target without explicit consent",
+                mAllowlistController.doesAgentHaveConsentToAutomateTargetApp(
+                        agentUid, agentPkg, targetPkg));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_PER_APP_CONSENT)
+    public void doesAgentHaveConsent_testAgentAndNormalTarget_returnsFalseWithoutExplicitConsent()
+            throws Exception {
+        int agentUid = Process.myUid();
+        String agentPkg = "com.test.agent";
+        String targetPkg = "com.normal.target";
+
+        preparePackage(agentPkg, generateSignature((byte) 10), /* preinstalled= */
+                false, /* testOnly= */ true);
+        when(mPermissionManager.checkUidPermission(eq(agentUid), anyString(), any()))
+                .thenReturn(PackageManager.PERMISSION_DENIED);
+
+        preparePackage(targetPkg, generateSignature((byte) 12), /* preinstalled= */
+                false, /* testOnly= */ false);
+
+        assertFalse("Test agent should NOT be allowed to automate normal target without consent",
+                mAllowlistController.doesAgentHaveConsentToAutomateTargetApp(
+                        agentUid, agentPkg, targetPkg));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_PER_APP_CONSENT)
+    public void doesAgentHaveConsent_normalAgentAndTestTarget_returnsFalseWithoutExplicitConsent()
+            throws Exception {
+        int agentUid = Process.myUid();
+        String agentPkg = "com.normal.agent";
+        String targetPkg = "com.test.target";
+
+        preparePackage(agentPkg, generateSignature((byte) 20), /* preinstalled= */ false,
+                /* testOnly= */ false);
+        when(mPermissionManager.checkUidPermission(
+                eq(agentUid), eq(ACCESS_COMPUTER_CONTROL), any()))
+                .thenReturn(PackageManager.PERMISSION_GRANTED);
+
+        preparePackage(targetPkg, generateSignature((byte) 21), /* preinstalled= */ false,
+                /* testOnly= */ true);
+
+        assertFalse("Normal agent should require explicit consent even for test targets",
+                mAllowlistController.doesAgentHaveConsentToAutomateTargetApp(
+                        agentUid, agentPkg, targetPkg));
+    }
+
+    @Test
     public void isPackageApprovedToRunAutomation_notAllowlisted_returnsFalse() throws Exception {
         final String packageName = "com.not.allowlisted";
         preparePackage(packageName, generateSignature((byte) 1));

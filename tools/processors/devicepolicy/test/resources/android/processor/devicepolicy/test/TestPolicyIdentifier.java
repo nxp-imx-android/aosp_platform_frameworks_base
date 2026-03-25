@@ -248,6 +248,27 @@ public final class PolicyIdentifier<T> {
                     new PolicyIdentifier<>(
                             "SIMPLE_STRING_POLICY_WITH_UNPRINTABLE_CHARACTERS_ALLOWED");
 
+    /** Test policy verifying a string policy with max length. */
+    @StringPolicyDefinition(
+            base =
+                    @PolicyDefinition(
+                            allowedScopes = {
+                                1 // POLICY_SCOPE_USER
+                            },
+                            affectedResource = 1, // RESOURCE_DEVICE_WIDE
+                            // requiredPermission and requiredCrossUserPermission using the default
+                            // values.
+                            allowedDpcTypes =
+                                    @AllowedDpcTypes(
+                                            deviceOwner = DISALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice =
+                                                    DISALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                            unaffiliatedFullUserProfileOwner = DISALLOWED)),
+            maxLength = 10)
+    public static final PolicyIdentifier<String> STRING_POLICY_WITH_MAX_LENGTH =
+            new PolicyIdentifier<>("STRING_POLICY_WITH_MAX_LENGTH");
+
     /** Test policy 5 */
     @ListOfStringPolicyDefinition(
             base =

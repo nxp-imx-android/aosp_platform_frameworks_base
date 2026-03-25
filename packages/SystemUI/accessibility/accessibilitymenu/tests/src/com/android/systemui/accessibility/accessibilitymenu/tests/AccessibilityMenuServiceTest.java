@@ -473,9 +473,8 @@ public class AccessibilityMenuServiceTest {
     @Test
     public void testOnScreenLock_closesMenu() throws Throwable {
         openMenu();
-        closeScreen();
-        wakeUpScreen();
-        assertThat(sKeyguardManager.isKeyguardLocked()).isTrue();
+
+        lockScreen();
 
         TestUtils.waitUntil("Menu did not close.",
                 TIMEOUT_UI_CHANGE_S,
@@ -485,9 +484,7 @@ public class AccessibilityMenuServiceTest {
 
     @Test
     public void testOnScreenLock_cannotOpenMenu() throws Throwable {
-        closeScreen();
-        wakeUpScreen();
-        assertThat(sKeyguardManager.isKeyguardLocked()).isTrue();
+        lockScreen();
 
         sInstrumentation.getContext().sendBroadcast(INTENT_OPEN_MENU);
         sUiDevice.waitForIdle();
@@ -559,6 +556,13 @@ public class AccessibilityMenuServiceTest {
         final Context context = sInstrumentation.getTargetContext();
         final UserManager userManager = context.getSystemService(UserManager.class);
         userManager.setUserRestriction(restriction, isRestricted);
+    }
+
+    private static void lockScreen() throws Exception {
+        closeScreen();
+        wakeUpScreen();
+        TestUtils.waitUntil("Keyguard is locked",
+                TIMEOUT_UI_CHANGE_S, () -> sKeyguardManager.isKeyguardLocked());
     }
 
     private static void unlockSignal() throws IOException {

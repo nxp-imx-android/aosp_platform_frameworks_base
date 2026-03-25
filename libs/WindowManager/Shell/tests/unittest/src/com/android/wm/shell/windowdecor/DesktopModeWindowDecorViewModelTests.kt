@@ -16,6 +16,7 @@
 package com.android.wm.shell.windowdecor
 
 import android.app.ActivityManager
+import android.app.ActivityManager.RecentTaskInfo
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED
@@ -59,6 +60,7 @@ import android.view.SurfaceView
 import android.view.View
 import android.view.ViewRootImpl
 import android.view.WindowInsets.Type.statusBars
+import android.window.TaskSnapshot
 import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito
@@ -80,6 +82,7 @@ import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel.DefaultWindowDecorationActions
 import com.google.common.truth.Truth.assertThat
+import java.util.ArrayList
 import junit.framework.Assert.assertFalse
 import junit.framework.Assert.assertTrue
 import junit.framework.Assert.fail
@@ -1664,6 +1667,65 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         // Verify that a request to focus the maximize button is made on the decoration.
         // This is important for accessibility services like Talkback.
         verify(decor).requestFocusMaximizeButton()
+    }
+
+    @Test
+    fun onManageWindows_snapshotListOnlyIncludesMatchingPackages() {
+        val mockManageWindowsMenuController = mock<ManageWindowsMenuController>()
+        // Create a task that resolved to the given package
+        val baseIntent1 =
+            Intent().apply {
+                component =
+                    ComponentName(
+                        "WindowDecorationTests",
+                        "com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModelTests",
+                    )
+            }
+        val callingDecor =
+            createOpenTaskDecoration(windowingMode = WINDOWING_MODE_FREEFORM).apply {
+                // Base intent must be set for task info as well since package name for calling task
+                // is queried from task info.
+                taskInfo.baseIntent = baseIntent1
+                whenever(this.manageWindowsMenuController)
+                    .thenReturn(mockManageWindowsMenuController)
+            }
+        val callingTask =
+            RecentTaskInfo().apply {
+                taskId = callingDecor.taskInfo.taskId
+                baseIntent = baseIntent1
+            }
+        val additionalDecor1 = createOpenTaskDecoration(windowingMode = WINDOWING_MODE_FREEFORM)
+        val additionalTask1 =
+            RecentTaskInfo().apply {
+                taskId = additionalDecor1.taskInfo.taskId
+                baseIntent = baseIntent1
+            }
+        // Create a task that does not resolve to the same package
+        val baseIntent2 =
+            Intent().apply {
+                component =
+                    ComponentName(
+                        "OtherPackage",
+                        "com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModelTests",
+                    )
+            }
+        val additionalDecor2 = createOpenTaskDecoration(windowingMode = WINDOWING_MODE_FREEFORM)
+        val additionalTask2 =
+            RecentTaskInfo().apply {
+                taskId = additionalDecor2.taskInfo.taskId
+                baseIntent = baseIntent2
+            }
+
+        // Assert that only tasks with the same package are added
+        whenever(mockActivityTaskManager.getRecentTasks(any(), any(), any()))
+            .thenReturn(listOf(callingTask, additionalTask1, additionalTask2))
+        val snapshotCaptor = argumentCaptor<ArrayList<Pair<Int, TaskSnapshot>>>()
+        createDefaultWindowActions().onManageWindows(callingDecor.taskInfo.taskId)
+        bgExecutor.flushAll()
+        testShellExecutor.flushAll()
+        verify(mockManageWindowsMenuController).createManageWindowsMenu(snapshotCaptor.capture())
+        // Snapshot list should include calling task and additionalTask1
+        assertThat(snapshotCaptor.firstValue.size).isEqualTo(2)
     }
 
     @Test

@@ -932,13 +932,19 @@ public class BubbleExpandedView extends LinearLayout {
             if (Flags.fixBubbledTaskHeight()) {
                 // FIX: Calculate and update bounds synchronously to prevent the shell
                 // transition from starting with stale bounds (e.g. from Bubble Bar).
-                int width = mTaskView.getLayoutParams().width;
-                int height = mTaskView.getLayoutParams().height;
+                float desiredHeight = mPositioner.getExpandedViewHeight(mBubble);
+                int maxHeight = mPositioner.getMaxExpandedViewHeight(mIsOverflow);
+                int height = (int) (desiredHeight == MAX_HEIGHT
+                                        ? maxHeight : Math.min(desiredHeight, maxHeight));
+                int width = getContentWidth();
                 if (width > 0 && height > 0) {
-                    int left =
-                            containerLocationOnScreen[0] + mExpandedViewContainer.getPaddingLeft();
-                    int top = containerLocationOnScreen[1] + mExpandedViewContainer.getPaddingTop();
+                    // Use Window Coordinates (getLocationInWindow) to match WCT expectations
+                    int[] loc = new int[2];
+                    mExpandedViewContainer.getLocationInWindow(loc);
+                    int left = loc[0];
+                    int top = loc[1];
                     Rect bounds = new Rect(left, top, left + width, top + height);
+                    // Synchronously update the state before the TO_FRONT transition is collected
                     mTaskView.onLocationChanged(bounds);
                 }
             }

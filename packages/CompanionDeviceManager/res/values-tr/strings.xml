@@ -48,6 +48,8 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"Cihaz"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Bu uygulama, arayan kişinin adı gibi bilgileri telefonunuz ve seçili cihaz arasında senkronize edebilir"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; uygulamasının arayan bilgileri gibi verileri senkronize etmesine ve <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> cihazınızdan akıllı işlemler gerçekleştirmesine izin verin"</string>
+    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
+    <skip />
     <string name="consent_yes" msgid="8344487259618762872">"İzin ver"</string>
     <string name="consent_no" msgid="2640796915611404382">"İzin verme"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"İptal"</string>
@@ -91,8 +93,10 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> cihazınızın ekranını &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; cihazına kaydedin, yayınlayın veya paylaşın.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>; ses, fotoğraflar, ödeme bilgileri, şifreler ve mesajlar da dahil olmak üzere <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> cihazınızda görünen veya oynatılan her şeye erişebilecek."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> cihazınızdaki uygulamaları &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; cihazına yayınlayın.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>; <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> kilitliyken bile ses, fotoğraflar, ödeme bilgileri, şifreler ve mesajlar da dahil olmak üzere <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> cihazında görünen veya oynatılan her şeye erişebilecek."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Kullanılabilir cihazların listesine erişip diğer uygulamalardan ses veya video akışı ya da yayını yapabilecek cihazları kontrol edin"</string>
-    <string name="permission_schedule_exact_alarm_summary" msgid="5938321911309800377"></string>
-    <string name="permission_bypass_dnd_summary" msgid="6221709271927387626"></string>
+    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
+    <skip />
+    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
+    <skip />
     <string name="device_type" product="default" msgid="8268703872070046263">"telefon"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablet"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"tv"</string>

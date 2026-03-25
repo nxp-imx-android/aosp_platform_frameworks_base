@@ -47,12 +47,12 @@ import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.LaunchAdjacentController
 import com.android.wm.shell.desktopmode.createActivityOptionsForStartTask
+import com.android.wm.shell.desktopmode.desktopfirst.isDisplayDesktopFirst
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer.OnCreateCallback
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellInit
 import java.io.PrintWriter
-import com.android.wm.shell.desktopmode.desktopfirst.isDisplayDesktopFirst
 
 /**
  * A [DesksOrganizer] that uses root tasks as the container of each desk.
@@ -82,10 +82,7 @@ class RootTaskDesksOrganizer(
     private var backPressedOnDeskListener: ((task: RunningTaskInfo) -> Unit)? = null
 
     init {
-        shellInit.addInitCallback(
-            { shellCommandHandler.addDumpCallback(this::dump, this) },
-            this,
-        )
+        shellInit.addInitCallback({ shellCommandHandler.addDumpCallback(this::dump, this) }, this)
     }
 
     override fun warmUpDefaultDesk(displayId: Int, userId: Int) {

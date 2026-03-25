@@ -127,7 +127,7 @@ public abstract class ContextInsight {
 
         @NonNull
         @Override
-        Bundle toBundleImpl() {
+        Bundle toBundleImpl(boolean includeHints) {
             return new Bundle();
         }
 
@@ -237,7 +237,16 @@ public abstract class ContextInsight {
         return mCreationTime;
     }
 
-    @NonNull abstract Bundle toBundleImpl();
+    @NonNull abstract Bundle toBundleImpl(boolean includeHints);
+
+    /**
+     * Make a deep copy of the insight without hints.
+     * @hide
+     */
+    @NonNull
+    public ContextInsight copyWithoutHints() {
+        return ContextInsight.createInsightFromBundle(this.toBundle(/* includeHints= */ false));
+    }
 
     /**
      * Return the {@link Bundle} representation of this insight's data.
@@ -246,14 +255,28 @@ public abstract class ContextInsight {
     @TestApi
     @NonNull
     public Bundle toBundle() {
+        return toBundle(/* includeHints= */ true);
+    }
+
+    /**
+     * Return the {@link Bundle} representation of this insight's data.
+     *
+     * @param includeHints whether to include hints in the bundle.
+     *
+     * @hide
+     */
+    @NonNull
+    public Bundle toBundle(boolean includeHints) {
         final Bundle b = new Bundle();
         b.putInt(KEY_INSIGHT_TYPE, getInsightType());
         b.putString(KEY_INSIGHT_ID, mId.toString());
         b.putParcelableArrayList(
-                KEY_ORIGIN_HINTS, new ArrayList<>(
-                        PublishedContextHintWrapper.wrapList(mOriginHints)));
+                KEY_ORIGIN_HINTS,
+                includeHints
+                        ? new ArrayList<>(PublishedContextHintWrapper.wrapList(mOriginHints))
+                        : new ArrayList<>());
         b.putParcelableArrayList(KEY_TOKENS, new ArrayList<>(mTokens));
-        b.putBundle(KEY_INSIGHT_DATA, toBundleImpl());
+        b.putBundle(KEY_INSIGHT_DATA, toBundleImpl(includeHints));
         b.putLong(KEY_CREATION_TIME, mCreationTime.toEpochMilli());
         return b;
     }

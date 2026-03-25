@@ -75,7 +75,7 @@ interface IPersonalContextManager {
     @EnforcePermission("PERSONAL_CONTEXT_WRITE_SETTINGS")
     void setEnabled(int userId, boolean enabled);
 
-    @EnforcePermission("PERSONAL_CONTEXT_READ_SETTINGS")
+    @RequiresNoPermission
     boolean isEnabled(int userId);
 
     oneway void updateEmbeddedClientInfo(

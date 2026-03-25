@@ -93,9 +93,6 @@ abstract class BaseOpenByDefaultDialog<T>(
     init {
         createDialog()
         listener.onDialogCreated()
-        if (Flags.useInputReportedFocusForAccessibility()) {
-            viewHost?.requestInputFocus(true)
-        }
         loadAppInfoJob =
             mainScope.launch {
                 if (!isActive) return@launch
@@ -132,6 +129,12 @@ abstract class BaseOpenByDefaultDialog<T>(
                 .invoke(context, display, dialogWindowManager, "Dialog")
                 .apply { setView(dialog, lp) }
 
+        if (
+            Flags.enableOpenByDefaultDialogFocusBugfix() ||
+                Flags.useInputReportedFocusForAccessibility()
+        ) {
+            checkNotNull(viewHost) { "Expected non-null view host" }.requestInputFocus(true)
+        }
         animationController.startEnterAnimation(dialog, this::onAnimationEnded)
     }
 
@@ -148,7 +151,10 @@ abstract class BaseOpenByDefaultDialog<T>(
 
     protected fun closeMenu() {
         isCloseRequested = true
-        if (Flags.useInputReportedFocusForAccessibility()) {
+        if (
+            Flags.useInputReportedFocusForAccessibility() ||
+                Flags.enableOpenByDefaultDialogFocusBugfix()
+        ) {
             viewHost?.requestInputFocus(false)
         }
         loadAppInfoJob?.cancel()

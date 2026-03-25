@@ -31,6 +31,7 @@ import static android.app.ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE;
 import static android.app.ActivityManager.PROCESS_STATE_PERSISTENT;
 import static android.app.ActivityManager.PROCESS_STATE_PERSISTENT_UI;
 import static android.app.ActivityManager.PROCESS_STATE_TOP;
+import static android.app.ActivityManager.PROCESS_STATE_UNKNOWN;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
@@ -50,6 +51,7 @@ import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.am.Flags;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -176,11 +178,16 @@ final class CapabilityController {
             case PROCESS_STATE_PERSISTENT:
             case PROCESS_STATE_PERSISTENT_UI:
             case PROCESS_STATE_TOP:
-                // Note: Although CPU time capability and implicit CPU time capability are granted,
-                // no (implicit) CPU time reason is set in this case. These process states
-                // inherently represent high-importance processes that will not be frozen, and no
-                // reason is added by default.
-                baseCapabilities = PROCESS_CAPABILITY_ALL; // BFSL allowed
+                // Note: When explicitCpuCapabilityForTopProcesses is false, top processes
+                // inherit PROCESS_CAPABILITY_IMPLICIT_CPU_TIME from PROCESS_CAPABILITY_ALL.
+                // In this legacy path no specific IMPLICIT_CPU_TIME_REASON is added by default
+                // but this will be solved once the flag is completely rolled out.
+                if (Flags.explicitCpuCapabilityForTopProcesses()) {
+                    baseCapabilities =
+                            PROCESS_CAPABILITY_ALL & (~ALL_CPU_TIME_CAPABILITIES); // BFSL allowed
+                } else {
+                    baseCapabilities = PROCESS_CAPABILITY_ALL;
+                }
                 break;
             case PROCESS_STATE_BOUND_TOP:
                 if (hasActiveInstrumentation) {
@@ -222,6 +229,11 @@ final class CapabilityController {
             return PROCESS_CAPABILITY_CPU_TIME;
         }
         // TODO: b/482137218 - Replace all usages of CPU_TIME_REASON_OTHER with explicit reasons.
+        if (node.getCurProcState() <= PROCESS_STATE_TOP
+                && node.getCurProcState() != PROCESS_STATE_UNKNOWN) {
+            edge.addCpuTimeReasons(CPU_TIME_REASON_OTHER);
+            return PROCESS_CAPABILITY_CPU_TIME;
+        }
         if (node.hasForegroundActivities()) {
             edge.addCpuTimeReasons(CPU_TIME_REASON_OTHER);
             return PROCESS_CAPABILITY_CPU_TIME;

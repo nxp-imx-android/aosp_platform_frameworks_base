@@ -12174,6 +12174,13 @@ public final class Settings {
                 "mandatory_biometrics_requirements_satisfied";
 
         /**
+         * The current default component to use the Raise Trigger feature.
+         * @hide
+         */
+        public static final String RAISE_TRIGGER_DEFAULT_ASSISTANT =
+                "raise_trigger_default_assistant";
+
+        /**
          * Number of trusted locations added by the user.
          * @hide
          */
@@ -22110,6 +22117,14 @@ public final class Settings {
              * @hide
              */
             public static final int RAISE_TO_TALK_VOICE_SENSITIVITY_VERY_HIGH = 4;
+
+            /**
+             * Whether satellite mode is enabled on the watch.
+             *
+             * @hide
+             */
+            @Readable
+            public static final String WEAR_SATELLITE_MODE_ENABLED = "wear_satellite_mode_enabled";
         }
     }
 

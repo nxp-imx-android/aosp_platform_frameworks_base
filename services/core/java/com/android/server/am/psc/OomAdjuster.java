@@ -34,6 +34,7 @@ import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
 import static android.app.ActivityManager.PROCESS_STATE_PERSISTENT;
 import static android.app.ActivityManager.PROCESS_STATE_PERSISTENT_UI;
 import static android.app.ActivityManager.PROCESS_STATE_TOP;
+import static android.app.ActivityManager.PROCESS_STATE_UNKNOWN;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_ACTIVITY;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_ALLOWLIST;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_BACKUP;
@@ -2092,7 +2093,12 @@ public abstract class OomAdjuster {
             case PROCESS_STATE_PERSISTENT:
             case PROCESS_STATE_PERSISTENT_UI:
             case PROCESS_STATE_TOP:
-                baseCapabilities = PROCESS_CAPABILITY_ALL; // BFSL allowed
+                if (Flags.explicitCpuCapabilityForTopProcesses()) {
+                    baseCapabilities =
+                            PROCESS_CAPABILITY_ALL & (~ALL_CPU_TIME_CAPABILITIES); // BFSL allowed
+                } else {
+                    baseCapabilities = PROCESS_CAPABILITY_ALL;
+                }
                 break;
             case PROCESS_STATE_BOUND_TOP:
                 if (app.hasActiveInstrumentation()) {
@@ -2123,7 +2129,7 @@ public abstract class OomAdjuster {
     // LINT.IfChange(getCpuCapability)
     @CpuTimeReasons
     private static int getCpuTimeReasons(ProcessRecordInternal app,
-            boolean hasForegroundActivities) {
+            @ProcessState int procState, boolean hasForegroundActivities) {
         // Note: persistent processes always get CPU_TIME with reason CPU_TIME_REASON_OTHER.
         // Currently, we only cite CPU_TIME_REASON_OTHER for all reasons. More specific reasons
         // can be used when they become interesting to observe.
@@ -2131,6 +2137,9 @@ public abstract class OomAdjuster {
         if (uidRec != null && uidRec.isCurAllowListed()) {
             // Process is in the power allowlist.
             return CPU_TIME_REASON_ALLOW_LIST;
+        }
+        if (procState <= PROCESS_STATE_TOP && procState != PROCESS_STATE_UNKNOWN) {
+            return CPU_TIME_REASON_OTHER;
         }
         if (hasForegroundActivities) {
             // TODO: b/402987519 - This grants the Top Sleeping process CPU_TIME but eventually
@@ -2151,14 +2160,15 @@ public abstract class OomAdjuster {
         if (app.hasActiveInstrumentation()) {
             return CPU_TIME_REASON_OTHER;
         }
+
         // TODO(b/370817323): Populate this method with all of the reasons to keep a process
         //  unfrozen.
         return CPU_TIME_REASON_NONE;
     }
 
-    protected static int getCpuCapability(ProcessRecordInternal app,
+    protected static int getCpuCapability(ProcessRecordInternal app, @ProcessState int procState,
             boolean hasForegroundActivities) {
-        final int reasons = getCpuTimeReasons(app, hasForegroundActivities);
+        final int reasons = getCpuTimeReasons(app, procState, hasForegroundActivities);
         app.addCurCpuTimeReasons(reasons);
         return (reasons != CPU_TIME_REASON_NONE) ? PROCESS_CAPABILITY_CPU_TIME : 0;
     }

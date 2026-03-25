@@ -256,8 +256,8 @@ sealed interface TransitionState {
          * when this transition is started in
          * [com.android.compose.animation.scene.MutableSceneTransitionLayoutStateImpl.startTransition].
          */
-        internal lateinit var currentSceneWhenTransitionStarted: SceneKey
-        internal lateinit var currentOverlaysWhenTransitionStarted: Set<OverlayKey>
+        lateinit var currentSceneWhenTransitionStarted: SceneKey
+        lateinit var currentOverlaysWhenTransitionStarted: Set<OverlayKey>
 
         /**
          * The key of this transition. This should usually be null, but it can be specified to use a

@@ -383,7 +383,6 @@
   <java-symbol type="bool" name="config_restartRadioAfterProvisioning" />
   <java-symbol type="bool" name="config_speed_up_audio_on_mt_calls" />
   <java-symbol type="bool" name="config_useFixedVolume" />
-  <java-symbol type="bool" name="config_supportProfilesOnNonMainUser"/>
   <java-symbol type="bool" name="config_isMainUserPermanentAdmin"/>
   <java-symbol type="bool" name="config_disallowRemovingLastAdminUser"/>
   <java-symbol type="bool" name="config_supportManagedProfileOnNonMainUser"/>
@@ -6608,6 +6607,9 @@
 
   <!-- Wallpaper Local Color Extraction configuration -->
   <java-symbol type="bool" name="config_enableWallpaperLocalColorExtraction"/>
+
+  <!-- True if the default wallpaper should be used until the user is unlocked. -->
+  <java-symbol type="bool" name="config_useDefaultWallpaperUntilUnlocked"/>
 
   <!-- Whether the Wear-specific charging experience is enabled -->
   <java-symbol type="bool" name="config_wearChargingExperienceEnabled" />

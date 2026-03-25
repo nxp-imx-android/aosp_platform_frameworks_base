@@ -577,6 +577,8 @@ static void ImageReader_imageRelease(JNIEnv* env, jobject thiz, jobject image)
     }
 
     sp<Fence> releaseFence = Image_unlockIfLocked(env, image);
+
+    checkAndClearBlobFooter(buffer, releaseFence);
     bufferConsumer->releaseBuffer(*buffer, releaseFence);
     Image_setBufferItem(env, image, NULL);
     ctx->returnBufferItem(buffer);

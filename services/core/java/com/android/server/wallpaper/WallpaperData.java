@@ -166,6 +166,7 @@ class WallpaperData {
         SWITCH_WALLPAPER_FAILURE,
         SWITCH_WALLPAPER_SWITCH_USER,
         SWITCH_WALLPAPER_UNLOCK_USER,
+        SWITCH_WALLPAPER_DELAYED,
     }
 
     // Context in which this wallpaper was bound. Intended for use in resolving b/301073479 but may

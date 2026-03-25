@@ -94,6 +94,7 @@ import com.android.server.display.brightness.BrightnessEvent;
 import com.android.server.display.brightness.BrightnessReason;
 import com.android.server.display.brightness.BrightnessUtils;
 import com.android.server.display.brightness.DisplayBrightnessController;
+import com.android.server.display.brightness.DisplayBrightnessReporter;
 import com.android.server.display.brightness.clamper.BrightnessClamperController;
 import com.android.server.display.brightness.strategy.AutomaticBrightnessStrategy;
 import com.android.server.display.brightness.strategy.DisplayBrightnessStrategy;
@@ -197,76 +198,9 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
     private static final int RINGBUFFER_MAX = 100;
     private static final int RINGBUFFER_RBC_MAX = 20;
 
-    private static final float[] BRIGHTNESS_RANGE_BOUNDARIES = {
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80,
-        90, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1200,
-        1400, 1600, 1800, 2000, 2250, 2500, 2750, 3000};
-
     private static final int STYLUS_USAGE_DEBOUNCE_TIME  = 1000;
     private static final int NANO_SECONDS_TO_MILLI_SECONDS_RATIO  = 1_000_000;
 
-    private static final int[] BRIGHTNESS_RANGE_INDEX = {
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_UNKNOWN,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_0_1,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_1_2,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_2_3,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_3_4,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_4_5,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_5_6,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_6_7,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_7_8,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_8_9,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_9_10,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_10_20,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_20_30,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_30_40,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_40_50,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_50_60,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_60_70,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_70_80,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_80_90,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_90_100,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_100_200,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_200_300,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_300_400,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_400_500,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_500_600,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_600_700,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_700_800,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_800_900,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_900_1000,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_1000_1200,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_1200_1400,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_1400_1600,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_1600_1800,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_1800_2000,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_2000_2250,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_2250_2500,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_2500_2750,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_2750_3000,
-    };
-
-    private static final float[] LUX_BUCKET_BOUNDARIES = {
-        0f, 0.1f, 0.3f, 1f, 3f, 10f, 30f, 100f, 300f, 1000f,
-        3000f, 10000f, 30000f, 100000f};
-
-    private static final int[] LUX_RANGE_INDEX = {
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_UNKNOWN,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_0_01,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_01_03,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_03_1,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_1_3,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_3_10,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_10_30,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_30_100,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_100_300,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_300_1000,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_1000_3000,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_3000_10000,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_10000_30000,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_30000_100000,
-        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_100000_INF,
-    };
 
     private final String mTag;
 
@@ -495,6 +429,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
 
     private Sensor mLightSensor;
     private Sensor mScreenOffBrightnessSensor;
+    private DisplayBrightnessReporter mDisplayBrightnessReporter;
 
     private boolean mIsRbcActive;
 
@@ -565,6 +500,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         mHandler = new DisplayControllerHandler(handler.getLooper());
         mDisplayDeviceConfig = mDisplayDevice.getDisplayDeviceConfig();
         mIdleStylusTimeoutMillisConfig = mDisplayDeviceConfig.getIdleStylusTimeoutMillis();
+        loadAmbientLightSensor();
         mIsEnabled = logicalDisplay.isEnabledLocked();
         mIsInTransition = logicalDisplay.isInTransitionLocked();
         mIsDisplayInternal = displayDeviceInfo.type == Display.TYPE_INTERNAL;
@@ -669,6 +605,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         }
         mDisplayWhiteBalanceSettings = displayWhiteBalanceSettings;
         mDisplayWhiteBalanceController = displayWhiteBalanceController;
+        mDisplayBrightnessReporter = new DisplayBrightnessReporter(
+                mHandler, mSensorManager, mLightSensor, mDisplayDeviceConfig.getColorSensor());
 
         loadNitsRange(resources);
 
@@ -1180,7 +1118,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                         + "config_autoBrightnessLightSensorRate (" + lightSensorRate + ").");
             }
 
-            loadAmbientLightSensor();
+
             // BrightnessTracker should only use one light sensor, we want to use the light sensor
             // from the default display and not e.g. temporary displays when switching layouts.
             if (mBrightnessTracker != null && mDisplayId == Display.DEFAULT_DISPLAY) {
@@ -1308,8 +1246,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                 false /*notifyForDescendants*/, mSettingsObserver, UserHandle.USER_ALL);
         mContext.getContentResolver().registerContentObserver(
                 Settings.Global.getUriFor(
-                    Settings.Global.Wearable.WEAR_CHARGING_EXPERIENCE_ENABLED),
-                    false /*notifyForDescendants*/, mSettingsObserver, UserHandle.USER_ALL);
+                        Settings.Global.Wearable.WEAR_CHARGING_EXPERIENCE_ENABLED),
+                false /*notifyForDescendants*/, mSettingsObserver, UserHandle.USER_ALL);
 
         mContext.registerReceiver(mChargingStateReceiver,
                 new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
@@ -1321,6 +1259,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         mDisplayPowerProximityStateController.cleanup();
         mBrightnessRangeController.stop();
         mBrightnessClamperController.stop();
+        mDisplayBrightnessReporter.stop();
         mHandler.removeCallbacksAndMessages(null);
 
         // Release any outstanding wakelocks we're still holding because of pending messages.
@@ -1737,7 +1676,21 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
             Slog.i(mTag, newEvent.toString(/* includeTime= */ false));
 
             if (newEvent.getReason().getReason() != BrightnessReason.REASON_TEMPORARY) {
-                logBrightnessEvent(newEvent, unthrottledBrightnessState, clampedState);
+                float brightnessInNits = mDisplayBrightnessController.convertToAdjustedNits(
+                        newEvent.getBrightness());
+                float initialBrightnessInNits = mDisplayBrightnessController.convertToAdjustedNits(
+                        newEvent.getInitialBrightness());
+                float appliedHbmMaxNits = newEvent.getHbmMode()
+                        == BrightnessInfo.HIGH_BRIGHTNESS_MODE_OFF ? -1f
+                        : mDisplayBrightnessController.convertToAdjustedNits(newEvent.getHbmMax());
+                float appliedThermalCapNits = newEvent.getThermalMax()
+                        == PowerManager.BRIGHTNESS_MAX ? -1f
+                        : mDisplayBrightnessController.convertToAdjustedNits(
+                                newEvent.getThermalMax());
+
+                mDisplayBrightnessReporter.report(newEvent, unthrottledBrightnessState,
+                        clampedState, brightnessInNits, initialBrightnessInNits,
+                        appliedHbmMaxNits, appliedThermalCapNits, mIsDisplayInternal);
                 mLastLoggedBrightnessEvent.copyFrom(newEvent);
             }
             if (mBrightnessEventRingBuffer != null) {
@@ -2825,196 +2778,6 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         synchronized (mHandler) {
             FrameworkStatsLog.write(
                     FrameworkStatsLog.DISPLAY_HBM_BRIGHTNESS_CHANGED, displayStatsId, brightness);
-        }
-    }
-
-    // Return bucket index of range_[left]_[right] where
-    // left <= nits < right
-    private int nitsToRangeIndex(float nits) {
-        for (int i = 0; i < BRIGHTNESS_RANGE_BOUNDARIES.length; i++) {
-            if (nits < BRIGHTNESS_RANGE_BOUNDARIES[i]) {
-                return BRIGHTNESS_RANGE_INDEX[i];
-            }
-        }
-        return FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_3000_INF;
-    }
-
-    private int convertDisplayPolicyToStatsEnum(int policy) {
-        return switch(policy) {
-            case DisplayPowerRequest.POLICY_OFF ->
-                FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__DISPLAY_POLICY__DISPLAY_POLICY_OFF;
-            case DisplayPowerRequest.POLICY_DOZE ->
-                FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__DISPLAY_POLICY__DISPLAY_POLICY_DOZE;
-            case DisplayPowerRequest.POLICY_DIM ->
-                FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__DISPLAY_POLICY__DISPLAY_POLICY_DIM;
-            case DisplayPowerRequest.POLICY_BRIGHT ->
-                FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__DISPLAY_POLICY__DISPLAY_POLICY_BRIGHT;
-            default ->
-            FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__DISPLAY_POLICY__DISPLAY_POLICY_UNKNOWN;
-        };
-    }
-
-    private int convertBrightnessReasonToStatsEnum(int brightnessReason) {
-        switch(brightnessReason) {
-            case BrightnessReason.REASON_UNKNOWN:
-                return FrameworkStatsLog
-                    .DISPLAY_BRIGHTNESS_CHANGED__ENTIRE_REASON__REASON_UNKNOWN;
-            case BrightnessReason.REASON_MANUAL:
-                return FrameworkStatsLog
-                    .DISPLAY_BRIGHTNESS_CHANGED__ENTIRE_REASON__REASON_MANUAL;
-            case BrightnessReason.REASON_DOZE:
-                return FrameworkStatsLog
-                    .DISPLAY_BRIGHTNESS_CHANGED__ENTIRE_REASON__REASON_DOZE;
-            case BrightnessReason.REASON_DOZE_DEFAULT:
-                return FrameworkStatsLog
-                    .DISPLAY_BRIGHTNESS_CHANGED__ENTIRE_REASON__REASON_DOZE_DEFAULT;
-            case BrightnessReason.REASON_AUTOMATIC:
-                return FrameworkStatsLog
-                    .DISPLAY_BRIGHTNESS_CHANGED__ENTIRE_REASON__REASON_AUTOMATIC;
-            case BrightnessReason.REASON_SCREEN_OFF:
-                return FrameworkStatsLog
-                    .DISPLAY_BRIGHTNESS_CHANGED__ENTIRE_REASON__REASON_SCREEN_OFF;
-            case BrightnessReason.REASON_OVERRIDE:
-                return FrameworkStatsLog
-                    .DISPLAY_BRIGHTNESS_CHANGED__ENTIRE_REASON__REASON_OVERRIDE;
-            case BrightnessReason.REASON_TEMPORARY:
-                return FrameworkStatsLog
-                    .DISPLAY_BRIGHTNESS_CHANGED__ENTIRE_REASON__REASON_TEMPORARY;
-            case BrightnessReason.REASON_BOOST:
-                return FrameworkStatsLog
-                    .DISPLAY_BRIGHTNESS_CHANGED__ENTIRE_REASON__REASON_BOOST;
-            case BrightnessReason.REASON_SCREEN_OFF_BRIGHTNESS_SENSOR:
-                return FrameworkStatsLog
-                    .DISPLAY_BRIGHTNESS_CHANGED__ENTIRE_REASON__REASON_SCREEN_OFF_BRIGHTNESS_SENSOR;
-            case BrightnessReason.REASON_FOLLOWER:
-                return FrameworkStatsLog
-                    .DISPLAY_BRIGHTNESS_CHANGED__ENTIRE_REASON__REASON_FOLLOWER;
-        }
-        return FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__ENTIRE_REASON__REASON_UNKNOWN;
-    }
-
-    /**
-     * Maps a given lux value to the corresponding bucket index.
-     * The buckets are defined by LUX_BUCKET_BOUNDARIES.
-     * The bucket represents the range [left, right), where 'left' is the previous
-     * boundary and 'right' is the current one.
-     *
-     * @param lux The ambient light value in lux.
-     * @return The corresponding bucket index from LUX_RANGE_INDEX.
-     */
-    static int mapLuxToProtoEnumBucket(float lux) {
-        if (lux < 0) {
-            if (DEBUG) {
-                Slog.d(TAG, "Invalid lux value: " + lux + ". Returning LUX_RANGE_UNKNOWN.");
-            }
-            return FrameworkStatsLog
-                .DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_UNKNOWN;
-        }
-
-        for (int i = 0; i < LUX_BUCKET_BOUNDARIES.length; i++) {
-            if (lux < LUX_BUCKET_BOUNDARIES[i]) {
-                return LUX_RANGE_INDEX[i];
-            }
-        }
-
-        // If the lux value is greater than or equal to the last boundary, it falls into
-        // the last bucket: [100000, inf).
-        return FrameworkStatsLog
-            .DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_100000_INF;
-    }
-
-    /**
-     * Determines the direction of a brightness adjustment for logging purposes,
-     *
-     * @param currentBrightnessInNits The brightness level in nits *after* the adjustment.
-     * @param lastReportedBrightnessInNits The brightness level in nits *before* this adjustment.
-     * @return An enum value indicating if the brightness was increased, decreased, or unknown.
-     */
-    static int getBrightnessAdjustmentDirection(
-            float currentBrightnessInNits,
-            float lastReportedBrightnessInNits) {
-
-        // Determine increase or decrease
-        if (currentBrightnessInNits > lastReportedBrightnessInNits) {
-            return FrameworkStatsLog
-                    .DISPLAY_BRIGHTNESS_CHANGED__BRIGHTNESS_DIRECTION__DIRECTION_INCREASE;
-        } else if (currentBrightnessInNits < lastReportedBrightnessInNits) {
-            return FrameworkStatsLog
-                    .DISPLAY_BRIGHTNESS_CHANGED__BRIGHTNESS_DIRECTION__DIRECTION_DECREASE;
-        } else {
-            // No significant change. Brightness adjusted in the middle of the range, but the value
-            // didn't change for unknown reason (e.g. hardware limit, slight unintended movement).
-            return FrameworkStatsLog
-                    .DISPLAY_BRIGHTNESS_CHANGED__BRIGHTNESS_DIRECTION__DIRECTION_UNKNOWN;
-        }
-    }
-
-    private void logBrightnessEvent(BrightnessEvent event, float unmodifiedBrightness,
-            DisplayBrightnessState brightnessState) {
-        int modifier = event.getReason().getModifier();
-        int flags = event.getFlags();
-        // It's easier to check if the brightness is at maximum level using the brightness
-        // value untouched by any modifiers
-        boolean brightnessIsMax = unmodifiedBrightness == event.getHbmMax();
-        float brightnessInNits =
-                mDisplayBrightnessController.convertToAdjustedNits(event.getBrightness());
-        boolean isScreenOff = event.getReason().getReason() == BrightnessReason.REASON_SCREEN_OFF;
-        float initialBrightnessInNits =
-                mDisplayBrightnessController.convertToAdjustedNits(event.getInitialBrightness());
-        float appliedLowPowerMode = event.isLowPowerModeSet() ? event.getPowerFactor() : -1f;
-        int appliedRbcStrength  = event.isRbcEnabled() ? event.getRbcStrength() : -1;
-        float appliedHbmMaxNits =
-                event.getHbmMode() == BrightnessInfo.HIGH_BRIGHTNESS_MODE_OFF
-                ? -1f : mDisplayBrightnessController.convertToAdjustedNits(event.getHbmMax());
-        // thermalCapNits set to -1 if not currently capping max brightness
-        float appliedThermalCapNits =
-                event.getThermalMax() == PowerManager.BRIGHTNESS_MAX
-                ? -1f : mDisplayBrightnessController.convertToAdjustedNits(event.getThermalMax());
-        int luxBucket = mapLuxToProtoEnumBucket(event.getLux());
-        int brightnessAdjustmentDirection = getBrightnessAdjustmentDirection(
-                brightnessInNits,
-                initialBrightnessInNits
-                );
-        if (mIsDisplayInternal) {
-            FrameworkStatsLog.write(
-                    FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED,
-                    initialBrightnessInNits,
-                    brightnessInNits,
-                    event.getLux(),
-                    event.getPhysicalDisplayId(),
-                    event.wasShortTermModelActive(),
-                    appliedLowPowerMode,
-                    appliedRbcStrength,
-                    appliedHbmMaxNits,
-                    appliedThermalCapNits,
-                    event.isAutomaticBrightnessEnabled(),
-                    FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__REASON__REASON_MANUAL,
-                    convertBrightnessReasonToStatsEnum(event.getReason().getReason()),
-                    // Use the special range 0-min for screen off brightness, otherwise use the
-                    // range based on nits.
-                    isScreenOff
-                            ? FrameworkStatsLog
-                                    .DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_0_MIN
-                            : nitsToRangeIndex(brightnessInNits),
-                    brightnessIsMax,
-                    event.getHbmMode() == BrightnessInfo.HIGH_BRIGHTNESS_MODE_SUNLIGHT,
-                    event.getHbmMode() == BrightnessInfo.HIGH_BRIGHTNESS_MODE_HDR,
-                    (modifier & BrightnessReason.MODIFIER_LOW_POWER) > 0,
-                    brightnessState.getBrightnessMaxReason(),
-                    // TODO: b/443712653 add brightnessMinReason here too.
-                    (modifier & BrightnessReason.MODIFIER_DIMMED) > 0,
-                    event.isRbcEnabled(),
-                    (flags & BrightnessEvent.FLAG_INVALID_LUX) > 0,
-                    (flags & BrightnessEvent.FLAG_DOZE_SCALE) > 0,
-                    (flags & BrightnessEvent.FLAG_USER_SET) > 0,
-                    event.getAutoBrightnessMode() == AUTO_BRIGHTNESS_MODE_IDLE,
-                    (flags & BrightnessEvent.FLAG_LOW_POWER_MODE) > 0,
-                    luxBucket,
-                    brightnessAdjustmentDirection,
-                    event.getAmbientColorTemperature(),
-                    event.getThermalStatus(),
-                    event.getDisplayStateReason(),
-                    convertDisplayPolicyToStatsEnum(event.getDisplayPolicy()));
         }
     }
 

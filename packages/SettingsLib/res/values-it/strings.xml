@@ -77,7 +77,7 @@
     <string name="osu_sign_up_failed" msgid="5605453599586001793">"Impossibile completare la registrazione. Tocca per riprovare."</string>
     <string name="osu_sign_up_complete" msgid="7640183358878916847">"Registrazione completata. Connessione…"</string>
     <string name="speed_label_slow" msgid="6069917670665664161">"Lenta"</string>
-    <string name="speed_label_okay" msgid="1253594383880810424">"OK"</string>
+    <string name="speed_label_okay" msgid="1253594383880810424">"Ok"</string>
     <string name="speed_label_fast" msgid="2677719134596044051">"Veloce"</string>
     <string name="speed_label_very_fast" msgid="8215718029533182439">"Molto veloce"</string>
     <string name="wifi_passpoint_expired" msgid="6540867261754427561">"Scaduta"</string>

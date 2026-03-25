@@ -48,6 +48,13 @@ flag {
 }
 
 flag {
+  name: "use_default_wallpaper_until_unlocked"
+  namespace: "users_and_accounts"
+  description: "Use default wallpaper until the user is unlocked."
+  bug: "484037479"
+}
+
+flag {
   name: "optimize_default_wallpaper"
   namespace: "systemui"
   description: "Optimize the default wallpaper image by scaling it to the display's resolution."

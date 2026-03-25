@@ -175,6 +175,7 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
             bundleInteractionLogger,
             notificationActivityStarter,
             kosmos.notificationUiEligibilityChecker,
+            kosmos.automationNotificationBackgroundProvider,
         )
     }
 
@@ -307,11 +308,10 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
 
     @Test
     fun settingsListener_userAll() {
-        val entryAll =
-            kosmos.buildNotificationEntry {
-                setUser(UserHandle.ALL)
-                setUid(UserHandle.ALL.getUid(1234))
-            }
+        val entryAll = kosmos.buildNotificationEntry {
+            setUser(UserHandle.ALL)
+            setUid(UserHandle.ALL.getUid(1234))
+        }
         val row = kosmos.createRowWithEntry(entryAll)
         val controllerUser = initController(row)
 

@@ -66,6 +66,8 @@ import android.app.ActivityOptions;
 import android.app.AppInteractionAttribution;
 import android.app.AppOpsManager;
 import android.app.IApplicationThread;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.companion.virtual.ActivityPolicyExemption;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
@@ -86,6 +88,7 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.Color;
 import android.graphics.Insets;
 import android.gui.DropInputMode;
 import android.hardware.display.DisplayManager;
@@ -126,6 +129,7 @@ import com.android.server.LocalServices;
 import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.inputmethod.InputMethodManagerInternal;
+import com.android.server.notification.NotificationManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.ActivityAssistInfo;
 import com.android.server.wm.ActivityTaskManagerInternal;
@@ -188,6 +192,24 @@ public class ComputerControlSessionImplTest {
             new AppInteractionAttribution.Builder(
                             AppInteractionAttribution.INTERACTION_TYPE_USER_QUERY)
                     .build();
+    private static final String NOTIFICATION_CHANNEL_ID = "TEST_CHANNEL_ID";
+    private static final int NOTIFICATION_ID = 5;
+    private static final String NOTIFICATION_TAG = "TEST_NOTIFICATION_TAG";
+    private static final Notification NOTIFICATION =
+            new Notification.Builder(
+                    InstrumentationRegistry.getInstrumentation().getTargetContext(),
+                    NOTIFICATION_CHANNEL_ID)
+                    .setOngoing(true)
+                    .setRequestPromotedOngoing(true)
+                    .setContentTitle("Hello")
+                    .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                    .setColor(Color.WHITE)
+                    .build();
+    private static final ComputerControlSessionParams.NotificationParams NOTIFICATION_PARAMS =
+            new ComputerControlSessionParams.NotificationParams.Builder(
+                    NOTIFICATION, NOTIFICATION_ID)
+                    .setNotificationTag(NOTIFICATION_TAG)
+                    .build();
 
     @FunctionalInterface
     private interface Interactor {
@@ -208,6 +230,10 @@ public class ComputerControlSessionImplTest {
     private IDisplayManager mDisplayManager;
     @Mock
     private PackageManager mOwnerPackageManager;
+    @Mock
+    private NotificationManager mNotificationManager;
+    @Mock
+    private NotificationManagerInternal mNotificationManagerInternal;
     @Mock
     private AppOpsManager mAppOpsManager;
     @Mock
@@ -295,6 +321,7 @@ public class ComputerControlSessionImplTest {
                     .setName(ComputerControlSessionImplTest.class.getSimpleName())
                     .setTargetPackageNames(TARGET_PACKAGE_NAMES)
                     .setAppInteractionAttribution(APP_INTERACTION_ATTRIBUTION)
+                    .setNotificationParams(NOTIFICATION_PARAMS)
                     .build();
     private final Context mContext =
             spy(new ContextWrapper(
@@ -314,6 +341,8 @@ public class ComputerControlSessionImplTest {
                 .thenReturn(ownerContext);
         when(ownerContext.getPackageManager()).thenReturn(mOwnerPackageManager);
         when(ownerContext.getSystemService(Context.APP_OPS_SERVICE)).thenReturn(mAppOpsManager);
+        when(ownerContext.getSystemService(Context.NOTIFICATION_SERVICE))
+                .thenReturn(mNotificationManager);
 
         final Context displayContext = spy(new ContextWrapper(
                 InstrumentationRegistry.getInstrumentation().getTargetContext()));
@@ -321,6 +350,7 @@ public class ComputerControlSessionImplTest {
         doReturn(mWindowManager).when(displayContext).getSystemService(WindowManager.class);
 
         LocalServices.removeAllServicesForTest();
+        LocalServices.addService(NotificationManagerInternal.class, mNotificationManagerInternal);
         LocalServices.addService(WindowManagerInternal.class, mWindowManagerInternal);
         LocalServices.addService(UserManagerInternal.class, mUserManagerInternal);
         LocalServices.addService(InputMethodManagerInternal.class, mInputMethodManagerInternal);
@@ -555,6 +585,25 @@ public class ComputerControlSessionImplTest {
 
         verify(mAppOpsManager).startWatchingMode(
                 eq(AppOpsManager.OP_COMPUTER_CONTROL), any(), any());
+    }
+
+    @Test
+    public void createSession_postsSessionNotification() throws Exception {
+        createComputerControlSession(mDefaultParams);
+
+        verify(mNotificationManager).notifyAsPackage(mSession.getOwnerPackageName(),
+                NOTIFICATION_TAG, NOTIFICATION_ID, NOTIFICATION);
+    }
+
+    @Test
+    public void closeSession_makesSessionNotificationCancellable() throws Exception {
+        createComputerControlSession(mDefaultParams);
+
+        mSession.close();
+        waitForIdle();
+
+        verify(mNotificationManagerInternal).removeComputerControlFlagFromNotification(
+                mSession.getOwnerPackageName(), NOTIFICATION_ID, USER_ID);
     }
 
     @Test

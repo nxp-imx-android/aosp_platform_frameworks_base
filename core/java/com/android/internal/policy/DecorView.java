@@ -38,7 +38,6 @@ import static android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATIO
 import static android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 import static android.view.flags.Flags.customizableWindowHeaders;
-import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS;
 
 import static com.android.internal.policy.PhoneWindow.FEATURE_OPTIONS_PANEL;
 
@@ -1173,10 +1172,8 @@ public class DecorView extends FrameLayout implements RootViewSurfaceTaker, Wind
 
         final boolean isOpaqueCaptionBar = customizableWindowHeaders()
                 && (appearance & APPEARANCE_TRANSPARENT_CAPTION_BAR_BACKGROUND) == 0;
-        final boolean consumingOpaqueCaptionBar =
-                ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS.isTrue()
-                        && mLastForceConsumingOpaqueCaptionBar
-                        && isOpaqueCaptionBar;
+        final boolean consumingOpaqueCaptionBar = mLastForceConsumingOpaqueCaptionBar
+                && isOpaqueCaptionBar;
 
         if (consumingCaptionBar || consumingOpaqueCaptionBar) {
             consumingTypes |= WindowInsets.Type.captionBar();
