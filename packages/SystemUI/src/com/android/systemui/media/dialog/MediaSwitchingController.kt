@@ -921,7 +921,13 @@ constructor(
             Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         val deepLinkIntent = Intent(Settings.ACTION_SETTINGS_EMBED_DEEP_LINK_ACTIVITY)
-        if (deepLinkIntent.resolveActivity(mContext.getPackageManager()) != null) {
+        val packageManager =
+            if (fixOutputSwitcherMultiuserSupport()) {
+                getPackageManagerForUser(mUserTracker.userHandle)
+            } else {
+                mContext.getPackageManager()
+            }
+        if (deepLinkIntent.resolveActivity(packageManager) != null) {
             Log.d(TAG, "Device support split mode, launch page with deep link")
             with(deepLinkIntent) {
                 setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

@@ -21,9 +21,11 @@ import android.bluetooth.BluetoothDevice
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.ApplicationInfoFlags
+import android.content.pm.ResolveInfo
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.Icon
 import android.media.AudioDeviceAttributes
@@ -52,6 +54,7 @@ import android.platform.test.annotations.RequiresFlagsDisabled
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.annotations.UsesFlags
 import android.platform.test.flag.junit.FlagsParameterization
+import android.provider.Settings
 import android.service.notification.StatusBarNotification
 import android.testing.TestableLooper
 import android.view.View
@@ -330,8 +333,9 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
             on { createActivityTransitionController(mDialogLaunchView) } doReturn mController
         }
         val intent = Intent(Intent.ACTION_MAIN)
-        mPackageManager.stub { on { getLaunchIntentForPackage(mPackageName) } doReturn intent }
-        mContext.prepareCreateContextAsUser(userHandle, mContext)
+        val userPackageManager =
+            mock<PackageManager> { on { getLaunchIntentForPackage(mPackageName) } doReturn intent }
+        createUserContext(userHandle, packageManager = userPackageManager)
         mediaSwitchingController.start(mCallback)
 
         mediaSwitchingController.tryToLaunchMediaApplication(mDialogLaunchView)
@@ -362,8 +366,9 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
             on { createActivityTransitionController(mDialogLaunchView) } doReturn mController
         }
         val intent = Intent(Intent.ACTION_MAIN)
-        mPackageManager.stub { on { getLaunchIntentForPackage(mPackageName) } doReturn intent }
-        mContext.prepareCreateContextAsUser(userHandle, mContext)
+        val userPackageManager =
+            mock<PackageManager> { on { getLaunchIntentForPackage(mPackageName) } doReturn intent }
+        createUserContext(userHandle, packageManager = userPackageManager)
         mediaSwitchingController.start(mCallback)
         clearInvocations(mCallback)
 
@@ -415,7 +420,6 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
             on { createActivityTransitionController(mDialogLaunchView) } doReturn mController
         }
         mediaSwitchingController.start(mCallback)
-        mContext.prepareCreateContextAsUser(userHandle, mContext)
         clearInvocations(mCallback)
 
         mediaSwitchingController.tryToLaunchInAppRoutingIntent(TEST_DEVICE_1_ID, mDialogLaunchView)
@@ -454,7 +458,6 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
         }
         mLocalMediaManager.stub { on { linkedItemComponentName } doReturn null }
         mediaSwitchingController.start(mCallback)
-        mContext.prepareCreateContextAsUser(userHandle, mContext)
         clearInvocations(mCallback)
 
         mediaSwitchingController.tryToLaunchInAppRoutingIntent(TEST_DEVICE_1_ID, mDialogLaunchView)
@@ -531,7 +534,6 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
                 on { isPreferenceRouteListingExist } doReturn false
                 on { missingPermissionsInfo } doReturn permissionsInfo
             }
-        mContext.prepareCreateContextAsUser(userHandle, mContext)
         mediaSwitchingController.start(mCallback)
         clearInvocations(mCallback)
 
@@ -566,7 +568,6 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
         val user = UserHandle.of(123)
         whenever(mLocalMediaManager.missingPermissionsInfo).thenReturn(info)
         whenever(mLocalMediaManager.userHandle).thenReturn(user)
-        mContext.prepareCreateContextAsUser(user, mContext)
         mMediaSwitchingController.start(mCallback)
 
         mMediaSwitchingController.tryToLaunchMissingPermissionsResolveIntent()
@@ -1655,6 +1656,127 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
     }
 
     @Test
+    @DisableFlags(FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
+    fun launchBluetoothPairing_noDeepLink_startActivityWithBluetoothSettings() {
+        whenever(mDialogTransitionAnimator.createActivityTransitionController(mDialogLaunchView))
+            .thenReturn(mActivityTransitionAnimatorController)
+        val intentCaptor = argumentCaptor<Intent>()
+
+        mMediaSwitchingController.launchBluetoothPairing(mDialogLaunchView)
+
+        verify(mStarter)
+            .startActivity(intentCaptor.capture(), any(), eq(mActivityTransitionAnimatorController))
+        assertThat(intentCaptor.firstValue.action).isEqualTo(Settings.ACTION_BLUETOOTH_SETTINGS)
+    }
+
+    @Test
+    @DisableFlags(FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
+    fun launchBluetoothPairing_withDeepLink_startActivityWithDeepLink() {
+        whenever(mDialogTransitionAnimator.createActivityTransitionController(mDialogLaunchView))
+            .thenReturn(mActivityTransitionAnimatorController)
+        val resolveInfo =
+            ResolveInfo().apply {
+                activityInfo =
+                    ActivityInfo().apply {
+                        name = "com.android.settings.Settings"
+                        applicationInfo =
+                            ApplicationInfo().apply { packageName = "com.android.settings" }
+                    }
+            }
+        mPackageManager.stub { on { resolveActivity(any(), any<Int>()) } doReturn resolveInfo }
+
+        mMediaSwitchingController.launchBluetoothPairing(mDialogLaunchView)
+
+        val intentCaptor = argumentCaptor<Intent>()
+        verify(mStarter)
+            .startActivity(intentCaptor.capture(), any(), eq(mActivityTransitionAnimatorController))
+        with(intentCaptor.firstValue) {
+            assertThat(action).isEqualTo(Settings.ACTION_SETTINGS_EMBED_DEEP_LINK_ACTIVITY)
+            val btSettingsIntent =
+                Intent.parseUri(
+                    getStringExtra(Settings.EXTRA_SETTINGS_EMBEDDED_DEEP_LINK_INTENT_URI),
+                    /* flags= */ 0,
+                )
+            assertThat(btSettingsIntent.action).isEqualTo(Settings.ACTION_BLUETOOTH_SETTINGS)
+            assertThat(
+                    getStringExtra(Settings.EXTRA_SETTINGS_EMBEDDED_DEEP_LINK_HIGHLIGHT_MENU_KEY)
+                )
+                .isEqualTo("top_level_connected_devices")
+        }
+    }
+
+    @Test
+    @EnableFlags(FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
+    fun launchBluetoothPairing_multiuser_startActivityWithBluetoothSettings() {
+        val userHandle = UserHandle.of(10)
+        whenever(mDialogTransitionAnimator.createActivityTransitionController(mDialogLaunchView))
+            .thenReturn(mActivityTransitionAnimatorController)
+        whenever(mUserTracker.userHandle).thenReturn(userHandle)
+        val userPackageManager =
+            mock<PackageManager> { on { resolveActivity(any(), any<Int>()) } doReturn null }
+        createUserContext(userHandle, packageManager = userPackageManager)
+
+        mMediaSwitchingController.launchBluetoothPairing(mDialogLaunchView)
+
+        val intentCaptor = argumentCaptor<Intent>()
+        verify(mStarter)
+            .startActivity(
+                intentCaptor.capture(),
+                /* dismissShade= */ any(),
+                eq(mActivityTransitionAnimatorController),
+                /* showOverLockscreenWhenLocked= */ eq(false),
+                eq(null),
+            )
+        assertThat(intentCaptor.firstValue.action).isEqualTo(Settings.ACTION_BLUETOOTH_SETTINGS)
+    }
+
+    @Test
+    @EnableFlags(FLAG_FIX_OUTPUT_SWITCHER_MULTIUSER_SUPPORT)
+    fun launchBluetoothPairing_multiuser_withDeepLink_startActivityWithDeepLink() {
+        val userHandle = UserHandle.of(10)
+        whenever(mDialogTransitionAnimator.createActivityTransitionController(mDialogLaunchView))
+            .thenReturn(mActivityTransitionAnimatorController)
+        whenever(mUserTracker.userHandle).thenReturn(userHandle)
+        val resolveInfo =
+            ResolveInfo().apply {
+                activityInfo =
+                    ActivityInfo().apply {
+                        name = "com.android.settings.Settings"
+                        applicationInfo =
+                            ApplicationInfo().apply { packageName = "com.android.settings" }
+                    }
+            }
+        val userPackageManager =
+            mock<PackageManager> { on { resolveActivity(any(), any<Int>()) } doReturn resolveInfo }
+        createUserContext(userHandle, packageManager = userPackageManager)
+
+        mMediaSwitchingController.launchBluetoothPairing(mDialogLaunchView)
+
+        val intentCaptor = argumentCaptor<Intent>()
+        verify(mStarter)
+            .startActivity(
+                intentCaptor.capture(),
+                /* dismissShade= */ any(),
+                eq(mActivityTransitionAnimatorController),
+                /* showOverLockscreenWhenLocked= */ eq(false),
+                eq(null),
+            )
+        with(intentCaptor.firstValue) {
+            assertThat(action).isEqualTo(Settings.ACTION_SETTINGS_EMBED_DEEP_LINK_ACTIVITY)
+            val btSettingsIntent =
+                Intent.parseUri(
+                    getStringExtra(Settings.EXTRA_SETTINGS_EMBEDDED_DEEP_LINK_INTENT_URI),
+                    /* flags= */ 0,
+                )
+            assertThat(btSettingsIntent.action).isEqualTo(Settings.ACTION_BLUETOOTH_SETTINGS)
+            assertThat(
+                    getStringExtra(Settings.EXTRA_SETTINGS_EMBEDDED_DEEP_LINK_HIGHLIGHT_MENU_KEY)
+                )
+                .isEqualTo("top_level_connected_devices")
+        }
+    }
+
+    @Test
     fun hasGroupPlayback_singleOutputDevice_returnsFalse() {
         whenever(mMediaDevice1.isSelected).thenReturn(true)
 
@@ -1976,11 +2098,13 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
                 on { isPreferenceRouteListingExist } doReturn false
                 on { missingPermissionsInfo } doReturn permissionsInfo
             }
-        mContext.prepareCreateContextAsUser(userHandle, mContext)
-        mPackageManager.stub {
-            on { getApplicationInfo(any(), any<ApplicationInfoFlags>()) } doReturn ApplicationInfo()
-            on { getApplicationLabel(any()) } doReturn "Test Name"
-        }
+        val userPackageManager =
+            mock<PackageManager> {
+                on { getApplicationInfo(any(), any<ApplicationInfoFlags>()) } doReturn
+                    ApplicationInfo()
+                on { getApplicationLabel(any()) } doReturn "Test Name"
+            }
+        createUserContext(userHandle, packageManager = userPackageManager)
 
         val warningInfo = mediaSwitchingController.getMissingPermissionsWarning()
 
@@ -1997,10 +2121,13 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
         val user = UserHandle.of(123)
         whenever(mLocalMediaManager.missingPermissionsInfo).thenReturn(info)
         whenever(mLocalMediaManager.userHandle).thenReturn(user)
-        mContext.prepareCreateContextAsUser(user, mContext)
-        whenever(mPackageManager.getApplicationInfo(any(), any<ApplicationInfoFlags>()))
-            .thenReturn(ApplicationInfo())
-        whenever(mPackageManager.getApplicationLabel(any())).thenReturn("Test Name")
+        val userPackageManager =
+            mock<PackageManager> {
+                on { getApplicationInfo(any(), any<ApplicationInfoFlags>()) } doReturn
+                    ApplicationInfo()
+                on { getApplicationLabel(any()) } doReturn "Test Name"
+            }
+        createUserContext(user, packageManager = userPackageManager)
 
         val warningInfo = mMediaSwitchingController.getMissingPermissionsWarning()
 
@@ -2016,6 +2143,11 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
         val spyResources = spy(mContext.resources)
         whenever(mSpyContext.resources).thenReturn(spyResources)
         whenever(spyResources.getBoolean(R.bool.config_enableInputRouting)).thenReturn(true)
+    }
+
+    private fun createUserContext(userHandle: UserHandle, packageManager: PackageManager) {
+        val userContext = mock<Context> { on { this.packageManager } doReturn packageManager }
+        mContext.prepareCreateContextAsUser(userHandle, userContext)
     }
 
     private fun createMediaSwitchingController(
