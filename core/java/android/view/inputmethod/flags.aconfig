@@ -234,6 +234,13 @@ flag {
 }
 
 flag {
+  name: "prevent_ime_startup_on_tv"
+  namespace: "tv_os"
+  description: "Enables config_preventImeStartupUnlessTextEditor on all TVs"
+  bug: "365002571"
+}
+
+flag {
   name: "public_autofill_id_in_editorinfo"
   is_exported: true
   namespace: "input_method"
