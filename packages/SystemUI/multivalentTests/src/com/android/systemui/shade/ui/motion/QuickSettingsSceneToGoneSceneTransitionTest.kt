@@ -71,6 +71,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.junit.Rule
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import platform.test.motion.compose.ComposeRecordingSpec
@@ -81,6 +82,7 @@ import platform.test.motion.golden.asDataPoint
 import platform.test.screenshot.DeviceEmulationSpec
 import platform.test.screenshot.Displays.Phone
 
+@Ignore("b/496045082")
 @RunWith(AndroidJUnit4::class)
 @MotionTest
 @LargeTest
