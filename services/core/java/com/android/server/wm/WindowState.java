@@ -138,6 +138,7 @@ import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_FIRST_TIME;
 import static android.view.WindowManagerPolicyConstants.TYPE_LAYER_MULTIPLIER;
 import static android.view.WindowManagerPolicyConstants.TYPE_LAYER_OFFSET;
+import static android.window.TaskConstants.TASK_CHILD_LAYER_STARTING_WINDOW;
 
 import static com.android.internal.policy.TransitionAnimation.MAX_ANIMATION_DURATION;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ADD_REMOVE;
@@ -2498,7 +2499,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                         if (startingWindow && mSurfaceAnimator.hasLeash()) {
                             // Keep starting window on top during fade-out animation.
                             getPendingTransaction().setLayer(mSurfaceAnimator.mLeash,
-                                    Integer.MAX_VALUE);
+                                    TASK_CHILD_LAYER_STARTING_WINDOW);
                         }
                         mAnimatingExit = true;
 
@@ -5666,7 +5667,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 t = getSyncTransaction();
             }
             // The starting window should cover the task.
-            t.setLayer(mSurfaceControl, Integer.MAX_VALUE);
+            t.setLayer(mSurfaceControl, TASK_CHILD_LAYER_STARTING_WINDOW);
             return;
         }
         // See comment in assignRelativeLayerForImeLayeringTargetChild
@@ -5705,7 +5706,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         super.onAnimationLeashCreated(t, leash);
         if (isStartingWindowAssociatedToTask()) {
             // Make sure the animation leash is still on top of the task.
-            t.setLayer(leash, Integer.MAX_VALUE);
+            t.setLayer(leash, TASK_CHILD_LAYER_STARTING_WINDOW);
         }
     }
 
