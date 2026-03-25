@@ -16,11 +16,6 @@
 
 package com.android.systemui.notifications.ui.composable
 
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.animateScrollBy
-import androidx.compose.foundation.gestures.rememberScrollableState
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -31,14 +26,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.platform.LocalDensity
@@ -46,7 +36,6 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.Velocity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.modifiers.onUnplaced
@@ -124,53 +113,25 @@ fun ContentScope.SnoozableHeadsUpNotificationPlaceholder(
     modifier: Modifier = Modifier,
 ) {
     val isSnoozable by viewModel.isHeadsUpOrAnimatingAway.collectAsStateWithLifecycle(false)
-
-    var scrollOffset by remember { mutableFloatStateOf(0f) }
     val headsUpInset = with(LocalDensity.current) { headsUpTopInset().toPx() }
-    val minScrollOffset = -headsUpInset
-    val maxScrollOffset = 0f
 
-    val scrollableState = rememberScrollableState { delta ->
-        consumeDeltaWithinRange(
-            current = scrollOffset,
-            setCurrent = { scrollOffset = it },
-            min = minScrollOffset,
-            max = maxScrollOffset,
-            delta,
+    val snoozeController =
+        rememberHeadsUpSnoozeController(
+            minOffset = { -headsUpInset },
+            isEnabled = { isSnoozable },
+            onSnoozed = {
+                viewModel.setHeadsUpAnimatingAway(false)
+                viewModel.snoozeHun()
+            },
+            onSnoozeStateChanged = { isSnoozing ->
+                debugLog(viewModel) { "isSnoozing:$isSnoozing" }
+            },
         )
-    }
 
-    val snoozeScrollConnection =
-        remember(minScrollOffset) {
-            object : NestedScrollConnection {
-                override suspend fun onPreFling(available: Velocity): Velocity {
-                    if (
-                        velocityOrPositionalThresholdReached(
-                            scrollOffset,
-                            minScrollOffset,
-                            available.y,
-                        )
-                    ) {
-                        scrollableState.animateScrollBy(minScrollOffset, tween())
-                    } else {
-                        scrollableState.animateScrollBy(-minScrollOffset, tween())
-                    }
-                    return available
-                }
-            }
-        }
+    LaunchedEffect(isSnoozable) { snoozeController.reset() }
 
     val horizontalAlignment = viewModel.horizontalAlignment
     val halfScreenWidth = LocalWindowInfo.current.containerSize.width / 2
-
-    LaunchedEffect(isSnoozable) { scrollOffset = 0f }
-
-    LaunchedEffect(scrollableState.isScrollInProgress) {
-        if (!scrollableState.isScrollInProgress && scrollOffset <= minScrollOffset) {
-            viewModel.setHeadsUpAnimatingAway(false)
-            viewModel.snoozeHun()
-        }
-    }
 
     HeadsUpNotificationPlaceholder(
         tag = "$tag.Snoozable",
@@ -182,19 +143,19 @@ fun ContentScope.SnoozableHeadsUpNotificationPlaceholder(
                 .thenIf(horizontalAlignment != Alignment.CenterHorizontally) {
                     Modifier.width { halfScreenWidth }
                 }
+                .headsUpSnoozeDraggable(controller = snoozeController)
                 .offset {
                     IntOffset(
                         x = if (horizontalAlignment == Alignment.End) halfScreenWidth else 0,
                         y =
-                            calculateHeadsUpPlaceholderYOffset(
-                                scrollOffset.roundToInt(),
-                                minScrollOffset.roundToInt(),
-                                stackScrollView.topHeadsUpHeight,
-                            ),
+                            snoozeController
+                                .calculateHeadsUpPlaceholderYOffset(
+                                    restPosition = headsUpInset,
+                                    topHeadsUpHeight = stackScrollView.topHeadsUpHeight.toFloat(),
+                                )
+                                .roundToInt(),
                     )
-                }
-                .thenIf(isSnoozable) { Modifier.nestedScroll(snoozeScrollConnection) }
-                .scrollable(orientation = Orientation.Vertical, state = scrollableState),
+                },
     )
 }
 
@@ -206,64 +167,4 @@ private fun headsUpTopInset(): Dp {
     return maxOf(safeTop, dimensionResource(R.dimen.heads_up_status_bar_padding))
 }
 
-/**
- * Calculates the vertical offset for the heads-up notification based on the user's scroll.
- *
- * This function implements a linear interpolation that maps the [scrollOffset] to a physical
- * Y-position, so that the notification moves faster than the finger swipe to ensure it completely
- * clears the screen no matter where on the notification the gesture started.
- * - At rest (scrollOffset = 0): Returns -minScrollOffset. This positions the HUN at its rest
- *   position: just below the safeTop (top padding from safeContent, or heads_up_status_bar_padding
- *   if safeContent has 0 topPadding)
- * - Fully offscreen (scrollOffset = minScrollOffset): Returns -topHeadsUpHeight. This positions the
- *   HUN completely off-screen above the window.
- *
- * @param scrollOffset The current scroll value (negative, ranging from [minScrollOffset] to 0).
- * @param minScrollOffset The lower bound of the scroll (negative, equivalent to -[headsUpTopInset])
- * @param topHeadsUpHeight The height of the heads-up notification.
- * @return The Y-offset for the HeadsUpNotificationPlaceholder.
- */
-private fun calculateHeadsUpPlaceholderYOffset(
-    scrollOffset: Int,
-    minScrollOffset: Int,
-    topHeadsUpHeight: Int,
-): Int {
-    return -minScrollOffset +
-        (scrollOffset * (-minScrollOffset + topHeadsUpHeight) / -minScrollOffset)
-}
-
-private fun velocityOrPositionalThresholdReached(
-    scrollOffset: Float,
-    minScrollOffset: Float,
-    availableVelocityY: Float,
-): Boolean {
-    return availableVelocityY < HUN_SNOOZE_VELOCITY_THRESHOLD ||
-        (availableVelocityY <= 0f &&
-            scrollOffset < minScrollOffset * HUN_SNOOZE_POSITIONAL_THRESHOLD_FRACTION)
-}
-
-/**
- * Takes a range, current value, and delta, and updates the current value by the delta, coercing the
- * result within the given range. Returns how much of the delta was consumed.
- */
-private fun consumeDeltaWithinRange(
-    current: Float,
-    setCurrent: (Float) -> Unit,
-    min: Float,
-    max: Float,
-    delta: Float,
-): Float {
-    return if (delta < 0 && current > min) {
-        val remainder = (current + delta - min).coerceAtMost(0f)
-        setCurrent((current + delta).coerceAtLeast(min))
-        delta - remainder
-    } else if (delta > 0 && current < max) {
-        val remainder = (current + delta).coerceAtLeast(0f)
-        setCurrent((current + delta).coerceAtMost(max))
-        delta - remainder
-    } else 0f
-}
-
 private val DEBUG_HUN_COLOR = Color(0f, 0f, 1f, 0.2f)
-private const val HUN_SNOOZE_POSITIONAL_THRESHOLD_FRACTION = 0.25f
-private const val HUN_SNOOZE_VELOCITY_THRESHOLD = -70f
