@@ -18,14 +18,7 @@ package com.android.systemui.inputmethod.domain.interactor
 
 import com.android.systemui.inputmethod.data.repository.imeSwitcherMenuRepository
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.statusbar.policy.data.repository.userSetupRepository
-import com.android.systemui.statusbar.policy.domain.interactor.deviceProvisioningInteractor
 
-val Kosmos.imeSwitcherMenuInteractor by
-    Kosmos.Fixture {
-        ImeSwitcherMenuInteractor(
-            imeSwitcherMenuRepository,
-            deviceProvisioningInteractor,
-            userSetupRepository,
-        )
-    }
+val Kosmos.imeSwitcherMenuInteractor by Kosmos.Fixture {
+    ImeSwitcherMenuInteractor(imeSwitcherMenuRepository)
+}
