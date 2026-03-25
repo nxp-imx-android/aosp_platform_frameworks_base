@@ -8090,4 +8090,7 @@
          dexopt. -->
     <string-array translatable="false" name="config_pr_dexopt_sync_forced_packages">
     </string-array>
+
+    <!-- Whether the speech compass is available. -->
+    <bool name="config_speechCompassAvailable">false</bool>
 </resources>
