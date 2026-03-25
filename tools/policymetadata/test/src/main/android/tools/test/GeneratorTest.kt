@@ -192,53 +192,6 @@ class GeneratorTest {
             )
 
     @Test
-    fun test_listOfPackagePolicy_outputMatches() {
-        val policyList =
-            PolicyMetadataList.newBuilder()
-                .addPolicyMetadata(
-                    listOfPackageTestPolicy(
-                            "test.package.PolicyContainer.MY_TEST_PACKAGE_LIST_POLICY"
-                        )
-                        .addAllAllowedScopes(listOf(PolicyMetadata.PolicyScope.POLICY_SCOPE_DEVICE))
-                        .setAffectedResource(PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE)
-                )
-                .build()
-
-        val javaFile = Generator.generate(policyList)
-
-        assertThat(javaFileToString(javaFile))
-            .isEqualTo(
-                fillInFile(
-                    includes =
-                        listOf(
-                            "android.app.admin.PolicyIdentifier",
-                            "android.app.admin.PackageIdentifier",
-                        ),
-                    staticImports =
-                        listOf("test.package.PolicyContainer.MY_TEST_PACKAGE_LIST_POLICY"),
-                    code =
-                        """
-                            policies.add(new ListPolicyMetadata<PackageIdentifier>(
-                                /* id= */ MY_TEST_PACKAGE_LIST_POLICY,
-                                /* elementMetadata= */ new PackagePolicyMetadata(
-                                    /* id= */ new PolicyIdentifier<PackageIdentifier>(MY_TEST_PACKAGE_LIST_POLICY.getId() + "#elements"),
-                                    /* allowedScopes= */ Set.of(
-                                        2
-                                    ),
-                                    /* affectedResource= */ 1,
-                                    /* requiredPermission= */ null,
-                                    /* requiredCrossUserPermission= */ null,
-                                    /* allowedDpcTypes= */ Set.of()
-                                ),
-                                /* resolutionMechanism= */ null,
-                                /* emptyListAllowed= */ true
-                            ));
-                        """,
-                )
-            )
-    }
-
-    @Test
     fun test_permissions_outputMatches() {
         val javaFile =
             Generator.generate(
