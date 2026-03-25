@@ -1037,7 +1037,6 @@ public class NotifierTest {
 
     @Test
     public void testOnWakeLockListener_FullWakeLock_ProcessesOnHandler() throws RemoteException {
-        when(mPowerManagerFlags.isAppWakelockDataSourceEnabled()).thenReturn(true);
         createNotifier();
 
         IWakeLockCallback exceptingCallback = new IWakeLockCallback.Stub() {
@@ -1092,26 +1091,6 @@ public class NotifierTest {
                 BatteryStats.WAKE_TYPE_FULL, false);
         verify(mAppOpsManager).startOpNoThrow(AppOpsManager.OP_WAKE_LOCK, uid,
                 "my.package.name", false, null, null);
-    }
-
-    @Test
-    public void testOnWakeLockListener_TracingDisabled() throws RemoteException {
-        when(mPowerManagerFlags.isAppWakelockDataSourceEnabled()).thenReturn(false);
-        createNotifier();
-
-        clearInvocations(mWakelockTracer);
-
-        final int uid = 1234;
-        final int pid = 5678;
-
-        // Release the wakelock
-        mNotifier.onWakeLockReleased(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "wakelockTag",
-                "my.package.name", uid, pid, /* workSource= */ null, /* historyTag= */ null,
-                /* callback= */ null);
-
-        // No interaction because the flag is disabled.
-        mTestLooper.dispatchAll();
-        verifyNoMoreInteractions(mWakelockTracer);
     }
 
     @Test

@@ -52,10 +52,6 @@ public class PowerManagerFlags {
             new FlagState(Flags.FLAG_DISABLE_FROZEN_PROCESS_WAKELOCKS,
                     Flags::disableFrozenProcessWakelocks);
 
-    private final FlagState mEnableAppWakelockDataSource =
-            new FlagState(Flags.FLAG_ENABLE_APP_WAKELOCK_DATA_SOURCE,
-                    Flags::enableAppWakelockDataSource);
-
     private final FlagState mPartialSleepWakelocks = new FlagState(
             Flags.FLAG_PARTIAL_SLEEP_WAKELOCKS,
             Flags::partialSleepWakelocks
@@ -103,13 +99,6 @@ public class PowerManagerFlags {
     }
 
     /**
-     * @return Whether the new Perfetto data source for tracing app wakelocks is enabled
-     */
-    public boolean isAppWakelockDataSourceEnabled() {
-        return mEnableAppWakelockDataSource.isEnabled();
-    }
-
-    /**
      * @return Whether new wakelock to keep device asleep - for the user, but ensures the CPU
      * remains awake - is enabled.
      */
@@ -134,7 +123,6 @@ public class PowerManagerFlags {
         pw.println(" " + mPerDisplayWakeByTouch);
         pw.println(" " + mLockOnUnplug);
         pw.println(" " + mDisableFrozenProcessWakelocks);
-        pw.println(" " + mEnableAppWakelockDataSource);
         pw.println(" " + mPartialSleepWakelocks);
         pw.println(" " + mSeparateTimeoutsFlicker);
         pw.println(" " + mWaitForUserBootComplete);
