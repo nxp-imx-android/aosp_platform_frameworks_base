@@ -141,6 +141,7 @@ per-file MessageStack.java = file:/MESSAGE_QUEUE_OWNERS
 per-file WaitState.java = file:/MESSAGE_QUEUE_OWNERS
 per-file *MessageQueue/** = file:/MESSAGE_QUEUE_OWNERS
 per-file *DeliQueue/** = file:/MESSAGE_QUEUE_OWNERS
+per-file LooperDoctor.java = file:/MESSAGE_QUEUE_OWNERS
 
 # Stats
 per-file IStatsBootstrapAtomService.aidl = file:/services/core/java/com/android/server/stats/OWNERS

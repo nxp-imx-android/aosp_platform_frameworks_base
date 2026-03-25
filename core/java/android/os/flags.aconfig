@@ -321,6 +321,13 @@ flag {
 }
 
 flag {
+    name: "message_queue_monitoring_enabled"
+    namespace: "system_performance"
+    description: "Enables MessageQueue monitoring via LooperDoctor."
+    bug: "483709211"
+}
+
+flag {
      name: "message_queue_testability"
      namespace: "system_performance"
      is_exported: true
