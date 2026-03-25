@@ -2204,13 +2204,17 @@ public class AudioDeviceInventory {
     }
 
      /*package*/ void disconnectLeAudio(int device) {
-        if (device != AudioSystem.DEVICE_OUT_BLE_HEADSET
-                && device != AudioSystem.DEVICE_OUT_BLE_BROADCAST
-                && device != AudioSystem.DEVICE_OUT_BLE_HEARING_AID) {
-            Log.e(TAG, "disconnectLeAudio: Can't disconnect not LE Audio device " + device);
-            return;
+        switch(device) {
+            case AudioSystem.DEVICE_OUT_BLE_BROADCAST,
+                 AudioSystem.DEVICE_OUT_BLE_HEADSET,
+                 AudioSystem.DEVICE_OUT_BLE_HEARING_AID,
+                 AudioSystem.DEVICE_IN_BLE_HEADSET,
+                 AudioSystem.DEVICE_IN_BLE_HEARING_AID -> {}
+            default -> {
+                Log.e(TAG, "disconnectLeAudio: Can't disconnect not LE Audio device " + device);
+                return;
+            }
         }
-
         synchronized (mDevicesLock) {
             final ArraySet<Pair<String, Integer>> toRemove = new ArraySet<>();
             // Disconnect ALL DEVICE_OUT_BLE_HEADSET or DEVICE_OUT_BLE_BROADCAST devices
@@ -2237,6 +2241,8 @@ public class AudioDeviceInventory {
     /*package*/ void disconnectLeAudioUnicast() {
         disconnectLeAudio(AudioSystem.DEVICE_OUT_BLE_HEADSET);
         disconnectLeAudio(AudioSystem.DEVICE_IN_BLE_HEADSET);
+        disconnectLeAudio(AudioSystem.DEVICE_OUT_BLE_HEARING_AID);
+        disconnectLeAudio(AudioSystem.DEVICE_IN_BLE_HEARING_AID);
     }
 
     /*package*/ void disconnectLeAudioBroadcast() {
