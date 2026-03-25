@@ -5026,7 +5026,8 @@ public class StatsPullAtomService extends SystemService {
             KeyOperationWithGeneralInfo atom = atomWrapper.payload.getKeyOperationWithGeneralInfo();
             pulledData.add(FrameworkStatsLog.buildStatsEvent(
                     FrameworkStatsLog.KEYSTORE2_KEY_OPERATION_WITH_GENERAL_INFO, atom.outcome,
-                    atom.error_code, atom.key_upgraded, atom.security_level, atomWrapper.count));
+                    atom.error_code, atom.key_upgraded, atom.security_level, atomWrapper.count,
+                    atom.is_attested));
         }
         return StatsManager.PULL_SUCCESS;
     }
