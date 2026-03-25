@@ -172,7 +172,7 @@ public class PccSandboxManagerServiceImplTest {
     public void testConstructor_schedulesPeriodicTask() {
         // Assert: alarm is scheduled.
         long expectedTriggerAtMillis = TEST_ELAPSED_REALTIME + AUDIT_LOG_CLEANUP_INTERVAL_MS;
-        verify(mAlarmManager, timeout(1000))
+        verify(mAlarmManager)
                 .set(
                         eq(AlarmManager.ELAPSED_REALTIME),
                         eq(expectedTriggerAtMillis),
@@ -186,7 +186,7 @@ public class PccSandboxManagerServiceImplTest {
         // Capture the listener.
         ArgumentCaptor<AlarmManager.OnAlarmListener> listenerCaptor =
                 ArgumentCaptor.forClass(AlarmManager.OnAlarmListener.class);
-        verify(mAlarmManager, timeout(1000))
+        verify(mAlarmManager)
                 .set(anyInt(), anyLong(), anyString(), listenerCaptor.capture(), any());
         AlarmManager.OnAlarmListener listener = listenerCaptor.getValue();
 
@@ -197,7 +197,7 @@ public class PccSandboxManagerServiceImplTest {
         listener.onAlarm();
 
         // Verify alarm is rescheduled.
-        verify(mAlarmManager, timeout(1000)).cancel(any(AlarmManager.OnAlarmListener.class));
+        verify(mAlarmManager).cancel(any(AlarmManager.OnAlarmListener.class));
         verify(mAlarmManager)
                 .set(
                         eq(AlarmManager.ELAPSED_REALTIME),
