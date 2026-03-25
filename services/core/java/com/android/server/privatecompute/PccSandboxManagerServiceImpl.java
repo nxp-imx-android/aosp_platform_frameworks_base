@@ -24,6 +24,7 @@ import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_WRITE_TO_
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
+import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.privatecompute.DataMigrationToPccService;
 import android.app.privatecompute.IDataMigrationToPccService;
@@ -312,6 +313,7 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
 
     private class Shell extends ShellCommand {
         @Override
+        @RequiresNoPermission
         public int onCommand(String cmd) {
             if (cmd == null) {
                 return handleDefaultCommands(cmd);
@@ -369,7 +371,7 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
                     return 0;
                 }
                 case "read-intelligence-audit-log" -> {
-                    final int userId = UserHandle.getUserId(Binder.getCallingUid());
+                    final int userId = ActivityManager.getCurrentUser();
                     List<AuditLogEntry> entries = AuditModeContext.readAuditLogs(
                             mInjector.getAuditLogFilesDirectory(), userId);
                     if (entries.isEmpty()) {
