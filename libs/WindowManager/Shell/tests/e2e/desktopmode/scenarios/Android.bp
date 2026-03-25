@@ -82,6 +82,7 @@ test_module_config {
         "com.android.wm.shell.functional.externaldisplay.DragMoveWindowToNextDisplayTest",
         "com.android.wm.shell.functional.externaldisplay.MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest",
         "com.android.wm.shell.functional.externaldisplay.MoveToNextDisplayProjectedTest",
+        "com.android.wm.shell.functional.externaldisplay.ProjectedModeStayOnDeviceTest",
         "com.android.wm.shell.functional.externaldisplay.MoveToNextDisplayTest",
         "com.android.wm.shell.functional.externaldisplay.OpenAppWithExternalDisplayConnectedTest",
         "com.android.wm.shell.functional.externaldisplay.ScaleDensityForExternalDisplayTest",
@@ -253,6 +254,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.externaldisplay.MoveToNextDisplayProjectedTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-externaldisplay-ProjectedModeStayOnDeviceTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.externaldisplay.ProjectedModeStayOnDeviceTest"],
 }
 
 test_module_config {
