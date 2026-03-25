@@ -19,9 +19,9 @@ package com.android.wm.shell.transition;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.util.ArraySet;
 
+import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.shared.annotations.ShellAnimationThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 
@@ -39,25 +39,22 @@ class MultiPartWindowAnimation extends WindowAnimation {
 
     @ShellMainThread
     MultiPartWindowAnimation(@NonNull WindowAnimation main,
-            @NonNull List<Animator> siblings,
-            @Nullable Consumer<WindowAnimation> finishCallback) {
+            @NonNull List<Animator> siblings) {
         super(main.mChange, main.mCornerRadius, main.getAnimation(), main.getAnimator());
-
-        if (main.getAnimator() != null) {
-            mAnimators.add(main.getAnimator());
-        }
+        mAnimators.add(main.getAnimator());
         mAnimators.addAll(siblings);
-
-        if (finishCallback != null) {
-            setupCompletion(finishCallback);
-        }
     }
 
     @ShellMainThread
-    private void setupCompletion(
-            @NonNull Consumer<WindowAnimation> finishCallback) {
+    @Override
+    public void addFinishCallback(@NonNull Consumer<WindowAnimation> finishCallback,
+            @NonNull ShellExecutor mainExecutor) {
+        if (finishCallback == null || mainExecutor == null) {
+            return;
+        }
+
         if (mAnimators.isEmpty()) {
-            finishCallback.accept(this);
+            mainExecutor.execute(() -> finishCallback.accept(this));
             return;
         }
 
@@ -65,8 +62,14 @@ class MultiPartWindowAnimation extends WindowAnimation {
             @Override
             public void onAnimationEnd(Animator animation) {
                 if (mFinished.add(animation) && mFinished.size() == mAnimators.size()) {
-                    finishCallback.accept(MultiPartWindowAnimation.this);
+                    mainExecutor.execute(
+                            () -> finishCallback.accept(MultiPartWindowAnimation.this));
                 }
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                onAnimationEnd(animation);
             }
         };
 

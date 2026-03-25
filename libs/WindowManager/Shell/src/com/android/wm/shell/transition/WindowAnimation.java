@@ -16,6 +16,8 @@
 
 package com.android.wm.shell.transition;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -30,7 +32,11 @@ import android.window.TransitionInfo;
 import android.window.WindowAnimationState;
 
 import com.android.internal.protolog.ProtoLog;
+import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
+import com.android.wm.shell.shared.annotations.ShellMainThread;
+
+import java.util.function.Consumer;
 
 /**
  * Keeps track of the animation of a single window/container.
@@ -56,32 +62,50 @@ class WindowAnimation {
     final TransitionInfo.Change mChange;
     final float mCornerRadius;
     private final WindowAnimationState mWindowAnimationState = new WindowAnimationState();
-    @Nullable
-    private ValueAnimator mAnimator;
+    @NonNull
+    private final ValueAnimator mAnimator;
     @Nullable
     private final Animation mAnimation;
 
-    WindowAnimation(@NonNull TransitionInfo.Change change, float cornerRadius) {
-        mChange = change;
-        mCornerRadius = cornerRadius;
-        mAnimation = null;
-        mAnimator = null;
-    }
-
+    @ShellMainThread
     WindowAnimation(@NonNull TransitionInfo.Change change, float cornerRadius,
-            @NonNull Animation animation,
-            @Nullable ValueAnimator animator) {
+            @Nullable Animation animation,
+            @NonNull ValueAnimator animator) {
         mChange = change;
         mCornerRadius = cornerRadius;
         mAnimation = animation;
         mAnimator = animator;
     }
 
-    void setAnimator(@Nullable ValueAnimator animator) {
-        mAnimator = animator;
+    /**
+     * Helper method to add a callback on the Animator for onAnimationEnd and onAnimationCancel with
+     * a gurad that ensures it was called only once
+     */
+    @ShellMainThread
+    public void addFinishCallback(@NonNull Consumer<WindowAnimation> finishCallback,
+            @NonNull ShellExecutor mainExecutor) {
+        if (finishCallback == null || mainExecutor == null) {
+            return;
+        }
+
+        mAnimator.addListener(new AnimatorListenerAdapter() {
+            private void onFinish() {
+                mainExecutor.execute(() -> finishCallback.accept(WindowAnimation.this));
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                onFinish();
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                onFinish();
+            }
+        });
     }
 
-    @Nullable
+    @NonNull
     ValueAnimator getAnimator() {
         return mAnimator;
     }
@@ -92,22 +116,16 @@ class WindowAnimation {
     }
 
     void start() {
-        if (mAnimator != null) {
-            mAnimator.start();
-        }
+        mAnimator.start();
     }
 
     void end() {
-        if (mAnimator != null) {
-            mAnimator.end();
-        }
+        mAnimator.end();
     }
 
     void cancelRemoveListeners() {
-        if (mAnimator != null) {
-            mAnimator.removeAllUpdateListeners();
-            mAnimator.cancel();
-        }
+        mAnimator.removeAllUpdateListeners();
+        mAnimator.cancel();
     }
 
     /**
@@ -118,10 +136,6 @@ class WindowAnimation {
      * animation.
      */
     WindowAnimationState getWindowAnimationState() {
-        if (mAnimation == null || mAnimator == null) {
-            return null;
-        }
-
         final long currentPlayTime = Math.clamp(mAnimator.getCurrentPlayTime(), 0,
                 mAnimator.getDuration());
         Transformation currentTransformation = new Transformation();
@@ -152,14 +166,22 @@ class WindowAnimation {
     public static String windowAnimationStateToString(WindowAnimationState state) {
         StringBuilder sb = new StringBuilder(128);
         sb.append("WindowAnimationState ");
-        sb.append("{ bounds="); sb.append(state.bounds);
-        sb.append(" scale="); sb.append(state.scale);
-        sb.append(" topLeftRadius="); sb.append(state.topLeftRadius);
-        sb.append(" topRightRadius="); sb.append(state.topRightRadius);
-        sb.append(" bottomRightRadius="); sb.append(state.bottomRightRadius);
-        sb.append(" bottomLeftRadius="); sb.append(state.bottomLeftRadius);
-        sb.append(" timestamp="); sb.append(state.timestamp);
-        sb.append(" velocityPxPerMs="); sb.append(state.velocityPxPerMs);
+        sb.append("{ bounds=");
+        sb.append(state.bounds);
+        sb.append(" scale=");
+        sb.append(state.scale);
+        sb.append(" topLeftRadius=");
+        sb.append(state.topLeftRadius);
+        sb.append(" topRightRadius=");
+        sb.append(state.topRightRadius);
+        sb.append(" bottomRightRadius=");
+        sb.append(state.bottomRightRadius);
+        sb.append(" bottomLeftRadius=");
+        sb.append(state.bottomLeftRadius);
+        sb.append(" timestamp=");
+        sb.append(state.timestamp);
+        sb.append(" velocityPxPerMs=");
+        sb.append(state.velocityPxPerMs);
         sb.append('}');
         return sb.toString();
     }
