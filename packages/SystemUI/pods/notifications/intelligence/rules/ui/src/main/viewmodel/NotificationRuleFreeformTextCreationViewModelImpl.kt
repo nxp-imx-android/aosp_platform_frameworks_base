@@ -36,7 +36,7 @@ constructor(
 ) : NotificationRuleFreeformTextCreationViewModel {
     // These items are stored in the view model so that they're retained even when going between
     // different pages (e.g. editing the action then coming back, editing the rule then coming back)
-    override var selectedAction by mutableStateOf(ActionModel.Highlight)
+    override var selectedAction: ActionModel by mutableStateOf(ActionModel.Highlight)
     override val enteredText = TextFieldState()
 
     private var processedFreeformTextResponse: ResponseModel<DraftRuleModel>? by

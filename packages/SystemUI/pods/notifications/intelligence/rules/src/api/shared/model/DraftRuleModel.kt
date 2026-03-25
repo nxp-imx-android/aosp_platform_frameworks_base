@@ -165,17 +165,26 @@ sealed interface DraftRuleModel {
 }
 
 /** Represents various actions that a rule can apply to a notification. */
-enum class ActionModel {
+sealed interface ActionModel {
     /** See [android.app.NotificationRule.Action.PRIMARY_ACTION_HIGHLIGHT_AND_ALERT]. */
-    HighlightAndAlert,
+    data object HighlightAndAlert : ActionModel
+
     /** See [android.app.NotificationRule.Action.PRIMARY_ACTION_HIGHLIGHT]. */
-    Highlight,
+    data object Highlight : ActionModel
+
     /** See [android.app.NotificationRule.Action.PRIMARY_ACTION_LOW]. */
-    Silence,
+    data object Silence : ActionModel
+
     /** See [android.app.NotificationRule.Action.PRIMARY_ACTION_BUNDLE]. */
-    Bundle,
+    data class Bundle(
+        /** See [android.app.NotificationRule.Action.getDynamicBundleName]. */
+        val name: String?,
+        /** See [android.app.NotificationRule.Action.getDynamicBundleEmojiIcon]. */
+        val emojiIcon: String?,
+    ) : ActionModel
+
     /** See [android.app.NotificationRule.Action.PRIMARY_ACTION_BLOCK]. */
-    Block,
+    data object Block : ActionModel
 }
 
 /** Represents a single aspect of a notification rule. */

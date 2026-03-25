@@ -2738,7 +2738,7 @@
     <string name="notification_rules_modify_action" translatable="false">Modify action</string>
 
     <!-- The full text for a notification rule. Includes substrings for particular parts of the rule, like what apps are part of the rule or what people are part of the rule. [CHAR LIMIT=NONE] -->
-    <string name="notification_rules_full_text" translatable="false">Notifications<xliff:g id="appsSubstring">%1$s</xliff:g><xliff:g id="peopleSubstring">%2$s</xliff:g><xliff:g id="keywordsSubstring">%3$s</xliff:g></string>
+    <string name="notification_rules_full_text" translatable="false">Notifications<xliff:g id="appsSubstring">%1$s</xliff:g><xliff:g id="peopleSubstring">%2$s</xliff:g><xliff:g id="keywordsSubstring">%3$s</xliff:g><xliff:g id="bundleSubstring">%4$s</xliff:g></string>
 
     <!-- Text explaining what items the notification rule applies to. For example, "from Phone" explains that the rule applies to just notifications from the 'Phone' app and "from Phone +3 more" explains that the rule applies to the 'Phone' app and 3 additional apps.
          The "valueField" annotation specifies that 'Phone' is the item value. When the user taps on 'Phone', they will be able to change which items(s) are selected. [CHAR LIMIT=NONE]-->
@@ -2753,6 +2753,8 @@
         <item quantity="one">\u0020that contain <annotation valueField="true">\u201c<xliff:g id="item">^1</xliff:g>\u201d</annotation></item>
         <item quantity="other">\u0020that contain <annotation valueField="true">\u201c<xliff:g id="firstItem">^1</xliff:g>\u201d +<xliff:g id="number">^2</xliff:g> more</annotation></item>
     </plurals>
+
+    <string name="notification_rules_bundle_text_description" translatable="false">\u0020into <annotation bundleName="true">\u201c<xliff:g id="bundleName">^1</xliff:g>\u201d</annotation> bundle with <annotation bundleEmoji="true"><xliff:g id="bundleEmoji">^2</xliff:g></annotation> emoji</string>
 
     <!-- Text for a button letting users edit a particular notification rule. [CHAR LIMIT=30]-->
     <string name="notification_rules_edit" translatable="false">Edit</string>

@@ -195,7 +195,7 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
-    fun fetchInitialRules_bundleAction() =
+    fun fetchInitialRules_bundleAction_noNameOrEmoji() =
         kosmos.runTest {
             val rule =
                 createRule(action = NotificationRule.Action.Builder(PRIMARY_ACTION_BUNDLE).build())
@@ -205,7 +205,30 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
             val result = underTest.rules
 
             assertThat(result).hasSize(1)
-            assertThat(result[0].action).isEqualTo(ActionModel.Bundle)
+            assertThat(result[0].action)
+                .isEqualTo(ActionModel.Bundle(name = null, emojiIcon = null))
+        }
+
+    @Test
+    @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
+    fun fetchInitialRules_bundleAction_withNameAndEmoji() =
+        kosmos.runTest {
+            val rule =
+                createRule(
+                    action =
+                        NotificationRule.Action.Builder(PRIMARY_ACTION_BUNDLE)
+                            .setDynamicBundleName("Dynamic Name")
+                            .setDynamicBundleEmojiIcon("\uD83D\uDCE6")
+                            .build()
+                )
+            putRulesIntoNotificationManager(listOf(rule))
+
+            underTest.start()
+            val result = underTest.rules
+
+            assertThat(result).hasSize(1)
+            assertThat(result[0].action)
+                .isEqualTo(ActionModel.Bundle(name = "Dynamic Name", emojiIcon = "\uD83D\uDCE6"))
         }
 
     @Test
@@ -632,6 +655,52 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
             assertThat(savedRule.filter!!.keywords).isEqualTo(KeywordsModel(listOf("dog")))
         }
 
+    @Test
+    @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
+    fun saveRule_withBundleAction() =
+        kosmos.runTest {
+            underTest.start()
+
+            val draftRule =
+                DraftRuleModel.New(
+                    action =
+                        ActionModel.Bundle(name = "Dynamic Bundle", emojiIcon = "\uD83D\uDCE6"),
+                    filter =
+                        DraftFilterModel(
+                            people = null,
+                            includedApps = RuleValue.Specified(IncludedAppsModel(listOf(FAKE_APP))),
+                            keywords = null,
+                        ),
+                )
+
+            testScope.launch { underTest.saveRule(draftRule) }
+
+            val expectedRule =
+                NotificationRule.Builder(
+                        100,
+                        NotificationRule.Action.Builder(PRIMARY_ACTION_BUNDLE)
+                            .setDynamicBundleName("Dynamic Bundle")
+                            .setDynamicBundleEmojiIcon("\uD83D\uDCE6")
+                            .build(),
+                    )
+                    .addFilter(
+                        NotificationRule.Filter.Builder()
+                            .addIncludedPackageUid(FAKE_APP_UID)
+                            .build()
+                    )
+                    .build()
+            verify(notificationManager).addNotificationRule(expectedRule, 0)
+
+            assertThat(underTest.rules).hasSize(1)
+            val savedRule = underTest.rules[0]
+            assertThat(savedRule.id).isEqualTo(100)
+            assertThat(savedRule.action)
+                .isEqualTo(ActionModel.Bundle(name = "Dynamic Bundle", emojiIcon = "\uD83D\uDCE6"))
+            assertThat(savedRule.filter).isNotNull()
+            assertThat(savedRule.filter!!.includedApps)
+                .isEqualTo(IncludedAppsModel(listOf(FAKE_APP)))
+        }
+
     // This should never happen, but if NotificationManager returns a different rule than
     // what was passed in, we should treat NotificationManager as the source of truth
     @Test
@@ -863,7 +932,7 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
 
             // Second attempt to save a draft rule: Succeeds
             val newDraftRule =
-                DraftRuleModel.New(action = ActionModel.Bundle, filter = DraftFilterModel())
+                DraftRuleModel.New(action = ActionModel.Block, filter = DraftFilterModel())
             whenever(kosmos.notificationManager.addNotificationRule(any(), any())).thenAnswer {
                 invocation ->
                 invocation.arguments[0]
@@ -874,7 +943,7 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
             val expectedRule =
                 NotificationRule.Builder(
                         102,
-                        NotificationRule.Action.Builder(PRIMARY_ACTION_BUNDLE).build(),
+                        NotificationRule.Action.Builder(PRIMARY_ACTION_BLOCK).build(),
                     )
                     .build()
             verify(notificationManager).addNotificationRule(expectedRule, 0)

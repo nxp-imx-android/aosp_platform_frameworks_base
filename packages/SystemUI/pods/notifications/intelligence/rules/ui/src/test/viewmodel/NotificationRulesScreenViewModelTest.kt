@@ -317,7 +317,7 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
             val rule =
                 RuleModel(
                     id = ID,
-                    action = ActionModel.Bundle,
+                    action = ActionModel.Block,
                     filter = FilterModel(keywords = KeywordsModel(listOf("cat"))),
                 )
 
@@ -335,7 +335,7 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
             val rule =
                 RuleModel(
                     id = ID,
-                    action = ActionModel.Bundle,
+                    action = ActionModel.Highlight,
                     filter =
                         FilterModel(keywords = KeywordsModel(listOf("cat", "dog", "pet", "animal"))),
                 )
@@ -347,6 +347,29 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
             assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" that contain "))
             assertThat(ruleDisplay.textChunks[2])
                 .isEqualTo(TextChunk.FieldValueText("“cat” +3 more"))
+        }
+
+    @Test
+    fun buildRuleText_bundleAction() =
+        kosmos.runTest {
+            val rule =
+                RuleModel(
+                    id = ID,
+                    action = ActionModel.Bundle(name = "Demo Notifs", emojiIcon = "\uD83C\uDF81"),
+                    filter = null,
+                )
+
+            val ruleDisplay = underTest.buildRuleText(rule, applicationContext.resources)
+
+            assertThat(ruleDisplay.textChunks).hasSize(6)
+            assertThat(ruleDisplay.textChunks[0]).isEqualTo(TextChunk.BasicText("Notifications"))
+            assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" into "))
+            assertThat(ruleDisplay.textChunks[2])
+                .isEqualTo(TextChunk.FieldValueText("“Demo Notifs”"))
+            assertThat(ruleDisplay.textChunks[3]).isEqualTo(TextChunk.BasicText(" bundle with "))
+            assertThat(ruleDisplay.textChunks[4])
+                .isEqualTo(TextChunk.FieldValueText("\uD83C\uDF81"))
+            assertThat(ruleDisplay.textChunks[5]).isEqualTo(TextChunk.BasicText(" emoji"))
         }
 
     @Test
@@ -368,7 +391,7 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
             val rule =
                 RuleModel(
                     id = ID,
-                    action = ActionModel.Highlight,
+                    action = ActionModel.Bundle(name = "Demo Notifs", emojiIcon = "\uD83C\uDF81"),
                     filter =
                         FilterModel(
                             includedApps =
@@ -380,7 +403,7 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
 
             val ruleDisplay = underTest.buildRuleText(rule, applicationContext.resources)
 
-            assertThat(ruleDisplay.textChunks).hasSize(9)
+            assertThat(ruleDisplay.textChunks).hasSize(14)
 
             assertThat(ruleDisplay.textChunks[0]).isEqualTo(TextChunk.BasicText("Notifications"))
             assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" from "))
@@ -401,6 +424,14 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
             assertThat(ruleDisplay.textChunks[7]).isEqualTo(TextChunk.BasicText(" that contain "))
             assertThat(ruleDisplay.textChunks[8])
                 .isEqualTo(TextChunk.FieldValueText("“cat” +3 more"))
+
+            assertThat(ruleDisplay.textChunks[9]).isEqualTo(TextChunk.BasicText(" into "))
+            assertThat(ruleDisplay.textChunks[10])
+                .isEqualTo(TextChunk.FieldValueText("“Demo Notifs”"))
+            assertThat(ruleDisplay.textChunks[11]).isEqualTo(TextChunk.BasicText(" bundle with "))
+            assertThat(ruleDisplay.textChunks[12])
+                .isEqualTo(TextChunk.FieldValueText("\uD83C\uDF81"))
+            assertThat(ruleDisplay.textChunks[13]).isEqualTo(TextChunk.BasicText(" emoji"))
         }
 
     companion object {

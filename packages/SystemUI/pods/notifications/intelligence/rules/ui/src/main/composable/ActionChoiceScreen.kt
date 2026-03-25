@@ -67,7 +67,7 @@ fun ActionChoiceScreen(
         }
 
         HeaderText(stringResource(R.string.notification_rules_action_less_alerting))
-        LessAlertingActions.fastForEach { action ->
+        buildLessAlertingActions(selectedAction = viewState.selectedAction).fastForEach { action ->
             ActionItem(
                 action = action,
                 onClick = { actionOnClick(action) },
@@ -129,5 +129,31 @@ private fun ActionItem(
     }
 }
 
+private fun buildLessAlertingActions(selectedAction: ActionModel): List<ActionModel> {
+    return buildList {
+        add(ActionModel.Silence)
+
+        if (selectedAction is ActionModel.Bundle) {
+            // If the user already picked bundle & then picked it again, use their
+            // already-defined bundle name & emoji.
+            add(selectedAction)
+        } else {
+            // Seed the new bundle action with a name & emoji so users can edit them.
+            // TODO: b/478225883 - Define single default bundle name and emoji in strings.xml.
+            add(
+                ActionModel.Bundle(
+                    name = defaultBundleNames.random(),
+                    emojiIcon = defaultBundleEmojis.random(),
+                )
+            )
+        }
+
+        add(ActionModel.Block)
+    }
+}
+
+private val defaultBundleNames =
+    listOf("My Custom Bundle [TK]", "Demo Bundle [TK]", "Example Bundle [TK]")
+private val defaultBundleEmojis = listOf("\uD83D\uDCE6", "\uD83C\uDF81", "\uD83D\uDC9D")
+
 private val MoreAlertingActions = listOf(ActionModel.HighlightAndAlert, ActionModel.Highlight)
-private val LessAlertingActions = listOf(ActionModel.Silence, ActionModel.Bundle, ActionModel.Block)

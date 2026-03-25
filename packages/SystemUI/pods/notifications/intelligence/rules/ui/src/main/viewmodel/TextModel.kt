@@ -22,25 +22,41 @@ import android.text.Spanned
 import android.text.TextUtils
 import androidx.annotation.PluralsRes
 import com.android.systemui.log.core.Logger
+import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
+import com.android.systemui.res.R
 
-/** Represents a single field as text. */
-internal data class SingleFieldTextModel<T>(
-    val text: String,
-    /** True if this text is ambiguous and requires clarification. See [RuleValue.Ambiguous]. */
-    val isAmbiguous: Boolean,
-    /**
-     * The range of the text that represents the actual field values. For example, for the string
-     * "from Phone +3 more", [valueFieldRange] should encompass just the "Phone +3 more" part.
-     *
-     * [onClick] will be associated with this range.
-     */
-    val valueFieldRange: IntRange?,
-    /** If this field is fully specified, this is the first item in the list. */
-    val firstItem: T?,
-    val firstItemIconId: String?,
-    /** Optional clickable behavior. */
-    val onClick: (() -> Unit)?,
-)
+sealed interface TextModel {
+    val text: String
+
+    /** Represents a single field as text. */
+    data class SingleFieldTextModel<T>(
+        override val text: String,
+        /** True if this text is ambiguous and requires clarification. See [RuleValue.Ambiguous]. */
+        val isAmbiguous: Boolean,
+        /**
+         * The range of the text that represents the actual field values. For example, for the
+         * string "from Phone +3 more", [valueFieldRange] should encompass just the "Phone +3 more"
+         * part.
+         *
+         * [onClick] will be associated with this range.
+         */
+        val valueFieldRange: IntRange?,
+        /** If this field is fully specified, this is the first item in the list. */
+        val firstItem: T?,
+        val firstItemIconId: String?,
+        /** Optional clickable behavior. */
+        val onClick: (() -> Unit)?,
+    ) : TextModel
+
+    /** Represents a custom bundle as text. */
+    data class BundleTextModel(
+        override val text: String,
+        /** The range of [text] that represents the bundle name. */
+        val nameRange: IntRange?,
+        /** The range of text that represents the bundle emoji. */
+        val emojiRange: IntRange?,
+    ) : TextModel
+}
 
 /**
  * Creates text that shows 1 or more selected items.
@@ -56,7 +72,7 @@ internal fun <T> createMultiItemText(
     @PluralsRes itemTextString: Int,
     resources: Resources,
     logger: Logger,
-): SingleFieldTextModel<T> {
+): TextModel.SingleFieldTextModel<T> {
     check(items.isNotEmpty()) { "Items must be non-empty" }
     val first = items[0]
 
@@ -86,7 +102,7 @@ internal fun <T> createAmbiguousText(
     @PluralsRes itemTextString: Int,
     resources: Resources,
     logger: Logger,
-): SingleFieldTextModel<T> {
+): TextModel.SingleFieldTextModel<T> {
     val template = resources.getQuantityText(itemTextString, 1)
     val spanned = TextUtils.expandTemplate(template, placeholderText) as Spanned
     return createFieldText(
@@ -106,20 +122,15 @@ private fun <T> createFieldText(
     onClick: (() -> Unit)?,
     isAmbiguous: Boolean,
     logger: Logger,
-): SingleFieldTextModel<T> {
+): TextModel.SingleFieldTextModel<T> {
     val annotations: Array<Annotation> = spanned.getSpans(0, spanned.length, Annotation::class.java)
 
-    val valueFieldRange =
-        annotations
-            .firstOrNull { annotation ->
-                annotation.key == "valueField" && annotation.value.toBoolean()
-            }
-            ?.let { spanned.getSpanStart(it) until spanned.getSpanEnd(it) }
+    val valueFieldRange = annotations.findAnnotationRange(key = "valueField", spanned = spanned)
     if (valueFieldRange == null) {
         logger.w({ "No valueField annotation for $str1" }) { str1 = spanned.toString() }
     }
 
-    return SingleFieldTextModel(
+    return TextModel.SingleFieldTextModel(
         text = spanned.toString(),
         valueFieldRange = valueFieldRange,
         onClick = onClick,
@@ -127,4 +138,51 @@ private fun <T> createFieldText(
         firstItemIconId = firstItemIconId,
         isAmbiguous = isAmbiguous,
     )
+}
+
+/**
+ * Creates text substring representing the bundling action, or returns null if [action] isn't a
+ * bundle action.
+ */
+// TODO: b/478225883 - Make bundle name & emoji icon clickable.
+internal fun createBundleText(
+    action: ActionModel,
+    resources: Resources,
+    logger: Logger,
+): TextModel.BundleTextModel? {
+    if (action !is ActionModel.Bundle) {
+        return null
+    }
+
+    val template = resources.getText(R.string.notification_rules_bundle_text_description)
+
+    // TODO: b/478225883 - Use default bundle name & emoji here.
+    val spanned =
+        TextUtils.expandTemplate(template, action.name ?: "???", action.emojiIcon ?: "?") as Spanned
+    val annotations = spanned.getSpans(0, spanned.length, Annotation::class.java)
+    val nameRange: IntRange? =
+        annotations.findAnnotationRange(key = "bundleName", spanned = spanned)
+    val emojiRange: IntRange? =
+        annotations.findAnnotationRange(key = "bundleEmoji", spanned = spanned)
+    if (nameRange == null) {
+        logger.w({ "No bundleName annotation for $str1" }) { str1 = spanned.toString() }
+    }
+    if (emojiRange == null) {
+        logger.w({ "No bundleEmoji annotation for $str1" }) { str1 = spanned.toString() }
+    }
+
+    return TextModel.BundleTextModel(
+        text = spanned.toString(),
+        nameRange = nameRange,
+        emojiRange = emojiRange,
+    )
+}
+
+/**
+ * Returns the range within [spanned] that is associated with an annotation of key=[key] and
+ * value=true.
+ */
+private fun Array<Annotation>.findAnnotationRange(key: String, spanned: Spanned): IntRange? {
+    return this.firstOrNull { annotation -> annotation.key == key && annotation.value.toBoolean() }
+        ?.let { spanned.getSpanStart(it) until spanned.getSpanEnd(it) }
 }
