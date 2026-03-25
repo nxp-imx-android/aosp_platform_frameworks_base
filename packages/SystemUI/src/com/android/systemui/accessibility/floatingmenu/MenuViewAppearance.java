@@ -36,6 +36,7 @@ import android.view.WindowMetrics;
 import androidx.annotation.DimenRes;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.systemui.Flags;
 import com.android.systemui.res.R;
 
 import java.lang.annotation.Retention;
@@ -309,6 +310,10 @@ public class MenuViewAppearance {
     }
 
     float avoidVerticalDisplayCutout(float y, Rect bounds, Rect cutout) {
+        if (Flags.floatingMenuAdjustCutoutAvoidance() && cutout.isEmpty()) {
+            // Quick return if no cutout
+            return y;
+        }
         int menuHeight = calculateActualMenuHeight();
         return avoidVerticalDisplayCutout(y, menuHeight, bounds, cutout);
     }
@@ -316,25 +321,38 @@ public class MenuViewAppearance {
     @VisibleForTesting
     public static float avoidVerticalDisplayCutout(
             float y, float menuHeight, Rect bounds, Rect cutout) {
-        if (cutout.top > y + menuHeight || cutout.bottom < y) {
-            return clampVerticalPosition(y, menuHeight, bounds.top, bounds.bottom);
+        if (Flags.floatingMenuAdjustCutoutAvoidance()) {
+            if (cutout.top > y + menuHeight * 0.5f || cutout.bottom < y - menuHeight * 0.5f) {
+                return y;
+            }
+        } else {
+            if (cutout.top > y + menuHeight || cutout.bottom < y) {
+                return clampVerticalPosition(y, menuHeight, bounds.top, bounds.bottom);
+            }
         }
 
         boolean topAvailable = cutout.top - bounds.top >= menuHeight;
         boolean bottomAvailable = bounds.bottom - cutout.bottom >= menuHeight;
         boolean topOrBottom;
         if (!topAvailable && !bottomAvailable) {
-            return clampVerticalPosition(y, menuHeight, bounds.top, bounds.bottom);
+            return (Flags.floatingMenuAdjustCutoutAvoidance())
+                    ? y
+                    : clampVerticalPosition(y, menuHeight, bounds.top, bounds.bottom);
         } else if (topAvailable && !bottomAvailable) {
             topOrBottom = true;
-        } else if (!topAvailable && bottomAvailable) {
+        } else if (!topAvailable) {
             topOrBottom = false;
         } else {
             topOrBottom = y + menuHeight * 0.5f < cutout.centerY();
         }
 
-        float finalPosition = (topOrBottom) ? cutout.top - menuHeight : cutout.bottom;
-        return clampVerticalPosition(finalPosition, menuHeight, bounds.top, bounds.bottom);
+        if (Flags.floatingMenuAdjustCutoutAvoidance()) {
+            return (topOrBottom) ? cutout.top - menuHeight * 0.5f
+                    : cutout.bottom + menuHeight * 0.5f;
+        } else {
+            float finalPosition = (topOrBottom) ? cutout.top - menuHeight : cutout.bottom;
+            return clampVerticalPosition(finalPosition, menuHeight, bounds.top, bounds.bottom);
+        }
     }
 
     private static float clampVerticalPosition(
@@ -349,7 +367,7 @@ public class MenuViewAppearance {
     }
 
     private int calculateActualMenuHeight() {
-        if (com.android.systemui.Flags.floatingMenuUniformPadding()) {
+        if (Flags.floatingMenuUniformPadding()) {
             return (getMenuPadding() * 2 + getMenuIconSize()) * mTargetFeaturesSize;
         }
 
