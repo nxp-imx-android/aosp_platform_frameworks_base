@@ -68,3 +68,10 @@ flag {
     description: "Allows the allow-while-idle quotas to be set to 0"
     bug: "437418242"
 }
+
+flag {
+    name: "quick_doze_on_lid_close"
+    namespace: "backstage_power"
+    description: "Enables Quick Doze transition when the desktop device lid is closed"
+    bug: "437418242"
+}

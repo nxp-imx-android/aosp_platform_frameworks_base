@@ -45,6 +45,8 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageManagerInternal;
 import android.content.res.Resources;
 import android.database.ContentObserver;
+import android.hardware.devicestate.DeviceState;
+import android.hardware.devicestate.DeviceStateManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -65,6 +67,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.HandlerExecutor;
 import android.os.IDeviceIdleController;
 import android.os.Looper;
 import android.os.Message;
@@ -351,6 +354,7 @@ public class DeviceIdleController extends SystemService
     private AnyMotionDetector mAnyMotionDetector;
     private final AppStateTrackerImpl mAppStateTracker;
     private PackageManager mPackageManager;
+    private DeviceStateManager.DeviceStateCallback mDeviceStateCallback;
     @GuardedBy("this")
     private boolean mLightEnabled;
     @GuardedBy("this")
@@ -391,6 +395,8 @@ public class DeviceIdleController extends SystemService
     private boolean mForceModeManagerQuickDozeRequest;
     @GuardedBy("this")
     private boolean mForceModeManagerOffBodyState;
+    @GuardedBy("this")
+    private boolean mIsDesktopClosedState;
 
     /** Time in the elapsed realtime timebase when this listener last received a motion event. */
     @GuardedBy("this")
@@ -2494,6 +2500,7 @@ public class DeviceIdleController extends SystemService
         private ConnectivityManager mConnectivityManager;
         private Constants mConstants;
         private LocationManager mLocationManager;
+        private DeviceStateManager mDeviceStateManager;
 
         Injector(Context ctx) {
             mContext = ctx.createAttributionContext(TAG);
@@ -2517,6 +2524,13 @@ public class DeviceIdleController extends SystemService
                 mConnectivityManager = mContext.getSystemService(ConnectivityManager.class);
             }
             return mConnectivityManager;
+        }
+
+        DeviceStateManager getDeviceStateManager() {
+            if (mDeviceStateManager == null) {
+                mDeviceStateManager = mContext.getSystemService(DeviceStateManager.class);
+            }
+            return mDeviceStateManager;
         }
 
         Constants getConstants(DeviceIdleController controller, Handler handler,
@@ -2792,6 +2806,10 @@ public class DeviceIdleController extends SystemService
                 mPowerSaveTempWhitelistChangedIntent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
                 mPowerSaveWhitelistChangedOptions = mostRecentDeliveryOptions;
                 mPowerSaveTempWhilelistChangedOptions = mostRecentDeliveryOptions;
+                if (Flags.quickDozeOnLidClose()
+                        && mPackageManager.hasSystemFeature(PackageManager.FEATURE_PC)) {
+                    initDeviceStateCallback();
+                }
 
                 IntentFilter filter = new IntentFilter();
                 filter.addAction(Intent.ACTION_BATTERY_CHANGED);
@@ -2892,6 +2910,27 @@ public class DeviceIdleController extends SystemService
             // Let the constraint know that we are not listening to it any more.
             setConstraintMonitoringLocked(constraint, /* monitoring= */ false);
             mConstraints.remove(constraint);
+        }
+    }
+
+    private void initDeviceStateCallback() {
+        DeviceStateManager dsm = mInjector.getDeviceStateManager();
+        if (dsm != null) {
+            mDeviceStateCallback =
+                    new DeviceStateManager.DeviceStateCallback() {
+                        @Override
+                        public void onDeviceStateChanged(DeviceState state) {
+                            final boolean isClosed = state.hasProperty(
+                                    DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_CLOSED);
+                            synchronized (DeviceIdleController.this) {
+                                if (mIsDesktopClosedState != isClosed) {
+                                    mIsDesktopClosedState = isClosed;
+                                    updateQuickDozeFlagLocked();
+                                }
+                            }
+                        }
+                    };
+            dsm.registerCallback(new HandlerExecutor(mHandler), mDeviceStateCallback);
         }
     }
 
@@ -3547,12 +3586,13 @@ public class DeviceIdleController extends SystemService
     /** Calls to {@link #updateQuickDozeFlagLocked(boolean)} by considering appropriate signals. */
     @GuardedBy("this")
     private void updateQuickDozeFlagLocked() {
+        boolean enableQuickDoze = mBatterySaverEnabled || mIsDesktopClosedState;
         if (mConstants.USE_MODE_MANAGER) {
-            // Only disable the quick doze flag when mode manager request is false and
-            // battery saver is off.
-            updateQuickDozeFlagLocked(mModeManagerRequestedQuickDoze || mBatterySaverEnabled);
+            // Only disable the quick doze flag when mode manager request is false,
+            // battery saver is off and the desktop lid is not in CLOSED state.
+            updateQuickDozeFlagLocked(mModeManagerRequestedQuickDoze || enableQuickDoze);
         } else {
-            updateQuickDozeFlagLocked(mBatterySaverEnabled);
+            updateQuickDozeFlagLocked(enableQuickDoze);
         }
     }
 
@@ -4915,6 +4955,7 @@ public class DeviceIdleController extends SystemService
                                 break;
                             case "offbody": pw.println(mIsOffBody); break;
                             case "forceoffbody": pw.println(mForceModeManagerOffBodyState); break;
+                            case "desktopclosed": pw.println(mIsDesktopClosedState); break;
                             default: pw.println("Unknown get option: " + arg); break;
                         }
                     } finally {
@@ -5532,6 +5573,8 @@ public class DeviceIdleController extends SystemService
                 pw.print("  mIsOffBody=");
                 pw.println(mIsOffBody);
             }
+            pw.print("  mIsDesktopClosedState=");
+            pw.println(mIsDesktopClosedState);
         }
     }
 
