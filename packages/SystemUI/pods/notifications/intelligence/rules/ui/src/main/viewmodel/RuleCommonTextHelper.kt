@@ -17,6 +17,7 @@
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
 import android.content.res.Resources
+import androidx.annotation.PluralsRes
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 import com.android.systemui.res.R
@@ -25,6 +26,7 @@ import com.android.systemui.res.R
 internal fun buildRuleText(
     appsText: SingleFieldTextModel<AppModel>?,
     contactsText: SingleFieldTextModel<ContactModel>?,
+    keywordsText: SingleFieldTextModel<String>?,
     resources: Resources,
 ): RuleDisplayModel {
     // Each field text requires annotations like underlining, click-ability, etc. And, we can't put
@@ -38,11 +40,12 @@ internal fun buildRuleText(
             // TODO: b/478225883 - Is "" an okay value for other languages?
             appsText?.text ?: "",
             contactsText?.text ?: "",
+            keywordsText?.text ?: "",
         )
 
     // Step 2: Re-find the fields within the string and annotate each chunk with style etc.
     // TODO: b/478225883 - It's possible the fields have different orders in different languages.
-    val fields = listOfNotNull(appsText, contactsText)
+    val fields = listOfNotNull(appsText, contactsText, keywordsText)
     val textChunks: List<TextChunk> =
         buildList {
                 var startIndex = 0
@@ -105,4 +108,10 @@ internal fun SingleFieldTextModel<*>.toTextChunks(): List<TextChunk> {
             // beginning or end of the string
             it == TextChunk.BasicText("")
         }
+}
+
+object ItemTextStringConstants {
+    @PluralsRes val includedAppString = R.plurals.notification_rules_from_items
+    @PluralsRes val contactString = R.plurals.notification_rules_from_items
+    @PluralsRes val keywordString = R.plurals.notification_rules_keyword_items
 }

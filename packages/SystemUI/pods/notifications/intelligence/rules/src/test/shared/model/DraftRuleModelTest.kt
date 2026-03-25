@@ -42,6 +42,7 @@ class DraftRuleModelTest : SysuiTestCase() {
         assertThat(draftRule.action).isEqualTo(ActionModel.Bundle)
         assertThat(draftRule.filter.contacts).isNull()
         assertThat(draftRule.filter.includedApps).isNull()
+        assertThat(draftRule.filter.keywords).isNull()
     }
 
     @Test
@@ -50,7 +51,7 @@ class DraftRuleModelTest : SysuiTestCase() {
             RuleModel(
                 id = 1,
                 action = ActionModel.Bundle,
-                filter = FilterModel(contacts = null, includedApps = null),
+                filter = FilterModel(contacts = null, includedApps = null, keywords = null),
             )
 
         val draftRule = rule.toDraft()
@@ -60,17 +61,24 @@ class DraftRuleModelTest : SysuiTestCase() {
         assertThat(draftRule.action).isEqualTo(ActionModel.Bundle)
         assertThat(draftRule.filter.contacts).isNull()
         assertThat(draftRule.filter.includedApps).isNull()
+        assertThat(draftRule.filter.keywords).isNull()
     }
 
     @Test
     fun toDraft_allFilledIn() {
         val contacts = ContactsModel(listOf(FAKE_CONTACT))
         val includedApps = IncludedAppsModel(listOf(FAKE_APP))
+        val keywords = KeywordsModel(listOf("cat", "dog", "fish"))
         val rule =
             RuleModel(
                 id = 2,
                 action = ActionModel.Silence,
-                filter = FilterModel(contacts = contacts, includedApps = includedApps),
+                filter =
+                    FilterModel(
+                        contacts = contacts,
+                        includedApps = includedApps,
+                        keywords = keywords,
+                    ),
             )
 
         val draftRule = rule.toDraft()
@@ -78,6 +86,7 @@ class DraftRuleModelTest : SysuiTestCase() {
         assertThat(draftRule.action).isEqualTo(ActionModel.Silence)
         assertThat(draftRule.filter.contacts).isEqualTo(RuleValue.Specified(contacts))
         assertThat(draftRule.filter.includedApps).isEqualTo(RuleValue.Specified(includedApps))
+        assertThat(draftRule.filter.keywords).isEqualTo(keywords)
     }
 
     @Test
@@ -153,6 +162,7 @@ class DraftRuleModelTest : SysuiTestCase() {
                     DraftFilterModel(
                         includedApps = null,
                         contacts = RuleValue.Specified(ContactsModel(listOf(FAKE_CONTACT))),
+                        keywords = KeywordsModel(listOf("example")),
                     ),
             )
 
@@ -163,6 +173,7 @@ class DraftRuleModelTest : SysuiTestCase() {
         assertThat(fullRule.filter).isNotNull()
         assertThat(fullRule.filter!!.includedApps).isNull()
         assertThat(fullRule.filter!!.contacts).isEqualTo(ContactsModel(listOf(FAKE_CONTACT)))
+        assertThat(fullRule.filter!!.keywords).isEqualTo(KeywordsModel(listOf("example")))
     }
 
     @Test
@@ -191,6 +202,7 @@ class DraftRuleModelTest : SysuiTestCase() {
                     DraftFilterModel(
                         includedApps = RuleValue.Specified(IncludedAppsModel(listOf(FAKE_APP))),
                         contacts = null,
+                        keywords = KeywordsModel(listOf("example")),
                     ),
             )
 
@@ -201,6 +213,7 @@ class DraftRuleModelTest : SysuiTestCase() {
         assertThat(fullRule.filter).isNotNull()
         assertThat(fullRule.filter!!.includedApps).isEqualTo(IncludedAppsModel(listOf(FAKE_APP)))
         assertThat(fullRule.filter!!.contacts).isNull()
+        assertThat(fullRule.filter!!.keywords).isEqualTo(KeywordsModel(listOf("example")))
     }
 
     @Test
@@ -208,7 +221,7 @@ class DraftRuleModelTest : SysuiTestCase() {
         val newRule =
             DraftRuleModel.New(
                 action = ActionModel.Bundle,
-                filter = DraftFilterModel(includedApps = null, contacts = null),
+                filter = DraftFilterModel(includedApps = null, contacts = null, keywords = null),
             )
 
         val fullRule = newRule.toFullRule(id = 10)
@@ -224,7 +237,7 @@ class DraftRuleModelTest : SysuiTestCase() {
             DraftRuleModel.PreExisting(
                 id = 10,
                 action = ActionModel.Bundle,
-                filter = DraftFilterModel(includedApps = null, contacts = null),
+                filter = DraftFilterModel(includedApps = null, contacts = null, keywords = null),
             )
 
         val fullRule = preExistingRule.toFullRule()

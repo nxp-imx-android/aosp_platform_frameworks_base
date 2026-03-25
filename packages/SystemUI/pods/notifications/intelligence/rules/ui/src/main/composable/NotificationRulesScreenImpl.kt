@@ -104,6 +104,9 @@ class NotificationRulesScreenImpl @Inject constructor() : NotificationRulesScree
                 is RulesScreenViewState.EditField.Apps -> {
                     AppChoiceScreen(viewState, onDismissRequest = onDismissRequest)
                 }
+                is RulesScreenViewState.EditField.Keywords -> {
+                    KeywordChoiceScreen(viewState, onDismissRequest = onDismissRequest)
+                }
             }
         }
     }

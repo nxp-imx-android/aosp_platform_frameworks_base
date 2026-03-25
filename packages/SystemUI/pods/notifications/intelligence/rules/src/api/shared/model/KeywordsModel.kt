@@ -14,18 +14,15 @@
  * limitations under the License.
  */
 
-package com.android.systemui.notifications.intelligence.rules.shared
+package com.android.systemui.notifications.intelligence.rules.shared.model
 
 /**
- * A helper object to help manually test certain behaviors for contextual display during feature
- * development. This is temporary while we're building out the feature.
+ * Models the keywords that are part of a notification rule.
+ *
+ * @param keywords must be non-empty.
  */
-interface NmContextualDisplayTestConfig {
-    /**
-     * Sets the amount of delay before returning a response for processing of freeform text into a
-     * rule.
-     */
-    val delayOnRuleGenerationMs: Long
-    /** Forces the processing of freeform text into a rule to return an error. */
-    val forceErrorOnRuleGeneration: Boolean
+data class KeywordsModel(val keywords: List<String>) {
+    init {
+        check(keywords.isNotEmpty()) { "keywords list must be non-empty" }
+    }
 }

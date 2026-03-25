@@ -20,8 +20,8 @@ import android.content.res.Resources
 import android.text.Annotation
 import android.text.Spanned
 import android.text.TextUtils
+import androidx.annotation.PluralsRes
 import com.android.systemui.log.core.Logger
-import com.android.systemui.res.R
 
 /** Represents a single field as text. */
 internal data class SingleFieldTextModel<T>(
@@ -42,12 +42,18 @@ internal data class SingleFieldTextModel<T>(
     val onClick: (() -> Unit)?,
 )
 
-/** Creates text that shows 1 or more selected items. */
+/**
+ * Creates text that shows 1 or more selected items.
+ *
+ * @param [iconId] an ID that will be paired with an inline icon in the composable. Use null if this
+ *   field doesn't have an associated image.
+ */
 internal fun <T> createMultiItemText(
     items: List<T>,
-    id: (T) -> String,
+    iconId: ((T) -> String)?,
     label: (T) -> String,
     onClick: (() -> Unit)?,
+    @PluralsRes itemTextString: Int,
     resources: Resources,
     logger: Logger,
 ): SingleFieldTextModel<T> {
@@ -55,19 +61,15 @@ internal fun <T> createMultiItemText(
     val first = items[0]
 
     val firstLabel = label(first)
+
+    val template = resources.getQuantityText(itemTextString, items.size)
     val spanned =
-        if (items.size > 1) {
-            val template = resources.getText(R.string.notification_rules_from_multi_items)
-            TextUtils.expandTemplate(template, firstLabel, (items.size - 1).toString()) as Spanned
-        } else {
-            val template = resources.getText(R.string.notification_rules_from_single_item)
-            TextUtils.expandTemplate(template, firstLabel) as Spanned
-        }
+        TextUtils.expandTemplate(template, firstLabel, (items.size - 1).toString()) as Spanned
 
     return createFieldText(
         spanned,
         firstItem = first,
-        firstItemIconId = id(first),
+        firstItemIconId = iconId?.invoke(first),
         onClick = onClick,
         isAmbiguous = false,
         logger = logger,
@@ -81,10 +83,11 @@ internal fun <T> createMultiItemText(
 internal fun <T> createAmbiguousText(
     placeholderText: String,
     onClick: () -> Unit,
+    @PluralsRes itemTextString: Int,
     resources: Resources,
     logger: Logger,
 ): SingleFieldTextModel<T> {
-    val template = resources.getText(R.string.notification_rules_from_single_item)
+    val template = resources.getQuantityText(itemTextString, 1)
     val spanned = TextUtils.expandTemplate(template, placeholderText) as Spanned
     return createFieldText(
         spanned,

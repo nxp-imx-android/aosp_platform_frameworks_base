@@ -31,6 +31,7 @@ import com.android.systemui.notifications.intelligence.rules.shared.model.Contac
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftFilterModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.KeywordsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
@@ -292,7 +293,86 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun buildRuleText_contactsAndApps() =
+    fun buildRuleText_singleKeyword() =
+        kosmos.runTest {
+            var lastEnteredEditField: RulesScreenViewState.EditField? = null
+
+            val draftRule =
+                DraftRuleModel.New(
+                    action = ActionModel.Bundle,
+                    filter = DraftFilterModel(keywords = KeywordsModel(listOf("cat"))),
+                )
+
+            val underTest =
+                notificationRuleEditViewModelFactory.create(
+                    draftRule,
+                    onNavigateToCurrentRulesScreen = {},
+                )
+
+            val ruleDisplay =
+                underTest.buildRuleText(
+                    onEnterEditField = { lastEnteredEditField = it },
+                    onExitEditField = {},
+                    resources = applicationContext.resources,
+                )
+
+            assertThat(ruleDisplay.textChunks).hasSize(3)
+            assertThat(ruleDisplay.textChunks[0]).isEqualTo(TextChunk.BasicText("Notifications"))
+            assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" that contain "))
+
+            assertThat(ruleDisplay.textChunks[2]).isInstanceOf(TextChunk.ClickableText::class.java)
+            val clickableChunk = ruleDisplay.textChunks[2] as TextChunk.ClickableText
+            assertThat(clickableChunk.text).isEqualTo("“cat”")
+            assertThat(clickableChunk.isAmbiguous).isFalse()
+
+            clickableChunk.onClick()
+            assertThat(lastEnteredEditField)
+                .isInstanceOf(RulesScreenViewState.EditField.Keywords::class.java)
+        }
+
+    @Test
+    fun buildRuleText_multipleKeywords() =
+        kosmos.runTest {
+            var lastEnteredEditField: RulesScreenViewState.EditField? = null
+
+            val draftRule =
+                DraftRuleModel.New(
+                    action = ActionModel.Bundle,
+                    filter =
+                        DraftFilterModel(
+                            keywords = KeywordsModel(listOf("cat", "dog", "pet", "animal"))
+                        ),
+                )
+
+            val underTest =
+                notificationRuleEditViewModelFactory.create(
+                    draftRule,
+                    onNavigateToCurrentRulesScreen = {},
+                )
+
+            val ruleDisplay =
+                underTest.buildRuleText(
+                    onEnterEditField = { lastEnteredEditField = it },
+                    onExitEditField = {},
+                    resources = applicationContext.resources,
+                )
+
+            assertThat(ruleDisplay.textChunks).hasSize(3)
+            assertThat(ruleDisplay.textChunks[0]).isEqualTo(TextChunk.BasicText("Notifications"))
+            assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" that contain "))
+
+            assertThat(ruleDisplay.textChunks[2]).isInstanceOf(TextChunk.ClickableText::class.java)
+            val clickableChunk = ruleDisplay.textChunks[2] as TextChunk.ClickableText
+            assertThat(clickableChunk.text).isEqualTo("“cat” +3 more")
+            assertThat(clickableChunk.isAmbiguous).isFalse()
+
+            clickableChunk.onClick()
+            assertThat(lastEnteredEditField)
+                .isInstanceOf(RulesScreenViewState.EditField.Keywords::class.java)
+        }
+
+    @Test
+    fun buildRuleText_allFields() =
         kosmos.runTest {
             val contact =
                 ContactModel(
@@ -318,6 +398,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                                     RuleValue.Specified(
                                         IncludedAppsModel(listOf(app, APP_CHAT_CAT, APP_POST_CAT))
                                     ),
+                                keywords = KeywordsModel(listOf("cat", "dog", "pet", "animal")),
                             ),
                     ),
                     onNavigateToCurrentRulesScreen = {},
@@ -330,7 +411,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                     resources = applicationContext.resources,
                 )
 
-            assertThat(ruleDisplay.textChunks).hasSize(7)
+            assertThat(ruleDisplay.textChunks).hasSize(9)
 
             assertThat(ruleDisplay.textChunks[0]).isEqualTo(TextChunk.BasicText("Notifications"))
             assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" from "))
@@ -348,6 +429,13 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
             assertThat(ruleDisplay.textChunks[6]).isInstanceOf(TextChunk.ClickableText::class.java)
             val clickableChunkContacts = ruleDisplay.textChunks[6] as TextChunk.ClickableText
             assertThat(clickableChunkContacts.text).isEqualTo("Mom Cell")
+            assertThat(clickableChunkContacts.isAmbiguous).isFalse()
+
+            assertThat(ruleDisplay.textChunks[7]).isEqualTo(TextChunk.BasicText(" that contain "))
+
+            assertThat(ruleDisplay.textChunks[8]).isInstanceOf(TextChunk.ClickableText::class.java)
+            val clickableChunk = ruleDisplay.textChunks[8] as TextChunk.ClickableText
+            assertThat(clickableChunk.text).isEqualTo("“cat” +3 more")
             assertThat(clickableChunkContacts.isAmbiguous).isFalse()
         }
 
@@ -384,11 +472,10 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                         action = ActionModel.Highlight,
                         filter =
                             DraftFilterModel(
-                                contacts = null,
                                 includedApps =
                                     RuleValue.Specified(
                                         IncludedAppsModel(listOf(APP_CHAT_CAT, APP_POST_CAT))
-                                    ),
+                                    )
                             ),
                     ),
                     onNavigateToCurrentRulesScreen = {},
@@ -428,8 +515,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                         action = ActionModel.Highlight,
                         filter =
                             DraftFilterModel(
-                                contacts = RuleValue.Specified(ContactsModel(listOf(CONTACT_CAT))),
-                                includedApps = null,
+                                contacts = RuleValue.Specified(ContactsModel(listOf(CONTACT_CAT)))
                             ),
                     ),
                     onNavigateToCurrentRulesScreen = {},
@@ -438,6 +524,42 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
             underTest.onContactsSaved(newContacts = emptyList()) { onExitInvoked = true }
 
             assertThat(underTest.rule.filter.contacts).isNull()
+            assertThat(onExitInvoked).isTrue()
+        }
+
+    @Test
+    fun onKeywordsSaved_storesNewList() =
+        kosmos.runTest {
+            var onExitInvoked = false
+            val underTest =
+                notificationRuleEditViewModelFactory.create(
+                    DraftRuleModel.New(action = ActionModel.Highlight, filter = DraftFilterModel()),
+                    onNavigateToCurrentRulesScreen = {},
+                )
+
+            underTest.onKeywordsSaved(listOf("fish", "horse")) { onExitInvoked = true }
+
+            assertThat(underTest.rule.filter.keywords)
+                .isEqualTo(KeywordsModel(listOf("fish", "horse")))
+            assertThat(onExitInvoked).isTrue()
+        }
+
+    @Test
+    fun onKeywordsSaved_emptyList_resetsToNull() =
+        kosmos.runTest {
+            var onExitInvoked = false
+            val underTest =
+                notificationRuleEditViewModelFactory.create(
+                    DraftRuleModel.New(
+                        action = ActionModel.Highlight,
+                        filter = DraftFilterModel(keywords = KeywordsModel(listOf("fish", "horse"))),
+                    ),
+                    onNavigateToCurrentRulesScreen = {},
+                )
+
+            underTest.onKeywordsSaved(newKeywords = emptyList()) { onExitInvoked = true }
+
+            assertThat(underTest.rule.filter.keywords).isNull()
             assertThat(onExitInvoked).isTrue()
         }
 

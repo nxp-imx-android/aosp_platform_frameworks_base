@@ -36,19 +36,24 @@ public data class RuleModel(
 )
 
 /** Represents a specific filter on a rule. See [android.app.NotificationRule.Filter]. */
-public data class FilterModel(
+data class FilterModel(
     /**
      * The contacts that this rule applies to. Null if contacts are not part of the rule filter. See
      * [android.app.NotificationRule.Filter.getContacts].
      */
-    public val contacts: ContactsModel?,
+    val contacts: ContactsModel? = null,
     /**
      * The apps that this rule applies to. Null if included apps are not part of the rule filter.
-     * [android.app.NotificationRule.Filter.getIncludedPackageUids].
+     * See [android.app.NotificationRule.Filter.getIncludedPackageUids].
      */
-    public val includedApps: IncludedAppsModel?,
+    val includedApps: IncludedAppsModel? = null,
+    /**
+     * The keywords that this rule applies to. Null if keywords are not part of the rule filter. See
+     * [android.app.NotificationRule.Filter.getKeywords].
+     */
+    val keywords: KeywordsModel? = null,
 ) {
     /** Returns true if at least one field in the filter is filled in with content. */
     val hasContent: Boolean
-        get() = contacts != null || includedApps != null
+        get() = contacts != null || includedApps != null || keywords != null
 }

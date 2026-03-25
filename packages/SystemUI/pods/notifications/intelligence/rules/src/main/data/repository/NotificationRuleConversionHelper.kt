@@ -37,11 +37,6 @@ object NotificationRuleConversionHelper {
             PRIMARY_ACTION_BLOCK to ActionModel.Block,
         )
 
-    fun NotificationRule.Action.toInternalModel(): ActionModel {
-        return validActionsMap[this.primaryAction]
-            ?: throw IllegalStateException("Action $this not present in validActionsMap")
-    }
-
     fun ActionModel.toExternalModel(): NotificationRule.Action {
         val primaryAction =
             validActionsMap.entries.find { it.value == this }?.key
