@@ -2056,8 +2056,12 @@
     <!-- True if live wallpapers can be supported in the deskop experience -->
     <bool name="config_isLiveWallpaperSupportedInDesktopExperience">false</bool>
 
-     <!-- Whether to create scaled versions of the default wallpaper image to match the display size -->
+    <!-- Whether to create scaled versions of the default wallpaper image to match the display size -->
     <bool name="config_optimizeDefaultWallpaper">false</bool>
+
+    <!-- The maximum number of optimized default wallpapers to keep. This is only relevant if
+         config_optimizeDefaultWallpaper is true. -->
+    <integer name="config_maxNumOptimizedDefaultWallpapers">3</integer>
 
     <!-- True if the default wallpaper should be used until the user is unlocked. -->
     <bool name="config_useDefaultWallpaperUntilUnlocked">false</bool>

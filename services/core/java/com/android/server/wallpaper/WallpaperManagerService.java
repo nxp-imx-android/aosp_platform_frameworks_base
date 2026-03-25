@@ -3162,6 +3162,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                 try {
                     Slog.d(TAG, "getCroppedDefaultWallpaper: Returning existing crop for display "
                             + displayId + " with size " + width + "x" + height);
+                    cropFile.setLastModified(System.currentTimeMillis());
                     return ParcelFileDescriptor.open(cropFile, MODE_READ_ONLY);
                 } catch (FileNotFoundException e) {
                     // fall through to regeneration
@@ -3176,12 +3177,32 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                 mWallpaperCropper.generateDefaultWallpaperCrop(context, cropFile, which,
                         maxSide, maxSide);
                 SELinux.restorecon(cropFile);
+                cropFile.setLastModified(System.currentTimeMillis());
+                manageDefaultWallpaperCache();
 
                 return ParcelFileDescriptor.open(cropFile, MODE_READ_ONLY);
             } catch (PackageManager.NameNotFoundException | IOException e) {
                 Slog.w(TAG, "Failed to get cropped default wallpaper", e);
             }
             return null;
+        }
+    }
+
+    private void manageDefaultWallpaperCache() {
+        int maxCacheSize = mContext.getResources().getInteger(
+                com.android.internal.R.integer.config_maxNumOptimizedDefaultWallpapers);
+        File[] files = WallpaperUtils.getDefaultCropFiles();
+        if (files == null || files.length <= maxCacheSize) {
+            return;
+        }
+
+        // Sort by last modified time, oldest first
+        Arrays.sort(files, (f1, f2) -> Long.compare(f1.lastModified(), f2.lastModified()));
+
+        // Keep the maxCacheSize most recent, delete others
+        for (int i = 0; i < files.length - maxCacheSize; i++) {
+            Slog.i(TAG, "Deleting old cropped default wallpaper: " + files[i].getName());
+            files[i].delete();
         }
     }
 
