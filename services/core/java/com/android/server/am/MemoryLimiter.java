@@ -458,7 +458,8 @@ class MemoryLimiter implements AutoCloseable {
         // ready.
         private void initializeMemoryLimits() {
             Limits ignored = new Limits(LIMIT_IS_IGNORED, LIMIT_IS_IGNORED);
-            Limits cached = new Limits(LIMIT_IS_DISABLED, LIMIT_IS_IGNORED);
+            Limits cached = new Limits(LIMIT_IS_IGNORED, LIMIT_IS_DISABLED);
+            Limits unregulated = new Limits(LIMIT_IS_DISABLED, LIMIT_IS_DISABLED);
             Limits notVisible = new Limits(mConfiguration.memNotVisible,
                     mConfiguration.swapNotVisible);
             Limits visible = new Limits(mConfiguration.memVisible,
@@ -474,6 +475,9 @@ class MemoryLimiter implements AutoCloseable {
                 } else if (ActivityManager.isProcStateCached(state)) {
                     // Limits are lifted from cached processes.
                     mStateLimit.set(state, cached);
+                } else if (state == ActivityManager.PROCESS_STATE_PERSISTENT_UI) {
+                    // Remove limits from this process state.
+                    mStateLimit.set(state, unregulated);
                 } else if (ActivityManager.isProcStateJankPerceptible(state)) {
                     mStateLimit.set(state, visible);
                 } else {
