@@ -30,7 +30,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 2
-        documentation: "Screen capture is allowed. "
+        documentation: "Screen capture is allowed."
       }
       resolution_mechanism {
         custom: true
@@ -60,7 +60,7 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Policy that controls whether the time is automatically obtained from the network or not. "
+  documentation: "Policy that controls whether the time is automatically obtained from the network or not."
   type_specific_metadata {
     enum_metadata {
       int_def_name: "android.app.admin.PolicyIdentifier.AutoTimeValue"
@@ -71,7 +71,7 @@ policy_metadata {
           class_name: "PolicyIdentifier"
           package_name: "android.app.admin"
         }
-        documentation: "The user can choose whether the time is automatically obtained from the network or not. "
+        documentation: "The user can choose whether the time is automatically obtained from the network or not."
       }
       values {
         field_name {
@@ -146,7 +146,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 1
-        documentation: "Specifies that the user is allowed to transfer managed eSIMs from the device. "
+        documentation: "Specifies that the user is allowed to transfer managed eSIMs from the device."
       }
       values {
         field_name {
@@ -155,7 +155,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 2
-        documentation: "Specifies that the user is not allowed to transfer managed eSIMs from the device. "
+        documentation: "Specifies that the user is not allowed to transfer managed eSIMs from the device."
       }
       resolution_mechanism {
         most_restrictive {
@@ -197,7 +197,7 @@ policy_metadata {
           class_name: "PolicyIdentifier"
           package_name: "android.app.admin"
         }
-        documentation: "The user can choose whether the device\'s time zone is set automatically or not. "
+        documentation: "The user can choose whether the device\'s time zone is set automatically or not."
       }
       values {
         field_name {
@@ -259,7 +259,7 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Policy that controls whether app installation is allowed or disallowed. "
+  documentation: "Policy that controls whether app installation is allowed or disallowed."
   type_specific_metadata {
     enum_metadata {
       default_value: 1
@@ -272,7 +272,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 1
-        documentation: "Installing Apps is allowed. "
+        documentation: "Installing Apps is allowed."
       }
       values {
         field_name {
@@ -281,7 +281,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 2
-        documentation: "Installing Apps is disallowed. "
+        documentation: "Installing Apps is disallowed."
       }
       resolution_mechanism {
         custom: true
@@ -311,7 +311,7 @@ policy_metadata {
     class_name: "Integer"
     package_name: "java.lang"
   }
-  documentation: "Policy that controls whether app uninstallation is allowed or disallowed. "
+  documentation: "Policy that controls whether app uninstallation is allowed or disallowed."
   type_specific_metadata {
     enum_metadata {
       default_value: 1
@@ -324,7 +324,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 1
-        documentation: "Uninstalling Apps is allowed. "
+        documentation: "Uninstalling Apps is allowed."
       }
       values {
         field_name {
@@ -333,7 +333,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 2
-        documentation: "Uninstalling Apps is disallowed. "
+        documentation: "Uninstalling Apps is disallowed."
       }
       resolution_mechanism {
         custom: true
@@ -376,7 +376,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 1
-        documentation: "Easter eggs are disallowed. "
+        documentation: "Easter eggs are disallowed."
       }
       values {
         field_name {
@@ -385,7 +385,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 2
-        documentation: "Easter eggs are allowed. "
+        documentation: "Easter eggs are allowed."
       }
       resolution_mechanism {
         custom: true
@@ -426,7 +426,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 1
-        documentation: "The settings menu of the user has factory reset disabled. "
+        documentation: "The settings menu of the user has factory reset disabled."
       }
       values {
         field_name {
@@ -435,7 +435,7 @@ policy_metadata {
           package_name: "android.app.admin"
         }
         int_value: 2
-        documentation: "The settings menu of the user has the factory reset option. "
+        documentation: "The settings menu of the user has the factory reset option."
       }
       resolution_mechanism {
         custom: true
@@ -453,6 +453,58 @@ policy_metadata {
   allowed_dpc_types: DPC_TYPE_PROFILE_OWNER_ON_USER0
   allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
   flag: "android.app.admin.flags.policy_streamlining_disallow_factory_reset"
+}
+policy_metadata {
+  identifier {
+    field_name: "BLUETOOTH_SHARING"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Integer"
+    package_name: "java.lang"
+  }
+  documentation: "Policy that controls whether Bluetooth sharing is allowed or disallowed."
+  type_specific_metadata {
+    enum_metadata {
+      default_value: 2
+      int_def_name: "android.app.admin.PolicyIdentifier.BluetoothSharingValue"
+      documentation: "Possible values {@link BLUETOOTH_SHARING}\n\n@hide"
+      values {
+        field_name {
+          field_name: "BLUETOOTH_SHARING_DISALLOWED"
+          class_name: "PolicyIdentifier"
+          package_name: "android.app.admin"
+        }
+        int_value: 1
+        documentation: "Bluetooth sharing is disallowed."
+      }
+      values {
+        field_name {
+          field_name: "BLUETOOTH_SHARING_ALLOWED"
+          class_name: "PolicyIdentifier"
+          package_name: "android.app.admin"
+        }
+        int_value: 2
+        documentation: "Bluetooth sharing is allowed."
+      }
+      resolution_mechanism {
+        custom: true
+      }
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  allowed_scopes: POLICY_SCOPE_DEVICE
+  affected_resource: RESOURCE_PER_USER
+  required_permission: "android.permission.MANAGE_DEVICE_POLICY_BLUETOOTH"
+  required_cross_user_permission: "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS"
+  allowed_dpc_types: DPC_TYPE_DEVICE_OWNER
+  allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
+  allowed_dpc_types: DPC_TYPE_PROFILE_OWNER_ON_USER0
+  allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
+  allowed_dpc_types: DPC_TYPE_UNAFFILIATED_FULL_USER_PROFILE_OWNER
+  allowed_dpc_types: DPC_TYPE_AFFILIATED_FULL_USER_PROFILE_OWNER
+  flag: "android.app.admin.flags.policy_streamlining_bluetooth_sharing"
 }
 policy_metadata {
   identifier {
