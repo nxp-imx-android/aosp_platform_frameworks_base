@@ -1492,7 +1492,7 @@ public class InputManagerService extends IInputManager.Stub
             @NonNull IBinder toChannelToken, boolean transferEntireGesture) {
         Objects.requireNonNull(fromChannelToken);
         Objects.requireNonNull(toChannelToken);
-        ProtoLog.d(INPUT_STREAM_MODIFIER_LOG, "transferTouchGesture: transferEntireGesture=%s",
+        ProtoLog.d(INPUT_STREAM_MODIFIER_LOG, "transferTouchGesture: transferEntireGesture=%b",
                 transferEntireGesture);
         return mNative.transferTouchGesture(fromChannelToken, toChannelToken,
                 false /* isDragDrop */, transferEntireGesture);
