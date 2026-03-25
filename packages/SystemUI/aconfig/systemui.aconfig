@@ -1303,6 +1303,16 @@ flag {
 }
 
 flag {
+    name: "qs_cast_tile_hsum_fix"
+    namespace: "systemui"
+    description: "Fix to make the cast tile work properly in headless system user mode."
+    bug: "455936312"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "qs_cast_tile_skip_wifi_check"
     namespace: "systemui"
     description: "Skip the wifi check for the cast tile."
