@@ -16,10 +16,12 @@
 package com.android.server.am.psc;
 
 import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
+import static android.app.ActivityManager.PROCESS_STATE_UNKNOWN;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager.ProcessCapability;
+import android.app.ActivityManager.ProcessState;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 /**
@@ -40,6 +42,9 @@ import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 abstract class GraphEdge {
     /** The cached value of {@link #evaluateCapabilityFilter}. */
     private @ProcessCapability int mCachedCapabilityFilter = PROCESS_CAPABILITY_NONE;
+
+    /** The process state propagated through this edge. */
+    private @ProcessState int mProcState = PROCESS_STATE_UNKNOWN;
 
     @ProcessCapability
     int getCachedCapabilityFilter() {
@@ -70,4 +75,22 @@ abstract class GraphEdge {
      * @return a bitmask where each bit indicates whether the edge propagates a capability.
      */
     abstract @ProcessCapability int evaluateCapabilityFilter();
+
+    @ProcessState int getProcState() {
+        return mProcState;
+    }
+
+    /**
+     * Updates the process state by evaluating the edge's properties.
+     */
+    void updateProcState() {
+        mProcState = Math.max(getSource().getProcState(), evaluateProcState());
+    }
+
+    /**
+     * Evaluates the process state that should be propagated through this edge.
+     *
+     * @return the evaluated {@link ProcessState}.
+     */
+    protected abstract @ProcessState int evaluateProcState();
 }

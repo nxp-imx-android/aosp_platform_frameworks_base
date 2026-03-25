@@ -16,8 +16,10 @@
 
 package com.android.server.am.psc;
 
+import static android.app.ActivityManager.MIN_PROCESS_STATE;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_ALL;
 import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
+import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
 import static android.app.ActivityManager.PROCESS_STATE_UNKNOWN;
 
 import static com.android.server.am.psc.Constants.UNKNOWN_ADJ;
@@ -291,6 +293,11 @@ final class TestGraphElements {
         public @ProcessCapability int getCapability() {
             return PROCESS_CAPABILITY_ALL;
         }
+
+        @Override
+        public @ProcessState int getProcState() {
+            return MIN_PROCESS_STATE;
+        }
     }
 
     /**
@@ -301,12 +308,14 @@ final class TestGraphElements {
         private final @NonNull GraphNode mSource;
         private final @NonNull TestProcessNode mTarget;
         private final @ProcessCapability int mCapabilityFilter;
+        private final @ProcessState int mEvaluatedProcState;
 
         private TestEdge(@NonNull GraphNode source, @NonNull TestProcessNode target,
-                @ProcessCapability int capabilityFilter) {
+                @ProcessCapability int capabilityFilter, @ProcessState int evaluatedProcState) {
             mSource = source;
             mTarget = target;
             mCapabilityFilter = capabilityFilter;
+            mEvaluatedProcState = evaluatedProcState;
         }
 
         @Override
@@ -333,10 +342,16 @@ final class TestGraphElements {
             return mCapabilityFilter;
         }
 
+        @Override
+        protected int evaluateProcState() {
+            return mEvaluatedProcState;
+        }
+
         static class Builder {
             private final @NonNull GraphNode mSource;
             private final @NonNull TestProcessNode mTarget;
             private @ProcessCapability int mCapabilityFilter = PROCESS_CAPABILITY_NONE;
+            private @ProcessState int mEvaluatedProcState = PROCESS_STATE_NONEXISTENT;
 
             Builder(@NonNull GraphNode source, @NonNull TestProcessNode target) {
                 mSource = source;
@@ -348,8 +363,13 @@ final class TestGraphElements {
                 return this;
             }
 
+            Builder withEvaluatedProcState(@ProcessState int evaluatedProcState) {
+                mEvaluatedProcState = evaluatedProcState;
+                return this;
+            }
+
             TestEdge build() {
-                return new TestEdge(mSource, mTarget, mCapabilityFilter);
+                return new TestEdge(mSource, mTarget, mCapabilityFilter, mEvaluatedProcState);
             }
         }
     }
