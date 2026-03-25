@@ -725,6 +725,12 @@ class BubblePositionerTest {
         assertThat(positioner.isPendingBubbleBarTopOnScreenUpdate).isFalse()
     }
 
+    @Test
+    fun largestAvailableRectOffset() {
+        positioner.update(defaultDeviceConfig.copy(insets = Insets.of(100, 200, 300, 250)))
+        assertThat(positioner.largestAvailableRectOffset).isEqualTo(300)
+    }
+
     private fun verifyGetBubbleBarExpandedViewBounds(onLeft: Boolean, isOverflow: Boolean) {
         positioner.isShowingInBubbleBar = true
         positioner.bubbleBarLocation =

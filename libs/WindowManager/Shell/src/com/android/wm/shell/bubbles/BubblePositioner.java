@@ -307,6 +307,20 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
     }
 
     /**
+     * Checks the offsets between the available rect and the screen rect for all edges and returns
+     * the largest offset as a positive number.
+     */
+    public int getLargestAvailableRectOffset() {
+        // calculate the offsets between the available rect bounds and the screen bounds in positive
+        // values
+        int leftOffset = getAvailableRect().left - getScreenRect().left;
+        int topOffset = getAvailableRect().top - getScreenRect().top;
+        int rightOffset = getScreenRect().right - getAvailableRect().right;
+        int bottomOffset = getScreenRect().bottom - getAvailableRect().bottom;
+        return Math.max(leftOffset, Math.max(topOffset, Math.max(rightOffset, bottomOffset)));
+    }
+
+    /**
      * On large screen (not small tablet), while in portrait, expanded bubbles are aligned to
      * the bottom of the screen.
      *

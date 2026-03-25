@@ -1504,7 +1504,15 @@ public class BubbleStackView extends FrameLayout
             // To calculate a distance, bubble stack needs to be moved to become hidden,
             // we need to take into account that the bubble stack is positioned on the edge
             // of the available screen rect, which can be offset by system bars and cutouts.
-            if (mStackAnimationController.isStackOnLeftSide()) {
+            if (Flags.fixBubblesStackVisibleInImmersive()) {
+                // use the largest edge offset to make sure that we are animating the stack far
+                // enough in case we are also going to rotate
+                int offset = mPositioner.getLargestAvailableRectOffset();
+                int tx = mStackAnimationController.isStackOnLeftSide()
+                        ? -(mBubbleSize + offset)
+                        : mBubbleSize + offset;
+                mBubbleContainer.animate().translationX(tx).start();
+            } else if (mStackAnimationController.isStackOnLeftSide()) {
                 int availableRectOffsetX =
                         mPositioner.getAvailableRect().left - mPositioner.getScreenRect().left;
                 mBubbleContainer
