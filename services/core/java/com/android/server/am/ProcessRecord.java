@@ -18,6 +18,7 @@ package com.android.server.am;
 
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_ACTIVITY;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_FOREGROUND_SERVICE;
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.os.Process.INVALID_UID;
 
 import static com.android.internal.util.Preconditions.checkArgument;
@@ -1515,8 +1516,13 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
                 sb.append(appId);
             }
             if (uid != info.uid) {
-                sb.append('i');
-                sb.append(UserHandle.getAppId(uid) - Process.FIRST_ISOLATED_UID);
+                if (enablePccFrameworkSupport() && Process.isPrivateComputeCoreUid(uid))  {
+                    sb.append('p');
+                    sb.append(UserHandle.getAppId(uid) - Process.FIRST_PCC_UID);
+                } else {
+                    sb.append('i');
+                    sb.append(UserHandle.getAppId(uid) - Process.FIRST_ISOLATED_UID);
+                }
             }
         }
     }

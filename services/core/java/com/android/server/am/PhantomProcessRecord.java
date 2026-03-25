@@ -16,6 +16,7 @@
 
 package com.android.server.am;
 
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.os.Process.PROC_NEWLINE_TERM;
 import static android.os.Process.PROC_OUT_LONG;
 
@@ -206,6 +207,9 @@ public final class PhantomProcessRecord {
             if (appId >= Process.FIRST_ISOLATED_UID && appId <= Process.LAST_ISOLATED_UID) {
                 sb.append('i');
                 sb.append(appId - Process.FIRST_ISOLATED_UID);
+            } else if (enablePccFrameworkSupport() && Process.isPrivateComputeCoreUid(appId)) {
+                sb.append('p');
+                sb.append(appId - Process.FIRST_PCC_UID);
             }
         }
         sb.append('}');
