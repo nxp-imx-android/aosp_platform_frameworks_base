@@ -17,8 +17,11 @@
 package com.android.server.privatecompute;
 
 import static android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT;
+
 import static com.android.server.privatecompute.PccSandboxManagerServiceImpl.AUDIT_LOG_CLEANUP_INTERVAL_MS;
+
 import static com.google.common.util.concurrent.MoreExecutors.newDirectExecutorService;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -31,7 +34,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -447,6 +449,49 @@ public class PccSandboxManagerServiceImplTest {
         verify(mCallback).onError(eq(MigrationException.ERROR_TIMEOUT), anyString());
 
         // Verify unbind
+        verify(mContext).unbindService(connectionCaptor.getValue());
+    }
+
+    @Test
+    public void testStartNonPccProcessForDataMigration_invalidBundle() throws Exception {
+        setupMigrationService(true);
+
+        IDataMigrationToPccService.Stub mockBinder = mock(IDataMigrationToPccService.Stub.class);
+        IDataMigrationToPccService mockInterface = mock(IDataMigrationToPccService.class);
+        when(mockBinder.queryLocalInterface(any())).thenReturn(mockInterface);
+
+        ArgumentCaptor<ServiceConnection> connectionCaptor =
+                ArgumentCaptor.forClass(ServiceConnection.class);
+        when(mContext.bindServiceAsUser(any(), connectionCaptor.capture(), anyInt(), any()))
+                .thenReturn(true);
+
+        mService.startNonPccProcessForDataMigration(mCallback);
+
+        verify(mContext).bindServiceAsUser(any(), any(), eq(Context.BIND_AUTO_CREATE),
+                eq(UserHandle.getUserHandleForUid(TEST_UID)));
+
+        connectionCaptor.getValue().onServiceConnected(new ComponentName(TEST_PACKAGE_NAME,
+                TEST_SERVICE_CLASS), mockBinder);
+
+        ArgumentCaptor<IMigrationRequestResultSender> completionCallbackCaptor =
+                ArgumentCaptor.forClass(IMigrationRequestResultSender.class);
+        verify(mockInterface).onMigrationRequested(completionCallbackCaptor.capture());
+
+        PersistableBundle outerBundle = new PersistableBundle();
+        PersistableBundle currentBundle = outerBundle;
+        for (int i = 0; i < 101; i++) {
+            PersistableBundle nextBundle = new PersistableBundle();
+            currentBundle.putPersistableBundle("key", nextBundle);
+            currentBundle = nextBundle;
+        }
+
+        MigrationRequestResult result = new MigrationRequestResult(
+                MigrationRequestResult.MIGRATION_REQUEST_ACCEPTED, outerBundle);
+        completionCallbackCaptor.getValue().sendResult(result);
+
+        verify(mCallback).onError(eq(MigrationException.ERROR_INVOCATION_FAILED),
+                anyString());
+
         verify(mContext).unbindService(connectionCaptor.getValue());
     }
 
