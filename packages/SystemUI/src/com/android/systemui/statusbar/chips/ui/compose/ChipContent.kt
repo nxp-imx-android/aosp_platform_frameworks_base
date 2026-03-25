@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.chips.ui.compose
 
-import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -25,23 +24,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.Measurable
-import androidx.compose.ui.layout.MeasureResult
-import androidx.compose.ui.layout.MeasureScope
-import androidx.compose.ui.node.LayoutModifierNode
-import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.constrain
 import androidx.compose.ui.unit.dp
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
@@ -52,7 +40,6 @@ import com.android.systemui.statusbar.chips.ui.viewmodel.rememberTimeRemainingSt
 import com.android.systemui.statusbar.chips.ui.viewmodel.toFormatter
 import java.text.NumberFormat
 import java.util.Locale
-import kotlin.math.min
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -234,163 +221,6 @@ fun ChipContent(
 
         is OngoingActivityChipModel.Content.IconOnly -> {
             throw IllegalStateException("ChipContent should only be used if the chip shows text")
-        }
-    }
-}
-
-/** A modifier that ensures the width of the content only increases and never decreases. */
-@VisibleForTesting
-fun Modifier.neverDecreaseWidth(density: Density, locale: Locale?, textLength: Int): Modifier {
-    return this.then(NeverDecreaseWidthElement(density, locale, textLength))
-}
-
-private data class NeverDecreaseWidthElement(
-    val density: Density,
-    val locale: Locale?,
-    val textLength: Int,
-) : ModifierNodeElement<NeverDecreaseWidthNode>() {
-    override fun create(): NeverDecreaseWidthNode {
-        return NeverDecreaseWidthNode(density, locale, textLength)
-    }
-
-    override fun update(node: NeverDecreaseWidthNode) {
-        node.textLength = textLength
-        node.locale = locale
-        node.density = density
-    }
-}
-
-private class NeverDecreaseWidthNode(
-    initialDensity: Density,
-    initialLocale: Locale?,
-    initialTextLength: Int,
-) : Modifier.Node(), LayoutModifierNode {
-    private var minWidth = 0
-
-    var density: Density = initialDensity
-        set(value) {
-            if (field != value) {
-                // Reset minWidth in case display size decreased. See b/395607413.
-                minWidth = 0
-            }
-            field = value
-        }
-
-    var locale: Locale? = initialLocale
-        set(value) {
-            if (field != value) {
-                // Reset minWidth in case new locale has smaller characters. See b/414387398.
-                minWidth = 0
-            }
-            field = value
-        }
-
-    var textLength = initialTextLength
-        set(value) {
-            if (field != value) {
-                // Reset minWidth in case the total number of characters has decreased. (e.g. from
-                // 1:00:00 to 59:59). See b/450956553.
-                minWidth = 0
-            }
-            field = value
-        }
-
-    override fun MeasureScope.measure(
-        measurable: Measurable,
-        constraints: Constraints,
-    ): MeasureResult {
-        val placeable = measurable.measure(Constraints(minWidth = minWidth).constrain(constraints))
-        val width = placeable.width
-        val height = placeable.height
-
-        minWidth = maxOf(minWidth, width)
-
-        return layout(width, height) { placeable.place(0, 0) }
-    }
-}
-
-/**
- * A custom layout modifier for text that ensures the text is only visible if it completely fits
- * within the constrained bounds. Imposes a provided [maxTextWidth]. Also, accounts for provided
- * padding values if provided and ensures its text is placed with the provided padding included
- * around it.
- */
-private fun Modifier.hideTextIfDoesNotFit(
-    text: String,
-    textStyle: TextStyle,
-    textMeasurer: TextMeasurer,
-    maxTextWidth: Dp,
-    startPadding: Dp = 0.dp,
-    endPadding: Dp = 0.dp,
-): Modifier {
-    return this.then(
-        HideTextIfDoesNotFitElement(
-            text,
-            textStyle,
-            textMeasurer,
-            maxTextWidth,
-            startPadding,
-            endPadding,
-        )
-    )
-}
-
-private data class HideTextIfDoesNotFitElement(
-    val text: String,
-    val textStyle: TextStyle,
-    val textMeasurer: TextMeasurer,
-    val maxTextWidth: Dp,
-    val startPadding: Dp,
-    val endPadding: Dp,
-) : ModifierNodeElement<HideTextIfDoesNotFitNode>() {
-    override fun create(): HideTextIfDoesNotFitNode {
-        return HideTextIfDoesNotFitNode(
-            text,
-            textStyle,
-            textMeasurer,
-            maxTextWidth,
-            startPadding,
-            endPadding,
-        )
-    }
-
-    override fun update(node: HideTextIfDoesNotFitNode) {
-        node.text = text
-        node.textStyle = textStyle
-        node.textMeasurer = textMeasurer
-        node.maxTextWidth = maxTextWidth
-        node.startPadding = startPadding
-        node.endPadding = endPadding
-    }
-}
-
-private class HideTextIfDoesNotFitNode(
-    var text: String,
-    var textStyle: TextStyle,
-    var textMeasurer: TextMeasurer,
-    var maxTextWidth: Dp,
-    var startPadding: Dp,
-    var endPadding: Dp,
-) : Modifier.Node(), LayoutModifierNode {
-    override fun MeasureScope.measure(
-        measurable: Measurable,
-        constraints: Constraints,
-    ): MeasureResult {
-        val horizontalPadding = startPadding + endPadding
-        val maxWidth =
-            min(maxTextWidth.roundToPx(), (constraints.maxWidth - horizontalPadding.roundToPx()))
-                .coerceAtLeast(constraints.minWidth)
-        val placeable = measurable.measure(constraints.copy(maxWidth = maxWidth))
-
-        val intrinsicWidth = textMeasurer.measure(text, textStyle, softWrap = false).size.width
-        return if (intrinsicWidth <= maxWidth) {
-            val height = placeable.height
-            val width = placeable.width
-            layout(width + horizontalPadding.roundToPx(), height) {
-                placeable.placeRelative(x = startPadding.roundToPx(), y = 0)
-            }
-        } else {
-            layout(0, 0) {}
         }
     }
 }
