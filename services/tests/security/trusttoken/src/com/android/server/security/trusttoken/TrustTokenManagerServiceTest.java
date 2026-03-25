@@ -29,12 +29,17 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.AdditionalMatchers.aryEq;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import android.app.StatsManager;
+import android.os.OutcomeReceiver;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
@@ -46,6 +51,7 @@ import android.security.trusttoken.TrustTokenManager;
 import android.security.trusttoken.TrustTokenUnavailableException;
 import android.testing.TestableContext;
 import android.util.Base64;
+import android.util.Pair;
 import android.util.StatsEvent;
 import android.util.StatsEventTestUtils;
 import android.util.StatsLog;
@@ -73,6 +79,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -106,6 +114,9 @@ public final class TrustTokenManagerServiceTest {
     static final byte[] CHALLENGE = testdata("challenge_1");
     static final byte[] CHALLENGE_RESPONSE =
             testdata("root_1_intermediate_1_token_1_challenge_1_response");
+    static final TrustTokenBatchAttestation FAKE_ATTESTATION =
+            new TrustTokenBatchAttestation(
+                    "batch-hash".getBytes(), "signature".getBytes(), List.of());
     private static final String DATABASE_NAME = "trust_token_test";
     private static final String MASTER_KEY_PREFIX = "trust_token_test_";
     static final long SYSTEM_UP_TO_DATE_THRESHOLD_MILLIS =
@@ -124,6 +135,10 @@ public final class TrustTokenManagerServiceTest {
 
     @Captor ArgumentCaptor<StatsEvent> mStatsEventCaptor;
 
+    @Captor
+    ArgumentCaptor<OutcomeReceiver<Pair<TrustConfiguration, List<byte[]>>, Throwable>>
+            mProviderOutcomeCaptor;
+
     ExtensionRegistryLite mLogRegistry = ExtensionRegistryLite.newInstance();
 
     TrustTokenManager mManager;
@@ -132,6 +147,8 @@ public final class TrustTokenManagerServiceTest {
     TrustTokenManagerService mService;
     TrustTokenManagerInternal mInternal;
 
+    TrustTokenProvider mProvider = mock(TrustTokenProvider.class);
+    OutcomeReceiver<Void, Throwable> mCallback = mock(OutcomeReceiver.class);
     Clock mClock = spy(Clock.SYSTEM_CLOCK);
 
     static byte[] testdata(String path) {
@@ -157,6 +174,10 @@ public final class TrustTokenManagerServiceTest {
         doReturn(CHALLENGE_RESPONSE)
                 .when(mMasterKey)
                 .sign(any(TrustTokenKey.class), aryEq(CHALLENGE));
+        doReturn(FAKE_ATTESTATION).when(mMasterKey).attest(any());
+        doReturn(TRUST_TOKEN_KEY_1, TRUST_TOKEN_KEY_2).when(mMasterKey).generatePerTokenKey();
+        mContext.getOrCreateTestableResources()
+                .addOverride(R.integer.vendor_required_trust_token_roots_timestamp, 1000);
         mService = new TrustTokenManagerService(mContext, mMasterKey, mDatabase, mClock);
         mManager = new TrustTokenManager(ITrustTokenManager.Stub.asInterface(mService.getBinder()));
         mInternal = mService.getInternal();
@@ -196,10 +217,39 @@ public final class TrustTokenManagerServiceTest {
         return state;
     }
 
+    // Sets the mock TrustTokenProvider to succeed with the given result.
+    void setProviderResult(TrustConfiguration configuration, List<byte[]> tokens) {
+        doAnswer(
+                    new Answer<Void>() {
+                        public Void answer(InvocationOnMock invocation) {
+                            mProviderOutcomeCaptor
+                                    .getValue()
+                                    .onResult(new Pair(configuration, tokens));
+                            return null;
+                        }
+                    })
+                .when(mProvider)
+                .requestVerifiedDeviceTokens(any(), any(), mProviderOutcomeCaptor.capture());
+    }
+
+    // Sets the mock TrustTokenProvider to fail.
+    void setProviderError(Throwable throwable) {
+        doAnswer(
+                    new Answer<Void>() {
+                        public Void answer(InvocationOnMock invocation) {
+                            mProviderOutcomeCaptor.getValue().onError(throwable);
+                            return null;
+                        }
+                    })
+                .when(mProvider)
+                .requestVerifiedDeviceTokens(any(), any(), any());
+    }
+
     @Test
     @RequiresFlagsEnabled(android.security.Flags.FLAG_ENABLE_TALISMAN_SERVICE)
     public void acquireVerifiedDeviceToken_success() throws Exception {
-        mInternal.updateTrustConfiguration(TRUST_CONFIGURATION_1);
+        setProviderResult(TRUST_CONFIGURATION_1, List.of());
+        mInternal.refillTokens(mProvider, 0, mCallback);
         assertThrows(
                 TrustTokenUnavailableException.class,
                 () -> mManager.acquireVerifiedDeviceToken(CHALLENGE));
@@ -209,7 +259,8 @@ public final class TrustTokenManagerServiceTest {
         assertThat(log.getOutcome())
                 .isEqualTo(AcquireTrustTokenCalled.Outcome.OUTCOME_TOKEN_EXHAUSTED);
 
-        mInternal.addTrustTokens(List.of(TRUST_TOKEN_KEY_1), List.of(TRUST_TOKEN_1));
+        setProviderResult(TRUST_CONFIGURATION_1, List.of(TRUST_TOKEN_1));
+        mInternal.refillTokens(mProvider, 1, mCallback);
         var token = mManager.acquireVerifiedDeviceToken(CHALLENGE);
         log = getLogEvent(TrustTokenExtensionAtomsProto.acquireTrustTokenCalled);
         assertThat(log.getTokenType()).isEqualTo(TrustTokenType.TRUST_TOKEN_TYPE_DEVICE);
@@ -223,7 +274,8 @@ public final class TrustTokenManagerServiceTest {
     @Test
     @RequiresFlagsEnabled(android.security.Flags.FLAG_ENABLE_TALISMAN_SERVICE)
     public void verifyTrustTokenAndChallenge_success() throws Exception {
-        mInternal.updateTrustConfiguration(TRUST_CONFIGURATION_1);
+        setProviderResult(TRUST_CONFIGURATION_1, List.of());
+        mInternal.refillTokens(mProvider, 0, mCallback);
         assertThat(
                         mManager.verifyTrustToken(
                                 new TrustToken(TRUST_TOKEN_1), CHALLENGE_RESPONSE, CHALLENGE))
@@ -238,7 +290,8 @@ public final class TrustTokenManagerServiceTest {
     @Test
     @RequiresFlagsEnabled(android.security.Flags.FLAG_ENABLE_TALISMAN_SERVICE)
     public void verifyTrustTokenAndChallenge_errors() throws Exception {
-        mInternal.updateTrustConfiguration(TRUST_CONFIGURATION_1);
+        setProviderResult(TRUST_CONFIGURATION_1, List.of());
+        mInternal.refillTokens(mProvider, 0, mCallback);
         assertThat(
                         mManager.verifyTrustToken(
                                 new TrustToken(TRUST_TOKEN_1),
@@ -250,7 +303,8 @@ public final class TrustTokenManagerServiceTest {
         assertThat(log.getOutcome())
                 .isEqualTo(VerifyTrustTokenCalled.Outcome.OUTCOME_CHALLENGE_INCORRECT);
 
-        mInternal.updateTrustConfiguration(TRUST_CONFIGURATION_2);
+        setProviderResult(TRUST_CONFIGURATION_2, List.of());
+        mInternal.refillTokens(mProvider, 0, mCallback);
         assertThat(
                         mManager.verifyTrustToken(
                                 new TrustToken(TRUST_TOKEN_1), CHALLENGE_RESPONSE, CHALLENGE))
@@ -275,17 +329,21 @@ public final class TrustTokenManagerServiceTest {
     }
 
     @Test
-    public void updateTrustConfiguration_success() {
-        mInternal.updateTrustConfiguration(TRUST_CONFIGURATION_1);
-        mInternal.updateTrustConfiguration(TRUST_CONFIGURATION_2);
-        // This token is invalid under the new trust configuration.
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> mInternal.addTrustTokens(List.of(TRUST_TOKEN_KEY_1), List.of(TRUST_TOKEN_1)));
+    public void refillTokens_success() {
+        setProviderResult(TRUST_CONFIGURATION_1, List.of(TRUST_TOKEN_1));
+        mInternal.refillTokens(mProvider, 1, mCallback);
+        verify(mCallback).onResult(any());
     }
 
     @Test
-    public void updateTrustConfiguration_useDeviceKeyWhenBothTimestampAreRecent() throws Exception {
+    public void refillTokens_invalidToken() {
+        setProviderResult(TRUST_CONFIGURATION_2, List.of(TRUST_TOKEN_1));
+        mInternal.refillTokens(mProvider, 1, mCallback);
+        verify(mCallback).onError(any(IllegalArgumentException.class));
+    }
+
+    @Test
+    public void refillTokens_useDeviceKeyWhenBothTimestampAreRecent() throws Exception {
         when(mClock.currentTimeMillis()).thenReturn(200000L);
         mContext.getOrCreateTestableResources()
                 .addOverride(R.integer.vendor_required_trust_token_roots_timestamp, 1000);
@@ -293,22 +351,22 @@ public final class TrustTokenManagerServiceTest {
                 .addOverride(
                         R.array.vendor_required_trust_token_roots,
                         new String[] {Base64.encodeToString(ROOT_KEY_1, Base64.DEFAULT)});
-        mInternal.updateTrustConfiguration(
+        setProviderResult(
                 new TrustConfiguration.Builder()
                         .addRootKey(ROOT_KEY_1)
                         .addRootKey(ROOT_KEY_2)
                         .addIntermediateCertificate(testdata("root_1_intermediate_1"))
                         .setUpdatedAt(Instant.ofEpochMilli(300000))
-                        .build());
-        // No exception is good.
-        mInternal.addTrustTokens(List.of(TRUST_TOKEN_KEY_1), List.of(TRUST_TOKEN_1));
+                        .build(),
+                List.of(TRUST_TOKEN_1));
+        mInternal.refillTokens(mProvider, 1, mCallback);
+        verify(mCallback).onResult(any());
         TrustTokenState state = pullState();
         assertFalse(state.getAuthorityFallback());
     }
 
     @Test
-    public void updateTrustConfiguration_useDeviceKeyWhenOnlyDeviceClockIsRecent()
-            throws Exception {
+    public void refillTokens_useDeviceKeyWhenOnlyDeviceClockIsRecent() throws Exception {
         when(mClock.currentTimeMillis()).thenReturn(200000L);
         mContext.getOrCreateTestableResources()
                 .addOverride(R.integer.vendor_required_trust_token_roots_timestamp, 1000);
@@ -316,22 +374,23 @@ public final class TrustTokenManagerServiceTest {
                 .addOverride(
                         R.array.vendor_required_trust_token_roots,
                         new String[] {Base64.encodeToString(ROOT_KEY_1, Base64.DEFAULT)});
-        mInternal.updateTrustConfiguration(
+        setProviderResult(
                 new TrustConfiguration.Builder()
                         .addRootKey(ROOT_KEY_1)
                         .addRootKey(ROOT_KEY_2)
                         .addIntermediateCertificate(testdata("root_1_intermediate_1"))
                         .setUpdatedAt(
                                 Instant.ofEpochMilli(300000 + SYSTEM_UP_TO_DATE_THRESHOLD_MILLIS))
-                        .build());
-        // No exception is good.
-        mInternal.addTrustTokens(List.of(TRUST_TOKEN_KEY_1), List.of(TRUST_TOKEN_1));
+                        .build(),
+                List.of(TRUST_TOKEN_1));
+        mInternal.refillTokens(mProvider, 1, mCallback);
+        verify(mCallback).onResult(any());
         TrustTokenState state = pullState();
         assertFalse(state.getAuthorityFallback());
     }
 
     @Test
-    public void updateTrustConfiguration_useDeviceKeyWhenServerTimeIsRecent() throws Exception {
+    public void refillTokens_useDeviceKeyWhenServerTimeIsRecent() throws Exception {
         when(mClock.currentTimeMillis()).thenReturn(200000L + SYSTEM_UP_TO_DATE_THRESHOLD_MILLIS);
         mContext.getOrCreateTestableResources()
                 .addOverride(R.integer.vendor_required_trust_token_roots_timestamp, 1000);
@@ -339,21 +398,22 @@ public final class TrustTokenManagerServiceTest {
                 .addOverride(
                         R.array.vendor_required_trust_token_roots,
                         new String[] {Base64.encodeToString(ROOT_KEY_1, Base64.DEFAULT)});
-        mInternal.updateTrustConfiguration(
+        setProviderResult(
                 new TrustConfiguration.Builder()
                         .addRootKey(ROOT_KEY_1)
                         .addRootKey(ROOT_KEY_2)
                         .addIntermediateCertificate(testdata("root_1_intermediate_1"))
                         .setUpdatedAt(Instant.ofEpochMilli(300000))
-                        .build());
-        // No exception is good.
-        mInternal.addTrustTokens(List.of(TRUST_TOKEN_KEY_1), List.of(TRUST_TOKEN_1));
+                        .build(),
+                List.of(TRUST_TOKEN_1));
+        mInternal.refillTokens(mProvider, 1, mCallback);
+        verify(mCallback).onResult(any());
         TrustTokenState state = pullState();
         assertFalse(state.getAuthorityFallback());
     }
 
     @Test
-    public void updateTrustConfiguration_doNotUseDeviceKey() throws Exception {
+    public void refillTokens_doNotUseDeviceKey() throws Exception {
         when(mClock.currentTimeMillis()).thenReturn(200000L + SYSTEM_UP_TO_DATE_THRESHOLD_MILLIS);
         mContext.getOrCreateTestableResources()
                 .addOverride(R.integer.vendor_required_trust_token_roots_timestamp, 100);
@@ -361,26 +421,26 @@ public final class TrustTokenManagerServiceTest {
                 .addOverride(
                         R.array.vendor_required_trust_token_roots,
                         new String[] {Base64.encodeToString(ROOT_KEY_2, Base64.DEFAULT)});
-        mInternal.updateTrustConfiguration(
+        setProviderResult(
                 new TrustConfiguration.Builder()
                         .addRootKey(ROOT_KEY_1)
                         .addIntermediateCertificate(testdata("root_1_intermediate_1"))
                         .setUpdatedAt(
                                 Instant.ofEpochMilli(300000 + SYSTEM_UP_TO_DATE_THRESHOLD_MILLIS))
-                        .build());
-        // No exception is good.
-        mInternal.addTrustTokens(List.of(TRUST_TOKEN_KEY_1), List.of(TRUST_TOKEN_1));
+                        .build(),
+                List.of(TRUST_TOKEN_1));
+        mInternal.refillTokens(mProvider, 1, mCallback);
+        verify(mCallback).onResult(any());
         TrustTokenState state = pullState();
         assertTrue(state.getAuthorityFallback());
     }
 
     @Test
     @RequiresFlagsEnabled(android.security.Flags.FLAG_ENABLE_TALISMAN_SERVICE)
-    public void addTrustTokens_keysAndTokensInOrder() {
-        mInternal.updateTrustConfiguration(TRUST_CONFIGURATION_1);
-        mInternal.addTrustTokens(
-                List.of(TRUST_TOKEN_KEY_1, TRUST_TOKEN_KEY_2),
-                List.of(TRUST_TOKEN_1, TRUST_TOKEN_2));
+    public void refillTokens_keysAndTokensInOrder() {
+        setProviderResult(TRUST_CONFIGURATION_1, List.of(TRUST_TOKEN_1, TRUST_TOKEN_2));
+        mInternal.refillTokens(mProvider, 2, mCallback);
+        verify(mCallback).onResult(any());
         var tokens =
                 List.of(
                         mManager.acquireVerifiedDeviceToken(CHALLENGE).getToken(),
@@ -391,11 +451,10 @@ public final class TrustTokenManagerServiceTest {
 
     @Test
     @RequiresFlagsEnabled(android.security.Flags.FLAG_ENABLE_TALISMAN_SERVICE)
-    public void addTrustTokens_keysAndTokensOutOfOrder() {
-        mInternal.updateTrustConfiguration(TRUST_CONFIGURATION_1);
-        mInternal.addTrustTokens(
-                List.of(TRUST_TOKEN_KEY_1, TRUST_TOKEN_KEY_2),
-                List.of(TRUST_TOKEN_2, TRUST_TOKEN_1));
+    public void refillTokens_keysAndTokensOutOfOrder() {
+        setProviderResult(TRUST_CONFIGURATION_1, List.of(TRUST_TOKEN_2, TRUST_TOKEN_1));
+        mInternal.refillTokens(mProvider, 2, mCallback);
+        verify(mCallback).onResult(any());
         var tokens =
                 List.of(
                         mManager.acquireVerifiedDeviceToken(CHALLENGE).getToken(),
@@ -405,51 +464,37 @@ public final class TrustTokenManagerServiceTest {
     }
 
     @Test
-    public void addTrustTokens_missingToken() {
-        mInternal.updateTrustConfiguration(TRUST_CONFIGURATION_1);
-        assertThrows(
-                IllegalArgumentException.class,
-                () ->
-                        mInternal.addTrustTokens(
-                                List.of(TRUST_TOKEN_KEY_1, TRUST_TOKEN_KEY_2),
-                                List.of(TRUST_TOKEN_1)));
+    public void refillTokens_missingToken() {
+        setProviderResult(TRUST_CONFIGURATION_1, List.of(TRUST_TOKEN_1));
+        mInternal.refillTokens(mProvider, 2, mCallback);
+        verify(mCallback).onError(any(IllegalArgumentException.class));
     }
 
     @Test
-    public void addTrustTokens_duplicateToken() {
-        mInternal.updateTrustConfiguration(TRUST_CONFIGURATION_1);
-        assertThrows(
-                IllegalArgumentException.class,
-                () ->
-                        mInternal.addTrustTokens(
-                                List.of(TRUST_TOKEN_KEY_1, TRUST_TOKEN_KEY_2),
-                                List.of(TRUST_TOKEN_1, TRUST_TOKEN_1)));
+    public void refillTokens_duplicateToken() {
+        setProviderResult(TRUST_CONFIGURATION_1, List.of(TRUST_TOKEN_1, TRUST_TOKEN_1));
+        mInternal.refillTokens(mProvider, 2, mCallback);
+        verify(mCallback).onError(any(IllegalArgumentException.class));
     }
 
     @Test
-    public void addTrustTokens_duplicateKey() {
-        mInternal.updateTrustConfiguration(TRUST_CONFIGURATION_1);
-        assertThrows(
-                IllegalArgumentException.class,
-                () ->
-                        mInternal.addTrustTokens(
-                                List.of(TRUST_TOKEN_KEY_1, TRUST_TOKEN_KEY_1),
-                                List.of(TRUST_TOKEN_1, TRUST_TOKEN_2)));
+    public void refillTokens_duplicateKey() {
+        doReturn(TRUST_TOKEN_KEY_1, TRUST_TOKEN_KEY_1).when(mMasterKey).generatePerTokenKey();
+        setProviderResult(TRUST_CONFIGURATION_1, List.of(TRUST_TOKEN_1, TRUST_TOKEN_1));
+        mInternal.refillTokens(mProvider, 2, mCallback);
+        verify(mCallback).onError(any(IllegalArgumentException.class));
     }
 
     @Test
-    public void generateKeys_numMatches() {
-        assertThat(mInternal.generateKeys(2)).hasSize(2);
-        assertThat(mInternal.generateKeys(3)).hasSize(3);
-    }
-
-    @Test
-    public void attestKeys_numMatches() {
-        TrustTokenBatchAttestation attestation = mInternal.attestKeys(mInternal.generateKeys(2));
-        assertThat(attestation.getBatchHash().length).isGreaterThan(0);
-        assertThat(attestation.getSignature().length).isGreaterThan(0);
-        // There should at least an attestation root, and the batch attestation key.
-        assertThat(attestation.getCertificates().size()).isAtLeast(2);
+    public void refillTokens_requestSeemsValid() {
+        mInternal.refillTokens(mProvider, 2, mCallback);
+        verify(mProvider)
+                .requestVerifiedDeviceTokens(
+                        argThat((keys) -> keys.size() == 2), notNull(), notNull());
+        mInternal.refillTokens(mProvider, 3, mCallback);
+        verify(mProvider)
+                .requestVerifiedDeviceTokens(
+                        argThat((keys) -> keys.size() == 3), notNull(), notNull());
     }
 
     @Test
@@ -457,14 +502,14 @@ public final class TrustTokenManagerServiceTest {
         TrustTokenState state = pullState();
         assertFalse(state.getHasTrustAnchor());
 
-        mInternal.updateTrustConfiguration(TRUST_CONFIGURATION_1);
+        setProviderResult(TRUST_CONFIGURATION_1, List.of());
+        mInternal.refillTokens(mProvider, 0, mCallback);
         state = pullState();
         assertTrue(state.getHasTrustAnchor());
         assertThat(state.getRootKeyCount()).isEqualTo(1);
 
-        mInternal.addTrustTokens(
-                List.of(TRUST_TOKEN_KEY_1, TRUST_TOKEN_KEY_2),
-                List.of(TRUST_TOKEN_1, TRUST_TOKEN_2));
+        setProviderResult(TRUST_CONFIGURATION_1, List.of(TRUST_TOKEN_1, TRUST_TOKEN_2));
+        mInternal.refillTokens(mProvider, 2, mCallback);
         state = pullState();
         assertThat(state.getDeviceTokenCount()).isEqualTo(2);
     }

@@ -16,52 +16,13 @@
 
 package com.android.server.security.trusttoken;
 
-import android.security.trusttoken.TrustConfiguration;
-
-import java.util.List;
+import android.os.CancellationSignal;
+import android.os.OutcomeReceiver;
 
 /** The internal interface for TrustTokenManagerService. */
 interface TrustTokenManagerInternal {
-    /**
-     * Generates new trust token keys.
-     *
-     * @param num The number of keys to generate.
-     * @hide
-     */
-    List<TrustTokenKey> generateKeys(int num);
+    CancellationSignal refillTokens(
+            TrustTokenProvider provider, int num, OutcomeReceiver<Void, Throwable> callback);
 
-    /**
-     * Attests to the trust token keys.
-     *
-     * @param keys the keys to attest.
-     * @hide
-     */
-    TrustTokenBatchAttestation attestKeys(List<TrustTokenKey> keys);
-
-    /**
-     * Adds pre-fetched trust tokens to the system.
-     *
-     * <p>This method can add both verified device tokens and verified identities tokens.
-     *
-     * <p>For verified identity tokens, all tokens corresponding to the same public key must be
-     * added together. There must also be a verified device token with the same public key as well.
-     *
-     * @param keys A list of the keys of the tokens.
-     * @param tokens A list of encoded tokens to add.
-     */
-    void addTrustTokens(List<TrustTokenKey> keys, List<byte[]> tokens)
-            throws TrustConfigurationUnavailableException;
-
-    /**
-     * Updates the trust configuration.
-     *
-     * @param configuration The updated configuration.
-     */
-    void updateTrustConfiguration(TrustConfiguration configuration);
-
-    /**
-     * Cleans up the internal database.
-     * @hide
-     */
     void cleanUpDatabase();
 }

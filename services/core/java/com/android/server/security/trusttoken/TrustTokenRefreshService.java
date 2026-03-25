@@ -25,14 +25,11 @@ import android.app.job.JobService;
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.OutcomeReceiver;
-import android.security.trusttoken.TrustConfiguration;
-import android.util.Pair;
 import android.util.Slog;
 
 import com.android.server.LocalServices;
 
 import java.time.Duration;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -55,6 +52,7 @@ public class TrustTokenRefreshService extends JobService {
     @Override
     public void onCreate() {
         var internal = LocalServices.getService(TrustTokenManagerInternal.class);
+        mExecutorService = Executors.newSingleThreadExecutor();
         Context context = getBaseContext();
         ComponentName providerComponent = TrustTokenProvider.getServiceProvider(context);
         TrustTokenProvider provider = null;
@@ -69,7 +67,6 @@ public class TrustTokenRefreshService extends JobService {
     // For unit test.
     void onCreate(TrustTokenManagerInternal internal, TrustTokenProvider provider) {
         super.onCreate();
-        mExecutorService = Executors.newSingleThreadExecutor();
         mInternal = internal;
         mProvider = provider;
     }
@@ -110,18 +107,12 @@ public class TrustTokenRefreshService extends JobService {
                     } else if (params.getJobId() == REGULAR_REFRESH_JOB_ID) {
                         num = 5000;
                     }
-                    List<TrustTokenKey> keys = mInternal.generateKeys(num);
-                    TrustTokenBatchAttestation attestation = mInternal.attestKeys(keys);
-                    mProvider.requestVerifiedDeviceTokens(
-                            keys,
-                            attestation,
-                            new OutcomeReceiver<
-                                    Pair<TrustConfiguration, List<byte[]>>, Throwable>() {
+                    mInternal.refillTokens(
+                            mProvider,
+                            num,
+                            new OutcomeReceiver<Void, Throwable>() {
                                 @Override
-                                public void onResult(
-                                        Pair<TrustConfiguration, List<byte[]>> result) {
-                                    mInternal.updateTrustConfiguration(result.first);
-                                    mInternal.addTrustTokens(keys, result.second);
+                                public void onResult(Void unused) {
                                     finishLogger.setOutcome(finishLogger.OUTCOME_SUCCESS).log();
                                     jobFinished(params, /* wantsReschedule= */ false);
                                 }
