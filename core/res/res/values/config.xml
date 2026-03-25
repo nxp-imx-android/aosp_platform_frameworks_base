@@ -3319,10 +3319,6 @@
          away from them. -->
     <bool name="config_multiuserSkipKeyguardWhenSwitchingToUnlockedUsers">false</bool>
 
-    <!-- Whether the bouncer screen during initial user sign-in on desktop platforms should indicate
-         a neutral space (e.g. system instead of user's lockscreen wallpaper). -->
-    <bool name="config_multiuserNeutralSpace">false</bool>
-
      <!-- Whether the UserSwitchingDialog should use the system wallpaper as the background during
           the user switching animation. -->
     <bool name="config_useSystemWallpaperDuringUserSwitch">false</bool>
