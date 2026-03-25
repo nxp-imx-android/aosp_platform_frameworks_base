@@ -18,6 +18,7 @@
 
 package com.android.systemui.bouncer.ui.composable
 
+import android.os.Flags
 import android.view.View
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
@@ -63,7 +64,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.PlatformIconButton
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.content.state.TransitionState
-import com.android.systemui.Flags
 import com.android.systemui.bouncer.ui.viewmodel.PasswordBouncerViewModel
 import com.android.systemui.common.ui.compose.SelectedUserAwareInputConnection
 import com.android.systemui.common.ui.compose.SelectedUserAwareLocalContext

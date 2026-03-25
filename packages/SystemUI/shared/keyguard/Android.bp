@@ -13,8 +13,5 @@ android_library {
     srcs: [
         "src/**/*.java",
     ],
-    static_libs: [
-        "com_android_systemui_flags_lib",
-    ],
     min_sdk_version: "current",
 }
