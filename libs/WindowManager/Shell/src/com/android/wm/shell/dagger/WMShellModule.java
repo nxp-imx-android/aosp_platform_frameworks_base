@@ -2174,11 +2174,12 @@ public abstract class WMShellModule {
             WindowDecorTaskResourceLoader taskResourceLoader,
             Optional<DesktopModeWindowDecorViewModel> desktopModeWindowDecorViewModel,
             PackageUpdateTransitionHandler packageUpdateTransitionHandler,
+            PackageManager packageManager,
             @ShellMainThreadImmediate CoroutineScope mainImmediateScope
     ) {
         return new PackageUpdateController(transitions, shellTaskOrganizer,
                 shellInit, userProfileContexts, taskResourceLoader,
-                desktopModeWindowDecorViewModel, packageUpdateTransitionHandler,
+                desktopModeWindowDecorViewModel, packageUpdateTransitionHandler, packageManager,
                 mainImmediateScope);
     }
 

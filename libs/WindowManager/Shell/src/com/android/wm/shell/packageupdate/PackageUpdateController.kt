@@ -21,6 +21,7 @@ import android.app.ActivityOptions
 import android.app.PendingIntent
 import android.app.WindowConfiguration.ACTIVITY_TYPE_HOME
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.UserHandle
 import android.view.WindowManager.TRANSIT_CHANGE
@@ -53,6 +54,7 @@ class PackageUpdateController(
     private val taskResourceLoader: WindowDecorTaskResourceLoader,
     private val desktopModeWindowDecorViewModel: Optional<DesktopModeWindowDecorViewModel>,
     private val packageUpdateTransitionHandler: PackageUpdateTransitionHandler,
+    private val packageManager: PackageManager,
     @ShellMainThreadImmediate private val mainImmediateScope: CoroutineScope,
 ) : ShellTaskOrganizer.PackageUpdateListener {
     init {
@@ -168,6 +170,19 @@ class PackageUpdateController(
             (data != null && type != null) -> freshIntent.setDataAndType(data, type)
             data != null -> freshIntent.data = data
             type != null -> freshIntent.type = type
+        }
+
+        // The intent might not resolve due to activity being removed after an update from the
+        // package. In that case, just remove the task.
+        if (packageManager.resolveActivityAsUser(freshIntent, /* flags */ 0, task.userId) == null) {
+            ProtoLog.w(
+                WM_SHELL_PACKAGE_UPDATE,
+                "PackageUpdateController: Intent %s did not resolve, removing the task %d instead. ",
+                freshIntent,
+                task.taskId,
+            )
+            wct.removeTask(task.token)
+            return
         }
 
         val options =
