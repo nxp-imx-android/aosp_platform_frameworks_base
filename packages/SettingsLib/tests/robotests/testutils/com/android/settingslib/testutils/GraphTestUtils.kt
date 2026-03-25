@@ -119,6 +119,7 @@ object GraphTestUtils {
      * @property preferencesInCategories list of preferences nested in categories
      * @property isUiOnly if current screen is marked as UI-only
      * @property sensitivityLevel the sensitivity level of the screen
+     * @property isFlagEnabled if the flag (e.g. for rollout) is enabled on current screen
      */
     data class PreferenceScreenConfig(
         val screenKey: String,
@@ -129,6 +130,7 @@ object GraphTestUtils {
         val preferencesInCategories: List<PreferenceCategoryConfig> = listOf(),
         val isUiOnly: Boolean = false,
         val sensitivityLevel: @SensitivityLevel Int = SensitivityLevel.NO_SENSITIVITY,
+        val isFlagEnabled: Boolean = true,
     )
 
     /**
@@ -178,6 +180,7 @@ object GraphTestUtils {
         override val title = screenConfig.title
         override val summary = screenConfig.summary
         override val sensitivityLevel = screenConfig.sensitivityLevel
+        override fun isFlagEnabled(context: Context) = screenConfig.isFlagEnabled
     }
 
     /**
