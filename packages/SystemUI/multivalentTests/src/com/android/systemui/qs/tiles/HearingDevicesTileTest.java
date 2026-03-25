@@ -22,12 +22,10 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import static java.util.Collections.emptyList;
-
-import android.bluetooth.BluetoothProfile;
 import android.content.Intent;
 import android.os.Handler;
 import android.provider.Settings;
@@ -63,8 +61,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import java.util.List;
-
 /** Tests for {@link HearingDevicesTile}. */
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
@@ -77,21 +73,11 @@ public class HearingDevicesTileTest extends SysuiTestCase {
     @Mock
     private QSHost mHost;
     @Mock
-    private QsEventLogger mUiEventLogger;
-    @Mock
-    private MetricsLogger mMetricsLogger;
-    @Mock
-    private StatusBarStateController mStatusBarStateController;
-    @Mock
     private ActivityStarter mActivityStarter;
-    @Mock
-    private QSLogger mQSLogger;
     @Mock
     private HearingDevicesChecker mDevicesChecker;
     @Mock
     HearingDevicesDialogManager mHearingDevicesDialogManager;
-    @Mock
-    BluetoothController mBluetoothController;
 
     private TestableLooper mTestableLooper;
     private HearingDevicesTile mTile;
@@ -103,17 +89,17 @@ public class HearingDevicesTileTest extends SysuiTestCase {
 
         mTile = new HearingDevicesTile(
                 mHost,
-                mUiEventLogger,
+                mock(QsEventLogger.class),
                 mTestableLooper.getLooper(),
                 new Handler(mTestableLooper.getLooper()),
                 new FalsingManagerFake(),
-                mMetricsLogger,
-                mStatusBarStateController,
+                mock(MetricsLogger.class),
+                mock(StatusBarStateController.class),
                 mActivityStarter,
-                mQSLogger,
+                mock(QSLogger.class),
                 mHearingDevicesDialogManager,
                 mDevicesChecker,
-                mBluetoothController);
+                mock(BluetoothController.class));
 
         mTile.initialize();
         mTestableLooper.processAllMessages();
@@ -147,24 +133,15 @@ public class HearingDevicesTileTest extends SysuiTestCase {
     }
 
     @Test
-    public void isAvailable_notSupportHearingProfile_returnFalse() {
-        when(mBluetoothController.getSupportedProfiles()).thenReturn(emptyList());
+    public void isAvailable_notSupportHearingDevices_returnFalse() {
+        when(mDevicesChecker.isHearingDeviceSupported()).thenReturn(false);
 
         assertThat(mTile.isAvailable()).isFalse();
     }
 
     @Test
-    public void isAvailable_supportHearingAidProfile_returnTrue() {
-        when(mBluetoothController.getSupportedProfiles()).thenReturn(
-                List.of(BluetoothProfile.HEARING_AID));
-
-        assertThat(mTile.isAvailable()).isTrue();
-    }
-
-    @Test
-    public void isAvailable_supportHapProfile_returnTrue() {
-        when(mBluetoothController.getSupportedProfiles()).thenReturn(
-                List.of(BluetoothProfile.HAP_CLIENT));
+    public void isAvailable_supportHearingDevices_returnTrue() {
+        when(mDevicesChecker.isHearingDeviceSupported()).thenReturn(true);
 
         assertThat(mTile.isAvailable()).isTrue();
     }

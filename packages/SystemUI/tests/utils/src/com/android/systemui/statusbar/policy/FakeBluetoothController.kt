@@ -65,12 +65,6 @@ class FakeBluetoothController : BluetoothController {
 
     override fun getConnectedDevices(): MutableList<CachedBluetoothDevice> = Collections.emptyList()
 
-    override fun getSupportedProfiles(): List<Int> = supportedProfiles
-
-    fun setSupportedProfiles(profiles: List<Int>) {
-        supportedProfiles = profiles
-    }
-
     override fun addOnMetadataChangedListener(
         device: CachedBluetoothDevice?,
         executor: Executor?,

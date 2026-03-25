@@ -18,7 +18,6 @@ package com.android.systemui.qs.tiles;
 
 import static com.android.systemui.accessibility.hearingaid.HearingDevicesUiEventLogger.LAUNCH_SOURCE_QS_TILE;
 
-import android.bluetooth.BluetoothProfile;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
@@ -47,10 +46,6 @@ import com.android.systemui.qs.tileimpl.QSTileImpl;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.policy.BluetoothController;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
 import javax.inject.Inject;
 
 /** Quick settings tile: Hearing Devices **/
@@ -60,7 +55,7 @@ public class HearingDevicesTile extends QSTileImpl<BooleanState> {
     private final HearingDevicesDialogManager mDialogManager;
     private final HearingDevicesChecker mDevicesChecker;
     private final BluetoothController mBluetoothController;
-    private Set<Integer> mCachedSupportedProfiles;
+    private Boolean mIsHearingDevicesSupported;
     private final BluetoothController.Callback mCallback = new BluetoothController.Callback() {
         @Override
         public void onBluetoothStateChange(boolean enabled) {
@@ -97,13 +92,13 @@ public class HearingDevicesTile extends QSTileImpl<BooleanState> {
 
     @Override
     public boolean isAvailable() {
-        if (mCachedSupportedProfiles == null) {
-            mCachedSupportedProfiles = TraceUtils.trace("HearingDevicesTile#getSupportedProfiles",
-                    this::getSupportedProfiles);
+        if (mIsHearingDevicesSupported == null) {
+            mIsHearingDevicesSupported = TraceUtils.trace(
+                    "HearingDevicesTile#isHearingDeviceSupported",
+                    mDevicesChecker::isHearingDeviceSupported);
         }
 
-        return mCachedSupportedProfiles.contains(BluetoothProfile.HEARING_AID)
-                || mCachedSupportedProfiles.contains(BluetoothProfile.HAP_CLIENT);
+        return mIsHearingDevicesSupported;
     }
 
     @Override
@@ -152,14 +147,5 @@ public class HearingDevicesTile extends QSTileImpl<BooleanState> {
     @Override
     public CharSequence getTileLabel() {
         return mContext.getString(R.string.quick_settings_hearing_devices_label);
-    }
-
-    private Set<Integer> getSupportedProfiles() {
-        List<Integer> profiles = mBluetoothController.getSupportedProfiles();
-        if (profiles == null || profiles.isEmpty()) {
-            return Collections.emptySet();
-        }
-
-        return Set.copyOf(profiles);
     }
 }

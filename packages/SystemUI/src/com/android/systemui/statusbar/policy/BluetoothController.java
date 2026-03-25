@@ -42,9 +42,6 @@ public interface BluetoothController extends CallbackController<Callback>, Dumpa
 
     List<CachedBluetoothDevice> getConnectedDevices();
 
-    /** gets the supported profiles for this device(e.g. phone/tablet). */
-    List<Integer> getSupportedProfiles();
-
     void addOnMetadataChangedListener(CachedBluetoothDevice device, Executor executor,
             BluetoothAdapter.OnMetadataChangedListener listener);
     void removeOnMetadataChangedListener(CachedBluetoothDevice device,

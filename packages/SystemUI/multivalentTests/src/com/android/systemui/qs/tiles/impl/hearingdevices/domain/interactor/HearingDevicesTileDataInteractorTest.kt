@@ -16,7 +16,6 @@
 
 package com.android.systemui.qs.tiles.impl.hearingdevices.domain.interactor
 
-import android.bluetooth.BluetoothProfile
 import android.os.UserHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -30,6 +29,7 @@ import com.android.systemui.qs.tiles.impl.hearingdevices.domain.model.HearingDev
 import com.android.systemui.statusbar.policy.fakeBluetoothController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -44,6 +44,7 @@ import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class HearingDevicesTileDataInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
@@ -59,19 +60,21 @@ class HearingDevicesTileDataInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    fun availability_supportHearingAidProfile_returnTrue() =
+    fun availability_supportHearingDevices_returnTrue() =
         testScope.runTest {
-            controller.supportedProfiles = listOf(BluetoothProfile.HEARING_AID)
+            whenever(checker.isHearingDeviceSupported()).thenReturn(true)
             val availability by collectLastValue(underTest.availability(testUser))
+            runCurrent()
 
             assertThat(availability).isTrue()
         }
 
     @Test
-    fun availability_notSupportRelatedProfile_returnFalse() =
+    fun availability_notSupportHearingDevices_returnFalse() =
         testScope.runTest {
-            controller.supportedProfiles = listOf(BluetoothProfile.A2DP)
+            whenever(checker.isHearingDeviceSupported()).thenReturn(false)
             val availability by collectLastValue(underTest.availability(testUser))
+            runCurrent()
 
             assertThat(availability).isFalse()
         }
