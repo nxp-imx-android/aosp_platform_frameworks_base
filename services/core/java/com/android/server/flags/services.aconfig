@@ -28,3 +28,10 @@ flag {
     description: "Enables configuration of filesystem parameters like max_lock_elapsed_time during boot of StorageManagerService."
     bug: "469596512"
 }
+
+flag {
+    name: "parallelize_onbootphase"
+    namespace: "system_performance"
+    description: "Run services' onBootPhase methods in parallel"
+    bug: "459252932"
+}
