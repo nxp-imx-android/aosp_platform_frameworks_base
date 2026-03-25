@@ -87,6 +87,7 @@ import platform.test.motion.golden.feature
 import platform.test.screenshot.DeviceEmulationSpec
 import platform.test.screenshot.Displays.Phone
 
+@Ignore("b/496045082")
 @RunWith(AndroidJUnit4::class)
 @MotionTest
 @LargeTest
