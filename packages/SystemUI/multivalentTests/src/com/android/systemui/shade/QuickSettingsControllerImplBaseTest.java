@@ -29,6 +29,7 @@ import android.os.Looper;
 import android.view.ViewParent;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
+import android.widget.FrameLayout;
 
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.UiEventLogger;
@@ -65,7 +66,6 @@ import com.android.systemui.statusbar.gesture.StatusBarLongPressGestureDetector;
 import com.android.systemui.statusbar.notification.stack.AmbientState;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController;
 import com.android.systemui.statusbar.phone.DozeParameters;
-import com.android.systemui.statusbar.phone.KeyguardBottomAreaView;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
 import com.android.systemui.statusbar.phone.KeyguardStatusBarView;
 import com.android.systemui.statusbar.phone.LightBarController;
@@ -106,7 +106,7 @@ public class QuickSettingsControllerImplBaseTest extends SysuiTestCase {
     protected TestScope mTestScope = mKosmos.getTestScope();
 
     @Mock protected Resources mResources;
-    @Mock protected KeyguardBottomAreaView mQsFrame;
+    @Mock protected FrameLayout mQsFrame;
     @Mock protected KeyguardStatusBarView mKeyguardStatusBar;
     @Mock protected QS mQs;
     @Mock protected QSFragmentCompose mQSFragment;
