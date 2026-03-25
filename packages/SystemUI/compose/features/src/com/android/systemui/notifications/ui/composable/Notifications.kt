@@ -18,6 +18,7 @@
 package com.android.systemui.notifications.ui.composable
 
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -360,7 +361,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
                             imeTopValue > 0f &&
                             remoteInputRowBottom > imeTopValue
                     ) {
-                        scrollStackWithNestedScroll(
+                        scrollStackBy(
                             delta = Offset(x = 0f, y = remoteInputRowBottom - imeTopValue),
                             nestedScrollDispatcher = nestedScrollDispatcher,
                             scrollState = contentScrollState,
@@ -386,7 +387,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
                 val targetScroll =
                     (scrollPosition + direction * scrollStep).coerceIn(0f, scrollRange)
                 coroutineScope.launch {
-                    scrollStackWithNestedScroll(
+                    scrollStackBy(
                         delta = Offset(x = 0f, y = targetScroll - scrollPosition),
                         nestedScrollDispatcher = nestedScrollDispatcher,
                         scrollState = contentScrollState,
@@ -700,23 +701,46 @@ private fun NotificationRulesEntryPoint(
     }
 }
 
-private suspend fun scrollStackWithNestedScroll(
+/**
+ * Scrolls the Stack by a given [delta] while properly dispatching nested scroll events.
+ *
+ * Note: [delta] represents **"scroll deltas"** (where positive means scrolling DOWN the list,
+ * simulating a finger dragging UP).
+ */
+@VisibleForTesting
+suspend fun scrollStackBy(
     delta: Offset,
     nestedScrollDispatcher: NestedScrollDispatcher,
     scrollState: ScrollState,
 ): Offset {
+    // Invert because ScrollState expects scroll space (positive = up), and delta is pointer space.
+    val invertedConsumed =
+        performNestedScroll(delta = -delta, nestedScrollDispatcher = nestedScrollDispatcher) {
+            available ->
+            val consumedByScroll = scrollState.scrollBy(-available.y)
+            Offset(x = 0f, y = -consumedByScroll)
+        }
+    return -invertedConsumed
+}
+
+/** A utility for wrapping a scroll operation with the Compose Nested Scroll protocol. */
+private inline fun performNestedScroll(
+    delta: Offset,
+    nestedScrollDispatcher: NestedScrollDispatcher,
+    performScroll: (Offset) -> Offset,
+): Offset {
     val preConsumed =
         nestedScrollDispatcher.dispatchPreScroll(
-            available = -delta, // need a negative delta here to move the scrim up
+            available = delta,
             source = NestedScrollSource.UserInput,
         )
     val available = delta - preConsumed
-    val consumed = Offset(x = 0f, y = scrollState.scrollBy(available.y))
+    val consumed = performScroll(available)
     val left = available - consumed
     val postConsumed =
         nestedScrollDispatcher.dispatchPostScroll(
             consumed = consumed,
-            available = -left, // need to invert it here, just like on preScroll
+            available = left,
             source = NestedScrollSource.UserInput,
         )
     return consumed + preConsumed + postConsumed
