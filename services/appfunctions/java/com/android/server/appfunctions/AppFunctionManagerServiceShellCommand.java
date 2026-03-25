@@ -36,6 +36,7 @@ import android.app.appfunctions.ExecuteAppFunctionRequest;
 import android.app.appfunctions.ExecuteAppFunctionResponse;
 import android.app.appfunctions.IAppFunctionManager;
 import android.app.appfunctions.IExecuteAppFunctionCallback;
+import android.app.appfunctions.IIsAppFunctionEnabledCallback;
 import android.app.appfunctions.ISetAppFunctionEnabledCallback;
 import android.app.appsearch.GenericDocument;
 import android.app.appsearch.SearchResult;
@@ -95,6 +96,9 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         pw.println(
                 "    --user <USER_ID> (optional): The user ID to list functions for. "
                         + "Defaults to the current user.");
+        pw.println(
+                "    --package <PACKAGE_NAME> (optional): Package name to list functions for. "
+                        + "Defaults to all packages.");
         pw.println();
         pw.println(
                 "  execute-app-function --package <PACKAGE_NAME> --function <FUNCTION_ID> "
@@ -128,7 +132,16 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         pw.println(
                 "    --user <USER_ID> (optional): The user ID under which to set the function state"
                         + ". Defaults to the current user.");
-
+        pw.println();
+        pw.println(
+                "  is-enabled --package <PACKAGE_NAME> --function <FUNCTION_ID> "
+                        + "[--user <USER_ID>]");
+        pw.println("    Checks if an app function is enabled for the specified package.");
+        pw.println("    --package <PACKAGE_NAME>: The target package name.");
+        pw.println("    --function <FUNCTION_ID>: The ID of the app function.");
+        pw.println(
+                "    --user <USER_ID> (optional): The user ID under which to check the function"
+                        + " state. Defaults to the current user.");
         pw.println();
 
         if (accessCheckFlagsEnabled()) {
@@ -207,6 +220,8 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                     return runExecuteAppFunction();
                 case "set-enabled":
                     return runSetAppFunctionEnabled();
+                case "is-enabled":
+                    return runIsAppFunctionEnabled();
                 case "grant-app-function-access":
                     if (!accessCheckFlagsEnabled()) {
                         return -1;
@@ -348,6 +363,7 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         final PrintWriter pw = getOutPrintWriter();
         int userId = ActivityManager.getCurrentUser();
         String opt;
+        String packageName = null;
 
         while ((opt = getNextOption()) != null) {
             switch (opt) {
@@ -357,6 +373,9 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                     } catch (NumberFormatException e) {
                         pw.println("Invalid user ID: " + getNextArg() + ". Using current user.");
                     }
+                    break;
+                case "--package":
+                    packageName = getNextArgRequired();
                     break;
                 default:
                     pw.println("Unknown option: " + opt);
@@ -369,7 +388,7 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         try {
             Map<String, List<SearchResult>> perPackageSearchResult =
                     AppFunctionDumpHelper.queryAppFunctionsStateForUser(
-                            context, /* isVerbose= */ true);
+                            context, packageName, /* isVerbose= */ true);
             JSONObject jsonObject = new JSONObject();
             for (Map.Entry<String, List<SearchResult>> entry : perPackageSearchResult.entrySet()) {
                 JSONArray searchResults = new JSONArray();
@@ -476,6 +495,72 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         }
 
         return -1;
+    }
+
+    private int runIsAppFunctionEnabled() throws Exception {
+        final PrintWriter pw = getOutPrintWriter();
+        String packageName = null;
+        String functionId = null;
+        int userId = ActivityManager.getCurrentUser();
+        String opt;
+        int enabledState = AppFunctionManager.APP_FUNCTION_STATE_DEFAULT;
+
+        while ((opt = getNextOption()) != null) {
+            switch (opt) {
+                case "--package":
+                    packageName = getNextArgRequired();
+                    break;
+                case "--function":
+                    functionId = getNextArgRequired();
+                    break;
+                case "--user":
+                    try {
+                        userId = UserHandle.parseUserArg(getNextArgRequired());
+                    } catch (NumberFormatException e) {
+                        pw.println("Invalid user ID: " + getNextArg() + ". Using current user.");
+                    }
+                    break;
+                default:
+                    pw.println("Unknown option: " + opt);
+                    return -1;
+            }
+        }
+
+        if (packageName == null) {
+            pw.println("Error: --package must be specified.");
+            return -1;
+        }
+        if (functionId == null) {
+            pw.println("Error: --function must be specified.");
+            return -1;
+        }
+
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        IIsAppFunctionEnabledCallback callback =
+                new IIsAppFunctionEnabledCallback.Stub() {
+                    @RequiresNoPermission
+                    @Override
+                    public void onSuccess(boolean isEnabled) {
+                        pw.println(isEnabled);
+                        countDownLatch.countDown();
+                    }
+
+                    @RequiresNoPermission
+                    @Override
+                    public void onError(android.os.ParcelableException exception) {
+                        pw.println("Error checking app function state: " + exception);
+                        countDownLatch.countDown();
+                    }
+                };
+        mService.isAppFunctionEnabled(
+                packageName, packageName, functionId, UserHandle.of(userId), callback);
+
+        boolean completed = countDownLatch.await(5, TimeUnit.SECONDS);
+        if (!completed) {
+            pw.println("Timed out");
+        }
+        pw.flush();
+        return 0;
     }
 
     private int runExecuteAppFunction() throws Exception {

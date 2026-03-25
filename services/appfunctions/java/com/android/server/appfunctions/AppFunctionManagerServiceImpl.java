@@ -954,33 +954,35 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         final int callingUid = Binder.getCallingUid();
         final int callingPid = Binder.getCallingPid();
 
-        try {
-            // The calling package name will be used to determine the visible packages.
-            mCallerValidator.validateCallingPackage(callingPackage);
-            mCallerValidator.verifyUserInteraction(
-                    /* targetUserId= */ userHandle.getIdentifier(),
-                    /* callingUid= */ callingUid,
-                    /* callingPid= */ callingPid,
-                    /* callingPackageName= */ callingPackage);
-        } catch (SecurityException e) {
+        if (Binder.getCallingUid() != Process.SHELL_UID
+                && Binder.getCallingUid() != Process.ROOT_UID) {
             try {
-                callback.onError(new ParcelableException(e));
-            } catch (RemoteException ex) {
-                Slog.e(TAG, "Failed to execute callback#onError.", e);
+                // The calling package name will be used to determine the visible packages.
+                mCallerValidator.validateCallingPackage(callingPackage);
+                mCallerValidator.verifyUserInteraction(
+                        /* targetUserId= */ userHandle.getIdentifier(),
+                        /* callingUid= */ callingUid,
+                        /* callingPid= */ callingPid,
+                        /* callingPackageName= */ callingPackage);
+            } catch (SecurityException e) {
+                try {
+                    callback.onError(new ParcelableException(e));
+                } catch (RemoteException ex) {
+                    Slog.e(TAG, "Failed to execute callback#onError.", e);
+                }
+                return;
             }
-            return;
-        }
-
-        if (!mVisibilityHelper.isPackageVisible(
-                targetPackage, callingPackage, callingUid, callingPid)) {
-            try {
-                callback.onError(
-                        new ParcelableException(
-                                new AppFunctionNotFoundException("App Function not found")));
-            } catch (RemoteException re) {
-                Slog.e(TAG, "Failed to execute callback#onError.", re);
+            if (!mVisibilityHelper.isPackageVisible(
+                    targetPackage, callingPackage, callingUid, callingPid)) {
+                try {
+                    callback.onError(
+                            new ParcelableException(
+                                    new AppFunctionNotFoundException("App Function not found")));
+                } catch (RemoteException re) {
+                    Slog.e(TAG, "Failed to execute callback#onError.", re);
+                }
+                return;
             }
-            return;
         }
 
         UserHandle targetUser = UserHandle.of(userHandle.getIdentifier());
