@@ -443,6 +443,11 @@ public class PersonalContextManagerService extends SystemService {
             return;
         }
 
+        final String packageName = mPackageManager.getNameForUid(callingUid);
+        if (!isPersonalContextModeEnabled(packageName, callingUid, userId)) {
+            throw new IllegalStateException("Personal Context is disabled for publishing package");
+        }
+
         final UserState userState = getUserStateSynchronized(userId);
         if (userState == null) {
             Slog.w(TAG, "Cannot start refiner workflow, no component manager for user " + userId);
