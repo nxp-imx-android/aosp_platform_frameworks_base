@@ -14,435 +14,476 @@
  * limitations under the License.
  */
 
-package com.android.systemui.media.dialog;
+package com.android.systemui.media.dialog
 
-import static android.permission.flags.Flags.FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED;
-
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
-
-import static com.google.common.truth.Truth.assertThat;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.os.Bundle;
-import android.platform.test.annotations.RequiresFlagsEnabled;
-import android.testing.TestableLooper;
-import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-
-import androidx.core.graphics.drawable.IconCompat;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.filters.SmallTest;
-
-import com.android.internal.logging.UiEventLogger;
-import com.android.media.flags.Flags;
-import com.android.systemui.SysuiTestCase;
-import com.android.systemui.animation.DialogTransitionAnimator;
-import com.android.systemui.broadcast.BroadcastSender;
-import com.android.systemui.kosmos.KosmosJavaAdapter;
-import com.android.systemui.res.R;
-import com.android.systemui.statusbar.phone.SystemUIDialog;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.os.Bundle
+import android.permission.flags.Flags.FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED
+import android.platform.test.annotations.RequiresFlagsEnabled
+import android.testing.TestableLooper
+import android.view.View
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.core.graphics.drawable.IconCompat
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.SmallTest
+import com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn
+import com.android.internal.logging.UiEventLogger
+import com.android.media.flags.Flags
+import com.android.systemui.SysuiTestCase
+import com.android.systemui.animation.DialogTransitionAnimator
+import com.android.systemui.animation.dialogTransitionAnimator
+import com.android.systemui.broadcast.BroadcastSender
+import com.android.systemui.res.R
+import com.android.systemui.statusbar.phone.SystemUIDialog
+import com.android.systemui.statusbar.phone.systemUIDialogDotFactory
+import com.android.systemui.testKosmos
+import com.google.common.truth.Truth.assertThat
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.stub
+import org.mockito.kotlin.verify
 
 @SmallTest
-@RunWith(AndroidJUnit4.class)
+@RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
-public class MediaOutputDialogDelegateTest extends SysuiTestCase {
+class MediaOutputDialogDelegateTest : SysuiTestCase() {
 
-    private static final String TEST_PACKAGE = "test_package";
+    private val mediaOutputAdapter = mock<MediaOutputAdapter>()
+    private val broadcastSender = mock<BroadcastSender>()
+    private val uiEventLogger = mock<UiEventLogger>()
 
-    // Mock
-    private final MediaOutputAdapter mMediaOutputAdapter = mock(MediaOutputAdapter.class);
-    private final BroadcastSender mBroadcastSender = mock(BroadcastSender.class);
-    private final UiEventLogger mUiEventLogger = mock(UiEventLogger.class);
-    private final MediaSwitchingController mMediaSwitchingController = mock(
-            MediaSwitchingController.class);
-
-    private DialogTransitionAnimator mDialogTransitionAnimator;
-    private SystemUIDialog.Factory mSystemUIDialogDotFactory;
-    private MediaOutputDialogDelegate mMediaOutputDialogDelegate;
+    private lateinit var mediaSwitchingController: MediaSwitchingController
+    private lateinit var dialogTransitionAnimator: DialogTransitionAnimator
+    private lateinit var systemUIDialogFactory: SystemUIDialog.Factory
+    private lateinit var mediaOutputDialogDelegate: MediaOutputDialogDelegate
 
     @Before
-    public void setUp() {
-        MediaOutputColorScheme mockedColorScheme = mock(MediaOutputColorScheme.class);
-        when(mMediaSwitchingController.getColorScheme()).thenReturn(mockedColorScheme);
-        when(mMediaSwitchingController.getStopButtonStringRes()).thenReturn(
-                R.string.media_output_dialog_button_stop_casting);
-        KosmosJavaAdapter kosmos = new KosmosJavaAdapter(this);
-        mDialogTransitionAnimator = kosmos.getDialogTransitionAnimator();
-        mSystemUIDialogDotFactory = kosmos.getSystemUIDialogDotFactory();
+    fun setUp() {
+        val mockedColorScheme = mock<MediaOutputColorScheme>()
+        mediaSwitchingController =
+            mock<MediaSwitchingController>() {
+                on { getColorScheme() } doReturn mockedColorScheme
+                on { getStopButtonStringRes() } doReturn
+                    R.string.media_output_dialog_button_stop_casting
+            }
+
+        val kosmos = testKosmos()
+        dialogTransitionAnimator = kosmos.dialogTransitionAnimator
+        systemUIDialogFactory = kosmos.systemUIDialogDotFactory
     }
 
     @Test
-    public void onCreate_noAppOpenIntent_metadataSectionNonClickable() {
-        when(mMediaSwitchingController.getAppLaunchIntent()).thenReturn(null);
+    fun onCreate_noAppOpenIntent_metadataSectionNonClickable() {
+        mediaSwitchingController.stub { on { getAppLaunchIntent() } doReturn null }
 
-        mMediaOutputDialogDelegate = createDelegate();
-        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
-        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
-        final LinearLayout mediaMetadataSectionLayout =
-                mMediaOutputDialogDelegate.mDialogView.requireViewById(
-                        R.id.media_metadata_section);
+        mediaOutputDialogDelegate = createDelegate()
+        val dialog = mediaOutputDialogDelegate.createDialog()
+        mediaOutputDialogDelegate.onCreate(dialog, Bundle())
+        val mediaMetadataSectionLayout =
+            mediaOutputDialogDelegate.mDialogView.requireViewById<LinearLayout>(
+                R.id.media_metadata_section
+            )
 
-        assertThat(mediaMetadataSectionLayout.isClickable()).isFalse();
+        assertThat(mediaMetadataSectionLayout.isClickable).isFalse()
     }
 
     @Test
-    public void onCreate_appOpenIntentAvailable_metadataSectionClickable() {
-        when(mMediaSwitchingController.getAppLaunchIntent()).thenReturn(new Intent(TEST_PACKAGE));
+    fun onCreate_appOpenIntentAvailable_metadataSectionClickable() {
+        mediaSwitchingController.stub { on { getAppLaunchIntent() } doReturn Intent(TEST_PACKAGE) }
 
-        mMediaOutputDialogDelegate = createDelegate();
-        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
-        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
-        final LinearLayout mediaMetadataSectionLayout =
-                mMediaOutputDialogDelegate.mDialogView.requireViewById(
-                        R.id.media_metadata_section);
+        mediaOutputDialogDelegate = createDelegate()
+        val dialog = mediaOutputDialogDelegate.createDialog()
+        mediaOutputDialogDelegate.onCreate(dialog, Bundle())
+        val mediaMetadataSectionLayout =
+            mediaOutputDialogDelegate.mDialogView.requireViewById<LinearLayout>(
+                R.id.media_metadata_section
+            )
 
-        assertThat(mediaMetadataSectionLayout.isClickable()).isTrue();
+        assertThat(mediaMetadataSectionLayout.isClickable).isTrue()
     }
 
     @Test
-    public void refresh_withIconCompat_iconIsVisible() {
-        when(mMediaSwitchingController.getHeaderIcon()).thenReturn(IconCompat.createWithBitmap(
-                Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)));
+    fun refresh_withIconCompat_iconIsVisible() {
+        mediaSwitchingController.stub {
+            on { getHeaderIcon() } doReturn
+                IconCompat.createWithBitmap(
+                    Bitmap.createBitmap(/* width= */ 1, /* height= */ 1, Bitmap.Config.ARGB_8888)
+                )
+        }
 
-        mMediaOutputDialogDelegate = createDelegate();
-        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
-        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+        mediaOutputDialogDelegate = createDelegate()
+        val dialog = mediaOutputDialogDelegate.createDialog()
+        mediaOutputDialogDelegate.onCreate(dialog, Bundle())
 
-        mMediaOutputDialogDelegate.refresh();
-        final ImageView view = mMediaOutputDialogDelegate.mDialogView.requireViewById(
-                R.id.header_icon);
+        mediaOutputDialogDelegate.refresh()
+        val view =
+            mediaOutputDialogDelegate.mDialogView.requireViewById<ImageView>(R.id.header_icon)
 
-        assertThat(view.getVisibility()).isEqualTo(View.VISIBLE);
+        assertThat(view.visibility).isEqualTo(View.VISIBLE)
     }
 
     @Test
-    public void refresh_noIcon_iconLayoutNotVisible() {
-        when(mMediaSwitchingController.getHeaderIcon()).thenReturn(null);
+    fun refresh_noIcon_iconLayoutNotVisible() {
+        mediaSwitchingController.stub { on { getHeaderIcon() } doReturn null }
 
-        mMediaOutputDialogDelegate = createDelegate();
-        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
-        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+        mediaOutputDialogDelegate = createDelegate()
+        val dialog = mediaOutputDialogDelegate.createDialog()
+        mediaOutputDialogDelegate.onCreate(dialog, Bundle())
 
-        mMediaOutputDialogDelegate.refresh();
-        final ImageView view = mMediaOutputDialogDelegate.mDialogView.requireViewById(
-                R.id.header_icon);
+        mediaOutputDialogDelegate.refresh()
+        val view =
+            mediaOutputDialogDelegate.mDialogView.requireViewById<ImageView>(R.id.header_icon)
 
-        assertThat(view.getVisibility()).isEqualTo(View.GONE);
+        assertThat(view.visibility).isEqualTo(View.GONE)
     }
 
     @Test
-    public void refresh_checkTitle() {
-        String headerTitle = "test_string";
-        when(mMediaSwitchingController.getHeaderTitle()).thenReturn(headerTitle);
+    fun refresh_checkTitle() {
+        val headerTitle = "test_string"
+        mediaSwitchingController.stub { on { getHeaderTitle() } doReturn headerTitle }
 
-        mMediaOutputDialogDelegate = createDelegate();
-        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
-        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+        mediaOutputDialogDelegate = createDelegate()
+        val dialog = mediaOutputDialogDelegate.createDialog()
+        mediaOutputDialogDelegate.onCreate(dialog, Bundle())
 
-        mMediaOutputDialogDelegate.refresh();
-        final TextView titleView = mMediaOutputDialogDelegate.mDialogView.requireViewById(
-                R.id.header_title);
+        mediaOutputDialogDelegate.refresh()
+        val titleView =
+            mediaOutputDialogDelegate.mDialogView.requireViewById<TextView>(R.id.header_title)
 
-        assertThat(titleView.getVisibility()).isEqualTo(View.VISIBLE);
-        assertThat(titleView.getText().toString()).isEqualTo(headerTitle);
+        assertThat(titleView.visibility).isEqualTo(View.VISIBLE)
+        assertThat(titleView.text.toString()).isEqualTo(headerTitle)
     }
 
     @Test
-    public void refresh_withSubtitle_checkSubtitle() {
-        String headerSubtitle = "test_string";
-        when(mMediaSwitchingController.getHeaderSubTitle()).thenReturn(headerSubtitle);
+    fun refresh_withSubtitle_checkSubtitle() {
+        val headerSubtitle = "test_string"
+        mediaSwitchingController.stub { on { getHeaderSubTitle() } doReturn headerSubtitle }
 
-        mMediaOutputDialogDelegate = createDelegate();
-        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
-        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+        mediaOutputDialogDelegate = createDelegate()
+        val dialog = mediaOutputDialogDelegate.createDialog()
+        mediaOutputDialogDelegate.onCreate(dialog, Bundle())
 
-        mMediaOutputDialogDelegate.refresh();
-        final TextView subtitleView = mMediaOutputDialogDelegate.mDialogView.requireViewById(
-                R.id.header_subtitle);
+        mediaOutputDialogDelegate.refresh()
+        val subtitleView =
+            mediaOutputDialogDelegate.mDialogView.requireViewById<TextView>(R.id.header_subtitle)
 
-        assertThat(subtitleView.getVisibility()).isEqualTo(View.VISIBLE);
-        assertThat(subtitleView.getText().toString()).isEqualTo(headerSubtitle);
+        assertThat(subtitleView.visibility).isEqualTo(View.VISIBLE)
+        assertThat(subtitleView.text.toString()).isEqualTo(headerSubtitle)
     }
 
     @Test
-    public void refresh_noSubtitle_checkSubtitle() {
-        mMediaOutputDialogDelegate = createDelegate();
-        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
-        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+    fun refresh_noSubtitle_checkSubtitle() {
+        mediaOutputDialogDelegate = createDelegate()
+        val dialog = mediaOutputDialogDelegate.createDialog()
+        mediaOutputDialogDelegate.onCreate(dialog, Bundle())
 
-        mMediaOutputDialogDelegate.refresh();
-        final TextView subtitleView = mMediaOutputDialogDelegate.mDialogView.requireViewById(
-                R.id.header_subtitle);
+        mediaOutputDialogDelegate.refresh()
+        val subtitleView =
+            mediaOutputDialogDelegate.mDialogView.requireViewById<TextView>(R.id.header_subtitle)
 
-        assertThat(subtitleView.getVisibility()).isEqualTo(View.GONE);
+        assertThat(subtitleView.visibility).isEqualTo(View.GONE)
     }
 
     @Test
-    public void refresh_inDragging_notUpdateAdapter() {
-        when(mMediaOutputAdapter.isDragging()).thenReturn(true);
+    fun refresh_inDragging_notUpdateAdapter() {
+        mediaOutputAdapter.stub { on { isDragging() } doReturn true }
 
-        mMediaOutputDialogDelegate = createDelegate();
-        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
-        mMediaOutputDialogDelegate.mAdapter = mMediaOutputAdapter;
-        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+        mediaOutputDialogDelegate = createDelegate()
+        val dialog = mediaOutputDialogDelegate.createDialog()
+        mediaOutputDialogDelegate.mAdapter = mediaOutputAdapter
+        mediaOutputDialogDelegate.onCreate(dialog, Bundle())
 
-        mMediaOutputDialogDelegate.refresh();
+        mediaOutputDialogDelegate.refresh()
 
-        verify(mMediaOutputAdapter, never()).notifyDataSetChanged();
+        verify(mediaOutputAdapter, never()).notifyDataSetChanged()
     }
 
     @Test
-    public void refresh_inDragging_directSetRefreshingToFalse() {
-        when(mMediaOutputAdapter.isDragging()).thenReturn(true);
+    fun refresh_inDragging_directSetRefreshingToFalse() {
+        mediaOutputAdapter.stub { on { isDragging() } doReturn true }
 
-        mMediaOutputDialogDelegate = createDelegate();
-        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
-        mMediaOutputDialogDelegate.mAdapter = mMediaOutputAdapter;
-        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+        mediaOutputDialogDelegate = createDelegate()
+        val dialog = mediaOutputDialogDelegate.createDialog()
+        mediaOutputDialogDelegate.mAdapter = mediaOutputAdapter
+        mediaOutputDialogDelegate.onCreate(dialog, Bundle())
 
-        mMediaOutputDialogDelegate.refresh();
+        mediaOutputDialogDelegate.refresh()
 
-        assertThat(mMediaSwitchingController.isRefreshing()).isFalse();
+        assertThat(mediaSwitchingController.isRefreshing()).isFalse()
     }
 
     @Test
-    public void refresh_notInDragging_verifyUpdateAdapter() {
-        when(mMediaOutputAdapter.getCurrentActivePosition()).thenReturn(-1);
-        when(mMediaOutputAdapter.isDragging()).thenReturn(false);
+    fun refresh_notInDragging_verifyUpdateAdapter() {
+        mediaOutputAdapter.stub {
+            on { getCurrentActivePosition() } doReturn -1
+            on { isDragging() } doReturn false
+        }
 
-        mMediaOutputDialogDelegate = createDelegate();
-        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
-        mMediaOutputDialogDelegate.mAdapter = mMediaOutputAdapter;
-        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+        mediaOutputDialogDelegate = createDelegate()
+        val dialog = mediaOutputDialogDelegate.createDialog()
+        mediaOutputDialogDelegate.mAdapter = mediaOutputAdapter
+        mediaOutputDialogDelegate.onCreate(dialog, Bundle())
 
-        mMediaOutputDialogDelegate.refresh();
+        mediaOutputDialogDelegate.refresh()
 
-        verify(mMediaOutputAdapter).updateItems();
+        verify(mediaOutputAdapter).updateItems()
     }
 
     @Test
-    public void dismissDialog_closesDialogByBroadcastSender() {
-        mMediaOutputDialogDelegate = createDelegate();
-        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
-        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+    fun dismissDialog_closesDialogByBroadcastSender() {
+        mediaOutputDialogDelegate = createDelegate()
+        val dialog = mediaOutputDialogDelegate.createDialog()
+        mediaOutputDialogDelegate.onCreate(dialog, Bundle())
 
-        mMediaOutputDialogDelegate.dismissDialog();
+        mediaOutputDialogDelegate.dismissDialog()
 
-        verify(mBroadcastSender).closeSystemDialogs();
+        verify(broadcastSender).closeSystemDialogs()
     }
 
     @Test
-    public void refresh_checkStopText() {
-        int stopResId = R.string.media_output_dialog_button_stop_casting;
-        when(mMediaSwitchingController.getStopButtonStringRes()).thenReturn(stopResId);
+    fun refresh_checkStopText() {
+        val stopResId = R.string.media_output_dialog_button_stop_casting
+        mediaSwitchingController.stub { on { getStopButtonStringRes() } doReturn stopResId }
 
-        mMediaOutputDialogDelegate = createDelegate();
-        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
-        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+        mediaOutputDialogDelegate = createDelegate()
+        val dialog = mediaOutputDialogDelegate.createDialog()
+        mediaOutputDialogDelegate.onCreate(dialog, Bundle())
 
-        mMediaOutputDialogDelegate.refresh();
-        final Button stop = mMediaOutputDialogDelegate.mDialogView.requireViewById(R.id.stop);
+        mediaOutputDialogDelegate.refresh()
+        val stop = mediaOutputDialogDelegate.mDialogView.requireViewById<Button>(R.id.stop)
 
-        assertThat(stop.getText().toString()).isEqualTo(mContext.getString(stopResId));
+        assertThat(stop.text.toString()).isEqualTo(mContext.getString(stopResId))
     }
 
     @Test
-    public void onCreate_normalScreenHeight_showsNormalIconAndMetadata() {
-        when(mMediaSwitchingController.getAppIcon()).thenReturn(new BitmapDrawable());
-        mContext.getResources().getConfiguration().screenHeightDp = 500;
+    fun onCreate_normalScreenHeight_showsNormalIconAndMetadata() {
+        mediaSwitchingController.stub { on { getAppIcon() } doReturn BitmapDrawable() }
+        mContext.resources.configuration.screenHeightDp = 500
 
-        mMediaOutputDialogDelegate = createDelegate();
-        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
-        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+        mediaOutputDialogDelegate = createDelegate()
+        val dialog = mediaOutputDialogDelegate.createDialog()
+        mediaOutputDialogDelegate.onCreate(dialog, Bundle())
 
-        mMediaOutputDialogDelegate.refresh();
+        mediaOutputDialogDelegate.refresh()
 
-        assertThat(mMediaOutputDialogDelegate.mDialogView
-                .requireViewById(R.id.app_source_icon_small_screen_height)
-                .getVisibility()).isEqualTo(View.GONE);
-        assertThat(mMediaOutputDialogDelegate.mDialogView.requireViewById(R.id.app_source_icon)
-                .getVisibility()).isEqualTo(View.VISIBLE);
+        assertThat(
+                mediaOutputDialogDelegate.mDialogView
+                    .requireViewById<View>(R.id.app_source_icon_small_screen_height)
+                    .visibility
+            )
+            .isEqualTo(View.GONE)
+        assertThat(
+                mediaOutputDialogDelegate.mDialogView
+                    .requireViewById<View>(R.id.app_source_icon)
+                    .visibility
+            )
+            .isEqualTo(View.VISIBLE)
     }
 
     @Test
-    public void onCreate_smallScreenHeight_showsSmallIconAndHidesMetadata() {
-        when(mMediaSwitchingController.getAppIcon()).thenReturn(new BitmapDrawable());
-        mContext.getResources().getConfiguration().screenHeightDp = 300;
+    fun onCreate_smallScreenHeight_showsSmallIconAndHidesMetadata() {
+        mediaSwitchingController.stub { on { getAppIcon() } doReturn BitmapDrawable() }
+        mContext.resources.configuration.screenHeightDp = 300
 
-        mMediaOutputDialogDelegate = createDelegate();
-        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
-        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+        mediaOutputDialogDelegate = createDelegate()
+        val dialog = mediaOutputDialogDelegate.createDialog()
+        mediaOutputDialogDelegate.onCreate(dialog, Bundle())
 
-        mMediaOutputDialogDelegate.refresh();
+        mediaOutputDialogDelegate.refresh()
 
-        assertThat(mMediaOutputDialogDelegate.mDialogView.requireViewById(R.id.app_source_icon)
-                .getVisibility()).isEqualTo(View.GONE);
-        assertThat(mMediaOutputDialogDelegate.mDialogView
-                .requireViewById(R.id.app_source_icon_small_screen_height)
-                .getVisibility()).isEqualTo(View.VISIBLE);
+        assertThat(
+                mediaOutputDialogDelegate.mDialogView
+                    .requireViewById<View>(R.id.app_source_icon)
+                    .visibility
+            )
+            .isEqualTo(View.GONE)
+        assertThat(
+                mediaOutputDialogDelegate.mDialogView
+                    .requireViewById<View>(R.id.app_source_icon_small_screen_height)
+                    .visibility
+            )
+            .isEqualTo(View.VISIBLE)
     }
 
     @Test
-    public void refresh_fromNormalToSmallScreenHeight_showsSmallIcon() {
-        when(mMediaSwitchingController.getAppIcon()).thenReturn(new BitmapDrawable());
+    fun refresh_fromNormalToSmallScreenHeight_showsSmallIcon() {
+        mediaSwitchingController.stub { on { getAppIcon() } doReturn BitmapDrawable() }
 
-        mMediaOutputDialogDelegate = createDelegate();
-        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
-        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+        mediaOutputDialogDelegate = createDelegate()
+        val dialog = mediaOutputDialogDelegate.createDialog()
+        mediaOutputDialogDelegate.onCreate(dialog, Bundle())
 
-        mContext.getResources().getConfiguration().screenHeightDp = 500;
-        mMediaOutputDialogDelegate.refresh();
-        mContext.getResources().getConfiguration().screenHeightDp = 300;
-        mMediaOutputDialogDelegate.refresh();
+        mContext.resources.configuration.screenHeightDp = 500
+        mediaOutputDialogDelegate.refresh()
+        mContext.resources.configuration.screenHeightDp = 300
+        mediaOutputDialogDelegate.refresh()
 
-        assertThat(mMediaOutputDialogDelegate.mDialogView.requireViewById(R.id.app_source_icon)
-                .getVisibility()).isEqualTo(View.GONE);
-        assertThat(mMediaOutputDialogDelegate.mDialogView
-                .requireViewById(R.id.app_source_icon_small_screen_height)
-                .getVisibility()).isEqualTo(View.VISIBLE);
+        assertThat(
+                mediaOutputDialogDelegate.mDialogView
+                    .requireViewById<View>(R.id.app_source_icon)
+                    .visibility
+            )
+            .isEqualTo(View.GONE)
+        assertThat(
+                mediaOutputDialogDelegate.mDialogView
+                    .requireViewById<View>(R.id.app_source_icon_small_screen_height)
+                    .visibility
+            )
+            .isEqualTo(View.VISIBLE)
     }
 
     @Test
-    public void refresh_fromSmallToNormalScreenHeight_showsNormalIcon() {
-        when(mMediaSwitchingController.getAppIcon()).thenReturn(new BitmapDrawable());
+    fun refresh_fromSmallToNormalScreenHeight_showsNormalIcon() {
+        mediaSwitchingController.stub { on { getAppIcon() } doReturn BitmapDrawable() }
 
-        mMediaOutputDialogDelegate = createDelegate();
-        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
-        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+        mediaOutputDialogDelegate = createDelegate()
+        val dialog = mediaOutputDialogDelegate.createDialog()
+        mediaOutputDialogDelegate.onCreate(dialog, Bundle())
 
-        mContext.getResources().getConfiguration().screenHeightDp = 300;
-        mMediaOutputDialogDelegate.refresh();
-        mContext.getResources().getConfiguration().screenHeightDp = 500;
-        mMediaOutputDialogDelegate.refresh();
+        mContext.resources.configuration.screenHeightDp = 300
+        mediaOutputDialogDelegate.refresh()
+        mContext.resources.configuration.screenHeightDp = 500
+        mediaOutputDialogDelegate.refresh()
 
-        assertThat(mMediaOutputDialogDelegate.mDialogView
-                .requireViewById(R.id.app_source_icon_small_screen_height)
-                .getVisibility()).isEqualTo(View.GONE);
-        assertThat(mMediaOutputDialogDelegate.mDialogView.requireViewById(R.id.app_source_icon)
-                .getVisibility()).isEqualTo(View.VISIBLE);
+        assertThat(
+                mediaOutputDialogDelegate.mDialogView
+                    .requireViewById<View>(R.id.app_source_icon_small_screen_height)
+                    .visibility
+            )
+            .isEqualTo(View.GONE)
+        assertThat(
+                mediaOutputDialogDelegate.mDialogView
+                    .requireViewById<View>(R.id.app_source_icon)
+                    .visibility
+            )
+            .isEqualTo(View.VISIBLE)
     }
 
     @Test
-    public void onStopButtonClick_releaseSession() {
-        spyOn(mDialogTransitionAnimator);
-        when(mMediaSwitchingController.getStopButtonStringRes())
-                .thenReturn(R.string.media_output_dialog_button_stop_casting);
+    fun onStopButtonClick_releaseSession() {
+        spyOn(dialogTransitionAnimator)
+        mediaSwitchingController.stub {
+            on { getStopButtonStringRes() } doReturn
+                R.string.media_output_dialog_button_stop_casting
+        }
 
-        mMediaOutputDialogDelegate = createDelegate();
-        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
-        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+        mediaOutputDialogDelegate = createDelegate()
+        val dialog = mediaOutputDialogDelegate.createDialog()
+        mediaOutputDialogDelegate.onCreate(dialog, Bundle())
 
-        mMediaOutputDialogDelegate.onStopButtonClick();
+        mediaOutputDialogDelegate.onStopButtonClick()
 
-        verify(mMediaSwitchingController).releaseSession();
-        verify(mDialogTransitionAnimator).disableAllCurrentDialogsExitAnimations();
+        verify(mediaSwitchingController).releaseSession()
+        verify(dialogTransitionAnimator).disableAllCurrentDialogsExitAnimations()
     }
 
     @Test
-    public void onCreate_ShouldLogVisibility() {
-        mMediaOutputDialogDelegate = createDelegate();
-        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
-        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+    fun onCreate_ShouldLogVisibility() {
+        mediaOutputDialogDelegate = createDelegate()
+        val dialog = mediaOutputDialogDelegate.createDialog()
+        mediaOutputDialogDelegate.onCreate(dialog, Bundle())
 
-        verify(mUiEventLogger)
-                .log(MediaOutputDialogDelegate.MediaOutputEvent.MEDIA_OUTPUT_DIALOG_SHOW);
+        verify(uiEventLogger)
+            .log(MediaOutputDialogDelegate.MediaOutputEvent.MEDIA_OUTPUT_DIALOG_SHOW)
     }
 
     @Test
     @RequiresFlagsEnabled(FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED)
-    public void refresh_noMissingPermissionsWarning_warningSectionGone() {
-        when(mMediaSwitchingController.getMissingPermissionsWarning()).thenReturn(null);
+    fun refresh_noMissingPermissionsWarning_warningSectionGone() {
+        mediaSwitchingController.stub { on { getMissingPermissionsWarning() } doReturn null }
 
-        mMediaOutputDialogDelegate = createDelegate();
-        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
-        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+        mediaOutputDialogDelegate = createDelegate()
+        val dialog = mediaOutputDialogDelegate.createDialog()
+        mediaOutputDialogDelegate.onCreate(dialog, Bundle())
 
-        mMediaOutputDialogDelegate.refresh();
+        mediaOutputDialogDelegate.refresh()
 
-        assertThat(mMediaOutputDialogDelegate.mDialogView.requireViewById(R.id.warning_section)
-                .getVisibility()).isEqualTo(View.GONE);
+        assertThat(
+                mediaOutputDialogDelegate.mDialogView
+                    .requireViewById<View>(R.id.warning_section)
+                    .visibility
+            )
+            .isEqualTo(View.GONE)
     }
 
     @Test
     @RequiresFlagsEnabled(FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED)
-    public void onWarningFixButtonClick_callsController() {
-        mMediaOutputDialogDelegate = createDelegate();
-        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
-        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+    fun onWarningFixButtonClick_callsController() {
+        mediaOutputDialogDelegate = createDelegate()
+        val dialog = mediaOutputDialogDelegate.createDialog()
+        mediaOutputDialogDelegate.onCreate(dialog, Bundle())
+        mediaSwitchingController.stub {
+            on { getMissingPermissionsWarning() } doReturn MissingPermissionsWarning("Test App")
+        }
 
-        when(mMediaSwitchingController.getMissingPermissionsWarning())
-                .thenReturn(new MissingPermissionsWarning("Test App"));
+        mediaOutputDialogDelegate.refresh()
+        mediaOutputDialogDelegate.mDialogView
+            .requireViewById<View>(R.id.warning_fix_button)
+            .performClick()
 
-        mMediaOutputDialogDelegate.refresh();
-        mMediaOutputDialogDelegate.mDialogView.requireViewById(R.id.warning_fix_button)
-                .performClick();
-
-        verify(mMediaSwitchingController).tryToLaunchMissingPermissionsResolveIntent();
+        verify(mediaSwitchingController).tryToLaunchMissingPermissionsResolveIntent()
     }
 
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MEDIA_OUTPUT_SWITCHER_ENTRY_POINT_THEMING)
-    public void refresh_withoutUsingSystemColors_updatesColorScheme() {
-        mMediaOutputDialogDelegate = createDelegate(/* useSystemColors= */ false);
-        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
-        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+    fun refresh_withoutUsingSystemColors_updatesColorScheme() {
+        mediaOutputDialogDelegate = createDelegate(useSystemColors = false)
+        val dialog = mediaOutputDialogDelegate.createDialog()
+        mediaOutputDialogDelegate.onCreate(dialog, Bundle())
 
-        IconCompat icon = IconCompat.createWithBitmap(
-                Bitmap.createBitmap(/* width= */ 1, /* height= */ 1, Bitmap.Config.ARGB_8888));
-        when(mMediaSwitchingController.getHeaderIcon()).thenReturn(icon);
+        val icon =
+            IconCompat.createWithBitmap(
+                Bitmap.createBitmap(/* width= */ 1, /* height= */ 1, Bitmap.Config.ARGB_8888)
+            )
+        mediaSwitchingController.stub { on { getHeaderIcon() } doReturn icon }
 
-        mMediaOutputDialogDelegate.refresh();
+        mediaOutputDialogDelegate.refresh()
 
-        verify(mMediaSwitchingController).updateCurrentColorScheme(any(), anyBoolean());
+        verify(mediaSwitchingController).updateCurrentColorScheme(any(), any())
     }
 
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MEDIA_OUTPUT_SWITCHER_ENTRY_POINT_THEMING)
-    public void refresh_withUsingSystemColors_doesNotUpdateColorScheme() {
-        mMediaOutputDialogDelegate = createDelegate(/* useSystemColors= */ true);
-        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
-        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+    fun refresh_withUsingSystemColors_doesNotUpdateColorScheme() {
+        mediaOutputDialogDelegate = createDelegate(useSystemColors = true)
+        val dialog = mediaOutputDialogDelegate.createDialog()
+        mediaOutputDialogDelegate.onCreate(dialog, Bundle())
 
-        IconCompat icon = IconCompat.createWithBitmap(
-                Bitmap.createBitmap(/* width= */ 1, /* height= */ 1, Bitmap.Config.ARGB_8888));
-        when(mMediaSwitchingController.getHeaderIcon()).thenReturn(icon);
+        val icon =
+            IconCompat.createWithBitmap(
+                Bitmap.createBitmap(/* width= */ 1, /* height= */ 1, Bitmap.Config.ARGB_8888)
+            )
+        mediaSwitchingController.stub { on { getHeaderIcon() } doReturn icon }
 
-        mMediaOutputDialogDelegate.refresh();
+        mediaOutputDialogDelegate.refresh()
 
-        verify(mMediaSwitchingController, never()).updateCurrentColorScheme(any(), anyBoolean());
+        verify(mediaSwitchingController, never()).updateCurrentColorScheme(any(), any())
     }
 
-    private MediaOutputDialogDelegate createDelegate(boolean useSystemColors) {
-        return new MediaOutputDialogDelegate(
-                false,
-                mMediaSwitchingController,
-                true,
-                null,
-                useSystemColors,
-                mContext,
-                mBroadcastSender,
-                mUiEventLogger,
-                mSystemUIDialogDotFactory
-        );
-    }
+    private fun createDelegate(useSystemColors: Boolean = true): MediaOutputDialogDelegate =
+        MediaOutputDialogDelegate(
+            false,
+            mediaSwitchingController,
+            true,
+            null,
+            useSystemColors,
+            mContext,
+            broadcastSender,
+            uiEventLogger,
+            systemUIDialogFactory,
+        )
 
-    private MediaOutputDialogDelegate createDelegate() {
-        return createDelegate(/* useSystemColors= */ true);
+    companion object {
+        private const val TEST_PACKAGE = "test_package"
     }
 }
