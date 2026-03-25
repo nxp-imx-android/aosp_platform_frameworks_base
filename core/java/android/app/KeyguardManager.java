@@ -310,7 +310,7 @@ public class KeyguardManager {
         intent.putExtra(EXTRA_DESCRIPTION, description);
 
         // explicitly set the package for security
-        intent.setPackage(getSettingsPackageForIntent(intent));
+        intent.setPackage(getSettingsPackageForIntent(intent, mContext.getUserId()));
         return intent;
     }
 
@@ -333,7 +333,7 @@ public class KeyguardManager {
         intent.putExtra(Intent.EXTRA_USER_ID, userId);
 
         // explicitly set the package for security
-        intent.setPackage(getSettingsPackageForIntent(intent));
+        intent.setPackage(getSettingsPackageForIntent(intent, userId));
 
         return intent;
     }
@@ -419,7 +419,7 @@ public class KeyguardManager {
         intent.putExtra(EXTRA_ALTERNATE_BUTTON_LABEL, alternateButtonLabel);
 
         // explicitly set the package for security
-        intent.setPackage(getSettingsPackageForIntent(intent));
+        intent.setPackage(getSettingsPackageForIntent(intent, mContext.getUserId()));
 
         return intent;
     }
@@ -458,7 +458,7 @@ public class KeyguardManager {
                 .putExtra(EXTRA_ALTERNATE_BUTTON_LABEL, alternateButtonLabel);
 
         // explicitly set the package for security
-        intent.setPackage(getSettingsPackageForIntent(intent));
+        intent.setPackage(getSettingsPackageForIntent(intent, mContext.getUserId()));
 
         return intent;
     }
@@ -504,9 +504,9 @@ public class KeyguardManager {
         }
     }
 
-    private String getSettingsPackageForIntent(Intent intent) {
+    private String getSettingsPackageForIntent(Intent intent, int userId) {
         List<ResolveInfo> resolveInfos = mContext.getPackageManager()
-                .queryIntentActivities(intent, PackageManager.MATCH_SYSTEM_ONLY);
+                .queryIntentActivitiesAsUser(intent, PackageManager.MATCH_SYSTEM_ONLY, userId);
         for (int i = 0; i < resolveInfos.size(); i++) {
             return resolveInfos.get(i).activityInfo.packageName;
         }
