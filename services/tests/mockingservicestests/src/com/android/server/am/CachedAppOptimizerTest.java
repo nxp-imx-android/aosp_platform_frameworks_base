@@ -1186,44 +1186,92 @@ public final class CachedAppOptimizerTest {
         assertTrue(mFreezeCounter.await(5, TimeUnit.SECONDS));
     }
 
+    @EnableFlags({
+            com.android.server.am.Flags.FLAG_ENABLE_ZRAM_WRITEBACK,
+            com.android.server.am.Flags.FLAG_LOG_ZRAM_WRITEBACK_EVENTS})
     @Test
-    public void unfreezeWrittenBackProcess_notifyOomAdjuster() throws Exception {
+    public void unfreezeWrittenBackProcess_prefetchCalled() throws Exception {
         mUseFreezer = true;
         mProcessDependencies.setRss(new long[]{
-                0 /*total_rss*/,
-                0 /*file*/,
-                0 /*anon*/,
-                0 /*swap*/,
-                0 /*shmem*/
+                0 /*total_rss*/, 0 /*file*/, 0 /*anon*/, 0 /*swap*/, 0 /*shmem*/
         });
-
+        mProcessDependencies.setRssAfterCompaction(new long[]{
+                0 /*total_rss*/, 0 /*file*/, 0 /*anon*/, 0 /*swap*/, 0 /*shmem*/
+        });
         // Force the system to use the freezer
+        setFlag(CachedAppOptimizer.KEY_ZRAM_WRITEBACK_ENABLED, "true", false);
         DeviceConfig.setProperty(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER_NATIVE_BOOT,
                 CachedAppOptimizer.KEY_USE_FREEZER, "true", false);
         mCachedAppOptimizerUnderTest.init();
         initActivityManagerService();
-
+        doReturn(true).when(mIMmd).supportsProcessMemoryZramOps();
         assertTrue(mAms.isAppFreezerSupported());
         assertThat(mCachedAppOptimizerUnderTest.useFreezer()).isTrue();
-
-        int pid = 10000;
+        int pid = 1;
         int uid = 2;
         int pkgUid = 3;
         ProcessRecord app = makeProcessRecord(pid, uid, pkgUid, "p1", "app1");
-
         // Freeze the app
         mFreezeCounter = new CountDownLatch(1);
         mCachedAppOptimizerUnderTest.forceFreezeForTest(app, true);
         assertTrue(mFreezeCounter.await(5, TimeUnit.SECONDS));
-
         // Mark as written back
         mAms.mProcessStateController.setIsZramWrittenBack(app, true);
         assertTrue(app.isZramWrittenBack());
-
+        // Unfreeze the app
+        mFreezeCounter = new CountDownLatch(1);
+        mCachedAppOptimizerUnderTest.forceFreezeForTest(app, false,
+                CachedAppOptimizer.UNFREEZE_REASON_ACTIVITY);
+        assertTrue(mFreezeCounter.await(5, TimeUnit.SECONDS));
         // Verify onZramWritebackStateChanged call
-        mCachedAppOptimizerUnderTest.forceFreezeForTest(app, false);
         verify(mAms.mProcessStateController).setIsZramWrittenBack(app, false);
         assertFalse(app.isZramWrittenBack());
+        // Verify prefetch was called
+        verify(mIMmd).asyncPrefetchProcessZramMemory(any());
+    }
+
+    @EnableFlags({
+            com.android.server.am.Flags.FLAG_ENABLE_ZRAM_WRITEBACK,
+            com.android.server.am.Flags.FLAG_LOG_ZRAM_WRITEBACK_EVENTS})
+    @Test
+    public void unfreezeWrittenBackProcess_prefetchNotCalledForWrongReason() throws Exception {
+        mUseFreezer = true;
+        mProcessDependencies.setRss(new long[]{
+                0 /*total_rss*/, 0 /*file*/, 0 /*anon*/, 0 /*swap*/, 0 /*shmem*/
+        });
+        mProcessDependencies.setRssAfterCompaction(new long[]{
+                0 /*total_rss*/, 0 /*file*/, 0 /*anon*/, 0 /*swap*/, 0 /*shmem*/
+        });
+        // Force the system to use the freezer
+        setFlag(CachedAppOptimizer.KEY_ZRAM_WRITEBACK_ENABLED, "true", false);
+        DeviceConfig.setProperty(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER_NATIVE_BOOT,
+                CachedAppOptimizer.KEY_USE_FREEZER, "true", false);
+        mCachedAppOptimizerUnderTest.init();
+        initActivityManagerService();
+        doReturn(true).when(mIMmd).supportsProcessMemoryZramOps();
+        assertTrue(mAms.isAppFreezerSupported());
+        assertThat(mCachedAppOptimizerUnderTest.useFreezer()).isTrue();
+        int pid = 1;
+        int uid = 2;
+        int pkgUid = 3;
+        ProcessRecord app = makeProcessRecord(pid, uid, pkgUid, "p1", "app1");
+        // Freeze the app
+        mFreezeCounter = new CountDownLatch(1);
+        mCachedAppOptimizerUnderTest.forceFreezeForTest(app, true);
+        assertTrue(mFreezeCounter.await(5, TimeUnit.SECONDS));
+        // Mark as written back
+        mAms.mProcessStateController.setIsZramWrittenBack(app, true);
+        assertTrue(app.isZramWrittenBack());
+        // Unfreeze the app with a different reason
+        mFreezeCounter = new CountDownLatch(1);
+        mCachedAppOptimizerUnderTest.forceFreezeForTest(app, false,
+                CachedAppOptimizer.UNFREEZE_REASON_BIND_SERVICE);
+        assertTrue(mFreezeCounter.await(5, TimeUnit.SECONDS));
+        // Verify onZramWritebackStateChanged call
+        verify(mAms.mProcessStateController).setIsZramWrittenBack(app, false);
+        assertFalse(app.isZramWrittenBack());
+        // Verify prefetch was NOT called
+        verify(mIMmd, never()).asyncPrefetchProcessZramMemory(any());
     }
 
     @Test
