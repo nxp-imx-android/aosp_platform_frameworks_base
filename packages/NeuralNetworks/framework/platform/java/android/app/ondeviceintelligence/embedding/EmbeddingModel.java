@@ -21,6 +21,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.IntDef;
+import android.annotation.CurrentTimeMillisLong;
 import android.annotation.IntRange;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
@@ -43,6 +44,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.lang.annotation.ElementType;
+import java.time.LocalDate;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -63,7 +65,6 @@ import java.util.stream.Collectors;
  *
  * @hide
  */
- // <p> TODO(b/492256294): Add release date to the model metadata.
 @SystemApi
 @FlaggedApi(Flags.FLAG_ON_DEVICE_INTELLIGENCE_26Q2)
 public final class EmbeddingModel implements OnDeviceModel, Parcelable {
@@ -89,6 +90,8 @@ public final class EmbeddingModel implements OnDeviceModel, Parcelable {
     private final int[] mSupportedModalities;
     private final int mMaxTokenLimit;
     private final LocaleList mSupportedLocales;
+    private final LocalDate mReleaseDate;
+    private final LocalDate mShutDownDate;
 
     /**
      * Constructs a new {@link EmbeddingModel}.
@@ -114,6 +117,46 @@ public final class EmbeddingModel implements OnDeviceModel, Parcelable {
                 Objects.requireNonNull(supportedModalities).stream().mapToInt(i -> i).toArray();
         mMaxTokenLimit = maxTokenLimit;
         mSupportedLocales = Objects.requireNonNull(supportedLocales);
+        mReleaseDate = null;
+        mShutDownDate = null;
+    }
+
+    /**
+     * Constructs a new {@link EmbeddingModel} with release and shutdown dates.
+     *
+     * <p>Note: This constructor was added internally in Android 17 release.
+     *
+     * <p>// TODO:b/492256294 - Move to a builder pattern.
+     *
+     * @param feature The internal feature.
+     * @param modelSignature The signature of the model.
+     * @param dimension The dimension of the embeddings.
+     * @param supportedModalities The list of supported modalities.
+     * @param maxTokenLimit The maximum token limit supported by the model.
+     * @param supportedLocales The list of supported locales.
+     * @param releaseDate The release date of the model.
+     * @param shutDownDate The shutdown date of the model.
+     *
+     * @hide
+     */
+    public EmbeddingModel(
+            @NonNull Feature feature,
+            @NonNull String modelSignature,
+            @IntRange(from = 1) int dimension,
+            @NonNull List<@Modality Integer> supportedModalities,
+            @IntRange(from = 1) int maxTokenLimit,
+            @NonNull LocaleList supportedLocales,
+            @Nullable LocalDate releaseDate,
+            @Nullable LocalDate shutDownDate) {
+        mFeature = Objects.requireNonNull(feature);
+        mModelSignature = Objects.requireNonNull(modelSignature);
+        mDimension = dimension;
+        mSupportedModalities =
+                Objects.requireNonNull(supportedModalities).stream().mapToInt(i -> i).toArray();
+        mMaxTokenLimit = maxTokenLimit;
+        mSupportedLocales = Objects.requireNonNull(supportedLocales);
+        mReleaseDate = releaseDate;
+        mShutDownDate = shutDownDate;
     }
 
     /**
@@ -170,6 +213,55 @@ public final class EmbeddingModel implements OnDeviceModel, Parcelable {
     @NonNull
     public List<@Modality Integer> getSupportedModalities() {
         return Arrays.stream(mSupportedModalities).boxed().collect(Collectors.toList());
+    }
+
+    /**
+     * Returns the release date of the model.
+     *
+     * <p>Release date is typically when the model was published by the remote implementation.
+     *
+     * <p>Returns null if the release date is unknown or unset.
+     *
+     * <p>Note: This method was added internally in Android 17 release.
+     * @hide
+     */
+    @Nullable
+    public LocalDate getReleaseDate() {
+        return mReleaseDate;
+    }
+
+    /**
+     * Returns the shutdown date of the model. This is the date after which the model will
+     * no longer be available for download or inference. You can expect the model to return
+     * {@link OnDeviceModel#MODEL_STATUS_UNAVAILABLE} status, or to not be present in the list of
+     * models returned by {@link OnDeviceIntelligenceManager#listEmbeddingModels()}, on or soon
+     * after the shutdown date.
+     *
+     * <p>Callers should periodically check for the shutdown date and plan to reindex their data in
+     * advance, using {@link #generateEmbeddings} with a more recent model available on the device,
+     * which can be estimated by the release date or shutdown date of the respective model.
+     *
+     * <p>Reindexing is required because embedding models are typically not compatible with each
+     * other. This places a constraint that you should always query the model with the same
+     * modelSignature {@link #getModelSignature()} that was used during original indexing done via
+     * {@link #generateEmbeddings}.
+     *
+     * <p> It is recommended that callers should perform re-indexing workload in a background worker
+     * (e.g. WorkManager), when the device is idle and charging.
+     * <p>Callers should include logic in their worker to check if the shutdown is beyond their
+     * threshold (e.g. if threshold is 1 month before shutdown:
+     * `LocalDate.now().isAfter(shutdownDate.minusMonths(1))`).
+     * And in case the shutdown date is beyond your threshold, your reindex workload must be
+     * triggered.
+     *
+     * <p>Returns null if the shutdown date is unknown or unset.
+     *
+     * <p>Note: This method was added internally in Android 17 release.
+     * @hide
+     */
+    @Nullable
+    public LocalDate getShutDownDate() {
+        return mShutDownDate;
     }
 
     /**
@@ -358,6 +450,8 @@ public final class EmbeddingModel implements OnDeviceModel, Parcelable {
         dest.writeIntArray(mSupportedModalities);
         dest.writeInt(mMaxTokenLimit);
         dest.writeTypedObject(mSupportedLocales, flags);
+        dest.writeString8(mReleaseDate != null ? mReleaseDate.toString() : null);
+        dest.writeString8(mShutDownDate != null ? mShutDownDate.toString() : null);
     }
 
     public static final @NonNull Creator<EmbeddingModel> CREATOR =
@@ -380,5 +474,9 @@ public final class EmbeddingModel implements OnDeviceModel, Parcelable {
         mSupportedModalities = in.createIntArray();
         mMaxTokenLimit = in.readInt();
         mSupportedLocales = in.readTypedObject(LocaleList.CREATOR);
+        String releaseDateStr = in.readString8();
+        mReleaseDate = releaseDateStr == null ? null : LocalDate.parse(releaseDateStr);
+        String shutDownDateStr = in.readString8();
+        mShutDownDate = shutDownDateStr == null ? null : LocalDate.parse(shutDownDateStr);
     }
 }
