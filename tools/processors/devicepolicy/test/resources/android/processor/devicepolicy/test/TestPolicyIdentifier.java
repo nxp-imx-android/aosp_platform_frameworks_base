@@ -27,6 +27,7 @@ import android.processor.devicepolicy.BooleanPolicyDefinition;
 import android.processor.devicepolicy.EnumPolicyDefinition;
 import android.processor.devicepolicy.EnumResolutionMechanism;
 import android.processor.devicepolicy.IntegerPolicyDefinition;
+import android.processor.devicepolicy.ListOfPackagePolicyDefinition;
 import android.processor.devicepolicy.ListOfStringPolicyDefinition;
 import android.processor.devicepolicy.ListResolutionMechanism;
 import android.processor.devicepolicy.LongPolicyDefinition;
@@ -337,6 +338,24 @@ public final class PolicyIdentifier<T> {
                                             unaffiliatedFullUserProfileOwner = DISALLOWED)))
     public static final PolicyIdentifier<PackageIdentifier> SIMPLE_PACKAGE_POLICY =
             new PolicyIdentifier<>("SIMPLE_PACKAGE_POLICY");
+
+    /** Test policy for Package List */
+    @ListOfPackagePolicyDefinition(
+            base = @PolicyDefinition(
+                    allowedScopes = {
+                             1 // POLICY_SCOPE_USER
+                    },
+                    affectedResource = 1, // RESOURCE_DEVICE_WIDE
+                    // requiredPermission and requiredCrossUserPermission using the default values.
+                    allowedDpcTypes = @AllowedDpcTypes(
+                            deviceOwner = DISALLOWED,
+                            managedProfileOwnerOfOrganizationOwnedDevice = DISALLOWED,
+                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                            unaffiliatedFullUserProfileOwner = DISALLOWED)),
+            emptyListAllowed = false,
+            resolutionMechanism = @ListResolutionMechanism(custom = true))
+    public static final PolicyIdentifier<List<PackageIdentifier>> SIMPLE_PACKAGE_LIST_POLICY =
+            new PolicyIdentifier<>("SIMPLE_PACKAGE_LIST_POLICY");
 
     /** Test policy verifying processing of DEFAULT_DEVICE_OWNER allowed. */
     @IntegerPolicyDefinition(

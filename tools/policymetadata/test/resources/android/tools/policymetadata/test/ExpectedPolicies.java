@@ -25,6 +25,7 @@ import static android.app.admin.PolicyIdentifier.SIMPLE_INTEGER_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_INTEGER_POLICY_WITH_RANGE;
 import static android.app.admin.PolicyIdentifier.SIMPLE_LONG_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_LONG_POLICY_WITH_RANGE;
+import static android.app.admin.PolicyIdentifier.SIMPLE_PACKAGE_LIST_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_PACKAGE_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_STRING_LIST_POLICY;
 import static android.app.admin.PolicyIdentifier.SIMPLE_STRING_POLICY;
@@ -40,6 +41,7 @@ import static android.app.admin.PolicyIdentifier.TEST_PROFILE_OWNER_OF_ORGANIZAT
 import static android.app.admin.PolicyIdentifier.TEST_PROFILE_OWNER_ON_USER0_ALLOWED;
 import static android.app.admin.PolicyIdentifier.TEST_PROFILE_OWNER_ON_USER_ALLOWED;
 
+import android.app.admin.PackageIdentifier;
 import android.app.admin.PolicyIdentifier;
 import java.lang.Integer;
 import java.lang.String;
@@ -382,6 +384,21 @@ public class Policies {
                 1,
                 2
             )
+        ));
+        policies.add(new ListPolicyMetadata<PackageIdentifier>(
+            /* id= */ SIMPLE_PACKAGE_LIST_POLICY,
+            /* elementMetadata= */ new PackagePolicyMetadata(
+                /* id= */ new PolicyIdentifier<PackageIdentifier>(SIMPLE_PACKAGE_LIST_POLICY.getId() + "#elements"),
+                /* allowedScopes= */ Set.of(
+                    1
+                ),
+                /* affectedResource= */ 1,
+                /* requiredPermission= */ null,
+                /* requiredCrossUserPermission= */ null,
+                /* allowedDpcTypes= */ Set.of()
+            ),
+            /* resolutionMechanism= */ null,
+            /* emptyListAllowed= */ false
         ));
         return policies;
     }
