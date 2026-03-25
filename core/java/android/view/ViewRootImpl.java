@@ -138,7 +138,6 @@ import static com.android.internal.annotations.VisibleForTesting.Visibility.PACK
 import static com.android.text.flags.Flags.disableHandwritingInitiatorForIme;
 import static com.android.window.flags.Flags.alwaysSeqIdLayout;
 import static com.android.window.flags.Flags.alwaysSeqIdLayoutWear;
-import static com.android.window.flags.Flags.enableWindowContextResourcesUpdateOnConfigChange;
 import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
 
 import android.Manifest;
@@ -7183,16 +7182,14 @@ public final class ViewRootImpl implements ViewParent,
             mActivityConfigCallback.onConfigurationChanged(overrideConfig, newDisplayId,
                     activityWindowInfo);
         } else {
-            if (enableWindowContextResourcesUpdateOnConfigChange()) {
-                // There is no activity callback - update resources for window token, if needed.
-                final IBinder windowContextToken = mContext.getWindowContextToken();
-                if (windowContextToken instanceof WindowTokenClient) {
-                    WindowTokenClientController.getInstance().onWindowConfigurationChanged(
-                            windowContextToken,
-                            mLastReportedMergedConfiguration.getMergedConfiguration(),
-                            newDisplayId
-                    );
-                }
+            // There is no activity callback - update resources for window token, if needed.
+            final IBinder windowContextToken = mContext.getWindowContextToken();
+            if (windowContextToken instanceof WindowTokenClient) {
+                WindowTokenClientController.getInstance().onWindowConfigurationChanged(
+                        windowContextToken,
+                        mLastReportedMergedConfiguration.getMergedConfiguration(),
+                        newDisplayId
+                );
             }
             updateConfiguration(newDisplayId);
         }
