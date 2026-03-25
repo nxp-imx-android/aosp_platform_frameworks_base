@@ -1705,15 +1705,18 @@ public class ComputerEngine implements Computer {
             return PackageInfoList.emptyList();
         }
         if (!mUserManager.exists(userId)) return PackageInfoList.emptyList();
-        flags = updateFlagsForPackage(flags, userId);
+        final long updatedFlags = updateFlagsForPackage(flags, userId);
 
         enforceCrossUserPermission(callingUid, userId, false /* requireFullPermission */,
                 false /* checkShell */, "get installed packages");
 
-        return getInstalledPackagesBody(flags, userId, callingUid);
+        Slog.i(TAG, "getInstalledPackages: callingUid=" + callingUid + " flags=" + flags
+               + " updatedFlags=" + updatedFlags + " userId=" + userId);
+
+        return getInstalledPackagesBody(updatedFlags, userId, callingUid);
     }
 
-    protected PackageInfoList getInstalledPackagesBody(long flags, int userId, int callingUid) {
+    private PackageInfoList getInstalledPackagesBody(long flags, int userId, int callingUid) {
         // writer
         final boolean listUninstalled = (flags & MATCH_KNOWN_PACKAGES) != 0;
         final boolean listApex = (flags & MATCH_APEX) != 0;
