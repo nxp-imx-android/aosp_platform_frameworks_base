@@ -53,9 +53,11 @@ import android.app.ActivityClient;
 import android.app.ActivityManager;
 import android.app.ActivityThread;
 import android.app.ActivityThread.ActivityClientRecord;
+import android.app.ClientTransactionHandler;
 import android.app.ContentProviderHolder;
 import android.app.IActivityManager;
 import android.app.LoadedApk;
+import android.app.servertransaction.DestroyActivityItem;
 import android.app.servertransaction.PendingTransactionActions;
 import android.content.ComponentName;
 import android.content.ContentProvider;
@@ -73,6 +75,7 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.testing.PollingCheck;
+import android.util.ArrayMap;
 import android.view.WindowManagerGlobal;
 import android.window.ActivityWindowInfo;
 import android.window.SizeConfigurationBuckets;
@@ -431,6 +434,31 @@ public class ActivityThreadClientTest {
                 .removeContentProvider(eq(holder.connection), anyBoolean());
     }
 
+    @Test
+    public void testDestroyActivityItem_postExecute_notifyWMS() {
+        try (ClientMockSession clientSession = new ClientMockSession()) {
+            final IBinder activityToken = new Binder();
+            final ClientTransactionHandler client = mock(ClientTransactionHandler.class);
+            doReturn(new ArrayMap<IBinder, DestroyActivityItem>()).when(client)
+                    .getActivitiesToBeDestroyed();
+            final PendingTransactionActions pendingActions = mock(PendingTransactionActions.class);
+
+            // No need to notify if not finishing.
+            final DestroyActivityItem item0 =
+                    new DestroyActivityItem(activityToken, false /* finished */);
+            item0.postExecute(client, pendingActions);
+
+            verify(clientSession.mActivityClient, never()).activityDestroyed(any());
+
+            // Notify if finishing.
+            final DestroyActivityItem item1 =
+                    new DestroyActivityItem(activityToken, true /* finished */);
+            item1.postExecute(client, pendingActions);
+
+            verify(clientSession.mActivityClient).activityDestroyed(activityToken);
+        }
+    }
+
     private void recreateAndVerifyNoRelaunch(ActivityThread activityThread, TestActivity activity) {
         clearInvocations(activityThread);
         getInstrumentation().runOnMainSync(() -> activity.recreate());
@@ -456,6 +484,7 @@ public class ActivityThreadClientTest {
     private class ClientMockSession implements AutoCloseable {
         private MockitoSession mMockSession;
         private ActivityThread mThread;
+        private ActivityClient mActivityClient;
 
         private ClientMockSession() {
             mThread = ActivityThread.currentActivityThread();
@@ -466,9 +495,9 @@ public class ActivityThreadClientTest {
                     .startMocking();
             doReturn(Mockito.mock(WindowManagerGlobal.class))
                     .when(WindowManagerGlobal::getInstance);
-            final ActivityClient mockAc = Mockito.mock(ActivityClient.class);
-            doReturn(mockAc).when(ActivityClient::getInstance);
-            doReturn(true).when(mockAc).finishActivity(any() /* token */,
+            mActivityClient = Mockito.mock(ActivityClient.class);
+            doReturn(mActivityClient).when(ActivityClient::getInstance);
+            doReturn(true).when(mActivityClient).finishActivity(any() /* token */,
                     anyInt() /* resultCode */, any() /* resultData */, anyInt() /* finishTask */);
         }
 
