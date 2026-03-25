@@ -85,7 +85,10 @@ public class AiSealSystemService extends SystemService {
     @GuardedBy("sLock")
     private void connectAiSealInternalServiceLocked() {
         // Reset the service to null if we are currently connected to it.
-        mAiSealInternalService = null;
+        if (mAiSealInternalService != null) {
+            Slog.w(TAG, "Connecting to AiSealInternalService twice");
+            mAiSealInternalService = null;
+        }
 
         Slog.d(TAG, "Connecting to AiSeal internal service");
         IBinder binder = ServiceManager.getService("aiseal_internal");
