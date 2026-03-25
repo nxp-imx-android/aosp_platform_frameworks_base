@@ -3079,4 +3079,15 @@ public final class MessageQueue {
         return foundInStack || foundInQueue;
     }
 
+    /**
+     * @hide
+     */
+    public void setLooperDoctor(LooperDoctor d) {
+        // This version of MessageQueue does not use LooperDoctor
+    }
+
+    /**
+     * @hide
+     */
+    public static final long USE_NEW_MESSAGEQUEUE = 421623328L;
 }
