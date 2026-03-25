@@ -24,11 +24,11 @@ import android.net.Uri
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.graphics.ImageLoader
 import com.android.systemui.notifications.intelligence.rules.data.repository.ContactsRepository
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PersonModel
 import javax.inject.Inject
 
 @SysUISingleton
-public class ContactsInteractorImpl
+class ContactsInteractorImpl
 @Inject
 constructor(
     private val contactsRepository: ContactsRepository,
@@ -37,7 +37,7 @@ constructor(
     override suspend fun fetchContacts(
         searchQuery: String,
         contentResolver: ContentResolver,
-    ): List<ContactModel> {
+    ): List<PersonModel.Contact> {
         return contactsRepository.fetchContacts(searchQuery, contentResolver)
     }
 

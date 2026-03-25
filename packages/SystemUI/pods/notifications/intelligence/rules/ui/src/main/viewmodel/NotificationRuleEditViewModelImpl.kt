@@ -34,11 +34,11 @@ import com.android.systemui.notifications.intelligence.rules.domain.interactor.N
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
 import com.android.systemui.notifications.intelligence.rules.shared.NotificationRulesLog
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.KeywordsModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PeopleModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PersonModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -73,7 +73,7 @@ constructor(
             this,
             onEnterEditField,
             onAppsSaved = { onAppsSaved(it, onExitEditField) },
-            onContactsSaved = { onContactsSaved(it, onExitEditField) },
+            onPeopleSaved = { onPeopleSaved(it, onExitEditField) },
             onKeywordsSaved = { onKeywordsSaved(it, onExitEditField) },
             resources = resources,
             logger = logger,
@@ -96,12 +96,12 @@ constructor(
         onExitEditField()
     }
 
-    override fun onContactsSaved(newContacts: List<ContactModel>, onExitEditField: () -> Unit) {
+    override fun onPeopleSaved(newPeople: List<PersonModel>, onExitEditField: () -> Unit) {
         val newFilter =
             rule.filter.copy(
-                contacts =
-                    if (newContacts.isNotEmpty()) {
-                        RuleValue.Specified(ContactsModel(newContacts))
+                people =
+                    if (newPeople.isNotEmpty()) {
+                        RuleValue.Specified(PeopleModel(newPeople))
                     } else {
                         // Saving with no selected contacts is effectively removing contacts from
                         // the filter.
@@ -126,10 +126,10 @@ constructor(
         onExitEditField()
     }
 
-    override suspend fun fetchContacts(
+    override suspend fun fetchPeople(
         searchQuery: String,
         contentResolver: ContentResolver,
-    ): List<ContactModel> {
+    ): List<PersonModel> {
         if (!NmContextualDisplayLaunch.isEnabled) {
             return emptyList()
         }

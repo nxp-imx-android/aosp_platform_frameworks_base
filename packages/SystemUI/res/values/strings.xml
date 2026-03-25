@@ -2735,8 +2735,8 @@
     <!-- Accessibility description for a dropdown button letting users change the selected action. [CHAR LIMIT=NONE]-->
     <string name="notification_rules_modify_action" translatable="false">Modify action</string>
 
-    <!-- The full text for a notification rule. Includes substrings for particular parts of the rule, like what apps are part of the rule or what contacts are part of the rule. [CHAR LIMIT=NONE] -->
-    <string name="notification_rules_full_text" translatable="false">Notifications<xliff:g id="appsSubstring">%1$s</xliff:g><xliff:g id="contactsSubstring">%2$s</xliff:g><xliff:g id="keywordsSubstring">%3$s</xliff:g></string>
+    <!-- The full text for a notification rule. Includes substrings for particular parts of the rule, like what apps are part of the rule or what people are part of the rule. [CHAR LIMIT=NONE] -->
+    <string name="notification_rules_full_text" translatable="false">Notifications<xliff:g id="appsSubstring">%1$s</xliff:g><xliff:g id="peopleSubstring">%2$s</xliff:g><xliff:g id="keywordsSubstring">%3$s</xliff:g></string>
 
     <!-- Text explaining what items the notification rule applies to. For example, "from Phone" explains that the rule applies to just notifications from the 'Phone' app and "from Phone +3 more" explains that the rule applies to the 'Phone' app and 3 additional apps.
          The "valueField" annotation specifies that 'Phone' is the item value. When the user taps on 'Phone', they will be able to change which items(s) are selected. [CHAR LIMIT=NONE]-->

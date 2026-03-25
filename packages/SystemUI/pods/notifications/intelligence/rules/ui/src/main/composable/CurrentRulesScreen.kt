@@ -109,9 +109,9 @@ private fun CurrentRule(
             buildInlineContentMap(
                 ruleDisplay.textChunks,
                 appIcon = { AppIcon(it) },
-                contactIcon = {
+                personIcon = {
                     val iconSizeDp = with(LocalDensity.current) { textSize.toDp() }
-                    ContactIcon(it, iconSizeDp, screenViewModel::loadContactBitmapFromUri)
+                    PersonIcon(it, iconSizeDp, screenViewModel::loadContactBitmapFromUri)
                 },
                 textSize = textSize,
             )

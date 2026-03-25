@@ -39,9 +39,10 @@ public data class RuleModel(
 data class FilterModel(
     /**
      * The contacts that this rule applies to. Null if contacts are not part of the rule filter. See
-     * [android.app.NotificationRule.Filter.getContacts].
+     * [android.app.NotificationRule.Filter.getContacts] and
+     * [android.app.NotificationRule.Filter.getShortcutIds].
      */
-    val contacts: ContactsModel? = null,
+    val people: PeopleModel? = null,
     /**
      * The apps that this rule applies to. Null if included apps are not part of the rule filter.
      * See [android.app.NotificationRule.Filter.getIncludedPackageUids].
@@ -55,5 +56,5 @@ data class FilterModel(
 ) {
     /** Returns true if at least one field in the filter is filled in with content. */
     val hasContent: Boolean
-        get() = contacts != null || includedApps != null || keywords != null
+        get() = people != null || includedApps != null || keywords != null
 }

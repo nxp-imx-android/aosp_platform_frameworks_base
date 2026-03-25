@@ -19,10 +19,10 @@ package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 import android.content.res.Resources
 import com.android.systemui.log.core.Logger
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.KeywordsModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PeopleModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PersonModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 
 /**
@@ -43,13 +43,9 @@ internal fun buildReadOnlyRuleText(
             )
         }
 
-    val contactsText: SingleFieldTextModel<ContactModel>? =
-        rule.filter?.contacts?.let {
-            createReadOnlyContactsText(
-                selectedContacts = it,
-                resources = resources,
-                logger = logger,
-            )
+    val peopleText: SingleFieldTextModel<PersonModel>? =
+        rule.filter?.people?.let {
+            createReadOnlyPeopleText(selectedPeople = it, resources = resources, logger = logger)
         }
 
     val keywordsText: SingleFieldTextModel<String>? =
@@ -63,7 +59,7 @@ internal fun buildReadOnlyRuleText(
 
     return buildRuleText(
         appsText = appsText,
-        contactsText = contactsText,
+        peopleText = peopleText,
         keywordsText = keywordsText,
         resources = resources,
     )
@@ -86,18 +82,18 @@ private fun createReadOnlyIncludedAppsText(
     )
 }
 
-/** Creates text representation for the contacts filter field. */
-private fun createReadOnlyContactsText(
-    selectedContacts: ContactsModel,
+/** Creates text representation for the people filter field. */
+private fun createReadOnlyPeopleText(
+    selectedPeople: PeopleModel,
     resources: Resources,
     logger: Logger,
-): SingleFieldTextModel<ContactModel> {
+): SingleFieldTextModel<PersonModel> {
     return createMultiItemText(
-        items = selectedContacts.contacts,
+        items = selectedPeople.people,
         iconId = { it.id },
         label = { it.displayLabel },
         onClick = null,
-        itemTextString = ItemTextStringConstants.contactString,
+        itemTextString = ItemTextStringConstants.personString,
         resources = resources,
         logger = logger,
     )

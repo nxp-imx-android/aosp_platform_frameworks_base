@@ -35,12 +35,12 @@ import com.android.systemui.notifications.intelligence.rules.data.repository.Not
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
 import com.android.systemui.notifications.intelligence.rules.shared.NotificationRulesLog
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel.Companion.toFullRule
 import com.android.systemui.notifications.intelligence.rules.shared.model.FilterModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.KeywordsModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PeopleModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ResponseModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 import javax.inject.Inject
@@ -191,7 +191,7 @@ constructor(
     private suspend fun NotificationRule.Filter.toInternalModel(): FilterModel? {
         val filterModel =
             FilterModel(
-                contacts = this.contacts.toContactsModel(),
+                people = this.contacts.toContactsModel(),
                 includedApps = this.includedPackageUids.toIncludedAppsModel(),
                 keywords = this.keywords.toKeywordsModel(),
             )
@@ -202,12 +202,12 @@ constructor(
         }
     }
 
-    private suspend fun List<Uri>.toContactsModel(): ContactsModel? {
+    private suspend fun List<Uri>.toContactsModel(): PeopleModel? {
         val contacts = this.mapNotNull { contactsRepository.lookupContact(it, contentResolver) }
         if (contacts.isEmpty()) {
             return null
         }
-        return ContactsModel(contacts)
+        return PeopleModel(contacts)
     }
 
     private suspend fun List<Int>.toIncludedAppsModel(): IncludedAppsModel? {
