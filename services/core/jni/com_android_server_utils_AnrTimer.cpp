@@ -758,11 +758,11 @@ class AnrTimerService::Timer {
                             id, pid, uid, statusString(status), -ms);
     }
 
-    static int maxId() {
-        return idGen;
-    }
-
   private:
+    // A mask to ensure uint32_t timer IDs do not wrap to negative values when converted to
+    // int32_t values.
+    static constexpr uint32_t kIdMask = 0x7f'ff'ff'ff;
+
     /**
      * Collect the name of the process.
      */
@@ -772,9 +772,9 @@ class AnrTimerService::Timer {
 
     // Get the next free ID.  NOTIMER is never returned.
     static timer_id_t nextId() {
-        timer_id_t id = idGen.fetch_add(1);
+        timer_id_t id = (idGen.fetch_add(1) & kIdMask);
         while (id == NOTIMER) {
-            id = idGen.fetch_add(1);
+            id = (idGen.fetch_add(1) & kIdMask);
         }
         return id;
     }
