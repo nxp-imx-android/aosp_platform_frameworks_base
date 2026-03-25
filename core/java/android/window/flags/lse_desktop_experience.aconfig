@@ -970,6 +970,17 @@ flag {
 }
 
 flag {
+    name: "filter_events_from_irrelevant_devices_in_drag_move_resize"
+    namespace: "lse_desktop_experience"
+    description: "Filters motion events from input devices whose events haven't started the drag /n"
+                 "remove or drag resize gesture."
+    bug: "452164704"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "fix_wallpaper_dim_issues_26q2"
     namespace: "lse_desktop_experience"
     description: "Fixes the issues around wallpaper dimming in 26Q2."

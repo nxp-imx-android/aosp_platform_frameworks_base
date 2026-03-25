@@ -17,12 +17,14 @@
 package com.android.wm.shell.windowdecor
 
 import android.os.SystemClock
+import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.test.filters.SmallTest
+import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import org.junit.After
 import org.junit.Assert.assertFalse
@@ -34,6 +36,7 @@ import org.mockito.Mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argThat
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
@@ -1553,10 +1556,500 @@ class DragDetectorTest : ShellTestCase() {
         verify(eventHandler, never()).handleMotionEvent(anyOrNull(), any())
     }
 
+    @Test
+    fun testDirectDispatchIntoDragDetector() {
+        val dragDetector = createDragDetector()
+
+        val down = createMotionEvent(MotionEvent.ACTION_DOWN)
+        assertFalse(dragDetector.onInterceptTouchEvent(viewGroup, down))
+
+        // If no child views can handle the gesture, the entire gesture is dispatched to the view
+        // group after the first down is passed to View#onInterceptTouchEvent.
+        assertTrue(dragDetector.onMotionEvent(viewGroup, down))
+
+        // Make sure only one down is passed
+        verify(eventHandler)
+            .handleMotionEvent(anyOrNull(), argThat { ev -> ev.action == MotionEvent.ACTION_DOWN })
+
+        val moveWithinSlop = createMotionEvent(MotionEvent.ACTION_MOVE)
+        assertTrue(dragDetector.onMotionEvent(viewGroup, moveWithinSlop))
+        verify(eventHandler, never())
+            .handleMotionEvent(anyOrNull(), argThat { ev -> ev.action == MotionEvent.ACTION_MOVE })
+
+        val moveBeyondSlop = createMotionEvent(MotionEvent.ACTION_MOVE, x = X + SLOP + 1)
+        assertTrue(dragDetector.onMotionEvent(viewGroup, moveBeyondSlop))
+        verify(eventHandler)
+            .handleMotionEvent(
+                eq(viewGroup),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_MOVE && ev.x == X + SLOP + 1 && ev.y == Y
+                },
+            )
+
+        val up = createMotionEvent(MotionEvent.ACTION_UP, x = X + SLOP + 1)
+        assertTrue(dragDetector.onMotionEvent(viewGroup, up))
+        verify(eventHandler)
+            .handleMotionEvent(
+                eq(viewGroup),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_UP && ev.x == X + SLOP + 1 && ev.y == Y
+                },
+            )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FILTER_EVENTS_FROM_IRRELEVANT_DEVICES_IN_DRAG_MOVE_RESIZE)
+    fun testIgnoreIrrelevantDevice_irrelevantGestureEndsFirst_directDispatch() {
+        val dragDetector = createDragDetector()
+
+        val relevantDown = createMotionEvent(MotionEvent.ACTION_DOWN, deviceId = DEFAULT_DEVICE_ID)
+        assertFalse(dragDetector.onInterceptTouchEvent(viewGroup, relevantDown))
+        assertTrue(dragDetector.onMotionEvent(viewGroup, relevantDown))
+        verify(eventHandler)
+            .handleMotionEvent(
+                eq(viewGroup),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_DOWN && ev.deviceId == DEFAULT_DEVICE_ID
+                },
+            )
+
+        val irrelevantDown =
+            createMotionEvent(MotionEvent.ACTION_DOWN, deviceId = ALTERNATIVE_DEVICE_ID)
+        assertFalse(dragDetector.onInterceptTouchEvent(viewGroup, irrelevantDown))
+        assertFalse(dragDetector.onMotionEvent(viewGroup, irrelevantDown))
+        verify(eventHandler, never())
+            .handleMotionEvent(
+                anyOrNull(),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_DOWN && ev.deviceId == ALTERNATIVE_DEVICE_ID
+                },
+            )
+
+        val irrelevantMove =
+            createMotionEvent(
+                MotionEvent.ACTION_MOVE,
+                x = X + SLOP + 1,
+                deviceId = ALTERNATIVE_DEVICE_ID,
+            )
+        assertFalse(dragDetector.onMotionEvent(viewGroup, irrelevantMove))
+        verify(eventHandler, never())
+            .handleMotionEvent(
+                anyOrNull(),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_MOVE && ev.deviceId == ALTERNATIVE_DEVICE_ID
+                },
+            )
+
+        val relevantMove =
+            createMotionEvent(
+                MotionEvent.ACTION_MOVE,
+                x = X + SLOP + 1,
+                deviceId = DEFAULT_DEVICE_ID,
+            )
+        assertTrue(dragDetector.onMotionEvent(viewGroup, relevantMove))
+        verify(eventHandler)
+            .handleMotionEvent(
+                eq(viewGroup),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_MOVE && ev.deviceId == DEFAULT_DEVICE_ID
+                },
+            )
+
+        val irrelevantUp =
+            createMotionEvent(
+                MotionEvent.ACTION_UP,
+                x = X + SLOP + 1,
+                deviceId = ALTERNATIVE_DEVICE_ID,
+            )
+        assertFalse(dragDetector.onMotionEvent(viewGroup, irrelevantUp))
+        verify(eventHandler, never())
+            .handleMotionEvent(
+                anyOrNull(),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_UP && ev.deviceId == ALTERNATIVE_DEVICE_ID
+                },
+            )
+
+        val relevantUp =
+            createMotionEvent(MotionEvent.ACTION_UP, x = X + SLOP + 1, deviceId = DEFAULT_DEVICE_ID)
+        assertTrue(dragDetector.onMotionEvent(viewGroup, relevantUp))
+        verify(eventHandler)
+            .handleMotionEvent(
+                eq(viewGroup),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_UP && ev.deviceId == DEFAULT_DEVICE_ID
+                },
+            )
+
+        // New gestures from irrelevant devices are still handled
+        assertFalse(dragDetector.onInterceptTouchEvent(viewGroup, irrelevantDown))
+        assertTrue(dragDetector.onMotionEvent(viewGroup, irrelevantDown))
+        verify(eventHandler)
+            .handleMotionEvent(
+                eq(viewGroup),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_DOWN && ev.deviceId == ALTERNATIVE_DEVICE_ID
+                },
+            )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FILTER_EVENTS_FROM_IRRELEVANT_DEVICES_IN_DRAG_MOVE_RESIZE)
+    fun testIgnoreIrrelevantDevice_irrelevantGestureEndsFirst_interceptsOnMove() {
+        val dragDetector = createDragDetector()
+
+        val relevantDown = createMotionEvent(MotionEvent.ACTION_DOWN, deviceId = DEFAULT_DEVICE_ID)
+        assertFalse(dragDetector.onInterceptTouchEvent(viewGroup, relevantDown))
+        verify(eventHandler, never())
+            .handleMotionEvent(
+                eq(viewGroup),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_DOWN && ev.deviceId == DEFAULT_DEVICE_ID
+                },
+            )
+
+        val irrelevantDown =
+            createMotionEvent(MotionEvent.ACTION_DOWN, deviceId = ALTERNATIVE_DEVICE_ID)
+        assertFalse(dragDetector.onInterceptTouchEvent(viewGroup, irrelevantDown))
+
+        val irrelevantMove =
+            createMotionEvent(
+                MotionEvent.ACTION_MOVE,
+                x = X + SLOP + 1,
+                deviceId = ALTERNATIVE_DEVICE_ID,
+            )
+        assertFalse(dragDetector.onMotionEvent(viewGroup, irrelevantMove))
+        verify(eventHandler, never())
+            .handleMotionEvent(
+                anyOrNull(),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_DOWN && ev.deviceId == ALTERNATIVE_DEVICE_ID
+                },
+            )
+        verify(eventHandler, never())
+            .handleMotionEvent(
+                anyOrNull(),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_MOVE && ev.deviceId == ALTERNATIVE_DEVICE_ID
+                },
+            )
+
+        val relevantMove =
+            createMotionEvent(
+                MotionEvent.ACTION_MOVE,
+                x = X + SLOP + 1,
+                deviceId = DEFAULT_DEVICE_ID,
+            )
+        assertTrue(dragDetector.onInterceptTouchEvent(viewGroup, relevantMove))
+        assertTrue(dragDetector.onMotionEvent(viewGroup, relevantMove))
+        verify(eventHandler)
+            .handleMotionEvent(
+                eq(viewGroup),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_DOWN &&
+                        ev.deviceId == DEFAULT_DEVICE_ID &&
+                        ev.x == X
+                },
+            )
+        verify(eventHandler)
+            .handleMotionEvent(
+                eq(viewGroup),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_MOVE &&
+                        ev.deviceId == DEFAULT_DEVICE_ID &&
+                        ev.x == X + SLOP + 1
+                },
+            )
+
+        val irrelevantUp =
+            createMotionEvent(
+                MotionEvent.ACTION_UP,
+                x = X + SLOP + 1,
+                deviceId = ALTERNATIVE_DEVICE_ID,
+            )
+        assertFalse(dragDetector.onMotionEvent(viewGroup, irrelevantUp))
+        verify(eventHandler, never())
+            .handleMotionEvent(
+                anyOrNull(),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_UP && ev.deviceId == ALTERNATIVE_DEVICE_ID
+                },
+            )
+
+        val relevantUp =
+            createMotionEvent(MotionEvent.ACTION_UP, x = X + SLOP + 1, deviceId = DEFAULT_DEVICE_ID)
+        assertTrue(dragDetector.onMotionEvent(viewGroup, relevantUp))
+        verify(eventHandler)
+            .handleMotionEvent(
+                anyOrNull(),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_UP && ev.deviceId == DEFAULT_DEVICE_ID
+                },
+            )
+
+        // New gestures from irrelevant devices are still handled
+        assertFalse(dragDetector.onInterceptTouchEvent(viewGroup, irrelevantDown))
+        assertTrue(dragDetector.onMotionEvent(viewGroup, irrelevantDown))
+        verify(eventHandler)
+            .handleMotionEvent(
+                anyOrNull(),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_DOWN && ev.deviceId == ALTERNATIVE_DEVICE_ID
+                },
+            )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FILTER_EVENTS_FROM_IRRELEVANT_DEVICES_IN_DRAG_MOVE_RESIZE)
+    fun testIgnoreIrrelevantDevice_relevantGestureEndsFirst_directDispatch() {
+        val dragDetector = createDragDetector()
+
+        val relevantDown = createMotionEvent(MotionEvent.ACTION_DOWN, deviceId = DEFAULT_DEVICE_ID)
+        assertFalse(dragDetector.onInterceptTouchEvent(viewGroup, relevantDown))
+        assertTrue(dragDetector.onMotionEvent(viewGroup, relevantDown))
+        verify(eventHandler)
+            .handleMotionEvent(
+                eq(viewGroup),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_DOWN && ev.deviceId == DEFAULT_DEVICE_ID
+                },
+            )
+
+        val irrelevantDown =
+            createMotionEvent(MotionEvent.ACTION_DOWN, deviceId = ALTERNATIVE_DEVICE_ID)
+        assertFalse(dragDetector.onInterceptTouchEvent(viewGroup, irrelevantDown))
+        assertFalse(dragDetector.onMotionEvent(viewGroup, irrelevantDown))
+        verify(eventHandler, never())
+            .handleMotionEvent(
+                anyOrNull(),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_DOWN && ev.deviceId == ALTERNATIVE_DEVICE_ID
+                },
+            )
+
+        val relevantMove =
+            createMotionEvent(
+                MotionEvent.ACTION_MOVE,
+                x = X + SLOP + 1,
+                deviceId = DEFAULT_DEVICE_ID,
+            )
+        assertTrue(dragDetector.onMotionEvent(viewGroup, relevantMove))
+        verify(eventHandler)
+            .handleMotionEvent(
+                eq(viewGroup),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_MOVE && ev.deviceId == DEFAULT_DEVICE_ID
+                },
+            )
+
+        val irrelevantMove =
+            createMotionEvent(
+                MotionEvent.ACTION_MOVE,
+                x = X + SLOP + 1,
+                deviceId = ALTERNATIVE_DEVICE_ID,
+            )
+        assertFalse(dragDetector.onMotionEvent(viewGroup, irrelevantMove))
+        verify(eventHandler, never())
+            .handleMotionEvent(
+                anyOrNull(),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_MOVE && ev.deviceId == ALTERNATIVE_DEVICE_ID
+                },
+            )
+
+        val relevantUp =
+            createMotionEvent(MotionEvent.ACTION_UP, x = X + SLOP + 1, deviceId = DEFAULT_DEVICE_ID)
+        assertTrue(dragDetector.onMotionEvent(viewGroup, relevantUp))
+        verify(eventHandler)
+            .handleMotionEvent(
+                eq(viewGroup),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_UP && ev.deviceId == DEFAULT_DEVICE_ID
+                },
+            )
+
+        // Another gesture from the relevant device should also be discarded before all gestures
+        // finish
+        assertFalse(dragDetector.onInterceptTouchEvent(viewGroup, relevantDown))
+        assertFalse(dragDetector.onMotionEvent(viewGroup, relevantDown))
+        verify(eventHandler)
+            .handleMotionEvent(
+                anyOrNull(),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_DOWN && ev.deviceId == DEFAULT_DEVICE_ID
+                },
+            )
+
+        assertFalse(dragDetector.onMotionEvent(viewGroup, relevantUp))
+        verify(eventHandler)
+            .handleMotionEvent(
+                anyOrNull(),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_UP && ev.deviceId == DEFAULT_DEVICE_ID
+                },
+            )
+
+        // Finish the gesture from the irrelevant device
+        val irrelevantUp =
+            createMotionEvent(
+                MotionEvent.ACTION_UP,
+                x = X + SLOP + 1,
+                deviceId = ALTERNATIVE_DEVICE_ID,
+            )
+        assertFalse(dragDetector.onMotionEvent(viewGroup, irrelevantUp))
+        verify(eventHandler, never())
+            .handleMotionEvent(
+                anyOrNull(),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_UP && ev.deviceId == ALTERNATIVE_DEVICE_ID
+                },
+            )
+
+        // New gestures from irrelevant devices are still handled
+        assertFalse(dragDetector.onInterceptTouchEvent(viewGroup, irrelevantDown))
+        assertTrue(dragDetector.onMotionEvent(viewGroup, irrelevantDown))
+        verify(eventHandler)
+            .handleMotionEvent(
+                anyOrNull(),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_DOWN && ev.deviceId == ALTERNATIVE_DEVICE_ID
+                },
+            )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FILTER_EVENTS_FROM_IRRELEVANT_DEVICES_IN_DRAG_MOVE_RESIZE)
+    fun testIgnoreIrrelevantDevice_relevantGestureEndsFirst_interceptsOnMove() {
+        val dragDetector = createDragDetector()
+
+        val relevantDown = createMotionEvent(MotionEvent.ACTION_DOWN, deviceId = DEFAULT_DEVICE_ID)
+        assertFalse(dragDetector.onInterceptTouchEvent(viewGroup, relevantDown))
+        verify(eventHandler, never())
+            .handleMotionEvent(
+                eq(viewGroup),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_DOWN && ev.deviceId == DEFAULT_DEVICE_ID
+                },
+            )
+
+        val irrelevantDown =
+            createMotionEvent(MotionEvent.ACTION_DOWN, deviceId = ALTERNATIVE_DEVICE_ID)
+        assertFalse(dragDetector.onInterceptTouchEvent(viewGroup, irrelevantDown))
+
+        val relevantMove =
+            createMotionEvent(
+                MotionEvent.ACTION_MOVE,
+                x = X + SLOP + 1,
+                deviceId = DEFAULT_DEVICE_ID,
+            )
+        assertTrue(dragDetector.onInterceptTouchEvent(viewGroup, relevantMove))
+        assertTrue(dragDetector.onMotionEvent(viewGroup, relevantMove))
+        verify(eventHandler)
+            .handleMotionEvent(
+                eq(viewGroup),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_DOWN &&
+                        ev.deviceId == DEFAULT_DEVICE_ID &&
+                        ev.x == X
+                },
+            )
+        verify(eventHandler)
+            .handleMotionEvent(
+                eq(viewGroup),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_MOVE &&
+                        ev.deviceId == DEFAULT_DEVICE_ID &&
+                        ev.x == X + SLOP + 1
+                },
+            )
+
+        val irrelevantMove =
+            createMotionEvent(
+                MotionEvent.ACTION_MOVE,
+                x = X + SLOP + 1,
+                deviceId = ALTERNATIVE_DEVICE_ID,
+            )
+        assertFalse(dragDetector.onMotionEvent(viewGroup, irrelevantMove))
+        verify(eventHandler, never())
+            .handleMotionEvent(
+                anyOrNull(),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_DOWN && ev.deviceId == ALTERNATIVE_DEVICE_ID
+                },
+            )
+        verify(eventHandler, never())
+            .handleMotionEvent(
+                anyOrNull(),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_MOVE && ev.deviceId == ALTERNATIVE_DEVICE_ID
+                },
+            )
+
+        val relevantUp =
+            createMotionEvent(MotionEvent.ACTION_UP, x = X + SLOP + 1, deviceId = DEFAULT_DEVICE_ID)
+        assertTrue(dragDetector.onMotionEvent(viewGroup, relevantUp))
+        verify(eventHandler)
+            .handleMotionEvent(
+                anyOrNull(),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_UP && ev.deviceId == DEFAULT_DEVICE_ID
+                },
+            )
+
+        // Another gesture from the relevant device should also be discarded before all gestures
+        // finish
+        assertFalse(dragDetector.onInterceptTouchEvent(viewGroup, relevantDown))
+        assertFalse(dragDetector.onMotionEvent(viewGroup, relevantDown))
+        verify(eventHandler)
+            .handleMotionEvent(
+                anyOrNull(),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_DOWN && ev.deviceId == DEFAULT_DEVICE_ID
+                },
+            )
+
+        assertFalse(dragDetector.onMotionEvent(viewGroup, relevantUp))
+        verify(eventHandler)
+            .handleMotionEvent(
+                anyOrNull(),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_UP && ev.deviceId == DEFAULT_DEVICE_ID
+                },
+            )
+
+        // Finish the gesture from the irrelevant device
+        val irrelevantUp =
+            createMotionEvent(
+                MotionEvent.ACTION_UP,
+                x = X + SLOP + 1,
+                deviceId = ALTERNATIVE_DEVICE_ID,
+            )
+        assertFalse(dragDetector.onMotionEvent(viewGroup, irrelevantUp))
+        verify(eventHandler, never())
+            .handleMotionEvent(
+                anyOrNull(),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_UP && ev.deviceId == ALTERNATIVE_DEVICE_ID
+                },
+            )
+
+        // New gestures from irrelevant devices are still handled
+        assertFalse(dragDetector.onInterceptTouchEvent(viewGroup, irrelevantDown))
+        assertTrue(dragDetector.onMotionEvent(viewGroup, irrelevantDown))
+        verify(eventHandler)
+            .handleMotionEvent(
+                anyOrNull(),
+                argThat { ev ->
+                    ev.action == MotionEvent.ACTION_DOWN && ev.deviceId == ALTERNATIVE_DEVICE_ID
+                },
+            )
+    }
+
     private fun createMotionEvent(
         action: Int,
         x: Float = X,
         y: Float = Y,
+        deviceId: Int = DEFAULT_DEVICE_ID,
         isTouch: Boolean = true,
         downTime: Long = SystemClock.uptimeMillis(),
         eventTime: Long = SystemClock.uptimeMillis(),
@@ -1588,7 +2081,7 @@ class DragDetectorTest : ShellTestCase() {
                 /* buttonState= */ 0,
                 /* xPrecision= */ 0f,
                 /* yPrecision= */ 0f,
-                /* deviceId= */ 0,
+                deviceId,
                 /* edgeFlags= */ 0,
                 if (isTouch) InputDevice.SOURCE_TOUCHSCREEN else InputDevice.SOURCE_MOUSE,
                 /* displayId= */ 0,
@@ -1608,5 +2101,8 @@ class DragDetectorTest : ShellTestCase() {
         private const val Y = 234f
 
         private const val VIEW_GROUP_ID = 9064
+
+        private const val DEFAULT_DEVICE_ID = 0
+        private const val ALTERNATIVE_DEVICE_ID = 1
     }
 }
