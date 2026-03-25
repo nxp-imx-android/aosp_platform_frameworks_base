@@ -16,7 +16,7 @@
 
 package com.android.systemui.statusbar.notification.row;
 
-import static com.android.systemui.Flags.enableLockscreenBlur;
+import static com.android.systemui.Flags.lockscreenBlurForNotifications;
 import static com.android.systemui.Flags.notificationRowTransparency;
 import static com.android.systemui.util.ColorUtilKt.hexColorString;
 
@@ -331,7 +331,7 @@ public class NotificationBackgroundView extends View implements Dumpable,
      */
     @UiThread
     public void setBlurBackgroundEnabled(boolean enabled) {
-        if (!enableLockscreenBlur()) {
+        if (!lockscreenBlurForNotifications()) {
             return;
         }
         Assert.isMainThread();
