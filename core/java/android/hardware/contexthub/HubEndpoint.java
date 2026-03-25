@@ -1109,7 +1109,7 @@ public class HubEndpoint {
             }
 
             DataFlowId dataFlowIdObj = new DataFlowId();
-            dataFlowIdObj.hubId = mPendingHubEndpointInfo.getIdentifier().getHub();
+            dataFlowIdObj.hubId = mAssignedHubEndpointInfo.getIdentifier().getHub();
             dataFlowIdObj.id = dataFlowId.get();
             ret = new DataFlowSource(dataConfig, this, region, info, dataFlowIdObj);
             synchronized (mLock) {
