@@ -597,3 +597,26 @@ policy_metadata {
   allowed_scopes: POLICY_SCOPE_USER
   affected_resource: RESOURCE_DEVICE_WIDE
 }
+policy_metadata {
+  identifier {
+    field_name: "SIMPLE_PACKAGE_LIST_POLICY"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "List<android.app.admin.PackageIdentifier>"
+    package_name: "java.util"
+  }
+  documentation: "Test policy for Package List"
+  type_specific_metadata {
+    list_metadata {
+      package_metadata {
+      }
+      resolution_mechanism {
+        custom: true
+      }
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+}
