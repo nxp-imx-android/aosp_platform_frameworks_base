@@ -119,7 +119,7 @@ public final class ScanConstants {
     @Retention(RetentionPolicy.SOURCE)
     public @interface OpResult{}
     public static final int RESULT_SUCCEEDED = 0;
-    public static final int RESULT_FAILED = 2;
+    public static final int RESULT_FAILED = 1;
 
     /*******************************Scan Session Setting*******************************************/
     @StringDef({
@@ -129,36 +129,7 @@ public final class ScanConstants {
     @Retention(RetentionPolicy.SOURCE)
     public @interface ScanSessionBundleKey {}
     public static final String KEY_CHANNEL_NUMBER = "CHANNEL_NUMBER";
-    /** Values should be one of the following in {@link ChannelListId} */
     public static final String KEY_CHANNEL_LIST_ID = "CHANNEL_LIST_ID";
-
-    @StringDef({
-            CHANNEL_LIST_TERRESTRIAL,
-            CHANNEL_LIST_CABLE,
-            CHANNEL_LIST_GENERAL_SATELLITE,
-            CHANNEL_LIST_PREFERRED_SATELLITE,
-            CHANNEL_LIST_SATELLITE,
-            CHANNEL_LIST_CAM_TERRESTRIAL,
-            CHANNEL_LIST_CAM_CABLE,
-            CHANNEL_LIST_CAM_SATELLITE,
-            CHANNEL_LIST_ATV_TERRESTRIAL,
-            CHANNEL_LIST_ATV_CABLE
-    })
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface ChannelListId {}
-    public static final String CHANNEL_LIST_TERRESTRIAL = "CHANNEL_LIST_TERRESTRIAL";
-    public static final String CHANNEL_LIST_CABLE = "CHANNEL_LIST_CABLE";
-    public static final String CHANNEL_LIST_GENERAL_SATELLITE = "CHANNEL_LIST_GENERAL_SATELLITE";
-    public static final String CHANNEL_LIST_PREFERRED_SATELLITE =
-            "CHANNEL_LIST_PREFERRED_SATELLITE";
-    public static final String CHANNEL_LIST_SATELLITE = "CHANNEL_LIST_SATELLITE";
-
-    public static final String CHANNEL_LIST_CAM_TERRESTRIAL = "CHANNEL_LIST_CAM_TERRESTRIAL";
-    public static final String CHANNEL_LIST_CAM_CABLE = "CHANNEL_LIST_CAM_CABLE";
-    public static final String CHANNEL_LIST_CAM_SATELLITE = "CHANNEL_LIST_CAM_SATELLITE";
-
-    public static final String CHANNEL_LIST_ATV_TERRESTRIAL = "CHANNEL_LIST_ATV_TERRESTRIAL";
-    public static final String CHANNEL_LIST_ATV_CABLE = "CHANNEL_LIST_ATV_CABLE";
 
     /************************************Scan Params***********************************************/
     @StringDef({
