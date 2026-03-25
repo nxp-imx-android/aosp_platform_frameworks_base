@@ -23,13 +23,17 @@ import static android.security.trusttoken.TrustTokenManager.VERIFICATION_SUCCESS
 
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.PermissionManuallyEnforced;
 import android.annotation.RequiresNoPermission;
 import android.app.StatsManager;
 import android.app.StatsManager.PullAtomMetadata;
+import android.content.ComponentName;
 import android.content.Context;
 import android.os.Binder;
 import android.os.CancellationSignal;
 import android.os.OutcomeReceiver;
+import android.os.ParcelFileDescriptor;
 import android.os.PermissionEnforcer;
 import android.security.trusttoken.ITrustTokenManager;
 import android.security.trusttoken.TrustAnchorUnavailableException;
@@ -53,6 +57,8 @@ import com.google.android.security.trusttoken.TrustAnchor;
 import com.google.android.security.trusttoken.TrustTokenInvalidSignatureException;
 import com.google.android.security.trusttoken.TrustTokenPolicy;
 
+import java.io.FileDescriptor;
+import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -367,6 +373,42 @@ public class TrustTokenManagerService extends SystemService {
             // TODO(b/472383812): Implement this method.
             // TODO(b/472383812): Protect with permissions
             Slog.w(TAG, "updatePreparedIdentities is not yet implemented.");
+        }
+
+        @PermissionManuallyEnforced
+        @Override
+        protected void dump(
+                @NonNull FileDescriptor fd, @NonNull PrintWriter fout, @Nullable String[] args) {
+            fout.println("hasProvider: " + mHasProvider);
+            ComponentName provider = TrustTokenProvider.getServiceProvider(mContext);
+            if (provider == null) {
+                fout.println("provider: null");
+            } else {
+                fout.println(
+                        "provider: " + provider.getPackageName() + "/" + provider.getClassName());
+            }
+            fout.println("hasTrustAnchor: " + (mTrustAnchor.get() != null));
+            fout.println("authorityFallback: " + mAuthorityFallback);
+            fout.println("numRootKey: " + mNumRootKey);
+            fout.println(
+                    "deviceTokenCounts: "
+                            + mDatabase.countTrustTokenSets(TrustTokenSet.TYPE_VERIFIED_DEVICE));
+        }
+
+        @PermissionManuallyEnforced
+        @Override
+        public int handleShellCommand(
+                @NonNull ParcelFileDescriptor in,
+                @NonNull ParcelFileDescriptor out,
+                @NonNull ParcelFileDescriptor err,
+                @NonNull String[] args) {
+            return new TrustTokenShellCommand(mContext, mInternal)
+                    .exec(
+                            this,
+                            in.getFileDescriptor(),
+                            out.getFileDescriptor(),
+                            err.getFileDescriptor(),
+                            args);
         }
     }
 
