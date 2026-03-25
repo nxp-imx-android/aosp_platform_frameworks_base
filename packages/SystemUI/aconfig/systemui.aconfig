@@ -80,8 +80,8 @@ flag {
 flag {
     name: "blur_on_more_surfaces"
     namespace: "systemui"
-    description: "Enable blur on more systemui surfaces"
-    bug: "444141641"
+    description: "Enable blur on more systemui surfaces (volume and power)"
+    bug: "496223564"
 }
 
 flag {
@@ -449,7 +449,7 @@ flag {
     name: "enable_lockscreen_blur"
     namespace: "systemui"
     description: "Enable blur on more lockscreen surfaces"
-    bug: "444141641"
+    bug: "496224024"
 }
 
 flag {
@@ -931,6 +931,13 @@ flag {
     metadata {
       purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "lockscreen_blur_for_notifications"
+    namespace: "systemui"
+    description: "Enable lockscreen blur for notifications"
+    bug: "496207304"
 }
 
 flag {
