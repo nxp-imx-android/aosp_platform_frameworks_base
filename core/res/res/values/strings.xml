@@ -7301,6 +7301,9 @@
     <!-- The label of cast to others button for Share Cast feature.  [CHAR LIMIT=30] -->
     <string name="media_route_chooser_share_cast_others">Cast to others</string>
 
+    <!-- [CHAR LIMIT=NONE] Accessibility description for the draggable divider in activity embedding. -->
+    <string name="activity_embedding_divider_drag_handle_description">draggable divider</string>
+
     <!-- Toast message shown when brightness is overridden by the top app and user tries to adjust it. [CHAR LIMIT=NONE] -->
     <string name="brightness_unable_adjust_msg">Can\'t adjust brightness because it\'s being controlled by the top app</string>
 </resources>
