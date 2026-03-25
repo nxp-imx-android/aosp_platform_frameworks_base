@@ -74,29 +74,32 @@ constructor(
             return
         }
 
-        backgroundScope.launch {
-            cursorInteractor.cursorPositions
-                .filterNotNull()
-                .map { pos: CursorPosition -> TimedPosition(pos, systemClock.currentTimeMillis()) }
-                .scan(emptyList<TimedPosition>()) { recentPositions, newTimedPosition ->
-                    val currentTime = newTimedPosition.timestamp
-                    (recentPositions.filter {
-                        currentTime - it.timestamp <= MAX_SHAKE_DURATION_MS
-                    } + newTimedPosition)
-                }
-                .map(::isCursorShaking)
-                .distinctUntilChanged()
-                .scan(CooldownState(0L, false)) { state, startToShake ->
-                    val currentTime = systemClock.currentTimeMillis()
-                    if (startToShake && currentTime - state.lastShakeTime >= COOLDOWN_MS) {
-                        CooldownState(currentTime, true)
-                    } else {
-                        CooldownState(state.lastShakeTime, false)
+        detectionJob =
+            backgroundScope.launch {
+                cursorInteractor.cursorPositions
+                    .filterNotNull()
+                    .map { pos: CursorPosition ->
+                        TimedPosition(pos, systemClock.currentTimeMillis())
                     }
-                }
-                .filter { it.isShaking }
-                .collect { notifyListeners() }
-        }
+                    .scan(emptyList<TimedPosition>()) { recentPositions, newTimedPosition ->
+                        val currentTime = newTimedPosition.timestamp
+                        (recentPositions.filter {
+                            currentTime - it.timestamp <= MAX_SHAKE_DURATION_MS
+                        } + newTimedPosition)
+                    }
+                    .map(::isCursorShaking)
+                    .distinctUntilChanged()
+                    .scan(CooldownState(0L, false)) { state, startToShake ->
+                        val currentTime = systemClock.currentTimeMillis()
+                        if (startToShake && currentTime - state.lastShakeTime >= COOLDOWN_MS) {
+                            CooldownState(currentTime, true)
+                        } else {
+                            CooldownState(state.lastShakeTime, false)
+                        }
+                    }
+                    .filter { it.isShaking }
+                    .collect { notifyListeners() }
+            }
     }
 
     private fun stopDetection() {
@@ -149,6 +152,6 @@ constructor(
 
         private const val COOLDOWN_MS = 3000L
 
-        private const val TAG = "GestureDetectionInteractor"
+        private const val TAG = "GestureDetectInteractor"
     }
 }
