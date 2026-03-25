@@ -447,9 +447,11 @@ public class PccSandboxManagerInternal implements OnRoleHoldersChangedListener {
      */
     public IBinder createPccProxyIfNeeded(ComponentName name, int userId, Intent intent,
             IBinder binder, int clientUid) {
-        binder = validatePccServiceBinder(binder);
-        if (binder == null) {
-            return null;
+        if (!isTrustedClient(clientUid)) {
+            binder = validatePccServiceBinder(binder);
+            if (binder == null) {
+                return null;
+            }
         }
 
         synchronized (mLock) {
