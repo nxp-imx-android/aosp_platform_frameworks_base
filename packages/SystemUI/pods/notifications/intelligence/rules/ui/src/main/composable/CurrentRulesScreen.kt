@@ -133,6 +133,7 @@ private fun CurrentRule(
             inlineContent = inlineTextContent,
             color = MaterialTheme.colorScheme.onSurface,
             style = textStyles.defaultStyle,
+            modifier = Modifier.padding(top = 8.dp),
         )
 
         if (isExpanded) {

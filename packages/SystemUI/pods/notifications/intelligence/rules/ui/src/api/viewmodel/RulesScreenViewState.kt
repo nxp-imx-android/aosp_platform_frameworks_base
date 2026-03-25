@@ -38,9 +38,13 @@ public sealed interface RulesScreenViewState {
         /**
          * The action for a particular rule is being edited.
          *
+         * @param selectedAction the currently selected action.
          * @param onActionSaved invoked when the user selects an action in the menu.
          */
-        public data class Action(val onActionSaved: (ActionModel) -> Unit) : EditField
+        public data class Action(
+            val selectedAction: ActionModel,
+            val onActionSaved: (ActionModel) -> Unit,
+        ) : EditField
 
         /** The list of contacts for a particular rule is being edited. */
         public data class Contacts(

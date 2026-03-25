@@ -2708,6 +2708,18 @@
     <!-- Notifications with this action will not be shown to the user at all. [CHAR LIMIT=NONE]-->
     <string name="notification_rules_action_block" translatable="false">Block</string>
 
+    <!-- Notifications with this action will be highlighted in the list and will alert the user via sound and/or vibration if enabled. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_action_highlight_and_alert_description" translatable="false">Notifications can interrupt all modes, including Do Not Disturb.</string>
+    <!-- Notifications with this action will be highlighted in the list. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_action_highlight_description" translatable="false">Highlighted notifications show at the top of the notification shade.</string>
+    <!-- Notifications with this action will be silenced, with no sound or vibration. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_action_silence_description" translatable="false">Silenced notifications show at the bottom of the shade and do not ring or vibrate.</string>
+    <!-- Notifications with this action will be silenced, with no sound or vibration, and be bundled into a single group. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_action_bundle_description" translatable="false">Notifications are collapsed &amp; grouped together.</string>
+    <!-- Notifications with this action will not be shown to the user at all. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_action_block_description" translatable="false">Notifications are blocked from interrupting and appearing in the shade.</string>
+
+
     <!-- Title for a page where users can add or remove people/contacts/group chats that will be affected by a notification rule. [CHAR LIMIT=30]-->
     <string name="notification_rules_field_people" translatable="false">People</string>
     <!-- Title for a page where users can add or remove apps that will be affected by a notification rule. [CHAR LIMIT=30]-->
@@ -2716,6 +2728,12 @@
     <string name="notification_rules_field_keyword" translatable="false">Keyword</string>
     <!-- Title for a page where users choose the action for a notification rule. [CHAR LIMIT=50]-->
     <string name="notification_rules_choose_action_title" translatable="false">Choose Action</string>
+    <!-- Header for actions that have more alerting behavior (e.g. sound & vibration) than a typical notification. [CHAR LIMIT=50]-->
+    <string name="notification_rules_action_more_alerting" translatable="false">More Alerting</string>
+    <!-- Header for actions that have less alerting behavior (e.g. sound & vibration) than a typical notification. [CHAR LIMIT=50]-->
+    <string name="notification_rules_action_less_alerting" translatable="false">Less Alerting</string>
+    <!-- Accessibility description for a dropdown button letting users change the selected action. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_modify_action" translatable="false">Modify action</string>
 
     <!-- The full text for a notification rule. Includes substrings for particular parts of the rule, like what apps are part of the rule or what contacts are part of the rule. [CHAR LIMIT=NONE] -->
     <string name="notification_rules_full_text" translatable="false">Notifications<xliff:g id="appsSubstring">%1$s</xliff:g><xliff:g id="contactsSubstring">%2$s</xliff:g><xliff:g id="keywordsSubstring">%3$s</xliff:g></string>
