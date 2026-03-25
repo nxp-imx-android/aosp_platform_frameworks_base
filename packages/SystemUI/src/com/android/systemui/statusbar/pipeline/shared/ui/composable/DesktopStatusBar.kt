@@ -33,7 +33,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -97,7 +96,6 @@ object DesktopStatusBar {
 
 // TODO(b/343358983): Add support for color themes in this composable.
 /** Top level composable responsible for all UI shown for the Status Bar for DesktopMode. */
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun DesktopStatusBar(
     viewModel: HomeStatusBarViewModel,
@@ -292,7 +290,7 @@ private fun QuickSettingsChip(
 
     WithAdaptiveTint(
         highlightModel = chipHighlightModel,
-        isDarkProvider = { bounds -> viewModel.areaDark.isDarkTheme(bounds) },
+        isDarkProvider = viewModel.areaDark::isDarkTheme,
     ) { tint ->
         val (hoverColor, rippleColor) =
             when (chipHighlightModel) {
