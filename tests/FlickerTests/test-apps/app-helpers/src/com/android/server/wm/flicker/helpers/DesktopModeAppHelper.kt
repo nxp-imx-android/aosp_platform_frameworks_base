@@ -885,12 +885,12 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
     fun clickCaption(
         wmHelper: WindowManagerStateHelper,
         device: UiDevice,
-        displayId: Int = DEFAULT_DISPLAY
     ) {
         val caption = checkNotNull(getCaptionForTheApp(wmHelper, device)) {
            "Unable to find caption"
         }
         caption.click()
+        val displayId = wmHelper.getWindow(innerHelper)?.displayId ?: DEFAULT_DISPLAY
         wmHelper
             .StateSyncBuilder()
             .withAppTransitionIdle(displayId)
