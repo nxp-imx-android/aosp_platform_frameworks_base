@@ -22,7 +22,7 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:paddingHorizontal">24dp</item>
-        <item name="android:paddingTop">24dp</item>
+        <item name="android:paddingTop">20dp</item>
         <item name="android:paddingBottom">16dp</item>
         <item name="android:background">@color/settingslib_materialColorSurfaceContainerHigh</item>
     </style>
@@ -45,7 +45,7 @@
     <style name="RequestComputerControlAccessDialogTitle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">24dp</item>
+        <item name="android:layout_marginTop">20dp</item>
         <item name="android:layout_marginBottom">16dp</item>
         <item name="android:gravity">center_horizontal</item>
         <item name="android:textAppearance">@style/TextAppearance.SettingsLib.HeadlineSmall</item>
