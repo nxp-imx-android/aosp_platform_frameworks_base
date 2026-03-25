@@ -26,6 +26,7 @@ import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.ActivityManager.ProcessState;
 import android.app.ActivityManagerInternal;
+import android.app.IActivityManager;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Process;
@@ -49,7 +50,6 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -91,6 +91,8 @@ class MemoryLimiter implements AutoCloseable {
     static final int LIMIT_TYPE_MEMORY = 1;
     // The memory.swap.max limit has been breached.
     static final int LIMIT_TYPE_SWAP = 2;
+    // The sum of anon+swap has breached its threshold.
+    static final int LIMIT_TYPE_ANON_SWAP = 3;
     // LINT.ThenChange(/services/core/jni/com_android_server_am_MemoryLimiter.cpp:limitTypes)
 
     // Well-known memory limits.
@@ -102,6 +104,10 @@ class MemoryLimiter implements AutoCloseable {
     // A discriminated value to mean "all UIDs".  It does not overlay INVALID_UID or any legal
     // UID.
     static final int ALL_UIDS = -2;
+
+    // The delay between receiving an anon+swap event and killing the process.  Units are
+    // milliseconds.  The value is 30s.
+    static final long KILL_DELAY_MS = 30 * 1000;
 
     // Two convenient constants.
     private static final long MB = 1024L * 1024;
@@ -115,12 +121,14 @@ class MemoryLimiter implements AutoCloseable {
             case LIMIT_TYPE_UNKNOWN -> "unknown";
             case LIMIT_TYPE_MEMORY -> "memory.high";
             case LIMIT_TYPE_SWAP -> "memory.swap.max";
+            case LIMIT_TYPE_ANON_SWAP -> "anon+swap";
             default -> "unexpected";
         };
     }
 
     /**
      * A convenience function that maps a limit type to a statsd enum.
+     * TODO(495781806) Update the atom types for swap and anon+swap.
      */
     static int limitTypeToAtom(int type) {
         return switch (type) {
@@ -128,6 +136,10 @@ class MemoryLimiter implements AutoCloseable {
                     FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT__TYPE__UNKNOWN;
             case LIMIT_TYPE_MEMORY ->
                     FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT__TYPE__HIGH;
+            case LIMIT_TYPE_SWAP ->
+                    FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT__TYPE__UNKNOWN;
+            case LIMIT_TYPE_ANON_SWAP ->
+                    FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT__TYPE__UNKNOWN;
             default -> FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT__TYPE__UNKNOWN;
         };
     }
@@ -263,27 +275,12 @@ class MemoryLimiter implements AutoCloseable {
             return Flags.memoryLimiterSwap();
         }
 
-        // 12GB
-        private static final long MEM_12GB = 12L * 1024 * 1024 * 1024;
-
         // Return true if the native layer should continue applying limits to a process after an
         // overlimit event.  If this is false, then the native layer sets the limits to "max"
         // after an over-limit event and will not make any further changes.  When limitMode is
         // false, the system is said to be in "senseMode": it uses cgroups to detect over-limit
         // events but does not enforce limits.
         boolean limitMode() {
-            if (!Files.exists(Paths.get(configFile()))) {
-                // There is no configuration file, so only check limits.
-                return false;
-            }
-
-            MemInfoReader memInfo = new MemInfoReader();
-            memInfo.readMemInfo();
-            if (memInfo.getTotalSize() < MEM_12GB) {
-                // This instance has less than 12GB of ram available, so only check limits.
-                return false;
-            }
-
             return true;
         }
 
@@ -311,6 +308,20 @@ class MemoryLimiter implements AutoCloseable {
                 mAm.set(LocalServices.getService(ActivityManagerInternal.class));
             }
             return mAm.get().getPackageNameByPid(pid);
+        }
+
+        // Kill the process.
+        void killProcess(int pid, int uid, String reason) {
+            IActivityManager am = ActivityManager.getService();
+
+            if (am != null) {
+                try {
+                    int[] target = { pid };
+                    am.killPids(target, reason, true);
+                } catch (android.os.RemoteException e) {
+                    Slog.e(TAG, "failed to kill " + pid, e);
+                }
+            }
         }
     }
 
@@ -343,6 +354,9 @@ class MemoryLimiter implements AutoCloseable {
 
         // The opcode to close the controller.
         private static final int MESSAGE_CLOSE = 3;
+
+        // The opcode to kill the pid.
+        private static final int MESSAGE_KILL = 4;
 
         // The well-known limits.  These are used only by dumpsys.
         private volatile Limits mLimitsNotVisible;
@@ -423,6 +437,12 @@ class MemoryLimiter implements AutoCloseable {
                                 mOpen = false;
                             }
 
+                            case MESSAGE_KILL -> {
+                                Slog.w(TAG, "killing process " + pid);
+                                String reason = (String) msg.obj;
+                                mInjector.killProcess(pid, uid, reason);
+                            }
+
                             default ->
                                     Slog.e(TAG, "invalid message: op=" + op);
                         }
@@ -430,14 +450,8 @@ class MemoryLimiter implements AutoCloseable {
                 };
 
             // Note that getConfiguration() accepts a null input.
-            try {
-                mConfiguration = getConfiguration(mInjector.configFile());
-                initializeMemoryLimits();
-            } catch (FileNotFoundException e) {
-                // Leading sanity checks mean this exception should never occur outside of test
-                // code.  Rethrow as an illegal argument because we were assured the file existed.
-                throw new IllegalArgumentException(e);
-            }
+            mConfiguration = getConfiguration(mInjector.configFile());
+            initializeMemoryLimits();
         }
 
         // Initialize the memory limits.  This exits immediately if memTotal or swapTotal is not
@@ -578,6 +592,12 @@ class MemoryLimiter implements AutoCloseable {
             try {
                 ProfilingServiceHelper helper = ProfilingServiceHelper.getInstance();
                 helper.onProfilingTriggerOccurred(uid, pkg, ProfilingTrigger.TRIGGER_TYPE_ANOMALY);
+
+                if (type == LIMIT_TYPE_ANON_SWAP) {
+                    Message msg = mQueue.obtainMessage(MESSAGE_KILL, pid, uid,
+                            "MemoryLimiter:AnonSwap");
+                    mQueue.sendMessageDelayed(msg, KILL_DELAY_MS);
+                }
             } catch (IllegalStateException e) {
                 // Log the exception but otherwise discard it.  A failure to generate a profile is
                 // not fatal.
@@ -698,8 +718,7 @@ class MemoryLimiter implements AutoCloseable {
      * errors are converted to an IllegalArgumentException.
      */
     @VisibleForTesting
-    static Configuration getConfiguration(@Nullable String file, long memTotal)
-            throws FileNotFoundException {
+    static Configuration getConfiguration(@Nullable String file, long memTotal) {
         if (file == null) {
             // A null file is a special case that is only used for testing.
             return sDefaultConfig;
@@ -723,13 +742,6 @@ class MemoryLimiter implements AutoCloseable {
             // there was no matching limit set.
             return getConfiguration(clist, memTotal);
 
-        } catch (FileNotFoundException e) {
-            // Override the configuration file limits and let the memory limiter run.  This is for
-            // development.
-            if (Flags.memoryLimiterForceOn()) {
-                return sDefaultConfig;
-            }
-            throw e;
         } catch (IOException e) {
             Slog.e(TAG, "config file: " + e);
             throw new IllegalArgumentException("bad config: " + file, e);
@@ -746,8 +758,7 @@ class MemoryLimiter implements AutoCloseable {
      * Return the configuration that is suitable for the memory in the current system.
      */
     @Nullable
-    private static Configuration getConfiguration(@Nullable String file)
-            throws FileNotFoundException {
+    private static Configuration getConfiguration(@Nullable String file) {
         return getConfiguration(file, memTotal());
     }
 
@@ -773,15 +784,17 @@ class MemoryLimiter implements AutoCloseable {
      */
     @VisibleForTesting
     static boolean isMemoryLimiterSupported(String configFile) {
-        if (!Files.exists(Paths.get(configFile))) return false;
+        if (!Files.exists(Paths.get(configFile))) {
+            Slog.i(TAG, "no config file: " + configFile);
+            return false;
+        }
 
-        try {
-            return getConfiguration(configFile) != null;
-        } catch (FileNotFoundException e) {
-            // This is surprising, because we just determined that the file existed.  Convert this
-            // to an IllegalStateException: something is wrong with the state of the system.
-            Slog.e(TAG, "unexpected file-not-found", e);
-            throw new IllegalStateException("config file removed at runtime", e);
+        Configuration cfg = getConfiguration(configFile);
+        if (cfg == null) {
+            Slog.i(TAG, "no configuration for " + memTotal() + " RAM");
+            return false;
+        } else {
+            return true;
         }
     }
 
