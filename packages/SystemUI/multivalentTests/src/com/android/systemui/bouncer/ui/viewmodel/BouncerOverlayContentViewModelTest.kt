@@ -17,6 +17,7 @@
 package com.android.systemui.bouncer.ui.viewmodel
 
 import android.content.testableContext
+import android.os.UserHandle
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.compose.foundation.text.input.clearText
@@ -56,6 +57,7 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.testKosmos
+import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
@@ -87,6 +89,18 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
         kosmos.sceneContainerStartable.start()
         underTest = kosmos.bouncerOverlayContentViewModel
         underTest.activateIn(testScope)
+    }
+
+    suspend private fun prepareOnGoBackTest(
+        userManagerLogoutEnabled: Boolean,
+        mainUserIsUserUnlocked: Boolean,
+    ) {
+        kosmos.fakeUserRepository.setMainUserIsUserSwitching()
+        kosmos.fakeUserRepository.setUserManagerLogoutEnabled(userManagerLogoutEnabled)
+        kosmos.fakeUserRepository.setUserUnlocked(
+            UserHandle.of(kosmos.fakeUserRepository.mainUserId),
+            mainUserIsUserUnlocked,
+        )
     }
 
     @Test
@@ -337,22 +351,6 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun navigateBack_hidesBouncerOverlay() =
-        kosmos.runTest {
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-
-            // Show bouncer
-            sceneInteractor.showOverlay(Overlays.Bouncer, "reason")
-            runCurrent()
-            assertThat(currentOverlays).contains(Overlays.Bouncer)
-
-            // Navigate back
-            underTest.navigateBack()
-            runCurrent()
-            assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
-        }
-
-    @Test
     fun backgroundColor_changesBasedOnWhetherBlurIsSupported() =
         kosmos.runTest {
             kosmos.fakeWindowRootViewBlurRepository.isBlurSupported.value = false
@@ -384,6 +382,66 @@ class BouncerOverlayContentViewModelTest : SysuiTestCase() {
             assertThat(fakeDeviceEntryFaceAuthRepository.runningAuthRequest.value)
                 .isEqualTo(FaceAuthUiEvent.FACE_AUTH_ACCESSIBILITY_ACTION to false)
         }
+
+    @Test
+    fun onGoBack_logoutToSystemUser_whenUserIsUnlocked() = kosmos.runTest {
+        prepareOnGoBackTest(userManagerLogoutEnabled = true, mainUserIsUserUnlocked = false)
+
+        kosmos.sceneInteractor.showOverlay(Overlays.Bouncer, "reason")
+        runCurrent()
+        assertThat(kosmos.sceneInteractor.transitionState.currentOverlays)
+            .contains(Overlays.Bouncer)
+
+        val logoutToSystemUserCount = kosmos.fakeUserRepository.logOutWithUserManagerCallCount
+
+        underTest.onGoBack()
+        runCurrent()
+
+        assertThat(kosmos.sceneInteractor.transitionState.currentOverlays)
+            .contains(Overlays.Bouncer)
+        assertThat(kosmos.fakeUserRepository.logOutWithUserManagerCallCount)
+            .isEqualTo(logoutToSystemUserCount + 1)
+    }
+
+    @Test
+    fun onGoBack_hidesBouncer_whenUserManagerLogoutDisabled() = kosmos.runTest {
+        prepareOnGoBackTest(userManagerLogoutEnabled = false, mainUserIsUserUnlocked = false)
+
+        kosmos.sceneInteractor.showOverlay(Overlays.Bouncer, "reason")
+        runCurrent()
+        assertThat(kosmos.sceneInteractor.transitionState.currentOverlays)
+            .contains(Overlays.Bouncer)
+
+        val logoutToSystemUserCount = kosmos.fakeUserRepository.logOutWithUserManagerCallCount
+
+        underTest.onGoBack()
+        runCurrent()
+
+        assertThat(kosmos.sceneInteractor.transitionState.currentOverlays)
+            .doesNotContain(Overlays.Bouncer)
+        assertThat(kosmos.fakeUserRepository.logOutWithUserManagerCallCount)
+            .isEqualTo(logoutToSystemUserCount)
+    }
+
+    @Test
+    fun onGoBack_hidesBouncer_whenUserIsUnlocked() = kosmos.runTest {
+        prepareOnGoBackTest(userManagerLogoutEnabled = true, mainUserIsUserUnlocked = true)
+
+        kosmos.sceneInteractor.showOverlay(Overlays.Bouncer, "reason")
+        runCurrent()
+        assertThat(kosmos.sceneInteractor.transitionState.currentOverlays)
+            .contains(Overlays.Bouncer)
+
+        val logoutToSystemUserCount = kosmos.fakeUserRepository.logOutWithUserManagerCallCount
+
+        underTest.onGoBack()
+        runCurrent()
+
+        assertThat(kosmos.sceneInteractor.transitionState.currentOverlays)
+            .doesNotContain(Overlays.Bouncer)
+        assertThat(kosmos.fakeUserRepository.logOutWithUserManagerCallCount)
+            .isEqualTo(logoutToSystemUserCount)
+    }
 
     private fun authMethodsToTest(): List<AuthenticationMethodModel> {
         return listOf(None, Pin, Password, Pattern, Sim)
