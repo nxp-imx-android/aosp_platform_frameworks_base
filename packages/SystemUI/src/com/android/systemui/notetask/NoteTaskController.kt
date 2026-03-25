@@ -74,7 +74,7 @@ constructor(
     private val context: Context,
     private val roleManager: RoleManager,
     private val shortcutManager: ShortcutManager,
-    private val resolver: NoteTaskInfoResolver,
+    private val noteTaskInfoResolver: NoteTaskInfoResolver,
     private val eventLogger: NoteTaskEventLogger,
     private val noteTaskBubblesController: NoteTaskBubblesController,
     private val userManager: UserManager,
@@ -84,6 +84,7 @@ constructor(
     private val devicePolicyManager: DevicePolicyManager,
     private val userTracker: UserTracker,
     private val secureSettings: SecureSettings,
+    private val lockscreenNoteTakingAvailability: LockscreenNoteTakingAvailability,
     @Application private val applicationScope: CoroutineScope,
     @Background private val bgCoroutineContext: CoroutineContext,
 ) {
@@ -182,18 +183,20 @@ constructor(
         if (!userManager.isUserUnlocked) return
 
         val isKeyguardLocked = keyguardManager.isKeyguardLocked
-        // KeyguardQuickAffordanceInteractor blocks the quick affordance from showing in the
-        // keyguard if it is not allowed by the admin policy. Here we block any other way to show
-        // note task when the screen is locked.
-        if (
-            isKeyguardLocked &&
+        if (isKeyguardLocked) {
+            val isLockscreenNoteTakingDisabled =
+                !lockscreenNoteTakingAvailability.isLockscreenNoteTakingEnabled()
+            // KeyguardQuickAffordanceInteractor blocks the quick affordance from showing in the
+            // keyguard if it is not allowed by the admin policy. Here we block any other way to
+            // show note task when the screen is locked.
+            val areKeyguardShortcutsDisabled =
                 devicePolicyManager.areKeyguardShortcutsDisabled(userId = user.identifier)
-        ) {
-            debugLog { "Enterprise policy disallows launching note app when the screen is locked." }
-            return
+            if (isLockscreenNoteTakingDisabled || areKeyguardShortcutsDisabled) {
+                debugLog { "Note taking is disabled on lock screen." }
+                return
+            }
         }
-
-        val info = resolver.resolveInfo(entryPoint, isKeyguardLocked, user)
+        val info = noteTaskInfoResolver.resolveInfo(entryPoint, isKeyguardLocked, user)
 
         if (info == null) {
             debugLog { "Default notes app isn't set" }
