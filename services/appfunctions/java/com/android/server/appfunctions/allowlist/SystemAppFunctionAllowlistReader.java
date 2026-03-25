@@ -61,6 +61,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.io.PrintWriter;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -476,6 +477,19 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
         @Override
         public String toString() {
             return super.toString() + " (status: " + mStatus + ")";
+        }
+    }
+
+    @Override
+    public void dump(@NonNull PrintWriter pw) {
+        pw.println("SystemAppFunctionAllowlistReader:");
+
+        synchronized (mCacheLock) {
+            pw.println("  Cache:");
+            Map<SignedPackage, ArraySet<String>> snapshot = mCache.snapshot();
+            for (Map.Entry<SignedPackage, ArraySet<String>> entry : snapshot.entrySet()) {
+                pw.println("    " + entry.getKey().toString() + ": " + entry.getValue());
+            }
         }
     }
 
