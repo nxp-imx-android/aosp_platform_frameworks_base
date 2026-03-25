@@ -18,7 +18,9 @@ package com.android.server.stats.binder;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.times;
 
@@ -110,6 +112,7 @@ public class BinderStatsConsumerServiceTest {
         builder.writeLong(stat.cpuTimeSumSquaredMicros);
         builder.writeLong(/* secondsWithAtLeast125Calls= */ 0);
         builder.writeLong(/* secondsWithAtLeast250Calls= */ 0);
+        builder.writeIntArray(new int[0]);
         return builder.usePooledBuffer().build();
     }
 
@@ -125,7 +128,7 @@ public class BinderStatsConsumerServiceTest {
     }
 
     private StatsEvent buildSingleSecondBinderCallsStats(
-            SingleSecondBinderStats stat, int aggregationCount) {
+            SingleSecondBinderStats stat, int aggregationCount, int[] expectedHistogram) {
         StatsEvent.Builder builder = StatsEvent.newBuilder().setAtomId(CALL_STATS_ATOM_ID);
         builder.writeLong(stat.clientUid);
         builder.writeLong(Process.myUid());
@@ -141,6 +144,7 @@ public class BinderStatsConsumerServiceTest {
         builder.writeLong(stat.cpuTimeMicrosSquaredSum * ((long) aggregationCount));
         builder.writeLong(stat.callCount >= 125 ? aggregationCount : 0);
         builder.writeLong(stat.callCount >= 250 ? aggregationCount : 0);
+        builder.writeIntArray(expectedHistogram);
         return builder.usePooledBuffer().build();
     }
 
@@ -157,6 +161,35 @@ public class BinderStatsConsumerServiceTest {
     }
 
     @Test
+    public void testReportSingleSecondGranularityStats_noHistogram() throws Exception {
+        SingleSecondBinderStats[] stats = new SingleSecondBinderStats[1];
+        stats[0] = new SingleSecondBinderStats();
+        stats[0].clientUid = 1000;
+        stats[0].interfaceDescriptor = "com.example.IFoo";
+        stats[0].aidlMethod = "bar";
+        stats[0].callCount = 10;
+        stats[0].durationCount = 10;
+        stats[0].durationMicrosSum = 100;
+        stats[0].durationMicrosSquaredSum = 112;
+        stats[0].cpuTimeCount = 5;
+        stats[0].cpuTimeMicrosSum = 50;
+        stats[0].cpuTimeMicrosSquaredSum = 250;
+        stats[0].durationBinIndices = new byte[0]; // Empty indices when histogram is off
+
+        mService.reportSecondGranularityStats(stats, TEST_START_TIME);
+
+        flushStats();
+
+        verify(() -> StatsLog.write(mStatsEventCaptor.capture()));
+
+        StatsEvent expectedEvent = buildSingleSecondBinderCallsStats(stats[0], 1, new int[0]);
+        AtomsProto.Atom expectedAtom = StatsEventTestUtils.convertToAtom(expectedEvent);
+        AtomsProto.Atom actualAtom =
+                StatsEventTestUtils.convertToAtom(mStatsEventCaptor.getValue());
+        assertEquals(expectedAtom, actualAtom);
+    }
+
+    @Test
     public void testReportSingleSecondGranularityStats_aggregation() throws Exception {
         SingleSecondBinderStats[] stats = new SingleSecondBinderStats[1];
         stats[0] = new SingleSecondBinderStats();
@@ -170,6 +203,8 @@ public class BinderStatsConsumerServiceTest {
         stats[0].cpuTimeCount = 5;
         stats[0].cpuTimeMicrosSum = 50;
         stats[0].cpuTimeMicrosSquaredSum = 250;
+        stats[0].durationBinIndices = new byte[] {1, 5, 10};
+        stats[0].durationCount = stats[0].durationBinIndices.length;
 
         mService.reportSecondGranularityStats(stats, TEST_START_TIME);
         mService.reportSecondGranularityStats(stats, TEST_START_TIME);
@@ -179,7 +214,13 @@ public class BinderStatsConsumerServiceTest {
 
         verify(() -> StatsLog.write(mStatsEventCaptor.capture()));
 
-        StatsEvent expectedEvent = buildSingleSecondBinderCallsStats(stats[0], 3);
+        int[] expectedHistogram = new int[100];
+        expectedHistogram[1] = 3;
+        expectedHistogram[5] = 3;
+        expectedHistogram[10] = 3;
+
+        StatsEvent expectedEvent =
+                buildSingleSecondBinderCallsStats(stats[0], 3, expectedHistogram);
         AtomsProto.Atom expectedAtom = StatsEventTestUtils.convertToAtom(expectedEvent);
         AtomsProto.Atom actualAtom =
                 StatsEventTestUtils.convertToAtom(mStatsEventCaptor.getValue());
@@ -200,6 +241,8 @@ public class BinderStatsConsumerServiceTest {
         stats[0].cpuTimeCount = 5;
         stats[0].cpuTimeMicrosSum = 50;
         stats[0].cpuTimeMicrosSquaredSum = 250;
+        stats[0].durationBinIndices = new byte[] {1, 2, 3};
+        stats[0].durationCount = stats[0].durationBinIndices.length;
 
         stats[1] = new SingleSecondBinderStats();
         stats[1].clientUid = 1001;
@@ -212,6 +255,8 @@ public class BinderStatsConsumerServiceTest {
         stats[1].cpuTimeCount = 8;
         stats[1].cpuTimeMicrosSum = 74;
         stats[1].cpuTimeMicrosSquaredSum = 932;
+        stats[1].durationBinIndices = new byte[] {4, 5, 6, 7};
+        stats[1].durationCount = stats[1].durationBinIndices.length;
 
         mService.reportSecondGranularityStats(stats, TEST_START_TIME);
 
@@ -219,8 +264,21 @@ public class BinderStatsConsumerServiceTest {
 
         verify(() -> StatsLog.write(mStatsEventCaptor.capture()), times(2));
 
-        StatsEvent expectedEvent1 = buildSingleSecondBinderCallsStats(stats[0], 1);
-        StatsEvent expectedEvent2 = buildSingleSecondBinderCallsStats(stats[1], 1);
+        int[] expectedHistogram1 = new int[100];
+        expectedHistogram1[1] = 1;
+        expectedHistogram1[2] = 1;
+        expectedHistogram1[3] = 1;
+
+        int[] expectedHistogram2 = new int[100];
+        expectedHistogram2[4] = 1;
+        expectedHistogram2[5] = 1;
+        expectedHistogram2[6] = 1;
+        expectedHistogram2[7] = 1;
+
+        StatsEvent expectedEvent1 =
+                buildSingleSecondBinderCallsStats(stats[0], 1, expectedHistogram1);
+        StatsEvent expectedEvent2 =
+                buildSingleSecondBinderCallsStats(stats[1], 1, expectedHistogram2);
         AtomsProto.Atom expectedAtom1 = StatsEventTestUtils.convertToAtom(expectedEvent1);
         AtomsProto.Atom expectedAtom2 = StatsEventTestUtils.convertToAtom(expectedEvent2);
         List<StatsEvent> actualEvents = mStatsEventCaptor.getAllValues();
@@ -244,6 +302,8 @@ public class BinderStatsConsumerServiceTest {
         stats[0].cpuTimeCount = 5;
         stats[0].cpuTimeMicrosSum = 50;
         stats[0].cpuTimeMicrosSquaredSum = 250;
+        stats[0].durationBinIndices = new byte[] {10, 20, 30};
+        stats[0].durationCount = stats[0].durationBinIndices.length;
 
         mService.reportSecondGranularityStats(stats, TEST_START_TIME);
 
@@ -256,7 +316,13 @@ public class BinderStatsConsumerServiceTest {
         AtomsProto.Atom actualAtom1 = StatsEventTestUtils.convertToAtom(actualEvents.get(0));
         AtomsProto.Atom actualAtom2 = StatsEventTestUtils.convertToAtom(actualEvents.get(1));
 
-        StatsEvent expectedCallStatsEvent = buildSingleSecondBinderCallsStats(stats[0], 1);
+        int[] expectedHistogram = new int[100];
+        expectedHistogram[10] = 1;
+        expectedHistogram[20] = 1;
+        expectedHistogram[30] = 1;
+
+        StatsEvent expectedCallStatsEvent =
+                buildSingleSecondBinderCallsStats(stats[0], 1, expectedHistogram);
         AtomsProto.Atom expectedCallStatsAtom =
                 StatsEventTestUtils.convertToAtom(expectedCallStatsEvent);
 
@@ -284,6 +350,8 @@ public class BinderStatsConsumerServiceTest {
         stats1[0].cpuTimeCount = 5;
         stats1[0].cpuTimeMicrosSum = 50;
         stats1[0].cpuTimeMicrosSquaredSum = 250;
+        stats1[0].durationBinIndices = new byte[] {40, 50};
+        stats1[0].durationCount = stats1[0].durationBinIndices.length;
 
         // First report: creates the bucket at startTime
         mService.reportSecondGranularityStats(stats1, startTime);
@@ -299,13 +367,19 @@ public class BinderStatsConsumerServiceTest {
         stats2[0].interfaceDescriptor = "com.example.IBar";
         stats2[0].aidlMethod = "foo";
         stats2[0].callCount = 5;
+        stats2[0].durationBinIndices = new byte[0];
 
         mService.reportSecondGranularityStats(stats2, startTime + 61_000);
 
         // Verify that the first bucket was reported
         verify(() -> StatsLog.write(mStatsEventCaptor.capture()), times(1));
 
-        StatsEvent expectedEvent = buildSingleSecondBinderCallsStats(stats1[0], 1);
+        int[] expectedHistogram = new int[100];
+        expectedHistogram[40] = 1;
+        expectedHistogram[50] = 1;
+
+        StatsEvent expectedEvent =
+                buildSingleSecondBinderCallsStats(stats1[0], 1, expectedHistogram);
         AtomsProto.Atom expectedAtom = StatsEventTestUtils.convertToAtom(expectedEvent);
         AtomsProto.Atom actualAtom =
                 StatsEventTestUtils.convertToAtom(mStatsEventCaptor.getValue());
@@ -441,5 +515,101 @@ public class BinderStatsConsumerServiceTest {
         AtomsProto.Atom actualAtom2 = StatsEventTestUtils.convertToAtom(actualEvents.get(1));
         assertEquals(expectedAtom1, actualAtom1);
         assertEquals(expectedAtom2, actualAtom2);
+    }
+
+    private static final int HISTOGRAM_SIZE = 100;
+
+    @Test
+    public void testAddSamplesToHistogram_emptyHistogram() {
+        byte[] input = new byte[0];
+        int[] expected = new int[0];
+        BinderStatsConsumerService.OptimizedHistogram h =
+                new BinderStatsConsumerService.OptimizedHistogram();
+        h.addSamplesToHistogram(input);
+        assertArrayEquals(expected, h.getHistogram());
+    }
+
+    @Test
+    public void testAddSamplesToHistogram_manyBins() {
+        byte[] input = new byte[HISTOGRAM_SIZE];
+        int[] expected = new int[HISTOGRAM_SIZE];
+        for (int i = 0; i < HISTOGRAM_SIZE; i++) {
+            input[i] = (byte) i;
+            expected[i] = 1;
+        }
+        BinderStatsConsumerService.OptimizedHistogram h =
+                new BinderStatsConsumerService.OptimizedHistogram();
+        h.addSamplesToHistogram(input);
+        assertArrayEquals(expected, h.getHistogram());
+    }
+
+    @Test
+    public void testAddSamplesToHistogram_repeatedIndices() {
+        byte[] input = new byte[] {5, 5, 5, 10, 10, 20};
+        int[] expected = new int[HISTOGRAM_SIZE];
+        expected[5] = 3;
+        expected[10] = 2;
+        expected[20] = 1;
+        BinderStatsConsumerService.OptimizedHistogram h =
+                new BinderStatsConsumerService.OptimizedHistogram();
+        h.addSamplesToHistogram(input);
+        assertArrayEquals(expected, h.getHistogram());
+    }
+
+    @Test
+    public void testAddSamplesToHistogram_nullInput() {
+        BinderStatsConsumerService.OptimizedHistogram h =
+                new BinderStatsConsumerService.OptimizedHistogram();
+        assertThrows(NullPointerException.class, () -> h.addSamplesToHistogram(null));
+    }
+
+    @Test
+    public void testOptimizedHistogram_conversionToFull() {
+        BinderStatsConsumerService.OptimizedHistogram h =
+                new BinderStatsConsumerService.OptimizedHistogram();
+        // Add 16 samples
+        for (int i = 0; i < 16; i++) {
+            h.addSamplesToHistogram(new byte[] {(byte) i});
+        }
+        // Should still be compact internally
+        int[] expectedFull = new int[HISTOGRAM_SIZE];
+        for (int i = 0; i < 16; i++) expectedFull[i] = 1;
+        assertArrayEquals(expectedFull, h.getHistogram());
+
+        // Add 17th sample, triggers conversion
+        h.addSamplesToHistogram(new byte[] {(byte) 50});
+        expectedFull[50] = 1;
+        assertArrayEquals(expectedFull, h.getHistogram());
+
+        // Add more samples after conversion to verify data preservation (no wiping)
+        h.addSamplesToHistogram(new byte[] {(byte) 60, (byte) 60});
+        expectedFull[60] = 2;
+        assertArrayEquals(expectedFull, h.getHistogram());
+    }
+
+    @Test
+    public void testAddSamplesToHistogram_outOfBoundsIndices() {
+        // Test with index 100 (size is 100, so indices 0-99 are valid)
+        byte[] input = new byte[] {0, 99, (byte) 100, (byte) 255};
+
+        BinderStatsConsumerService.OptimizedHistogram h =
+                new BinderStatsConsumerService.OptimizedHistogram();
+        h.addSamplesToHistogram(input);
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> h.getHistogram());
+    }
+
+    @Test
+    public void testAddSamplesToHistogram_largeSingleAppend() {
+        // Adding 20 samples in one go should trigger immediate conversion to full.
+        byte[] input = new byte[20];
+        int[] expected = new int[HISTOGRAM_SIZE];
+        for (int i = 0; i < 20; i++) {
+            input[i] = (byte) i;
+            expected[i] = 1;
+        }
+        BinderStatsConsumerService.OptimizedHistogram h =
+                new BinderStatsConsumerService.OptimizedHistogram();
+        h.addSamplesToHistogram(input);
+        assertArrayEquals(expected, h.getHistogram());
     }
 }
