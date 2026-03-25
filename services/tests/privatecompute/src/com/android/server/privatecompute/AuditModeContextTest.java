@@ -338,6 +338,28 @@ public class AuditModeContextTest {
     }
 
     @Test
+    public void testDeleteAuditLogFiles_deletesFolder() throws Exception {
+        File folder = mTemporaryFolder.newFolder();
+        new File(folder, "audit_log.0.bin").createNewFile();
+        new File(folder, "audit_log.1.bin").createNewFile();
+        assertThat(folder.exists()).isTrue();
+
+        AuditModeContext.deleteAuditLogFiles(folder);
+
+        assertThat(folder.exists()).isFalse();
+    }
+
+    @Test
+    public void testDeleteAuditLogFiles_nonExistentFolder_doesNotThrow() {
+        File folder = new File(mTemporaryFolder.getRoot(), "non_existent");
+        assertThat(folder.exists()).isFalse();
+
+        AuditModeContext.deleteAuditLogFiles(folder);
+
+        // Assert: no exception thrown.
+    }
+
+    @Test
     public void testReadAuditLogs_noFiles_returnsEmptyList() throws Exception {
         File folder = mTemporaryFolder.newFolder();
 

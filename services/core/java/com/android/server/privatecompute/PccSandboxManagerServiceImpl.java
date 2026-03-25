@@ -41,6 +41,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ResolveInfo;
 import android.os.Binder;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -60,6 +61,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.BackgroundThread;
 import com.android.server.LocalServices;
 
+import java.io.File;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -87,13 +89,12 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
     private @Nullable AuditModeContext mAuditModeContext = null;
 
     private final Object mAuditModeLock = new Object();
-    private final ExecutorService mExecutorService = Executors.newSingleThreadExecutor();
+    private final ExecutorService mExecutorService;
 
     private PccSandboxManagerInternal mInternal;
     private final PccSandboxManagerNativeImpl mNativeImpl = new PccSandboxManagerNativeImpl();
 
-    private final AlarmManager.OnAlarmListener mAuditLogCleanupListener =
-            () -> mExecutorService.execute(this::runAuditLogCleanupTask);
+    private final AlarmManager.OnAlarmListener mAuditLogCleanupListener;
 
     public PccSandboxManagerServiceImpl(Context context) {
         this(context, new Injector());
@@ -104,13 +105,15 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
         mContext = context;
         mPackageManagerInternal = LocalServices.getService(PackageManagerInternal.class);
         mInjector = injector;
+        mExecutorService = mInjector.getExecutorService();
+        mAuditLogCleanupListener = () -> mExecutorService.execute(this::runAuditLogCleanupTask);
 
         // Run the audit log cleanup task upon booting.
         mExecutorService.execute(this::runAuditLogCleanupTask);
     }
 
     private void runAuditLogCleanupTask() {
-        mInjector.deleteAuditLogFiles();
+        AuditModeContext.deleteAuditLogFiles(mInjector.getAuditLogFilesDirectory());
         rescheduleAuditLogCleanup();
     }
 
@@ -156,8 +159,13 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
             return SystemClock.elapsedRealtime();
         }
 
-        void deleteAuditLogFiles() {
-            AuditModeContext.deleteAuditLogFiles();
+        ExecutorService getExecutorService() {
+            return Executors.newSingleThreadExecutor();
+        }
+
+        File getAuditLogFilesDirectory() {
+            return new File(Environment.getDataSystemCeDirectory(UserHandle.USER_SYSTEM),
+                    AuditModeContext.AUDIT_LOG_FILES_DIRNAME);
         }
     }
 
@@ -275,7 +283,7 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
             }
             if (mAuditModeContext == null) {
                 runAuditLogCleanupTask();
-                mAuditModeContext = AuditModeContext.create();
+                mAuditModeContext = AuditModeContext.create(mInjector.getAuditLogFilesDirectory());
             }
             for (PersistableBundle bundle : data) {
                 mAuditModeContext.writeToAuditLog(bundle, packageName);
@@ -362,7 +370,8 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
                 }
                 case "read-intelligence-audit-log" -> {
                     final int userId = UserHandle.getUserId(Binder.getCallingUid());
-                    List<AuditLogEntry> entries = AuditModeContext.readAuditLogs(userId);
+                    List<AuditLogEntry> entries = AuditModeContext.readAuditLogs(
+                            mInjector.getAuditLogFilesDirectory(), userId);
                     if (entries.isEmpty()) {
                         pw.println("No audit logs found for user " + userId);
                         return 0;
