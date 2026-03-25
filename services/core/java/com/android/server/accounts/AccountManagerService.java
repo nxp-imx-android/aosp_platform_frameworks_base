@@ -6266,10 +6266,9 @@ public class AccountManagerService
                         getCredentialPermissionNotificationId(
                                 account, authTokenType, uid, accounts),
                         accounts);
-
-                cancelAccountAccessRequestNotificationIfNeeded(account, uid, true, accounts);
             }
         }
+        cancelAccountAccessRequestNotificationIfNeeded(account, uid, true, accounts);
 
         // Listeners are a final CopyOnWriteArrayList, hence no lock needed.
         for (AccountManagerInternal.OnAppPermissionChangeListener listener
