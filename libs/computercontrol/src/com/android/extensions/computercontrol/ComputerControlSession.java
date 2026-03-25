@@ -43,6 +43,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import com.android.internal.os.IResultReceiver;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -458,8 +460,9 @@ public final class ComputerControlSession implements AutoCloseable {
      *
      * @hide
      */
-    public InteractiveMirror createInteractiveMirror() {
-        return mSession.createInteractiveMirror();
+    public InteractiveMirror createInteractiveMirror(
+            IResultReceiver a11yEmbeddedConnectionReceiver) {
+        return mSession.createInteractiveMirror(a11yEmbeddedConnectionReceiver);
     }
 
     /**

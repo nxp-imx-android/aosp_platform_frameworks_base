@@ -28,6 +28,7 @@ import android.view.DisplayInfo;
 import android.view.SurfaceControl;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.os.IResultReceiver;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
@@ -74,6 +75,7 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
     private final Supplier<SurfaceControl.Transaction> mTransactionSupplier;
     private final InputManagerInternal mInputManagerInternal;
     private final InteractiveMirrorImplCallback mCallback;
+    private final IResultReceiver mA11yEmbeddedConnectionReceiver;
 
     @GuardedBy("this")
     private boolean mIsInteractivityAllowed = false;
@@ -89,6 +91,7 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
     private float mScale = 1.f;
 
     InteractiveMirrorImpl(WindowManagerInternal.DisplayMirror mirror,
+            IResultReceiver a11yEmbeddedConnectionReceiver,
             Supplier<SurfaceControl.Transaction> transactionSupplier, DisplayInfo displayInfo,
             InputManagerInternal inputManagerInternal,
             boolean isInteractivityAllowed,
@@ -103,6 +106,7 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
                 .setHidden(true)
                 .build();
         mCallback = callback;
+        mA11yEmbeddedConnectionReceiver = a11yEmbeddedConnectionReceiver;
 
         Slog.v(TAG, "Creating interactive mirror with SurfaceControl: " + mMirrorLeash);
 
@@ -136,6 +140,10 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
         synchronized (this) {
             return Boolean.TRUE.equals(mIsInteractive);
         }
+    }
+
+    IResultReceiver getA11yEmbeddedConnectionReceiver() {
+        return mA11yEmbeddedConnectionReceiver;
     }
 
     @RequiresNoPermission

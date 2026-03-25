@@ -88,6 +88,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.inputmethod.IRemoteComputerControlInputConnection;
 import com.android.internal.inputmethod.InputConnectionCommandHeader;
+import com.android.internal.os.IResultReceiver;
 import com.android.server.FgThread;
 import com.android.server.LocalServices;
 import com.android.server.UiThread;
@@ -326,16 +327,25 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 @Override
                 public void onInteractiveChanged(boolean isInteractive) {
                     synchronized (mInteractiveMirrors) {
-                        if (areAnyMirrorsInteractive()) {
+                        var firstMirror = getFirstMirrorThatIsInteractiveLocked();
+                        if (firstMirror != null) {
                             // If any mirror is interactive, allow it to steal top focus to allow
                             // key event and IME interactions from the user.
                             mWindowManagerInternal.setCanStealTopFocusForDisplay(
                                     mVirtualDisplayId, /* canStealTopFocus= */ true);
+                            mWindowManagerInternal
+                                    .setFocusedA11yEmbeddedConnectionReceiverOnDisplay(
+                                            mVirtualDisplayId,
+                                            firstMirror.getA11yEmbeddedConnectionReceiver());
+
                         } else {
                             // If all mirrors are non-interactive, disable top focus stealing for
                             // the virtual display by clearing the override.
                             mWindowManagerInternal.setCanStealTopFocusForDisplay(
                                     mVirtualDisplayId, /* canStealTopFocus= */ false);
+                            mWindowManagerInternal
+                                    .setFocusedA11yEmbeddedConnectionReceiverOnDisplay(
+                                            mVirtualDisplayId, null);
                         }
                     }
                     mStatsController.onMirrorViewInteractive(isInteractive);
@@ -739,8 +749,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     @Override
     @Nullable
-    public IInteractiveMirror createInteractiveMirror(SurfaceControl outMirrorSurface) {
-        final var mirror = createInteractiveMirrorImpl();
+    public IInteractiveMirror createInteractiveMirror(
+            IResultReceiver a11yEmbeddedConnectionReceiver, SurfaceControl outMirrorSurface) {
+        final var mirror = createInteractiveMirrorImpl(a11yEmbeddedConnectionReceiver);
         if (mirror == null) {
             return null;
         }
@@ -799,16 +810,17 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     }
 
     @Nullable
-    private InteractiveMirrorImpl createInteractiveMirrorImpl() {
+    private InteractiveMirrorImpl createInteractiveMirrorImpl(
+            IResultReceiver a11yEmbeddedConnectionReceiver) {
         final var mirror =
                 mWindowManagerInternal.createMirrorForDisplayContent(mVirtualDisplayId);
         if (mirror == null) {
             Slog.w(TAG, "Failed to create DisplayMirror from WM for display: " + mVirtualDisplayId);
             return null;
         }
-        return new InteractiveMirrorImpl(mirror, mTransactionSupplier,
-                mDisplayManagerGlobal.getDisplayInfo(mVirtualDisplayId), mInputManagerInternal,
-                isMirrorInteractionAllowed(), mInteractiveMirrorCallback);
+        return new InteractiveMirrorImpl(mirror, a11yEmbeddedConnectionReceiver,
+                mTransactionSupplier, mDisplayManagerGlobal.getDisplayInfo(mVirtualDisplayId),
+                mInputManagerInternal, isMirrorInteractionAllowed(), mInteractiveMirrorCallback);
     }
 
     private void removeInteractiveMirror(InteractiveMirrorImpl interactiveMirror) {
@@ -915,15 +927,16 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         return mLifecycle.getCurrentState() instanceof LifecycleState.Active;
     }
 
-    private boolean areAnyMirrorsInteractive() {
-        synchronized (mInteractiveMirrors) {
-            for (int i = 0; i < mInteractiveMirrors.size(); i++) {
-                if (mInteractiveMirrors.get(i).isInteractive()) {
-                    return true;
-                }
+    @GuardedBy("mInteractiveMirrors")
+    @Nullable
+    private InteractiveMirrorImpl getFirstMirrorThatIsInteractiveLocked() {
+        for (int i = 0; i < mInteractiveMirrors.size(); i++) {
+            var mirror = mInteractiveMirrors.get(i);
+            if (mirror.isInteractive()) {
+                return mirror;
             }
         }
-        return false;
+        return null;
     }
 
     @SuppressLint("WrongConstant")
