@@ -1512,6 +1512,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     if (mService.getActivityStartController().startExistingRecentsIfPossible(
                             hop.getActivityIntent(), activityOptions)) {
                         // Start recents successfully.
+                        effects |= TRANSACT_EFFECTS_LIFECYCLE;
                         break;
                     }
                 }
