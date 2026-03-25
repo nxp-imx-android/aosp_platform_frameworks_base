@@ -138,7 +138,6 @@ import static com.android.internal.annotations.VisibleForTesting.Visibility.PACK
 import static com.android.text.flags.Flags.disableHandwritingInitiatorForIme;
 import static com.android.window.flags.Flags.alwaysSeqIdLayout;
 import static com.android.window.flags.Flags.alwaysSeqIdLayoutWear;
-import static com.android.window.flags.Flags.enableWindowContextResourcesUpdateOnConfigChange;
 import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
 
 import android.Manifest;
@@ -607,7 +606,7 @@ public final class ViewRootImpl implements ViewParent,
 
     final W mWindow;
 
-    final IBinder mLeashToken;
+    private final IBinder mLeashToken;
 
     final int mTargetSdkVersion;
 
@@ -7183,16 +7182,14 @@ public final class ViewRootImpl implements ViewParent,
             mActivityConfigCallback.onConfigurationChanged(overrideConfig, newDisplayId,
                     activityWindowInfo);
         } else {
-            if (enableWindowContextResourcesUpdateOnConfigChange()) {
-                // There is no activity callback - update resources for window token, if needed.
-                final IBinder windowContextToken = mContext.getWindowContextToken();
-                if (windowContextToken instanceof WindowTokenClient) {
-                    WindowTokenClientController.getInstance().onWindowConfigurationChanged(
-                            windowContextToken,
-                            mLastReportedMergedConfiguration.getMergedConfiguration(),
-                            newDisplayId
-                    );
-                }
+            // There is no activity callback - update resources for window token, if needed.
+            final IBinder windowContextToken = mContext.getWindowContextToken();
+            if (windowContextToken instanceof WindowTokenClient) {
+                WindowTokenClientController.getInstance().onWindowConfigurationChanged(
+                        windowContextToken,
+                        mLastReportedMergedConfiguration.getMergedConfiguration(),
+                        newDisplayId
+                );
             }
             updateConfiguration(newDisplayId);
         }
@@ -7321,6 +7318,7 @@ public final class ViewRootImpl implements ViewParent,
     private static final int MSG_INITIAL_TOUCH_BOOST_TIMEOUT = 44;
     private static final int MSG_REQUEST_HARDWARE_RENDERER_OUTPUT_DISABLED = 45;
     private static final int MSG_REQUEST_VIEW_ANIMATIONS_DISABLED = 46;
+    private static final int MSG_REQUEST_A11Y_EMBEDDED_CONNECTION = 47;
 
     final class ViewRootHandler extends Handler {
         @Override
@@ -7398,6 +7396,8 @@ public final class ViewRootImpl implements ViewParent,
                     return "MSG_REQUEST_HARDWARE_RENDERER_OUTPUT_DISABLED";
                 case MSG_REQUEST_VIEW_ANIMATIONS_DISABLED:
                     return "MSG_REQUEST_VIEW_ANIMATIONS_DISABLED";
+                case MSG_REQUEST_A11Y_EMBEDDED_CONNECTION:
+                    return "MSG_REQUEST_A11Y_EMBEDDED_CONNECTION";
             }
             return super.getMessageName(message);
         }
@@ -7729,6 +7729,17 @@ public final class ViewRootImpl implements ViewParent,
                     WindowManagerGlobal.getInstance()
                             .onAnimationDisableRequestChangedForViewRoot();
                     recalculatePerformanceHintSessionNeeded();
+                    break;
+                }
+                case MSG_REQUEST_A11Y_EMBEDDED_CONNECTION: {
+                    final var receiver = (IResultReceiver) msg.obj;
+                    final var data = new Bundle();
+                    data.putBinder(WindowManager.PARCEL_KEY_A11Y_EMBEDDED_CONNECTION,
+                            getAccessibilityEmbeddedConnection().asBinder());
+                    try {
+                        receiver.send(0, data);
+                    } catch (RemoteException e) {
+                    }
                     break;
                 }
             }
@@ -12925,6 +12936,15 @@ public final class ViewRootImpl implements ViewParent,
                 viewAncestor.dispatchScrollToTop(x);
             }
         }
+
+        @Override
+        public void requestAccessibilityEmbeddedConnection(IResultReceiver receiver) {
+            final ViewRootImpl viewAncestor = mViewAncestor.get();
+            if (viewAncestor != null) {
+                viewAncestor.mHandler.obtainMessage(MSG_REQUEST_A11Y_EMBEDDED_CONNECTION,
+                        receiver).sendToTarget();
+            }
+        }
     }
 
     /**
@@ -13394,6 +13414,14 @@ public final class ViewRootImpl implements ViewParent,
                     ViewRootImpl.this);
         }
         return mAccessibilityEmbeddedConnection;
+    }
+
+    /**
+     * Get the token used to track this window with the accessibility manager.
+     * @hide
+     */
+    public IBinder getAccessibilityLeashToken() {
+        return mLeashToken;
     }
 
     private class SendWindowContentChangedAccessibilityEvent implements Runnable {

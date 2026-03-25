@@ -38,11 +38,12 @@ import com.android.systemui.log.assertLogsWtf
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftFilterModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.KeywordsModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PeopleModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PersonModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ResponseModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
 import com.android.systemui.testKosmosNew
@@ -235,6 +236,55 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
+    fun fetchInitialRules_emptyFilter_filterIsNull() =
+        kosmos.runTest {
+            val rule =
+                NotificationRule.Builder(
+                        300,
+                        NotificationRule.Action.Builder(PRIMARY_ACTION_BLOCK).build(),
+                    )
+                    .addFilter(NotificationRule.Filter.Builder().build())
+                    .build()
+            putRulesIntoNotificationManager(listOf(rule))
+
+            underTest.start()
+            val result = underTest.rules
+
+            assertThat(result).hasSize(1)
+            assertThat(result[0].filter).isNull()
+        }
+
+    @Test
+    @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
+    fun fetchInitialRules_keywords() =
+        kosmos.runTest {
+            val filter =
+                NotificationRule.Filter.Builder()
+                    .apply {
+                        addKeyword("example1")
+                        addKeyword("example2")
+                    }
+                    .build()
+            val rule =
+                NotificationRule.Builder(
+                        300,
+                        NotificationRule.Action.Builder(PRIMARY_ACTION_BLOCK).build(),
+                    )
+                    .addFilter(filter)
+                    .build()
+            putRulesIntoNotificationManager(listOf(rule))
+
+            underTest.start()
+            val result = underTest.rules
+
+            assertThat(result).hasSize(1)
+            assertThat(result[0].filter).isNotNull()
+            assertThat(result[0].filter!!.keywords)
+                .isEqualTo(KeywordsModel(listOf("example1", "example2")))
+        }
+
+    @Test
+    @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
     fun fetchInitialRules_contacts_hasOnlyFoundContacts() =
         kosmos.runTest {
             val filter =
@@ -259,7 +309,7 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
 
             assertThat(result).hasSize(1)
             assertThat(result[0].filter).isNotNull()
-            assertThat(result[0].filter!!.contacts!!.contacts)
+            assertThat(result[0].filter!!.people!!.people)
                 .containsExactly(FAKE_CONTACT_1, FAKE_CONTACT_2)
                 .inOrder()
         }
@@ -294,6 +344,35 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
+    fun fetchInitialRules_noKeywords_isNull() =
+        kosmos.runTest {
+            // WHEN there's apps & contacts but no keywords
+            val filter =
+                NotificationRule.Filter.Builder()
+                    .apply {
+                        addContact(CONTACT_1_URI)
+                        addIncludedPackageUid(FAKE_APP_UID)
+                    }
+                    .build()
+            val rule =
+                NotificationRule.Builder(
+                        300,
+                        NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT).build(),
+                    )
+                    .addFilter(filter)
+                    .build()
+            putRulesIntoNotificationManager(listOf(rule))
+
+            underTest.start()
+            val result = underTest.rules
+
+            assertThat(result).hasSize(1)
+            // THEN keywords is null
+            assertThat(result[0].filter!!.keywords).isNull()
+        }
+
+    @Test
+    @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
     fun fetchInitialRules_noContacts_isNull() =
         kosmos.runTest {
             // WHEN there's apps but not contacts
@@ -314,8 +393,8 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
             val result = underTest.rules
 
             assertThat(result).hasSize(1)
-            // THEN contacts is null
-            assertThat(result[0].filter!!.contacts).isNull()
+            // THEN people is null
+            assertThat(result[0].filter!!.people).isNull()
         }
 
     @Test
@@ -382,11 +461,12 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
                     action = ActionModel.Silence,
                     filter =
                         DraftFilterModel(
-                            contacts =
+                            people =
                                 RuleValue.Specified(
-                                    ContactsModel(listOf(FAKE_CONTACT_1, FAKE_CONTACT_2))
+                                    PeopleModel(listOf(FAKE_CONTACT_1, FAKE_CONTACT_2))
                                 ),
                             includedApps = RuleValue.Specified(IncludedAppsModel(listOf(FAKE_APP))),
+                            keywords = KeywordsModel(listOf("dog")),
                         ),
                 )
 
@@ -402,6 +482,7 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
                             .addContact(CONTACT_1_URI)
                             .addContact(CONTACT_2_URI)
                             .addIncludedPackageUid(FAKE_APP_UID)
+                            .addKeyword("dog")
                             .build()
                     )
                     .build()
@@ -412,10 +493,11 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
             assertThat(savedRule.id).isEqualTo(100)
             assertThat(savedRule.action).isEqualTo(ActionModel.Silence)
             assertThat(savedRule.filter).isNotNull()
-            assertThat(savedRule.filter!!.contacts)
-                .isEqualTo(ContactsModel(listOf(FAKE_CONTACT_1, FAKE_CONTACT_2)))
+            assertThat(savedRule.filter!!.people)
+                .isEqualTo(PeopleModel(listOf(FAKE_CONTACT_1, FAKE_CONTACT_2)))
             assertThat(savedRule.filter!!.includedApps)
                 .isEqualTo(IncludedAppsModel(listOf(FAKE_APP)))
+            assertThat(savedRule.filter!!.keywords).isEqualTo(KeywordsModel(listOf("dog")))
         }
 
     @Test
@@ -431,11 +513,12 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
                     action = ActionModel.Block,
                     filter =
                         DraftFilterModel(
-                            contacts =
+                            people =
                                 RuleValue.Specified(
-                                    ContactsModel(listOf(FAKE_CONTACT_1, FAKE_CONTACT_2))
+                                    PeopleModel(listOf(FAKE_CONTACT_1, FAKE_CONTACT_2))
                                 ),
                             includedApps = RuleValue.Specified(IncludedAppsModel(listOf(FAKE_APP))),
+                            keywords = KeywordsModel(listOf("dog")),
                         ),
                 )
 
@@ -451,6 +534,7 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
                             .addContact(CONTACT_1_URI)
                             .addContact(CONTACT_2_URI)
                             .addIncludedPackageUid(FAKE_APP_UID)
+                            .addKeyword("dog")
                             .build()
                     )
                     .build()
@@ -462,10 +546,11 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
             assertThat(savedRule.id).isEqualTo(34)
             assertThat(savedRule.action).isEqualTo(ActionModel.Block)
             assertThat(savedRule.filter).isNotNull()
-            assertThat(savedRule.filter!!.contacts)
-                .isEqualTo(ContactsModel(listOf(FAKE_CONTACT_1, FAKE_CONTACT_2)))
+            assertThat(savedRule.filter!!.people)
+                .isEqualTo(PeopleModel(listOf(FAKE_CONTACT_1, FAKE_CONTACT_2)))
             assertThat(savedRule.filter!!.includedApps)
                 .isEqualTo(IncludedAppsModel(listOf(FAKE_APP)))
+            assertThat(savedRule.filter!!.keywords).isEqualTo(KeywordsModel(listOf("dog")))
         }
 
     // This should never happen, but if NotificationManager returns a different rule than
@@ -482,9 +567,9 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
                     action = ActionModel.Block,
                     filter =
                         DraftFilterModel(
-                            contacts =
+                            people =
                                 RuleValue.Specified(
-                                    ContactsModel(listOf(FAKE_CONTACT_1, FAKE_CONTACT_2))
+                                    PeopleModel(listOf(FAKE_CONTACT_1, FAKE_CONTACT_2))
                                 )
                         ),
                 )
@@ -515,7 +600,7 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
             assertThat(savedRule.filter).isNotNull()
 
             // THEN the returned rule values (with just apps) are used
-            assertThat(savedRule.filter!!.contacts).isNull()
+            assertThat(savedRule.filter!!.people).isNull()
             assertThat(savedRule.filter!!.includedApps)
                 .isEqualTo(IncludedAppsModel(listOf(FAKE_APP)))
         }
@@ -536,9 +621,9 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
                     action = ActionModel.Block,
                     filter =
                         DraftFilterModel(
-                            contacts =
+                            people =
                                 RuleValue.Specified(
-                                    ContactsModel(listOf(FAKE_CONTACT_1, FAKE_CONTACT_2))
+                                    PeopleModel(listOf(FAKE_CONTACT_1, FAKE_CONTACT_2))
                                 )
                         ),
                 )
@@ -571,7 +656,7 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
             assertThat(savedRule.filter).isNotNull()
 
             // THEN returned rule values (with just apps) are used
-            assertThat(savedRule.filter!!.contacts).isNull()
+            assertThat(savedRule.filter!!.people).isNull()
             assertThat(savedRule.filter!!.includedApps)
                 .isEqualTo(IncludedAppsModel(listOf(FAKE_APP)))
         }
@@ -748,8 +833,9 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
                     action = ActionModel.Silence,
                     filter =
                         DraftFilterModel(
-                            contacts = null,
+                            people = null,
                             includedApps = RuleValue.Specified(IncludedAppsModel(listOf(FAKE_APP))),
+                            keywords = null,
                         ),
                 )
 
@@ -778,7 +864,7 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
             val updatedRuleDraft =
                 DraftRuleModel.New(
                     action = ActionModel.Highlight,
-                    filter = DraftFilterModel(contacts = null, includedApps = null),
+                    filter = DraftFilterModel(people = null, includedApps = null, keywords = null),
                 )
 
             testScope.launch { underTest.saveRule(updatedRuleDraft) }
@@ -829,9 +915,9 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
                     action = ActionModel.Silence,
                     filter =
                         DraftFilterModel(
-                            contacts =
+                            people =
                                 RuleValue.Specified(
-                                    ContactsModel(listOf(FAKE_CONTACT_1, FAKE_CONTACT_2))
+                                    PeopleModel(listOf(FAKE_CONTACT_1, FAKE_CONTACT_2))
                                 ),
                             includedApps = RuleValue.Specified(IncludedAppsModel(listOf(FAKE_APP))),
                         ),
@@ -862,9 +948,17 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
         private val CONTACT_1_URI = "key1".toUri()
         private val CONTACT_2_URI = "key2".toUri()
         private val FAKE_CONTACT_1 =
-            ContactModel(lookupUri = CONTACT_1_URI, name = "name1", photoUri = "uri1".toUri())
+            PersonModel.Contact(
+                lookupUri = CONTACT_1_URI,
+                name = "name1",
+                photoUri = "uri1".toUri(),
+            )
         private val FAKE_CONTACT_2 =
-            ContactModel(lookupUri = CONTACT_2_URI, name = "name2", photoUri = "uri2".toUri())
+            PersonModel.Contact(
+                lookupUri = CONTACT_2_URI,
+                name = "name2",
+                photoUri = "uri2".toUri(),
+            )
 
         private const val FAKE_APP_UID = 13
         private val FAKE_APP =

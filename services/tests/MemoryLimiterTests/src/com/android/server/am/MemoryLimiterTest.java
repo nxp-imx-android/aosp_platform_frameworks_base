@@ -47,6 +47,7 @@ import com.android.server.am.MemoryLimiter.Limits;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -123,21 +124,37 @@ public class MemoryLimiterTest {
     // The mapping between process states and sizes is arbitrary.  Constants are declared to
     // make it more obvious in the test routine just what the memory limit will be.
     @ProcessState
-    private static final int PROCESS_STATE_100M = ActivityManager.PROCESS_STATE_SERVICE;
+    private static final int PROCESS_STATE_FG = ActivityManager.PROCESS_STATE_SERVICE;
     @ProcessState
-    private static final int PROCESS_STATE_10M = ActivityManager.PROCESS_STATE_TRANSIENT_BACKGROUND;
+    private static final int PROCESS_STATE_BG = ActivityManager.PROCESS_STATE_TRANSIENT_BACKGROUND;
     @ProcessState
     private static final int PROCESS_STATE_MAX = ActivityManager.PROCESS_STATE_TOP;
 
-    // The memory assigned to a process in PROCESS_STATE_10M.
-    private static final Long sProcessMemory10M = (long) (10 * MB);
+    // High limit MB
+    private static final int LIMIT_MEM = 20;
+    private static final int LIMIT_SWAP = 10;
 
-    // The memory assigned to a process in PROCESS_STATE_100M.
-    private static final Long sProcessMemory100M = (long) (100 * MB);
+    // The memory assigned to a process in PROCESS_STATE_FG.
+    private static final long sProcessMemoryFG = LIMIT_MEM * MB;
+
+    // The memory assigned to a process in PROCESS_STATE_BG.
+    private static final long sProcessMemoryBG = (LIMIT_MEM / 2) * MB;
+
+    // The memory assigned to a process in PROCESS_STATE_FG.
+    private static final long sProcessSwapFG = LIMIT_SWAP * MB;
+
+    // The memory assigned to a process in PROCESS_STATE_FG.
+    private static final long sProcessSwapBG = LIMIT_SWAP * MB;
 
     // The memory assigned to a process in PROCESS_STATE_MAX.  Any negative value turns into
     // maximum memory in the native handlers, but the test uses -1 for consistency.
-    private static final Long sProcessMemoryMax = (long) (-1);
+    private static final long sProcessMemoryMax = (long) (-1);
+
+    // The memory that will make the process exceed mem-high.  Units are MB.
+    private static final int sProcessSizeOverHigh = LIMIT_MEM + 1;
+
+    // The memory that will make the process exceed mem-high + swap-max.  Units are MB.
+    private static final int sProcessSizeOverAnon = LIMIT_MEM + LIMIT_SWAP + 1;
 
     // Return true if MemoryLimiter is running in system_server.
     private static boolean isMemoryLimiterRunning() {
@@ -198,7 +215,7 @@ public class MemoryLimiterTest {
 
         // A countdown latch that tests can wait on.  This is atomic so that changes to attribute
         // made in the test thread are visible in the callback thread.
-        private final CountDownLatch mLatch;
+        private CountDownLatch mLatch;
 
         // A single over-limit event.  The limit is configured limit in bytes.  The percent is the
         // percentage of available memory represented by the limit.
@@ -216,6 +233,13 @@ public class MemoryLimiterTest {
         EventCounter(int expected, boolean limitMode) {
             super(new TestInjector("config-testing.xml", limitMode));
             mLatch = new CountDownLatch(expected);
+        }
+
+        void reset(int expected) {
+            synchronized (mLock) {
+                mLatch = new CountDownLatch(expected);
+                mEvents.clear();
+            }
         }
 
         // Wait for the counter to go to zero within timeout seconds.  This cannot take the lock!
@@ -243,19 +267,13 @@ public class MemoryLimiterTest {
             assertThat(event.limit).isEqualTo(limit);
         }
 
-        // A tiny convenience function that creates a Limits object with three fields set to the
-        // same value.
-        private static Limits simpleLimits(long limit) {
-            return new Limits(limit, limit);
-        }
-
         // Get the memory limit for the process state.  Use one of the process states above.
         @Override
         public Limits getStateLimit(@ProcessState int newState) {
             return switch (newState) {
-                case PROCESS_STATE_10M -> simpleLimits(sProcessMemory10M);
-                case PROCESS_STATE_100M -> simpleLimits(sProcessMemory100M);
-                case PROCESS_STATE_MAX -> simpleLimits(sProcessMemoryMax);
+                case PROCESS_STATE_BG -> new Limits(sProcessMemoryBG, sProcessSwapBG);
+                case PROCESS_STATE_FG -> new Limits(sProcessMemoryFG, sProcessSwapFG);
+                case PROCESS_STATE_MAX -> new Limits(sProcessMemoryMax, sProcessMemoryMax);
                 default -> {
                     fail("invalid state for testing: " + newState);
                     yield null;
@@ -475,12 +493,17 @@ public class MemoryLimiterTest {
         }
 
         // Send a request to the application to change its memory.  The size has unit MB.
-        void resize(int size) {
+        void resize(int size, int delay) {
             final Intent intent = new Intent(); // SendActivity.this, SendActivity.class);
             intent.setAction(HELPER + ".MEMORY");
             intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
             intent.putExtra("size", size);
+            intent.putExtra("delay", delay);
             mContext.sendBroadcast(intent);
+        }
+
+        void resize(int size) {
+            resize(size, 0);
         }
 
         // Send a request to the application to exit.
@@ -529,16 +552,55 @@ public class MemoryLimiterTest {
                 helper.attach(limiter);
 
                 // Set the limit, grow the app, and wait for the over-limit event.
-                limiter.onProcStateUpdated(PROCESS_STATE_100M);
-                helper.resize(100);
+                limiter.onProcStateUpdated(PROCESS_STATE_FG);
+                helper.resize(sProcessSizeOverHigh);
                 assertTrue(counter.await(10));
 
                 // There should be exactly one event in the counter.
                 assertThat(counter.eventCount()).isEqualTo(1);
-                counter.expect(0, helper, sProcessMemory100M);
+                counter.expect(0, helper, sProcessMemoryFG);
 
                 // Verify that limitMode is honored.
-                assertThat(helper.currentMemHigh()).isEqualTo(sProcessMemory100M);
+                assertThat(helper.currentMemHigh()).isEqualTo(sProcessMemoryFG);
+            }
+        }
+    }
+
+    @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
+    @Ignore
+    @Test
+    public void testLimiterAnonSwap() throws Exception {
+        try (EventCounter counter = new EventCounter(1)) {
+            try (MemoryLimiter controller = new MemoryLimiter(counter)) {
+                MemoryLimiter.Limiter limiter = controller.newLimiter();
+
+                Helper helper = new Helper();
+                helper.attach(limiter);
+
+                // Set the limit, grow the app, and wait for the over-limit event.
+                limiter.onProcStateUpdated(PROCESS_STATE_FG);
+                helper.resize(sProcessSizeOverHigh);
+                assertTrue(counter.await(10));
+
+                // There should be exactly one event in the counter.
+                assertThat(counter.eventCount()).isEqualTo(1);
+                counter.expect(0, helper, sProcessMemoryFG);
+
+                // Verify that limitMode is honored.
+                assertThat(helper.currentMemHigh()).isEqualTo(sProcessMemoryFG);
+
+                // Grow the helper another 10M.  This should fill swap and then should exceed
+                // anon+rss.
+                counter.reset(2);
+                helper.resize(sProcessSizeOverAnon, 1);
+                assertTrue(counter.await(300));
+
+                // There should be exactly one event in the counter.
+                assertThat(counter.eventCount()).isEqualTo(2);
+                // The swap limit limit.
+                counter.expect(0, helper, sProcessSwapFG);
+                // The anon+swap limit.
+                counter.expect(1, helper, sProcessMemoryFG + sProcessSwapFG);
             }
         }
     }
@@ -554,13 +616,13 @@ public class MemoryLimiterTest {
                 helper.attach(limiter);
 
                 // Set the limit, grow the app, and wait for the over-limit event.
-                limiter.onProcStateUpdated(PROCESS_STATE_100M);
-                helper.resize(100);
+                limiter.onProcStateUpdated(PROCESS_STATE_FG);
+                helper.resize(sProcessSizeOverHigh);
                 assertTrue(counter.await(10));
 
                 // There should be exactly one event in the counter.
                 assertThat(counter.eventCount()).isEqualTo(1);
-                counter.expect(0, helper, sProcessMemory100M);
+                counter.expect(0, helper, sProcessMemoryFG);
 
                 // Verify that limitMode is honored.
                 assertThat(helper.currentMemHigh()).isEqualTo(sProcessMemoryMax);
@@ -578,14 +640,14 @@ public class MemoryLimiterTest {
                 Helper helper = new Helper();
                 helper.attach(limiter);
 
-                // Grow the app by 100M, set the limit, and wait for the over-limit event.
-                helper.resize(100);
-                limiter.onProcStateUpdated(PROCESS_STATE_100M);
+                // Grow the app by 10M, set the limit, and wait for the over-limit event.
+                helper.resize(sProcessSizeOverHigh);
+                limiter.onProcStateUpdated(PROCESS_STATE_FG);
                 assertTrue(counter.await(10));
 
                 // There should be exactly one event in the counter.
                 assertThat(counter.eventCount()).isEqualTo(1);
-                counter.expect(0, helper, sProcessMemory100M);
+                counter.expect(0, helper, sProcessMemoryFG);
             }
         }
     }
@@ -731,7 +793,7 @@ public class MemoryLimiterTest {
             for (int i = 0; i < 100 && helper.currentSwapMax() != expected; i++) {
                 Thread.sleep(100); // Wait a bit before polling again.
             }
-            assertThat(helper.currentSwapMax()).isEqualTo(expected * MB);
+            assertThat(helper.currentSwapMax()).isEqualTo(expected);
         }
     }
 
@@ -783,13 +845,13 @@ public class MemoryLimiterTest {
                 blockSystemLimiter(mUid, true);
 
                 // Set the limit, grow the app, and wait for the over-limit event.
-                limiter.onProcStateUpdated(PROCESS_STATE_100M);
-                helper.resize(100);
+                limiter.onProcStateUpdated(PROCESS_STATE_FG);
+                helper.resize(sProcessSizeOverHigh);
                 assertTrue(counter.await(10));
 
                 // There should be exactly one event in the counter.
                 assertThat(counter.eventCount()).isEqualTo(1);
-                counter.expect(0, helper, sProcessMemory100M);
+                counter.expect(0, helper, sProcessMemoryFG);
             }
         }
     }

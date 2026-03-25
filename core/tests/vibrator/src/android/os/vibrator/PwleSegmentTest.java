@@ -104,7 +104,8 @@ public class PwleSegmentTest {
                 new VibratorInfo.Builder(0)
                         .setCapabilities(
                                 IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2
-                                        | IVibrator.CAP_FREQUENCY_CONTROL)
+                                        | IVibrator.CAP_FREQUENCY_CONTROL
+                                        | IVibrator.CAP_GET_RESONANT_FREQUENCY)
                         .setFrequencyProfile(TEST_FREQUENCY_PROFILE)
                         .build();
         VibratorInfo infoWithoutPwle = new VibratorInfo.Builder(0).build();

@@ -74,6 +74,7 @@ class BrightnessSliderMotionTest : SysuiTestCase() {
                 onRestrictedClick = {},
                 onDrag = {},
                 onStop = {},
+                onDispose = {},
                 overriddenByAppState = false,
                 hapticsViewModelFactory = kosmos.sliderHapticsViewModelFactory,
             )

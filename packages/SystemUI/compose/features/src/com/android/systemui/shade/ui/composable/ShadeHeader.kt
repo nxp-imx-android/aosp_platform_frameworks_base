@@ -454,7 +454,9 @@ fun ContentScope.OverlayShadeHeader(
                     )
                 }
                 if (!groupedPrivacyChip() && viewModel.isPrivacyChipVisible) {
-                    Box(modifier = Modifier.fillMaxSize().padding(horizontal = horizontalPadding)) {
+                    Box(
+                        modifier = Modifier.fillMaxHeight().padding(horizontal = horizontalPadding)
+                    ) {
                         PrivacyChip(
                             privacyList = viewModel.privacyItems,
                             onClick = viewModel::onPrivacyChipClicked,

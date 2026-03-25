@@ -122,7 +122,16 @@ impl NativeActivityThread {
     }
 
     fn handle_create_service_request(&mut self, req: CreateServiceRequest) -> Result<()> {
-        atrace::trace_method!(AtraceTag::ActivityManager);
+        // Do not modify this slice name. It's referred to by a perfetto module
+        // (android.app_process_starts).
+        let _atrace_trace_method_guard = atrace::begin_scoped_event(
+            AtraceTag::ActivityManager,
+            &format!(
+                "serviceCreate: library_name: {}, base_symbol_name: {}",
+                req.library_name, req.base_symbol_name
+            ),
+        );
+
         let namespace = self.create_linker_namespace(
             &req.zip_paths,
             &req.library_paths,
@@ -193,7 +202,16 @@ impl NativeActivityThread {
     }
 
     fn handle_bind_service_request(&mut self, req: BindServiceRequest) -> Result<()> {
-        atrace::trace_method!(AtraceTag::ActivityManager);
+        // Do not modify this slice name. It's referred to by a perfetto module
+        // (android.services).
+        let _atrace_trace_method_guard = atrace::begin_scoped_event(
+            AtraceTag::ActivityManager,
+            &format!(
+                "serviceBind: action: {:?}, data: {:?}, rebind: {}",
+                req.action, req.data, req.rebind
+            ),
+        );
+
         let service = self.services.get_mut(&req.service_token).context("service not found")?;
 
         let external_token = match service.bind_tokens.get(&req.bind_token) {
@@ -296,7 +314,10 @@ impl NativeActivityThread {
     }
 
     fn handle_bind_application_request(&mut self, req: BindApplicationRequest) -> Result<()> {
-        atrace::trace_method!(AtraceTag::ActivityManager);
+        // Do not modify this slice name. It's referred to by a perfetto module
+        // (android.app_process_starts).
+        let _atrace_trace_method_guard =
+            atrace::begin_scoped_event(AtraceTag::ActivityManager, "bindApplication");
 
         // Reset the time zone to be the system time zone. This needs to be done because the system
         // time zone could have changed after the spawning of this process. Without doing this, this

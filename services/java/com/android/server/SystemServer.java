@@ -52,7 +52,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.res.Configuration;
 import android.content.res.Resources.Theme;
-import android.crashrecovery.flags.Flags;
 import android.credentials.CredentialManager;
 import android.database.sqlite.SQLiteCompatibilityWalFlags;
 import android.database.sqlite.SQLiteGlobal;
@@ -172,7 +171,6 @@ import com.android.server.contentsuggestions.ContentSuggestionsManagerService;
 import com.android.server.contextualsearch.ContextualSearchManagerService;
 import com.android.server.coverage.CoverageService;
 import com.android.server.cpu.CpuMonitorService;
-import com.android.server.crashrecovery.CrashRecoveryAdaptor;
 import com.android.server.credentials.CredentialManagerService;
 import com.android.server.criticalevents.CriticalEventLog;
 import com.android.server.devicepolicy.DevicePolicyManagerService;
@@ -406,6 +404,8 @@ public final class SystemServer implements Dumpable {
      */
     private static final String APPSEARCH_MODULE_LIFECYCLE_CLASS =
             "com.android.server.appsearch.AppSearchModule$Lifecycle";
+    private static final String CRASHRECOVERY_MODULE_LIFECYCLE_CLASS =
+            "com.android.server.crashrecovery.CrashRecoveryModule$Lifecycle";
     private static final String ISOLATED_COMPILATION_SERVICE_CLASS =
             "com.android.server.compos.IsolatedCompilationService";
     private static final String MEDIA_COMMUNICATION_SERVICE_CLASS =
@@ -1327,12 +1327,6 @@ public final class SystemServer implements Dumpable {
         t.traceBegin("StartRecoverySystemService");
         mSystemServiceManager.startService(RecoverySystemService.Lifecycle.class);
         t.traceEnd();
-
-        if (!Flags.refactorCrashrecovery()) {
-            // Initialize RescueParty.
-            CrashRecoveryAdaptor.rescuePartyRegisterHealthObserver(mSystemContext);
-        }
-
 
         // Manages LEDs and display backlight so we need it to bring up the display.
         t.traceBegin("StartLightsService");
@@ -3269,17 +3263,9 @@ public final class SystemServer implements Dumpable {
         mPackageManagerService.systemReady();
         t.traceEnd();
 
-        if (Flags.refactorCrashrecovery()) {
-            t.traceBegin("StartCrashRecoveryModule");
-            CrashRecoveryAdaptor.initializeCrashrecoveryModuleService(mSystemServiceManager);
-            t.traceEnd();
-        } else {
-            // Now that we have the essential services needed for mitigations, register the boot
-            // with package watchdog.
-            // Note that we just booted, which might send out a rescue party if we're stuck in a
-            // runtime restart loop.
-            CrashRecoveryAdaptor.packageWatchdogNoteBoot(mSystemContext);
-        }
+        t.traceBegin("StartCrashRecoveryModule");
+        mSystemServiceManager.startService(CRASHRECOVERY_MODULE_LIFECYCLE_CLASS);
+        t.traceEnd();
 
         t.traceBegin("MakeDisplayManagerServiceReady");
         try {

@@ -19,6 +19,7 @@ package com.android.server.wm.flicker.helpers
 import android.app.Instrumentation
 import android.os.SystemClock
 import android.view.ContentInfo.Source
+import android.view.Display
 import android.view.InputDevice.SOURCE_MOUSE
 import android.view.InputDevice.SOURCE_STYLUS
 import android.view.InputDevice.SOURCE_TOUCHSCREEN
@@ -37,7 +38,8 @@ import android.view.MotionEvent.ToolType
  */
 class MotionEventHelper(
     private val instr: Instrumentation,
-    val inputMethod: InputMethod
+    val inputMethod: InputMethod,
+    val displayId: Int = Display.DEFAULT_DISPLAY,
 ) {
     enum class InputMethod(@ToolType val toolType: Int, @Source val source: Int) {
         STYLUS(TOOL_TYPE_STYLUS, SOURCE_STYLUS),
@@ -176,7 +178,7 @@ class MotionEventHelper(
                 inputMethod.source,
                 /* flags = */ 0
             )
-        event.displayId = 0
+        event.displayId = displayId
         return event
     }
 

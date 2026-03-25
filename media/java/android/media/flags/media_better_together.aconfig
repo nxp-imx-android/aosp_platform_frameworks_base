@@ -227,6 +227,16 @@ flag {
 }
 
 flag {
+    name: "make_device_selection_behaviour_respect_route_listing_preference"
+    namespace: "media_better_together"
+    description: "Makes sure selection behaviour strictly respects RouteListingPreference item"
+    bug: "479229905"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "move_output_switcher_calls_to_background_thread"
     namespace: "media_better_together"
     description: "Move blocking calls from Output Switcher to a background thread"

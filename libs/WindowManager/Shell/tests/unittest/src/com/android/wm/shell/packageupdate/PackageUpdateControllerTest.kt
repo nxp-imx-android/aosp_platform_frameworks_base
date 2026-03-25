@@ -17,10 +17,12 @@
 package com.android.wm.shell.packageupdate
 
 import android.app.ActivityManager.RunningTaskInfo
+import android.app.ApplicationPackageManager
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.content.ComponentName
 import android.content.Intent
 import android.graphics.Bitmap
+import android.net.Uri
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.view.Display.DEFAULT_DISPLAY
@@ -71,6 +73,7 @@ class PackageUpdateControllerTest : ShellTestCase() {
     private val taskResourceLoader = mock<WindowDecorTaskResourceLoader>()
     private val viewModel = mock<DesktopModeWindowDecorViewModel>()
     private val transitionHandler = mock<PackageUpdateTransitionHandler>()
+    private val packageManager = mock<ApplicationPackageManager>()
     private val testScope = TestScope()
     private val testDispatcher = StandardTestDispatcher(testScope.testScheduler)
     private lateinit var packageUpdateController: PackageUpdateController
@@ -86,12 +89,15 @@ class PackageUpdateControllerTest : ShellTestCase() {
                 taskResourceLoader,
                 Optional.of(viewModel),
                 transitionHandler,
+                packageManager,
                 testScope,
             )
 
         whenever(userProfileContexts[anyInt()]).thenReturn(context)
         whenever(userProfileContexts.getOrCreate(anyInt())).thenReturn(context)
         whenever(viewModel.hasWindowDecoration(anyInt())).thenReturn(true)
+        whenever(packageManager.resolveActivityAsUser(any(), anyInt(), anyInt())).thenReturn(mock())
+
         taskResourceLoader.stub {
             onBlocking { getVeilIcon(any()) }.thenReturn(mock<Bitmap>())
             onBlocking { getNameAndHeaderIcon(any()) }.thenReturn(Pair("appName", mock<Bitmap>()))
@@ -120,6 +126,12 @@ class PackageUpdateControllerTest : ShellTestCase() {
     @Test
     fun onPackageUpdateFinished_launchesBaseIntent() {
         val task = createTaskInfo(1)
+        val originalIntent = task.baseIntent
+        originalIntent.action = Intent.ACTION_VIEW
+        originalIntent.addCategory(Intent.CATEGORY_DEFAULT)
+        originalIntent.putExtra("test_key", "test_value")
+        originalIntent.setDataAndType(Uri.parse("content://test"), "text/plain")
+
         packageUpdateController.onPackageUpdateRequested(listOf(task))
 
         packageUpdateController.onPackageUpdateFinished(listOf(task))
@@ -127,7 +139,64 @@ class PackageUpdateControllerTest : ShellTestCase() {
         val wct = getLatestWct(type = TRANSIT_CHANGE)
         assertThat(wct.hierarchyOps.map { it.type })
             .containsExactly(HIERARCHY_OP_TYPE_PENDING_INTENT)
-        wct.assertPendingIntent(task.baseIntent)
+        wct.assertPendingIntent(originalIntent)
+
+        // Verify that the launched intent is a fresh intent with copied attributes
+        val launchedIntent = wct.getLaunchedIntent()
+
+        assertThat(launchedIntent).isNotNull()
+        assertThat(launchedIntent?.action).isEqualTo(originalIntent.action)
+        assertThat(launchedIntent?.categories).containsExactly(Intent.CATEGORY_DEFAULT)
+        assertThat(launchedIntent?.getStringExtra("test_key")).isEqualTo("test_value")
+        assertThat(launchedIntent?.data).isEqualTo(originalIntent.data)
+        assertThat(launchedIntent?.type).isEqualTo(originalIntent.type)
+        assertThat(launchedIntent?.flags?.and(Intent.FLAG_ACTIVITY_CLEAR_TASK))
+            .isEqualTo(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+    }
+
+    @Test
+    fun onPackageUpdateFinished_launchesBaseIntent_withDataOnly() {
+        val task = createTaskInfo(1)
+        task.baseIntent.setData(Uri.parse("content://test"))
+
+        packageUpdateController.onPackageUpdateRequested(listOf(task))
+
+        packageUpdateController.onPackageUpdateFinished(listOf(task))
+
+        val wct = getLatestWct(type = TRANSIT_CHANGE)
+        val launchedIntent = wct.getLaunchedIntent()
+
+        assertThat(launchedIntent?.data).isEqualTo(task.baseIntent.data)
+        assertThat(launchedIntent?.type).isNull()
+    }
+
+    @Test
+    fun onPackageUpdateFinished_launchesBaseIntent_withTypeOnly() {
+        val task = createTaskInfo(1)
+        task.baseIntent.setType("text/plain")
+
+        packageUpdateController.onPackageUpdateRequested(listOf(task))
+
+        packageUpdateController.onPackageUpdateFinished(listOf(task))
+
+        val wct = getLatestWct(type = TRANSIT_CHANGE)
+        val launchedIntent = wct.getLaunchedIntent()
+
+        assertThat(launchedIntent?.data).isNull()
+        assertThat(launchedIntent?.type).isEqualTo(task.baseIntent.type)
+    }
+
+    @Test
+    fun onPackageUpdateFinished_activityNotResolved_removesTask() {
+        whenever(packageManager.resolveActivityAsUser(any(), anyInt(), anyInt())).thenReturn(null)
+        val task = createTaskInfo(1)
+        packageUpdateController.onPackageUpdateRequested(listOf(task))
+
+        packageUpdateController.onPackageUpdateFinished(listOf(task))
+
+        val wct = getLatestWct(type = TRANSIT_CHANGE)
+        assertThat(wct.hierarchyOps.map { it.type }).containsExactly(HIERARCHY_OP_TYPE_REMOVE_TASK)
+        wct.assertRemoveTask(task, removeFromRecents = true)
     }
 
     @Test
@@ -202,6 +271,11 @@ class PackageUpdateControllerTest : ShellTestCase() {
             hop.type == HIERARCHY_OP_TYPE_PENDING_INTENT &&
                 hop.pendingIntent?.intent?.component == intent.component
         }
+    }
+
+    private fun WindowContainerTransaction.getLaunchedIntent(): Intent? {
+        val hop = hierarchyOps.firstOrNull { it.type == HIERARCHY_OP_TYPE_PENDING_INTENT }
+        return hop?.pendingIntent?.intent
     }
 
     private fun WindowContainerTransaction.assertContinuePackageUpdate(task: RunningTaskInfo) {

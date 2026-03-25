@@ -101,7 +101,7 @@ constructor(
                 .map { chip ->
                     chip.copy(
                         isPopupShown = chip.chipId == currentActiveQuickActionId,
-                        showPopup = { _, anchorBounds ->
+                        togglePopup = { _, anchorBounds ->
                             quickActionsInteractor.toggle(
                                 QuickActionPanelModel(
                                     chipId = chip.chipId,
@@ -110,7 +110,6 @@ constructor(
                                 )
                             )
                         },
-                        hidePopup = { quickActionsInteractor.close() },
                     )
                 } +
                 listOfNotNull(bundle.assistant, bundle.ime).filter {

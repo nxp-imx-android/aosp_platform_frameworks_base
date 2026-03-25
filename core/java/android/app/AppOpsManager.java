@@ -3081,8 +3081,7 @@ public class AppOpsManager {
         new AppOpInfo.Builder(OP_READ_CONTACTS, OPSTR_READ_CONTACTS, "READ_CONTACTS")
             .setPermission(android.Manifest.permission.READ_CONTACTS)
             .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
-        new AppOpInfo.Builder(OP_WRITE_CONTACTS, OPSTR_WRITE_CONTACTS, "WRITE_CONTACTS",
-                AppOpsManager.MODE_ERRORED)
+        new AppOpInfo.Builder(OP_WRITE_CONTACTS, OPSTR_WRITE_CONTACTS, "WRITE_CONTACTS")
             .setPermission(android.Manifest.permission.WRITE_CONTACTS)
             .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
         new AppOpInfo.Builder(OP_READ_CALL_LOG, OPSTR_READ_CALL_LOG, "READ_CALL_LOG")
@@ -3435,8 +3434,7 @@ public class AppOpsManager {
         new AppOpInfo.Builder(OP_MANAGE_MEDIA, OPSTR_MANAGE_MEDIA, "MANAGE_MEDIA",
                 AppOpsManager.MODE_ERRORED)
             .setPermission(Manifest.permission.MANAGE_MEDIA).build(),
-        new AppOpInfo.Builder(OP_BLUETOOTH_CONNECT, OPSTR_BLUETOOTH_CONNECT, "BLUETOOTH_CONNECT",
-                AppOpsManager.MODE_ERRORED)
+        new AppOpInfo.Builder(OP_BLUETOOTH_CONNECT, OPSTR_BLUETOOTH_CONNECT, "BLUETOOTH_CONNECT")
             .setPermission(Manifest.permission.BLUETOOTH_CONNECT)
             .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
         new AppOpInfo.Builder(OP_UWB_RANGING, OPSTR_UWB_RANGING, "UWB_RANGING",

@@ -37,9 +37,10 @@ public class ClientTestReceiver extends BroadcastReceiver {
         if (action.contains(".MEMORY")) {
             Trace.beginSection("ClientTestReceiver.onReceive");
             int size = intent.getIntExtra("size", 0);
-            Log.i(TAG, "handling memory size " + size + "MB");
+            int delay = intent.getIntExtra("delay", 0);
+            Log.i(TAG, "handling memory size " + size + "MB, delay " + delay + "s");
             if (size > 0) {
-                mTest.setMemory(size);
+                mTest.setMemory(size, delay);
             }
             Trace.endSection();
         } else if (action.contains(".EXIT")) {

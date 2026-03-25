@@ -108,6 +108,7 @@ public abstract class EventDeliveryTestBase {
         mMessenger = new Messenger(mHandler);
         mPid = 0;
         mActivityOptions.setLaunchWindowingMode(WINDOWING_MODE_FULLSCREEN);
+        mActivityOptions.setLaunchDisplayId(mContext.getDisplayId());
     }
 
     protected void tearDown() throws Exception {

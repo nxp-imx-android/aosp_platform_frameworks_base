@@ -168,7 +168,7 @@ constructor(
         userId: Int,
     ) {
         val hasButton =
-            settingsIntent != null && !isScreenLocked && interactor.shouldShowSettingsButton()
+            settingsIntent != null && !isScreenLocked && interactor.shouldShowSettingsButton(userId)
         if (hasButton) {
             settingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             settingsButtonAction.value = {

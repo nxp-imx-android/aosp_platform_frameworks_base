@@ -23,11 +23,17 @@ import static android.security.trusttoken.TrustTokenManager.VERIFICATION_SUCCESS
 
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.PermissionManuallyEnforced;
 import android.annotation.RequiresNoPermission;
 import android.app.StatsManager;
 import android.app.StatsManager.PullAtomMetadata;
+import android.content.ComponentName;
 import android.content.Context;
 import android.os.Binder;
+import android.os.CancellationSignal;
+import android.os.OutcomeReceiver;
+import android.os.ParcelFileDescriptor;
 import android.os.PermissionEnforcer;
 import android.security.trusttoken.ITrustTokenManager;
 import android.security.trusttoken.TrustAnchorUnavailableException;
@@ -37,6 +43,7 @@ import android.security.trusttoken.TrustTokenIdentitySet;
 import android.security.trusttoken.TrustTokenUnavailableException;
 import android.security.trusttoken.TrustTokenWithChallenge;
 import android.util.Base64;
+import android.util.Pair;
 import android.util.Slog;
 import android.util.StatsEvent;
 
@@ -50,6 +57,8 @@ import com.google.android.security.trusttoken.TrustAnchor;
 import com.google.android.security.trusttoken.TrustTokenInvalidSignatureException;
 import com.google.android.security.trusttoken.TrustTokenPolicy;
 
+import java.io.FileDescriptor;
+import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -365,12 +374,96 @@ public class TrustTokenManagerService extends SystemService {
             // TODO(b/472383812): Protect with permissions
             Slog.w(TAG, "updatePreparedIdentities is not yet implemented.");
         }
+
+        @PermissionManuallyEnforced
+        @Override
+        protected void dump(
+                @NonNull FileDescriptor fd, @NonNull PrintWriter fout, @Nullable String[] args) {
+            fout.println("hasProvider: " + mHasProvider);
+            ComponentName provider = TrustTokenProvider.getServiceProvider(mContext);
+            if (provider == null) {
+                fout.println("provider: null");
+            } else {
+                fout.println(
+                        "provider: " + provider.getPackageName() + "/" + provider.getClassName());
+            }
+            fout.println("hasTrustAnchor: " + (mTrustAnchor.get() != null));
+            fout.println("authorityFallback: " + mAuthorityFallback);
+            fout.println("numRootKey: " + mNumRootKey);
+            fout.println(
+                    "deviceTokenCounts: "
+                            + mDatabase.countTrustTokenSets(TrustTokenSet.TYPE_VERIFIED_DEVICE));
+        }
+
+        @PermissionManuallyEnforced
+        @Override
+        public int handleShellCommand(
+                @NonNull ParcelFileDescriptor in,
+                @NonNull ParcelFileDescriptor out,
+                @NonNull ParcelFileDescriptor err,
+                @NonNull String[] args) {
+            return new TrustTokenShellCommand(mContext, mInternal)
+                    .exec(
+                            this,
+                            in.getFileDescriptor(),
+                            out.getFileDescriptor(),
+                            err.getFileDescriptor(),
+                            args);
+        }
     }
 
     private final TrustTokenManagerInternal mInternal =
             new TrustTokenManagerInternal() {
                 @Override
-                public List<TrustTokenKey> generateKeys(int num) {
+                public CancellationSignal refillTokens(
+                        TrustTokenProvider provider,
+                        int num,
+                        OutcomeReceiver<Void, Throwable> callback) {
+                    List<TrustTokenKey> keys = generateKeys(num);
+                    TrustTokenBatchAttestation attestation = attestKeys(keys);
+                    return provider.requestVerifiedDeviceTokens(
+                            keys,
+                            attestation,
+                            new OutcomeReceiver<
+                                    Pair<TrustConfiguration, List<byte[]>>, Throwable>() {
+                                @Override
+                                public void onResult(
+                                        Pair<TrustConfiguration, List<byte[]>> result) {
+                                    try {
+                                        updateTrustConfiguration(result.first);
+                                        addTrustTokens(keys, result.second);
+                                        callback.onResult(null);
+                                    } catch (Exception e) {
+                                        callback.onError(e);
+                                    }
+                                }
+
+                                @Override
+                                public void onError(Throwable throwable) {
+                                    callback.onError(throwable);
+                                }
+                            });
+                }
+
+                @Override
+                public void cleanUpDatabase() {
+                    TrustAnchor anchor = getTrustAnchor();
+                    mDatabase.cleanUpTrustTokenSets(
+                            TrustTokenSet.TYPE_VERIFIED_DEVICE,
+                            MAX_TOKEN_NUM_PER_TYPE,
+                            (tokenSet) -> {
+                                try (var token =
+                                        new com.google.android.security.trusttoken.TrustToken(
+                                                anchor, tokenSet.getTokenSet())) {
+
+                                    return true;
+                                } catch (IllegalArgumentException e) {
+                                    return false;
+                                }
+                            });
+                }
+
+                private List<TrustTokenKey> generateKeys(int num) {
                     var keys = new ArrayList<TrustTokenKey>(num);
                     for (int i = 0; i < num; ++i) {
                         keys.add(getOrInitMasterKey().generatePerTokenKey());
@@ -378,13 +471,11 @@ public class TrustTokenManagerService extends SystemService {
                     return keys;
                 }
 
-                @Override
-                public TrustTokenBatchAttestation attestKeys(List<TrustTokenKey> keys) {
+                private TrustTokenBatchAttestation attestKeys(List<TrustTokenKey> keys) {
                     return getOrInitMasterKey().attest(keys);
                 }
 
-                @Override
-                public void addTrustTokens(
+                private void addTrustTokens(
                         @NonNull List<TrustTokenKey> keys, @NonNull List<byte[]> tokens)
                         throws TrustAnchorUnavailableException {
                     // We only supported trusted device tokens at the moment, so there should be
@@ -433,28 +524,9 @@ public class TrustTokenManagerService extends SystemService {
                     mDatabase.addTrustTokenSets(validTokens);
                 }
 
-                @Override
-                public void updateTrustConfiguration(@NonNull TrustConfiguration configuration) {
+                private void updateTrustConfiguration(@NonNull TrustConfiguration configuration) {
                     mDatabase.updateTrustConfiguration(configuration);
                     updateTrustAnchor();
-                }
-
-                @Override
-                public void cleanUpDatabase() {
-                    TrustAnchor anchor = getTrustAnchor();
-                    mDatabase.cleanUpTrustTokenSets(
-                            TrustTokenSet.TYPE_VERIFIED_DEVICE,
-                            MAX_TOKEN_NUM_PER_TYPE,
-                            (tokenSet) -> {
-                                try (var token =
-                                        new com.google.android.security.trusttoken.TrustToken(
-                                                anchor, tokenSet.getTokenSet())) {
-
-                                    return true;
-                                } catch (IllegalArgumentException e) {
-                                    return false;
-                                }
-                            });
                 }
             };
 

@@ -61,8 +61,8 @@ sealed interface ChipHighlightModel {
     companion object {
         /** Alpha values for the different chip states. */
         internal object Alpha {
-            const val DEFAULT_HOVER = 0.11f
-            const val DEFAULT_RIPPLE = 0.15f
+            const val DEFAULT_HOVER = 0.89f
+            const val DEFAULT_RIPPLE = 0.85f
             const val TRANSPARENT_HOVER = 0.22f
             const val TRANSPARENT_RIPPLE = 0.26f
         }
@@ -70,25 +70,16 @@ sealed interface ChipHighlightModel {
 
     data object Weak : ChipHighlightModel {
         override val backgroundColor: Color
-            @Composable
-            get() {
-                val alpha =
-                    if (isSystemInDarkTheme()) {
-                        0.1f
-                    } else {
-                        0.4f
-                    }
-                return Color.White.copy(alpha = alpha)
-            }
+            @Composable get() = Color.White.copy(alpha = if (isSystemInDarkTheme()) 0.1f else 0.4f)
 
         override val foregroundColor: Color
             @Composable get() = if (isSystemInDarkTheme()) Color.White else Color.Black
 
         override val hoverBackgroundColor: Color
-            @Composable get() = foregroundColor.copy(alpha = Alpha.DEFAULT_HOVER)
+            @Composable get() = backgroundColor.copy(alpha = Alpha.DEFAULT_HOVER)
 
         override val rippleColor: Color
-            @Composable get() = foregroundColor.copy(alpha = Alpha.DEFAULT_RIPPLE)
+            @Composable get() = backgroundColor.copy(alpha = Alpha.DEFAULT_RIPPLE)
     }
 
     data object Strong : ChipHighlightModel {
@@ -96,13 +87,13 @@ sealed interface ChipHighlightModel {
             @Composable get() = MaterialTheme.colorScheme.secondary
 
         override val foregroundColor: Color
-            @Composable get() = if (isSystemInDarkTheme()) Color.Black else Color.White
+            @Composable get() = MaterialTheme.colorScheme.onSecondary
 
         override val hoverBackgroundColor: Color
-            @Composable get() = foregroundColor.copy(alpha = Alpha.DEFAULT_HOVER)
+            @Composable get() = backgroundColor.copy(alpha = Alpha.DEFAULT_HOVER)
 
         override val rippleColor: Color
-            @Composable get() = foregroundColor.copy(alpha = Alpha.DEFAULT_RIPPLE)
+            @Composable get() = backgroundColor.copy(alpha = Alpha.DEFAULT_RIPPLE)
     }
 
     data object Transparent : ChipHighlightModel {

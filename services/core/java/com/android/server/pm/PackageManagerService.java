@@ -35,7 +35,6 @@ import static android.content.pm.PackageManager.MATCH_SYSTEM_ONLY;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.content.pm.PackageManager.USER_MIN_ASPECT_RATIO_UNSET;
 import static android.content.pm.PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET;
-import static android.crashrecovery.flags.Flags.refactorCrashrecovery;
 import static android.os.Process.INVALID_UID;
 import static android.os.PerfettoCategories.BIG_LOCKS_CATEGORY;
 import static android.os.Trace.TRACE_TAG_PACKAGE_MANAGER;
@@ -228,7 +227,6 @@ import com.android.server.art.DexUseManagerLocal;
 import com.android.server.art.model.DeleteResult;
 import com.android.server.compat.CompatChange;
 import com.android.server.compat.PlatformCompat;
-import com.android.server.crashrecovery.CrashRecoveryAdaptor;
 import com.android.server.pm.Installer.InstallerException;
 import com.android.server.pm.Settings.VersionInfo;
 import com.android.server.pm.dex.ArtManagerService;
@@ -3127,9 +3125,6 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
     public void shutdown() {
         mDynamicCodeLogger.writeNow();
-        if (!refactorCrashrecovery()) {
-            CrashRecoveryAdaptor.packageWatchdogWriteNow(mContext);
-        }
 
         synchronized (mLock) {
             mPackageUsage.writeNow(mSettings.getPackagesLocked());

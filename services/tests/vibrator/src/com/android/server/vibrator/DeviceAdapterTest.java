@@ -298,9 +298,9 @@ public class DeviceAdapterTest {
                 /* repeatIndex= */ 1);
 
         VibrationEffect.Composed expected = new VibrationEffect.Composed(Arrays.asList(
-                new PwleSegment(0.0f, 0.16522837f, 63.52442f, 281.7622f, 20),
-                new PwleSegment(0.16522837f, 1.0f, 281.7622f, 500f, 100),
-                new PwleSegment(1.0f, 0.0f, 500, 281.7622f, 100)),
+                new PwleSegment(0.0f, 0.41745436f, 63.52442f, 125.292694f, 20),
+                new PwleSegment(0.41745436f, 1.0f, 125.292694f, 500f, 100),
+                new PwleSegment(1.0f, 0.0f, 500, 125.292694f, 100)),
                 /* repeatIndex= */ 1);
 
         assertThat(mAdapter.adaptToVibrator(PWLE_V2_BASIC_VIBRATOR_ID, effect)).isEqualTo(expected);

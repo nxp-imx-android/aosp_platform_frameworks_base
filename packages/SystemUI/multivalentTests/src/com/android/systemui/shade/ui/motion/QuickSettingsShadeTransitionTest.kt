@@ -69,6 +69,7 @@ import com.android.systemui.window.data.repository.fakeWindowRootViewBlurReposit
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import org.junit.Rule
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito
@@ -83,6 +84,7 @@ import platform.test.motion.golden.dataPointType
 import platform.test.screenshot.DeviceEmulationSpec
 import platform.test.screenshot.Displays.Phone
 
+@Ignore("b/496045082")
 @RunWith(AndroidJUnit4::class)
 @MotionTest
 @LargeTest

@@ -439,7 +439,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void disabled_testPushDynamicShortcut() {
+    @Test
+    public void testPushDynamicShortcut() {
         // Change the max number of shortcuts.
         mService.updateConfigurationLocked(ConfigConstants.KEY_MAX_SHORTCUTS + "=5,"
                 + ShortcutService.ConfigConstants.KEY_SAVE_DELAY_MILLIS + "=1");
@@ -581,7 +582,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
                 eq(CALLING_PACKAGE_1), eq("s9"), eq(USER_10));
     }
 
-    public void disabled_testPushDynamicShortcut_CallsToUsageStatsManagerAreThrottled()
+    @Test
+    public void testPushDynamicShortcut_CallsToUsageStatsManagerAreThrottled()
             throws InterruptedException {
         mService.updateConfigurationLocked(
                 ShortcutService.ConfigConstants.KEY_SAVE_DELAY_MILLIS + "=500");
@@ -665,7 +667,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         assertEquals(3, mManager.getRemainingCallCount());
     }
 
-    public void disbabledTestPublishWithNoActivity() {
+    @Test
+    public void TestPublishWithNoActivity() {
         // If activity is not explicitly set, use the default one.
 
         mRunningUsers.put(USER_11, true);
@@ -771,7 +774,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void disabled_testPublishWithNoActivity_noMainActivityInPackage() {
+    @Test
+    public void testPublishWithNoActivity_noMainActivityInPackage() {
         mRunningUsers.put(USER_11, true);
 
         runWithCaller(CALLING_PACKAGE_2, USER_11, () -> {
@@ -2614,7 +2618,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void disabled_testPinShortcutAndGetPinnedShortcuts_multi() {
+    @Test
+    public void testPinShortcutAndGetPinnedShortcuts_multi() {
         // Create some shortcuts.
         runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
             assertTrue(mManager.setDynamicShortcuts(list(
@@ -2947,7 +2952,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void disabled_testPinShortcutAndGetPinnedShortcuts_crossProfile_plusLaunch() {
+    @Test
+    public void testPinShortcutAndGetPinnedShortcuts_crossProfile_plusLaunch() {
         // Create some shortcuts.
         runWithCaller(CALLING_PACKAGE_1, USER_10, () -> {
             assertTrue(mManager.setDynamicShortcuts(list(
@@ -9201,7 +9207,8 @@ public class ShortcutManagerTest1 extends BaseShortcutManagerTest {
         });
     }
 
-    public void disabled_testReturnedByServer() {
+    @Test
+    public void testReturnedByServer() {
         // Package 1 updated, with manifest shortcuts.
         addManifestShortcutResource(
                 new ComponentName(CALLING_PACKAGE_1, ShortcutActivity.class.getName()),

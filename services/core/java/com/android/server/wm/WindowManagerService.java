@@ -2093,12 +2093,24 @@ public class WindowManagerService extends IWindowManager.Stub
 
         if (imMayMove) {
             displayContent.computeImeLayeringTarget(true /* update */);
+            if (!com.android.window.flags.Flags.showImeLayeringTargetWhenAdding()) {
+                final WindowState imeWindow = displayContent.getImeWindow();
+                if (WindowManager.useClientSurface() && displayContent.getImeLayeringTarget() == win
+                        && imeWindow != null && imeWindow.isVisible()) {
+                    displayContent.getPendingTransaction().show(win.mSurfaceControl);
+                }
+            }
+        }
+        if (com.android.window.flags.Flags.showImeLayeringTargetWhenAdding()
+                && WindowManager.useClientSurface() && displayContent.getImeLayeringTarget() == win
+                && win.mLegacyPolicyVisibilityAfterAnim) {
             final WindowState imeWindow = displayContent.getImeWindow();
-            if (WindowManager.useClientSurface() && displayContent.getImeLayeringTarget() == win
-                    && imeWindow != null && imeWindow.isVisible()) {
+            if (imeWindow != null && imeWindow.isVisible()) {
                 // Since WindowState#showSurfaceOnCreation is false, explicitly show the surface if
                 // it is the IME layering target.
                 displayContent.getPendingTransaction().show(win.mSurfaceControl);
+                // Hide client surface until performShowLocked to sync with enter animation.
+                winAnimator.mAlpha = 0;
             }
         }
 
@@ -8926,6 +8938,21 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         @Override
+        public void setFocusedA11yEmbeddedConnectionReceiverOnDisplay(int displayId,
+                @Nullable IResultReceiver receiver) {
+            synchronized (mGlobalLock) {
+                final DisplayContent dc = mRoot.getDisplayContent(displayId);
+                if (dc == null) {
+                    Slog.e(TAG, "Failed to set A11y embedded connection receiver"
+                            + " for display: " + displayId
+                            + " - DisplayContent not found.");
+                    return;
+                }
+                dc.setFocusedA11yEmbeddedConnectionReceiver(receiver);
+            }
+        }
+
+        @Override
         public void setThemeReady(boolean ready) {
             synchronized (mGlobalLock) {
                 mThemeReady = ready;
@@ -10607,7 +10634,7 @@ public class WindowManagerService extends IWindowManager.Stub
                         "Focus request " + focusWindow,
                         "reason=grantEmbeddedWindowFocus(false)");
             }
-            ProtoLog.v(WM_DEBUG_FOCUS, "grantEmbeddedWindowFocus win=%s grantFocus=%s",
+            ProtoLog.v(WM_DEBUG_FOCUS, "grantEmbeddedWindowFocus win=%s grantFocus=%b",
                     embeddedWindow, grantFocus);
         }
     }
@@ -10651,7 +10678,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 dc.getInputMonitor().updateInputWindowsLw(true);
             }
             embeddedWindow.updatePotentialHostWhileFocus(grantFocus ? hostWindow : null);
-            ProtoLog.v(WM_DEBUG_FOCUS, "grantEmbeddedWindowFocus win=%s grantFocus=%s",
+            ProtoLog.v(WM_DEBUG_FOCUS, "grantEmbeddedWindowFocus win=%s grantFocus=%b",
                     embeddedWindow, grantFocus);
         }
     }

@@ -29,7 +29,7 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PersonModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.TextChunk
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.TextStyles
 
@@ -45,7 +45,7 @@ internal fun buildAnnotatedString(
 internal fun buildInlineContentMap(
     textChunks: List<TextChunk>,
     appIcon: @Composable (AppModel) -> Unit,
-    contactIcon: @Composable (ContactModel) -> Unit,
+    personIcon: @Composable (PersonModel) -> Unit,
     textSize: TextUnit,
 ): Map<String, InlineTextContent> {
     return textChunks.filterIsInstance<TextChunk.Icon<*>>().associate { iconChunk ->
@@ -60,7 +60,7 @@ internal fun buildInlineContentMap(
             ) {
                 when (val model = iconChunk.model) {
                     is AppModel -> appIcon(model)
-                    is ContactModel -> contactIcon(model)
+                    is PersonModel -> personIcon(model)
                     else -> {
                         throw IllegalStateException("Unsupported model type for inline icon")
                     }

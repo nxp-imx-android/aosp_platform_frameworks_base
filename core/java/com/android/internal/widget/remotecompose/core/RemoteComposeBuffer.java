@@ -1869,10 +1869,12 @@ public class RemoteComposeBuffer {
      * @param spacedBy spacing between items
      */
     public void addFlowStart(
-            int componentId, int animationId, int horizontal, int vertical, float spacedBy) {
+            int componentId, int animationId, int horizontal, int vertical, float spacedBy,
+            int maxItemsInEachRow, int maxLines) {
         mLastComponentId = getComponentId(componentId);
         FlowLayout.apply(
-                mBuffer, mLastComponentId, animationId, horizontal, vertical, spacedBy);
+                mBuffer, mLastComponentId, animationId, horizontal, vertical, spacedBy,
+                maxItemsInEachRow, maxLines);
     }
 
     /**

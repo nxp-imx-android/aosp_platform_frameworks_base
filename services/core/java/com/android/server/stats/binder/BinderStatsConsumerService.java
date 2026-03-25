@@ -56,6 +56,9 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
     private static final int MAX_INCOMING_STRING_LENGTH = 256;
     private static final long RATE_LIMIT_TIME_WINDOW_MS = 100;
     private static final int MAX_REPORTED_STATS_IN_TIME_WINDOW = 10;
+
+    private static final int[] EMPTY_HISTOGRAM = new int[0];
+
     @GuardedBy("mFlushLock")
     private long mStartOfCurrentTimeWindowMillis = 0;
     @GuardedBy("mFlushLock")
@@ -113,7 +116,7 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
                     callStats.callDurationSumSquaredMicros, callStats.cpuTimeCount,
                     callStats.cpuTimeSumMicros, callStats.cpuTimeSumSquaredMicros,
                     /* secondsWithAtLeast125Calls = */ 0,
-                    /* secondsWithAtLeast250Calls = */ 0);
+                    /* secondsWithAtLeast250Calls = */ 0, EMPTY_HISTOGRAM);
         }
     }
 
@@ -168,6 +171,7 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
 
         int callingUid = Binder.getCallingUid();
 
+    outerLoop:
         for (SingleSecondBinderStats stats : singleSecondStatsArray) {
             if (stats.interfaceDescriptor == null || stats.aidlMethod == null) {
                 Slog.wtf(TAG, "Received stats with null interface or method.");
@@ -177,6 +181,18 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
                     || stats.aidlMethod.length() > MAX_INCOMING_STRING_LENGTH) {
                 Slog.wtf(TAG, "Interface descriptor or AIDL method too long.");
                 continue;
+            }
+            if (stats.durationBinIndices.length > 0) {
+                if (stats.durationBinIndices.length != stats.durationCount) {
+                    Slog.wtf(TAG, "Invalid number of duration bin Indices.");
+                    continue outerLoop;
+                }
+                for (byte x : stats.durationBinIndices) {
+                    if (x < 0 || x > 99) {
+                        Slog.wtf(TAG, "Invalid duration bin index.");
+                        continue outerLoop;
+                    }
+                }
             }
 
             BinderStatsKey key = new BinderStatsKey(
@@ -259,7 +275,8 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
                     aggregatedStats.mDurationMicrosSquaredSum, aggregatedStats.mCpuTimeCount,
                     aggregatedStats.mCpuTimeMicrosSum, aggregatedStats.mCpuTimeMicrosSquaredSum,
                     aggregatedStats.mSecondsWithAtLeast125Calls,
-                    aggregatedStats.mSecondsWithAtLeast250Calls);
+                    aggregatedStats.mSecondsWithAtLeast250Calls,
+                    aggregatedStats.mLatencyHistogram.getHistogram());
         }
     }
 
@@ -318,6 +335,76 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
         }
     }
 
+    /**
+     * Efficiently stores histogram counts. Uses a compact byte array for small sample
+     * sizes (< 16) and upgrades to a full bucket array for larger datasets to save memory.
+     */
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+    public static class OptimizedHistogram {
+        // The fixed size of the final, uncompressed histogram. This must be kept in sync with the
+        // native side (see frameworks/native/libs/binder/observer/Histogram.h).
+        private static final int FULL_HISTOGRAM_SIZE = 100;
+        private static final int SMALL_HISTOGRAM_REPRESENTATION_LENGTH = 16;
+
+        private byte[] mSmallRepresentationIndices; // bucket indices or null if not used
+        private int[] mFullHistogramCounts; // full buckets or null if not used
+        private int mSize; // total number of samples
+
+        /**
+         * Adds samples to the histogram from the provided bucket indices.
+         * All data points must be strictly lie between 0 and 100.
+         */
+        public void addSamplesToHistogram(byte[] bucketIndices) {
+            if (bucketIndices.length == 0) {
+                return;
+            }
+
+            if (mFullHistogramCounts == null
+                    && mSize + bucketIndices.length <= SMALL_HISTOGRAM_REPRESENTATION_LENGTH) {
+                if (mSmallRepresentationIndices == null) {
+                    mSmallRepresentationIndices = new byte[SMALL_HISTOGRAM_REPRESENTATION_LENGTH];
+                }
+                for (byte bucketIndex : bucketIndices) {
+                    mSmallRepresentationIndices[mSize++] = bucketIndex;
+                }
+            } else {
+                if (mFullHistogramCounts == null) {
+                    convertToFullHistogram();
+                }
+                incrementBuckets(bucketIndices, bucketIndices.length);
+                mSize += bucketIndices.length;
+            }
+        }
+
+        private void convertToFullHistogram() {
+            mFullHistogramCounts = new int[FULL_HISTOGRAM_SIZE];
+            if (mSmallRepresentationIndices != null) {
+                incrementBuckets(mSmallRepresentationIndices, mSize);
+                mSmallRepresentationIndices = null;
+            }
+        }
+
+        private void incrementBuckets(byte[] bucketIndices, int length) {
+            for (int i = 0; i < length; i++) {
+                int index = bucketIndices[i];
+                mFullHistogramCounts[index]++;
+            }
+        }
+
+        /**
+         * Returns an uncompressed histogram that can be sent statsD.
+         */
+        public int[] getHistogram() {
+            if (mSize == 0) {
+                return EMPTY_HISTOGRAM;
+            }
+            if (mFullHistogramCounts == null) {
+                convertToFullHistogram();
+            }
+            return mFullHistogramCounts;
+        }
+    }
+
     // Mutable container for aggregated stats
     static class AidlTargetStats {
         final long mCreationTimestampMs;
@@ -334,6 +421,7 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
         // For call stats
         int mSecondsWithAtLeast10Calls;
         int mSecondsWithAtLeast50Calls;
+        OptimizedHistogram mLatencyHistogram = new OptimizedHistogram();
 
         AidlTargetStats(long creationTimestampMs) {
             mCreationTimestampMs = creationTimestampMs;
@@ -360,6 +448,8 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
             if (stats.durationCount >= 50) {
                 mSecondsWithAtLeast50Calls++;
             }
+
+            mLatencyHistogram.addSamplesToHistogram(stats.durationBinIndices);
         }
     }
 }

@@ -60,7 +60,7 @@ abstract class CloseAndKeepFocus() : TestScenarioBase() {
     @Test
     open fun closeAndKeepFocus() {
         val externalDisplayId = connectedDisplayRule.addedDisplays.first()
-        testAppInExternalDisplay.clickCaption(wmHelper, device, externalDisplayId)
+        testAppInExternalDisplay.clickCaption(wmHelper, device)
         testAppInExternalDisplay.closeDesktopApp(wmHelper, device)
         // Send minimize via keyboard and observe window to check display focus.
         keyEventHelper.press(KEYCODE_MINUS, META_META_ON)

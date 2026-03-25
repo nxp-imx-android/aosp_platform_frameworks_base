@@ -146,4 +146,10 @@ oneway interface IWindow {
      *         space of this window.
      */
     void dispatchScrollToTop(int x);
+
+    /**
+     * Request the window to share its AccessibilityEmbeddedConnection to integrate this window
+     * into a custom accessibility hierarchy.
+     */
+    void requestAccessibilityEmbeddedConnection(IResultReceiver receiver);
 }

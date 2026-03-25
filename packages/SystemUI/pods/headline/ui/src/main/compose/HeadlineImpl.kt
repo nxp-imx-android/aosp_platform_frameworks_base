@@ -51,7 +51,9 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.approachLayout
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
@@ -75,10 +77,12 @@ import com.android.systemui.headline.ui.viewmodel.HeadlineItemContent
 import com.android.systemui.headline.ui.viewmodel.HeadlineViewModel
 import com.android.systemui.headline.ui.viewmodel.HeadlineViewModel.Companion.GoneScene
 import com.android.systemui.headline.ui.viewmodel.toHeadlineItemKey
+import com.android.systemui.statusbar.chips.ui.compose.neverDecreaseWidth
 import com.android.systemui.statusbar.chips.ui.viewmodel.formatTimeRemainingData
 import com.android.systemui.statusbar.chips.ui.viewmodel.rememberChronometerState
 import com.android.systemui.statusbar.chips.ui.viewmodel.rememberTimeRemainingState
 import com.android.systemui.statusbar.chips.ui.viewmodel.toFormatter
+import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 
@@ -180,8 +184,8 @@ private fun ContentScope.HeadlineItemScene(
                 // TODO(b/449675581): Use Modifier.expandable() instead once it is public.
                 modifier =
                     Modifier.element(item.key.toPillElementKey())
-                        .clickable { onItemClicked(item) }
                         .clip(CircleShape)
+                        .clickable { onItemClicked(item) }
                         .background(color = Color.Black)
             ) {
                 HeadlinePill(
@@ -342,40 +346,59 @@ private fun TextBasedHeadlineItem(
     isLast: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val text: String? =
-        when (content) {
-            is HeadlineItemContent.TextBasedContent.TextItem -> {
-                content.text.load()
-            }
-            is HeadlineItemContent.TextBasedContent.ShortTimeDelta -> {
-                val timeRemainingState =
-                    rememberTimeRemainingState(
-                        futureTimeMillis = content.time,
-                        timeSource = content.timeSource,
-                    )
-                timeRemainingState.timeRemainingData?.let { formatTimeRemainingData(it) }
-            }
-            is HeadlineItemContent.TextBasedContent.TimerItem -> {
-                val timerState =
-                    rememberChronometerState(
-                        chronometer = content.timer.value,
-                        formatter = content.timer.format.toFormatter(),
-                        timeSource = content.timer.timeSource,
-                    )
-                timerState.currentTimeText
+    // Ensure that there is a minimum spacing between a Text and its siblings.
+    val textModifier =
+        when {
+            isReversed && !isLast -> modifier.padding(end = 4.dp)
+            !isReversed && !isFirst -> modifier.padding(start = 4.dp)
+            else -> modifier
+        }
+    val density = LocalDensity.current
+    val locale: Locale? = LocalConfiguration.current.locales[0]
+
+    when (content) {
+        is HeadlineItemContent.TextBasedContent.TextItem -> {
+            content.text.load()?.let {
+                Text(
+                    modifier = textModifier,
+                    text = it,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
         }
-
-    text?.let {
-        // Ensure that there is a minimum spacing between a Text and its siblings.
-        val textModifier =
-            when {
-                isReversed && !isLast -> modifier.padding(end = 4.dp)
-                !isReversed && !isFirst -> modifier.padding(start = 4.dp)
-                else -> modifier
+        is HeadlineItemContent.TextBasedContent.ShortTimeDelta -> {
+            val timeRemainingState =
+                rememberTimeRemainingState(
+                    futureTimeMillis = content.time,
+                    timeSource = content.timeSource,
+                )
+            timeRemainingState.timeRemainingData?.let {
+                val text = formatTimeRemainingData(it)
+                Text(
+                    modifier = textModifier.neverDecreaseWidth(density, locale, text.length),
+                    text = text,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
-
-        Text(modifier = textModifier, text = text, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+        is HeadlineItemContent.TextBasedContent.TimerItem -> {
+            val timerState =
+                rememberChronometerState(
+                    chronometer = content.timer.value,
+                    formatter = content.timer.format.toFormatter(),
+                    timeSource = content.timer.timeSource,
+                )
+            timerState.currentTimeText?.let {
+                Text(
+                    modifier = textModifier.neverDecreaseWidth(density, locale, it.length),
+                    text = it,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
     }
 }
 

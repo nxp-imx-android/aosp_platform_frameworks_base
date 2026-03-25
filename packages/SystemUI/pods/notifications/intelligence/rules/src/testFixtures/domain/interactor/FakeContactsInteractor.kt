@@ -21,13 +21,13 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.core.graphics.createBitmap
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PersonModel
 
 class FakeContactsInteractor : ContactsInteractor {
     override suspend fun fetchContacts(
         searchQuery: String,
         contentResolver: ContentResolver,
-    ): List<ContactModel> {
+    ): List<PersonModel.Contact> {
         return emptyList()
     }
 

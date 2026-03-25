@@ -16,6 +16,7 @@
 package com.android.server.am.psc;
 
 import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
+import static android.app.ActivityManager.PROCESS_STATE_UNKNOWN;
 
 import static com.android.server.am.psc.PlatformCompatCache.CACHED_COMPAT_CHANGE_CAMERA_MICROPHONE_CAPABILITY;
 
@@ -58,6 +59,9 @@ class ProcessNode extends GraphNode {
     // TODO(b/479393330): Remove this property and evaluate implicit CPU time directly from
     //  ProcessRecordInternal once the computation can be decoupled from oomadj.
     private boolean mHasIntrinsicImplicitCpuTime;
+
+    /** The process state of this process, calculated by {@link ProcStateController}. */
+    private @ProcessState int mProcState = PROCESS_STATE_UNKNOWN;
 
     ProcessNode(@NonNull ProcessRecordInternal proc) {
         mProc = Objects.requireNonNull(proc);
@@ -162,6 +166,15 @@ class ProcessNode extends GraphNode {
 
     void setHasIntrinsicImplicitCpuTime(boolean hasIntrinsicImplicitCpuTime) {
         mHasIntrinsicImplicitCpuTime = hasIntrinsicImplicitCpuTime;
+    }
+
+    @Override
+    public @ProcessState int getProcState() {
+        return mProcState;
+    }
+
+    void setProcState(@ProcessState int procState) {
+        mProcState = procState;
     }
 
     int getMaxAdj() {

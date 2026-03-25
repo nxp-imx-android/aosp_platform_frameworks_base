@@ -63,6 +63,8 @@ class FakeImeSwitcherMenuRepository : ImeSwitcherMenuRepository {
         imeAndSubtypeSelectedCalls.add(Triple(imeId, subtypeIndex, userId))
     }
 
+    override fun shouldShowSettingsButton(userId: Int): Boolean = true
+
     /**
      * Sets the model for the given user.
      *

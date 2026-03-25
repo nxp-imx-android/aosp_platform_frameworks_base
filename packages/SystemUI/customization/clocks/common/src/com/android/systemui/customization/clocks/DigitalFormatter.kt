@@ -18,6 +18,7 @@ package com.android.systemui.customization.clocks
 
 import android.annotation.SuppressLint
 import android.icu.text.SimpleDateFormat
+import android.icu.util.TimeZone
 import android.icu.util.ULocale
 import com.android.systemui.plugins.keyguard.ui.clocks.TimeFormatKind
 import java.util.Locale
@@ -69,9 +70,17 @@ protected constructor(
         onTimeZoneChanged()
     }
 
+    var overrideTimeZone: TimeZone? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                onTimeZoneChanged()
+            }
+        }
+
     override fun onTimeZoneChanged() {
-        textFormat.timeZone = timeKeeper.timeZone
-        descriptionFormat?.timeZone = timeKeeper.timeZone
+        textFormat.timeZone = overrideTimeZone ?: timeKeeper.timeZone
+        descriptionFormat?.timeZone = overrideTimeZone ?: timeKeeper.timeZone
         applyPattern()
     }
 

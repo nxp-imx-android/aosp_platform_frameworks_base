@@ -21,24 +21,24 @@ import android.content.ContentResolver
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PersonModel
 
 /** Interactor for everything related to contacts. */
-public interface ContactsInteractor {
+interface ContactsInteractor {
     /**
      * Fetches all contacts whose name matches [searchQuery].
      *
      * @param contentResolver the content resolver for the current user.
      */
-    public suspend fun fetchContacts(
+    suspend fun fetchContacts(
         searchQuery: String,
         contentResolver: ContentResolver,
-    ): List<ContactModel>
+    ): List<PersonModel.Contact>
 
     /**
      * Loads the photo thumbnail for a contact from the given [uri].
      *
      * @param userContext a context specific to the user that owns the notification rule.
      */
-    public suspend fun loadBitmapFromUri(uri: Uri, userContext: Context, @Px sizePx: Int): Bitmap?
+    suspend fun loadBitmapFromUri(uri: Uri, userContext: Context, @Px sizePx: Int): Bitmap?
 }

@@ -1620,6 +1620,11 @@ public interface WindowManager extends ViewManager {
     public static final String PARCEL_KEY_SHORTCUTS_ARRAY = "shortcuts_array";
 
     /**
+     * @hide
+     */
+    String PARCEL_KEY_A11Y_EMBEDDED_CONNECTION = "a11y_embedded_connection";
+
+    /**
      * Whether the WindowManager Extensions - Activity Embedding feature should be guarded by
      * the app's target SDK on Android 15.
      *

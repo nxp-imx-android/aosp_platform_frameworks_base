@@ -16,12 +16,14 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
+import android.annotation.PluralsRes
 import android.content.res.Resources
 import com.android.systemui.log.core.Logger
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.KeywordsModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PeopleModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PersonModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
 
 /**
@@ -32,7 +34,8 @@ internal fun buildEditableRuleText(
     viewModel: NotificationRuleEditViewModel,
     onEnterEditField: (RulesScreenViewState.EditField) -> Unit,
     onAppsSaved: (List<AppModel>) -> Unit,
-    onContactsSaved: (List<ContactModel>) -> Unit,
+    onPeopleSaved: (List<PersonModel>) -> Unit,
+    onKeywordsSaved: (List<String>) -> Unit,
     resources: Resources,
     logger: Logger,
 ): RuleDisplayModel {
@@ -48,19 +51,36 @@ internal fun buildEditableRuleText(
             )
         }
 
-    val contactsText: SingleFieldTextModel<ContactModel>? =
-        viewModel.rule.filter.contacts?.let {
-            createEditableContactsText(
-                selectedContacts = it,
+    val peopleText: SingleFieldTextModel<PersonModel>? =
+        viewModel.rule.filter.people?.let {
+            createEditablePeopleText(
+                selectedPeople = it,
                 viewModel = viewModel,
                 onEnterEditField = onEnterEditField,
-                onContactsSaved = onContactsSaved,
+                onPeopleSaved = onPeopleSaved,
                 resources = resources,
                 logger = logger,
             )
         }
 
-    return buildRuleText(appsText = appsText, contactsText = contactsText, resources = resources)
+    val keywordsText: SingleFieldTextModel<String>? =
+        viewModel.rule.filter.keywords?.let {
+            createEditableKeywordsText(
+                selectedKeywords = it,
+                viewModel = viewModel,
+                onEnterEditField = onEnterEditField,
+                onKeywordsSaved = onKeywordsSaved,
+                resources = resources,
+                logger = logger,
+            )
+        }
+
+    return buildRuleText(
+        appsText = appsText,
+        peopleText = peopleText,
+        keywordsText = keywordsText,
+        resources = resources,
+    )
 }
 
 /** Creates text representation for the included apps filter field. */
@@ -89,8 +109,9 @@ private fun createEditableIncludedAppsText(
         FieldDataModel(
             currentValue = selectedIncludedApps,
             items = items,
-            id = { it.uniqueId },
+            iconId = { it.uniqueId },
             label = { it.label },
+            itemTextString = ItemTextStringConstants.includedAppString,
             onClick = onClick,
         ),
         resources = resources,
@@ -98,27 +119,27 @@ private fun createEditableIncludedAppsText(
     )
 }
 
-/** Creates text representation for the contacts filter field. */
-private fun createEditableContactsText(
-    selectedContacts: RuleValue<ContactsModel>,
+/** Creates text representation for the people filter field. */
+private fun createEditablePeopleText(
+    selectedPeople: RuleValue<PeopleModel>,
     viewModel: NotificationRuleEditViewModel,
     onEnterEditField: (RulesScreenViewState.EditField) -> Unit,
-    onContactsSaved: (List<ContactModel>) -> Unit,
+    onPeopleSaved: (List<PersonModel>) -> Unit,
     resources: Resources,
     logger: Logger,
-): SingleFieldTextModel<ContactModel> {
+): SingleFieldTextModel<PersonModel> {
     val onClick: () -> Unit = {
         onEnterEditField(
-            RulesScreenViewState.EditField.Contacts(
-                onContactsSaved = onContactsSaved,
+            RulesScreenViewState.EditField.People(
+                onPeopleSaved = onPeopleSaved,
                 viewModel = viewModel,
             )
         )
     }
 
     val items =
-        if (selectedContacts is RuleValue.Specified<ContactsModel>) {
-            selectedContacts.value.contacts
+        if (selectedPeople is RuleValue.Specified<PeopleModel>) {
+            selectedPeople.value.people
         } else {
             emptyList()
         }
@@ -126,12 +147,42 @@ private fun createEditableContactsText(
     return createFieldText(
         fieldData =
             FieldDataModel(
-                currentValue = selectedContacts,
+                currentValue = selectedPeople,
                 items = items,
-                id = { it.id },
+                iconId = { it.id },
                 label = { it.displayLabel },
+                itemTextString = ItemTextStringConstants.personString,
                 onClick = onClick,
             ),
+        resources = resources,
+        logger = logger,
+    )
+}
+
+/** Creates text representation for the keywords filter field. */
+private fun createEditableKeywordsText(
+    selectedKeywords: KeywordsModel,
+    viewModel: NotificationRuleEditViewModel,
+    onEnterEditField: (RulesScreenViewState.EditField) -> Unit,
+    onKeywordsSaved: (List<String>) -> Unit,
+    resources: Resources,
+    logger: Logger,
+): SingleFieldTextModel<String> {
+    val onClick: () -> Unit = {
+        onEnterEditField(
+            RulesScreenViewState.EditField.Keywords(
+                viewModel = viewModel,
+                onKeywordsSaved = onKeywordsSaved,
+            )
+        )
+    }
+
+    return createMultiItemText(
+        items = selectedKeywords.keywords,
+        iconId = null, // No icon for keywords
+        label = { it },
+        onClick = onClick,
+        itemTextString = ItemTextStringConstants.keywordString,
         resources = resources,
         logger = logger,
     )
@@ -145,19 +196,21 @@ private fun <T, R> createFieldText(
 ): SingleFieldTextModel<T> {
     return when (fieldData.currentValue) {
         is RuleValue.Specified -> {
-            createMultiItemText<T>(
+            createMultiItemText(
                 items = fieldData.items,
-                id = fieldData.id,
+                iconId = fieldData.iconId,
                 label = fieldData.label,
                 onClick = fieldData.onClick,
+                itemTextString = fieldData.itemTextString,
                 resources = resources,
                 logger = logger,
             )
         }
         is RuleValue.Ambiguous -> {
-            createAmbiguousText<T>(
+            createAmbiguousText(
                 placeholderText = fieldData.currentValue.placeholderText,
                 onClick = fieldData.onClick,
+                itemTextString = fieldData.itemTextString,
                 resources = resources,
                 logger = logger,
             )
@@ -166,17 +219,17 @@ private fun <T, R> createFieldText(
 }
 
 /**
- * Represents a field in a rule, like [RuleModel.filter.includedApps] or
- * [RuleModel.filter.contacts].
+ * Represents a field in a rule, like [RuleModel.filter.includedApps] or [RuleModel.filter.people].
  *
- * Type T: The type for an individual item in the filter, like [ContactModel].
+ * Type T: The type for an individual item in the filter, like [PersonModel].
  *
- * Type R: The type of the field as a whole, like [ContactsModel].
+ * Type R: The type of the field as a whole, like [PeopleModel].
  */
 private data class FieldDataModel<T, R>(
     val currentValue: RuleValue<R>,
     val items: List<T>,
-    val id: (T) -> String,
+    val iconId: (T) -> String,
     val label: (T) -> String,
     val onClick: () -> Unit,
+    @PluralsRes val itemTextString: Int,
 )

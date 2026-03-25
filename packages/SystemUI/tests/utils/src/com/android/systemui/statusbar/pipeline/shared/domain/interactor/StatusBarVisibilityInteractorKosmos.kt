@@ -29,20 +29,25 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.domain.interactor.shadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 
-val Kosmos.statusBarVisibilityInteractor: StatusBarVisibilityInteractor by
+val Kosmos.statusBarVisibilityInteractorFactory: (Int) -> StatusBarVisibilityInteractor by
     Kosmos.Fixture {
-        StatusBarVisibilityInteractor(
-            thisDisplayId = testableContext.displayId,
-            homeStatusBarInteractor = homeStatusBarInteractor,
-            bgDisplayScope = backgroundScope,
-            keyguardInteractor = keyguardInteractor,
-            keyguardTransitionInteractor = keyguardTransitionInteractor,
-            shadeInteractor = shadeInteractor,
-            shadeDisplaysInteractor = { shadeDisplaysInteractor },
-            sceneInteractor = sceneInteractor,
-            occlusionInteractor = keyguardOcclusionInteractor,
-            desktopInteractor = desktopInteractor,
-            bgDispatcher = testDispatcher,
-            tableLoggerFactory = tableLogBufferFactory,
-        )
+        { displayId ->
+            StatusBarVisibilityInteractor(
+                thisDisplayId = displayId,
+                homeStatusBarInteractor = homeStatusBarInteractor,
+                bgDisplayScope = backgroundScope,
+                keyguardInteractor = keyguardInteractor,
+                keyguardTransitionInteractor = keyguardTransitionInteractor,
+                shadeInteractor = shadeInteractor,
+                shadeDisplaysInteractor = { shadeDisplaysInteractor },
+                sceneInteractor = sceneInteractor,
+                occlusionInteractor = keyguardOcclusionInteractor,
+                desktopInteractor = desktopInteractor,
+                bgDispatcher = testDispatcher,
+                tableLoggerFactory = tableLogBufferFactory,
+            )
+        }
     }
+
+val Kosmos.statusBarVisibilityInteractor: StatusBarVisibilityInteractor by
+    Kosmos.Fixture { statusBarVisibilityInteractorFactory.invoke(testableContext.displayId) }

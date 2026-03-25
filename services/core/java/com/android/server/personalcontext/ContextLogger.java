@@ -16,6 +16,7 @@
 
 package com.android.server.personalcontext;
 
+import android.os.UserHandle;
 import android.service.personalcontext.hint.PublishedContextHint;
 import android.service.personalcontext.insight.PublishedContextInsight;
 
@@ -33,14 +34,18 @@ import java.util.Map;
 import java.util.Queue;
 
 /** @hide */
-public class ContextLogger
-        implements RefinerWorkflow.EventListener, RendererWorkflow.EventListener {
-    private static final int MAX_RECENT_ITEMS_TO_KEEP = 3;
+public class ContextLogger implements
+        RefinerWorkflow.EventListener,
+        RendererWorkflow.EventListener,
+        AccessController.EventListener {
+    private static final int MAX_RECENT_TIMELINES_TO_KEEP = 3;
+    private static final int MAX_RECENT_ACCESSES_TO_KEEP = 12;
 
     private final Queue<Timeline> mRecentRefinerTimelines = new LinkedList<>();
     private final Map<Long, Timeline> mActiveRefinerTimelines = new HashMap<>();
     private final Queue<Timeline> mRecentRendererTimelines = new LinkedList<>();
     private final Map<Long, Timeline> mActiveRendererTimelines = new HashMap<>();
+    private final Queue<Timeline> mRecentAccessTimelines = new LinkedList<>();
 
     /** Called when a workflow is started. */
     @Override
@@ -111,7 +116,7 @@ public class ContextLogger
     private void flushRefinerWorkflowTimeline(long flowId, Timeline timeline) {
         mActiveRefinerTimelines.remove(flowId);
         mRecentRefinerTimelines.add(timeline);
-        while (mRecentRefinerTimelines.size() > MAX_RECENT_ITEMS_TO_KEEP) {
+        while (mRecentRefinerTimelines.size() > MAX_RECENT_TIMELINES_TO_KEEP) {
             mRecentRefinerTimelines.remove();
         }
     }
@@ -162,10 +167,28 @@ public class ContextLogger
         flushRendererWorkflowTimeline(flowId, flowTimeline);
     }
 
+    @Override
+    public void onAccessChecked(String packageName, UserHandle user, String description,
+            int result) {
+        final Timeline accessTimeline = new Timeline();
+
+        accessTimeline.addStringDetail("%s (Package: %s, User: %s) - %s",
+                description,
+                packageName,
+                user.getIdentifier(),
+                result == AccessController.RESULT_ALLOWED ? "allowed" :
+                        result == AccessController.RESULT_DENIED ? "denied" : "bypassed");
+
+        mRecentAccessTimelines.add(accessTimeline);
+        while (mRecentAccessTimelines.size() > MAX_RECENT_ACCESSES_TO_KEEP) {
+            mRecentAccessTimelines.remove();
+        }
+    }
+
     private void flushRendererWorkflowTimeline(long flowId, Timeline timeline) {
         mActiveRendererTimelines.remove(flowId);
         mRecentRendererTimelines.add(timeline);
-        if (mRecentRendererTimelines.size() > MAX_RECENT_ITEMS_TO_KEEP) {
+        if (mRecentRendererTimelines.size() > MAX_RECENT_TIMELINES_TO_KEEP) {
             mRecentRendererTimelines.remove();
         }
     }
@@ -181,12 +204,19 @@ public class ContextLogger
         dumpTimelines(fout, mRecentRefinerTimelines);
 
         fout.write("Active Render Workflows\n");
-        fout.write("=====================\n");
+        fout.write("=======================\n");
         dumpTimelines(fout, mActiveRendererTimelines.values());
 
         fout.write("Recent Render Workflows\n");
-        fout.write("=====================\n");
+        fout.write("=======================\n");
         dumpTimelines(fout, mRecentRendererTimelines);
+
+        fout.write("Recent Access Checks\n");
+        fout.write("====================\n");
+        for (Timeline timeline : mRecentAccessTimelines) {
+            timeline.dump(fout);
+        }
+        fout.write("\n");
     }
 
     private void dumpTimelines(PrintWriter fout, Collection<Timeline> timelines) {

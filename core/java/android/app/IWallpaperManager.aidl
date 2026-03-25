@@ -312,4 +312,12 @@ interface IWallpaperManager {
      * @hide
      */
     boolean isStaticWallpaper(int which);
+
+    /**
+     * Returns whether any wallpaper has been set yet. Will be false until the first wallpaper is
+     * set during boot.
+     *
+     * @hide
+     */
+    boolean hasSetWallpaper();
 }

@@ -79,9 +79,13 @@ public class VisualizerConnection {
                 mVisualizer = IInsightSurfaceVisualizer.Stub.asInterface(service);
 
                 // Perform all the deferred actions now that a visualizer exists.
-                mDeferredActions.forEach(Runnable::run);
-                mDeferredActions.clear();
-
+                if (mDeferredActions != null && !mDeferredActions.isEmpty()) {
+                    List<Runnable> actionsToRun = new ArrayList<>(mDeferredActions);
+                    mDeferredActions.clear();
+                    for (Runnable action : actionsToRun) {
+                        action.run();
+                    }
+                }
                 try {
                     service.linkToDeath(() -> mInjector.executeAction(() -> {
                         teardownVisualizer(name, "visualizer died");

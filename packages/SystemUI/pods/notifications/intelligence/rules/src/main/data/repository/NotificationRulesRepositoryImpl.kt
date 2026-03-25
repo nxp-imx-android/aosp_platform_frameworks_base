@@ -30,17 +30,17 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
-import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRuleConversionHelper.toInternalModel
 import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRuleConversionHelper.validActionsMap
 import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRuleToExternalHelpers.toExternalRuleFormat
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
 import com.android.systemui.notifications.intelligence.rules.shared.NotificationRulesLog
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel.Companion.toFullRule
 import com.android.systemui.notifications.intelligence.rules.shared.model.FilterModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.KeywordsModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PeopleModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ResponseModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 import javax.inject.Inject
@@ -188,19 +188,26 @@ constructor(
             ?: throw IllegalStateException("Action $this not present in validActionsMap")
     }
 
-    private suspend fun NotificationRule.Filter.toInternalModel(): FilterModel {
-        return FilterModel(
-            contacts = this.contacts.toContactsModel(),
-            includedApps = this.includedPackageUids.toIncludedAppsModel(),
-        )
+    private suspend fun NotificationRule.Filter.toInternalModel(): FilterModel? {
+        val filterModel =
+            FilterModel(
+                people = this.contacts.toContactsModel(),
+                includedApps = this.includedPackageUids.toIncludedAppsModel(),
+                keywords = this.keywords.toKeywordsModel(),
+            )
+        return if (filterModel.hasContent) {
+            filterModel
+        } else {
+            null
+        }
     }
 
-    private suspend fun List<Uri>.toContactsModel(): ContactsModel? {
+    private suspend fun List<Uri>.toContactsModel(): PeopleModel? {
         val contacts = this.mapNotNull { contactsRepository.lookupContact(it, contentResolver) }
         if (contacts.isEmpty()) {
             return null
         }
-        return ContactsModel(contacts)
+        return PeopleModel(contacts)
     }
 
     private suspend fun List<Int>.toIncludedAppsModel(): IncludedAppsModel? {
@@ -210,6 +217,14 @@ constructor(
             return null
         }
         return IncludedAppsModel(includedApps)
+    }
+
+    private fun List<String>.toKeywordsModel(): KeywordsModel? {
+        return if (this.isNotEmpty()) {
+            KeywordsModel(this)
+        } else {
+            null
+        }
     }
 
     companion object {

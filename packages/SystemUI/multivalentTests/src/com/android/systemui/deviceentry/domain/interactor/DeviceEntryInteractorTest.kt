@@ -16,9 +16,12 @@
 
 package com.android.systemui.deviceentry.domain.interactor
 
+import android.app.ActivityManager.RunningTaskInfo
+import android.app.WindowConfiguration
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.FlagsParameterization
+import android.service.dreams.Flags.FLAG_DRIVE_DREAM_STATE_FROM_OCCLUSION
 import android.testing.TestableLooper
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
@@ -47,10 +50,12 @@ import com.android.systemui.keyguard.data.repository.deviceEntryFingerprintAuthR
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.data.repository.fakeTrustRepository
+import com.android.systemui.keyguard.data.repository.keyguardOcclusionRepository
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardDismissActionInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
+import com.android.systemui.keyguard.shared.DriveDreamStateFromOcclusion
 import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.keyguard.shared.model.DismissAction
 import com.android.systemui.keyguard.shared.model.DozeStateModel
@@ -90,16 +95,22 @@ import kotlinx.coroutines.test.advanceTimeBy
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(AndroidJUnit4::class)
+@RunWith(ParameterizedAndroidJunit4::class)
 @EnableSceneContainer
 @TestableLooper.RunWithLooper
-class DeviceEntryInteractorTest : SysuiTestCase() {
+class DeviceEntryInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    private val trustRepository by lazy { kosmos.fakeTrustRepository }
-    private val underTest: DeviceEntryInteractor by lazy { kosmos.deviceEntryInteractor }
+    private val Kosmos.trustRepository by Kosmos.Fixture { fakeTrustRepository }
+    private val Kosmos.underTest: DeviceEntryInteractor by Kosmos.Fixture { deviceEntryInteractor }
+
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
 
     @Before
     fun setUp() {
@@ -225,8 +236,15 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             assertThat(isDeviceEntered).isTrue()
 
             // Dream starts, and device is unlocked.
-            keyguardInteractor.setDreaming(true)
-            advanceTimeBy(DREAMING_DELAY_MS)
+            val dreamTaskInfo =
+                RunningTaskInfo().apply {
+                    topActivityType = WindowConfiguration.ACTIVITY_TYPE_DREAM
+                }
+            keyguardOcclusionRepository.setOccludedFromRemoteAnimation(true, dreamTaskInfo)
+            if (!DriveDreamStateFromOcclusion.isEnabled) {
+                keyguardInteractor.setDreaming(true)
+                advanceTimeBy(DREAMING_DELAY_MS)
+            }
 
             // Verify device remains entered.
             assertThat(currentScene).isEqualTo(Scenes.Dream)
@@ -844,12 +862,20 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
             switchToScene(Scenes.Gone)
 
             // Simulate dreaming
-            fakeKeyguardRepository.setDreaming(true)
-            fakeKeyguardRepository.setDreamingWithOverlay(true)
-            fakeKeyguardRepository.setDozeTransitionModel(
-                DozeTransitionModel(from = DozeStateModel.DOZE, to = DozeStateModel.FINISH)
-            )
-            testScope.advanceTimeBy(KeyguardInteractor.IS_DREAMING_NOT_DOZING_DELAY_MS + 100L)
+            val dreamTaskInfo =
+                RunningTaskInfo().apply {
+                    topActivityType = WindowConfiguration.ACTIVITY_TYPE_DREAM
+                }
+            keyguardOcclusionRepository.setOccludedFromRemoteAnimation(true, dreamTaskInfo)
+
+            if (!DriveDreamStateFromOcclusion.isEnabled) {
+                fakeKeyguardRepository.setDreaming(true)
+                fakeKeyguardRepository.setDreamingWithOverlay(true)
+                fakeKeyguardRepository.setDozeTransitionModel(
+                    DozeTransitionModel(from = DozeStateModel.DOZE, to = DozeStateModel.FINISH)
+                )
+                testScope.advanceTimeBy(KeyguardInteractor.IS_DREAMING_NOT_DOZING_DELAY_MS + 100L)
+            }
             switchToScene(Scenes.Dream)
             assertThat(isUnlocked).isTrue()
             assertThat(currentScene).isEqualTo(Scenes.Dream)
@@ -1251,8 +1277,15 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
         assertThat(canShowAlternateBouncer).isTrue()
     }
 
-    private companion object {
+    companion object {
         // A delay to move past the initial dreaming delay.
-        const val DREAMING_DELAY_MS = KeyguardInteractor.IS_DREAMING_NOT_DOZING_DELAY_MS + 100L
+        private const val DREAMING_DELAY_MS =
+            KeyguardInteractor.IS_DREAMING_NOT_DOZING_DELAY_MS + 100L
+
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams(): List<FlagsParameterization> {
+            return FlagsParameterization.allCombinationsOf(FLAG_DRIVE_DREAM_STATE_FROM_OCCLUSION)
+        }
     }
 }

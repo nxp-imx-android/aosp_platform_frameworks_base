@@ -33,8 +33,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import android.animation.ValueAnimator;
 import android.util.ArrayMap;
 import android.view.SurfaceControl;
+import android.view.animation.Animation;
 import android.window.TransitionInfo;
 import android.window.WindowContainerToken;
 
@@ -67,10 +69,12 @@ public class MergeTransitionHelperTest extends ShellTestCase {
         WindowContainerToken token2 = mock(WindowContainerToken.class);
 
         TransitionInfo.Change change1 = new ChangeBuilder(token1, TRANSIT_OPEN).build();
-        WindowAnimation anim1 = new WindowAnimation(change1, 0f);
+        WindowAnimation anim1 = new WindowAnimation(change1, 0f, mock(Animation.class),
+                mock(ValueAnimator.class));
 
         TransitionInfo.Change change2 = new ChangeBuilder(token2, TRANSIT_OPEN).build();
-        WindowAnimation anim2 = new WindowAnimation(change2, 0f);
+        WindowAnimation anim2 = new WindowAnimation(change2, 0f, mock(Animation.class),
+                mock(ValueAnimator.class));
 
         List<WindowAnimation> runningAnims = new ArrayList<>();
         runningAnims.add(anim1);

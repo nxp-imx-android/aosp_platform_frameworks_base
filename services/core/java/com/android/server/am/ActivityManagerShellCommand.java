@@ -1532,10 +1532,7 @@ final class ActivityManagerShellCommand extends ShellCommand {
                 managed = false;
                 mallocInfo = true;
             } else if (opt.equals("-b")) {
-                dumpBitmaps = getNextArg();
-                if (dumpBitmaps == null) {
-                    dumpBitmaps = "png"; // default to PNG in dumping bitmaps
-                }
+                dumpBitmaps = getNextArgRequired();
             } else {
                 err.println("Error: Unknown option: " + opt);
                 return -1;

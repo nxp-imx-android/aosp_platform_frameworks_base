@@ -39,6 +39,7 @@ import android.view.IDisplayWindowListener;
 import android.view.IWindowManager;
 import android.view.InsetsState;
 import android.window.DesktopExperienceFlags;
+import android.window.DisplayAreaInfo;
 import android.window.WindowContainerTransaction;
 
 import androidx.annotation.BinderThread;
@@ -350,7 +351,7 @@ public class DisplayController {
     /** Called when a display rotate requested. */
     public void onDisplayChangeRequested(WindowContainerTransaction wct, int displayId,
             Rect startAbsBounds, Rect endAbsBounds, int fromRotation, int toRotation,
-            @Nullable InsetsState endInsetsState) {
+            @Nullable InsetsState endInsetsState, @Nullable DisplayAreaInfo displayAreaInfo) {
         synchronized (mDisplays) {
             final DisplayRecord dr = mDisplays.get(displayId);
             if (dr == null) {
@@ -363,7 +364,7 @@ public class DisplayController {
             updateDisplayLayout(displayId, startAbsBounds, endAbsBounds, fromRotation, toRotation);
 
             mChangeController.dispatchOnDisplayChange(
-                    wct, displayId, fromRotation, toRotation, null /* newDisplayAreaInfo */);
+                    wct, displayId, fromRotation, toRotation, displayAreaInfo);
         }
     }
 

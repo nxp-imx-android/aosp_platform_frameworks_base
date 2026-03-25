@@ -22,6 +22,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
+import com.android.wm.shell.Utils
 import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
@@ -42,7 +43,7 @@ abstract class CreateDesksUntilLimit : TestScenarioBase() {
 
     @Test
     open fun createDeskUntilLimit() {
-        var overview = tapl.launchedAppState.switchToOverview()
+        var overview = Utils.switchToOverview(tapl)
         // All tasks / desks were removed from overview during set up, but it's still possible that
         // one desk is there when desktop-first displays force-recreate a default desk. So account
         // for the possibility of 0 or 1 desks existing here before creating up to the limit.

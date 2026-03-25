@@ -252,6 +252,7 @@ import android.view.WindowManager.EngagementModeFlags;
 import android.view.WindowManagerPolicyConstants.PointerEventListener;
 import android.view.inputmethod.ImeTracker;
 import android.window.DesktopExperienceFlags;
+import android.window.DisplayAreaInfo;
 import android.window.DisplayWindowPolicyController;
 import android.window.IDisplayAreaOrganizer;
 import android.window.ScreenCaptureInternal;
@@ -264,6 +265,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
+import com.android.internal.os.IResultReceiver;
 import com.android.internal.policy.TransitionAnimation;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.ToBooleanFunction;
@@ -873,6 +875,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     /** Whether client rendering limitations are enabled for this display. **/
     private boolean mAreClientRenderingLimitationsEnabled = false;
+
+    /** The result receiver for getting a11y embedded connection updates of the focused window. */
+    @Nullable
+    private IResultReceiver mA11yEmbeddedConnectionReceiver = null;
 
     private final Consumer<WindowState> mUpdateWindowsForAnimator = w -> {
         WindowStateAnimator winAnimator = w.mWinAnimator;
@@ -1586,6 +1592,25 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                         SurfaceControl.FRAME_RATE_SELECTION_STRATEGY_OVERRIDE_CHILDREN);
     }
 
+    void setFocusedA11yEmbeddedConnectionReceiver(@Nullable IResultReceiver receiver) {
+        if (mA11yEmbeddedConnectionReceiver == receiver) {
+            return;
+        }
+        mA11yEmbeddedConnectionReceiver = receiver;
+        handleA11yEmbeddedConnectionUpdatesForFocusedWindow();
+    }
+
+    private void handleA11yEmbeddedConnectionUpdatesForFocusedWindow() {
+        if (mA11yEmbeddedConnectionReceiver == null || mCurrentFocus == null) {
+            return;
+        }
+        try {
+            mCurrentFocus.mClient.requestAccessibilityEmbeddedConnection(
+                    mA11yEmbeddedConnectionReceiver);
+        } catch (RemoteException e) {
+        }
+    }
+
     /**
      * @return the window animation scale for this {@link DisplayContent}.
      */
@@ -1932,10 +1957,17 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 final Rect endBounds = mTmpConfiguration.windowConfiguration.getBounds();
                 final ActionChain chain = mAtmService.mChainTracker.startTransit("recfgDisp");
                 if (!chain.isCollecting()) {
-                    final TransitionRequestInfo.DisplayChange change =
-                            new TransitionRequestInfo.DisplayChange(mDisplayId);
+                    final TransitionRequestInfo.DisplayChange change;
+                    if (com.android.window.flags.Flags.syncedDisplayModeUpdates()) {
+                        final DisplayAreaInfo displayAreaInfo = mDisplayContent
+                                        .getDisplayAreaInfo();
+                        displayAreaInfo.configuration.setTo(mTmpConfiguration);
+                        change = new TransitionRequestInfo.DisplayChange(displayAreaInfo);
+                    } else {
+                        change = new TransitionRequestInfo.DisplayChange(mDisplayId);
+                        change.setEndAbsBounds(endBounds);
+                    }
                     change.setStartAbsBounds(startBounds);
-                    change.setEndAbsBounds(endBounds);
                     requestChangeTransition(changes, change, chain);
                 } else {
                     final Transition transition = chain.getTransition();
@@ -4456,6 +4488,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                     this::updateAccessibilityOnWindowFocusChanged,
                     mWmService.mAccessibilityController));
         }
+
+        handleA11yEmbeddedConnectionUpdatesForFocusedWindow();
 
         return true;
     }

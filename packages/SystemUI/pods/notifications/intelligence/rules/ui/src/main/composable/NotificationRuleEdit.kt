@@ -98,9 +98,9 @@ fun NotificationRuleEdit(
             buildInlineContentMap(
                 ruleDisplay.textChunks,
                 appIcon = { AppIcon(it) },
-                contactIcon = {
+                personIcon = {
                     val iconSizeDp = with(LocalDensity.current) { textSize.toDp() }
-                    ContactIcon(it, iconSizeDp, viewModel::loadContactBitmapFromUri)
+                    PersonIcon(it, iconSizeDp, viewModel::loadContactBitmapFromUri)
                 },
                 textSize = textSize,
             )
@@ -180,11 +180,11 @@ private fun buildAddFieldOptions(
     onExitEditField: () -> Unit,
 ): List<RulesScreenViewState.EditField> {
     return mutableListOf<RulesScreenViewState.EditField>().apply {
-        if (viewModel.rule.filter.contacts == null) {
+        if (viewModel.rule.filter.people == null) {
             add(
-                RulesScreenViewState.EditField.Contacts(
-                    onContactsSaved = { newContacts ->
-                        viewModel.onContactsSaved(newContacts, onExitEditField)
+                RulesScreenViewState.EditField.People(
+                    onPeopleSaved = { newPeople ->
+                        viewModel.onPeopleSaved(newPeople, onExitEditField)
                     },
                     viewModel = viewModel,
                 )
@@ -195,6 +195,16 @@ private fun buildAddFieldOptions(
                 RulesScreenViewState.EditField.Apps(
                     viewModel = viewModel,
                     onAppsSaved = { newApps -> viewModel.onAppsSaved(newApps, onExitEditField) },
+                )
+            )
+        }
+        if (viewModel.rule.filter.keywords == null) {
+            add(
+                RulesScreenViewState.EditField.Keywords(
+                    viewModel = viewModel,
+                    onKeywordsSaved = { newKeywords ->
+                        viewModel.onKeywordsSaved(newKeywords, onExitEditField)
+                    },
                 )
             )
         }

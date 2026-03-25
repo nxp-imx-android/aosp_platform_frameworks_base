@@ -41,6 +41,7 @@ import android.annotation.SuppressLint;
 import android.annotation.TestApi;
 import android.annotation.UserIdInt;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.companion.AssociationInfo;
 import android.companion.DeviceId;
@@ -165,6 +166,8 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
     public final SparseArray<List<DevicePresenceEvent>> mPendingDevicePresenceEvents =
             new SparseArray<>();
 
+    private BluetoothAdapter mBluetoothAdapter;
+
     public DevicePresenceProcessor(@NonNull Context context,
             @NonNull CompanionAppBinder companionAppBinder,
             @NonNull UserManager userManager,
@@ -203,6 +206,7 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
             return;
         }
 
+        mBluetoothAdapter = btAdapter;
         mBluetoothDeviceProcessor.init(btAdapter);
         mBleDeviceProcessor.init(context, btAdapter);
 
@@ -253,8 +257,8 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
 
             if (callingPackage.equals(associationInfo.getPackageName())) {
                 throw new IllegalArgumentException(
-                      "When observing device presence for the own package,"
-                              + " use setAssociationId instead, not the device id."
+                        "When observing device presence for the own package,"
+                                + " use setAssociationId instead, not the device id."
                 );
             }
 
@@ -305,20 +309,42 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
                     a -> (new AssociationInfo.Builder(a))
                             .setNotifyOnDeviceNearby(true)
                             .build());
-
             // Send callback immediately if the device is present.
             if (isDevicePresent(associationId)) {
                 Slog.i(TAG, "Device is already present. Triggering callback.");
                 if (isBlePresent(associationId)) {
                     onDevicePresenceEvent(mNearbyBleDevices, associationId,
-                            new DevicePresenceEvent(associationId, EVENT_BLE_APPEARED, null));
+                            new DevicePresenceEvent.Builder()
+                                    .setAssociationId(associationId)
+                                    .setEvent(EVENT_BLE_APPEARED)
+                                    .build(), true);
                 } else if (isBtConnected(associationId)) {
                     onDevicePresenceEvent(mConnectedBtDevices, associationId,
-                            new DevicePresenceEvent(associationId, EVENT_BT_CONNECTED, null));
+                            new DevicePresenceEvent.Builder()
+                                    .setAssociationId(associationId)
+                                    .setEvent(EVENT_BT_CONNECTED)
+                                    .build(), true);
                 } else if (isSimulatePresent(associationId)) {
                     onDevicePresenceEvent(mSimulated, associationId,
-                            new DevicePresenceEvent(associationId, EVENT_BLE_APPEARED, null));
+                            new DevicePresenceEvent.Builder()
+                                    .setAssociationId(associationId)
+                                    .setEvent(EVENT_BLE_APPEARED)
+                                    .build(), true);
                 }
+            } else if (isDeviceCurrentlyConnected(association)) {
+                // Handle the edge case where a device is actively connected via Bluetooth but is
+                // not yet present in the cache. This can happen if an app is reinstalled while the
+                // underlying BT connection was never dropped.
+                // Proactively query the live connection state from the Bluetooth adapter and
+                // dispatch a presence callback immediately to ensure state is synchronized.
+                Slog.i(TAG, "Device " + associationId + " was not in cache, but is actively "
+                        + "connected via BT. Triggering callback.");
+
+                onDevicePresenceEvent(mConnectedBtDevices, associationId,
+                        new DevicePresenceEvent.Builder()
+                                .setAssociationId(associationId)
+                                .setEvent(EVENT_BT_CONNECTED)
+                                .build(), true);
             }
         }
 
@@ -643,11 +669,11 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
      * Marks a "self-managed" device as disconnected when binderDied.
      */
     public void onSelfManagedDeviceReporterBinderDied(int associationId) {
-        onDevicePresenceEvent(
-                mConnectedSelfManagedDevices,
-                associationId,
-                new DevicePresenceEvent(associationId, EVENT_SELF_MANAGED_DISAPPEARED, null)
-        );
+        onDevicePresenceEvent(mConnectedSelfManagedDevices, associationId,
+                new DevicePresenceEvent.Builder()
+                        .setAssociationId(associationId)
+                        .setEvent(EVENT_SELF_MANAGED_DISAPPEARED)
+                        .build(), false);
     }
 
     @Override
@@ -671,7 +697,10 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
             Slog.i(TAG, "onBluetoothCompanionDeviceConnected: "
                     + "associationId( " + associationId + " )");
             onDevicePresenceEvent(mConnectedBtDevices, associationId,
-                    new DevicePresenceEvent(associationId, EVENT_BT_CONNECTED, null));
+                    new DevicePresenceEvent.Builder()
+                            .setAssociationId(associationId)
+                            .setEvent(EVENT_BT_CONNECTED)
+                            .build(), false);
 
             // Stop the BLE scan if all devices report BT connected status and BLE was present.
             if (canStopBleScan()) {
@@ -694,8 +723,10 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
         }
 
         onDevicePresenceEvent(mConnectedBtDevices, associationId,
-                new DevicePresenceEvent(associationId, EVENT_BT_DISCONNECTED, null));
-
+                new DevicePresenceEvent.Builder()
+                        .setAssociationId(associationId)
+                        .setEvent(EVENT_BT_DISCONNECTED)
+                        .build(), false);
         // Restart BLE scanning when the device is disconnected.
         mBleDeviceProcessor.restartScan();
 
@@ -719,7 +750,10 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
         }
 
         onDevicePresenceEvent(mNearbyBleDevices, associationId,
-                new DevicePresenceEvent(associationId, EVENT_BLE_APPEARED, null));
+                new DevicePresenceEvent.Builder()
+                        .setAssociationId(associationId)
+                        .setEvent(EVENT_BLE_APPEARED)
+                        .build(), false);
         synchronized (mBtDisconnectedDevices) {
             final boolean isCurrentPresent = mBtDisconnectedDevicesBlePresence.get(associationId);
             if (mBtDisconnectedDevices.contains(associationId) && isCurrentPresent) {
@@ -737,7 +771,10 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
         }
 
         onDevicePresenceEvent(mNearbyBleDevices, associationId,
-                new DevicePresenceEvent(associationId, EVENT_BLE_DISAPPEARED, null));
+                new DevicePresenceEvent.Builder()
+                        .setAssociationId(associationId)
+                        .setEvent(EVENT_BLE_DISAPPEARED)
+                        .build(), false);
     }
 
     /** FOR DEBUGGING AND/OR TESTING PURPOSES ONLY. */
@@ -807,14 +844,20 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
 
     private void simulateDeviceAppeared(int associationId, int state) {
         onDevicePresenceEvent(mSimulated, associationId,
-                new DevicePresenceEvent(associationId, state, null));
+                new DevicePresenceEvent.Builder()
+                        .setAssociationId(associationId)
+                        .setEvent(state)
+                        .build(), false);
         mSchedulerHelper.scheduleOnDeviceGoneCallForSimulatedDevicePresence(associationId);
     }
 
     private void simulateDeviceDisappeared(int associationId, int state) {
         mSchedulerHelper.unscheduleOnDeviceGoneCallForSimulatedDevicePresence(associationId);
         onDevicePresenceEvent(mSimulated, associationId,
-                new DevicePresenceEvent(associationId, state, null));
+                new DevicePresenceEvent.Builder()
+                        .setAssociationId(associationId)
+                        .setEvent(state)
+                        .build(), false);
     }
 
     private void enforceAssociationExists(int associationId) {
@@ -825,7 +868,7 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
     }
 
     private void onDevicePresenceEvent(@NonNull Set<Integer> presentDevicesForSource,
-            int associationId, @NonNull DevicePresenceEvent event) {
+            int associationId, @NonNull DevicePresenceEvent event, boolean forceNotification) {
         Slog.i(TAG,
                 "onDevicePresenceEvent() id=[" + associationId + "], event=[" + event + "]...");
 
@@ -858,7 +901,7 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
             case EVENT_SELF_MANAGED_APPEARED:
             case EVENT_SELF_MANAGED_NEARBY:
                 final boolean added = presentDevicesForSource.add(associationId);
-                if (!added) {
+                if (!added && !forceNotification) {
                     Slog.w(TAG, "The association is already present.");
                 }
 
@@ -868,8 +911,9 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
                 } else {
                     return;
                 }
-
-                if (association.isSelfManaged() || added) {
+                // Notify the app if the association is self-managed or the device present is not
+                // in the cache or the device is already present but force to send the callback.
+                if (association.isSelfManaged() || added || forceNotification) {
                     notifyDevicePresenceEvent(userId, packageName, deviceProfile, event);
                     // Also send the legacy callback.
                     legacyNotifyDevicePresenceEvent(association, true);
@@ -1030,6 +1074,7 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
 
     /**
      * Notify the self-managed device presence event to the app.
+     *
      * @deprecated Use {@link #processSelfManagedDevicePresenceEvent(int, DevicePresenceEvent)}
      * instead.
      */
@@ -1051,7 +1096,7 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
      * the core presence logic or broadcasting the event.
      *
      * @param associationId the ID of the association reporting the event.
-     * @param event the {@link DevicePresenceEvent} reported by the app.
+     * @param event         the {@link DevicePresenceEvent} reported by the app.
      */
     public void processSelfManagedDevicePresenceEvent(
             int associationId, @NonNull DevicePresenceEvent event) {
@@ -1084,9 +1129,11 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
         // 3. Process the event.
         switch (event.getEvent()) {
             case EVENT_SELF_MANAGED_APPEARED, EVENT_SELF_MANAGED_DISAPPEARED ->
-                    onDevicePresenceEvent(mConnectedSelfManagedDevices, associationId, event);
+                    onDevicePresenceEvent(mConnectedSelfManagedDevices,
+                            associationId, event, false);
             case EVENT_SELF_MANAGED_NEARBY, EVENT_SELF_MANAGED_NOT_NEARBY -> onDevicePresenceEvent(
-                    mSelfManagedNearByDevices, associationId, event);
+                    mSelfManagedNearByDevices,
+                    associationId, event, false);
             default -> Slog.w(TAG,
                     "Unsupported event type for self-managed presence: " + event.getEvent());
         }
@@ -1441,7 +1488,10 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
             final int associationId = msg.what;
             if (mSimulated.contains(associationId)) {
                 onDevicePresenceEvent(mSimulated, associationId,
-                        new DevicePresenceEvent(associationId, EVENT_BLE_DISAPPEARED, null));
+                        new DevicePresenceEvent.Builder()
+                                .setAssociationId(associationId)
+                                .setEvent(EVENT_BLE_DISAPPEARED)
+                                .build(), false);
             }
         }
     }
@@ -1485,7 +1535,10 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
                     Slog.i(TAG, "Device ( " + associationId + " ) is likely BLE out of range, "
                             + "sending callback with event ( " + EVENT_BLE_DISAPPEARED + " )");
                     onDevicePresenceEvent(mNearbyBleDevices, associationId,
-                            new DevicePresenceEvent(associationId, EVENT_BLE_DISAPPEARED, null));
+                            new DevicePresenceEvent.Builder()
+                                    .setAssociationId(associationId)
+                                    .setEvent(EVENT_BLE_DISAPPEARED)
+                                    .build(), false);
                 }
 
                 mBtDisconnectedDevices.remove(associationId);
@@ -1539,6 +1592,32 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
                 }
             }
         }
+    }
+
+    private boolean isDeviceCurrentlyConnected(@NonNull AssociationInfo association) {
+        String macAddress = association.getDeviceMacAddressAsString();
+        if (macAddress == null) {
+            Slog.w(TAG, "Association " + association.getId() + " has no MAC address.");
+            return false;
+        }
+
+        if (mBluetoothAdapter == null) {
+            Slog.w(TAG, "BluetoothAdapter is null, cannot check BT connection state.");
+            return false;
+        }
+
+        try {
+            BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(macAddress);
+            if (device.isConnected()) {
+                Slog.i(TAG, "Device " + association.getId() + " is currently connected.");
+                return true;
+            }
+        } catch (IllegalArgumentException e) {
+            Slog.e(TAG, "Invalid MAC address for association " + association.getId() + ": "
+                    + macAddress, e);
+        }
+
+        return false;
     }
 
     private static class DevicePresenceListener {

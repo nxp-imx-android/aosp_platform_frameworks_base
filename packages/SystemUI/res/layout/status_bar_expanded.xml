@@ -110,8 +110,8 @@
 
     <include layout="@layout/dock_info_bottom_area_overlay" />
 
-    <include
-        layout="@layout/keyguard_bottom_area"
+    <include layout="@layout/ambient_indication"
+        android:id="@id/ambient_indication_container"
         android:visibility="gone" />
 
     <include

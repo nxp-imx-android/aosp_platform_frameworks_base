@@ -50,9 +50,10 @@ final class AccessibilityEmbeddedConnection extends IAccessibilityEmbeddedConnec
             viewRootImpl.mAttachInfo.mLeashedParentAccessibilityViewId = hostViewId;
             viewRootImpl.mAttachInfo.mEmbeddingHostWindowId = hostWindowId;
             if (accessibilityManager.isEnabled()) {
-                accessibilityManager.associateEmbeddedHierarchy(host, viewRootImpl.mLeashToken);
+                accessibilityManager.associateEmbeddedHierarchy(host,
+                        viewRootImpl.getAccessibilityLeashToken());
             }
-            return viewRootImpl.mLeashToken;
+            return viewRootImpl.getAccessibilityLeashToken();
         }
         return null;
     }
@@ -66,7 +67,8 @@ final class AccessibilityEmbeddedConnection extends IAccessibilityEmbeddedConnec
             viewRootImpl.mAttachInfo.mLeashedParentToken = null;
             viewRootImpl.mAttachInfo.mLeashedParentAccessibilityViewId = View.NO_ID;
             if (accessibilityManager.isEnabled()) {
-                accessibilityManager.disassociateEmbeddedHierarchy(viewRootImpl.mLeashToken);
+                accessibilityManager.disassociateEmbeddedHierarchy(
+                        viewRootImpl.getAccessibilityLeashToken());
             }
         }
     }

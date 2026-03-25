@@ -32,6 +32,7 @@ import com.android.wm.shell.shared.annotations.ShellAnimationThread;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * Composite animation container that coordinates multiple WindowAnimations for a single transition.
@@ -41,8 +42,11 @@ public class TransitionWindowAnimation implements ITransitionAnimation {
     private final List<WindowAnimation> mAnimations = new ArrayList<>();
     private final Set<WindowAnimation> mFinished = new ArraySet<>();
     private final ShellExecutor mAnimExecutor;
+    private final ShellExecutor mMainExecutor;
 
-    TransitionWindowAnimation(@NonNull ShellExecutor animExecutor) {
+    TransitionWindowAnimation(@NonNull ShellExecutor mainExecutor,
+            @NonNull ShellExecutor animExecutor) {
+        mMainExecutor = mainExecutor;
         mAnimExecutor = animExecutor;
     }
 
@@ -77,24 +81,19 @@ public class TransitionWindowAnimation implements ITransitionAnimation {
             return;
         }
 
+        final Consumer<WindowAnimation> finishCallback = (anim) -> {
+            if (mFinished.add(anim) && mFinished.size() == mAnimations.size()) {
+                onFinished.onFinished(null);
+            }
+        };
+
         updateAnimScale();
         for (int j = 0; j < mAnimations.size(); j++) {
             final WindowAnimation anim = mAnimations.get(j);
-            final ValueAnimator animator = anim.getAnimator();
-            if (animator != null) {
-                animator.addListener(new android.animation.AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(android.animation.Animator animation) {
-                        if (mFinished.add(anim) && mFinished.size() == mAnimations.size()) {
-                            onFinished.onFinished(null);
-                        }
-                    }
-                });
-                mAnimExecutor.execute(anim::start);
-            } else {
-                mFinished.add(anim);
-            }
+            anim.addFinishCallback(finishCallback, mMainExecutor);
+            mAnimExecutor.execute(anim::start);
         }
+
         if (mFinished.size() == mAnimations.size()) {
             onFinished.onFinished(null);
         }
@@ -113,11 +112,9 @@ public class TransitionWindowAnimation implements ITransitionAnimation {
             if (animation != null) {
                 animation.scaleCurrentDuration(mScale);
             }
-            if (animator != null) {
-                long newDuration = animation != null ? animation.computeDurationHint()
-                        : (long) (animator.getDuration() * mScale);
-                animator.setDuration(newDuration);
-            }
+            long newDuration = animation != null ? animation.computeDurationHint()
+                    : (long) (animator.getDuration() * mScale);
+            animator.setDuration(newDuration);
         }
     }
 

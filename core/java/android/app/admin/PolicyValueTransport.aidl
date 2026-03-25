@@ -25,10 +25,11 @@ import android.app.admin.PackageIdentifierTransport;
  * @hide
  */
 union PolicyValueTransport {
-    int integerField;
     boolean booleanField;
-    long longField;
-    String stringField;
+    int integerField;
+    List<PackageIdentifierTransport> listOfPackageField;
     List<String> listOfStringField;
+    long longField;
     PackageIdentifierTransport packageField;
+    String stringField;
 }

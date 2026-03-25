@@ -1529,7 +1529,11 @@ public class CachedAppOptimizer {
 
             opt.setFreezeUnfreezeTime(SystemClock.uptimeMillis());
             opt.setFrozen(false);
+            final boolean wasZramWrittenBack = app.isZramWrittenBack();
             mAm.mProcessStateController.setIsZramWrittenBack(app, false);
+            if (wasZramWrittenBack) {
+                prefetchZram(app, reason);
+            }
             mFrozenProcesses.delete(pid);
             mAm.mProcessStateController.setFrozenProcessCount(mFrozenProcesses.size());
         } catch (Exception e) {
@@ -1819,22 +1823,22 @@ public class CachedAppOptimizer {
                 FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_OTHER_REASONS;
         String processNameForLogging =
                 (processName != null && processName.equals(packageName)) ? null : processName;
-        long graphicsMemKb = 0;
+        long graphicsMemKbVal = 0;
         final KernelAllocationStats.ProcessGpuMem[] gpuAllocations =
                 mKernelAllocationStats.getGpuAllocations();
         if (gpuAllocations != null) {
             for (final KernelAllocationStats.ProcessGpuMem pgm : gpuAllocations) {
                 if (pgm.pid == pid) {
-                    graphicsMemKb = pgm.gpuMemoryKb;
+                    graphicsMemKbVal = pgm.gpuMemoryKb;
                     break;
                 }
             }
         }
+        final long graphicsMemKb = graphicsMemKbVal;
         final boolean gpuMemoryTooHigh =
                 graphicsMemKb > mZramWritebackGpuMemThresholdKb;
-        final boolean dmaBufMemTooHigh =
-                mKernelAllocationStats.getDmabufSizeForProcessKb(pid)
-                        > mZramWritebackDmabufMemThresholdKb;
+        final long dmaBufSizeKb = mKernelAllocationStats.getDmabufSizeForProcessKb(pid);
+        final boolean dmaBufMemTooHigh = dmaBufSizeKb > mZramWritebackDmabufMemThresholdKb;
         try {
             if (zramUsedDeltaKb >= mZramWritebackThresholdKb) {
                 eventTypeToLog =
@@ -1851,13 +1855,13 @@ public class CachedAppOptimizer {
             if (gpuMemoryTooHigh) {
                 eventTypeToLog =
                         FrameworkStatsLog
-                                .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_HAS_GPU_MEMORY;
+                                .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_GPU_MEMORY_TOO_HIGH;
                 return;
             }
             if (dmaBufMemTooHigh) {
                 eventTypeToLog =
                         FrameworkStatsLog
-                                .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_HAS_DMA_BUF;
+                                .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_DMA_BUF_TOO_HIGH;
                 return;
             }
             final IMmd mmd = getMmd();
@@ -1871,7 +1875,7 @@ public class CachedAppOptimizer {
                 if (mHasZramWritebackSupport == null) {
                     mHasZramWritebackSupport = mmd.supportsProcessMemoryZramOps();
                 }
-                if (!mHasZramWritebackSupport) {
+                if (!Boolean.TRUE.equals(mHasZramWritebackSupport)) {
                     eventTypeToLog =
                             FrameworkStatsLog
                                     .ZRAM_WRITEBACK_EVENT__EVENT_TYPE__SKIPPED_UNSUPPORTED_BY_MMD;
@@ -1920,7 +1924,9 @@ public class CachedAppOptimizer {
                                         getZramWritebackEventType(status), uid, processName,
                                         hasActivities, zramUsedDeltaKb, bytesWritten,
                                         // the following should both be true if we reach this point.
-                                        dmaBufMemTooHigh, gpuMemoryTooHigh);
+                                        dmaBufMemTooHigh, gpuMemoryTooHigh,
+                                        dmaBufSizeKb,
+                                        graphicsMemKb);
                             }
                         };
                 try {
@@ -1964,7 +1970,7 @@ public class CachedAppOptimizer {
             }
             FrameworkStatsLog.write(FrameworkStatsLog.ZRAM_WRITEBACK_EVENT, eventTypeToLog, uid,
                     processName, hasActivities, zramUsedDeltaKb, /* zramBytesWritten= */ 0,
-                    dmaBufMemTooHigh, gpuMemoryTooHigh);
+                    dmaBufMemTooHigh, gpuMemoryTooHigh, dmaBufSizeKb, graphicsMemKb);
         }
     }
 
@@ -2902,12 +2908,20 @@ public class CachedAppOptimizer {
      */
     @VisibleForTesting
     void forceFreezeForTest(ProcessRecord proc, boolean freeze) {
+        forceFreezeForTest(proc, freeze, UNFREEZE_REASON_NONE);
+    }
+
+    /**
+     * Freeze or unfreeze a process.  This should only be used for testing.
+     */
+    @VisibleForTesting
+    void forceFreezeForTest(ProcessRecord proc, boolean freeze, @UnfreezeReason int reason) {
         synchronized (mAm) {
             synchronized (mProcLock) {
                 if (freeze) {
                     forceFreezeAppAsyncLSP(proc);
                 } else {
-                    unfreezeAppLSP(proc, UNFREEZE_REASON_NONE, true);
+                    unfreezeAppLSP(proc, reason, true);
                 }
             }
         }
@@ -3024,5 +3038,55 @@ public class CachedAppOptimizer {
 
     public int getFrozenProcessCount() {
         return mFrozenProcesses.size();
+    }
+
+    private void prefetchZram(ProcessRecord app, @UnfreezeReason int reason) {
+        if (reason != UNFREEZE_REASON_ACTIVITY) {
+            return;
+        }
+        final boolean zramWritebackEnabled = Flags.enableZramWriteback() && mZramWritebackEnabled;
+        if (!zramWritebackEnabled) {
+            return;
+        }
+
+        final IMmd mmd = getMmd();
+        if (mmd == null) {
+            return;
+        }
+
+        try {
+            if (mHasZramWritebackSupport == null) {
+                mHasZramWritebackSupport = mmd.supportsProcessMemoryZramOps();
+            }
+            if (!Boolean.TRUE.equals(mHasZramWritebackSupport)) {
+                return;
+            }
+
+            final int pid = app.getPid();
+            FrameworkStatsLog.write(FrameworkStatsLog.ZRAM_WRITEBACK_EVENT,
+                    FrameworkStatsLog.ZRAM_WRITEBACK_EVENT__EVENT_TYPE__PREFETCHED,
+                    app.uid, app.processName, app.hasActivities(),
+                    /* rss_swap_kb */ 0, /* zram_bytes_written */ 0,
+                    /* has_dma_buf */ false, /* has_gpu_memory */ false,
+                    /* dma_buf_size_kb */ 0, /* gpu_memory_size_kb */ 0);
+            Trace.instantForTrack(
+                    Trace.TRACE_TAG_ACTIVITY_MANAGER,
+                    ATRACE_ZRAM_WRITEBACK_TRACK,
+                    "ZramWriteback: prefetch for "
+                            + app.processName
+                            + ":"
+                            + pid);
+            try {
+                final FileDescriptor fd = Process.openPidFd(pid, 0);
+                try (final ParcelFileDescriptor pfd =
+                        ParcelFileDescriptor.adoptFd(fd.getInt$())) {
+                    mmd.asyncPrefetchProcessZramMemory(pfd);
+                }
+            } catch (IOException e) {
+                Slog.w(TAG_AM, "Failed to get pidfd for " + pid, e);
+            }
+        } catch (RemoteException e) {
+            Slog.w(TAG_AM, "Failed to call mmd.", e);
+        }
     }
 }

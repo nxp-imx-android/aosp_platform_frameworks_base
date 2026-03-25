@@ -885,12 +885,12 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
     fun clickCaption(
         wmHelper: WindowManagerStateHelper,
         device: UiDevice,
-        displayId: Int = DEFAULT_DISPLAY
     ) {
         val caption = checkNotNull(getCaptionForTheApp(wmHelper, device)) {
            "Unable to find caption"
         }
         caption.click()
+        val displayId = wmHelper.getWindow(innerHelper)?.displayId ?: DEFAULT_DISPLAY
         wmHelper
             .StateSyncBuilder()
             .withAppTransitionIdle(displayId)
@@ -901,9 +901,13 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
     private fun getDesktopAppViewByRes(viewResId: String): UiObject2 =
         DeviceHelpers.waitForObj(By.res(SYSTEMUI_PACKAGE, viewResId), TIMEOUT)
 
-    private fun getDisplayRect(wmHelper: WindowManagerStateHelper): Rect =
-        wmHelper.currentState.wmState.getDefaultDisplay()?.displayRect
-            ?: throw IllegalStateException("Default display is null")
+    private fun getDisplayRect(wmHelper: WindowManagerStateHelper): Rect {
+        val window = wmHelper.getWindow(innerHelper)
+            ?: error("Unable to find the window for $innerHelper")
+        val displayId = window.displayId
+        return wmHelper.currentState.wmState.getDisplay(displayId)?.displayRect
+            ?: throw IllegalStateException("Display $displayId is null")
+    }
 
     /** Wait for transition to full screen to finish. */
     fun waitForTransitionToFullscreen(

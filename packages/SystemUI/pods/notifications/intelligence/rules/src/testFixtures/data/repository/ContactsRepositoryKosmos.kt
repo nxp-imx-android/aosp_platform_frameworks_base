@@ -19,24 +19,24 @@ package com.android.systemui.notifications.intelligence.rules.data.repository
 import android.content.ContentResolver
 import android.net.Uri
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PersonModel
 
 val Kosmos.fakeContactsRepository by Kosmos.Fixture { FakeContactsRepository() }
 
 class FakeContactsRepository : ContactsRepository {
-    var contacts = emptyList<ContactModel>()
+    var contacts = emptyList<PersonModel.Contact>()
 
     override suspend fun lookupContact(
         lookupUri: Uri,
         contentResolver: ContentResolver,
-    ): ContactModel? {
+    ): PersonModel.Contact? {
         return contacts.find { it.lookupUri == lookupUri }
     }
 
     override suspend fun fetchContacts(
         searchQuery: String,
         contentResolver: ContentResolver,
-    ): List<ContactModel> {
+    ): List<PersonModel.Contact> {
         return contacts
     }
 }

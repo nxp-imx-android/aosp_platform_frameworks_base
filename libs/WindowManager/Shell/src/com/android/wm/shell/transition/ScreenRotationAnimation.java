@@ -401,8 +401,8 @@ class ScreenRotationAnimation {
         }
 
         final WindowAnimation composite =
-                new MultiPartWindowAnimation(mainAnim, siblings,
-                        (winAnim) -> mainExecutor.execute(() -> finishCallback.accept(winAnim)));
+                new MultiPartWindowAnimation(mainAnim, siblings);
+        composite.addFinishCallback(finishCallback, mainExecutor);
         return composite;
     }
 

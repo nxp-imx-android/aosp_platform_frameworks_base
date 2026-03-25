@@ -26,7 +26,7 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.notifications.intelligence.rules.shared.NotificationRulesLog
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PersonModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -43,7 +43,7 @@ constructor(
     override suspend fun lookupContact(
         lookupUri: Uri,
         contentResolver: ContentResolver,
-    ): ContactModel? {
+    ): PersonModel.Contact? {
         return withContext(backgroundDispatcher) {
             try {
                 contentResolver.query(lookupUri, CONTACT_LOOKUP_PROJECTION, null, null, null).use {
@@ -65,12 +65,12 @@ constructor(
     override suspend fun fetchContacts(
         searchQuery: String,
         contentResolver: ContentResolver,
-    ): List<ContactModel> {
+    ): List<PersonModel.Contact> {
         return withContext(backgroundDispatcher) {
             val selection = "${ContactsContract.Contacts.DISPLAY_NAME_PRIMARY} LIKE ?"
             val selectionArgs = arrayOf("%$searchQuery%")
 
-            val foundContacts = mutableListOf<ContactModel>()
+            val foundContacts = mutableListOf<PersonModel.Contact>()
             // TODO: b/478225883 - Handle work contacts, similar to ValidateNotificationPeople.
             try {
                 contentResolver
@@ -95,7 +95,7 @@ constructor(
         }
     }
 
-    private fun getContactFromCursor(cursor: Cursor): ContactModel? {
+    private fun getContactFromCursor(cursor: Cursor): PersonModel.Contact? {
         val id: Long? = cursor.getString(cursor.getColumnIndex(ID_FIELD)).toLongOrNull()
         val lookupKey: String? = cursor.getString(cursor.getColumnIndex(LOOKUP_KEY_FIELD))
         val name: String? = cursor.getString(cursor.getColumnIndex(NAME_FIELD))
@@ -106,7 +106,7 @@ constructor(
         }
 
         val lookupUri = ContactsContract.Contacts.getLookupUri(id, lookupKey) ?: return null
-        return ContactModel(lookupUri = lookupUri, name = name, photoUri = photoUri?.toUri())
+        return PersonModel.Contact(lookupUri = lookupUri, name = name, photoUri = photoUri?.toUri())
     }
 
     companion object {

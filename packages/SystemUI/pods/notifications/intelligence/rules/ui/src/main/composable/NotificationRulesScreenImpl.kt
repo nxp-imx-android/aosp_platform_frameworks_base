@@ -98,11 +98,14 @@ class NotificationRulesScreenImpl @Inject constructor() : NotificationRulesScree
                 is RulesScreenViewState.EditField.Action -> {
                     ActionChoiceScreen(viewState, onDismissRequest = onDismissRequest)
                 }
-                is RulesScreenViewState.EditField.Contacts -> {
-                    ContactChoiceScreen(viewState, onDismissRequest = onDismissRequest)
+                is RulesScreenViewState.EditField.People -> {
+                    PeopleChoiceScreen(viewState, onDismissRequest = onDismissRequest)
                 }
                 is RulesScreenViewState.EditField.Apps -> {
                     AppChoiceScreen(viewState, onDismissRequest = onDismissRequest)
+                }
+                is RulesScreenViewState.EditField.Keywords -> {
+                    KeywordChoiceScreen(viewState, onDismissRequest = onDismissRequest)
                 }
             }
         }

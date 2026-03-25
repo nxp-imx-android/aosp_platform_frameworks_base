@@ -339,7 +339,7 @@ public class DisplayControllerTests extends ShellTestCase {
         final InsetsState endInsetsState = new InsetsState();
         endInsetsState.setDisplayFrame(new Rect(0, 0, 100, 100));
         mController.onDisplayChangeRequested(null, DISPLAY_ID_0, new Rect(0, 0, 100, 200),
-                new Rect(0, 0, 200, 100), 0, 1, endInsetsState);
+                new Rect(0, 0, 200, 100), 0, 1, endInsetsState, null);
 
         assertEquals(new Rect(0, 0, 100, 100),
                 mController.getInsetsState(DISPLAY_ID_0).getDisplayFrame());

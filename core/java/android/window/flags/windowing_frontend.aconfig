@@ -12,6 +12,16 @@ flag {
 }
 
 flag {
+  name: "show_ime_layering_target_when_adding"
+  namespace: "windowing_frontend"
+  description: "Prevent IME flickering when adding a layering target"
+  bug: "495662368"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "release_all_transition_surfaces_on_idle"
   namespace: "windowing_frontend"
   description: "Reduce offscreen layers which rely on GC to release"

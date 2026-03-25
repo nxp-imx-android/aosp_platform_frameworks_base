@@ -48,8 +48,9 @@ fun AddFieldDialog(
 private fun RulesScreenViewState.EditField.toText(): String {
     val resourceId =
         when (this) {
-            is RulesScreenViewState.EditField.Contacts -> R.string.notification_rules_field_people
+            is RulesScreenViewState.EditField.People -> R.string.notification_rules_field_people
             is RulesScreenViewState.EditField.Apps -> R.string.notification_rules_field_app
+            is RulesScreenViewState.EditField.Keywords -> R.string.notification_rules_field_keyword
             is RulesScreenViewState.EditField.Action ->
                 throw IllegalStateException(
                     "Actions should always be edited inline, not via the `Add` button"

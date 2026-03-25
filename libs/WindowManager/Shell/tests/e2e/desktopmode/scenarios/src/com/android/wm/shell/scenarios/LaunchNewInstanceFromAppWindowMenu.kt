@@ -51,6 +51,7 @@ abstract class LaunchNewInstanceFromAppWindowMenu(
 
     @Test
     open fun launchNewInstanceFromFullScreenAndEnterSplitScreen() {
+        browserDesktopAppHelper.exitDesktopModeToFullScreenIfNeeded(wmHelper, device)
         browserApp.openThreeDotsMenu()
         browserApp.clickNewWindowInMenu()
         SplitScreenUtils.waitForSplitComplete(wmHelper, browserApp, browserApp)

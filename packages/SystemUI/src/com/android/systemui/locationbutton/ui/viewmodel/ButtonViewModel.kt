@@ -36,4 +36,5 @@ data class ButtonViewModel(
     @StringRes val textResId: Int?,
     val textColor: Color,
     val configuration: Configuration,
+    val validationFlags: Int = 0,
 )

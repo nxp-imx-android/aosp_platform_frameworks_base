@@ -608,9 +608,17 @@ public class DisplayRotation {
                     final var endRotationInsetsState =
                             com.android.window.flags.Flags.sendNewInsetsStateWithRotation()
                                     ? mDisplayContent.getInsetsStateForRotation(mRotation) : null;
-                    final TransitionRequestInfo.DisplayChange change =
-                            new TransitionRequestInfo.DisplayChange(mDisplayContent.getDisplayId(),
-                                    oldRotation, mRotation, endRotationInsetsState);
+                    final TransitionRequestInfo.DisplayChange change;
+                    if (com.android.window.flags.Flags.syncedDisplayModeUpdates()) {
+                        change = new TransitionRequestInfo.DisplayChange(mDisplayContent
+                                        .getDisplayAreaInfo());
+                        change.setStartRotation(oldRotation);
+                        change.setEndInsetsState(endRotationInsetsState);
+                    } else {
+                        change = new TransitionRequestInfo.DisplayChange(
+                                mDisplayContent.getDisplayId(), oldRotation, mRotation,
+                                endRotationInsetsState);
+                    }
                     mDisplayContent.requestChangeTransition(
                             ActivityInfo.CONFIG_WINDOW_CONFIGURATION, change, chain);
                 }

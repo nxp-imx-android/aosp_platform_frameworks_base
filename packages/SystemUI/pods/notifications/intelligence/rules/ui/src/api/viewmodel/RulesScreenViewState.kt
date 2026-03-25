@@ -18,7 +18,7 @@ package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.PersonModel
 
 /** Represents the current state of the rules screen. */
 public sealed interface RulesScreenViewState {
@@ -38,20 +38,30 @@ public sealed interface RulesScreenViewState {
         /**
          * The action for a particular rule is being edited.
          *
+         * @param selectedAction the currently selected action.
          * @param onActionSaved invoked when the user selects an action in the menu.
          */
-        public data class Action(val onActionSaved: (ActionModel) -> Unit) : EditField
+        public data class Action(
+            val selectedAction: ActionModel,
+            val onActionSaved: (ActionModel) -> Unit,
+        ) : EditField
 
-        /** The list of contacts for a particular rule is being edited. */
-        public data class Contacts(
+        /** The list of people for a particular rule is being edited. */
+        data class People(
             val viewModel: NotificationRuleEditViewModel,
-            val onContactsSaved: (List<ContactModel>) -> Unit,
+            val onPeopleSaved: (List<PersonModel>) -> Unit,
         ) : EditField
 
         /** The list of apps for a particular rule is being edited. */
         public data class Apps(
             val viewModel: NotificationRuleEditViewModel,
             val onAppsSaved: (List<AppModel>) -> Unit,
+        ) : EditField
+
+        /** The list of keywords for a particular rule is being edited. */
+        data class Keywords(
+            val viewModel: NotificationRuleEditViewModel,
+            val onKeywordsSaved: (List<String>) -> Unit,
         ) : EditField
     }
 

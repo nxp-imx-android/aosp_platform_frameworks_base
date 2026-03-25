@@ -16,14 +16,22 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastForEach
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RulesScreenViewState
 import com.android.systemui.res.R
@@ -34,21 +42,92 @@ fun ActionChoiceScreen(
     viewState: RulesScreenViewState.EditField.Action,
     onDismissRequest: () -> Unit,
 ) {
-    Column(Modifier.fillMaxSize()) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier =
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp),
+    ) {
         Header(
             stringResource(R.string.notification_rules_choose_action_title),
             onDismissRequest = onDismissRequest,
         )
-        DropdownMenu(expanded = true, onDismissRequest = onDismissRequest) {
-            for (action in ActionModel.entries) {
-                DropdownMenuItem(
-                    text = { Text(text = action.toText()) },
-                    onClick = {
-                        viewState.onActionSaved(action)
-                        onDismissRequest.invoke()
-                    },
-                )
-            }
+
+        val actionOnClick: (ActionModel) -> Unit = {
+            viewState.onActionSaved(it)
+            onDismissRequest.invoke()
+        }
+
+        HeaderText(stringResource(R.string.notification_rules_action_more_alerting))
+        MoreAlertingActions.fastForEach { action ->
+            ActionItem(
+                action = action,
+                onClick = { actionOnClick(action) },
+                isSelected = action == viewState.selectedAction,
+            )
+        }
+
+        HeaderText(stringResource(R.string.notification_rules_action_less_alerting))
+        LessAlertingActions.fastForEach { action ->
+            ActionItem(
+                action = action,
+                onClick = { actionOnClick(action) },
+                isSelected = action == viewState.selectedAction,
+            )
         }
     }
 }
+
+@Composable
+private fun HeaderText(string: String, modifier: Modifier = Modifier) {
+    Text(
+        text = string,
+        color = MaterialTheme.colorScheme.onSurface,
+        style = MaterialTheme.typography.titleMediumEmphasized,
+        modifier = modifier.padding(16.dp),
+    )
+}
+
+@Composable
+private fun ActionItem(
+    action: ActionModel,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val cardShape = MaterialTheme.shapes.medium
+    val textColor =
+        if (isSelected) {
+            MaterialTheme.colorScheme.onSurface
+        } else {
+            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+        }
+    Column(
+        modifier =
+            modifier
+                .then(
+                    if (isSelected) {
+                        Modifier.border(width = 2.dp, color = action.toColor(), shape = cardShape)
+                    } else {
+                        Modifier.border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f),
+                            shape = cardShape,
+                        )
+                    }
+                )
+                .background(color = MaterialTheme.colorScheme.surface, shape = cardShape)
+                .clickable(enabled = true, onClick = onClick)
+                .padding(16.dp)
+    ) {
+        ReadOnlyAction(action)
+        Text(
+            text = action.toDescription(),
+            style = MaterialTheme.typography.bodyMedium,
+            color = textColor,
+            modifier = Modifier.padding(top = 12.dp),
+        )
+    }
+}
+
+private val MoreAlertingActions = listOf(ActionModel.HighlightAndAlert, ActionModel.Highlight)
+private val LessAlertingActions = listOf(ActionModel.Silence, ActionModel.Bundle, ActionModel.Block)

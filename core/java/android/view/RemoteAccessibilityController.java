@@ -26,14 +26,19 @@ import android.view.accessibility.IAccessibilityEmbeddedConnection;
 
 import java.lang.ref.WeakReference;
 
-class RemoteAccessibilityController {
+/**
+ * Manages embedding a remote {@link IAccessibilityEmbeddedConnection} into a host view.
+ *
+ * @hide
+ */
+public class RemoteAccessibilityController {
     private static final String TAG = "RemoteAccessibilityController";
     private RemoteAccessibilityEmbeddedConnection mConnectionWrapper;
     private Matrix mWindowMatrixForEmbeddedHierarchy = new Matrix();
     private final float[] mMatrixValues = new float[9];
     private View mHostView;
 
-    RemoteAccessibilityController(View v) {
+    public RemoteAccessibilityController(View v) {
         mHostView = v;
     }
 
@@ -46,7 +51,7 @@ class RemoteAccessibilityController {
         }
     }
 
-    void associateHierarchy(IAccessibilityEmbeddedConnection connection,
+    public void associateHierarchy(IAccessibilityEmbeddedConnection connection,
             IBinder leashToken, int hostViewId, int hostWindowId) {
 
         try {
@@ -58,22 +63,22 @@ class RemoteAccessibilityController {
         }
     }
 
-    void disassociateHierarchy() {
+    public void disassociateHierarchy() {
         setRemoteAccessibilityEmbeddedConnection(null, null);
     }
 
-    boolean alreadyAssociated(IAccessibilityEmbeddedConnection connection) {
+    public boolean alreadyAssociated(IAccessibilityEmbeddedConnection connection) {
         if (mConnectionWrapper == null) {
             return false;
         }
         return mConnectionWrapper.mConnection.equals(connection);
     }
 
-    boolean connected() {
+    public boolean connected() {
       return mConnectionWrapper != null;
     }
 
-    IBinder getLeashToken() {
+    public IBinder getLeashToken() {
         return mConnectionWrapper.getLeashToken();
     }
 
@@ -149,7 +154,7 @@ class RemoteAccessibilityController {
         return mConnectionWrapper;
     }
 
-    void setWindowMatrix(Matrix m, boolean force) {
+    public void setWindowMatrix(Matrix m, boolean force) {
         // If the window matrix doesn't change, do nothing.
         if (!force && m.equals(mWindowMatrixForEmbeddedHierarchy)) {
             return;
@@ -168,10 +173,4 @@ class RemoteAccessibilityController {
             Log.d(TAG, "Error while setScreenMatrix " + e);
         }
     }
-
-
-
-
-
-
 }

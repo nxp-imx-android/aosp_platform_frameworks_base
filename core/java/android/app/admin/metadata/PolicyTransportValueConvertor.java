@@ -16,6 +16,8 @@
 
 package android.app.admin.metadata;
 
+import static java.util.stream.Collectors.toList;
+
 import android.annotation.NonNull;
 import android.app.admin.PackageIdentifier;
 import android.app.admin.PackageIdentifierTransport;
@@ -155,6 +157,36 @@ public abstract class PolicyTransportValueConvertor<T> {
                 }
             };
 
+    private static final PolicyTransportValueConvertor<List<PackageIdentifier>>
+            LIST_OF_PACKAGE_CONVERTOR =
+                    new PolicyTransportValueConvertor<>() {
+                        @Override
+                        @NonNull
+                        public PolicyValueTransport toTransport(
+                                @NonNull List<PackageIdentifier> value) {
+                            return PolicyValueTransport.listOfPackageField(
+                                    value.stream()
+                                            .map(PackageIdentifier::createTransport)
+                                            .collect(toList()));
+                        }
+
+                        @Override
+                        @NonNull
+                        public List<PackageIdentifier> fromTransport(
+                                @NonNull PolicyValueTransport transport) {
+                            if (transport.getTag() != PolicyValueTransport.listOfPackageField) {
+                                throw new IllegalArgumentException(
+                                        "Policy value " + transport + " is not a list of package");
+                            }
+
+                            return transport.getListOfPackageField().stream()
+                                    .map(PackageIdentifier::new)
+                                    .collect(toList());
+                        }
+                    };
+
+
+
 
     protected PolicyTransportValueConvertor() {
     }
@@ -204,6 +236,7 @@ public abstract class PolicyTransportValueConvertor<T> {
         // instead.
         return (PolicyTransportValueConvertor) switch(metadata.getElementMetadata()) {
             case StringPolicyMetadata m -> LIST_OF_STRING_CONVERTOR;
+            case PackagePolicyMetadata m -> LIST_OF_PACKAGE_CONVERTOR;
             default -> throw new UnsupportedOperationException(
                     "Unsupported list policy conversion for "
                             + metadata.getId()

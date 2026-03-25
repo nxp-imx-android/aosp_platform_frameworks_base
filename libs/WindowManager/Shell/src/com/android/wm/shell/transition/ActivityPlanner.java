@@ -146,7 +146,8 @@ public class ActivityPlanner implements ITransitionPlanner {
             }
 
             if (transitionWindowAnimation == null) {
-                transitionWindowAnimation = new TransitionWindowAnimation(mAnimExecutor);
+                transitionWindowAnimation = new TransitionWindowAnimation(mMainExecutor,
+                        mAnimExecutor);
             }
             transitionWindowAnimation.addWindowAnimation(winAnim);
             plan.setAnimation(change.getContainer(), transitionWindowAnimation);

@@ -12,6 +12,10 @@ filegroup {
     srcs: [
         "java/**/*.java",
     ],
+    // TODO(b/485250240): enable cross device sync when it's ready.
+    exclude_srcs: [
+        "java/com/android/server/companion/datatransfer/crossdevicesync/**/*.java",
+    ],
     path: "java",
     visibility: ["//frameworks/base/services"],
 }

@@ -376,12 +376,7 @@ public class Notifier {
 
         mFullWakeLockLog = mInjector.getWakeLockLog(context);
         mPartialWakeLockLog = mInjector.getWakeLockLog(context);
-
-        if (mFlags.isAppWakelockDataSourceEnabled()) {
-            mWakelockTracer = mInjector.getWakelockTracer(looper);
-        } else {
-            mWakelockTracer = null;
-        }
+        mWakelockTracer = mInjector.getWakelockTracer(looper);
 
         // Initialize interactive state for battery stats.
         try {

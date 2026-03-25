@@ -45,10 +45,11 @@ class FakePowerRepository @Inject constructor() : PowerRepository {
 
     private val _wakefulnessEvents =
         MutableSharedFlow<WakefulnessModel>(
-            replay = 1,
-            extraBufferCapacity = 3,
-            onBufferOverflow = BufferOverflow.DROP_OLDEST,
-        )
+                replay = 1,
+                extraBufferCapacity = 3,
+                onBufferOverflow = BufferOverflow.DROP_OLDEST,
+            )
+            .also { it.tryEmit(WakefulnessModel()) }
     override val wakefulnessEvents = _wakefulnessEvents.asSharedFlow()
 
     private val _screenPowerState = MutableStateFlow(ScreenPowerState.SCREEN_OFF)

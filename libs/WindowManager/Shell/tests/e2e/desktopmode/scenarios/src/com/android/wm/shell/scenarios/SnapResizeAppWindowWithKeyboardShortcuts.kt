@@ -52,8 +52,9 @@ abstract class SnapResizeAppWindowWithKeyboardShortcuts(
         testApp.enterDesktopMode(wmHelper, device)
 
         // TODO(b/491062938): Remove this once the bug is fixed.
-        // Click on the app handle to ensure the app is in focus
-        testApp.getCaptionForTheApp(wmHelper, device)?.click()
+        // Bring the app to the front to ensure it is in focus without accidentally opening the app
+        // handle menu
+        testApp.bringToFront(wmHelper, device)
     }
 
     @Test

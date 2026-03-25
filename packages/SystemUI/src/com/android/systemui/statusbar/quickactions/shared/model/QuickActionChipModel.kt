@@ -91,8 +91,7 @@ sealed class QuickActionChipModel {
         /** Determines the colors used for the chip. Defaults to system themed colors. */
         val colors: ChipColors = ChipColors.SystemTheme,
         val isPopupShown: Boolean = false,
-        val showPopup: (Context, RectF) -> Unit = { _, _ -> },
-        val hidePopup: () -> Unit = {},
+        val togglePopup: (Context, RectF) -> Unit = { _, _ -> },
         val contentDescription: ContentDescription? = null,
         val popupViewModelFactory: StatusBarPopupViewModel.Factory? = null,
     ) : QuickActionChipModel() {

@@ -870,11 +870,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                     return wl;
                 });
 
-        // TODO (b/291907312): remove feature flag
-        // NOTE: Prefer using the @EnableFlags annotation where possible. Do not add any android.app
-        //  flags here.
-        mSetFlagsRule.disableFlags(Flags.FLAG_POLITE_NOTIFICATIONS);
-
         mActivityIntent = spy(PendingIntent.getActivity(mContext, 0,
                 new Intent().setPackage(mPkg), PendingIntent.FLAG_MUTABLE));
         mActivityIntentImmutable = spy(PendingIntent.getActivity(mContext, 0,
@@ -1108,7 +1103,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         try {
             mService.onDestroy();
-        } catch (IllegalStateException | IllegalArgumentException e) {
+        } catch (Exception e) {
             Log.e(TAG, "failed to destroy", e);
             // can throw if a broadcast receiver was never registered
         }

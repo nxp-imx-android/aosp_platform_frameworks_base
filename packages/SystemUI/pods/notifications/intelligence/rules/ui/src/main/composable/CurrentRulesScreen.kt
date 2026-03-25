@@ -109,9 +109,9 @@ private fun CurrentRule(
             buildInlineContentMap(
                 ruleDisplay.textChunks,
                 appIcon = { AppIcon(it) },
-                contactIcon = {
+                personIcon = {
                     val iconSizeDp = with(LocalDensity.current) { textSize.toDp() }
-                    ContactIcon(it, iconSizeDp, screenViewModel::loadContactBitmapFromUri)
+                    PersonIcon(it, iconSizeDp, screenViewModel::loadContactBitmapFromUri)
                 },
                 textSize = textSize,
             )
@@ -133,6 +133,7 @@ private fun CurrentRule(
             inlineContent = inlineTextContent,
             color = MaterialTheme.colorScheme.onSurface,
             style = textStyles.defaultStyle,
+            modifier = Modifier.padding(top = 8.dp),
         )
 
         if (isExpanded) {

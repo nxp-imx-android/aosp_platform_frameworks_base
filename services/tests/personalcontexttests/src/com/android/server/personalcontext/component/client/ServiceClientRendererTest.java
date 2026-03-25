@@ -19,13 +19,14 @@ package com.android.server.personalcontext.component.client;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.Manifest;
+import android.app.role.RoleManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
@@ -35,6 +36,7 @@ import android.os.UserHandle;
 import android.permission.PermissionManager;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
+import android.service.personalcontext.Flags;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.insight.BundleInsight;
 import android.service.personalcontext.insight.PublishedContextInsight;
@@ -44,6 +46,7 @@ import android.service.personalcontext.renderer.IInsightRenderer;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import com.android.server.personalcontext.AccessController;
 import com.android.server.personalcontext.component.Renderer;
 
 import org.junit.Before;
@@ -73,6 +76,7 @@ public class ServiceClientRendererTest {
     @Mock private IInsightRenderer mIInsightRenderer;
     @Mock private PermissionManager mPermissionManager;
     @Mock private Handler mHandler;
+    @Mock private AccessController mAccessController;
 
     private final FakeExecutor mFakeExecutor = new FakeExecutor();
 
@@ -83,6 +87,7 @@ public class ServiceClientRendererTest {
         MockitoAnnotations.initMocks(this);
         when(mContext.getPackageManager()).thenReturn(mPackageManager);
         when(mContext.getSystemService(PermissionManager.class)).thenReturn(mPermissionManager);
+        when(mContext.getSystemService(eq(RoleManager.class))).thenReturn(mock(RoleManager.class));
 
         final ServiceInfo serviceInfo = new ServiceInfo();
         serviceInfo.packageName = TEST_PACKAGE_NAME;
@@ -90,6 +95,7 @@ public class ServiceClientRendererTest {
         mServiceClientRenderer =
                 new ServiceClientRenderer(
                         mContext,
+                        mAccessController,
                         UUID.randomUUID(),
                         serviceInfo,
                         mUserHandle,
@@ -114,8 +120,8 @@ public class ServiceClientRendererTest {
                 serviceInfo.packageName)).thenReturn(permissionGranted
                 ? PackageManager.PERMISSION_GRANTED : PackageManager.PERMISSION_DENIED);
 
-        final ServiceClientRenderer renderer = new ServiceClientRenderer(mContext,
-                UUID.randomUUID(), serviceInfo, mUserHandle);
+        final ServiceClientRenderer renderer = new ServiceClientRenderer(
+                mContext, mAccessController, UUID.randomUUID(), serviceInfo, mUserHandle);
         return (renderer.getProperties()
                 & Renderer.PROPERTY_CAN_RECEIVE_NOTIFICATION_INSIGHTS)
                 == Renderer.PROPERTY_CAN_RECEIVE_NOTIFICATION_INSIGHTS;
@@ -147,6 +153,9 @@ public class ServiceClientRendererTest {
 
     @Test
     public void testRender() throws Exception {
+        when(mAccessController.isClientAllowed(
+                any(), eq(AccessController.ACCESS_PCC_OR_AUTO_COMPANION_ROLE))).thenReturn(true);
+
         BundleInsight insight = new BundleInsight.Builder().build();
         PublishedContextInsight publishedInsight =
                 new PublishedContextInsight(insight, UUID.randomUUID());
@@ -165,16 +174,12 @@ public class ServiceClientRendererTest {
                 .isEqualTo(publishedInsight);
     }
 
-    @EnableFlags(android.service.personalcontext.Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
+    @EnableFlags({
+            Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PCC_ACCESS_CONTROL,
+            Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ROLE_ACCESS_CONTROL,
+    })
     @Test
-    public void testRender_noPermissions_failsImmediately() throws Exception {
-        when(mPermissionManager.checkPackageNamePermission(
-                        eq(Manifest.permission.PERSONAL_CONTEXT_RECEIVE_INSIGHTS),
-                        eq(TEST_PACKAGE_NAME),
-                        anyInt(),
-                        anyInt()))
-                .thenReturn(PermissionManager.PERMISSION_HARD_DENIED);
-
+    public void testRender_noPermissions_insightIgnored() throws Exception {
         BundleInsight insight = new BundleInsight.Builder().build();
         PublishedContextInsight publishedInsight =
                 new PublishedContextInsight(insight, UUID.randomUUID());

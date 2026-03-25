@@ -45,7 +45,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.UserInfo;
 import android.database.ContentObserver;
-import android.os.Binder;
 import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.os.Process;
@@ -141,7 +140,9 @@ public class PersonalContextManagerServiceTest {
         mContext.addMockUserContext(UserHandle.SYSTEM, mPackageManager);
 
         // By Default, allow all behavior through
-        when(mAccessController.hasAccess(anyInt(), anyInt())).thenReturn(true);
+        when(mAccessController.isPackageAllowed(any(), anyInt())).thenReturn(true);
+        when(mAccessController.isServiceAllowed(any(), anyInt())).thenReturn(true);
+        when(mAccessController.isAnyPackageForUidAllowed(anyInt(), anyInt())).thenReturn(true);
 
         mContext.getTestablePermissions()
                 .setPermission(Manifest.permission.INTERACT_ACROSS_USERS, PERMISSION_GRANTED);
@@ -158,8 +159,9 @@ public class PersonalContextManagerServiceTest {
 
         mService = spy(new PersonalContextManagerService(
                 mContext,
-                mAccessController,
-                (userContext, mAccessController, executor) -> mEmbeddedInsightRenderer));
+                (userContext, mAccessController, executor) -> mEmbeddedInsightRenderer,
+                (context, eventListener, user) -> mAccessController));
+
         mLocalService = mService.new LocalService();
 
         mBinderService =
@@ -399,7 +401,7 @@ public class PersonalContextManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(android.service.personalcontext.Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
+    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
     public void testPublishTriggeringHint_permissionDenied_throwsSecurityException() {
         mFakePermissionEnforcer.revoke(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS);
 
@@ -413,35 +415,17 @@ public class PersonalContextManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
-    public void testPublishTriggeringHint_allowListDenied_throwsSecurityException() {
-        when(mAccessController.hasAccess(anyInt(), eq(AccessController.ACCESS_PUBLISH_HINTS)))
-                .thenReturn(false);
+    public void testPublishTriggeringHint_accessDenied_throwsSecurityException() {
         BundleHint hint = new BundleHint.Builder().build();
         ContextHintWrapper hintWrapper = new ContextHintWrapper(hint);
         List<ContextHintWrapper> hints = List.of(hintWrapper);
+
+        when(mAccessController.isAnyPackageForUidAllowed(anyInt(), anyInt())).thenReturn(false);
+        mService.onUserStarting(mUser1);
 
         assertThrows(
                 SecurityException.class,
                 () -> mBinderService.publishTriggeringHint(hints, List.of(), List.of(), USER_ID_1));
-
-        verify(mService, never())
-                .startRefinerWorkflow(eq(USER_ID_1), anyInt(), eq(Set.of(hint)), any(), any());
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
-    public void testPublishTriggeringHint_allowListAllowed_succeeds() {
-        when(mAccessController.hasAccess(anyInt(), eq(AccessController.ACCESS_PUBLISH_HINTS)))
-                .thenReturn(true);
-        BundleHint hint = new BundleHint.Builder().build();
-        ContextHintWrapper hintWrapper = new ContextHintWrapper(hint);
-        List<ContextHintWrapper> hints = List.of(hintWrapper);
-
-        mBinderService.publishTriggeringHint(hints, List.of(), List.of(), USER_ID_1);
-
-        verify(mService)
-                .startRefinerWorkflow(eq(USER_ID_1), anyInt(), eq(Set.of(hint)), any(), any());
     }
 
     @Test
@@ -468,11 +452,9 @@ public class PersonalContextManagerServiceTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
-    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
-    public void testRegisterInsightSurfaceClient_flagDisabled_throwsSecurityException() {
-        mFakePermissionEnforcer.revoke(Manifest.permission.PERSONAL_CONTEXT_HOST_INSIGHT_SURFACE);
-
+    public void testRegisterInsightSurfaceClient_accessDenied_throwsSecurityException() {
+        when(mAccessController.isAnyPackageForUidAllowed(anyInt(), anyInt())).thenReturn(false);
+        mService.onUserStarting(mUser1);
         assertThrows(
                 SecurityException.class,
                 () ->
@@ -481,25 +463,7 @@ public class PersonalContextManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
-    public void testRegisterInsightSurfaceClient_allowListDenied_throwsSecurityException() {
-        when(mAccessController.hasAccess(anyInt(), anyInt())).thenReturn(false);
-        assertThrows(
-                SecurityException.class,
-                () ->
-                        mBinderService.registerInsightSurfaceClient(
-                                mock(InsightSurfaceClientInfo.class), USER_ID_1));
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
-    public void testRegisterInsightSurfaceClient_allowListApproved_succeeds() {
-        when(mAccessController.hasAccess(
-                        eq(Binder.getCallingUid()),
-                        eq(
-                                AccessController.ACCESS_RECEIVE_INSIGHTS
-                                        | AccessController.ACCESS_PUBLISH_HINTS)))
-                .thenReturn(true);
+    public void testRegisterInsightSurfaceClient() {
         assertDoesNotThrow(
                 () ->
                         mBinderService.registerInsightSurfaceClient(
@@ -507,13 +471,14 @@ public class PersonalContextManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
-    public void testPublishInsightSurfaceHints_allowListDenied_throwsException() {
-        when(mAccessController.hasAccess(anyInt(), eq(AccessController.ACCESS_PUBLISH_HINTS)))
-                .thenReturn(false);
+    public void testPublishInsightSurfaceHints_accessDenied_throwsException() {
+        when(mAccessController.isAnyPackageForUidAllowed(
+                anyInt(), eq(AccessController.ACCESS_PUBLISH_HINTS_ALLOWLIST))).thenReturn(false);
         BundleHint hint = new BundleHint.Builder().build();
         ContextHintWrapper hintWrapper = new ContextHintWrapper(hint);
         List<ContextHintWrapper> hints = List.of(hintWrapper);
+
+        mService.onUserStarting(mUser1);
 
         assertThrows(
                 SecurityException.class,
@@ -522,10 +487,7 @@ public class PersonalContextManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
-    public void testPublishInsightSurfaceHints_allowListAllowed_succeeds() {
-        when(mAccessController.hasAccess(anyInt(), eq(AccessController.ACCESS_PUBLISH_HINTS)))
-                .thenReturn(true);
+    public void testPublishInsightSurfaceHints() {
         BundleHint hint = new BundleHint.Builder().build();
         ContextHintWrapper hintWrapper = new ContextHintWrapper(hint);
         List<ContextHintWrapper> hints = List.of(hintWrapper);
@@ -538,7 +500,7 @@ public class PersonalContextManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(android.service.personalcontext.Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
+    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
     public void testPublishInsightSurfaceHints_permissionDenied_throwsSecurityException() {
         mFakePermissionEnforcer.revoke(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS);
 
@@ -706,58 +668,34 @@ public class PersonalContextManagerServiceTest {
     }
 
     @Test
-    @DisableFlags({
-        Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS,
-        Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL
-    })
-    public void testPublishInsight() {
+    public void testPublishInsight_accessDenied_throwsException() {
         BundleInsight insight = new BundleInsight.Builder().build();
         ContextInsightWrapper wrapper = new ContextInsightWrapper(insight);
         List<ContextInsightWrapper> insights = List.of(wrapper);
 
-        mBinderService.publishInsight(insights, TEST_COMPONENT_UUID, USER_ID_1);
-
-        verify(mService)
-                .startInsightWorkflow(
-                        eq(USER_ID_1), eq(TEST_COMPONENT_UUID.getUuid()), eq(Set.of(insight)));
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
-    public void testPublishInsightOutsideAllowlist_throwsException() {
-        BundleInsight insight = new BundleInsight.Builder().build();
-        ContextInsightWrapper wrapper = new ContextInsightWrapper(insight);
-        List<ContextInsightWrapper> insights = List.of(wrapper);
-
-        when(mAccessController.hasAccess(
-                        eq(Binder.getCallingUid()), eq(AccessController.ACCESS_PUBLISH_INSIGHTS)))
-                .thenReturn(false);
+        when(mAccessController.isAnyPackageForUidAllowed(anyInt(), anyInt())).thenReturn(false);
+        mService.onUserStarting(mUser1);
 
         assertThrows(
                 Exception.class,
                 () -> mBinderService.publishInsight(insights, TEST_COMPONENT_UUID, USER_ID_1));
 
         verify(mService, never())
-                .startInsightWorkflow(
+                .startPublishedInsightWorkflow(
                         eq(USER_ID_1), eq(TEST_COMPONENT_UUID.getUuid()), eq(Set.of(insight)));
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
-    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
-    public void testPublishInsightInAllowlist_succeeds() {
+    public void testPublishInsight_accessGranted_succeeds() {
         BundleInsight insight = new BundleInsight.Builder().build();
         ContextInsightWrapper wrapper = new ContextInsightWrapper(insight);
         List<ContextInsightWrapper> insights = List.of(wrapper);
 
-        when(mAccessController.hasAccess(
-                        eq(Binder.getCallingUid()), eq(AccessController.ACCESS_PUBLISH_INSIGHTS)))
-                .thenReturn(true);
-
+        mService.onUserStarting(mUser1);
         mBinderService.publishInsight(insights, TEST_COMPONENT_UUID, USER_ID_1);
 
         verify(mService)
-                .startInsightWorkflow(
+                .startPublishedInsightWorkflow(
                         eq(USER_ID_1), eq(TEST_COMPONENT_UUID.getUuid()), eq(Set.of(insight)));
     }
 
