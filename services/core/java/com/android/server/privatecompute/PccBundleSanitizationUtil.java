@@ -70,10 +70,8 @@ class PccBundleSanitizationUtil {
             sanitizationResult = PCC_INPUT_SANITIZATION_REPORTED__RESULT__FAILED;
             throw e;
         } finally {
-            long elapsedTimeMillis =
-                    (SystemClock.elapsedRealtimeNanos() - startTimeNanos) / 1_000_000;
-            PrivateComputeStatsLogUtil.logPccBundleInputSanitizationLatency(elapsedTimeMillis,
-                    sanitizationResult);
+            PrivateComputeStatsLogUtil.logPccBundleInputSanitizationLatency(
+                    SystemClock.elapsedRealtimeNanos() - startTimeNanos, sanitizationResult);
         }
     }
 

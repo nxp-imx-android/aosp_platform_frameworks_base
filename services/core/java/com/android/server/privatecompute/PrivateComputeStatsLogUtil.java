@@ -31,11 +31,11 @@ import com.android.os.privatecompute.PrivateComputeAtomsLog;
 public class PrivateComputeStatsLogUtil {
 
     /** Logs the latency for performing bundle sanitization. */
-    public static void logPccBundleInputSanitizationLatency(long elapsedTimeMillis,
+    public static void logPccBundleInputSanitizationLatency(long elapsedTimeNanos,
             int sanitizationResult) {
         PrivateComputeAtomsLog.write(
                 PCC_INPUT_SANITIZATION_REPORTED,
-                elapsedTimeMillis,
+                elapsedTimeNanos,
                 sanitizationResult
         );
     }
