@@ -179,7 +179,7 @@ private fun Popup(chip: QuickActionChipModel.PopupChip, modifier: Modifier = Mod
         icons = chip.icons,
         colors = chip.colors,
         contentDescription = chip.contentDescription,
-        onClick = { chip.showPopup(context, RectF(boundsCache)) },
+        onClick = { chip.togglePopup(context, RectF(boundsCache)) },
     )
 }
 

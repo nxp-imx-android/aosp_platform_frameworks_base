@@ -86,7 +86,7 @@ class StatusBarPopupChipsViewModelTest : SysuiTestCase() {
                 val mediaChip = shownPopupChips.first() as QuickActionChipModel.PopupChip
                 assertThat(mediaChip.isPopupShown).isFalse()
 
-                mediaChip.showPopup.invoke(context, RectF())
+                mediaChip.togglePopup.invoke(context, RectF())
                 assertThat((shownPopupChips.first() as QuickActionChipModel.PopupChip).isPopupShown)
                     .isTrue()
             }
