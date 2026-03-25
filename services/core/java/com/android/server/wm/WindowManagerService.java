@@ -10593,7 +10593,7 @@ public class WindowManagerService extends IWindowManager.Stub
                         "Focus request " + focusWindow,
                         "reason=grantEmbeddedWindowFocus(false)");
             }
-            ProtoLog.v(WM_DEBUG_FOCUS, "grantEmbeddedWindowFocus win=%s grantFocus=%s",
+            ProtoLog.v(WM_DEBUG_FOCUS, "grantEmbeddedWindowFocus win=%s grantFocus=%b",
                     embeddedWindow, grantFocus);
         }
     }
@@ -10637,7 +10637,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 dc.getInputMonitor().updateInputWindowsLw(true);
             }
             embeddedWindow.updatePotentialHostWhileFocus(grantFocus ? hostWindow : null);
-            ProtoLog.v(WM_DEBUG_FOCUS, "grantEmbeddedWindowFocus win=%s grantFocus=%s",
+            ProtoLog.v(WM_DEBUG_FOCUS, "grantEmbeddedWindowFocus win=%s grantFocus=%b",
                     embeddedWindow, grantFocus);
         }
     }
