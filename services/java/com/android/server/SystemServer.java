@@ -496,6 +496,11 @@ public final class SystemServer implements Dumpable {
 
     private static final String TETHERING_CONNECTOR_CLASS = "android.net.ITetheringConnector";
 
+    private static final String DEVICE_TO_DEVICE_SERVICE_CLASS =
+            "com.android.server.devicetodevice.DeviceToDeviceService";
+    private static final String DEVICE_TO_DEVICE_APEX_SERVICE_JAR_PATH =
+            "/apex/com.android.bettertogether/javalib/service-device-to-device.jar";
+
     private static final String PERSISTENT_DATA_BLOCK_PROP = "ro.frp.pst";
 
     private static final String UNCRYPT_PACKAGE_FILE = "/cache/recovery/uncrypt_file";
@@ -3363,6 +3368,20 @@ public final class SystemServer implements Dumpable {
                 || android.view.flags.Flags.sensitiveContentAppProtection()) {
             t.traceBegin("StartSensitiveContentProtectionManager");
             mSystemServiceManager.startService(SensitiveContentProtectionManagerService.class);
+            t.traceEnd();
+        }
+
+        if (android.bettertogether.flags.Flags.enableD2dConnectivityService()) {
+            t.traceBegin("DeviceToDeviceService");
+            // Avoid crashing the system if the aconfig flag is enabled but the build flag is
+            // disabled (the services classes are not present in that case).
+            // TODO: b/466104217 - Remove this try catch once flag is cleaned up.
+            try {
+                mSystemServiceManager.startServiceFromJar(DEVICE_TO_DEVICE_SERVICE_CLASS,
+                        DEVICE_TO_DEVICE_APEX_SERVICE_JAR_PATH);
+            } catch (Throwable e) {
+                Slog.e(TAG, "Failed to start DeviceToDeviceService", e);
+            }
             t.traceEnd();
         }
 

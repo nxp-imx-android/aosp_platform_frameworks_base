@@ -36,6 +36,7 @@ soong_config_module_type {
         "release_telephony_module",
         "release_uprobestats_bridge_service",
         "release_webapp_module",
+        "release_bettertogether_module",
     ],
     properties: [
         "fragments",
@@ -225,6 +226,15 @@ custom_platform_bootclasspath {
                 {
                     apex: "com.android.webapp",
                     module: "com.android.webapp-bootclasspath-fragment",
+                },
+            ],
+        },
+        release_bettertogether_module: {
+            fragments: [
+                // only used if bettertogether module is enabled.
+                {
+                    apex: "com.android.bettertogether",
+                    module: "com.android.bettertogether-bootclasspath-fragment",
                 },
             ],
         },
