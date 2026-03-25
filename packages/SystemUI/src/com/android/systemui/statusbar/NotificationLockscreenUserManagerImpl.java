@@ -889,7 +889,14 @@ public class NotificationLockscreenUserManagerImpl implements
     @Override
     public void onStateChanged(int newState) {
         mState = newState;
-        updatePublicMode();
+        if (!SceneContainerFlag.isEnabled()) {
+            // The Flexiglass implementation doesn't read the mState value in updatePublicMode, so
+            // this code path doesn't need to trigger updatePublicMode. Moreover, updatePublicMode
+            // can issue a lot of blocking binder calls, so it should be avoided here.
+            //
+            // For more info, see b/495683101.
+            updatePublicMode();
+        }
     }
 
     public void updatePublicMode() {

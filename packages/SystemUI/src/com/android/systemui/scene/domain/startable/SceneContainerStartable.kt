@@ -1213,7 +1213,7 @@ constructor(
                         // wait for transition to complete before notifying Notifications to avoid
                         // a flicker during the unlock animation: b/454362854
                         if (unlockStatus.deviceUnlockSource?.dismissesLockscreen == true) {
-                            snapshotFlow { !onOrLeavingLockscreenScene() || onNotifShadeOverlay() }
+                            snapshotFlow { !onOrLeavingKeyguard() || onNotifShadeOverlay() }
                                 .first { it }
                         }
                     }
@@ -1224,9 +1224,18 @@ constructor(
         }
     }
 
-    private fun onOrLeavingLockscreenScene() =
-        sceneInteractor.transitionState.isIdle(Scenes.Lockscreen) ||
-            sceneInteractor.transitionState.isTransitioning(from = Scenes.Lockscreen)
+    /**
+     * Returns `true` if currently on the keyguard (defined as the `Lockscreen` scene or `Bouncer`
+     * overlay), or if leaving the keyguard; `false` otherwise
+     */
+    private fun onOrLeavingKeyguard(): Boolean {
+        return with(sceneInteractor.transitionState) {
+            isIdle(Scenes.Lockscreen) ||
+                isTransitioning(from = Scenes.Lockscreen) ||
+                isIdle(Overlays.Bouncer) ||
+                isTransitioning(from = Overlays.Bouncer)
+        }
+    }
 
     private fun onNotifShadeOverlay() =
         Overlays.NotificationsShade in sceneInteractor.transitionState.currentOverlays &&
