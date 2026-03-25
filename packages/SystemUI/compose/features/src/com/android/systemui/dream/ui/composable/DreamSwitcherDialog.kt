@@ -352,12 +352,19 @@ private fun DreamCard(uiDreamInfo: DreamItemUiModel, onClick: () -> Unit) {
         )
 
         if (uiDreamInfo.active) {
-            Icon(
-                painter = painterResource(R.drawable.ic_check_circle_filled_24dp),
-                contentDescription = null,
-                modifier = Modifier.size(Dimensions.CardSelectedIconSize).align(Alignment.Center),
-                tint = MaterialTheme.colorScheme.primaryFixedDim,
-            )
+            Box(
+                modifier =
+                    Modifier.size(Dimensions.CardSelectedIconSize)
+                        .align(Alignment.Center)
+                        .background(MaterialTheme.colorScheme.tertiary, CircleShape),
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_check_small),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    tint = MaterialTheme.colorScheme.onTertiary,
+                )
+            }
         }
     }
 }
