@@ -1849,8 +1849,10 @@ public final class ActiveServices {
     }
 
     IBinder peekServiceLocked(Intent service, String resolvedType, String callingPackage) {
+        final int callingUid = mAm.mInjector.getCallingUid();
+
         ServiceLookupResult r = retrieveServiceLocked(service, null, resolvedType, callingPackage,
-                mAm.mInjector.getCallingPid(), mAm.mInjector.getCallingUid(),
+                mAm.mInjector.getCallingPid(), callingUid,
                 UserHandle.getCallingUserId(), false, false, false, false, false, false);
 
         IBinder ret = null;
@@ -1860,14 +1862,27 @@ public final class ActiveServices {
                 throw new SecurityException(
                         "Permission Denial: Accessing service"
                         + " from pid=" + mAm.mInjector.getCallingPid()
-                        + ", uid=" + mAm.mInjector.getCallingUid()
+                        + ", uid=" + callingUid
                         + " requires " + r.permission);
             }
             IntentBindRecord ib = r.record.bindings.get(r.record.intent);
             if (ib != null) {
                 if (r.record.serviceInfo.shouldRunInPccSandbox()) {
+                    boolean hasSysConfigExemption = false;
+                    if (callingPackage != null) {
+                        if (mAm.mAppOpsService.checkPackage(callingUid, callingPackage)
+                                != AppOpsManager.MODE_ALLOWED) {
+                            throw new SecurityException("Package " + callingPackage
+                                    + " does not belong to UID " + callingUid);
+                        }
+
+                        String targetPackage = r.record.packageName;
+                        hasSysConfigExemption = mAm.isPccAssociationAllowedBySysConfigLocked(
+                                callingPackage, targetPackage);
+                    }
+
                     ret = mPccSandboxManagerInternal.fetchPccProxyIfNeeded(ib.binder,
-                            mAm.mInjector.getCallingUid());
+                            callingUid, hasSysConfigExemption);
                 } else {
                     ret = ib.binder;
                 }
@@ -4837,13 +4852,17 @@ public final class ActiveServices {
 
     private IBinder createPccProxyIfNeeded(ConnectionRecord cr, IBinder binder) {
         if (cr.binding.service.serviceInfo.shouldRunInPccSandbox()) {
+            boolean hasSysConfigExemption = mAm.isPccAssociationAllowedBySysConfigLocked(
+                    cr.clientPackageName,
+                    cr.binding.service.name.getPackageName());
             return mPccSandboxManagerInternal
                     .createPccProxyIfNeeded(
                             cr.binding.service.name,
                             cr.binding.client.userId,
                             cr.binding.intent.intent.getIntent(),
                             binder,
-                            cr.binding.client.uid
+                            cr.binding.client.uid,
+                            hasSysConfigExemption
                     );
         } else {
             return binder;
@@ -7301,7 +7320,8 @@ public final class ActiveServices {
                         cr.binding.service.name,
                         cr.binding.client.userId,
                         cr.binding.intent.intent.getIntent(),
-                        cr.binding.intent.binder
+                        cr.binding.intent.binder,
+                        cr.binding.client.uid
                 );
             }
         } finally {

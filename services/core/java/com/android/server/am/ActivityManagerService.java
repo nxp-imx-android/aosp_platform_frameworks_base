@@ -2923,6 +2923,8 @@ public class ActivityManagerService extends IActivityManager.Stub
             PackageAssociationInfo associationsOfPkg1 = mAllowedAssociations.get(pkg1);
             PackageAssociationInfo associationsOfPkg2 = mAllowedAssociations.get(pkg2);
 
+            // TODO(b/496974676): Extract sysconfig allow association checks into a common method
+            // and reuse in isPccAssociationAllowedBySysConfig()
             if (isPccFrameworkSupportEnabled && callerOrTargetIsPcc) {
                 // Framework requires explicit allow associations in sysconfig from PCC
                 // with non-PCC packages.
@@ -2976,6 +2978,54 @@ public class ActivityManagerService extends IActivityManager.Stub
                 Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
             }
         }
+    }
+
+    /**
+     * Checks whether an association between a caller and a target package is explicitly allowed
+     * by the device's SysConfig {@code <allow-association>} rules for Private Compute Core (PCC).
+     *
+     * <p>This method enforces a strict mutual consent policy for PCC connections:
+     * <ul>
+     *   <li>At least one of the packages must explicitly define an allowlist containing the
+     *     other.</li>
+     *   <li>If a package defines an allowlist, the other package <b>must</b> be included in it.
+     *       If it is omitted, the association is immediately denied.</li>
+     * </ul>
+     *
+     * @param callerPackage The package name of the client initiating the connection.
+     * @param targetPackage The package name of the target service being connected to.
+     * @return {@code true} if the association is mutually allowed by the SysConfig rules,
+     *         {@code false} if either package explicitly denies the other, if any input is null,
+     *         or if no explicit association rules are defined for either package.
+     */
+    @GuardedBy("this")
+    boolean isPccAssociationAllowedBySysConfigLocked(String callerPackage, String targetPackage) {
+        ensureAllowedAssociations();
+        if (mAllowedAssociations == null || callerPackage == null || targetPackage == null) {
+            return false;
+        }
+
+        PackageAssociationInfo callerAssoc = mAllowedAssociations.get(callerPackage);
+        PackageAssociationInfo targetAssoc = mAllowedAssociations.get(targetPackage);
+
+        // PCC requires an explicit allow association from at least one side.
+        if (callerAssoc == null && targetAssoc == null) {
+            return false;
+        }
+
+        // If the caller defines rules, it MUST explicitly allow the target.
+        if (callerAssoc != null && !callerAssoc.isPackageAssociationAllowed(targetPackage)) {
+            return false;
+        }
+
+        // If the target defines rules, it MUST explicitly allow the caller.
+        if (targetAssoc != null && !targetAssoc.isPackageAssociationAllowed(callerPackage)) {
+            return false;
+        }
+
+        // If we reach here, at least one side explicitly allowed the association,
+        // and neither side explicitly denied it.
+        return true;
     }
 
     /**

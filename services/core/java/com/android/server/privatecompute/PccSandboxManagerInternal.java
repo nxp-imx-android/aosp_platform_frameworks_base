@@ -477,6 +477,8 @@ public class PccSandboxManagerInternal implements OnRoleHoldersChangedListener {
      * @param intent    The Intent used to bind to the service.
      * @param binder    The raw IBinder of the PCC service.
      * @param clientUid The UID of the client process.
+     * @param hasSysConfigExemption Whether there's a sys config exemption for connection from this
+     *                              client
      * @return one of the following:
      * <ul>
      *     <li>The original binder if the client is trusted</li>
@@ -487,17 +489,27 @@ public class PccSandboxManagerInternal implements OnRoleHoldersChangedListener {
      * </ul>
      */
     public IBinder createPccProxyIfNeeded(ComponentName name, int userId, Intent intent,
-            IBinder binder, int clientUid) {
-        if (!isTrustedClient(clientUid)) {
+            IBinder binder, int clientUid, boolean hasSysConfigExemption) {
+        if (binder == null) {
+            return binder;
+        }
+
+        // TODO(b/496291774): The sysconfig exemption will be removed in future releases
+        if (!isTrustedClient(clientUid) && !hasSysConfigExemption) {
             binder = validatePccServiceBinder(binder);
             if (binder == null) {
                 return null;
             }
         }
 
+        if (hasSysConfigExemption) {
+            Trace.instant(Trace.TRACE_TAG_SYSTEM_SERVER,
+                    "createPccProxyIfNeeded#hasSysConfigExemption");
+        }
+
         synchronized (mLock) {
             PccServiceConnectionInfo newConnectionInfo = new PccServiceConnectionInfo(name, userId,
-                    intent);
+                    intent, clientUid);
             PccServiceInfo pccServiceInfo = mPccServiceConnections.get(binder);
             if (pccServiceInfo == null) {
                 DeathRecipient deathRecipient = new DeathRecipient(binder);
@@ -515,7 +527,7 @@ public class PccSandboxManagerInternal implements OnRoleHoldersChangedListener {
                 pccServiceInfo.mConnectionInfos.add(newConnectionInfo);
             }
 
-            if (isTrustedClient(clientUid)) {
+            if (isTrustedClient(clientUid) || hasSysConfigExemption) {
                 return binder;
             }
 
@@ -528,6 +540,7 @@ public class PccSandboxManagerInternal implements OnRoleHoldersChangedListener {
      *
      * @param binder    The raw IBinder of the PCC service.
      * @param clientUid The UID of the client process.
+     * @param hasSysConfigExemption If the client has a sys config exemption to bind to service
      * @return one of the following:
      * <ul>
      *     <li>The original binder if the client is trusted</li>
@@ -536,9 +549,17 @@ public class PccSandboxManagerInternal implements OnRoleHoldersChangedListener {
      *     <li>null if the proxy connection doesn't exist.</li>
      * </ul>
      */
-    public IBinder fetchPccProxyIfNeeded(IBinder binder, int clientUid) {
-        if (isTrustedClient(clientUid)) {
+    public IBinder fetchPccProxyIfNeeded(IBinder binder, int clientUid,
+            boolean hasSysConfigExemption) {
+        if (isTrustedClient(clientUid) || hasSysConfigExemption) {
             return binder;
+        }
+
+        // Validate the binder. It might have been cached by an exempted
+        // client that bypassed validation. If invalid, reject the peek.
+        if (validatePccServiceBinder(binder) == null) {
+            Slog.w(TAG, "Cannot fetch proxy: cached binder is not a valid IPccService.");
+            return null;
         }
 
         synchronized (mLock) {
@@ -561,9 +582,10 @@ public class PccSandboxManagerInternal implements OnRoleHoldersChangedListener {
      * @param userId    The user ID of the client process.
      * @param intent    The Intent used to bind to the service.
      * @param binder    The raw IBinder of the PCC service.
+     * @param clientUid The UID of the client process
      */
     public void removePccProxyIfNeeded(ComponentName name, int userId, Intent intent,
-            IBinder binder) {
+            IBinder binder, int clientUid) {
         synchronized (mLock) {
             if (!mPccServiceConnections.containsKey(binder)) {
                 Slog.w(TAG, "Cannot find PCC connection for the binder: " + binder);
@@ -571,18 +593,29 @@ public class PccSandboxManagerInternal implements OnRoleHoldersChangedListener {
             }
 
             PccServiceInfo serviceInfo = mPccServiceConnections.get(binder);
-            PccServiceConnectionInfo connectionInfo = new PccServiceConnectionInfo(name, userId,
-                    intent);
-            serviceInfo.mConnectionInfos.remove(connectionInfo);
+            if (serviceInfo != null) {
+                PccServiceConnectionInfo connectionInfo = new PccServiceConnectionInfo(name, userId,
+                        intent, clientUid);
+                serviceInfo.mConnectionInfos.remove(connectionInfo);
 
-            if (serviceInfo.mConnectionInfos.isEmpty()) {
-                mPccServiceConnections.remove(binder);
-                binder.unlinkToDeath(serviceInfo.mDeathRecipient, 0);
-                serviceInfo.destroy();
+                if (serviceInfo.mConnectionInfos.isEmpty()) {
+                    mPccServiceConnections.remove(binder);
+                    binder.unlinkToDeath(serviceInfo.mDeathRecipient, 0);
+                    serviceInfo.destroy();
+                }
             }
         }
     }
 
+    /**
+     * Validates if the provided {@code binder} is a valid {@link IPccService}.
+     *
+     * <p>This method only performs validation and does not modify or wrap the binder. It returns
+     * the original binder instance if valid, or {@code null} otherwise.
+     *
+     * @param binder The {@link IBinder} to validate.
+     * @return The original {@link IBinder} if it's a valid {@link IPccService}, or {@code null}.
+     */
     private IBinder validatePccServiceBinder(IBinder binder) {
         try {
             if (binder == null || !IPccService.DESCRIPTOR.equals(binder.getInterfaceDescriptor())) {
@@ -855,11 +888,10 @@ public class PccSandboxManagerInternal implements OnRoleHoldersChangedListener {
         }
     }
 
-
     private record PccServiceConnectionInfo(ComponentName name, int userId,
-                                            Intent.FilterComparison intentFilter) {
-        PccServiceConnectionInfo(ComponentName name, int userId, Intent intent) {
-            this(name, userId, new Intent.FilterComparison(intent));
+                                            Intent.FilterComparison intentFilter, int clientUid) {
+        PccServiceConnectionInfo(ComponentName name, int userId, Intent intent, int clientUid) {
+            this(name, userId, new Intent.FilterComparison(intent), clientUid);
         }
     }
 
