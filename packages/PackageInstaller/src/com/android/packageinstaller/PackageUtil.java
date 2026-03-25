@@ -373,7 +373,9 @@ public class PackageUtil {
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             return new AlertDialog.Builder(getActivity())
                     .setMessage(getArguments().getInt(MESSAGE_KEY))
-                    .setPositiveButton(R.string.ok, (dialog, which) -> getActivity().finish())
+                    .setPositiveButton(R.string.ok, (dialog, which) -> {
+                        getActivity().finish();
+                    })
                     .create();
         }
 

@@ -50,6 +50,8 @@ import androidx.lifecycle.MutableLiveData
 import com.android.packageinstaller.common.EventResultPersister
 import com.android.packageinstaller.common.EventResultPersister.OutOfIdsException
 import com.android.packageinstaller.common.InstallEventReceiver
+import com.android.packageinstaller.stats.StatsdLogger
+import com.android.packageinstaller.stats.PiaStagesLatencyTracker
 import com.android.packageinstaller.v2.model.InstallAborted.Companion.ABORT_REASON_DONE
 import com.android.packageinstaller.v2.model.InstallAborted.Companion.ABORT_REASON_INTERNAL_ERROR
 import com.android.packageinstaller.v2.model.InstallAborted.Companion.ABORT_REASON_POLICY
@@ -94,6 +96,10 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
     private val _installResult = MutableLiveData<InstallStage>()
     val installResult: LiveData<InstallStage>
         get() = _installResult
+
+    val piaStagesLatencyTracker: PiaStagesLatencyTracker = PiaStagesLatencyTracker(
+        StatsdLogger()
+    )
 
     /**
      * Session ID for a session created when caller uses PackageInstaller APIs
@@ -164,11 +170,18 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
                 || PackageInstaller.ACTION_CONFIRM_INSTALL == intent.action
                 || isConfirmDeveloperVerificationAction
 
-        sessionId = if (isSessionInstall)
-            intent.getIntExtra(PackageInstaller.EXTRA_SESSION_ID, SessionInfo.INVALID_ID)
-        else SessionInfo.INVALID_ID
+        if (isSessionInstall) {
+            sessionId = intent.getIntExtra(PackageInstaller.EXTRA_SESSION_ID, SessionInfo.INVALID_ID)
+            piaStagesLatencyTracker.setSessionId(sessionId)
+        } else {
+            sessionId = SessionInfo.INVALID_ID
+        }
 
         stagedSessionId = intent.getIntExtra(EXTRA_STAGED_SESSION_ID, SessionInfo.INVALID_ID)
+
+        if (stagedSessionId != SessionInfo.INVALID_ID) {
+            piaStagesLatencyTracker.setSessionId(stagedSessionId)
+        }
 
         callingPackage = callerInfo.packageName
         callingUid = callerInfo.uid
@@ -198,6 +211,11 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
             if (sessionId != SessionInfo.INVALID_ID)
                 packageInstaller.getSessionInfo(sessionId)
             else null
+
+        if (sessionInfo != null) {
+            // For session-based installs, the size is already known by the system
+            piaStagesLatencyTracker.setApkSize(sessionInfo.size.toInt())
+        }
 
         // This case is launching the extra intent that is included in the failure result received
         // by the installer when the installation failed because of developer verification.
@@ -397,6 +415,7 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
                         val params: SessionParams =
                             createSessionParams(originatingUid, intent, pfd, uri.toString())
                         stagedSessionId = packageInstaller.createSession(params)
+                        piaStagesLatencyTracker.setSessionId(stagedSessionId)
                     }
                 } catch (e: Exception) {
                     Log.e(LOG_TAG, "Failed to create a staging session", e)
@@ -412,7 +431,7 @@ class InstallRepository(private val context: Context) : EventResultPersister.Eve
                 }
             }
 
-            sessionStager = SessionStager(context, uri, stagedSessionId)
+            sessionStager = SessionStager(context, uri, stagedSessionId, piaStagesLatencyTracker)
             stagingJob = GlobalScope.launch(Dispatchers.Main) {
                 val wasFileStaged = sessionStager!!.execute()
 
