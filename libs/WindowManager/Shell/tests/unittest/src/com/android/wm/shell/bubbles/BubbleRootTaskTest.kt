@@ -28,7 +28,6 @@ import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
 import com.android.testing.wm.util.MockToken
 import com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK
-import com.android.window.flags.Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
@@ -101,9 +100,7 @@ class BubbleRootTaskTest : ShellTestCase() {
         assertThat(rootTaskProperties.isDisablePip).isTrue()
         assertThat(rootTaskProperties.isDisableLaunchAdjacent).isTrue()
         assertThat(rootTaskProperties.isForceTranslucent).isTrue()
-        if (com.android.window.flags.Flags.visibilityManagementInBubbleRoot()) {
-            assertThat(rootTaskProperties.isForceLeafTasksNonOccluding).isTrue()
-        }
+        assertThat(rootTaskProperties.isForceLeafTasksNonOccluding).isTrue()
 
         val token = MockToken.token()
         bubbleRootTask.prepareRootTaskForTest(bubbleRootTaskId = 123, bubbleRootToken = token)
@@ -133,7 +130,6 @@ class BubbleRootTaskTest : ShellTestCase() {
         assertThat(bubbleRootTask.taskId).isEqualTo(456)
     }
 
-    @EnableFlags(FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     @Test
     fun onTaskAppeared_addVisibilityBarrier() {
         val rootTaskToken = MockToken.token()
@@ -163,7 +159,6 @@ class BubbleRootTaskTest : ShellTestCase() {
             .isEqualTo(REQUEST_NONE)
     }
 
-    @EnableFlags(FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     @Test
     fun visibilityBarrier_onTaskAppearedOrChanged_doesNotAffectRootTask() {
         val rootTaskToken = MockToken.token()

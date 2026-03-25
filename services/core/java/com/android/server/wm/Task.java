@@ -4800,9 +4800,6 @@ class Task extends TaskFragment {
      * invisible.
      */
     boolean isForceLeafTasksNonOccluding() {
-        if (!Flags.visibilityManagementInBubbleRoot()) {
-            return false;
-        }
         return mIsForceLeafTasksNonOccluding;
     }
 
@@ -6820,9 +6817,6 @@ class Task extends TaskFragment {
      * {@link IllegalStateException} if trying to add a child window to it.
      */
     boolean isVisibilityBarrier() {
-        if (!Flags.visibilityManagementInBubbleRoot()) {
-            return false;
-        }
         return mIsVisibilityBarrier;
     }
 

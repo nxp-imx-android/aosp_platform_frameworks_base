@@ -2700,7 +2700,6 @@ public class TaskTests extends WindowTestsBase {
         }
     }
 
-    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     @Test
     public void testIsVisibilityBarrier_failAddChild() {
         final Task visibilityBarrier = new Task.Builder(mAtm)
