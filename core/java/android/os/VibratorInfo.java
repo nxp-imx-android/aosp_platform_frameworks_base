@@ -394,7 +394,9 @@ public class VibratorInfo implements Parcelable {
      */
     public boolean areEnvelopeEffectsSupported() {
         return hasCapability(
-                IVibrator.CAP_FREQUENCY_CONTROL | IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
+                IVibrator.CAP_FREQUENCY_CONTROL
+                        | IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2
+                        | IVibrator.CAP_GET_RESONANT_FREQUENCY);
     }
 
     /**
@@ -529,6 +531,9 @@ public class VibratorInfo implements Parcelable {
         }
         if (hasCapability(IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2)) {
             names.add("CAP_COMPOSE_PWLE_EFFECTS_V2");
+        }
+        if (hasCapability(IVibrator.CAP_GET_RESONANT_FREQUENCY)) {
+            names.add("GET_RESONANT_FREQUENCY");
         }
         return names.toArray(new String[names.size()]);
     }
