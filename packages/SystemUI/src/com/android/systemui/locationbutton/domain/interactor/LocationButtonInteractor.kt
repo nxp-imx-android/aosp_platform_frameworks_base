@@ -79,29 +79,30 @@ constructor(
         val width = validateWidth(request.width, density)
         val height = validateHeight(request.height, density)
 
+        val defaultPadding = (MIN_PADDING_DP * density).roundToInt()
         val paddingLeft =
             if (request.hasPaddingLeft()) {
                 validatePadding(request.paddingLeft, density)
             } else {
-                0
+                defaultPadding
             }
         val paddingTop =
             if (request.hasPaddingTop()) {
                 validatePadding(request.paddingTop, density)
             } else {
-                0
+                defaultPadding
             }
         val paddingRight =
             if (request.hasPaddingRight()) {
                 validatePadding(request.paddingRight, density)
             } else {
-                0
+                defaultPadding
             }
         val paddingBottom =
             if (request.hasPaddingBottom()) {
                 validatePadding(request.paddingBottom, density)
             } else {
-                0
+                defaultPadding
             }
 
         val strokeWidth =
@@ -350,13 +351,13 @@ constructor(
     }
 
     private fun validatePadding(padding: Int, density: Float): Int {
-        if (padding < 0) {
-            Slog.w(LOG_TAG, "Padding can't be negative.")
-            return 0
-        }
-
+        val minPadding = (MIN_PADDING_DP * density).roundToInt()
         val maxPadding = (MAX_PADDING_DP * density).roundToInt()
 
+        if (padding < minPadding) {
+            Slog.w(LOG_TAG, "Clamping padding from $padding to $minPadding px (min 4dp)")
+            return minPadding
+        }
         if (padding > maxPadding) {
             Slog.w(LOG_TAG, "Clamping padding from $padding to $maxPadding px (max 8dp)")
             return maxPadding
@@ -389,6 +390,7 @@ constructor(
         const val MAX_STROKE_WIDTH_DP = 3
         const val MIN_TOUCH_TARGET_SIZE_DP = 48
         const val MAX_HEIGHT_DP = 136
+        const val MIN_PADDING_DP = 4
         const val MAX_PADDING_DP = 8
         const val LOG_TAG = "LocationButton"
     }

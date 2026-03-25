@@ -412,8 +412,10 @@ public final class LocationButtonRequest implements Parcelable {
         /**
          * Sets the left padding of the button.
          *
-         * <p>The padding must be between 0 and 8dp (inclusive). Values outside this range will be
-         * clamped. If not explicitly set, it defaults to 0.
+         * <p>The padding must be between 4dp and 8dp (inclusive). This restricted range ensures a
+         * safe and standardized button appearance and touch target.
+         *
+         * <p>Values outside this range will be clamped. If not explicitly set, it defaults to 4dp.
          */
         @NonNull
         public Builder setPaddingLeft(int paddingLeft) {
@@ -425,8 +427,10 @@ public final class LocationButtonRequest implements Parcelable {
         /**
          * Sets the top padding of the button.
          *
-         * <p>The padding must be between 0 and 8dp (inclusive). Values outside this range will be
-         * clamped. If not explicitly set, it defaults to 0.
+         * <p>The padding must be between 4dp and 8dp (inclusive). This restricted range ensures a
+         * safe and standardized button appearance and touch target.
+         *
+         * <p>Values outside this range will be clamped. If not explicitly set, it defaults to 4dp.
          */
         @NonNull
         public Builder setPaddingTop(int paddingTop) {
@@ -438,8 +442,10 @@ public final class LocationButtonRequest implements Parcelable {
         /**
          * Sets the right padding of the button.
          *
-         * <p>The padding must be between 0 and 8dp (inclusive). Values outside this range will be
-         * clamped. If not explicitly set, it defaults to 0.
+         * <p>The padding must be between 4dp and 8dp (inclusive). This restricted range ensures a
+         * safe and standardized button appearance and touch target.
+         *
+         * <p>Values outside this range will be clamped. If not explicitly set, it defaults to 4dp.
          */
         @NonNull
         public Builder setPaddingRight(int paddingRight) {
@@ -451,8 +457,10 @@ public final class LocationButtonRequest implements Parcelable {
         /**
          * Sets the bottom padding of the button.
          *
-         * <p>The padding must be between 0 and 8dp (inclusive). Values outside this range will be
-         * clamped. If not explicitly set, it defaults to 0.
+         * <p>The padding must be between 4dp and 8dp (inclusive). This restricted range ensures a
+         * safe and standardized button appearance and touch target.
+         *
+         * <p>Values outside this range will be clamped. If not explicitly set, it defaults to 4dp.
          */
         @NonNull
         public Builder setPaddingBottom(int paddingBottom) {
