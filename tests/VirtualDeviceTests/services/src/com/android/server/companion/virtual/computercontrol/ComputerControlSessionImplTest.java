@@ -1221,11 +1221,30 @@ public class ComputerControlSessionImplTest {
                 mActivityListenerArgumentCaptor.capture());
 
         mActivityListenerArgumentCaptor.getValue().onAuthenticationPrompt(
-                displayId, BLOCKED_COMPONENT.getPackageName());
+                displayId, TEST_COMPONENT.getPackageName());
         waitForIdle();
 
         verify(mLifecycleCallback).onBlocked(BLOCK_REASON_AUTHENTICATION_PROMPT_REQUESTED,
-                BLOCKED_COMPONENT.getPackageName());
+                TEST_COMPONENT.getPackageName());
+    }
+
+    @Test
+    public void onAuthenticationPrompt_canExitBlockedStateOnRequest() throws RemoteException {
+        int displayId = Display.DEFAULT_DISPLAY;
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        mActivityListenerArgumentCaptor.getValue().onAuthenticationPrompt(
+                displayId, TEST_COMPONENT.getPackageName());
+        waitForIdle();
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_AUTHENTICATION_PROMPT_REQUESTED,
+                TEST_COMPONENT.getPackageName());
+        clearInvocations(mLifecycleCallback);
+
+        mSession.requestUnblock();
+        waitForIdle();
+
+        verify(mLifecycleCallback).onActive();
     }
 
     @Test

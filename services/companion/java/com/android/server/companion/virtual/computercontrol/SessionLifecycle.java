@@ -122,7 +122,12 @@ final class SessionLifecycle {
     @NonNull
     LifecycleState exitBlockedState() {
         return updateLifecycleState(/* exitBlockedState = */ true,
-                (config) -> config.mCallerInitiatedBlock = false);
+                (config) -> {
+                    config.mCallerInitiatedBlock = false;
+                    // Clear any authentication prompt block reason,
+                    // because the request was already denied.
+                    config.mAuthenticationPromptPackage = null;
+                });
     }
 
     void monitor() {
