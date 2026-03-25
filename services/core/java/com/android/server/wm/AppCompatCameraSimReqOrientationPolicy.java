@@ -17,7 +17,8 @@
 package com.android.server.wm;
 
 import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
-import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
+import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
+import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LOCKED;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_NOSENSOR;
 import static android.content.res.CameraCompatibilityInfo.isCameraCompatModeActive;
@@ -36,6 +37,7 @@ import static com.android.server.wm.AppCompatConfiguration.MIN_FIXED_ORIENTATION
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.WindowConfiguration;
 import android.content.res.CameraCompatibilityInfo;
 import android.content.res.CompatibilityInfo;
 import android.os.RemoteException;
@@ -203,8 +205,35 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
         return isCameraCompatModeActive(cameraCompatInfo);
     }
 
-    void onDisplayRotationChanged(@NonNull ActivityRecord activity, @Surface.Rotation int
-            newDisplayRotation) {
+    void onWindowingModeChanged(@NonNull ActivityRecord activity,
+            @WindowConfiguration.WindowingMode int newWindowingMode) {
+        final Task task = activity.getTask();
+        if (task == null) {
+            return;
+        }
+        // Windowing mode change can make camera app eligible or ineligible for treatment (it will
+        // not modify the treatment setup for the same policy). To avoid unnecessary recompute,
+        // compare if the treatment can possibly be applied in new windowing mode, versus whether it
+        // is currently active.
+        final boolean activityAndDisplayEligibleForTreatment =
+                isCompatibilityTreatmentEnabledForActivity(activity, /* checkOrientation= */ false,
+                        newWindowingMode)
+                        || shouldSandboxExternalDisplayRotationForActivity(activity);
+        final boolean needsTreatmentUpdate = mActiveCameraCompat.contains(task.mTaskId)
+                != activityAndDisplayEligibleForTreatment;
+        if (needsTreatmentUpdate) {
+            // Camera compat should already be running, so any camera-compat-induced config
+            // changes to the app orientation and aspect ratio should remain the same.
+            ProtoLog.d(WM_DEBUG_CAMERA_COMPAT, "%s: Updating camera compat after windowing"
+                    + " mode change: %s", TAG_CAMERA_COMPAT, mActiveCameraCompat);
+            updateAndDispatchCameraConfiguration(task.mTaskId, activity.app, activity);
+            mDisplayRotation = mActiveCameraCompat.contains(task.mTaskId)
+                    ? activity.mDisplayContent.getRotation() : ROTATION_UNDEFINED;
+        }
+    }
+
+    void onDisplayRotationChanged(@NonNull ActivityRecord activity,
+            @Surface.Rotation int newDisplayRotation) {
         final Task task = activity.getTask();
         if (task == null) {
             return;
@@ -229,6 +258,10 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
     private void updateAndDispatchCameraConfiguration(int taskId,
             @Nullable WindowProcessController app,
             @Nullable ActivityRecord activity) {
+        final CameraCompatibilityInfo existingTreatment =
+                mActiveCameraCompat.get(taskId) == null
+                        ? new CameraCompatibilityInfo.Builder().build()
+                        : mActiveCameraCompat.get(taskId);
         // Put a placeholder before the activity configuration is recomputed, to make sure the
         // CameraCompatibilityInfo is up to date when queried by other policies, and to skip
         // computation for any app that doesn't have camera opened (i.e. if there are no entries in
@@ -249,7 +282,12 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
             } else {
                 mActiveCameraCompat.remove(taskId);
             }
-            if (activity != null && updateSuccessful && isCameraCompatActive) {
+            if (activity != null && updateSuccessful
+                    // Request refresh in case treatment is started, but also stopped while camera
+                    // is still open but treatment is no longer applicable, for example when
+                    // switching to an unsupported windowing mode. Refresh ensures camera is set up
+                    // without rotate and crop and without display sandboxing.
+                    && !cameraCompatInfo.equals(existingTreatment)) {
                 mActivityRefresher.requestRefresh(activity);
             }
         } else {
@@ -458,19 +496,24 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
     }
 
     boolean isCameraRunningAndWindowingModeEligible(@NonNull ActivityRecord activity) {
+        return isCameraRunningAndWindowingModeEligible(activity, activity.getWindowingMode());
+    }
+
+    boolean isCameraRunningAndWindowingModeEligible(@NonNull ActivityRecord activity,
+            @WindowConfiguration.WindowingMode int windowingMode) {
         return mCameraStateMonitor.isCameraRunningForActivity(activity)
-                && isWindowingModeEligible(activity)
+                && isWindowingModeEligible(windowingMode)
                 && isTreatmentAllowedViaConfig(activity)
                 // Do not apply camera compat treatment when an app is running on a candybar
                 // display.
                 && activity.getDisplayContent().getIgnoreOrientationRequest();
     }
 
-    private boolean isWindowingModeEligible(@NonNull ActivityRecord activity) {
-        // TODO(b/432218134): consider all windowing modes, e.g. WINDOWING_MODE_PINNED.
-        return activity.inFreeformWindowingMode()
-                || (Flags.cameraCompatUnifyCameraPolicies() && (activity.inMultiWindowMode()
-                        || activity.getWindowingMode() == WINDOWING_MODE_FULLSCREEN));
+    private static boolean isWindowingModeEligible(@WindowConfiguration.WindowingMode int
+            windowingMode) {
+        return windowingMode == WINDOWING_MODE_FREEFORM
+                || (Flags.cameraCompatUnifyCameraPolicies()
+                && windowingMode != WINDOWING_MODE_UNDEFINED);
     }
 
     boolean shouldCameraCompatControlAspectRatio(@NonNull ActivityRecord activity) {
@@ -535,7 +578,14 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
     @VisibleForTesting
     boolean isCompatibilityTreatmentEnabledForActivity(@NonNull ActivityRecord activity,
             boolean checkOrientation) {
-        return isCameraRunningAndWindowingModeEligible(activity)
+        return isCompatibilityTreatmentEnabledForActivity(activity, checkOrientation,
+                activity.getWindowingMode());
+    }
+
+    @VisibleForTesting
+    private boolean isCompatibilityTreatmentEnabledForActivity(@NonNull ActivityRecord activity,
+                boolean checkOrientation, @WindowConfiguration.WindowingMode int windowingMode) {
+        return isCameraRunningAndWindowingModeEligible(activity, windowingMode)
                 && isOrientationEligibleForTreatment(activity, checkOrientation)
                 // TODO(b/332665280): investigate whether we can support activity embedding.
                 && !activity.isEmbedded();

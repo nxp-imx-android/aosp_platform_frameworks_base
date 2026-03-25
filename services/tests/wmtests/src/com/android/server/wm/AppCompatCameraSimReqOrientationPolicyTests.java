@@ -711,6 +711,51 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
         });
     }
 
+    @Test
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
+    public void testOnCameraOpened_windowingModeChanged_recomputesCameraCompatMode() {
+        runTestScenario((robot) -> {
+            robot.configureActivityAndDisplay(SCREEN_ORIENTATION_PORTRAIT, ORIENTATION_PORTRAIT,
+                    WINDOWING_MODE_FREEFORM);
+            robot.rotateDisplay(ROTATION_90);
+
+            robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+
+            // Display rotation for fixed-orientation portrait apps should always be 0.
+            robot.assertCompatibilityInfoSentWithDisplayRotation(ROTATION_0);
+            robot.assertCompatibilityInfoSentWithSensorOverride(false);
+            robot.assertCompatibilityInfoSentWithLetterbox(true);
+            robot.assertCompatibilityInfoSentWithInverseTransformAllowed(false);
+            robot.assertCompatibilityInfoSentWithRotateAndCrop(ROTATION_270);
+
+            robot.changeWindowingMode(WINDOWING_MODE_FULLSCREEN);
+
+            robot.assertCompatibilityInfoNoCameraCompatMode(/* times */ 2, /* order */ 1);
+        });
+    }
+
+    @Test
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
+    public void testOnCameraOpened_fullscreenToFreeform_activatesCameraCompatMode() {
+        runTestScenario((robot) -> {
+            robot.configureActivityAndDisplay(SCREEN_ORIENTATION_PORTRAIT, ORIENTATION_PORTRAIT,
+                    WINDOWING_MODE_FULLSCREEN);
+            robot.rotateDisplay(ROTATION_0);
+
+            robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+
+            robot.assertCompatibilityInfoNeverUpdated();
+
+            robot.changeWindowingMode(WINDOWING_MODE_FREEFORM);
+
+            robot.assertCompatibilityInfoSentWithDisplayRotation(ROTATION_0);
+            robot.assertCompatibilityInfoSentWithSensorOverride(false);
+            robot.assertCompatibilityInfoSentWithLetterbox(true);
+            robot.assertCompatibilityInfoSentWithInverseTransformAllowed(false);
+            robot.assertCompatibilityInfoSentWithRotateAndCrop(ROTATION_0);
+        });
+    }
+
     /**
      * Runs a test scenario providing a Robot.
      */
@@ -860,8 +905,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
                 rotateDisplay(ROTATION_90);
                 a.configureTopActivity(/* minAspect */ -1, /* maxAspect */ -1,
                         activityOrientation, /* isUnresizable */ false);
-                a.top().setWindowingMode(windowingMode);
-                a.displayContent().setWindowingMode(windowingMode);
+                a.setTaskWindowingMode(windowingMode);
                 setIgnoreOrientationRequest(true);
                 a.setDisplayNaturalOrientation(naturalOrientation);
                 spyOn(a.top().mAppCompatController.getCameraOverrides());
@@ -876,6 +920,14 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
             activity().rotateDisplayForTopActivity(rotation);
             if (cameraCompatFreeformPolicy() != null) {
                 cameraCompatFreeformPolicy().onDisplayRotationChanged(activity().top(), rotation);
+            }
+        }
+
+        private void changeWindowingMode(@WindowingMode int windowingMode) {
+            activity().setTaskWindowingMode(windowingMode);
+            if (cameraCompatFreeformPolicy() != null) {
+                cameraCompatFreeformPolicy().onWindowingModeChanged(activity().top(),
+                        windowingMode);
             }
         }
 
@@ -970,7 +1022,8 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
         void assertCompatibilityInfoSentWithDisplayRotation(@Surface.Rotation int
                 expectedRotation, int times, int order) {
             final CompatibilityInfo compatInfo = getCompatibilityInfo(times, order);
-            assertTrue(compatInfo.isOverrideCameraCompatibilityInfoRequired());
+            assertEquals(expectedRotation != ROTATION_UNDEFINED,
+                    compatInfo.isOverrideCameraCompatibilityInfoRequired());
             assertEquals(expectedRotation, compatInfo.cameraCompatibilityInfo
                     .getDisplayRotationSandbox());
         }
@@ -1029,7 +1082,11 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
         }
 
         void assertCompatibilityInfoNoCameraCompatMode() {
-            final CompatibilityInfo compatInfo = getCompatibilityInfo();
+            assertCompatibilityInfoNoCameraCompatMode(/* times */ 1, /* order */ 0);
+        }
+
+        void assertCompatibilityInfoNoCameraCompatMode(int times, int order) {
+            final CompatibilityInfo compatInfo = getCompatibilityInfo(times, order);
             assertFalse(compatInfo.isOverrideCameraCompatibilityInfoRequired());
         }
 

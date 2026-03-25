@@ -134,6 +134,9 @@ class ActivityRefresher {
     }
 
     private boolean refreshActivity(@NonNull ActivityRecord activity) {
+        if (activity.app == null) {
+            return false;
+        }
         final boolean cycleThroughStop =
                 mWmService.mAppCompatConfiguration
                         .isCameraCompatRefreshCycleThroughStopEnabled()

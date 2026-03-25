@@ -369,7 +369,6 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
                     "%s: Camera activity is null in onCameraOpened().", TAG_CAMERA_COMPAT);
             return;
         }
-
         // Checking whether an activity in fullscreen rather than the task as this camera
         // compat treatment doesn't cover activity embedding.
         if (cameraActivity.getWindowingMode() == WINDOWING_MODE_FULLSCREEN) {

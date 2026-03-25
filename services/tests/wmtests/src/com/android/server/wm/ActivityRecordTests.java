@@ -2839,6 +2839,22 @@ public class ActivityRecordTests extends WindowTestsBase {
                 Surface.ROTATION_90);
     }
 
+    @SetupWindows(addWindows = W_ACTIVITY)
+    @Test
+    @EnableFlags({Flags.FLAG_CAMERA_COMPAT_UPDATE_TREATMENT_ON_ROTATION})
+    public void testWindowingModeChanged_notifiesCameraCompat() {
+        final ActivityRecord activity = setupDisplayAndActivityForCameraCompat(
+                /* isCameraRunning */ true, WINDOWING_MODE_FULLSCREEN);
+        final AppCompatCameraPolicy cameraPolicy = activity.mWmService.mAppCompatCameraPolicy;
+        spyOn(cameraPolicy.mSimReqOrientationPolicy);
+
+        activity.getTask().setWindowingMode(WINDOWING_MODE_FREEFORM);
+        ensureActivityConfiguration(activity);
+
+        verify(cameraPolicy.mSimReqOrientationPolicy).onWindowingModeChanged(activity,
+                WINDOWING_MODE_FREEFORM);
+    }
+
     private void performRotation(DisplayRotation spiedRotation, int rotationToReport) {
         doReturn(rotationToReport).when(spiedRotation).rotationForOrientation(anyInt(), anyInt());
         mWm.updateRotation(false, false);

@@ -22,6 +22,7 @@ import static com.android.server.wm.AppCompatConfiguration.MIN_FIXED_ORIENTATION
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.WindowConfiguration;
 import android.content.pm.ActivityInfo.ScreenOrientation;
 import android.content.res.Configuration;
 import android.view.Surface;
@@ -109,6 +110,15 @@ class AppCompatCameraPolicy {
     @Nullable
     static AppCompatCameraPolicy getAppCompatCameraPolicy(@NonNull ActivityRecord activityRecord) {
         return activityRecord.mWmService.mAppCompatCameraPolicy;
+    }
+
+    static void onWindowingModeChanged(@NonNull ActivityRecord activity,
+            @WindowConfiguration.WindowingMode int newWindowingMode) {
+        final AppCompatCameraPolicy cameraPolicy = getAppCompatCameraPolicy(activity);
+        if (cameraPolicy != null && cameraPolicy.mSimReqOrientationPolicy != null) {
+            cameraPolicy.mSimReqOrientationPolicy.onWindowingModeChanged(activity,
+                    newWindowingMode);
+        }
     }
 
     static void onDisplayRotationChanged(@NonNull ActivityRecord activity,

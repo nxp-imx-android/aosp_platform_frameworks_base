@@ -16,6 +16,7 @@
 
 package com.android.server.wm;
 
+import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.content.pm.ActivityInfo.OVERRIDE_MIN_ASPECT_RATIO_ONLY_FOR_CAMERA;
 import static android.content.pm.ActivityInfo.OVERRIDE_ORIENTATION_ONLY_FOR_CAMERA;
 
@@ -27,7 +28,10 @@ import static com.android.window.flags.Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POL
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 
+import android.app.WindowConfiguration.WindowingMode;
 import android.compat.testing.PlatformCompatChangeRule;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
@@ -367,6 +371,21 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
         });
     }
 
+    @Test
+    public void testOnWindowingModeChanged_notifiesSimReqOrientationPolicy() {
+        runTestScenario((robot) -> {
+            robot.applyOnConf(c -> {
+                c.enableCameraCompatSimReqOrientationTreatment(/* enabled= */ true);
+                robot.dw().allowEnterDesktopMode(true);
+            });
+
+            robot.triggerOnWindowingModeChanged(WINDOWING_MODE_FREEFORM);
+
+            robot.checkSimReqOrientationPolicyNotifiedOfWindowingModeChange(
+                    WINDOWING_MODE_FREEFORM);
+        });
+    }
+
     /**
      * Runs a test scenario providing a Robot.
      */
@@ -441,5 +460,16 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
         void checkShouldOverrideOrientationForCamera(boolean expected) {
             assertEquals(expected, shouldCameraCompatControlOrientation(activity().top()));
         }
+
+        void triggerOnWindowingModeChanged(@WindowingMode int windowingMode) {
+            AppCompatCameraPolicy.onWindowingModeChanged(activity().top(), windowingMode);
+        }
+
+        void checkSimReqOrientationPolicyNotifiedOfWindowingModeChange(
+                @WindowingMode int windowingMode) {
+            verify(activity().top().mWmService.mAppCompatCameraPolicy.mSimReqOrientationPolicy)
+                    .onWindowingModeChanged(eq(activity().top()), eq(windowingMode));
+        }
+
     }
 }
