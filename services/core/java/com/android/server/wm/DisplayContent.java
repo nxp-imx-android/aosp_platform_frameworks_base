@@ -252,6 +252,7 @@ import android.view.WindowManager.EngagementModeFlags;
 import android.view.WindowManagerPolicyConstants.PointerEventListener;
 import android.view.inputmethod.ImeTracker;
 import android.window.DesktopExperienceFlags;
+import android.window.DisplayAreaInfo;
 import android.window.DisplayWindowPolicyController;
 import android.window.IDisplayAreaOrganizer;
 import android.window.ScreenCaptureInternal;
@@ -1956,10 +1957,17 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 final Rect endBounds = mTmpConfiguration.windowConfiguration.getBounds();
                 final ActionChain chain = mAtmService.mChainTracker.startTransit("recfgDisp");
                 if (!chain.isCollecting()) {
-                    final TransitionRequestInfo.DisplayChange change =
-                            new TransitionRequestInfo.DisplayChange(mDisplayId);
+                    final TransitionRequestInfo.DisplayChange change;
+                    if (com.android.window.flags.Flags.syncedDisplayModeUpdates()) {
+                        final DisplayAreaInfo displayAreaInfo = mDisplayContent
+                                        .getDisplayAreaInfo();
+                        displayAreaInfo.configuration.setTo(mTmpConfiguration);
+                        change = new TransitionRequestInfo.DisplayChange(displayAreaInfo);
+                    } else {
+                        change = new TransitionRequestInfo.DisplayChange(mDisplayId);
+                        change.setEndAbsBounds(endBounds);
+                    }
                     change.setStartAbsBounds(startBounds);
-                    change.setEndAbsBounds(endBounds);
                     requestChangeTransition(changes, change, chain);
                 } else {
                     final Transition transition = chain.getTransition();
