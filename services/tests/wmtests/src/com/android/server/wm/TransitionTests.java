@@ -3468,8 +3468,7 @@ public class TransitionTests extends WindowTestsBase {
 
     @Test
     public void testReadyTrackerBasics() {
-        final TransitionController controller = new TestTransitionController(
-                mock(ActivityTaskManagerService.class));
+        final TransitionController controller = new TestTransitionController(mAtm);
         controller.setFullReadyTrackingForTest(true);
         Transition transit = createTestTransition(TRANSIT_OPEN, controller);
         // Not ready if nothing has happened yet
@@ -3492,8 +3491,7 @@ public class TransitionTests extends WindowTestsBase {
 
     @Test
     public void testReadyTrackerAlternate() {
-        final TransitionController controller = new TestTransitionController(
-                mock(ActivityTaskManagerService.class));
+        final TransitionController controller = new TestTransitionController(mAtm);
         controller.setFullReadyTrackingForTest(true);
         Transition transit = createTestTransition(TRANSIT_OPEN, controller);
 

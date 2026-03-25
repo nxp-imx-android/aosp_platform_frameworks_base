@@ -78,8 +78,12 @@ class DisplayUpdateTests : WindowTestsBase() {
     private val unblockerTestHandler: TestHandler =
         spy(TestHandler( /* callback= */ null, unblockerClock))
 
+    private val wmHandlerClock: OffsettableClock = OffsettableClock.Stopped()
+    private val wmTestHandler: TestHandler = TestHandler(/* callback= */ null, wmHandlerClock)
+
     @Before
     fun before() {
+        mRootWindowContainer.mTransitionController.mHandler = wmTestHandler
         displayManager = mSystemServicesTestRule.testDisplayManager
         testPlayer = registerTestTransitionPlayer()
         displayManager.setReturnDisplaysFromWm(false)
@@ -123,7 +127,10 @@ class DisplayUpdateTests : WindowTestsBase() {
         addActivityToDisplay(anotherSecondaryDisplay)
 
         testPlayer.flush()
-        mSystemServicesTestRule.waitUntilWindowManagerHandlersIdle()
+        advanceWmHandler()
+
+        // Perform surface placement, so DisplayContent#mLastHasContent is updated
+        mRootWindowContainer.performSurfacePlacement()
     }
 
     @Test
@@ -380,7 +387,7 @@ class DisplayUpdateTests : WindowTestsBase() {
         // Also wait for the handlers to be idle to ensure that the second queued transition started
         // collecting (onStartCollect callback is posted to mH handler)
         testPlayer.start()
-        mSystemServicesTestRule.waitUntilWindowManagerHandlersIdle()
+        advanceWmHandler()
 
         assertThat(mDisplayContent.displayInfo.uniqueId).isEqualTo("new2")
     }
@@ -518,28 +525,36 @@ class DisplayUpdateTests : WindowTestsBase() {
             Display.INVALID_DISPLAY)
         performDefaultPhysicalDisplaySwitch(newUniqueId = "new2", newWidth = 300, newHeight = 400)
 
-        // Set up a capture of the next transition request (the second display switch),
-        // and intercept the transaction listeners. We can't just access mLastTransit as by this
-        // time the start transaction presented listeners will be cleared already
-        var presentedListeners: Runnable? = null
-        onNextTransitionRequest { transition ->
-            presentedListeners = captureTransactionPresentedListeners(transition)
-        }
-
         // Make the first display switch finished collecting, but do not invoke that its start
-        // transaction is presented yet, then wait for idle to ensure onStartCallback is invoked
-        // since the callback is posted to mH handler
+        // transaction is presented yet, then advance WM handler to ensure onStartCallback is
+        // invoked since the callback is posted to mH handler
+        val firstTransition = testPlayer.mLastTransit
+        val firstTransitionPresentedListeners =
+            captureTransactionPresentedListeners(firstTransition)
         testPlayer.start()
-        mSystemServicesTestRule.waitUntilWindowManagerHandlersIdle()
+        advanceWmHandler()
+
+        // Verify that second (queued) transition is requested now
+        assertThat(firstTransition).isNotEqualTo(testPlayer.mLastTransit)
 
         // Verify that screen is not unblocked yet
         verify(screenUnblocker, never()).sendToTarget()
 
-        // Since the first switch finished collecting, now the second display switch
-        // should be collecting, let's notify that its start transaction is now presented
-        presentedListeners!!.run()
+        // Fire presented listener for the first transition
+        firstTransitionPresentedListeners.run()
 
-        // The second display switch is complete, so display should be unblocked
+        // Verify that the screen is still not unblocked, as we already have the second
+        // transition collecting and this 'presented' callback doesn't match with it
+        verify(screenUnblocker, never()).sendToTarget()
+
+        // Let's notify that the second display switch started and its start transaction
+        // is now presented
+        val secondTransitionPresentedListeners =
+            captureTransactionPresentedListeners(testPlayer.mLastTransit)
+        testPlayer.start()
+        secondTransitionPresentedListeners.run()
+
+        // The second display switch is complete, so the display should be unblocked now
         verify(screenUnblocker).sendToTarget()
     }
 
@@ -603,16 +618,6 @@ class DisplayUpdateTests : WindowTestsBase() {
         mRootWindowContainer.mDisplayUnblocker!!.onDefaultDisplaySwitching(switching)
     }
 
-    private fun onNextTransitionRequest(onRequest: (Transition) -> Unit) {
-        spyOn(testPlayer)
-        doAnswer { invocation ->
-            val transitionToken = invocation.getArgument<IBinder>(0)
-            val transition = Transition.fromBinder(transitionToken)!!
-            onRequest(transition)
-            invocation.callRealMethod()
-        }.whenever(testPlayer).requestStartTransition(any(), any())
-    }
-
     private fun captureTransactionPresentedListeners(transition: Transition): Runnable {
         spyOn(transition)
 
@@ -632,6 +637,7 @@ class DisplayUpdateTests : WindowTestsBase() {
         return Runnable {
             val stats = mock<SurfaceControl.TransactionStats>()
             whenever(stats.presentFence).thenReturn(mock())
+            assertThat(capturedListeners).isNotEmpty()
             capturedListeners.forEach { it.accept(stats) }
         }
     }
@@ -670,6 +676,10 @@ class DisplayUpdateTests : WindowTestsBase() {
         )
         act.addWindow(win)
         act.setVisibleRequested(true)
+    }
+
+    private fun advanceWmHandler() {
+        wmTestHandler.timeAdvance()
     }
 
     private companion object {
