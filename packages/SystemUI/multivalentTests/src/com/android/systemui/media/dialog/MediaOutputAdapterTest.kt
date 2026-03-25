@@ -237,7 +237,8 @@ class MediaOutputAdapterTest : SysuiTestCase() {
             assertThat(mSlider.value).isEqualTo(TEST_CURRENT_VOLUME)
             assertThat(mSlider.valueFrom).isEqualTo(0)
             assertThat(mSlider.valueTo).isEqualTo(TEST_MAX_VOLUME)
-            assertThat(mSlider.stateDescription).isEqualTo("50%")
+            assertThat(mSlider.stateDescription)
+                .isEqualTo(mContext.getString(R.string.media_output_dialog_volume_percentage, 50))
         }
     }
 
