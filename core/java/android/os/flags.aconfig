@@ -495,4 +495,11 @@ flag {
      bug: "324241334"
 }
 
+flag {
+    namespace: "users_and_accounts"
+    name: "login_add_user_enforcement"
+    description: "Enables a cross-user restriction check to prevent users from bypassing DISALLOW_ADD_USER by adding new users from the Login screen."
+    bug: "433361306"
+}
+
 # keep-sorted end
