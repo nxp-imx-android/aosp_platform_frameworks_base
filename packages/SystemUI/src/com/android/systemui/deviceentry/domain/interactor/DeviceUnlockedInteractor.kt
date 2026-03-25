@@ -20,6 +20,7 @@ import android.security.Flags.secureLockDevice
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import com.android.systemui.CoreStartable
+import com.android.systemui.Flags
 import com.android.systemui.Flags.strongAuthRequiredAfterSignOutMessageFix
 import com.android.systemui.authentication.domain.interactor.AuthenticationInteractor
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
@@ -350,7 +351,11 @@ constructor(
                         )
                         merge(
                             // Device wakefulness events.
-                            powerInteractor.detailedWakefulness
+                            if (Flags.wakefulnessEventsSharedFlow()) {
+                                    powerInteractor.detailedWakefulnessEvents
+                                } else {
+                                    powerInteractor.detailedWakefulness
+                                }
                                 .map {
                                     Triple(
                                         it.isAsleep(),

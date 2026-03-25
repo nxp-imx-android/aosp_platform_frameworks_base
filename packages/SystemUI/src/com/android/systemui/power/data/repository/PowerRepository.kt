@@ -149,7 +149,8 @@ interface PowerRepository {
         asleepOrWakingFromPreviouslyEnteredDevice: Boolean =
             if (SceneContainerFlag.isEnabled) {
                 if (Flags.wakefulnessEventsSharedFlow()) {
-                    wakefulnessEvents.replayCache.first()
+                    wakefulnessEvents.replayCache
+                        .first()
                         .asleepOrWakingFromPreviouslyEnteredDevice()
                 } else {
                     wakefulness.value.asleepOrWakingFromPreviouslyEnteredDevice()
@@ -254,13 +255,14 @@ constructor(
                 )
             )
         } else {
-            _wakefulness.value = WakefulnessModel(
-                rawState,
-                lastWakeReason,
-                lastSleepReason,
-                powerButtonLaunchGestureTriggered,
-                asleepOrWakingFromPreviouslyEnteredDevice,
-            )
+            _wakefulness.value =
+                WakefulnessModel(
+                    rawState,
+                    lastWakeReason,
+                    lastSleepReason,
+                    powerButtonLaunchGestureTriggered,
+                    asleepOrWakingFromPreviouslyEnteredDevice,
+                )
         }
     }
 
