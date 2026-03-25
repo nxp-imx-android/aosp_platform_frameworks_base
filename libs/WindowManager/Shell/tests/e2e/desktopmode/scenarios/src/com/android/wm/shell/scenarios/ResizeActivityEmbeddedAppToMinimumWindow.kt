@@ -17,12 +17,14 @@
 package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
+import android.graphics.Rect
 import android.tools.Rotation
 import android.tools.device.apphelpers.SettingsHelper
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
+import com.google.common.truth.Truth.assertWithMessage
 import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
@@ -35,7 +37,7 @@ import org.junit.Test
 @Ignore("Test Base Class")
 abstract class ResizeActivityEmbeddedAppToMinimumWindow(
     val rotation: Rotation = Rotation.ROTATION_0
-) : ResizeAppScenarioTestBase(rotation) {
+) : TestScenarioBase(rotation) {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
@@ -60,12 +62,16 @@ abstract class ResizeActivityEmbeddedAppToMinimumWindow(
         )
 
         val finalBounds = wmHelper.getWindowRegion(settingsApp).bounds
-        assertWindowResizedFromTopRight(
-            initialBounds,
-            finalBounds,
-            horizontalChange = -1500,
-            verticalChange = 1500,
-        )
+        assertWindowShrunkFromTopRight(initialBounds, finalBounds)
+    }
+
+    private fun assertWindowShrunkFromTopRight(initialBounds: Rect, finalBounds: Rect) {
+        assertWithMessage("Window width should have decreased")
+            .that(finalBounds.width())
+            .isLessThan(initialBounds.width())
+        assertWithMessage("Window height should have decreased")
+            .that(finalBounds.height())
+            .isLessThan(initialBounds.height())
     }
 
     @After

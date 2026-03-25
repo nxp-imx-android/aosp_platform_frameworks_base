@@ -65,12 +65,7 @@ abstract class ResizeAppWithCornerResize(
             verticalChange,
         )
         val finalBounds = wmHelper.getWindowRegion(testApp).bounds
-        assertWindowResizedFromTopRight(
-            initialBounds,
-            finalBounds,
-            horizontalChange,
-            verticalChange,
-        )
+        assertWindowExpandedFromTopRight(initialBounds, finalBounds)
     }
 
     @After

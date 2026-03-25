@@ -70,12 +70,7 @@ constructor(
             verticalChange,
         )
         val finalBounds = wmHelper.getWindowRegion(imeApp).bounds
-        assertWindowResizedFromTopRight(
-            initialBounds,
-            finalBounds,
-            horizontalChange,
-            verticalChange,
-        )
+        assertWindowExpandedFromTopRight(initialBounds, finalBounds)
     }
 
     @After
