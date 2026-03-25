@@ -137,7 +137,7 @@ public final class VirtualDeviceManager {
     private static final String TAG = "VirtualDeviceManager";
 
     /** @hide */
-    public static final int COMPUTER_CONTROL_VERSION = 5;
+    public static final int COMPUTER_CONTROL_VERSION = Flags.computerControlSupportV5() ? 5 : 4;
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
