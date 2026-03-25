@@ -2290,6 +2290,7 @@ public class AccountManagerService
         }
     }
 
+    @SuppressWarnings("AndroidFrameworkRequiresPermission")
     private Account renameAccountInternal(
             UserAccounts accounts, Account accountToRename, String newName) {
         Account resultAccount = null;
@@ -2342,24 +2343,24 @@ public class AccountManagerService
                 } finally {
                     accounts.accountsDb.endTransactionDe();
                 }
-            /*
-             * Database transaction was successful. Clean up cached
-             * data associated with the account in the user profile.
-             */
+                /*
+                 * Database transaction was successful. Clean up cached
+                 * data associated with the account in the user profile.
+                 */
                 renamedAccount = insertAccountIntoCacheLocked(accounts, renamedAccount);
-            /*
-             * Extract the data and token caches before removing the
-             * old account to preserve the user data associated with
-             * the account.
-             */
+                /*
+                 * Extract the data and token caches before removing the
+                 * old account to preserve the user data associated with
+                 * the account.
+                 */
                 Map<String, String> tmpData = accounts.userDataCache.get(accountToRename);
                 Map<String, String> tmpTokens = accounts.authTokenCache.get(accountToRename);
                 Map<String, Integer> tmpVisibility = accounts.visibilityCache.get(accountToRename);
                 removeAccountFromCacheLocked(accounts, accountToRename);
-            /*
-             * Update the cached data associated with the renamed
-             * account.
-             */
+                /*
+                 * Update the cached data associated with the renamed
+                 * account.
+                 */
                 accounts.userDataCache.put(renamedAccount, tmpData);
                 accounts.authTokenCache.put(renamedAccount, tmpTokens);
                 accounts.visibilityCache.put(renamedAccount, tmpVisibility);
@@ -2368,21 +2369,6 @@ public class AccountManagerService
                         new AtomicReference<>(accountToRename.name));
                 resultAccount = renamedAccount;
                 recomputeCacheSizeForAccountLocked(accounts, renamedAccount);
-
-                int parentUserId = accounts.userId;
-                if (canHaveRestrictedProfile(parentUserId)) {
-                /*
-                 * Owner or system user account was renamed, rename the account for
-                 * those users with which the account was shared.
-                 */
-                    List<UserInfo> users = getUserManager().getAliveUsers();
-                    for (UserInfo user : users) {
-                        if (user.isRestricted()
-                                && (user.restrictedProfileParentId == parentUserId)) {
-                            renameSharedAccountAsUser(accountToRename, newName, user.id);
-                        }
-                    }
-                }
 
                 sendNotificationAccountUpdated(resultAccount, accounts);
                 sendAccountsChangedBroadcast(
@@ -2397,6 +2383,21 @@ public class AccountManagerService
 
                 AccountManager.invalidateLocalAccountsDataCaches();
                 AccountManager.invalidateLocalAccountUserDataCaches();
+            }
+        }
+
+        int parentUserId = accounts.userId;
+        if (canHaveRestrictedProfile(parentUserId)) {
+            /*
+             * Owner or system user account was renamed, rename the account for
+             * those users with which the account was shared.
+             */
+            List<UserInfo> users = getUserManager().getAliveUsers();
+            for (UserInfo user : users) {
+                if (user.isRestricted()
+                        && (user.restrictedProfileParentId == parentUserId)) {
+                    renameSharedAccountAsUser(accountToRename, newName, user.id);
+                }
             }
         }
         return resultAccount;
