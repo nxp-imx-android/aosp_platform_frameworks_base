@@ -14,11 +14,21 @@
  * limitations under the License.
  */
 
-package com.android.systemui.notifications.intelligence.rules
+package com.android.systemui.notifications.intelligence.rules.ui
 
 import com.android.systemui.notifications.intelligence.rules.data.NotificationRulesDataModule
 import com.android.systemui.notifications.intelligence.rules.domain.NotificationRulesDomainModule
 import dagger.Module
 
-@Module(includes = [NotificationRulesDataModule::class, NotificationRulesDomainModule::class])
-public interface NotificationRulesModule
+/**
+ * A module that provides any common implementations that *must* be included in any build with the
+ * notification rules feature.
+ */
+@Module(
+    includes = [
+        NotificationRulesDataModule::class,
+        NotificationRulesDomainModule::class,
+        NotificationRulesUiModule::class,
+    ]
+)
+public interface NotificationRulesCommonModule
