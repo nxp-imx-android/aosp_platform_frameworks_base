@@ -36,7 +36,7 @@ constructor(@HighlightsHeader private val highlightsHeaderController: NodeContro
     val highlightsSectioner =
         object : NotifSectioner("Highlights", BUCKET_HIGHLIGHTS) {
             override fun isInSection(entry: PipelineEntry?): Boolean {
-                return (entry?.asListEntry()?.representativeEntry?.ranking?.proposedImportance
+                return (entry?.asListEntry()?.representativeEntry?.ranking?.importance
                     ?: 0) == NotificationManager.IMPORTANCE_MAX
             }
 
