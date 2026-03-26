@@ -22,6 +22,8 @@ import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.LogBufferFactory
 import com.android.systemui.notifications.intelligence.rules.data.repository.ContactsRepository
 import com.android.systemui.notifications.intelligence.rules.data.repository.ContactsRepositoryImpl
+import com.android.systemui.notifications.intelligence.rules.data.repository.ConversationPartnersRepository
+import com.android.systemui.notifications.intelligence.rules.data.repository.ConversationPartnersRepositoryImpl
 import com.android.systemui.notifications.intelligence.rules.data.repository.FreeformRuleRepository
 import com.android.systemui.notifications.intelligence.rules.data.repository.FreeformRuleRepositoryImpl
 import com.android.systemui.notifications.intelligence.rules.data.repository.InstalledAppsRepository
@@ -38,6 +40,11 @@ import dagger.multibindings.IntoMap
 @Module
 interface NotificationRulesDataModule {
     @Binds public fun bindContactsRepository(impl: ContactsRepositoryImpl): ContactsRepository
+
+    @Binds
+    public fun bindConversationPartnersRepository(
+        impl: ConversationPartnersRepositoryImpl
+    ): ConversationPartnersRepository
 
     @Binds
     public fun bindInstalledAppsRepository(

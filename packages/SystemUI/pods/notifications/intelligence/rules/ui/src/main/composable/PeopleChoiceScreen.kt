@@ -19,6 +19,7 @@ package com.android.systemui.notifications.intelligence.rules.ui.composable
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,11 +27,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
+import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.notifications.intelligence.rules.shared.model.PersonModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RulesScreenViewState
@@ -73,7 +76,15 @@ fun PersonIcon(
     modifier: Modifier = Modifier,
 ) {
     when (model) {
-        is PersonModel.Contact -> ContactIcon(model, size, loadContactBitmap, modifier.size(size))
+        is PersonModel.Contact ->
+            ContactIcon(
+                model,
+                size = size,
+                loadContactBitmap = loadContactBitmap,
+                modifier = modifier.size(size),
+            )
+        is PersonModel.ConversationPartner ->
+            ConversationPartnerIcon(model, size = size, modifier = modifier.size(size))
     }
 }
 
@@ -96,4 +107,25 @@ private fun ContactIcon(
             Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.secondary))
         },
     )
+}
+
+@Composable
+private fun ConversationPartnerIcon(
+    model: PersonModel.ConversationPartner,
+    size: Dp,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
+    Box(modifier = modifier) {
+        Image(
+            rememberDrawablePainter(model.avatarIcon.loadDrawable(context)),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+        )
+        Image(
+            rememberDrawablePainter(model.appBadgeIcon),
+            contentDescription = null,
+            modifier = Modifier.size(size * 0.42f).align(Alignment.BottomEnd),
+        )
+    }
 }

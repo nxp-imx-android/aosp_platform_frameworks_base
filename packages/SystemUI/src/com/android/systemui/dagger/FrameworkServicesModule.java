@@ -36,6 +36,7 @@ import android.app.WallpaperManager;
 import android.app.admin.DevicePolicyManager;
 import android.app.ambientcontext.AmbientContextManager;
 import android.app.job.JobScheduler;
+import android.app.people.IPeopleManager;
 import android.app.role.RoleManager;
 import android.app.smartspace.SmartspaceManager;
 import android.app.supervision.SupervisionManager;
@@ -867,5 +868,12 @@ public class FrameworkServicesModule {
     @Nullable
     static IUsbManager provideIUsbManager() {
         return IUsbManager.Stub.asInterface(ServiceManager.getService(Context.USB_SERVICE));
+    }
+
+    @Provides
+    @Singleton
+    @Nullable
+    static IPeopleManager provideIPeopleManager() {
+        return IPeopleManager.Stub.asInterface(ServiceManager.getService(Context.PEOPLE_SERVICE));
     }
 }
