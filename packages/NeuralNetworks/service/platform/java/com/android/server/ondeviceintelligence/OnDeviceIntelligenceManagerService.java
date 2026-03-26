@@ -178,7 +178,9 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
 
     private final InferenceInfoStore mInferenceInfoStore;
     private final ServiceThread mServiceThread;
+    @GuardedBy("mLock")
     private RemoteOnDeviceSandboxedInferenceService mRemoteInferenceService;
+    @GuardedBy("mLock")
     private RemoteOnDeviceIntelligenceService mRemoteOnDeviceIntelligenceService;
     volatile boolean mIsServiceEnabled;
 
@@ -233,8 +235,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                 });
             };
 
-    private final DeviceConfig.OnPropertiesChangedListener mOnPropertiesChangedListener =
-            this::sendUpdatedConfig;
+    private DeviceConfig.OnPropertiesChangedListener mOnPropertiesChangedListener;
 
     private final RemoteCallbackList<ILifecycleListener> mLifecycleListeners =
             new RemoteCallbackList.Builder<ILifecycleListener>(
@@ -881,14 +882,18 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                     writer.println(configPrefix + "Could not get service names: " + e);
                 }
                 writer.println();
-                if (mRemoteOnDeviceIntelligenceService != null) {
+                RemoteOnDeviceIntelligenceService remoteOnDeviceIntelligenceService =
+                        getRemoteOnDeviceIntelligenceService();
+                if (remoteOnDeviceIntelligenceService != null) {
                     writer.println("  mRemoteOnDeviceIntelligenceService: "
-                            + mRemoteOnDeviceIntelligenceService);
-                    mRemoteOnDeviceIntelligenceService.dump(prefix, writer);
+                            + remoteOnDeviceIntelligenceService);
+                    remoteOnDeviceIntelligenceService.dump(prefix, writer);
                 }
-                if (mRemoteInferenceService != null) {
-                    writer.println("  mRemoteInferenceService: " + mRemoteInferenceService);
-                    mRemoteInferenceService.dump(prefix, writer);
+                RemoteOnDeviceSandboxedInferenceService remoteInferenceService =
+                        getRemoteInferenceService();
+                if (remoteInferenceService != null) {
+                    writer.println("  mRemoteInferenceService: " + remoteInferenceService);
+                    remoteInferenceService.dump(prefix, writer);
                 }
                 mInferenceInfoStore.dump(prefix, writer);
                 writer.println();
@@ -1315,10 +1320,14 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                             }
                             return;
                         }
-                        result = mRemoteInferenceService.post(
-                                service -> service.updateProcessingState(
-                                        processingState,
-                                        callback));
+                        RemoteOnDeviceSandboxedInferenceService remoteInferenceService =
+                                getRemoteInferenceService();
+                        if (remoteInferenceService != null) {
+                            result = remoteInferenceService.post(
+                                    service -> service.updateProcessingState(
+                                            processingState,
+                                            callback));
+                        }
                         if (result != null) {
                             result.whenCompleteAsync((c, e) -> BundleUtil.tryCloseResource(
                                     processingState), resourceClosingExecutor);
@@ -1377,9 +1386,14 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                                                     setRemoteInferenceServiceUid(uid);
                                                 }
                                             });
-                                    mRemoteOnDeviceIntelligenceService.run(
-                                            IOnDeviceIntelligenceService
-                                                    ::notifyInferenceServiceConnected);
+                                    RemoteOnDeviceIntelligenceService
+                                        remoteOnDeviceIntelligenceService =
+                                            getRemoteOnDeviceIntelligenceService();
+                                    if (remoteOnDeviceIntelligenceService != null) {
+                                        remoteOnDeviceIntelligenceService.run(
+                                                IOnDeviceIntelligenceService
+                                                        ::notifyInferenceServiceConnected);
+                                    }
                                     broadcastExecutor.execute(
                                             () -> registerModelLoadingBroadcasts(service));
                                     mConfigExecutor.execute(
@@ -1395,16 +1409,25 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                             public void onDisconnected(
                                     @NonNull IOnDeviceSandboxedInferenceService service) {
                                 ensureRemoteIntelligenceServiceInitialized(false);
-                                mRemoteOnDeviceIntelligenceService.run(IOnDeviceIntelligenceService
-                                        ::notifyInferenceServiceDisconnected);
+                                RemoteOnDeviceIntelligenceService remoteOnDeviceIntelligenceService
+                                    = getRemoteOnDeviceIntelligenceService();
+                                if (remoteOnDeviceIntelligenceService != null) {
+                                    remoteOnDeviceIntelligenceService
+                                        .run(IOnDeviceIntelligenceService
+                                            ::notifyInferenceServiceDisconnected);
+                                }
                             }
 
                             @Override
                             public void onBinderDied() {
                                 ensureRemoteIntelligenceServiceInitialized(false);
-                                mRemoteOnDeviceIntelligenceService.run(
-                                        IOnDeviceIntelligenceService
-                                                ::notifyInferenceServiceDisconnected);
+                                RemoteOnDeviceIntelligenceService remoteOnDeviceIntelligenceService
+                                    = getRemoteOnDeviceIntelligenceService();
+                                if (remoteOnDeviceIntelligenceService != null) {
+                                    remoteOnDeviceIntelligenceService.run(
+                                            IOnDeviceIntelligenceService
+                                                    ::notifyInferenceServiceDisconnected);
+                                }
                             }
                             });
             } catch (RuntimeException e) {
@@ -1477,6 +1500,10 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
             Slog.e(TAG, "config_defaultOnDeviceIntelligenceDeviceConfigNamespace is empty");
             return;
         }
+        if (mOnPropertiesChangedListener != null) {
+            DeviceConfig.removeOnPropertiesChangedListener(mOnPropertiesChangedListener);
+        }
+        mOnPropertiesChangedListener = this::sendUpdatedConfig;
         DeviceConfig.addOnPropertiesChangedListener(
                 configNamespace,
                 mConfigExecutor,
@@ -1513,20 +1540,23 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                     "Remote inference service not available for sendUpdatedConfig");
             return;
         }
-        mRemoteInferenceService.run(service -> service.updateProcessingState(
-                bundle,
-                new IProcessingUpdateStatusCallback.Stub() {
-                    @Override
-                    public void onSuccess(PersistableBundle result) {
-                        Slog.d(TAG, "Config update successful." + result);
-                    }
-                    @Override
-                    public void onFailure(int errorCode, String errorMessage) {
-                        Slog.e(TAG, "Config update failed with code ["
-                                        + errorCode
-                                        + "] and message = " + errorMessage);
-                    }
-                }));
+        RemoteOnDeviceSandboxedInferenceService remoteInferenceService = getRemoteInferenceService();
+        if (remoteInferenceService != null) {
+            remoteInferenceService.run(service -> service.updateProcessingState(
+                    bundle,
+                    new IProcessingUpdateStatusCallback.Stub() {
+                        @Override
+                        public void onSuccess(PersistableBundle result) {
+                            Slog.d(TAG, "Config update successful." + result);
+                        }
+                        @Override
+                        public void onFailure(int errorCode, String errorMessage) {
+                            Slog.e(TAG, "Config update failed with code ["
+                                            + errorCode
+                                            + "] and message = " + errorMessage);
+                        }
+                    }));
+        }
     }
 
     @NonNull
@@ -1671,6 +1701,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                 mRemoteOnDeviceIntelligenceService = null;
             }
             if (durationMs != -1) {
+                getTemporaryHandler().removeMessages(MSG_RESET_TEMPORARY_SERVICE);
                 getTemporaryHandler().sendEmptyMessageDelayed(
                         MSG_RESET_TEMPORARY_SERVICE, durationMs);
             }
@@ -1688,6 +1719,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
             mTemporaryBroadcastKeys = broadcastKeys;
             mBroadcastPackageName = receiverPackageName;
             if (durationMs != -1) {
+                getTemporaryHandler().removeMessages(MSG_RESET_BROADCAST_KEYS);
                 getTemporaryHandler().sendEmptyMessageDelayed(
                         MSG_RESET_BROADCAST_KEYS, durationMs);
             }
@@ -1704,6 +1736,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
         synchronized (mLock) {
             mTemporaryConfigNamespace = configNamespace;
             if (durationMs != -1) {
+                getTemporaryHandler().removeMessages(MSG_RESET_CONFIG_NAMESPACE);
                 getTemporaryHandler().sendEmptyMessageDelayed(
                         MSG_RESET_CONFIG_NAMESPACE, durationMs);
             }
@@ -1718,11 +1751,26 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
         synchronized (mLock) {
             if (mTemporaryHandler != null) {
                 mTemporaryHandler.removeMessages(MSG_RESET_TEMPORARY_SERVICE);
+                mTemporaryHandler.removeMessages(MSG_RESET_BROADCAST_KEYS);
+                mTemporaryHandler.removeMessages(MSG_RESET_CONFIG_NAMESPACE);
                 mTemporaryHandler = null;
             }
-            mRemoteInferenceService = null;
-            mRemoteOnDeviceIntelligenceService = null;
+            if (mRemoteInferenceService != null) {
+                mRemoteInferenceService.unbind();
+                mRemoteInferenceService = null;
+            }
+            if (mRemoteOnDeviceIntelligenceService != null) {
+                mRemoteOnDeviceIntelligenceService.unbind();
+                mRemoteOnDeviceIntelligenceService = null;
+            }
             mTemporaryServiceNames = new String[0];
+            mTemporaryBroadcastKeys = null;
+            mBroadcastPackageName = SYSTEM_PACKAGE;
+            mTemporaryConfigNamespace = null;
+            if (mOnPropertiesChangedListener != null) {
+                DeviceConfig.removeOnPropertiesChangedListener(mOnPropertiesChangedListener);
+                mOnPropertiesChangedListener = null;
+            }
         }
     }
 
@@ -1828,12 +1876,16 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
 
     /** Returns the remote sandboxed inference service connector. */
     public RemoteOnDeviceSandboxedInferenceService getRemoteInferenceService() {
-        return mRemoteInferenceService;
+        synchronized (mLock) {
+            return mRemoteInferenceService;
+        }
     }
 
     /** Returns the remote intelligence service connector. */
     public RemoteOnDeviceIntelligenceService getRemoteOnDeviceIntelligenceService() {
-        return mRemoteOnDeviceIntelligenceService;
+        synchronized (mLock) {
+            return mRemoteOnDeviceIntelligenceService;
+        }
     }
 
     private void trackInferenceJob(int callerUid, AndroidFuture<?> result) {
@@ -1907,7 +1959,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                 return;
             }
             mHighPriorityUids.add(uid);
-            if (mHighPriorityConnection == null && mRemoteInferenceService != null) {
+            if (mHighPriorityConnection == null && getRemoteInferenceService() != null) {
                 try {
                     Slog.d(TAG, "Adding shared high priority binding for UID " + uid);
                     String serviceName = getSandboxedInferenceServiceName();
