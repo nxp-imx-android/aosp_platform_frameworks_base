@@ -25,13 +25,14 @@ import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
+import com.android.internal.widget.remotecompose.core.operations.ComponentData;
 import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 
 import java.util.List;
 
 /** Represents a single integer typically used for states or named for input into the system */
-public class IntegerConstant extends Operation implements Serializable {
+public class IntegerConstant extends Operation implements Serializable, ComponentData {
     private static final String CLASS_NAME = "IntegerConstant";
 
     private int mValue;
