@@ -135,12 +135,13 @@ class MemoryLimiter implements AutoCloseable {
             case LIMIT_TYPE_UNKNOWN ->
                     FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT__TYPE__UNKNOWN;
             case LIMIT_TYPE_MEMORY ->
-                    FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT__TYPE__HIGH;
+                    FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT__TYPE__LIMIT_TYPE_HIGH;
             case LIMIT_TYPE_SWAP ->
-                    FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT__TYPE__UNKNOWN;
+                    FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT__TYPE__LIMIT_TYPE_SWAP;
             case LIMIT_TYPE_ANON_SWAP ->
+                    FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT__TYPE__LIMIT_TYPE_ANON_SWAP;
+            default ->
                     FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT__TYPE__UNKNOWN;
-            default -> FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT__TYPE__UNKNOWN;
         };
     }
 
@@ -574,7 +575,7 @@ class MemoryLimiter implements AutoCloseable {
             // statsd logging is throttled to at most 28 events per day.
             if (shouldLogAtom()) {
                 FrameworkStatsLog.write(FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT,
-                        uid, limitTypeToAtom(type), percent);
+                        uid, limitTypeToAtom(type), percent, limit);
             }
             onLimitExceeded(pid, uid, type, limit, percent, pkg);
         }
