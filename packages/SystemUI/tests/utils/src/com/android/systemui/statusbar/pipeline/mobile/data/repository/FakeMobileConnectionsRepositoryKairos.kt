@@ -112,6 +112,10 @@ class FakeMobileConnectionsRepositoryKairos(
         }
     }
 
+    fun setDefaultDataSubId(subId: Int) {
+        defaultDataSubId.setValue(subId)
+    }
+
     companion object {
         val DEFAULT_ICON = TelephonyIcons.G
 

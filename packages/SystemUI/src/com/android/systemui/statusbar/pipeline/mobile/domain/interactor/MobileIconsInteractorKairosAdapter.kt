@@ -142,6 +142,23 @@ constructor(
             )
             .stateIn(scope, SharingStarted.WhileSubscribed(), null)
 
+    override val defaultDataIconInteractor: StateFlow<MobileIconInteractor?> =
+        combine(repoK.defaultDataSubId, interactorsBySubIdK) { subId, interactors ->
+                if (
+                    subId != null &&
+                        subId != android.telephony.SubscriptionManager.INVALID_SUBSCRIPTION_ID
+                ) {
+                    interactors[subId]
+                } else {
+                    null
+                }
+            }
+            .toColdConflatedFlow(
+                kairosNetwork,
+                nameTag("MobileIconsInteractorKairosAdapter.defaultDataIconInteractor"),
+            )
+            .stateIn(scope, SharingStarted.WhileSubscribed(), null)
+
     override val alwaysShowDataRatIcon: StateFlow<Boolean> =
         kairosInteractor.alwaysShowDataRatIcon
             .toColdConflatedFlow(

@@ -119,9 +119,8 @@ constructor(
     }
 
     private fun getDataRepo(): MobileConnectionRepository? {
-        return mobileConnectionsRepository.activeMobileDataRepository.value
-            ?: mobileConnectionsRepository.defaultDataSubId.value?.let {
-                mobileConnectionsRepository.getRepoForSubId(it)
-            }
+        return mobileConnectionsRepository.defaultDataSubId.value?.let {
+            mobileConnectionsRepository.getRepoForSubId(it)
+        }
     }
 }
