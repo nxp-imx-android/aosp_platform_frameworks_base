@@ -402,10 +402,12 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
 
     public void setAdbProvisioned(int featureId, boolean isProvisioned) {
         mStore.saveFeatureAdbProvisioned(featureId, isProvisioned);
+        sendModeChanged(isAdvancedProtectionEnabledInternal(), /* isToggle= */ false);
     }
 
     public void removeAdbProvisioning(int featureId) {
         mStore.removeFeatureAdbProvisioning(featureId);
+        sendModeChanged(isAdvancedProtectionEnabledInternal(), /* isToggle= */ false);
     }
 
     public Boolean retrieveFeatureAdbProvisioned(int featureId) {
