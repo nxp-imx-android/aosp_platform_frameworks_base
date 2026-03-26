@@ -61,6 +61,7 @@ import android.view.MotionEvent;
 import android.view.NotificationHeaderView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.view.ViewParent;
 import android.view.ViewStub;
 import android.view.accessibility.AccessibilityEvent;
@@ -563,7 +564,10 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                         : null;
 
         if (mAutomationNotificationBackground != null) {
-            addView(mAutomationNotificationBackground, 0);
+            addView(
+                    mAutomationNotificationBackground,
+                    0,
+                    new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         }
     }
 
