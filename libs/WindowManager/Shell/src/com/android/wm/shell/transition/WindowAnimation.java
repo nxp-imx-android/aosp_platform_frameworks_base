@@ -84,10 +84,6 @@ class WindowAnimation {
     @ShellMainThread
     public void addFinishCallback(@NonNull Consumer<WindowAnimation> finishCallback,
             @NonNull ShellExecutor mainExecutor) {
-        if (finishCallback == null || mainExecutor == null) {
-            return;
-        }
-
         mAnimator.addListener(new AnimatorListenerAdapter() {
             private void onFinish() {
                 mainExecutor.execute(() -> finishCallback.accept(WindowAnimation.this));

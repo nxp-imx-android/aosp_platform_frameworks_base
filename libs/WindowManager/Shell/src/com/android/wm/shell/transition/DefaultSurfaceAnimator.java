@@ -139,7 +139,9 @@ public class DefaultSurfaceAnimator implements Runnable {
         ValueAnimator va = buildSurfaceAnimation(anim, null /* finishRunnable */,
                 pool, null /* mainExecutor */, adapter);
         WindowAnimation windowAnimation = new WindowAnimation(change, cornerRadius, anim, va);
-        windowAnimation.addFinishCallback(finishCallback, mainExecutor);
+        if (finishCallback != null && mainExecutor != null) {
+            windowAnimation.addFinishCallback(finishCallback, mainExecutor);
+        }
         return windowAnimation;
     }
 

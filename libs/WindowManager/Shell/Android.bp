@@ -155,6 +155,15 @@ android_library {
             "ProtoLogLintChecker",
         ],
     },
+    errorprone: {
+        extra_check_modules: [
+            "//external/nullaway:nullaway_plugin",
+        ],
+        javacflags: [
+            "-Xep:NullAway:WARN",
+            "-XepOpt:NullAway:AnnotatedPackages=com.android.wm.shell",
+        ],
+    },
 }
 
 java_defaults {

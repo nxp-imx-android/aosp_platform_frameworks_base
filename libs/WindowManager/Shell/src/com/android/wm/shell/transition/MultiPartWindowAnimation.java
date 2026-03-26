@@ -49,10 +49,6 @@ class MultiPartWindowAnimation extends WindowAnimation {
     @Override
     public void addFinishCallback(@NonNull Consumer<WindowAnimation> finishCallback,
             @NonNull ShellExecutor mainExecutor) {
-        if (finishCallback == null || mainExecutor == null) {
-            return;
-        }
-
         if (mAnimators.isEmpty()) {
             mainExecutor.execute(() -> finishCallback.accept(this));
             return;
