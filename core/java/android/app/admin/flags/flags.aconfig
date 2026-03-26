@@ -483,13 +483,6 @@ flag {
 }
 
 flag {
-  name: "device_owner_for_all"
-  namespace: "enterprise"
-  description: "Enable any user (not just the Main User) to be a DeviceOwner"
-  bug: "435271558"
-}
-
-flag {
   name: "multi_user_management_device_provisioning"
   is_exported: true
   namespace: "enterprise"
