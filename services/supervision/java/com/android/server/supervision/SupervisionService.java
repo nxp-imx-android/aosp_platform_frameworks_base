@@ -848,7 +848,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
     }
 
     private void onSupervisionDisabled(@UserIdInt int userId) {
-        if (!Flags.removeRoleHolderAfterEventDispatch()) {
+        if (!Flags.removeRoleAfterEventDispatch()) {
             onSupervisionDisabledLegacy(userId);
             return;
         }
@@ -981,7 +981,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
         allSupervisionPackages.addAll(systemSupervisionPackage);
 
         clearSuspendedPackagesFor(userId, allSupervisionPackages);
-        if (!Flags.removeRoleHolderAfterEventDispatch()) {
+        if (!Flags.removeRoleAfterEventDispatch()) {
             removeSupervisionRoleHolders(user, supervisionPackages);
         }
 
