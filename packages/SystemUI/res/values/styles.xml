@@ -735,6 +735,7 @@
         <item name="android:paddingEnd">12dp</item>
         <item name="android:insetTop">8dp</item>
         <item name="android:insetBottom">8dp</item>
+        <item name="android:fontFamily">variable-label-large</item>
         <item name="android:textColor">@color/media_dialog_on_surface_variant</item>
         <item name="iconSize">18dp</item>
         <item name="iconTint">@color/media_dialog_primary</item>
