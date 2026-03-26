@@ -101,8 +101,8 @@ public class RavenwoodSystemProperties {
 
         // TODO(b/450069205): Use of "exists" is a bad recipe for incremental builds... Make sure
         // ravenwood.go empties it if not specified.
-        final var perTestPropFle = RavenwoodEnvironment.getInstance().perTestPropFile();
-        var testProps = Files.exists(Path.of(perTestPropFle)) ? readProperties(perTestPropFle)
+        final var perTestSyspropFle = RavenwoodEnvironment.getInstance().perTestSyspropFile();
+        var testProps = Files.exists(Path.of(perTestSyspropFle)) ? readProperties(perTestSyspropFle)
                 : new HashMap<String, String>();
 
         Log.i(TAG, "Default system properties:");
