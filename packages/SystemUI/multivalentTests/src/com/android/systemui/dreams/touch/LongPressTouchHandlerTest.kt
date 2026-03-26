@@ -87,6 +87,20 @@ class LongPressTouchHandlerTest : SysuiTestCase() {
         }
 
     @Test
+    fun onLongPress_pilfers() =
+        kosmos.runTest {
+            underTest.onSessionStart(session)
+            verify(session).registerGestureListener(gestureListenerCaptor.capture())
+            val listener = gestureListenerCaptor.firstValue
+
+            // WHEN a long press occurs
+            listener.onLongPress(mock())
+
+            // THEN the session pilfers pointers
+            verify(session).pilfer()
+        }
+
+    @Test
     fun onLongPress_vibrates() =
         kosmos.runTest {
             underTest.onSessionStart(session)
