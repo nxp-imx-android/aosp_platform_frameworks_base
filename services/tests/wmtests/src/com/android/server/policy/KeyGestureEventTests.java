@@ -330,7 +330,7 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
 
     @Test
     public void testKeyGestureBrightnessChange_overrideShowsToast() {
-        mSetFlagsRule.enableFlags(Flags.FLAG_BRIGHTNESS_OVERRIDE_TOAST);
+        mSetFlagsRule.enableFlags(Flags.FLAG_BRIGHTNESS_DIALOG_OVERRIDE_TOAST);
         mPhoneWindowManager.prepareBrightnessOverride();
         sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_UP);
         mPhoneWindowManager.assertToastShown(
