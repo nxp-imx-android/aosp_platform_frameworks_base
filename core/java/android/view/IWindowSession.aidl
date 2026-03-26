@@ -36,6 +36,7 @@ import android.view.InsetsState;
 import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.SurfaceControl.Transaction;
+import android.view.WindowInputChannelParams;
 import android.view.WindowRelayoutResult;
 import android.window.ClientWindowFrames;
 import android.window.InputTransferToken;
@@ -302,18 +303,12 @@ interface IWindowSession {
     * be used as unique identifier.
     */
     @nullable
-    InputChannel grantInputChannel(int displayId, in SurfaceControl surface, in IBinder clientToken,
-            in @nullable InputTransferToken hostInputTransferToken, int flags, int privateFlags,
-            int inputFeatures, int type, in IBinder windowToken,
-            in InputTransferToken embeddedInputTransferToken, String inputHandleName);
+    InputChannel grantInputChannel(in WindowInputChannelParams params);
 
     /**
      * Update the flags on an input channel associated with a particular surface.
      */
-    oneway void updateInputChannel(in IBinder channelToken,
-            in @nullable InputTransferToken hostInputTransferToken,
-            int displayId, in SurfaceControl surface, int flags, int privateFlags, int inputFeatures,
-            in Region region);
+    oneway void updateInputChannel(in WindowInputChannelParams params);
 
     /**
      * Transfer window focus to an embedded window if the calling window has focus.
