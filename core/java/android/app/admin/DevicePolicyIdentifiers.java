@@ -239,16 +239,6 @@ public final class DevicePolicyIdentifiers {
     public static final String COMMON_CRITERIA_MODE_POLICY = "commonCriteriaMode";
 
     /**
-     * String identifier for content restriction apps policy.
-     *
-     * <p>This identifier is used with {@link DevicePolicyManager#setPolicy} to set
-     * the list of packages as the holders of the {@link
-     * android.app.role.RoleManager#ROLE_CONTENT_RESTRICTION} role.
-     */
-    @FlaggedApi(android.app.contentrestriction.flags.Flags.FLAG_CONTENT_RESTRICTION_API)
-    public static final String CONTENT_RESTRICTION_APPS_POLICY = "contentRestrictionApps";
-
-    /**
      * @hide
      */
     public static final String USER_RESTRICTION_PREFIX = "userRestriction_";
