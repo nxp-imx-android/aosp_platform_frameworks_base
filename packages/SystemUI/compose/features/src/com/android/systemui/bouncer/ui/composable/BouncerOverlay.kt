@@ -21,14 +21,14 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.overscroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -42,7 +42,6 @@ import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.layout.ContainerConfig
 import com.android.compose.layout.containerize
-import com.android.compose.modifiers.thenIf
 import com.android.systemui.bouncer.ui.viewmodel.BouncerOverlayContentViewModel
 import com.android.systemui.bouncer.ui.viewmodel.BouncerUserActionsViewModel
 import com.android.systemui.compose.modifiers.sysuiResTag
@@ -110,30 +109,21 @@ private fun ContentScope.BouncerOverlay(
     DisposableEffect(Unit) { onDispose { viewModel.onUiDestroyed() } }
     val containerLayout = calculateContainerLayout()
     val isContainerized = containerLayout != null
-    val navigationBarsWindowInsets = WindowInsets.navigationBars
+    val insets = WindowInsets.navigationBars.union(WindowInsets.ime)
     Box(
         modifier
             .fillMaxSize()
             // Block pointer events from reaching overlay framework and dismissing Bouncer
             .pointerInput(Unit) { detectTapGestures() }
-            .thenIf(isContainerized) { Modifier.windowInsetsPadding(navigationBarsWindowInsets) }
-            // Allows the content within each of the layouts to react to the appearance and
-            // disappearance of the IME, which is also known as the software keyboard.
-            //
-            // Despite the keyboard only being part of the password bouncer, adding it at this level
-            // is both necessary to properly handle the keyboard in all layouts and harmless in
-            // cases when the keyboard isn't used (like the PIN or pattern auth methods).
-            .imePadding()
     ) {
         Box(
             Modifier.then(
-                    if (isContainerized) {
-                        Modifier.containerize(containerConfig(), containerLayout)
-                    } else {
-                        Modifier.fillMaxSize()
-                    }
-                )
-                .align(Alignment.Center)
+                if (isContainerized) {
+                    Modifier.containerize(containerConfig(), containerLayout, insets)
+                } else {
+                    Modifier.fillMaxSize()
+                }
+            )
         ) {
 
             // Background is defined in a separate Composable from BouncerContent to be able to
@@ -156,9 +146,8 @@ private fun ContentScope.BouncerOverlay(
                     .overscroll(verticalOverscrollEffect)
                     .sysuiResTag(Bouncer.TestTags.ROOT)
                     .fillMaxSize()
-                    .thenIf(!isContainerized) {
-                        Modifier.windowInsetsPadding(navigationBarsWindowInsets)
-                    },
+                    // No-op if containerization is enabled as insets will be already consumed.
+                    .windowInsetsPadding(insets),
             )
         }
     }
