@@ -97,6 +97,7 @@ class PolicyIdentifierCompiler() {
                 import android.processor.devicepolicy.ListOfStringPolicyDefinition;
                 import android.processor.devicepolicy.ListResolutionMechanism;
                 import android.processor.devicepolicy.LongPolicyDefinition;
+                import android.processor.devicepolicy.LongResolutionMechanism;
                 import android.processor.devicepolicy.PackagePolicyDefinition;
                 import android.processor.devicepolicy.PolicyDefinition;
                 import android.processor.devicepolicy.StringPolicyDefinition;

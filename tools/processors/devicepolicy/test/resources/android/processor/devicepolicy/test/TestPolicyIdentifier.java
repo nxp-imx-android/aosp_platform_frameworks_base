@@ -32,6 +32,7 @@ import android.processor.devicepolicy.ListOfPackagePolicyDefinition;
 import android.processor.devicepolicy.ListOfStringPolicyDefinition;
 import android.processor.devicepolicy.ListResolutionMechanism;
 import android.processor.devicepolicy.LongPolicyDefinition;
+import android.processor.devicepolicy.LongResolutionMechanism;
 import android.processor.devicepolicy.PackagePolicyDefinition;
 import android.processor.devicepolicy.PolicyDefinition;
 import android.processor.devicepolicy.StringPolicyDefinition;
@@ -160,7 +161,8 @@ public final class PolicyIdentifier<T> {
                                             managedProfileOwnerOfOrganizationOwnedDevice =
                                                     DISALLOWED,
                                             managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
-                                            unaffiliatedFullUserProfileOwner = DISALLOWED)))
+                                            unaffiliatedFullUserProfileOwner = DISALLOWED)),
+            resolutionMechanism = @LongResolutionMechanism(custom = true))
     public static final PolicyIdentifier<Long> SIMPLE_LONG_POLICY =
             new PolicyIdentifier<>("SIMPLE_LONG_POLICY");
 
@@ -205,7 +207,8 @@ public final class PolicyIdentifier<T> {
                                             managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
                                             unaffiliatedFullUserProfileOwner = DISALLOWED)),
             minValue = 10,
-            maxValue = 100)
+            maxValue = 100,
+            resolutionMechanism = @LongResolutionMechanism(custom = true))
     public static final PolicyIdentifier<Long> SIMPLE_LONG_POLICY_WITH_RANGE =
             new PolicyIdentifier<>("SIMPLE_LONG_POLICY_WITH_RANGE");
 
