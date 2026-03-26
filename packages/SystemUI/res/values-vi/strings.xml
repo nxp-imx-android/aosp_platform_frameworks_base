@@ -660,6 +660,8 @@
     <string name="keyguard_indication_charging_time_slowly" msgid="301936949731705417">"<xliff:g id="PERCENTAGE">%2$s</xliff:g> • Đang sạc chậm • Sẽ đầy sau <xliff:g id="CHARGING_TIME_LEFT">%1$s</xliff:g>"</string>
     <string name="keyguard_indication_charging_time_dock" msgid="3149328898931741271">"<xliff:g id="PERCENTAGE">%2$s</xliff:g> • Đang sạc • Sẽ đầy sau <xliff:g id="CHARGING_TIME_LEFT">%1$s</xliff:g>"</string>
     <string name="accessibility_action_open_communal_hub" msgid="3081702792413787849">"Các tiện ích trên màn hình khoá"</string>
+    <!-- no translation found for accessibility_action_customize_lock_screen (1998560311105362696) -->
+    <skip />
     <string name="accessibility_announcement_communal_widget_added" msgid="6911593106099328271">"Đã thêm tiện ích <xliff:g id="WIDGET_NAME">%1$s</xliff:g> vào màn hình khoá"</string>
     <string name="communal_tutorial_indicator_text" msgid="4503010353591430123">"Vuốt sang trái để bắt đầu xem hướng dẫn chung"</string>
     <string name="cta_tile_button_to_open_widget_editor" msgid="3871562362382963878">"Tuỳ chỉnh"</string>
@@ -1862,12 +1864,12 @@
     <string name="av_camera_label" msgid="7719772172590702343">"Camera"</string>
     <string name="av_camera_blur_drill_in_title" msgid="3392789469292685354">"Làm mờ nền"</string>
     <string name="av_camera_blur_off" msgid="3170334995799202022">"Tắt"</string>
-    <string name="av_camera_blur_light" msgid="5105255788203563538">"Mờ nhẹ"</string>
-    <string name="av_camera_blur_full" msgid="6493497965254048479">"Mờ hẳn"</string>
+    <string name="av_camera_blur_light" msgid="5105255788203563538">"Làm mờ nhẹ"</string>
+    <string name="av_camera_blur_full" msgid="6493497965254048479">"Làm mờ nhiều"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"Cải thiện ánh sáng"</string>
     <string name="av_camera_face_retouch" msgid="45890971969486224">"Tinh chỉnh chân dung"</string>
     <string name="av_camera_framing" msgid="2948988841290208034">"Lấy khung hình camera"</string>
-    <string name="av_studio_mic" msgid="1815195630183143501">"Micrô phòng thu"</string>
+    <string name="av_studio_mic" msgid="1815195630183143501">"Micrô chuyên nghiệp"</string>
     <string name="av_studio_look" msgid="631085505786989852">"Hình ảnh chuyên nghiệp"</string>
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d hiệu ứng"</string>
     <string name="av_blur" msgid="405131343487260171">"Làm mờ"</string>
