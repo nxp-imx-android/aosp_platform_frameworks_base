@@ -920,6 +920,14 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                         /* trueValue= */ PolicyIdentifier.EASTER_EGGS_DISALLOWED,
                         /* falseValue= */ PolicyIdentifier.EASTER_EGGS_ALLOWED));
 
+        handlers.add(
+                new EnumStoredAsBooleanPolicyHandler(
+                        PolicyIdentifier.BLUETOOTH_SHARING,
+                        dpms.getPolicyDefinitionForUserRestriction(
+                                UserManager.DISALLOW_BLUETOOTH_SHARING),
+                        /* trueValue= */ PolicyIdentifier.BLUETOOTH_SHARING_DISALLOWED,
+                        /* falseValue= */ PolicyIdentifier.BLUETOOTH_SHARING_ALLOWED));
+
         // NEW HANDLERS SHOULD GO IN {@link PolicyHandlerFactory}, NOT HERE!
         //
         // Handlers should only be added here if you are migrating a pre-existing policy and your

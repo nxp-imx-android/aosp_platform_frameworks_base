@@ -708,6 +708,14 @@ flag {
 }
 
 flag {
+  name: "policy_streamlining_bluetooth_sharing"
+  namespace: "enterprise"
+  description: "Redirect DISALLOW_BLUETOOTH_SHARING to the generic set/getPolicy APIs"
+  bug: "444379417"
+  is_exported: true
+}
+
+flag {
   name: "policy_streamlining_disallow_factory_reset"
   is_exported: true
   namespace: "enterprise"
