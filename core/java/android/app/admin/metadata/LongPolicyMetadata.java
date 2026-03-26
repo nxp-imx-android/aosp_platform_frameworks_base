@@ -19,6 +19,7 @@ package android.app.admin.metadata;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.admin.PolicyIdentifier;
+import android.app.admin.ResolutionMechanism;
 
 import java.util.Set;
 
@@ -38,6 +39,7 @@ public class LongPolicyMetadata extends PolicyMetadata<Long> {
             @Nullable String requiredPermission,
             @Nullable String requiredCrossUserPermission,
             @NonNull Set<Integer> allowedDpcTypes,
+            @Nullable ResolutionMechanismMetadata resolutionMechanism,
             long minValue,
             long maxValue) {
         super(
@@ -47,7 +49,7 @@ public class LongPolicyMetadata extends PolicyMetadata<Long> {
                 requiredPermission,
                 requiredCrossUserPermission,
                 allowedDpcTypes,
-                null);
+                resolutionMechanism);
         mMinValue = minValue;
         mMaxValue = maxValue;
     }

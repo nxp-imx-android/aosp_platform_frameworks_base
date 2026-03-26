@@ -312,6 +312,7 @@ public class Policies {
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(),
+            /* resolutionMechanism= */ null,
             /* minValue= */ Long.MIN_VALUE,
             /* maxValue= */ Long.MAX_VALUE
         ));
@@ -324,6 +325,7 @@ public class Policies {
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(),
+            /* resolutionMechanism= */ null,
             /* minValue= */ 10L,
             /* maxValue= */ 100L
         ));

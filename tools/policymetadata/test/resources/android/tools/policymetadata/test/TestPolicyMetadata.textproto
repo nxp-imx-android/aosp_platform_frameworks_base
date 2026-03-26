@@ -432,6 +432,9 @@ policy_metadata {
   documentation: "Test policy for Long "
   type_specific_metadata {
     long_metadata {
+      resolution_mechanism {
+        custom: true
+      }
     }
   }
   allowed_scopes: POLICY_SCOPE_USER
@@ -452,6 +455,9 @@ policy_metadata {
     long_metadata {
       min_value: 10
       max_value: 100
+      resolution_mechanism {
+        custom: true
+      }
     }
   }
   allowed_scopes: POLICY_SCOPE_USER
