@@ -23,6 +23,7 @@ import android.media.projection.IAppContentProjectionCallback
 import android.media.projection.IAppContentProjectionSession
 import android.media.projection.IMediaProjection
 import android.media.projection.MediaProjectionConfig
+import android.media.projection.MediaProjectionManager
 import android.media.projection.ReviewGrantedConsentResult
 import android.media.projection.StopReason
 import android.os.RemoteException
@@ -99,7 +100,7 @@ constructor(
      * Returns the current [IMediaProjection] or creates a new one for the given [displayId] if it
      * doesn't exist or is authorized for a different display.
      */
-    private fun getOrCreateProjection(displayId: Int): IMediaProjection {
+    private fun getOrCreateProjection(displayId: Int, mediaProjectionType: Int): IMediaProjection {
         val currentProjection = projection
         // Reuse the existing projection if it exists and matches the requested display.
         if (currentProjection != null && displayId == authorizedDisplayId) {
@@ -112,6 +113,7 @@ constructor(
                 packageName,
                 reviewGrantedConsentRequired,
                 displayId,
+                mediaProjectionType,
             )
 
         projection = newProjection
@@ -125,13 +127,11 @@ constructor(
      */
     fun onAppContentSharingApproved(
         contentId: Int,
-        callback: IAppContentProjectionCallback,
+        appContentCallback: IAppContentProjectionCallback,
         isAudioRequested: Boolean,
     ) {
         try {
-            val projection = getOrCreateProjection(initialDisplayId)
-
-            val session =
+            val appContentSession =
                 object : IAppContentProjectionSession.Stub() {
                     // This is an anonymous implementation of IAppContentProjectionSession.Stub.
                     // It serves as the local Binder object for the projection session, allowing
@@ -140,7 +140,7 @@ constructor(
                     override fun notifySessionStop() {
                         Log.d(TAG, "App content projection session stopped by remote app.")
                         try {
-                            projection.stop(StopReason.STOP_HOST_APP)
+                            projection?.stop(StopReason.STOP_HOST_APP)
                         } catch (e: RemoteException) {
                             Log.e(TAG, "Failed to stop projection on session stop", e)
                         }
@@ -148,14 +148,25 @@ constructor(
                     }
                 }
 
-            callback.onLoopbackProjectionStarted(session, contentId, isAudioRequested)
+            val projectionManager = context.getSystemService(MediaProjectionManager::class.java)
+            val projectionToken =
+                projectionManager.createProjectionForAppContent(
+                    uid,
+                    packageName,
+                    appContentSession,
+                    contentId,
+                    isAudioRequested,
+                    appContentCallback,
+                )!!
+            projection = projectionToken
+            authorizedDisplayId = initialDisplayId
 
             mediaProjectionHelper.setReviewedConsentIfNeeded(
                 ReviewGrantedConsentResult.RECORD_CONTENT_TASK,
                 reviewGrantedConsentRequired,
-                projection,
+                projectionToken,
             )
-            _sharingState.value = SharingState.Approved(projection)
+            _sharingState.value = SharingState.Approved(projectionToken)
         } catch (e: Exception) {
             Log.e(TAG, "Error granting projection permission for app content", e)
             _sharingState.value = SharingState.Denied
@@ -178,7 +189,8 @@ constructor(
             // Create a new LaunchCookie and ActivityOptions to perform the security handshake.
             val launchCookie = ActivityOptions.LaunchCookie(MEDIA_PROJECTION_LAUNCH_TOKEN)
 
-            val projection = getOrCreateProjection(initialDisplayId)
+            val projection =
+                getOrCreateProjection(initialDisplayId, MediaProjectionManager.TYPE_SCREEN_CAPTURE)
 
             if (task.isForegroundTask && task.component?.packageName == packageName) {
                 // The task is already in the foreground and belongs to the host app, so we don't
@@ -263,7 +275,8 @@ constructor(
     /** Called when the user approves sharing of an entire display. */
     fun onDisplaySharingApproved(displayId: Int) {
         try {
-            val projectionToUse = getOrCreateProjection(displayId)
+            val projectionToUse =
+                getOrCreateProjection(displayId, MediaProjectionManager.TYPE_SCREEN_CAPTURE)
 
             mediaProjectionHelper.setReviewedConsentIfNeeded(
                 ReviewGrantedConsentResult.RECORD_CONTENT_DISPLAY,

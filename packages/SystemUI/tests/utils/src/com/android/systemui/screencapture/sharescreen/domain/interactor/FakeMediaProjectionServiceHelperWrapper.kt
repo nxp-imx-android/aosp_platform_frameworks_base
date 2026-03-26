@@ -36,6 +36,7 @@ class FakeMediaProjectionServiceHelperWrapper : MediaProjectionServiceHelperWrap
         packageName: String,
         reviewGrantedConsentRequired: Boolean,
         displayId: Int,
+        mediaProjectionType: Int,
     ): IMediaProjection {
         createOrReuseProjectionCallCount++
         return projection
