@@ -97,8 +97,16 @@ message TypeSpecificPolicyMetadata {
   }
 
   message LongPolicyMetadata {
+    message ResolutionMechanism {
+      oneof mechanism {
+        bool custom = 1;
+        bool not_coexistable = 2;
+      }
+    }
+
     optional int64 min_value = 1;
     optional int64 max_value = 2;
+    ResolutionMechanism resolution_mechanism = 3;
   }
 
   message EnumPolicyMetadata {

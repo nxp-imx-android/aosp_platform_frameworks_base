@@ -41,4 +41,9 @@ public @interface LongPolicyDefinition {
      * The maximum value this long policy can take, inclusive.
      */
     long maxValue() default Long.MAX_VALUE;
+
+    /**
+     * Indicates the conflict resolution mechanism used by this policy.
+     */
+    LongResolutionMechanism resolutionMechanism();
 }

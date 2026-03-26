@@ -17,6 +17,7 @@
 package android.processor.devicepolicy
 
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.LongPolicyMetadata.ResolutionMechanism as LongResolutionMechanismProto
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.type.TypeMirror
@@ -59,12 +60,17 @@ class LongProcessor(processingEnv: ProcessingEnvironment) :
             )
         }
 
-        val longMetadataBuilder = TypeSpecificPolicyMetadata.LongPolicyMetadata.newBuilder()
+        val longMetadataBuilder =
+            TypeSpecificPolicyMetadata.LongPolicyMetadata.newBuilder()
+                .setResolutionMechanism(getResolutionMechanism(longDefinition, element))
         if (longDefinition.minValue != Long.MIN_VALUE) {
             longMetadataBuilder.setMinValue(longDefinition.minValue)
         }
         if (longDefinition.maxValue != Long.MAX_VALUE) {
             longMetadataBuilder.setMaxValue(longDefinition.maxValue)
+        }
+        if (longDefinition.minValue > longDefinition.maxValue) {
+            printError(element, "minValue cannot be larger than maxValue.")
         }
 
         val typeSpecificMetadata =
@@ -75,5 +81,48 @@ class LongProcessor(processingEnv: ProcessingEnvironment) :
 
     override fun annotationClass(): Class<LongPolicyDefinition> {
         return LongPolicyDefinition::class.java
+    }
+
+    private fun getResolutionMechanism(annotation: LongPolicyDefinition, element: Element) =
+        ResolutionMechanismProcessor(element).getResolutionMechanism(annotation.resolutionMechanism)
+
+    // Helper class to process the resolution mechanism field
+    inner class ResolutionMechanismProcessor(val element: Element) {
+
+        public fun getResolutionMechanism(
+            annotationValue: LongResolutionMechanism
+        ): LongResolutionMechanismProto {
+            if (!verifyResolutionMechanism(annotationValue)) {
+                // Error is already printed
+                return LongResolutionMechanismProto.newBuilder().build()
+            }
+
+            val builder = LongResolutionMechanismProto.newBuilder()
+            if (annotationValue.custom) {
+                builder.setCustom(true)
+            } else {
+                builder.setNotCoexistable(true)
+            }
+            return builder.build()
+        }
+
+        private fun verifyResolutionMechanism(
+            annotationValue: LongResolutionMechanism
+        ): Boolean {
+            val isCustom = annotationValue.custom
+            val isNotCoexistable = annotationValue.notCoexistable
+
+            if (isCustom && isNotCoexistable) {
+                printError(element, "Only one resolution mechanism can be selected")
+                return false
+            }
+
+            if (!isCustom && !isNotCoexistable) {
+                printError(element, "Resolution mechanism can not be empty")
+                return false
+            }
+
+            return true
+        }
     }
 }

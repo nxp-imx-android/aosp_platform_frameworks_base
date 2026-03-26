@@ -26,6 +26,7 @@ import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.ListPoli
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.ListPolicyMetadata.ListElementMetadataCase
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.ListPolicyMetadata.ResolutionMechanism as ListResolutionMechanismProto
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.LongPolicyMetadata
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.LongPolicyMetadata.ResolutionMechanism as LongResolutionMechanismProto
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.StringPolicyMetadata
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.TypeMetadataCase
 import com.squareup.javapoet.ClassName
@@ -343,36 +344,54 @@ object Generator {
             }
     }
 
-    private val longPolicyMetadataType = ClassName.get(METADATA_PACKAGE, "LongPolicyMetadata")
-
     private fun generateLongPolicyMetadata(
         policy: PolicyMetadata,
         policyId: CodeBlock = policy.getPolicyIdCodeBlock(),
         longMetadata: LongPolicyMetadata = policy.typeSpecificMetadata.longMetadata,
-    ): CodeBlock {
-        val builder =
+    ) = LongGenerator(policy, policyId, longMetadata).generate()
+
+    class LongGenerator(
+        val policy: PolicyMetadata,
+        val policyId: CodeBlock,
+        val metadata: LongPolicyMetadata,
+    ) {
+        private val longPolicyMetadataType = ClassName.get(METADATA_PACKAGE, "LongPolicyMetadata")
+
+        fun generate() =
             CodeBlock.builder()
                 .add("new \$T(\n", longPolicyMetadataType)
                 .indent()
                 .addPolicyArguments(policy, policyId)
                 .add(",\n")
-        val minValue =
-            if (longMetadata.hasMinValue()) {
-                CodeBlock.of("\$LL", longMetadata.minValue)
+                .add("/* resolutionMechanism= */ \$L,\n", generateResolutionMechanism())
+                .add("/* minValue= */ \$L,\n", generateMinValue())
+                .add("/* maxValue= */ \$L\n", generateMaxValue())
+                .unindent()
+                .add(")")
+                .build()
+
+        private fun generateMinValue(): CodeBlock =
+            if (metadata.hasMinValue()) {
+                CodeBlock.of("\$LL", metadata.minValue)
             } else {
                 CodeBlock.of("Long.MIN_VALUE")
             }
-        val maxValue =
-            if (longMetadata.hasMaxValue()) {
-                CodeBlock.of("\$LL", longMetadata.maxValue)
+
+        private fun generateMaxValue(): CodeBlock =
+            if (metadata.hasMaxValue()) {
+                CodeBlock.of("\$LL", metadata.maxValue)
             } else {
                 CodeBlock.of("Long.MAX_VALUE")
             }
-        builder.add("/* minValue= */ \$L,\n", minValue)
-        builder.add("/* maxValue= */ \$L", maxValue)
-        builder.add("\n")
-        builder.unindent().add(")")
-        return builder.build()
+
+        private fun generateResolutionMechanism(): CodeBlock =
+            when (metadata.resolutionMechanism.mechanismCase) {
+                LongResolutionMechanismProto.MechanismCase.CUSTOM -> CodeBlock.of("null")
+                LongResolutionMechanismProto.MechanismCase.NOT_COEXISTABLE ->
+                    CodeBlock.of("new \$T()", notCoexistableType)
+                LongResolutionMechanismProto.MechanismCase.MECHANISM_NOT_SET ->
+                    throw IllegalArgumentException("Resolution mechanism not set")
+            }
     }
 
     private val stringPolicyMetadataType = ClassName.get(METADATA_PACKAGE, "StringPolicyMetadata")

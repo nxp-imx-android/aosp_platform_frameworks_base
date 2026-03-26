@@ -274,6 +274,7 @@ object LongPolicy {
             /*requiredPermission=*/ "testPermission",
             /*requiredCrossUserPermission=*/ "testCrossUserPermission",
             /*allowedDpcTypes=*/ setOf(),
+            /*resolutionMechanism=*/ null,
             /*minValue=*/ 10L,
             /*maxValue=*/ 20L,
         )
@@ -296,6 +297,7 @@ fun LongPolicyMetadata.copy(minValue: Long? = null, maxValue: Long? = null) =
         this.requiredPermission,
         this.requiredCrossUserPermission,
         this.allowedDpcTypes,
+        this.resolutionMechanism,
         minValue ?: this.minValue,
         maxValue ?: this.maxValue,
     )
