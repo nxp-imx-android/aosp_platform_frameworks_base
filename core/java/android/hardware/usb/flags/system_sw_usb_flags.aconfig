@@ -65,3 +65,13 @@ flag {
     description: "Feature flag to enable use of UsbDpUtils library in USB HALs"
     bug: "484049535"
 }
+
+flag {
+    name: "mtp_download_io_order_improvement"
+    namespace: "system_sw_usb"
+    description: "Slightly change the order of I/O operations in MtpFfsHandle's sendFile() to improve download throughput."
+    bug: "430242480"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
