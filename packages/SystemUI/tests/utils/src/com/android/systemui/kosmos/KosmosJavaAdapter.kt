@@ -44,6 +44,7 @@ import com.android.systemui.communal.domain.interactor.communalSettingsInteracto
 import com.android.systemui.communal.ui.viewmodel.communalTransitionViewModel
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.data.repository.brightnessMirrorShowingRepository
+import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryFingerprintAuthInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryUdfpsInteractor
@@ -212,6 +213,7 @@ class KosmosJavaAdapter() {
     val powerInteractor by lazy { kosmos.powerInteractor }
     val pulseExpansionInteractor by lazy { kosmos.pulseExpansionInteractor }
     val deviceEntryInteractor by lazy { kosmos.deviceEntryInteractor }
+    val fakeDeviceEntryRepository by lazy { kosmos.fakeDeviceEntryRepository }
     val deviceEntryUdfpsInteractor by lazy { kosmos.deviceEntryUdfpsInteractor }
     val deviceUnlockedInteractor by lazy { kosmos.deviceUnlockedInteractor }
     val deviceEntryFingerprintAuthInteractor by lazy { kosmos.deviceEntryFingerprintAuthInteractor }
