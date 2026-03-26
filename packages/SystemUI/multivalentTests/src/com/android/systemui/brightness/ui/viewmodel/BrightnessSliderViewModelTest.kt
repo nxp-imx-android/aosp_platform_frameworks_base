@@ -23,7 +23,6 @@ import com.android.settingslib.display.BrightnessUtils
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.brightness.data.model.LinearBrightness
 import com.android.systemui.brightness.data.repository.fakeScreenBrightnessRepository
-import com.android.systemui.brightness.domain.interactor.ScreenBrightnessInteractor
 import com.android.systemui.brightness.domain.interactor.brightnessMirrorShowingInteractor
 import com.android.systemui.brightness.domain.interactor.brightnessPolicyEnforcementInteractor
 import com.android.systemui.brightness.domain.interactor.screenBrightnessInteractor
@@ -52,7 +51,6 @@ import org.mockito.kotlin.mock
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@kotlinx.coroutines.ExperimentalCoroutinesApi
 class BrightnessSliderViewModelTest : SysuiTestCase() {
 
     private val minBrightness = 0f
@@ -71,60 +69,6 @@ class BrightnessSliderViewModelTest : SysuiTestCase() {
             LinearBrightness(maxBrightness),
         )
     }
-
-    @Test
-    fun commitBrightness_differentValue_setsBrightness() =
-        with(kosmos) {
-            testScope.runTest {
-                underTest.activateIn(this)
-                val brightness by collectLastValue(fakeScreenBrightnessRepository.linearBrightness)
-
-                val initialBrightness = 0.5f
-                fakeScreenBrightnessRepository.setBrightness(LinearBrightness(initialBrightness))
-                runCurrent()
-                assertThat(brightness?.floatValue).isEqualTo(initialBrightness)
-
-                val newValue = 100
-                val expectedLinearValue =
-                    BrightnessUtils.convertGammaToLinearFloat(
-                        newValue,
-                        minBrightness,
-                        maxBrightness,
-                    )
-
-                underTest.commitBrightness(GammaBrightness(newValue))
-                runCurrent()
-
-                assertThat(brightness?.floatValue).isWithin(1e-5f).of(expectedLinearValue)
-            }
-        }
-
-    @Test
-    fun commitBrightness_sameValue_doesNotSetBrightness() =
-        with(kosmos) {
-            testScope.runTest {
-                underTest.activateIn(this)
-                val brightness by collectLastValue(fakeScreenBrightnessRepository.linearBrightness)
-
-                val initialBrightness = 0.5f
-                fakeScreenBrightnessRepository.setBrightness(LinearBrightness(initialBrightness))
-                runCurrent()
-
-                val currentGammaValue = underTest.currentBrightness.value
-
-                // If we manually change the repository, saveBrightness should see it and BAIL if
-                // it's the same as what's current in the view model
-                val manuallySetValue = 0.8f
-                fakeScreenBrightnessRepository.setBrightness(LinearBrightness(manuallySetValue))
-                // DON'T runCurrent, we want underTest.currentBrightness to stay old
-
-                underTest.commitBrightness(GammaBrightness(currentGammaValue))
-                runCurrent()
-
-                // It should still be 0.8f, NOT reverted back to 0.5f
-                assertThat(brightness?.floatValue).isEqualTo(manuallySetValue)
-            }
-        }
 
     @Test
     fun brightnessChangeInRepository_changeInFlow() =
@@ -315,10 +259,9 @@ class BrightnessSliderViewModelTest : SysuiTestCase() {
     private fun Kosmos.create(
         supportsMirror: Boolean = true,
         imageLoader: ImageLoader = this.imageLoader,
-        interactor: ScreenBrightnessInteractor = screenBrightnessInteractor,
     ): BrightnessSliderViewModel {
         return BrightnessSliderViewModel(
-            interactor,
+            screenBrightnessInteractor,
             brightnessPolicyEnforcementInteractor,
             sliderHapticsViewModelFactory,
             {
@@ -329,7 +272,6 @@ class BrightnessSliderViewModelTest : SysuiTestCase() {
             supportsMirror,
             brightnessWarningToast,
             imageLoader,
-            testScope.backgroundScope,
         )
     }
 }
