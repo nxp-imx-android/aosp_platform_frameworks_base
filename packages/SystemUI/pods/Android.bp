@@ -103,6 +103,7 @@ filegroup {
         ":com.android.systemui.headline.ui_fixtureFiles",
         ":com.android.systemui.notifications.intelligence.rules_fixtureFiles",
         ":com.android.systemui.notifications.intelligence.rules.ui_fixtureFiles",
+        ":com.android.systemui.qs.panels.ui_fixtureFiles",
     ],
 
     visibility: ["//frameworks/base/packages/SystemUI/tests:__pkg__"],

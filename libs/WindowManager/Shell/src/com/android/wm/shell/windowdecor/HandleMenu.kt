@@ -116,6 +116,7 @@ private constructor(
     private val surfaceControlBuilderSupplier: () -> SurfaceControl.Builder,
     private val surfaceControlTransactionSupplier: () -> SurfaceControl.Transaction,
     private val surfaceControlViewHostFactory: SurfaceControlViewHostFactory,
+    private val decorThemeUtilFactory: DecorThemeUtil.Factory,
 ) {
     private val isViewAboveStatusBar: Boolean
         get() = (DesktopModeFlags.ENABLE_HANDLE_INPUT_FIX.isTrue() && !taskInfo.isFreeform)
@@ -217,6 +218,7 @@ private constructor(
                     shouldShowRestartButton = shouldShowRestartButton,
                     appToWebData = appToWebData,
                     splitScreenController = splitScreenController,
+                    decorThemeUtilFactory = decorThemeUtilFactory,
                 )
                 .apply {
                     bind(taskInfo, shouldShowMoreActionsPill)
@@ -551,6 +553,7 @@ private constructor(
         private val shouldShowRestartButton: Boolean,
         private val appToWebData: AppToWebData?,
         private val splitScreenController: SplitScreenController,
+        private val decorThemeUtilFactory: DecorThemeUtil.Factory,
     ) : OnClickListener {
         val rootView =
             LayoutInflater.from(context)
@@ -656,7 +659,7 @@ private constructor(
                 openInAppOrBrowserBtn,
             )
 
-        private val decorThemeUtil = DecorThemeUtil(context)
+        private val decorThemeUtil = decorThemeUtilFactory.create(context)
         private val animator =
             HandleMenuAnimator(context, rootView, menuWidth, captionHeight.toFloat())
 
@@ -969,6 +972,7 @@ private constructor(
             captionHeight: Int,
             captionX: Int,
             captionY: Int,
+            decorThemeUtilFactory: DecorThemeUtil.Factory,
             surfaceControlBuilderSupplier: () -> SurfaceControl.Builder = {
                 SurfaceControl.Builder()
             },
@@ -1008,6 +1012,7 @@ private constructor(
                 surfaceControlBuilderSupplier,
                 surfaceControlTransactionSupplier,
                 surfaceControlViewHostFactory,
+                decorThemeUtilFactory,
             )
 
         @Deprecated("Handle menu should no longer have reference to window decoration")
@@ -1035,6 +1040,7 @@ private constructor(
             captionHeight: Int,
             captionX: Int,
             captionY: Int,
+            decorThemeUtilFactory: DecorThemeUtil.Factory,
             surfaceControlBuilderSupplier: () -> SurfaceControl.Builder = {
                 SurfaceControl.Builder()
             },
@@ -1074,6 +1080,7 @@ private constructor(
                 surfaceControlBuilderSupplier,
                 surfaceControlTransactionSupplier,
                 surfaceControlViewHostFactory,
+                decorThemeUtilFactory,
             )
     }
 }

@@ -16,6 +16,7 @@
 
 package com.android.systemui.shade.ui.viewmodel
 
+import android.content.res.mainResources
 import com.android.systemui.desktop.domain.interactor.desktopInteractor
 import com.android.systemui.keyguard.ui.transitions.blurConfig
 import com.android.systemui.kosmos.Kosmos
@@ -29,6 +30,7 @@ import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.shade.domain.interactor.shadeStatusBarComponentsInteractor
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModelFactory
+import com.android.systemui.statusbar.ui.systemBarUtilsState
 import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 
 val Kosmos.notificationsShadeOverlayContentViewModel:
@@ -37,6 +39,8 @@ val Kosmos.notificationsShadeOverlayContentViewModel:
         mainDispatcher = testDispatcher,
         shadeHeaderViewModelFactory = shadeHeaderViewModelFactory,
         notificationsPlaceholderViewModelFactory = notificationsPlaceholderViewModelFactory,
+        resources = mainResources,
+        systemBarUtilsState = systemBarUtilsState,
         sceneInteractor = sceneInteractor,
         shadeInteractor = shadeInteractor,
         shadeModeInteractor = shadeModeInteractor,

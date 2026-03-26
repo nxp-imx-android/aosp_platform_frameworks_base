@@ -168,7 +168,8 @@ public class MediaProjectionPermissionActivity extends Activity {
                                 mUid,
                                 mPackageName,
                                 mReviewGrantedConsentRequired,
-                                Display.DEFAULT_DISPLAY);
+                                Display.DEFAULT_DISPLAY,
+                                MediaProjectionManager.TYPE_SCREEN_CAPTURE);
 
                 LaunchCookie launchCookie = launchingIntent.getParcelableExtra(
                         MediaProjectionManager.EXTRA_LAUNCH_COOKIE, LaunchCookie.class);
@@ -389,7 +390,11 @@ public class MediaProjectionPermissionActivity extends Activity {
         try {
             IMediaProjection projection =
                     MediaProjectionServiceHelper.createOrReuseProjection(
-                            mUid, mPackageName, mReviewGrantedConsentRequired, displayId);
+                            mUid,
+                            mPackageName,
+                            mReviewGrantedConsentRequired,
+                            displayId,
+                            MediaProjectionManager.TYPE_SCREEN_CAPTURE);
             if (screenShareMode == ENTIRE_SCREEN || screenShareMode == ENTIRE_SCREEN_EXTERNAL) {
                 final Intent intent = new Intent();
                 setCommonIntentExtras(intent, hasCastingCapabilities, projection);
@@ -432,8 +437,13 @@ public class MediaProjectionPermissionActivity extends Activity {
         // token upfront to ensure the system correctly handles the reuse flow.
         if (mReviewGrantedConsentRequired) {
             try {
-                projection = MediaProjectionServiceHelper.createOrReuseProjection(
-                        mUid, mPackageName, mReviewGrantedConsentRequired, getDisplayId());
+                projection =
+                        MediaProjectionServiceHelper.createOrReuseProjection(
+                                mUid,
+                                mPackageName,
+                                mReviewGrantedConsentRequired,
+                                getDisplayId(),
+                                MediaProjectionManager.TYPE_SCREEN_CAPTURE);
             } catch (RemoteException e) {
                 Log.e(TAG, "Error creating projection for large screen review", e);
                 finishAsCancelled();

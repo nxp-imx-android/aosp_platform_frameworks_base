@@ -106,45 +106,4 @@ public class AuditLogFileManagerTest {
         File nextFile = fileManager.rotateAndReturnNewFile();
         assertEquals("audit_log.0.bin", nextFile.getName());
     }
-
-    @Test
-    public void testDeleteAuditLogFiles_deletesMatchingFiles() throws Exception {
-        File folder = mTemporaryFolder.newFolder();
-        // Create matching files
-        new File(folder, "audit_log.0.bin").createNewFile();
-        new File(folder, "audit_log.1.bin").createNewFile();
-        // Create non-matching files
-        File otherFile = new File(folder, "other_file.txt");
-        File auditLogTxt = new File(folder, "audit_log.txt");
-        File backupBin = new File(folder, "backup.bin");
-        otherFile.createNewFile();
-        auditLogTxt.createNewFile();
-        backupBin.createNewFile();
-        assertThat(folder.listFiles()).hasLength(5);
-
-        AuditLogFileManager.deleteAuditLogFiles(folder);
-
-        File[] files = folder.listFiles();
-        assertThat(files).asList().containsExactly(otherFile, auditLogTxt, backupBin);
-    }
-
-    @Test
-    public void testDeleteAuditLogFiles_emptyFolder_doesNothing() throws Exception {
-        File folder = mTemporaryFolder.newFolder();
-        assertThat(folder.listFiles()).hasLength(0);
-
-        AuditLogFileManager.deleteAuditLogFiles(folder);
-
-        assertThat(folder.listFiles()).hasLength(0);
-    }
-
-    @Test
-    public void testDeleteAuditLogFiles_nonExistentFolder_doesNotThrow() {
-        File folder = new File(mTemporaryFolder.getRoot(), "non_existent");
-        assertThat(folder.exists()).isFalse();
-
-        AuditLogFileManager.deleteAuditLogFiles(folder);
-
-        // Assert: no exception thrown.
-    }
 }

@@ -88,11 +88,6 @@ public class FakeBluetoothController extends BaseLeakChecker<Callback> implement
     }
 
     @Override
-    public List<Integer> getSupportedProfiles() {
-        return Collections.emptyList();
-    }
-
-    @Override
     public void addOnMetadataChangedListener(CachedBluetoothDevice device, Executor executor,
             BluetoothAdapter.OnMetadataChangedListener listener) {
 

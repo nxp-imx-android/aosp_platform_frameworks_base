@@ -310,10 +310,6 @@ public final class ComputerControlSessionProcessor {
     }
 
     private boolean isComputerControlAvailableForUser(@UserIdInt int userId) {
-        if (!android.companion.virtualdevice.flags.Flags.computerControlManagedProfiles()) {
-            return !mDevicePolicyManagerInternal.isUserOrganizationManaged(userId);
-        }
-
         // On fully managed devices, follow nearbyAppStreamingPolicy.
         if (mDevicePolicyManagerInternal.getDeviceOwnerComponent(/* callingUser= */ false)
                 != null) {

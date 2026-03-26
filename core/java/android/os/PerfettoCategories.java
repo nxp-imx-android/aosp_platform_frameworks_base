@@ -81,11 +81,16 @@ public final class PerfettoCategories {
             new PerfettoTrace.Category("debug.anr");
 
     @NonNull
+    public static final PerfettoTrace.Category BITMAP_CATEGORY =
+            new PerfettoTrace.Category("bitmap");
+
+    @NonNull
     public static final List<PerfettoTrace.Category> ALL_CATEGORIES =
             Collections.unmodifiableList(Arrays.asList(
                     // go/keep-sorted start
                     ANR_CATEGORY,
                     BIG_LOCKS_CATEGORY,
+                    BITMAP_CATEGORY,
                     BROADCASTS_CATEGORY,
                     CC_CATEGORY,
                     FREEZER_CATEGORY,

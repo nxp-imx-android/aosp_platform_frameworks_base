@@ -206,3 +206,14 @@ flag {
   description: "Removes supervision role only after the 'disable supervision' event has been dispatched."
   bug: "495425956"
 }
+
+flag {
+  name: "enable_remove_device_admin_checks_for_reset_password_token"
+  is_exported: false
+  namespace: "supervision"
+  description: "Removes device admin checks for resetPasswordWithToken-related APIs"
+  bug: "444307589"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}

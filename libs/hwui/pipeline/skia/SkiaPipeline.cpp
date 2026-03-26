@@ -35,6 +35,7 @@
 #include <SkString.h>
 #include <SkTypeface.h>
 #include <android-base/properties.h>
+#include <com_android_graphics_libgui_flags.h>
 #include <gui/TraceUtils.h>
 #include <include/android/SkSurfaceAndroid.h>
 #include <include/docs/SkMultiPictureDocument.h>
@@ -597,10 +598,23 @@ int SkiaPipeline::getFrameTimestamps(uint64_t frameNumber, nsecs_t* outRequested
     if (!anw) {
         return -1;
     }
-    return native_window_get_frame_timestamps(
-            anw, frameNumber, outRequestedPresentTime, outAcquireTime, outLatchTime,
+    const bool debugGpuPresentTimes =
+            com::android::graphics::libgui::flags::debug_gpu_present_times() &&
+            outDisplayPresentTime;
+    nsecs_t tempAcquireTime;
+    nsecs_t* pAcquireTime =
+            debugGpuPresentTimes && !outAcquireTime ? &tempAcquireTime : outAcquireTime;
+
+    int result = native_window_get_frame_timestamps(
+            anw, frameNumber, outRequestedPresentTime, pAcquireTime, outLatchTime,
             outFirstRefreshStartTime, outLastRefreshStartTime, outGpuCompositionDoneTime,
             outDisplayPresentTime, outDequeueReadyTime, outReleaseTime);
+    if (debugGpuPresentTimes) {
+        ATRACE_FORMAT_INSTANT("450351988: SkiaPipeline::getFrameTimestamps: frameNumber=%" PRId64
+                              " presentTime=%" PRId64 " acquireFence=%" PRId64,
+                              frameNumber, *outDisplayPresentTime, *pAcquireTime);
+    }
+    return result;
 }
 
 void SkiaPipeline::setFrameTimelineInfo(const struct ANativeWindowFrameTimelineInfo& info) {

@@ -16,7 +16,7 @@
 
 package com.android.systemui.qs.ui.viewmodel
 
-import android.content.Context
+import android.content.res.Resources
 import android.graphics.Rect
 import android.media.AudioManager
 import androidx.compose.runtime.getValue
@@ -32,6 +32,7 @@ import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.qs.panels.domain.interactor.QSPanelAppearanceInteractor
 import com.android.systemui.qs.panels.ui.viewmodel.toolbar.ToolbarViewModel
 import com.android.systemui.qs.tiles.dialog.AudioDetailsViewModel
+import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
@@ -42,6 +43,7 @@ import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.core.StatusBarForDesktop
 import com.android.systemui.statusbar.notification.stack.domain.interactor.NotificationStackAppearanceInteractor
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
+import com.android.systemui.statusbar.ui.SystemBarUtilsState
 import com.android.systemui.volume.dialog.domain.interactor.ExpandedAudioTileDetailsFeatureInteractor
 import com.android.systemui.volume.panel.component.volume.domain.model.SliderType
 import com.android.systemui.volume.panel.component.volume.slider.ui.viewmodel.AudioStreamSliderViewModel
@@ -75,11 +77,12 @@ constructor(
     val audioDetailsViewModelFactory: AudioDetailsViewModel.Factory,
     val buildNumberViewModelFactory: BuildNumberViewModel.Factory,
     val expandedAudioTileDetailsFeatureInteractor: ExpandedAudioTileDetailsFeatureInteractor,
-    @ShadeDisplayAware shadeContext: Context,
     val shadeInteractor: ShadeInteractor,
     val shadeModeInteractor: ShadeModeInteractor,
     val sceneInteractor: SceneInteractor,
     val notificationStackAppearanceInteractor: NotificationStackAppearanceInteractor,
+    @ShadeDisplayAware private val resources: Resources,
+    @ShadeDisplayAware systemBarUtilsState: SystemBarUtilsState,
     @Assisted private val volumeSliderCoroutineScope: CoroutineScope?,
     val toolbarViewModelFactory: ToolbarViewModel.Factory,
     private val blurConfig: BlurConfig,
@@ -118,6 +121,12 @@ constructor(
                     Flags.notificationShadeBlur() &&
                         windowRootViewBlurInteractor.isBlurCurrentlySupported.value
             )
+
+    val statusBarHeightPx: Int by
+        systemBarUtilsState.statusBarHeight.hydratedStateOf(
+            traceName = "QuickSettingsShadeOverlayContentViewModel#statusBarHeight",
+            initialValue = resources.getDimensionPixelSize(R.dimen.status_bar_height),
+        )
 
     /**
      * Calculates the blur radius to apply to the overlay.

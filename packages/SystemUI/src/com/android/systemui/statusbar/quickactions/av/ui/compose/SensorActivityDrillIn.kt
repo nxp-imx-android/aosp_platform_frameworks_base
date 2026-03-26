@@ -243,16 +243,16 @@ private fun SupportingContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = stringResource(R.string.sensor_activity_manage_access_button),
-                style = typography.titleSmallEmphasized,
-                color = colorScheme.primary,
-                modifier = Modifier.clickable(onClick = { viewModel.manageApp(packageName) }),
-            )
-            Text(
                 text = stringResource(R.string.sensor_activity_close_app_button),
                 style = typography.titleSmallEmphasized,
                 color = colorScheme.primary,
                 modifier = Modifier.clickable(onClick = { viewModel.closeApp(packageName) }),
+            )
+            Text(
+                text = stringResource(R.string.sensor_activity_manage_access_button),
+                style = typography.titleSmallEmphasized,
+                color = colorScheme.primary,
+                modifier = Modifier.clickable(onClick = { viewModel.manageApp(packageName) }),
             )
         }
     }

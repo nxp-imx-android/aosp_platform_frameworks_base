@@ -297,6 +297,7 @@ class SceneContainerStartableTest(flags: FlagsParameterization) : SysuiTestCase(
                 "unlocking for test",
                 forceSettleToTargetScene = true,
             )
+            sceneInteractor.onIdleSceneEnteredComposition(Scenes.Gone)
             keyguardSurfaceBehindInteractor.setAnimatingSurface(true)
             runCurrent()
 
@@ -3035,6 +3036,7 @@ class SceneContainerStartableTest(flags: FlagsParameterization) : SysuiTestCase(
 
             unlockDevice()
             sceneInteractor.changeScene(Scenes.Gone, "Switch to Gone to make isVisible be false.")
+            sceneInteractor.onIdleSceneEnteredComposition(Scenes.Gone)
             assertThat(sceneInteractor.isVisible).isFalse()
 
             val argumentCaptor = argumentCaptor<ActivityTransitionAnimator.Listener>()
@@ -3312,6 +3314,7 @@ class SceneContainerStartableTest(flags: FlagsParameterization) : SysuiTestCase(
             transitionStateFlow.value = ObservableTransitionState.Idle(it, initialOverlays)
             fakeSceneDataSource.transitionState = TransitionState.Idle(it, initialOverlays)
             sceneInteractor.changeScene(it, "prepareState, initialSceneKey isn't null")
+            sceneInteractor.onIdleSceneEnteredComposition(it)
         }
         for (overlay in initialOverlays) {
             sceneInteractor.instantlyShowOverlay(

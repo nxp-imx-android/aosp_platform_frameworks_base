@@ -20,7 +20,9 @@
 
 #include "android_media_AudioTrack.h"
 
+#include <android-base/expected.h>
 #include <android-base/macros.h>
+#include <android/media/audio/common/FlushFromFrameAccuracy.h>
 #include <android/media/audio/common/FlushFromFrameSupport.h>
 #include <android_os_Parcel.h>
 #include <binder/MemoryBase.h>
@@ -51,6 +53,7 @@
 using namespace android;
 
 using ::android::media::VolumeShaper;
+using ::android::media::audio::common::FlushFromFrameAccuracy;
 using ::android::media::audio::common::FlushFromFrameSupport;
 
 // ----------------------------------------------------------------------------
@@ -235,6 +238,21 @@ sp<IMemory> allocSharedMem(int sizeInBytes) {
 
 sp<AudioTrack> getAudioTrack(JNIEnv* env, jobject thiz) {
     return getFieldSp<AudioTrack>(env, thiz, javaAudioTrackFields.nativeTrackInJavaObj);
+}
+
+// These values must match the values defined in AudioTrack.java.
+static constexpr int FLUSH_FROM_ACCURACY_BEST_EFFORT = 0;
+static constexpr int FLUSH_FROM_ACCURACY_EXACT = 1;
+
+::android::ConversionResult<FlushFromFrameAccuracy> javaInt2FlushFromFrameAccuracy(jint accuracy) {
+    switch (accuracy) {
+        case FLUSH_FROM_ACCURACY_BEST_EFFORT:
+            return FlushFromFrameAccuracy::BEST_EFFORT;
+        case FLUSH_FROM_ACCURACY_EXACT:
+            return FlushFromFrameAccuracy::EXACT;
+        default:
+            return ::base::unexpected(BAD_VALUE);
+    }
 }
 
 } // anonymous
@@ -1496,9 +1514,33 @@ static jint android_media_AudioTrack_setStartThresholdInFrames(JNIEnv *env, jobj
     return (jint)result; // this should be a positive value.
 }
 
-static jlong android_media_AudioTrack_flushFromFrame(JNIEnv * /*env*/, jobject /*thiz*/,
-                                                     jint /*accuracy*/, jlong positionInFrames) {
-    return positionInFrames;
+static jlong android_media_AudioTrack_flushFromFrame(JNIEnv* env, jobject thiz, jint accuracy,
+                                                     jlong positionInFrames) {
+    sp<AudioTrack> lpTrack = getAudioTrack(env, thiz);
+    if (lpTrack == nullptr) {
+        jniThrowException(env, "java/lang/IllegalStateException",
+                          "Unable to retrieve AudioTrack pointer for flushFromFrame()");
+        return (jint)AUDIO_JAVA_ERROR;
+    }
+    auto aidlFlushFromFrameAccuracy = javaInt2FlushFromFrameAccuracy(accuracy);
+    if (!aidlFlushFromFrameAccuracy.ok()) {
+        jniThrowExceptionFmt(env, "java/lang/IllegalStateException",
+                             "Illegal flush from frame accuracy = %d", accuracy);
+        return (jlong)AUDIO_JAVA_ERROR;
+    }
+    int64_t result;
+    auto status = lpTrack->flushFromFrame(aidlFlushFromFrameAccuracy.value(),
+                                          (int64_t)positionInFrames, &result);
+    if (status == NO_ERROR) {
+        return (jlong)result;
+    } else if (status == BAD_VALUE) {
+        jniThrowException(env, "java/lang/IllegalStateException", "Illegal value");
+        return (jlong)AUDIO_JAVA_ERROR;
+    } else {
+        jniThrowException(env, "java/lang/UnsupportedOperationException",
+                          "flushWrittenFramesFromPosition is not supported");
+        return (jlong)AUDIO_JAVA_ERROR;
+    }
 }
 
 static jint android_media_AudioTrack_getFlushWrittenFramesFromPositionSupport(

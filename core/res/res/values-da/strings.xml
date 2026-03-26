@@ -226,7 +226,7 @@
     <string name="network_logging_notification_text" msgid="1327373071132562512">"Din organisation administrerer denne enhed og kan overvåge netværkstrafik. Tryk for at se info."</string>
     <string name="location_changed_notification_title" msgid="3620158742816699316">"Apps kan få adgang til din lokation"</string>
     <string name="location_changed_notification_text" msgid="7158423339982706912">"Kontakt din it-administrator for at få flere oplysninger"</string>
-    <string name="geofencing_service" msgid="3826902410740315456">"Tjeneste til geografisk afgrænsning"</string>
+    <string name="geofencing_service" msgid="3826902410740315456">"Tjeneste til geofencing"</string>
     <string name="country_detector" msgid="7023275114706088854">"Landeregistrering"</string>
     <string name="location_service" msgid="2439187616018455546">"Lokationstjeneste"</string>
     <string name="gnss_service" msgid="8907781262179951385">"GNSS-tjeneste"</string>
@@ -761,15 +761,15 @@
     <string name="device_unlock_notification_name" msgid="2632928999862915709">"Enhedsoplåsning"</string>
     <string name="alternative_unlock_setup_notification_title" msgid="6241508547901933544">"Prøv en anden metode til oplåsning"</string>
     <string name="alternative_face_setup_notification_content" product="default" msgid="3384959224091897331">"Brug ansigtsoplåsning, hvis dit fingeraftryk ikke genkendes, f.eks. når du har våde fingre"</string>
-    <string name="alternative_face_setup_notification_content" product="desktop" msgid="8589631194028810041">"Lås op via ansigtsgenkendelse, hvis dit fingeraftryk ikke genkendes, f.eks. når du har våde fingre"</string>
+    <string name="alternative_face_setup_notification_content" product="desktop" msgid="8589631194028810041">"Lås op via ansigtigsoplåsning, hvis dit fingeraftryk ikke genkendes, f.eks. når du har våde fingre"</string>
     <string name="alternative_fp_setup_notification_content" msgid="7454096947415721639">"Brug fingeroplåsning, hvis dit ansigt ikke genkendes, f.eks. når der ikke er nok lys"</string>
     <string name="face_recalibrate_notification_name" product="default" msgid="7311163114750748686">"Ansigtsoplåsning"</string>
-    <string name="face_recalibrate_notification_name" product="desktop" msgid="6343244778393495390">"Lås op via ansigtsgenkendelse"</string>
+    <string name="face_recalibrate_notification_name" product="desktop" msgid="6343244778393495390">"Ansigtigsoplåsning"</string>
     <string name="face_recalibrate_notification_title" product="default" msgid="2524791952735579082">"Der er et problem med Ansigtsoplåsning"</string>
     <string name="face_recalibrate_notification_title" product="desktop" msgid="7502893130398903561">"Der er et problem med at låse op via ansigtsgenkendelse"</string>
     <string name="face_recalibrate_notification_content" msgid="3064513770251355594">"Tryk for at slette din ansigtsmodel, og tilføj derefter dit ansigt igen"</string>
     <string name="face_sensor_privacy_enabled" product="default" msgid="7407126963510598508">"Hvis du vil bruge ansigtsoplåsning, skal du aktivere "<b>"Kameraadgang"</b>" under Indstillinger &gt; Privatliv"</string>
-    <string name="face_sensor_privacy_enabled" product="desktop" msgid="7690221855638766930">"Hvis du vil låse op via ansigtsgenkendelse, skal du aktivere "<b>"Kameraadgang"</b>" under Indstillinger &gt; Privatliv"</string>
+    <string name="face_sensor_privacy_enabled" product="desktop" msgid="7690221855638766930">"Hvis du vil låse op via ansigtigsoplåsning, skal du aktivere "<b>"Kameraadgang"</b>" under Indstillinger &gt; Privatliv"</string>
     <string name="fingerprint_recalibrate_notification_name" msgid="1414578431898579354">"Fingeroplåsning"</string>
     <string name="fingerprint_recalibrate_notification_title" msgid="2406561052064558497">"Fingeraftrykssensoren kan ikke bruges"</string>
     <string name="fingerprint_recalibrate_notification_content" msgid="8519935717822194943">"Få den repareret."</string>
@@ -832,7 +832,7 @@
     <string name="face_error_security_update_required" msgid="5076017208528750161">"Sensoren er midlertidigt deaktiveret."</string>
     <string name="face_name_template" msgid="3877037340223318119">"Ansigt <xliff:g id="FACEID">%d</xliff:g>"</string>
     <string name="face_app_setting_name" product="default" msgid="5854024256907828015">"Brug ansigtsoplåsning"</string>
-    <string name="face_app_setting_name" product="desktop" msgid="8226850671242901114">"Lås op via ansigtsgenkendelse"</string>
+    <string name="face_app_setting_name" product="desktop" msgid="8226850671242901114">"Ansigtigsoplåsning"</string>
     <string name="face_or_screen_lock_app_setting_name" msgid="1603149075605709106">"Brug ansigts- eller skærmlås"</string>
     <string name="face_dialog_default_subtitle" msgid="6620492813371195429">"Brug dit ansigt for at fortsætte"</string>
     <string name="face_or_screen_lock_dialog_default_subtitle" msgid="5006381531158341844">"Brug din ansigts- eller skærmlås for at fortsætte"</string>
@@ -1165,7 +1165,7 @@
     <string name="keyguard_accessibility_slide_unlock" msgid="2968195219692413046">"Lås op ved at stryge."</string>
     <string name="keyguard_accessibility_pattern_unlock" msgid="8669128146589233293">"Lås op med mønster."</string>
     <string name="keyguard_accessibility_face_unlock" product="default" msgid="4533832120787386728">"Ansigtsoplåsning."</string>
-    <string name="keyguard_accessibility_face_unlock" product="desktop" msgid="6739732585954513653">"Lås op via ansigtsgenkendelse."</string>
+    <string name="keyguard_accessibility_face_unlock" product="desktop" msgid="6739732585954513653">"Ansigtigsoplåsning."</string>
     <string name="keyguard_accessibility_pin_unlock" msgid="4020864007967340068">"Lås op med pinkode."</string>
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"Lås op ved hjælp af pinkoden til SIM-kortet."</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"Lås op ved hjælp af PUK-koden til SIM-kortet."</string>
@@ -2168,10 +2168,10 @@
     <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"AI-agenter og -tjenester, du har givet adgang til %1$s, kan stadig tilgå dens data"</string>
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Tilføj applås"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" product="default" msgid="1348151645996748654">"Ansigtsoplåsning"</string>
-    <string name="app_lock_edu_dialog_biometric_description_has_face" product="desktop" msgid="380233309639495358">"Lås op via ansigtsgenkendelse"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_face" product="desktop" msgid="380233309639495358">"Ansigtigsoplåsning"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Fingeroplåsning"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="default" msgid="6551410616110497401">"Fingeroplåsning, Ansigtsoplåsning"</string>
-    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="desktop" msgid="4797005135507921547">"Fingeroplåsning, Lås op via ansigtsgenkendelse"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="desktop" msgid="4797005135507921547">"Fingeroplåsning, Ansigtigsoplåsning"</string>
     <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"adgangskode"</string>
     <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"mønster"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"Pinkode"</string>
@@ -2711,6 +2711,8 @@
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> er fjernet for nu"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> er nu tilgængelig"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Cast til andre"</string>
+    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
+    <skip />
     <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
     <skip />
 </resources>

@@ -9,13 +9,6 @@ flag {
 }
 
 flag {
-    name: "dynamic_code_logging_service_removal"
-    namespace: "security"
-    description: "Remove the DynamicCodeLoggingService from the platform"
-    bug: "403391929"
-}
-
-flag {
     name: "reset_keyguard_first_state_dispatch_on_service_connected"
     namespace: "wear_services"
     description: "Reset the first keyguard state dispatch flag when KeyguardService is connected"
@@ -27,4 +20,11 @@ flag {
     namespace: "pixel_storage"
     description: "Enables configuration of filesystem parameters like max_lock_elapsed_time during boot of StorageManagerService."
     bug: "469596512"
+}
+
+flag {
+    name: "parallelize_onbootphase"
+    namespace: "system_performance"
+    description: "Run services' onBootPhase methods in parallel"
+    bug: "459252932"
 }

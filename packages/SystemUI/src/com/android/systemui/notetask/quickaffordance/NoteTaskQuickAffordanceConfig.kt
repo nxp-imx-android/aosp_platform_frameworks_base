@@ -38,6 +38,7 @@ import com.android.systemui.keyguard.data.quickaffordance.KeyguardQuickAffordanc
 import com.android.systemui.keyguard.data.quickaffordance.KeyguardQuickAffordanceConfig.PickerScreenState
 import com.android.systemui.keyguard.data.repository.KeyguardQuickAffordanceRepository
 import com.android.systemui.notetask.LaunchNotesRoleSettingsTrampolineActivity.Companion.ACTION_MANAGE_NOTES_ROLE_FROM_QUICK_AFFORDANCE
+import com.android.systemui.notetask.LockscreenNoteTakingAvailability
 import com.android.systemui.notetask.NoteTaskController
 import com.android.systemui.notetask.NoteTaskEnabledKey
 import com.android.systemui.notetask.NoteTaskEntryPoint.QUICK_AFFORDANCE
@@ -65,6 +66,7 @@ constructor(
     private val keyguardMonitor: KeyguardUpdateMonitor,
     private val userManager: UserManager,
     private val lazyRepository: Lazy<KeyguardQuickAffordanceRepository>,
+    private val lockscreenNoteTakingAvailability: LockscreenNoteTakingAvailability,
     @NoteTaskEnabledKey private val isEnabled: Boolean,
     @Background private val backgroundExecutor: Executor,
 ) : KeyguardQuickAffordanceConfig {
@@ -116,7 +118,8 @@ constructor(
                     isEnabled &&
                         isUserUnlocked &&
                         isDefaultNotesAppSet &&
-                        isShortcutSelectedOrDefaultEnabled
+                        isShortcutSelectedOrDefaultEnabled &&
+                        lockscreenNoteTakingAvailability.isLockscreenNoteTakingEnabled()
                 ) {
                     val contentDescription = ContentDescription.Resource(pickerNameResourceId)
                     val icon = Icon.Resource(pickerIconResourceId, contentDescription)
@@ -129,6 +132,9 @@ constructor(
     }
 
     override suspend fun getPickerScreenState(): PickerScreenState {
+        if (!lockscreenNoteTakingAvailability.shouldShowNotesInLockscreenShortcutPicker()) {
+            return PickerScreenState.UnavailableOnDevice
+        }
         val isDefaultNotesAppSet =
             noteTaskInfoResolver.resolveInfo(
                 QUICK_AFFORDANCE,

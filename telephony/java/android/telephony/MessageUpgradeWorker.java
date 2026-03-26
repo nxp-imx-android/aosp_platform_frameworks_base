@@ -16,6 +16,7 @@
 
 package android.telephony;
 
+import static android.os.Process.BLUETOOTH_UID;
 import static android.service.messaging.AlternativeMessageTransportService.UPGRADE_STATUS_REJECTED;
 
 import android.Manifest;
@@ -33,6 +34,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.os.Binder;
 import android.provider.Telephony;
 import android.service.messaging.AlternativeMessageTransportService;
 import android.service.messaging.AlternativeMessageTransportServiceWrapper;
@@ -42,6 +44,7 @@ import android.util.Log;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.telephony.SmsApplication;
+import com.android.internal.telephony.TelephonyStatsLog;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -140,26 +143,82 @@ public class MessageUpgradeWorker {
         }
 
         long messageId = parseMessageId(messageUri);
-        MessageType type = parseMessageType(messageUri);
+        MessageType messageType = parseMessageType(messageUri);
 
-        if (messageId == -1 || type == MessageType.UNKNOWN) {
+        if (messageId == -1 || messageType == MessageType.UNKNOWN) {
             Log.e(TAG, "Invalid message URI: " + messageUri);
             rejectUpgradeRequest(clientCallbackExecutor, clientCallback);
             return;
         }
 
-        storePendingIntents(type, messageId, sentIntents, deliveryIntents);
+        storePendingIntents(messageType, messageId, sentIntents, deliveryIntents);
+
+        long upgradeStartTimeMs = android.os.SystemClock.elapsedRealtime();
 
         // Discard pending intents upon upgrade rejection
         Consumer<Integer> clientCallbackWrapper = status -> {
+            int latencyMs = (int) (android.os.SystemClock.elapsedRealtime()
+                    - upgradeStartTimeMs);
+            boolean hasMultipleSentIntents = sentIntents != null && sentIntents.size() > 1;
             if (status == UPGRADE_STATUS_REJECTED) {
-                discardAllPendingIntents(type, messageId);
+                logMessageUpgradeResolved(TelephonyStatsLog
+                        .MESSAGE_UPGRADE_RESOLVED__STATUS__STATUS_FAILED,
+                        messageType, latencyMs, hasMultipleSentIntents);
+                discardAllPendingIntents(messageType, messageId);
+            } else {
+                logMessageUpgradeResolved(TelephonyStatsLog
+                                .MESSAGE_UPGRADE_RESOLVED__STATUS__STATUS_SUCCEEDED,
+                        messageType, latencyMs, hasMultipleSentIntents);
             }
             clientCallback.accept(status);
         };
 
         mServiceWrapper.upgradeMessage(
                 messageUri, smsAppPackage, clientCallbackExecutor, clientCallbackWrapper);
+    }
+
+    /**
+     * Helper to log the MESSAGE_UPGRADE_RESOLVED atom.
+     */
+    private void logMessageUpgradeResolved(
+            int resolveStatus, MessageType messageType, int latencyMs, boolean isMultipart) {
+
+        int sourceType = Binder.getCallingUid() == BLUETOOTH_UID
+                ? TelephonyStatsLog
+                .MESSAGE_UPGRADE_RESOLVED__SOURCE_TYPE__SOURCE_TYPE_BLUETOOTH
+                : TelephonyStatsLog
+                        .MESSAGE_UPGRADE_RESOLVED__SOURCE_TYPE__SOURCE_TYPE_THIRD_PARTY_APP;
+
+        int originalMessageType = switch (messageType) {
+            case SMS -> isMultipart
+                    ? TelephonyStatsLog
+                        .MESSAGE_UPGRADE_RESOLVED__ORIGINAL_MESSAGE_TYPE__ORIGINAL_MESSAGE_TYPE_SMS_MULTIPART
+                    : TelephonyStatsLog
+                        .MESSAGE_UPGRADE_RESOLVED__ORIGINAL_MESSAGE_TYPE__ORIGINAL_MESSAGE_TYPE_SMS;
+            case MMS -> TelephonyStatsLog
+                    .MESSAGE_UPGRADE_RESOLVED__ORIGINAL_MESSAGE_TYPE__ORIGINAL_MESSAGE_TYPE_MMS;
+            case UNKNOWN -> TelephonyStatsLog
+                    .MESSAGE_UPGRADE_RESOLVED__ORIGINAL_MESSAGE_TYPE__ORIGINAL_MESSAGE_TYPE_UNKNOWN;
+        };
+
+        int dmaUid = 0;
+        if (mCachedDefaultSmsPackage != null) {
+            try {
+                int currentUserId = mContext.getUserId();
+                dmaUid = mContext.getPackageManager().getPackageUid(
+                        mCachedDefaultSmsPackage, currentUserId);
+            } catch (PackageManager.NameNotFoundException e) {
+                Log.e(TAG, "DMA package not found for UID mapping.");
+            }
+        }
+
+        TelephonyStatsLog.write(
+                TelephonyStatsLog.MESSAGE_UPGRADE_RESOLVED,
+                sourceType,
+                originalMessageType,
+                resolveStatus,
+                latencyMs,
+                dmaUid);
     }
 
     /**
@@ -170,18 +229,28 @@ public class MessageUpgradeWorker {
      * requesting package is not the default SMS app itself (to prevent self-upgrading).
      *
      * @param callingPkg The package name of the app requesting to send a message.
+     * @param shouldLog Whether to log the event in case of upgrade not supported.
      * @return {@code true} if the upgrade service is available and the calling package
      *         is eligible for upgrade.
      */
     @VisibleForTesting
-    public boolean isMessageUpgradeSupportedForPackage(String callingPkg) {
+    public boolean isMessageUpgradeSupportedForPackage(String callingPkg, boolean shouldLog) {
         if (TextUtils.isEmpty(callingPkg)) {
             Log.e(TAG, "callingPkg is null or empty.");
             return false;
         }
+
+        boolean isSupported;
         synchronized (mMessageUpgradeLock) {
-            return mCachedIsUpgradeSupported && !callingPkg.equals(mCachedDefaultSmsPackage);
+            isSupported = mCachedIsUpgradeSupported && !callingPkg.equals(mCachedDefaultSmsPackage);
         }
+
+        if (shouldLog && !isSupported) {
+            logMessageUpgradeResolved(
+                    TelephonyStatsLog.MESSAGE_UPGRADE_RESOLVED__STATUS__STATUS_SUCCEEDED,
+                    MessageType.UNKNOWN, 0, false);
+        }
+        return isSupported;
     }
 
     /**
@@ -302,7 +371,8 @@ public class MessageUpgradeWorker {
                 int type = typeObj;
                 if (type == Telephony.Sms.MESSAGE_TYPE_SENT) {
                     dispatchSentIntents(mContext, sentIntents, Activity.RESULT_OK, 0);
-                    discardUpgradedMessagePendingIntents(mSmsPendingSentIntents, messageId);
+                    discardUpgradedMessagePendingIntents(mSmsPendingSentIntents,
+                            messageId, /* isSuccessfullyDispatched= */ true);
                 } else if (type == Telephony.Sms.MESSAGE_TYPE_FAILED) {
                     Integer errorCodeObj = values.getAsInteger(Telephony.Sms.ERROR_CODE);
                     int errorCode = (errorCodeObj != null) ? errorCodeObj : 0;
@@ -321,10 +391,12 @@ public class MessageUpgradeWorker {
                 int status = statusObj;
                 if (status == Telephony.Sms.STATUS_COMPLETE) {
                     dispatchDeliveryIntents(deliveryIntents, Activity.RESULT_OK);
-                    discardUpgradedMessagePendingIntents(mSmsPendingDeliveryIntents, messageId);
+                    discardUpgradedMessagePendingIntents(mSmsPendingDeliveryIntents,
+                            messageId, /* isSuccessfullyDispatched= */ true);
                 } else if (status == Telephony.Sms.STATUS_FAILED) {
                     dispatchDeliveryIntents(deliveryIntents, Activity.RESULT_CANCELED);
-                    discardUpgradedMessagePendingIntents(mSmsPendingDeliveryIntents, messageId);
+                    discardUpgradedMessagePendingIntents(mSmsPendingDeliveryIntents,
+                            messageId, /* isSuccessfullyDispatched= */ true);
                 }
             }
         }
@@ -360,27 +432,53 @@ public class MessageUpgradeWorker {
             int msgBox = msgBoxObj;
             if (msgBox == Telephony.Mms.MESSAGE_BOX_SENT) {
                 dispatchSentIntents(mContext, sentIntents, Activity.RESULT_OK, 0);
-                discardUpgradedMessagePendingIntents(mMmsPendingSentIntents, messageId);
+                discardUpgradedMessagePendingIntents(
+                        mMmsPendingSentIntents, messageId, /* isSuccessfullyDispatched= */ true);
             } else if (msgBox == Telephony.Mms.MESSAGE_BOX_FAILED) {
                 Integer respStatusObj = values.getAsInteger(Telephony.Mms.RESPONSE_STATUS);
                 int errorCode = (respStatusObj != null) ? respStatusObj : 0;
                 dispatchSentIntents(mContext, sentIntents, Activity.RESULT_CANCELED, errorCode);
-                discardUpgradedMessagePendingIntents(mMmsPendingSentIntents, messageId);
+                discardUpgradedMessagePendingIntents(
+                        mMmsPendingSentIntents, messageId, /* isSuccessfullyDispatched= */ true);
             }
         }
     }
 
-    private void storePendingIntents(MessageType type, long id,
-            List<PendingIntent> sent, List<PendingIntent> delivery) {
+    private void storePendingIntents(MessageType type, long id, List<PendingIntent> sent,
+            List<PendingIntent> delivery) {
+
+        int sourceType = Binder.getCallingUid() == BLUETOOTH_UID
+                ? TelephonyStatsLog
+                .MESSAGE_UPGRADE_INTENT_CACHED__SOURCE_TYPE__SOURCE_TYPE_BLUETOOTH
+                : TelephonyStatsLog
+                        .MESSAGE_UPGRADE_INTENT_CACHED__SOURCE_TYPE__SOURCE_TYPE_THIRD_PARTY_APP;
+        int messageTypeSms = TelephonyStatsLog
+                .MESSAGE_UPGRADE_INTENT_CACHED__UPGRADE_TYPE__ORIGINAL_MESSAGE_TYPE_SMS;
+        int messageTypeMms = TelephonyStatsLog
+                .MESSAGE_UPGRADE_INTENT_CACHED__UPGRADE_TYPE__ORIGINAL_MESSAGE_TYPE_MMS;
+        int intentTypeSent = TelephonyStatsLog
+                .MESSAGE_UPGRADE_INTENT_CACHED__INTENT_TYPE__UPGRADE_INTENT_SENT;
+        int intentTypeDelivery = TelephonyStatsLog
+                .MESSAGE_UPGRADE_INTENT_CACHED__INTENT_TYPE__UPGRADE_INTENT_DELIVERY;
         synchronized (mMessageUpgradeLock) {
             if (sent != null && !sent.isEmpty()) {
                 switch (type) {
-                    case SMS -> mSmsPendingSentIntents.put(id, sent);
-                    case MMS -> mMmsPendingSentIntents.put(id, sent);
+                    case SMS -> {
+                        PendingIntentRecord record = new PendingIntentRecord(sent,
+                                messageTypeSms, sourceType, intentTypeSent);
+                        mSmsPendingSentIntents.put(id, record);
+                    }
+                    case MMS -> {
+                        PendingIntentRecord record = new PendingIntentRecord(sent,
+                                messageTypeMms, sourceType, intentTypeSent);
+                        mMmsPendingSentIntents.put(id, record);
+                    }
                 }
             }
             if (delivery != null && !delivery.isEmpty() && type == MessageType.SMS) {
-                mSmsPendingDeliveryIntents.put(id, delivery);
+                PendingIntentRecord record = new PendingIntentRecord(delivery,
+                        messageTypeSms, sourceType, intentTypeDelivery);
+                mSmsPendingDeliveryIntents.put(id, record);
             }
         }
     }
@@ -388,10 +486,13 @@ public class MessageUpgradeWorker {
     private void discardAllPendingIntents(MessageType type, long id) {
         synchronized (mMessageUpgradeLock) {
             if (type == MessageType.SMS) {
-                mSmsPendingSentIntents.remove(id);
-                mSmsPendingDeliveryIntents.remove(id);
+                discardUpgradedMessagePendingIntents(
+                        mSmsPendingSentIntents, id, /* isSuccessfullyDispatched= */ false);
+                discardUpgradedMessagePendingIntents(
+                        mSmsPendingDeliveryIntents, id, /* isSuccessfullyDispatched= */ false);
             } else {
-                mMmsPendingSentIntents.remove(id);
+                discardUpgradedMessagePendingIntents(
+                        mMmsPendingSentIntents, id, /* isSuccessfullyDispatched= */ false);
             }
         }
     }
@@ -400,15 +501,33 @@ public class MessageUpgradeWorker {
             PendingIntentCache pendingIntents,
             long messageId) {
         synchronized (mMessageUpgradeLock) {
-            return pendingIntents.get(messageId);
+            PendingIntentRecord record = pendingIntents.get(messageId);
+            return (record != null) ? record.mIntents : null;
         }
     }
 
     private void discardUpgradedMessagePendingIntents(
             PendingIntentCache pendingIntents,
-            long messageId) {
+            long messageId, boolean isSuccessfullyDispatched) {
+        PendingIntentRecord record;
         synchronized (mMessageUpgradeLock) {
-            pendingIntents.remove(messageId);
+            record = pendingIntents.remove(messageId);
+        }
+        if (record != null) {
+            int timeInCacheMs = (int) (android.os.SystemClock.elapsedRealtime()
+                    - record.mAddedTimeMs);
+            int eventType = isSuccessfullyDispatched
+                    ? TelephonyStatsLog
+                        .MESSAGE_UPGRADE_INTENT_CACHED__CACHE_EVENT__CACHE_EVENT_REMOVED_DISPATCHED
+                    : TelephonyStatsLog
+                        .MESSAGE_UPGRADE_INTENT_CACHED__CACHE_EVENT__CACHE_EVENT_REMOVED_REJECTED;
+            TelephonyStatsLog.write(
+                    TelephonyStatsLog.MESSAGE_UPGRADE_INTENT_CACHED,
+                    record.mSourceType,
+                    record.mOriginalMessageType,
+                    eventType,
+                    record.mIntentType,
+                    timeInCacheMs);
         }
     }
 
@@ -470,7 +589,7 @@ public class MessageUpgradeWorker {
         };
     }
 
-    private static class PendingIntentCache extends LinkedHashMap<Long, List<PendingIntent>> {
+    private static class PendingIntentCache extends LinkedHashMap<Long, PendingIntentRecord> {
         private final int mMaxSize;
 
         PendingIntentCache(int maxSize) {
@@ -479,8 +598,40 @@ public class MessageUpgradeWorker {
         }
 
         @Override
-        protected boolean removeEldestEntry(Map.Entry<Long, List<PendingIntent>> eldest) {
-            return (size() > mMaxSize);
+        protected boolean removeEldestEntry(Map.Entry<Long, PendingIntentRecord> eldest) {
+            if (size() > mMaxSize) {
+                PendingIntentRecord record = eldest.getValue();
+                int timeInCacheMs = (int) (android.os.SystemClock.elapsedRealtime()
+                        - record.mAddedTimeMs);
+                int eventType = TelephonyStatsLog
+                        .MESSAGE_UPGRADE_INTENT_CACHED__CACHE_EVENT__CACHE_EVENT_REMOVED_EVICTED;
+                TelephonyStatsLog.write(
+                        TelephonyStatsLog.MESSAGE_UPGRADE_INTENT_CACHED,
+                        record.mSourceType,
+                        record.mOriginalMessageType,
+                        eventType,
+                        record.mIntentType,
+                        timeInCacheMs);
+                return true;
+            }
+            return false;
+        }
+    }
+
+    private static class PendingIntentRecord {
+        final List<PendingIntent> mIntents;
+        final long mAddedTimeMs;
+        final int mOriginalMessageType;
+        final int mSourceType;
+        final int mIntentType;
+
+        PendingIntentRecord(List<PendingIntent> intents, int originalMessageType, int sourceType,
+                int intentType) {
+            this.mIntents = intents;
+            this.mAddedTimeMs = android.os.SystemClock.elapsedRealtime();
+            this.mOriginalMessageType = originalMessageType;
+            this.mSourceType = sourceType;
+            this.mIntentType = intentType;
         }
     }
 }

@@ -191,6 +191,16 @@ flag {
 }
 
 flag {
+    name: "location_auditing"
+    namespace: "location"
+    description: "Flag for auditing MLS violations"
+    bug: "431045539"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "support_codetype_in_gnss_status"
     namespace: "location"
     description: "Support code type and elapsed real time in GnssStatus"

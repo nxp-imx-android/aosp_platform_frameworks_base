@@ -22,6 +22,7 @@ import com.android.internal.widget.lockPatternUtils
 import com.android.keyguard.keyguardUpdateMonitor
 import com.android.systemui.animation.dialogTransitionAnimator
 import com.android.systemui.colorextraction.fakeSysuiColorExtractor
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.shade.fakeShadeController
 import com.android.systemui.statusbar.phone.fakeLightBarController
@@ -67,6 +68,7 @@ val Kosmos.actionsDialogLiteDelegateFactory:
                 accessibilityManager,
                 dialogTransitionAnimator,
                 systemUIDialogDotFactory,
+                deviceEntryInteractor,
             )
         }
     }

@@ -120,6 +120,7 @@ public class Policies {
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(),
+            /* resolutionMechanism= */ null,
             /* minValue= */ Integer.MIN_VALUE,
             /* maxValue= */ Integer.MAX_VALUE
         ));
@@ -132,6 +133,7 @@ public class Policies {
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(),
+            /* resolutionMechanism= */ null,
             /* minValue= */ -100,
             /* maxValue= */ 100
         ));
@@ -146,6 +148,7 @@ public class Policies {
             /* allowedDpcTypes= */ Set.of(
                 1  // DEVICE_OWNER
             ),
+            /* resolutionMechanism= */ null,
             /* minValue= */ Integer.MIN_VALUE,
             /* maxValue= */ Integer.MAX_VALUE
         ));
@@ -160,6 +163,7 @@ public class Policies {
             /* allowedDpcTypes= */ Set.of(
                 2  // FINANCED_DEVICE_OWNER
             ),
+            /* resolutionMechanism= */ null,
             /* minValue= */ Integer.MIN_VALUE,
             /* maxValue= */ Integer.MAX_VALUE
         ));
@@ -174,6 +178,7 @@ public class Policies {
             /* allowedDpcTypes= */ Set.of(
                 3  // MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
             ),
+            /* resolutionMechanism= */ null,
             /* minValue= */ Integer.MIN_VALUE,
             /* maxValue= */ Integer.MAX_VALUE
         ));
@@ -188,6 +193,7 @@ public class Policies {
             /* allowedDpcTypes= */ Set.of(
                 4  // PROFILE_OWNER_ON_USER0
             ),
+            /* resolutionMechanism= */ null,
             /* minValue= */ Integer.MIN_VALUE,
             /* maxValue= */ Integer.MAX_VALUE
         ));
@@ -202,6 +208,7 @@ public class Policies {
             /* allowedDpcTypes= */ Set.of(
                 5  // MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
             ),
+            /* resolutionMechanism= */ null,
             /* minValue= */ Integer.MIN_VALUE,
             /* maxValue= */ Integer.MAX_VALUE
         ));
@@ -217,6 +224,7 @@ public class Policies {
                 6, // UNAFFILIATED_FULL_USER_PROFILE_OWNER
                 7  // AFFILIATED_FULL_USER_PROFILE_OWNER
             ),
+            /* resolutionMechanism= */ null,
             /* minValue= */ Integer.MIN_VALUE,
             /* maxValue= */ Integer.MAX_VALUE
         ));
@@ -231,6 +239,7 @@ public class Policies {
             /* allowedDpcTypes= */ Set.of(
                 7  // AFFILIATED_FULL_USER_PROFILE_OWNER
             ),
+            /* resolutionMechanism= */ null,
             /* minValue= */ Integer.MIN_VALUE,
             /* maxValue= */ Integer.MAX_VALUE
         ));
@@ -246,6 +255,7 @@ public class Policies {
                 6, // UNAFFILIATED_FULL_USER_PROFILE_OWNER
                 7  // AFFILIATED_FULL_USER_PROFILE_OWNER
             ),
+            /* resolutionMechanism= */ null,
             /* minValue= */ Integer.MIN_VALUE,
             /* maxValue= */ Integer.MAX_VALUE
         ));
@@ -258,6 +268,7 @@ public class Policies {
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(),
+            /* resolutionMechanism= */ null,
             /* minValue= */ Integer.MIN_VALUE,
             /* maxValue= */ Integer.MAX_VALUE
         ));
@@ -275,6 +286,7 @@ public class Policies {
                 5, // MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
                 7  // AFFILIATED_FULL_USER_PROFILE_OWNER
             ),
+            /* resolutionMechanism= */ null,
             /* minValue= */ Integer.MIN_VALUE,
             /* maxValue= */ Integer.MAX_VALUE
         ));
@@ -287,6 +299,7 @@ public class Policies {
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(),
+            /* resolutionMechanism= */ null,
             /* minValue= */ Integer.MIN_VALUE,
             /* maxValue= */ Integer.MAX_VALUE
         ));
@@ -299,6 +312,7 @@ public class Policies {
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(),
+            /* resolutionMechanism= */ null,
             /* minValue= */ Long.MIN_VALUE,
             /* maxValue= */ Long.MAX_VALUE
         ));
@@ -311,6 +325,7 @@ public class Policies {
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(),
+            /* resolutionMechanism= */ null,
             /* minValue= */ 10L,
             /* maxValue= */ 100L
         ));

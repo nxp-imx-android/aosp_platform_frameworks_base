@@ -17,39 +17,25 @@
 package android.processor.devicepolicy.test
 
 import android.processor.devicepolicy.protos.PolicyMetadata
-import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata
 import android.tools.policymetadata.Generator
 import org.junit.Test
 
 class LongGeneratorTest {
 
-    private fun longTestPolicy(
-        name: String,
-        minValue: Long? = null,
-        maxValue: Long? = null,
-    ): PolicyMetadata.Builder {
-        val longMetadata = TypeSpecificPolicyMetadata.LongPolicyMetadata.newBuilder()
-        if (minValue != null) {
-            longMetadata.setMinValue(minValue)
+    private fun longTestPolicy(name: String): PolicyMetadata.Builder =
+        PolicyMetadata.newBuilder().apply {
+            identifier = simpleNameToFieldName(name)
+            typeSpecificMetadataBuilder.longMetadataBuilder.resolutionMechanismBuilder.custom = true
         }
-        if (maxValue != null) {
-            longMetadata.setMaxValue(maxValue)
-        }
-
-        return PolicyMetadata.newBuilder()
-            .setIdentifier(simpleNameToFieldName(name))
-            .setTypeSpecificMetadata(
-                TypeSpecificPolicyMetadata.newBuilder().setLongMetadata(longMetadata)
-            )
-    }
 
     @Test
     fun test_outputMatches() {
         val javaFile =
             Generator.generate(
-                longTestPolicy("test.package.PolicyContainer.MY_TEST_LONG_POLICY")
-                    .addAllAllowedScopes(listOf(PolicyMetadata.PolicyScope.POLICY_SCOPE_DEVICE))
-                    .setAffectedResource(PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE)
+                longTestPolicy("test.package.PolicyContainer.MY_TEST_LONG_POLICY").apply {
+                    addAllowedScopes(PolicyMetadata.PolicyScope.POLICY_SCOPE_DEVICE)
+                    affectedResource = PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE
+                }
             )
 
         javaFile.assertContainsPolicy(
@@ -65,6 +51,7 @@ class LongGeneratorTest {
                       /* requiredPermission= */ null,
                       /* requiredCrossUserPermission= */ null,
                       /* allowedDpcTypes= */ Set.of(),
+                      /* resolutionMechanism= */ null,
                       /* minValue= */ Long.MIN_VALUE,
                       /* maxValue= */ Long.MAX_VALUE
                   ));
@@ -76,30 +63,57 @@ class LongGeneratorTest {
     fun test_withMinMax_outputMatches() {
         val javaFile =
             Generator.generate(
-                longTestPolicy(
-                        "test.package.PolicyContainer.SIMPLE_LONG_POLICY_WITH_RANGE",
-                        minValue = 10,
-                        maxValue = 100,
-                    )
-                    .addAllAllowedScopes(listOf(PolicyMetadata.PolicyScope.POLICY_SCOPE_DEVICE))
-                    .setAffectedResource(PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE)
+                longTestPolicy("test.package.PolicyContainer.LONG_POLICY").apply {
+                    typeSpecificMetadataBuilder.longMetadataBuilder.apply {
+                        minValue = 10L
+                        maxValue = 100L
+                    }
+                }
             )
 
         javaFile.assertContainsPolicy(
-            staticImports = listOf("test.package.PolicyContainer.SIMPLE_LONG_POLICY_WITH_RANGE"),
+            staticImports = listOf("test.package.PolicyContainer.LONG_POLICY"),
             code =
                 """
                   policies.add(new LongPolicyMetadata(
-                      /* id= */ SIMPLE_LONG_POLICY_WITH_RANGE,
-                      /* allowedScopes= */ Set.of(
-                          2
-                      ),
-                      /* affectedResource= */ 1,
+                      /* id= */ LONG_POLICY,
+                      /* allowedScopes= */ Set.of(),
+                      /* affectedResource= */ 0,
                       /* requiredPermission= */ null,
                       /* requiredCrossUserPermission= */ null,
                       /* allowedDpcTypes= */ Set.of(),
+                      /* resolutionMechanism= */ null,
                       /* minValue= */ 10L,
                       /* maxValue= */ 100L
+                  ));
+                """,
+        )
+    }
+
+    @Test
+    fun test_resolutionMechanismNotCoexistable_outputMatches() {
+        val javaFile =
+            Generator.generate(
+                longTestPolicy("test.package.MY_TEST_LONG_POLICY").apply {
+                    typeSpecificMetadataBuilder.longMetadataBuilder.resolutionMechanismBuilder
+                        .notCoexistable = true
+                }
+            )
+
+        javaFile.assertContainsPolicy(
+            staticImports = listOf("test.package.MY_TEST_LONG_POLICY"),
+            code =
+                """
+                  policies.add(new LongPolicyMetadata(
+                      /* id= */ MY_TEST_LONG_POLICY,
+                      /* allowedScopes= */ Set.of(),
+                      /* affectedResource= */ 0,
+                      /* requiredPermission= */ null,
+                      /* requiredCrossUserPermission= */ null,
+                      /* allowedDpcTypes= */ Set.of(),
+                      /* resolutionMechanism= */ new ResolutionMechanismMetadata.NotCoexistable(),
+                      /* minValue= */ Long.MIN_VALUE,
+                      /* maxValue= */ Long.MAX_VALUE
                   ));
                 """,
         )

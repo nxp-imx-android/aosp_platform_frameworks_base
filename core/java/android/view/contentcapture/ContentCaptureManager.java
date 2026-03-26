@@ -20,6 +20,7 @@ import static android.view.contentcapture.ContentCaptureHelper.sVerbose;
 import static android.view.contentcapture.ContentCaptureHelper.toSet;
 import static android.view.contentprotection.flags.Flags.FLAG_SET_CONTENT_PROTECTION_ALLOWLIST_ENABLED;
 import static android.view.contentcapture.flags.Flags.deprecateSetContentCaptureEnabled;
+
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
@@ -460,7 +461,7 @@ public final class ContentCaptureManager {
     /** @hide */
     public static final int DEFAULT_IDLE_FLUSHING_FREQUENCY_MS = 5_000;
     /** @hide */
-    public static final int DEFAULT_TEXT_CHANGE_FLUSHING_FREQUENCY_MS = 1_000;
+    public static final int DEFAULT_TEXT_CHANGE_FLUSHING_FREQUENCY_MS = 500;
     /** @hide */
     public static final int DEFAULT_LOG_HISTORY_SIZE = 10;
     /** @hide */

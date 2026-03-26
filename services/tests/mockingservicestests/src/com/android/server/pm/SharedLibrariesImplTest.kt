@@ -252,7 +252,8 @@ class SharedLibrariesImplTest {
         val scanRequest = ScanRequest(parsedPackage, null, null, null, null,
             null, null, null, 0, 0, false, null, null, false)
         val scanResult = ScanResult(scanRequest, null, false, 0, null, null, null)
-        var installRequest = InstallRequest(parsedPackage, 0, 0, UserHandle(0), scanResult, null)
+        var installRequest =
+            InstallRequest(parsedPackage, 0, 0, UserHandle(0), scanResult, null, null, false)
 
         val latestInfoSetting =
             mSharedLibrariesImpl.getStaticSharedLibLatestVersionSetting(installRequest)!!
@@ -282,7 +283,8 @@ class SharedLibrariesImplTest {
         val scanRequest = ScanRequest(parsedPackage5, null, null, null, null,
             null, null, null, 0, 0, false, null, null, false)
         val scanResult = ScanResult(scanRequest, null, false, 0, null, null, null)
-        val installRequest = InstallRequest(parsedPackage5, 0, 0, UserHandle(0), scanResult, null)
+        val installRequest =
+            InstallRequest(parsedPackage5, 0, 0, UserHandle(0), scanResult, null, null, false)
 
         // This should still return the PackageSetting for version 10, because they share
         // the same package name, and we need to check signatures against it.
@@ -368,7 +370,8 @@ class SharedLibrariesImplTest {
     fun getAllowedSharedLibInfos_withStaticSharedLibInfo() {
         val testInfo = libOfStatic(TEST_LIB_PACKAGE_NAME, TEST_LIB_NAME, 1L)
         val scanResult = ScanResult(mock(), null, false, 0, null, testInfo, null)
-        var installRequest = InstallRequest(mock(), 0, 0, UserHandle(0), scanResult, null)
+        var installRequest =
+            InstallRequest(mock(), 0, 0, UserHandle(0), scanResult, null, null, false)
 
         val allowedInfos = mSharedLibrariesImpl.getAllowedSharedLibInfos(installRequest)
 
@@ -391,7 +394,8 @@ class SharedLibrariesImplTest {
             null, null, null, 0, 0, false, null, null, false)
         val scanResult = ScanResult(scanRequest, packageSetting, false, 0, null, null,
             listOf(testInfo))
-        var installRequest = InstallRequest(parsedPackage, 0, 0, UserHandle(0), scanResult, null)
+        var installRequest =
+            InstallRequest(parsedPackage, 0, 0, UserHandle(0), scanResult, null, null, false)
 
         val allowedInfos = mSharedLibrariesImpl.getAllowedSharedLibInfos(installRequest)
 

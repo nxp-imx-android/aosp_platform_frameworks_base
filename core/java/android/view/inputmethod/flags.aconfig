@@ -89,6 +89,16 @@ flag {
 }
 
 flag {
+  name: "fix_ime_not_showing_in_floating_mode_after_unlock"
+  namespace: "input_method"
+  description: "Fix for not showing floating mode IME after unlock by invalidating mGivenInsetsReady."
+  bug: "457615714"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "fix_jank_tracker_ime_animation_delay"
   namespace: "input_method"
   description: "Fix IME inset animation delay because of IME Jank Tracker"
@@ -221,6 +231,13 @@ flag {
     namespace: "tv_os"
     description: "Feature flag for adding config_preventImeStartupBypassedApps"
     bug: "394569237"
+}
+
+flag {
+  name: "prevent_ime_startup_on_tv"
+  namespace: "tv_os"
+  description: "Enables config_preventImeStartupUnlessTextEditor on all TVs"
+  bug: "365002571"
 }
 
 flag {

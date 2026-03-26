@@ -36,6 +36,7 @@ import android.app.appfunctions.ExecuteAppFunctionRequest;
 import android.app.appfunctions.ExecuteAppFunctionResponse;
 import android.app.appfunctions.IAppFunctionManager;
 import android.app.appfunctions.IExecuteAppFunctionCallback;
+import android.app.appfunctions.IIsAppFunctionEnabledCallback;
 import android.app.appfunctions.ISetAppFunctionEnabledCallback;
 import android.app.appsearch.GenericDocument;
 import android.app.appsearch.SearchResult;
@@ -95,6 +96,9 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         pw.println(
                 "    --user <USER_ID> (optional): The user ID to list functions for. "
                         + "Defaults to the current user.");
+        pw.println(
+                "    --package <PACKAGE_NAME> (optional): Package name to list functions for. "
+                        + "Defaults to all packages.");
         pw.println();
         pw.println(
                 "  execute-app-function --package <PACKAGE_NAME> --function <FUNCTION_ID> "
@@ -128,6 +132,19 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         pw.println(
                 "    --user <USER_ID> (optional): The user ID under which to set the function state"
                         + ". Defaults to the current user.");
+        pw.println();
+        pw.println(
+                "  is-enabled --package <PACKAGE_NAME> --function <FUNCTION_ID> "
+                        + "[--user <USER_ID>]");
+        pw.println("    Checks if an app function is enabled for the specified package.");
+        pw.println("    --package <PACKAGE_NAME>: The target package name.");
+        pw.println("    --function <FUNCTION_ID>: The ID of the app function.");
+        pw.println(
+                "    --user <USER_ID> (optional): The user ID under which to check the function"
+                        + " state. Defaults to the current user.");
+        pw.println();
+        pw.println("  purge-allowlist-cache");
+        pw.println("    Purges the allowlist cache.");
 
         pw.println();
 
@@ -207,6 +224,8 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                     return runExecuteAppFunction();
                 case "set-enabled":
                     return runSetAppFunctionEnabled();
+                case "is-enabled":
+                    return runIsAppFunctionEnabled();
                 case "grant-app-function-access":
                     if (!accessCheckFlagsEnabled()) {
                         return -1;
@@ -247,18 +266,6 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                         return -1;
                     }
                     return resetTestPageSize();
-                case "set-test-allowlist-entry":
-                    // TODO(b/457349791): Remove once allowlist service is ready
-                    if (!android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
-                        return -1;
-                    }
-                    return setTestAllowlistEntry();
-                case "clear-test-allowlist":
-                    // TODO(b/457349791): Remove once allowlist service is ready
-                    if (!android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
-                        return -1;
-                    }
-                    return clearTestAllowlist();
                 case "enable-allowlist":
                     // TODO(b/457349791): Remove this once the source is stable to avoid disruption
                     if (!android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
@@ -274,6 +281,11 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                 case "read-app-description":
                     // Not added to help, because it is not a platform feature yet.
                     return readAppDescription();
+                case "purge-allowlist-cache":
+                    if (!android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
+                        return -1;
+                    }
+                    return purgeAllowlistCache();
                 default:
                     return handleDefaultCommands(cmd);
             }
@@ -348,6 +360,7 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         final PrintWriter pw = getOutPrintWriter();
         int userId = ActivityManager.getCurrentUser();
         String opt;
+        String packageName = null;
 
         while ((opt = getNextOption()) != null) {
             switch (opt) {
@@ -357,6 +370,9 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                     } catch (NumberFormatException e) {
                         pw.println("Invalid user ID: " + getNextArg() + ". Using current user.");
                     }
+                    break;
+                case "--package":
+                    packageName = getNextArgRequired();
                     break;
                 default:
                     pw.println("Unknown option: " + opt);
@@ -369,7 +385,7 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         try {
             Map<String, List<SearchResult>> perPackageSearchResult =
                     AppFunctionDumpHelper.queryAppFunctionsStateForUser(
-                            context, /* isVerbose= */ true);
+                            context, packageName, /* isVerbose= */ true);
             JSONObject jsonObject = new JSONObject();
             for (Map.Entry<String, List<SearchResult>> entry : perPackageSearchResult.entrySet()) {
                 JSONArray searchResults = new JSONArray();
@@ -476,6 +492,72 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         }
 
         return -1;
+    }
+
+    private int runIsAppFunctionEnabled() throws Exception {
+        final PrintWriter pw = getOutPrintWriter();
+        String packageName = null;
+        String functionId = null;
+        int userId = ActivityManager.getCurrentUser();
+        String opt;
+        int enabledState = AppFunctionManager.APP_FUNCTION_STATE_DEFAULT;
+
+        while ((opt = getNextOption()) != null) {
+            switch (opt) {
+                case "--package":
+                    packageName = getNextArgRequired();
+                    break;
+                case "--function":
+                    functionId = getNextArgRequired();
+                    break;
+                case "--user":
+                    try {
+                        userId = UserHandle.parseUserArg(getNextArgRequired());
+                    } catch (NumberFormatException e) {
+                        pw.println("Invalid user ID: " + getNextArg() + ". Using current user.");
+                    }
+                    break;
+                default:
+                    pw.println("Unknown option: " + opt);
+                    return -1;
+            }
+        }
+
+        if (packageName == null) {
+            pw.println("Error: --package must be specified.");
+            return -1;
+        }
+        if (functionId == null) {
+            pw.println("Error: --function must be specified.");
+            return -1;
+        }
+
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        IIsAppFunctionEnabledCallback callback =
+                new IIsAppFunctionEnabledCallback.Stub() {
+                    @RequiresNoPermission
+                    @Override
+                    public void onSuccess(boolean isEnabled) {
+                        pw.println(isEnabled);
+                        countDownLatch.countDown();
+                    }
+
+                    @RequiresNoPermission
+                    @Override
+                    public void onError(android.os.ParcelableException exception) {
+                        pw.println("Error checking app function state: " + exception);
+                        countDownLatch.countDown();
+                    }
+                };
+        mService.isAppFunctionEnabled(
+                packageName, packageName, functionId, UserHandle.of(userId), callback);
+
+        boolean completed = countDownLatch.await(5, TimeUnit.SECONDS);
+        if (!completed) {
+            pw.println("Timed out");
+        }
+        pw.flush();
+        return 0;
     }
 
     private int runExecuteAppFunction() throws Exception {
@@ -805,66 +887,6 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         return 0;
     }
 
-    private int setTestAllowlistEntry() {
-        final PrintWriter pw = getOutPrintWriter();
-        SignedPackage agentPackage = null;
-        List<String> appPackages = null;
-
-        String opt;
-        while ((opt = getNextOption()) != null) {
-            if (opt.equals("--agent-package")) {
-                agentPackage = parseSignedPackage(getNextArgRequired());
-            } else if (opt.equals("--app-packages")) {
-                String rawAppPackagesInput = getNextArgRequired();
-                try {
-                    String[] rawAppPackages = rawAppPackagesInput.split(",");
-                    appPackages = new ArrayList<>();
-                    for (String rawAppPackage : rawAppPackages) {
-                        SignedPackage appPackage = parseSignedPackage(rawAppPackage);
-                        if (appPackage != null) {
-                            appPackages.add(appPackage.getPackageName());
-                        } else {
-                            throw new IllegalArgumentException("Unable to parse " + rawAppPackage);
-                        }
-                    }
-                } catch (Exception e) {
-                    pw.println("Unable to parse " + rawAppPackagesInput);
-                }
-            } else {
-                pw.println("Unknown option: " + opt);
-                return -1;
-            }
-        }
-
-        if (agentPackage == null) {
-            pw.println("Error: --agent-package is required");
-            return -1;
-        }
-
-        if (appPackages == null) {
-            pw.println("Error: --app-packages is required");
-            return -1;
-        }
-
-        SystemAppFunctionAllowlistReader.getInstance(mContext)
-                .setTestAllowlist(agentPackage, appPackages);
-
-        pw.println("Set test allowlist entry");
-        return 0;
-    }
-
-    @Nullable
-    private SignedPackage parseSignedPackage(@NonNull String rawString) {
-        return SignedPackageParser.parse(rawString);
-    }
-
-    private int clearTestAllowlist() {
-        final PrintWriter pw = getOutPrintWriter();
-        SystemAppFunctionAllowlistReader.getInstance(mContext).clearTestAllowlist();
-        pw.println("Clear test allowlist");
-        return 0;
-    }
-
     private int enableAllowlist() {
         final PrintWriter pw = getOutPrintWriter();
         SystemAppFunctionAllowlistReader.getInstance(mContext).enableAllowlist();
@@ -876,6 +898,13 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         final PrintWriter pw = getOutPrintWriter();
         SystemAppFunctionAllowlistReader.getInstance(mContext).disableAllowlist();
         pw.println("Disable allowlist");
+        return 0;
+    }
+
+    private int purgeAllowlistCache() {
+        final PrintWriter pw = getOutPrintWriter();
+        SystemAppFunctionAllowlistReader.getInstance(mContext).purgeCache();
+        pw.println("Purge allowlist cache");
         return 0;
     }
 

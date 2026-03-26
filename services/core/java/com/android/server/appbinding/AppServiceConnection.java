@@ -45,7 +45,6 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
     private final AppBindingConstants mConstants;
     private final AppServiceFinder mFinder;
     private final String mPackageName;
-    private final ConditionVariable mConditionVariable = new ConditionVariable();
     private final Handler mHandler;
     @GuardedBy("mLock")
     private final Queue<AppServiceCallback> mAppServiceCallbacks = new ArrayDeque<>();

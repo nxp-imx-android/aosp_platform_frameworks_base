@@ -926,6 +926,7 @@ android_robolectric_test {
         "RoboTestLibraries",
         "androidx.compose.runtime_runtime",
         "androidx.compose.ui_ui-test-junit4",
+        "platform-compat-test-rules",
         "SystemUI_pod_tests",
         "SystemUI_test_fixtures",
     ],
@@ -978,6 +979,30 @@ android_robolectric_test {
     strict_mode: false,
 }
 
+// "Stub" app that we use as the main module when running
+// SystemUiRavenTests on Sonata.
+// (We can probably generate it on the fly within sonata using
+// SystemUiRavenTests's definition, but let's just use this explicit
+// app at least for now.)
+//
+// We do not use it when running SystemUiRavenTests with atest.
+android_app {
+    name: "SystemUiRaven-stub",
+    manifest: "AndroidManifest-robo.xml",
+    static_libs: [
+        "SystemUI-res",
+    ],
+    srcs: [], // No source files
+    resource_dirs: [], // Don't include res/ (It's in "SystemUI-res" already)
+    platform_apis: true,
+    certificate: "platform",
+    optimize: {
+        optimize: false,
+        shrink_resources: false,
+        optimized_shrink_resources: false,
+    },
+}
+
 android_ravenwood_test {
     name: "SystemUiRavenTests",
     package_name: "com.android.systemui.tests.raven",
@@ -1000,6 +1025,7 @@ android_ravenwood_test {
         "kotlin-test",
         "mockito-kotlin-nodeps",
         "androidx.compose.runtime_runtime",
+        "platform-compat-test-rules",
     ],
     libs: [
         "android.test.runner.impl",

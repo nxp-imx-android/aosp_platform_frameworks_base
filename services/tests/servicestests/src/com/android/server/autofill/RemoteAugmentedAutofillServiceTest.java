@@ -27,7 +27,9 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -47,11 +49,13 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.service.autofill.Dataset;
 import android.service.autofill.Field;
+import android.service.autofill.FillEventHistory;
 import android.service.autofill.InlinePresentation;
 import android.service.autofill.InlineSuggestionRenderService;
 import android.service.autofill.augmented.IAugmentedAutofillService;
 import android.service.autofill.augmented.IFillCallback;
 import android.service.personalcontext.hint.AutofillInlineRequestHint;
+import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHint;
 import android.testing.TestableContext;
 import android.util.Size;
@@ -80,7 +84,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.verification.VerificationMode;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -105,6 +111,7 @@ public class RemoteAugmentedAutofillServiceTest {
 
     private static final int USER_ID = 0;
     private static final int REQUEST_TIMEOUT_MS = 2000;
+    private static final int TASK_ID = 4567;
 
     private static final InlinePresentationSpec AUTOFILL_INLINE_PRESENTATION_SPEC =
             new InlinePresentationSpec.Builder(new Size(100, 100), new Size(100, 100)).build();
@@ -115,6 +122,10 @@ public class RemoteAugmentedAutofillServiceTest {
     private static final ComponentName ACTIVITY_COMPONENT_NAME =
             new ComponentName("test_activity_package", "test_activity_class");
     private static final AutofillValue AUTOFILL_VALUE = AutofillValue.forText("test_value");
+    private static final AutofillId FOCUSED_ID = new AutofillId(3);
+    private static final InlineSuggestionsRequest INLINE_SUGGESTIONS_REQUEST =
+            new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
+                    .build();
 
     private final Function<InlineFillUi, Boolean> mInlineSuggestionsCallback =
             inlineFillUi -> {
@@ -216,32 +227,14 @@ public class RemoteAugmentedAutofillServiceTest {
     public void onRequestAutofillLocked_bothResponses_choosesPersonalContextResult()
             throws Exception {
         final int sessionId = 1234;
-        AutofillId focusedId = new AutofillId(3);
-        final InlineSuggestionsRequest inlineSuggestionsRequest =
-                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
-                        .build();
-        // Request augmented autofill.
-        mService.onRequestAutofillLocked(
-                sessionId,
-                mClient,
-                4567, // taskId
-                ACTIVITY_COMPONENT_NAME,
-                mActivityToken,
-                focusedId,
-                AUTOFILL_VALUE,
-                inlineSuggestionsRequest,
-                mInlineSuggestionsCallback,
-                () -> {}, // onErrorCallback
-                mRemoteInlineSuggestionRenderService,
-                USER_ID);
+        requestAugmentedAutofill(sessionId);
 
         // Augmented autofill service receives fill request.
-        IFillCallback fillCallback =
-                triggerAugmentedAutofillRequest(sessionId, ACTIVITY_COMPONENT_NAME, focusedId);
+        IFillCallback fillCallback = triggerAugmentedAutofillRequest(sessionId);
 
         // Both augmented autofill and personal context provide a response.
-        sendAutofillResponse(focusedId, fillCallback, false);
-        sendPersonalContextResponse(sessionId, focusedId);
+        sendAutofillResponse(FOCUSED_ID, fillCallback, false);
+        sendPersonalContextResponse(sessionId, FOCUSED_ID);
 
         // Verify inline suggestions are applied.
         assertInlinePresentationResult(PERSONAL_CONTEXT_INLINE_PRESENTATION_SPEC);
@@ -252,31 +245,13 @@ public class RemoteAugmentedAutofillServiceTest {
     public void onRequestAutofillLocked_emptyPersonalContextResponse_choosesAutofillResults()
             throws Exception {
         final int sessionId = 1234;
-        AutofillId focusedId = new AutofillId(3);
-        final InlineSuggestionsRequest inlineSuggestionsRequest =
-                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
-                        .build();
-        // Request augmented autofill.
-        mService.onRequestAutofillLocked(
-                sessionId,
-                mClient,
-                4567, // taskId
-                ACTIVITY_COMPONENT_NAME,
-                mActivityToken,
-                focusedId,
-                AUTOFILL_VALUE,
-                inlineSuggestionsRequest,
-                mInlineSuggestionsCallback,
-                () -> {}, // onErrorCallback
-                mRemoteInlineSuggestionRenderService,
-                USER_ID);
+        requestAugmentedAutofill(sessionId);
 
         // Augmented autofill service receives fill request.
-        IFillCallback fillCallback =
-                triggerAugmentedAutofillRequest(sessionId, ACTIVITY_COMPONENT_NAME, focusedId);
+        IFillCallback fillCallback = triggerAugmentedAutofillRequest(sessionId);
 
         // Both augmented autofill and personal context provide a response.
-        sendAutofillResponse(focusedId, fillCallback, false);
+        sendAutofillResponse(FOCUSED_ID, fillCallback, false);
         sendEmptyPersonalContextResponse(sessionId);
 
         // Autofill result is chosen as the personal context response is empty.
@@ -285,8 +260,9 @@ public class RemoteAugmentedAutofillServiceTest {
 
     @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     @Test
-    public void onRequestAutofillLocked_onlyAutofillResponse_choosesAutofillResult()
-            throws Exception {
+    public void onRequestAutofillLocked_disabledPackage_noPersonalContextHintSent() {
+        when(mContextManagerInternal.isPersonalContextServiceEnabledForPackage(any(), anyInt()))
+                .thenReturn(false);
         final int sessionId = 1234;
         AutofillId focusedId = new AutofillId(3);
         final InlineSuggestionsRequest inlineSuggestionsRequest =
@@ -307,12 +283,21 @@ public class RemoteAugmentedAutofillServiceTest {
                 mRemoteInlineSuggestionRenderService,
                 USER_ID);
 
+        verify(mContextManagerInternal, never()).publishTriggeringHint(any(), any(), any());
+    }
+
+    @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    @Test
+    public void onRequestAutofillLocked_onlyAutofillResponse_choosesAutofillResult()
+            throws Exception {
+        final int sessionId = 1234;
+        requestAugmentedAutofill(sessionId);
+
         // Augmented autofill service receives fill request.
-        IFillCallback fillCallback =
-                triggerAugmentedAutofillRequest(sessionId, ACTIVITY_COMPONENT_NAME, focusedId);
+        IFillCallback fillCallback = triggerAugmentedAutofillRequest(sessionId);
 
         // Augmented autofill provides a response, personal context does not.
-        sendAutofillResponse(focusedId, fillCallback, false);
+        sendAutofillResponse(FOCUSED_ID, fillCallback, false);
 
         timeoutFutures();
 
@@ -320,39 +305,42 @@ public class RemoteAugmentedAutofillServiceTest {
         assertInlinePresentationResult(AUTOFILL_INLINE_PRESENTATION_SPEC);
     }
 
+    @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    @Test
+    public void onRequestAutofillLocked_onlyEmptyAutofillResponse_discardedNotLogged()
+            throws Exception {
+        final int sessionId = 1234;
+        requestAugmentedAutofill(sessionId);
+
+        // Augmented autofill service receives fill request.
+        IFillCallback fillCallback = triggerAugmentedAutofillRequest(sessionId);
+
+        // Augmented autofill provides a response, personal context does not.
+        sendEmptyAutofillResponse(fillCallback);
+
+        timeoutFutures();
+
+        // Nothing is logged since the response is empty.
+        verify(mAutofillServiceCallbacks, never()).setLastResponse(sessionId);
+        verify(mAutofillServiceCallbacks, never())
+                .logAugmentedAutofillResponseDiscarded(sessionId, null);
+    }
+
     @DisableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     @Test
     public void onRequestAutofillLocked_personalContextDisabled_choosesAutofillResult()
             throws Exception {
         final int sessionId = 1234;
-        AutofillId focusedId = new AutofillId(3);
-        final InlineSuggestionsRequest inlineSuggestionsRequest =
-                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
-                        .build();
-        // Request augmented autofill.
-        mService.onRequestAutofillLocked(
-                sessionId,
-                mClient,
-                4567, // taskId
-                ACTIVITY_COMPONENT_NAME,
-                mActivityToken,
-                focusedId,
-                AUTOFILL_VALUE,
-                inlineSuggestionsRequest,
-                mInlineSuggestionsCallback,
-                () -> {}, // onErrorCallback
-                mRemoteInlineSuggestionRenderService, // render service?
-                USER_ID);
+        requestAugmentedAutofill(sessionId);
 
         // Augmented autofill service receives fill request.
-        IFillCallback fillCallback =
-                triggerAugmentedAutofillRequest(sessionId, ACTIVITY_COMPONENT_NAME, focusedId);
+        IFillCallback fillCallback = triggerAugmentedAutofillRequest(sessionId);
 
         // Augmented autofill provides a response.
-        sendAutofillResponse(focusedId, fillCallback, false);
+        sendAutofillResponse(FOCUSED_ID, fillCallback, false);
 
         // Send personal context response, but since flag is disabled, it will be a no-op.
-        sendPersonalContextResponse(sessionId, focusedId);
+        sendPersonalContextResponse(sessionId, FOCUSED_ID);
 
         // Verify inline suggestions are applied.
         assertInlinePresentationResult(AUTOFILL_INLINE_PRESENTATION_SPEC);
@@ -362,33 +350,15 @@ public class RemoteAugmentedAutofillServiceTest {
     @Test
     public void onRequestAutofillLocked_fillWindowShowing_noResult() throws Exception {
         final int sessionId = 1234;
-        AutofillId focusedId = new AutofillId(3);
-        final InlineSuggestionsRequest inlineSuggestionsRequest =
-                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
-                        .build();
-        // Request augmented autofill.
-        mService.onRequestAutofillLocked(
-                sessionId,
-                mClient,
-                4567, // taskId
-                ACTIVITY_COMPONENT_NAME,
-                mActivityToken,
-                focusedId,
-                AUTOFILL_VALUE,
-                inlineSuggestionsRequest,
-                mInlineSuggestionsCallback,
-                () -> {}, // onErrorCallback
-                mRemoteInlineSuggestionRenderService,
-                USER_ID);
+        requestAugmentedAutofill(sessionId);
 
         // Augmented autofill service receives fill request.
-        IFillCallback fillCallback =
-                triggerAugmentedAutofillRequest(sessionId, ACTIVITY_COMPONENT_NAME, focusedId);
+        IFillCallback fillCallback = triggerAugmentedAutofillRequest(sessionId);
 
         // Both augmented autofill and personal context provide a response. The fill window is
         // showing, meaning that we should not provide a result.
-        sendAutofillResponse(focusedId, fillCallback, /* showingFillWindow= */ true);
-        sendPersonalContextResponse(sessionId, focusedId);
+        sendAutofillResponse(FOCUSED_ID, fillCallback, /* showingFillWindow= */ true);
+        sendPersonalContextResponse(sessionId, FOCUSED_ID);
 
         // Not all futures will have finished. When the fill window is showing, one of the futures
         // remain running so that cancellation can still occur.
@@ -402,34 +372,16 @@ public class RemoteAugmentedAutofillServiceTest {
     public void onRequestAutofillLocked_emptyAutofillResponse_choosesPersonalContextResult()
             throws Exception {
         final int sessionId = 1234;
-        AutofillId focusedId = new AutofillId(3);
-        final InlineSuggestionsRequest inlineSuggestionsRequest =
-                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
-                        .build();
-        // Request augmented autofill.
-        mService.onRequestAutofillLocked(
-                sessionId,
-                mClient,
-                4567, // taskId
-                ACTIVITY_COMPONENT_NAME,
-                mActivityToken,
-                focusedId,
-                AUTOFILL_VALUE, // focusedValue
-                inlineSuggestionsRequest,
-                mInlineSuggestionsCallback,
-                () -> {}, // onErrorCallback
-                mRemoteInlineSuggestionRenderService, // render service?
-                USER_ID);
+        requestAugmentedAutofill(sessionId);
 
         // Augmented autofill service receives fill request.
-        IFillCallback fillCallback =
-                triggerAugmentedAutofillRequest(sessionId, ACTIVITY_COMPONENT_NAME, focusedId);
+        IFillCallback fillCallback = triggerAugmentedAutofillRequest(sessionId);
 
         // Augmented autofill provides an empty response.
         sendEmptyAutofillResponse(fillCallback);
 
         // Personal context provides a valid response.
-        sendPersonalContextResponse(sessionId, focusedId);
+        sendPersonalContextResponse(sessionId, FOCUSED_ID);
 
         // Verify inline suggestions are applied.
         assertInlinePresentationResult(PERSONAL_CONTEXT_INLINE_PRESENTATION_SPEC);
@@ -439,34 +391,16 @@ public class RemoteAugmentedAutofillServiceTest {
     @Test
     public void onRequestAutofillLocked_cancelledAutofillResponse_noResult() throws Exception {
         final int sessionId = 1234;
-        AutofillId focusedId = new AutofillId(3);
-        final InlineSuggestionsRequest inlineSuggestionsRequest =
-                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
-                        .build();
-        // Request augmented autofill.
-        mService.onRequestAutofillLocked(
-                sessionId,
-                mClient,
-                4567, // taskId
-                ACTIVITY_COMPONENT_NAME,
-                mActivityToken,
-                focusedId,
-                AUTOFILL_VALUE, // focusedValue
-                inlineSuggestionsRequest,
-                mInlineSuggestionsCallback,
-                () -> {}, // onErrorCallback
-                mRemoteInlineSuggestionRenderService, // render service?
-                USER_ID);
+        requestAugmentedAutofill(sessionId);
 
         // Augmented autofill service receives fill request.
-        IFillCallback fillCallback =
-                triggerAugmentedAutofillRequest(sessionId, ACTIVITY_COMPONENT_NAME, focusedId);
+        IFillCallback fillCallback = triggerAugmentedAutofillRequest(sessionId);
 
         // Augmented autofill cancels the request.
         fillCallback.cancel();
 
         // Personal context provides a valid response.
-        sendPersonalContextResponse(sessionId, focusedId);
+        sendPersonalContextResponse(sessionId, FOCUSED_ID);
 
         // No result is provided since the augmented autofill request was cancelled.
         assertThat(mInlineFillUiResult).isNull();
@@ -476,31 +410,13 @@ public class RemoteAugmentedAutofillServiceTest {
     @Test
     public void onRequestAutofillLocked_noInlineSuggestionsRequest_noResult() throws Exception {
         final int sessionId = 1234;
-        AutofillId focusedId = new AutofillId(3);
-        final InlineSuggestionsRequest inlineSuggestionsRequest =
-                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
-                        .build();
-        // Request augmented autofill without an InlineSuggestionsRequest specified.
-        mService.onRequestAutofillLocked(
-                sessionId,
-                mClient,
-                4567, // taskId
-                ACTIVITY_COMPONENT_NAME,
-                mActivityToken,
-                focusedId,
-                AUTOFILL_VALUE, // focusedValue
-                null, // inlineSuggestionsRequest
-                mInlineSuggestionsCallback,
-                () -> {}, // onErrorCallback
-                mRemoteInlineSuggestionRenderService, // render service?
-                USER_ID);
+        requestAugmentedAutofill(sessionId, /* request= */ null);
 
         // Augmented autofill service receives fill request.
-        IFillCallback fillCallback =
-                triggerAugmentedAutofillRequest(sessionId, ACTIVITY_COMPONENT_NAME, focusedId);
+        IFillCallback fillCallback = triggerAugmentedAutofillRequest(sessionId);
 
         // Augmented autofill provides a valid response.
-        sendAutofillResponse(focusedId, fillCallback, /* showingFillWindow= */ false);
+        sendAutofillResponse(FOCUSED_ID, fillCallback, /* showingFillWindow= */ false);
 
         // Personal context request is not sent at all.
         verifyNoInteractions(mContextManagerInternal);
@@ -513,28 +429,10 @@ public class RemoteAugmentedAutofillServiceTest {
     @Test
     public void onRequestAutofillLocked_noPersonalContextResponse_emptyUi() throws Exception {
         final int sessionId = 1234;
-        AutofillId focusedId = new AutofillId(3);
-        final InlineSuggestionsRequest inlineSuggestionsRequest =
-                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
-                        .build();
-        // Request augmented autofill.
-        mService.onRequestAutofillLocked(
-                sessionId,
-                mClient,
-                4567, // taskId
-                ACTIVITY_COMPONENT_NAME,
-                mActivityToken,
-                focusedId,
-                AUTOFILL_VALUE, // focusedValue
-                inlineSuggestionsRequest,
-                mInlineSuggestionsCallback,
-                () -> {}, // onErrorCallback
-                mRemoteInlineSuggestionRenderService, // render service?
-                USER_ID);
+        requestAugmentedAutofill(sessionId);
 
         // Augmented autofill service receives fill request.
-        IFillCallback fillCallback =
-                triggerAugmentedAutofillRequest(sessionId, ACTIVITY_COMPONENT_NAME, focusedId);
+        IFillCallback fillCallback = triggerAugmentedAutofillRequest(sessionId);
 
         // Augmented autofill provides an empty response.
         sendEmptyAutofillResponse(fillCallback);
@@ -551,27 +449,10 @@ public class RemoteAugmentedAutofillServiceTest {
     @Test
     public void onRequestAutofillLocked_neitherResponseReturns_noResult() throws Exception {
         final int sessionId = 1234;
-        AutofillId focusedId = new AutofillId(3);
-        final InlineSuggestionsRequest inlineSuggestionsRequest =
-                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
-                        .build();
-        // Request augmented autofill.
-        mService.onRequestAutofillLocked(
-                sessionId,
-                mClient,
-                4567, // taskId
-                ACTIVITY_COMPONENT_NAME,
-                mActivityToken,
-                focusedId,
-                AUTOFILL_VALUE, // focusedValue
-                inlineSuggestionsRequest,
-                mInlineSuggestionsCallback,
-                () -> {}, // onErrorCallback
-                mRemoteInlineSuggestionRenderService, // render service?
-                USER_ID);
+        requestAugmentedAutofill(sessionId);
 
         // Augmented autofill service receives fill request.
-        triggerAugmentedAutofillRequest(sessionId, ACTIVITY_COMPONENT_NAME, focusedId);
+        triggerAugmentedAutofillRequest(sessionId);
         mTestExecutor.runAll();
 
         // Neither result is sent, time out futures.
@@ -584,27 +465,123 @@ public class RemoteAugmentedAutofillServiceTest {
 
     @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     @Test
+    public void onRequestAutofillLocked_personalContextChosen_sendsFillEventHistory()
+            throws Exception {
+        final int sessionId1 = 1234;
+        requestAugmentedAutofill(sessionId1);
+
+        // Augmented autofill service receives fill request.
+        IFillCallback fillCallback = triggerAugmentedAutofillRequest(sessionId1);
+
+        // Verify AutofillInlineRequestHint was sent.
+        AutofillInlineRequestHint firstAutofillHint =
+                verifySingleHintSent(AutofillInlineRequestHint.class);
+
+        // Both augmented autofill and personal context provide a response.
+        sendAutofillResponse(FOCUSED_ID, fillCallback, false);
+        sendPersonalContextResponse(sessionId1, FOCUSED_ID);
+
+        // Discarded event is logged for augmented autofill service.
+        verify(mAutofillServiceCallbacks).logAugmentedAutofillResponseDiscarded(sessionId1, null);
+
+        // Go through another round of request and responses.
+        Mockito.clearInvocations(mClient, mAugmentedService, mContextManagerInternal);
+        final int sessionId2 = 5050;
+        requestAugmentedAutofill(sessionId2);
+        fillCallback = triggerAugmentedAutofillRequest(sessionId2);
+
+        // Two hints are captured, the first should be the bundle hint.
+        BundleHint bundleHint = verifySingleHintSent(BundleHint.class, times(2), /* index= */ 0);
+        // Bundle hint contains the sessionId and hintId from the first request.
+        verifyFillEventHistoryHint(
+                bundleHint, firstAutofillHint, FillEventHistory.Event.TYPE_DATASETS_SHOWN);
+
+        // Request hint sent after fill event history hint.
+        AutofillInlineRequestHint secondAutofillHint =
+                verifySingleHintSent(AutofillInlineRequestHint.class, times(2), /* index= */ 1);
+
+        sendAutofillResponse(FOCUSED_ID, fillCallback, false);
+        sendPersonalContextResponse(sessionId2, FOCUSED_ID);
+
+        // One more round of request and responses.
+        Mockito.clearInvocations(mClient, mAugmentedService, mContextManagerInternal);
+        final int sessionId3 = 5050;
+        requestAugmentedAutofill(sessionId3);
+        fillCallback = triggerAugmentedAutofillRequest(sessionId3);
+
+        // Bundle hint is sent first, before request hint.
+        BundleHint bundleHint2 = verifySingleHintSent(BundleHint.class, times(2), /* index= */ 0);
+        // Bundle hint contains the sessionId and hintId from the second request.
+        verifyFillEventHistoryHint(
+                bundleHint2, secondAutofillHint, FillEventHistory.Event.TYPE_DATASETS_SHOWN);
+
+        // Request hint sent after fill event history hint.
+        verifySingleHintSent(AutofillInlineRequestHint.class, times(2), /* index= */ 1);
+
+        sendAutofillResponse(FOCUSED_ID, fillCallback, false);
+        sendPersonalContextResponse(sessionId3, FOCUSED_ID);
+    }
+
+    @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    @Test
+    public void onRequestAutofillLocked_noPersonalContextResponse_doesNotSendFillEventHistory()
+            throws Exception {
+        final int sessionId1 = 1234;
+        requestAugmentedAutofill(sessionId1);
+
+        // Augmented autofill service receives fill request.
+        IFillCallback fillCallback = triggerAugmentedAutofillRequest(sessionId1);
+
+        // Verify AutofillInlineRequestHint was sent.
+        AutofillInlineRequestHint firstAutofillHint =
+                verifySingleHintSent(AutofillInlineRequestHint.class);
+
+        // Empty personal context response is sent.
+        sendAutofillResponse(FOCUSED_ID, fillCallback, false);
+        sendEmptyPersonalContextResponse(sessionId1);
+
+        // Go through another round of request and responses.
+        Mockito.clearInvocations(mClient, mAugmentedService, mContextManagerInternal);
+        final int sessionId2 = 5050;
+        requestAugmentedAutofill(sessionId2);
+        triggerAugmentedAutofillRequest(sessionId2);
+
+        // Only request hint is sent, otherwise verification would fail due to publishTriggeringHint
+        // being invoked twice.
+        verifySingleHintSent(AutofillInlineRequestHint.class);
+    }
+
+    @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    @Test
+    public void onDestroyAutofillWindowsRequest_sendsFillEventHistory() throws Exception {
+        final int sessionId = 1234;
+        requestAugmentedAutofill(sessionId);
+
+        // Augmented autofill service receives fill request.
+        IFillCallback fillCallback = triggerAugmentedAutofillRequest(sessionId);
+
+        // Verify AutofillInlineRequestHint was sent.
+        AutofillInlineRequestHint autofillHint =
+                verifySingleHintSent(AutofillInlineRequestHint.class);
+
+        // Both augmented autofill and personal context provide a response.
+        sendAutofillResponse(FOCUSED_ID, fillCallback, false);
+        sendPersonalContextResponse(sessionId, FOCUSED_ID);
+
+        // Session ends.
+        mService.onDestroyAutofillWindowsRequest();
+
+        // Bundle hint with fill event history is sent upon session end.
+        BundleHint bundleHint = verifySingleHintSent(BundleHint.class, times(2), /* index= */ 1);
+        verifyFillEventHistoryHint(
+                bundleHint, autofillHint, FillEventHistory.Event.TYPE_DATASETS_SHOWN);
+    }
+
+    @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    @Test
     public void onRequestAutofillLocked_augmentedAutofillBinderMatchesHint() throws Exception {
         final int sessionId = 1234;
-        final int taskId = 4567;
-        AutofillId focusedId = new AutofillId(3);
-        final InlineSuggestionsRequest inlineSuggestionsRequest =
-                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
-                        .build();
-        // Request augmented autofill.
-        mService.onRequestAutofillLocked(
-                sessionId,
-                mClient,
-                taskId,
-                ACTIVITY_COMPONENT_NAME,
-                mActivityToken,
-                focusedId,
-                AUTOFILL_VALUE, // focusedValue
-                inlineSuggestionsRequest,
-                mInlineSuggestionsCallback,
-                () -> {}, // onErrorCallback
-                mRemoteInlineSuggestionRenderService, // render service?
-                USER_ID);
+        requestAugmentedAutofill(sessionId);
 
         ArgumentCaptor<IResultReceiver.Stub> resultReceiverCaptor =
                 ArgumentCaptor.forClass(IResultReceiver.Stub.class);
@@ -619,25 +596,21 @@ public class RemoteAugmentedAutofillServiceTest {
         mTestExecutor.runAll();
 
         // Triggering hint is sent to context engine.
-        ArgumentCaptor<Set<ContextHint>> hintCaptor = ArgumentCaptor.forClass(Set.class);
-        verify(mContextManagerInternal)
-                .publishTriggeringHint(hintCaptor.capture(), any(), eq(USER_ID));
-        assertThat(hintCaptor.getValue()).hasSize(1);
+        AutofillInlineRequestHint autofillHint =
+                verifySingleHintSent(AutofillInlineRequestHint.class);
 
         // The binder inside the autofill hint matches the one provided by the service.
-        ContextHint triggeringHint = hintCaptor.getValue().stream().findFirst().get();
-        assertThat(triggeringHint).isInstanceOf(AutofillInlineRequestHint.class);
-        AutofillInlineRequestHint autofillHint = (AutofillInlineRequestHint) triggeringHint;
         assertThat(autofillHint.getAugmentedAutofillProxy().asBinder())
                 .isEqualTo(augmentedAutofillBinder);
 
         // Verify other data matches the request to onRequestAutofillLocked.
         assertThat(autofillHint.getSessionId()).isEqualTo(sessionId);
-        assertThat(autofillHint.getTaskId()).isEqualTo(taskId);
+        assertThat(autofillHint.getTaskId()).isEqualTo(TASK_ID);
         assertThat(autofillHint.getActivityComponent()).isEqualTo(ACTIVITY_COMPONENT_NAME);
-        assertThat(autofillHint.getFocusedId()).isEqualTo(focusedId);
+        assertThat(autofillHint.getFocusedId()).isEqualTo(FOCUSED_ID);
         assertThat(autofillHint.getAutofillValue()).isEqualTo(AUTOFILL_VALUE);
-        assertThat(autofillHint.getInlineSuggestionsRequest()).isEqualTo(inlineSuggestionsRequest);
+        assertThat(autofillHint.getInlineSuggestionsRequest())
+                .isEqualTo(INLINE_SUGGESTIONS_REQUEST);
     }
 
     @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
@@ -647,33 +620,33 @@ public class RemoteAugmentedAutofillServiceTest {
         doThrow(new DeadObjectException()).when(mClient).getAugmentedAutofillClient(any());
 
         final int sessionId = 1234;
-        final int taskId = 4567;
-        AutofillId focusedId = new AutofillId(3);
-        final InlineSuggestionsRequest inlineSuggestionsRequest =
-                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
-                        .build();
-        // Request for augmented autofill does not fail.
-        mService.onRequestAutofillLocked(
-                sessionId,
-                mClient,
-                taskId,
-                ACTIVITY_COMPONENT_NAME,
-                mActivityToken,
-                focusedId,
-                AUTOFILL_VALUE, // focusedValue
-                inlineSuggestionsRequest,
-                mInlineSuggestionsCallback,
-                () -> {}, // onErrorCallback
-                mRemoteInlineSuggestionRenderService, // render service?
-                USER_ID);
+        requestAugmentedAutofill(sessionId);
 
         // No requests to augmented autofill or personal context are sent.
         assertThat(mAutofillResponseFutures).isEmpty();
     }
 
-    private IFillCallback triggerAugmentedAutofillRequest(
-            int sessionId, ComponentName activityComponent, AutofillId focusedId)
-            throws RemoteException {
+    private void requestAugmentedAutofill(int sessionId) {
+        requestAugmentedAutofill(sessionId, INLINE_SUGGESTIONS_REQUEST);
+    }
+
+    private void requestAugmentedAutofill(int sessionId, InlineSuggestionsRequest request) {
+        mService.onRequestAutofillLocked(
+                sessionId,
+                mClient,
+                TASK_ID,
+                ACTIVITY_COMPONENT_NAME,
+                mActivityToken,
+                FOCUSED_ID,
+                AUTOFILL_VALUE,
+                request,
+                mInlineSuggestionsCallback,
+                () -> {}, // onErrorCallback
+                mRemoteInlineSuggestionRenderService,
+                USER_ID);
+    }
+
+    private IFillCallback triggerAugmentedAutofillRequest(int sessionId) throws RemoteException {
         ArgumentCaptor<IResultReceiver.Stub> resultReceiverCaptor =
                 ArgumentCaptor.forClass(IResultReceiver.Stub.class);
         verify(mClient).getAugmentedAutofillClient(resultReceiverCaptor.capture());
@@ -690,8 +663,8 @@ public class RemoteAugmentedAutofillServiceTest {
                         eq(sessionId),
                         any(),
                         anyInt(),
-                        eq(activityComponent),
-                        eq(focusedId),
+                        eq(ACTIVITY_COMPONENT_NAME),
+                        eq(FOCUSED_ID),
                         any(),
                         anyLong(),
                         any(),
@@ -735,6 +708,54 @@ public class RemoteAugmentedAutofillServiceTest {
     private void sendEmptyPersonalContextResponse(int sessionId) {
         mService.notifySystemInlineSuggestions(sessionId, new ArrayList<>());
         mTestExecutor.runAll();
+    }
+
+    private <T extends ContextHint> T verifySingleHintSent(Class<T> clazz) {
+        return verifySingleHintSent(clazz, times(1), -1);
+    }
+
+    /**
+     * Verifies a hint with the given type was sent to the personal context manager.
+     *
+     * @param clazz type of the hint
+     * @param verificationMode verification mode to use
+     * @param index which captured hint set to look in, use -1 for the latest capture
+     */
+    private <T extends ContextHint> T verifySingleHintSent(
+            Class<T> clazz, VerificationMode verificationMode, int index) {
+        ArgumentCaptor<Set<ContextHint>> hintCaptor = ArgumentCaptor.forClass(Set.class);
+        verify(mContextManagerInternal, verificationMode)
+                .publishTriggeringHint(hintCaptor.capture(), any(), eq(USER_ID));
+        Set<ContextHint> sentHints =
+                index == -1 ? hintCaptor.getValue() : hintCaptor.getAllValues().get(index);
+        assertThat(sentHints).hasSize(1);
+        ContextHint hint = sentHints.iterator().next();
+        assertThat(hint).isInstanceOf(clazz);
+        return (T) hint;
+    }
+
+    private void verifyFillEventHistoryHint(
+            BundleHint hint, AutofillInlineRequestHint requestHint, int eventType) {
+        assertThat(
+                        hint.getDataBundle()
+                                .getString(
+                                        RemoteAugmentedAutofillService
+                                                .PERSONAL_CONTEXT_KEY_HINT_ID))
+                .isEqualTo(requestHint.getHintId().toString());
+        assertThat(
+                        hint.getDataBundle()
+                                .getInt(
+                                        RemoteAugmentedAutofillService
+                                                .PERSONAL_CONTEXT_KEY_SESSION_ID))
+                .isEqualTo(requestHint.getSessionId());
+        assertThat(hint.getHintTypeName()).isEqualTo(FillEventHistory.class.getCanonicalName());
+        FillEventHistory fillEventHistory =
+                hint.getDataBundle()
+                        .getParcelable(
+                                RemoteAugmentedAutofillService
+                                        .PERSONAL_CONTEXT_KEY_FILL_EVENT_HISTORY,
+                                FillEventHistory.class);
+        assertThat(fillEventHistory.getEvents().getFirst().getType()).isEqualTo(eventType);
     }
 
     private void timeoutFutures() {

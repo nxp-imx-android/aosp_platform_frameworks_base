@@ -526,6 +526,7 @@ public final class AlarmManagerServiceTest {
         when(mPackageManagerInternal.isSameApp(anyString(), anyLong(), anyInt(), anyInt()))
                 .thenReturn(true);
         when(mPackageManagerInternal.isSameApp(anyString(), anyInt(), anyInt())).thenReturn(true);
+        when(mPackageManager.hasSystemFeature(PackageManager.FEATURE_PC)).thenReturn(false);
 
         registerAppIds(new String[]{TEST_CALLING_PACKAGE},
                 new Integer[]{UserHandle.getAppId(TEST_CALLING_UID)});
@@ -4333,6 +4334,140 @@ public final class AlarmManagerServiceTest {
                         getNextTzOffsetChange(TZ_ID_LA, Instant.ofEpochMilli(currentRtc)));
         final long expectedRescheduledElapsed = nextExpectedRtc - (mNowRtcTest - mNowElapsedTest);
         assertEquals(expectedRescheduledElapsed, rescheduledDstAlarm.getWhenElapsed(), 2000);
+    }
+
+    @Test
+    @DisableFlags(com.android.server.deviceidle.Flags.FLAG_SUPPORT_ALLOW_WHILE_IDLE_QUOTA_ZERO)
+    public void testAllowWhileIdleQuota_nonZero_flagDisabled() {
+        mService.mConstants.mIsFeaturePc = true;
+        setDeviceConfigInt(KEY_ALLOW_WHILE_IDLE_QUOTA, 0);
+        assertEquals("Allow while idle quota should be 1 when flag is disabled",
+                1, mService.mConstants.ALLOW_WHILE_IDLE_QUOTA);
+    }
+
+    @Test
+    @EnableFlags(com.android.server.deviceidle.Flags.FLAG_SUPPORT_ALLOW_WHILE_IDLE_QUOTA_ZERO)
+    public void testAllowWhileIdleQuota_zero_flagEnabled() {
+        mService.mConstants.mIsFeaturePc = true;
+        setDeviceConfigInt(KEY_ALLOW_WHILE_IDLE_QUOTA, 0);
+        assertEquals("Allow while idle quota should be 0 when flag is enabled",
+                0, mService.mConstants.ALLOW_WHILE_IDLE_QUOTA);
+    }
+
+    @Test
+    @EnableFlags(com.android.server.deviceidle.Flags.FLAG_SUPPORT_ALLOW_WHILE_IDLE_QUOTA_ZERO)
+    public void testAllowWhileIdleQuota_zero_blocksWakeups() throws Exception {
+        mService.mConstants.mIsFeaturePc = true;
+        setDeviceConfigInt(KEY_ALLOW_WHILE_IDLE_QUOTA, 0);
+
+        final long idleUntilTime = mNowElapsedTest + 10000;
+        setIdleUntilAlarm(ELAPSED_REALTIME_WAKEUP, idleUntilTime, getNewMockPendingIntent());
+        assertNotNull("Device should be in doze", mService.mPendingIdleUntil);
+
+        final long triggerTime = mNowElapsedTest + 5000;
+        final PendingIntent alarmPi = getNewMockPendingIntent();
+        setAllowWhileIdleAlarm(ELAPSED_REALTIME_WAKEUP, triggerTime, alarmPi, false, false);
+
+        assertEquals("Alarm should be deferred when quota is 0",
+                idleUntilTime, mTestTimer.getElapsed());
+    }
+
+    @Test
+    @EnableFlags(com.android.server.deviceidle.Flags.FLAG_SUPPORT_ALLOW_WHILE_IDLE_QUOTA_ZERO)
+    public void testAllowWhileIdleQuota_zero_blocksWakeups_batterySaver() throws Exception {
+        mService.mConstants.mIsFeaturePc = true;
+        setDeviceConfigInt(KEY_ALLOW_WHILE_IDLE_QUOTA, 0);
+
+        when(mAppStateTracker.areAlarmsRestrictedByBatterySaver(TEST_CALLING_UID,
+                TEST_CALLING_PACKAGE)).thenReturn(true);
+        when(mAppStateTracker.isForceAllAppsStandbyEnabled()).thenReturn(true);
+
+        final long triggerTime = mNowElapsedTest + 5000;
+        final PendingIntent alarmPi = getNewMockPendingIntent();
+        setAllowWhileIdleAlarm(ELAPSED_REALTIME_WAKEUP, triggerTime, alarmPi, false, false);
+
+        assertEquals("Alarm should be deferred by when quota is 0 in battery saver",
+                mNowElapsedTest + INDEFINITE_DELAY, mTestTimer.getElapsed());
+    }
+
+    @Test
+    @EnableFlags(com.android.server.deviceidle.Flags.FLAG_SUPPORT_ALLOW_WHILE_IDLE_QUOTA_ZERO)
+    public void testAllowWhileIdleCompatQuota_zero_blocksWakeups() throws Exception {
+        mService.mConstants.mIsFeaturePc = true;
+        setDeviceConfigInt(KEY_ALLOW_WHILE_IDLE_COMPAT_QUOTA, 0);
+
+        final long idleUntilTime = mNowElapsedTest + 10000;
+        setIdleUntilAlarm(ELAPSED_REALTIME_WAKEUP, idleUntilTime, getNewMockPendingIntent());
+
+        final long triggerTime = mNowElapsedTest + 5000;
+        final PendingIntent alarmPi = getNewMockPendingIntent();
+        // Compat alarm
+        setAllowWhileIdleAlarm(ELAPSED_REALTIME_WAKEUP, triggerTime, alarmPi, false, true);
+
+        assertEquals("Compat alarm should be deferred when compat quota is 0",
+                idleUntilTime, mTestTimer.getElapsed());
+    }
+
+    @Test
+    @EnableFlags(com.android.server.deviceidle.Flags.FLAG_SUPPORT_ALLOW_WHILE_IDLE_QUOTA_ZERO)
+    public void testAllowWhileIdleCompatQuota_zero_blocksWakeups_batterySaver() throws Exception {
+        mService.mConstants.mIsFeaturePc = true;
+        setDeviceConfigInt(KEY_ALLOW_WHILE_IDLE_COMPAT_QUOTA, 0);
+
+        when(mAppStateTracker.areAlarmsRestrictedByBatterySaver(TEST_CALLING_UID,
+                TEST_CALLING_PACKAGE)).thenReturn(true);
+        when(mAppStateTracker.isForceAllAppsStandbyEnabled()).thenReturn(true);
+
+        final long triggerTime = mNowElapsedTest + 5000;
+        final PendingIntent alarmPi = getNewMockPendingIntent();
+        // Compat alarm
+        setAllowWhileIdleAlarm(ELAPSED_REALTIME_WAKEUP, triggerTime, alarmPi, false, true);
+
+        assertEquals("Compat alarm should be deferred by when quota is 0 in battery saver",
+                mNowElapsedTest + INDEFINITE_DELAY, mTestTimer.getElapsed());
+    }
+
+    @Test
+    @EnableFlags({
+            com.android.server.deviceidle.Flags.FLAG_SUPPORT_ALLOW_WHILE_IDLE_QUOTA_ZERO,
+            android.app.Flags.FLAG_ALLOW_ALARMS_WITH_RELAXED_QUOTA
+    })
+    public void testAllowWhileIdleListenerQuota_zero_blocksWakeups() throws Exception {
+        mService.mConstants.mIsFeaturePc = true;
+        setDeviceConfigInt(KEY_ALLOW_WHILE_IDLE_LISTENER_QUOTA, 0);
+
+        final long idleUntilTime = mNowElapsedTest + 10000;
+        setIdleUntilAlarm(ELAPSED_REALTIME_WAKEUP, idleUntilTime, getNewMockPendingIntent());
+
+        final long triggerTime = mNowElapsedTest + 5000;
+        // Listener alarm
+        setTestAlarmWithListener(ELAPSED_REALTIME_WAKEUP, triggerTime, getNewListener(() -> {}),
+                FLAG_STANDALONE | FLAG_ALLOW_WHILE_IDLE, 0, TEST_CALLING_UID);
+
+        assertEquals("Listener alarm should be deferred when listener quota is 0",
+                idleUntilTime, mTestTimer.getElapsed());
+    }
+
+    @Test
+    @EnableFlags({
+            com.android.server.deviceidle.Flags.FLAG_SUPPORT_ALLOW_WHILE_IDLE_QUOTA_ZERO,
+            android.app.Flags.FLAG_ALLOW_ALARMS_WITH_RELAXED_QUOTA
+    })
+    public void testAllowWhileIdleListenerQuota_zero_blocksWakeups_batterySaver() throws Exception {
+        mService.mConstants.mIsFeaturePc = true;
+        setDeviceConfigInt(KEY_ALLOW_WHILE_IDLE_LISTENER_QUOTA, 0);
+
+        when(mAppStateTracker.areAlarmsRestrictedByBatterySaver(TEST_CALLING_UID,
+                TEST_CALLING_PACKAGE)).thenReturn(true);
+        when(mAppStateTracker.isForceAllAppsStandbyEnabled()).thenReturn(true);
+
+        final long triggerTime = mNowElapsedTest + 5000;
+        // Listener alarm
+        setTestAlarmWithListener(ELAPSED_REALTIME_WAKEUP, triggerTime, getNewListener(() -> {}),
+                FLAG_STANDALONE | FLAG_ALLOW_WHILE_IDLE, 0, TEST_CALLING_UID);
+
+        assertEquals("Listener alarm should be deferred by when quota is 0 in battery saver",
+                mNowElapsedTest + INDEFINITE_DELAY, mTestTimer.getElapsed());
     }
 
     private Alarm findTimeZoneOffsetAlarm() {

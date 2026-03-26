@@ -181,6 +181,9 @@ public class BluetoothPowerStatsCollector extends PowerStatsCollector {
                         if (error == BluetoothStatusCodes.ERROR_PROFILE_SERVICE_NOT_BOUND) {
                             Slog.i(TAG, "Bluetooth is off, skipping activity info request.");
                             immediateFuture.complete(null);
+                        } else if (error == BluetoothStatusCodes.FEATURE_NOT_SUPPORTED) {
+                            Slog.i(TAG, "BluetoothActivityEnergyInfo not supported.");
+                            immediateFuture.complete(null);
                         } else {
                             immediateFuture.completeExceptionally(
                                     new RuntimeException("error: " + error));

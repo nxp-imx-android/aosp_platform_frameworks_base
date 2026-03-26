@@ -691,7 +691,7 @@ public final class FillEventHistory implements Parcelable {
                 @Nullable FieldClassification[] detectedFieldClassifications,
                 int saveDialogNotShowReason, int uiType, @Nullable AutofillId focusedId) {
             mEventType = Preconditions.checkArgumentInRange(eventType, 0,
-                    TYPE_VIEW_REQUESTED_AUTOFILL, "eventType");
+                    TYPE_RESPONSE_DISCARDED, "eventType");
             mDatasetId = datasetId;
             mClientState = clientState;
             mSelectedDatasetIds = selectedDatasetIds;

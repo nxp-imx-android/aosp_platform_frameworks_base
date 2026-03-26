@@ -86,7 +86,9 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
@@ -131,8 +133,10 @@ import com.android.systemui.globalactions.domain.interactor.GlobalActionsInterac
 import com.android.systemui.globalactions.shared.model.GlobalActionType;
 import com.android.systemui.globalactions.shared.model.GlobalActionsEvent;
 import com.android.systemui.plugins.ActivityStarter;
+import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor;
 import com.android.systemui.plugins.GlobalActions.GlobalActionsManager;
 import com.android.systemui.plugins.GlobalActionsPanelPlugin;
+import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.scrim.ScrimDrawable;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.ShadeController;
@@ -1697,6 +1701,16 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                         });
             }
 
+            // Add AccessibilityDelegate to set the role to Button
+            view.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+                @Override
+                public void onInitializeAccessibilityNodeInfo(
+                        View host, AccessibilityNodeInfo info) {
+                    super.onInitializeAccessibilityNodeInfo(host, info);
+                    info.setClassName(Button.class.getName());
+                }
+            });
+
             view.setOnClickListener(v -> onClickItem(position));
             if (action instanceof LongPressAction) {
                 view.setOnLongClickListener(v -> onLongClickItem(position));
@@ -2563,6 +2577,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         private final SystemUIDialog.Factory mSystemUIDialogFactory;
         @NonNull
         private final GestureDetector mGestureDetector;
+        @NonNull
+        private final DeviceEntryInteractor mDeviceEntryInteractor;
 
         @VisibleForTesting
         @Nullable
@@ -2650,7 +2666,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                 @NonNull SelectedUserInteractor selectedUserInteractor,
                 @NonNull AccessibilityManager accessibilityManager,
                 @NonNull DialogTransitionAnimator dialogTransitionAnimator,
-                @NonNull SystemUIDialog.Factory systemUIDialogFactory) {
+                @NonNull SystemUIDialog.Factory systemUIDialogFactory,
+                @NonNull DeviceEntryInteractor deviceEntryInteractor) {
             mContext = context;
             mAdapter = adapter;
             mOverflowAdapter = overflowAdapter;
@@ -2672,6 +2689,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             mDialogTransitionAnimator = dialogTransitionAnimator;
             mSystemUIDialogFactory = systemUIDialogFactory;
             mGestureDetector = new GestureDetector(context, mGestureListener);
+            mDeviceEntryInteractor = deviceEntryInteractor;
         }
 
         @NonNull
@@ -2867,6 +2885,26 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             dialog.getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
                     OnBackInvokedDispatcher.PRIORITY_DEFAULT, mOnBackInvokedCallback);
             if (DEBUG) Log.d(TAG, "OnBackInvokedCallback handler registered");
+
+            if (SceneContainerFlag.isEnabled()) {
+                dismissWhenUnlockStatusChanges(mDeviceEntryInteractor.isUnlocked().getValue());
+            }
+        }
+
+        /**
+         * Dismisses the dialog when the unlock status changes.
+         *
+         * @param initialValue The initial unlock status of the device.
+         */
+        private void dismissWhenUnlockStatusChanges(boolean initialValue) {
+            collectFlow(
+                    mGlobalActionsLayout,
+                    mDeviceEntryInteractor.isUnlocked(),
+                    newValue -> {
+                        if (newValue != initialValue) {
+                            dismiss();
+                        }
+                    });
         }
 
         /**

@@ -120,6 +120,7 @@ aconfig_declarations_group {
         "com.android.media.flags.mediasession-aconfig-java",
         "com.android.media.flags.projection-aconfig-java",
         "com.android.media.mediadrm.flags-aconfig-java",
+        "com.android.media.metrics.flags-aconfig-java",
         "com.android.microxr.flags-aconfig-java",
         "com.android.net.http.flags-aconfig-exported-java",
         "com.android.net.thread.platform.flags-aconfig-java",

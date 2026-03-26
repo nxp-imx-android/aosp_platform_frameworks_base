@@ -336,8 +336,8 @@ public class PipController implements ConfigurationChangeListener,
             public void onActivityRestartAttempt(ActivityManager.RunningTaskInfo task,
                     boolean homeTaskVisible, boolean clearedTask, boolean wasVisible) {
                 ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                        "onActivityRestartAttempt: topActivity=%s, wasVisible=%b, displayId=%s, "
-                                + "pipDisplayLayoutState#displayId=%s",
+                        "onActivityRestartAttempt: topActivity=%s, wasVisible=%b, displayId=%d, "
+                                + "pipDisplayLayoutState#displayId=%d",
                         task.topActivity, wasVisible, task.displayId,
                         mPipDisplayLayoutState.getDisplayId());
                 if (task.getWindowingMode() != WINDOWING_MODE_PINNED

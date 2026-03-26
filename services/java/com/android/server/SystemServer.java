@@ -230,7 +230,6 @@ import com.android.server.pm.BackgroundInstallControlService;
 import com.android.server.pm.CrossProfileAppsService;
 import com.android.server.pm.DataLoaderManagerService;
 import com.android.server.pm.DexOptHelper;
-import com.android.server.pm.DynamicCodeLoggingService;
 import com.android.server.pm.HsumBootUserInitializer;
 import com.android.server.pm.Installer;
 import com.android.server.pm.LauncherAppsService;
@@ -495,6 +494,11 @@ public final class SystemServer implements Dumpable {
     private static final String RANGING_SERVICE_CLASS = "com.android.server.ranging.RangingService";
 
     private static final String TETHERING_CONNECTOR_CLASS = "android.net.ITetheringConnector";
+
+    private static final String DEVICE_TO_DEVICE_SERVICE_CLASS =
+            "com.android.server.devicetodevice.DeviceToDeviceService";
+    private static final String DEVICE_TO_DEVICE_APEX_SERVICE_JAR_PATH =
+            "/apex/com.android.bettertogether/javalib/service-device-to-device.jar";
 
     private static final String PERSISTENT_DATA_BLOCK_PROP = "ro.frp.pst";
 
@@ -2835,18 +2839,6 @@ public final class SystemServer implements Dumpable {
             }
 
             if (!isWatch) {
-                // We don't run this on watches as there are no plans to use the data logged
-                // on watch devices.
-                t.traceBegin("StartDynamicCodeLoggingService");
-                try {
-                    DynamicCodeLoggingService.schedule(context);
-                } catch (Throwable e) {
-                    reportWtf("starting DynamicCodeLoggingService", e);
-                }
-                t.traceEnd();
-            }
-
-            if (!isWatch) {
                 t.traceBegin("StartPruneInstantAppsJobService");
                 try {
                     PruneInstantAppsJobService.schedule(context);
@@ -3027,7 +3019,8 @@ public final class SystemServer implements Dumpable {
         }
 
         // AiSeal
-        if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_AISEAL)) {
+        if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_AISEAL)
+                && android.aiseal.Flags.aisealHostApis()) {
             t.traceBegin("StartAiSealSystemService");
             try {
                 mSystemServiceManager.startService(AiSealSystemService.class);
@@ -3362,6 +3355,20 @@ public final class SystemServer implements Dumpable {
                 || android.view.flags.Flags.sensitiveContentAppProtection()) {
             t.traceBegin("StartSensitiveContentProtectionManager");
             mSystemServiceManager.startService(SensitiveContentProtectionManagerService.class);
+            t.traceEnd();
+        }
+
+        if (android.bettertogether.flags.Flags.enableD2dConnectivityService()) {
+            t.traceBegin("DeviceToDeviceService");
+            // Avoid crashing the system if the aconfig flag is enabled but the build flag is
+            // disabled (the services classes are not present in that case).
+            // TODO: b/466104217 - Remove this try catch once flag is cleaned up.
+            try {
+                mSystemServiceManager.startServiceFromJar(DEVICE_TO_DEVICE_SERVICE_CLASS,
+                        DEVICE_TO_DEVICE_APEX_SERVICE_JAR_PATH);
+            } catch (Throwable e) {
+                Slog.e(TAG, "Failed to start DeviceToDeviceService", e);
+            }
             t.traceEnd();
         }
 

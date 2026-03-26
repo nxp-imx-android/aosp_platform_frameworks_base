@@ -441,6 +441,7 @@ cc_defaults {
         "liblog",
         "libminikin",
         "libz",
+        "libguiflags",
         "libtracing_perfetto",
         "libperfetto_c",
     ],

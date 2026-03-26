@@ -1081,10 +1081,10 @@ public final class Bitmap implements Parcelable {
 
         final long flowId = source.mId;
         if (android.os.Flags.perfettoSdkTracingV3()) {
-            if (PerfettoCategories.GFX_CATEGORY.isEnabled()) {
+            if (PerfettoCategories.BITMAP_CATEGORY.isEnabled()) {
                 PerfettoTrackEventBuilder builder =
                         com.android.internal.dev.perfetto.sdk.PerfettoTrace.begin(
-                                        PerfettoCategories.GFX_CATEGORY, "Bitmap_createBitmap")
+                                        PerfettoCategories.BITMAP_CATEGORY, "Bitmap_createBitmap")
                                 .setFlow(flowId);
                 traceBitmap(builder, source);
                 builder.emit();
@@ -1201,11 +1201,11 @@ public final class Bitmap implements Parcelable {
             result = bitmap;
             return result;
         } finally {
-            if (PerfettoCategories.GFX_CATEGORY.isEnabled()) {
+            if (PerfettoCategories.BITMAP_CATEGORY.isEnabled()) {
                 if (android.os.Flags.perfettoSdkTracingV3()) {
                     PerfettoTrackEventBuilder builder =
                             com.android.internal.dev.perfetto.sdk.PerfettoTrace.end(
-                                    PerfettoCategories.GFX_CATEGORY);
+                                    PerfettoCategories.BITMAP_CATEGORY);
                     if (result != null) {
                         traceBitmap(builder, result);
                     }

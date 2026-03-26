@@ -19,6 +19,7 @@ package com.android.server.privatecompute;
 import android.annotation.NonNull;
 import android.os.Binder;
 import android.os.Environment;
+import android.os.FileUtils;
 import android.os.PersistableBundle;
 import android.os.SystemClock;
 import android.os.UserHandle;
@@ -114,16 +115,11 @@ class AuditModeContext {
         return Executors.newFixedThreadPool(N_THREADS);
     }
 
-    private static File getAuditLogFilesDirectory() {
-        return new File(Environment.getDataSystemCeDirectory(), AUDIT_LOG_FILES_DIRNAME);
-    }
-
     /**
      * Instantiates an AuditModeContext, including an output stream to the audit log file, or
      * returns null if an error occurred.
      */
-    public static @NonNull AuditModeContext create() {
-        File folder = getAuditLogFilesDirectory();
+    public static @NonNull AuditModeContext create(File folder) {
         return new AuditModeContext(
                 getBundleSerializerExecutorService(),
                 getDiskWriterExecutorService(),
@@ -132,8 +128,13 @@ class AuditModeContext {
     }
 
     /** Deletes all audit log files from the default audit log directory. */
-    static void deleteAuditLogFiles() {
-        AuditLogFileManager.deleteAuditLogFiles(getAuditLogFilesDirectory());
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+    static void deleteAuditLogFiles(File dir) {
+        if (dir.exists()) {
+            if (!FileUtils.deleteContentsAndDir(dir)) {
+                Log.w(TAG, "Failed to delete audit log directory: " + dir.getAbsolutePath());
+            }
+        }
     }
 
     @VisibleForTesting
@@ -259,11 +260,6 @@ class AuditModeContext {
      * Returns all logs on disk for the given user. Logs are sorted by increasing timestamp. Skips
      * unreadable logs, if any.
      */
-    public static List<AuditLogEntry> readAuditLogs(int userId) {
-        return readAuditLogs(getAuditLogFilesDirectory(), userId);
-    }
-
-    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
     public static List<AuditLogEntry> readAuditLogs(File folder, int userId) {
         List<AuditLogEntry> entries = readAuditLogs(folder);
         List<AuditLogEntry> filteredEntries = new ArrayList<>();

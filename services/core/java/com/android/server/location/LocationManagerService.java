@@ -444,6 +444,52 @@ public class LocationManagerService extends ILocationManager.Stub implements
                         }
                     });
         }
+
+        if (Flags.locationAuditing()) {
+            AppOpsManager appOps =
+                    Objects.requireNonNull(mContext.getSystemService(AppOpsManager.class));
+            appOps.startWatchingNoted(
+                    new int[] {
+                        AppOpsManager.OP_FINE_LOCATION,
+                        AppOpsManager.OP_COARSE_LOCATION,
+                        AppOpsManager.OP_EMERGENCY_LOCATION
+                    },
+                    (opCode, uid, packageName, attributionTag, appOpsFlags, appOpsResult) -> {
+                        /*
+                         * opCode: The specific app operation code that was noted (e.g.,
+                         * AppOpsManager.OP_FINE_LOCATION).
+                         * uid: The User ID (UID) of the application that performed the operation.
+                         * packageName: The package name of the application that performed the
+                         * operation.
+                         * attributionTag: An optional string provided by the application to further
+                         * specify the source of the operation within its package.
+                         * appOpsFlags: Flags from AppOpsManager.OnNotedCallback. This is a bitmask
+                         *     of the OP_FLAG_* constants defined in AppOpsManager.OpFlags,
+                         *     indicating whether the operation is on behalf of the app itself
+                         *     (OP_FLAG_SELF), or proxied by a trusted (OP_FLAG_TRUSTED_PROXY) or
+                         *     untrusted (OP_FLAG_UNTRUSTED_PROXY) app, or blamed on the app by a
+                         *     trusted (OP_FLAG_TRUSTED_PROXIED) or untrusted
+                         *     (OP_FLAG_UNTRUSTED_PROXIED) app. See
+                         *     {@link android.app.AppOpsManager.OpFlags} for more details.
+                         * appOpsResult: Result from AppOpsManager.OnNotedCallback. This is one of
+                         *     the MODE_* constants defined in AppOpsManager.Mode, indicating the
+                         *     result of the operation. Possible values include MODE_ALLOWED,
+                         *     MODE_IGNORED (silently fail), MODE_ERRORED (fatal error),
+                         *     MODE_DEFAULT (use default security check), and MODE_FOREGROUND
+                         *     (allow only when app is in foreground). See
+                         *     {@link android.app.AppOpsManager.Mode} for more details.
+                         */
+                        mInjector
+                                .getLocationUsageLogger()
+                                .logLocationOpNoted(
+                                        opCode,
+                                        uid,
+                                        packageName,
+                                        attributionTag,
+                                        appOpsFlags,
+                                        appOpsResult);
+                    });
+        }
     }
 
     void onSystemThirdPartyAppsCanStart() {
@@ -1945,7 +1991,7 @@ public class LocationManagerService extends ILocationManager.Stub implements
             mScreenInteractiveHelper = new SystemScreenInteractiveHelper(context);
             mDeviceStationaryHelper = new SystemDeviceStationaryHelper();
             mDeviceIdleHelper = new SystemDeviceIdleHelper(context);
-            mLocationUsageLogger = new LocationUsageLogger();
+            mLocationUsageLogger = new LocationUsageLogger(context);
             mPackageResetHelper = new SystemPackageResetHelper(context);
         }
 

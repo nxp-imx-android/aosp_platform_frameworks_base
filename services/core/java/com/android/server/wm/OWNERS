@@ -1,11 +1,7 @@
 set noparent
 
-ogunwale@google.com
-jjaggi@google.com
-racarr@google.com
+natanieljr@google.com
 vishnun@google.com
-akulian@google.com
-roosa@google.com
 erosky@google.com
 riddlehsu@google.com
 louischang@google.com
@@ -26,6 +22,11 @@ mcarli@google.com
 pbdr@google.com
 takise@google.com
 gracielawputri@google.com
+jjaggi@google.com
+racarr@google.com
+roosa@google.com
+akulian@google.com
+ogunwale@google.com
 
 # Files related to background activity launches
 per-file Background*Start* = set noparent

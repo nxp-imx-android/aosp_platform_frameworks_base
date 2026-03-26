@@ -438,7 +438,7 @@ public final class DropBoxManagerService extends SystemService {
 
                 mContentResolver.registerContentObserver(
                     Settings.Global.CONTENT_URI, true,
-                    new ContentObserver(new Handler()) {
+                    new ContentObserver(new Handler(Looper.getMainLooper())) {
                         @Override
                         public void onChange(boolean selfChange) {
                             mReceiver.onReceive(getContext(), (Intent) null);

@@ -460,8 +460,8 @@ public class StackAnimationController extends
             return;
         }
 
-        BubbleLog.d(String.format("Flinging %s.",
-                PhysicsAnimationLayout.getReadablePropertyName(property)));
+        BubbleLog.d("Flinging %s.",
+                PhysicsAnimationLayout.getReadablePropertyName(property));
 
         StackPositionProperty firstBubbleProperty = new StackPositionProperty(property);
         final float currentValue = firstBubbleProperty.getValue(this);
@@ -631,9 +631,9 @@ public class StackAnimationController extends
             return;
         }
 
-        BubbleLog.d(String.format("Springing %s to final position %f.",
+        BubbleLog.d("Springing %s to final position %f.",
                 PhysicsAnimationLayout.getReadablePropertyName(property),
-                finalPosition));
+                finalPosition);
 
         // Whether we're springing towards the touch location, rather than to a position on the
         // sides of the screen.
@@ -778,7 +778,7 @@ public class StackAnimationController extends
                 final int oldIndex = mLayout.indexOfChild(view);
                 swapped |= animateSwap(view, oldIndex, newIndex, updateAllIcons, after);
             } else {
-                BubbleLog.w("bubbleViews[" + newIndex + "] is null");
+                BubbleLog.w("bubbleViews[%d] is null", newIndex);
             }
         }
         if (!swapped) {
@@ -929,7 +929,7 @@ public class StackAnimationController extends
 
     /** Moves the stack to a position instantly, with no animation. */
     public void setStackPosition(PointF pos) {
-        BubbleLog.d(String.format("Setting position to (%f, %f).", pos.x, pos.y));
+        BubbleLog.d("Setting position to (%f, %f).", pos.x, pos.y);
         mStackPosition.set(pos.x, pos.y);
 
         mPositioner.setRestingPosition(mStackPosition);

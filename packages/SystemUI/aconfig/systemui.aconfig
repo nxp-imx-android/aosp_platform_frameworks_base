@@ -78,10 +78,17 @@ flag {
 }
 
 flag {
+    name: "black_screen_on_scene_container_start_fix"
+    namespace: "systemui"
+    description: "Fix a brief black screen on scene container startup"
+    bug: "452871017"
+}
+
+flag {
     name: "blur_on_more_surfaces"
     namespace: "systemui"
-    description: "Enable blur on more systemui surfaces"
-    bug: "444141641"
+    description: "Enable blur on more systemui surfaces (volume and power)"
+    bug: "496223564"
 }
 
 flag {
@@ -449,7 +456,7 @@ flag {
     name: "enable_lockscreen_blur"
     namespace: "systemui"
     description: "Enable blur on more lockscreen surfaces"
-    bug: "444141641"
+    bug: "496224024"
 }
 
 flag {
@@ -696,14 +703,6 @@ flag {
 }
 
 flag {
-  name: "glanceable_hub_v2_resources"
-  namespace: "systemui"
-  description: "Read only flag for rolling out glanceable hub v2 resource values"
-  bug: "375689917"
-  is_fixed_read_only: true
-}
-
-flag {
     name: "global_actions_feedback_action"
     namespace: "systemui"
     description: "When enabled at build-time, the feedback global action will be available on "
@@ -931,6 +930,13 @@ flag {
     metadata {
       purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "lockscreen_blur_for_notifications"
+    namespace: "systemui"
+    description: "Enable lockscreen blur for notifications"
+    bug: "496207304"
 }
 
 flag {
@@ -1509,6 +1515,16 @@ flag {
     namespace: "systemui"
     description: "Only capture a single display when screenshotting"
     bug: "362720389"
+}
+
+flag {
+    name: "screenshot_remove_nonforced_sound"
+    namespace: "systemui"
+    description: "Only play screenshot shutter sound when forced"
+    bug: "457718566"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {

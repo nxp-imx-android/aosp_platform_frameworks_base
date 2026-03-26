@@ -19,6 +19,7 @@ package android.app.admin;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_APPS_CONTROL;
+import static android.Manifest.permission.MANAGE_DEVICE_POLICY_BLUETOOTH;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_CONTENT_RESTRICTION_APPS;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_FACTORY_RESET;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_FUN;
@@ -36,6 +37,7 @@ import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_APP_INSTALL
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_APP_UNINSTALL;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_AUTO_TIME;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_AUTO_TIME_ZONE;
+import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_BLUETOOTH_SHARING;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_DISALLOW_FACTORY_RESET;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_EASTER_EGGS;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_LOCKSCREEN_MESSAGE;
@@ -341,7 +343,7 @@ public final class PolicyIdentifier<T> {
      * <p>If the value is {@code null}, any previously set role holder set through this policy will
      * be removed.
      */
-    @FlaggedApi(FLAG_POLICY_STREAMLINING)
+    @FlaggedApi(android.app.contentrestriction.flags.Flags.FLAG_CONTENT_RESTRICTION_API)
     @NonNull
     @ListOfStringPolicyDefinition(
             base =
@@ -629,6 +631,52 @@ public final class PolicyIdentifier<T> {
             resolutionMechanism = @EnumResolutionMechanism(custom = true))
     public static final PolicyIdentifier<Integer> FACTORY_RESET =
             new PolicyIdentifier<>("FACTORY_RESET");
+
+    /** Bluetooth sharing is disallowed. */
+    @FlaggedApi(Flags.FLAG_POLICY_STREAMLINING_BLUETOOTH_SHARING)
+    public static final int BLUETOOTH_SHARING_DISALLOWED = 1;
+
+    /** Bluetooth sharing is allowed. */
+    @FlaggedApi(Flags.FLAG_POLICY_STREAMLINING_BLUETOOTH_SHARING)
+    public static final int BLUETOOTH_SHARING_ALLOWED = 2;
+
+    /**
+     * Possible values {@link BLUETOOTH_SHARING}
+     *
+     * @hide
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(
+            prefix = {"BLUETOOTH_SHARING_"},
+            value = {
+                BLUETOOTH_SHARING_DISALLOWED,
+                BLUETOOTH_SHARING_ALLOWED,
+            })
+    public @interface BluetoothSharingValue {}
+
+    /** Policy that controls whether Bluetooth sharing is allowed or disallowed. */
+    @FlaggedApi(Flags.FLAG_POLICY_STREAMLINING_BLUETOOTH_SHARING)
+    @NonNull
+    @EnumPolicyDefinition(
+            base =
+                    @PolicyDefinition(
+                            allowedScopes = {POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE},
+                            affectedResource = RESOURCE_PER_USER,
+                            requiredPermission = MANAGE_DEVICE_POLICY_BLUETOOTH,
+                            requiredCrossUserPermission = MANAGE_DEVICE_POLICY_ACROSS_USERS,
+                            allowedDpcTypes =
+                                    @AllowedDpcTypes(
+                                            deviceOwner = ALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice = ALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = ALLOWED,
+                                            unaffiliatedFullUserProfileOwner = ALLOWED,
+                                            profileOwnerOnUser0 = ALLOWED,
+                                            affiliatedFullUserProfileOwner = ALLOWED)),
+            intDef = BluetoothSharingValue.class,
+            defaultValue = BLUETOOTH_SHARING_ALLOWED,
+            resolutionMechanism = @EnumResolutionMechanism(custom = true))
+    public static final PolicyIdentifier<Integer> BLUETOOTH_SHARING =
+            new PolicyIdentifier<>("BLUETOOTH_SHARING");
 
     // Make sure to update the policy metadata file when updating the definitions above by running
     // the following commands:

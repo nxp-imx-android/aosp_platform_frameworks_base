@@ -201,9 +201,4 @@
     <item msgid="6641673879029894995">"Ki"</item>
     <item msgid="5806682401126108403">"Be"</item>
   </string-array>
-  <string-array name="tile_states_battery_charging">
-    <item msgid="7997022271404074195">"Nem áll rendelkezésre"</item>
-    <item msgid="9200787142547749446">"Ki"</item>
-    <item msgid="1965665798398064399">"Be"</item>
-  </string-array>
 </resources>

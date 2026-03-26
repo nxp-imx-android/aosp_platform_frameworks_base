@@ -22,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.scene.shared.model.SceneContainerConfig
@@ -85,6 +86,12 @@ constructor(
      * source of truth for this state and is merely a local copy of it.
      */
     var activeTransitionAnimationCount: Int by mutableIntStateOf(0)
+
+    /**
+     * The [TransitionState.Idle] scene that's currently being composed by the UI or `null`, if none
+     * is being composed or if not currently `Idle`.
+     */
+    var composedIdleScene: SceneKey? by mutableStateOf<SceneKey?>(null)
 
     /**
      * Whether the device is provisioned (setup wizard finished). Note: this is _not_ the

@@ -16,6 +16,7 @@
 #include "pipeline/skia/SkiaIpcPipeline.h"
 
 #include <android/ipcrenderbuffer/IPCRecordingCanvas.h>
+#include <com_android_graphics_libgui_flags.h>
 #include <gui/TraceUtils.h>
 #include <include/core/SkImage.h>
 #include <include/core/SkSurface.h>
@@ -426,7 +427,16 @@ int SkiaIpcPipeline::getFrameTimestamps(uint64_t frameNumber, nsecs_t* outReques
     if (outLastRefreshStartTime) *outLastRefreshStartTime = events->lastRefreshStartTime;
     if (outGpuCompositionDoneTime)
         *outGpuCompositionDoneTime = getTimestamp(events->gpuCompositionDoneFence);
-    if (outDisplayPresentTime) *outDisplayPresentTime = getTimestamp(events->displayPresentFence);
+    if (outDisplayPresentTime) {
+        *outDisplayPresentTime = getTimestamp(events->displayPresentFence);
+        if (com::android::graphics::libgui::flags::debug_gpu_present_times()) {
+            ATRACE_FORMAT_INSTANT(
+                    "450351988: SkiaIpcPipeline::getFrameTimestamps: frameNumber=%" PRId64
+                    " presentTime=%" PRId64 " acquireFence=%" PRId64,
+                    frameNumber, *outDisplayPresentTime,
+                    outAcquireTime ? *outAcquireTime : getTimestamp(events->acquireFence));
+        }
+    }
     if (outDequeueReadyTime) *outDequeueReadyTime = events->dequeueReadyTime;
     if (outReleaseTime) *outReleaseTime = getTimestamp(events->releaseFence);
     return 0;

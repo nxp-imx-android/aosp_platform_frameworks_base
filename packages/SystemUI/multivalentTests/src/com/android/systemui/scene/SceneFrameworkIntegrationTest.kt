@@ -577,6 +577,8 @@ class SceneFrameworkIntegrationTest : SysuiTestCase() {
             fakeSceneDataSource.transitionState = TransitionState.Idle(toScene, toOverlays)
         }
 
+        sceneContainerViewModel.onIdleSceneEnteredComposition(toScene)
+
         fakeSceneDataSource.unpause(force = true)
 
         assertWithMessage(

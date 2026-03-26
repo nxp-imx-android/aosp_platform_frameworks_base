@@ -160,4 +160,21 @@ class StringPolicyHandlerTest {
         assertThat(exception.message)
             .contains("Unprintable characters are not allowed for policy ${StringPolicy.key}")
     }
+
+    @Test
+    fun setPolicyUnchecked_maxLength_shouldRejectLongerStrings() {
+        val metadataWithMaxLength = StringPolicy.metadata.copy(maxLength = 10)
+        val handler = createHandler(metadata = metadataWithMaxLength)
+
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                handler.setPolicyUnchecked(
+                    anyCaller,
+                    anyScope,
+                    PolicyValueTransport.stringField("a".repeat(11)),
+                )
+            }
+        assertThat(exception.message)
+            .contains("is longer than the maximum length 10 for policy ${StringPolicy.key}")
+    }
 }

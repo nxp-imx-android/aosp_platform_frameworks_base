@@ -836,7 +836,7 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
         mPipUiEventLoggerLogger.log(uiEventEnum);
 
         ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                "onTaskAppeared: %s, state=%s, taskId=%s", mTaskInfo.topActivity,
+                "onTaskAppeared: %s, state=%s, taskId=%d", mTaskInfo.topActivity,
                 mPipTransitionState, mTaskInfo.taskId);
         if (mPipTransitionState.getInSwipePipToHomeTransition()) {
             if (mWaitForFixedRotation) {
@@ -1096,7 +1096,7 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
     /** Explicitly set the visibility of PiP window. */
     public void setPipVisibility(boolean visible) {
         ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                "setPipVisibility: %s, state=%s visible=%s",
+                "setPipVisibility: %s, state=%s visible=%b",
                 (mTaskInfo != null ? mTaskInfo.topActivity : null), mPipTransitionState, visible);
         if (!isInPip()) {
             return;

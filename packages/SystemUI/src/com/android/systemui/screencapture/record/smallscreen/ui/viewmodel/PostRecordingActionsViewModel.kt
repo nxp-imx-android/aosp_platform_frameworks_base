@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.broadcast.BroadcastSender
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
@@ -54,6 +55,7 @@ constructor(
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val parentUriRepository: ParentUriRepository,
     private val uiEventLogger: UiEventLogger,
+    private val activityStarter: ActivityStarter,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
 
     var parentUri: Uri? by mutableStateOf(null)
@@ -102,6 +104,17 @@ constructor(
         )
     }
 
+    /** Executes a [runnable] after the keyguard is dismissed. */
+    fun executeDismissingKeyguard(runnable: Runnable) {
+        activityStarter.executeRunnableDismissingKeyguard(
+            runnable,
+            /* cancelAction= */ null,
+            /* dismissShade= */ true,
+            /* afterKeyguardGone= */ true,
+            /* deferred= */ false,
+        )
+    }
+
     private fun startVideoActivity(
         action: String,
         label: String?,
@@ -127,21 +140,23 @@ constructor(
                     }
                 }
 
-        broadcastSender.sendBroadcastAsUser(
-            intent =
-                ActivityStartingReceiver.wrapIntent(
-                    context,
-                    intent,
-                    displayId
-                        .takeIf { it != Display.INVALID_DISPLAY }
-                        ?.let { validDisplayId ->
-                            ActivityOptions.makeBasic()
-                                .apply { launchDisplayId = validDisplayId }
-                                .toBundle()
-                        },
-                ),
-            userHandle = userTracker.userHandle,
-        )
+        executeDismissingKeyguard {
+            broadcastSender.sendBroadcastAsUser(
+                intent =
+                    ActivityStartingReceiver.wrapIntent(
+                        context,
+                        intent,
+                        displayId
+                            .takeIf { it != Display.INVALID_DISPLAY }
+                            ?.let { validDisplayId ->
+                                ActivityOptions.makeBasic()
+                                    .apply { launchDisplayId = validDisplayId }
+                                    .toBundle()
+                            },
+                    ),
+                userHandle = userTracker.userHandle,
+            )
+        }
     }
 
     @AssistedFactory

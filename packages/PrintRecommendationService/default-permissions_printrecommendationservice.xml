@@ -17,7 +17,7 @@
 <exceptions>
   <exception package="com.android.printservice.recommendation">
     <!-- Local network access needed to query printers with mDNS. -->
-    <permission name="android.permission.ACCESS_LOCAL_NETWORK" fixed="true"/>
+    <permission name="android.permission.ACCESS_LOCAL_NETWORK" fixed="false"/>
   </exception>
 </exceptions>
 

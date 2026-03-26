@@ -50,16 +50,6 @@ flag {
 }
 
 flag {
-    name: "close_split_task_instead_of_moving_to_back"
-    namespace: "lse_desktop_experience"
-    description: "Closing a task in split screen via its window decor, instead of moving it to the background."
-    bug: "442283534"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "default_desk_without_warmup_migration"
     namespace: "lse_desktop_experience"
     description: "Moves desk creation to coroutines to guarantee non-null default desk"
@@ -967,6 +957,17 @@ flag {
   description: "Allow app developers to opt out from OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS"
   bug: "472448413"
   is_exported: true
+}
+
+flag {
+    name: "filter_events_from_irrelevant_devices_in_drag_move_resize"
+    namespace: "lse_desktop_experience"
+    description: "Filters motion events from input devices whose events haven't started the drag /n"
+                 "remove or drag resize gesture."
+    bug: "452164704"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {

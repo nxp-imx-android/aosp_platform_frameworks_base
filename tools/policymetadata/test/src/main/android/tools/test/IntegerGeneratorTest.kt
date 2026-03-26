@@ -17,29 +17,25 @@
 package android.processor.devicepolicy.test
 
 import android.processor.devicepolicy.protos.PolicyMetadata
-import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata
-import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.IntegerPolicyMetadata
 import android.tools.policymetadata.Generator
 import org.junit.Test
 
 class IntegerGeneratorTest {
     private fun integerTestPolicy(name: String): PolicyMetadata.Builder =
-        PolicyMetadata.newBuilder()
-            .setIdentifier(simpleNameToFieldName(name))
-            .setTypeSpecificMetadata(
-                TypeSpecificPolicyMetadata.newBuilder()
-                    .setIntegerMetadata(
-                        TypeSpecificPolicyMetadata.IntegerPolicyMetadata.newBuilder()
-                    )
-            )
+        PolicyMetadata.newBuilder().apply {
+            identifier = simpleNameToFieldName(name)
+            typeSpecificMetadataBuilder.integerMetadataBuilder.resolutionMechanismBuilder //
+                .custom = true
+        }
 
     @Test
     fun test_outputMatches() {
         val javaFile =
             Generator.generate(
-                integerTestPolicy("test.package.PolicyContainer.MY_TEST_INTEGER_POLICY")
-                    .addAllAllowedScopes(listOf(PolicyMetadata.PolicyScope.POLICY_SCOPE_DEVICE))
-                    .setAffectedResource(PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE)
+                integerTestPolicy("test.package.PolicyContainer.MY_TEST_INTEGER_POLICY").apply {
+                    addAllowedScopes(PolicyMetadata.PolicyScope.POLICY_SCOPE_DEVICE)
+                    affectedResource = PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE
+                }
             )
 
         javaFile.assertContainsPolicy(
@@ -55,6 +51,7 @@ class IntegerGeneratorTest {
                       /* requiredPermission= */ null,
                       /* requiredCrossUserPermission= */ null,
                       /* allowedDpcTypes= */ Set.of(),
+                      /* resolutionMechanism= */ null,
                       /* minValue= */ Integer.MIN_VALUE,
                       /* maxValue= */ Integer.MAX_VALUE
                   ));
@@ -64,18 +61,14 @@ class IntegerGeneratorTest {
 
     @Test
     fun test_withMinMax_outputMatches() {
-        val integerMetadata =
-            TypeSpecificPolicyMetadata.IntegerPolicyMetadata.newBuilder()
-                .setMinValue(-10)
-                .setMaxValue(10)
         val javaFile =
             Generator.generate(
-                integerTestPolicy("test.package.PolicyContainer.MY_TEST_INTEGER_POLICY")
-                    .setTypeSpecificMetadata(
-                        TypeSpecificPolicyMetadata.newBuilder().setIntegerMetadata(integerMetadata)
-                    )
-                    .addAllAllowedScopes(listOf(PolicyMetadata.PolicyScope.POLICY_SCOPE_DEVICE))
-                    .setAffectedResource(PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE)
+                integerTestPolicy("test.package.PolicyContainer.MY_TEST_INTEGER_POLICY").apply {
+                    typeSpecificMetadataBuilder.integerMetadataBuilder.apply {
+                        minValue = -10
+                        maxValue = 10
+                    }
+                }
             )
 
         javaFile.assertContainsPolicy(
@@ -84,15 +77,43 @@ class IntegerGeneratorTest {
                 """
                   policies.add(new IntegerPolicyMetadata(
                       /* id= */ MY_TEST_INTEGER_POLICY,
-                      /* allowedScopes= */ Set.of(
-                          2
-                      ),
-                      /* affectedResource= */ 1,
+                      /* allowedScopes= */ Set.of(),
+                      /* affectedResource= */ 0,
                       /* requiredPermission= */ null,
                       /* requiredCrossUserPermission= */ null,
                       /* allowedDpcTypes= */ Set.of(),
+                      /* resolutionMechanism= */ null,
                       /* minValue= */ -10,
                       /* maxValue= */ 10
+                  ));
+                """,
+        )
+    }
+
+    @Test
+    fun test_resolutionMechanismNotCoexistable_outputMatches() {
+        val javaFile =
+            Generator.generate(
+                integerTestPolicy("test.package.Class.MY_TEST_INTEGER_POLICY").apply {
+                    typeSpecificMetadataBuilder.integerMetadataBuilder.resolutionMechanismBuilder
+                        .notCoexistable = true
+                }
+            )
+
+        javaFile.assertContainsPolicy(
+            staticImports = listOf("test.package.Class.MY_TEST_INTEGER_POLICY"),
+            code =
+                """
+                  policies.add(new IntegerPolicyMetadata(
+                      /* id= */ MY_TEST_INTEGER_POLICY,
+                      /* allowedScopes= */ Set.of(),
+                      /* affectedResource= */ 0,
+                      /* requiredPermission= */ null,
+                      /* requiredCrossUserPermission= */ null,
+                      /* allowedDpcTypes= */ Set.of(),
+                      /* resolutionMechanism= */ new ResolutionMechanismMetadata.NotCoexistable(),
+                      /* minValue= */ Integer.MIN_VALUE,
+                      /* maxValue= */ Integer.MAX_VALUE
                   ));
                 """,
         )

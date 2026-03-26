@@ -20,7 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.clearInvocations;
@@ -663,6 +662,45 @@ public class TouchMonitorTest extends SysuiTestCase {
 
         verify(gestureListener1, never()).onDown(any());
         verify(gestureListener2).onDown(eq(followupEvent));
+    }
+
+    @Test
+    public void testPilferingIsolatesSession() {
+        final TouchHandler touchHandler1 = createTouchHandler();
+        final TouchHandler touchHandler2 = createTouchHandler();
+        final Environment environment = new Environment(Stream.of(touchHandler1, touchHandler2)
+                .collect(Collectors.toCollection(HashSet::new)), mKosmos);
+
+        final InputEvent initialEvent = Mockito.mock(InputEvent.class);
+        environment.publishInputEvent(initialEvent);
+
+        final TouchHandler.TouchSession session1 = captureSession(touchHandler1);
+        final GestureDetector.OnGestureListener gestureListener1 =
+                registerGestureListener(session1);
+
+        final TouchHandler.TouchSession session2 = captureSession(touchHandler2);
+        final TouchHandler.TouchSession.Callback callback2 =
+                Mockito.mock(TouchHandler.TouchSession.Callback.class);
+        session2.registerCallback(callback2);
+        final GestureDetector.OnGestureListener gestureListener2 =
+                registerGestureListener(session2);
+
+        // Session 1 pilfers the pointers.
+        session1.pilfer();
+        environment.executeAll();
+
+        // This should isolate session 1, which means session 2 is removed.
+        verify(callback2).onRemoved();
+
+        Mockito.clearInvocations(gestureListener1, gestureListener2);
+
+        // Subsequent gesture events should only be routed to session 1.
+        final MotionEvent followupEvent = Mockito.mock(MotionEvent.class);
+        environment.publishGestureEvent(
+                onGestureListener -> onGestureListener.onLongPress(followupEvent));
+
+        verify(gestureListener1).onLongPress(eq(followupEvent));
+        verify(gestureListener2, never()).onLongPress(any());
     }
 
     @Test

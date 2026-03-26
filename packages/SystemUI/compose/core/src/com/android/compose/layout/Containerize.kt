@@ -16,11 +16,17 @@
 
 package com.android.compose.layout
 
+import android.graphics.Point
+import android.util.Log
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 
 /**
  * Applies a container layout to a Composable.
@@ -28,6 +34,9 @@ import androidx.compose.ui.unit.Dp
  * The container size is calculated as a fraction of the incoming constraints, clamped by min/max
  * edge constraints defined in [ContainerConfig]. [ContainerLayout] determines if width or height
  * corresponds to the long or short edge.
+ *
+ * The container is centered in the available space (including any insets) if possible. If
+ * [WindowInsets] are provided, the container will not overlap them.
  *
  * It's recommended to use [com.android.compose.windowsizeclass.LocalWindowSizeClass] to evaluate if
  * [containerize] modifier should be applied and which [ContainerLayout] should be used.
@@ -55,12 +64,26 @@ import androidx.compose.ui.unit.Dp
  *
  * @param config The configuration for calculating the container size.
  * @param layout The [ContainerLayout] (HORIZONTAL/VERTICAL) to map long/short edges to axes.
+ * @param insets The [WindowInsets] to be consumed internally.
  */
-fun Modifier.containerize(config: ContainerConfig, layout: ContainerLayout) =
-    this.layout { measurable, constraints ->
-        val placeable = measurable.measure(config.calculateContainerSize(this, constraints, layout))
-        layout(placeable.width, placeable.height) { placeable.placeRelative(x = 0, y = 0) }
-    }
+@Composable
+fun Modifier.containerize(
+    config: ContainerConfig,
+    layout: ContainerLayout,
+    insets: WindowInsets = WindowInsets(),
+): Modifier {
+    return this.layout { measurable, constraints ->
+            val bottomInset = insets.getBottom(this)
+            val topInset = insets.getTop(this)
+            val (size, offset) =
+                config.calculateContainerPlacement(this, constraints, layout, bottomInset, topInset)
+            val placeable = measurable.measure(Constraints.fixed(size.width, size.height))
+            layout(placeable.width, placeable.height) {
+                placeable.placeRelative(x = offset.x, y = offset.y)
+            }
+        }
+        .consumeWindowInsets(insets)
+}
 
 /**
  * Specifies how to map "long" and "short" edge constraints to width and height.
@@ -71,6 +94,12 @@ enum class ContainerLayout {
     HORIZONTAL,
     VERTICAL,
 }
+
+/**
+ * @property size Calculated container size.
+ * @property offset Calculated container offset.
+ */
+data class ContainerPlacement(val size: IntSize, val offset: Point)
 
 /**
  * Configuration for the [containerize] modifier.
@@ -89,40 +118,83 @@ class ContainerConfig(
     val maxShortEdge: Dp,
 ) {
     /**
-     * Calculates the final [Constraints] for the container.
-     *
-     * First, the preferred [Constraints] are calculated based on [ContainerConfig],
-     * [ContainerLayout] and display [Density]. Then, a specified fraction of parents' max
-     * constraints is calculated and the value is clamped between the preferred [Constraints].
-     * Finally, the value is capped by parents' max constraints to prevent overflow. Resulting width
-     * and height are used to return a fixed [Constraints].
+     * Calculates the [ContainerPlacement] for the container.
+     * - The preferred [Constraints] are calculated based on [ContainerConfig], [ContainerLayout]
+     *   and display [Density].
+     * - A specified fraction of parents' max constraints is calculated and the value is clamped
+     *   between the preferred [Constraints].
+     * - The value is capped by parents' max constraints minus insets to prevent overflow. Resulting
+     *   width and height are saved to [ContainerPlacement.size].
+     * - Using the calculated size, [ContainerPlacement.offset] is calculated to place the container
+     *   in [Constraints]' center if possible or aligned to insets otherwise.
      *
      * @param density Display [Density].
      * @param constraints The [Constraints] from the parent.
      * @param layout The [ContainerLayout] to interpret edge constraints.
-     * @return Calculated [Constraints] for the child.
+     * @param bottomInset Bottom inset value to apply.
+     * @param topInset Top inset value to apply.
+     * @return Calculated `size` and `offset` in [ContainerPlacement].
      */
-    fun calculateContainerSize(
+    fun calculateContainerPlacement(
         density: Density,
         constraints: Constraints,
         layout: ContainerLayout,
-    ): Constraints {
+        bottomInset: Int,
+        topInset: Int,
+    ): ContainerPlacement {
         val preferredConstraints = calculatePreferredConstraints(density, layout)
-        val width =
-            minOf(
-                (constraints.maxWidth * sizeFraction)
-                    .toInt()
-                    .coerceIn(preferredConstraints.minWidth, preferredConstraints.maxWidth),
-                constraints.maxWidth,
-            )
-        val height =
-            minOf(
-                (constraints.maxHeight * sizeFraction)
-                    .toInt()
-                    .coerceIn(preferredConstraints.minHeight, preferredConstraints.maxHeight),
-                constraints.maxHeight,
-            )
-        return Constraints.fixed(width, height)
+        val size = calculateContainerSize(constraints, preferredConstraints, topInset + bottomInset)
+        val offset = calculateOffsetToPlaceInCenter(constraints, size, bottomInset, topInset)
+        return ContainerPlacement(size, offset)
+    }
+
+    private fun calculateContainerSize(
+        parentConstraints: Constraints,
+        preferredConstraints: Constraints,
+        verticalInsets: Int,
+    ) =
+        IntSize(
+            width =
+                minOf(
+                    (parentConstraints.maxWidth * sizeFraction)
+                        .toInt()
+                        .coerceIn(preferredConstraints.minWidth, preferredConstraints.maxWidth),
+                    parentConstraints.maxWidth,
+                ),
+            height =
+                minOf(
+                    (parentConstraints.maxHeight * sizeFraction)
+                        .toInt()
+                        .coerceIn(preferredConstraints.minHeight, preferredConstraints.maxHeight),
+                    parentConstraints.maxHeight - verticalInsets,
+                ),
+        )
+
+    private fun calculateOffsetToPlaceInCenter(
+        constraints: Constraints,
+        size: IntSize,
+        bottomInset: Int,
+        topInset: Int,
+    ): Point {
+        if (!constraints.hasBoundedWidth || !constraints.hasBoundedHeight) {
+            Log.w(TAG, "Container can be placed only in bounded constraints, are $constraints")
+            return Point(0, 0)
+        }
+        val xOffsetToAlignCenter = (constraints.maxWidth - size.width) / 2
+        val yOffsetToAlignCenter = (constraints.maxHeight - size.height) / 2
+        val yOffset =
+            if (bottomInset > yOffsetToAlignCenter) {
+                // Move the container up if it would overlap bottom inset.
+                yOffsetToAlignCenter - (bottomInset - yOffsetToAlignCenter)
+            } else if (topInset > yOffsetToAlignCenter) {
+                // Move the container down if it would overlap top inset.
+                // Equivalent to `yOffsetToAlignCenter + (topInset - yOffsetToAlignCenter)`
+                topInset
+            } else {
+                // Center container otherwise.
+                yOffsetToAlignCenter
+            }
+        return Point(xOffsetToAlignCenter, yOffset)
     }
 
     /**
@@ -159,5 +231,9 @@ class ContainerConfig(
                 }
             }
         }
+    }
+
+    companion object {
+        private const val TAG = "ContainerConfig"
     }
 }

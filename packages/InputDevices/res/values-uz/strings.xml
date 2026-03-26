@@ -3,6 +3,7 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="8016145283189546017">"Kiritish qurilmalari"</string>
     <string name="keyboard_layouts_label" msgid="6688773268302087545">"Android klaviaturasi"</string>
+    <string name="keyboard_layout_english_ca_label" msgid="2415799429045326926">"Ingliz (Kanada)"</string>
     <string name="keyboard_layout_english_uk_label" msgid="6664258463319999632">"Ingliz (Birlashgan Qirollik)"</string>
     <string name="keyboard_layout_english_us_label" msgid="8994890249649106291">"Ingliz (AQSH)"</string>
     <string name="keyboard_layout_english_us_intl" msgid="3705168594034233583">"Ingliz (AQSH), xalqaro"</string>
@@ -59,20 +60,28 @@
     <string name="keyboard_layout_montenegrin_cyrillic" msgid="2391253952894077421">"Chernogor (kirill)"</string>
     <string name="keyboard_layout_romanian" msgid="8698989892731726903">"Rumin"</string>
     <string name="keyboard_layout_english_india" msgid="7962353311188603367">"Ingliz (Hindiston)"</string>
-    <!-- no translation found for playstation_controller_circle_button (3436949457993997215) -->
+    <string name="playstation_controller_circle_button" msgid="3436949457993997215">"Aylana tugmasi"</string>
+    <string name="playstation_controller_triangle_button" msgid="7058016183388142515">"Uchburchak tugmasi"</string>
+    <string name="playstation_controller_square_button" msgid="1611460593522078301">"Kvadrat tugmasi"</string>
+    <string name="playstation_controller_cross_button" msgid="5263132258994089833">"Xoch tugmasi"</string>
+    <string name="default_game_controller_down_button" msgid="5298575601656661456">"Pastga tugmasi"</string>
+    <string name="default_game_controller_left_button" msgid="8135197345326445929">"Chapga tugmasi"</string>
+    <string name="default_game_controller_right_button" msgid="7213665536684737133">"Oʻngga tugmasi"</string>
+    <string name="default_game_controller_up_button" msgid="5466016771871639338">"Yuqoriga tugmasi"</string>
+    <!-- no translation found for nintendo_game_controller_l_button (4725333055757177703) -->
     <skip />
-    <!-- no translation found for playstation_controller_triangle_button (7058016183388142515) -->
+    <!-- no translation found for nintendo_game_controller_r_button (1916817307166823755) -->
     <skip />
-    <!-- no translation found for playstation_controller_square_button (1611460593522078301) -->
+    <!-- no translation found for nintendo_game_controller_zl_button (7980363034784417011) -->
     <skip />
-    <!-- no translation found for playstation_controller_cross_button (5263132258994089833) -->
+    <!-- no translation found for nintendo_game_controller_zr_button (301860128142672009) -->
     <skip />
-    <!-- no translation found for default_game_controller_down_button (5298575601656661456) -->
+    <!-- no translation found for xbox_game_controller_lb_button (3531058576782769049) -->
     <skip />
-    <!-- no translation found for default_game_controller_left_button (8135197345326445929) -->
+    <!-- no translation found for xbox_game_controller_rb_button (7009478913470850721) -->
     <skip />
-    <!-- no translation found for default_game_controller_right_button (7213665536684737133) -->
+    <!-- no translation found for xbox_game_controller_lt_button (6613016668751667815) -->
     <skip />
-    <!-- no translation found for default_game_controller_up_button (5466016771871639338) -->
+    <!-- no translation found for xbox_game_controller_rt_button (1259415225164057316) -->
     <skip />
 </resources>

@@ -27,6 +27,7 @@ import static android.app.appfunctions.AppFunctionRuntimeMetadata.APP_FUNCTION_R
 
 import static com.android.server.appfunctions.AppFunctionExecutors.THREAD_POOL_EXECUTOR;
 import static com.android.server.appfunctions.CallerValidator.CAN_EXECUTE_APP_FUNCTIONS_DENIED;
+import static com.android.server.appfunctions.CallerValidator.CAN_EXECUTE_APP_FUNCTIONS_DENIED_NOT_ALLOWLISTED;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -459,6 +460,15 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                         new SecurityException(
                                                 "Caller does not have permission to execute the"
                                                         + " appfunction"));
+                            }
+                            if (canExecuteResult
+                                    == CAN_EXECUTE_APP_FUNCTIONS_DENIED_NOT_ALLOWLISTED) {
+                                return AndroidFuture.failedFuture(
+                                        new SecurityException(
+                                                "Caller "
+                                                        + requestInternal.getCallingPackage()
+                                                        + " is not allowed to call "
+                                                        + targetPackageName));
                             }
 
                             if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
@@ -954,33 +964,35 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         final int callingUid = Binder.getCallingUid();
         final int callingPid = Binder.getCallingPid();
 
-        try {
-            // The calling package name will be used to determine the visible packages.
-            mCallerValidator.validateCallingPackage(callingPackage);
-            mCallerValidator.verifyUserInteraction(
-                    /* targetUserId= */ userHandle.getIdentifier(),
-                    /* callingUid= */ callingUid,
-                    /* callingPid= */ callingPid,
-                    /* callingPackageName= */ callingPackage);
-        } catch (SecurityException e) {
+        if (Binder.getCallingUid() != Process.SHELL_UID
+                && Binder.getCallingUid() != Process.ROOT_UID) {
             try {
-                callback.onError(new ParcelableException(e));
-            } catch (RemoteException ex) {
-                Slog.e(TAG, "Failed to execute callback#onError.", e);
+                // The calling package name will be used to determine the visible packages.
+                mCallerValidator.validateCallingPackage(callingPackage);
+                mCallerValidator.verifyUserInteraction(
+                        /* targetUserId= */ userHandle.getIdentifier(),
+                        /* callingUid= */ callingUid,
+                        /* callingPid= */ callingPid,
+                        /* callingPackageName= */ callingPackage);
+            } catch (SecurityException e) {
+                try {
+                    callback.onError(new ParcelableException(e));
+                } catch (RemoteException ex) {
+                    Slog.e(TAG, "Failed to execute callback#onError.", e);
+                }
+                return;
             }
-            return;
-        }
-
-        if (!mVisibilityHelper.isPackageVisible(
-                targetPackage, callingPackage, callingUid, callingPid)) {
-            try {
-                callback.onError(
-                        new ParcelableException(
-                                new AppFunctionNotFoundException("App Function not found")));
-            } catch (RemoteException re) {
-                Slog.e(TAG, "Failed to execute callback#onError.", re);
+            if (!mVisibilityHelper.isPackageVisible(
+                    targetPackage, callingPackage, callingUid, callingPid)) {
+                try {
+                    callback.onError(
+                            new ParcelableException(
+                                    new AppFunctionNotFoundException("App Function not found")));
+                } catch (RemoteException re) {
+                    Slog.e(TAG, "Failed to execute callback#onError.", re);
+                }
+                return;
             }
-            return;
         }
 
         UserHandle targetUser = UserHandle.of(userHandle.getIdentifier());

@@ -25,6 +25,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -81,11 +82,22 @@ fun QuickActionChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+    cornerRadius: Dp = dimensionResource(id = R.dimen.ongoing_activity_chip_corner_radius),
+    horizontalPadding: PaddingValues =
+        PaddingValues(
+            start = 4.dp,
+            end =
+                if (
+                    (chipContent is ChipContent.Text || chipContent is ChipContent.Timer) &&
+                        icons.isNotEmpty()
+                )
+                    8.dp
+                else 4.dp,
+        ),
 ) {
     val hoveredState by interactionSource.collectIsHoveredAsState()
     val indication = if (hoveredState) null else LocalIndication.current
-    val chipShape =
-        RoundedCornerShape(dimensionResource(id = R.dimen.ongoing_activity_chip_corner_radius))
+    val chipShape = RoundedCornerShape(cornerRadius)
     val chipBackgroundColor =
         colors.chipBackground(isSelected = isSelected, colorScheme = MaterialTheme.colorScheme)
 
@@ -104,10 +116,6 @@ fun QuickActionChip(
                     interactionSource = interactionSource,
                 ),
     ) {
-        // Symmetrical padding unless there are both icons and text.
-        val startPadding = 4.dp
-        val hasText = chipContent is ChipContent.Text || chipContent is ChipContent.Timer
-        val endPadding = if (hasText && icons.isNotEmpty()) 8.dp else startPadding
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -125,7 +133,7 @@ fun QuickActionChip(
                         shape = chipShape,
                     )
                     .indication(interactionSource, indication)
-                    .padding(start = startPadding, end = endPadding),
+                    .padding(horizontalPadding),
         ) {
             ChipIcons(chipIcons = icons, colors = colors, isSelected = isSelected)
 

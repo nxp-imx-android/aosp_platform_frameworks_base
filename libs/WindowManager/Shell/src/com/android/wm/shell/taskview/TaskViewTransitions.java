@@ -27,6 +27,7 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.window.flags.Flags.enableHandlersDebuggingMode;
 import static com.android.wm.shell.bubbles.util.BubbleUtils.getExitBubbleTransaction;
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 import static com.android.wm.shell.transition.TransitionDispatchState.CAPTURED_CHANGE_IN_WRONG_TRANSITION;
 import static com.android.wm.shell.transition.TransitionDispatchState.CAPTURED_UNRELATED_CHANGE;
@@ -126,6 +127,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             mTaskView = taskView;
             mLaunchCookie = launchCookie;
         }
+
         /** Dumps PendingTransition state. */
         public void dump(PrintWriter pw, String prefix) {
             pw.print(prefix); pw.println("Pending transition:");
@@ -535,7 +537,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
             }
         }
 
-        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.setTaskViewVisible(): taskView=%d "
+        ProtoLog.d(WM_SHELL_BUBBLES, "Transitions.setTaskViewVisible(): taskView=%d "
                 + "visible=%b", taskView.hashCode(), visible);
         final PendingTransition pending = new PendingTransition(
                 visible ? TRANSIT_TO_FRONT : TRANSIT_TO_BACK, wct, taskView, null /* cookie */);
@@ -601,21 +603,21 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
     private void setTaskBoundsInTransition(TaskViewTaskController taskView, Rect boundsOnScreen) {
         final TaskViewRepository.TaskViewState state = mTaskViewRepo.byTaskView(taskView);
         if (state == null || Objects.equals(boundsOnScreen, state.mBounds)) {
-            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.setTaskBoundsInTransition(): "
+            ProtoLog.d(WM_SHELL_BUBBLES, "Transitions.setTaskBoundsInTransition(): "
                     + "Skipping, same bounds");
             return;
         }
         state.mBounds.set(boundsOnScreen);
         if (!state.mVisible) {
             // Task view isn't visible, the bounds will next visibility update.
-            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.setTaskBoundsInTransition(): "
+            ProtoLog.d(WM_SHELL_BUBBLES, "Transitions.setTaskBoundsInTransition(): "
                     + "Skipping, not visible");
             return;
         }
         if (hasPending()) {
             // There is already a transition in-flight, the window bounds will be set in
             // prepareOpenAnimation.
-            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.setTaskBoundsInTransition(): "
+            ProtoLog.d(WM_SHELL_BUBBLES, "Transitions.setTaskBoundsInTransition(): "
                     + "Skipping, pending transition");
             return;
         }

@@ -85,6 +85,10 @@
       ]
     },
     {
+      "name": "FunctionalTestsDesktopMode-externaldisplay-ProjectedModeStayOnDeviceTest",
+      "keywords": []
+    },
+    {
       "name": "FunctionalTestsDesktopMode-externaldisplay-MoveToNextDisplayTest",
       "keywords": [
         "desktop"

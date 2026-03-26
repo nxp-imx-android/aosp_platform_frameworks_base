@@ -211,7 +211,8 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/see_all_button"
                 android:visibility="gone"
-                android:focusable="false"
+                android:focusable="true"
+                android:contentDescription="@string/accessibility_bluetooth_device_settings_pair_new_device"
                 android:layout_marginTop="@dimen/tile_details_button_margin_vertical_corrected">
 
                 <LinearLayout
@@ -222,6 +223,7 @@
                     android:gravity="center"
                     android:layout_gravity="center"
                     android:duplicateParentState="false"
+                    android:focusable="false"
                     android:clickable="false">
 
                     <FrameLayout
@@ -231,7 +233,6 @@
                         android:clickable="false">
 
                         <ImageView
-                            android:contentDescription="@string/accessibility_bluetooth_device_settings_pair_new_device"
                             android:src="@drawable/ic_add"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"

@@ -16,9 +16,10 @@
 
 package android.view.contentcapture;
 
+import static android.view.contentcapture.ContentCaptureEvent.TYPE_SESSION_FLUSH;
 import static android.view.contentcapture.ContentCaptureEvent.TYPE_SESSION_STARTED;
-import static android.view.contentcapture.ContentCaptureSession.FLUSH_REASON_VIEW_TREE_APPEARED;
-import static android.view.contentcapture.ContentCaptureSession.FLUSH_REASON_VIEW_TREE_APPEARING;
+import static android.view.contentcapture.ContentCaptureEvent.TYPE_VIEW_TEXT_CHANGED;
+import static android.view.contentcapture.ContentCaptureSession.FLUSH_REASON_TEXT_CHANGE_TIMEOUT;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -36,7 +37,6 @@ import android.content.pm.ParceledListSlice;
 import android.graphics.Insets;
 import android.os.Handler;
 import android.os.RemoteException;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.testing.AndroidTestingRunner;
@@ -535,13 +535,13 @@ public class MainContentCaptureSessionTest {
 
         AutofillId autofillId = new AutofillId(42);
         ContentCaptureEvent event1 =
-                new ContentCaptureEvent(session.getId(), ContentCaptureEvent.TYPE_VIEW_TEXT_CHANGED)
+                new ContentCaptureEvent(session.getId(), TYPE_VIEW_TEXT_CHANGED)
                         .setAutofillId(autofillId)
                         .setText("");
         session.sendEvent(event1);
 
         ContentCaptureEvent event2 =
-                new ContentCaptureEvent(session.getId(), ContentCaptureEvent.TYPE_VIEW_TEXT_CHANGED)
+                new ContentCaptureEvent(session.getId(), TYPE_VIEW_TEXT_CHANGED)
                         .setAutofillId(autofillId)
                         .setText("text");
         session.sendEvent(event2);
@@ -550,7 +550,59 @@ public class MainContentCaptureSessionTest {
         verify(mMockContentCaptureDirectManager, times(1)).sendEvents(any(), anyInt(), any());
     }
 
-    /** Simulates the regular content capture events sequence. */
+    @Test
+    public void notifyViewTextChanged_scheduledFlush() throws Exception {
+        // Arrange
+        int textChangeFlushFrequencyMs = 123;
+        ContentCaptureOptions options = new ContentCaptureOptions(
+                /* loggingLevel= */ 0,
+                BUFFER_SIZE,
+                /* idleFlushingFrequencyMs= */ 1000,
+                textChangeFlushFrequencyMs,
+                /* logHistorySize= */ 0,
+                /* enableContentCaptureReceiver= */ true,
+                new ContentCaptureOptions.ContentProtectionOptions(
+                        /* enableReceiver= */ false,
+                        BUFFER_SIZE,
+                        /* requiredGroups= */ Collections.emptyList(),
+                        /* optionalGroups= */ Collections.emptyList(),
+                        /* optionalGroupsThreshold= */ 0),
+                /* whitelistedComponents= */  null);
+        MainContentCaptureSession session = createSession(options);
+        session.mDirectServiceInterface = mMockContentCaptureDirectManager;
+        session.onSessionStarted(0x2, null);
+
+        AutofillId autofillId = new AutofillId(42);
+
+        // Act
+        session.notifyViewTextChanged(autofillId, "text");
+        // Process the initial enqueue and scheduleFlush
+        mTestableLooper.processAllMessages();
+
+        // Advance time significantly to guarantee the delayed flush triggers.
+        // Moving time forward by a larger margin avoids TestableLooper edge-case rounding limits.
+        mTestableLooper.moveTimeForward(textChangeFlushFrequencyMs + 1000);
+        mTestableLooper.processAllMessages();
+
+        // Assert
+        // Capture the arguments passed to sendEvents
+        ArgumentCaptor<ParceledListSlice> captor = ArgumentCaptor.forClass(ParceledListSlice.class);
+        verify(mMockContentCaptureDirectManager, times(1))
+                .sendEvents(captor.capture(), eq(FLUSH_REASON_TEXT_CHANGE_TIMEOUT), eq(options));
+        // Assert the events correspond to the text change and the session flush
+        List<ContentCaptureEvent> flushedEvents = captor.getValue().getList();
+        assertThat(flushedEvents).isNotNull();
+        assertThat(flushedEvents).hasSize(2);
+        // Event 0: TYPE_VIEW_TEXT_CHANGED
+        ContentCaptureEvent textChangedEvent = flushedEvents.get(0);
+        assertThat(textChangedEvent.getType()).isEqualTo(TYPE_VIEW_TEXT_CHANGED);
+        assertThat(textChangedEvent.getText().toString()).isEqualTo("text");
+        // Event 1: TYPE_SESSION_FLUSH
+        ContentCaptureEvent flushEvent = flushedEvents.get(1);
+        assertThat(flushEvent.getType()).isEqualTo(TYPE_SESSION_FLUSH);
+        assertThat(flushEvent.getSessionId()).isEqualTo(session.getId());
+    }
+
     private void notifyContentCaptureEvents(final MainContentCaptureSession session) {
         final ArrayList<Object> events = new ArrayList<>(
                 List.of(

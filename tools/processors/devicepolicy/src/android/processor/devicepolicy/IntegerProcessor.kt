@@ -17,6 +17,7 @@
 package android.processor.devicepolicy
 
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.IntegerPolicyMetadata.ResolutionMechanism as IntegerResolutionMechanismProto
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.type.TypeMirror
@@ -60,7 +61,9 @@ class IntegerProcessor(processingEnv: ProcessingEnvironment) :
             )
         }
 
-        val integerMetadataBuilder = TypeSpecificPolicyMetadata.IntegerPolicyMetadata.newBuilder()
+        val integerMetadataBuilder =
+            TypeSpecificPolicyMetadata.IntegerPolicyMetadata.newBuilder()
+                .setResolutionMechanism(getResolutionMechanism(integerDefinition, element))
         if (integerDefinition.minValue != Integer.MIN_VALUE) {
             integerMetadataBuilder.setMinValue(integerDefinition.minValue)
         }
@@ -81,5 +84,48 @@ class IntegerProcessor(processingEnv: ProcessingEnvironment) :
 
     override fun annotationClass(): Class<IntegerPolicyDefinition> {
         return IntegerPolicyDefinition::class.java
+    }
+
+    private fun getResolutionMechanism(annotation: IntegerPolicyDefinition, element: Element) =
+        ResolutionMechanismProcessor(element).getResolutionMechanism(annotation.resolutionMechanism)
+
+    // Helper class to process the resolution mechanism field
+    inner class ResolutionMechanismProcessor(val element: Element) {
+
+        public fun getResolutionMechanism(
+            annotationValue: IntegerResolutionMechanism
+        ): IntegerResolutionMechanismProto {
+            if (!verifyResolutionMechanism(annotationValue)) {
+                // Error is already printed
+                return IntegerResolutionMechanismProto.newBuilder().build()
+            }
+
+            val builder = IntegerResolutionMechanismProto.newBuilder()
+            if (annotationValue.custom) {
+                builder.setCustom(true)
+            } else {
+                builder.setNotCoexistable(true)
+            }
+            return builder.build()
+        }
+
+        private fun verifyResolutionMechanism(
+            annotationValue: IntegerResolutionMechanism
+        ): Boolean {
+            val isCustom = annotationValue.custom
+            val isNotCoexistable = annotationValue.notCoexistable
+
+            if (isCustom && isNotCoexistable) {
+                printError(element, "Only one resolution mechanism can be selected")
+                return false
+            }
+
+            if (!isCustom && !isNotCoexistable) {
+                printError(element, "Resolution mechanism can not be empty")
+                return false
+            }
+
+            return true
+        }
     }
 }

@@ -1040,10 +1040,6 @@
         <item name="android:windowActivityTransitions">true</item>
     </style>
 
-    <style name="FloatingOverlay" parent="@android:style/Theme.DeviceDefault.DayNight">
-        <item name="overlayButtonTextColor">@color/materialColorOnSurface</item>
-    </style>
-
     <style name="EditTextActivityButton" parent="@android:style/Widget.DeviceDefault.Button.Colored">
         <item name="android:textColor">@color/materialColorOnSurface</item>
     </style>

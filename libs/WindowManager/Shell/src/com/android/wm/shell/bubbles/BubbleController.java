@@ -1841,7 +1841,7 @@ public class BubbleController implements ConfigurationChangeListener,
             @Nullable BubbleTransitions.DragData dragData) {
         if (!BubbleFlagHelper.enableCreateAnyBubble()) return;
         Bubble b = mBubbleData.getOrCreateBubble(taskInfo); // Removes from overflow
-        BubbleLog.v("BubbleController.expandStackAndSelectBubble() taskId=%s", taskInfo.taskId);
+        BubbleLog.v("BubbleController.expandStackAndSelectBubble() taskId=%d", taskInfo.taskId);
         BubbleBarLocation location = null;
         if (dragData != null) {
             location =
@@ -2033,7 +2033,7 @@ public class BubbleController implements ConfigurationChangeListener,
         Bubble existingNotebubble = mBubbleData.getBubbleInStackWithKey(noteBubbleKey);
         BubbleLog.d(
                 "BubbleController.showOrHideNotesBubble() key=%s existingAppBubble=%s  "
-                        + "stackVisibility=%s statusBarShade=%s",
+                        + "stackVisibility=%s statusBarShade=%b",
                 noteBubbleKey, existingNotebubble,
                 (mStackView != null ? mStackView.getVisibility() : "null"),
                 mIsStatusBarShade);

@@ -97,7 +97,15 @@ constructor(
         val displayName = info?.displayName
         var msg: String =
             when {
-                count < 2 && isPuk -> resources.getString(R.string.kg_puk_enter_puk_hint)
+                count < 2 && isPuk -> {
+                    when {
+                        repository.simPukInputModel.enteredSimPuk.isNullOrEmpty() ->
+                            resources.getString(R.string.kg_puk_enter_puk_hint)
+                        repository.simPukInputModel.enteredSimPin.isNullOrEmpty() ->
+                            resources.getString(R.string.kg_puk_enter_pin_hint)
+                        else -> resources.getString(R.string.kg_enter_confirm_pin_hint)
+                    }
+                }
                 count < 2 -> resources.getString(R.string.kg_sim_pin_instructions)
                 else -> {
                     when {

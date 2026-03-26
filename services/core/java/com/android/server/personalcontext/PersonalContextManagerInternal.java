@@ -18,6 +18,7 @@ package com.android.server.personalcontext;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.UserIdInt;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.NotificationEvent;
@@ -59,4 +60,13 @@ public abstract class PersonalContextManagerInternal {
      */
     public abstract void publishTriggeringHint(
             @NonNull Set<ContextHint> hints, @Nullable Set<RenderToken> renderToken, int userId);
+
+    /**
+     * Checks to see if the personal context service is enabled for a given package name and user.
+     *
+     * @param packageName package to check
+     * @param userId user to check
+     */
+    public abstract boolean isPersonalContextServiceEnabledForPackage(
+            String packageName, @UserIdInt int userId);
 }

@@ -332,6 +332,10 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
         }
         mFrozen = frozen;
         if (!frozen) {
+            if (android.view.inputmethod.Flags.fixImeNotShowingInFloatingModeAfterUnlock()
+                    && !mServerVisible) {
+                mGivenInsetsReady = false;
+            }
             // Unfreeze and process the pending IME insets states.
             super.setServerVisible(mServerVisible);
         }

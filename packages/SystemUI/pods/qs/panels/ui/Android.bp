@@ -72,3 +72,8 @@ android_library {
         "//vendor:__subpackages__",
     ],
 }
+
+filegroup {
+    name: "com.android.systemui.qs.panels.ui_fixtureFiles",
+    defaults: ["sysui_fixtureFiles"],
+}

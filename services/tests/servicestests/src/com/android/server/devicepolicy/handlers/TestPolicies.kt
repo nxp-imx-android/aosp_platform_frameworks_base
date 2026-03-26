@@ -235,6 +235,7 @@ object IntegerPolicy {
             /*requiredPermission=*/ "testPermission",
             /*requiredCrossUserPermission=*/ "testCrossUserPermission",
             /*allowedDpcTypes=*/ setOf(),
+            /*resolutionMechanism=*/ null,
             MIN,
             MAX,
         )
@@ -256,6 +257,7 @@ fun IntegerPolicyMetadata.copy(minValue: Int? = null, maxValue: Int? = null) =
         this.requiredPermission,
         this.requiredCrossUserPermission,
         this.allowedDpcTypes,
+        this.resolutionMechanism,
         minValue ?: this.minValue,
         maxValue ?: this.maxValue,
     )
@@ -272,6 +274,7 @@ object LongPolicy {
             /*requiredPermission=*/ "testPermission",
             /*requiredCrossUserPermission=*/ "testCrossUserPermission",
             /*allowedDpcTypes=*/ setOf(),
+            /*resolutionMechanism=*/ null,
             /*minValue=*/ 10L,
             /*maxValue=*/ 20L,
         )
@@ -294,6 +297,7 @@ fun LongPolicyMetadata.copy(minValue: Long? = null, maxValue: Long? = null) =
         this.requiredPermission,
         this.requiredCrossUserPermission,
         this.allowedDpcTypes,
+        this.resolutionMechanism,
         minValue ?: this.minValue,
         maxValue ?: this.maxValue,
     )

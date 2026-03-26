@@ -26,33 +26,14 @@ import org.junit.Ignore
 abstract class ResizeAppScenarioTestBase(rotation: Rotation = Rotation.ROTATION_0) :
     TestScenarioBase(rotation) {
 
-    /** Assert that the app window has resized properly according to the swipe changes. */
-    fun assertWindowResizedFromTopRight(
-        initialBounds: Rect,
-        finalBounds: Rect,
-        horizontalChange: Int,
-        verticalChange: Int,
-    ) {
-        if (horizontalChange > 0) {
-            assertWithMessage("Window width should have increased")
-                .that(finalBounds.width())
-                .isGreaterThan(initialBounds.width())
-        } else if (horizontalChange < 0) {
-            assertWithMessage("Window width should have decreased")
-                .that(finalBounds.width())
-                .isLessThan(initialBounds.width())
-        }
-
-        if (verticalChange < 0) {
-            assertWithMessage("Window height should have increased")
-                .that(finalBounds.height())
-                .isGreaterThan(initialBounds.height())
-        } else if (verticalChange > 0) {
-            assertWithMessage("Window height should have decreased")
-                .that(finalBounds.height())
-                .isLessThan(initialBounds.height())
-        }
-
+    /** Assert that the app window has expanded while its left and bottom remain stable. */
+    fun assertWindowExpandedFromTopRight(initialBounds: Rect, finalBounds: Rect) {
+        assertWithMessage("Window width should have increased")
+            .that(finalBounds.width())
+            .isGreaterThan(initialBounds.width())
+        assertWithMessage("Window height should have increased")
+            .that(finalBounds.height())
+            .isGreaterThan(initialBounds.height())
         assertWithMessage("Window left position should remain same")
             .that(finalBounds.left)
             .isEqualTo(initialBounds.left)

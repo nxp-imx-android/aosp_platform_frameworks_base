@@ -6722,7 +6722,6 @@ public final class ActivityThread extends ClientTransactionHandler
             ((ContextImpl) c).scheduleFinalCleanup(r.activity.getClass().getName(), "Activity");
         }
         if (finishing) {
-            ActivityClient.getInstance().activityDestroyed(r.token);
             mNewActivities.remove(r);
         }
         mSomeActivitiesChanged = true;

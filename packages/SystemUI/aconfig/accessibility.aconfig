@@ -30,6 +30,16 @@ flag {
 }
 
 flag {
+    name: "floating_menu_adjust_cutout_avoidance"
+    namespace: "accessibility"
+    description: "Makes cutout avoidance behave less erratically with larger menus."
+    bug: "491674801"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "floating_menu_drag_to_hide"
     namespace: "accessibility"
     description: "Allows users to hide the FAB then use notification to dismiss or bring it back."

@@ -483,6 +483,20 @@ constructor(
         onBootTransitionInteractor.maybeChangeInitialScene()
     }
 
+    /** Called when SceneContainer has currently composed [scene] with TransitionState.Idle. */
+    fun onIdleSceneEnteredComposition(scene: SceneKey) {
+        sceneInteractor.onIdleSceneEnteredComposition(scene)
+    }
+
+    /**
+     * Called when SceneContainer has re-composed, and previously it was showing [scene] with
+     * TransitionState.Idle - this means that [scene] (at least in its idle state) has left
+     * composition.
+     */
+    fun onIdleSceneExitedComposition(scene: SceneKey) {
+        sceneInteractor.onIdleSceneExitedComposition(scene)
+    }
+
     fun startTransitionImmediately(transition: TransitionState.Transition) {
         sceneInteractor.startTransitionImmediately(transition)
     }

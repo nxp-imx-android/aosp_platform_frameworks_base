@@ -16,7 +16,7 @@
 
 package com.android.systemui.statusbar.notification.row;
 
-import static com.android.systemui.Flags.enableLockscreenBlur;
+import static com.android.systemui.Flags.lockscreenBlurForNotifications;
 import static com.android.systemui.Flags.notificationAppearNonlinear;
 import static com.android.systemui.Flags.notificationBackgroundTintOptimization;
 import static com.android.systemui.Flags.notificationRowTransparency;
@@ -372,12 +372,12 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
     }
 
     protected boolean usesBlurredBackground() {
-        return usesTransparentBackground() && enableLockscreenBlur();
+        return usesTransparentBackground() && lockscreenBlurForNotifications();
     }
 
     protected boolean usesTransparentBackground() {
         return mIsBlurSupported && notificationRowTransparency()
-                && (!mOnKeyguard || enableLockscreenBlur());
+                && (!mOnKeyguard || lockscreenBlurForNotifications());
     }
 
     @Override

@@ -37,6 +37,7 @@ import com.android.systemui.keyguard.shared.model.TransitionModeOnCanceled
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.util.kotlin.sample
+import com.android.systemui.util.kotlin.Utils.Companion.sample as sampleCombine
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineDispatcher
@@ -107,16 +108,14 @@ constructor(
                 .filterRelevantKeyguardStateAnd { wakefulness ->
                     wakefulness.isAwakeForAnimations()
                 }
-                .sample(wakeToGoneInteractor.canWakeDirectlyToGone, ::Pair)
-                .collect {
-                    (
-                        detailedWakefulness,
-                        canWakeDirectlyToGone,
-                    ) ->
+                .sampleCombine(
+                    wakeToGoneInteractor.canWakeDirectlyToGone,
+                    keyguardInteractor.primaryBouncerShowing,
+                )
+                .collect { (detailedWakefulness, canWakeDirectlyToGone, primaryBouncerShowing) ->
                     val startedStep = transitionInteractor.startedKeyguardTransitionStep.value
                     val isKeyguardOccludedLegacy = keyguardInteractor.isKeyguardOccluded.value
                     val biometricUnlockMode = keyguardInteractor.biometricUnlockState.value.mode
-                    val primaryBouncerShowing = keyguardInteractor.primaryBouncerShowing.value
                     val autoOpenCommunal = communalSettingsInteractor.autoOpenEnabled.value
 
                     // Do not transition to LOCKSCREEN or GONE if we are waking and unlocking.
@@ -135,11 +134,11 @@ constructor(
                                 !maybeStartTransitionToOccludedOrInsecureCamera { state, reason ->
                                     startTransitionTo(state, ownerReason = reason)
                                 } &&
-                                    (Flags.wakefulnessForAnimations() || !isWakeAndDismiss(biometricUnlockMode)) &&
+                                    !isWakeAndDismiss(biometricUnlockMode) &&
                                     !primaryBouncerShowing
                             } else {
                                 !isKeyguardOccludedLegacy &&
-                                    (Flags.wakefulnessForAnimations() || !isWakeAndDismiss(biometricUnlockMode)) &&
+                                    !isWakeAndDismiss(biometricUnlockMode) &&
                                     !primaryBouncerShowing
                             }
 

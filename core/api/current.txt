@@ -8479,7 +8479,6 @@ package android.app.admin {
     field public static final String CAMERA_DISABLED_POLICY = "cameraDisabled";
     field @FlaggedApi("android.app.admin.flags.common_criteria_mode_coexistence") public static final String COMMON_CRITERIA_MODE_POLICY = "commonCriteriaMode";
     field @FlaggedApi("android.view.contentprotection.flags.manage_device_policy_enabled") public static final String CONTENT_PROTECTION_POLICY = "contentProtection";
-    field @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public static final String CONTENT_RESTRICTION_APPS_POLICY = "contentRestrictionApps";
     field @FlaggedApi("android.app.admin.flags.cross_profile_widget_provider_bulk_apis") public static final String CROSS_PROFILE_WIDGET_PROVIDER_POLICY = "crossProfileWidgetProvider";
     field public static final String KEYGUARD_DISABLED_FEATURES_POLICY = "keyguardDisabledFeatures";
     field public static final String LOCK_TASK_POLICY = "lockTask";
@@ -9109,7 +9108,10 @@ package android.app.admin {
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time_zone") public static final int AUTO_TIME_ZONE_ENABLED = 4; // 0x4
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time_zone") public static final int AUTO_TIME_ZONE_ENABLED_UNENFORCED = 2; // 0x2
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time_zone") public static final int AUTO_TIME_ZONE_USER_CHOICE = 0; // 0x0
-    field @FlaggedApi("android.app.admin.flags.policy_streamlining") @NonNull public static final android.app.admin.PolicyIdentifier<java.util.List<String>> CONTENT_RESTRICTION_APPS;
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining_bluetooth_sharing") @NonNull public static final android.app.admin.PolicyIdentifier<Integer> BLUETOOTH_SHARING;
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining_bluetooth_sharing") public static final int BLUETOOTH_SHARING_ALLOWED = 2; // 0x2
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining_bluetooth_sharing") public static final int BLUETOOTH_SHARING_DISALLOWED = 1; // 0x1
+    field @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") @NonNull public static final android.app.admin.PolicyIdentifier<java.util.List<String>> CONTENT_RESTRICTION_APPS;
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_easter_eggs") @NonNull public static final android.app.admin.PolicyIdentifier<Integer> EASTER_EGGS;
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_easter_eggs") public static final int EASTER_EGGS_ALLOWED = 2; // 0x2
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_easter_eggs") public static final int EASTER_EGGS_DISALLOWED = 1; // 0x1

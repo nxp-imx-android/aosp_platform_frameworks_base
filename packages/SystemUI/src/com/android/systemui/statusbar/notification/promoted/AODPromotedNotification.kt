@@ -21,11 +21,13 @@ import android.app.Flags.richOngoingImprovements
 import android.app.Notification
 import android.content.Context
 import android.content.res.ColorStateList
+import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.graphics.Typeface
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.util.Log
 import android.util.Size
 import android.view.NotificationHeaderView
@@ -80,7 +82,6 @@ import com.android.internal.widget.NotificationProgressModel
 import com.android.systemui.FontStyles
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R as systemuiR
-import com.android.systemui.statusbar.notification.promoted.AodPromotedNotificationColor.Background
 import com.android.systemui.statusbar.notification.promoted.AodPromotedNotificationColor.PrimaryText
 import com.android.systemui.statusbar.notification.promoted.AodPromotedNotificationColor.SecondaryText
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
@@ -90,7 +91,9 @@ import com.android.systemui.statusbar.notification.promoted.ui.viewmodel.AODProm
 import com.android.systemui.statusbar.notification.row.shared.ImageModel
 import com.android.systemui.statusbar.notification.row.shared.isNullOrEmpty
 import com.android.systemui.statusbar.notification.shared.Metric
+import com.android.systemui.util.dpToPx
 import java.time.Instant
+import kotlin.math.ceil
 import kotlin.math.min
 
 @Composable
@@ -141,7 +144,8 @@ fun AODPromotedNotificationView(
     modifier: Modifier = Modifier,
     useLowFrequencyMode: () -> Boolean = { true },
 ) {
-    val borderStroke = BorderStroke(0.5.dp, SecondaryText.brush.value.copy(alpha = 0.32f))
+    val borderStroke =
+        BorderStroke(BORDER_WIDTH_DP.dp, SecondaryText.brush.value.copy(alpha = BORDER_ALPHA))
 
     val borderRadius = dimensionResource(systemuiR.dimen.notification_corner_radius)
     val borderShape = RoundedCornerShape(borderRadius)
@@ -344,8 +348,20 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         root.context.resources.getDimensionPixelSize(R.dimen.notification_2025_margin)
     private val iconPaddingPx: Int =
         root.context.resources.getDimensionPixelSize(R.dimen.notification_2025_icon_circle_padding)
-    private val iconBackgroundDrawable: Drawable =
-        root.context.resources.getDrawable(R.drawable.notification_icon_circle, root.context.theme)
+
+    private val smallIconBackgroundDrawable: Drawable =
+        GradientDrawable().apply {
+            setColor(Color.TRANSPARENT)
+            shape = GradientDrawable.OVAL
+            setStroke(
+                // This should look similar to the Compose border from
+                // AODPromotedNotification, so we're using ceil to emulate how Compose
+                // makes this conversion.
+                ceil(BORDER_WIDTH_DP.dpToPx(root.context)).toInt().coerceAtLeast(1),
+                Color.argb((255 * BORDER_ALPHA).toInt(), 255, 255, 255),
+            )
+        }
+
     private val progressStyleProgressThickness: Float =
         root.context.resources.getDimension(
             systemuiR.dimen.notification_aod_progress_style_progress_thickness
@@ -750,7 +766,6 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         // icon for use small_icon case, guaranteeing that the small icon is
         // rendered in the same way.
         if (content.skeletonNotifIcon is PromotedNotificationContentModel.NotifIcon.SmallIcon) {
-            conversationIcon?.background = iconBackgroundDrawable
             conversationIcon?.setPadding(iconPaddingPx, iconPaddingPx, iconPaddingPx, iconPaddingPx)
 
             // For rendering performance:
@@ -930,7 +945,10 @@ private class AODPromotedNotificationViewUpdater(root: View) {
                 // Icon binding must be called in this order
                 updateImageView(smallIconView, notifIcon.imageModel)
                 smallIconView.setImageLevel(iconLevel)
-                smallIconView.setBackgroundColor(Background.colorInt)
+                smallIconView.background = smallIconBackgroundDrawable
+                // The background is an outline with a transparent center, so it should be tinted
+                // the same as the icon itself.
+                smallIconView.setBackgroundColor(PrimaryText.colorInt)
                 smallIconView.originalIconColor = PrimaryText.colorInt
             }
 
@@ -1169,3 +1187,5 @@ private val viewUpdaterTagId = systemuiR.id.aod_promoted_notification_view_updat
 private val viewInflationIdentity = systemuiR.id.aod_promoted_notification_inflation_identity
 
 private const val TAG = "AODPromotedNotification"
+private const val BORDER_WIDTH_DP = 0.5
+private const val BORDER_ALPHA = 0.32f

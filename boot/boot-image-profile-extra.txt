@@ -88,6 +88,9 @@ HSPLandroid/os/Message$MatchAllMessages;->*
 HSPLandroid/os/Message$MatchAllFutureMessages;->*
 HSPLandroid/os/Message$MatchBarrierToken;->*
 HSPLandroid/os/Message$MatchDeliverableMessages;->*
+HSPLandroid/os/LooperDoctor;->*
+HSPLandroid/os/LooperDoctor$LooperDoctorThread;->*
+HSPLandroid/os/LooperDoctor$Builder;->*
 
 # While the SystemFeaturesMetadata static cache isn't heavyweight, ensure it's
 # pre-initialized in the boot image to avoid redundant per-process overhead.

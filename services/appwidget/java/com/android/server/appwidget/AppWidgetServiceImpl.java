@@ -1375,9 +1375,6 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     public ParceledListSlice<PendingHostUpdate> startListening(IAppWidgetHost callbacks,
             String callingPackage, int hostId, int[] appWidgetIds) {
         final int userId = UserHandle.getCallingUserId();
-        if (DEBUG) {
-            Slog.i(TAG, "startListening() " + userId);
-        }
 
         // Make sure the package runs under the caller uid.
         mSecurityPolicy.enforceCallFromPackage(callingPackage);
@@ -1511,10 +1508,6 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     @Override
     public void setAppWidgetHidden(String callingPackage, int hostId) {
         final int userId = UserHandle.getCallingUserId();
-
-        if (DEBUG) {
-            Slog.i(TAG, "setAppWidgetHidden() " + userId);
-        }
 
         mSecurityPolicy.enforceCallFromPackage(callingPackage);
 
@@ -1871,10 +1864,6 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     public int[] getAppWidgetIds(ComponentName componentName) {
         final int userId = UserHandle.getCallingUserId();
 
-        if (DEBUG) {
-            Slog.i(TAG, "getAppWidgetIds() " + userId);
-        }
-
         // Make sure the package runs under the caller uid.
         mSecurityPolicy.enforceCallFromPackage(componentName.getPackageName());
 
@@ -2131,10 +2120,6 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     public AppWidgetProviderInfo getAppWidgetInfo(String callingPackage, int appWidgetId) {
         final int userId = UserHandle.getCallingUserId();
 
-        if (DEBUG) {
-            Slog.i(TAG, "getAppWidgetInfo() " + userId);
-        }
-
         // Make sure the package runs under the caller uid.
         mSecurityPolicy.enforceCallFromPackage(callingPackage);
 
@@ -2292,10 +2277,6 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     public void updateAppWidgetOptions(String callingPackage, int appWidgetId, Bundle options) {
         final int userId = UserHandle.getCallingUserId();
 
-        if (DEBUG) {
-            Slog.i(TAG, "updateAppWidgetOptions() " + userId);
-        }
-
         // Make sure the package runs under the caller uid.
         mSecurityPolicy.enforceCallFromPackage(callingPackage);
 
@@ -2388,10 +2369,6 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     @Override
     public void updateAppWidgetIds(String callingPackage, int[] appWidgetIds,
             RemoteViews views) {
-        if (DEBUG) {
-            Slog.i(TAG, "updateAppWidgetIds() " + UserHandle.getCallingUserId());
-        }
-
         updateAppWidgetIds(callingPackage, appWidgetIds, views, false);
     }
 
@@ -5294,10 +5271,6 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
             throws RemoteException {
         final int userId = UserHandle.getCallingUserId();
         final int callingUid = Binder.getCallingUid();
-
-        if (DEBUG) {
-            Slog.i(TAG, "reportWidgetEvents() " + userId);
-        }
 
         // Make sure the package runs under the caller uid.
         mSecurityPolicy.enforceCallFromPackage(callingPackage);

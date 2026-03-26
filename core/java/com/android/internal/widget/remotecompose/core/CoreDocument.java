@@ -69,18 +69,18 @@ public class CoreDocument implements Serializable {
 
     // Semantic version
     public static final int MAJOR_VERSION = 1;
-    public static final int MINOR_VERSION = 2;
+    public static final int MINOR_VERSION = 3;
     public static final int PATCH_VERSION = 0;
 
     // Internal version level
-    public static final int DOCUMENT_API_LEVEL = 8;
+    public static final int DOCUMENT_API_LEVEL = 9;
     static final int PROFILE_WIDGETS = 0x100;
     static final int PROFILE_ANDROIDX = 0x200; // REMOVE IN PLATFORM
     public static final int PROFILE = PROFILE_ANDROIDX;
 
     // We also keep a more fine-grained BUILD number, exposed as
     // ID_API_LEVEL = DOCUMENT_API_LEVEL + BUILD
-    static final float BUILD = 0.72f;
+    static final float BUILD = 0.1f;
 
     private static final boolean UPDATE_VARIABLES_BEFORE_LAYOUT = false;
 
@@ -740,7 +740,7 @@ public class CoreDocument implements Serializable {
      * @param type the type of haptic pre-defined effect
      */
     public void haptic(int type) {
-        if (mHapticEngine != null) {
+        if (mHapticEngine != null && Limits.ENABLE_HAPTIC_FEEDBACK) {
             mHapticEngine.haptic(type);
         }
     }
@@ -1308,6 +1308,42 @@ public class CoreDocument implements Serializable {
         }
         if (mRootLayoutComponent != null) {
             if (mRootLayoutComponent.onClick(context, this, x, y)) {
+                handled = true;
+            }
+        }
+        return handled;
+    }
+
+    /**
+     * Passing a long click event to the document.
+     *
+     * @return true if the event was handled
+     */
+    public boolean onLongPress(@NonNull RemoteContext context, float x, float y) {
+        if (context.isBasicDebug()) {
+            System.out.println("[RC] LongPress at " + x + ", " + y);
+        }
+        boolean handled = false;
+        if (mRootLayoutComponent != null) {
+            if (mRootLayoutComponent.onLongPress(context, this, x, y)) {
+                handled = true;
+            }
+        }
+        return handled;
+    }
+
+    /**
+     * Passing a double click event to the document.
+     *
+     * @return true if the event was handled
+     */
+    public boolean onDoubleClick(@NonNull RemoteContext context, float x, float y) {
+        if (context.isBasicDebug()) {
+            System.out.println("[RC] DoubleClick at " + x + ", " + y);
+        }
+        boolean handled = false;
+        if (mRootLayoutComponent != null) {
+            if (mRootLayoutComponent.onDoubleClick(context, this, x, y)) {
                 handled = true;
             }
         }

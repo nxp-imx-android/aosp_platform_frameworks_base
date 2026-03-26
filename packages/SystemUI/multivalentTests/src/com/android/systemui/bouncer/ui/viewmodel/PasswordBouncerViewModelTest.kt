@@ -16,9 +16,12 @@
 
 package com.android.systemui.bouncer.ui.viewmodel
 
+import android.compat.testing.PlatformCompatChangeRule
 import android.content.pm.UserInfo
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.text.ShowSecretsSetting
+import androidx.compose.foundation.text.input.TextObfuscationMode
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -29,6 +32,7 @@ import com.android.systemui.authentication.domain.interactor.authenticationInter
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.authentication.shared.model.AuthenticationResult
 import com.android.systemui.bouncer.domain.interactor.bouncerInteractor
+import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.haptics.msdl.bouncerHapticPlayer
 import com.android.systemui.inputmethod.data.model.InputMethodModel
 import com.android.systemui.inputmethod.data.repository.fakeInputMethodRepository
@@ -51,12 +55,15 @@ import com.android.systemui.user.data.model.SelectedUserModel
 import com.android.systemui.user.data.model.SelectionStatus
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.user.domain.interactor.selectedUserInteractor
+import com.android.text.flags.Flags as TextFlags
 import com.google.common.truth.Truth.assertThat
 import java.util.UUID
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.MutableStateFlow
+import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
@@ -67,6 +74,8 @@ import org.mockito.kotlin.verify
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class PasswordBouncerViewModelTest : SysuiTestCase() {
+
+    @get:Rule val compatChangeRule = PlatformCompatChangeRule()
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val isInputEnabled = MutableStateFlow(true)
@@ -541,6 +550,38 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
                 },
         )
     }
+
+    @Test
+    @EnableFlags(Flags.FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER)
+    fun isPasswordRevealed_overridesToVisible() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_improveLargeScreenInteractionOnLockscreen, true)
+            kosmos.fakeConfigurationRepository.onConfigurationChange(
+                android.content.res.Configuration()
+            )
+            underTest.onRevealPasswordButtonClicked()
+            runCurrent()
+            assertThat(underTest.textObfuscationMode).isEqualTo(TextObfuscationMode.Visible)
+        }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_MORE_INDICATORS_AND_BUTTONS_ON_PASSWORD_BOUNCER,
+        TextFlags.FLAG_SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL,
+    )
+    @EnableCompatChanges(ShowSecretsSetting.SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)
+    fun textObfuscationMode_isHidden_whenRequiredAndNotRevealed() =
+        kosmos.runTest {
+            overrideResource(R.bool.config_improveLargeScreenInteractionOnLockscreen, true)
+            kosmos.fakeConfigurationRepository.onConfigurationChange(
+                android.content.res.Configuration()
+            )
+
+            fakeAuthenticationRepository.setIsShowPasswordsTouchEnabled(false)
+            runCurrent()
+
+            assertThat(underTest.textObfuscationMode).isEqualTo(TextObfuscationMode.Hidden)
+        }
 
     companion object {
         private const val ENTER_YOUR_PASSWORD = "Enter your password"

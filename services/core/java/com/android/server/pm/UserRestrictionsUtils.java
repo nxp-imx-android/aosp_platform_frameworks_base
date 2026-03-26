@@ -178,6 +178,18 @@ public class UserRestrictionsUtils {
     );
 
     /**
+     * User restrictions that are set to {@code true} when supervision is enabled.
+     *
+     * <p>See {@link SupervisionManager#isSupervisionEnabled()}.
+     */
+    public static final Set<String> DEFAULT_SUPERVISION_RESTRICTIONS =
+            Sets.newArraySet(
+                    UserManager.DISALLOW_FACTORY_RESET,
+                    UserManager.DISALLOW_CONFIG_DATE_TIME,
+                    UserManager.DISALLOW_ADD_USER,
+                    UserManager.DISALLOW_GRANT_ADMIN);
+
+    /**
      * User restrictions that can only be set by profile owners on the main user, or by device
      * owners. When set by DO they will be applied to all users.
      */

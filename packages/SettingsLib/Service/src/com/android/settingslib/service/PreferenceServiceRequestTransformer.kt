@@ -34,6 +34,7 @@ import com.android.settingslib.graph.PreferenceGetterResponse
 import com.android.settingslib.graph.PreferenceSetterRequest
 import com.android.settingslib.graph.PreferenceSetterResult
 import com.android.settingslib.graph.PreferenceGraphCompressor
+import com.android.settingslib.graph.PreferenceSetterResponse
 import com.android.settingslib.graph.getAllPermissions
 import com.android.settingslib.graph.getText
 import com.android.settingslib.graph.preferenceValueProto
@@ -199,8 +200,8 @@ fun transformFrameworkSetValueRequest(request: SetValueRequest): PreferenceSette
 }
 
 /** Translate Catalyst SET VALUE result to Framework SET VALUE result */
-fun transformCatalystSetValueResponse(@PreferenceSetterResult response: Int): SetValueResult {
-    val resultCode = when (response) {
+fun transformCatalystSetValueResponse(response: PreferenceSetterResponse): SetValueResult {
+    val resultCode = when (response.errorCode) {
         PreferenceSetterResult.OK -> SetValueResult.RESULT_OK
         PreferenceSetterResult.UNAVAILABLE -> SetValueResult.RESULT_UNAVAILABLE
         PreferenceSetterResult.DISABLED -> SetValueResult.RESULT_DISABLED

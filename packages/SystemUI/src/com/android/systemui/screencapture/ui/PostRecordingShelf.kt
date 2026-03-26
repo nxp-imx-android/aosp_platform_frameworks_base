@@ -108,7 +108,7 @@ constructor(
     private val dialog: SystemUIDialog =
         dialogFactory
             .create(
-                context.createWindowContext(display, DIALOG_WINDOW_TYPE, null),
+                context = context.createWindowContext(display, DIALOG_WINDOW_TYPE, null),
                 theme = R.style.Theme_SystemUI_Dialog,
             ) { dialogInstance ->
                 DialogContent(
@@ -248,10 +248,8 @@ constructor(
                             ActionButtonGroupItem(
                                 icon = folderIcon,
                                 onClick = {
-                                    coroutineScope.launch {
-                                        actionsViewModel.openInFolder()
-                                        hide()
-                                    }
+                                    actionsViewModel.openInFolder()
+                                    hide()
                                 },
                             )
                         )
@@ -261,25 +259,27 @@ constructor(
                         ActionButtonGroupItem(
                             icon = deleteIcon,
                             onClick = {
-                                coroutineScope.launch {
-                                    isConfirmDeletionDialogShowing = true
-                                    if (
-                                        postRecordingConfirmDeletion(
-                                            dialogFactory,
-                                            context,
-                                            actionsViewModel,
-                                            display,
-                                        )
-                                    ) {
-                                        hide()
-                                        postRecordSnackbarDialogs.showVideoDeleted(
-                                            uri = videoViewModel.recording.uri,
-                                            thumbnail = videoViewModel.recording.thumbnail,
-                                            notificationId = videoViewModel.notificationId,
-                                            display = display,
-                                        )
+                                actionsViewModel.executeDismissingKeyguard {
+                                    coroutineScope.launch {
+                                        isConfirmDeletionDialogShowing = true
+                                        if (
+                                            postRecordingConfirmDeletion(
+                                                dialogFactory,
+                                                context,
+                                                actionsViewModel,
+                                                display,
+                                            )
+                                        ) {
+                                            hide()
+                                            postRecordSnackbarDialogs.showVideoDeleted(
+                                                uri = videoViewModel.recording.uri,
+                                                thumbnail = videoViewModel.recording.thumbnail,
+                                                notificationId = videoViewModel.notificationId,
+                                                display = display,
+                                            )
+                                        }
+                                        isConfirmDeletionDialogShowing = false
                                     }
-                                    isConfirmDeletionDialogShowing = false
                                 }
                             },
                         )

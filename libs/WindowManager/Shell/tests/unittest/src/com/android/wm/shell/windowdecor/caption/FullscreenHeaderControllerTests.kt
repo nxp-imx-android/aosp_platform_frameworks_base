@@ -51,6 +51,7 @@ import com.android.wm.shell.windowdecor.WindowDecorationActions
 import com.android.wm.shell.windowdecor.WindowDecorationTestHelper.TestWindowDecorTaskResourceLoader
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
 import com.android.wm.shell.windowdecor.caption.CaptionController.CaptionType
+import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
 import kotlinx.coroutines.Dispatchers
@@ -209,6 +210,7 @@ class FullscreenHeaderControllerTests : ShellTestCase() {
             onCaptionGenericMotionListener = mock(),
             syncQueue = mock(),
             focusTransitionObserver = mock(),
+            decorThemeUtilFactory = DecorThemeUtil.Factory(),
         )
 
     private fun FullscreenHeaderController.relayout(taskInfo: RunningTaskInfo) {

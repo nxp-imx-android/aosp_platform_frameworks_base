@@ -1839,18 +1839,22 @@ public class DisplayPolicy {
         }
     }
 
-    private boolean shouldBeHiddenByKeyguard(WindowState win,
+    @VisibleForTesting
+    boolean shouldBeHiddenByKeyguard(WindowState win,
             @Nullable WindowState imeLayeringTarget) {
         if (!mDisplayContent.isDefaultDisplay || !isKeyguardShowing()) {
             return false;
         }
 
         // Show IME over the keyguard if the target allows it.
-        final boolean showImeOverKeyguard = imeLayeringTarget != null && win.mIsImWindow
-                && imeLayeringTarget.isDisplayed() && (imeLayeringTarget.canShowWhenLocked()
-                    || !imeLayeringTarget.canBeHiddenByKeyguard());
-        if (showImeOverKeyguard) {
-            return false;
+        if (win.mIsImWindow && imeLayeringTarget != null && imeLayeringTarget.isDisplayed()) {
+            final boolean isActivity = imeLayeringTarget.mActivityRecord != null;
+            final boolean showImeOverKeyguard = imeLayeringTarget.canShowWhenLocked()
+                    || (!isActivity && !imeLayeringTarget.canBeHiddenByKeyguard());
+
+            if (showImeOverKeyguard) {
+                return false;
+            }
         }
 
         // Show SHOW_WHEN_LOCKED windows if keyguard is occluded.

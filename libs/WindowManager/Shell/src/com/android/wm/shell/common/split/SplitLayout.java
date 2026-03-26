@@ -1613,7 +1613,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         @Override
         public void onImeRequested(int displayId, boolean isRequested) {
             if (displayId != mDisplayId) return;
-            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN, "IME was set to requested=%s",
+            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN, "IME was set to requested=%b",
                     isRequested);
             mSplitLayoutHandler.setExcludeImeInsets(true);
         }

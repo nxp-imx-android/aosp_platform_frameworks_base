@@ -100,7 +100,9 @@ public enum ScreenshotEvent implements UiEventLogger.UiEventEnum {
     @UiEvent(doc = "User has discarded the result of a long screenshot")
     SCREENSHOT_LONG_SCREENSHOT_EXIT(911),
     @UiEvent(doc = "A screenshot has been taken and saved to work profile")
-    SCREENSHOT_SAVED_TO_WORK_PROFILE(1240);
+    SCREENSHOT_SAVED_TO_WORK_PROFILE(1240),
+    @UiEvent(doc = "Captured scroll screenshot image is NOT taller than the scroll viewport")
+    SCREENSHOT_LONG_SCREENSHOT_FITS_VIEWPORT(2699);
 
     private final int mId;
 

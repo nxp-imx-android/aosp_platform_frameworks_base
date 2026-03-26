@@ -2381,6 +2381,7 @@
   <java-symbol type="string" name="fallback_wallpaper_component" />
   <java-symbol type="bool" name="config_isLiveWallpaperSupportedInDesktopExperience" />
   <java-symbol type="bool" name="config_optimizeDefaultWallpaper" />
+  <java-symbol type="integer" name="config_maxNumOptimizedDefaultWallpapers" />
   <java-symbol type="string" name="input_method_binding_label" />
   <java-symbol type="string" name="input_method_language_settings" />
   <java-symbol type="string" name="input_method_switcher_settings_button" />
@@ -6179,6 +6180,7 @@
   <java-symbol type="drawable" name="activity_embedding_divider_handle" />
   <java-symbol type="dimen" name="activity_embedding_divider_touch_target_width" />
   <java-symbol type="dimen" name="activity_embedding_divider_touch_target_height" />
+  <java-symbol type="string" name="activity_embedding_divider_drag_handle_description" />
 
   <!-- Whether we order unlocking and waking -->
   <java-symbol type="bool" name="config_orderUnlockAndWake" />

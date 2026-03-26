@@ -37,6 +37,7 @@ constructor(
     override fun onSessionStart(session: TouchSession) {
         session.registerGestureListener {
             if (dialogController.showDialog()) {
+                session.pilfer()
                 logger.logLongPressDetected()
                 vibratorHelper.performHapticFeedback(
                     containerView,

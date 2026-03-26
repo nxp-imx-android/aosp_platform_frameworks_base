@@ -3421,7 +3421,7 @@ public class WallpaperManager {
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static InputStream openDefaultWallpaper(Context context, @SetWallpaperFlags int which) {
-        if (optimizeDefaultWallpaper() &&  context.getResources().getBoolean(
+        if (optimizeDefaultWallpaper() && context.getResources().getBoolean(
                 R.bool.config_optimizeDefaultWallpaper)) {
             if (sGlobals.mService != null) {
                 try {

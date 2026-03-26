@@ -18,8 +18,11 @@ package com.android.systemui.screenshot
 
 import android.media.MediaActionSound
 import android.media.MediaPlayer
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags.FLAG_SCREENSHOT_REMOVE_NONFORCED_SOUND
 import com.android.systemui.SysuiTestCase
 import java.lang.IllegalStateException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -58,6 +61,7 @@ class ScreenshotSoundControllerTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(FLAG_SCREENSHOT_REMOVE_NONFORCED_SOUND)
     fun init_soundLoading() {
         createController()
         scope.advanceUntilIdle()
@@ -81,6 +85,20 @@ class ScreenshotSoundControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_SCREENSHOT_REMOVE_NONFORCED_SOUND)
+    fun playCameraSound_withRemovedSound_noSoundPlays() =
+        scope.runTest {
+            val controller = createController()
+
+            controller.playScreenshotSound()
+            advanceUntilIdle()
+
+            verify(mediaPlayer, never()).start()
+            verify(mediaActionSound, never()).play(any())
+        }
+
+    @Test
+    @DisableFlags(FLAG_SCREENSHOT_REMOVE_NONFORCED_SOUND)
     fun playCameraSound_soundLoadingSuccessful_mediaPlayerPlays() =
         scope.runTest {
             val controller = createController()
@@ -93,6 +111,7 @@ class ScreenshotSoundControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_SCREENSHOT_REMOVE_NONFORCED_SOUND)
     fun playCameraSound_illegalStateException_doesNotThrow() =
         scope.runTest {
             whenever(mediaPlayer.start()).thenThrow(IllegalStateException())
@@ -107,6 +126,7 @@ class ScreenshotSoundControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(FLAG_SCREENSHOT_REMOVE_NONFORCED_SOUND)
     fun playCameraSound_soundLoadingSuccessful_mediaPlayerReleases() =
         scope.runTest {
             val controller = createController()

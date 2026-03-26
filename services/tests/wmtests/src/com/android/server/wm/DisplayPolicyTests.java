@@ -662,4 +662,44 @@ public class DisplayPolicyTests extends WindowTestsBase {
                 displayPolicyProto.getLeftGestureHostIdentifier();
         assertEquals(windowTitle, leftGestureHostIdentifier.getTitle());
     }
+
+    @Test
+    public void testShouldBeHiddenByKeyguard_ImeLayeringTarget_CannotShowWhenLocked() {
+        ((TestWindowManagerPolicy) mWm.mPolicy).mKeyguardShowingAndNotOccluded = true;
+
+        final WindowState imeWindow = createInputMethodWindow(true, true, false);
+        mDisplayContent.setImeWindow(imeWindow);
+
+        final WindowState appWindow = spy(createApplicationWindow());
+        appWindow.mAttrs.flags &= ~FLAG_SHOW_WHEN_LOCKED;
+
+        // Mock isDisplayed to return true
+        doReturn(true).when(appWindow).isDisplayed();
+
+        mDisplayContent.setImeLayeringTarget(appWindow);
+
+        final DisplayPolicy displayPolicy = mDisplayContent.getDisplayPolicy();
+
+        assertTrue(displayPolicy.shouldBeHiddenByKeyguard(imeWindow, appWindow));
+    }
+
+    @Test
+    public void testShouldBeHiddenByKeyguard_ImeLayeringTarget_CanShowWhenLocked() {
+        ((TestWindowManagerPolicy) mWm.mPolicy).mKeyguardShowingAndNotOccluded = true;
+
+        final WindowState imeWindow = createInputMethodWindow(true, true, false);
+        mDisplayContent.setImeWindow(imeWindow);
+
+        final WindowState appWindow = spy(createApplicationWindow());
+        appWindow.mAttrs.flags |= FLAG_SHOW_WHEN_LOCKED;
+
+        // Mock isDisplayed to return true
+        doReturn(true).when(appWindow).isDisplayed();
+
+        mDisplayContent.setImeLayeringTarget(appWindow);
+
+        final DisplayPolicy displayPolicy = mDisplayContent.getDisplayPolicy();
+
+        assertFalse(displayPolicy.shouldBeHiddenByKeyguard(imeWindow, appWindow));
+    }
 }

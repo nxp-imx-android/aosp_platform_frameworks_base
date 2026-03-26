@@ -227,7 +227,8 @@ final class InstallRequest {
 
     // addForInit
     InstallRequest(ParsedPackage parsedPackage, int parseFlags, int scanFlags,
-            @Nullable UserHandle user, ScanResult scanResult, PackageSetting disabledPs) {
+            @Nullable UserHandle user, ScanResult scanResult, PackageSetting disabledPs,
+            @Nullable String apexModuleName, boolean replaceSystem) {
         if (user != null) {
             mUserId = user.getIdentifier();
         } else {
@@ -244,6 +245,10 @@ final class InstallRequest {
         mSessionId = -1;
         mRequireUserAction = USER_ACTION_UNSPECIFIED;
         mDisabledPs = disabledPs;
+        mApexModuleName = apexModuleName;
+        mReplace = replaceSystem;
+        // TODO(b/465115937): Set this unconditionally.
+        mSystem = replaceSystem;
         mHasAppMetadataFileFromInstaller = false;
         mDependencyInstallerEnabled = false;
         mMissingSharedLibraryCount = 0;

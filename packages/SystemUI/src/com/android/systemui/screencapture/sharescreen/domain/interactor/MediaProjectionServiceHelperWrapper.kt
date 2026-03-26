@@ -28,6 +28,7 @@ interface MediaProjectionServiceHelperWrapper {
         packageName: String,
         reviewGrantedConsentRequired: Boolean,
         displayId: Int,
+        mediaProjectionType: Int,
     ): IMediaProjection
 
     fun setReviewedConsentIfNeeded(
@@ -45,12 +46,14 @@ class MediaProjectionServiceHelperWrapperImpl @Inject constructor() :
         packageName: String,
         reviewGrantedConsentRequired: Boolean,
         displayId: Int,
+        mediaProjectionType: Int,
     ): IMediaProjection {
         return MediaProjectionServiceHelper.createOrReuseProjection(
             uid,
             packageName,
             reviewGrantedConsentRequired,
             displayId,
+            mediaProjectionType,
         )
     }
 

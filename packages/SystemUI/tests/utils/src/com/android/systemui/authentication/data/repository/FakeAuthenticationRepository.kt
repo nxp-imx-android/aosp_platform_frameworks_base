@@ -72,6 +72,14 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
     override val isPinEnhancedPrivacyEnabled: StateFlow<Boolean> =
         _isPinEnhancedPrivacyEnabled.asStateFlow()
 
+    private val _isShowPasswordsTouchEnabled = MutableStateFlow(true)
+    override val isShowPasswordsTouchEnabled: StateFlow<Boolean> =
+        _isShowPasswordsTouchEnabled.asStateFlow()
+
+    private val _isShowPasswordsPhysicalEnabled = MutableStateFlow(false)
+    override val isShowPasswordsPhysicalEnabled: StateFlow<Boolean> =
+        _isShowPasswordsPhysicalEnabled.asStateFlow()
+
     private var credentialOverride: List<Any>? = null
     private var securityMode: SecurityMode = DEFAULT_AUTHENTICATION_METHOD.toSecurityMode()
 
@@ -230,6 +238,14 @@ class FakeAuthenticationRepository(private val currentTimeMs: () -> Long) :
 
     fun setPinEnhancedPrivacyEnabled(isEnabled: Boolean) {
         _isPinEnhancedPrivacyEnabled.value = isEnabled
+    }
+
+    fun setIsShowPasswordsTouchEnabled(isEnabled: Boolean) {
+        _isShowPasswordsTouchEnabled.value = isEnabled
+    }
+
+    fun setIsShowPasswordsPhysicalEnabled(isEnabled: Boolean) {
+        _isShowPasswordsPhysicalEnabled.value = isEnabled
     }
 
     /**

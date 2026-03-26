@@ -744,10 +744,10 @@ constructor(
                     PowerExemptionManager.REASON_DEVICE_DEMO_MODE -> UIControl.HIDE_ENTRY
 
                     PowerExemptionManager.REASON_SYSTEM_ALLOW_LISTED,
-                    PowerExemptionManager.REASON_DEVICE_OWNER,
+                    PowerExemptionManager.REASON_DEVICE_DPC,
                     PowerExemptionManager.REASON_DISALLOW_APPS_CONTROL,
                     PowerExemptionManager.REASON_DPO_PROTECTED_APP,
-                    PowerExemptionManager.REASON_PROFILE_OWNER,
+                    PowerExemptionManager.REASON_USER_DPC,
                     PowerExemptionManager.REASON_ACTIVE_DEVICE_ADMIN,
                     PowerExemptionManager.REASON_PROC_STATE_PERSISTENT,
                     PowerExemptionManager.REASON_PROC_STATE_PERSISTENT_UI,

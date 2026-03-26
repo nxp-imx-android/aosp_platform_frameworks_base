@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"qurilma"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Bu ilova telefoningiz va tanlangan qurilmada chaqiruvchining ismi kabi maʼlumotlarni sinxronlay oladi"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"<xliff:g id="DEVICE_TYPE">%2$s</xliff:g> qurilmasida &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; ilovasiga chaqiruvchi axboroti kabi maʼlumotlarni sinxronlab, aqlli amallarni bajarishga ruxsat bering"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"<xliff:g id="DEVICE_TYPE">%2$s</xliff:g> qurilmasida &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; ilovasiga chaqiruvchi axboroti kabi maʼlumotlarni sinxronlab, smart amallarni bajarishga ruxsat bering"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Ruxsat"</string>
     <string name="consent_no" msgid="2640796915611404382">"Ruxsat berilmasin"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Bekor qilish"</string>
@@ -93,10 +92,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> qurilmangiz ekranini yozib olib, &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; qurilmasiga translatsiya qiling yoki ulashing.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> ilovasi <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> qurilmangizda chiqadigan yoki ijro qilinadigan hamma narsa – audio, suratlar, toʻlov axboroti, parollar va xabarlarga kirish ruxsatiga ega boʻladi."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> ilovalarini &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; qurilmasiga uzating.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> ilovasi <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> qurilmasida chiqadigan yoki ijro qilinadigan hamma narsa – audio, suratlar, toʻlov axboroti, parollar va xabarlarga kirish ruxsatini oladi, hattoki <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> qulflanganida ham."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Mavjud qurilmalar roʻyxatini olish va qaysi biri boshqa ilovalarga audio yoki video uzatishini boshqarish"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Sizga ogohlantirishlar yuborish"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Bezovta qilinmasin rejimi yoniqligida ham ogohlantirishlar kelishiga ruxsat berish"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telefon"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"planshet"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"tv"</string>

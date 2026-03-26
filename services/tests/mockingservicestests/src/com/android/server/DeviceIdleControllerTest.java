@@ -79,6 +79,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.hardware.devicestate.DeviceState;
+import android.hardware.devicestate.DeviceStateManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -168,6 +170,8 @@ public class DeviceIdleControllerTest {
     @Mock
     private ContentResolver mContentResolver;
     @Mock
+    private DeviceStateManager mDeviceStateManager;
+    @Mock
     private IActivityManager mIActivityManager;
     @Mock
     private LocationManager mLocationManager;
@@ -192,6 +196,7 @@ public class DeviceIdleControllerTest {
         ConnectivityManager connectivityManager;
         LocationManager locationManager;
         ConstraintController constraintController;
+        DeviceStateManager deviceStateManager;
         // Freeze time for testing.
         volatile long nowElapsed;
         volatile long nowUptime;
@@ -223,6 +228,11 @@ public class DeviceIdleControllerTest {
         @Override
         ConnectivityManager getConnectivityManager() {
             return connectivityManager;
+        }
+
+        @Override
+        DeviceStateManager getDeviceStateManager() {
+            return deviceStateManager;
         }
 
         @Override
@@ -407,6 +417,8 @@ public class DeviceIdleControllerTest {
 
         doReturn(mWearModeManagerInternal)
                 .when(() -> LocalServices.getService(WearModeManagerInternal.class));
+        setupPackageManagerFeature(PackageManager.FEATURE_PC, false);
+        mSetFlagsRule.disableFlags(Flags.FLAG_QUICK_DOZE_ON_LID_CLOSE);
 
         setupDeviceIdleController();
     }
@@ -3132,6 +3144,7 @@ public class DeviceIdleControllerTest {
 
     @Test
     @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    @DisableFlags({Flags.FLAG_STOP_POWER_SAVE_TEMP_WHITELIST_BROADCAST})
     public void testTempAllowlist_includesPccApp_dynamic() throws Exception {
         doNothing().when(getContext()).sendBroadcastAsUser(any(), any(), any(), any());
         doNothing()
@@ -3197,6 +3210,67 @@ public class DeviceIdleControllerTest {
                 "PCC UID " + TEST_PCC_UID + " should NOT be added when flag is disabled",
                 mDeviceIdleController.mTempWhitelistAppIdEndTimes.indexOfKey(TEST_PCC_UID) >= 0);
     }
+
+    @Test
+    public void testQuickDozeOnLidClose_flagDisabled_doesNotRegisterListener() {
+        cleanupDeviceIdleController();
+        setupPackageManagerFeature(PackageManager.FEATURE_PC, true);
+        mInjector = new InjectorForTest(getContext());
+        mInjector.deviceStateManager = mDeviceStateManager;
+        setupDeviceIdleController();
+
+        verify(mDeviceStateManager, never()).registerCallback(any(Executor.class), any());
+    }
+
+    @Test
+    public void testQuickDozeOnLidClose_flagEnabled_featureNotPc_doesNotRegisterListener() {
+        mSetFlagsRule.enableFlags(Flags.FLAG_QUICK_DOZE_ON_LID_CLOSE);
+        cleanupDeviceIdleController();
+        mInjector = new InjectorForTest(getContext());
+        mInjector.deviceStateManager = mDeviceStateManager;
+        setupDeviceIdleController();
+
+        verify(mDeviceStateManager, never()).registerCallback(any(Executor.class), any());
+    }
+
+    @Test
+    public void testQuickDozeOnLidClose_flagEnabled_quickDozeWhenLidClosedAndOpened() {
+        mSetFlagsRule.enableFlags(Flags.FLAG_QUICK_DOZE_ON_LID_CLOSE);
+        cleanupDeviceIdleController();
+        setupPackageManagerFeature(PackageManager.FEATURE_PC, true);
+        mInjector = new InjectorForTest(getContext());
+        mInjector.deviceStateManager = mDeviceStateManager;
+        setupDeviceIdleController();
+
+        ArgumentCaptor<DeviceStateManager.DeviceStateCallback> callbackCaptor =
+                ArgumentCaptor.forClass(DeviceStateManager.DeviceStateCallback.class);
+        verify(mDeviceStateManager).registerCallback(any(), callbackCaptor.capture());
+        DeviceStateManager.DeviceStateCallback callback = callbackCaptor.getValue();
+
+        enterDeepState(STATE_ACTIVE);
+        setQuickDozeEnabled(false);
+        setScreenOn(false);
+        setChargingOn(false);
+        verifyStateConditions(STATE_INACTIVE);
+
+        DeviceState closedState = mock(DeviceState.class);
+        doReturn(true).when(closedState).hasProperty(
+                DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_CLOSED);
+        callback.onDeviceStateChanged(closedState);
+
+        assertTrue("Quick Doze should be enabled when entering CLOSED state",
+                mDeviceIdleController.isQuickDozeEnabled());
+        verifyStateConditions(STATE_QUICK_DOZE_DELAY);
+
+        DeviceState openedState = mock(DeviceState.class);
+        doReturn(false).when(openedState).hasProperty(
+                DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_CLOSED);
+        callback.onDeviceStateChanged(openedState);
+
+        assertFalse("Quick Doze should be disabled when exiting CLOSED state",
+                mDeviceIdleController.isQuickDozeEnabled());
+    }
+
 
     private void enterDeepState(int state) {
         switch (state) {

@@ -1056,7 +1056,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         final String callerPackageName = ComponentUtils.getPackageName(callerTaskInfo);
         if (callerPackageName == null) {
             ProtoLog.e(WM_SHELL_DESKTOP_MODE,
-                    "%s: Error getting package name for task: %s", TAG,
+                    "%s: Error getting package name for task: %d", TAG,
                     callerTaskInfo.taskId);
             return new ArrayList<>();
         }
