@@ -235,6 +235,7 @@ object IntegerPolicy {
             /*requiredPermission=*/ "testPermission",
             /*requiredCrossUserPermission=*/ "testCrossUserPermission",
             /*allowedDpcTypes=*/ setOf(),
+            /*resolutionMechanism=*/ null,
             MIN,
             MAX,
         )
@@ -256,6 +257,7 @@ fun IntegerPolicyMetadata.copy(minValue: Int? = null, maxValue: Int? = null) =
         this.requiredPermission,
         this.requiredCrossUserPermission,
         this.allowedDpcTypes,
+        this.resolutionMechanism,
         minValue ?: this.minValue,
         maxValue ?: this.maxValue,
     )
