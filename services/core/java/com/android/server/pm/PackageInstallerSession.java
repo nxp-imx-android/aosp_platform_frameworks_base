@@ -1414,8 +1414,8 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             mDeveloperVerifierController.bindToVerifierServiceIfNeeded(
                     mPm::snapshotComputer, userId, this::onConnectionEstablished);
             if (!TextUtils.isEmpty(params.appPackageName)) {
-                mDeveloperVerifierController.notifyPackageNameAvailable(params.appPackageName,
-                        userId);
+                mDeveloperVerifierController.notifyPackageNameAvailable(sessionId,
+                        params.appPackageName, userId);
             }
             synchronized (mMetrics) {
                 mMetrics.onDeveloperVerificationBindStarted(
@@ -6656,13 +6656,14 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             }
         } catch (InstallerException ignored) {
         }
+
         if (shouldUseVerificationService()
                 && !TextUtils.isEmpty(params.appPackageName)
                 && !isCommitted()) {
             // Only notify for the cancellation if the verification request has not
             // been sent out, which happens right after commit() is called.
             mDeveloperVerifierController.notifyVerificationCancelled(
-                    params.appPackageName, userId);
+                    sessionId, params.appPackageName, userId);
             synchronized (mMetrics) {
                 mMetrics.onDeveloperVerificationCancelled();
             }

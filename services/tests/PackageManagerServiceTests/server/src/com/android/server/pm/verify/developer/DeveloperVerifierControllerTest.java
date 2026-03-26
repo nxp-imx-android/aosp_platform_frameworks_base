@@ -104,6 +104,10 @@ public class DeveloperVerifierControllerTest {
             TimeUnit.MINUTES.toMillis(10);
     private static final long TEST_VERIFIER_CONNECTION_TIMEOUT_DURATION_MILLIS =
             TimeUnit.SECONDS.toMillis(10);
+    private static final long TEST_PRE_WARM_TIMEOUT_DURATION_MILLIS =
+            TimeUnit.MINUTES.toMillis(3);
+    private static final long TEST_IDLE_TIMEOUT_MILLIS =
+            TimeUnit.SECONDS.toMillis(30);
     private static final int TEST_POLICY = DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
 
     private final ArrayList<SharedLibraryInfo> mTestDeclaredLibraries = new ArrayList<>();
@@ -164,6 +168,12 @@ public class DeveloperVerifierControllerTest {
         when(mInjector.getMaxVerificationExtendedTimeoutMillis()).thenReturn(
                 TEST_MAX_TIMEOUT_DURATION_MILLIS);
         when(mInjector.getVerifierConnectionTimeoutMillis()).thenReturn(
+                TEST_VERIFIER_CONNECTION_TIMEOUT_DURATION_MILLIS);
+        when(mInjector.getPreWarmedSessionExpirationDurationMillis()).thenReturn(
+                TEST_PRE_WARM_TIMEOUT_DURATION_MILLIS);
+        when(mInjector.getVerifierAutoDisconnectionAfterIdleMillis()).thenReturn(
+                TEST_IDLE_TIMEOUT_MILLIS);
+        when(mInjector.getVerifierAutoDisconnectionAfterConnectionMillis()).thenReturn(
                 TEST_VERIFIER_CONNECTION_TIMEOUT_DURATION_MILLIS);
 
         // Mock time forward as the code continues to check for the current time
@@ -276,8 +286,10 @@ public class DeveloperVerifierControllerTest {
         assertThat(mDeveloperVerifierController.bindToVerifierServiceIfNeeded(mSnapshotSupplier,
                 mUserId, mOnConnectionEstablished)).isFalse();
         // Test that notifying the verifier when it's not installed doesn't crash
-        mDeveloperVerifierController.notifyPackageNameAvailable(TEST_PACKAGE_NAME, mUserId);
-        mDeveloperVerifierController.notifyVerificationCancelled(TEST_PACKAGE_NAME, mUserId);
+        mDeveloperVerifierController.notifyPackageNameAvailable(
+                TEST_ID, TEST_PACKAGE_NAME, mUserId);
+        mDeveloperVerifierController.notifyVerificationCancelled(
+                TEST_ID, TEST_PACKAGE_NAME, mUserId);
         mDeveloperVerifierController.notifyVerificationTimeout(-1, mUserId);
         verifyNoMoreInteractions(mMockService);
     }
@@ -304,8 +316,10 @@ public class DeveloperVerifierControllerTest {
         // 2 invocations, one for onBinderDied and one for onDisconnected.
         verify(mInjector, times(2)).removeCallbacks(eq(mHandler), any(Runnable.class));
         // Test that nothing crashes if the service connection is lost
-        mDeveloperVerifierController.notifyPackageNameAvailable(TEST_PACKAGE_NAME, mUserId);
-        mDeveloperVerifierController.notifyVerificationCancelled(TEST_PACKAGE_NAME, mUserId);
+        mDeveloperVerifierController.notifyPackageNameAvailable(
+                TEST_ID, TEST_PACKAGE_NAME, mUserId);
+        mDeveloperVerifierController.notifyVerificationCancelled(
+                TEST_ID, TEST_PACKAGE_NAME, mUserId);
         mDeveloperVerifierController.notifyVerificationTimeout(TEST_ID, mUserId);
         verifyNoMoreInteractions(mMockService);
         assertThat(mDeveloperVerifierController.startVerificationSession(
@@ -326,8 +340,12 @@ public class DeveloperVerifierControllerTest {
         mDeveloperVerifierController.bindToVerifierServiceIfNeeded(mSnapshotSupplier, mUserId,
                 () -> {
                 });
-        mDeveloperVerifierController.notifyPackageNameAvailable(TEST_PACKAGE_NAME, mUserId);
+        mDeveloperVerifierController.notifyPackageNameAvailable(
+                TEST_ID, TEST_PACKAGE_NAME, mUserId);
         verify(mMockService, times(1)).onPackageNameAvailable(eq(TEST_PACKAGE_NAME));
+        // Verify reaper started
+        Object token = getReaperToken();
+        assertThat(token).isNotNull();
     }
 
     @Test
@@ -336,8 +354,40 @@ public class DeveloperVerifierControllerTest {
         mDeveloperVerifierController.bindToVerifierServiceIfNeeded(mSnapshotSupplier, mUserId,
                 () -> {
                 });
-        mDeveloperVerifierController.notifyVerificationCancelled(TEST_PACKAGE_NAME, mUserId);
+        // Add a pre-warmed session first
+        mDeveloperVerifierController.notifyPackageNameAvailable(
+                TEST_ID, TEST_PACKAGE_NAME, mUserId);
+
+        mDeveloperVerifierController.notifyVerificationCancelled(
+                TEST_ID, TEST_PACKAGE_NAME, mUserId);
         verify(mMockService, times(1)).onVerificationCancelled(eq(TEST_PACKAGE_NAME));
+
+        // Canceling the only pre-warmed session should trigger auto-disconnect
+        Runnable autoDisconnectRunnable = getAutoDisconnectRunnable();
+        assertThat(autoDisconnectRunnable).isNotNull();
+    }
+
+    @Test
+    public void testPreWarmedSessionTimeout() throws Exception {
+        mDeveloperVerifierController.bindToVerifierServiceIfNeeded(mSnapshotSupplier, mUserId,
+                () -> {});
+        // Mock time for notifyPackageNameAvailable
+        when(mInjector.getCurrentTimeMillis())
+                .thenReturn(TEST_REQUEST_START_TIME)
+                .thenReturn(TEST_REQUEST_START_TIME + TEST_PRE_WARM_TIMEOUT_DURATION_MILLIS + 1);
+
+        mDeveloperVerifierController.notifyPackageNameAvailable(
+                TEST_ID, TEST_PACKAGE_NAME, mUserId);
+
+        Object token = getReaperToken();
+        assertThat(token).isNotNull();
+
+        // Run the timeout check
+        findMessageByToken(token).getCallback().run();
+
+        // After timeout, it should schedule auto-disconnect
+        Runnable autoDisconnectRunnable = getAutoDisconnectRunnable();
+        assertThat(autoDisconnectRunnable).isNotNull();
     }
 
     @Test
@@ -709,23 +759,16 @@ public class DeveloperVerifierControllerTest {
         assertThat(session.getTimeoutTime().toEpochMilli()).isEqualTo(maxTimeoutTime);
     }
 
+
     @Test
     public void testTimeoutChecksMultipleTimes() {
+        // Use a single-element array to bypass the "effectively final" restriction for variables
+        // captured in lambda expressions, allowing us to update the mocked time later in the test.
+        long[] currentTimeMillis = { TEST_REQUEST_START_TIME };
         // Mock time forward as the code continues to check for the current time
-        when(mInjector.getCurrentTimeMillis())
-                // First called when the tracker is created
-                .thenReturn(TEST_REQUEST_START_TIME)
-                // Then mock the first timeout check when the timeout time isn't reached yet
-                .thenReturn(TEST_REQUEST_START_TIME + TEST_TIMEOUT_DURATION_MILLIS - 1000)
-                // Then mock the same time used to check the remaining time
-                .thenReturn(TEST_REQUEST_START_TIME + TEST_TIMEOUT_DURATION_MILLIS - 1000)
-                // Then mock the second timeout check when the timeout time isn't reached yet
-                .thenReturn(TEST_REQUEST_START_TIME + TEST_TIMEOUT_DURATION_MILLIS - 100)
-                // Then mock the same time used to check the remaining time
-                .thenReturn(TEST_REQUEST_START_TIME + TEST_TIMEOUT_DURATION_MILLIS - 100)
-                // Then mock the third timeout check when the timeout time has been reached
-                .thenReturn(TEST_REQUEST_START_TIME + TEST_TIMEOUT_DURATION_MILLIS + 1);
+        when(mInjector.getCurrentTimeMillis()).thenAnswer(invocation -> currentTimeMillis[0]);
 
+        currentTimeMillis[0] = TEST_REQUEST_START_TIME;
         mDeveloperVerifierController.startVerificationSession(
                 mSnapshotSupplier, mUserId, TEST_ID, TEST_PACKAGE_NAME, TEST_PACKAGE_URI,
                 TEST_SIGNING_INFO, mTestDeclaredLibraries, TEST_POLICY, mTestExtensionParams,
@@ -736,12 +779,15 @@ public class DeveloperVerifierControllerTest {
         assertThat(token).isNotNull();
 
         // Run first check (not timed out)
+        currentTimeMillis[0] = TEST_REQUEST_START_TIME + TEST_TIMEOUT_DURATION_MILLIS - 1000;
         findMessageByToken(token).getCallback().run();
 
         // Run second check (still not timed out)
+        currentTimeMillis[0] = TEST_REQUEST_START_TIME + TEST_TIMEOUT_DURATION_MILLIS - 100;
         findMessageByToken(token).getCallback().run();
 
         // Run third check (timed out)
+        currentTimeMillis[0] = TEST_REQUEST_START_TIME + TEST_TIMEOUT_DURATION_MILLIS + 1;
         findMessageByToken(token).getCallback().run();
 
         verify(mInjector, atLeastOnce()).getCurrentTimeMillis();
@@ -795,9 +841,16 @@ public class DeveloperVerifierControllerTest {
 
     @Test
     public void testAutoDisconnect() throws Exception {
+        // Create a pre-warmed session
+        mDeveloperVerifierController.bindToVerifierServiceIfNeeded(mSnapshotSupplier, mUserId,
+                () -> {});
+        mDeveloperVerifierController.notifyPackageNameAvailable(
+                TEST_ID, TEST_PACKAGE_NAME, mUserId);
+
         final DeveloperVerificationSession session = setUpSession();
 
-        // Final completion triggers auto-disconnect schedule
+        // Final completion triggers auto-disconnect schedule because the pre-warmed
+        // session was consumed/cleared by the startVerificationSession call.
         session.reportVerificationComplete(
                 new DeveloperVerificationStatus.Builder().setVerified(true).build(),
                 new PersistableBundle());
