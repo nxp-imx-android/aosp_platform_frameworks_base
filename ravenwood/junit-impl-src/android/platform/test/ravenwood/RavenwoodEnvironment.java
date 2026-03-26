@@ -442,13 +442,16 @@ public final class RavenwoodEnvironment {
         return val.split("\\s+");
     }
 
-    /** Property files from each test. Optional. This is relative to the current directory. */
-    private static final String PER_TEST_PROP = "ravenwood.prop";
+    /**
+     * Default filename of the per-test {@link android.os.SystemProperties} override.
+     */
+    private static final String PER_TEST_SYSPROP = "ravenwood.sysprop";
 
     /**
-     * @return per-test property file. Default is {@link #PER_TEST_PROP}.
+     * @return Filename of the per-test {@link android.os.SystemProperties} override.
+     * Default is {@link #PER_TEST_SYSPROP}.
      */
-    public String perTestPropFile() {
-        return System.getProperty("android.ravenwood.per_test_prop_file", PER_TEST_PROP);
+    public String perTestSyspropFile() {
+        return System.getProperty("android.ravenwood.per_test_prop_file", PER_TEST_SYSPROP);
     }
 }

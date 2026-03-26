@@ -1006,7 +1006,7 @@ android_ravenwood_test {
     name: "SystemUiRavenTests",
     package_name: "com.android.systemui.tests.raven",
     build_resources: true,
-    data: ["ravenwood.prop"],
+    data: ["ravenwood.sysprop"],
     srcs: [
         ":SystemUI-tests-multivalent-monolith",
         ":SystemUI-tests-multivalent-pods",

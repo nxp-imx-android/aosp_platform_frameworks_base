@@ -33,7 +33,7 @@ android_ravenwood_test {
     ],
     data: [
         "data/**/*",
-        "ravenwood.prop",
+        "ravenwood.sysprop",
     ],
     test_options: {
         // This is injected outside of the <test> element.
