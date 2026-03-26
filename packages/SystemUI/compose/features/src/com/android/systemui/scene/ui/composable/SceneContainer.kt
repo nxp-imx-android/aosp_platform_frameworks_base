@@ -55,6 +55,7 @@ import com.android.compose.animation.scene.observableTransitionState
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffectFactory
 import com.android.compose.snapshot.ObserveReads
+import com.android.systemui.Flags.blackScreenOnSceneContainerStartFix
 import com.android.systemui.keyguard.ui.composable.modifier.burnInAware
 import com.android.systemui.lifecycle.rememberActivated
 import com.android.systemui.lifecycle.rememberViewModel
@@ -218,6 +219,13 @@ private fun InternalSceneContainer(
     DisposableEffect(viewModel, state) {
         viewModel.setTransitionState(state.observableTransitionState())
         onDispose { viewModel.setTransitionState(null) }
+    }
+
+    if (blackScreenOnSceneContainerStartFix() && state.transitionState.isIdle()) {
+        DisposableEffect(state.transitionState.currentScene) {
+            viewModel.onIdleSceneEnteredComposition(state.transitionState.currentScene)
+            onDispose { viewModel.onIdleSceneExitedComposition(state.transitionState.currentScene) }
+        }
     }
 
     ObserveReads {

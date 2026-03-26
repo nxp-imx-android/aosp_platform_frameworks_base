@@ -78,6 +78,13 @@ flag {
 }
 
 flag {
+    name: "black_screen_on_scene_container_start_fix"
+    namespace: "systemui"
+    description: "Fix a brief black screen on scene container startup"
+    bug: "452871017"
+}
+
+flag {
     name: "blur_on_more_surfaces"
     namespace: "systemui"
     description: "Enable blur on more systemui surfaces (volume and power)"
