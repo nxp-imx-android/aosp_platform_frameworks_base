@@ -79,7 +79,6 @@ import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor;
 import com.android.systemui.flags.FeatureFlags;
-import com.android.systemui.keyguard.domain.interactor.KeyguardDismissInteractor;
 import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor;
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor;
 import com.android.systemui.keyguard.domain.interactor.KeyguardServiceShowLockscreenInteractor;
@@ -328,7 +327,6 @@ public class KeyguardService extends Service {
     private final WindowManagerOcclusionManager mWmOcclusionManager;
     private final KeyguardEnabledInteractor mKeyguardEnabledInteractor;
     private final KeyguardWakeDirectlyToGoneInteractor mKeyguardWakeDirectlyToGoneInteractor;
-    private final KeyguardDismissInteractor mKeyguardDismissInteractor;
     private final KeyguardServiceShowLockscreenInteractor mKeyguardServiceShowLockscreenInteractor;
     private final KeyguardUpdateMonitor mKeyguardUpdateMonitor;
     private final ActivityManager mActivityManager;
@@ -354,7 +352,6 @@ public class KeyguardService extends Service {
             KeyguardEnabledInteractor keyguardEnabledInteractor,
             Lazy<KeyguardStateCallbackStartable> keyguardStateCallbackStartableLazy,
             KeyguardWakeDirectlyToGoneInteractor keyguardWakeDirectlyToGoneInteractor,
-            KeyguardDismissInteractor keyguardDismissInteractor,
             Lazy<DeviceEntryInteractor> deviceEntryInteractorLazy,
             KeyguardStateCallbackInteractor keyguardStateCallbackInteractor,
             KeyguardServiceShowLockscreenInteractor keyguardServiceShowLockscreenInteractor,
@@ -378,7 +375,7 @@ public class KeyguardService extends Service {
         mKeyguardStateCallbackInteractor = keyguardStateCallbackInteractor;
         mDeviceEntryInteractorLazy = deviceEntryInteractorLazy;
 
-        if (KeyguardWmStateRefactor.isEnabled()) {
+        if (SceneContainerFlag.isEnabled()) {
             WindowManagerLockscreenVisibilityViewBinder.bind(
                     wmLockscreenVisibilityViewModel,
                     wmLockscreenVisibilityManager,
@@ -393,7 +390,6 @@ public class KeyguardService extends Service {
         mWmOcclusionManager = windowManagerOcclusionManager;
         mKeyguardEnabledInteractor = keyguardEnabledInteractor;
         mKeyguardWakeDirectlyToGoneInteractor = keyguardWakeDirectlyToGoneInteractor;
-        mKeyguardDismissInteractor = keyguardDismissInteractor;
         mKeyguardServiceShowLockscreenInteractor = keyguardServiceShowLockscreenInteractor;
         mKeyguardUpdateMonitor = keyguardUpdateMonitor;
         mActivityManager = activityManager;
@@ -450,7 +446,7 @@ public class KeyguardService extends Service {
             Log.d(TAG, "setOccluded(" + isOccluded + ")");
 
             Trace.beginSection("KeyguardService.mBinder#setOccluded");
-            if (!KeyguardWmStateRefactor.isEnabled()) {
+            if (!SceneContainerFlag.isEnabled()) {
                 mKeyguardViewMediator.setOccluded(isOccluded);
             } else {
                 mWmOcclusionManager.onKeyguardServiceSetOccluded(isOccluded);
@@ -464,8 +460,6 @@ public class KeyguardService extends Service {
             if (SceneContainerFlag.isEnabled()) {
                 mDeviceEntryInteractorLazy.get().attemptDeviceEntry(
                         "KeyguardService.dismiss", callback);
-            } else if (KeyguardWmStateRefactor.isEnabled()) {
-                mKeyguardDismissInteractor.dismissKeyguardWithCallback(callback);
             } else {
                 mKeyguardViewMediator.dismiss(callback, message);
             }
@@ -630,8 +624,6 @@ public class KeyguardService extends Service {
             // flow to call this in that interactor.
             if (SceneContainerFlag.isEnabled()) {
                 mDeviceEntryInteractorLazy.get().lockNow("doKeyguardTimeout");
-            }
-            if (KeyguardWmStateRefactor.isEnabled()) {
                 mKeyguardServiceShowLockscreenInteractor
                         .onKeyguardServiceDoKeyguardTimeout(options);
             }
