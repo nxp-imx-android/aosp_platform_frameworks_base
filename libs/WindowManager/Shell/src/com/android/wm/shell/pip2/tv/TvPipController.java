@@ -361,6 +361,7 @@ public class TvPipController implements PipTransitionState.PipTransitionStateCha
         ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                 "%s: movePipToFullscreen()", TAG);
 
+        mTvPipMenuController.promoteMenuToTop();
         mTvPipScheduler.scheduleExitPipViaExpand(wasVisible);
     }
 
@@ -368,8 +369,8 @@ public class TvPipController implements PipTransitionState.PipTransitionStateCha
         ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                 "%s: togglePipExpansion()", TAG);
         boolean expanding = !mTvPipBoundsState.isTvPipExpanded();
-        mTvPipBoundsAlgorithm.updateGravityOnExpansionToggled(expanding);
         mTvPipBoundsState.setTvPipManuallyCollapsed(!expanding);
+        mTvPipBoundsAlgorithm.updateGravityOnExpansionToggled(expanding);
         mTvPipBoundsState.setTvPipExpanded(expanding);
 
         updatePinnedStackBounds();
@@ -511,6 +512,10 @@ public class TvPipController implements PipTransitionState.PipTransitionStateCha
                     mTvPipScheduler.scheduleAnimateResizePip(toBounds, duration);
                     mTvPipMenuController.onPipTransitionToTargetBoundsStarted(toBounds);
                 }
+                break;
+            case PipTransitionState.CHANGED_PIP_BOUNDS:
+                mTvPipMenuController.onPipTransitionFinished(/* enterTransition= */ false);
+                mTvPipActionsProvider.updatePipExpansionState(mTvPipBoundsState.isTvPipExpanded());
                 break;
         }
     }
