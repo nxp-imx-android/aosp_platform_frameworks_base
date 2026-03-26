@@ -440,7 +440,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
 
             val draftRule =
                 DraftRuleModel.New(
-                    action = ActionModel.Bundle,
+                    action = ActionModel.Highlight,
                     filter = DraftFilterModel(keywords = KeywordsModel(listOf("cat"))),
                 )
 
@@ -478,7 +478,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
 
             val draftRule =
                 DraftRuleModel.New(
-                    action = ActionModel.Bundle,
+                    action = ActionModel.Block,
                     filter =
                         DraftFilterModel(
                             keywords = KeywordsModel(listOf("cat", "dog", "pet", "animal"))
@@ -513,6 +513,39 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun buildRuleText_bundleAction() =
+        kosmos.runTest {
+            val draftRule =
+                DraftRuleModel.New(
+                    action = ActionModel.Bundle(name = "Demo Notifs", emojiIcon = "\uD83C\uDF81"),
+                    filter = DraftFilterModel(),
+                )
+
+            val underTest =
+                notificationRuleEditViewModelFactory.create(
+                    draftRule,
+                    onNavigateToCurrentRulesScreen = {},
+                )
+
+            val ruleDisplay =
+                underTest.buildRuleText(
+                    onEnterEditField = {},
+                    onExitEditField = {},
+                    resources = applicationContext.resources,
+                )
+
+            assertThat(ruleDisplay.textChunks).hasSize(6)
+            assertThat(ruleDisplay.textChunks[0]).isEqualTo(TextChunk.BasicText("Notifications"))
+            assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" into "))
+            assertThat(ruleDisplay.textChunks[2])
+                .isEqualTo(TextChunk.FieldValueText("“Demo Notifs”"))
+            assertThat(ruleDisplay.textChunks[3]).isEqualTo(TextChunk.BasicText(" bundle with "))
+            assertThat(ruleDisplay.textChunks[4])
+                .isEqualTo(TextChunk.FieldValueText("\uD83C\uDF81"))
+            assertThat(ruleDisplay.textChunks[5]).isEqualTo(TextChunk.BasicText(" emoji"))
+        }
+
+    @Test
     fun buildRuleText_allFields() =
         kosmos.runTest {
             val contact =
@@ -531,7 +564,8 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
             val underTest =
                 notificationRuleEditViewModelFactory.create(
                     DraftRuleModel.New(
-                        action = ActionModel.Highlight,
+                        action =
+                            ActionModel.Bundle(name = "Demo Notifs", emojiIcon = "\uD83C\uDF81"),
                         filter =
                             DraftFilterModel(
                                 people = RuleValue.Specified(PeopleModel(listOf(contact))),
@@ -552,7 +586,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                     resources = applicationContext.resources,
                 )
 
-            assertThat(ruleDisplay.textChunks).hasSize(9)
+            assertThat(ruleDisplay.textChunks).hasSize(14)
 
             assertThat(ruleDisplay.textChunks[0]).isEqualTo(TextChunk.BasicText("Notifications"))
             assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" from "))
@@ -578,6 +612,14 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
             val clickableChunk = ruleDisplay.textChunks[8] as TextChunk.ClickableText
             assertThat(clickableChunk.text).isEqualTo("“cat” +3 more")
             assertThat(clickableChunkContacts.isAmbiguous).isFalse()
+
+            assertThat(ruleDisplay.textChunks[9]).isEqualTo(TextChunk.BasicText(" into "))
+            assertThat(ruleDisplay.textChunks[10])
+                .isEqualTo(TextChunk.FieldValueText("“Demo Notifs”"))
+            assertThat(ruleDisplay.textChunks[11]).isEqualTo(TextChunk.BasicText(" bundle with "))
+            assertThat(ruleDisplay.textChunks[12])
+                .isEqualTo(TextChunk.FieldValueText("\uD83C\uDF81"))
+            assertThat(ruleDisplay.textChunks[13]).isEqualTo(TextChunk.BasicText(" emoji"))
         }
 
     @Test

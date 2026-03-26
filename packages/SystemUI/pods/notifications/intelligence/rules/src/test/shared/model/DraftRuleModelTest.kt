@@ -33,13 +33,13 @@ import org.junit.runner.RunWith
 class DraftRuleModelTest : SysuiTestCase() {
     @Test
     fun toDraft_filterNull() {
-        val rule = RuleModel(id = 1, action = ActionModel.Bundle, filter = null)
+        val rule = RuleModel(id = 1, action = ActionModel.Block, filter = null)
 
         val draftRule = rule.toDraft()
 
         assertThat(draftRule).isInstanceOf(DraftRuleModel.PreExisting::class.java)
         assertThat((draftRule as DraftRuleModel.PreExisting).id).isEqualTo(1)
-        assertThat(draftRule.action).isEqualTo(ActionModel.Bundle)
+        assertThat(draftRule.action).isEqualTo(ActionModel.Block)
         assertThat(draftRule.filter.people).isNull()
         assertThat(draftRule.filter.includedApps).isNull()
         assertThat(draftRule.filter.keywords).isNull()
@@ -50,7 +50,7 @@ class DraftRuleModelTest : SysuiTestCase() {
         val rule =
             RuleModel(
                 id = 1,
-                action = ActionModel.Bundle,
+                action = ActionModel.Block,
                 filter = FilterModel(people = null, includedApps = null, keywords = null),
             )
 
@@ -58,7 +58,7 @@ class DraftRuleModelTest : SysuiTestCase() {
 
         assertThat(draftRule).isInstanceOf(DraftRuleModel.PreExisting::class.java)
         assertThat((draftRule as DraftRuleModel.PreExisting).id).isEqualTo(1)
-        assertThat(draftRule.action).isEqualTo(ActionModel.Bundle)
+        assertThat(draftRule.action).isEqualTo(ActionModel.Block)
         assertThat(draftRule.filter.people).isNull()
         assertThat(draftRule.filter.includedApps).isNull()
         assertThat(draftRule.filter.keywords).isNull()
@@ -106,12 +106,15 @@ class DraftRuleModelTest : SysuiTestCase() {
                 DraftFilterModel(people = RuleValue.Ambiguous("test")),
             )
 
-        val copy = draft.copyDraft(action = ActionModel.Silence)
+        val copy =
+            draft.copyDraft(
+                action = ActionModel.Bundle(name = "bundle", emojiIcon = "\uD83D\uDC9D")
+            )
 
         assertThat(copy)
             .isEqualTo(
                 DraftRuleModel.New(
-                    action = ActionModel.Silence,
+                    action = ActionModel.Bundle(name = "bundle", emojiIcon = "\uD83D\uDC9D"),
                     filter = DraftFilterModel(people = RuleValue.Ambiguous("test")),
                 )
             )
@@ -138,7 +141,7 @@ class DraftRuleModelTest : SysuiTestCase() {
     fun toFullRule_new_hasAmbiguousValues_throws() {
         val newRule =
             DraftRuleModel.New(
-                action = ActionModel.Bundle,
+                action = ActionModel.Highlight,
                 filter =
                     DraftFilterModel(
                         includedApps = RuleValue.Ambiguous("social media apps"),
@@ -153,7 +156,7 @@ class DraftRuleModelTest : SysuiTestCase() {
     fun toFullRule_new_noAmbiguousValues() {
         val newRule =
             DraftRuleModel.New(
-                action = ActionModel.Bundle,
+                action = ActionModel.Silence,
                 filter =
                     DraftFilterModel(
                         includedApps = null,
@@ -165,7 +168,7 @@ class DraftRuleModelTest : SysuiTestCase() {
         val fullRule = newRule.toFullRule(id = 4)
 
         assertThat(fullRule.id).isEqualTo(4)
-        assertThat(fullRule.action).isEqualTo(ActionModel.Bundle)
+        assertThat(fullRule.action).isEqualTo(ActionModel.Silence)
         assertThat(fullRule.filter).isNotNull()
         assertThat(fullRule.filter!!.includedApps).isNull()
         assertThat(fullRule.filter!!.people).isEqualTo(PeopleModel(listOf(FAKE_CONTACT)))
@@ -177,7 +180,7 @@ class DraftRuleModelTest : SysuiTestCase() {
         val newRule =
             DraftRuleModel.PreExisting(
                 id = 10,
-                action = ActionModel.Bundle,
+                action = ActionModel.Silence,
                 filter =
                     DraftFilterModel(
                         includedApps = RuleValue.Specified(IncludedAppsModel(listOf(FAKE_APP))),
@@ -193,7 +196,7 @@ class DraftRuleModelTest : SysuiTestCase() {
         val newRule =
             DraftRuleModel.PreExisting(
                 id = 10,
-                action = ActionModel.Bundle,
+                action = ActionModel.Silence,
                 filter =
                     DraftFilterModel(
                         includedApps = RuleValue.Specified(IncludedAppsModel(listOf(FAKE_APP))),
@@ -205,7 +208,7 @@ class DraftRuleModelTest : SysuiTestCase() {
         val fullRule = newRule.toFullRule()
 
         assertThat(fullRule.id).isEqualTo(10)
-        assertThat(fullRule.action).isEqualTo(ActionModel.Bundle)
+        assertThat(fullRule.action).isEqualTo(ActionModel.Silence)
         assertThat(fullRule.filter).isNotNull()
         assertThat(fullRule.filter!!.includedApps).isEqualTo(IncludedAppsModel(listOf(FAKE_APP)))
         assertThat(fullRule.filter!!.people).isNull()
@@ -216,14 +219,14 @@ class DraftRuleModelTest : SysuiTestCase() {
     fun toFullRule_new_noFilterValues() {
         val newRule =
             DraftRuleModel.New(
-                action = ActionModel.Bundle,
+                action = ActionModel.Highlight,
                 filter = DraftFilterModel(includedApps = null, people = null, keywords = null),
             )
 
         val fullRule = newRule.toFullRule(id = 10)
 
         assertThat(fullRule.id).isEqualTo(10)
-        assertThat(fullRule.action).isEqualTo(ActionModel.Bundle)
+        assertThat(fullRule.action).isEqualTo(ActionModel.Highlight)
         assertThat(fullRule.filter).isNull()
     }
 
@@ -232,14 +235,14 @@ class DraftRuleModelTest : SysuiTestCase() {
         val preExistingRule =
             DraftRuleModel.PreExisting(
                 id = 10,
-                action = ActionModel.Bundle,
+                action = ActionModel.Highlight,
                 filter = DraftFilterModel(includedApps = null, people = null, keywords = null),
             )
 
         val fullRule = preExistingRule.toFullRule()
 
         assertThat(fullRule.id).isEqualTo(10)
-        assertThat(fullRule.action).isEqualTo(ActionModel.Bundle)
+        assertThat(fullRule.action).isEqualTo(ActionModel.Highlight)
         assertThat(fullRule.filter).isNull()
     }
 

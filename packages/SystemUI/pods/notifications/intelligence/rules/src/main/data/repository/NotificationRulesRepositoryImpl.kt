@@ -30,7 +30,8 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
-import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRuleConversionHelper.validActionsMap
+import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRuleConversionHelper.toInternalModel
+import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRuleConversionHelper.validPrimaryActionValues
 import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRuleToExternalHelpers.toExternalRuleFormat
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
 import com.android.systemui.notifications.intelligence.rules.shared.NotificationRulesLog
@@ -94,7 +95,7 @@ constructor(
     private suspend fun fetchInitialRules(): List<RuleModel> {
         return notificationManager.notificationRules
             .filter {
-                val isValidAction = validActionsMap.containsKey(it.action.primaryAction)
+                val isValidAction = validPrimaryActionValues.contains(it.action.primaryAction)
                 if (!isValidAction) {
                     logger.w({ "Filtering out invalid action $int1" }) {
                         int1 = it.action.primaryAction
@@ -182,11 +183,6 @@ constructor(
                     null
                 },
         )
-    }
-
-    private fun NotificationRule.Action.toInternalModel(): ActionModel {
-        return validActionsMap[this.primaryAction]
-            ?: throw IllegalStateException("Action $this not present in validActionsMap")
     }
 
     private suspend fun NotificationRule.Filter.toInternalModel(): FilterModel? {

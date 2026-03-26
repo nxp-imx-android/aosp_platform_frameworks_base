@@ -28,21 +28,57 @@ import com.android.systemui.notifications.intelligence.rules.shared.model.Action
  * Helper object for converting between the external and internal model representations of a rule.
  */
 object NotificationRuleConversionHelper {
-    val validActionsMap: Map<Int, ActionModel> =
-        mapOf(
-            PRIMARY_ACTION_HIGHLIGHT_AND_ALERT to ActionModel.HighlightAndAlert,
-            PRIMARY_ACTION_HIGHLIGHT to ActionModel.Highlight,
-            PRIMARY_ACTION_LOW to ActionModel.Silence,
-            PRIMARY_ACTION_BUNDLE to ActionModel.Bundle,
-            PRIMARY_ACTION_BLOCK to ActionModel.Block,
+    val validPrimaryActionValues =
+        listOf(
+            PRIMARY_ACTION_HIGHLIGHT_AND_ALERT,
+            PRIMARY_ACTION_HIGHLIGHT,
+            PRIMARY_ACTION_LOW,
+            PRIMARY_ACTION_BUNDLE,
+            PRIMARY_ACTION_BLOCK,
         )
 
     fun ActionModel.toExternalModel(): NotificationRule.Action {
         val primaryAction =
-            validActionsMap.entries.find { it.value == this }?.key
-                ?: throw IllegalStateException(
-                    "ActionModel doesn't have a corresponding entry in validActionsMap"
+            when (this) {
+                ActionModel.HighlightAndAlert -> PRIMARY_ACTION_HIGHLIGHT_AND_ALERT
+                ActionModel.Highlight -> PRIMARY_ACTION_HIGHLIGHT
+                ActionModel.Silence -> PRIMARY_ACTION_LOW
+                is ActionModel.Bundle -> PRIMARY_ACTION_BUNDLE
+                ActionModel.Block -> PRIMARY_ACTION_BLOCK
+            }
+        val bundleName =
+            if (this is ActionModel.Bundle) {
+                this.name
+            } else {
+                null
+            }
+        val bundleEmoji =
+            if (this is ActionModel.Bundle) {
+                this.emojiIcon
+            } else {
+                null
+            }
+        return NotificationRule.Action.Builder(primaryAction)
+            .setDynamicBundleName(bundleName)
+            .setDynamicBundleEmojiIcon(bundleEmoji)
+            .build()
+    }
+
+    fun NotificationRule.Action.toInternalModel(): ActionModel {
+        return when (primaryAction) {
+            PRIMARY_ACTION_HIGHLIGHT_AND_ALERT -> ActionModel.HighlightAndAlert
+            PRIMARY_ACTION_HIGHLIGHT -> ActionModel.Highlight
+            PRIMARY_ACTION_LOW -> ActionModel.Silence
+            PRIMARY_ACTION_BUNDLE ->
+                ActionModel.Bundle(
+                    name = this.dynamicBundleName,
+                    emojiIcon = this.dynamicBundleEmojiIcon,
                 )
-        return NotificationRule.Action.Builder(primaryAction).build()
+            PRIMARY_ACTION_BLOCK -> ActionModel.Block
+            else ->
+                throw IllegalStateException(
+                    "Action $primaryAction not present in `validPrimaryActionValues`"
+                )
+        }
     }
 }
