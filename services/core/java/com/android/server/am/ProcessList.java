@@ -1525,11 +1525,12 @@ public final class ProcessList extends ProcessListInternal
             return;
 
         long start = SystemClock.elapsedRealtime();
-        ByteBuffer buf = ByteBuffer.allocate(4 * 5);
+        ByteBuffer buf = ByteBuffer.allocate(4 * 6);
         buf.putInt(LMK_PROCPRIO);
         buf.putInt(pid);
         buf.putInt(uid);
         buf.putInt(amt);
+        buf.putInt(0); // PROC_TYPE_APP
         buf.putInt(forLmkdOnly ? 1 : 0);
         writeLmkd(buf, null);
         long now = SystemClock.elapsedRealtime();
