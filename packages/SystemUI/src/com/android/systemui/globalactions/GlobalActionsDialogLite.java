@@ -86,7 +86,9 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
@@ -1698,6 +1700,16 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                             }
                         });
             }
+
+            // Add AccessibilityDelegate to set the role to Button
+            view.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+                @Override
+                public void onInitializeAccessibilityNodeInfo(
+                        View host, AccessibilityNodeInfo info) {
+                    super.onInitializeAccessibilityNodeInfo(host, info);
+                    info.setClassName(Button.class.getName());
+                }
+            });
 
             view.setOnClickListener(v -> onClickItem(position));
             if (action instanceof LongPressAction) {

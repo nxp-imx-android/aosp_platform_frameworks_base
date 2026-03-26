@@ -56,6 +56,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManagerPolicyConstants;
+import android.view.accessibility.AccessibilityNodeInfo;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.window.OnBackInvokedCallback;
@@ -1634,6 +1636,26 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         View.OnFocusChangeListener listener = view.getOnFocusChangeListener();
         assertThat(listener).isNull();
+    }
+
+    @Test
+    public void testMyAdapter_getView_setsAccessibilityRoleButton() {
+        setMaxShownPowerItems(1);
+        mRepository.setPossibleGlobalActions(List.of(GlobalActionType.POWER));
+        GlobalActionsDialogLite globalActionsDialogLite = createGlobalActionsDialogLite();
+        globalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
+
+        GlobalActionsDialogLite.MyAdapter adapter = globalActionsDialogLite.new MyAdapter();
+        ViewGroup parent = new LinearLayout(mContext);
+
+        View view = adapter.getView(/* position= */ 0, /* convertView= */ null, parent);
+        View.AccessibilityDelegate delegate = view.getAccessibilityDelegate();
+        assertThat(delegate).isNotNull();
+
+        AccessibilityNodeInfo info = AccessibilityNodeInfo.obtain();
+        delegate.onInitializeAccessibilityNodeInfo(view, info);
+
+        assertThat(info.getClassName().toString()).isEqualTo(Button.class.getName());
     }
 
     private void mockConfigurationForInsetFocusRings(boolean enableConfig) {
