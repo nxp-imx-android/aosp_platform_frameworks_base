@@ -74,7 +74,7 @@ class PreferenceSetterApiHandlerTest {
         ApiPermissionChecker.alwaysAllow()
     )
 
-    private fun invokeWithRequest(screenKey: String, preferenceKey: String, value: Any): Int =
+    private fun invokeWithRequest(screenKey: String, preferenceKey: String, value: Any): PreferenceSetterResponse =
         runBlocking {
             val valueProto = when (value) {
                 is Boolean -> preferenceValueProto {
@@ -139,7 +139,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
         assertThat(
-            invokeWithRequest("inexistent_screen", "preference_key", true)
+            invokeWithRequest("inexistent_screen", "preference_key", true).errorCode
         ).isEqualTo(PreferenceSetterResult.UNSUPPORTED)
     }
 
@@ -162,7 +162,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
         assertThat(
-            invokeWithRequest("screen_key", "inexistent_preference", true)
+            invokeWithRequest("screen_key", "inexistent_preference", true).errorCode
         ).isEqualTo(PreferenceSetterResult.UNSUPPORTED)
     }
 
@@ -185,7 +185,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", true)
+            invokeWithRequest("screen_key", "preference_key", true).errorCode
         ).isEqualTo(PreferenceSetterResult.UNSUPPORTED)
     }
 
@@ -212,7 +212,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", true)
+            invokeWithRequest("screen_key", "preference_key", true).errorCode
         ).isEqualTo(PreferenceSetterResult.DISABLED)
         assertThat(getPreferenceValue<Boolean>(disabledPreference)).isEqualTo(false)
     }
@@ -239,7 +239,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", true)
+            invokeWithRequest("screen_key", "preference_key", true).errorCode
         ).isEqualTo(PreferenceSetterResult.RESTRICTED)
         assertThat(getPreferenceValue<Boolean>(restrictedPreference)).isEqualTo(false)
     }
@@ -265,7 +265,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", true)
+            invokeWithRequest("screen_key", "preference_key", true).errorCode
         ).isEqualTo(PreferenceSetterResult.UNAVAILABLE)
         assertThat(getPreferenceValue<Boolean>(unavailablePreference)).isEqualTo(false)
     }
@@ -292,7 +292,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", true)
+            invokeWithRequest("screen_key", "preference_key", true).errorCode
         ).isEqualTo(PreferenceSetterResult.INVALID_REQUEST)
         assertThat(getPreferenceValue<Int>(intPreference)).isEqualTo(3)
     }
@@ -320,7 +320,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", true)
+            invokeWithRequest("screen_key", "preference_key", true).errorCode
         ).isEqualTo(PreferenceSetterResult.DISALLOW)
         assertThat(getPreferenceValue<Boolean>(highSensitivityPreference)).isEqualTo(false)
     }
@@ -350,7 +350,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", true)
+            invokeWithRequest("screen_key", "preference_key", true).errorCode
         ).isEqualTo(PreferenceSetterResult.UNSUPPORTED)
         assertThat(getPreferenceValue<Boolean>(unknownSensitivityPreference)).isEqualTo(false)
     }
@@ -379,7 +379,7 @@ class PreferenceSetterApiHandlerTest {
         )
         makePermissionPass(application, INTERACT_ACROSS_PROFILES, false)
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", true)
+            invokeWithRequest("screen_key", "preference_key", true).errorCode
         ).isEqualTo(PreferenceSetterResult.REQUIRE_APP_PERMISSION)
         assertThat(getPreferenceValue<Boolean>(preference)).isEqualTo(false)
     }
@@ -409,7 +409,7 @@ class PreferenceSetterApiHandlerTest {
         )
         makePermissionPass(application, INTERACT_ACROSS_PROFILES, true)
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", true)
+            invokeWithRequest("screen_key", "preference_key", true).errorCode
         ).isEqualTo(PreferenceSetterResult.REQUIRE_USER_AGREEMENT)
         assertThat(getPreferenceValue<Boolean>(preference)).isEqualTo(false)
     }
@@ -438,7 +438,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", true)
+            invokeWithRequest("screen_key", "preference_key", true).errorCode
         ).isEqualTo(PreferenceSetterResult.REQUIRE_USER_AGREEMENT)
         assertThat(getPreferenceValue<Boolean>(preference)).isEqualTo(false)
     }
@@ -468,7 +468,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", true)
+            invokeWithRequest("screen_key", "preference_key", true).errorCode
         ).isEqualTo(PreferenceSetterResult.REQUIRE_USER_AGREEMENT)
         assertThat(getPreferenceValue<Boolean>(preference)).isEqualTo(false)
     }
@@ -499,7 +499,7 @@ class PreferenceSetterApiHandlerTest {
         )
         makePermissionPass(application, INTERACT_ACROSS_PROFILES, true)
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", true)
+            invokeWithRequest("screen_key", "preference_key", true).errorCode
         ).isEqualTo(PreferenceSetterResult.OK)
         assertThat(getPreferenceValue<Boolean>(preference)).isEqualTo(true)
     }
@@ -530,7 +530,7 @@ class PreferenceSetterApiHandlerTest {
         )
         makePermissionPass(application, INTERACT_ACROSS_PROFILES, true)
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", false)
+            invokeWithRequest("screen_key", "preference_key", false).errorCode
         ).isEqualTo(PreferenceSetterResult.OK)
         assertThat(getPreferenceValue<Boolean>(preference)).isEqualTo(false)
     }
@@ -561,7 +561,7 @@ class PreferenceSetterApiHandlerTest {
         )
         makePermissionPass(application, INTERACT_ACROSS_PROFILES, true)
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", 8)
+            invokeWithRequest("screen_key", "preference_key", 8).errorCode
         ).isEqualTo(PreferenceSetterResult.OK)
         assertThat(getPreferenceValue<Int>(intPreference)).isEqualTo(8)
     }
@@ -592,7 +592,7 @@ class PreferenceSetterApiHandlerTest {
         )
         makePermissionPass(application, INTERACT_ACROSS_PROFILES, true)
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", "hey")
+            invokeWithRequest("screen_key", "preference_key", "hey").errorCode
         ).isEqualTo(PreferenceSetterResult.INVALID_REQUEST)
         assertThat(getPreferenceValue<Int>(intPreference)).isEqualTo(4)
     }
@@ -624,7 +624,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", 2.3f)
+            invokeWithRequest("screen_key", "preference_key", 2.3f).errorCode
         ).isEqualTo(PreferenceSetterResult.OK)
         assertThat(getPreferenceValue<Float>(stringPreference)).isWithin(0.001f).of(2.3f)
     }
@@ -648,7 +648,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", 10)
+            invokeWithRequest("screen_key", "preference_key", 10).errorCode
         ).isEqualTo(PreferenceSetterResult.INVALID_REQUEST)
         assertThat(getPreferenceValue<Int>(intRangePreference)).isEqualTo(4)
     }
@@ -672,7 +672,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", 2)
+            invokeWithRequest("screen_key", "preference_key", 2).errorCode
         ).isEqualTo(PreferenceSetterResult.INVALID_REQUEST)
         assertThat(getPreferenceValue<Int>(intRangePreference)).isEqualTo(4)
     }
@@ -696,7 +696,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", 5)
+            invokeWithRequest("screen_key", "preference_key", 5).errorCode
         ).isEqualTo(PreferenceSetterResult.OK)
         assertThat(getPreferenceValue<Int>(intRangePreference)).isEqualTo(5)
     }
@@ -727,7 +727,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", 2.3f)
+            invokeWithRequest("screen_key", "preference_key", 2.3f).errorCode
         ).isEqualTo(PreferenceSetterResult.OK)
         assertThat(getPreferenceValue<Float>(floatPreference)).isWithin(0.001f).of(2.3f)
     }
@@ -758,7 +758,7 @@ class PreferenceSetterApiHandlerTest {
         )
         makePermissionPass(application, INTERACT_ACROSS_PROFILES, true)
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", "there")
+            invokeWithRequest("screen_key", "preference_key", "there").errorCode
         ).isEqualTo(PreferenceSetterResult.OK)
         assertThat(getPreferenceValue<String>(stringPreference)).isEqualTo("there")
     }
@@ -789,7 +789,7 @@ class PreferenceSetterApiHandlerTest {
         )
         makePermissionPass(application, INTERACT_ACROSS_PROFILES, true)
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", "there")
+            invokeWithRequest("screen_key", "preference_key", "there").errorCode
         ).isEqualTo(PreferenceSetterResult.REQUIRE_USER_AGREEMENT)
 
         assertThat(getPreferenceValue<String>(stringPreference)).isEqualTo("hello")
@@ -822,7 +822,7 @@ class PreferenceSetterApiHandlerTest {
         )
         makePermissionPass(application, INTERACT_ACROSS_PROFILES, true)
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", 67)
+            invokeWithRequest("screen_key", "preference_key", 67).errorCode
         ).isEqualTo(PreferenceSetterResult.OK)
         assertThat(getPreferenceValue<Int>(stringPreference)).isEqualTo(67)
     }
@@ -855,7 +855,7 @@ class PreferenceSetterApiHandlerTest {
         )
         makePermissionPass(application, INTERACT_ACROSS_PROFILES, true)
         assertThat(
-            invokeWithRequest("screen_key", "preference_key", "there")
+            invokeWithRequest("screen_key", "preference_key", "there").errorCode
         ).isEqualTo(PreferenceSetterResult.INTERNAL_ERROR)
         assertThat(getPreferenceValue<String>(stringPreference)).isEqualTo("hello")
     }
@@ -877,7 +877,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
 
-        val response = invokeWithRequest("magic_screen_key", "magic_screen_key", false)
+        val response = invokeWithRequest("magic_screen_key", "magic_screen_key", false).errorCode
 
         assertThat(response).isEqualTo(PreferenceSetterResult.UNAVAILABLE)
     }
@@ -904,7 +904,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
 
-        val response = invokeWithRequest("screen_key", "dne_preference", false)
+        val response = invokeWithRequest("screen_key", "dne_preference", false).errorCode
 
         assertThat(response).isEqualTo(PreferenceSetterResult.UNAVAILABLE)
     }
@@ -935,7 +935,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
 
-        val response = invokeWithRequest("screen_key", "no_sensitivity_pref", false)
+        val response = invokeWithRequest("screen_key", "no_sensitivity_pref", false).errorCode
 
         assertThat(response).isEqualTo(PreferenceSetterResult.OK)
         assertThat(getPreferenceValue<Boolean>(noSensPref!!)).isEqualTo(false)
@@ -968,7 +968,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
 
-        val response = invokeWithRequest("screen_key", "must_provide_undo_pref", false)
+        val response = invokeWithRequest("screen_key", "must_provide_undo_pref", false).errorCode
         assertThat(response).isEqualTo(PreferenceSetterResult.OK)
         assertThat(getPreferenceValue<Boolean>(mpuPref!!)).isEqualTo(false)
     }
@@ -996,7 +996,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
 
-        val response = invokeWithRequest("screen_key", "requires_confirmation_pref", false)
+        val response = invokeWithRequest("screen_key", "requires_confirmation_pref", false).errorCode
 
         assertThat(response).isEqualTo(PreferenceSetterResult.DISALLOW)
     }
@@ -1024,7 +1024,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
 
-        val response = invokeWithRequest("screen_key", "deeplink_only_pref", false)
+        val response = invokeWithRequest("screen_key", "deeplink_only_pref", false).errorCode
 
         assertThat(response).isEqualTo(PreferenceSetterResult.DISALLOW)
     }
@@ -1052,7 +1052,7 @@ class PreferenceSetterApiHandlerTest {
                 )
             )
         )
-        val response = invokeWithRequest("screen_key", "ui_only_pref", false)
+        val response = invokeWithRequest("screen_key", "ui_only_pref", false).errorCode
 
         assertThat(response).isEqualTo(PreferenceSetterResult.UNSUPPORTED)
     }
@@ -1083,7 +1083,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
 
-        val response = invokeWithRequest("outer_screen_key", "inner_screen_key", false)
+        val response = invokeWithRequest("outer_screen_key", "inner_screen_key", false).errorCode
 
         assertThat(response).isEqualTo(PreferenceSetterResult.UNSUPPORTED)
     }
@@ -1112,7 +1112,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
 
-        val response = invokeWithRequest("dne_screen", "no_sensitivity_pref", false)
+        val response = invokeWithRequest("dne_screen", "no_sensitivity_pref", false).errorCode
 
         assertThat(response).isEqualTo(PreferenceSetterResult.UNSUPPORTED)
     }
@@ -1144,7 +1144,7 @@ class PreferenceSetterApiHandlerTest {
             )
         )
 
-        val response = invokeWithRequest("pref_screen", "no_sensitivity_pref", false)
+        val response = invokeWithRequest("pref_screen", "no_sensitivity_pref", false).errorCode
 
         assertThat(response).isEqualTo(PreferenceSetterResult.OK)
     }
@@ -1179,7 +1179,7 @@ class PreferenceSetterApiHandlerTest {
         )
         setRegistryFactories(magicScreen)
 
-        val response = invokeWithRequest("magic_screen_key", "preference_key", false)
+        val response = invokeWithRequest("magic_screen_key", "preference_key", false).errorCode
 
         assertThat(response).isEqualTo(PreferenceSetterResult.OK)
         assertThat(getPreferenceValue<Boolean>(noSensPreference)).isEqualTo(false)
@@ -1214,7 +1214,7 @@ class PreferenceSetterApiHandlerTest {
             ))
         )
 
-        val response = invokeWithRequest("outer_screen", "inner_preference", false)
+        val response = invokeWithRequest("outer_screen", "inner_preference", false).errorCode
 
         assertThat(response).isEqualTo(PreferenceSetterResult.UNSUPPORTED)
     }
@@ -1248,7 +1248,7 @@ class PreferenceSetterApiHandlerTest {
             ))
         )
 
-        val response = invokeWithRequest("inner_screen", "inner_preference", false)
+        val response = invokeWithRequest("inner_screen", "inner_preference", false).errorCode
 
         assertThat(response).isEqualTo(PreferenceSetterResult.OK)
         assertThat(getPreferenceValue<Boolean>(innerPreference)).isEqualTo(false)
