@@ -23,7 +23,9 @@
 #include <android-base/logging.h>
 #include <android-base/stringprintf.h>
 #include <android_runtime/AndroidRuntime.h>
+#include <com_android_graphics_libgui_flags.h>
 #include <ftl/enum.h>
+#include <gui/TraceUtils.h>
 #include <input/BlockingQueue.h>
 #include <input/InputConsumer.h>
 #include <input/InputTransport.h>
@@ -714,11 +716,21 @@ void InputFrameMetricsObserver::notify(const uirenderer::FrameInfoBuffer& buffer
     }
     const int64_t gpuCompletedTime =
             buffer[static_cast<size_t>(uirenderer::FrameInfoIndex::GpuCompleted)];
+    const int64_t vsyncId =
+            buffer[static_cast<size_t>(uirenderer::FrameInfoIndex::FrameTimelineVsyncId)];
+    if (com::android::graphics::libgui::flags::debug_gpu_present_times()) {
+        ATRACE_FORMAT_INSTANT("450351988: %s: vsyncId=%" PRId64 " inputEventId=%" PRId64
+                              " gpuCompleted=%" PRId64 " presentTime=%" PRId64,
+                              __func__, vsyncId, inputEventId, gpuCompletedTime, presentTime);
+    }
+
     if (gpuCompletedTime >= presentTime) {
-        const int64_t discrepancy = (gpuCompletedTime - presentTime);
-        const int64_t vsyncId =
-                buffer[static_cast<size_t>(uirenderer::FrameInfoIndex::FrameTimelineVsyncId)];
-        LOG(ERROR) << "Not reporting timeline because gpuCompletedTime is " << discrepancy * 1E-6
+        const double discrepancy = (gpuCompletedTime - presentTime) * 1E-6;
+        if (com::android::graphics::libgui::flags::debug_gpu_present_times()) {
+            ATRACE_FORMAT_INSTANT("%s: b/450351988 DETECTED: discrepancy=%.2f ms", __func__,
+                                  discrepancy);
+        }
+        LOG(ERROR) << "Not reporting timeline because gpuCompletedTime is " << discrepancy
                    << "ms ahead of presentTime. FRAME_TIMELINE_VSYNC_ID=" << vsyncId
                    << ", INPUT_EVENT_ID=" << inputEventId;
         return;

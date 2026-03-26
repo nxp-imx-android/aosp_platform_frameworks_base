@@ -17,7 +17,9 @@
 #include "CanvasContext.h"
 
 #include <apex/window.h>
+#include <com_android_graphics_libgui_flags.h>
 #include <fcntl.h>
+
 #include "system/window.h"
 
 #ifdef __ANDROID__
@@ -788,6 +790,17 @@ void CanvasContext::draw(bool solelyTextureViewUpdates) {
     mCurrentFrameInfo->set(FrameInfoIndex::CommandSubmissionCompleted) = std::max(
             drawResult.commandSubmissionTime, mCurrentFrameInfo->get(FrameInfoIndex::SwapBuffers));
 
+    if (com::android::graphics::libgui::flags::debug_gpu_present_times()) {
+        const auto vsyncId = mCurrentFrameInfo->get(FrameInfoIndex::FrameTimelineVsyncId);
+        ATRACE_FORMAT_INSTANT("450351988: %s CommandSubmissionCompleted: vsyncId=%" PRId64
+                              " frameNumber=%" PRIu64 " time=%" PRId64
+                              " (commandSubmissionTime=%" PRId64 ", swapBuffers=%" PRId64 ")",
+                              __func__, vsyncId, frameCompleteNr,
+                              mCurrentFrameInfo->get(FrameInfoIndex::CommandSubmissionCompleted),
+                              drawResult.commandSubmissionTime,
+                              mCurrentFrameInfo->get(FrameInfoIndex::SwapBuffers));
+    }
+
     mIsDirty = false;
 
     if (requireSwap) {
@@ -883,6 +896,14 @@ void CanvasContext::draw(bool solelyTextureViewUpdates) {
             mCurrentFrameInfo->markFrameCompleted();
             mCurrentFrameInfo->set(FrameInfoIndex::GpuCompleted)
                     = mCurrentFrameInfo->get(FrameInfoIndex::FrameCompleted);
+            if (com::android::graphics::libgui::flags::debug_gpu_present_times()) {
+                const auto vsyncId = mCurrentFrameInfo->get(FrameInfoIndex::FrameTimelineVsyncId);
+                ATRACE_FORMAT_INSTANT(
+                        "450351988: %s setting GpuCompleted to FrameCompleted vsyncId=%" PRId64
+                        " frameNumber=%" PRIu64 " time=%" PRId64 ")",
+                        __func__, vsyncId, frameCompleteNr,
+                        mCurrentFrameInfo->get(FrameInfoIndex::FrameCompleted));
+            }
             std::scoped_lock lock(mFrameInfoMutex);
             mJankTracker.finishFrame(*mCurrentFrameInfo, mFrameMetricsReporter, frameCompleteNr,
                                      mSurfaceControlGenerationId);
@@ -946,6 +967,13 @@ void CanvasContext::reportMetricsWithPresentTime() {
             &presentTime, nullptr /*outDequeueReadyTime*/, nullptr /*outReleaseTime*/);
 
     forthBehind->set(FrameInfoIndex::DisplayPresentTime) = presentTime;
+    if (com::android::graphics::libgui::flags::debug_gpu_present_times()) {
+        const int64_t vsyncId = forthBehind->get(FrameInfoIndex::FrameTimelineVsyncId);
+        ATRACE_FORMAT_INSTANT("450351988: %s: vsyncId=%" PRId64 " frameNumber=%" PRId64
+                              " presentTime=%" PRId64 " gpuCompleted=%" PRId64,
+                              __func__, vsyncId, frameNumber, presentTime,
+                              forthBehind->get(FrameInfoIndex::GpuCompleted));
+    }
     {  // acquire lock
         std::scoped_lock lock(mFrameInfoMutex);
         if (mFrameMetricsReporter != nullptr) {
@@ -1026,10 +1054,20 @@ void CanvasContext::onSurfaceStatsAvailable(void* context, int32_t surfaceContro
 
     if (frameInfo != nullptr) {
         std::scoped_lock lock(instance->mFrameInfoMutex);
+        const int64_t vsyncId = frameInfo->get(FrameInfoIndex::FrameTimelineVsyncId);
         frameInfo->set(FrameInfoIndex::FrameCompleted) = std::max(gpuCompleteTime,
                 frameInfo->get(FrameInfoIndex::SwapBuffersCompleted));
         frameInfo->set(FrameInfoIndex::GpuCompleted) = std::max(
                 gpuCompleteTime, frameInfo->get(FrameInfoIndex::CommandSubmissionCompleted));
+
+        if (com::android::graphics::libgui::flags::debug_gpu_present_times()) {
+            ATRACE_FORMAT_INSTANT("450351988: %s: vsyncId=%" PRId64 " frameNumber=%" PRIu64
+                                  " gpuCompleteTime=%" PRId64 " CommandSubmissionCompleted=%" PRId64
+                                  " gpuCompleted=%" PRId64,
+                                  __func__, vsyncId, frameNumber, gpuCompleteTime,
+                                  frameInfo->get(FrameInfoIndex::CommandSubmissionCompleted),
+                                  frameInfo->get(FrameInfoIndex::GpuCompleted));
+        }
 
         const auto currentDuration = frameInfo->get(FrameInfoIndex::FrameCompleted) -
                                      frameInfo->get(FrameInfoIndex::SyncStart);
