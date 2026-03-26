@@ -18,6 +18,7 @@ package com.android.server.am;
 
 import static android.app.ActivityManager.RunningAppProcessInfo.procStateToImportance;
 import static android.app.ActivityManagerInternal.ALLOW_NON_FULL;
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidTrackEvent.PROCESS_DIED_EVENT;
 import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessDiedEvent.PROCESS_NAME;
 import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessDiedEvent.UID;
@@ -490,8 +491,9 @@ public final class AppExitInfoTracker {
             addExitInfoInnerLocked(packages[i], uid, info);
         }
 
-        // SDK sandbox exits are stored under both real and package UID
-        if (Process.isSdkSandboxUid(uid)) {
+        // SDK and PCC sandbox exits are stored under both real and package UID
+        if (Process.isSdkSandboxUid(uid) || (enablePccFrameworkSupport()
+                && Process.isPrivateComputeCoreUid(uid))) {
             for (int i = 0; i < packages.length; i++) {
                 addExitInfoInnerLocked(packages[i], raw.getPackageUid(), info);
             }
