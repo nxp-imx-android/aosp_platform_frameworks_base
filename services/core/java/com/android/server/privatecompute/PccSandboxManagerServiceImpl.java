@@ -541,9 +541,16 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
                     @Override
                     @RequiresNoPermission
                     public void sendResult(MigrationRequestResult result) {
-                        // TODO(): Call PccBundleSanitizationUtil.sanitizeBundle once it handles
-                        // PersistableBundle for a depth check.
+                        try {
+                            PccBundleSanitizationUtil.sanitizeBundle(result.getExtras());
+                        } catch (IllegalArgumentException e) {
+                            reportError(MigrationException.ERROR_INVOCATION_FAILED,
+                                    "Failed to sanitize bundle: " + e.getMessage());
+                            return;
+                        }
+
                         reportResult(result);
+
                     }
                 });
             } catch (RemoteException e) {
