@@ -26,8 +26,8 @@ import androidx.test.uiautomator.UiDevice
 import com.android.compatibility.common.util.UiAutomatorUtils2.waitFindObject
 import com.android.window.flags.Flags
 import com.google.common.truth.Truth.assertThat
-import junit.framework.Assert.fail
 import org.junit.After
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
