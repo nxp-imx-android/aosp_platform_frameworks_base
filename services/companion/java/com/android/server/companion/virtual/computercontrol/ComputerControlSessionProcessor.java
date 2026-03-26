@@ -39,7 +39,6 @@ import android.app.KeyguardManager;
 import android.app.PendingIntent;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManagerInternal;
-import android.companion.virtual.CompanionDeviceId;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.computercontrol.ComputerControlSession;
@@ -496,19 +495,64 @@ public final class ComputerControlSessionProcessor {
     @GuardedBy("mSessions")
     private boolean checkSessionCreationPreconditionsLocked(
             @NonNull ComputerControlSessionRequest request) {
-        if (isDeviceLocked(request.attributionSource(), request.params().getCompanionDeviceId())) {
-            dispatchSessionCreationFailed(request, ComputerControlSession.ERROR_DEVICE_LOCKED);
-            return false;
-        }
         if (mSessions.size() >= MAXIMUM_CONCURRENT_SESSIONS) {
             dispatchSessionCreationFailed(request,
                     ComputerControlSession.ERROR_SESSION_LIMIT_REACHED);
             return false;
         }
+
+        // If the caller claims to be running on a virtual device, make sure that this is actually
+        // the case and this is not just an explicitly created device context. If the uid is not
+        // seen on the device they claim to be running on, fallback to default.
+        final int deviceId;
+        if (request.attributionSource().getDeviceId() != Context.DEVICE_ID_DEFAULT
+                && mVirtualDeviceManagerInternal.isDeviceIdAssociationValid(
+                        request.ownerUid(), request.attributionSource().getDeviceId())) {
+            deviceId = request.attributionSource().getDeviceId();
+        } else {
+            deviceId = Context.DEVICE_ID_DEFAULT;
+        }
+
+        // For cross-device requests rely on AuthenticationPolicyManager
+        var authenticationPolicyManager = getAuthenticationPolicyManager();
+        if (android.companion.virtualdevice.flags.Flags.computerControlCrossDevice()
+                && android.companion.Flags.supportAiAgent()
+                && authenticationPolicyManager != null
+                && request.params().getCompanionDeviceId() != null) {
+            boolean crossDeviceAuthorized =
+                    Binder.withCleanCallingIdentity(
+                            () ->
+                                    authenticationPolicyManager.isAgentAuthorized(
+                                            request.ownerUserId(),
+                                            deviceId,
+                                            request.params().getCompanionDeviceId().getDeviceId()));
+            if (!crossDeviceAuthorized) {
+                Slog.e(
+                        TAG,
+                        "Agent app "
+                                + request.ownerPackageName()
+                                + " is not allowed to start cross-device automation.");
+                dispatchSessionCreationFailed(
+                        request, ComputerControlSession.ERROR_PERMISSION_DENIED);
+            }
+            return crossDeviceAuthorized;
+        }
+
+        boolean isDeviceLocked =
+                Binder.withCleanCallingIdentity(
+                        () -> mKeyguardManager.isDeviceLocked(request.ownerUserId(), deviceId));
+        if (isDeviceLocked) {
+            dispatchSessionCreationFailed(request, ComputerControlSession.ERROR_DEVICE_LOCKED);
+            return false;
+        }
+
+        // Enforce that the caller has a visible non-toast Window on any display AND that the
+        // reported deviceId is valid.
         if (request.params().getTargetComputerControlVersion()
-                >= MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17
+                        >= MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17
                 // This returns true only if the uid has a visible non-toast window on any display.
-                && !mActivityTaskManagerInternal.isUidForeground(request.ownerUid())) {
+                && !isUidForeground(
+                        request.ownerUid(), request.attributionSource().getDeviceId())) {
             Slog.e(TAG, "Agent app " + request.ownerPackageName()
                     + " does not have a non-toast visible window on any display.");
             dispatchSessionCreationFailed(request, ComputerControlSession.ERROR_PERMISSION_DENIED);
@@ -517,32 +561,18 @@ public final class ComputerControlSessionProcessor {
         return true;
     }
 
-    private boolean isDeviceLocked(@NonNull AttributionSource attributionSource,
-            @Nullable CompanionDeviceId companionDeviceId) {
-        // If the caller claims to be running on a virtual device, make sure that this is actually
-        // the case and this is not just an explicitly created device context. If the uid is not
-        // seen on the device they claim to be running on, fallback to default.
-        final int deviceId;
-        if (attributionSource.getDeviceId() != Context.DEVICE_ID_DEFAULT
-                && mVirtualDeviceManagerInternal.isDeviceIdAssociationValid(
-                        attributionSource.getUid(), attributionSource.getDeviceId())) {
-            deviceId = attributionSource.getDeviceId();
-        } else {
-            deviceId = Context.DEVICE_ID_DEFAULT;
+    private boolean isUidForeground(int ownerUid, int deviceId) {
+        // TODO(b/493529664)
+        // 1) If deviceId is a VirtualDevice, enforce display is owned by the device
+        // 2) Enforce that uid is visible on THAT display (make isUidForeground display-aware)
+        // 3) If deviceID is a VirtualDevice and the above 2 failed,
+        //    check service binding from VirtualDevice owner to ownerUid
+
+        if (deviceId != Context.DEVICE_ID_DEFAULT
+                && !mVirtualDeviceManagerInternal.isDeviceIdAssociationValid(ownerUid, deviceId)) {
+            return false;
         }
-        final int userId = UserHandle.getUserId(attributionSource.getUid());
-        return Binder.withCleanCallingIdentity(() -> {
-            var authenticationPolicyManager = getAuthenticationPolicyManager();
-            if (android.companion.Flags.supportAiAgent() && authenticationPolicyManager != null) {
-                // Note: isAgentAuthorized validates things about the agent AND the device state,
-                //       including the devices keyguard state.
-                return !authenticationPolicyManager.isAgentAuthorized(
-                        userId, deviceId,
-                        companionDeviceId == null ? null : companionDeviceId.getDeviceId());
-            } else {
-                return mKeyguardManager.isDeviceLocked(userId, deviceId);
-            }
-        });
+        return mActivityTaskManagerInternal.isUidForeground(ownerUid);
     }
 
     @Nullable

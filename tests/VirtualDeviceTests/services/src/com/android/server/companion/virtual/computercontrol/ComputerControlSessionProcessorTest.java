@@ -148,6 +148,14 @@ public class ComputerControlSessionProcessorTest {
                     .setTargetPackageNames(List.of(TARGET_PACKAGE))
                     .setTargetComputerControlVersion(MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17)
                     .setAppInteractionAttribution(APP_INTERACTION_ATTRIBUTION)
+                    .setNotificationParams(NOTIFICATION_PARAMS)
+                    .build();
+    private static final ComputerControlSessionParams CROSS_DEVICE_PARAMS =
+            new ComputerControlSessionParams.Builder()
+                    .setName(ComputerControlSessionImplTest.class.getSimpleName())
+                    .setTargetPackageNames(List.of(TARGET_PACKAGE))
+                    .setTargetComputerControlVersion(MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17)
+                    .setAppInteractionAttribution(APP_INTERACTION_ATTRIBUTION)
                     .setCompanionDeviceId(COMPANION_DEVICE_ID)
                     .setNotificationParams(NOTIFICATION_PARAMS)
                     .build();
@@ -311,9 +319,8 @@ public class ComputerControlSessionProcessorTest {
     @Test
     @EnableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
     public void defaultDevice_keyguardLocked_sessionNotCreated() throws Exception {
-        when(mAuthenticationPolicyService.isAgentAuthorized(
-                any(), eq(Context.DEVICE_ID_DEFAULT), eq(COMP_DEVICE_ID))).thenReturn(false);
-
+        when(mKeyguardManager.isDeviceLocked(CALLING_USER_ID, Context.DEVICE_ID_DEFAULT))
+                .thenReturn(true);
         mProcessor.processNewSessionRequest(
                 mAppThread, ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
 
@@ -335,20 +342,19 @@ public class ComputerControlSessionProcessorTest {
     }
 
     @Test
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_CROSS_DEVICE)
     @EnableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
     public void nonDefaultDevice_uidNotSeenOnDevice_fallbackToDefaultDevice() throws Exception {
         when(mVirtualDeviceManagerInternal.isDeviceIdAssociationValid(
                 ATTRIBUTION_SOURCE.getUid(), NON_DEFAULT_DEVICE_ID))
                 .thenReturn(false);
-        when(mAuthenticationPolicyService.isAgentAuthorized(
-                any(), eq(Context.DEVICE_ID_DEFAULT), eq(COMP_DEVICE_ID))).thenReturn(false);
 
         mProcessor.processNewSessionRequest(
                 mAppThread, ATTRIBUTION_SOURCE.withDeviceId(NON_DEFAULT_DEVICE_ID), PARAMS,
                 mComputerControlSessionCallback);
 
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
-                .onSessionCreationFailed(ComputerControlSession.ERROR_DEVICE_LOCKED);
+                .onSessionCreationFailed(ComputerControlSession.ERROR_PERMISSION_DENIED);
     }
 
     @Test
@@ -369,6 +375,7 @@ public class ComputerControlSessionProcessorTest {
     }
 
     @Test
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_CROSS_DEVICE)
     @EnableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
     public void nonDefaultDevice_uidSeenOnDevice_sessionCreated() throws Exception {
         when(mVirtualDeviceManagerInternal.isDeviceIdAssociationValid(
@@ -386,6 +393,7 @@ public class ComputerControlSessionProcessorTest {
     }
 
     @Test
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_CROSS_DEVICE)
     @EnableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
     public void sessionCreation_passesCompanionDeviceIdToPolicy() throws Exception {
         when(mVirtualDeviceManagerInternal.isDeviceIdAssociationValid(
@@ -393,7 +401,9 @@ public class ComputerControlSessionProcessorTest {
                 .thenReturn(true);
 
         mProcessor.processNewSessionRequest(
-                mAppThread, ATTRIBUTION_SOURCE.withDeviceId(NON_DEFAULT_DEVICE_ID), PARAMS,
+                mAppThread,
+                ATTRIBUTION_SOURCE.withDeviceId(NON_DEFAULT_DEVICE_ID),
+                CROSS_DEVICE_PARAMS,
                 mComputerControlSessionCallback);
 
         verify(mAuthenticationPolicyService, timeout(CALLBACK_TIMEOUT_MS)).isAgentAuthorized(
@@ -410,11 +420,98 @@ public class ComputerControlSessionProcessorTest {
                 .thenReturn(false);
 
         mProcessor.processNewSessionRequest(
-                mAppThread, ATTRIBUTION_SOURCE.withDeviceId(NON_DEFAULT_DEVICE_ID), PARAMS,
+                mAppThread,
+                ATTRIBUTION_SOURCE.withDeviceId(NON_DEFAULT_DEVICE_ID),
+                PARAMS,
                 mComputerControlSessionCallback);
 
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS).times(1))
                 .onSessionCreated(anyInt(), any());
+    }
+
+    @Test
+    public void nonDefaultDevice_uidOnDevice_keyguardLocked_sessionNotCreated() throws Exception {
+        when(mVirtualDeviceManagerInternal.isDeviceIdAssociationValid(
+                        ATTRIBUTION_SOURCE.getUid(), NON_DEFAULT_DEVICE_ID))
+                .thenReturn(true);
+        when(mKeyguardManager.isDeviceLocked(CALLING_USER_ID, NON_DEFAULT_DEVICE_ID))
+                .thenReturn(true);
+
+        mProcessor.processNewSessionRequest(
+                mAppThread, ATTRIBUTION_SOURCE.withDeviceId(NON_DEFAULT_DEVICE_ID), PARAMS,
+                mComputerControlSessionCallback);
+
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
+                .onSessionCreationFailed(ComputerControlSession.ERROR_DEVICE_LOCKED);
+    }
+
+    @Test
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_CROSS_DEVICE)
+    @EnableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
+    public void crossDeviceRequest_authorized_sessionCreated() throws Exception {
+        when(mAuthenticationPolicyService.isAgentAuthorized(
+                        any(UserHandle.class), eq(Context.DEVICE_ID_DEFAULT), eq(COMP_DEVICE_ID)))
+                .thenReturn(true);
+
+        mProcessor.processNewSessionRequest(
+                mAppThread,
+                ATTRIBUTION_SOURCE,
+                CROSS_DEVICE_PARAMS,
+                mComputerControlSessionCallback);
+
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS).times(1))
+                .onSessionCreated(anyInt(), any());
+    }
+
+    @Test
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_CROSS_DEVICE)
+    @EnableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
+    public void crossDeviceRequest_notAuthorized_sessionNotCreated() throws Exception {
+        when(mAuthenticationPolicyService.isAgentAuthorized(
+                        any(UserHandle.class), eq(Context.DEVICE_ID_DEFAULT), eq(COMP_DEVICE_ID)))
+                .thenReturn(false);
+
+        mProcessor.processNewSessionRequest(
+                mAppThread,
+                ATTRIBUTION_SOURCE,
+                CROSS_DEVICE_PARAMS,
+                mComputerControlSessionCallback);
+
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
+                .onSessionCreationFailed(ComputerControlSession.ERROR_PERMISSION_DENIED);
+    }
+
+    @Test
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_CROSS_DEVICE)
+    @EnableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
+    public void crossDeviceRequest_passesCompanionDeviceIdToPolicy() throws Exception {
+        mProcessor.processNewSessionRequest(
+                mAppThread,
+                ATTRIBUTION_SOURCE,
+                CROSS_DEVICE_PARAMS,
+                mComputerControlSessionCallback);
+
+        verify(mAuthenticationPolicyService, timeout(CALLBACK_TIMEOUT_MS))
+                .isAgentAuthorized(
+                        any(UserHandle.class), eq(Context.DEVICE_ID_DEFAULT), eq(COMP_DEVICE_ID));
+    }
+
+    @Test
+    public void callerWithoutVisibleWindow_nonDefaultDevice_sessionNotCreated() throws Exception {
+        when(mVirtualDeviceManagerInternal.isDeviceIdAssociationValid(
+                        ATTRIBUTION_SOURCE.getUid(), NON_DEFAULT_DEVICE_ID))
+                .thenReturn(true);
+        when(mActivityTaskManagerInternal.isUidForeground(ATTRIBUTION_SOURCE.getUid()))
+                .thenReturn(false);
+
+        mProcessor.processNewSessionRequest(
+                mAppThread,
+                ATTRIBUTION_SOURCE.withDeviceId(NON_DEFAULT_DEVICE_ID),
+                PARAMS,
+                mComputerControlSessionCallback);
+
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
+                .onSessionCreationFailed(ComputerControlSession.ERROR_PERMISSION_DENIED);
     }
 
     @Test

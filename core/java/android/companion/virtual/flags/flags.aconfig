@@ -278,6 +278,16 @@ flag {
 }
 
 flag {
+    name: "computer_control_cross_device"
+    namespace: "virtual_devices"
+    description: "Enables support for cross-device ComputerControl"
+    bug: "493529664"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "computer_control_support_v5"
     namespace: "virtual_devices"
     description: "Enables support for the ComputerControl v5 APIs"
