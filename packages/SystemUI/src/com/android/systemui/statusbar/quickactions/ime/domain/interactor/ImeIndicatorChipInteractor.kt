@@ -131,4 +131,8 @@ constructor(
             )
         }
     }
+
+    fun hideInputMethodPicker(displayId: Int) {
+        scope.launch { inputMethodRepository.hideInputMethodPicker(displayId) }
+    }
 }

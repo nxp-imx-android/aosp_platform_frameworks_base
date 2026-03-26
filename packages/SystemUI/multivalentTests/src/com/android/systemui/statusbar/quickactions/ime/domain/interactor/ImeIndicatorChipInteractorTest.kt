@@ -163,14 +163,24 @@ class ImeIndicatorChipInteractorTest : SysuiTestCase() {
     @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
     fun showInputMethodPicker_showsPicker() =
         kosmos.runTest {
-            val displayId = 1
-            underTest.showInputMethodPicker(displayId)
+            underTest.showInputMethodPicker(DISPLAY_ID)
             testScope.runCurrent()
 
             assertThat(fakeInputMethodRepository.inputMethodPickerShownEntryPoint)
                 .isEqualTo(InputMethodManager.IM_PICKER_ENTRY_POINT_STATUS_BAR_CHIP)
             assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId)
-                .isEqualTo(displayId)
+                .isEqualTo(DISPLAY_ID)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
+    fun hideInputMethodPicker_hidesPicker() =
+        kosmos.runTest {
+            underTest.hideInputMethodPicker(DISPLAY_ID)
+            testScope.runCurrent()
+
+            assertThat(fakeInputMethodRepository.inputMethodPickerShownEntryPoint).isNull()
+            assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId).isNull()
         }
 
     private fun setUpTwoImes() {
@@ -188,5 +198,6 @@ class ImeIndicatorChipInteractorTest : SysuiTestCase() {
 
     companion object {
         const val USER_ID = FakeUserRepository.DEFAULT_SELECTED_USER
+        const val DISPLAY_ID = 1
     }
 }
