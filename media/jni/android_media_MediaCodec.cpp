@@ -4073,35 +4073,31 @@ static void android_media_MediaCodec_native_init(JNIEnv *env, jclass) {
     gFields.bufferInfoPresentationTimeUs =
             env->GetFieldID(clazz.get(), "presentationTimeUs", "J");
 
-    // Since these TestApis are defined under the flag, make sure they are
-    // accessed only when the flag is set.
-    if (android::media::codec::codec_availability()) {
-        clazz.reset(env->FindClass("android/media/MediaCodec$GlobalResourceInfo"));
-        CHECK(clazz.get() != NULL);
-        gGlobalResourceInfo.clazz = (jclass)env->NewGlobalRef(clazz.get());
-        gGlobalResourceInfo.ctorId = env->GetMethodID(clazz.get(), "<init>", "()V");
-        CHECK(gGlobalResourceInfo.ctorId != NULL);
-        gGlobalResourceInfo.resourceId =
-                env->GetFieldID(clazz.get(), "mName", "Ljava/lang/String;");
-        CHECK(gGlobalResourceInfo.resourceId != NULL);
-        gGlobalResourceInfo.capacityId = env->GetFieldID(clazz.get(), "mCapacity", "J");
-        CHECK(gGlobalResourceInfo.capacityId != NULL);
-        gGlobalResourceInfo.availableId = env->GetFieldID(clazz.get(), "mAvailable", "J");
-        CHECK(gGlobalResourceInfo.availableId != NULL);
+    clazz.reset(env->FindClass("android/media/MediaCodec$GlobalResourceInfo"));
+    CHECK(clazz.get() != NULL);
+    gGlobalResourceInfo.clazz = (jclass)env->NewGlobalRef(clazz.get());
+    gGlobalResourceInfo.ctorId = env->GetMethodID(clazz.get(), "<init>", "()V");
+    CHECK(gGlobalResourceInfo.ctorId != NULL);
+    gGlobalResourceInfo.resourceId =
+            env->GetFieldID(clazz.get(), "mName", "Ljava/lang/String;");
+    CHECK(gGlobalResourceInfo.resourceId != NULL);
+    gGlobalResourceInfo.capacityId = env->GetFieldID(clazz.get(), "mCapacity", "J");
+    CHECK(gGlobalResourceInfo.capacityId != NULL);
+    gGlobalResourceInfo.availableId = env->GetFieldID(clazz.get(), "mAvailable", "J");
+    CHECK(gGlobalResourceInfo.availableId != NULL);
 
-        clazz.reset(env->FindClass("android/media/MediaCodec$InstanceResourceInfo"));
-        CHECK(clazz.get() != NULL);
-        gInstanceResourceInfo.clazz = (jclass)env->NewGlobalRef(clazz.get());
-        gInstanceResourceInfo.ctorId = env->GetMethodID(clazz.get(), "<init>", "()V");
-        CHECK(gInstanceResourceInfo.ctorId != NULL);
-        gInstanceResourceInfo.resourceId =
-                env->GetFieldID(clazz.get(), "mName", "Ljava/lang/String;");
-        CHECK(gInstanceResourceInfo.resourceId != NULL);
-        gInstanceResourceInfo.staticCountId= env->GetFieldID(clazz.get(), "mStaticCount", "J");
-        CHECK(gInstanceResourceInfo.staticCountId != NULL);
-        gInstanceResourceInfo.perFrameCountId = env->GetFieldID(clazz.get(), "mPerFrameCount", "J");
-        CHECK(gInstanceResourceInfo.perFrameCountId != NULL);
-    }
+    clazz.reset(env->FindClass("android/media/MediaCodec$InstanceResourceInfo"));
+    CHECK(clazz.get() != NULL);
+    gInstanceResourceInfo.clazz = (jclass)env->NewGlobalRef(clazz.get());
+    gInstanceResourceInfo.ctorId = env->GetMethodID(clazz.get(), "<init>", "()V");
+    CHECK(gInstanceResourceInfo.ctorId != NULL);
+    gInstanceResourceInfo.resourceId =
+            env->GetFieldID(clazz.get(), "mName", "Ljava/lang/String;");
+    CHECK(gInstanceResourceInfo.resourceId != NULL);
+    gInstanceResourceInfo.staticCountId= env->GetFieldID(clazz.get(), "mStaticCount", "J");
+    CHECK(gInstanceResourceInfo.staticCountId != NULL);
+    gInstanceResourceInfo.perFrameCountId = env->GetFieldID(clazz.get(), "mPerFrameCount", "J");
+    CHECK(gInstanceResourceInfo.perFrameCountId != NULL);
 }
 
 static void android_media_MediaCodec_native_setup(
