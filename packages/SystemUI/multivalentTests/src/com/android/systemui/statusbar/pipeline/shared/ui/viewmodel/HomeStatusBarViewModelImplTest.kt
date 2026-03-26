@@ -43,6 +43,7 @@ import com.android.systemui.display.data.repository.fake
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.andSceneContainer
+import com.android.systemui.inputmethod.data.repository.fakeInputMethodRepository
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFaceAuthRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
@@ -108,6 +109,7 @@ import com.android.systemui.statusbar.pipeline.shared.domain.interactor.setHomeS
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.setHomeStatusBarInteractorShowOperatorName
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import com.android.systemui.statusbar.policy.data.repository.fakeDeviceProvisioningRepository
+import com.android.systemui.statusbar.quickactions.ime.domain.interactor.imeIndicatorChipInteractor
 import com.android.systemui.statusbar.window.shared.model.StatusBarWindowState
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
@@ -1349,6 +1351,38 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
             assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
             assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
             assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+        }
+
+    @Test
+    fun onClockClicked_hidesInputMethodPicker() =
+        kosmos.runTest {
+            imeIndicatorChipInteractor.hideInputMethodPicker(testableContext.displayId)
+            assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId).isNull()
+
+            underTest.onClockClicked()
+            assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId).isNull()
+
+            imeIndicatorChipInteractor.showInputMethodPicker(testableContext.displayId)
+            assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId).isNotNull()
+
+            underTest.onClockClicked()
+            assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId).isNull()
+        }
+
+    @Test
+    fun onSpacerClicked_hidesInputMethodPicker() =
+        kosmos.runTest {
+            imeIndicatorChipInteractor.hideInputMethodPicker(testableContext.displayId)
+            assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId).isNull()
+
+            underTest.onSpacerClicked()
+            assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId).isNull()
+
+            imeIndicatorChipInteractor.showInputMethodPicker(testableContext.displayId)
+            assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId).isNotNull()
+
+            underTest.onSpacerClicked()
+            assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId).isNull()
         }
 
     @Test
