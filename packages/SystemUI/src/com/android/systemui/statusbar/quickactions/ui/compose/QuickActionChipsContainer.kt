@@ -20,6 +20,7 @@ import android.graphics.Rect
 import android.graphics.RectF
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
@@ -38,6 +39,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.ui.compose.load
@@ -48,6 +50,7 @@ import com.android.systemui.statusbar.chips.ui.viewmodel.rememberChronometerStat
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.DesktopStatusBar
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.WithAdaptiveTint
 import com.android.systemui.statusbar.quickactions.shared.model.ChipContent
+import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipId
 import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipModel
 import com.android.systemui.statusbar.shared.ui.compose.StatusBarIcon
 
@@ -163,24 +166,40 @@ private fun Popup(chip: QuickActionChipModel.PopupChip, modifier: Modifier = Mod
 
     val boundsCache = remember { RectF() }
 
-    QuickActionChip(
-        modifier =
-            modifier.onGloballyPositioned { coordinates ->
-                val boundsInWindow = coordinates.boundsInWindow()
-                boundsCache.set(
-                    boundsInWindow.left,
-                    boundsInWindow.top,
-                    boundsInWindow.right,
-                    boundsInWindow.bottom,
-                )
-            },
-        isSelected = chip.isPopupShown,
-        chipContent = chip.chipContent,
-        icons = chip.icons,
-        colors = chip.colors,
-        contentDescription = chip.contentDescription,
-        onClick = { chip.togglePopup(context, RectF(boundsCache)) },
-    )
+    val positionedModifier =
+        modifier.onGloballyPositioned { coordinates ->
+            val boundsInWindow = coordinates.boundsInWindow()
+            boundsCache.set(
+                boundsInWindow.left,
+                boundsInWindow.top,
+                boundsInWindow.right,
+                boundsInWindow.bottom,
+            )
+        }
+
+    if (chip.chipId == QuickActionChipId.ShareScreenPrivacyIndicator) {
+        QuickActionChip(
+            modifier = positionedModifier,
+            isSelected = chip.isPopupShown,
+            chipContent = chip.chipContent,
+            icons = chip.icons,
+            colors = chip.colors,
+            contentDescription = chip.contentDescription,
+            onClick = { chip.togglePopup(context, RectF(boundsCache)) },
+            cornerRadius = 16.dp,
+            horizontalPadding = PaddingValues(horizontal = 8.dp),
+        )
+    } else {
+        QuickActionChip(
+            modifier = positionedModifier,
+            isSelected = chip.isPopupShown,
+            chipContent = chip.chipContent,
+            icons = chip.icons,
+            colors = chip.colors,
+            contentDescription = chip.contentDescription,
+            onClick = { chip.togglePopup(context, RectF(boundsCache)) },
+        )
+    }
 }
 
 @Composable
