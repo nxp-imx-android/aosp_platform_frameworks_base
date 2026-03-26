@@ -697,8 +697,22 @@ public class EdgeBackGestureHandler {
                     return;
                 }
                 removeAndDisposeDisplayResource(displayId);
-                mDisplayBackGestureHandlers.put(displayId,
-                        createDisplayBackGestureHandler(display));
+                try {
+                    mDisplayBackGestureHandlers.put(
+                            displayId, createDisplayBackGestureHandler(display));
+                } catch (IllegalArgumentException e) {
+                    // This can happen when a display is instantly removed after being added. Note
+                    // that `isDesktopModeSupportedOnDisplay` above just returns `false` if the
+                    // displayId is invalid by the time it's called, so we don't have to wrap it.
+                    // Also note that if this operation fails indeed, nothing has been added to
+                    // `mDisplayBackGestureHandlers`, so the state is correct afterwards.
+                    Log.w(
+                            TAG,
+                            "Failed to initialize DisplayBackGestureHandler - display "
+                                    + displayId
+                                    + " already removed?",
+                            e);
+                }
             });
         }
     }
