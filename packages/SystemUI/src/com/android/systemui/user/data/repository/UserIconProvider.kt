@@ -44,15 +44,15 @@ constructor(
 
     private data class UserImageCacheKey(val userId: Int, val iconSize: Int)
 
-    private val userImageCache = ConcurrentHashMap<UserImageCacheKey, Drawable>()
+    private val userImageCache = ConcurrentHashMap<UserImageCacheKey, android.graphics.Bitmap>()
 
     suspend fun getUserImage(@UserIdInt userId: Int, iconSize: Int): Drawable {
         val cacheKey = UserImageCacheKey(userId = userId, iconSize = iconSize)
 
         // Return cached image when possible. If there is no cache yet for the given user and the
-        // given image size, we will cache newly created Drawable below.
-        userImageCache[cacheKey]?.let { cachedDrawable ->
-            return cachedDrawable
+        // given image size, we will cache newly created Bitmap below.
+        userImageCache[cacheKey]?.let { cachedBitmap ->
+            return BitmapDrawable(appContext.resources, cachedBitmap)
         }
 
         val userIcon =
@@ -71,9 +71,8 @@ constructor(
                     }
             }
 
-        val drawable = BitmapDrawable(appContext.resources, userIcon)
-        userImageCache[cacheKey] = drawable
-        return drawable
+        userImageCache[cacheKey] = userIcon
+        return BitmapDrawable(appContext.resources, userIcon)
     }
 
     fun clearCacheForUser(@UserIdInt userId: Int) {

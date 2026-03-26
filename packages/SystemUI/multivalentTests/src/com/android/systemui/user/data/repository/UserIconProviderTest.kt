@@ -18,6 +18,7 @@
 package com.android.systemui.user.data.repository
 
 import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.os.UserManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -70,7 +71,8 @@ class UserIconProviderTest : SysuiTestCase() {
             assertThat(iconFetchCount).isEqualTo(1)
             val cachedImage = underTest.getUserImage(USER_ID, /* iconSize= */ 1)
             assertThat(iconFetchCount).isEqualTo(1)
-            assertThat(image).isSameInstanceAs(cachedImage)
+            assertThat((image as BitmapDrawable).bitmap)
+                .isSameInstanceAs((cachedImage as BitmapDrawable).bitmap)
 
             underTest.getUserImage(OTHER_USER_ID, /* iconSize= */ 1)
             assertThat(iconFetchCount).isEqualTo(2)
@@ -82,9 +84,10 @@ class UserIconProviderTest : SysuiTestCase() {
             val image = underTest.getUserImage(USER_ID, /* iconSize= */ 1)
             assertThat(iconFetchCount).isEqualTo(1)
 
-            val resizedImage = underTest.getUserImage(USER_ID, OTHER_USER_ID)
+            val resizedImage = underTest.getUserImage(USER_ID, /* iconSize= */ 5)
             assertThat(iconFetchCount).isEqualTo(2)
-            assertThat(resizedImage).isNotSameInstanceAs(image)
+            assertThat((image as BitmapDrawable).bitmap)
+                .isNotSameInstanceAs((resizedImage as BitmapDrawable).bitmap)
         }
 
     @Test
@@ -104,14 +107,15 @@ class UserIconProviderTest : SysuiTestCase() {
             // that we can get cached image for the second user
             val secondUserCachedImage = underTest.getUserImage(OTHER_USER_ID, /* iconSize= */ 1)
             assertThat(iconFetchCount).isEqualTo(3)
-            assertThat(secondUserImage).isSameInstanceAs(secondUserCachedImage)
+            assertThat((secondUserImage as BitmapDrawable).bitmap)
+                .isSameInstanceAs((secondUserCachedImage as BitmapDrawable).bitmap)
         }
 
     companion object {
         private const val USER_ID = 10
-        private val USER_IMAGE = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+        private val USER_IMAGE = Bitmap.createBitmap(/* width= */ 10, /* height= */ 10, Bitmap.Config.ARGB_8888)
 
         private const val OTHER_USER_ID = 11
-        private val OTHER_USER_IMAGE = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+        private val OTHER_USER_IMAGE = Bitmap.createBitmap(/* width= */ 10,/* height= */ 10, Bitmap.Config.ARGB_8888)
     }
 }
