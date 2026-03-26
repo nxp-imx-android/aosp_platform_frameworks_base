@@ -28,6 +28,9 @@ import com.android.systemui.log.logBufferFactory
 import com.android.systemui.log.table.tableLogBufferFactory
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.display.domain.interactor.shadeExpansionTargetDisplayInteractor
+import com.android.systemui.shade.domain.interactor.displayAwareShadeElementToggleInteractor
+import com.android.systemui.shade.domain.interactor.notificationElement
+import com.android.systemui.shade.domain.interactor.qsElement
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.shareToAppChipViewModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.ongoingActivityChipsViewModel
@@ -95,6 +98,9 @@ var Kosmos.homeStatusBarViewModelFactory: (Int) -> HomeStatusBarViewModel by
                 sceneInteractor,
                 shadeInteractor,
                 shadeExpansionTargetDisplayInteractor,
+                displayAwareShadeElementToggleInteractor,
+                qsElement,
+                notificationElement,
                 imeIndicatorChipInteractor,
                 shareToAppChipViewModel,
                 ongoingActivityChipsViewModel,
