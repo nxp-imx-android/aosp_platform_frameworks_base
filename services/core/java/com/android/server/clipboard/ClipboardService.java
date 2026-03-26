@@ -702,12 +702,12 @@ public class ClipboardService extends SystemService {
                 if (clipboard == null) {
                     return null;
                 }
-                showAccessNotificationLocked(
+                boolean wasAccessShown = showAccessNotificationLocked(
                         pkg, intendingUid, intendingUserId, clipboard, deviceId);
                 notifyTextClassifierLocked(clipboard, pkg, intendingUid);
                 if (clipboard.primaryClip != null) {
                     scheduleWriteClipDataStatsLocked(clipboard.primaryClip,
-                            clipboard.primaryClipUid, intendingUid);
+                            clipboard.primaryClipUid, intendingUid, wasAccessShown);
                     scheduleAutoClear(userId, intendingUid, intendingDeviceId);
                 }
                 return clipboard.primaryClip;
@@ -1495,53 +1495,56 @@ public class ClipboardService extends SystemService {
      * the setting is enabled, and if the accessing app is not the source of the data and is not the
      * IME, the content capture service, or the autofill service. The notification is also only
      * shown once per clip for each app.
+     *
+     * @return whether the access notification was shown.
      */
     @GuardedBy("mLock")
-    private void showAccessNotificationLocked(String callingPackage, int uid, @UserIdInt int userId,
-            Clipboard clipboard, int accessDeviceId) {
+    private boolean showAccessNotificationLocked(String callingPackage, int uid,
+            @UserIdInt int userId, Clipboard clipboard, int accessDeviceId) {
         if (clipboard.primaryClip == null) {
-            return;
+            return false;
         }
         // Don't notify if a trusted component has confirmed the user decided on clip access.
         if (shouldSuppressAccessNotificationForUidLocked(uid)) {
-            return;
+            return false;
         }
         if (Settings.Secure.getInt(getContext().getContentResolver(),
                 Settings.Secure.CLIPBOARD_SHOW_ACCESS_NOTIFICATIONS,
                 (mShowAccessNotifications ? 1 : 0)) == 0) {
-            return;
+            return false;
         }
         // Don't notify if the app accessing the clipboard is the same as the current owner.
         if (UserHandle.isSameApp(getPccAwareUid(uid), getPccAwareUid(clipboard.primaryClipUid))) {
-            return;
+            return false;
         }
         // Exclude special cases: IME, ContentCapture, Autofill.
         if (isDefaultIme(userId, callingPackage)) {
-            return;
+            return false;
         }
         if (mContentCaptureInternal != null
                 && mContentCaptureInternal.isContentCaptureServiceForUser(uid, userId)) {
-            return;
+            return false;
         }
         if (mAutofillInternal != null
                 && mAutofillInternal.isAugmentedAutofillServiceForUser(uid, userId)) {
-            return;
+            return false;
         }
         if (mPm.checkPermission(Manifest.permission.SUPPRESS_CLIPBOARD_ACCESS_NOTIFICATION,
                 callingPackage) == PackageManager.PERMISSION_GRANTED) {
-            return;
+            return false;
         }
         // Don't notify if this access is coming from the privileged app which owns the device.
         if (clipboard.deviceId != DEVICE_ID_DEFAULT && mVdmInternal != null
                 && mVdmInternal.getDeviceOwnerUid(clipboard.deviceId) == uid) {
-            return;
+            return false;
         }
         // Don't notify if already notified for this uid and clip.
         if (clipboard.mNotifiedUids.get(uid)) {
-            return;
+            return false;
         }
 
         final ArraySet<Context> toastContexts = getToastContexts(clipboard, accessDeviceId);
+        boolean[] wasAccessShown = {false};
         Binder.withCleanCallingIdentity(() -> {
             try {
                 CharSequence callingAppLabel = mPm.getApplicationLabel(
@@ -1564,6 +1567,7 @@ public class ClipboardService extends SystemService {
                                 Toast.LENGTH_LONG);
                     }
                     toastToShow.show();
+                    wasAccessShown[0] = true;
                 }
             } catch (PackageManager.NameNotFoundException e) {
                 // do nothing
@@ -1571,6 +1575,7 @@ public class ClipboardService extends SystemService {
         });
 
         clipboard.mNotifiedUids.put(uid, true);
+        return wasAccessShown[0];
     }
 
     /**
@@ -1719,8 +1724,8 @@ public class ClipboardService extends SystemService {
     }
 
     @GuardedBy("mLock")
-    private void scheduleWriteClipDataStatsLocked(@NonNull ClipData clipData,
-            int sourceUid, int intendingUid) {
+    private void scheduleWriteClipDataStatsLocked(@NonNull ClipData clipData, int sourceUid,
+            int intendingUid, boolean wasAccessShown) {
         if (!clipboardGetEventLogging()) {
             return;
         }
@@ -1757,7 +1762,8 @@ public class ClipboardService extends SystemService {
                     sourceUid, intendingUid,
                     ActivityManager
                             .processStateAmToProto(mAmInternal.getUidProcessState(intendingUid)),
-                    mimeTypes.toArray(), secondsSinceSet, finalIsSensitive, isUserInitiated));
+                    mimeTypes.toArray(), secondsSinceSet, finalIsSensitive, isUserInitiated,
+                    wasAccessShown));
         } else {
             mWorkerHandler.post(() -> FrameworkStatsLog.write(
                     FrameworkStatsLog.CLIPBOARD_GET_EVENT_REPORTED,
@@ -1765,7 +1771,7 @@ public class ClipboardService extends SystemService {
                     ActivityManager
                             .processStateAmToProto(mAmInternal.getUidProcessState(intendingUid)),
                     CLIP_DATA_TYPES_UNKNOWN, /* time_since_set_in_secs = */ 0,
-                    /* is_sensitive = */ false, isUserInitiated));
+                    /* is_sensitive = */ false, isUserInitiated, wasAccessShown));
         }
     }
 
