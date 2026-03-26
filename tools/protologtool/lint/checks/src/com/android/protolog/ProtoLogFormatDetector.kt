@@ -293,7 +293,7 @@ class ProtoLogFormatDetector : Detector(), SourceCodeScanner {
         val typeOk =
             when {
                 isBoolean(type) -> specifierChar == 'b'
-                isInteger(type) -> specifierChar == 'd' || specifierChar == 'x'
+                isInteger(type) -> specifierChar == 'd' || specifierChar == 'x' || specifierChar == 'o'
                 isFloat(type) -> specifierChar == 'f' || specifierChar == 'e' || specifierChar == 'g'
                 else -> specifierChar == 's'
             }
@@ -302,7 +302,7 @@ class ProtoLogFormatDetector : Detector(), SourceCodeScanner {
             val expectedType =
                 when (specifierChar) {
                     'b' -> "boolean"
-                    'd', 'x' -> "integer, long, short, or byte"
+                    'd', 'x', 'o' -> "integer, long, short, or byte"
                     'f', 'e', 'g' -> "float or double"
                     else -> "String"
                 }
@@ -514,7 +514,7 @@ class ProtoLogFormatDetector : Detector(), SourceCodeScanner {
 
     companion object {
         // Matches a format specifier starting with %, followed by any non-whitespace characters.
-        private val SUPPORTED_SPECIFIERS = arrayOf('b', 'd', 'f', 's')
+        private val SUPPORTED_SPECIFIERS = arrayOf('b', 'd', 'o', 'x', 'f', 'e', 'g', 's')
 
         val ISSUE_INVALID_FORMAT_SPECIFIER: Issue =
             Issue.create(
