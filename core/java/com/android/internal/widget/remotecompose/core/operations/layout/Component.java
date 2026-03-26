@@ -783,6 +783,94 @@ public class Component extends PaintOperation
     }
 
     /**
+     * Long press handler
+     *
+     * @param context  the current context
+     * @param document the current document
+     * @param x        x location on screen or -1 if unconditional click
+     * @param y        y location on screen or -1 if unconditional click
+     * @return true if the long press was handled
+     */
+    public boolean onLongPress(
+            @NonNull RemoteContext context, @NonNull CoreDocument document, float x, float y) {
+        boolean isUnconditional = x == -1 && y == -1;
+        if (!isUnconditional && !contains(context, x, y)) {
+            return false;
+        }
+
+        mLocation[0] = 0f;
+        mLocation[1] = 0f;
+        getLocationInWindow(context, mLocation, true);
+        float lx = isUnconditional ? -1 : x - mLocation[0];
+        float ly = isUnconditional ? -1 : y - mLocation[1];
+
+        mLocation[0] = 0f;
+        mLocation[1] = 0f;
+        getLocationInWindow(context, mLocation, false);
+
+        // Iterate backwards
+        for (int i = mList.size() - 1; i >= 0; i--) {
+            Operation op = mList.get(i);
+            if (op instanceof Component) {
+                if (((Component) op).onLongPress(context, document, x, y)) {
+                    return true;
+                }
+            }
+            if (op instanceof ClickHandler) {
+                if (((ClickHandler) op).onLongPress(context, document, this, lx, ly)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Double click handler
+     *
+     * @param context  the current context
+     * @param document the current document
+     * @param x        x location on screen or -1 if unconditional click
+     * @param y        y location on screen or -1 if unconditional click
+     * @return true if the double click was handled
+     */
+    public boolean onDoubleClick(
+            @NonNull RemoteContext context, @NonNull CoreDocument document, float x, float y) {
+        boolean isUnconditional = x == -1 && y == -1;
+        if (!isUnconditional && !contains(context, x, y)) {
+            return false;
+        }
+
+        mLocation[0] = 0f;
+        mLocation[1] = 0f;
+        getLocationInWindow(context, mLocation, true);
+        float lx = isUnconditional ? -1 : x - mLocation[0];
+        float ly = isUnconditional ? -1 : y - mLocation[1];
+
+        mLocation[0] = 0f;
+        mLocation[1] = 0f;
+        getLocationInWindow(context, mLocation, false);
+
+        // Iterate backwards
+        for (int i = mList.size() - 1; i >= 0; i--) {
+            Operation op = mList.get(i);
+            if (op instanceof Component) {
+                if (((Component) op).onDoubleClick(context, document, x, y)) {
+                    return true;
+                }
+            }
+            if (op instanceof ClickHandler) {
+                if (((ClickHandler) op).onDoubleClick(context, document, this, lx, ly)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Touch down handler
      *
      * @param context  the current context
