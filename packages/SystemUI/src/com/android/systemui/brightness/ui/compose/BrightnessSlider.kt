@@ -117,7 +117,6 @@ fun BrightnessSlider(
     onRestrictedClick: (PolicyRestriction.Restricted) -> Unit,
     onDrag: (Int) -> Unit,
     onStop: (Int) -> Unit,
-    onDispose: (Int) -> Unit,
     overriddenByAppState: Boolean,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
@@ -145,8 +144,6 @@ fun BrightnessSlider(
             )
         }
     val colors = SystemUISliderColors.Defaults
-
-    DisposableEffectWithLifecycle(Unit) { onDispose { onDispose(value) } }
 
     // The value state is recreated every time gammaValue changes, so we recreate this derivedState
     // We have to use value as that's the value that changes when the user is dragging (gammaValue
@@ -418,7 +415,6 @@ fun BrightnessSliderContainer(
                 dragging = false
                 coroutineScope.launch { viewModel.onDrag(Drag.Stopped(GammaBrightness(it))) }
             },
-            onDispose = { viewModel.commitBrightness(GammaBrightness(it)) },
             modifier =
                 Modifier.borderOnFocus(
                         color = MaterialTheme.colorScheme.secondary,
