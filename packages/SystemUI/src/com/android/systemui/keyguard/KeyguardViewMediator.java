@@ -2582,15 +2582,17 @@ public class KeyguardViewMediator implements CoreStartable,
             }
         }
 
-        int currentUserId = mSelectedUserInteractor.getSelectedUserId();
-        if (options != null && options.getBinder(LOCK_ON_USER_SWITCH_CALLBACK) != null) {
-            LockNowCallback callback = new LockNowCallback(currentUserId,
-                    IRemoteCallback.Stub.asInterface(
-                            options.getBinder(LOCK_ON_USER_SWITCH_CALLBACK)));
-            synchronized (mLockNowCallbacks) {
-                mLockNowCallbacks.add(callback);
+        if (!SceneContainerFlag.isEnabled()) {
+            int currentUserId = mSelectedUserInteractor.getSelectedUserId();
+            if (options != null && options.getBinder(LOCK_ON_USER_SWITCH_CALLBACK) != null) {
+                LockNowCallback callback = new LockNowCallback(currentUserId,
+                        IRemoteCallback.Stub.asInterface(
+                                options.getBinder(LOCK_ON_USER_SWITCH_CALLBACK)));
+                synchronized (mLockNowCallbacks) {
+                    mLockNowCallbacks.add(callback);
+                }
+                Log.d(TAG, "LockNowCallback required for user: " + callback.mUserId);
             }
-            Log.d(TAG, "LockNowCallback required for user: " + callback.mUserId);
         }
 
         // if another app is disabling us, don't show
@@ -3191,16 +3193,15 @@ public class KeyguardViewMediator implements CoreStartable,
     }
 
     private void updateActivityLockScreenState(boolean showing, boolean aodShowing, String reason) {
+        if (SceneContainerFlag.isEnabled()) {
+            return;
+        }
+
         mUiBgExecutor.execute(() -> {
             Log.d(TAG, "updateActivityLockScreenState(" + showing + ", " + aodShowing + ", "
                     + reason + ")");
             if (showing) {
                 notifyLockNowCallback();
-            }
-
-            if (KeyguardWmStateRefactor.isEnabled()) {
-                // Handled in WmLockscreenVisibilityManager if flag is enabled.
-                return;
             }
 
             if (ENABLE_NEW_KEYGUARD_SHELL_TRANSITIONS) {
@@ -4349,6 +4350,10 @@ public class KeyguardViewMediator implements CoreStartable,
         mShowing = showing;
         mAodShowing = aodShowing;
 
+        if (SceneContainerFlag.isEnabled()) {
+            return;
+        }
+
         if (updateActivityLockScreenState) {
             updateActivityLockScreenState(showing, aodShowing, reason);
         }
@@ -4383,6 +4388,10 @@ public class KeyguardViewMediator implements CoreStartable,
     }
 
     private void notifyLockNowCallback() {
+        if (SceneContainerFlag.isEnabled()) {
+            return;
+        }
+
         List<LockNowCallback> callbacks;
 
         synchronized (mLockNowCallbacks) {

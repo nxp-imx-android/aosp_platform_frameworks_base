@@ -7,6 +7,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.user.data.model.SelectionStatus
 import com.android.systemui.user.data.repository.UserRepository
 import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -16,10 +17,10 @@ import kotlinx.coroutines.flow.map
 class SelectedUserInteractor @Inject constructor(private val repository: UserRepository) {
 
     /** Flow providing the ID of the currently selected user. */
-    val selectedUser = repository.selectedUserInfo.map { it.id }.distinctUntilChanged()
+    val selectedUser: Flow<Int> = repository.selectedUserInfo.map { it.id }.distinctUntilChanged()
 
     /** Flow providing the [UserInfo] of the currently selected user. */
-    val selectedUserInfo = repository.selectedUserInfo
+    val selectedUserInfo: Flow<UserInfo> = repository.selectedUserInfo
 
     /** StateFlow providing whether the current user is the headless system user. */
     val isCurrentUserHeadlessSystemUser: StateFlow<Boolean> =

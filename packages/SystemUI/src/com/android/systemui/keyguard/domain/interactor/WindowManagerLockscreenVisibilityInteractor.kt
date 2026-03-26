@@ -20,6 +20,7 @@ import com.android.compose.animation.scene.ObservableTransitionState.Idle
 import com.android.compose.animation.scene.ObservableTransitionState.Transition
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.keyguard.data.repository.KeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.Edge
@@ -30,6 +31,7 @@ import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.power.shared.model.WakefulnessState
 import com.android.systemui.scene.data.model.asIterable
+import com.android.systemui.scene.domain.interactor.OnBootTransitionInteractor
 import com.android.systemui.scene.domain.interactor.SceneBackInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
@@ -42,13 +44,17 @@ import com.android.systemui.util.kotlin.Utils.Companion.toQuad
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import dagger.Lazy
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 @SysUISingleton
 class WindowManagerLockscreenVisibilityInteractor
@@ -68,6 +74,8 @@ constructor(
     wakeToGoneInteractor: KeyguardWakeDirectlyToGoneInteractor,
     deviceProvisioningInteractor: Lazy<DeviceProvisioningInteractor>,
     powerInteractor: PowerInteractor,
+    @Application val scope: CoroutineScope,
+    private val onBootTransitionInteractor: OnBootTransitionInteractor,
 ) {
     private val defaultSurfaceBehindVisibility =
         combine(
@@ -465,13 +473,18 @@ constructor(
      * only inform WM once we're done with the keyguard and we're fully GONE. Don't use this if you
      * want to know if the AOD/clock/notifs/etc. are visible.
      */
-    val lockscreenVisibility: Flow<Pair<Boolean, String>> =
+    val lockscreenVisibility: StateFlow<Pair<Boolean, String>> =
         if (SceneContainerFlag.isEnabled) {
                 lockscreenVisibilityWithScenes
             } else {
                 lockscreenVisibilityLegacy
             }
             .distinctUntilChangedBy { it.first }
+            .stateIn(
+                scope = scope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = onBootTransitionInteractor.showLockscreenOnBoot() to "initial value",
+            )
 
     /**
      * Whether always-on-display (AOD) is visible when the lockscreen is visible, from window
