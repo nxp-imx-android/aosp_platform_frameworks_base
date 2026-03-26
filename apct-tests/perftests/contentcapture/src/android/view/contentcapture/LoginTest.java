@@ -32,7 +32,9 @@ import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.service.contentcapture.ContentCaptureService;
 import android.view.View;
+import android.view.autofill.AutofillId;
 import android.view.contentcapture.flags.Flags;
+import android.widget.TextView;
 
 import androidx.test.filters.LargeTest;
 
@@ -536,6 +538,68 @@ public class LoginTest extends AbstractContentCapturePerfTestCase {
                             .filter(expectedA11yText::equals)
                             .count();
             assertThat(correctA11yTextCount).isEqualTo(expectedA11yTextCount);
+            state.resumeTiming();
+        }
+    }
+
+    @Test
+    public void testFlushOnTextChange() throws Throwable {
+        // Arrange
+        MyContentCaptureService service = enableService();
+        CustomTestActivity activity = launchActivity(R.layout.test_login_activity, 0);
+        TextView textView = activity.findViewById(R.id.username);
+        View rootView = textView.getRootView();
+
+        long eventTimeoutMs = 15000;
+        int expectedFlushCount = 2;
+
+        BenchmarkState state = mPerfStatusReporter.getBenchmarkState();
+
+        // Initial Stabilization (Exclude from timing)
+        state.pauseTiming();
+        sInstrumentation.runOnMainSync(() -> rootView.setVisibility(View.GONE));
+        sInstrumentation.waitForIdleSync();
+        sInstrumentation.runOnMainSync(() -> rootView.setVisibility(View.VISIBLE));
+        sInstrumentation.waitForIdleSync();
+        service.waitForFlushEvents(expectedFlushCount, eventTimeoutMs);
+        state.resumeTiming();
+
+        int iteration = 0;
+
+        // Act & Benchmark Loop
+        while (state.keepRunning()) {
+            state.pauseTiming();
+            service.clearEvents();
+
+            // Generate unique text so the pipeline doesn't drop it as a duplicate
+            final String textToInject = "new text " + iteration++;
+
+            ContentCaptureSession session = textView.getContentCaptureSession();
+            AutofillId autofillId = textView.getAutofillId();
+            state.resumeTiming();
+
+            // Inject the event directly into the session
+            sInstrumentation.runOnMainSync(() -> {
+                session.notifyViewTextChanged(autofillId, textToInject);
+            });
+            sInstrumentation.waitForIdleSync();
+
+            // Wait for exactly 1 flush triggered by the text change timeout
+            state.pauseTiming();
+            boolean flushEventReceived = service.waitForFlushEvents(1, eventTimeoutMs);
+
+            // Assert
+            assertThat(flushEventReceived).isTrue();
+            List<ContentCaptureEvent> events = service.getCapturedEvents();
+            boolean hasTextChange = events.stream()
+                    .anyMatch(event ->
+                            event.getType() == ContentCaptureEvent.TYPE_VIEW_TEXT_CHANGED);
+            boolean hasSessionFlush = events.stream()
+                    .anyMatch(event ->
+                            event.getType() == ContentCaptureEvent.TYPE_SESSION_FLUSH);
+            assertThat(hasTextChange).isTrue();
+            assertThat(hasSessionFlush).isTrue();
+
             state.resumeTiming();
         }
     }
