@@ -171,6 +171,13 @@ constructor(
     /** Whether the "enhanced PIN privacy" setting is enabled for the current user. */
     val isPinEnhancedPrivacyEnabled: StateFlow<Boolean> = repository.isPinEnhancedPrivacyEnabled
 
+    /** Whether characters in password/secret fields should be shown for touch input. */
+    val isShowPasswordsTouchEnabled: StateFlow<Boolean> = repository.isShowPasswordsTouchEnabled
+
+    /** Whether characters in password/secret fields should be shown for physical keyboard input. */
+    val isShowPasswordsPhysicalEnabled: StateFlow<Boolean> =
+        repository.isShowPasswordsPhysicalEnabled
+
     /**
      * The number of failed authentication attempts for the selected user since the last successful
      * authentication.
