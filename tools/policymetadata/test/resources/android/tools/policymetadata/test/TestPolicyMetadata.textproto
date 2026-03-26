@@ -142,6 +142,9 @@ policy_metadata {
   documentation: "Test policy 3 "
   type_specific_metadata {
     integer_metadata {
+      resolution_mechanism {
+        custom: true
+      }
     }
   }
   allowed_scopes: POLICY_SCOPE_USER
@@ -162,6 +165,9 @@ policy_metadata {
     integer_metadata {
       min_value: -100
       max_value: 100
+      resolution_mechanism {
+        custom: true
+      }
     }
   }
   allowed_scopes: POLICY_SCOPE_USER
@@ -180,6 +186,9 @@ policy_metadata {
   documentation: "Test policy verifying processing of DEFAULT_DEVICE_OWNER allowed. "
   type_specific_metadata {
     integer_metadata {
+      resolution_mechanism {
+        custom: true
+      }
     }
   }
   allowed_scopes: POLICY_SCOPE_USER
@@ -199,6 +208,9 @@ policy_metadata {
   documentation: "Test policy verifying processing of FINANCED_DEVICE_OWNER allowed. "
   type_specific_metadata {
     integer_metadata {
+      resolution_mechanism {
+        custom: true
+      }
     }
   }
   allowed_scopes: POLICY_SCOPE_USER
@@ -218,6 +230,9 @@ policy_metadata {
   documentation: "Test policy verifying processing of PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE allowed. "
   type_specific_metadata {
     integer_metadata {
+      resolution_mechanism {
+        custom: true
+      }
     }
   }
   allowed_scopes: POLICY_SCOPE_USER
@@ -237,6 +252,9 @@ policy_metadata {
   documentation: "Test policy verifying processing of PROFILE_OWNER_ON_USER0 allowed. "
   type_specific_metadata {
     integer_metadata {
+      resolution_mechanism {
+        custom: true
+      }
     }
   }
   allowed_scopes: POLICY_SCOPE_USER
@@ -256,6 +274,9 @@ policy_metadata {
   documentation: "Test policy verifying processing of PROFILE_OWNER allowed. "
   type_specific_metadata {
     integer_metadata {
+      resolution_mechanism {
+        custom: true
+      }
     }
   }
   allowed_scopes: POLICY_SCOPE_USER
@@ -275,6 +296,9 @@ policy_metadata {
   documentation: "Test policy verifying processing of PROFILE_OWNER_ON_USER allowed. "
   type_specific_metadata {
     integer_metadata {
+      resolution_mechanism {
+        custom: true
+      }
     }
   }
   allowed_scopes: POLICY_SCOPE_USER
@@ -295,6 +319,9 @@ policy_metadata {
   documentation: "Test policy verifying processing of AFFILIATED_PROFILE_OWNER_ON_USER allowed. "
   type_specific_metadata {
     integer_metadata {
+      resolution_mechanism {
+        custom: true
+      }
     }
   }
   allowed_scopes: POLICY_SCOPE_USER
@@ -314,6 +341,9 @@ policy_metadata {
   documentation: "Test policy verifying processing of AFFILIATED_PROFILE_OWNER_ON_USER_SAME_AS_UNAFFILIATED."
   type_specific_metadata {
     integer_metadata {
+      resolution_mechanism {
+        custom: true
+      }
     }
   }
   allowed_scopes: POLICY_SCOPE_USER
@@ -334,6 +364,9 @@ policy_metadata {
   documentation: "Test policy verifying processing of\nAFFILIATED_PROFILE_OWNER_ON_USER_SAME_AS_UNAFFILIATED_DISALLOWED."
   type_specific_metadata {
     integer_metadata {
+      resolution_mechanism {
+        custom: true
+      }
     }
   }
   allowed_scopes: POLICY_SCOPE_USER
@@ -352,6 +385,9 @@ policy_metadata {
   documentation: "Test policy verifying processing of multiple allowed DPC types. "
   type_specific_metadata {
     integer_metadata {
+      resolution_mechanism {
+        custom: true
+      }
     }
   }
   allowed_scopes: POLICY_SCOPE_USER
@@ -374,6 +410,9 @@ policy_metadata {
   documentation: "Test policy that is flagged. "
   type_specific_metadata {
     integer_metadata {
+      resolution_mechanism {
+        custom: true
+      }
     }
   }
   allowed_scopes: POLICY_SCOPE_USER

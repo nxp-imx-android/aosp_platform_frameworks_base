@@ -21,6 +21,7 @@ import android.processor.devicepolicy.protos.PolicyMetadataList
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.EnumPolicyMetadata
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.EnumPolicyMetadata.ResolutionMechanism as EnumResolutionMechanismProto
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.IntegerPolicyMetadata
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.IntegerPolicyMetadata.ResolutionMechanism as IntegerResolutionMechanismProto
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.ListPolicyMetadata
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.ListPolicyMetadata.ListElementMetadataCase
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.ListPolicyMetadata.ResolutionMechanism as ListResolutionMechanismProto
@@ -291,36 +292,55 @@ object Generator {
             .add(")")
             .build()
 
-    private val integerPolicyMetadataType = ClassName.get(METADATA_PACKAGE, "IntegerPolicyMetadata")
-
     private fun generateIntegerPolicyMetadata(
         policy: PolicyMetadata,
         policyId: CodeBlock = policy.getPolicyIdCodeBlock(),
         integerMetadata: IntegerPolicyMetadata = policy.typeSpecificMetadata.integerMetadata,
-    ): CodeBlock {
-        val builder =
+    ) = IntegerGenerator(policy, policyId, integerMetadata).generate()
+
+    class IntegerGenerator(
+        val policy: PolicyMetadata,
+        val policyId: CodeBlock,
+        val metadata: IntegerPolicyMetadata,
+    ) {
+        private val integerPolicyMetadataType =
+            ClassName.get(METADATA_PACKAGE, "IntegerPolicyMetadata")
+
+        fun generate() =
             CodeBlock.builder()
                 .add("new \$T(\n", integerPolicyMetadataType)
                 .indent()
                 .addPolicyArguments(policy, policyId)
                 .add(",\n")
-        val minValue =
-            if (integerMetadata.hasMinValue()) {
-                CodeBlock.of("\$L", integerMetadata.minValue)
+                .add("/* resolutionMechanism= */ \$L,\n", generateResolutionMechanism())
+                .add("/* minValue= */ \$L,\n", generateMinValue())
+                .add("/* maxValue= */ \$L\n", generateMaxValue())
+                .unindent()
+                .add(")")
+                .build()
+
+        private fun generateMinValue(): CodeBlock =
+            if (metadata.hasMinValue()) {
+                CodeBlock.of("\$L", metadata.minValue)
             } else {
                 CodeBlock.of("Integer.MIN_VALUE")
             }
-        val maxValue =
-            if (integerMetadata.hasMaxValue()) {
-                CodeBlock.of("\$L", integerMetadata.maxValue)
+
+        private fun generateMaxValue(): CodeBlock =
+            if (metadata.hasMaxValue()) {
+                CodeBlock.of("\$L", metadata.maxValue)
             } else {
                 CodeBlock.of("Integer.MAX_VALUE")
             }
-        builder.add("/* minValue= */ \$L,\n", minValue)
-        builder.add("/* maxValue= */ \$L", maxValue)
-        builder.add("\n")
-        builder.unindent().add(")")
-        return builder.build()
+
+        private fun generateResolutionMechanism(): CodeBlock =
+            when (metadata.resolutionMechanism.mechanismCase) {
+                IntegerResolutionMechanismProto.MechanismCase.CUSTOM -> CodeBlock.of("null")
+                IntegerResolutionMechanismProto.MechanismCase.NOT_COEXISTABLE ->
+                    CodeBlock.of("new \$T()", notCoexistableType)
+                IntegerResolutionMechanismProto.MechanismCase.MECHANISM_NOT_SET ->
+                    throw IllegalArgumentException("Resolution mechanism not set")
+            }
     }
 
     private val longPolicyMetadataType = ClassName.get(METADATA_PACKAGE, "LongPolicyMetadata")
@@ -365,11 +385,12 @@ object Generator {
             "/* unprintableCharactersAllowed= */ \$L,\n",
             stringMetadata.unprintableCharactersAllowed,
         )
-        val maxLength = if (stringMetadata.hasMaxLength()) {
-            CodeBlock.of("\$L", stringMetadata.maxLength)
-        } else {
-            CodeBlock.of("Integer.MAX_VALUE")
-        }
+        val maxLength =
+            if (stringMetadata.hasMaxLength()) {
+                CodeBlock.of("\$L", stringMetadata.maxLength)
+            } else {
+                CodeBlock.of("Integer.MAX_VALUE")
+            }
         add("/* maxLength= */ \$L", maxLength)
         return this
     }
