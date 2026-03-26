@@ -4367,6 +4367,20 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             Manifest.permission.INTERACT_ACROSS_USERS_FULL,
             Manifest.permission.WRITE_SECURE_SETTINGS})
     @Override
+    public void toggleInputMethodPickerFromSystem(
+            int auxiliarySubtypeMode, @IMPickerEntryPoint int entryPoint, int displayId) {
+        mHandler.post(() -> {
+            synchronized (ImfLock.class) {
+                final int userId = resolveImeUserIdFromDisplayIdLocked(displayId);
+                toggleInputMethodPickerLocked(auxiliarySubtypeMode, entryPoint, displayId, userId);
+            }
+        });
+    }
+
+    @IInputMethodManagerImpl.PermissionVerified(allOf = {
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL,
+            Manifest.permission.WRITE_SECURE_SETTINGS})
+    @Override
     public void hideInputMethodPickerFromSystem(int displayId) {
         mHandler.post(() -> {
             synchronized (ImfLock.class) {
@@ -5273,6 +5287,16 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
 
         mImeSwitcherMenu.show(items, selectedImeId, selectedSubtypeIndex, isScreenLocked,
                 entryPoint, displayId, userId);
+    }
+
+    @GuardedBy("ImfLock.class")
+    private void toggleInputMethodPickerLocked(int auxiliarySubtypeMode,
+            @IMPickerEntryPoint int entryPoint, int displayId, @UserIdInt int userId) {
+        if (mImeSwitcherMenu.isShowing(getUserData(userId))) {
+            hideInputMethodPickerLocked(displayId, userId);
+        } else {
+            showInputMethodPickerLocked(auxiliarySubtypeMode, entryPoint, displayId, userId);
+        }
     }
 
     @GuardedBy("ImfLock.class")

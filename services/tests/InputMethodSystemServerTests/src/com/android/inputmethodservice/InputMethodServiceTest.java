@@ -1214,6 +1214,15 @@ public class InputMethodServiceTest {
         // TODO: b/478352392 - Add test coverage.
     }
 
+    /**
+     * Verifies that the IME Switcher menu can be toggled via
+     * InputMethodManager#toggleInputMethodPickerFromSystem().
+     */
+    @Test
+    public void testImeSwitcherMenu_toggleFromSystem() throws Exception {
+        // TODO: b/478352392 - Add test coverage.
+    }
+
     static void setDeviceProvisioned(@NonNull Context context, boolean provisioned) {
         Settings.Global.putInt(context.getContentResolver(),
                 Settings.Global.DEVICE_PROVISIONED, provisioned ? 1 : 0);

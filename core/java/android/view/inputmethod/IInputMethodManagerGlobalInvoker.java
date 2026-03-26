@@ -356,6 +356,23 @@ final class IInputMethodManagerGlobalInvoker {
     @RequiresPermission(allOf = {
             Manifest.permission.WRITE_SECURE_SETTINGS,
             Manifest.permission.INTERACT_ACROSS_USERS_FULL})
+    static void toggleInputMethodPickerFromSystem(
+            int auxiliarySubtypeMode, @IMPickerEntryPoint int entryPoint, int displayId) {
+        final IInputMethodManager service = getService();
+        if (service == null) {
+            return;
+        }
+        try {
+            service.toggleInputMethodPickerFromSystem(auxiliarySubtypeMode, entryPoint, displayId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    @AnyThread
+    @RequiresPermission(allOf = {
+            Manifest.permission.WRITE_SECURE_SETTINGS,
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL})
     static void hideInputMethodPickerFromSystem(int displayId) {
         final IInputMethodManager service = getService();
         if (service == null) {

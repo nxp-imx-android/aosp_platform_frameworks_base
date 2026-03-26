@@ -218,7 +218,7 @@ class InputMethodRepositoryTest : SysuiTestCase() {
         }
 
     @Test
-    fun showImePicker_forwardsDisplayId() =
+    fun showImePicker_forwardsArgs() =
         testScope.runTest {
             underTest.showInputMethodPicker(
                 /* showAuxiliarySubtypes= */ true,
@@ -228,6 +228,23 @@ class InputMethodRepositoryTest : SysuiTestCase() {
 
             verify(inputMethodManager)
                 .showInputMethodPickerFromSystem(
+                    /* showAuxiliarySubtypes = */ eq(true),
+                    /* entryPoint = */ eq(InputMethodManager.IM_PICKER_ENTRY_POINT_DEFAULT),
+                    /* displayId = */ eq(DISPLAY_ID),
+                )
+        }
+
+    @Test
+    fun toggleImePicker_forwardsArgs() =
+        testScope.runTest {
+            underTest.toggleInputMethodPicker(
+                /* showAuxiliarySubtypes= */ true,
+                InputMethodManager.IM_PICKER_ENTRY_POINT_DEFAULT,
+                displayId = DISPLAY_ID,
+            )
+
+            verify(inputMethodManager)
+                .toggleInputMethodPickerFromSystem(
                     /* showAuxiliarySubtypes = */ eq(true),
                     /* entryPoint = */ eq(InputMethodManager.IM_PICKER_ENTRY_POINT_DEFAULT),
                     /* displayId = */ eq(DISPLAY_ID),
