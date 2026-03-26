@@ -16,12 +16,23 @@
 
 package com.android.systemui.qs.panels.ui
 
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditModeLayoutTab
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditModeLayoutTabImpl
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditModeTabs
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditModeTabsImpl
+import com.android.systemui.qs.panels.ui.viewmodel.EditModeLayoutTabViewModel
+import com.android.systemui.qs.panels.ui.viewmodel.EditModeLayoutTabViewModelImpl
 import dagger.Binds
 import dagger.Module
 
 @Module
 public interface PanelsUIModule {
     @Binds public fun bindEditModeTabs(impl: EditModeTabsImpl): EditModeTabs
+
+    @Binds public fun bindEditLayoutTab(impl: EditModeLayoutTabImpl): EditModeLayoutTab
+
+    @Binds
+    public fun bindEditModeLayoutTabViewModel(
+        impl: EditModeLayoutTabViewModelImpl
+    ): EditModeLayoutTabViewModel
 }
