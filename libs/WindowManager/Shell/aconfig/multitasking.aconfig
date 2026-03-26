@@ -489,3 +489,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fix_bubbles_stack_visible_in_immersive"
+    namespace: "multitasking"
+    description: "Fixes a bug where the floating stack is visible in immersive mode"
+    bug: "494514819"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
