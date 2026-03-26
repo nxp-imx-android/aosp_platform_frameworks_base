@@ -9813,8 +9813,9 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         private void handleLimitReached(int uid) {
-            Slog.wtf(TAG, "Uid " + uid + " sent too many Binders to uid "
-                    + Process.myUid());
+            final String packageName = mPackageManagerInt.getNameForUid(uid);
+            Slog.wtf(TAG, "Uid " + uid + " [" + packageName + "]"
+                    + " sent too many Binders to uid " + Process.myUid());
             BinderProxy.dumpProxyDebugInfo();
             CriticalEventLog.getInstance().logExcessiveBinderCalls(uid);
             if (uid == Process.SYSTEM_UID) {
@@ -9840,7 +9841,8 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         @Override
         public void onWarningThresholdReached(int uid) {
-            Slog.w(TAG, "Uid " + uid + " sent too many ("
+            final String packageName = mPackageManagerInt.getNameForUid(uid);
+            Slog.w(TAG, "Uid " + uid + " [" + packageName + "]" + " sent too many ("
                     + BINDER_PROXY_WARNING_WATERMARK + ") Binders to uid " + Process.myUid());
             FrameworkStatsLog.write(FrameworkStatsLog.EXCESSIVE_BINDER_PROXY_COUNT_REPORTED, uid);
         }
