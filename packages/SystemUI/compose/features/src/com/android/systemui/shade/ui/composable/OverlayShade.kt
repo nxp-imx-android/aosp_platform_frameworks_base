@@ -22,7 +22,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -67,6 +67,7 @@ import kotlin.math.min
 fun ContentScope.OverlayShade(
     panelElement: ElementKey,
     alignmentOnWideScreens: Alignment.Horizontal,
+    statusBarHeightPx: Int,
     enableTransparency: Boolean,
     onScrimClicked: () -> Unit,
     modifier: Modifier = Modifier,
@@ -91,7 +92,8 @@ fun ContentScope.OverlayShade(
 
         Box(
             modifier =
-                Modifier.fillMaxSize().panelContainerPadding(isFullWidth, alignmentOnWideScreens),
+                Modifier.fillMaxSize()
+                    .panelContainerPadding(isFullWidth, alignmentOnWideScreens, statusBarHeightPx),
             contentAlignment = panelAlignment,
         ) {
             Panel(
@@ -190,6 +192,7 @@ private fun getHalfScreenWidth() = LocalConfiguration.current.screenWidthDp.dp /
 private fun Modifier.panelContainerPadding(
     isFullWidthPanel: Boolean,
     alignment: Alignment.Horizontal,
+    statusBarHeightPx: Int,
 ): Modifier {
     if (isFullWidthPanel) {
         return this
@@ -205,12 +208,14 @@ private fun Modifier.panelContainerPadding(
     val paddings = PaddingValues(start = startPadding, end = endPadding)
     val layoutDirection = LocalLayoutDirection.current
     return windowInsetsPadding(
-        WindowInsets.safeContent.union(
-            WindowInsets(
-                left = paddings.calculateLeftPadding(layoutDirection),
-                right = paddings.calculateRightPadding(layoutDirection),
+        WindowInsets.safeDrawing
+            .union(WindowInsets(top = statusBarHeightPx))
+            .union(
+                WindowInsets(
+                    left = paddings.calculateLeftPadding(layoutDirection),
+                    right = paddings.calculateRightPadding(layoutDirection),
+                )
             )
-        )
     )
 }
 

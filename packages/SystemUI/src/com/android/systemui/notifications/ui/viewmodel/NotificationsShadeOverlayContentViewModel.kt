@@ -16,6 +16,7 @@
 
 package com.android.systemui.notifications.ui.viewmodel
 
+import android.content.res.Resources
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
@@ -31,9 +32,11 @@ import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarou
 import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
 import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
+import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeStatusBarComponentsInteractor
@@ -41,6 +44,7 @@ import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
 import com.android.systemui.statusbar.core.StatusBarForDesktop
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationsPlaceholderViewModel
+import com.android.systemui.statusbar.ui.SystemBarUtilsState
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import dagger.assisted.AssistedFactory
@@ -67,6 +71,8 @@ constructor(
     @Main private val mainDispatcher: CoroutineDispatcher,
     val shadeHeaderViewModelFactory: ShadeHeaderViewModel.Factory,
     val notificationsPlaceholderViewModelFactory: NotificationsPlaceholderViewModel.Factory,
+    @ShadeDisplayAware private val resources: Resources,
+    @ShadeDisplayAware private val systemBarUtilsState: SystemBarUtilsState,
     desktopInteractor: DesktopInteractor,
     val sceneInteractor: SceneInteractor,
     private val shadeInteractor: ShadeInteractor,
@@ -128,6 +134,12 @@ constructor(
     val alignmentOnWideScreens: Alignment.Horizontal by
         shadeModeInteractor.notificationStackHorizontalAlignment.hydratedStateOf(
             initialValue = Alignment.Start
+        )
+
+    val statusBarHeightPx: Int by
+        systemBarUtilsState.statusBarHeight.hydratedStateOf(
+            traceName = "NotificationsShadeOverlayContentViewModel#statusBarHeight",
+            initialValue = resources.getDimensionPixelSize(R.dimen.status_bar_height),
         )
 
     /**
