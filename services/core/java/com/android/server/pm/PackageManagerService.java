@@ -3223,7 +3223,10 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             Slog.e(TAG, "Holds PM's lock, unable kill application synchronized");
             killApplication(pkgName, appId, userId, reason, exitInfoReason);
         } else {
-            final int timeoutMs = isSharedUidWithSiblingsRunning(userId, appId, pkgName)
+            // We set timeout for shared-uid with running siblings to 3 seconds
+            SharedUidProcessStatus sharedUidStatus = SharedUidProcessStatus.from(snapshotComputer(),
+                    ActivityManager.getService(), userId, appId, pkgName);
+            int timeoutMs = (sharedUidStatus != null && sharedUidStatus.siblingsRunning)
                     ? STOP_AND_KILL_APP_SHARED_USER_TIMEOUT_MS
                     : STOP_AND_KILL_APP_TIMEOUT_MS;
             KillAppBlocker blocker = new KillAppBlocker(timeoutMs);
@@ -3238,6 +3241,14 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                  * to wait for the process itself to be gone to be assured of its death.
                  */
                 atmi.stopAndKillAppForUpdate(pkgName, userId, appId);
+
+                // Optimization: For shared-uid, we know if it's running or not. We can avoid
+                // waiting if it's not running and save few seconds. This is status-quo to pre-26Q2:
+                // we killed app process and moved on with update.
+                if (sharedUidStatus != null && !sharedUidStatus.targetAppRunning) {
+                    return;
+                }
+
                 if (!blocker.waitAppProcessGone(ami, snapshotComputer(), mUserManager, pkgName)) {
                     Slog.w(TAG, "Timeout reached waiting for " + pkgName
                             + " to be gone. Force killing now.");
@@ -3250,35 +3261,65 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         }
     }
 
-    private boolean isSharedUidWithSiblingsRunning(@UserIdInt int userId, @AppIdInt int appId,
-            String pkgName) {
-        final int checkUserId = userId == USER_ALL ? UserHandle.USER_SYSTEM : userId;
-        final int uid = UserHandle.getUid(checkUserId, appId);
-        String[] packages = snapshotComputer().getPackagesForUid(uid);
-        if (packages == null || packages.length <= 1) {
-            return false;
+    private static class SharedUidProcessStatus {
+        /** Whether the target package itself is currently running. */
+        final boolean targetAppRunning;
+        /** Whether any other package sharing the same UID is currently running. */
+        final boolean siblingsRunning;
+
+        private SharedUidProcessStatus(boolean targetAppRunning, boolean siblingsRunning) {
+            this.targetAppRunning = targetAppRunning;
+            this.siblingsRunning = siblingsRunning;
         }
-        try {
-            IActivityManager am = ActivityManager.getService();
-            if (am == null) return false;
-            List<ActivityManager.RunningAppProcessInfo> runningProcesses =
-                    am.getRunningAppProcesses();
-            if (runningProcesses == null) return false;
-            final int size = runningProcesses.size();
-            for (int i = 0; i < size; i++) {
-                ActivityManager.RunningAppProcessInfo info = runningProcesses.get(i);
-                if (info.uid == uid && info.pkgList != null) {
-                    for (String runningPkg : info.pkgList) {
-                        if (!pkgName.equals(runningPkg)) {
-                            return true;
+
+        /**
+         * Analyzes running processes to determine the status of a shared UID.
+         *
+         * @return A status object, or {@code null} if the UID is not a shared UID.
+         */
+        @Nullable
+        static SharedUidProcessStatus from(Computer snapshot, IActivityManager am,
+                @UserIdInt int userId, @AppIdInt int appId, String pkgName) {
+            final int checkUserId = userId == USER_ALL ? UserHandle.USER_SYSTEM : userId;
+            final int uid = UserHandle.getUid(checkUserId, appId);
+            String[] packages = snapshot.getPackagesForUid(uid);
+            if (packages == null || packages.length <= 1) {
+                return null;
+            }
+
+            boolean targetAppRunning = false;
+            boolean siblingsRunning = false;
+
+            try {
+                List<ActivityManager.RunningAppProcessInfo> runningProcesses =
+                        am.getRunningAppProcesses();
+                if (runningProcesses != null) {
+                    final int size = runningProcesses.size();
+                    for (int i = 0; i < size; i++) {
+                        ActivityManager.RunningAppProcessInfo info = runningProcesses.get(i);
+                        if (info.uid == uid && info.pkgList != null) {
+                            for (String runningPkg : info.pkgList) {
+                                if (pkgName.equals(runningPkg)) {
+                                    targetAppRunning = true;
+                                } else {
+                                    siblingsRunning = true;
+                                }
+
+                                if (targetAppRunning && siblingsRunning) {
+                                    return new SharedUidProcessStatus(true, true);
+                                }
+                            }
                         }
                     }
                 }
+            } catch (RemoteException e) {
+                Slog.w(TAG, "Failed to get running processes", e);
+                // Return "worst case" (assume running) to be safe on error
+                return new SharedUidProcessStatus(true, true);
             }
-        } catch (RemoteException e) {
-            Slog.w(TAG, "Failed to get running processes", e);
+
+            return new SharedUidProcessStatus(targetAppRunning, siblingsRunning);
         }
-        return false;
     }
 
     @Override
