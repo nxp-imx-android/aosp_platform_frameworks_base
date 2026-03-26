@@ -181,6 +181,30 @@ public abstract class TvInputService extends Service {
      */
     public static final String EVENT_EAS_STOP = "eas_stop";
     /**
+     * Optional extra bundle key to include when session event is {@link #EVENT_EAS_START}.
+     * <p>This extra key should have a string value that represents the EAS message to be shown
+     * on the screen.</p>
+     *
+     * @hide
+     */
+    public static final String EXTRA_EAS_MESSAGE = "eas_message";
+    /**
+     * Bundle extra key that must be included in {@link Session#notifySessionEvent(String, Bundle)}
+     * if event type is {@link #EVENT_EAS_START}.
+     * <p>This extra key should have a boolean value to indicate if there is a channel change.</p>
+     *
+     * @hide
+     */
+    public static final String EXTRA_EAS_IS_CHANNEL_CHANGE = "eas_is_channel_change";
+    /**
+     * Optional extra bundle key to include when session event is {@link #EVENT_EAS_START}.
+     * <p>This extra key should have a string value that represents the URI of the channel that
+     * to be switched to when {@link #EXTRA_EAS_IS_CHANNEL_CHANGE} is true.</p>
+     *
+     * @hide
+     */
+    public static final String EXTRA_EAS_CHANNEL_CHANGE_URI = "eas_channel_change_uri";
+    /**
      * Session event to signal that the initial tuning sequence is complete.
      * * <p><b>Usage for HbbTV:</b> This event acts as a synchronization barrier. It must be fired
      * only after the hardware tuner has locked, the first frame is ready for display, and
