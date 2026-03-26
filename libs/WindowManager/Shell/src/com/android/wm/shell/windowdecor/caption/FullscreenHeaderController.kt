@@ -72,6 +72,7 @@ import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
 import com.android.wm.shell.windowdecor.WindowDecoration2.RelayoutParams
 import com.android.wm.shell.windowdecor.WindowDecorationActions
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
+import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
@@ -121,6 +122,7 @@ class FullscreenHeaderController(
     private val focusTransitionObserver: FocusTransitionObserver,
     private val layoutMenuFactory: LayoutMenuFactory = DefaultLayoutMenuFactory,
     private val handleMenuFactory: HandleMenuFactory = HandleMenuFactory,
+    private val decorThemeUtilFactory: DecorThemeUtil.Factory,
     private val fullscreenHeaderViewHolderFactory: FullscreenHeaderViewHolder.Factory =
         FullscreenHeaderViewHolder.DefaultFactory(),
     private val surfaceControlBuilderSupplier: () -> SurfaceControl.Builder = {
@@ -482,6 +484,7 @@ class FullscreenHeaderController(
                     // Add top padding to the caption Y so that the menu is shown over what is the
                     // actual contents of the caption, ignoring padding.
                     captionY = captionLayoutResult.captionY + captionLayoutResult.captionTopPadding,
+                    decorThemeUtilFactory = decorThemeUtilFactory,
                 )
                 .apply {
                     show(

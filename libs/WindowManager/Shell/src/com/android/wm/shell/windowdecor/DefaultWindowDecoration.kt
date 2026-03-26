@@ -1132,6 +1132,7 @@ constructor(
                     focusTransitionObserver,
                     pinnedLayerController,
                     desktopTasksController,
+                    decorThemeUtilFactory,
                 )
             }
 
@@ -1185,6 +1186,7 @@ constructor(
                     appToWebRepository = appToWebRepository,
                     focusTransitionObserver = focusTransitionObserver,
                     fullscreenHeaderViewHolderFactory = fullscreenHeaderViewHolderFactory,
+                    decorThemeUtilFactory = decorThemeUtilFactory,
                 )
             }
 

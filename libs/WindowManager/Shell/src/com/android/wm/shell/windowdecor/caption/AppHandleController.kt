@@ -70,6 +70,7 @@ import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
 import com.android.wm.shell.windowdecor.WindowDecoration2.RelayoutParams
 import com.android.wm.shell.windowdecor.WindowDecorationActions
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
+import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
@@ -116,6 +117,7 @@ class AppHandleController(
     private val focusTransitionObserver: FocusTransitionObserver,
     private val pinnedLayerController: PinnedLayerController?,
     private val desktopTasksController: DesktopTasksController,
+    private val decorThemeUtilFactory: DecorThemeUtil.Factory,
     private val handleMenuFactory: HandleMenuFactory = HandleMenuFactory,
     private val appHandleViewHolderFactory: AppHandleViewHolder.Factory =
         AppHandleViewHolder.Factory(),
@@ -429,6 +431,7 @@ class AppHandleController(
                     captionHeight = captionLayoutResult.captionHeight,
                     captionX = captionLayoutResult.captionX,
                     captionY = captionLayoutResult.captionY,
+                    decorThemeUtilFactory = decorThemeUtilFactory,
                 )
                 .apply {
                     show(

@@ -522,6 +522,7 @@ class AppHeaderController(
                     // actual contents of the caption, ignoring padding. This is currently relevant
                     // to the Header in desktop immersive.
                     captionY = captionLayoutResult.captionY + captionLayoutResult.captionTopPadding,
+                    decorThemeUtilFactory = decorThemeUtilFactory,
                 )
                 .apply {
                     show(

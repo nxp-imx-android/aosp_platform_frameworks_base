@@ -535,7 +535,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 mDesktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo),
                 mDesktopConfig, inSyncWithTransition,
                 mLockTaskChangeListener.isTaskLocked(),
-                /* occludingElementsCalculator = */ () -> getOccludingElements());
+                /* occludingElementsCalculator = */ () -> getOccludingElements(),
+                mDecorThemeUtilFactory);
 
         final Configuration newConfig = mRelayoutParams.mWindowDecorConfig;
 
@@ -1099,7 +1100,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             DesktopConfig desktopConfig,
             boolean inSyncWithTransition,
             boolean isTaskLocked,
-            Supplier<List<OccludingElement>> occludingElementsCalculator) {
+            Supplier<List<OccludingElement>> occludingElementsCalculator,
+            DecorThemeUtil.Factory decorThemeUtilFactory) {
         final int captionLayoutId = getDesktopModeWindowDecorLayoutId(taskInfo.getWindowingMode());
         final boolean isAppHeader =
                 captionLayoutId == R.layout.desktop_mode_app_header;
@@ -1216,7 +1218,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                         : new int[]{R.style.BoxShadowParamsKeyUnfocused,
                                     R.style.BoxShadowParamsAmbientUnfocused};
 
-                final DecorThemeUtil decorThemeUtil = new DecorThemeUtil(context);
+                final DecorThemeUtil decorThemeUtil = decorThemeUtilFactory.create(context);
                 if (decorThemeUtil.getAppTheme(taskInfo) == Theme.DARK) {
                     relayoutParams.mBorderSettingsId = hasGlobalFocus
                             ? R.style.BorderSettingsFocusedDark
@@ -1656,7 +1658,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 // Add top padding to the caption Y so that the menu is shown over what is the
                 // actual contents of the caption, ignoring padding. This is currently relevant
                 // to the Header in desktop immersive.
-                mResult.mCaptionY + mResult.mCaptionTopPadding
+                mResult.mCaptionY + mResult.mCaptionTopPadding,
+                mDecorThemeUtilFactory
         );
         mWindowDecorViewHolder.onHandleMenuOpened();
         mHandleMenu.show(

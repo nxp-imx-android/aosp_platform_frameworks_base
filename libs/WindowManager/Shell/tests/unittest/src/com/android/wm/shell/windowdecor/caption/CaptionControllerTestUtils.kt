@@ -59,6 +59,7 @@ fun HandleMenu.HandleMenuFactory.verifyHandleMenuCreated(
             captionHeight = any(),
             captionX = any(),
             captionY = any(),
+            decorThemeUtilFactory = any(),
             surfaceControlBuilderSupplier = any(),
             surfaceControlTransactionSupplier = any(),
             surfaceControlViewHostFactory = any(),
