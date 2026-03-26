@@ -22,6 +22,7 @@ import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_OPT_OUT_EDGE_
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 
 import static com.android.window.flags.Flags.currentAnimatorScaleUsesSharedMemory;
+import static com.android.window.flags.Flags.returnWindowlessRootViewsInWmglobalGetwindowview;
 
 import android.animation.ValueAnimator;
 import android.annotation.NonNull;
@@ -375,6 +376,14 @@ public final class WindowManagerGlobal {
                 final View view = mViews.get(i);
                 if (view.getWindowToken() == windowToken) {
                     return view;
+                }
+            }
+            if (returnWindowlessRootViewsInWmglobalGetwindowview()) {
+                for (int i = 0; i < mWindowlessRoots.size(); ++i) {
+                    final ViewRootImpl root = mWindowlessRoots.get(i);
+                    if (root.getWindowToken() == windowToken) {
+                        return root.getView();
+                    }
                 }
             }
         }

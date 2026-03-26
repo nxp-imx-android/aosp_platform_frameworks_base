@@ -1140,6 +1140,17 @@ flag {
 }
 
 flag {
+    name: "return_windowless_root_views_in_wmglobal_getwindowview"
+    namespace: "lse_desktop_experience"
+    description: "Returns matched root views hosted in SurfaceControlViewHost in /n"
+                 "WindowManagerGlobal#getWindowView(IBinder)."
+    bug: "479750486"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "runtime_density_resolution_for_window_layout"
     namespace: "lse_desktop_experience"
     description: "Enable API changes for runtime density resolution for ActivityInfo.WindowLayout"
