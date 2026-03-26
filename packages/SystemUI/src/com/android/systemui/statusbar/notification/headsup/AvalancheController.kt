@@ -157,49 +157,46 @@ constructor(
         if (isShowing(entry)) {
             outcome = "update showing"
             runnable.run()
-        } else {
-            val runnables = nextMap[entry]
-            if (runnables != null) {
-                outcome = "update next"
-                runnables.add(runnable)
-                if (AvalancheReplaceHunWhenCritical.isEnabled) {
-                    checkReplaceCurrentHun(entry)?.let { outcome = "$outcome & $it" }
-                } else {
-                    checkNextPinnedByUser(entry)?.let { outcome = "$outcome & $it" }
-                }
-            } else if (headsUpEntryShowing == null) {
-                outcome = "show now"
-                showNow(entry, arrayListOf(runnable))
+        } else if (entry in nextMap) {
+            outcome = "update next"
+            nextMap[entry]?.add(runnable)
+            if (AvalancheReplaceHunWhenCritical.isEnabled) {
+                checkReplaceCurrentHun(entry)?.let { outcome = "$outcome & $it" }
             } else {
-                // Clean up invalid state when entry is in list but not map and vice versa
-                nextMap.remove(entry)
-                nextList.remove(entry)
+                checkNextPinnedByUser(entry)?.let { outcome = "$outcome & $it" }
+            }
+        } else if (headsUpEntryShowing == null) {
+            outcome = "show now"
+            showNow(entry, arrayListOf(runnable))
+        } else {
+            // Clean up invalid state when entry is in list but not map and vice versa
+            if (entry in nextMap) nextMap.remove(entry)
+            if (entry in nextList) nextList.remove(entry)
 
-                outcome = "add next"
-                addToNext(entry, runnable)
+            outcome = "add next"
+            addToNext(entry, runnable)
 
-                val nextReplacementResult =
-                    if (AvalancheReplaceHunWhenCritical.isEnabled) {
-                        checkReplaceCurrentHun(entry)
-                    } else {
-                        checkNextPinnedByUser(entry)
-                    }
-                if (nextReplacementResult != null) {
-                    outcome = "$outcome & $nextReplacementResult"
+            val nextReplacementResult =
+                if (AvalancheReplaceHunWhenCritical.isEnabled) {
+                    checkReplaceCurrentHun(entry)
                 } else {
-                    // Shorten headsUpEntryShowing display time
-                    val nextIndex = nextList.indexOf(entry)
-                    val isOnlyNextEntry = nextIndex == 0 && nextList.size == 1
-                    if (isOnlyNextEntry) {
-                        // HeadsUpEntry.updateEntry recursively calls AvalancheController#update
-                        // and goes to the isShowing case above
-                        headsUpEntryShowing!!.updateEntry(
-                            /* updatePostTime= */ false,
-                            /* updateEarliestRemovalTime= */ false,
-                            /* ignoreSticky= */ false,
-                            /* reason= */ "shorten duration of previously-last HUN",
-                        )
-                    }
+                    checkNextPinnedByUser(entry)
+                }
+            if (nextReplacementResult != null) {
+                outcome = "$outcome & $nextReplacementResult"
+            } else {
+                // Shorten headsUpEntryShowing display time
+                val nextIndex = nextList.indexOf(entry)
+                val isOnlyNextEntry = nextIndex == 0 && nextList.size == 1
+                if (isOnlyNextEntry) {
+                    // HeadsUpEntry.updateEntry recursively calls AvalancheController#update
+                    // and goes to the isShowing case above
+                    headsUpEntryShowing!!.updateEntry(
+                        /* updatePostTime= */ false,
+                        /* updateEarliestRemovalTime= */ false,
+                        /* ignoreSticky= */ false,
+                        /* reason= */ "shorten duration of previously-last HUN",
+                    )
                 }
             }
         }
@@ -327,10 +324,10 @@ constructor(
             return
         }
         val outcome: String
-        val removedRunnables = nextMap.remove(entry)
-        if (removedRunnables != null) {
+        if (entry in nextMap) {
             onCleanup.accept(entry, caller)
-            nextList.remove(entry)
+            if (entry in nextMap) nextMap.remove(entry)
+            if (entry in nextList) nextList.remove(entry)
             uiEventLogger.log(ThrottleEvent.AVALANCHE_THROTTLING_HUN_REMOVED)
             outcome = "remove from next. ${getStateStr()}"
         } else if (isShowing(entry)) {
