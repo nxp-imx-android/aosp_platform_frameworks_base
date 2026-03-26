@@ -143,6 +143,10 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                 "    --user <USER_ID> (optional): The user ID under which to check the function"
                         + " state. Defaults to the current user.");
         pw.println();
+        pw.println("  purge-allowlist-cache");
+        pw.println("    Purges the allowlist cache.");
+
+        pw.println();
 
         if (accessCheckFlagsEnabled()) {
             // grant-app-function-access
@@ -262,18 +266,6 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                         return -1;
                     }
                     return resetTestPageSize();
-                case "set-test-allowlist-entry":
-                    // TODO(b/457349791): Remove once allowlist service is ready
-                    if (!android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
-                        return -1;
-                    }
-                    return setTestAllowlistEntry();
-                case "clear-test-allowlist":
-                    // TODO(b/457349791): Remove once allowlist service is ready
-                    if (!android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
-                        return -1;
-                    }
-                    return clearTestAllowlist();
                 case "enable-allowlist":
                     // TODO(b/457349791): Remove this once the source is stable to avoid disruption
                     if (!android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
@@ -289,6 +281,11 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                 case "read-app-description":
                     // Not added to help, because it is not a platform feature yet.
                     return readAppDescription();
+                case "purge-allowlist-cache":
+                    if (!android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
+                        return -1;
+                    }
+                    return purgeAllowlistCache();
                 default:
                     return handleDefaultCommands(cmd);
             }
@@ -890,66 +887,6 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         return 0;
     }
 
-    private int setTestAllowlistEntry() {
-        final PrintWriter pw = getOutPrintWriter();
-        SignedPackage agentPackage = null;
-        List<String> appPackages = null;
-
-        String opt;
-        while ((opt = getNextOption()) != null) {
-            if (opt.equals("--agent-package")) {
-                agentPackage = parseSignedPackage(getNextArgRequired());
-            } else if (opt.equals("--app-packages")) {
-                String rawAppPackagesInput = getNextArgRequired();
-                try {
-                    String[] rawAppPackages = rawAppPackagesInput.split(",");
-                    appPackages = new ArrayList<>();
-                    for (String rawAppPackage : rawAppPackages) {
-                        SignedPackage appPackage = parseSignedPackage(rawAppPackage);
-                        if (appPackage != null) {
-                            appPackages.add(appPackage.getPackageName());
-                        } else {
-                            throw new IllegalArgumentException("Unable to parse " + rawAppPackage);
-                        }
-                    }
-                } catch (Exception e) {
-                    pw.println("Unable to parse " + rawAppPackagesInput);
-                }
-            } else {
-                pw.println("Unknown option: " + opt);
-                return -1;
-            }
-        }
-
-        if (agentPackage == null) {
-            pw.println("Error: --agent-package is required");
-            return -1;
-        }
-
-        if (appPackages == null) {
-            pw.println("Error: --app-packages is required");
-            return -1;
-        }
-
-        SystemAppFunctionAllowlistReader.getInstance(mContext)
-                .setTestAllowlist(agentPackage, appPackages);
-
-        pw.println("Set test allowlist entry");
-        return 0;
-    }
-
-    @Nullable
-    private SignedPackage parseSignedPackage(@NonNull String rawString) {
-        return SignedPackageParser.parse(rawString);
-    }
-
-    private int clearTestAllowlist() {
-        final PrintWriter pw = getOutPrintWriter();
-        SystemAppFunctionAllowlistReader.getInstance(mContext).clearTestAllowlist();
-        pw.println("Clear test allowlist");
-        return 0;
-    }
-
     private int enableAllowlist() {
         final PrintWriter pw = getOutPrintWriter();
         SystemAppFunctionAllowlistReader.getInstance(mContext).enableAllowlist();
@@ -961,6 +898,13 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         final PrintWriter pw = getOutPrintWriter();
         SystemAppFunctionAllowlistReader.getInstance(mContext).disableAllowlist();
         pw.println("Disable allowlist");
+        return 0;
+    }
+
+    private int purgeAllowlistCache() {
+        final PrintWriter pw = getOutPrintWriter();
+        SystemAppFunctionAllowlistReader.getInstance(mContext).purgeCache();
+        pw.println("Purge allowlist cache");
         return 0;
     }
 
