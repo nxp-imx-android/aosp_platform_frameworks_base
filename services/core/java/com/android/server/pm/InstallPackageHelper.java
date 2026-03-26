@@ -19,6 +19,7 @@ package com.android.server.pm;
 import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.content.pm.Flags.allowUpdatedVersionBetterThanApkInApex;
 import static android.content.pm.Flags.disallowSdkLibsToBeApps;
+import static android.content.pm.Flags.scanApksInUpdatedApexAsNewInstalls;
 import static android.content.pm.PackageManager.APP_METADATA_SOURCE_APK;
 import static android.content.pm.PackageManager.APP_METADATA_SOURCE_INSTALLER;
 import static android.content.pm.PackageManager.APP_METADATA_SOURCE_UNKNOWN;
@@ -4242,26 +4243,39 @@ final class InstallPackageHelper {
                 parsedPackage, parseFlags, scanFlags, user);
         final ScanResult scanResult = scanResultPair.first;
         boolean shouldHideSystemApp = scanResultPair.second;
-        final InstallRequest installRequest = new InstallRequest(
-                parsedPackage, parseFlags, scanFlags, user, scanResult, disabledPkgSetting);
 
-        String existingApexModuleName = null;
+        final PackageSetting existingPkgSetting;
         synchronized (mPm.mLock) {
-            var existingPkgSetting = mPm.mSettings.getPackageLPr(parsedPackage.getPackageName());
-            if (existingPkgSetting != null) {
-                existingApexModuleName = existingPkgSetting.getApexModuleName();
-            }
+            existingPkgSetting = mPm.mSettings.getPackageLPr(parsedPackage.getPackageName());
         }
 
+        final String apexModuleName;
         if (activeApexInfo != null) {
-            installRequest.setApexModuleName(activeApexInfo.apexModuleName);
+            apexModuleName = activeApexInfo.apexModuleName;
+        } else if (disabledPkgSetting != null) {
+            apexModuleName = disabledPkgSetting.getApexModuleName();
+        } else if (existingPkgSetting != null) {
+            apexModuleName = existingPkgSetting.getApexModuleName();
         } else {
-            if (disabledPkgSetting != null) {
-                installRequest.setApexModuleName(disabledPkgSetting.getApexModuleName());
-            } else if (existingApexModuleName != null) {
-                installRequest.setApexModuleName(existingApexModuleName);
-            }
+            apexModuleName = null;
         }
+
+        // An updated APEX can include a package that is already present in the system
+        // image; treat this as a replacement of the existing system image package.
+        final boolean replace =
+                (scanApksInUpdatedApexAsNewInstalls()
+                        && (scanFlags & (SCAN_AS_APK_IN_APEX | SCAN_NEW_INSTALL))
+                                == (SCAN_AS_APK_IN_APEX | SCAN_NEW_INSTALL)
+                        && scanResult.mRequest.mOldPkg != null
+                        && existingPkgSetting != null
+                        && existingPkgSetting.isSystem()
+                        && !existingPkgSetting.isUpdatedSystemApp()
+                        && existingPkgSetting.getApexModuleName() == null
+                        && apexModuleName != null);
+
+        final InstallRequest installRequest = new InstallRequest(
+                parsedPackage, parseFlags, scanFlags, user, scanResult, disabledPkgSetting,
+                apexModuleName, replace);
 
         synchronized (mPm.mLock) {
             boolean appIdCreated = false;
@@ -4278,6 +4292,20 @@ final class InstallPackageHelper {
                     appIdCreated = optimisticallyRegisterAppIds(installRequest);
                 } else {
                     installRequest.setScannedPackageSettingAppId(Process.INVALID_UID);
+                }
+                if (installRequest.isInstallReplace()) {
+                    // Per the comment above, remove the existing system image package
+                    // to make way for the new APK-in-APEX. This effectively makes the
+                    // APK-in-APEX the system version of the package, which will allow
+                    // it to influence which privileged permissions the package can hold,
+                    // among other things; as such, don't mark the existing PackageSetting
+                    // as being a disabled system package (the APK-in-APEX will become the
+                    // disabled system package, if a newer version of the package is
+                    // installed on /data).
+                    AndroidPackage oldPackage = mPm.mPackages.get(pkgName);
+                    if (oldPackage != null) {
+                        mRemovePackageHelper.removePackage(oldPackage, true);
+                    }
                 }
                 commitReconciledScanResultLocked(reconcileResult.get(0),
                         mPm.mUserManager.getUserIds());
