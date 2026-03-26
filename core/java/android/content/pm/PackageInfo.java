@@ -702,6 +702,9 @@ public class PackageInfo implements Parcelable {
             sb.append("Large parcel: size=").append(elmSize)
                     .append(" pkg=").append(packageName);
 
+            if (applicationInfo != null) {
+                sb.append(" uid=").append(applicationInfo.uid);
+            }
             if (activities != null) {
                 sb.append(" actv=").append(activitiesSize);
                 sb.append("(").append(activities.length).append(")");
@@ -734,7 +737,13 @@ public class PackageInfo implements Parcelable {
                 sb.append(" attr=").append(attributionsSize);
                 sb.append("(").append(attributions.length).append(")");
             }
-
+            sb.append(" prevAllowSquashing=").append(prevAllowSquashing);
+            // Notice that if string de-duplication is enabled (such as when the object is parcelled
+            // as an element of a PackageInfoList), the parcel size might be smaller than when the
+            // object is parcelled alone without string de-duplication.
+            // When the object is parcelled as an element of a PackageInfoList, the parcel size
+            // might be different even though the object is the same, depending on other elements in
+            // the PackageInfoList.
             Log.w(TAG, sb.toString());
         }
     }
