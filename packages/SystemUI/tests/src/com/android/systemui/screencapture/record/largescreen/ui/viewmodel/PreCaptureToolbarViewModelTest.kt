@@ -20,6 +20,7 @@ import android.graphics.Rect
 import android.net.Uri
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.view.WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.uiEventLoggerFake
@@ -33,6 +34,7 @@ import com.android.systemui.screencapture.record.largescreen.domain.interactor.l
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -46,6 +48,10 @@ class PreCaptureToolbarViewModelTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
+        assumeTrue(
+            context.resources.configuration.smallestScreenWidthDp >=
+                LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP
+        )
         viewModel = kosmos.preCaptureToolbarViewModel
         viewModel.activateIn(kosmos.testScope)
     }
