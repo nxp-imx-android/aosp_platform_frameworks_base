@@ -452,7 +452,7 @@ fun PreferenceMetadata.setPreconditionsAsString(context: Context): String? {
                 set?.valuePreconditions?.getDescription(context),
             )
             .joinToString(", ")
-        return if (preconditions.isEmpty()) null else "Preconditions to writing: $preconditions."
+        return if (preconditions.isEmpty()) null else "Preconditions to setting: $preconditions."
     } else {
         if (this !is PreferenceScreenMetadata && getEnabledDescription() != null) {
             // Screens are not settable so no need to communicate set preconditions.
