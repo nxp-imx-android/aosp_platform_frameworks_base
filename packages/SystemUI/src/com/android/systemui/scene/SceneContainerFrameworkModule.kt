@@ -16,8 +16,12 @@
 
 package com.android.systemui.scene
 
+import android.app.ActivityManager
 import android.content.Context
+import com.android.compose.animation.scene.SceneKey
+import com.android.internal.widget.LockPatternUtils
 import com.android.systemui.CoreStartable
+import com.android.systemui.Flags.startOnGoneSceneIfNoLockscreen
 import com.android.systemui.notifications.ui.composable.NotificationsShadeSessionModule
 import com.android.systemui.res.R
 import com.android.systemui.scene.domain.SceneDomainModule
@@ -89,8 +93,24 @@ interface SceneContainerFrameworkModule {
 
     companion object {
 
+        private fun determineInitialScene(lockPatternUtils: LockPatternUtils): SceneKey {
+            if (!startOnGoneSceneIfNoLockscreen()) {
+                return Scenes.Lockscreen
+            }
+
+            val userId = ActivityManager.getCurrentUser()
+            if (lockPatternUtils.isLockScreenDisabled(userId)) {
+                return Scenes.Gone
+            }
+
+            return Scenes.Lockscreen
+        }
+
         @Provides
-        fun containerConfig(context: Context): SceneContainerConfig {
+        fun containerConfig(
+            context: Context,
+            lockPatternUtils: LockPatternUtils,
+        ): SceneContainerConfig {
             // Include the shade and quick settings scenes if:
             // 1. Dual Shade is disabled, or
             // 2. The config explicitly requires them.
@@ -119,7 +139,7 @@ interface SceneContainerFrameworkModule {
                         Scenes.QuickSettings.takeIf { includeShadeAndQSScenes },
                         Scenes.Shade.takeIf { includeShadeAndQSScenes },
                     ),
-                initialSceneKey = Scenes.Lockscreen,
+                initialSceneKey = determineInitialScene(lockPatternUtils),
                 overlayKeys =
                     listOfNotNull(
                         Overlays.NotificationsShade,

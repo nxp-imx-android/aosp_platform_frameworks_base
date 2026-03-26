@@ -1633,6 +1633,13 @@ flag {
 }
 
 flag {
+    name: "start_on_gone_scene_if_no_lockscreen"
+    namespace: "systemui"
+    description: "Start on the Gone scene if the current user has no lockscreen"
+    bug: "495877718"
+}
+
+flag {
     name: "status_bar_always_check_underlying_networks"
     namespace: "systemui"
     description: "For status bar connectivity UI, always check underlying networks for wifi and "
