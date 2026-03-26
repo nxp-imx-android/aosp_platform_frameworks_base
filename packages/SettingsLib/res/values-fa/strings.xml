@@ -199,8 +199,7 @@
     <string name="accessibility_wifi_three_bars" msgid="779895671061950234">"‏سه نوار برای Wi‑Fi."</string>
     <string name="accessibility_wifi_signal_full" msgid="7165262794551355617">"‏قدرت سیگنال Wi‑Fi کامل است."</string>
     <string name="accessibility_wifi_other_device" msgid="2815627624555795918">"به دستگاهتان متصل شد."</string>
-    <!-- no translation found for accessibility_wifi_shared_network_icon_message (7853291528081728631) -->
-    <skip />
+    <string name="accessibility_wifi_shared_network_icon_message" msgid="7853291528081728631">"همه کاربران این دستگاه می‌توانند مشاهده و متصل کنند."</string>
     <string name="accessibility_wifi_security_type_none" msgid="162352241518066966">"شبکه باز"</string>
     <string name="accessibility_wifi_security_type_secured" msgid="2399774097343238942">"شبکه ایمن"</string>
     <string name="process_kernel_label" msgid="950292573930336765">"‏سیستم‌عامل Android"</string>

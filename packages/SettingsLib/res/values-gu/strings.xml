@@ -199,8 +199,7 @@
     <string name="accessibility_wifi_three_bars" msgid="779895671061950234">"Wifi ત્રણ બાર."</string>
     <string name="accessibility_wifi_signal_full" msgid="7165262794551355617">"પૂર્ણ Wifi સિગ્નલ."</string>
     <string name="accessibility_wifi_other_device" msgid="2815627624555795918">"તમારા ડિવાઇસ સાથે કનેક્ટેડ છે."</string>
-    <!-- no translation found for accessibility_wifi_shared_network_icon_message (7853291528081728631) -->
-    <skip />
+    <string name="accessibility_wifi_shared_network_icon_message" msgid="7853291528081728631">"આ ડિવાઇસ પરના બધા વપરાશકર્તાઓ જોઈ શકે છે અને કનેક્ટ કરી શકે છે."</string>
     <string name="accessibility_wifi_security_type_none" msgid="162352241518066966">"નેટવર્ક ખોલો"</string>
     <string name="accessibility_wifi_security_type_secured" msgid="2399774097343238942">"સુરક્ષિત નેટવર્ક"</string>
     <string name="process_kernel_label" msgid="950292573930336765">"Android OS"</string>
