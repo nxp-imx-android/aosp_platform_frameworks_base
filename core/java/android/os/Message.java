@@ -187,6 +187,9 @@ public final class Message implements Parcelable {
     /** @hide */
     public int heapIndex = -1;
 
+    /** @hide */
+    public long enqueueTime = -1;
+
     /*package*/ Bundle data;
 
     @UnsupportedAppUsage
@@ -419,6 +422,7 @@ public final class Message implements Parcelable {
         target = null;
         callback = null;
         data = null;
+        enqueueTime = -1;
         this.onClear();
     }
 

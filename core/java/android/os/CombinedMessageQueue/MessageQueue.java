@@ -3079,4 +3079,10 @@ public final class MessageQueue {
         return foundInStack || foundInQueue;
     }
 
+    /**
+     * @hide
+     */
+    public void setLooperDoctor(LooperDoctor d) {
+        // This version of MessageQueue does not use LooperDoctor
+    }
 }
