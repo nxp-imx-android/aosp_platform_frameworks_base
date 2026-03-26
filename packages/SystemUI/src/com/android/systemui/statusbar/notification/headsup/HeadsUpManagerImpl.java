@@ -790,9 +790,8 @@ public class HeadsUpManagerImpl
     @Nullable
     @VisibleForTesting
     HeadsUpEntry getHeadsUpEntry(@NonNull String key) {
-        HeadsUpEntry headsUpEntry = mHeadsUpEntryMap.get(key);
-        if (headsUpEntry != null) {
-            return headsUpEntry;
+        if (mHeadsUpEntryMap.containsKey(key)) {
+            return mHeadsUpEntryMap.get(key);
         }
         return mAvalancheController.getWaitingEntry(key);
     }
