@@ -3107,6 +3107,61 @@ class SceneContainerStartableTest(flags: FlagsParameterization) : SysuiTestCase(
             assertThat(currentScene).isEqualTo(Scenes.Gone)
         }
 
+    @Test
+    fun switchesToLockscreen_onTimeout() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            prepareState(isDeviceUnlocked = true, initialSceneKey = Scenes.Gone)
+            underTest.start()
+            runCurrent()
+            assertThat(currentScene).isEqualTo(Scenes.Gone)
+
+            keyguardServiceShowLockscreenInteractor.onKeyguardServiceDoKeyguardTimeout()
+            runCurrent()
+
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+        }
+
+    @Test
+    fun doesNotSwitchToLockscreen_onTimeout_ifOccluded() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            prepareState(isDeviceUnlocked = false)
+            underTest.start()
+            runCurrent()
+
+            keyguardOcclusionInteractor.setOccludedFromWm(true)
+            assertThat(currentScene).isEqualTo(Scenes.Occluded)
+
+            keyguardServiceShowLockscreenInteractor.onKeyguardServiceDoKeyguardTimeout()
+            runCurrent()
+
+            assertThat(currentScene).isEqualTo(Scenes.Occluded)
+        }
+
+    @Test
+    @EnableFlags(FLAG_DRIVE_DREAM_STATE_FROM_OCCLUSION)
+    fun doesNotSwitchToLockscreen_onTimeout_ifDreaming() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            prepareState(isDeviceUnlocked = false)
+            underTest.start()
+            runCurrent()
+
+            val dreamTaskInfo =
+                RunningTaskInfo().apply {
+                    topActivityType = WindowConfiguration.ACTIVITY_TYPE_DREAM
+                }
+            keyguardOcclusionRepository.setOccludedFromRemoteAnimation(true, dreamTaskInfo)
+            runCurrent()
+            assertThat(currentScene).isEqualTo(Scenes.Dream)
+
+            keyguardServiceShowLockscreenInteractor.onKeyguardServiceDoKeyguardTimeout()
+            runCurrent()
+
+            assertThat(currentScene).isEqualTo(Scenes.Dream)
+        }
+
     @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
     @Test
     fun doesNotUnlock_onFaceAuthSuccess_untilConfirmedAndReadyToDismissInSecureLockDevice() =
