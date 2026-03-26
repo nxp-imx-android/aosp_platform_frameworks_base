@@ -353,6 +353,22 @@ final class IInputMethodManagerGlobalInvoker {
     }
 
     @AnyThread
+    @RequiresPermission(allOf = {
+            Manifest.permission.WRITE_SECURE_SETTINGS,
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL})
+    static void hideInputMethodPickerFromSystem(int displayId) {
+        final IInputMethodManager service = getService();
+        if (service == null) {
+            return;
+        }
+        try {
+            service.hideInputMethodPickerFromSystem(displayId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    @AnyThread
     @RequiresPermission(Manifest.permission.TEST_INPUT_METHOD)
     static boolean isInputMethodPickerShownForTest(@UserIdInt int userId) {
         final IInputMethodManager service = getService();

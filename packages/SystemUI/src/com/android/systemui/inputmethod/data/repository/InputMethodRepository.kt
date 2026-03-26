@@ -84,6 +84,15 @@ interface InputMethodRepository {
         @IMPickerEntryPoint entryPoint: Int,
         displayId: Int,
     )
+
+    /**
+     * Hides the system's input method picker dialog.
+     *
+     * @param displayId (legacy unused param)
+     * @see InputMethodManager.hideInputMethodPickerFromSystem
+     */
+    // TODO: b/496501764 - Remove unused "displayId" param.
+    suspend fun hideInputMethodPicker(displayId: Int)
 }
 
 @SysUISingleton
@@ -174,6 +183,13 @@ constructor(
                 entryPoint,
                 displayId,
             )
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    override suspend fun hideInputMethodPicker(displayId: Int) {
+        withContext(backgroundDispatcher) {
+            inputMethodManager.hideInputMethodPickerFromSystem(displayId)
         }
     }
 

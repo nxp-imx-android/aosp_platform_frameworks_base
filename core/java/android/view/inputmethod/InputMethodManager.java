@@ -4758,6 +4758,18 @@ public final class InputMethodManager {
                 mode, entryPoint, displayId);
     }
 
+    /**
+     * Hides the input method chooser dialog from system.
+     *
+     * @param displayId (legacy unused param)
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.WRITE_SECURE_SETTINGS)
+    public void hideInputMethodPickerFromSystem(int displayId) {
+        // TODO: b/496501764 - Remove unused "displayId" param.
+        IInputMethodManagerGlobalInvoker.hideInputMethodPickerFromSystem(displayId);
+    }
+
     @GuardedBy("mH")
     private void showInputMethodPickerLocked() {
         IInputMethodManagerGlobalInvoker.showInputMethodPickerFromClient(mClient,
