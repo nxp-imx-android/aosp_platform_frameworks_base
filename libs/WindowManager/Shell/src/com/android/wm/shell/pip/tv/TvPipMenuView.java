@@ -294,7 +294,7 @@ public class TvPipMenuView extends FrameLayout implements TvPipActionsProvider.L
      */
     void setPipBounds(Rect updatedPipBounds) {
         ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                "%s: updateLayout, width: %s, height: %s", TAG, updatedPipBounds.width(),
+                "%s: updateLayout, width: %d, height: %d", TAG, updatedPipBounds.width(),
                 updatedPipBounds.height());
         if (updatedPipBounds.equals(mCurrentPipBounds)) return;
 

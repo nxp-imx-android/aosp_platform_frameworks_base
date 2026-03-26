@@ -423,7 +423,7 @@ public class TvPipMenuController implements PipMenuController, TvPipMenuView.Lis
     public void movePipMenu(@Nullable SurfaceControl.Transaction pipTx, @Nullable Rect pipBounds,
             float alpha) {
         ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                "%s: movePipMenu: %s, alpha %s", TAG,
+                "%s: movePipMenu: %s, alpha %f", TAG,
                 pipBounds != null ? pipBounds.toShortString() : null, alpha);
 
         if ((pipBounds == null || pipBounds.isEmpty()) && alpha == ALPHA_NO_CHANGE) {

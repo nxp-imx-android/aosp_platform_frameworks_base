@@ -357,11 +357,11 @@ public class PhonePipMenuController implements PipMenuController,
             boolean willResizeMenu, boolean withDelay) {
         if (DEBUG) {
             ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                    "%s: showMenu() state=%s"
-                            + " isMenuVisible=%s"
-                            + " allowMenuTimeout=%s"
-                            + " willResizeMenu=%s"
-                            + " withDelay=%s"
+                    "%s: showMenu() state=%d"
+                            + " isMenuVisible=%b"
+                            + " allowMenuTimeout=%b"
+                            + " willResizeMenu=%b"
+                            + " withDelay=%b"
                             + " callers=\n%s", TAG, menuState, isMenuVisible(), allowMenuTimeout,
                     willResizeMenu, withDelay, Debug.getCallers(5, "    "));
         }
@@ -475,10 +475,10 @@ public class PhonePipMenuController implements PipMenuController,
         final boolean isMenuVisible = isMenuVisible();
         if (DEBUG) {
             ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                    "%s: hideMenu() state=%s"
-                            + " isMenuVisible=%s"
-                            + " animationType=%s"
-                            + " resize=%s"
+                    "%s: hideMenu() state=%d"
+                            + " isMenuVisible=%b"
+                            + " animationType=%d"
+                            + " resize=%b"
                             + " callers=\n%s", TAG, mMenuState, isMenuVisible,
                     animationType, resize,
                     Debug.getCallers(5, "    "));
@@ -559,8 +559,8 @@ public class PhonePipMenuController implements PipMenuController,
     void onMenuStateChangeStart(int menuState, boolean resize, Runnable callback) {
         if (DEBUG) {
             ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                    "%s: onMenuStateChangeStart() mMenuState=%s"
-                            + " menuState=%s resize=%s"
+                    "%s: onMenuStateChangeStart() mMenuState=%d"
+                            + " menuState=%d resize=%b"
                             + " callers=\n%s", TAG, mMenuState, menuState, resize,
                     Debug.getCallers(5, "    "));
         }

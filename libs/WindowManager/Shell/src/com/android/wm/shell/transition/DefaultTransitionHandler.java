@@ -264,7 +264,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                 // We only enable seamless rotation if all the visible task windows requested it.
                 if (anim != ROTATION_ANIMATION_SEAMLESS) {
                     ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
-                            "  task %s isn't requesting seamless, so not seamless.",
+                            "  task %d isn't requesting seamless, so not seamless.",
                             taskInfo.taskId);
                     allTasksSeamless = false;
                 } else if (isTopTask) {

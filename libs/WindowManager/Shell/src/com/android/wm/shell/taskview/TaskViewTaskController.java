@@ -137,7 +137,7 @@ public class TaskViewTaskController implements ShellTaskOrganizer.TaskListener {
      * task related changes and getting the current bounds.
      */
     public void setTaskViewBase(TaskViewBase taskViewBase) {
-        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.setTaskViewBase(): taskView=%d base=%s",
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "TaskController.setTaskViewBase(): taskView=%d base=%d",
                 hashCode(), taskViewBase.hashCode());
         mTaskViewBase = taskViewBase;
     }

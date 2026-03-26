@@ -177,7 +177,7 @@ public class TvPipNotificationController implements TvPipActionsProvider.Listene
         }
 
         ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                "%s: update(), title: %s, subtitle: %s, mediaSessionToken: %s, #actions: %s", TAG,
+                "%s: update(), title: %s, subtitle: %s, mediaSessionToken: %s, #actions: %d", TAG,
                 getNotificationTitle(), mPipSubtitle, mMediaSessionToken, mPipActions.length);
         mNotificationBuilder
                 .setWhen(System.currentTimeMillis())
