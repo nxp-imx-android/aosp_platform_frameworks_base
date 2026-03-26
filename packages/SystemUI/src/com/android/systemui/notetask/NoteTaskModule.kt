@@ -39,7 +39,6 @@ import com.android.systemui.qs.tiles.base.shared.model.QSTileConfig
 import com.android.systemui.qs.tiles.base.shared.model.QSTileUIConfig
 import com.android.systemui.qs.tiles.base.ui.viewmodel.QSTileViewModel
 import com.android.systemui.qs.tiles.base.ui.viewmodel.QSTileViewModelFactory
-import com.android.systemui.qs.tiles.base.ui.viewmodel.StubQSTileViewModel
 import com.android.systemui.qs.tiles.impl.notes.domain.interactor.NotesTileDataInteractor
 import com.android.systemui.qs.tiles.impl.notes.domain.interactor.NotesTileUserActionInteractor
 import com.android.systemui.qs.tiles.impl.notes.domain.model.NotesTileModel
@@ -111,14 +110,12 @@ interface NoteTaskModule {
             stateInteractor: NotesTileDataInteractor,
             userActionInteractor: NotesTileUserActionInteractor,
         ): QSTileViewModel =
-            if (com.android.systemui.Flags.qsNewTilesFuture())
-                factory.create(
-                    TileSpec.create(NOTES_TILE_SPEC),
-                    userActionInteractor,
-                    stateInteractor,
-                    mapper,
-                )
-            else StubQSTileViewModel
+            factory.create(
+                TileSpec.create(NOTES_TILE_SPEC),
+                userActionInteractor,
+                stateInteractor,
+                mapper,
+            )
 
         @Provides
         @IntoMap
