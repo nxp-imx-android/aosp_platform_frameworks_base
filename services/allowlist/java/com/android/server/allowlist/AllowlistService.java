@@ -27,6 +27,7 @@ import android.annotation.UserIdInt;
 import android.app.appfunctions.flags.Flags;
 import android.content.Context;
 import android.content.pm.SignedPackage;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteCallback;
@@ -68,6 +69,9 @@ import java.util.function.Consumer;
 public final class AllowlistService extends SystemService {
 
     private static final String LOG_TAG = AllowlistService.class.getSimpleName();
+
+    // Timeout for binding to the AllowlistProviderService.
+    private static final int APP_BINDING_TIMEOUT_MS = 10 * 1000 * Build.HW_TIMEOUT_MULTIPLIER;
 
     private AppBindingService mAppBindingService;
     // Only used for testing purpose
@@ -117,7 +121,7 @@ public final class AllowlistService extends SystemService {
                 try {
                     service.asBinder().linkToDeath(mProviderDeathRecipient, 0);
                 } catch (RemoteException e) {
-                    Slog.e(LOG_TAG, "Failed to link to death for IAllowlistProviderService", e);
+                    Slog.e(LOG_TAG, "Failed to link to death for IAllowlistProviderService");
                     return;
                 }
 
@@ -126,7 +130,7 @@ public final class AllowlistService extends SystemService {
                         service.addRequestForAllowlistChange(request,
                                 mOnProviderAllowlistsChangedListener);
                     } catch (RemoteException e) {
-                        Slog.w(LOG_TAG, "Failed to re-register an AllowlistRequest", e);
+                        Slog.w(LOG_TAG, "Failed to re-register an AllowlistRequest");
                     }
                 }
 
@@ -236,7 +240,7 @@ public final class AllowlistService extends SystemService {
                 try {
                     service.queryAllowlist(request, wrapperCallback);
                 } catch (RemoteException e) {
-                    Slog.w(LOG_TAG, "Exception when querying allowlist", e);
+                    Slog.w(LOG_TAG, "Exception when querying allowlist");
                     wrapperCallback.sendResult(null);
                 }
             });
@@ -295,7 +299,7 @@ public final class AllowlistService extends SystemService {
                     try {
                         service.asBinder().linkToDeath(mProviderDeathRecipient, 0);
                     } catch (RemoteException e) {
-                        Slog.e(LOG_TAG, "Failed to link to death for IAllowlistProviderService", e);
+                        Slog.e(LOG_TAG, "Failed to link to death for IAllowlistProviderService");
                     }
                 }
             });
@@ -348,8 +352,7 @@ public final class AllowlistService extends SystemService {
                     try {
                         service.removeRequestForAllowlistChange(request);
                     } catch (RemoteException e) {
-                        Slog.w(LOG_TAG, "Exception when removing allowlist listener", e);
-                        return;
+                        Slog.w(LOG_TAG, "Exception when removing allowlist listener");
                     }
                 });
             }
@@ -401,7 +404,7 @@ public final class AllowlistService extends SystemService {
                     IAllowlistProviderService binder =
                             (IAllowlistProviderService) connection.getServiceBinder();
                     action.accept(binder);
-                });
+                }, APP_BINDING_TIMEOUT_MS);
     }
 
     void addPackagesToShellAllowlist(int allowlistId, @NonNull List<SignedPackage> signedPackages) {

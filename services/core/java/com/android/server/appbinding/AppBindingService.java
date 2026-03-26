@@ -199,9 +199,6 @@ public class AppBindingService extends Binder {
             int userId,
             Consumer<AppServiceConnection> action,
             long timeoutMillis) {
-        if (!Flags.enableTimeoutInDispatchAppServiceEvent()) {
-            return;
-        }
         List<AppServiceConnection> serviceConnections = new ArrayList<>();
         synchronized (mLock) {
             for (int i = 0; i < mApps.size(); i++) {

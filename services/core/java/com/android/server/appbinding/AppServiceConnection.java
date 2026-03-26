@@ -88,6 +88,7 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
 
     @Override
     protected void onConnected(@NonNull IInterface service) {
+        scheduleCallbacksLegacy();
         scheduleCallbacks();
     }
 
@@ -112,7 +113,7 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
         synchronized (mLock) {
             mCallbacks.add(callback);
         }
-        scheduleCallbacks();
+        scheduleCallbacksLegacy();
     }
     /**
      * Adds a callback to the queue and tries to schedule it immediately
@@ -121,12 +122,10 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
      * @param timeoutMillis Time to wait for the connection to be established
      */
     public void addCallback(Consumer<AppServiceConnection> action, long timeoutMillis) {
-        if (Flags.enableTimeoutInDispatchAppServiceEvent()) {
-            synchronized (mLock) {
-                mAppServiceCallbacks.add(new AppServiceCallback(action, timeoutMillis));
-            }
-            scheduleCallbacks();
+        synchronized (mLock) {
+            mAppServiceCallbacks.add(new AppServiceCallback(action, timeoutMillis));
         }
+        scheduleCallbacks();
     }
 
     /**
@@ -134,22 +133,6 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
      * already established
      */
     private void scheduleCallbacks() {
-        if (!Flags.enableTimeoutInDispatchAppServiceEvent()) {
-            if (isConnected()) {
-                ArrayList<Consumer<AppServiceConnection>> callbacks;
-                synchronized (mLock) {
-                    callbacks = new ArrayList<>(mCallbacks);
-                    mCallbacks.clear();
-                }
-
-                for (Consumer<AppServiceConnection> action : callbacks) {
-                    mHandler.post(() -> {
-                        action.accept(this);
-                    });
-                }
-            }
-            return;
-        }
         if (isConnected()) {
             ArrayList<AppServiceCallback> callbacks;
             synchronized (mLock) {
@@ -159,6 +142,22 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
 
             for (AppServiceCallback callback : callbacks) {
                 callback.postAction();
+            }
+        }
+    }
+
+    private void scheduleCallbacksLegacy() {
+        if (isConnected()) {
+            ArrayList<Consumer<AppServiceConnection>> callbacks;
+            synchronized (mLock) {
+                callbacks = new ArrayList<>(mCallbacks);
+                mCallbacks.clear();
+            }
+
+            for (Consumer<AppServiceConnection> action : callbacks) {
+                mHandler.post(() -> {
+                    action.accept(this);
+                });
             }
         }
     }
