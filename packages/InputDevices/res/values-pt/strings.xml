@@ -3,6 +3,8 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="8016145283189546017">"Dispositivos de entrada"</string>
     <string name="keyboard_layouts_label" msgid="6688773268302087545">"Teclado do Android"</string>
+    <!-- no translation found for keyboard_layout_english_ca_label (2415799429045326926) -->
+    <skip />
     <string name="keyboard_layout_english_uk_label" msgid="6664258463319999632">"Inglês (Reino Unido)"</string>
     <string name="keyboard_layout_english_us_label" msgid="8994890249649106291">"Inglês (EUA)"</string>
     <string name="keyboard_layout_english_us_intl" msgid="3705168594034233583">"Inglês (EUA), estilo internacional"</string>
@@ -74,5 +76,21 @@
     <!-- no translation found for default_game_controller_right_button (7213665536684737133) -->
     <skip />
     <!-- no translation found for default_game_controller_up_button (5466016771871639338) -->
+    <skip />
+    <!-- no translation found for nintendo_game_controller_l_button (4725333055757177703) -->
+    <skip />
+    <!-- no translation found for nintendo_game_controller_r_button (1916817307166823755) -->
+    <skip />
+    <!-- no translation found for nintendo_game_controller_zl_button (7980363034784417011) -->
+    <skip />
+    <!-- no translation found for nintendo_game_controller_zr_button (301860128142672009) -->
+    <skip />
+    <!-- no translation found for xbox_game_controller_lb_button (3531058576782769049) -->
+    <skip />
+    <!-- no translation found for xbox_game_controller_rb_button (7009478913470850721) -->
+    <skip />
+    <!-- no translation found for xbox_game_controller_lt_button (6613016668751667815) -->
+    <skip />
+    <!-- no translation found for xbox_game_controller_rt_button (1259415225164057316) -->
     <skip />
 </resources>
