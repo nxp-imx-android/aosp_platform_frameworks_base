@@ -404,6 +404,7 @@ public class MenuView extends FrameLayout implements
         mMenuViewModel.registerObserversAndCallbacks();
         getViewTreeObserver().addOnComputeInternalInsetsListener(this);
         getViewTreeObserver().addOnDrawListener(mSystemGestureExcludeUpdater);
+        mAdapter.show();
     }
 
     void hide() {
@@ -420,6 +421,7 @@ public class MenuView extends FrameLayout implements
         mMenuViewModel.unregisterObserversAndCallbacks();
         getViewTreeObserver().removeOnComputeInternalInsetsListener(this);
         getViewTreeObserver().removeOnDrawListener(mSystemGestureExcludeUpdater);
+        mAdapter.hide();
     }
 
     void onDraggingStart() {
