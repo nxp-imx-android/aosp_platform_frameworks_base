@@ -5042,6 +5042,31 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                         userId);
     }
 
+    private int getAppUidForPrivateComputeCoreUidInternal(int pccUid) {
+        final int callerUid = Binder.getCallingUid();
+        if (!Process.isPrivateComputeCoreUid(pccUid)) {
+            return Process.INVALID_UID;
+        }
+
+        final int userId = UserHandle.getUserId(pccUid);
+        final PackageSetting setting;
+        synchronized (mLock) {
+            setting = (PackageSetting) mSettings.getPccSettingLPr(
+                    UserHandle.getAppId(pccUid));
+        }
+        if (setting == null) {
+            Slog.w(TAG, "No application found for PCC UID " + pccUid);
+            return Process.INVALID_UID;
+        }
+        final Computer snapshot = snapshotComputer();
+        final PackageStateInternal ps = snapshot.getPackageStateForInstalledAndFiltered(
+                setting.getPackageName(), callerUid, userId);
+        if (ps == null) {
+            return Process.INVALID_UID;
+        }
+        return UserHandle.getUid(userId, setting.getAppId());
+    }
+
     public class IPackageManagerImpl extends IPackageManagerBase {
 
         public IPackageManagerImpl() {
@@ -7017,28 +7042,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
         @Override
         public int getAppUidForPrivateComputeCoreUid(int pccUid) {
-            final int callerUid = Binder.getCallingUid();
-            if (!Process.isPrivateComputeCoreUid(pccUid)) {
-                return Process.INVALID_UID;
-            }
-
-            final int userId = UserHandle.getUserId(pccUid);
-            final PackageSetting setting;
-            synchronized (mLock) {
-                setting = (PackageSetting) mSettings.getPccSettingLPr(
-                        UserHandle.getAppId(pccUid));
-            }
-            if (setting == null) {
-                Slog.w(TAG, "No application found for PCC UID " + pccUid);
-                return Process.INVALID_UID;
-            }
-            final Computer snapshot = snapshotComputer();
-            final PackageStateInternal ps = snapshot.getPackageStateForInstalledAndFiltered(
-                    setting.getPackageName(), callerUid, userId);
-            if (ps == null) {
-                return Process.INVALID_UID;
-            }
-            return UserHandle.getUid(userId, setting.getAppId());
+            return getAppUidForPrivateComputeCoreUidInternal(pccUid);
         }
 
         @Override
@@ -7138,6 +7142,11 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         @Override
         protected ResolveIntentHelper getResolveIntentHelper() {
             return mResolveIntentHelper;
+        }
+
+        @Override
+        public int getAppUidForPrivateComputeCoreUid(int pccUid) {
+            return getAppUidForPrivateComputeCoreUidInternal(pccUid);
         }
 
         @NonNull
