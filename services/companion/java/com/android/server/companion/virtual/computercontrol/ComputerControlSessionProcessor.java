@@ -97,7 +97,6 @@ public final class ComputerControlSessionProcessor {
 
     private final Context mContext;
     private final KeyguardManager mKeyguardManager;
-    private final AuthenticationPolicyManager mAuthenticationPolicyManager;
     private final AppOpsManager mAppOpsManager;
     private final PackageManager mPackageManager;
     private final UserManager mUserManager;
@@ -108,6 +107,10 @@ public final class ComputerControlSessionProcessor {
     private final VirtualDeviceFactory mVirtualDeviceFactory;
     private final PendingIntentFactory mPendingIntentFactory;
     private final ComputerControlAllowlistController mAllowlistController;
+
+    // Lazily initialized on-demand by getAuthenticationPolicyManager()
+    @Nullable
+    private AuthenticationPolicyManager mAuthenticationPolicyManager;
 
     /** The binders of all currently active sessions. */
     @GuardedBy("mSessions")
@@ -139,7 +142,6 @@ public final class ComputerControlSessionProcessor {
         mVirtualDeviceFactory = virtualDeviceFactory;
         mPendingIntentFactory = pendingIntentFactory;
         mKeyguardManager = context.getSystemService(KeyguardManager.class);
-        mAuthenticationPolicyManager = context.getSystemService(AuthenticationPolicyManager.class);
         mAppOpsManager = context.getSystemService(AppOpsManager.class);
         mPackageManager = context.getPackageManager();
         mUserManager = context.getSystemService(UserManager.class);
@@ -530,16 +532,26 @@ public final class ComputerControlSessionProcessor {
         }
         final int userId = UserHandle.getUserId(attributionSource.getUid());
         return Binder.withCleanCallingIdentity(() -> {
-            if (android.companion.Flags.supportAiAgent() && mAuthenticationPolicyManager != null) {
+            var authenticationPolicyManager = getAuthenticationPolicyManager();
+            if (android.companion.Flags.supportAiAgent() && authenticationPolicyManager != null) {
                 // Note: isAgentAuthorized validates things about the agent AND the device state,
                 //       including the devices keyguard state.
-                return !mAuthenticationPolicyManager.isAgentAuthorized(
+                return !authenticationPolicyManager.isAgentAuthorized(
                         userId, deviceId,
                         companionDeviceId == null ? null : companionDeviceId.getDeviceId());
             } else {
                 return mKeyguardManager.isDeviceLocked(userId, deviceId);
             }
         });
+    }
+
+    @Nullable
+    private AuthenticationPolicyManager getAuthenticationPolicyManager() {
+        if (mAuthenticationPolicyManager == null) {
+            mAuthenticationPolicyManager =
+                    mContext.getSystemService(AuthenticationPolicyManager.class);
+        }
+        return mAuthenticationPolicyManager;
     }
 
     /** Notifies the client that session creation failed. */
