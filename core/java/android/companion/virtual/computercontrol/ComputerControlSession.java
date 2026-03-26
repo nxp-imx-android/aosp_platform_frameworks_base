@@ -294,7 +294,6 @@ public final class ComputerControlSession implements AutoCloseable {
                     releaseResources();
                     synchronized (mLifecycle) {
                         mLifecycle.onClosed(closeReason);
-                        mA11yManager.unregisterDisplayProxy(mAccessibilityProxy);
                     }
                     mOnClosedRunnable.run();
                     mHandlerThread.quitSafely();
