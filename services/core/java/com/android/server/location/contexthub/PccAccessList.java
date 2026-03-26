@@ -19,6 +19,7 @@ package com.android.server.location.contexthub;
 import android.hardware.contexthub.HubEndpointInfo;
 import android.os.Process;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -35,12 +36,23 @@ public class PccAccessList {
     private final Set<HubEndpointInfo.HubEndpointIdentifier> mPccEndpointIds =
             ConcurrentHashMap.newKeySet();
 
+    /** A callback to be invoked when the PCC access list is updated. */
+    public interface PccAccessChangeCallback {
+        /**
+         * @param endpointId The endpoint ID that was added to the PCC access list.
+         */
+        void onPccAccessChanged(HubEndpointInfo.HubEndpointIdentifier endpointId);
+    }
+
+    /** The registered callback. */
+    private PccAccessChangeCallback mCallback;
+
     private PccAccessList() {}
 
     /**
      * @return The singleton instance of this class.
      */
-    public static PccAccessList getInstance() {
+    /* package */ static PccAccessList getInstance() {
         if (sInstance == null) {
             synchronized (PccAccessList.class) {
                 if (sInstance == null) {
@@ -59,14 +71,14 @@ public class PccAccessList {
      * @param uid The UID of the client.
      * @param endpointInfo The endpoint being accessed.
      */
-    public void maybeNotePccAccessForEndpoint(int uid, HubEndpointInfo endpointInfo) {
+    /* package */ void maybeNotePccAccessForEndpoint(int uid, HubEndpointInfo endpointInfo) {
         notePccAccessInternal(uid, endpointInfo.getIdentifier());
     }
 
     /**
      * Equivalent to {@link #maybeNotePccAccessForEndpoint(int, HubEndpointInfo)} but for nanoapps.
      */
-    public void maybeNotePccAccessForNanoapp(int uid, int contextHubId, long nanoAppId) {
+    /* package */ void maybeNotePccAccessForNanoapp(int uid, int contextHubId, long nanoAppId) {
         notePccAccessInternal(
                 uid, new HubEndpointInfo.HubEndpointIdentifier(contextHubId, nanoAppId));
     }
@@ -78,20 +90,35 @@ public class PccAccessList {
      * @param endpointInfo The endpoint info to check for.
      * @return {@code true} if the client has access, {@code false} otherwise.
      */
-    public boolean checkPccAccessForEndpoint(int uid, HubEndpointInfo endpointInfo) {
+    /* package */ boolean checkPccAccessForEndpoint(int uid, HubEndpointInfo endpointInfo) {
         return checkPccAccessInternal(uid, endpointInfo.getIdentifier());
     }
 
     /** Equivalent to {@link #checkPccAccessForEndpoint(int, HubEndpointInfo)} but for nanoapps. */
-    public boolean checkPccAccessForNanoapp(int uid, int contextHubId, long nanoAppId) {
+    /* package */ boolean checkPccAccessForNanoapp(int uid, int contextHubId, long nanoAppId) {
         return checkPccAccessInternal(
                 uid, new HubEndpointInfo.HubEndpointIdentifier(contextHubId, nanoAppId));
     }
 
     private void notePccAccessInternal(int uid, HubEndpointInfo.HubEndpointIdentifier endpointId) {
         if (isPccUid(uid)) {
-            mPccEndpointIds.add(endpointId);
+            if (mPccEndpointIds.add(endpointId)) {
+                PccAccessChangeCallback callback;
+                synchronized (this) {
+                    callback = mCallback;
+                }
+                if (callback != null) {
+                    callback.onPccAccessChanged(endpointId);
+                }
+            }
         }
+    }
+
+    /** Registers a callback to be invoked when the PCC access list is updated. */
+    /* package */ synchronized void registerPccAccessChangeCallback(
+            PccAccessChangeCallback callback) {
+        Objects.requireNonNull(callback);
+        mCallback = callback;
     }
 
     /**
