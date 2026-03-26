@@ -22,6 +22,7 @@ import android.view.View
 import com.android.internal.annotations.VisibleForTesting
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.media.controls.ui.controller.KeyguardMediaController
+import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.notification.SourceType
@@ -36,7 +37,6 @@ import com.android.systemui.statusbar.notification.dagger.SilentHeader
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
 import com.android.systemui.statusbar.notification.shared.NmContextualDisplay
-import com.android.systemui.statusbar.notification.shared.NmHighlights
 import com.android.systemui.statusbar.notification.stack.StackScrollAlgorithm.SectionProvider
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.util.foldToSparseArray
@@ -127,7 +127,7 @@ internal constructor(
         if (!SceneContainerFlag.isEnabled) {
             keyguardMediaController.attachSinglePaneContainer(mediaControlsView)
         }
-        if (NmHighlights.isEnabled) {
+        if (NmContextualDisplayLaunch.isEnabled) {
             highlightsHeaderController.reinflateView(parent)
         }
     }
@@ -142,7 +142,7 @@ internal constructor(
             view === peopleHeaderView ||
             view === alertingHeaderView ||
             view === incomingHeaderView ||
-            (NmHighlights.isEnabled && view === highlightsHeaderView) ||
+            (NmContextualDisplayLaunch.isEnabled && view === highlightsHeaderView) ||
             getBucket(view) != getBucket(previous)) &&
             // don't consider the first notification after onboarding to be a new section, so that
             // the onboarding affordance remains close to the notification
@@ -363,7 +363,7 @@ internal constructor(
         peopleHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
         silentHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
         alertingHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
-        if (NmHighlights.isEnabled) {
+        if (NmContextualDisplayLaunch.isEnabled) {
             highlightsHeaderView?.setForegroundColors(onSurface, onSurfaceVariant)
         }
     }

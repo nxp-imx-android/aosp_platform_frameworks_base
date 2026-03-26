@@ -289,13 +289,6 @@ flag {
 }
 
 flag {
-  name: "nm_highlights"
-  namespace: "notifications"
-  description: "Allows the NAS to highlight notifications"
-  bug: "438704838"
-}
-
-flag {
   name: "nm_insights"
   namespace: "notifications"
   description: "Shows insights derived from notifications"
