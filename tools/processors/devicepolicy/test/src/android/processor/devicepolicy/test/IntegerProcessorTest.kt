@@ -16,6 +16,9 @@
 
 package android.processor.devicepolicy.test
 
+import android.processor.devicepolicy.protos.PolicyMetadataList
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.IntegerPolicyMetadata
+import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
 class IntegerProcessorTest {
@@ -40,7 +43,8 @@ class IntegerProcessorTest {
                                 allowedScopes = { POLICY_SCOPE_USER },
                                 affectedResource = RESOURCE_DEVICE_WIDE,
                                 $ALLOWED_DPC_TYPES_SNIPPET
-                        )
+                        ),
+                        resolutionMechanism = @IntegerResolutionMechanism(custom = true)
                 )
                 public static final PolicyIdentifier<Integer> MIN_GREATER_MAX =
                     new PolicyIdentifier<>("MIN_GREATER_MAX");
@@ -48,4 +52,117 @@ class IntegerProcessorTest {
             expectedError = "minValue cannot be larger than maxValue",
         )
     }
+
+    @Test
+    fun test_missingResolutionMechanism_failsToCompile() {
+        compiler.compileExpectError(
+            """
+                /**
+                * ResolutionMechanism can not be empty.
+                */
+                @IntegerPolicyDefinition(
+                        base = @PolicyDefinition(
+                                allowedScopes = { POLICY_SCOPE_USER },
+                                affectedResource = RESOURCE_DEVICE_WIDE,
+                                $ALLOWED_DPC_TYPES_SNIPPET
+                        ),
+                        resolutionMechanism = @IntegerResolutionMechanism()
+                )
+                public static final PolicyIdentifier<Integer> POLICY_KEY =
+                    new PolicyIdentifier<>("POLICY_KEY");
+            """,
+            expectedError = "Resolution mechanism can not be empty",
+        )
+    }
+
+    @Test
+    fun test_twoResolutionMechanisms_failsToCompile() {
+        compiler.compileExpectError(
+            """
+                /**
+                * ResolutionMechanism can not have multiple mechanisms.
+                */
+                @IntegerPolicyDefinition(
+                        base = @PolicyDefinition(
+                                allowedScopes = { POLICY_SCOPE_USER },
+                                affectedResource = RESOURCE_DEVICE_WIDE,
+                                $ALLOWED_DPC_TYPES_SNIPPET
+                        ),
+                        resolutionMechanism = @IntegerResolutionMechanism(
+                            custom = true,
+                            notCoexistable = true
+                        )
+                )
+                public static final PolicyIdentifier<Integer> POLICY_KEY =
+                    new PolicyIdentifier<>("POLICY_KEY");
+            """,
+            expectedError = "Only one resolution mechanism can be selected",
+        )
+    }
+
+    @Test
+    fun test_resolutionMechanism_custom_addedToTextProto() {
+        val generatedResolutionMechanism =
+            compiler
+                .compileExpectSuccess(
+                    """
+                        /** * ResolutionMechanism custom.  */
+                        @IntegerPolicyDefinition(
+                                base = @PolicyDefinition(
+                                        allowedScopes = { POLICY_SCOPE_USER },
+                                        affectedResource = RESOURCE_DEVICE_WIDE,
+                                        $ALLOWED_DPC_TYPES_SNIPPET
+                                ),
+                                resolutionMechanism = @IntegerResolutionMechanism(
+                                    custom = true
+                                )
+                        )
+                        public static final PolicyIdentifier<Integer> POLICY_KEY =
+                            new PolicyIdentifier<>("POLICY_KEY");
+                    """
+                )
+                .getResolutionMechanism()
+
+        val expectedResolutionMechanism =
+            IntegerPolicyMetadata.ResolutionMechanism.newBuilder().setCustom(true).build()
+
+        assertThat(generatedResolutionMechanism).isEqualTo(expectedResolutionMechanism)
+    }
+
+    @Test
+    fun test_resolutionMechanism_notCoexistable_addedToTextProto() {
+        val generatedResolutionMechanism =
+            compiler
+                .compileExpectSuccess(
+                    """
+                        /** * ResolutionMechanism custom.  */
+                        @IntegerPolicyDefinition(
+                                base = @PolicyDefinition(
+                                        allowedScopes = { POLICY_SCOPE_USER },
+                                        affectedResource = RESOURCE_DEVICE_WIDE,
+                                        $ALLOWED_DPC_TYPES_SNIPPET
+                                ),
+                                resolutionMechanism = @IntegerResolutionMechanism(
+                                    notCoexistable = true
+                                )
+                        )
+                        public static final PolicyIdentifier<Integer> POLICY_KEY =
+                            new PolicyIdentifier<>("POLICY_KEY");
+                    """
+                )
+                .getResolutionMechanism()
+
+        val expectedResolutionMechanism =
+            IntegerPolicyMetadata.ResolutionMechanism.newBuilder().setNotCoexistable(true).build()
+
+        assertThat(generatedResolutionMechanism).isEqualTo(expectedResolutionMechanism)
+    }
+
+    private fun PolicyMetadataList.getResolutionMechanism():
+        IntegerPolicyMetadata.ResolutionMechanism? =
+        this.getPolicyMetadataList()
+            ?.getOrNull(0)
+            ?.getTypeSpecificMetadata()
+            ?.getIntegerMetadata()
+            ?.getResolutionMechanism()
 }

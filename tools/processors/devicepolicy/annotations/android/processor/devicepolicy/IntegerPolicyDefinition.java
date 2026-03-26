@@ -41,4 +41,10 @@ public @interface IntegerPolicyDefinition {
      * The maximum value this integer policy can take, inclusive.
      */
     int maxValue() default Integer.MAX_VALUE;
+
+    /**
+     * Indicates the conflict resolution mechanism used by this policy.
+     */
+    IntegerResolutionMechanism resolutionMechanism();
+
 }
