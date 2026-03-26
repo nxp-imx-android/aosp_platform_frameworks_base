@@ -40,6 +40,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.Componen
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.ComponentMeasure;
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.MeasurePass;
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.Size;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.AlignByModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.paint.PaintBundle;
 import com.android.internal.widget.remotecompose.core.operations.utilities.StringSerializer;
 import com.android.internal.widget.remotecompose.core.operations.utilities.touch.CommandParameters;
@@ -462,10 +463,10 @@ public class CoreText extends LayoutManager implements VariableSupport, Accessib
     public float getAlignValue(@NonNull PaintContext context, float line) {
         if (Float.isNaN(line)) {
             int id = Utils.idFromNan(line);
-            if (id == RemoteContext.ID_FIRST_BASELINE) {
+            if (id == AlignByModifierOperation.ID_FIRST_BASELINE) {
                 return mBaseline;
             }
-            if (id == RemoteContext.ID_LAST_BASELINE) {
+            if (id == AlignByModifierOperation.ID_LAST_BASELINE) {
                 // TODO add support for last baseline
                 return mBaseline;
             }
