@@ -42,6 +42,7 @@ import com.android.systemui.statusbar.ui.systemBarUtilsState
 import com.android.systemui.wallpapers.domain.interactor.wallpaperInteractorFaked
 import com.android.systemui.wallpapers.ui.viewmodel.wallpaperViewModel
 import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
+import com.android.systemui.window.logging.blurLogger
 import com.android.systemui.window.ui.FakeBlurChoreographer
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.mockito.kotlin.mock
@@ -122,6 +123,7 @@ val Kosmos.sceneTransitionBlurViewModel by Fixture {
         blurChoreographer = fakeBlurChoreographer,
         shadeInteractor = shadeInteractor,
         deviceEntryInteractor = deviceEntryInteractor,
+        logger = blurLogger,
     )
 }
 
