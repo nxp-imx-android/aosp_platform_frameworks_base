@@ -36,13 +36,6 @@ flag {
 }
 
 flag {
-    name: "mouse_swap_primary_button"
-    namespace: "input"
-    description: "Controls whether the connected mice's primary buttons, left and right, can be swapped."
-    bug: "352598211"
-}
-
-flag {
     name: "enable_customizable_input_gestures"
     namespace: "input"
     description: "Enables keyboard shortcut customization support"
@@ -83,13 +76,6 @@ flag {
     namespace: "accessibility"
     description: "Adds key gesture for TalkBack"
     bug: "441787329"
-}
-
-flag {
-    name: "mouse_scrolling_acceleration"
-    namespace: "input"
-    description: "Allows the user to disable input scrolling acceleration for mouse."
-    bug: "383555305"
 }
 
 flag {
