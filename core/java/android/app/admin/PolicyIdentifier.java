@@ -343,7 +343,7 @@ public final class PolicyIdentifier<T> {
      * <p>If the value is {@code null}, any previously set role holder set through this policy will
      * be removed.
      */
-    @FlaggedApi(FLAG_POLICY_STREAMLINING)
+    @FlaggedApi(android.app.contentrestriction.flags.Flags.FLAG_CONTENT_RESTRICTION_API)
     @NonNull
     @ListOfStringPolicyDefinition(
             base =

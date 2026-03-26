@@ -555,5 +555,5 @@ policy_metadata {
   required_cross_user_permission: "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL"
   allowed_dpc_types: DPC_TYPE_DEVICE_OWNER
   allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
-  flag: "android.app.admin.flags.policy_streamlining"
+  flag: "android.app.contentrestriction.flags.content_restriction_api"
 }
