@@ -54,4 +54,12 @@ flag {
     bug: "467266483"
 }
 
+flag {
+    name: "notification_summarization_allow_animation"
+    namespace: "notifications"
+    description: "Animation support for notification summarization icon."
+    bug: "486942439"
+}
+
+
 # go/keep-sorted end
