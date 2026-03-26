@@ -105,7 +105,10 @@ class ActivatableNotificationViewTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_NOTIFICATION_ROW_TRANSPARENCY, Flags.FLAG_ENABLE_LOCKSCREEN_BLUR)
+    @DisableFlags(
+        Flags.FLAG_NOTIFICATION_ROW_TRANSPARENCY,
+        Flags.FLAG_LOCKSCREEN_BLUR_FOR_NOTIFICATIONS
+    )
     fun testBackgroundBehaviors() {
         mView = TestActivatableNotificationView(mContext, useRealNotificationBackgroundView = true)
 
@@ -134,7 +137,7 @@ class ActivatableNotificationViewTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_NOTIFICATION_ROW_TRANSPARENCY)
-    @DisableFlags(Flags.FLAG_ENABLE_LOCKSCREEN_BLUR)
+    @DisableFlags(Flags.FLAG_LOCKSCREEN_BLUR_FOR_NOTIFICATIONS)
     fun testBackgroundBehaviorsWithTransparency() {
         mView = TestActivatableNotificationView(mContext, useRealNotificationBackgroundView = true)
 
@@ -167,7 +170,10 @@ class ActivatableNotificationViewTest : SysuiTestCase() {
 
     @Test
     @Ignore("TODO(b/469142819) - Determine how to get robolectric looper work with this")
-    @EnableFlags(Flags.FLAG_NOTIFICATION_ROW_TRANSPARENCY, Flags.FLAG_ENABLE_LOCKSCREEN_BLUR)
+    @EnableFlags(
+        Flags.FLAG_NOTIFICATION_ROW_TRANSPARENCY,
+        Flags.FLAG_LOCKSCREEN_BLUR_FOR_NOTIFICATIONS
+    )
     fun testBackgroundBehaviorsWithBlur() {
         mView = TestActivatableNotificationView(context, useRealNotificationBackgroundView = true)
 
