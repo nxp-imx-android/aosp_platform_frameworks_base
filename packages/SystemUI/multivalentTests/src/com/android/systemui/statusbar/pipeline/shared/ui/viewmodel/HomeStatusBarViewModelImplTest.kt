@@ -1362,7 +1362,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
             underTest.onClockClicked()
             assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId).isNull()
 
-            imeIndicatorChipInteractor.showInputMethodPicker(testableContext.displayId)
+            imeIndicatorChipInteractor.toggleInputMethodPicker(testableContext.displayId)
             assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId).isNotNull()
 
             underTest.onClockClicked()
@@ -1378,7 +1378,7 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
             underTest.onSpacerClicked()
             assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId).isNull()
 
-            imeIndicatorChipInteractor.showInputMethodPicker(testableContext.displayId)
+            imeIndicatorChipInteractor.toggleInputMethodPicker(testableContext.displayId)
             assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId).isNotNull()
 
             underTest.onSpacerClicked()

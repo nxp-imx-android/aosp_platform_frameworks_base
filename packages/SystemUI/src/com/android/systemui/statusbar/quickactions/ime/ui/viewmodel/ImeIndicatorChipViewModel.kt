@@ -115,7 +115,14 @@ constructor(
         return QuickActionChipModel.LaunchChip(
             chipId = QuickActionChipId.ImeIndicator,
             chipContent = content,
-            onClick = { imeIndicatorChipInteractor.showInputMethodPicker(displayId) },
+            onClick = {
+                // ImeIndicator is a QuickActions LaunchChip (not PopupChip), with no associated
+                // popups. It launches InputMethodPicker (SystemUI Dialog, via InputMethodManager
+                // API) that appears as if it were a StatusBar popup, thus is required to mimic the
+                // behaviour of StatusBar popups. In particular, clicks on ImeIndicator chip should
+                // toggle InputMethodPicker, like PopupChip clicks toggling their respective popups.
+                imeIndicatorChipInteractor.toggleInputMethodPicker(displayId)
+            },
             contentDescription =
                 ContentDescription.Resource(
                     R.string.accessibility_status_bar_input_method_indicator

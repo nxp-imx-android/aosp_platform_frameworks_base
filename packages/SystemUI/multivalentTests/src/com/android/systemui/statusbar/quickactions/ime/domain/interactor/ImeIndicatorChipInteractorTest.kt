@@ -161,9 +161,9 @@ class ImeIndicatorChipInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
-    fun showInputMethodPicker_showsPicker() =
+    fun toggleInputMethodPicker_togglesPicker() =
         kosmos.runTest {
-            underTest.showInputMethodPicker(DISPLAY_ID)
+            underTest.toggleInputMethodPicker(DISPLAY_ID)
             testScope.runCurrent()
 
             assertThat(fakeInputMethodRepository.inputMethodPickerShownEntryPoint)
