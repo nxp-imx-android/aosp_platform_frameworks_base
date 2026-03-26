@@ -1469,6 +1469,31 @@ public class DisplayContentTests extends WindowTestsBase {
     }
 
     @Test
+    public void testComputeImeControlTarget_focusedOnAnotherDisplay() {
+        final DisplayContent dc = createNewDisplay();
+        dc.setRemoteInsetsController(createDisplayWindowInsetsController());
+        final DisplayContent anotherDc = createNewDisplay();
+
+        // Make this display the user's main display
+        final int displayId = dc.getDisplayId();
+        doReturn(0).when(mWm.mUmInternal).getUserAssignedToDisplay(displayId);
+        doReturn(displayId).when(mWm.mUmInternal).getMainDisplayAssignedToUser(0);
+
+        // Focus on this display, no input target
+        dc.setImeInputTarget(null);
+        spyOn(mWm.mRoot);
+        doReturn(dc).when(mWm.mRoot).getTopFocusedDisplayContent();
+        assertNull("Control target should be null when focus is on this display",
+                dc.computeImeControlTarget());
+
+        // Focus on another display, no input target on this display
+        doReturn(anotherDc).when(mWm.mRoot).getTopFocusedDisplayContent();
+        assertEquals("Control target should be remote insets when focus is on another display",
+                dc.mRemoteInsetsControlTarget,
+                dc.computeImeControlTarget());
+    }
+
+    @Test
     public void testComputeImeControlTarget_splitScreen() {
         final DisplayContent dc = createNewDisplay();
         dc.setRemoteInsetsController(createDisplayWindowInsetsController());
