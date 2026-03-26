@@ -2711,6 +2711,8 @@
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> ამოიშალა დროებით"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> ახლა ხელმისაწვდომია"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"სხვებისთვის ტრანსლირება"</string>
+    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
+    <skip />
     <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
     <skip />
 </resources>
