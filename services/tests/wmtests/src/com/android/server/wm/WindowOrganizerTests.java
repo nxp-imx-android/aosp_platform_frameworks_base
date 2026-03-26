@@ -2532,7 +2532,6 @@ public class WindowOrganizerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     public void testCreateTask_setParentContainer_inRootTask() {
         registerMockOrganizer();
         final Task rootTask = new TaskBuilder(mSupervisor).setCreatedByOrganizer(true).build();
@@ -2553,7 +2552,6 @@ public class WindowOrganizerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     public void testCreateTask_setParentContainer_inTaskDisplayArea() {
         registerMockOrganizer();
         final TaskDisplayArea tda = createTaskDisplayArea(mDisplayContent, mWm, "test", 1000);
@@ -2574,7 +2572,6 @@ public class WindowOrganizerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     public void testCreateTask_setParentContainer_inRootTaskOfNonDefaultDisplay() {
         registerMockOrganizer();
         final DisplayContent dc = createNewDisplay();
@@ -2600,7 +2597,6 @@ public class WindowOrganizerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     public void testCreateTask_setParentContainer_inValidRootTask() {
         registerMockOrganizer();
         final Task rootTask = new TaskBuilder(mSupervisor).setCreatedByOrganizer(false).build();
@@ -2612,7 +2608,6 @@ public class WindowOrganizerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     public void testCreateTask_setParentContainer_unmatchedDisplay() {
         registerMockOrganizer();
         final DisplayContent dc = createNewDisplay();
@@ -2629,7 +2624,6 @@ public class WindowOrganizerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     public void testCreateTask_setVisibilityBarrier() {
         registerMockOrganizer();
         final TaskCreationParams params = new TaskCreationParams.Builder()
@@ -2649,7 +2643,6 @@ public class WindowOrganizerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     public void testCreateTask_setForceLeafTasksNonOccluding() {
         registerMockOrganizer();
         final TaskCreationParams params = new TaskCreationParams.Builder()

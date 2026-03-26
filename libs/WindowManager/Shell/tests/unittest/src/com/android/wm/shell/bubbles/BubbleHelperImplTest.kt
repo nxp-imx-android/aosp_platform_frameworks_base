@@ -29,7 +29,6 @@ import androidx.test.filters.SmallTest
 import com.android.testing.wm.util.MockToken
 import com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK
 import com.android.window.flags.Flags.FLAG_QUICK_BUBBLE_SWITCH
-import com.android.window.flags.Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
@@ -73,7 +72,6 @@ class BubbleHelperImplTest : ShellTestCase() {
         assertThat(bubbleHelper.getAppBubbleRootTaskToken()).isEqualTo(token)
     }
 
-    @EnableFlags(FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     @Test
     fun getAppBubbleVisibilityBarrierToken() {
         val taskToken = MockToken.token()
@@ -101,7 +99,7 @@ class BubbleHelperImplTest : ShellTestCase() {
         assertThat(bubbleHelper.isAppBubbleRootTask(taskInfo0)).isFalse()
         assertThat(bubbleHelper.isAppBubbleRootTask(taskInfo1)).isTrue()
         assertThat(bubbleHelper.isAppBubbleRootTask(null as ActivityManager.RunningTaskInfo?))
-                .isFalse()
+            .isFalse()
     }
 
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK)

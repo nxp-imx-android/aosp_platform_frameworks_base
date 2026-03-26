@@ -85,16 +85,14 @@ constructor(
                 .setDisablePip(true)
                 .setDisableLaunchAdjacent(true)
                 .setForceTranslucent(true)
-        if (com.android.window.flags.Flags.visibilityManagementInBubbleRoot()) {
-            // We are using the visibility barrier to control the task visibility.
-            // Force leaf tasks to be non-occluding, so that all tasks above the visibility barrier
-            // can be visible.
-            // During quick switch, TaskViewTransitions will ensure all participated tasks are
-            // visible, and animate their visibility through TaskView instead of actually toggling
-            // the window visibility, so that it doesn't have to wait for the activity lifecycle
-            // until stable (user stop switching).
-            taskProperties.setForceLeafTasksNonOccluding(true)
-        }
+                // We are using the visibility barrier to control the task visibility.
+                // Force leaf tasks to be non-occluding, so that all tasks above the visibility
+                // barrier can be visible.
+                // During quick switch, TaskViewTransitions will ensure all participated tasks
+                // are visible, and animate their visibility through TaskView instead of actually
+                // toggling the window visibility, so that it doesn't have to wait for the activity
+                // lifecycle until stable (user stop switching).
+                .setForceLeafTasksNonOccluding(true)
         val params =
             TaskCreationParams.Builder()
                 .setName("Bubbles")
@@ -124,9 +122,6 @@ constructor(
     }
 
     private fun addVisibilityBarrier(rootTaskToken: WindowContainerToken) {
-        if (!com.android.window.flags.Flags.visibilityManagementInBubbleRoot()) {
-            return
-        }
         val params =
             TaskCreationParams.Builder()
                 .setName("Bubbles-visibility-barrier")

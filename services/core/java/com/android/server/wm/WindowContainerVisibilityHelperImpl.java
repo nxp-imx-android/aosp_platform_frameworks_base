@@ -267,24 +267,22 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
      */
     private static boolean containsCanBeVisibleActivity(@NonNull WindowContainer wc) {
         if (wc.asTaskFragment() != null) {
-            if (Flags.visibilityManagementInBubbleRoot()) {
-                if (wc.asTaskFragment().isForceHidden()) {
-                    // Activity in hidden container cannot be made visible.
-                    return false;
-                }
-                if (wc.asTask() != null && !wc.asTask().isLeafTask()) {
-                    for (int i = wc.getChildCount() - 1; i >= 0; --i) {
-                        final WindowContainer<?> child = wc.getChildAt(i);
-                        if (child.asTask() != null && child.asTask().isVisibilityBarrier()) {
-                            // Siblings behind the visibility barrier cannot be made visible.
-                            return false;
-                        }
-                        if (containsCanBeVisibleActivity(child)) {
-                            return true;
-                        }
+            if (wc.asTaskFragment().isForceHidden()) {
+                // Activity in hidden container cannot be made visible.
+                return false;
+            }
+            if (wc.asTask() != null && !wc.asTask().isLeafTask()) {
+                for (int i = wc.getChildCount() - 1; i >= 0; --i) {
+                    final WindowContainer<?> child = wc.getChildAt(i);
+                    if (child.asTask() != null && child.asTask().isVisibilityBarrier()) {
+                        // Siblings behind the visibility barrier cannot be made visible.
+                        return false;
                     }
-                    return false;
+                    if (containsCanBeVisibleActivity(child)) {
+                        return true;
+                    }
                 }
+                return false;
             }
             return wc.asTaskFragment().topRunningActivity() != null;
         }

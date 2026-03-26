@@ -973,7 +973,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
             return null;
         }
         final WindowContainer parent;
-        if (Flags.visibilityManagementInBubbleRoot() && params.getParentContainer() != null) {
+        if (params.getParentContainer() != null) {
             parent = fromBinder(params.getParentContainer().asBinder());
             if (parent == null) {
                 ProtoLog.e(WM_DEBUG_WINDOW_ORGANIZER, "createTask unknown requested parent");
@@ -1009,7 +1009,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                 .setRemoveWithTaskOrganizer(true)
                 .setOnTop(params.isOnTop())
                 .setReparentOnDisplayRemoval(properties.isReparentOnDisplayRemoval());
-        if (Flags.visibilityManagementInBubbleRoot() && params.isVisibilityBarrier()) {
+        if (params.isVisibilityBarrier()) {
             builder.setIsVisibilityBarrier(true);
         } else {
             builder.setWindowingMode(params.getWindowingMode())
@@ -1020,7 +1020,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         }
         final Task task = builder.build();
 
-        if (Flags.visibilityManagementInBubbleRoot() && properties.isForceLeafTasksNonOccluding()) {
+        if (properties.isForceLeafTasksNonOccluding()) {
             task.setForceLeafTasksNonOccluding(true);
         }
         if (properties.isReparentLeafTaskIfRelaunchFromHome()) {
