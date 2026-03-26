@@ -21,7 +21,6 @@
 #include <Matrix.h>
 #include <RenderNode.h>
 #include <TreeInfo.h>
-#include <com_android_graphics_hwui_flags.h>
 #include <effects/StretchEffect.h>
 #include <gui/TraceUtils.h>
 #include <hwui/Paint.h>
@@ -38,10 +37,6 @@ using namespace uirenderer;
     (reinterpret_cast<RenderNode*>(renderNodePtr)->mutateStagingProperties().prop(val) \
         ? (reinterpret_cast<RenderNode*>(renderNodePtr)->setPropertyFieldsDirty(dirtyFlag), true) \
         : false)
-
-bool surfaceview_stretch_alignment() {
-    return com::android::graphics::hwui::flags::surfaceview_stretch_alignment();
-}
 
 // ----------------------------------------------------------------------------
 // DisplayList view properties
@@ -730,56 +725,23 @@ static void android_view_RenderNode_requestPositionUpdates(JNIEnv* env, jobject,
                 info.damageAccumulator->findNearestStretchEffect();
             const uirenderer::StretchEffect* effect = result.stretchEffect;
             if (effect) {
-                if (surfaceview_stretch_alignment()) {
-                    auto& parentBounds = result.parentBounds;
-                    auto parentWidth = parentBounds.width();
-                    auto parentHeight = parentBounds.height();
-                    float normalized;
-                    normalized = (targetBounds.top - parentBounds.top()) / parentHeight;
-                    targetBounds.top =
-                            effect->computeStretchedPositionY(normalized) * parentHeight +
-                            parentBounds.top();
-                    normalized = (targetBounds.bottom - parentBounds.top()) / parentHeight;
-                    targetBounds.bottom =
-                            effect->computeStretchedPositionY(normalized) * parentHeight +
-                            parentBounds.top();
+                auto& parentBounds = result.parentBounds;
+                auto parentWidth = parentBounds.width();
+                auto parentHeight = parentBounds.height();
+                float normalized;
+                normalized = (targetBounds.top - parentBounds.top()) / parentHeight;
+                targetBounds.top = effect->computeStretchedPositionY(normalized) * parentHeight +
+                                   parentBounds.top();
+                normalized = (targetBounds.bottom - parentBounds.top()) / parentHeight;
+                targetBounds.bottom = effect->computeStretchedPositionY(normalized) * parentHeight +
+                                      parentBounds.top();
 
-                    normalized = (targetBounds.left - parentBounds.left()) / parentWidth;
-                    targetBounds.left =
-                            effect->computeStretchedPositionX(normalized) * parentWidth +
-                            parentBounds.left();
-                    normalized = (targetBounds.right - parentBounds.left()) / parentWidth;
-                    targetBounds.right =
-                            effect->computeStretchedPositionX(normalized) * parentWidth +
-                            parentBounds.left();
-                } else {
-                    // Compute the number of pixels that the stretching container
-                    // scales by.
-                    // Then compute the scale factor that the child would need
-                    // to scale in order to occupy the same pixel bounds.
-                    auto& parentBounds = result.parentBounds;
-                    auto parentWidth = parentBounds.width();
-                    auto parentHeight = parentBounds.height();
-                    auto& stretchDirection = effect->getStretchDirection();
-                    auto stretchX = stretchDirection.x();
-                    auto stretchY = stretchDirection.y();
-                    auto stretchXPixels = parentWidth * std::abs(stretchX);
-                    auto stretchYPixels = parentHeight * std::abs(stretchY);
-                    SkMatrix stretchMatrix;
-
-                    auto childScaleX = 1 + (stretchXPixels / targetBounds.getWidth());
-                    auto childScaleY = 1 + (stretchYPixels / targetBounds.getHeight());
-                    auto pivotX = stretchX > 0 ? targetBounds.left : targetBounds.right;
-                    auto pivotY = stretchY > 0 ? targetBounds.top : targetBounds.bottom;
-                    stretchMatrix.setScale(childScaleX, childScaleY, pivotX, pivotY);
-                    SkRect rect = SkRect::MakeLTRB(targetBounds.left, targetBounds.top,
-                                                   targetBounds.right, targetBounds.bottom);
-                    SkRect dst = stretchMatrix.mapRect(rect);
-                    targetBounds.left = dst.left();
-                    targetBounds.top = dst.top();
-                    targetBounds.right = dst.right();
-                    targetBounds.bottom = dst.bottom();
-                }
+                normalized = (targetBounds.left - parentBounds.left()) / parentWidth;
+                targetBounds.left = effect->computeStretchedPositionX(normalized) * parentWidth +
+                                    parentBounds.left();
+                normalized = (targetBounds.right - parentBounds.left()) / parentWidth;
+                targetBounds.right = effect->computeStretchedPositionX(normalized) * parentWidth +
+                                     parentBounds.left();
             } else {
                 return;
             }

@@ -180,16 +180,6 @@ flag {
 }
 
 flag {
-  name: "surfaceview_stretch_alignment"
-  namespace: "core_graphics"
-  description: "Fix SurfaceView alignment when overscroll stretch is occurring"
-  bug: "419836766"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "image_decoder_gainmap_fail"
   namespace: "core_graphics"
   description: "Add API for partial decoding of gainmap images with ImageDecoder"
