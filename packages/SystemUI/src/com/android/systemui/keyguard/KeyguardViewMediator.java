@@ -1542,8 +1542,8 @@ public class KeyguardViewMediator implements CoreStartable,
 
     private Consumer<Float> getRemoteSurfaceAlphaApplier() {
         return (Float alpha) -> {
-            if (mRemoteAnimationTarget == null) {
-                Log.e(TAG, "Attempting to set alpha on null animation target");
+            if (mRemoteAnimationTarget == null || !mRemoteAnimationTarget.leash.isValid()) {
+                Log.e(TAG, "Attempting to set alpha on null animation target or invalid leash");
                 return;
             }
             final View localView = mKeyguardViewControllerLazy.get().getViewRootImpl().getView();
