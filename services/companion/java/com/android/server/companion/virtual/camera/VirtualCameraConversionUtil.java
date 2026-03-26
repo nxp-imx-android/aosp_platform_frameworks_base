@@ -76,12 +76,10 @@ final class VirtualCameraConversionUtil {
         serviceConfiguration.sensorOrientation = cameraConfig.getSensorOrientation();
         serviceConfiguration.lensFacing = cameraConfig.getLensFacing();
         serviceConfiguration.virtualCameraCallback = convertCallback(cameraConfig.getCallback());
-        if (Flags.virtualCameraMetadata()) {
-            serviceConfiguration.perFrameCameraMetadataEnabled =
-                    cameraConfig.isPerFrameCameraMetadataEnabled();
-            serviceConfiguration.cameraCharacteristics = convertToVirtualCameraMetadata(
-                    cameraConfig.getCameraCharacteristics());
-        }
+        serviceConfiguration.perFrameCameraMetadataEnabled =
+                cameraConfig.isPerFrameCameraMetadataEnabled();
+        serviceConfiguration.cameraCharacteristics = convertToVirtualCameraMetadata(
+                cameraConfig.getCameraCharacteristics());
         if (Flags.cameraMultipleInputStreams()) {
             serviceConfiguration.isMultiInputStreamEnabled =
                     cameraConfig.isConcurrentStreamConfigSupported();
@@ -103,15 +101,13 @@ final class VirtualCameraConversionUtil {
             @Override
             public void onConfigureSession(VirtualCameraMetadata sessionParameters,
                     ICaptureResultConsumer captureResultConsumer) throws RemoteException {
-                if (Flags.virtualCameraMetadata()) {
-                    CaptureRequest captureRequest = null;
-                    if (sessionParameters != null) {
-                        captureRequest = convertToCaptureRequest(sessionParameters);
-                    }
-
-                    camera.onConfigureSession(captureRequest,
-                            convertToVdmCaptureResultConsumer(captureResultConsumer));
+                CaptureRequest captureRequest = null;
+                if (sessionParameters != null) {
+                    captureRequest = convertToCaptureRequest(sessionParameters);
                 }
+
+                camera.onConfigureSession(captureRequest,
+                        convertToVdmCaptureResultConsumer(captureResultConsumer));
             }
             @Override
             public void onStreamConfigured(int streamId, Surface surface, int width, int height,
@@ -125,7 +121,7 @@ final class VirtualCameraConversionUtil {
                     VirtualCameraMetadata captureRequestSettings) throws RemoteException {
                 CaptureRequest captureRequest = null;
 
-                if (Flags.virtualCameraMetadata() && captureRequestSettings != null) {
+                if (captureRequestSettings != null) {
                     captureRequest = convertToCaptureRequest(captureRequestSettings);
                 }
 
