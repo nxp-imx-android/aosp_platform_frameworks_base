@@ -115,6 +115,16 @@ public abstract class PolicyValidator<T> {
                                                 .filter(Character::isISOControl)
                                                 .findFirst());
                     }
+
+                    if (value.length() > stringPolicy.getMaxLength()) {
+                        throw new IllegalArgumentException(
+                                "The length of string is"
+                                        + value.length()
+                                        + ", which is longer than the maximum length "
+                                        + stringPolicy.getMaxLength()
+                                        + " for policy "
+                                        + policy.getId());
+                    }
                 }
             };
 
