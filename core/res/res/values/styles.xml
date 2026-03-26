@@ -1862,6 +1862,6 @@ please see styles_device_defaults.xml.
         <item name="textAppearance">@style/TextAppearance.DeviceDefault.AppLock.ItemText</item>
         <item name="paddingTop">@dimen/app_lock_padding_extra_small</item>
         <item name="paddingBottom">@dimen/app_lock_padding_extra_small</item>
-        <item name="android:layout_marginBottom">@dimen/app_lock_margin</item>
+        <item name="android:layout_marginBottom">@dimen/app_lock_margin_medium</item>
     </style>
 </resources>

@@ -45,7 +45,9 @@ import android.util.Log;
 import android.util.Slog;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
+import android.widget.ScrollView;
 import android.widget.Toast;
 
 import com.android.internal.R;
@@ -127,6 +129,9 @@ public class AppLockActivity extends Activity {
 
     private CharSequence mPackageLabel;
     private Drawable mPackageLogo;
+
+    private ViewTreeObserver.OnGlobalLayoutListener mGlobalLayoutListener;
+    private ScrollView mScrollView;
 
     /**
      * Creates an {@link Intent} to launch {@link AppLockActivity} to enable or disable App Lock on
@@ -257,6 +262,13 @@ public class AppLockActivity extends Activity {
         if (mScreenLockDialog != null && mScreenLockDialog.isShowing()) {
             mScreenLockDialog.dismiss();
         }
+        if (mScrollView != null && mGlobalLayoutListener != null) {
+            final ViewTreeObserver observer = mScrollView.getViewTreeObserver();
+            if (observer.isAlive()) {
+                observer.removeOnGlobalLayoutListener(mGlobalLayoutListener);
+            }
+            mGlobalLayoutListener = null;
+        }
     }
 
     /** Displays a dialog prompting the user to set up a secure screen lock. */
@@ -269,6 +281,19 @@ public class AppLockActivity extends Activity {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(dialogView);
         mScreenLockDialog = builder.create();
+
+        // Show the divider only when content is scrollable.
+        mScrollView = dialogView.findViewById(R.id.app_lock_add_screen_lock_scroll_view);
+        if (mScrollView != null) {
+            mGlobalLayoutListener = () -> {
+                final boolean canScroll = mScrollView.canScrollVertically(/* direction= */ 1);
+                dialogView.findViewById(R.id.app_lock_add_screen_lock_bottom_sheet_divider)
+                        .setVisibility(canScroll ? View.VISIBLE : View.GONE);
+            };
+            mScrollView.getViewTreeObserver().addOnGlobalLayoutListener(mGlobalLayoutListener);
+        } else {
+            Slog.w(TAG, "mScrollView is null, cannot toggle divider visibility.");
+        }
 
         final View.OnClickListener addScreenLockClickListener = v -> {
             final Intent setLockIntent = new Intent(DevicePolicyManager.ACTION_SET_NEW_PASSWORD);
