@@ -82,7 +82,7 @@
     <string name="kg_prompt_password_auth_timeout" msgid="5809110458491920871">"Mere sikkerhed er påkrævet. Adgangskoden er ikke blevet brugt i et stykke tid."</string>
     <string name="kg_prompt_pattern_auth_timeout" msgid="1860605401869262178">"Mere sikkerhed er påkrævet. Mønsteret er ikke blevet brugt i et stykke tid."</string>
     <string name="kg_prompt_auth_timeout" msgid="6620679830980315048">"Mere sikkerhed er påkrævet. Enheden er ikke blevet låst op i et stykke tid."</string>
-    <string name="kg_face_locked_out" msgid="2751559491287575">"Oplåsning med ansigt mislykkedes. For mange forsøg."</string>
+    <string name="kg_face_locked_out" msgid="2751559491287575">"Ansigtigsoplåsning mislykkedes. For mange forsøg."</string>
     <string name="kg_fp_locked_out" msgid="6228277682396768830">"Oplåsning med finger mislykkedes. For mange forsøg."</string>
     <string name="kg_trust_agent_disabled" msgid="5400691179958727891">"Trust agent er ikke tilgængelig"</string>
     <string name="kg_primary_auth_locked_out_pin" msgid="5492230176361601475">"For mange forsøg med forkert pinkode"</string>
