@@ -703,7 +703,8 @@ class ProcessErrorStateRecord {
                 incrementalMetrics != null ? incrementalMetrics.getLastReadErrorNumber()
                         : 0,
                 incrementalMetrics != null ? incrementalMetrics.getTotalDelayedReadsDurationMillis()
-                        : -1);
+                        : -1,
+                anrInfo != null ? anrInfo.getAnrId() : 0);
         final ProcessRecord parentPr = parentProcess != null
                 ? (ProcessRecord) parentProcess.mOwner : null;
         mService.addErrorToDropBox("anr", mApp, mApp.processName, activityShortComponentName,
