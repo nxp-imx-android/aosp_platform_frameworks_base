@@ -36,13 +36,6 @@ flag {
 }
 
 flag {
-    name: "mouse_swap_primary_button"
-    namespace: "input"
-    description: "Controls whether the connected mice's primary buttons, left and right, can be swapped."
-    bug: "352598211"
-}
-
-flag {
     name: "enable_customizable_input_gestures"
     namespace: "input"
     description: "Enables keyboard shortcut customization support"

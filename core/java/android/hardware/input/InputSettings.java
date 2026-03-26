@@ -19,7 +19,6 @@ package android.hardware.input;
 import static com.android.hardware.input.Flags.enableCustomizableInputGestures;
 import static com.android.hardware.input.Flags.mouseScrollingAcceleration;
 import static com.android.hardware.input.Flags.mouseReverseVerticalScrolling;
-import static com.android.hardware.input.Flags.mouseSwapPrimaryButton;
 import static com.android.hardware.input.Flags.touchpadDisable;
 import static com.android.hardware.input.Flags.touchpadVisualizer;
 
@@ -447,14 +446,6 @@ public class InputSettings {
     }
 
     /**
-     * Returns true if the feature flag for mouse swap primary button is enabled.
-     * @hide
-     */
-    public static boolean isMouseSwapPrimaryButtonFeatureFlagEnabled() {
-        return mouseSwapPrimaryButton();
-    }
-
-    /**
      * Returns true if the touchpad visualizer is allowed to appear.
      *
      * @param context The application context.
@@ -800,10 +791,6 @@ public class InputSettings {
      * @hide
      */
     public static boolean isMouseSwapPrimaryButtonEnabled(@NonNull Context context) {
-        if (!isMouseSwapPrimaryButtonFeatureFlagEnabled()) {
-            return false;
-        }
-
         return Settings.System.getIntForUser(context.getContentResolver(),
                 Settings.System.MOUSE_SWAP_PRIMARY_BUTTON, 0, UserHandle.USER_CURRENT)
                 != 0;
@@ -821,10 +808,6 @@ public class InputSettings {
     @RequiresPermission(Manifest.permission.WRITE_SETTINGS)
     public static void setMouseSwapPrimaryButton(@NonNull Context context,
             boolean swapPrimaryButton) {
-        if (!isMouseSwapPrimaryButtonFeatureFlagEnabled()) {
-            return;
-        }
-
         Settings.System.putIntForUser(context.getContentResolver(),
                 Settings.System.MOUSE_SWAP_PRIMARY_BUTTON, swapPrimaryButton ? 1 : 0,
                 UserHandle.USER_CURRENT);
