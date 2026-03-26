@@ -25,10 +25,12 @@ import android.view.HapticFeedbackConstants
 import android.view.View
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.core.view.doOnDetach
 import androidx.core.view.isInvisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.internal.graphics.drawable.BackgroundBlurDrawable
 import com.android.systemui.Flags
 import com.android.systemui.Flags.enableLockscreenBlur
 import com.android.systemui.common.ui.view.TouchHandlingView
@@ -80,11 +82,7 @@ object DeviceEntryIconViewBinder {
         val bgView = view.bgView
         touchHandlingView.listener =
             object : TouchHandlingView.Listener {
-                override fun onLongPressDetected(
-                    view: View,
-                    x: Int,
-                    y: Int,
-                ) {
+                override fun onLongPressDetected(view: View, x: Int, y: Int) {
                     if (falsingManager.isFalseLongTap(FalsingManager.LOW_PENALTY)) {
                         Log.d(
                             TAG,
@@ -100,6 +98,31 @@ object DeviceEntryIconViewBinder {
                         view.clearFocus()
                         view.clearAccessibilityFocus()
                         viewModel.onUserInteraction()
+                    }
+                }
+            }
+        val layoutChangeListener =
+            View.OnLayoutChangeListener {
+                v,
+                left,
+                top,
+                right,
+                bottom,
+                oldLeft,
+                oldTop,
+                oldRight,
+                oldBottom ->
+                val width = right - left
+                val height = bottom - top
+                if (height <= 0 || width <= 0) {
+                    return@OnLayoutChangeListener
+                }
+                if (height == oldBottom - oldTop && width == oldLeft - oldRight) {
+                    return@OnLayoutChangeListener
+                }
+                v?.background?.let {
+                    if (it is BackgroundBlurDrawable) {
+                        it.setCornerRadius(min(height, width).toFloat() / 2f)
                     }
                 }
             }
@@ -257,7 +280,6 @@ object DeviceEntryIconViewBinder {
                     if (enableLockscreenBlur()) {
                         bgView.background =
                             bgView.viewRootImpl.createBackgroundBlurDrawable().apply {
-                                setCornerRadius(min(bgView.width, bgView.height).toFloat() / 2f)
                                 setBlurRadius(
                                     bgView.context.resources.getDimensionPixelOffset(
                                         R.dimen.fingerprint_icon_blur_radius
@@ -265,6 +287,10 @@ object DeviceEntryIconViewBinder {
                                 )
                                 setVisible(false, false)
                             }
+                        bgView.addOnLayoutChangeListener(layoutChangeListener)
+                        bgView.doOnDetach {
+                            bgView.removeOnLayoutChangeListener(layoutChangeListener)
+                        }
 
                         launch("$TAG#windowRootViewBlurInteractor.isBlurCurrentlySupported") {
                             windowRootViewBlurInteractor.isBlurCurrentlySupported.collect {
