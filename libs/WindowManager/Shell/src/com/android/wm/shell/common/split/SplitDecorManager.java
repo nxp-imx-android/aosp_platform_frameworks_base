@@ -54,7 +54,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.launcher3.icons.IconProvider;
-import com.android.window.flags.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.common.ScreenshotUtils;
 import com.android.wm.shell.common.SurfaceUtils;
@@ -416,16 +415,12 @@ public class SplitDecorManager extends WindowlessWindowManager {
                 // `startFadeAnimation` calls updateCallbackStatus when the animation ends,
                 // triggering animFinishedCallback before this listener can set the callback
                 // status to true.
-                if (Flags.closeSplitTaskInsteadOfMovingToBack()) {
-                    mRunningAnimationCount++;
-                }
+                mRunningAnimationCount++;
                 SurfaceControl.Transaction finishT = new SurfaceControl.Transaction();
                 mFadeAnimator.addListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
-                        if (Flags.closeSplitTaskInsteadOfMovingToBack()) {
-                            mRunningAnimationCount--;
-                        }
+                        mRunningAnimationCount--;
                         releaseDecor(finishT);
                         finishT.apply();
                         finishT.close();

@@ -4669,30 +4669,6 @@ class DesktopTasksControllerTest : ShellTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_CLOSE_SPLIT_TASK_INSTEAD_OF_MOVING_TO_BACK)
-    fun closeTask_splitScreen_movesOtherToFullscreen() {
-        val task = createSplitScreenTask()
-        task.baseActivity = ComponentName("mypacakge", "mypacakge.MyActivity")
-        val otherTask = createSplitScreenTask()
-
-        whenever(splitScreenController.isTaskInSplitScreen(task.taskId)).thenReturn(true)
-        whenever(splitScreenController.getSplitPosition(task.taskId))
-            .thenReturn(SPLIT_POSITION_TOP_OR_LEFT)
-        whenever(splitScreenController.getTaskInfo(SPLIT_POSITION_BOTTOM_OR_RIGHT))
-            .thenReturn(otherTask)
-
-        val result = controller.closeTask(task)
-
-        assertThat(result)
-            .isEqualTo(DesktopTasksController.CloseTaskResult.CLOSE_REQUESTED_SPLIT_SCREEN)
-        verify(splitScreenController)
-            .moveTaskToFullscreen(
-                eq(otherTask.taskId),
-                eq(SplitScreenController.EXIT_REASON_DESKTOP_MODE),
-            )
-    }
-
-    @EnableFlags(Flags.FLAG_CLOSE_SPLIT_TASK_INSTEAD_OF_MOVING_TO_BACK)
     fun closeTask_splitScreen_requestsCloseTask() {
         val task = createSplitScreenTask()
         task.baseActivity = ComponentName("mypacakge", "mypacakge.MyActivity")
@@ -4708,29 +4684,7 @@ class DesktopTasksControllerTest : ShellTestCase() {
 
         assertThat(result)
             .isEqualTo(DesktopTasksController.CloseTaskResult.CLOSE_REQUESTED_SPLIT_SCREEN)
-        verify(splitScreenController).closeTask(eq(otherTask.taskId))
-    }
-
-    @Test
-    @EnableFlags(FLAG_CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT)
-    @DisableFlags(Flags.FLAG_CLOSE_SPLIT_TASK_INSTEAD_OF_MOVING_TO_BACK)
-    fun closeTask_splitScreen_dividerFlinging_doNothing() {
-        val task = createSplitScreenTask()
-        task.baseActivity = ComponentName("mypacakge", "mypacakge.MyActivity")
-        val otherTask = createSplitScreenTask()
-
-        whenever(splitScreenController.isTaskInSplitScreen(task.taskId)).thenReturn(true)
-        whenever(splitScreenController.getSplitPosition(task.taskId))
-            .thenReturn(SPLIT_POSITION_TOP_OR_LEFT)
-        whenever(splitScreenController.getTaskInfo(SPLIT_POSITION_BOTTOM_OR_RIGHT))
-            .thenReturn(otherTask)
-        whenever(splitScreenController.isDividerFlinging).thenReturn(true)
-
-        val result = controller.closeTask(task)
-
-        assertThat(result)
-            .isEqualTo(DesktopTasksController.CloseTaskResult.NOT_CLOSED_DIVIDER_FLINGING)
-        verify(splitScreenController, never()).moveTaskToFullscreen(any(), any())
+        verify(splitScreenController).closeTask(eq(task.taskId))
     }
 
     @Test

@@ -2083,38 +2083,7 @@ class DesktopTasksController(
             return CloseTaskResult.NOT_CLOSED_TASK_LOCKED
         }
         if (splitScreenController.isTaskInSplitScreen(taskId)) {
-            if (Flags.closeSplitTaskInsteadOfMovingToBack()) {
-                splitScreenController.closeTask(taskId)
-                logI(
-                    "closeTask(taskId=%d): %s",
-                    taskId,
-                    CloseTaskResult.CLOSE_REQUESTED_SPLIT_SCREEN,
-                )
-                return CloseTaskResult.CLOSE_REQUESTED_SPLIT_SCREEN
-            }
-            if (
-                DesktopExperienceFlags.CLOSE_FULLSCREEN_AND_SPLITSCREEN_KEYBOARD_SHORTCUT
-                    .isTrue() && splitScreenController.isDividerFlinging()
-            ) {
-                logW(
-                    "closeTask(taskId=%d): %s",
-                    taskId,
-                    CloseTaskResult.NOT_CLOSED_DIVIDER_FLINGING,
-                )
-                return CloseTaskResult.NOT_CLOSED_DIVIDER_FLINGING
-            }
-            val otherTaskPosition =
-                when (splitScreenController.getSplitPosition(taskId)) {
-                    SPLIT_POSITION_TOP_OR_LEFT -> SPLIT_POSITION_BOTTOM_OR_RIGHT
-                    SPLIT_POSITION_BOTTOM_OR_RIGHT -> SPLIT_POSITION_TOP_OR_LEFT
-                    else -> error("Unexpected task position")
-                }
-            val otherTask = splitScreenController.getTaskInfo(otherTaskPosition)
-            if (otherTask == null) {
-                logW("closeTask(taskId=%d): %s", taskId, CloseTaskResult.NOT_CLOSED_NO_OTHER_TASK)
-                return CloseTaskResult.NOT_CLOSED_NO_OTHER_TASK
-            }
-            splitScreenController.moveTaskToFullscreen(otherTask.taskId, EXIT_REASON_DESKTOP_MODE)
+            splitScreenController.closeTask(taskId)
             logI("closeTask(taskId=%d): %s", taskId, CloseTaskResult.CLOSE_REQUESTED_SPLIT_SCREEN)
             return CloseTaskResult.CLOSE_REQUESTED_SPLIT_SCREEN
         }
