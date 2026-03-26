@@ -179,7 +179,7 @@ fun ContentScope.BouncerContentLayout(
 
         if (viewModel.showBackButton) {
             TextButton(
-                onClick = viewModel::navigateBack,
+                onClick = viewModel::onGoBack,
                 text = stringResource(R.string.back_button_on_bouncer),
                 modifier = Modifier.align(Alignment.BottomStart).testTag("BackButton"),
             )
