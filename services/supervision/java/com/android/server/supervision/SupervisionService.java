@@ -1010,7 +1010,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
     private void removeSupervisionRoleHolder(@UserIdInt int userId, String packageName) {
         mInjector.removeRoleHoldersAsUser(ROLE_SUPERVISION, packageName,
-                UserHandle.getUserHandleForUid(userId));
+                UserHandle.of(userId));
     }
 
     private void removeSupervisionRoleHolders(UserHandle user, List<String> supervisionPackages) {
