@@ -30,6 +30,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.ClickHan
 import com.android.internal.widget.remotecompose.core.operations.layout.ClickModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 import com.android.internal.widget.remotecompose.core.operations.layout.DecoratorComponent;
+import com.android.internal.widget.remotecompose.core.operations.layout.MultiClickModifier;
 import com.android.internal.widget.remotecompose.core.operations.layout.TouchHandler;
 import com.android.internal.widget.remotecompose.core.operations.utilities.StringSerializer;
 import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
@@ -124,6 +125,10 @@ public class ComponentModifiers extends PaintOperation
                 context.translate(-tx, -ty);
                 ((ClickModifierOperation) op).paint(context);
                 context.translate(tx, ty);
+            } else if (op instanceof MultiClickModifier) {
+                context.translate(-tx, -ty);
+                ((MultiClickModifier) op).paint(context);
+                context.translate(tx, ty);
             } else if (op instanceof PaintOperation) {
                 ((PaintOperation) op).paint(context);
             }
@@ -148,6 +153,8 @@ public class ComponentModifiers extends PaintOperation
                 h -= pop.getTop() + pop.getBottom();
             }
             if (op instanceof ClickModifierOperation) {
+                ((DecoratorComponent) op).layout(context, component, width, height);
+            } else if (op instanceof MultiClickModifier) {
                 ((DecoratorComponent) op).layout(context, component, width, height);
             } else if (op instanceof DecoratorComponent) {
                 ((DecoratorComponent) op).layout(context, component, w, h);
@@ -176,6 +183,44 @@ public class ComponentModifiers extends PaintOperation
             ModifierOperation op = mList.get(i);
             if (op instanceof ClickHandler) {
                 if (((ClickHandler) op).onClick(context, document, component, x, y)) {
+                    handled = true;
+                }
+            }
+        }
+        return handled;
+    }
+
+    @Override
+    public boolean onLongPress(
+            @NonNull RemoteContext context,
+            @NonNull CoreDocument document,
+            @NonNull Component component,
+            float x,
+            float y) {
+        boolean handled = false;
+        for (int i = mList.size() - 1; i >= 0; i--) {
+            ModifierOperation op = mList.get(i);
+            if (op instanceof ClickHandler) {
+                if (((ClickHandler) op).onLongPress(context, document, component, x, y)) {
+                    handled = true;
+                }
+            }
+        }
+        return handled;
+    }
+
+    @Override
+    public boolean onDoubleClick(
+            @NonNull RemoteContext context,
+            @NonNull CoreDocument document,
+            @NonNull Component component,
+            float x,
+            float y) {
+        boolean handled = false;
+        for (int i = mList.size() - 1; i >= 0; i--) {
+            ModifierOperation op = mList.get(i);
+            if (op instanceof ClickHandler) {
+                if (((ClickHandler) op).onDoubleClick(context, document, component, x, y)) {
                     handled = true;
                 }
             }

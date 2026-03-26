@@ -119,6 +119,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.ImpulseO
 import com.android.internal.widget.remotecompose.core.operations.layout.ImpulseProcess;
 import com.android.internal.widget.remotecompose.core.operations.layout.LayoutComponentContent;
 import com.android.internal.widget.remotecompose.core.operations.layout.LoopOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.MultiClickModifier;
 import com.android.internal.widget.remotecompose.core.operations.layout.RootLayoutComponent;
 import com.android.internal.widget.remotecompose.core.operations.layout.TouchCancelModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.TouchDownModifierOperation;
@@ -338,6 +339,7 @@ public class Operations {
     public static final int MODIFIER_ROUNDED_CLIP_RECT = 54;
 
     public static final int MODIFIER_CLICK = 59;
+    public static final int MODIFIER_MULTI_CLICK = 83;
     public static final int MODIFIER_TOUCH_DOWN = 219;
     public static final int MODIFIER_TOUCH_UP = 220;
     public static final int MODIFIER_TOUCH_CANCEL = 225;
@@ -470,6 +472,7 @@ public class Operations {
             sMapV7AndroidXExperimental.put(MODIFIER_ALIGN_BY, AlignByModifierOperation::read);
             sMapV7AndroidXExperimental.put(LAYOUT_COMPUTE, LayoutComputeOperation::read);
             sMapV7AndroidXExperimental.put(LAYOUT_FLOW, FlowLayout::read);
+            sMapV7AndroidXExperimental.put(MODIFIER_MULTI_CLICK, MultiClickModifier::read);
         }
         return sMapV7AndroidXExperimental;
     }
@@ -513,6 +516,7 @@ public class Operations {
             sMapV7WidgetsExperimental.put(MODIFIER_ALIGN_BY, AlignByModifierOperation::read);
             sMapV7WidgetsExperimental.put(LAYOUT_COMPUTE, LayoutComputeOperation::read);
             sMapV7WidgetsExperimental.put(LAYOUT_FLOW, FlowLayout::read);
+            sMapV7WidgetsExperimental.put(MODIFIER_MULTI_CLICK, MultiClickModifier::read);
         }
         return sMapV7WidgetsExperimental;
     }

@@ -113,6 +113,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.ImpulseO
 import com.android.internal.widget.remotecompose.core.operations.layout.ImpulseProcess;
 import com.android.internal.widget.remotecompose.core.operations.layout.LayoutComponentContent;
 import com.android.internal.widget.remotecompose.core.operations.layout.LoopOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.MultiClickModifier;
 import com.android.internal.widget.remotecompose.core.operations.layout.RootLayoutComponent;
 import com.android.internal.widget.remotecompose.core.operations.layout.TouchCancelModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.TouchDownModifierOperation;
@@ -1611,6 +1612,15 @@ public class RecordingRemoteComposeBuffer extends RemoteComposeBuffer {
                         mode,
                         enabled,
                         clickable));
+    }
+
+    /**
+     * Add a click modifier operation
+     * @param clickType type of click (0=single, 1=long, 2=double)
+     */
+    @Override
+    public void addClickModifierOperation(int clickType) {
+        addOperation(new MultiClickModifier(clickType));
     }
 
     @Override
