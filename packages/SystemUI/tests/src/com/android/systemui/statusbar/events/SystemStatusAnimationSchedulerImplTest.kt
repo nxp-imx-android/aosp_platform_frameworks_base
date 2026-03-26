@@ -108,9 +108,7 @@ class SystemStatusAnimationSchedulerImplTest(flags: FlagsParameterization) : Sys
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(
-                Flags.FLAG_LOCATION_INDICATORS_ENABLED,
-            )
+            return FlagsParameterization.allCombinationsOf(Flags.FLAG_LOCATION_INDICATORS_ENABLED)
         }
     }
 
