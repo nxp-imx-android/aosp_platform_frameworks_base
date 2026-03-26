@@ -51,9 +51,6 @@ public class DataSyncProcessor {
 
     private static final String TAG = "CDM_DataSyncProcessor";
 
-    private final Object mRemoteMetadataLock = new Object();
-
-    @GuardedBy("mRemoteMetadataLock")
     private final AssociationStore mAssociationStore;
 
     private final LocalMetadataStore mLocalMetadataStore;
