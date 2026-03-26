@@ -27,7 +27,6 @@ import android.annotation.Size;
 import android.annotation.SystemApi;
 import android.chre.flags.Flags;
 import android.content.Context;
-import android.hardware.contexthub.DataFlowId;
 import android.hardware.contexthub.HubEndpointInfo.HubEndpointIdentifier;
 import android.hardware.location.ContextHubTransaction;
 import android.hardware.location.ContextHubTransactionHelper;
@@ -342,10 +341,10 @@ public class HubEndpoint {
 
     /**
      * @param handle The native handle created in native_init.
-     * @param producerRegionId The ID of the producer's shared data region.
+     * @param sourceRegionId The ID of the producer's shared data region.
      * @param dataFlowId The ID of the data flow.
-     * @param consumerHubId The hub ID of the consumer.
-     * @param consumerEndpointId The endpoint ID of the consumer.
+     * @param sinkHubId The hub ID of the consumer.
+     * @param sinkEndpointId The endpoint ID of the consumer.
      * @param regionId The ID of the consumer's shared data region.
      * @param regionSize The size of the consumer's shared data region in bytes.
      * @param regionFd The file descriptor of the consumer's shared data region.
@@ -363,6 +362,25 @@ public class HubEndpoint {
             int regionId,
             long regionSize,
             int regionFd,
+            int notificationPolicy,
+            int notificationPolicyData,
+            boolean canOverwrite);
+
+    /**
+     * @param handle The native handle created in native_init.
+     * @param sourceRegionId The ID of the producer's shared data region.
+     * @param sinkHubId The hub ID of the consumer.
+     * @param sinkEndpointId The endpoint ID of the consumer.
+     * @param notificationPolicy The notification policy for new data alerts.
+     * @param notificationPolicyData The data associated with the notification policy.
+     * @param canOverwrite Whether the source can overwrite the sink's read position.
+     * @return The consumer descriptor offset.
+     */
+    private native int native_addOffloadSinkInPrimaryRegion(
+            long handle,
+            int sourceRegionId,
+            long sinkHubId,
+            long sinkEndpointId,
             int notificationPolicy,
             int notificationPolicyData,
             boolean canOverwrite);
@@ -1411,18 +1429,29 @@ public class HubEndpoint {
                     @Override
                     public long addSinkInRegion(@Nullable SharedDataRegion region)
                             throws RemoteException {
-                        Log.d(TAG, "addSinkInRegion: region id=" + region.id);
-                        if (region == null) {
-                            Log.e(TAG, "addSinkInRegion: region is null");
-                            // TODO(b/460528144): Create a new region
-                            return 0;
-                        }
-
                         synchronized (mNativeLock) {
                             if (mNativeHandle == 0) {
                                 throw new ConcurrentModificationException(
                                         "Endpoint unregistered simultaneously with API call.");
                             }
+                            if (region == null) {
+                                Log.d(
+                                        TAG,
+                                        "addSinkInRegion: region is null, add offload sink in"
+                                                + " primary region.");
+                                return native_addOffloadSinkInPrimaryRegion(
+                                        mNativeHandle,
+                                        context.info.region.id,
+                                        id.getHub(),
+                                        id.getEndpoint(),
+                                        newDataAlertPolicy.getPolicyType(),
+                                        newDataAlertPolicy.getData(),
+                                        canOverwrite);
+                            }
+
+                            Log.d(
+                                    TAG,
+                                    "addSinkInRegion: add offload sink in region id=" + region.id);
                             return native_mapOffloadSinkRegion(
                                     mNativeHandle,
                                     context.info.region.id,

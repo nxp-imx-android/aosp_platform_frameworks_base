@@ -976,6 +976,40 @@ static jint android_hardware_HubEndpoint_mapOffloadSinkRegion(
     return consDescOffsetRes.value();
 }
 
+static jint android_hardware_HubEndpoint_addOffloadSinkInPrimaryRegion(
+        JNIEnv* env, jobject /*thiz*/, jlong handle, jint sourceRegionId, jlong sinkHubId,
+        jlong sinkEndpointId, jint notificationPolicy, jint notificationPolicyData,
+        jboolean canOverwrite) {
+    HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
+    RETURN_ON_FALSE(resource != nullptr, 0, "Invalid handle");
+
+    SourceWrapper* sourceWrapper = resource->getSourceWrapper(sourceRegionId);
+    RETURN_ON_FALSE(sourceWrapper != nullptr, 0, "Source not found for regionId");
+
+    RemoteEndpointId sinkId = {.aidlId = {.hubId = sinkHubId, .endpointId = sinkEndpointId}};
+    ConsumerPolicyBuilder policy =
+            createConsumerPolicyBuilder(notificationPolicy, notificationPolicyData, canOverwrite);
+
+    std::variant<UntypedProducer, VariableDataProducer>& producer = sourceWrapper->getProducer();
+    pw::Result<uint32_t> consDescOffsetRes;
+    if (producer.index() == 0) {
+        ConsumerManager consumerManager = std::get<UntypedProducer>(producer).getConsumerManager();
+        consDescOffsetRes = consumerManager.addConsumer(sinkId, policy);
+    } else if (fmcq_support_variable_sized_data_flow_fix()) {
+        ConsumerManager consumerManager =
+                std::get<VariableDataProducer>(producer).getConsumerManager();
+        consDescOffsetRes = consumerManager.addConsumer(sinkId, policy);
+    } else {
+        return 0;
+    }
+
+    RETURN_ON_FALSE(consDescOffsetRes.ok(), 0,
+                    (std::string("Failed to add sink: ") + consDescOffsetRes.status().str())
+                            .c_str());
+
+    return consDescOffsetRes.value();
+}
+
 static void android_hardware_HubEndpoint_updateSinkPolicy(JNIEnv* env, jobject /*thiz*/,
                                                           jlong handle, jint regionId,
                                                           jlong sinkHubId, jlong sinkEndpointId,
@@ -1085,6 +1119,8 @@ static const JNINativeMethod method_table[] = {
         {"native_addOffloadSink", "(JIJJ)[I", (void*)android_hardware_HubEndpoint_addOffloadSink},
         {"native_mapOffloadSinkRegion", "(JIIJJIJIIIZ)I",
          (void*)android_hardware_HubEndpoint_mapOffloadSinkRegion},
+        {"native_addOffloadSinkInPrimaryRegion", "(JIJJIIZ)I",
+         (void*)android_hardware_HubEndpoint_addOffloadSinkInPrimaryRegion},
         {"native_updateSinkPolicy", "(JIJJIIZ)V",
          (void*)android_hardware_HubEndpoint_updateSinkPolicy},
         {"native_removeOffloadSink", "(JIJJ)V",
