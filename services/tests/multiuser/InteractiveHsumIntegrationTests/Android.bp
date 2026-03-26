@@ -23,6 +23,7 @@ android_test {
         "src/**/*.java",
     ],
     static_libs: [
+        "android.multiuser.flags-aconfig-java",
         "androidx.test.core",
         "androidx.test.runner",
         "androidx.test.uiautomator_uiautomator",
