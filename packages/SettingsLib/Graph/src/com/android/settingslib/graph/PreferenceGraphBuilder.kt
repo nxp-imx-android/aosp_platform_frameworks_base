@@ -38,6 +38,7 @@ import com.android.settingslib.graph.PreferenceGetterFlags.includeValue
 import com.android.settingslib.graph.PreferenceGetterFlags.includeValueDescriptor
 import com.android.settingslib.graph.proto.KeyParametersSchemaProto
 import com.android.settingslib.graph.proto.ParameterDefinitionProto
+import com.android.settingslib.graph.proto.PreconditionStability as PreconditionStabilityProto
 import com.android.settingslib.graph.proto.PreconditionStatusProto
 import com.android.settingslib.graph.proto.PreferenceGraphProto
 import com.android.settingslib.graph.proto.PreferenceGroupProto
@@ -88,13 +89,12 @@ import com.android.settingslib.utils.applications.AppUtils
 import com.android.settingslib.utils.runSafely
 import com.android.settingslib.utils.runSafelyAsync
 import com.google.errorprone.annotations.CanIgnoreReturnValue
+import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import java.util.Locale
-import com.android.settingslib.graph.proto.PreconditionStability as PreconditionStabilityProto
 
 private const val TAG = "PreferenceGraphBuilder"
 
@@ -156,7 +156,7 @@ private constructor(
             intent.setClassName(context, activityClassName)
             if (
                 context.packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY) ==
-                null
+                    null
             ) {
                 Log.e(TAG, "$activityClassName is not activity")
                 return
@@ -272,8 +272,7 @@ private constructor(
     ): Boolean {
         val screenMetadata = createScreenInstanceForMetadata(context, factory)
         val isScreenExposable = screenMetadata?.isExposable(context) ?: false
-        if (!isScreenExposable)
-            return false
+        if (!isScreenExposable) return false
         if (factory !is PreferenceScreenMetadataParameterizedFactory) {
             return addPreferenceScreen(factory.create(context))
         }
@@ -287,9 +286,7 @@ private constructor(
             }
             if (includeParameters) {
                 if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
-                    factory.keyParameters(context).collect {
-                        screen.addKeyParameters(it.toProto())
-                    }
+                    factory.keyParameters(context).collect { screen.addKeyParameters(it.toProto()) }
                 } else {
                     factory.parameters(context).collect { screen.addParameters(it.toProto()) }
                 }
@@ -304,7 +301,7 @@ private constructor(
                         runSafelyAsync(TAG, "create screen with empty key parameters") {
                             addPreferenceScreen(
                                 factory.create(context),
-                                PreferenceScreenCoordinate("$screenKey:empty")
+                                PreferenceScreenCoordinate("$screenKey:empty"),
                             )
                         }
                     } else {
@@ -312,8 +309,8 @@ private constructor(
                             runSafelyAsync(TAG, "create screen with params") {
                                 if (flagEnabled == false) return@runSafelyAsync
                                 val screenMetadata = factory.createWithKeyParameters(context, it)
-                                if (flagEnabled == null) flagEnabled =
-                                    checkScreenFlag(screenMetadata)
+                                if (flagEnabled == null)
+                                    flagEnabled = checkScreenFlag(screenMetadata)
                                 if (flagEnabled) addPreferenceScreen(screenMetadata)
                             }
                         }
@@ -334,10 +331,8 @@ private constructor(
     @CanIgnoreReturnValue
     private suspend fun addPreferenceScreen(
         metadata: PreferenceScreenMetadata,
-        coordinate: PreferenceScreenCoordinate = PreferenceScreenCoordinate(
-            metadata.key,
-            metadata.keyParameters
-        )
+        coordinate: PreferenceScreenCoordinate =
+            PreferenceScreenCoordinate(metadata.key, metadata.keyParameters),
     ): Boolean {
         if (!checkScreenFlag(metadata)) return false
         if (!metadata.isExposable(context)) return false
@@ -374,9 +369,7 @@ private constructor(
             when (metadata) {
                 is PreferenceScreenCreator,
                 is PreferencesApiScreen -> {
-                    runSafely(TAG, "isFlagEnabled", true) {
-                        !metadata.isFlagEnabled(context)
-                    }
+                    runSafely(TAG, "isFlagEnabled", true) { !metadata.isFlagEnabled(context) }
                 }
 
                 else -> {
@@ -515,8 +508,7 @@ private constructor(
             runSafelyAsync(TAG, "process hierarchy node") {
                 if (it !is PreferenceHierarchy && !it.metadata.isExposable(context))
                     return@runSafelyAsync
-                if (it.metadata is PreferenceScreenMetadata)
-                    return@runSafelyAsync
+                if (it.metadata is PreferenceScreenMetadata) return@runSafelyAsync
 
                 addPreferences(
                     preferenceOrGroupProto {
@@ -535,29 +527,30 @@ private constructor(
         screenMetadata: PreferenceScreenMetadata,
         metadata: PreferenceMetadata,
         isRoot: Boolean,
-    ) = runSafelyAsync(TAG, "conversion for $screenMetadata $metadata", null) {
-        metadata
-            .toProto(
-                context,
-                callingPid,
-                callingUid,
-                screenMetadata,
-                isRoot,
-                request.flags,
-                valueDescriptors,
-            )
-            .also {
-                if (!isRoot && shrinkHierarchy) return@also
-                if (metadata is PreferenceScreenMetadata) {
-                    @Suppress("CheckReturnValue") addPreferenceScreen(metadata)
-                }
-                metadata.intent(context)?.resolveActivity(context.packageManager)?.let {
-                    if (it.packageName == context.packageName) {
-                        add(it.className)
+    ) =
+        runSafelyAsync(TAG, "conversion for $screenMetadata $metadata", null) {
+            metadata
+                .toProto(
+                    context,
+                    callingPid,
+                    callingUid,
+                    screenMetadata,
+                    isRoot,
+                    request.flags,
+                    valueDescriptors,
+                )
+                .also {
+                    if (!isRoot && shrinkHierarchy) return@also
+                    if (metadata is PreferenceScreenMetadata) {
+                        @Suppress("CheckReturnValue") addPreferenceScreen(metadata)
+                    }
+                    metadata.intent(context)?.resolveActivity(context.packageManager)?.let {
+                        if (it.packageName == context.packageName) {
+                            add(it.className)
+                        }
                     }
                 }
-            }
-    }
+        }
 
     private suspend fun String?.toActionTarget(extras: Bundle?): ActionTarget? {
         if (this.isNullOrEmpty()) return null
@@ -577,15 +570,13 @@ private constructor(
     private suspend fun Class<out Fragment>.toActionTarget(extras: Bundle?): ActionTarget? {
         if (
             !PreferenceScreenProvider::class.java.isAssignableFrom(this) &&
-            !PreferenceScreenBindingKeyProvider::class.java.isAssignableFrom(this)
+                !PreferenceScreenBindingKeyProvider::class.java.isAssignableFrom(this)
         ) {
             return null
         }
         val fragment =
             runSafelyAsync(TAG, "instantiate fragment ${this@toActionTarget}", fallback = null) {
-                withContext(Dispatchers.Main) {
-                    newInstance().apply { arguments = extras }
-                }
+                withContext(Dispatchers.Main) { newInstance().apply { arguments = extras } }
             }
         if (fragment is PreferenceScreenBindingKeyProvider) {
             val screenKey = fragment.getPreferenceScreenBindingKey(context)
@@ -703,20 +694,15 @@ fun PreferenceMetadata.toProto(
 
             val preferenceExtras = metadata.extras(context)
             preferenceExtras?.let { extras = it.toProto() }
-            enabled = runSafely(TAG, "isEnabled", false) {
-                metadata.isEnabled(context)
-            }
+            enabled = runSafely(TAG, "isEnabled", false) { metadata.isEnabled(context) }
             if (metadata is PreferenceAvailabilityProvider) {
-                available = runSafely(TAG, "isAvailable", false) {
-                    metadata.isAvailable(context)
-                }
+                available = runSafely(TAG, "isAvailable", false) { metadata.isAvailable(context) }
             } else {
                 available = true
             }
             if (metadata is PreferenceRestrictionProvider) {
-                restricted = runSafely(TAG, "isRestricted", false) {
-                    metadata.isRestricted(context)
-                }
+                restricted =
+                    runSafely(TAG, "isRestricted", false) { metadata.isRestricted(context) }
             }
 
             if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
@@ -740,9 +726,7 @@ fun PreferenceMetadata.toProto(
                 }
             }
 
-            screenMetadata.getTrampolinedLaunchIntent(metadata).let {
-                launchIntent = it.toProto()
-            }
+            screenMetadata.getTrampolinedLaunchIntent(metadata).let { launchIntent = it.toProto() }
 
             for (tag in metadata.tags(context)) addTags(tag)
         }
@@ -754,28 +738,28 @@ fun PreferenceMetadata.toProto(
                 metadata.screenPreconditions?.getDescription(context),
                 includeValue,
                 isGet = true,
-                evaluate = { metadata.evaluatePreconditions(context, metadata.screenPreconditions) }
+                evaluate = { metadata.evaluatePreconditions(context, metadata.screenPreconditions) },
             )
             addPreconditionStatus(
                 context,
                 metadata.preconditions?.getDescription(context),
                 includeValue,
                 isGet = true,
-                evaluate = { metadata.evaluatePreconditions(context, metadata.preconditions) }
+                evaluate = { metadata.evaluatePreconditions(context, metadata.preconditions) },
             )
             addPreconditionStatus(
                 context,
                 metadata.get.preconditions?.getDescription(context),
                 includeValue,
                 isGet = true,
-                evaluate = { metadata.evaluatePreconditions(context, metadata.get.preconditions) }
+                evaluate = { metadata.evaluatePreconditions(context, metadata.get.preconditions) },
             )
             addPreconditionStatus(
                 context,
                 metadata.set?.preconditions?.getDescription(context),
                 includeValue,
                 isGet = false,
-                evaluate = { metadata.evaluatePreconditions(context, metadata.set?.preconditions) }
+                evaluate = { metadata.evaluatePreconditions(context, metadata.set?.preconditions) },
             )
             addPreconditionStatus(
                 context,
@@ -783,7 +767,7 @@ fun PreferenceMetadata.toProto(
                 includeValue,
                 isGet = false,
                 // TODO: should this be null?
-                evaluate = { metadata.evaluatePreconditions(context, null) }
+                evaluate = { metadata.evaluatePreconditions(context, null) },
             )
             metadata.set?.warning?.let { warningConfig ->
                 setWarning = setWarningProto {
@@ -809,7 +793,7 @@ fun PreferenceMetadata.toProto(
                 metadata.screenPreconditions?.getDescription(context),
                 includeValue,
                 isGet = true,
-                evaluate = { metadata.evaluatePreconditions(context) }
+                evaluate = { metadata.evaluatePreconditions(context) },
             )
         } else if (metadata is PreferenceAvailabilityProvider) {
             addPreconditionStatus(
@@ -819,27 +803,30 @@ fun PreferenceMetadata.toProto(
                 isGet = true,
                 evaluate = {
                     if (metadata.isAvailable(context)) Allowed
-                    else Custom(
-                        metadata.availabilityDescription,
-                        metadata.getAvailabilityStability()
-                    )
-                }
+                    else
+                        Custom(
+                            metadata.availabilityDescription,
+                            metadata.getAvailabilityStability(),
+                        )
+                },
             )
         }
+        // We treat enabled as "get" for screens as it appears that's the way they've been used.
         metadata.getEnabledDescription()?.let {
             addPreconditionStatus(
                 context,
                 it,
                 includeValue,
-                isGet = false,
+                isGet = (metadata is PreferenceScreenMetadata),
                 evaluate = {
                     if (metadata.isEnabled(context)) Allowed
-                    else Custom(
-                        it,
-                        metadata.getEnabledStability()
-                            ?: PreconditionStability.STABLE_UNTIL_APK_UPDATE
-                    )
-                }
+                    else
+                        Custom(
+                            it,
+                            metadata.getEnabledStability()
+                                ?: PreconditionStability.STABLE_UNTIL_APK_UPDATE,
+                        )
+                },
             )
         }
         // always true for preferences
@@ -851,7 +838,10 @@ fun PreferenceMetadata.toProto(
                 if (preconditions is Disallowed) {
                     value = preferenceValueProto {
                         error = preferenceErrorProto {
-                            if (preconditions.stability == PreconditionStability.STABLE_UNTIL_APK_UPDATE) {
+                            if (
+                                preconditions.stability ==
+                                    PreconditionStability.STABLE_UNTIL_APK_UPDATE
+                            ) {
                                 error =
                                     "read precondition not met: ${preconditions.getReason(context)} (stable)"
                             } else {
@@ -864,52 +854,53 @@ fun PreferenceMetadata.toProto(
             }
             return@preferenceProto
         }
-        metadata.getReadPermissions(context)
-            ?.let { if (it.size > 0) readPermissions = it.toProto() }
-        metadata.getWritePermissions(context)
-            ?.let { if (it.size > 0) writePermissions = it.toProto() }
+        metadata.getReadPermissions(context)?.let {
+            if (it.size > 0) readPermissions = it.toProto()
+        }
+        metadata.getWritePermissions(context)?.let {
+            if (it.size > 0) writePermissions = it.toProto()
+        }
         val readPermit = metadata.evalReadPermit(context, callingPid, callingUid)
         val writePermit =
             metadata.evalWritePermit(context, callingPid, callingUid) ?: ReadWritePermit.ALLOW
         readWritePermit = ReadWritePermit.make(readPermit, writePermit)
         if (flags.includeValue()) {
-            val errorString = if (hasAvailable() && !available) {
-                if (metadata is PreferenceAvailabilityProvider) {
-                    if (metadata.getAvailabilityStability() == PreconditionStability.STABLE_UNTIL_APK_UPDATE) {
-                        "read precondition not met: ${metadata.availabilityDescription} (stable)"
+            val errorString =
+                if (hasAvailable() && !available) {
+                    if (metadata is PreferenceAvailabilityProvider) {
+                        if (
+                            metadata.getAvailabilityStability() ==
+                                PreconditionStability.STABLE_UNTIL_APK_UPDATE
+                        ) {
+                            "read precondition not met: ${metadata.availabilityDescription} (stable)"
+                        } else {
+                            "read precondition not met: ${metadata.availabilityDescription}"
+                        }
                     } else {
-                        "read precondition not met: ${metadata.availabilityDescription}"
+                        "read precondition not met: missing available with unknown reason"
+                    }
+                } else if (readPermit == ReadWritePermit.REQUIRE_APP_PERMISSION) {
+                    "read precondition not met: must hold all specified permissions"
+                } else if (readPermit != ReadWritePermit.ALLOW) {
+                    if (metadata is ApiPreference<*, *>) {
+                        val failure = runBlocking {
+                            metadata.evaluatePreconditions(context, metadata.get.preconditions)
+                        }
+                        if (failure is Disallowed) {
+                            failure.getReason(context)
+                        } else {
+                            "read precondition not met: missing readPermit with unknown reason - ${failure} - ${readPermit}"
+                        }
+                    } else {
+                        "read precondition not met: missing readPermit with unknown reason - ${readPermit}"
                     }
                 } else {
-                    "read precondition not met: missing available with unknown reason"
+                    null
                 }
-            } else if (readPermit == ReadWritePermit.REQUIRE_APP_PERMISSION) {
-                "read precondition not met: must hold all specified permissions"
-            } else if (readPermit != ReadWritePermit.ALLOW) {
-                if (metadata is ApiPreference<*, *>) {
-                    val failure = runBlocking {
-                        metadata.evaluatePreconditions(
-                            context,
-                            metadata.get.preconditions
-                        )
-                    }
-                    if (failure is Disallowed) {
-                        failure.getReason(context)
-                    } else {
-                        "read precondition not met: missing readPermit with unknown reason - ${failure} - ${readPermit}"
-                    }
-                } else {
-                    "read precondition not met: missing readPermit with unknown reason - ${readPermit}"
-                }
-            } else {
-                null
-            }
 
             if (errorString != null) {
                 value = preferenceValueProto {
-                    error = preferenceErrorProto {
-                        error = errorString
-                    }
+                    error = preferenceErrorProto { error = errorString }
                 }
             } else {
                 val storage = metadata.storage(context)
@@ -921,28 +912,27 @@ fun PreferenceMetadata.toProto(
                             Int::class.javaObjectType -> storage.getInt(key)?.let { intValue = it }
 
                             Boolean::class.java,
-                            Boolean::class.javaObjectType -> storage.getBoolean(key)
-                                ?.let { booleanValue = it }
+                            Boolean::class.javaObjectType ->
+                                storage.getBoolean(key)?.let { booleanValue = it }
 
                             Float::class.java,
-                            Float::class.javaObjectType -> storage.getFloat(key)
-                                ?.let { floatValue = it }
+                            Float::class.javaObjectType ->
+                                storage.getFloat(key)?.let { floatValue = it }
 
                             Long::class.java,
-                            Long::class.javaObjectType -> storage.getLong(key)
-                                ?.let { longValue = it }
+                            Long::class.javaObjectType ->
+                                storage.getLong(key)?.let { longValue = it }
 
                             CharSequence::class.java,
                             CharSequence::class.javaObjectType,
-
                             String::class.java,
-                            String::class.javaObjectType -> storage.getString(key)
-                                ?.let { stringValue = it.toString() }
+                            String::class.javaObjectType ->
+                                storage.getString(key)?.let { stringValue = it.toString() }
 
                             else -> {
                                 Log.e(
                                     "PreferenceGraphBuilder",
-                                    "Unsupported type ${metadata.valueType}"
+                                    "Unsupported type ${metadata.valueType}",
                                 )
                                 error = preferenceErrorProto {
                                     error = "Error: Unsupported type ${metadata.valueType}"
@@ -991,8 +981,9 @@ fun PreferenceMetadata.toProto(
                         values.zip(descriptions).forEach { (value, desc) ->
                             addPossibleValues(
                                 possibleValueProto {
-                                    this.value =
-                                        preferenceValueProto { stringValue = value.toString() }
+                                    this.value = preferenceValueProto {
+                                        stringValue = value.toString()
+                                    }
                                     description = desc.toString()
                                 }
                             )
@@ -1030,16 +1021,13 @@ fun PreferenceMetadata.toProto(
 
                         CharSequence::class.java,
                         CharSequence::class.javaObjectType,
-
                         String::class.java,
                         String::class.javaObjectType -> stringType = true
 
                         else -> error("Error: Unsupported type ${metadata.valueType}")
                     }
                     (metadata as? ValueDescriptor)?.getUnitOfMeasurement()?.let {
-                        parameters = keyParametersProto {
-                            putValues("unit", it)
-                        }
+                        parameters = keyParametersProto { putValues("unit", it) }
                     }
                 }
             }
@@ -1091,8 +1079,8 @@ fun <T> PersistentPreference<T>.evalWritePermit(
 
         // Unknown sensitivity is disallowed, unless we are on a debuggable build
         // and the caller holds the WRITE_SECURE_SETTINGS permission.
-        sensitivityLevel == DO_NOT_EXPOSE &&
-                !(isDebuggable && hasUnknownSensitivitySettings) -> ReadWritePermit.DISALLOW
+        sensitivityLevel == DO_NOT_EXPOSE && !(isDebuggable && hasUnknownSensitivitySettings) ->
+            ReadWritePermit.DISALLOW
 
         // If the app lacks the required permissions, require them.
         getWritePermissions(context)?.check(context, callingPid, callingUid) == false ->
@@ -1103,7 +1091,6 @@ fun <T> PersistentPreference<T>.evalWritePermit(
             runSafely(TAG, "getWritePermit for $key", ReadWritePermit.DISALLOW) {
                 getWritePermit(context, callingPid, callingUid)
             }
-
     }
 }
 
@@ -1190,26 +1177,30 @@ private fun ApiType<*, *>.toProto(
                             value = preferenceValueProto {
                                 when (this@toProto.getType()) {
                                     Int::class.java,
-                                    Int::class.javaObjectType -> intValue =
-                                        extractSafety(it.first, markup = false) as Int
+                                    Int::class.javaObjectType ->
+                                        intValue = extractSafety(it.first, markup = false) as Int
 
                                     Boolean::class.java,
-                                    Boolean::class.javaObjectType -> booleanValue =
-                                        extractSafety(it.first, markup = false) as Boolean
+                                    Boolean::class.javaObjectType ->
+                                        booleanValue =
+                                            extractSafety(it.first, markup = false) as Boolean
 
                                     Float::class.java,
-                                    Float::class.javaObjectType -> floatValue =
-                                        extractSafety(it.first, markup = false) as Float
+                                    Float::class.javaObjectType ->
+                                        floatValue =
+                                            extractSafety(it.first, markup = false) as Float
 
                                     Long::class.java,
-                                    Long::class.javaObjectType -> longValue =
-                                        extractSafety(it.first, markup = false) as Long
+                                    Long::class.javaObjectType ->
+                                        longValue = extractSafety(it.first, markup = false) as Long
 
                                     String::class.java,
-                                    String::class.javaObjectType -> stringValue =
-                                        extractSafety(it.first, markup = false) as String
+                                    String::class.javaObjectType ->
+                                        stringValue =
+                                            extractSafety(it.first, markup = false) as String
 
-                                    else -> error("Error: Unsupported type ${this@toProto.getType()}")
+                                    else ->
+                                        error("Error: Unsupported type ${this@toProto.getType()}")
                                 }
                             }
                             description = extractSafety(it.second, markup = false) as String
