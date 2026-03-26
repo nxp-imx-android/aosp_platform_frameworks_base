@@ -499,3 +499,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fix_bubbles_stash_incorrect_progress"
+    namespace: "multitasking"
+    description: "Fixes a bug where persistent bubble stash progress is incorrect after transition from home."
+    bug: "487826634"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
