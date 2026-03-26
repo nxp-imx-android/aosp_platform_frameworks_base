@@ -30,11 +30,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.res.Resources;
-import android.net.wifi.flags.Flags;
 import android.net.wifi.sharedconnectivity.service.ISharedConnectivityCallback;
 import android.net.wifi.sharedconnectivity.service.ISharedConnectivityService;
 import android.net.wifi.sharedconnectivity.service.SharedConnectivityService;
 import android.os.Binder;
+import android.os.Flags;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -195,7 +195,7 @@ public class SharedConnectivityManager {
     /**
      * Service connection for the {@link ISharedConnectivityService}.
      *
-     * <p>When {@link Flags#sharedConnectivityManagerOffloadToBackgroundThread()} is enabled,
+     * <p>When {@link Flags#fixMainThreadBlockingOnFirstUnlock()} is enabled,
      * this field must only be accessed on the {@link #mBackgroundHandler} thread. Otherwise,
      * it is accessed on the main thread.
      */
@@ -206,7 +206,7 @@ public class SharedConnectivityManager {
      * Handler thread and handler for offloading service binding and unbinding.
      *
      * <p>These are only initialized and used if
-     * {@link Flags#sharedConnectivityManagerOffloadToBackgroundThread()} is enabled.
+     * {@link Flags#fixMainThreadBlockingOnFirstUnlock()} is enabled.
      */
     private HandlerThread mHandlerThread;
     private Handler mBackgroundHandler;
@@ -214,7 +214,7 @@ public class SharedConnectivityManager {
     /**
      * The remaining number of retry attempts for binding to the service.
      *
-     * <p>When {@link Flags#sharedConnectivityManagerOffloadToBackgroundThread()} is enabled,
+     * <p>When {@link Flags#fixMainThreadBlockingOnFirstUnlock()} is enabled,
      * this field must only be accessed on the {@link #mBackgroundHandler} thread. Otherwise,
      * it is accessed on the main thread.
      */
@@ -268,7 +268,7 @@ public class SharedConnectivityManager {
         mIntentAction = serviceIntentAction;
         mUserManager = context.getSystemService(UserManager.class);
         mMainHandler = new Handler(Looper.getMainLooper());
-        if (Flags.sharedConnectivityManagerOffloadToBackgroundThread()) {
+        if (Flags.fixMainThreadBlockingOnFirstUnlock()) {
             mHandlerThread = new HandlerThread(TAG);
             mHandlerThread.start();
             mBackgroundHandler = mHandlerThread.getThreadHandler();
@@ -278,7 +278,7 @@ public class SharedConnectivityManager {
     /**
      * Binds to the shared connectivity service.
      *
-     * <p>When {@link Flags#sharedConnectivityManagerOffloadToBackgroundThread()} is enabled,
+     * <p>When {@link Flags#fixMainThreadBlockingOnFirstUnlock()} is enabled,
      * this method must only be called on the {@link #mBackgroundHandler} thread. Otherwise,
      * it is called on the main thread.
      */
@@ -312,7 +312,7 @@ public class SharedConnectivityManager {
                     }
                 }
                 // When service disconnected, invoke unbind() to clear connection cache.
-                if (Flags.sharedConnectivityManagerOffloadToBackgroundThread()) {
+                if (Flags.fixMainThreadBlockingOnFirstUnlock()) {
                     mBackgroundHandler.post(SharedConnectivityManager.this::unbind);
                     mService = null;
                 } else {
@@ -374,7 +374,7 @@ public class SharedConnectivityManager {
                     }
                     Log.i(TAG, "scheduleConnect: shouldRebind=" + shouldRebind);
                     if (shouldRebind) {
-                        if (Flags.sharedConnectivityManagerOffloadToBackgroundThread()) {
+                        if (Flags.fixMainThreadBlockingOnFirstUnlock()) {
                             mBackgroundHandler.post(this::bind);
                         } else {
                             bind();
@@ -390,7 +390,7 @@ public class SharedConnectivityManager {
             if (Intent.ACTION_USER_UNLOCKED.equals(intent.getAction())) {
                 Log.i(TAG, "onReceive: ACTION_USER_UNLOCKED");
                 context.unregisterReceiver(mBroadcastReceiver);
-                if (Flags.sharedConnectivityManagerOffloadToBackgroundThread()) {
+                if (Flags.fixMainThreadBlockingOnFirstUnlock()) {
                     mBackgroundHandler.post(SharedConnectivityManager.this::bind);
                 } else {
                     bind();
@@ -442,7 +442,7 @@ public class SharedConnectivityManager {
     }
 
     /**
-     * NonNull when {@link Flags#sharedConnectivityManagerOffloadToBackgroundThread()} is enabled.
+     * NonNull when {@link Flags#fixMainThreadBlockingOnFirstUnlock()} is enabled.
      * @hide
      */
     @TestApi
@@ -455,7 +455,7 @@ public class SharedConnectivityManager {
     /**
      * Unbinds from the shared connectivity service.
      *
-     * <p>When {@link Flags#sharedConnectivityManagerOffloadToBackgroundThread()} is enabled,
+     * <p>When {@link Flags#fixMainThreadBlockingOnFirstUnlock()} is enabled,
      * this method must only be called on the {@link #mBackgroundHandler} thread. Otherwise,
      * it is called on the main thread.
      */
@@ -464,7 +464,7 @@ public class SharedConnectivityManager {
             Log.i(TAG, "unbind");
             mContext.unbindService(mServiceConnection);
             mServiceConnection = null;
-            if (!Flags.sharedConnectivityManagerOffloadToBackgroundThread()) {
+            if (!Flags.fixMainThreadBlockingOnFirstUnlock()) {
                 mService = null;
             }
         }
@@ -509,7 +509,7 @@ public class SharedConnectivityManager {
                 mCallbackProxyCache.put(callback, proxy);
             }
             if (shouldBind) {
-                if (Flags.sharedConnectivityManagerOffloadToBackgroundThread()) {
+                if (Flags.fixMainThreadBlockingOnFirstUnlock()) {
                     mBackgroundHandler.post(this::bind);
                 } else {
                     bind();
@@ -553,7 +553,7 @@ public class SharedConnectivityManager {
                 shouldUnbind = mCallbackProxyCache.isEmpty();
             }
             if (shouldUnbind) {
-                if (Flags.sharedConnectivityManagerOffloadToBackgroundThread()) {
+                if (Flags.fixMainThreadBlockingOnFirstUnlock()) {
                     mBackgroundHandler.post(this::unbind);
                 } else {
                     unbind();
@@ -570,7 +570,7 @@ public class SharedConnectivityManager {
                 shouldUnbind = mProxyMap.isEmpty();
             }
             if (shouldUnbind) {
-                if (Flags.sharedConnectivityManagerOffloadToBackgroundThread()) {
+                if (Flags.fixMainThreadBlockingOnFirstUnlock()) {
                     mBackgroundHandler.post(this::unbind);
                     mService = null;
                 } else {

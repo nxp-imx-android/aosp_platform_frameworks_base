@@ -18,6 +18,7 @@ package com.android.keyguard;
 
 import android.annotation.CallSuper;
 import android.content.Context;
+import android.os.Flags;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -27,8 +28,6 @@ import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-
-import com.android.systemui.Flags;
 
 /**
  * A View similar to a textView which contains password text and can animate when the text is

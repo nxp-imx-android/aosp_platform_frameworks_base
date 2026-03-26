@@ -227,6 +227,16 @@ flag {
 }
 
 flag {
+    name: "fix_main_thread_blocking_on_first_unlock"
+    namespace: "system_performance"
+    description: "Fix main thread blocking on first unlock"
+    bug: "491497495"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "get_private_space_settings"
     namespace: "profile_experiences"
     description: "Guards a new Private Profile API in LauncherApps"
