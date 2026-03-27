@@ -19,6 +19,7 @@ package android.service.personalcontext;
 import static java.util.Objects.requireNonNull;
 
 import android.Manifest;
+import android.annotation.BroadcastBehavior;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -116,6 +117,7 @@ public final class PersonalContextManager {
      * This broadcast is only sent to registered receivers.
      */
     @SdkConstant(SdkConstant.SdkConstantType.BROADCAST_INTENT_ACTION)
+    @BroadcastBehavior(protectedBroadcast = true)
     public static final String ACTION_PERSONAL_CONTEXT_ENABLED_CHANGED =
             "android.service.personalcontext.action.PERSONAL_CONTEXT_ENABLED_CHANGED";
 
