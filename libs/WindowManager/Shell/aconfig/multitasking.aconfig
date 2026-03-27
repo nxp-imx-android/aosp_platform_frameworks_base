@@ -520,3 +520,12 @@ flag {
     }
 }
 
+flag {
+    name: "fix_bubble_bar_visibility_update_dropped"
+    namespace: "multitasking"
+    description: "Fixes bubble bar visibility update being dropped when animations are interrupted"
+    bug: "474032293"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
