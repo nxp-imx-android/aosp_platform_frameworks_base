@@ -129,7 +129,7 @@ class TransitionController {
     final ActivityTaskManagerService mAtm;
     BLASTSyncEngine mSyncEngine;
 
-    final RemotePlayer mRemotePlayer;
+    RemotePlayer mRemotePlayer;
     SnapshotController mSnapshotController;
     TransitionTracer mTransitionTracer;
 
@@ -269,6 +269,9 @@ class TransitionController {
 
     final Handler mLoggerHandler = FgThread.getHandler();
 
+    @VisibleForTesting
+    Handler mHandler;
+
     /**
      * {@code true} While this waits for the display to become enabled (during boot). While waiting
      * for the display, all core-initiated transitions will be "local".
@@ -278,14 +281,15 @@ class TransitionController {
 
     TransitionController(ActivityTaskManagerService atm) {
         mAtm = atm;
-        mRemotePlayer = new RemotePlayer(atm);
-        if (Flags.fallbackTransitionPlayer()) {
-            mTransitionPlayers.add(
-                    new TransitionPlayerRecord(new FallbackPlayer(atm), null /* proc */));
-        }
     }
 
     void setWindowManager(WindowManagerService wms) {
+        mHandler = mAtm.mH;
+        mRemotePlayer = new RemotePlayer(mAtm, mHandler);
+        if (Flags.fallbackTransitionPlayer()) {
+            mTransitionPlayers.add(new TransitionPlayerRecord(new FallbackPlayer(mAtm, mHandler),
+                    null /* proc */));
+        }
         mSnapshotController = wms.mSnapshotController;
         mTransitionTracer = wms.mTransitionTracer;
         mIsWaitingForDisplayEnabled = !wms.mDisplayEnabled;
@@ -1001,7 +1005,7 @@ class TransitionController {
                     transition.getSyncId());
             transition.mIsPlayerEnabled = false;
             transition.mLogger.mRequestTimeNs = SystemClock.elapsedRealtimeNanos();
-            mAtm.mH.post(() -> mAtm.mWindowOrganizerController.startTransition(
+            mHandler.post(() -> mAtm.mWindowOrganizerController.startTransition(
                     transition.getToken(), null));
             return transition;
         }
@@ -1351,7 +1355,7 @@ class TransitionController {
             queued.mTransition.playNow();
         } else {
             // Post this so that the now-playing transition logic isn't interrupted.
-            mAtm.mH.post(() -> {
+            mHandler.post(() -> {
                 synchronized (mAtm.mGlobalLock) {
                     // The transition/sync may be aborted if the transition player died.
                     if (queued.isAborted(mSyncEngine)) return;
@@ -1909,6 +1913,7 @@ class TransitionController {
         @GuardedBy("itself")
         private final ArrayMap<IBinder, DelegateProcess> mDelegateProcesses = new ArrayMap<>();
         private final ActivityTaskManagerService mAtm;
+        private final Handler mHandler;
 
         private class DelegateProcess implements Runnable {
             final WindowProcessController mProc;
@@ -1928,8 +1933,9 @@ class TransitionController {
             }
         }
 
-        RemotePlayer(ActivityTaskManagerService atm) {
+        RemotePlayer(ActivityTaskManagerService atm, Handler handler) {
             mAtm = atm;
+            mHandler = handler;
         }
 
         void update(@NonNull WindowProcessController delegate, boolean running, boolean predict) {
@@ -1957,7 +1963,7 @@ class TransitionController {
             // if the remote animation doesn't happen.
             if (predict) {
                 delegateProc.mNeedReport = true;
-                mAtm.mH.postDelayed(delegateProc, REPORT_RUNNING_GRACE_PERIOD_MS);
+                mHandler.postDelayed(delegateProc, REPORT_RUNNING_GRACE_PERIOD_MS);
             }
             synchronized (mDelegateProcesses) {
                 mDelegateProcesses.put(delegate.getThread().asBinder(), delegateProc);
@@ -1982,7 +1988,7 @@ class TransitionController {
                     // It was predicted to run remote transition. Now it is really requesting so
                     // remove the timeout of restoration.
                     delegate.mNeedReport = false;
-                    mAtm.mH.removeCallbacks(delegate);
+                    mHandler.removeCallbacks(delegate);
                 }
             }
             return delegate != null;
@@ -2135,9 +2141,11 @@ class TransitionController {
     /** Fallback player used during time periods where a real player is not registered. */
     private static class FallbackPlayer implements ITransitionPlayer {
         final ActivityTaskManagerService mAtm;
+        private final Handler mHandler;
 
-        FallbackPlayer(ActivityTaskManagerService atm) {
+        FallbackPlayer(ActivityTaskManagerService atm, Handler handler) {
             mAtm = atm;
+            mHandler = handler;
         }
 
         @Override
@@ -2154,7 +2162,7 @@ class TransitionController {
             setupStartState(info, t, finishT);
             t.apply();
             finishT.apply();
-            mAtm.mH.post(() -> {
+            mHandler.post(() -> {
                 try {
                     ProtoLog.v(WM_DEBUG_WINDOW_TRANSITIONS_MIN, "Transition animation [FALLBACK] "
                             + "finished #%d @%d", info.getDebugId(), info.getTrack());
@@ -2184,7 +2192,7 @@ class TransitionController {
             // This is often wasted work; however, Fallback is only active during exceptional
             // situations so debugging is more valuable than micro-optimization at this point.
             final Throwable requestTrace = new Throwable();
-            mAtm.mH.post(() -> {
+            mHandler.post(() -> {
                 try {
                     final Transition transit = Transition.fromBinder(transitionToken);
                     if (transit == null) {

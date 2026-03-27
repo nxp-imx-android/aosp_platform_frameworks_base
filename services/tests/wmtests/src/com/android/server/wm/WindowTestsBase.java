@@ -2297,6 +2297,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
             doReturn(this).when(atms).getTransitionController();
             mSnapshotController = mock(SnapshotController.class);
             mTransitionTracer = mock(TransitionTracer.class);
+            setWindowManager(atms.mWindowManager);
         }
     }
 
