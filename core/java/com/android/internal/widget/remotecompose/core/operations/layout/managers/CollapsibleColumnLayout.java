@@ -21,6 +21,7 @@ import static com.android.internal.widget.remotecompose.core.documentation.Docum
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
+import com.android.internal.widget.remotecompose.core.CoreDocument;
 import com.android.internal.widget.remotecompose.core.Operation;
 import com.android.internal.widget.remotecompose.core.Operations;
 import com.android.internal.widget.remotecompose.core.PaintContext;
@@ -272,7 +273,11 @@ public class CollapsibleColumnLayout extends ColumnLayout {
             }
         }
         if (!mChildrenComponents.isEmpty() && size != null) {
-            size.setHeight(size.getHeight() + (mSpacedBy * (visibleChildren - 1)));
+            float spacedBy = mSpacedBy;
+            if (context.getDensityBehavior() == CoreDocument.DENSITY_BEHAVIOR_DP) {
+                spacedBy *= context.getDensity();
+            }
+            size.setHeight(size.getHeight() + (spacedBy * (visibleChildren - 1)));
         }
 
         float childrenWidth = 0f;

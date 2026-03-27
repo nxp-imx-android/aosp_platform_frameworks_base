@@ -22,6 +22,7 @@ import static com.android.internal.widget.remotecompose.core.documentation.Docum
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
+import com.android.internal.widget.remotecompose.core.CoreDocument;
 import com.android.internal.widget.remotecompose.core.Operation;
 import com.android.internal.widget.remotecompose.core.Operations;
 import com.android.internal.widget.remotecompose.core.PaintContext;
@@ -237,7 +238,11 @@ public class FlowLayout extends RowLayout {
                 currentRowMaxHeight = 0;
             }
             currentRow.add(c);
-            currentWidth += componentWidth + mSpacedBy;
+            float spacedBy = mSpacedBy;
+            if (context.getDensityBehavior() == CoreDocument.DENSITY_BEHAVIOR_DP) {
+                spacedBy *= context.getDensity();
+            }
+            currentWidth += componentWidth + spacedBy;
             currentRowMaxHeight = Math.max(currentRowMaxHeight, componentHeight);
         }
         DebugLog.s(() -> "COMPUTED " + rows.size() + " SEGMENTS OF ROWS for " + this + " ("

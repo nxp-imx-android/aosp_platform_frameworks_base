@@ -80,9 +80,24 @@ public class CoreDocument implements Serializable {
 
     // We also keep a more fine-grained BUILD number, exposed as
     // ID_API_LEVEL = DOCUMENT_API_LEVEL + BUILD
-    static final float BUILD = 0.1f;
+    static final float BUILD = 0.2f;
 
     private static final boolean UPDATE_VARIABLES_BEFORE_LAYOUT = false;
+
+    /**
+     * Legacy density behavior
+     */
+    public static final int DENSITY_BEHAVIOR_LEGACY = 0;
+
+    /**
+     * Values are interpreted as pixels, no density applied by default.
+     */
+    public static final int DENSITY_BEHAVIOR_PIXELS = 1;
+
+    /**
+     * Values are interpreted as dp, density applied by default.
+     */
+    public static final int DENSITY_BEHAVIOR_DP = 2;
 
     ////////////////////////////////////////////////////////////////////////////////////////////
     // Default feature values
@@ -94,6 +109,7 @@ public class CoreDocument implements Serializable {
     private static final int DEFAULT_FEATURE_ARRAY_LISTENERS = 1;
     private static final int DEFAULT_FEATURE_MEASURE_VERSION = LayoutManager.DEFAULT_MEASURE_TYPE;
     private static final int DEFAULT_FEATURE_TOUCH_VERSION = LayoutManager.DEFAULT_TOUCH_VERSION;
+    private static final int DEFAULT_DENSITY_BEHAVIOR = DENSITY_BEHAVIOR_LEGACY;
 
     /// /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -109,6 +125,7 @@ public class CoreDocument implements Serializable {
 
     int mMeasureVersion = DEFAULT_FEATURE_MEASURE_VERSION;
     int mTouchVersion = DEFAULT_FEATURE_TOUCH_VERSION;
+    int mDensityBehavior = DEFAULT_DENSITY_BEHAVIOR;
 
     boolean mNeedsInitialMeasure = true;
 
@@ -229,6 +246,18 @@ public class CoreDocument implements Serializable {
     }
 
     /**
+     * Returns the density of the document
+     *
+     * @return the density
+     */
+    public float getDensity() {
+        if (mHeader != null) {
+            return mHeader.getDensity();
+        }
+        return 1f;
+    }
+
+    /**
      * Set the viewport height of the document
      *
      * @param height document height
@@ -293,6 +322,24 @@ public class CoreDocument implements Serializable {
 
     public int getContentMode() {
         return mContentMode;
+    }
+
+    /**
+     * Returns the density behavior of the document.
+     * 0: Current behavior (mixed)
+     * 1: Values are interpreted as pixels, no density applied by default
+     * 2: Values are interpreted as dp, density applied by default
+     */
+    public int getDensityBehavior() {
+        return mDensityBehavior;
+    }
+
+    /**
+     * Sets the density behavior of the document.
+     * @param behavior
+     */
+    public void setDensityBehavior(int behavior) {
+        mDensityBehavior = behavior;
     }
 
     /**
@@ -702,6 +749,9 @@ public class CoreDocument implements Serializable {
         if (featureId == Header.FEATURE_TOUCH_VERSION) {
             return mHeader.getInt(featureId, DEFAULT_FEATURE_TOUCH_VERSION);
         }
+        if (featureId == Header.DOC_DENSITY_BEHAVIOR) {
+            return mHeader.getInt(featureId, DEFAULT_DENSITY_BEHAVIOR);
+        }
         return mHeader.getInt(featureId, -1);
     }
 
@@ -974,6 +1024,7 @@ public class CoreDocument implements Serializable {
 
         mMeasureVersion = featureIntValue(Header.FEATURE_MEASURE_VERSION);
         mTouchVersion = featureIntValue(Header.FEATURE_TOUCH_VERSION);
+        mDensityBehavior = featureIntValue(Header.DOC_DENSITY_BEHAVIOR);
         mBitmapMemory = 0;
         mOperations = inflateComponents(mOperations);
 

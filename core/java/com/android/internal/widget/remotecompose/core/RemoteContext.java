@@ -456,6 +456,14 @@ public abstract class RemoteContext {
         return mDocument.useFeature(feature);
     }
 
+    /**
+     * Return the document density behavior
+     * @return
+     */
+    public int getDensityBehavior() {
+        return mDocument.mDensityBehavior;
+    }
+
     /** The font information */
     public static class FontInfo {
         /** the id of the font */

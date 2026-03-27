@@ -415,18 +415,6 @@ public class LayoutComponent extends Component {
         mScrollY = value;
     }
 
-    @Override
-    public void paint(@NonNull PaintContext context) {
-        if (mDrawContentOperations != null) {
-            context.save();
-            context.translate(mX, mY);
-            mDrawContentOperations.paint(context);
-            context.restore();
-            return;
-        }
-        super.paint(context);
-    }
-
     /**
      * Paint the component content. Used by the DrawContent operation. (back out mX/mY -- TODO:
      * refactor paintingComponent instead, to not include mX/mY etc.)
@@ -436,7 +424,7 @@ public class LayoutComponent extends Component {
     public void drawContent(@NonNull PaintContext context) {
         context.save();
         context.translate(-mX, -mY);
-        paintingComponent(context);
+        internalPaintingComponent(context);
         context.restore();
     }
 
@@ -452,6 +440,17 @@ public class LayoutComponent extends Component {
 
     @Override
     public void paintingComponent(@NonNull PaintContext context) {
+        if (mDrawContentOperations != null) {
+            context.save();
+            context.translate(mX, mY);
+            mDrawContentOperations.paint(context);
+            context.restore();
+            return;
+        }
+        internalPaintingComponent(context);
+    }
+
+    private void internalPaintingComponent(@NonNull PaintContext context) {
         Component prev = context.getContext().mLastComponent;
         RemoteContext remoteContext = context.getContext();
 

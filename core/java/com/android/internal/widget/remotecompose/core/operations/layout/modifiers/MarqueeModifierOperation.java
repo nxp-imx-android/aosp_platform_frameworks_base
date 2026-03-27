@@ -20,6 +20,7 @@ import static com.android.internal.widget.remotecompose.core.documentation.Docum
 
 import android.annotation.NonNull;
 
+import com.android.internal.widget.remotecompose.core.CoreDocument;
 import com.android.internal.widget.remotecompose.core.Operation;
 import com.android.internal.widget.remotecompose.core.Operations;
 import com.android.internal.widget.remotecompose.core.PaintContext;
@@ -284,9 +285,15 @@ public class MarqueeModifierOperation extends DecoratorModifierOperation impleme
             float height) {
         mComponentWidth = width;
         mComponentHeight = height;
+
+        float spacing = mSpacing;
+        if (context.getDensityBehavior() == CoreDocument.DENSITY_BEHAVIOR_DP) {
+            spacing *= context.getDensity();
+        }
+
         if (component instanceof LayoutComponent) {
             LayoutComponent layoutComponent = (LayoutComponent) component;
-            setContentWidth(layoutComponent.minIntrinsicWidth(context));
+            setContentWidth(layoutComponent.minIntrinsicWidth(context) + spacing);
             setContentHeight(layoutComponent.minIntrinsicHeight(context));
         }
     }
