@@ -421,7 +421,9 @@ public class CompanionDeviceManagerService extends SystemService {
 
             enforceCallerIsSystemOrCanInteractWithUserId(getContext(), userId);
 
-            return mAssociationStore.getTrustedAssociations(userId);
+            // TODO(b/496715920): Temporarily give PCC all the associations for it
+            // to establish trust. Should give only trusted associations after 26Q3.
+            return mAssociationStore.getActiveAssociationsByUser(userId);
         }
 
         @Override
