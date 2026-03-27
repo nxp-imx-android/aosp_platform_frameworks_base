@@ -748,6 +748,15 @@ public class SystemServicesTestRule implements TestRule {
             spyOn(uiContext);
             doNothing().when(uiContext).registerComponentCallbacks(any());
             doNothing().when(uiContext).unregisterComponentCallbacks(any());
+
+            spyOn(mSystemThread);
+            doAnswer(invocation -> {
+                Context ctx = (Context) invocation.callRealMethod();
+                spyOn(ctx);
+                doNothing().when(ctx).registerComponentCallbacks(any());
+                doNothing().when(ctx).unregisterComponentCallbacks(any());
+                return ctx;
+            }).when(mSystemThread).getSystemUiContext(anyInt());
         }
 
         @Override
