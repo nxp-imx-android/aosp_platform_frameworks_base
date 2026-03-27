@@ -591,7 +591,7 @@
     <string name="sensor_privacy_start_use_mic_camera_dialog_title" msgid="4316471859905020023">"क्या आपको डिवाइस का कैमरा और माइक्रोफ़ोन अनब्लॉक करना है?"</string>
     <string name="sensor_privacy_start_use_mic_dialog_content" msgid="1624701280680913717">"ऐसा करने से, सभी ऐप्लिकेशन और सेवाओं के लिए माइक्रोफ़ोन का ऐक्सेस अनब्लॉक हो जाएगा और वे इसका इस्तेमाल कर पाएंगी."</string>
     <string name="sensor_privacy_start_use_camera_dialog_content" msgid="4704948062372435963">"ऐसा करने से, सभी ऐप्लिकेशन और सेवाओं के लिए कैमरे का ऐक्सेस अनब्लॉक हो जाएगा और वे इसका इस्तेमाल कर पाएंगी."</string>
-    <string name="sensor_privacy_start_use_mic_camera_dialog_content" msgid="3577642558418404919">"ऐसा करने पर, जिन ऐप्लिकेशन और सेवाओं के पास कैमरा या माइक्रोफ़ोन का ऐक्सेस है वे इनका इस्तेमाल कर पाएंगी."</string>
+    <string name="sensor_privacy_start_use_mic_camera_dialog_content" msgid="3577642558418404919">"ऐसा करने पर, इस्तेमाल करने की अनुमति वाले ऐप्लिकेशन और सेवाओं को कैमरा या माइक्रोफ़ोन का ऐक्सेस फिर से मिल जाएगा."</string>
     <string name="sensor_privacy_start_use_mic_blocked_dialog_title" msgid="2640140287496469689">"माइक्रोफ़ोन को ब्लॉक किया गया है"</string>
     <string name="sensor_privacy_start_use_camera_blocked_dialog_title" msgid="7398084286822440384">"कैमरे को ब्लॉक किया गया है"</string>
     <string name="sensor_privacy_start_use_mic_camera_blocked_dialog_title" msgid="195236134743281973">"माइक्रोफ़ोन और कैमरे को ब्लॉक किया गया है"</string>
