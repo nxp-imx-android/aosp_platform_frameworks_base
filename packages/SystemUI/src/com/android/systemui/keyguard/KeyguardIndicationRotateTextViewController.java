@@ -401,6 +401,7 @@ public class KeyguardIndicationRotateTextViewController extends
     public static final int INDICATION_TYPE_SECURE_LOCK_DEVICE = 16;
     public static final int INDICATION_TYPE_CLICK_TO_UNLOCK_HINT = 17;
     public static final int INDICATION_TYPE_KEY_TO_UNLOCK_HINT = 18;
+    public static final int INDICATION_TYPE_ENTER_TO_UNLOCK_HINT = 19;
 
     @IntDef({
             INDICATION_TYPE_NONE,
@@ -422,6 +423,7 @@ public class KeyguardIndicationRotateTextViewController extends
             INDICATION_TYPE_SECURE_LOCK_DEVICE,
             INDICATION_TYPE_CLICK_TO_UNLOCK_HINT,
             INDICATION_TYPE_KEY_TO_UNLOCK_HINT,
+            INDICATION_TYPE_ENTER_TO_UNLOCK_HINT,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface IndicationType {
@@ -470,6 +472,8 @@ public class KeyguardIndicationRotateTextViewController extends
                 return "click_to_unlock_hint";
             case INDICATION_TYPE_KEY_TO_UNLOCK_HINT:
                 return "key_to_unlock_hint";
+            case INDICATION_TYPE_ENTER_TO_UNLOCK_HINT:
+                return "enter_to_unlock_hint";
             default:
                 return "unknown[" + type + "]";
         }
