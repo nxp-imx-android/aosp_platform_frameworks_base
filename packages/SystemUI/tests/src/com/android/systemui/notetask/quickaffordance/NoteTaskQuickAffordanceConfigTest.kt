@@ -38,6 +38,7 @@ import com.android.systemui.notetask.LockscreenNoteTakingAvailability
 import com.android.systemui.notetask.NoteTaskController
 import com.android.systemui.notetask.NoteTaskEntryPoint
 import com.android.systemui.notetask.NoteTaskInfoResolver
+import com.android.systemui.notetask.NoteTaskUserResolver
 import com.android.systemui.res.R
 import com.android.systemui.stylus.StylusManager
 import com.android.systemui.util.concurrency.FakeExecutor
@@ -72,6 +73,7 @@ internal class NoteTaskQuickAffordanceConfigTest : SysuiTestCase() {
     @Mock lateinit var roleManager: RoleManager
     @Mock lateinit var packageManager: PackageManager
     @Mock lateinit var lockscreenNoteTakingAvailability: LockscreenNoteTakingAvailability
+    @Mock lateinit var userResolver: NoteTaskUserResolver
 
     private lateinit var mockitoSession: MockitoSession
 
@@ -95,11 +97,10 @@ internal class NoteTaskQuickAffordanceConfigTest : SysuiTestCase() {
                 )
             )
             .thenReturn(ApplicationInfo())
-        whenever(controller.getUserForHandlingNotesTaking(any())).thenReturn(UserHandle.SYSTEM)
+        whenever(userResolver.getUserForHandlingNoteTaking(any())).thenReturn(UserHandle.SYSTEM)
         whenever(roleManager.getRoleHoldersAsUser(eq(RoleManager.ROLE_NOTES), any<UserHandle>()))
             .thenReturn(listOf("com.google.test.notes"))
-        whenever(lockscreenNoteTakingAvailability.isLockscreenNoteTakingEnabled())
-            .thenReturn(true)
+        whenever(lockscreenNoteTakingAvailability.isLockscreenNoteTakingEnabled()).thenReturn(true)
         whenever(lockscreenNoteTakingAvailability.shouldShowNotesInLockscreenShortcutPicker())
             .thenReturn(true)
 
@@ -120,6 +121,7 @@ internal class NoteTaskQuickAffordanceConfigTest : SysuiTestCase() {
             keyguardMonitor = mock(),
             lazyRepository = { repository },
             lockscreenNoteTakingAvailability = lockscreenNoteTakingAvailability,
+            userResolver = userResolver,
             isEnabled = isEnabled,
             backgroundExecutor = FakeExecutor(FakeSystemClock()),
             roleManager = roleManager,
