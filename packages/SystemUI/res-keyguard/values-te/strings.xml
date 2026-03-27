@@ -124,12 +124,9 @@
     <string name="kg_prompt_reason_restart_pattern" msgid="3321211830602827742">"డివైజ్‌ను రీస్టార్ట్ చేసిన తర్వాత ఆకృతి అవసరం"</string>
     <string name="kg_prompt_reason_restart_pin" msgid="2672166323886110512">"డివైజ్‌ను రీస్టార్ట్ చేసిన తర్వాత PIN అవసరం"</string>
     <string name="kg_prompt_reason_restart_password" msgid="3967993994418885887">"డివైజ్‌ను రీస్టార్ట్ చేసిన తర్వాత పాస్‌వర్డ్ అవసరం"</string>
-    <!-- no translation found for kg_prompt_reason_signin_pattern (1650886553162854395) -->
-    <skip />
-    <!-- no translation found for kg_prompt_reason_signin_pin (636031498838532631) -->
-    <skip />
-    <!-- no translation found for kg_prompt_reason_signin_password (1020939174735616114) -->
-    <skip />
+    <string name="kg_prompt_reason_signin_pattern" msgid="1650886553162854395">"సైన్ ఇన్ చేయడానికి ఆకృతి అవసరం"</string>
+    <string name="kg_prompt_reason_signin_pin" msgid="636031498838532631">"సైన్ ఇన్ చేయడానికి PIN అవసరం"</string>
+    <string name="kg_prompt_reason_signin_password" msgid="1020939174735616114">"సైన్ ఇన్ చేయడానికి పాస్‌వర్డ్ అవసరం"</string>
     <string name="kg_prompt_reason_timeout_pattern" msgid="5514969660010197363">"అదనపు సెక్యూరిటీ కోసం, బదులుగా ఆకృతిని ఉపయోగించండి"</string>
     <string name="kg_prompt_reason_timeout_pin" msgid="4227962059353859376">"అదనపు సెక్యూరిటీ కోసం, బదులుగా PINను ఉపయోగించండి"</string>
     <string name="kg_prompt_reason_timeout_password" msgid="8810879144143933690">"అదనపు సెక్యూరిటీ కోసం, బదులుగా పాస్‌వర్డ్‌ను ఉపయోగించండి"</string>
