@@ -32,6 +32,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -146,7 +147,7 @@ public class PccSandboxManagerServiceImplTest {
         LocalServices.removeServiceForTest(UserManagerInternal.class);
         LocalServices.addService(UserManagerInternal.class, umi);
 
-        org.mockito.Mockito.doCallRealMethod().when(mInjector).deleteAuditLogFilesAllUsers();
+        doCallRealMethod().when(mInjector).deleteAuditLogFilesAllUsers();
 
         PccSandboxManagerServiceImpl service = new PccSandboxManagerServiceImpl(mContext,
                 mInjector);
