@@ -73,6 +73,7 @@ import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -424,6 +425,22 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
                     }
                     return 0;
                 }
+                case "audit-start" -> {
+                    synchronized (mAuditModeLock) {
+                        setAuditModeEnabled(pw, true);
+                    }
+                    return 0;
+                }
+                case "audit-stop" -> {
+                    synchronized (mAuditModeLock) {
+                        setAuditModeEnabled(pw, false);
+                        for (int i = 0; i < mAuditModeContexts.size(); i++) {
+                            mAuditModeContexts.valueAt(i).stopAuditing();
+                        }
+                        mAuditModeContexts.clear();
+                    }
+                    return 0;
+                }
                 case "read-intelligence-audit-log" -> {
                     // We check if the device is locked to force the user to input their LSKF
                     // when changing users. Otherwise, a user could `am switch-user` to a different
@@ -437,6 +454,12 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
                     if (keyguardManager.isKeyguardLocked()) {
                         pw.println("Please unlock your device to read the audit log.");
                         return -1;
+                    }
+
+                    if (PccProperties.audit_mode_enabled().orElse(true)) {
+                        pw.println(
+                                "Warning: Audit in progress. Results may be incomplete. Call"
+                                    + " 'audit-stop' to save buffers before reading.");
                     }
 
                     final int userId = ActivityManager.getCurrentUser();
@@ -462,6 +485,20 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
                 default -> {
                     return handleDefaultCommands(cmd);
                 }
+            }
+        }
+
+        private void setAuditModeEnabled(PrintWriter pw, boolean enabled) {
+            try {
+                PccProperties.audit_mode_enabled(enabled);
+                Optional<Boolean> value = PccProperties.audit_mode_enabled();
+                if (value.isPresent() && value.get() == enabled) {
+                    pw.println("Audit mode " + (enabled ? "enabled" : "disabled"));
+                } else {
+                    pw.println("Failed to " + (enabled ? "enable" : "disable") + " audit mode");
+                }
+            } catch (RuntimeException e) {
+                Log.e(TAG, "Failed to set audit_mode_enabled sysprop", e);
             }
         }
 
