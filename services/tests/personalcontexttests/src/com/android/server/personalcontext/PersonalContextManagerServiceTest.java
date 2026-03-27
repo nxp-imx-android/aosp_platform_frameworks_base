@@ -209,6 +209,12 @@ public class PersonalContextManagerServiceTest {
 
     @Test
     public void testOnUserUnlocked_systemUser_registersInternalComponents() {
+        Settings.Secure.putIntForUser(
+                mContext.getContentResolver(),
+                Settings.Secure.PERSONAL_CONTEXT_ENABLED,
+                1,
+                UserHandle.USER_SYSTEM);
+
         mService.onUserStarting(mSystemUser);
         mService.onUserUnlocked(mSystemUser);
 
@@ -518,10 +524,11 @@ public class PersonalContextManagerServiceTest {
     // TODO(b/495521356): remove test when permission is removed entirely.
     @Test
     public void testIsEnabled_doesNotEnforcePermission() {
+        mBinderService.setEnabled(mContext.getUserId(), /* enabled= */ false);
         mFakePermissionEnforcer.revoke(Manifest.permission.PERSONAL_CONTEXT_READ_SETTINGS);
 
         // Read succeeds.
-        assertThat(mBinderService.isEnabled(mContext.getUserId())).isTrue();
+        assertThat(mBinderService.isEnabled(mContext.getUserId())).isFalse();
     }
 
     @Test
