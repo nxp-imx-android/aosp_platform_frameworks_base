@@ -51,6 +51,12 @@ interface ConfigurationInteractor {
      */
     val layoutDirection: Flow<Int>
 
+    /**
+     * Display rotation, one of [Surface.ROTATION_0], [Surface.ROTATION_90], [Surface.ROTATION_180],
+     * [Surface.ROTATION_270]
+     */
+    val displayRotation: Flow<Int>
+
     /** Emit an event on any config change */
     val onAnyConfigurationChange: Flow<Unit>
 
@@ -96,6 +102,11 @@ class ConfigurationInteractorImpl(private val repository: ConfigurationRepositor
 
     override val layoutDirection: Flow<Int> =
         repository.configurationValues.map { it.layoutDirection }.distinctUntilChanged()
+
+    override val displayRotation: Flow<Int> =
+        repository.configurationValues
+            .map { it.windowConfiguration.displayRotation }
+            .distinctUntilChanged()
 
     override fun dimensionPixelSize(resourceId: Int): Flow<Int> {
         return onAnyConfigurationChange.mapLatest { repository.getDimensionPixelSize(resourceId) }

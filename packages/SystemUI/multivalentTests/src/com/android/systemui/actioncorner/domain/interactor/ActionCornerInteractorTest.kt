@@ -28,7 +28,7 @@ import android.provider.Settings.Secure.ACTION_CORNER_BOTTOM_RIGHT_ACTION
 import android.provider.Settings.Secure.ACTION_CORNER_TOP_LEFT_ACTION
 import android.provider.Settings.Secure.ACTION_CORNER_TOP_RIGHT_ACTION
 import android.view.Display.DEFAULT_DISPLAY
-import android.view.IWindowManager
+import android.view.mockIWindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
@@ -83,7 +83,6 @@ class ActionCornerInteractorTest : SysuiTestCase() {
     }
 
     private val Kosmos.launcherProxyService by Fixture { mock<LauncherProxyService>() }
-    private val Kosmos.windowManager by Fixture { mock<IWindowManager>() }
     private val Kosmos.commandQueue by Fixture { mock<CommandQueue>() }
     private val Kosmos.fakePointerRepository by Fixture { FakePointerDeviceRepository() }
     private val Kosmos.noteTaskController by Fixture { mock<NoteTaskController>() }
@@ -97,7 +96,7 @@ class ActionCornerInteractorTest : SysuiTestCase() {
             windowManagerLockscreenVisibilityInteractor,
             fakeUserSetupRepository,
             commandQueue,
-            windowManager,
+            mockIWindowManager,
             noteTaskController,
         )
     }
@@ -164,7 +163,7 @@ class ActionCornerInteractorTest : SysuiTestCase() {
             ACTION_CORNER_ACTION_LOCKSCREEN,
         )
         actionCornerRepository.addState(ActiveActionCorner(BOTTOM_RIGHT, DEFAULT_DISPLAY))
-        verify(windowManager).lockNow(eq(null))
+        verify(kosmos.mockIWindowManager).lockNow(eq(null))
     }
 
     @Test
