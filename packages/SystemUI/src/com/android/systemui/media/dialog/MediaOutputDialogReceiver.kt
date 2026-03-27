@@ -87,7 +87,7 @@ constructor(
 
     private fun launchSystemRoutingDialog(userHandle: UserHandle?) {
         if (userHandle == null) {
-            Log.e(TAG, "Can't launch dialog. Package name is empty.")
+            Log.e(TAG, "Can't launch dialog. UserHandle is empty.")
             return
         }
         mediaOutputDialogManager.createAndShowForSystemRouting(userHandle = userHandle)
