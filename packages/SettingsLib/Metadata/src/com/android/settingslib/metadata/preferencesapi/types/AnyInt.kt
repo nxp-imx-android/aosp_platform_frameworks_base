@@ -25,7 +25,7 @@ import com.android.settingslib.metadata.ValidatedKeyParameters
 import com.android.settingslib.metadata.preferencesapi.types.EType
 
 /** Any int value. */
-sealed class AnyInt(private val unitOfMeasurement: String? = null): DirectApiType<Int> {
+open class AnyInt(private val unitOfMeasurement: String? = null): DirectApiType<Int> {
 
     override fun getParametersSchema() = KeyParametersSchema.Builder()
         .parameter("unit", "The unit of measurement (if any) such as dB or milliseconds.", type = AnyString)
