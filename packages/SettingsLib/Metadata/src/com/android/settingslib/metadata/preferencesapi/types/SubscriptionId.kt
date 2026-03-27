@@ -60,7 +60,12 @@ open class SubscriptionId(
 
     override fun getDescription(context: Context): String = "An ID of a network subscription"
 
-    override fun getKey(): String = "SubscriptionId:${includeActive}:${includeInactive}"
+    override fun getKey(): String = when {
+        includeActive && includeInactive -> "SubscriptionId_ActiveAndInactive"
+        includeActive -> "SubscriptionId_ActiveOnly"
+        includeInactive -> "SubscriptionId_InactiveOnly"
+        else -> "SubscriptionId_None"
+    }
 
     override suspend fun getOptions(context: Context): List<Pair<SafetyAnnotated<Int>, SafetyAnnotated<String>>> {
         return try {
