@@ -41,6 +41,9 @@ import static org.mockito.Mockito.when;
 
 import android.app.AlarmManager;
 import android.app.privatecompute.DataMigrationToPccService;
+import android.content.BroadcastReceiver;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.app.privatecompute.IDataMigrationToPccService;
 import android.app.privatecompute.IMigrationRequestResultReceiver;
 import android.app.privatecompute.IMigrationRequestResultSender;
@@ -157,6 +160,30 @@ public class PccSandboxManagerServiceImplTest {
         verify(mInjector).deleteAuditLogFilesAllUsers();
         assertFalse(mAuditLogDirUser1.exists());
         assertFalse(mAuditLogDirUser2.exists());
+    }
+
+    @Test
+    public void testWhenUserUnlocked_folderIsDeleted() throws Exception {
+        mAuditLogDirUser1.mkdirs();
+        mAuditLogDirUser2.mkdirs();
+        assertTrue(mAuditLogDirUser1.exists());
+        assertTrue(mAuditLogDirUser2.exists());
+        ArgumentCaptor<BroadcastReceiver> receiverCaptor =
+                ArgumentCaptor.forClass(BroadcastReceiver.class);
+        verify(mContext).registerReceiverForAllUsers(
+                receiverCaptor.capture(), any(IntentFilter.class), any(), any(Handler.class));
+        BroadcastReceiver receiver = receiverCaptor.getValue();
+
+        // Act: User 10 is unlocked.
+        Intent intent = new Intent(Intent.ACTION_USER_UNLOCKED);
+        intent.putExtra(Intent.EXTRA_USER_HANDLE, 10);
+        receiver.onReceive(mContext, intent);
+        mService.getExecutorService().shutdown();
+        assertTrue(mService.getExecutorService().awaitTermination(5, TimeUnit.SECONDS));
+
+        verify(mInjector).deleteAuditLogFiles(10);
+        assertTrue(mAuditLogDirUser1.exists());  // User 0's folder is not deleted
+        assertFalse(mAuditLogDirUser2.exists()); // User 10's folder is deleted
     }
 
     @Test

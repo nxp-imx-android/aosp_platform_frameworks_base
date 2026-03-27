@@ -24,6 +24,7 @@ import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_WRITE_TO_
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
+import android.annotation.RequiresPermission;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.KeyguardManager;
@@ -36,8 +37,10 @@ import android.app.privatecompute.IPccSandboxManagerNative;
 import android.app.privatecompute.MigrationException;
 import android.app.privatecompute.MigrationRequestResult;
 import android.content.ComponentName;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
@@ -101,17 +104,39 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
 
     private final AlarmManager.OnAlarmListener mAuditLogCleanupListener;
 
+    private final BroadcastReceiver mUserUnlockedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (Intent.ACTION_USER_UNLOCKED.equals(intent.getAction())) {
+                int userId = intent.getIntExtra(Intent.EXTRA_USER_HANDLE, UserHandle.USER_NULL);
+                if (userId != UserHandle.USER_NULL) {
+                    mExecutorService.execute(() -> {
+                        mInjector.deleteAuditLogFiles(userId);
+                    });
+                }
+            }
+        }
+    };
+
+    @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS_FULL)
     public PccSandboxManagerServiceImpl(Context context) {
         this(context, new Injector());
     }
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+    @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS_FULL)
     public PccSandboxManagerServiceImpl(Context context, Injector injector) {
         mContext = context;
         mPackageManagerInternal = LocalServices.getService(PackageManagerInternal.class);
         mInjector = injector;
         mExecutorService = mInjector.getExecutorService();
         mAuditLogCleanupListener = () -> mExecutorService.execute(this::runAuditLogCleanupTask);
+
+        mContext.registerReceiverForAllUsers(
+                mUserUnlockedReceiver,
+                new IntentFilter(Intent.ACTION_USER_UNLOCKED),
+                /* broadcastPermission= */ null,
+                mInjector.getHandler(mInjector.getBackgroundLooper()));
 
         // Run the audit log cleanup task upon booting.
         mExecutorService.execute(this::runAuditLogCleanupTask);
@@ -171,6 +196,10 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
         File getAuditLogFilesDirectory(int userId) {
             return new File(Environment.getDataMiscCeDirectory(userId),
                     AuditModeContext.AUDIT_LOG_FILES_DIRNAME);
+        }
+
+        void deleteAuditLogFiles(int userId) {
+            AuditModeContext.deleteAuditLogFiles(getAuditLogFilesDirectory(userId));
         }
 
         void deleteAuditLogFilesAllUsers() {
