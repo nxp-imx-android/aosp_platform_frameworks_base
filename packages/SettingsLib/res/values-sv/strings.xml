@@ -202,7 +202,7 @@
     <string name="accessibility_wifi_shared_network_icon_message" msgid="7853291528081728631">"Alla användare på den här enheten kan se och ansluta till nätverket."</string>
     <string name="accessibility_wifi_security_type_none" msgid="162352241518066966">"Öppet nätverk"</string>
     <string name="accessibility_wifi_security_type_secured" msgid="2399774097343238942">"Säkert nätverk"</string>
-    <string name="process_kernel_label" msgid="950292573930336765">"Operativsystemet Android"</string>
+    <string name="process_kernel_label" msgid="950292573930336765">"Android OS"</string>
     <string name="data_usage_uninstalled_apps" msgid="1933665711856171491">"Borttagna appar"</string>
     <string name="data_usage_uninstalled_apps_users" msgid="5533981546921913295">"Borttagna appar och användare"</string>
     <string name="data_usage_ota" msgid="7984667793701597001">"Systemuppdateringar"</string>
