@@ -24,6 +24,7 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
+import android.app.ActivityManager.ProcessState;
 import android.app.job.JobParameters;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
@@ -659,7 +660,7 @@ public abstract class BatteryStats {
     /**
      * Maps the ActivityManager procstate into corresponding BatteryStats procstate.
      */
-    public static int mapToInternalProcessState(int procState) {
+    public static int mapToInternalProcessState(@ProcessState int procState) {
         if (procState == ActivityManager.PROCESS_STATE_NONEXISTENT) {
             return Uid.PROCESS_STATE_NONEXISTENT;
         } else if (procState == ActivityManager.PROCESS_STATE_TOP) {
