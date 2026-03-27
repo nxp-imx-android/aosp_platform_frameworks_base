@@ -25,7 +25,6 @@ import android.app.admin.DevicePolicyManager.AppFunctionsPolicy;
 import android.app.appfunctions.flags.Flags;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManagerInternal;
 import android.os.Binder;
 import android.os.Process;
 import android.os.UserHandle;
@@ -33,7 +32,6 @@ import android.os.UserManager;
 
 import android.util.Slog;
 import com.android.internal.infra.AndroidFuture;
-import com.android.server.LocalServices;
 import com.android.server.appfunctions.allowlist.AppFunctionAllowlistReader;
 
 import java.util.Objects;
@@ -290,13 +288,28 @@ class CallerValidatorImpl implements CallerValidator {
             // root does not have a package name
             return;
         }
-        if (!LocalServices.getService(PackageManagerInternal.class).isSameApp(
-                claimedCallingPackage, actualCallingUid, UserHandle.getUserId(actualCallingUid))) {
+        UserHandle callingUserHandle = UserHandle.getUserHandleForUid(actualCallingUid);
+        Context actualCallingUserContext =
+                mContext.createContextAsUser(callingUserHandle, /* flags= */ 0);
+        int claimedCallingUid = getPackageUid(actualCallingUserContext, claimedCallingPackage);
+        if (claimedCallingUid != actualCallingUid) {
             throw new SecurityException(
                     "Specified calling package ["
                             + claimedCallingPackage
                             + "] does not match the calling uid "
                             + actualCallingUid);
+        }
+    }
+
+    /**
+     * Finds the UID of the {@code packageName} in the given {@code context}. Returns {@link
+     * Process#INVALID_UID} if unable to find the UID.
+     */
+    private int getPackageUid(@NonNull Context context, @NonNull String packageName) {
+        try {
+            return context.getPackageManager().getPackageUid(packageName, /* flags= */ 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            return Process.INVALID_UID;
         }
     }
 
