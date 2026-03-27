@@ -168,6 +168,15 @@ java_defaults {
             "ProtoLogLintChecker",
         ],
     },
+    errorprone: {
+        extra_check_modules: [
+            "//external/nullaway:nullaway_plugin",
+        ],
+        javacflags: [
+            "-Xep:NullAway:WARN",
+            "-XepOpt:NullAway:AnnotatedPackages=com.android.wm.shell",
+        ],
+    },
 }
 
 // A dedicated library to ensure WindowManager-Shell raw sources are linted in presubmit.
