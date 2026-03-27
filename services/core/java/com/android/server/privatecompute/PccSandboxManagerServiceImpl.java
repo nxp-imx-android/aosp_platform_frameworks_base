@@ -118,8 +118,13 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
     }
 
     private void runAuditLogCleanupTask() {
-        mInjector.deleteAuditLogFilesAllUsers();
-        rescheduleAuditLogCleanup();
+        final long token = Binder.clearCallingIdentity();
+        try {
+            mInjector.deleteAuditLogFilesAllUsers();
+            rescheduleAuditLogCleanup();
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
     }
 
     private void rescheduleAuditLogCleanup() {
@@ -177,7 +182,11 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
             UserManagerInternal umi = LocalServices.getService(UserManagerInternal.class);
             if (umi != null) {
                 for (int userId : umi.getUserIds()) {
-                    AuditModeContext.deleteAuditLogFiles(getAuditLogFilesDirectory(userId));
+                    // This conditions is to avoid deleting audit log files for a locked user,
+                    // and triggering StrictMode violations.
+                    if (umi.isUserUnlockingOrUnlocked(userId)) {
+                        AuditModeContext.deleteAuditLogFiles(getAuditLogFilesDirectory(userId));
+                    }
                 }
             }
         }
@@ -298,7 +307,7 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
                         mAuditModeContexts.valueAt(i).stopAuditing();
                     }
                     mAuditModeContexts.clear();
-                    rescheduleAuditLogCleanup();
+                    runAuditLogCleanupTask();
                 }
                 return false;
             }
