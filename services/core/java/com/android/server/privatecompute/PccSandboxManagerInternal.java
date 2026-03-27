@@ -387,6 +387,16 @@ public class PccSandboxManagerInternal implements OnRoleHoldersChangedListener {
      * @param appPackage The package name of the application.
      */
     public boolean isPccTrustedSystemComponent(int appUid, String appPackage) {
+        if (mTrustInstrumentedClients) {
+            android.app.ActivityManagerInternal ami = LocalServices.getService(
+                    android.app.ActivityManagerInternal.class);
+            if (ami != null) {
+                int sourceUid = ami.getInstrumentationSourceUid(appUid);
+                if (sourceUid != Process.INVALID_UID) {
+                    return true;
+                }
+            }
+        }
         for (int uid : TRUSTED_UIDS) {
             if (UserHandle.isSameApp(appUid, uid)) {
                 return true;
@@ -631,13 +641,6 @@ public class PccSandboxManagerInternal implements OnRoleHoldersChangedListener {
     private boolean isTrustedClient(int clientUid) {
         if (Process.isPrivateComputeCoreUid(clientUid)) {
             return true;
-        }
-        if (mTrustInstrumentedClients) {
-            android.app.ActivityManagerInternal ami = LocalServices.getService(
-                    android.app.ActivityManagerInternal.class);
-            if (ami != null && ami.getInstrumentationSourceUid(clientUid) != Process.INVALID_UID) {
-                return true;
-            }
         }
         AndroidPackage androidPackage = mPackageManagerInternal.getPackage(clientUid);
         if (androidPackage != null) {

@@ -144,6 +144,7 @@ import android.provider.Settings;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.AtomicFile;
+import android.util.IntArray;
 import android.util.KeyValueListParser;
 import android.util.Pair;
 import android.util.Slog;
@@ -398,6 +399,8 @@ public class AppOpsService extends IAppOpsService.Stub {
       * changed
       */
     private final SparseArray<int[]> mSwitchedOps = new SparseArray<>();
+
+    private int[] mPccOverriddenOps;
 
     /** Package sampled for message collection in the current session */
     @GuardedBy("this")
@@ -1025,6 +1028,7 @@ public class AppOpsService extends IAppOpsService.Stub {
             mSwitchedOps.put(switchCode,
                     ArrayUtils.appendInt(mSwitchedOps.get(switchCode), switchedCode));
         }
+        initializePccOverriddenOps();
         mAppOpsCheckingService = LocalServices.getService(AppOpsCheckingServiceInterface.class);
 
         mAppOpsCheckingService.addAppOpsModeChangedListener(
@@ -1081,6 +1085,17 @@ public class AppOpsService extends IAppOpsService.Stub {
         }
     }
 
+    private void initializePccOverriddenOps() {
+        IntArray overriddenOps = new IntArray();
+        for (int op = 0; op < AppOpsManager._NUM_OP; op++) {
+            int pccMode = AppOpsManager.opToPccMode(op);
+            if (AppOpsManager.isModeValid(AppOpsManager.opToPccMode(op))) {
+                overriddenOps.add(op);
+            }
+        }
+        mPccOverriddenOps = overriddenOps.toArray();
+    }
+
     public void publish() {
         ServiceManager.addService(Context.APP_OPS_SERVICE, asBinder());
         LocalServices.addService(AppOpsManagerInternal.class, mAppOpsManagerInternal);
@@ -1124,7 +1139,14 @@ public class AppOpsService extends IAppOpsService.Stub {
                         new Ops(pkgName, uidState));
             }
 
-            createSandboxUidStateIfNotExistsForAppLocked(uid, null);
+            PackageState packageState;
+            try (PackageManagerLocal.UnfilteredSnapshot snapshot =
+                         getPackageManagerLocal().withUnfilteredSnapshot()) {
+                packageState = snapshot.getPackageStates().get(pkgName);
+                if (packageState != null) {
+                    createAssociatedUidStatesIfNotExistsForAppLocked(uid, packageState, null);
+                }
+            }
         }
     }
 
@@ -1288,28 +1310,26 @@ public class AppOpsService extends IAppOpsService.Stub {
 
     private void initializeUserUidStatesLocked(int userId, Map<String,
             PackageState> packageStates, SparseBooleanArray knownUids) {
-        for (Map.Entry<String, PackageState> entry : packageStates.entrySet()) {
-            PackageState packageState = entry.getValue();
+        for (PackageState packageState : packageStates.values()) {
             if (packageState.isApex()) {
                 continue;
             }
-            int appId = packageState.getAppId();
-            String packageName = entry.getKey();
 
-            initializePackageUidStateLocked(userId, appId, packageName, knownUids);
+            initializePackageUidStateLocked(userId, packageState, knownUids);
         }
     }
 
     /*
       Be careful not to clear any existing data; only want to add objects that don't already exist.
      */
-    private void initializePackageUidStateLocked(int userId, int appId, String packageName,
-            SparseBooleanArray knownUids) {
-        int uid = UserHandle.getUid(userId, appId);
+    private void initializePackageUidStateLocked(int userId, @NonNull PackageState packageState,
+            @Nullable SparseBooleanArray knownUids) {
+        int uid = UserHandle.getUid(userId, packageState.getAppId());
         if (knownUids != null) {
             knownUids.put(uid, true);
         }
         UidState uidState = getUidStateLocked(uid, true);
+        String packageName = packageState.getPackageName();
         Ops ops = uidState.pkgOps.get(packageName);
         if (ops == null) {
             ops = new Ops(packageName, uidState);
@@ -1326,7 +1346,7 @@ public class AppOpsService extends IAppOpsService.Stub {
             }
         }
 
-        createSandboxUidStateIfNotExistsForAppLocked(uid, knownUids);
+        createAssociatedUidStatesIfNotExistsForAppLocked(uid, packageState, knownUids);
     }
 
     private void trimUidStatesLocked(SparseBooleanArray knownUids,
@@ -1534,8 +1554,7 @@ public class AppOpsService extends IAppOpsService.Stub {
 
                 // TODO(b/299330771): Check uidForegroundOps for all devices.
                 SparseBooleanArray uidForegroundOps =
-                        mAppOpsCheckingService.getForegroundOps(
-                                uid, PERSISTENT_DEVICE_ID_DEFAULT);
+                        getForegroundOps(uid, PERSISTENT_DEVICE_ID_DEFAULT);
                 for (int i = 0; i < uidForegroundOps.size(); i++) {
                     foregroundOps.put(uidForegroundOps.keyAt(i), true);
                 }
@@ -1556,12 +1575,12 @@ public class AppOpsService extends IAppOpsService.Stub {
                     }
                     final int code = foregroundOps.keyAt(fgi);
                     // TODO(b/299330771): Notify op changes for all relevant devices.
-                    if (mAppOpsCheckingService.getUidMode(
+                    if (getUidMode(
                                             uidState.uid,
                                             PERSISTENT_DEVICE_ID_DEFAULT,
                                             code)
                                     != AppOpsManager.opToDefaultMode(code)
-                            && mAppOpsCheckingService.getUidMode(
+                            && getUidMode(
                                             uidState.uid,
                                             PERSISTENT_DEVICE_ID_DEFAULT,
                                             code)
@@ -1794,7 +1813,7 @@ public class AppOpsService extends IAppOpsService.Stub {
         // TODO(b/299330771): Make this methods device-aware, currently it represents only the
         // primary device.
         final SparseIntArray opModes =
-                mAppOpsCheckingService.getNonDefaultUidModes(
+                getNonDefaultUidModes(
                         uidState.uid, PERSISTENT_DEVICE_ID_DEFAULT);
         if (opModes == null) {
             return null;
@@ -2187,11 +2206,11 @@ public class AppOpsService extends IAppOpsService.Stub {
             }
             // TODO(b/266164193): Ensure this behavior is device-aware after uid op mode for runtime
             //  permissions is deprecated.
-            if (mAppOpsCheckingService.getUidMode(
+            if (getUidMode(
                             uidState.uid, PERSISTENT_DEVICE_ID_DEFAULT, code)
                     != AppOpsManager.opToDefaultMode(code)) {
                 previousMode =
-                        mAppOpsCheckingService.getUidMode(
+                        getUidMode(
                                 uidState.uid, PERSISTENT_DEVICE_ID_DEFAULT, code);
             } else {
                 // doesn't look right but is legacy behavior.
@@ -2669,7 +2688,7 @@ public class AppOpsService extends IAppOpsService.Stub {
                 // TODO(b/266164193): Ensure this behavior is device-aware after uid op mode for
                 //  runtime permissions is deprecated.
                 SparseIntArray opModes =
-                        mAppOpsCheckingService.getNonDefaultUidModes(
+                        getNonDefaultUidModes(
                                 uidState.uid, PERSISTENT_DEVICE_ID_DEFAULT);
                 if (opModes != null && (uidState.uid == reqUid || reqUid == -1)) {
                     final int uidOpCount = opModes.size();
@@ -3068,6 +3087,7 @@ public class AppOpsService extends IAppOpsService.Stub {
         if (isOpRestrictedDueToSuspend(code, packageName, uid)) {
             return AppOpsManager.MODE_IGNORED;
         }
+
         synchronized (this) {
             if (isOpRestrictedLocked(uid, code, packageName, attributionTag, virtualDeviceId,
                     pvr.bypass, true)) {
@@ -3079,7 +3099,7 @@ public class AppOpsService extends IAppOpsService.Stub {
             code = AppOpsManager.opToSwitch(code);
             UidState uidState = getUidStateLocked(uid, false);
             if (uidState != null) {
-                int rawUidMode = mAppOpsCheckingService.getUidMode(
+                int rawUidMode = getUidMode(
                         uidState.uid, getPersistentDeviceIdForOp(virtualDeviceId, code), code);
 
                 if (rawUidMode != AppOpsManager.opToDefaultMode(code)) {
@@ -3132,14 +3152,6 @@ public class AppOpsService extends IAppOpsService.Stub {
             return MODE_IGNORED;
         }
 
-        if (Process.isPrivateComputeCoreUid(uid)) {
-            int pccMode = AppOpsManager.opToPccMode(code);
-            if (AppOpsManager.isModeValid(pccMode)) {
-                return pccMode;
-            } // else, determine the mode using its defining app uid
-            uid = mContext.getPackageManager().getAppUidForPrivateComputeCoreUid(uid);
-        }
-
         synchronized (this) {
             if (isOpRestrictedLocked(uid, code, packageName, attributionTag, virtualDeviceId,
                     pvr.bypass, isCheckOp)) {
@@ -3150,7 +3162,7 @@ public class AppOpsService extends IAppOpsService.Stub {
             }
 
             int switchCode = AppOpsManager.opToSwitch(code);
-            int rawUidMode = mAppOpsCheckingService.getUidMode(uid,
+            int rawUidMode = getUidMode(uid,
                     getPersistentDeviceIdForOp(virtualDeviceId, switchCode), switchCode);
 
             if (rawUidMode != AppOpsManager.opToDefaultMode(switchCode)) {
@@ -3458,15 +3470,6 @@ public class AppOpsService extends IAppOpsService.Stub {
             proxyAttributionTag = null;
         }
 
-        if (Process.isPrivateComputeCoreUid(uid)) {
-            int pccMode = AppOpsManager.opToPccMode(code);
-            if (AppOpsManager.isModeValid(pccMode)) {
-                return new SyncNotedAppOp(pccMode, code, attributionTag, packageName);
-            }
-            // else, determine the mode using its defining app uid
-            uid = mContext.getPackageManager().getAppUidForPrivateComputeCoreUid(uid);
-        }
-
         synchronized (this) {
             final Ops ops = getOpsLocked(uid, packageName, attributionTag,
                     pvr.isAttributionTagValid, pvr.bypass, /* edit */ true);
@@ -3514,13 +3517,13 @@ public class AppOpsService extends IAppOpsService.Stub {
 
                 // If there is a non-default per UID policy (we set UID op mode only if
                 // non-default) it takes over, otherwise use the per package policy.
-            } else if (mAppOpsCheckingService.getUidMode(uidState.uid,
+            } else if (getUidMode(uidState.uid,
                     getPersistentDeviceIdForOp(virtualDeviceId, switchCode), switchCode)
                     != AppOpsManager.opToDefaultMode(switchCode)) {
                 final int uidMode =
                         uidState.evalMode(
                                 code,
-                                mAppOpsCheckingService.getUidMode(
+                                getUidMode(
                                         uidState.uid,
                                         getPersistentDeviceIdForOp(virtualDeviceId, switchCode),
                                         switchCode));
@@ -4127,15 +4130,6 @@ public class AppOpsService extends IAppOpsService.Stub {
             proxyAttributionTag = null;
         }
 
-        if (Process.isPrivateComputeCoreUid(uid)) {
-            int pccMode = AppOpsManager.opToPccMode(code);
-            if (AppOpsManager.isModeValid(pccMode)) {
-                return new SyncNotedAppOp(pccMode, code, attributionTag, packageName);
-            }
-            // else, determine the mode using its defining app uid
-            uid = mContext.getPackageManager().getAppUidForPrivateComputeCoreUid(uid);
-        }
-
         boolean isRestricted = false;
         int startType = START_TYPE_FAILED;
         synchronized (this) {
@@ -4166,7 +4160,7 @@ public class AppOpsService extends IAppOpsService.Stub {
                 // If there is a non-default per UID policy (we set UID op mode only if
                 // non-default) it takes over, otherwise use the per package policy.
             } else if ((rawUidMode =
-                    mAppOpsCheckingService.getUidMode(
+                    getUidMode(
                             uidState.uid, getPersistentDeviceIdForOp(virtualDeviceId, switchCode),
                             switchCode))
                     != AppOpsManager.opToDefaultMode(switchCode)) {
@@ -4272,15 +4266,6 @@ public class AppOpsService extends IAppOpsService.Stub {
                     packageName);
         }
 
-        if (Process.isPrivateComputeCoreUid(uid)) {
-            int pccMode = AppOpsManager.opToPccMode(code);
-            if (AppOpsManager.isModeValid(pccMode)) {
-                return new SyncNotedAppOp(pccMode, code, attributionTag, packageName);
-            }
-            // else, determine the mode using its defining app uid
-            uid = mContext.getPackageManager().getAppUidForPrivateComputeCoreUid(uid);
-        }
-
         boolean isRestricted = false;
         synchronized (this) {
             // Edit is true (so we create the Ops object if needed), but attribution tag is given as
@@ -4303,13 +4288,13 @@ public class AppOpsService extends IAppOpsService.Stub {
             final int switchCode = AppOpsManager.opToSwitch(code);
             // If there is a non-default mode per UID policy (we set UID op mode only if
             // non-default) it takes over, otherwise use the per package policy.
-            if (mAppOpsCheckingService.getUidMode(uidState.uid,
+            if (getUidMode(uidState.uid,
                     getPersistentDeviceIdForOp(virtualDeviceId, switchCode), switchCode)
                     != AppOpsManager.opToDefaultMode(switchCode)) {
                 final int uidMode =
                         uidState.evalMode(
                                 code,
-                                mAppOpsCheckingService.getUidMode(
+                                getUidMode(
                                         uidState.uid,
                                         getPersistentDeviceIdForOp(virtualDeviceId, switchCode),
                                         switchCode));
@@ -4475,10 +4460,6 @@ public class AppOpsService extends IAppOpsService.Stub {
         } catch (SecurityException e) {
             logVerifyAndGetBypassFailure(proxiedUid, e, "finishOperation");
             return;
-        }
-
-        if (Process.isPrivateComputeCoreUid(proxiedUid)) {
-            proxiedUid = mContext.getPackageManager().getAppUidForPrivateComputeCoreUid(proxiedUid);
         }
 
         synchronized (this) {
@@ -4923,8 +4904,9 @@ public class AppOpsService extends IAppOpsService.Stub {
         return uidState;
     }
 
-    private void createSandboxUidStateIfNotExistsForAppLocked(int uid,
-            SparseBooleanArray knownUids) {
+    private void createAssociatedUidStatesIfNotExistsForAppLocked(int uid,
+            @NonNull PackageState packageState, @Nullable SparseBooleanArray knownUids) {
+
         if (UserHandle.getAppId(uid) < Process.FIRST_APPLICATION_UID) {
             return;
         }
@@ -4933,6 +4915,15 @@ public class AppOpsService extends IAppOpsService.Stub {
             knownUids.put(sandboxUid, true);
         }
         getUidStateLocked(sandboxUid, true);
+
+        int pccId = packageState.getPccId();
+        if (enablePccFrameworkSupport() && pccId != Process.INVALID_UID) {
+            final int pccUid = UserHandle.getUid(UserHandle.getUserId(uid), pccId);
+            if (knownUids != null) {
+                knownUids.put(pccUid, true);
+            }
+            getUidStateLocked(pccUid, true);
+        }
     }
 
     private void updateAppWidgetVisibility(SparseArray<String> uidPackageNames, boolean visible) {
@@ -5037,7 +5028,56 @@ public class AppOpsService extends IAppOpsService.Stub {
                 e.printStackTrace();
             }
         } else if (Process.isPrivateComputeCoreUid(uid)) {
-            uid = pm.getAppUidForPrivateComputeCoreUid(uid);
+            uid = Process.getAppUidForPrivateComputeCoreUid(uid);
+        }
+        return uid;
+    }
+
+    private int getUidMode(int uid, String persistentDeviceId, int op) {
+        if (enablePccFrameworkSupport() && Process.isPrivateComputeCoreUid(uid)) {
+            int pccMode = AppOpsManager.opToPccMode(op);
+            if (AppOpsManager.isModeValid(pccMode)) {
+                return pccMode;
+            }
+        }
+        return mAppOpsCheckingService.getUidMode(resolveToAppUid(uid), persistentDeviceId, op);
+    }
+
+    private SparseBooleanArray getForegroundOps(int uid, String persistentDeviceId) {
+        SparseBooleanArray ops = mAppOpsCheckingService.getForegroundOps(resolveToAppUid(uid),
+                persistentDeviceId);
+        if (enablePccFrameworkSupport() && Process.isPrivateComputeCoreUid(uid)) {
+            for (int op : mPccOverriddenOps) {
+                int pccMode = AppOpsManager.opToPccMode(op);
+                if (pccMode == AppOpsManager.MODE_FOREGROUND) {
+                    ops.put(op, true);
+                } else {
+                    ops.delete(op);
+                }
+            }
+        }
+        return ops;
+    }
+
+    private SparseIntArray getNonDefaultUidModes(int uid, String persistentDeviceId) {
+        SparseIntArray modes = mAppOpsCheckingService.getNonDefaultUidModes(resolveToAppUid(uid),
+                persistentDeviceId);
+        if (enablePccFrameworkSupport() && Process.isPrivateComputeCoreUid(uid)) {
+            for (int op : mPccOverriddenOps) {
+                int pccMode = AppOpsManager.opToPccMode(op);
+                if (pccMode == AppOpsManager.opToDefaultMode(op)) {
+                    modes.delete(op);
+                } else {
+                    modes.put(op, pccMode);
+                }
+            }
+        }
+        return modes;
+    }
+
+    private int resolveToAppUid(int uid) {
+        if (enablePccFrameworkSupport() && Process.isPrivateComputeCoreUid(uid)) {
+            return Process.getAppUidForPrivateComputeCoreUid(uid);
         }
         return uid;
     }
@@ -6840,7 +6880,7 @@ public class AppOpsService extends IAppOpsService.Stub {
                     UidState uidState = mUidStates.valueAt(i);
                     // TODO(b/299330771): Dump modes for all devices.
                     final SparseIntArray opModes =
-                            mAppOpsCheckingService.getNonDefaultUidModes(
+                            getNonDefaultUidModes(
                                     uidState.uid, PERSISTENT_DEVICE_ID_DEFAULT);
                     final ArrayMap<String, Ops> pkgOps = uidState.pkgOps;
 
