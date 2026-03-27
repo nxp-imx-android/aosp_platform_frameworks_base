@@ -77,7 +77,6 @@ class SystemAppFunctionAllowlistReaderTest {
                 directExecutor,
                 directExecutor,
             )
-        allowlistReader.enableAllowlist()
     }
 
     @Test
