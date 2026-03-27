@@ -39,7 +39,6 @@ import com.android.systemui.statusbar.phone.SysuiDarkIconDispatcher.DarkChange
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.policy.ConfigurationController.ConfigurationListener
 import javax.inject.Inject
-import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -122,8 +121,8 @@ enum class HoverTheme {
  * starts hovering over them and removes overlay when status icons are no longer hovered
  */
 class StatusOverlayHoverListener(
-    private val view: View,
-    private val configurationController: ConfigurationController,
+    view: View,
+    configurationController: ConfigurationController,
     private val resources: Resources,
     private val themeFlow: Flow<HoverTheme>,
     private val customHeightPx: Int? = null,
@@ -137,30 +136,23 @@ class StatusOverlayHoverListener(
     val backgroundColor
         get() = if (lastTheme == HoverTheme.LIGHT) lightColor else darkColor
 
-    /**
-     * Starts the listener, returning a [DisposableHandle] that *must* be disposed of when the
-     * listener should stop and release resources. Failing to dispose the handle will cause a memory
-     * leak.
-     */
-    fun start(): DisposableHandle {
-        return view
-            .repeatWhenAttached {
-                lifecycleScope.launch {
-                    val configurationListener =
-                        object : ConfigurationListener {
-                            override fun onConfigChanged(newConfig: Configuration?) {
-                                updateResources()
-                            }
+    init {
+        view.repeatWhenAttached {
+            lifecycleScope.launch {
+                val configurationListener =
+                    object : ConfigurationListener {
+                        override fun onConfigChanged(newConfig: Configuration?) {
+                            updateResources()
                         }
-                    repeatOnLifecycle(Lifecycle.State.CREATED) {
-                        configurationController.addCallback(configurationListener)
                     }
-                    configurationController.removeCallback(configurationListener)
+                repeatOnLifecycle(Lifecycle.State.CREATED) {
+                    configurationController.addCallback(configurationListener)
                 }
-
-                lifecycleScope.launch { themeFlow.collect { lastTheme = it } }
+                configurationController.removeCallback(configurationListener)
             }
-            .also { updateResources() }
+            lifecycleScope.launch { themeFlow.collect { lastTheme = it } }
+        }
+        updateResources()
     }
 
     override fun onHover(v: View, event: MotionEvent): Boolean {

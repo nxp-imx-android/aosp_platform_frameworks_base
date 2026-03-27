@@ -58,7 +58,6 @@ import java.util.Optional
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Provider
-import kotlinx.coroutines.DisposableHandle
 
 private const val TAG = "PhoneStatusBarViewController"
 
@@ -91,9 +90,7 @@ private constructor(
 
     private lateinit var clock: Clock
     private lateinit var startSideContainer: View
-    private var startSideHoverListenerDisposableHandle: DisposableHandle? = null
     private lateinit var endSideContainer: View
-    private var endSideHoverListenerDisposableHandle: DisposableHandle? = null
 
     private val shadeInvocationSplitRatio: Float =
         resources.getFloat(R.dimen.config_invocationGestureSplitRatio)
@@ -206,11 +203,9 @@ private constructor(
 
     private fun addCursorSupportToIconContainers() {
         endSideContainer = mView.requireViewById(R.id.system_icons)
-        endSideHoverListenerDisposableHandle?.dispose()
-        val hoverListener =
+        endSideContainer.setOnHoverListener(
             statusOverlayHoverListenerFactory.createDarkAwareListener(endSideContainer)
-        endSideHoverListenerDisposableHandle = hoverListener?.start()
-        endSideContainer.setOnHoverListener(hoverListener)
+        )
 
         if (statusBarTapToExpandShadeEnabled()) {
             endSideContainer.setOnTouchListener(
@@ -236,14 +231,12 @@ private constructor(
     private fun updateStartSideContainerHoverListener() {
         val iconContainerHeightPx =
             context.resources.getDimensionPixelSize(R.dimen.status_bar_icon_container_height)
-        startSideHoverListenerDisposableHandle?.dispose()
-        val hoverListener =
+        startSideContainer.setOnHoverListener(
             statusOverlayHoverListenerFactory.createDarkAwareListener(
                 startSideContainer,
                 customHeightPx = iconContainerHeightPx,
             )
-        startSideHoverListenerDisposableHandle = hoverListener?.start()
-        startSideContainer.setOnHoverListener(hoverListener)
+        )
     }
 
     private fun statusBarTapToExpandShadeEnabled(): Boolean {
@@ -265,10 +258,6 @@ private constructor(
         endSideContainer.setOnHoverListener(null)
         progressProvider?.setReadyToHandleTransition(false)
         configurationController.removeCallback(configurationListener)
-        startSideHoverListenerDisposableHandle?.dispose()
-        startSideHoverListenerDisposableHandle = null
-        endSideHoverListenerDisposableHandle?.dispose()
-        endSideHoverListenerDisposableHandle = null
     }
 
     init {
