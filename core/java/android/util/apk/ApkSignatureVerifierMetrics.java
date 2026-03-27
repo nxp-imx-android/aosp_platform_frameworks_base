@@ -75,7 +75,10 @@ public class ApkSignatureVerifierMetrics {
             VerificationResult.VERIFICATION_V32_MISSING_CLASSICAL_ROLLBACK,
             VerificationResult.VERIFICATION_V32_MISSING_CLASSICAL,
             VerificationResult.VERIFICATION_V32_MAX_ATTR_WITHOUT_MIN_ATTR,
-            VerificationResult.VERIFICATION_V32_UPDATE_SIGNATURE_MISMATCH
+            VerificationResult.VERIFICATION_V32_UPDATE_SIGNATURE_MISMATCH,
+            VerificationResult.VERIFICATION_V32_SIGNATURE_SCHEME_MISMATCH,
+            VerificationResult.VERIFICATION_V32_PQC_KEY_MISMATCH,
+            VerificationResult.VERIFICATION_V32_CLASSICAL_KEY_MISMATCH
     })
     public @interface VerificationResult {
         int VERIFICATION_SUCCESS = ApkSigVerifyProtoEnums.VERIFICATION_SUCCESS;
@@ -143,6 +146,12 @@ public class ApkSignatureVerifierMetrics {
                 ApkSigVerifyProtoEnums.VERIFICATION_V32_MAX_ATTR_WITHOUT_MIN_ATTR;
         int VERIFICATION_V32_UPDATE_SIGNATURE_MISMATCH =
                 ApkSigVerifyProtoEnums.VERIFICATION_V32_UPDATE_SIGNATURE_MISMATCH;
+        int VERIFICATION_V32_SIGNATURE_SCHEME_MISMATCH =
+                ApkSigVerifyProtoEnums.VERIFICATION_V32_SIGNATURE_SCHEME_MISMATCH;
+        int VERIFICATION_V32_PQC_KEY_MISMATCH =
+                ApkSigVerifyProtoEnums.VERIFICATION_V32_PQC_KEY_MISMATCH;
+        int VERIFICATION_V32_CLASSICAL_KEY_MISMATCH =
+                ApkSigVerifyProtoEnums.VERIFICATION_V32_CLASSICAL_KEY_MISMATCH;
     }
 
     /**
