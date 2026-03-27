@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"zařízení"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Tato aplikace bude moci synchronizovat údaje, jako je jméno volajícího, mezi vaším telefonem a vybraným zařízením"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Povolte aplikaci &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; synchronizovat informace, jako jsou údaje o volajícím, a spouštět chytré akce z vašeho zařízení (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>)"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"Povolte aplikaci &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; synchronizovat informace, jako jsou údaje o volajícím, a spouštět chytré akce z vašeho zařízení (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>)"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Povolit"</string>
     <string name="consent_no" msgid="2640796915611404382">"Nepovolovat"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Zrušit"</string>
@@ -93,10 +92,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Nahrávat, odesílat nebo sdílet obrazovku zařízení <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> na zařízení &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Aplikace <xliff:g id="APP_NAME">%1$s</xliff:g> bude mít přístup ke všemu, co na zařízení typu <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> zobrazíte nebo přehrajete, včetně zvuku, fotek, platebních údajů, hesel a zpráv."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Streamovat aplikace na zařízení typu <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> do zařízení &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Aplikace <xliff:g id="APP_NAME">%1$s</xliff:g> bude mít přístup ke všemu, co na zařízení typu <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> zobrazíte nebo přehrajete, včetně zvuku, fotek, platebních údajů, hesel a zpráv, a to i když bude vaše zařízení typu <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> zamknuté."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Přístup k seznamu dostupných zařízení a určení, které bude streamovat nebo odesílat zvuk či video z ostatních aplikací"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Posílat upozornění"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Posílat upozornění, i když je zapnutý režim Nerušit"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telefonu"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tabletu"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"televize"</string>

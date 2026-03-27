@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"naprava"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Ta aplikacija bo lahko sinhronizirala podatke, na primer ime klicatelja, v telefonu in izbrani napravi."</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Dovolite, da naprava &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; sinhronizira podatke, kot so podatki o klicatelju, in izvaja pametna dejanja iz naprave <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"Dovolite, da naprava &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; sinhronizira podatke, kot so podatki o klicatelju, in izvaja pametna dejanja iz naprave <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Dovoli"</string>
     <string name="consent_no" msgid="2640796915611404382">"Ne dovoli"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Prekliči"</string>
@@ -93,10 +92,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Snemajte, predvajajte ali delite zaslon naprave <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> z napravo &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> bo imela dostop do vsega, kar je prikazano ali se predvaja v napravi <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, vključno z zvokom, fotografijami, podatki za plačilo, gesli in sporočili."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Pretočno predvajajte aplikacije naprave <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> v napravo &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> bo imela dostop do vsega, kar je prikazano ali se predvaja v napravi <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, vključno z zvokom, fotografijami, podatki za plačilo, gesli in sporočili, tudi ko je naprava <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> zaklenjena."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Dostop do seznama razpoložljivih naprav in upravljanje, katera naprava pretočno ali na daljavo predvaja zvok ali videoposnetek iz drugih aplikacij"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Pošiljanje opozoril"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Pošiljanje opozoril tudi, ko je vklopljen način Ne moti"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telefon"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablični računalnik"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"televizor"</string>

@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"dispositivo"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Esta app vai poder sincronizar informações, como o nome do autor de uma chamada, entre o telemóvel e o dispositivo escolhido"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Permita que &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; sincronize informações, como as informações do autor da chamada, e execute ações inteligentes a partir do seu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"Dê autorização a &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; para sincronizar informações, como as informações do autor da chamada, e executar ações inteligentes a partir do seu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Permitir"</string>
     <string name="consent_no" msgid="2640796915611404382">"Não permitir"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Cancelar"</string>
@@ -93,10 +92,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Grave, transmita ou partilhe o ecrã do <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> para &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;A app <xliff:g id="APP_NAME">%1$s</xliff:g> vai ter acesso a tudo o que seja visível ou reproduzido no seu <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, incluindo áudio, fotos, informações de pagamento, palavras-passe e mensagens."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Faça stream das apps do <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> para &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;A app <xliff:g id="APP_NAME">%1$s</xliff:g> vai ter acesso a tudo o que for visível ou reproduzido no <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, incluindo áudio, fotos, informações de pagamento, palavras-passe e mensagens, mesmo quando o <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> estiver bloqueado."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Aceda a uma lista de dispositivos disponíveis e controle qual deles faz stream ou transmite áudio ou vídeo de outras apps"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Enviar-lhe alertas"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Enviar-lhe alertas mesmo quando o modo Não incomodar está ativado"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telemóvel"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablet"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"tv"</string>
