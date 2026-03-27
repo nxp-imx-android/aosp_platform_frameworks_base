@@ -49,6 +49,7 @@ import com.android.app.displaylib.PerDisplayRepository
 import com.android.compose.theme.PlatformTheme
 import com.android.keyguard.AlphaOptimizedLinearLayout
 import com.android.systemui.Dumpable
+import com.android.systemui.Flags
 import com.android.systemui.Flags.notificationShadeBlur
 import com.android.systemui.animation.ShadeInterpolation
 import com.android.systemui.battery.BatteryMeterView.MODE_ESTIMATE
@@ -89,7 +90,6 @@ import dagger.Lazy
 import java.io.PrintWriter
 import javax.inject.Inject
 import javax.inject.Named
-import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
@@ -167,7 +167,6 @@ constructor(
     private val mShadeCarrierGroup: ShadeCarrierGroup = header.requireViewById(R.id.carrier_group)
     private val systemIconsHoverContainer: View =
         header.requireViewById(R.id.hover_system_icons_container)
-    private var hoverListenerDisposableHandle: DisposableHandle? = null
 
     private var roundedCorners = 0
     private var cutout: DisplayCutout? = null
@@ -433,10 +432,9 @@ constructor(
         demoModeController.addCallback(demoModeReceiver)
         statusBarIconController.addIconGroup(iconManager)
         nextAlarmController.addCallback(nextAlarmCallback)
-        val hoverListener =
+        systemIconsHoverContainer.setOnHoverListener(
             statusOverlayHoverListenerFactory.createListener(systemIconsHoverContainer)
-        hoverListenerDisposableHandle = hoverListener.start()
-        systemIconsHoverContainer.setOnHoverListener(hoverListener)
+        )
     }
 
     override fun onViewDetached() {
@@ -448,8 +446,6 @@ constructor(
         statusBarIconController.removeIconGroup(iconManager)
         nextAlarmController.removeCallback(nextAlarmCallback)
         systemIconsHoverContainer.setOnHoverListener(null)
-        hoverListenerDisposableHandle?.dispose()
-        hoverListenerDisposableHandle = null
     }
 
     fun disable(state1: Int, state2: Int, animate: Boolean) {

@@ -153,46 +153,34 @@ class StatusOverlayHoverListenerTest : SysuiTestCase() {
     @Test
     fun onHover_customHeightLargerThanViewHeight_overlayHeightIsViewHeight() {
         attachView(view)
-        val listener = factory.createDarkAwareListener(view, view.height + 3)
-        val disposable = listener?.start()
-        view.setOnHoverListener(listener)
+        view.setOnHoverListener(factory.createDarkAwareListener(view, view.height + 3))
 
         view.hoverStarted()
 
         assertThat(overlayDrawable.bounds.height()).isEqualTo(view.height)
-        disposable?.dispose()
     }
 
     @Test
     fun onHover_customHeightSmallerThanViewHeight_usesCustomHeight() {
         attachView(view)
         val customHeightPx = view.height - 10
-        val listener = factory.createDarkAwareListener(view, customHeightPx)
-        val disposable = listener?.start()
-        view.setOnHoverListener(listener)
+        view.setOnHoverListener(factory.createDarkAwareListener(view, customHeightPx))
         view.hoverStarted()
 
         assertThat(overlayDrawable.bounds.height()).isLessThan(view.height)
         // Height adjustment split equally between top and bottom
         assertThat(overlayDrawable.bounds.top).isEqualTo(5)
         assertThat(overlayDrawable.bounds.bottom).isEqualTo(view.height - 5)
-        disposable?.dispose()
     }
 
     private fun View.setUpHoverListener() {
-        val listener = factory.createListener(view)
-        val disposable = listener?.start()
-        setOnHoverListener(listener)
+        setOnHoverListener(factory.createListener(view))
         attachView(view)
-        disposable?.dispose()
     }
 
     private fun View.setUpDarkAwareHoverListener(customHeightPx: Int? = null) {
-        val listener = factory.createDarkAwareListener(view, customHeightPx)
-        val disposable = listener?.start()
-        setOnHoverListener(listener)
+        setOnHoverListener(factory.createDarkAwareListener(view, customHeightPx))
         attachView(view)
-        disposable?.dispose()
     }
 
     private fun attachView(view: View) {
