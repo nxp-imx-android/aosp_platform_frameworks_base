@@ -61,9 +61,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 import java.io.PrintWriter;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -166,9 +164,6 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
 
         maybeStartAlowlistListener();
         return getValidTargetPackages(agentSignedPackage)
-                // TODO(b/457349791): Timeout should be handled by AllowlistService to ensure that
-                // allowlist set by shell command would still return.
-                .orTimeout(5, TimeUnit.SECONDS)
                 .thenApply(
                         (allowlistTargets) -> {
                             if (DEBUG) {
@@ -204,11 +199,6 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
                                         || status == RESPONSE_STATUS_ERROR_NETWORK) {
                                     return true;
                                 }
-                            }
-                            if (exception instanceof TimeoutException) {
-                                // TODO(b/457349791): Timeout should be handled by AllowlistService
-                                // to ensure that allowlist set by shell command would still return.
-                                return true;
                             }
                             return false;
                         });
