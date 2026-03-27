@@ -89,12 +89,16 @@ class AuditModeContext {
     @GuardedBy("mLock")
     private AuditLogInMemoryBuffer mAuditLogInMemoryBuffer;
 
+    final int mUserId;
+
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
     AuditModeContext(
+            int userId,
             ExecutorService serializerExecutor,
             ExecutorService diskWriterExecutor,
             File folder,
             Injector injector) {
+        mUserId = userId;
         mBundleSerializerExecutor = serializerExecutor;
         mDiskWriterExecutor = diskWriterExecutor;
         mFolder = folder;
@@ -119,15 +123,16 @@ class AuditModeContext {
      * Instantiates an AuditModeContext, including an output stream to the audit log file, or
      * returns null if an error occurred.
      */
-    public static @NonNull AuditModeContext create(File folder) {
+    public static @NonNull AuditModeContext create(int userId, File folder) {
         return new AuditModeContext(
+                userId,
                 getBundleSerializerExecutorService(),
                 getDiskWriterExecutorService(),
                 folder,
                 new Injector());
     }
 
-    /** Deletes all audit log files from the default audit log directory. */
+    /** Deletes all audit log files from the user's audit log directory. */
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
     static void deleteAuditLogFiles(File dir) {
         if (dir.exists()) {
@@ -170,18 +175,22 @@ class AuditModeContext {
      *
      * <p>If the in-memory queue is full, it is emptied and asynchronously written to disk.
      */
-    void writeToAuditLog(@NonNull PersistableBundle data, @NonNull String packageName) {
+    void writeToAuditLog(@NonNull PersistableBundle data, @NonNull String packageName,
+                         int callingUid) {
         synchronized (mLock) {
             if (mIsStopping) {
                 return;
             }
+        }
+        if (UserHandle.getUserId(callingUid) != mUserId) {
+            throw new SecurityException("Attempted to write to audit log from a different user.");
         }
         AuditLogEntry entry =
                 new AuditLogEntry(
                         data,
                         SystemClock.elapsedRealtimeNanos(),
                         packageName,
-                        Binder.getCallingUid());
+                        callingUid);
         mBundleSerializerExecutor.execute(
                 () -> {
                     try {

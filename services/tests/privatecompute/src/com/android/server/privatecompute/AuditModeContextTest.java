@@ -79,6 +79,7 @@ public class AuditModeContextTest {
         when(mInjector.auditModeMaxLogFiles()).thenReturn(MAX_FILES);
         mAuditModeContext =
                 new AuditModeContext(
+                        UserHandle.getUserId(TEST_UID),
                         newDirectExecutorService(),
                         newDirectExecutorService(),
                         mTemporaryFolder.getRoot(),
@@ -91,7 +92,7 @@ public class AuditModeContextTest {
         // Currently this test's implementation is identical to testStopAuditing_writesPendingData,
         // but in the future we might change how we write. These are two different behaviors that
         // need to be tested.
-        mAuditModeContext.writeToAuditLog(getTestBundle(), TEST_PACKAGE_NAME);
+        mAuditModeContext.writeToAuditLog(getTestBundle(), TEST_PACKAGE_NAME, TEST_UID);
 
         mAuditModeContext.stopAuditing(); // Triggers a write with pending data
 
@@ -108,13 +109,13 @@ public class AuditModeContextTest {
         int entrySize = entry.toByteArray().length;
         int nEntriesToWrite = (int) Math.floor(1024 * MAX_SIZE_KILOBYTES / (double) entrySize);
         for (int i = 0; i < nEntriesToWrite; i++) {
-            mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME);
+            mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME, TEST_UID);
         }
         File file = mAuditModeContext.getCurrentAuditLogFile();
         assertThat(file.length()).isEqualTo(0); // no write yet
 
         // buffer full, triggers a write
-        mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME);
+        mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME, TEST_UID);
 
         assertThat(file.length()).isNotEqualTo(0); // write triggered
     }
@@ -126,15 +127,31 @@ public class AuditModeContextTest {
         int entrySize = entry.toByteArray().length;
         int nEntriesToWrite = (int) Math.floor(1024 * MAX_SIZE_KILOBYTES / (double) entrySize);
         for (int i = 0; i < nEntriesToWrite; i++) {
-            mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME);
+            mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME, TEST_UID);
         }
         File file = mAuditModeContext.getCurrentAuditLogFile();
 
         // buffer full, triggers a write
-        mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME);
+        mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME, TEST_UID);
 
         File newFile = mAuditModeContext.getCurrentAuditLogFile();
         assertThat(newFile.getName()).isNotEqualTo(file.getName());
+    }
+
+    @Test
+    public void testWriteToAuditLog_differentUser_throwsSecurityException() {
+        AuditModeContext auditModeContext =
+                new AuditModeContext(
+                        UserHandle.getUserId(TEST_UID) + 1,
+                        newDirectExecutorService(),
+                        newDirectExecutorService(),
+                        mTemporaryFolder.getRoot(),
+                        mInjector);
+        assertThrows(
+                SecurityException.class,
+                () ->
+                        auditModeContext.writeToAuditLog(
+                                getTestBundle(), TEST_PACKAGE_NAME, TEST_UID));
     }
 
     @Test
@@ -143,6 +160,7 @@ public class AuditModeContextTest {
         File newFolder = mTemporaryFolder.newFolder();
         AuditModeContext auditModeContext =
                 new AuditModeContext(
+                        UserHandle.getUserId(TEST_UID),
                         newDirectExecutorService(),
                         newDirectExecutorService(),
                         newFolder,
@@ -154,7 +172,7 @@ public class AuditModeContextTest {
         int entrySize = entry.toByteArray().length;
         int nEntriesToWrite = (int) Math.floor(1024 * MAX_SIZE_KILOBYTES / (double) entrySize);
         for (int i = 0; i < MAX_FILES * nEntriesToWrite; i++) {
-            auditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME);
+            auditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME, TEST_UID);
         }
         PersistableBundle testBundle2 = testBundle.deepCopy();
         testBundle2.putInt("test_key2", 123);
@@ -167,7 +185,7 @@ public class AuditModeContextTest {
         }
 
         // Act: write one more bundle to the ringbuffer, then trigger a write.
-        auditModeContext.writeToAuditLog(testBundle2, TEST_PACKAGE_NAME);
+        auditModeContext.writeToAuditLog(testBundle2, TEST_PACKAGE_NAME, TEST_UID);
         auditModeContext.stopAuditing();
 
         // Assert: Should behave like a ringbuffer, and overwrite the first file.
@@ -192,11 +210,11 @@ public class AuditModeContextTest {
         int entrySize = entry.toByteArray().length;
         int nEntriesToWrite = (int) Math.floor(1024 * MAX_SIZE_KILOBYTES / (double) entrySize);
         for (int i = 0; i < nEntriesToWrite; i++) {
-            mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME);
+            mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME, TEST_UID);
         }
 
         // buffer full, triggers a write
-        mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME);
+        mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME, TEST_UID);
 
         DataInputStream stream = new DataInputStream(new FileInputStream(file));
         List<AuditLogEntry> entries = readAuditLogFileFromStream(stream);
@@ -210,7 +228,7 @@ public class AuditModeContextTest {
         PersistableBundle testBundle = getTestBundle();
         File file = mAuditModeContext.getCurrentAuditLogFile();
 
-        mAuditModeContext.writeToAuditLog(testBundle, packageName);
+        mAuditModeContext.writeToAuditLog(testBundle, packageName, TEST_UID);
 
         mAuditModeContext.stopAuditing(); // flushes 1 log entry to disk
         DataInputStream stream = new DataInputStream(new FileInputStream(file));
@@ -221,7 +239,7 @@ public class AuditModeContextTest {
 
     @Test
     public void testStopAuditing_writesPendingData() throws Exception {
-        mAuditModeContext.writeToAuditLog(getTestBundle(), TEST_PACKAGE_NAME);
+        mAuditModeContext.writeToAuditLog(getTestBundle(), TEST_PACKAGE_NAME, TEST_UID);
 
         mAuditModeContext.stopAuditing();
 
@@ -234,7 +252,7 @@ public class AuditModeContextTest {
     @Test
     public void testStopAuditing_whenStopped_noMoreDataIsWritten() throws Exception {
         PersistableBundle testBundle = getTestBundle();
-        mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME);
+        mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME, TEST_UID);
         mAuditModeContext.stopAuditing(); // flushes 1 log entry to disk
         AuditLogEntry entry = new AuditLogEntry(testBundle, 234L, TEST_PACKAGE_NAME, 123);
         int entrySize = entry.toByteArray().length;
@@ -242,7 +260,7 @@ public class AuditModeContextTest {
 
         // nEntriesToWrite writes, would trigger a write if not for the stopAuditing()
         for (int i = 0; i < nEntriesToWrite; i++) {
-            mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME);
+            mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME, TEST_UID);
         }
 
         File file = mAuditModeContext.getCurrentAuditLogFile();
@@ -259,8 +277,9 @@ public class AuditModeContextTest {
         ExecutorService writerExecutor = AuditModeContext.getDiskWriterExecutorService();
         mAuditModeContext =
                 new AuditModeContext(
+                        UserHandle.getUserId(TEST_UID),
                         serializerExecutor, writerExecutor, mTemporaryFolder.getRoot(), mInjector);
-        mAuditModeContext.writeToAuditLog(getTestBundle(), TEST_PACKAGE_NAME);
+        mAuditModeContext.writeToAuditLog(getTestBundle(), TEST_PACKAGE_NAME, TEST_UID);
         serializerExecutor.awaitTermination(10, TimeUnit.SECONDS); // Wait for the pending tasks.
         writerExecutor.awaitTermination(10, TimeUnit.SECONDS); // Wait for the pending write.
 
@@ -284,6 +303,7 @@ public class AuditModeContextTest {
         ExecutorService writerExecutor = AuditModeContext.getDiskWriterExecutorService();
         mAuditModeContext =
                 new AuditModeContext(
+                        UserHandle.getUserId(TEST_UID),
                         serializerExecutor, writerExecutor, mTemporaryFolder.getRoot(), mInjector);
         CountDownLatch slowTaskStarted = new CountDownLatch(1);
         CountDownLatch allowSlowTaskToFinish = new CountDownLatch(1);
@@ -303,12 +323,12 @@ public class AuditModeContextTest {
         int entrySize = entry.toByteArray().length;
         int nEntriesToWrite = (int) Math.floor(1024 * MAX_SIZE_KILOBYTES / (double) entrySize);
         for (int i = 0; i < nEntriesToWrite; i++) {
-            mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME);
+            mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME, TEST_UID);
         }
 
         // Act: Triggers a write by the serializerExecutor, who is busy with the slow task.
         long startTime = System.currentTimeMillis();
-        mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME);
+        mAuditModeContext.writeToAuditLog(testBundle, TEST_PACKAGE_NAME, TEST_UID);
         long endTime = System.currentTimeMillis();
 
         // Assert: The write should be fast, even though the executor is busy with the slow task.

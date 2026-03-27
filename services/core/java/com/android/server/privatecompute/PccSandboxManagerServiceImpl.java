@@ -57,11 +57,13 @@ import android.os.SystemClock;
 import android.os.UserHandle;
 import android.sysprop.PccProperties;
 import android.util.Log;
+import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.BackgroundThread;
 import com.android.server.LocalServices;
+import com.android.server.pm.UserManagerInternal;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -87,8 +89,9 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
     private final Injector mInjector;
 
     // Only instantiated when audit mode is enabled.
-    @GuardedBy("mAuditLogLock")
-    private @Nullable AuditModeContext mAuditModeContext = null;
+    @GuardedBy("mAuditModeLock")
+    private final SparseArray<AuditModeContext> mAuditModeContexts =
+            new SparseArray<>();
 
     private final Object mAuditModeLock = new Object();
     private final ExecutorService mExecutorService;
@@ -115,7 +118,7 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
     }
 
     private void runAuditLogCleanupTask() {
-        AuditModeContext.deleteAuditLogFiles(mInjector.getAuditLogFilesDirectory());
+        mInjector.deleteAuditLogFilesAllUsers();
         rescheduleAuditLogCleanup();
     }
 
@@ -165,9 +168,18 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
             return Executors.newSingleThreadExecutor();
         }
 
-        File getAuditLogFilesDirectory() {
-            return new File(Environment.getDataSystemCeDirectory(UserHandle.USER_SYSTEM),
+        File getAuditLogFilesDirectory(int userId) {
+            return new File(Environment.getDataMiscCeDirectory(userId),
                     AuditModeContext.AUDIT_LOG_FILES_DIRNAME);
+        }
+
+        void deleteAuditLogFilesAllUsers() {
+            UserManagerInternal umi = LocalServices.getService(UserManagerInternal.class);
+            if (umi != null) {
+                for (int userId : umi.getUserIds()) {
+                    AuditModeContext.deleteAuditLogFiles(getAuditLogFilesDirectory(userId));
+                }
+            }
         }
     }
 
@@ -266,8 +278,8 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
             @NonNull List<PersistableBundle> data, @NonNull String packageName)
             throws SecurityException {
         final int callingUid = mInjector.getCallingUid();
-        if (!mPackageManagerInternal.isSameApp(
-                packageName, callingUid, UserHandle.getUserId(callingUid))) {
+        final int userId = UserHandle.getUserId(callingUid);
+        if (!mPackageManagerInternal.isSameApp(packageName, callingUid, userId)) {
             // We don't report the security exception to apps, but we log it.
             throw new SecurityException(
                     "Package name " + packageName + " does not match calling UID " + callingUid);
@@ -276,19 +288,28 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
         synchronized (mAuditModeLock) {
             if (!mInjector.auditModeEnabled()) {
                 // If audit mode was toggled off, clean up, including writing pending data to disk.
-                if (mAuditModeContext != null) {
-                    mAuditModeContext.stopAuditing();
-                    mAuditModeContext = null;
+                if (mAuditModeContexts.size() > 0) {
+                    for (int i = 0; i < mAuditModeContexts.size(); i++) {
+                        mAuditModeContexts.valueAt(i).stopAuditing();
+                    }
+                    mAuditModeContexts.clear();
                     rescheduleAuditLogCleanup();
                 }
                 return false;
             }
-            if (mAuditModeContext == null) {
-                runAuditLogCleanupTask();
-                mAuditModeContext = AuditModeContext.create(mInjector.getAuditLogFilesDirectory());
+            AuditModeContext context = mAuditModeContexts.get(userId);
+            if (context == null) {
+                // When we start auditing for the first user, clean up any old audit log files.
+                if (mAuditModeContexts.size() == 0) {
+                    runAuditLogCleanupTask();
+                }
+                context =
+                        AuditModeContext.create(
+                                userId, mInjector.getAuditLogFilesDirectory(userId));
+                mAuditModeContexts.put(userId, context);
             }
             for (PersistableBundle bundle : data) {
-                mAuditModeContext.writeToAuditLog(bundle, packageName);
+                context.writeToAuditLog(bundle, packageName, callingUid);
             }
         }
         return true;
@@ -388,7 +409,7 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
 
                     final int userId = ActivityManager.getCurrentUser();
                     List<AuditLogEntry> entries = AuditModeContext.readAuditLogs(
-                            mInjector.getAuditLogFilesDirectory(), userId);
+                            mInjector.getAuditLogFilesDirectory(userId), userId);
                     if (entries.isEmpty()) {
                         pw.println("No audit logs found for user " + userId);
                         return 0;
