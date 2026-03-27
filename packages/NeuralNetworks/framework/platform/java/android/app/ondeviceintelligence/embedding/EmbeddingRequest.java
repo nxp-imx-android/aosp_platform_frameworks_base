@@ -22,6 +22,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemApi;
 import android.app.ondeviceintelligence.flags.Flags;
+import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.PersistableBundle;
@@ -168,6 +169,7 @@ public final class EmbeddingRequest implements Parcelable, AutoCloseable {
      *     System API in API 37.1 minor release.
      * @hide
      */
+    @UnsupportedAppUsage
     public EmbeddingRequest(
             @NonNull List<Content> content, @Nullable PersistableBundle requestOptions) {
         mContent = Collections.unmodifiableList(new ArrayList<>(Objects.requireNonNull(content)));
@@ -188,6 +190,7 @@ public final class EmbeddingRequest implements Parcelable, AutoCloseable {
      *
      * @hide
      */
+    @UnsupportedAppUsage
     @Nullable
     public PersistableBundle getRequestOptions() {
         return mRequestOptions;
