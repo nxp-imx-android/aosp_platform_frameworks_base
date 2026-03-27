@@ -172,8 +172,8 @@ class CompanionDeviceShellCommand extends ShellCommand {
                     }
 
                     mAssociationRequestsProcessor.createAssociation(userId, packageName, macAddress,
-                            deviceProfile, deviceProfile, /* associatedDevice= */ null, selfManaged,
-                            /* callback= */ null, /* resultReceiver= */ null,
+                            "fakeDisplayName", deviceProfile, /* associatedDevice= */ null,
+                            selfManaged, /* callback= */ null, /* resultReceiver= */ null,
                             /* deviceIcon= */ null, /* skipRoleGrant= */ false, permissions,
                             isRemoteAiAgentSupported);
                 }
