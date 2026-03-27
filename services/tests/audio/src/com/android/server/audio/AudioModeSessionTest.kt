@@ -197,7 +197,7 @@ class AudioModeSessionTest {
         val devices = listOf(mSpeaker, mEarpiece)
         session.onAvailableDevicesChanged(devices)
         verify(mDeviceBroker).setCommunicationDevice(
-            any(), any(), eq(mEarpiece), eq(true), any()
+            any(), any(), eq(mEarpiece), eq(true), eq(true), any()
         )
         session.onCommunicationDeviceChanged(mEarpiece)
 
@@ -210,6 +210,7 @@ class AudioModeSessionTest {
                 any(),
                 any(),
                 eq(mSpeaker),
+                eq(true),
                 eq(true),
                 any(),
             )
@@ -233,6 +234,7 @@ class AudioModeSessionTest {
                 any(),
                 eq(mSpeaker),
                 eq(true),
+                eq(true),
                 any(),
             )
 
@@ -248,6 +250,7 @@ class AudioModeSessionTest {
                 any(),
                 eq(mWiredHeadset),
                 eq(true),
+                eq(true),
                 any(),
             )
 
@@ -262,7 +265,7 @@ class AudioModeSessionTest {
         val devices = listOf(mSpeaker, mEarpiece, mWiredHeadset)
         session.onAvailableDevicesChanged(devices)
         verify(mDeviceBroker).setCommunicationDevice(
-            any(), any(), eq(mWiredHeadset), eq(true), any()
+            any(), any(), eq(mWiredHeadset), eq(true), eq(true), any()
         )
 
         val speakerRoute = createRoute(mSpeaker)
@@ -281,6 +284,7 @@ class AudioModeSessionTest {
                 any(),
                 any(),
                 eq(mSpeaker),
+                eq(true),
                 eq(true),
                 any(),
             )
@@ -305,6 +309,7 @@ class AudioModeSessionTest {
                 any(),
                 eq(mWiredHeadset),
                 eq(true),
+                eq(true),
                 any(),
             )
 
@@ -319,7 +324,7 @@ class AudioModeSessionTest {
         val externalRequestId = captor.lastValue
 
         // Verify that the requested route is cleared (set to null), so we fall to default
-        verify(mDeviceBroker).setCommunicationDevice(any(), any(), eq(mScoHeadset), eq(true), any())
+        verify(mDeviceBroker).setCommunicationDevice(any(), any(), eq(mScoHeadset), eq(true), eq(true), any())
 
         session.onCommunicationDeviceChanged(mScoHeadset)
         val scoRoute = createRoute(mScoHeadset)
@@ -332,7 +337,7 @@ class AudioModeSessionTest {
         val inOrderService = inOrder(mAudioService)
         session.setClientPaused(true)
         inOrderService.verify(mAudioService).setMode(eq(MODE_NORMAL), any(), any())
-        verify(mDeviceBroker).setCommunicationDevice(any(), any(), eq(null), eq(true), any())
+        verify(mDeviceBroker).setCommunicationDevice(any(), any(), eq(null), eq(true), eq(true), any())
         inOrderService.verify(mAudioService)
             .abandonAudioFocusForModeSession(
                 eq(mAttributionSource),
@@ -357,13 +362,14 @@ class AudioModeSessionTest {
                 any(),
                 eq(mSpeaker),
                 eq(true),
+                eq(true),
                 any(),
             )
         clearInvocations(mDeviceBroker)
         val inOrderService = inOrder(mAudioService)
 
         session.setClientPaused(true)
-        verify(mDeviceBroker).setCommunicationDevice(any(), any(), eq(null), eq(true), any())
+        verify(mDeviceBroker).setCommunicationDevice(any(), any(), eq(null), eq(true), eq(true), any())
 
         session.setClientPaused(false)
         inOrderService.verify(mAudioService)
@@ -382,6 +388,7 @@ class AudioModeSessionTest {
                 any(),
                 eq(mSpeaker),
                 eq(true),
+                eq(true),
                 any(),
             )
         verify(mCallback).onResumed(any())
@@ -395,7 +402,8 @@ class AudioModeSessionTest {
         session.pause()
 
         inOrderService.verify(mAudioService).setMode(eq(MODE_NORMAL), any(), any())
-        verify(mDeviceBroker).setCommunicationDevice(any(), any(), eq(null), eq(true), any())
+        verify(mDeviceBroker).setCommunicationDevice(any(), any(), eq(null), eq(true),
+            eq(true), any())
         inOrderService.verify(mAudioService)
             .abandonAudioFocusForModeSession(
                 eq(mAttributionSource),
@@ -420,7 +428,7 @@ class AudioModeSessionTest {
 
         // Server pause
         session.pause()
-        verify(mDeviceBroker).setCommunicationDevice(any(), any(), eq(null), eq(true), any())
+        verify(mDeviceBroker).setCommunicationDevice(any(), any(), eq(null), eq(true), eq(true), any())
         clearInvocations(mDeviceBroker, mAudioService)
 
         // Server resume
@@ -441,6 +449,7 @@ class AudioModeSessionTest {
                 any(),
                 any(),
                 eq(mSpeaker),
+                eq(true),
                 eq(true),
                 any(),
             )
@@ -551,7 +560,7 @@ class AudioModeSessionTest {
         session.onAvailableDevicesChanged(listOf(mSpeaker, mEarpiece, mWiredHeadset, mBleHeadset, mScoHeadset))
 
         verify(mDeviceBroker).setCommunicationDevice(
-            any(), any(), eq(mScoHeadset), eq(true), any()
+            any(), any(), eq(mScoHeadset), eq(true), eq(true), any()
         )
     }
 
@@ -562,7 +571,7 @@ class AudioModeSessionTest {
         session.onAvailableDevicesChanged(listOf(mSpeaker, mEarpiece, mWiredHeadset, mBleHeadset))
 
         verify(mDeviceBroker).setCommunicationDevice(
-            any(), any(), eq(mBleHeadset), eq(true), any()
+            any(), any(), eq(mBleHeadset), eq(true), eq(true), any()
         )
     }
 
@@ -573,7 +582,7 @@ class AudioModeSessionTest {
         session.onAvailableDevicesChanged(listOf(mSpeaker, mEarpiece, mWiredHeadset))
 
         verify(mDeviceBroker).setCommunicationDevice(
-            any(), any(), eq(mWiredHeadset), eq(true), any()
+            any(), any(), eq(mWiredHeadset), eq(true), eq(true), any()
         )
     }
 
@@ -584,7 +593,7 @@ class AudioModeSessionTest {
         session.onAvailableDevicesChanged(listOf(mSpeaker, mEarpiece, mHearingAid))
 
         verify(mDeviceBroker).setCommunicationDevice(
-            any(), any(), eq(mHearingAid), eq(true), any()
+            any(), any(), eq(mHearingAid), eq(true), eq(true), any()
         )
     }
 
@@ -599,13 +608,13 @@ class AudioModeSessionTest {
 
         // speaker is prioritized by the external pref
         verify(customDeviceBroker).setCommunicationDevice(
-            any(), any(), eq(mSpeaker), eq(true), any()
+            any(), any(), eq(mSpeaker), eq(true), eq(true), any()
         )
 
         // Add SCO headset (priority 30). It should beat the external preference
         session.onAvailableDevicesChanged(listOf(mScoHeadset, mHearingAid, mWiredHeadset))
         verify(customDeviceBroker).setCommunicationDevice(
-            any(), any(), eq(mScoHeadset), eq(true), any()
+            any(), any(), eq(mScoHeadset), eq(true), eq(true), any()
         )
     }
 
@@ -616,7 +625,7 @@ class AudioModeSessionTest {
 
         session.onAvailableDevicesChanged(listOf(mSpeaker, mEarpiece))
         verify(mDeviceBroker).setCommunicationDevice(
-            any(), any(), eq(mSpeaker), eq(true), any()
+            any(), any(), eq(mSpeaker), eq(true), eq(true), any()
         )
 
         session.onCommunicationDeviceChanged(mSpeaker)
@@ -634,7 +643,7 @@ class AudioModeSessionTest {
 
         session.onAvailableDevicesChanged(listOf(mSpeaker, mEarpiece))
         verify(mDeviceBroker).setCommunicationDevice(
-            any(), any(), eq(mEarpiece), eq(true), any()
+            any(), any(), eq(mEarpiece), eq(true), eq(true), any()
         )
 
         session.onCommunicationDeviceChanged(mEarpiece)
@@ -653,7 +662,7 @@ class AudioModeSessionTest {
         // Display inactive prefers earpiece, but we only have speaker available.
         session.onAvailableDevicesChanged(listOf(mSpeaker))
         verify(mDeviceBroker).setCommunicationDevice(
-            any(), any(), eq(mSpeaker), eq(true), any()
+            any(), any(), eq(mSpeaker), eq(true), eq(true), any()
         )
     }
 
@@ -672,7 +681,7 @@ class AudioModeSessionTest {
         session.setDisplayActiveUseCase(true)
 
         verify(mDeviceBroker).setCommunicationDevice(
-            any(), any(), eq(mSpeaker), eq(true), any()
+            any(), any(), eq(mSpeaker), eq(true), eq(true), any()
         )
 
         // Simulate broker confirming the device
@@ -690,7 +699,7 @@ class AudioModeSessionTest {
 
         val requestId = session.setRequestedRoute(createRoute(mBleHeadset))
         verify(mDeviceBroker).setCommunicationDevice(
-            any(), any(), eq(mBleHeadset), eq(true), any()
+            any(), any(), eq(mBleHeadset), eq(true), eq(true), any()
         )
         session.onCommunicationDeviceChanged(mBleHeadset)
 
@@ -710,7 +719,7 @@ class AudioModeSessionTest {
         val externalRequestId = captor.lastValue
 
         verify(mDeviceBroker).setCommunicationDevice(
-            any(), any(), eq(mScoHeadset), eq(true), any()
+            any(), any(), eq(mScoHeadset), eq(true), eq(true), any()
         )
 
         session.onCommunicationDeviceChanged(mScoHeadset)
@@ -729,7 +738,7 @@ class AudioModeSessionTest {
         // Start the default routing
         session.onAvailableDevicesChanged(listOf(mEarpiece, mSpeaker))
         verify(mDeviceBroker).setCommunicationDevice(
-            any(), any(), eq(mEarpiece), eq(true), any()
+            any(), any(), eq(mEarpiece), eq(true), eq(true), any()
         )
 
         val earpieceRoute = createRoute(mEarpiece)
@@ -741,7 +750,7 @@ class AudioModeSessionTest {
         verify(mCallback).onRoutingResult(any(), eq(earpieceRoute), eq(ROUTING_RESULT_PREEMPTED))
 
         verify(mDeviceBroker).setCommunicationDevice(
-            any(), any(), eq(mSpeaker), eq(true), any()
+            any(), any(), eq(mSpeaker), eq(true), eq(true), any()
         )
 
         // Success callback for the explicit request
@@ -757,7 +766,7 @@ class AudioModeSessionTest {
         // Start with speaker
         session.onAvailableDevicesChanged(listOf(mSpeaker))
         verify(mDeviceBroker).setCommunicationDevice(
-            any(), any(), eq(mSpeaker), eq(true), any()
+            any(), any(), eq(mSpeaker), eq(true), eq(true), any()
         )
         session.onCommunicationDeviceChanged(mSpeaker)
 
@@ -768,7 +777,7 @@ class AudioModeSessionTest {
         session.onAvailableDevicesChanged(listOf(mSpeaker, mScoHeadset))
 
         verify(mDeviceBroker).setCommunicationDevice(
-            any(), any(), eq(mScoHeadset), eq(true), any()
+            any(), any(), eq(mScoHeadset), eq(true), eq(true), any()
         )
 
         session.onCommunicationDeviceChanged(mScoHeadset)
@@ -784,7 +793,7 @@ class AudioModeSessionTest {
         // Start with speaker and SCO
         session.onAvailableDevicesChanged(listOf(mSpeaker, mScoHeadset))
         verify(mDeviceBroker).setCommunicationDevice(
-            any(), any(), eq(mScoHeadset), eq(true), any()
+            any(), any(), eq(mScoHeadset), eq(true), eq(true), any()
         )
 
         session.onCommunicationDeviceChanged(mScoHeadset)
@@ -796,7 +805,7 @@ class AudioModeSessionTest {
         session.onAvailableDevicesChanged(listOf(mSpeaker))
 
         verify(mDeviceBroker).setCommunicationDevice(
-            any(), any(), eq(mSpeaker), eq(true), any()
+            any(), any(), eq(mSpeaker), eq(true), eq(true), any()
         )
 
         session.onCommunicationDeviceChanged(mSpeaker)
