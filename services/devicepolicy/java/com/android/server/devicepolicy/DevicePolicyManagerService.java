@@ -7545,6 +7545,16 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             } else {
                 shouldFactoryReset = userId == UserHandle.USER_SYSTEM;
             }
+            if (!shouldFactoryReset) {
+                // Check if user can be wiped first.
+                String reason = reasonToWipeDeviceWhenUserCannotBeWiped(userId);
+                if (reason != null) {
+                    Slogf.w(LOG_TAG, "User %d cannot be removed (reason: %s); will factory "
+                            + "reset instead", userId, reason);
+                    shouldFactoryReset = true;
+                }
+            }
+
             if (shouldFactoryReset) {
                 restriction = UserManager.DISALLOW_FACTORY_RESET;
             } else if (isManagedProfile(userId)) {
@@ -7594,6 +7604,19 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 forceWipeUser(userId, wipeReasonForUser, (flags & WIPE_SILENTLY) != 0);
             }
         });
+    }
+
+    /**
+     * Gets the reason the device will be wiped when the user couldn't, or {@code null} if the
+     * device shouldn't be wiped.
+     */
+    private @Nullable String reasonToWipeDeviceWhenUserCannotBeWiped(@UserIdInt int userId) {
+        int removability = mContext.getSystemService(UserManager.class).getUserRemovability(userId);
+        return switch(removability) {
+            case UserManager.REMOVE_RESULT_ERROR_LAST_ADMIN_USER ->
+                    Flags.wipeDeviceWhenWipedUserIsLastAdmin() ? "last admin user" : null;
+            default -> null;
+        };
     }
 
     private void sendWipeProfileNotification(String wipeReasonForUser, UserHandle user) {
