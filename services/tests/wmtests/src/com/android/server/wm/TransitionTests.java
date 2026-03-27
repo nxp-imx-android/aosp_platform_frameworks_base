@@ -3772,6 +3772,36 @@ public class TransitionTests extends WindowTestsBase {
     }
 
     @Test
+    @RequiresFlagsEnabled(com.android.graphics.surfaceflinger.flags
+                                                .Flags.FLAG_SET_CLIENT_DRAWN_CORNER_RADII)
+    public void testDisableRoundedCornerOpt_ActivityTarget() {
+        final TransitionController controller = mDisplayContent.mTransitionController;
+        registerTestTransitionPlayer();
+
+        final Task task = createTask(mDefaultDisplay);
+        final ActivityRecord activity = createActivityRecord(task);
+
+        doReturn(mMockT).when(task).getSyncTransaction();
+
+        final Transition transition = createTestTransition(TRANSIT_OPEN, controller);
+        controller.moveToCollecting(transition);
+
+        // Setup change state so it is kept as a target
+        transition.collect(activity);
+        activity.setVisibleRequested(true);
+        transition.mChanges.get(activity).mVisible = false;
+
+        controller.requestStartTransition(transition, null /*startTask*/,
+                null /*remote*/, null /*displayChange*/);
+
+        transition.onTransactionReady(transition.getSyncId(), mMockT);
+
+        // Verify that the optimization was disabled on the parent Task
+        verify(mMockT).toggleClientDrawnRoundedCornersOpt(eq(task.getSurfaceControl()), eq(false));
+        assertThat(controller.mRoundedCornerOptTasks).contains(task);
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ALLOW_DRAG_AND_DROP_WHEN_INTERACTIVE_BUGFIX)
     public void testInteractiveStateChanges_resumedAndPausedTasksAreReported() {
         final TransitionController controller = mDisplayContent.mTransitionController;
