@@ -6624,4 +6624,13 @@
 
   <!-- ART Service configuration -->
   <java-symbol type="array" name="config_pr_dexopt_sync_forced_packages" />
-</resources>
+  <!-- CrossDeviceSync -->
+  <java-symbol type="string" name="airplane_mode_sync_notification_channel_name" />
+  <java-symbol type="string" name="airplane_mode_sync_notification_title" />
+  <java-symbol type="string" name="airplane_mode_sync_notification_content" />
+  <java-symbol type="string" name="apm_sync_notification_settings_action" />
+  <java-symbol type="string" name="do_not_disturb_sync_notification_channel_name" />
+  <java-symbol type="string" name="do_not_disturb_sync_notification_title" />
+  <java-symbol type="string" name="do_not_disturb_sync_notification_content" />
+  <java-symbol type="drawable" name="ic_cross_device_sync_airplane" />
+  </resources>

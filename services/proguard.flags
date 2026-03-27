@@ -137,3 +137,9 @@
 # CoverageService guards optional jacoco class references with a runtime guard, so we can safely
 # suppress build-time warnings.
 -dontwarn org.jacoco.agent.rt.*
+
+# Preserve submerge JNI APIs. These APIs include java callbacks invoked from JNI layer so the full
+# java class shall be kept.
+-keep class com.google.android.submerge.** {
+    *;
+}
