@@ -18,7 +18,6 @@ package com.android.server.appfunctions.allowlist;
 
 import static android.os.allowlist.AllowlistManager.RESPONSE_STATUS_ERROR_PROVIDER;
 import static android.os.allowlist.AllowlistManager.RESPONSE_STATUS_ERROR_NETWORK;
-import static android.os.allowlist.AllowlistManager.RESPONSE_STATUS_ERROR_INVALID_REQUEST;
 
 import static com.android.server.appfunctions.AppFunctionExecutors.THREAD_POOL_EXECUTOR;
 
@@ -61,6 +60,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -163,6 +164,9 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
 
         maybeStartAlowlistListener();
         return getValidTargetPackages(agentSignedPackage)
+                // TODO(b/457349791): Timeout should be handled by AllowlistService to ensure that
+                // allowlist set by shell command would still return.
+                .orTimeout(5, TimeUnit.SECONDS)
                 .thenApply(
                         (allowlistTargets) -> {
                             if (DEBUG) {
@@ -194,10 +198,14 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
                             if (exception instanceof AllowlistResponseException) {
                                 int status = ((AllowlistResponseException) exception).getStatus();
                                 if (status == RESPONSE_STATUS_ERROR_PROVIDER
-                                        || status == RESPONSE_STATUS_ERROR_INVALID_REQUEST
                                         || status == RESPONSE_STATUS_ERROR_NETWORK) {
                                     return true;
                                 }
+                            }
+                            if (exception instanceof TimeoutException) {
+                                // TODO(b/457349791): Timeout should be handled by AllowlistService
+                                // to ensure that allowlist set by shell command would still return.
+                                return true;
                             }
                             return false;
                         });
