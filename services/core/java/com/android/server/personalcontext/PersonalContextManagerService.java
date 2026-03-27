@@ -118,8 +118,7 @@ public class PersonalContextManagerService extends SystemService {
      *
      * @see PersonalContextManager#isPersonalContextModeEnabled(String)
      */
-    // TODO(b/481494584): flip the default to disabled (0).
-    public static final int PERSONAL_CONTEXT_MODE_ENABLED_DEFAULT_VALUE = 1;
+    public static final int PERSONAL_CONTEXT_MODE_ENABLED_DEFAULT_VALUE = 0;
 
     static final SecretKeySpec HINT_SIGNING_KEY;
 
