@@ -26,7 +26,6 @@ import com.android.app.animation.Interpolators
 import com.android.systemui.clock.ClockModernization
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.lifecycle.repeatWhenAttached
-import com.android.systemui.lifecycle.setSnapshotBinding
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.chips.mediaprojection.domain.model.MediaProjectionStopDialogModel
@@ -137,31 +136,45 @@ class HomeStatusBarViewBinderImpl @Inject constructor() : HomeStatusBarViewBinde
                     viewModel.operatorNameViewModel,
                     viewModel.areaTint,
                 )
-                view.setSnapshotBinding {
-                    operatorNameView.isVisible = viewModel.shouldShowOperatorNameView
+                launch {
+                    viewModel.shouldShowOperatorNameView.collect { operatorNameView.isVisible = it }
+                }
 
-                    if (!ClockModernization.isEnabled) {
-                        clockView.adjustVisibility(model = viewModel.isClockVisible)
+                if (!ClockModernization.isEnabled) {
+                    launch { viewModel.isClockVisible.collect { clockView.adjustVisibility(it) } }
+                }
+
+                launch {
+                    viewModel.isNotificationIconContainerVisible.collect {
+                        notificationIconsArea.adjustVisibility(it)
                     }
+                }
 
-                    notificationIconsArea.adjustVisibility(
-                        viewModel.isNotificationIconContainerVisible
-                    )
-
-                    val (baseVis, animState) = viewModel.systemInfoCombinedVis
-                    if (animState.isAnimatingChip()) {
-                        systemInfoView.visibility = baseVis.visibility.value
-                        when (animState) {
-                            AnimatingIn -> {
-                                systemEventChipAnimateIn?.invoke(systemInfoView)
+                launch {
+                    viewModel.systemInfoCombinedVis.collect { (baseVis, animState) ->
+                        // Broadly speaking, the baseVis controls the view.visibility, and
+                        // the animation state uses only alpha to achieve its effect. This
+                        // means that we can always modify the visibility, and if we're
+                        // animating we can use the animState to handle it. If we are not
+                        // animating, then we can use the baseVis default animation
+                        if (animState.isAnimatingChip()) {
+                            // Just apply the visibility of the view, but don't animate
+                            systemInfoView.visibility = baseVis.visibility
+                            // Now apply the animation state, with its animator
+                            when (animState) {
+                                AnimatingIn -> {
+                                    systemEventChipAnimateIn?.invoke(systemInfoView)
+                                }
+                                AnimatingOut -> {
+                                    systemEventChipAnimateOut?.invoke(systemInfoView)
+                                }
+                                else -> {
+                                    // Nothing to do here
+                                }
                             }
-                            AnimatingOut -> {
-                                systemEventChipAnimateOut?.invoke(systemInfoView)
-                            }
-                            else -> {}
+                        } else {
+                            systemInfoView.adjustVisibility(baseVis)
                         }
-                    } else {
-                        systemInfoView.adjustVisibility(baseVis)
                     }
                 }
             }
@@ -207,10 +220,10 @@ class HomeStatusBarViewBinderImpl @Inject constructor() : HomeStatusBarViewBinde
     }
 
     private fun View.adjustVisibility(model: VisibilityModel) {
-        if (model.visibility.value == View.VISIBLE) {
+        if (model.visibility == View.VISIBLE) {
             this.show(model.shouldAnimateChange)
         } else {
-            this.hide(model.visibility.value, model.shouldAnimateChange)
+            this.hide(model.visibility, model.shouldAnimateChange)
         }
     }
 

@@ -74,7 +74,8 @@ object KeyguardStatusBarViewBinder {
                 view.setSnapshotBinding {
                     val (baseVis, animState) = viewModel.systemInfoCombinedVis
 
-                    systemInfoView.visibility = baseVis.visibility.value
+                    // Always update base visibility first
+                    systemInfoView.visibility = baseVis.visibility
 
                     if (animState != lastAnimState) {
                         currentAnimator?.cancel()

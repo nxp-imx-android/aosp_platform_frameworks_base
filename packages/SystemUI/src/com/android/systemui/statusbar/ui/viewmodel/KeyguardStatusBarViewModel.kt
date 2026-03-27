@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.ui.viewmodel
 
+import android.view.View
 import androidx.compose.runtime.getValue
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.desktop.domain.interactor.DesktopInteractor
@@ -33,7 +34,6 @@ import com.android.systemui.statusbar.phone.domain.interactor.ShadeDarkIconInter
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarIconBlockListInteractor
 import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombinedVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
-import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityState
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
@@ -107,9 +107,9 @@ constructor(
                 val model =
                     VisibilityModel(
                         if (sysInfoVisible) {
-                            VisibilityState.VISIBLE
+                            View.VISIBLE
                         } else {
-                            VisibilityState.INVISIBLE
+                            View.INVISIBLE
                         },
                         animationState == Idle,
                     )
@@ -119,10 +119,7 @@ constructor(
             .hydratedStateOf(
                 traceName = "systemInfoCombinedVis",
                 initialValue =
-                    SystemInfoCombinedVisibilityModel(
-                        VisibilityModel(VisibilityState.INVISIBLE, false),
-                        Idle,
-                    ),
+                    SystemInfoCombinedVisibilityModel(VisibilityModel(View.INVISIBLE, false), Idle),
             )
 
     /** True if we can show the user switcher on keyguard and false otherwise. */
