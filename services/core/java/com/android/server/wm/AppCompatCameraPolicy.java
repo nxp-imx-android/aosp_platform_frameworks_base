@@ -16,13 +16,13 @@
 
 package com.android.server.wm;
 
-import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 
 import static com.android.server.wm.AppCompatConfiguration.MIN_FIXED_ORIENTATION_LETTERBOX_ASPECT_RATIO;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.WindowConfiguration;
 import android.content.pm.ActivityInfo.ScreenOrientation;
 import android.content.res.Configuration;
 import android.view.Surface;
@@ -40,37 +40,56 @@ class AppCompatCameraPolicy {
 
     static final String TAG_CAMERA_COMPAT = "AppCompatCamera";
 
-    @Nullable
-    @VisibleForTesting
-    final CameraStateMonitor mCameraStateMonitor;
-    @Nullable
-    @VisibleForTesting
-    final ActivityRefresher mActivityRefresher;
-    @Nullable
-    final AppCompatCameraDisplayRotationPolicy mDisplayRotationPolicy;
-    @Nullable
-    final AppCompatCameraSimReqOrientationPolicy mSimReqOrientationPolicy;
+    @NonNull
+    private final WindowManagerService mWmService;
 
-    AppCompatCameraPolicy(@NonNull WindowManagerService wmService,
-            @NonNull DisplayContent displayContent) {
+    @Nullable
+    @VisibleForTesting
+    CameraStateMonitor mCameraStateMonitor;
+    @Nullable
+    @VisibleForTesting
+    ActivityRefresher mActivityRefresher;
+    @Nullable
+    AppCompatCameraDisplayRotationPolicy mDisplayRotationPolicy;
+    @Nullable
+    AppCompatCameraSimReqOrientationPolicy mSimReqOrientationPolicy;
+
+    AppCompatCameraPolicy(@NonNull WindowManagerService wmService) {
+        mWmService = wmService;
+        initialize();
+    }
+
+    /**
+     * Reinitializes camera policy objects.
+     *
+     * <p>Should be used only for testing, after configuration changes that can enable/disable
+     * camera policies.
+     */
+    @VisibleForTesting
+    void reInit() {
+        dispose();
+        initialize();
+    }
+
+    private void initialize() {
         // Not checking DeviceConfig value here to allow enabling via DeviceConfig
         // without the need to restart the device.
         final boolean isDisplayRotationPolicyEnabled = AppCompatCameraDisplayRotationPolicy
-                .isPolicyEnabled(displayContent);
+                .isPolicyEnabled(mWmService);
         final boolean isSimReqOrientationPolicyEnabled = AppCompatCameraSimReqOrientationPolicy
-                .isPolicyEnabled(displayContent);
+                .isPolicyEnabled(mWmService);
         if (isDisplayRotationPolicyEnabled || isSimReqOrientationPolicyEnabled) {
             final AppCompatCameraStateSource cameraStateListenerDelegate =
                     new AppCompatCameraStateSource();
-            mCameraStateMonitor = new CameraStateMonitor(displayContent, wmService.mH,
+            mCameraStateMonitor = new CameraStateMonitor(mWmService, mWmService.mH,
                     cameraStateListenerDelegate);
-            mActivityRefresher = new ActivityRefresher(wmService, wmService.mH);
+            mActivityRefresher = new ActivityRefresher(mWmService, mWmService.mH);
             mDisplayRotationPolicy = isDisplayRotationPolicyEnabled
-                    ? new AppCompatCameraDisplayRotationPolicy(displayContent, mCameraStateMonitor,
+                    ? new AppCompatCameraDisplayRotationPolicy(mWmService, mCameraStateMonitor,
                             cameraStateListenerDelegate, mActivityRefresher)
                     : null;
             mSimReqOrientationPolicy = isSimReqOrientationPolicyEnabled
-                    ? new AppCompatCameraSimReqOrientationPolicy(displayContent,
+                    ? new AppCompatCameraSimReqOrientationPolicy(mWmService,
                             mCameraStateMonitor, cameraStateListenerDelegate, mActivityRefresher)
                     : null;
         } else {
@@ -82,7 +101,7 @@ class AppCompatCameraPolicy {
     }
 
     static void onActivityRefreshed(@NonNull ActivityRecord activity) {
-        final AppCompatCameraPolicy cameraPolicy = getAppCompatCameraPolicy(activity);
+        final AppCompatCameraPolicy cameraPolicy = activity.mWmService.mAppCompatCameraPolicy;
         if (cameraPolicy != null && cameraPolicy.mActivityRefresher != null) {
             cameraPolicy.mActivityRefresher.onActivityRefreshed(activity);
         }
@@ -90,13 +109,21 @@ class AppCompatCameraPolicy {
 
     @Nullable
     static AppCompatCameraPolicy getAppCompatCameraPolicy(@NonNull ActivityRecord activityRecord) {
-        return activityRecord.mDisplayContent != null
-                ? activityRecord.mDisplayContent.mAppCompatCameraPolicy : null;
+        return activityRecord.mWmService.mAppCompatCameraPolicy;
+    }
+
+    static void onWindowingModeChanged(@NonNull ActivityRecord activity,
+            @WindowConfiguration.WindowingMode int newWindowingMode) {
+        final AppCompatCameraPolicy cameraPolicy = getAppCompatCameraPolicy(activity);
+        if (cameraPolicy != null && cameraPolicy.mSimReqOrientationPolicy != null) {
+            cameraPolicy.mSimReqOrientationPolicy.onWindowingModeChanged(activity,
+                    newWindowingMode);
+        }
     }
 
     static void onDisplayRotationChanged(@NonNull ActivityRecord activity,
             @Surface.Rotation int newDisplayRotation) {
-        final AppCompatCameraPolicy cameraPolicy = getAppCompatCameraPolicy(activity);
+        final AppCompatCameraPolicy cameraPolicy = activity.mWmService.mAppCompatCameraPolicy;
         if (cameraPolicy != null && cameraPolicy.mSimReqOrientationPolicy != null) {
             cameraPolicy.mSimReqOrientationPolicy.onDisplayRotationChanged(activity,
                     newDisplayRotation);
@@ -111,7 +138,7 @@ class AppCompatCameraPolicy {
      */
     static void onActivityConfigurationChanging(@NonNull ActivityRecord activity,
             @NonNull Configuration newConfig, @NonNull Configuration lastReportedConfig) {
-        final AppCompatCameraPolicy cameraPolicy = getAppCompatCameraPolicy(activity);
+        final AppCompatCameraPolicy cameraPolicy = activity.mWmService.mAppCompatCameraPolicy;
         if (cameraPolicy != null && cameraPolicy.mActivityRefresher != null) {
             cameraPolicy.mActivityRefresher.onActivityConfigurationChanging(activity, newConfig,
                     lastReportedConfig);
@@ -125,7 +152,7 @@ class AppCompatCameraPolicy {
      * if refresh is pending for camera compat.
      */
     static void onActivityRelaunching(@NonNull ActivityRecord activity) {
-        final AppCompatCameraPolicy cameraPolicy = getAppCompatCameraPolicy(activity);
+        final AppCompatCameraPolicy cameraPolicy = activity.mWmService.mAppCompatCameraPolicy;
         if (cameraPolicy != null && cameraPolicy.mActivityRefresher != null) {
             cameraPolicy.mActivityRefresher.onActivityRelaunching(activity);
         }
@@ -137,9 +164,9 @@ class AppCompatCameraPolicy {
      * <p>This class uses this signal as a trigger for notifying the user about forced rotation
      * reason with the {@link Toast}.
      */
-    void onScreenRotationAnimationFinished() {
+    void onScreenRotationAnimationFinished(@NonNull DisplayContent displayContent) {
         if (mDisplayRotationPolicy != null) {
-            mDisplayRotationPolicy.onScreenRotationAnimationFinished();
+            mDisplayRotationPolicy.onScreenRotationAnimationFinished(displayContent);
         }
     }
 
@@ -154,7 +181,7 @@ class AppCompatCameraPolicy {
      * </ul>
      */
     static boolean isTreatmentEnabledForActivity(@NonNull ActivityRecord activity) {
-        final AppCompatCameraPolicy cameraPolicy = getAppCompatCameraPolicy(activity);
+        final AppCompatCameraPolicy cameraPolicy = activity.mWmService.mAppCompatCameraPolicy;
         return cameraPolicy != null && cameraPolicy.mDisplayRotationPolicy != null
                 && cameraPolicy.mDisplayRotationPolicy
                         .isTreatmentEnabledForActivity(activity);
@@ -197,15 +224,15 @@ class AppCompatCameraPolicy {
     }
 
     @ScreenOrientation
-    int getOrientation() {
+    int getOrientation(@NonNull DisplayContent displayContent) {
         return mDisplayRotationPolicy != null
-                ? mDisplayRotationPolicy.getOrientation()
+                ? mDisplayRotationPolicy.getOrientation(displayContent)
                 : SCREEN_ORIENTATION_UNSPECIFIED;
     }
 
     // TODO(b/369070416): have policies implement the same interface.
     static boolean shouldCameraCompatControlOrientation(@NonNull ActivityRecord activity) {
-        final AppCompatCameraPolicy cameraPolicy = getAppCompatCameraPolicy(activity);
+        final AppCompatCameraPolicy cameraPolicy = activity.mWmService.mAppCompatCameraPolicy;
         if (cameraPolicy == null) {
             return false;
         }
@@ -219,7 +246,7 @@ class AppCompatCameraPolicy {
 
     // TODO(b/369070416): have policies implement the same interface.
     static boolean isFreeformLetterboxingForCameraAllowed(@NonNull ActivityRecord activity) {
-        final AppCompatCameraPolicy cameraPolicy = getAppCompatCameraPolicy(activity);
+        final AppCompatCameraPolicy cameraPolicy = activity.mWmService.mAppCompatCameraPolicy;
         if (cameraPolicy == null) {
             return false;
         }
@@ -230,7 +257,7 @@ class AppCompatCameraPolicy {
 
     // TODO(b/369070416): have policies implement the same interface.
     static boolean shouldCameraCompatControlAspectRatio(@NonNull ActivityRecord activity) {
-        final AppCompatCameraPolicy cameraPolicy = getAppCompatCameraPolicy(activity);
+        final AppCompatCameraPolicy cameraPolicy = activity.mWmService.mAppCompatCameraPolicy;
         if (cameraPolicy == null) {
             return false;
         }
@@ -243,7 +270,7 @@ class AppCompatCameraPolicy {
     }
 
     static boolean shouldIgnoreReqOrientationForCameraCompat(@NonNull ActivityRecord activity) {
-        final AppCompatCameraPolicy cameraPolicy = getAppCompatCameraPolicy(activity);
+        final AppCompatCameraPolicy cameraPolicy = activity.mWmService.mAppCompatCameraPolicy;
         if (cameraPolicy == null) {
             return false;
         }
@@ -265,7 +292,7 @@ class AppCompatCameraPolicy {
      */
     private static boolean isCameraRunningAndWindowingModeEligible(
             @NonNull ActivityRecord activity) {
-        final AppCompatCameraPolicy cameraPolicy = getAppCompatCameraPolicy(activity);
+        final AppCompatCameraPolicy cameraPolicy = activity.mWmService.mAppCompatCameraPolicy;
         if (cameraPolicy == null) {
             return false;
         }
@@ -280,7 +307,7 @@ class AppCompatCameraPolicy {
 
     static void dump(@NonNull ActivityRecord activity, @NonNull PrintWriter pw,
             @NonNull String prefix) {
-        final AppCompatCameraPolicy cameraPolicy = getAppCompatCameraPolicy(activity);
+        final AppCompatCameraPolicy cameraPolicy = activity.mWmService.mAppCompatCameraPolicy;
         if (cameraPolicy == null) {
             return;
         }
@@ -296,15 +323,15 @@ class AppCompatCameraPolicy {
     }
 
     @Nullable
-    String getSummaryForDisplayRotationHistoryRecord() {
+    String getSummaryForDisplayRotationHistoryRecord(@NonNull DisplayContent displayContent) {
         return mDisplayRotationPolicy != null
-                ? mDisplayRotationPolicy.getSummaryForDisplayRotationHistoryRecord()
+                ? mDisplayRotationPolicy.getSummaryForDisplayRotationHistoryRecord(displayContent)
                 : null;
     }
 
     // TODO(b/369070416): have policies implement the same interface.
     static float getCameraCompatMinAspectRatio(@NonNull ActivityRecord activity) {
-        final AppCompatCameraPolicy cameraPolicy = getAppCompatCameraPolicy(activity);
+        final AppCompatCameraPolicy cameraPolicy = activity.mWmService.mAppCompatCameraPolicy;
         if (cameraPolicy == null) {
             return 1.0f;
         }
@@ -316,14 +343,6 @@ class AppCompatCameraPolicy {
                 ? cameraPolicy.mSimReqOrientationPolicy.getCameraCompatAspectRatio(activity)
                 : MIN_FIXED_ORIENTATION_LETTERBOX_ASPECT_RATIO;
         return Math.max(displayRotationCompatPolicyAspectRatio, simReqOrientationPolicyAspectRatio);
-    }
-
-    @Surface.Rotation
-    static int getCameraDeviceRotation(@NonNull ActivityRecord activity) {
-        final AppCompatCameraPolicy cameraPolicy = getAppCompatCameraPolicy(activity);
-        return cameraPolicy != null && cameraPolicy.mSimReqOrientationPolicy != null
-                ? cameraPolicy.mSimReqOrientationPolicy.getCameraDeviceRotation()
-                : ROTATION_UNDEFINED;
     }
 
     /**

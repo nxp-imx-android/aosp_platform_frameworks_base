@@ -48,10 +48,10 @@ class AppCompatCameraStateStrategyForTask {
             new PendingCameraUpdateRepository();
 
     @NonNull
-    private final DisplayContent mDisplayContent;
+    private final WindowManagerService mWmService;
 
-    AppCompatCameraStateStrategyForTask(@NonNull DisplayContent displayContent) {
-        mDisplayContent = displayContent;
+    AppCompatCameraStateStrategyForTask(@NonNull WindowManagerService wmService) {
+        mWmService = wmService;
     }
 
     /**
@@ -169,8 +169,8 @@ class AppCompatCameraStateStrategyForTask {
             return true;
         }
 
-        final Task cameraTask = mDisplayContent.getTask(task ->
-                task.getTaskInfo().taskId == cameraAppInfo.mTaskId);
+        final Task cameraTask = mWmService.mRoot.getTask(task -> task.isTaskId(
+                cameraAppInfo.mTaskId));
         final boolean canClose = cameraTask == null
                 || policy.canCameraBeClosed(cameraAppInfo, cameraTask);
         if (canClose) {
@@ -233,14 +233,13 @@ class AppCompatCameraStateStrategyForTask {
      */
     @Nullable
     private ActivityRecord findUniqueActivityWithPackageName(@NonNull String packageName) {
-        final ActivityRecord topActivity = mDisplayContent.topRunningActivity(
-                /* considerKeyguardState= */ true);
+        final ActivityRecord topActivity = mWmService.mRoot.topRunningActivity();
         if (topActivity != null && topActivity.packageName.equals(packageName)) {
             return topActivity;
         }
 
         final List<ActivityRecord> activitiesOfPackageWhichOpenedCamera = new ArrayList<>();
-        mDisplayContent.forAllActivities(activityRecord -> {
+        mWmService.mRoot.forAllActivities(activityRecord -> {
             if (activityRecord.isVisibleRequested()
                     && activityRecord.packageName.equals(packageName)) {
                 activitiesOfPackageWhichOpenedCamera.add(activityRecord);
@@ -272,7 +271,7 @@ class AppCompatCameraStateStrategyForTask {
 
     @Nullable
     private WindowProcessController getAppProcessForCallingId(int pid) {
-        return mDisplayContent.mAtmService.mProcessMap.getProcess(pid);
+        return mWmService.mAtmService.mProcessMap.getProcess(pid);
     }
 
     /**

@@ -178,16 +178,16 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
             mWindowTestsBase = windowTestsBase;
             setupCameraManager();
             setupAppCompatConfiguration();
-
+            reInitCameraPolicy();
+            spyOnPolicy();
             configureActivityAndDisplay();
         }
 
-        @Override
-        void onPostDisplayContentCreation(@NonNull DisplayContent displayContent) {
-            super.onPostDisplayContentCreation(displayContent);
-            spyOn(displayContent.mAppCompatCameraPolicy);
-            if (displayContent.mAppCompatCameraPolicy.mSimReqOrientationPolicy != null) {
-                spyOn(displayContent.mAppCompatCameraPolicy.mSimReqOrientationPolicy);
+        private void spyOnPolicy() {
+            final AppCompatCameraPolicy cameraPolicy = testBase().mWm.mAppCompatCameraPolicy;
+            spyOn(cameraPolicy);
+            if (cameraPolicy.mSimReqOrientationPolicy != null) {
+                spyOn(cameraPolicy.mSimReqOrientationPolicy);
             }
 
             mFakePolicyCannotCloseOnce = new FakeAppCompatCameraStatePolicy(true);
@@ -211,9 +211,11 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
         private void setupAppCompatConfiguration() {
             applyOnConf((c) -> {
                 c.enableCameraCompatForceRotateTreatment(true);
+                c.enableCameraCompatSimReqOrientationTreatment(true);
                 c.enableCameraCompatRefresh(true);
                 c.enableCameraCompatRefreshCycleThroughStop(true);
                 c.enableCameraCompatSplitScreenAspectRatio(false);
+                dw().allowEnterDesktopMode(true);
             });
         }
 
@@ -316,11 +318,11 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
         }
 
         private void waitHandlerIdle() {
-            mWindowTestsBase.waitHandlerIdle(activity().displayContent().mWmService.mH);
+            mWindowTestsBase.waitHandlerIdle(testBase().mWm.mH);
         }
 
         private CameraStateMonitor getCameraStateMonitor() {
-            return activity().top().mDisplayContent.mAppCompatCameraPolicy.mCameraStateMonitor;
+            return activity().top().mWmService.mAppCompatCameraPolicy.mCameraStateMonitor;
         }
 
         private AppCompatCameraStateSource getAppCompatCameraStateSource() {

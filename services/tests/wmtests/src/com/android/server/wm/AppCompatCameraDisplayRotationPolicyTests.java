@@ -43,6 +43,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -191,11 +192,7 @@ public final class AppCompatCameraDisplayRotationPolicyTests extends WindowTests
             robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT);
             robot.setTreatmentEnabledViaConfig(false);
 
-            robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
-
-            robot.assertDisplayRotationFromPolicy(SCREEN_ORIENTATION_UNSPECIFIED);
-
-            robot.assertNoForceRotationOrRefresh();
+            robot.assertPolicyNotCreated();
         });
     }
 
@@ -268,7 +265,7 @@ public final class AppCompatCameraDisplayRotationPolicyTests extends WindowTests
     @DisableFlags(Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
     public void testDisplayTypeExternal_noForceRotationOrRefresh() {
         runTestScenario((robot) -> {
-            robot.conf().enableCameraCompatSimReqOrientationTreatment(false);
+            robot.applyOnConf(c -> c.enableCameraCompatSimReqOrientationTreatment(false));
             robot.configureActivityAndDisplay(SCREEN_ORIENTATION_PORTRAIT,
                     WINDOWING_MODE_FULLSCREEN, ORIENTATION_PORTRAIT, TYPE_EXTERNAL);
 
@@ -454,7 +451,7 @@ public final class AppCompatCameraDisplayRotationPolicyTests extends WindowTests
     public void testOnActivityConfigurationChanging_splitScreenAspectRatioAllowed_refresh() {
         runTestScenario((robot) -> {
             robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT);
-            robot.conf().enableCameraCompatSplitScreenAspectRatio(true);
+            robot.applyOnConf(c -> c.enableCameraCompatSplitScreenAspectRatio(true));
 
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
             robot.callOnActivityConfigurationChanging(/*isDisplayRotationChanging=*/ true);
@@ -529,11 +526,16 @@ public final class AppCompatCameraDisplayRotationPolicyTests extends WindowTests
         }
 
         @Override
-        void onPostDisplayContentCreation(@NonNull DisplayContent displayContent) {
-            super.onPostDisplayContentCreation(displayContent);
-            spyOn(displayContent.mAppCompatCameraPolicy);
-            if (displayContent.mAppCompatCameraPolicy.mDisplayRotationPolicy != null) {
-                spyOn(displayContent.mAppCompatCameraPolicy.mDisplayRotationPolicy);
+        void applyOnConf(@NonNull Consumer<AppCompatConfigurationRobot> consumer) {
+            super.applyOnConf(consumer);
+            reInitCameraPolicy();
+            spyOnPolicy();
+        }
+
+        private void spyOnPolicy() {
+            spyOn(testBase().mWm.mAppCompatCameraPolicy);
+            if (testBase().mWm.mAppCompatCameraPolicy.mDisplayRotationPolicy != null) {
+                spyOn(testBase().mWm.mAppCompatCameraPolicy.mDisplayRotationPolicy);
             }
         }
 
@@ -657,11 +659,11 @@ public final class AppCompatCameraDisplayRotationPolicyTests extends WindowTests
         }
 
         private void waitHandlerIdle() {
-            mWindowTestsBase.waitHandlerIdle(activity().displayContent().mWmService.mH);
+            mWindowTestsBase.waitHandlerIdle(testBase().mWm.mH);
         }
 
         private void callOnActivityConfigurationChanging(boolean isDisplayRotationChanging) {
-            activity().displayContent().mAppCompatCameraPolicy.mActivityRefresher
+            testBase().mWm.mAppCompatCameraPolicy.mActivityRefresher
                     .onActivityConfigurationChanging(activity().top(),
                     /* oldConfig */ createConfigurationWithDisplayRotation(ROTATION_0),
                     /* newConfig */ createConfigurationWithDisplayRotation(
@@ -681,7 +683,7 @@ public final class AppCompatCameraDisplayRotationPolicyTests extends WindowTests
         }
 
         void setTreatmentEnabledViaConfig(boolean enable) {
-            conf().enableCameraCompatForceRotateTreatment(enable);
+            applyOnConf(c -> c.enableCameraCompatForceRotateTreatment(enable));
         }
 
         void finishRotationAnimation() {
@@ -689,11 +691,16 @@ public final class AppCompatCameraDisplayRotationPolicyTests extends WindowTests
             if (cameraCompatPolicy == null) {
                 return;
             }
-            cameraCompatPolicy.onScreenRotationAnimationFinished();
+            cameraCompatPolicy.onScreenRotationAnimationFinished(activity().displayContent());
+        }
+
+        private void assertPolicyNotCreated() {
+            assertNull(cameraCompatPolicy());
         }
 
         private void assertNoForceRotationOrRefresh() {
-            assertEquals(SCREEN_ORIENTATION_UNSPECIFIED, cameraCompatPolicy().getOrientation());
+            assertEquals(SCREEN_ORIENTATION_UNSPECIFIED,
+                    cameraCompatPolicy().getOrientation(activity().displayContent()));
             assertActivityRefreshed(/* refreshed */ false);
         }
 
@@ -715,7 +722,8 @@ public final class AppCompatCameraDisplayRotationPolicyTests extends WindowTests
         }
 
         void assertDisplayRotationFromPolicy(int expectedOrientation) {
-            assertEquals(expectedOrientation, cameraCompatPolicy().getOrientation());
+            assertEquals(expectedOrientation,
+                    cameraCompatPolicy().getOrientation(activity().displayContent()));
         }
 
         private void assertShouldCameraCompatControlOrientation(boolean shouldControl) {
@@ -738,10 +746,7 @@ public final class AppCompatCameraDisplayRotationPolicyTests extends WindowTests
         }
 
         AppCompatCameraDisplayRotationPolicy cameraCompatPolicy() {
-            if (activity().displayContent().mAppCompatCameraPolicy == null) {
-                return null;
-            }
-            return activity().displayContent().mAppCompatCameraPolicy.mDisplayRotationPolicy;
+            return testBase().mWm.mAppCompatCameraPolicy.mDisplayRotationPolicy;
         }
     }
 }

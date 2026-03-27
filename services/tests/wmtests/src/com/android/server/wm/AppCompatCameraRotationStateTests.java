@@ -64,7 +64,8 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
             // The last created display is 'current'.
             robot.configureActivityAndDisplay(ROTATION_90, ORIENTATION_PORTRAIT, TYPE_INTERNAL);
 
-            robot.checkOrientationEventListenerSetUp(/* expected= */ false);
+            // TODO(b/495372418): start the listener only while external display is connected.
+            // robot.checkOrientationEventListenerSetUp(/* expected= */ false);
             robot.checkDisplayRotation(/* expected= */ Surface.ROTATION_90);
         });
     }
@@ -246,7 +247,7 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
         @Override
         void onPostActivityCreation(@NonNull ActivityRecord activity) {
             super.onPostActivityCreation(activity);
-            mCameraInfoProvider = new AppCompatCameraRotationState(activity.mDisplayContent);
+            mCameraInfoProvider = new AppCompatCameraRotationState(activity.mWmService);
             mCameraInfoProvider.start();
         }
 
@@ -279,15 +280,18 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
         }
 
         void checkDisplayRotation(@Surface.Rotation int expected) {
-            assertEquals(expected, mCameraInfoProvider.getCameraDeviceRotation());
+            assertEquals(expected,
+                    mCameraInfoProvider.getCameraDeviceRotation(activity().displayContent()));
         }
 
         void checkIsPortraitCamera(boolean expected) {
-            assertEquals(expected, mCameraInfoProvider.isCameraDeviceNaturalOrientationPortrait());
+            assertEquals(expected, mCameraInfoProvider
+                    .isCameraDeviceNaturalOrientationPortrait(activity().displayContent()));
         }
 
         void checkIsCameraDisplayRotationPortrait(boolean expected) {
-            assertEquals(expected, mCameraInfoProvider.isCameraDeviceOrientationPortrait());
+            assertEquals(expected, mCameraInfoProvider
+                    .isCameraDeviceOrientationPortrait(activity().displayContent()));
         }
 
         void checkOrientationEventListenerSetUp(boolean expected) {

@@ -509,9 +509,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     private final DisplayPolicy mDisplayPolicy;
     private final DisplayRotation mDisplayRotation;
 
-    @NonNull
-    AppCompatCameraPolicy mAppCompatCameraPolicy;
-
     DisplayFrames mDisplayFrames;
     final DeferredDisplayUpdater mDisplayUpdater;
 
@@ -1325,7 +1322,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             mWmService.mDisplayWindowSettings.setShouldShowSystemDecorsInternalLocked(this, false);
         }
 
-        mAppCompatCameraPolicy = new AppCompatCameraPolicy(mWmService, this);
         mDisplayPolicy = new DisplayPolicy(mWmService, this);
         mDisplayRotation = new DisplayRotation(mWmService, this, mDisplayInfo.address,
                 mDeviceStateController, root.getDisplayRotationCoordinator());
@@ -1381,7 +1377,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 R.bool.config_defaultInTouchMode);
         mWmService.mInputManager.setInTouchMode(mInTouchMode, mWmService.MY_PID, mWmService.MY_UID,
                 /* hasPermission= */ true, mDisplayId);
-        mAppCompatCameraPolicy.start();
     }
 
     private void beginHoldScreenUpdate() {
@@ -3306,7 +3301,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     @ScreenOrientation
     @Override
     int getOrientation() {
-        final int compatOrientation = mAppCompatCameraPolicy.getOrientation();
+        final int compatOrientation = mWmService.mAppCompatCameraPolicy
+                .getOrientation(this);
         if (compatOrientation != SCREEN_ORIENTATION_UNSPECIFIED) {
             mLastOrientationSource = null;
             return compatOrientation;
@@ -3887,8 +3883,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         // on the next traversal if it's removed from RootWindowContainer child list.
         getPendingTransaction().apply();
         mWmService.mWindowPlacerLocked.requestTraversal();
-
-        mAppCompatCameraPolicy.dispose();
     }
 
     /** Returns true if a removal action is still being deferred. */
