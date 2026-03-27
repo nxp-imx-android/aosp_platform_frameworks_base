@@ -545,7 +545,7 @@ policy_metadata {
       string_metadata {
       }
       resolution_mechanism {
-        custom: true
+        union: true
       }
     }
   }
