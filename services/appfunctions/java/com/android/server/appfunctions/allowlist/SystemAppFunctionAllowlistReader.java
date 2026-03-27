@@ -18,6 +18,7 @@ package com.android.server.appfunctions.allowlist;
 
 import static android.os.allowlist.AllowlistManager.RESPONSE_STATUS_ERROR_PROVIDER;
 import static android.os.allowlist.AllowlistManager.RESPONSE_STATUS_ERROR_NETWORK;
+import static android.os.allowlist.AllowlistManager.RESPONSE_STATUS_ERROR_INVALID_REQUEST;
 
 import static com.android.server.appfunctions.AppFunctionExecutors.THREAD_POOL_EXECUTOR;
 
@@ -198,6 +199,7 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
                             if (exception instanceof AllowlistResponseException) {
                                 int status = ((AllowlistResponseException) exception).getStatus();
                                 if (status == RESPONSE_STATUS_ERROR_PROVIDER
+                                        || status == RESPONSE_STATUS_ERROR_INVALID_REQUEST
                                         || status == RESPONSE_STATUS_ERROR_NETWORK) {
                                     return true;
                                 }
