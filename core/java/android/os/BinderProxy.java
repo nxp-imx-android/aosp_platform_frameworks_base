@@ -255,12 +255,14 @@ public final class BinderProxy implements IBinder {
                         } finally {
                             Binder.restoreCallingIdentity(identity);
                         }
-                        dumpPerUidProxyCounts();
+                        // The dump returns the UID and count of the top offender
+                        final String proxyCounts = dumpPerUidProxyCounts();
                         Runtime.getRuntime().gc();
                         throw new BinderProxyMapSizeException(
                                 "Binder ProxyMap has too many entries: "
                                 + totalSize + " (total), " + totalUnclearedSize + " (uncleared), "
-                                + unclearedSize() + " (uncleared after GC). BinderProxy leak?");
+                                + unclearedSize() + " (uncleared after GC). BinderProxy leak? "
+                                + proxyCounts);
                     } else if (totalSize > 3 * totalUnclearedSize / 2) {
                         Log.v(Binder.TAG, "BinderProxy map has many cleared entries: "
                                 + (totalSize - totalUnclearedSize) + " of " + totalSize
@@ -370,17 +372,24 @@ public final class BinderProxy implements IBinder {
         }
 
         /**
-         * Dump per uid binder proxy counts to the logcat.
+         * Dump per uid binder proxy counts to the logcat and return a string with the top offender.
          */
-        private void dumpPerUidProxyCounts() {
+        private String dumpPerUidProxyCounts() {
             SparseIntArray counts = BinderInternal.nGetBinderProxyPerUidCounts();
-            if (counts.size() == 0) return;
+            if (counts.size() == 0) return "";
             Log.d(Binder.TAG, "Per Uid Binder Proxy Counts:");
+            int maxCount = -1;
+            int maxUid = -1;
             for (int i = 0; i < counts.size(); i++) {
                 final int uid = counts.keyAt(i);
                 final int binderCount = counts.valueAt(i);
                 Log.d(Binder.TAG, "UID : " + uid + "  count = " + binderCount);
+                if (binderCount > maxCount) {
+                    maxCount = binderCount;
+                    maxUid = uid;
+                }
             }
+            return "TOP UID " + maxUid + " count " + maxCount;
         }
 
         // Corresponding ArrayLists in the following two arrays always have the same size.
