@@ -80,6 +80,14 @@ flag {
 }
 
 flag {
+ name: "enable_confirm_supervision_approval_api"
+ is_exported: false
+ namespace: "supervision"
+ description: "Flag that enables the ACTION_CONFIRM_SUPERVISION_APPROVAL intent action API"
+ bug: "452112201"
+}
+
+flag {
   name: "enable_supervision_settings_session_updates"
   is_exported: false
   namespace: "supervision"
