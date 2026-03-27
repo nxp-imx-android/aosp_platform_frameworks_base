@@ -65,6 +65,10 @@ class FakeHomeStatusBarViewModel(
 
     override fun onStatusBarLongPressed() {}
 
+    override fun onClockClicked() {}
+
+    override fun onSpacerClicked() {}
+
     override fun onQuickSettingsChipClicked() {}
 
     override fun onNotificationIconChipClicked() {}

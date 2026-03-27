@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.pipeline.shared.ui.composable
 
 import android.view.ContextThemeWrapper
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -109,6 +110,8 @@ fun DesktopStatusBar(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier =
+            // TODO(b/478352392): Move this padding to clickable Row below (after applying the
+            // clickable modifier), so it's included in the click target. Ref: b/494287030.
             modifier.fillMaxSize().padding(start = DesktopStatusBar.Dimensions.PaddingHorizontal),
     ) {
         WithAdaptiveTint(
@@ -122,6 +125,7 @@ fun DesktopStatusBar(
                         Alignment.Start,
                     ),
                 verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable(onClick = viewModel::onClockClicked),
             ) {
                 val clockViewModel =
                     rememberViewModel("HomeStatusBar.Clock") {
@@ -143,7 +147,7 @@ fun DesktopStatusBar(
                 )
             }
         }
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.weight(1f).clickable(onClick = viewModel::onSpacerClicked))
 
         Row(
             horizontalArrangement =

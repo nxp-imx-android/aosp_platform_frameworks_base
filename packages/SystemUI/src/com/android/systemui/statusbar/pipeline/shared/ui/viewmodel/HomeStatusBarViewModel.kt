@@ -78,6 +78,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombine
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityState
 import com.android.systemui.statusbar.policy.domain.interactor.DeviceProvisioningInteractor
+import com.android.systemui.statusbar.quickactions.ime.domain.interactor.ImeIndicatorChipInteractor
 import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipsViewModel
 import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipModel
@@ -163,6 +164,12 @@ interface HomeStatusBarViewModel : Activatable {
 
     /** Notifies that there was a long press on the status bar. */
     fun onStatusBarLongPressed()
+
+    /** Notifies that the clock container was clicked. */
+    fun onClockClicked()
+
+    /** Notifies that the status bar's blank space was clicked. */
+    fun onSpacerClicked()
 
     /** Notifies that the system icons container was clicked. */
     fun onQuickSettingsChipClicked()
@@ -283,6 +290,7 @@ constructor(
     sceneInteractor: SceneInteractor,
     private val shadeInteractor: ShadeInteractor,
     private val shadeExpansionTargetDisplayInteractor: ShadeExpansionTargetDisplayInteractor,
+    private val imeIndicatorChipInteractor: ImeIndicatorChipInteractor,
     shareToAppChipViewModel: ShareToAppChipViewModel,
     @DisplayAware private val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel,
     statusBarPopupChipsViewModelFactory: StatusBarPopupChipsViewModel.Factory,
@@ -470,6 +478,30 @@ constructor(
     override fun onStatusBarTap(eventX: Float) {
         logger.d({ double1 = eventX.toDouble() }, { "Statusbar Tap at x=$double1" })
         scrollToTopInteractor.onScrollToTop(thisDisplayId, eventX.toInt())
+    }
+
+    override fun onClockClicked() {
+        // ImeIndicator is a QuickActions LaunchChip (not PopupChip), with no associated popups. On
+        // click it launches the InputMethodPicker (SystemUI Dialog, via InputMethodManager API)
+        // that appears as if it were a StatusBar popup, thus is required to mimic the behaviour of
+        // StatusBar popups. In particular, click on StatusBar clock should hide InputMethodPicker
+        // for consistency, like how they currently trigger the open StatusBar popup (if any) to
+        // dismiss (by virtue of the click falling outside the bounds of that popup).
+        // TODO: b/478352392 - Consider achieving the same effect by hiding InputMethodPicker upon
+        // "out-of-bounds click" instead, via SceneContainerViewModel.onEmptySpaceMotionEvent().
+        imeIndicatorChipInteractor.hideInputMethodPicker(thisDisplayId)
+    }
+
+    override fun onSpacerClicked() {
+        // ImeIndicator is a QuickActions LaunchChip (not PopupChip), with no associated popups. On
+        // click it launches the InputMethodPicker (SystemUI Dialog, via InputMethodManager API)
+        // that appears as if it were a StatusBar popup, thus is required to mimic the behaviour of
+        // StatusBar popups. In particular, click on StatusBar spacer should hide InputMethodPicker
+        // for consistency, like how they currently trigger the open StatusBar popup (if any) to
+        // dismiss (by virtue of the click falling outside the bounds of that popup).
+        // TODO: b/478352392 - Consider achieving the same effect by hiding InputMethodPicker upon
+        // "out-of-bounds click" instead, via SceneContainerViewModel.onEmptySpaceMotionEvent().
+        imeIndicatorChipInteractor.hideInputMethodPicker(thisDisplayId)
     }
 
     override fun onStatusBarLongPressed() {
