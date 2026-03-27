@@ -47,6 +47,7 @@ import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
 import com.android.systemui.CoreStartable;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.dagger.SysUISingleton;
+import com.android.systemui.Flags;
 import com.android.systemui.statusbar.notification.NotificationUtils;
 import com.android.systemui.util.NotificationChannels;
 
@@ -176,6 +177,8 @@ public class StorageNotification implements CoreStartable {
         }
     };
 
+    private boolean notificationAlertsChannelConfig;
+
     @Override
     public void start() {
         mStorageManager.registerListener(mListener);
@@ -209,6 +212,9 @@ public class StorageNotification implements CoreStartable {
         mContext.getPackageManager().registerMoveCallback(mMoveCallback, new Handler());
 
         updateMissingPrivateVolumes();
+
+        notificationAlertsChannelConfig = mContext.getResources().getBoolean(
+            com.android.systemui.res.R.bool.config_storageNotificationsUseAlertsChannel);
     }
 
     private void updateMissingPrivateVolumes() {
@@ -630,8 +636,12 @@ public class StorageNotification implements CoreStartable {
 
     private Notification.Builder buildNotificationBuilder(VolumeInfo vol, CharSequence title,
             CharSequence text) {
+        String channel = NotificationChannels.STORAGE;
+        if (Flags.notificationStorageAlertsChannel() && notificationAlertsChannelConfig) {
+            channel = NotificationChannels.ALERTS;
+        }
         Notification.Builder builder =
-                new Notification.Builder(mContext, NotificationChannels.STORAGE)
+                new Notification.Builder(mContext, channel)
                         .setSmallIcon(getSmallIcon(vol.getDisk(), vol.getState()))
                         .setColor(mContext.getColor(R.color.system_notification_accent_color))
                         .setContentTitle(title)
