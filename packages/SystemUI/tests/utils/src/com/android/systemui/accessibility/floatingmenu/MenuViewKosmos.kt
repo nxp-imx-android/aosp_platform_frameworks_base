@@ -29,6 +29,8 @@ var Kosmos.menuView by Fixture {
         menuViewModel,
         menuViewAppearance,
         TestUtils.mockSecureSettings(testableContext),
-        mock<Magnification>(),
+        menuViewMagnification,
     )
 }
+
+var Kosmos.menuViewMagnification by Fixture { mock<Magnification>() }
