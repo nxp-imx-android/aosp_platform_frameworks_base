@@ -1114,6 +1114,44 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
+    public void continuousServiceForceStopped_clearsSettingsByWritingEmptyString() {
+        mFakePermissionEnforcer.grant(Manifest.permission.MANAGE_ACCESSIBILITY);
+
+        final AccessibilityServiceInfo info_a = createFakeAccessibilityServiceInfo(
+                COMPONENT_NAME, /* hasQsTile= */ false);
+        info_a.flags = FLAG_REQUEST_ACCESSIBILITY_BUTTON;
+        AccessibilityUserState userState = mA11yms.getCurrentUserState();
+        List<AccessibilityServiceInfo> installedServices = new ArrayList<>();
+        installedServices.add(info_a);
+        userState.buildInstalledServicesMapLocked(installedServices);
+        Set<String> shortcutTargets = Set.of(info_a.getComponentName().flattenToString());
+        for (int shortcutType : USER_SHORTCUT_TYPES) {
+            if (shortcutType == UserShortcutType.TRIPLETAP) {
+                continue;
+            }
+            userState.updateShortcutTargetsLocked(shortcutTargets, shortcutType);
+            writeStringsToSetting(shortcutTargets, ShortcutUtils.convertToKey(shortcutType));
+        }
+
+        mA11yms.onPackagesForceStoppedLocked(
+                new String[]{info_a.getComponentName().getPackageName()},
+                userState);
+        mTestableLooper.processAllMessages();
+
+        for (int shortcutType : USER_SHORTCUT_TYPES) {
+            if (shortcutType == UserShortcutType.TRIPLETAP) {
+                continue;
+            }
+            final String targetString = Settings.Secure.getStringForUser(
+                    mTestableContext.getContentResolver(),
+                    ShortcutUtils.convertToKey(shortcutType),
+                    mA11yms.getCurrentUserIdLocked());
+            assertThat(targetString).isNotNull();
+            assertThat(targetString).isEqualTo("");
+        }
+    }
+
+    @Test
     public void testPackageMonitorScanPackages_scansWithoutHoldingLock() {
         setupAccessibilityServiceConnection(0);
         final AtomicReference<Set<Boolean>> lockState = collectLockStateWhilePackageScanning();
