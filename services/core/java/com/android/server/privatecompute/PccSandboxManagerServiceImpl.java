@@ -132,14 +132,12 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
         mExecutorService = mInjector.getExecutorService();
         mAuditLogCleanupListener = () -> mExecutorService.execute(this::runAuditLogCleanupTask);
 
+        // Data retention: Delete audit log files when the user is first unlocked, after boot.
         mContext.registerReceiverForAllUsers(
                 mUserUnlockedReceiver,
                 new IntentFilter(Intent.ACTION_USER_UNLOCKED),
                 /* broadcastPermission= */ null,
                 mInjector.getHandler(mInjector.getBackgroundLooper()));
-
-        // Run the audit log cleanup task upon booting.
-        mExecutorService.execute(this::runAuditLogCleanupTask);
     }
 
     private void runAuditLogCleanupTask() {
