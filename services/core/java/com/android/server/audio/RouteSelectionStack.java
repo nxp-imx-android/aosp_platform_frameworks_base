@@ -182,7 +182,7 @@ public class RouteSelectionStack implements IBinder.DeathRecipient {
     // AudioManager for existing/legacy clients (which moves matching from uid to process, but this
     // is better, and almost certainly non-breaking), or via API exposed sessions which hold
     // explicit tokens.
-    public RouteClient getClientForUid(int uid) {
+    public synchronized RouteClient getClientForUid(int uid) {
         for (var client : mClients) {
             if (client.getUid() == uid) {
                 return client;
