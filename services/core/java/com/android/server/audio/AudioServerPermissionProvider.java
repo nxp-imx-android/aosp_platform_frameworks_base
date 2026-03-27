@@ -136,6 +136,22 @@ public class AudioServerPermissionProvider {
         mPermissionPredicate = permissionPredicate;
         // Initialize the package state
         mPackageMap = packageMap;
+        IntArray sysUids = new IntArray();
+        for (int userId : userIdSupplier.get()) {
+            for (int appId : packageMap.keySet()) {
+                if (appId < Process.FIRST_APPLICATION_UID) {
+                    sysUids.add(UserHandle.getUid(userId, appId));
+                }
+            }
+            for (int appId : NONPACKAGE_UIDS) {
+                if (!packageMap.containsKey(appId)) {
+                    sysUids.add(UserHandle.getUid(userId, appId));
+                }
+            }
+        }
+        int[] sysUidsArray = sysUids.toArray();
+        Arrays.sort(sysUidsArray);
+        mPermMap[PermissionEnum.SCHEDULE_EXACT_ALARM] = sysUidsArray;
     }
 
     /**
@@ -315,6 +331,57 @@ public class AudioServerPermissionProvider {
         }
     }
 
+    /**
+     * Return whether the given uid is cached as holding SCHEDULE_EXACT_ALARM, USE_EXACT_ALARM or
+     * MODIFY_AUDIO_SETTINGS_PRIVILEGED.
+     */
+    public boolean hasScheduleExactAlarm(int uid) {
+        synchronized (mLock) {
+            return hasPermission(uid, PermissionEnum.MODIFY_AUDIO_SETTINGS_PRIVILEGED)
+                    || hasPermission(uid, PermissionEnum.USE_EXACT_ALARM)
+                    || hasPermission(uid, PermissionEnum.SCHEDULE_EXACT_ALARM);
+        }
+    }
+
+    /** Called when a package requests to check SCHEDULE_EXACT_ALARM */
+    public void addScheduleExactAlarm(int uid) {
+        synchronized (mLock) {
+            int[] perms = mPermMap[PermissionEnum.SCHEDULE_EXACT_ALARM];
+            int ind = Arrays.binarySearch(perms, uid);
+            if (ind >= 0)
+                return;
+
+            ind = ~ind;
+            int[] newPerms = new int[perms.length + 1];
+            System.arraycopy(perms, 0, newPerms, 0, ind);
+            newPerms[ind] = uid;
+            System.arraycopy(perms, ind, newPerms, ind + 1, perms.length - ind);
+
+            mPermMap[PermissionEnum.SCHEDULE_EXACT_ALARM] = newPerms;
+            if (mDest == null) {
+                return;
+            }
+            try {
+                mDest.populatePermissionState(PermissionEnum.SCHEDULE_EXACT_ALARM, newPerms);
+            } catch (RemoteException e) {
+                // We will re-init the state when the service comes back up
+                mDest = null;
+            }
+        }
+    }
+
+    /** Return a package name for the given uid from the internal cache */
+    @Nullable
+    public String getPackageName(int uid) {
+        synchronized (mLock) {
+            var packages = mPackageMap.get(UserHandle.getAppId(uid));
+            if (packages != null && !packages.isEmpty()) {
+                return packages.values().iterator().next().packageName;
+            }
+            return null;
+        }
+    }
+
     private boolean isSpecialHdsPermission(int perm) {
         for (var hdsPerm : HDS_PERMS) {
             if (perm == hdsPerm) return true;
@@ -345,8 +412,18 @@ public class AudioServerPermissionProvider {
     }
 
     @GuardedBy("mLock")
+    private boolean hasPermission(int uid, byte perm) {
+        int[] perms = mPermMap[perm];
+        if (perms == null) return false;
+        return Arrays.binarySearch(perms, uid) >= 0;
+    }
+
+    @GuardedBy("mLock")
     /** Return all uids (not app-ids) which currently hold a given permission. Not app-op aware */
     private int[] getUidsHoldingPerm(int perm) {
+        if (perm == PermissionEnum.SCHEDULE_EXACT_ALARM) {
+            return mPermMap[perm];
+        }
         IntArray acc = new IntArray();
         final IntArray appIds = new IntArray(mPackageMap.size() + NONPACKAGE_UIDS.length);
         for (int appId : NONPACKAGE_UIDS) {
