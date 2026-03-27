@@ -120,17 +120,11 @@ public class SupervisionAppServiceFinder
 
     private final OnRoleHoldersChangedListener mRoleHolderChangedListener =
             (role, user) -> {
-                if (Flags.appBindingServiceRework()) {
-                    int userId = user.getIdentifier();
-                    if ((RoleManager.ROLE_SYSTEM_SUPERVISION.equals(role)
-                            || RoleManager.ROLE_SUPERVISION.equals(role))
-                            && isSupervisionEnabledForUser(userId)) {
-                        mListener.accept(SupervisionAppServiceFinder.this, userId);
-                    }
-                } else {
-                    if (RoleManager.ROLE_SYSTEM_SUPERVISION.equals(role)) {
-                        mListener.accept(SupervisionAppServiceFinder.this, user.getIdentifier());
-                    }
+                int userId = user.getIdentifier();
+                if ((RoleManager.ROLE_SYSTEM_SUPERVISION.equals(role)
+                        || RoleManager.ROLE_SUPERVISION.equals(role))
+                        && isSupervisionEnabledForUser(userId)) {
+                    mListener.accept(SupervisionAppServiceFinder.this, userId);
                 }
             };
 }
