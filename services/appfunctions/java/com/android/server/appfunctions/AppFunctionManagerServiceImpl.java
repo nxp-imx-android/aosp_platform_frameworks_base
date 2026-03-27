@@ -174,6 +174,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
 
+    @Nullable private final AppFunctionAllowlistReader mAllowlistReader;
+
     public AppFunctionManagerServiceImpl(
             @NonNull Context context,
             @NonNull PackageManagerInternal packageManagerInternal,
@@ -205,7 +207,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 appFunctionMetadataReader,
                 appInteractionService,
                 new VisibilityHelperImpl(context, packageManagerInternal),
-                activityTaskManagerInternal);
+                activityTaskManagerInternal,
+                allowlistReader);
     }
 
     private AppFunctionManagerServiceImpl(
@@ -223,7 +226,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             AppFunctionMetadataReader appFunctionMetadataReader,
             @Nullable AppInteractionService appInteractionService,
             VisibilityHelper visibilityHelper,
-            ActivityTaskManagerInternal activityTaskManagerInternal) {
+            ActivityTaskManagerInternal activityTaskManagerInternal,
+            AppFunctionAllowlistReader allowlistReader) {
         mContext = Objects.requireNonNull(context);
         mRemoteServiceCaller = Objects.requireNonNull(remoteServiceCaller);
         mCallerValidator = Objects.requireNonNull(callerValidator);
@@ -245,6 +249,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         mAppInteractionService = appInteractionService;
         mVisibilityHelper = Objects.requireNonNull(visibilityHelper);
         mActivityTaskManagerInternal = Objects.requireNonNull(activityTaskManagerInternal);
+        mAllowlistReader = allowlistReader;
     }
 
     /** Called when the user is unlocked. */
@@ -354,6 +359,11 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
         final long token = Binder.clearCallingIdentity();
         try {
+            if (android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()
+                    && mAllowlistReader != null) {
+                mAllowlistReader.dump(pw);
+                pw.println();
+            }
             AppFunctionDumpHelper.dumpAppFunctionsState(mContext, pw, args);
         } finally {
             Binder.restoreCallingIdentity(token);

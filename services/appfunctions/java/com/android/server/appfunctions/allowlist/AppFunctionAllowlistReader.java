@@ -18,6 +18,7 @@ package com.android.server.appfunctions.allowlist;
 
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
+import java.io.PrintWriter;
 import java.util.concurrent.CompletableFuture;
 
 /** Reads the AppFunction allowlist data. */
@@ -39,4 +40,7 @@ public interface AppFunctionAllowlistReader {
             })
     CompletableFuture<Boolean> isAllowlisted(
             @NonNull String agentPackageName, @NonNull String targetPackageName, int userId);
+
+    /** Dumps the state of this allowlist reader. */
+    void dump(@NonNull PrintWriter pw);
 }
