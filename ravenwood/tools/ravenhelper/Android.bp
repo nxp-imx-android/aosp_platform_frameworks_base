@@ -21,7 +21,7 @@ java_binary_host {
 
 java_test_host {
     name: "ravenhelpertest",
-    srcs: ["test/**/*.kt"],
+    srcs: ["src-test/**/*.kt"],
     static_libs: [
         "ravenhelper",
         "truth",

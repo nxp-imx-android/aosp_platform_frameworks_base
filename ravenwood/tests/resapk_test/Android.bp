@@ -18,7 +18,7 @@ android_ravenwood_test {
         "truth",
     ],
     srcs: [
-        "test/**/*.java",
+        "src/**/*.java",
     ],
     flags_packages: [
         "com.android.internal.os.flags-aconfig",
