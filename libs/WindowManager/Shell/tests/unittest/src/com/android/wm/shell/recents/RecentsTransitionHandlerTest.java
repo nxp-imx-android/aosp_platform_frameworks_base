@@ -26,6 +26,7 @@ import static android.view.WindowManager.TRANSIT_SLEEP;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.window.TransitionInfo.FLAG_CHANGED_INTERACTIVE;
+import static android.window.WindowContainerTransaction.Change.CHANGE_FORCE_NO_PIP;
 
 import static com.android.wm.shell.Flags.FLAG_ADD_ONE_OFF_HANDLER_LEASHES;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_PIP2;
@@ -68,6 +69,7 @@ import android.os.UserManager;
 import android.platform.test.annotations.EnableFlags;
 import android.view.SurfaceControl;
 import android.window.TransitionInfo;
+import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import androidx.annotation.NonNull;
@@ -864,9 +866,20 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
 
         // Start the recents transition
         final IBinder transition = startRecentsTransition(/* synthetic= */ false);
+        final TransitionInfo info = createTransitionInfo();
         mRecentsTransitionHandler.startAnimation(
-                transition, createTransitionInfo(), new StubTransaction(), new StubTransaction(),
+                transition, info, new StubTransaction(), new StubTransaction(),
                 mock(Transitions.TransitionFinishCallback.class));
+
+        // Extract the closing app
+        WindowContainerToken closingAppToken = null;
+        for (int i = 0; i < info.getChanges().size(); i++) {
+            final TransitionInfo.Change change = info.getChanges().get(i);
+            if (change.getMode() == TRANSIT_TO_BACK) {
+                closingAppToken = change.getContainer();
+            }
+        }
+        assertNotNull(closingAppToken);
 
         // Simulate a cancel with screenshots (which depends on Launcher to complete the finishing
         // of the transition)
@@ -877,11 +890,18 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         // Simulate Launcher finishing the transition upon cancel, but with toHome=false
         // (ie. back to app instead)
         mRecentsTransitionHandler.findController(transition).finish(false /* toHome */,
-                true /* sendUserLeaveHint */, finishCallback);
+                false /* sendUserLeaveHint */, finishCallback);
         mMainExecutor.flushAll();
 
         // Verify we didn't actually finish back to app
-        verify(handler).handleFinishRecents(eq(false), any(), any());
+        final ArgumentCaptor<WindowContainerTransaction> wctCaptor =
+                ArgumentCaptor.forClass(WindowContainerTransaction.class);
+        verify(handler).handleFinishRecents(eq(false), wctCaptor.capture(), any());
+
+        // Verify that if sendUserLeaveHint is false that we disable entering pip
+        final WindowContainerTransaction wct = wctCaptor.getValue();
+        final int changeMask = wct.getChanges().get(closingAppToken.asBinder()).getChangeMask();
+        assertThat((changeMask & CHANGE_FORCE_NO_PIP) != 0).isTrue();
 
         // Verify we still call Launcher's finish callback
         verify(finishCallback).send(anyInt(), any());

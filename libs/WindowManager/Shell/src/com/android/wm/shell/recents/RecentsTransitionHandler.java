@@ -1644,6 +1644,24 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
         }
 
         /**
+         * Common cleanup of opening/pausing/closing tasks when finishing the recents transition.
+         */
+        private void cleanUpTasksOnFinish(WindowContainerTransaction wct,
+                SurfaceControl.Transaction t, boolean sendUserLeaveHint) {
+            for (int i = 0; i < mOpeningTasks.size(); ++i) {
+                t.show(mOpeningTasks.get(i).mTaskSurface);
+            }
+            setCornerRadiusForFreeformTasks(
+                    mRecentTasksController.getContext(), t, mOpeningTasks);
+            for (int i = 0; i < mPausingTasks.size(); ++i) {
+                cleanUpPausingOrClosingTask(mPausingTasks.get(i), wct, t, sendUserLeaveHint);
+            }
+            for (int i = 0; i < mClosingTasks.size(); ++i) {
+                cleanUpPausingOrClosingTask(mClosingTasks.get(i), wct, t, sendUserLeaveHint);
+            }
+        }
+
+        /**
          * @param runnerFinishCb The remote finish callback to run after finish is complete, this is
          *                       not the same as mFinishCb which reports the transition is finished
          *                       to WM.
@@ -1660,10 +1678,13 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
 
             if (mAwaitingCancelCompletion) {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                        "[%d] RecentsController.finishInner: completing cancel", mInstanceId);
+                        "[%d] RecentsController.finishInner: completing cancel, userLeave=%b",
+                        mInstanceId, sendUserLeaveHint);
+
+                final WindowContainerTransaction wct = new WindowContainerTransaction();
+                cleanUpTasksOnFinish(wct, t, sendUserLeaveHint);
 
                 // Notify the mixers of the pending finish
-                final WindowContainerTransaction wct = new WindowContainerTransaction();
                 for (int i = 0; i < mMixers.size(); ++i) {
                     mMixers.get(i).handleFinishRecents(false, wct, t);
                 }
@@ -1779,17 +1800,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 }
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION, "  normal finish");
                 // The general case: committing to recents, going home, or switching tasks.
-                for (int i = 0; i < mOpeningTasks.size(); ++i) {
-                    t.show(mOpeningTasks.get(i).mTaskSurface);
-                }
-                setCornerRadiusForFreeformTasks(
-                        mRecentTasksController.getContext(), t, mOpeningTasks);
-                for (int i = 0; i < mPausingTasks.size(); ++i) {
-                    cleanUpPausingOrClosingTask(mPausingTasks.get(i), wct, t, sendUserLeaveHint);
-                }
-                for (int i = 0; i < mClosingTasks.size(); ++i) {
-                    cleanUpPausingOrClosingTask(mClosingTasks.get(i), wct, t, sendUserLeaveHint);
-                }
+                cleanUpTasksOnFinish(wct, t, sendUserLeaveHint);
 
                 if (mPipTransaction != null && sendUserLeaveHint) {
                     SurfaceControl pipLeash = null;
