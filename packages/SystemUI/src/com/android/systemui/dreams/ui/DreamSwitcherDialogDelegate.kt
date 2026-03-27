@@ -39,13 +39,18 @@ constructor(
     @Assisted private val dialogController: DreamDialogController,
 ) : SystemUIDialog.Delegate {
     override fun createDialog(): SystemUIDialog {
-        return dialogFactory.create(
-            context,
-            theme = R.style.Theme_SystemUI_Dialog_SelectDream,
-            dismissOnDeviceLock = false,
-        ) {
-            PlatformTheme { DreamSwitcherDialog(viewModelFactory, dialogController) }
-        }
+        return dialogFactory
+            .create(
+                context,
+                theme = R.style.Theme_SystemUI_Dialog_SelectDream,
+                dismissOnDeviceLock = false,
+            ) {
+                PlatformTheme { DreamSwitcherDialog(viewModelFactory, dialogController) }
+            }
+            .also { dialog ->
+                val title = context.getString(R.string.dream_switcher_choose_screensaver)
+                dialog.window?.setTitle(title)
+            }
     }
 
     @AssistedFactory
