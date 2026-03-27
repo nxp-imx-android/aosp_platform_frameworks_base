@@ -67,5 +67,8 @@ public class Limits {
     /** Enable the player to generate haptic feedback */
     public static final boolean ENABLE_HAPTIC_FEEDBACK = false;
 
+    /** Enable the player to support Image URLs */
+    public static final boolean ENABLE_IMAGE_URLS = false;
+
     private Limits() {}
 }
