@@ -266,18 +266,6 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                         return -1;
                     }
                     return resetTestPageSize();
-                case "enable-allowlist":
-                    // TODO(b/457349791): Remove this once the source is stable to avoid disruption
-                    if (!android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
-                        return -1;
-                    }
-                    return enableAllowlist();
-                case "disable-allowlist":
-                    // TODO(b/457349791): Remove this once the source is stable to avoid disruption
-                    if (!android.app.appfunctions.flags.Flags.enableAppFunctionPermissionV2()) {
-                        return -1;
-                    }
-                    return disableAllowlist();
                 case "read-app-description":
                     // Not added to help, because it is not a platform feature yet.
                     return readAppDescription();
@@ -884,20 +872,6 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         }
         ServiceConfig.sTestPageSize.set(pageSize);
         pw.println("Set test page size to " + pageSize);
-        return 0;
-    }
-
-    private int enableAllowlist() {
-        final PrintWriter pw = getOutPrintWriter();
-        SystemAppFunctionAllowlistReader.getInstance(mContext).enableAllowlist();
-        pw.println("Enable allowlist");
-        return 0;
-    }
-
-    private int disableAllowlist() {
-        final PrintWriter pw = getOutPrintWriter();
-        SystemAppFunctionAllowlistReader.getInstance(mContext).disableAllowlist();
-        pw.println("Disable allowlist");
         return 0;
     }
 
