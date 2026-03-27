@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"սարք"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Այս հավելվածը կկարողանա համաժամացնել ձեր հեռախոսի և ընտրված սարքի տվյալները, օր․՝ զանգողի անունը"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Թույլատրեք &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; սարքին համաժամացնել տեղեկություններ, օրինակ՝ զանգողի տվյալները, և կատարել խելացի գործողություններ ձեր <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>ից"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"Թույլատրեք &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; սարքին համաժամացնել տեղեկությունները, օրինակ՝ զանգողի տվյալները, և կատարել խելացի գործողություններ ձեր <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>ից"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Թույլատրել"</string>
     <string name="consent_no" msgid="2640796915611404382">"Չթույլատրել"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Չեղարկել"</string>
@@ -93,10 +92,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Տեսագրեք ձեր <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>ի էկրանը կամ այն ցուցադրեք &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; սարքում։&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> հավելվածին հասանելի կլինի այն ամենը, ինչ ցուցադրվում կամ նվագարկվում է ձեր <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>ում՝ ներառյալ աուդիո ֆայլերը, լուսանկարները, վճարային տեղեկությունները, գաղտնաբառերը և հաղորդագրությունները։"</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Հեռարձակեք ձեր <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>ի էկրանը &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; սարքում։&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> հավելվածին հասանելի կլինի այն ամենը, ինչ ցուցադրվում կամ նվագարկվում է <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> սարքում՝ ներառյալ աուդիո ֆայլերը, լուսանկարները, վճարային տեղեկությունները, գաղտնաբառերը և հաղորդագրությունները, նույնիսկ եթե <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g>ը կողպված է։"</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Բացել հասանելի սարքերի ցանկը և կառավարել, թե որ սարքը աուդիո կամ վիդեո հեռարձակի այլ հավելվածներից"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Ուղարկել ձեզ ծանուցումներ"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Ուղարկել ձեզ ծանուցումներ նույնիսկ «Չանհանգստացնել» ռեժիմում"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"հեռախոս"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"պլանշետ"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"հեռուստացույց"</string>

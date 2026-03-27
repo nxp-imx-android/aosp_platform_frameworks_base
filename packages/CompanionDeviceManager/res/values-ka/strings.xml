@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"მოწყობილობა"</string>
     <string name="summary_generic" msgid="1761976003668044801">"ეს აპი შეძლებს ინფორმაციის სინქრონიზებას თქვენს ტელეფონსა და თქვენ მიერ არჩეულ მოწყობილობას შორის, მაგალითად, იმ ადამიანის სახელის, რომელიც გირეკავთ"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"ნება დართეთ &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt;-ს, მოახდინოს ისეთი ინფორმაციის სინქრონიზაცია, როგორიცაა აბონენტის ინფორმაცია და გაუშვას გონიერი მოქმედებები თქვენი <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>-დან"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"ნება დართეთ &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt;-ს, მოახდინოს ისეთი ინფორმაციის სინქრონიზაცია, როგორიცაა აბონენტის ინფორმაცია და გაუშვას გონიერი მოქმედებები თქვენი <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>-დან"</string>
     <string name="consent_yes" msgid="8344487259618762872">"დაშვება"</string>
     <string name="consent_no" msgid="2640796915611404382">"არ დაიშვას"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"გაუქმება"</string>
@@ -93,10 +92,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"თქვენი <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>-ის ეკრანის ჩაწერა, ტრანსლირება ან &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;-ისთვის გაზიარება.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>-ს ექნება წვდომა ყველაფერზე, რაც ჩანს ან უკრავს თქვენს <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>-ზე, მათ შორის, აუდიოზე, ფოტოებზე, გადახდის ინფორმაციაზე, პაროლებსა და შეტყობინებებზე."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"დაუშვით თქვენი <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>-ის აპების ნაკადი &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>-ზე&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> მიიღებს წვდომას ყველაფერზე, რაც ჩანს ან უკრავს თქვენს <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>-ზე, მათ შორის, აუდიოზე, ფოტოებზე, გადახდის ინფორმაციაზე, პაროლებსა და შეტყობინებებზე, მაშინაც კი, როცა თქვენი <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> დაბლოკილია."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"წვდომა ხელმისაწვდომი მოწყობილობების სიაზე და აკონტროლეთ რომელი უშვებს აუდიოს ან ვიდეოს სხვა აპებიდან."</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"გაფრთხილებების გამოგზავნა"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"გაფრთხილებებს გამოგიგზავნით მაშინაც კი, როცა „არ შემაწუხოთ“ რეჟიმი ჩართულია"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"ტელეფონი"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"ტაბლეტი"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"ტელევიზორი"</string>

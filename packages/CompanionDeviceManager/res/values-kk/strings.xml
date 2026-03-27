@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"Құрылғы"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Бұл қолданба телефон мен таңдалған құрылғы арасында деректі (мысалы, қоңырау шалушының атын) синхрондай алады."</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; қолданбасына қоңырау шалушы туралы ақпарат сияқты деректерді синхрондауға және <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> құрылғысында смарт әрекеттерді орындауға рұқсат бересіз."</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; қолданбасына қоңырау шалушы туралы ақпарат сияқты деректерді синхрондауға және <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> құрылғысында смарт әрекеттерді орындауға рұқсат бересіз."</string>
     <string name="consent_yes" msgid="8344487259618762872">"Рұқсат беру"</string>
     <string name="consent_no" msgid="2640796915611404382">"Рұқсат бермеу"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Бас тарту"</string>
@@ -93,10 +92,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> экранын &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; құрылғысына жазуға, трансляциялауға немесе бөлісуге болады.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> қолданбасы <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> құрылғысында көрінетін немесе ойнайтын кез келген нәрсеге, соның ішінде аудиоға, фотосуреттерге, төлем туралы ақпаратқа, құпия сөздер мен хабарларға қол жеткізе алады."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> қолданбаларын &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; құрылғысына трансляциялаңыз.&lt;br/&gt;&lt;br/&gt;<xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> құлыптаулы болса да, <xliff:g id="APP_NAME">%1$s</xliff:g> қолданбасы <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> құрылғысында көрінетін немесе ойнайтын кез келген нәрсеге, соның ішінде аудиоға, фотосуреттерге, төлем туралы ақпаратқа, құпия сөздер мен хабарларға қол жеткізе алады."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Қолжетімді құрылғылар тізімін ашып, қай құрылғының басқа қолданбалардан аудионы не бейнені трансляциялайтынын басқара аласыз."</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Сізге хабарландырулар жібереді."</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Мазаламау режимі қосулы болса да, сізге хабарландырулар жібереді."</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"телефон"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"планшет"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"теледидар"</string>
