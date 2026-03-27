@@ -7,6 +7,7 @@ java_defaults {
     jni_libs: [
         "libservicestestjni",
         "libbpf",
+        "submerge_java_static_jni",
     ],
 }
 
@@ -1163,4 +1164,15 @@ test_module_config {
         "device-tests",
     ],
     include_filters: ["com.android.server.modes"],
+}
+
+test_module_config {
+    name: "FrameworksServicesTests_cross_device_sync",
+    base: "FrameworksServicesTests",
+    team: "trendy_team_wear_wear_frameworks",
+    test_suites: [
+        "automotive-tests",
+        "device-tests",
+    ],
+    include_filters: ["com.android.server.companion.datatransfer.crossdevicesync"],
 }

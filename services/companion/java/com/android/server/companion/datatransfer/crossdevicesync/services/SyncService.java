@@ -23,7 +23,6 @@ import android.os.ResultReceiver;
 import android.util.IndentingPrintWriter;
 import android.util.Log;
 
-import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.companion.datatransfer.crossdevicesync.data.storage.IStorage;
 import com.android.server.companion.datatransfer.crossdevicesync.feature.FeatureManager;
 import com.android.server.companion.datatransfer.crossdevicesync.metadata.MetadataPublisher;
@@ -45,7 +44,7 @@ public class SyncService {
     private final Context mContext;
 
     /** Sets the {@link SyncServiceInjector} to be used. Only used for testing. */
-    @Nullable @VisibleForTesting SyncServiceInjector mInjector;
+    @Nullable private SyncServiceInjector mInjector;
 
     private NetworkManager mNetworkManager;
     private MetadataPublisher mMetadataPublisher;
@@ -58,11 +57,16 @@ public class SyncService {
     @Nullable private CountDownLatch mDestroyLatch;
 
     public SyncService(Context context) {
+        this(context, null);
+    }
+
+    SyncService(Context context, @Nullable SyncServiceInjector injector) {
         mContext = context;
+        mInjector = injector;
     }
 
     private void initialize() {
-        mInjector = new SyncServiceInjectorImpl(mContext);
+        mInjector = mInjector != null ? mInjector : new SyncServiceInjectorImpl(mContext);
         mNetworkManager = mInjector.getNetworkManager();
         mMetadataPublisher = mInjector.getMetadataPublisher();
         mNotificationHelper = mInjector.getNotificationHelper();
@@ -104,7 +108,7 @@ public class SyncService {
         }
     }
 
-    protected void dump(FileDescriptor fd, PrintWriter writer, String[] args) {
+    public void dump(FileDescriptor fd, PrintWriter writer, String[] args) {
         if (Build.IS_DEBUGGABLE
                 && mSyncServiceShellCommand.exec(
                                 new Binder(), null, fd, null, args, null, new ResultReceiver(null))

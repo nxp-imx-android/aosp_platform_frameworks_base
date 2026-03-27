@@ -48,7 +48,7 @@ import java.util.function.Function;
 public class CompanionActionControllerImpl implements CompanionActionController {
     private static final String TAG = "CompanionActionCtrl";
     private static final boolean DEBUG = DebugConfig.DEBUG_NETWORK;
-    private static final String SERVICE_NAME = "cross_device_sync";
+    @VisibleForTesting static final String SERVICE_NAME = "cross_device_sync";
     @VisibleForTesting static final long WAITING_TIMEOUT_MS = 2000;
 
     private final Object mLock;
