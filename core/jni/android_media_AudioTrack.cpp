@@ -1524,7 +1524,7 @@ static jlong android_media_AudioTrack_flushFromFrame(JNIEnv* env, jobject thiz, 
     }
     auto aidlFlushFromFrameAccuracy = javaInt2FlushFromFrameAccuracy(accuracy);
     if (!aidlFlushFromFrameAccuracy.ok()) {
-        jniThrowExceptionFmt(env, "java/lang/IllegalStateException",
+        jniThrowExceptionFmt(env, "java/lang/IllegalArgumentException",
                              "Illegal flush from frame accuracy = %d", accuracy);
         return (jlong)AUDIO_JAVA_ERROR;
     }
@@ -1534,7 +1534,7 @@ static jlong android_media_AudioTrack_flushFromFrame(JNIEnv* env, jobject thiz, 
     if (status == NO_ERROR) {
         return (jlong)result;
     } else if (status == BAD_VALUE) {
-        jniThrowException(env, "java/lang/IllegalStateException", "Illegal value");
+        jniThrowException(env, "java/lang/IllegalArgumentException", "Illegal value");
         return (jlong)AUDIO_JAVA_ERROR;
     } else {
         jniThrowException(env, "java/lang/UnsupportedOperationException",
