@@ -129,6 +129,8 @@ public final class SurfaceControl implements Parcelable {
     private static native void nativeUpdateDefaultBufferSize(long nativeObject, int width, int height);
 
     private static native long nativeMirrorSurface(long mirrorOfObject, long stopAtObject);
+    private static native long nativeMirrorSurfaceWithCrop(long mirrorOfObject, long stopAtObject,
+            long cropByObject);
     private static native long nativeCreateTransaction();
     private static native long nativeGetNativeTransactionFinalizer();
     private static native void nativeApplyTransaction(long transactionObj, boolean sync,
@@ -3086,6 +3088,52 @@ public final class SurfaceControl implements Parcelable {
         long nativeObj = nativeMirrorSurface(mirrorOf.mNativeObject, stopAtObj);
         SurfaceControl sc = new SurfaceControl();
         sc.assignNativeObject(nativeObj, "mirrorSurface");
+        return sc;
+    }
+
+    /**
+     * Creates a cropped mirrored hierarchy for the mirrorOf {@link SurfaceControl}.
+     *
+     * This is equivalent to calling
+     * {@link #mirrorWithCrop(SurfaceControl, SurfaceControl, SurfaceControl)}
+     * with a null stopAt SurfaceControl. See
+     * {@link #mirrorWithCrop(SurfaceControl, SurfaceControl, SurfaceControl)} for more details.
+     *
+     * @param mirrorOf The root of the hierarchy that should be mirrored.
+     * @param cropBy The SurfaceControl that's used to crop the mirrored surface. If null,
+     *      no cropping will be applied.
+     * @return A SurfaceControl that's the parent of the root of the mirrored + cropped hierarchy.
+     *
+     * @hide
+     */
+    public static SurfaceControl mirrorWithCrop(@NonNull SurfaceControl mirrorOf,
+            @Nullable SurfaceControl cropBy) {
+        return mirrorWithCrop(mirrorOf, null, cropBy);
+    }
+
+    /**
+     * Creates a cropped mirrored hierarchy for the mirrorOf {@link SurfaceControl}.
+     *
+     * The mirrored hierarchy will be cropped dynamically by the cropBy SurfaceControl. If cropBy
+     * surface changes geometry, the mirrored hierarchy will be cropped to the new geometry.
+     *
+     * @param mirrorOf The root of the hierarchy that should be mirrored.
+     * @param stopAt An optional SurfaceControl. When non-null the mirrored
+     *      hierarchy won't include the specified SurfaceControl or anything z-ordered above it.
+     * @param cropBy The SurfaceControl that's used to crop the mirrored surface. If null,
+     *      no cropping will be applied.
+     * @return A SurfaceControl that's the parent of the root of the mirrored + cropped hierarchy.
+     *
+     * @hide
+     */
+    public static SurfaceControl mirrorWithCrop(@NonNull SurfaceControl mirrorOf,
+            @Nullable SurfaceControl stopAt, @Nullable SurfaceControl cropBy) {
+        long stopAtObj = stopAt != null ? stopAt.mNativeObject : 0;
+        long cropByObj = cropBy != null ? cropBy.mNativeObject : 0;
+        long nativeObj = nativeMirrorSurfaceWithCrop(mirrorOf.mNativeObject, stopAtObj,
+                cropByObj);
+        SurfaceControl sc = new SurfaceControl();
+        sc.assignNativeObject(nativeObj, "mirrorWithCrop");
         return sc;
     }
 
