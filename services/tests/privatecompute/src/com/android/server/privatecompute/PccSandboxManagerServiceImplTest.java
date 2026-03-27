@@ -330,10 +330,53 @@ public class PccSandboxManagerServiceImplTest {
     }
 
     @Test
+    public void testWriteToAuditLogInternal_nonPccNonPcsUid_returnsFalse() {
+        int nonPccNonPcsUid = Process.FIRST_APPLICATION_UID;
+        when(mInjector.getCallingUid()).thenReturn(nonPccNonPcsUid);
+        when(mPackageManagerInternal.isSameApp(
+                        TEST_PACKAGE_NAME, nonPccNonPcsUid, UserHandle.getUserId(nonPccNonPcsUid)))
+                .thenReturn(true);
+        when(mInternal.isPccTrustedSystemComponent(nonPccNonPcsUid, TEST_PACKAGE_NAME))
+                .thenReturn(false);
+
+        List<PersistableBundle> data = new ArrayList<>(1);
+        data.add(new PersistableBundle());
+
+        assertFalse(mService.writeToAuditLogInternal(data, TEST_PACKAGE_NAME));
+    }
+
+    @Test
+    public void testWriteToAuditLogInternal_explicitNonPcsUid_returnsFalse() {
+        when(mInjector.auditModeEnabled()).thenReturn(true);
+        int nonPccUid = Process.FIRST_APPLICATION_UID + 1;
+        when(mInjector.getCallingUid()).thenReturn(nonPccUid);
+        when(mPackageManagerInternal.isSameApp(
+                        TEST_PACKAGE_NAME, nonPccUid, UserHandle.getUserId(nonPccUid)))
+                .thenReturn(true);
+        // Explicitly mock that it is NOT a PCC UID
+        when(mInternal.isPccTrustedSystemComponent(nonPccUid, TEST_PACKAGE_NAME))
+                .thenReturn(false);
+        // Explicitly mock that it is NOT a PCS UID
+        when(mPackageManager.getPackagesForUid(nonPccUid))
+                .thenReturn(new String[] {TEST_PACKAGE_NAME});
+        when(mPackageManager.checkPermission(
+                        android.Manifest.permission.PROVIDE_PRIVATE_COMPUTE_SERVICES,
+                        TEST_PACKAGE_NAME))
+                .thenReturn(PackageManager.PERMISSION_DENIED);
+
+        List<PersistableBundle> data = new ArrayList<>(1);
+        data.add(new PersistableBundle());
+
+        assertFalse(mService.writeToAuditLogInternal(data, TEST_PACKAGE_NAME));
+    }
+
+    @Test
     public void testWriteToAuditLogInternal_sysPropDisabled_returnsFalse() {
         when(mInjector.auditModeEnabled()).thenReturn(false);
         when(mPackageManagerInternal.isSameApp(
                         TEST_PACKAGE_NAME, TEST_UID, UserHandle.getUserId(TEST_UID)))
+                .thenReturn(true);
+        when(mInternal.isPccTrustedSystemComponent(TEST_UID, TEST_PACKAGE_NAME))
                 .thenReturn(true);
         List<PersistableBundle> data = new ArrayList<>(1);
         data.add(new PersistableBundle());
@@ -346,6 +389,8 @@ public class PccSandboxManagerServiceImplTest {
         when(mInjector.auditModeEnabled()).thenReturn(true);
         when(mPackageManagerInternal.isSameApp(
                         TEST_PACKAGE_NAME, TEST_UID, UserHandle.getUserId(TEST_UID)))
+                .thenReturn(true);
+        when(mInternal.isPccTrustedSystemComponent(TEST_UID, TEST_PACKAGE_NAME))
                 .thenReturn(true);
         List<PersistableBundle> data = new ArrayList<>(1);
         data.add(new PersistableBundle());
