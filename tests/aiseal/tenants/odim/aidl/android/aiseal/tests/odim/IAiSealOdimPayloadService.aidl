@@ -24,4 +24,5 @@ interface IAiSealOdimPayloadService {
     const long PORT = 5142;
 
     String joinStringsWithSpace(String a, String b);
+    oneway void exit(int status);
 }

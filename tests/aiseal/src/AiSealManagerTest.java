@@ -82,6 +82,14 @@ public class AiSealManagerTest {
         assertEquals("Incorrect ODIM service response", "hello world", result);
     }
 
+    @Test
+    public void testAiSealManager_connectAfterPayloadExit() throws Exception {
+        IAiSealOdimTestService service = getOdimTestService();
+        service.exit(1);
+        String result = service.joinStringsWithSpace("hello", "world");
+        assertEquals("Incorrect ODIM service response", "hello world", result);
+    }
+
     private class OdimTestServiceConnection extends AbstractFuture<IAiSealOdimTestService>
             implements ServiceConnection {
         @Override

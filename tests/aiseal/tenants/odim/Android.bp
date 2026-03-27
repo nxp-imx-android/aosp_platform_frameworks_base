@@ -54,6 +54,7 @@ android_test_helper_app {
     platform_apis: true,
     certificate: "platform",
     static_libs: [
+        "androidx.annotation_annotation",
         "odim_aidl_interface-java",
     ],
     sdk_version: "system_current",
