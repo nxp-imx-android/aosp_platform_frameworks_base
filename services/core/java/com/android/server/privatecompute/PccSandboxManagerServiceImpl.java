@@ -273,6 +273,11 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
                     "Package name " + packageName + " does not match calling UID " + callingUid);
         }
 
+        if (!Process.isPrivateComputeCoreUid(callingUid)
+                && !isPccTrustedSystemComponent(callingUid, packageName)) {
+            return false;
+        }
+
         synchronized (mAuditModeLock) {
             if (!mInjector.auditModeEnabled()) {
                 // If audit mode was toggled off, clean up, including writing pending data to disk.
