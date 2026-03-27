@@ -871,15 +871,33 @@ public class InternetDetailsContentController implements AccessPointController.A
     }
 
     private String getMobileSummary(Context context, String networkTypeDescription, int subId) {
+        // SIM Display Logic for Dual SIM Scenarios
+        // There are three case of two SIMs:
+        // 1. Standard: Displays the Active Data SIM only (DDS SIM is the same as active
+        //    data SIM)
+        // 2. Automatic data switching Enabled & Non-DDS is active data:
+        //    Displays DDS SIM and non-DDS SIM.
+        //    - DDS SIM: Displays "Poor connection."
+        //    - Non-DDS SIM: Displays "Temporarily connected."
+        // 3. CBRS SIMs set (Non-DDS CBRS SIM is active data):
+        //    Displays the Active Data SIM only
+
         if (!isMobileDataEnabled()) {
             return context.getString(R.string.mobile_data_off_summary);
         }
         String summary = networkTypeDescription;
         int activeDataSubId = getActiveDataSubId();
-        boolean isForVisibleDds = subId == activeDataSubId;
         int activeAutoSwitchNonDdsSubId = getActiveAutoSwitchNonDdsSubId();
+        boolean isDds = subId == mDefaultDataSubId;
+        boolean isActiveData = subId == activeDataSubId;
         boolean isOnNonDds =
                 activeAutoSwitchNonDdsSubId != SubscriptionManager.INVALID_SUBSCRIPTION_ID;
+        boolean isForVisibleDds = isDds || (isActiveData && !isOnNonDds);
+        if (DEBUG) {
+            Log.d(TAG, "getMobileSummary: [" + subId + "], isDds:" + isDds + ", isActiveData:"
+                    + isActiveData + ", isOnNonDds:" + isOnNonDds);
+        }
+
         // Set network description for the carrier network when connecting to the carrier network
         // under the airplane mode ON.
         if (activeNetworkIsCellular() || isCarrierNetworkActive()) {
