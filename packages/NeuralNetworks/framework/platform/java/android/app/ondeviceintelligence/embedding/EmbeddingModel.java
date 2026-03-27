@@ -35,6 +35,7 @@ import android.app.ondeviceintelligence.OnDeviceModel;
 import android.app.ondeviceintelligence.FeatureDetails;
 import android.app.ondeviceintelligence.TokenInfo;
 import android.app.ondeviceintelligence.flags.Flags;
+import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.LocaleList;
@@ -139,6 +140,7 @@ public final class EmbeddingModel implements OnDeviceModel, Parcelable {
      *
      * @hide
      */
+    @UnsupportedAppUsage
     public EmbeddingModel(
             @NonNull Feature feature,
             @NonNull String modelSignature,
@@ -226,6 +228,7 @@ public final class EmbeddingModel implements OnDeviceModel, Parcelable {
      * @hide
      */
     @Nullable
+    @UnsupportedAppUsage
     public LocalDate getReleaseDate() {
         return mReleaseDate;
     }
@@ -260,6 +263,7 @@ public final class EmbeddingModel implements OnDeviceModel, Parcelable {
      * @hide
      */
     @Nullable
+    @UnsupportedAppUsage
     public LocalDate getShutDownDate() {
         return mShutDownDate;
     }
