@@ -236,6 +236,14 @@ final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
         mInner.showInputMethodPickerFromSystem(auxiliarySubtypeMode, entryPoint, displayId);
     }
 
+    @IInputMethodManagerImpl.PermissionVerified(allOf = {
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL,
+            Manifest.permission.WRITE_SECURE_SETTINGS})
+    @Override
+    public void hideInputMethodPickerFromSystem(int displayId) {
+        mInner.hideInputMethodPickerFromSystem(displayId);
+    }
+
     @IInputMethodManagerImpl.PermissionVerified(Manifest.permission.TEST_INPUT_METHOD)
     @Override
     public boolean isInputMethodPickerShownForTest(@UserIdInt int userId) {
@@ -421,4 +429,3 @@ final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
         mInner.dump(fd, fout, args);
     }
 }
-

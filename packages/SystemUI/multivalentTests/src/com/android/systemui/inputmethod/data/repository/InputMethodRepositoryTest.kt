@@ -220,23 +220,29 @@ class InputMethodRepositoryTest : SysuiTestCase() {
     @Test
     fun showImePicker_forwardsDisplayId() =
         testScope.runTest {
-            val displayId = 7
-
             underTest.showInputMethodPicker(
                 /* showAuxiliarySubtypes= */ true,
                 InputMethodManager.IM_PICKER_ENTRY_POINT_DEFAULT,
-                displayId = displayId,
+                displayId = DISPLAY_ID,
             )
 
             verify(inputMethodManager)
                 .showInputMethodPickerFromSystem(
                     /* showAuxiliarySubtypes = */ eq(true),
                     /* entryPoint = */ eq(InputMethodManager.IM_PICKER_ENTRY_POINT_DEFAULT),
-                    /* displayId = */ eq(displayId),
+                    /* displayId = */ eq(DISPLAY_ID),
                 )
+        }
+
+    @Test
+    fun hideImePicker_forwardsDisplayId() =
+        testScope.runTest {
+            underTest.hideInputMethodPicker(DISPLAY_ID)
+            verify(inputMethodManager).hideInputMethodPickerFromSystem(eq(DISPLAY_ID))
         }
 
     companion object {
         private val USER_HANDLE = UserHandle.of(100)
+        private val DISPLAY_ID = 7
     }
 }
