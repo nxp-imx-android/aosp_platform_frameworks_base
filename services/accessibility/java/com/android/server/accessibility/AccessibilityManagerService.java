@@ -4515,8 +4515,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             if (userState.removeShortcutTargetLocked(shortcutType, serviceName)) {
                 final Set<String> currentTargets = userState.getShortcutTargetsLocked(shortcutType);
                 persistColonDelimitedSetToSettingLocked(
-                        shortcutSettingName,
-                        userState.mUserId, currentTargets, str -> str);
+                        shortcutSettingName, userState.mUserId, currentTargets,
+                        str -> str, /* defaultEmptyString= */ "");
 
                 if (shortcutType != QUICK_SETTINGS) {
                     continue;
