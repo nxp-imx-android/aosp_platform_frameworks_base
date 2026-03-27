@@ -134,3 +134,7 @@ per-file android_os_Perfetto* = file:/PERFETTO_OWNERS
 
 # Processes, threads, and scheduling
 per-file android_util_Process* = file:/PERFORMANCE_OWNERS
+
+# Memory statistics
+per-file com_android_internal_os_KernelAllocationStats.cpp = set noparent
+per-file com_android_internal_os_KernelAllocationStats.cpp = file:/MEMORY_OWNERS
