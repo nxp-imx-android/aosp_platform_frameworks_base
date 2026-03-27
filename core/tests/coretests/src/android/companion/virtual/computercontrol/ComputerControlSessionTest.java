@@ -16,6 +16,8 @@
 
 package android.companion.virtual.computercontrol;
 
+import static android.companion.virtual.computercontrol.ComputerControlSession.UNSTABLE_REASON_CALLER_INTERACTION;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -346,7 +348,10 @@ public class ComputerControlSessionTest {
         // Tap to reset the idle state.
         mSession.tap(0, 0);
 
-        // Verify listener is NOT called initially
+        verify(mMockStabilityListener, timeout(100))
+                .onSessionUnstable(UNSTABLE_REASON_CALLER_INTERACTION);
+
+        // Verify onSessionStable is NOT called initially
         verify(mMockStabilityListener, Mockito.after(200).never()).onSessionStable();
 
         drawFrame(mSurface);
@@ -363,6 +368,8 @@ public class ComputerControlSessionTest {
         mSession.setStabilityListener(Duration.ofMillis(0), mExecutor, mMockStabilityListener);
         // Tap to reset the idle state.
         mSession.tap(0, 0);
+        verify(mMockStabilityListener, timeout(100))
+                .onSessionUnstable(UNSTABLE_REASON_CALLER_INTERACTION);
         verify(mMockStabilityListener, Mockito.after(100).never()).onSessionStable();
 
         // Verify listener is NOT called after accessibility event
@@ -384,6 +391,8 @@ public class ComputerControlSessionTest {
         mSession.setStabilityListener(Duration.ofMillis(100), mExecutor, mMockStabilityListener);
         // Tap to reset the idle state.
         mSession.tap(0, 0);
+        verify(mMockStabilityListener, timeout(100))
+                .onSessionUnstable(UNSTABLE_REASON_CALLER_INTERACTION);
 
         for (int i = 0; i < 4; i++) {
             SystemClock.sleep(60);
@@ -401,6 +410,8 @@ public class ComputerControlSessionTest {
         mSession.setStabilityListener(Duration.ofMillis(100), mExecutor, mMockStabilityListener);
         // Tap to reset the idle state.
         mSession.tap(0, 0);
+        verify(mMockStabilityListener, timeout(100))
+                .onSessionUnstable(UNSTABLE_REASON_CALLER_INTERACTION);
 
         for (int i = 0; i < 4; i++) {
             SystemClock.sleep(60);
@@ -418,7 +429,7 @@ public class ComputerControlSessionTest {
         drawFrame(mSurface);
         SystemClock.sleep(FRAME_PROCESSING_DELAY_MS);
 
-        verify(mMockStabilityListener, never()).onSessionStable();
+        verifyNoInteractions(mMockStabilityListener);
     }
 
     @Test
@@ -430,6 +441,8 @@ public class ComputerControlSessionTest {
         // Tap to reset the idle state.
         mSession.tap(0, 0);
 
+        verify(mMockStabilityListener, timeout(100))
+                .onSessionUnstable(UNSTABLE_REASON_CALLER_INTERACTION);
         verify(mMockStabilityListener, timeout(100)).onSessionStable();
     }
 
@@ -445,6 +458,8 @@ public class ComputerControlSessionTest {
         mSession.setStabilityListener(Duration.ofMillis(100), mExecutor, mMockStabilityListener);
         // Tap to reset the idle state.
         mSession.tap(0, 0);
+        verify(mMockStabilityListener, timeout(100))
+                .onSessionUnstable(UNSTABLE_REASON_CALLER_INTERACTION);
         a11yProxy.onAccessibilityEvent(null);
 
         verify(mMockStabilityListener, timeout(2 * 100)).onSessionStable();

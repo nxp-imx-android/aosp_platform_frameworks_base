@@ -236,6 +236,27 @@ public final class ComputerControlSession implements AutoCloseable {
     public @interface Action {
     }
 
+    /**
+     * Unknown unstable reason.
+     */
+    public static final int UNSTABLE_REASON_UNKNOWN = 0;
+
+    /**
+     * Reason indicating that the session became unstable due to an interaction performed by the
+     * caller, such as {@link #tap(int, int)}.
+     */
+    public static final int UNSTABLE_REASON_CALLER_INTERACTION = 1;
+
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = "UNSTABLE_REASON_", value = {
+            UNSTABLE_REASON_UNKNOWN,
+            UNSTABLE_REASON_CALLER_INTERACTION,
+    })
+    @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+    public @interface UnstableReason {
+    }
+
     private final String mTraceTrack = "ComputerControlSession#" + System.identityHashCode(this);
 
     /** Auxiliary thread for any client-side work related to the computer control session. */
@@ -355,7 +376,7 @@ public final class ComputerControlSession implements AutoCloseable {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
-        mAccessibilityProxy.resetStabilityState();
+        mAccessibilityProxy.resetStabilityState(UNSTABLE_REASON_CALLER_INTERACTION);
     }
 
     /**
@@ -370,7 +391,7 @@ public final class ComputerControlSession implements AutoCloseable {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
-        mAccessibilityProxy.resetStabilityState();
+        mAccessibilityProxy.resetStabilityState(UNSTABLE_REASON_CALLER_INTERACTION);
     }
 
     /**
@@ -607,7 +628,7 @@ public final class ComputerControlSession implements AutoCloseable {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
-        mAccessibilityProxy.resetStabilityState();
+        mAccessibilityProxy.resetStabilityState(UNSTABLE_REASON_CALLER_INTERACTION);
     }
 
     /**
@@ -630,7 +651,7 @@ public final class ComputerControlSession implements AutoCloseable {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
-        mAccessibilityProxy.resetStabilityState();
+        mAccessibilityProxy.resetStabilityState(UNSTABLE_REASON_CALLER_INTERACTION);
     }
 
     /**
@@ -646,7 +667,7 @@ public final class ComputerControlSession implements AutoCloseable {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
-        mAccessibilityProxy.resetStabilityState();
+        mAccessibilityProxy.resetStabilityState(UNSTABLE_REASON_CALLER_INTERACTION);
     }
 
     /**
@@ -667,7 +688,7 @@ public final class ComputerControlSession implements AutoCloseable {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
-        mAccessibilityProxy.resetStabilityState();
+        mAccessibilityProxy.resetStabilityState(UNSTABLE_REASON_CALLER_INTERACTION);
     }
 
     /** Perform provided action on the trusted virtual display. */
@@ -677,7 +698,7 @@ public final class ComputerControlSession implements AutoCloseable {
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
-        mAccessibilityProxy.resetStabilityState();
+        mAccessibilityProxy.resetStabilityState(UNSTABLE_REASON_CALLER_INTERACTION);
     }
 
     /** Creates an interactive virtual display, mirroring the trusted one. */
@@ -1034,10 +1055,16 @@ public final class ComputerControlSession implements AutoCloseable {
      * app under automation being idle and no UI animations being under progress. These are useful
      * for tasks that should only run on a static UI, such as taking screenshots to determine the
      * next step.
+     *
+     * When a stability listener is first added, the caller can assume the session is in a stable
+     * state, and it will be notified otherwise.
      */
     public interface StabilityListener {
         /** Called when the computer control session is considered stable. */
         void onSessionStable();
+
+        /** Called when the computer control session is considered unstable. */
+        default void onSessionUnstable(@UnstableReason int reason) {}
     }
 
     /**
