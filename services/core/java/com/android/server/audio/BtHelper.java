@@ -28,6 +28,7 @@ import static android.media.AudioManager.AUDIO_DEVICE_CATEGORY_WATCH;
 import static android.media.audio.Flags.blePeripheralDevices;
 import static android.media.audio.Flags.bleHearingAidDevice;
 
+import static com.android.media.audio.Flags.bleHearingAidDeviceImpl;
 import static com.android.media.audio.Flags.optimizeBtDeviceSwitch;
 
 import android.annotation.NonNull;
@@ -681,12 +682,16 @@ public class BtHelper {
         // vendor audio HAL implementation supports BLE hearing devices: this allows supporting
         // BLE hearing aids as regular BLE headsets on older implementations.
         if (bleHearingAidDevice()) {
-            IntArray deviceTypes = new IntArray();
-            if (AudioSystem.getSupportedDeviceTypes(AudioManager.GET_DEVICES_OUTPUTS,
-                    deviceTypes) == AudioSystem.SUCCESS) {
-                mSupportsBleHearingAids =
-                        deviceTypes.contains(AudioSystem.DEVICE_OUT_BLE_HEARING_AID);
-                return;
+            // TODO(b/370812132) - Framework support for the new BLE hearing aid type is temporarily
+            // disabled pending soak/verification and client adoption.
+            if (bleHearingAidDeviceImpl()) {
+                IntArray deviceTypes = new IntArray();
+                if (AudioSystem.getSupportedDeviceTypes(AudioManager.GET_DEVICES_OUTPUTS,
+                        deviceTypes) == AudioSystem.SUCCESS) {
+                    mSupportsBleHearingAids =
+                            deviceTypes.contains(AudioSystem.DEVICE_OUT_BLE_HEARING_AID);
+                    return;
+                }
             }
         }
         mSupportsBleHearingAids = false;
