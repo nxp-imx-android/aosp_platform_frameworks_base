@@ -21,11 +21,15 @@ import android.os.Parcelable
 import com.android.systemui.mediaprojection.MediaProjectionCaptureTarget
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 
-data class ScreenRecordingParameters(
+data class ScreenRecordingParameters
+@JvmOverloads
+constructor(
     val captureTarget: MediaProjectionCaptureTarget?,
     val audioSource: ScreenRecordingAudioSource,
     val displayId: Int,
     val shouldShowTaps: Boolean,
+    val shouldShowSeconds: Boolean = false,
+    val notificationId: Int = 0,
 ) : Parcelable {
 
     constructor(
@@ -41,6 +45,8 @@ data class ScreenRecordingParameters(
         ) as ScreenRecordingAudioSource,
         parcel.readInt(),
         parcel.readBoolean(),
+        parcel.readBoolean(),
+        parcel.readInt(),
     )
 
     override fun describeContents(): Int = 0
@@ -51,6 +57,8 @@ data class ScreenRecordingParameters(
             writeSerializable(audioSource)
             writeInt(displayId)
             writeBoolean(shouldShowTaps)
+            writeBoolean(shouldShowSeconds)
+            writeInt(notificationId)
         }
 
     companion object CREATOR : Parcelable.Creator<ScreenRecordingParameters> {

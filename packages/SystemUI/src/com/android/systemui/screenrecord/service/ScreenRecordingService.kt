@@ -124,6 +124,9 @@ open class ScreenRecordingService : ComponentService() {
 
     private fun RecordingContext.startRecording() {
         screenRecordingPreferenceRepository.setShouldShowTaps(shouldShowTaps)
+        if (shouldShowSeconds) {
+            screenRecordingPreferenceRepository.setShouldShowSeconds(shouldShowSeconds)
+        }
         try {
             Log.d(tag, "Starting screen recording user=$userId $this")
             val notification = notificationInteractor.createRecordingNotification(audioSource)
@@ -215,16 +218,28 @@ open class ScreenRecordingService : ComponentService() {
 
         override fun updateParameters(parameters: ScreenRecordingParameters) {
             screenRecordingPreferenceRepository.setShouldShowTaps(parameters.shouldShowTaps)
+            if (parameters.shouldShowSeconds) {
+                screenRecordingPreferenceRepository.setShouldShowSeconds(
+                    parameters.shouldShowSeconds
+                )
+            }
         }
 
         override fun startRecording(parameters: ScreenRecordingParameters) {
+            val actualNotificationId =
+                if (parameters.notificationId != 0) {
+                    parameters.notificationId
+                } else {
+                    UUID.randomUUID().mostSignificantBits.toInt()
+                }
             val context =
                 RecordingContext(
-                    notificationId = UUID.randomUUID().mostSignificantBits.toInt(),
+                    notificationId = actualNotificationId,
                     captureTarget = parameters.captureTarget,
                     audioSource = parameters.audioSource,
                     displayId = parameters.displayId,
                     shouldShowTaps = parameters.shouldShowTaps,
+                    shouldShowSeconds = parameters.shouldShowSeconds,
                     recorder =
                         ScreenMediaRecorder(
                             this@ScreenRecordingService,
@@ -247,6 +262,7 @@ open class ScreenRecordingService : ComponentService() {
         val audioSource: ScreenRecordingAudioSource,
         val displayId: Int,
         val shouldShowTaps: Boolean,
+        val shouldShowSeconds: Boolean,
         val notificationId: Int,
     )
 

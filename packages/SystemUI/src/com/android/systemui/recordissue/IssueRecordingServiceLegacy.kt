@@ -75,7 +75,7 @@ constructor(
     private val traceurConnection: TraceurConnection = traceurConnectionProvider.create()
 
     private val session =
-        IssueRecordingServiceSession(
+        IssueRecordingServiceSessionLegacy(
             bgExecutor,
             dialogTransitionAnimator,
             panelInteractor,
