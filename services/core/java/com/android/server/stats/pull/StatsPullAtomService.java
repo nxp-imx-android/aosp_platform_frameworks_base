@@ -895,6 +895,8 @@ public class StatsPullAtomService extends SystemService {
                         synchronized (mSuspendControlServiceInternalLock) {
                             return pullAdaptiveSuspendStats(atomTag, data);
                         }
+                    case FrameworkStatsLog.SLAB_INFO:
+                        return pullSlabInfoStats(atomTag, data);
                     default:
                         throw new UnsupportedOperationException("Unknown tagId=" + atomTag);
                 }
@@ -1108,6 +1110,7 @@ public class StatsPullAtomService extends SystemService {
         if (ENABLE_ADAPTIVE_SUSPEND_STATS_PULLER) {
             registerAdaptiveSuspendStats();
         }
+        registerSlabInfoStats();
     }
 
     private void initMobileDataStatsPuller() {
@@ -2815,6 +2818,35 @@ public class StatsPullAtomService extends SystemService {
                         dmaBufTotalExportedKb,
                         dmaBufUserspaceKb,
                         dmaBufTotalExportedKb - dmaBufUserspaceKb));
+        return StatsManager.PULL_SUCCESS;
+    }
+
+    private void registerSlabInfoStats() {
+        int tagId = FrameworkStatsLog.SLAB_INFO;
+        mStatsManager.setPullAtomCallback(
+            tagId,
+            null, // use default PullAtomMetadata values,
+            DIRECT_EXECUTOR,
+            mStatsCallbackImpl
+        );
+    }
+
+    int pullSlabInfoStats(int atomTag, List<StatsEvent> pulledData) {
+        KernelAllocationStats.SlabCacheStats[] slabCacheStats =
+            KernelAllocationStats.getSlabInfoStats();
+
+        if (slabCacheStats == null) {
+            return StatsManager.PULL_SKIP;
+        }
+
+        for (KernelAllocationStats.SlabCacheStats slabCache : slabCacheStats) {
+            pulledData.add(FrameworkStatsLog.buildStatsEvent(
+                atomTag,
+                slabCache.name,
+                slabCache.totalMemUsageKb
+                )
+            );
+        }
         return StatsManager.PULL_SUCCESS;
     }
 
