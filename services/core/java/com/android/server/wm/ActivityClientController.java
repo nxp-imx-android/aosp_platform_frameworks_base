@@ -181,6 +181,13 @@ class ActivityClientController extends IActivityClientController.Stub {
 
     @Override
     public void activityIdle(IBinder token, Configuration config, boolean stopProfiling) {
+        try {
+            Thread.sleep(250);
+        }
+        catch(InterruptedException ex)
+        {
+            Thread.currentThread().interrupt();
+        }
         final long origId = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {
