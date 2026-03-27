@@ -16,6 +16,8 @@
 
 package android.os;
 
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
+
 import android.annotation.AppIdInt;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -486,6 +488,9 @@ public final class UserHandle implements Parcelable {
                     sb.append("ai");
                     sb.append(appId - Process.FIRST_APP_ZYGOTE_ISOLATED_UID);
                 }
+            } else if (enablePccFrameworkSupport() && Process.isPrivateComputeCoreUid(uid)) {
+                sb.append('p');
+                sb.append(appId - Process.FIRST_PCC_UID);
             } else if (appId >= Process.FIRST_APPLICATION_UID) {
                 sb.append('a');
                 sb.append(appId - Process.FIRST_APPLICATION_UID);
