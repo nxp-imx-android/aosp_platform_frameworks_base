@@ -503,6 +503,14 @@ abstract class LogModule {
             return factory.create("CommunalLog", 250)
         }
 
+        /** Provides a [LogBuffer] for window background blur logs. */
+        @Provides
+        @SysUISingleton
+        @WindowBackgroundBlurLog
+        fun provideWindowBackgroundBlurLogBuffer(factory: LogBufferFactory): LogBuffer {
+            return factory.create("WindowBackgroundBlur", 250)
+        }
+
         /** Provides a [LogBuffer] for communal touch-handling logs. */
         @Provides
         @SysUISingleton

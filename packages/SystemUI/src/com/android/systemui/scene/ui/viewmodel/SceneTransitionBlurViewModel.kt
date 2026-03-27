@@ -38,6 +38,7 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.wallpapers.domain.interactor.WallpaperInteractor
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
+import com.android.systemui.window.logging.BlurLogger
 import com.android.systemui.window.shared.model.BlurEffect
 import com.android.systemui.window.ui.BlurChoreographer
 import dagger.assisted.AssistedFactory
@@ -63,6 +64,7 @@ constructor(
     private val blurConfig: BlurConfig,
     private val shadeInteractor: ShadeInteractor,
     private val deviceEntryInteractor: DeviceEntryInteractor,
+    private val logger: BlurLogger,
 ) : HydratedActivatable(false) {
 
     private val ignoredSceneChanges: Set<SceneKey> = setOf(Scenes.Shade, Scenes.QuickSettings)
@@ -125,8 +127,17 @@ constructor(
         }
         blurRadius?.let {
             val scale = computeBackgroundBlurScale(transitionState)
+            val blurEffect = BlurEffect(it, scale)
+            if (transitionState is TransitionState.Idle) {
+                logger.logRequestWindowBackgroundBlur(
+                    transitionState.currentScene,
+                    transitionState.currentOverlays,
+                    blurEffect,
+                    windowRootViewBlurInteractor.isBlurCurrentlySupported.value,
+                )
+            }
             v("Applying blur for TransitionState change", blurRadius, scale)
-            applyBlur(BlurEffect(it, scale))
+            applyBlur(blurEffect)
         }
     }
 
