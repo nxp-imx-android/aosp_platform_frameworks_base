@@ -32,6 +32,7 @@ import android.os.Message;
 import android.os.Process;
 import android.os.ProfilingServiceHelper;
 import android.os.ProfilingTrigger;
+import android.provider.DeviceConfig;
 import android.util.IndentingPrintWriter;
 import android.util.Slog;
 
@@ -311,8 +312,10 @@ class MemoryLimiter implements AutoCloseable {
             return mAm.get().getPackageNameByPid(pid);
         }
 
-        // Kill the process.
+        // Kill the process, but only if the runtime disable flag is false.
         void killProcess(int pid, int uid, String reason) {
+            if (sDisableKill) return;
+
             IActivityManager am = ActivityManager.getService();
 
             if (am != null) {
@@ -358,6 +361,9 @@ class MemoryLimiter implements AutoCloseable {
 
         // The opcode to kill the pid.
         private static final int MESSAGE_KILL = 4;
+
+        // This is saved in case the feature is runtime-disabled.
+        private Limits mLimitsUnlimited;
 
         // The well-known limits.  These are used only by dumpsys.
         private volatile Limits mLimitsNotVisible;
@@ -460,7 +466,7 @@ class MemoryLimiter implements AutoCloseable {
         private void initializeMemoryLimits() {
             Limits ignored = new Limits(LIMIT_IS_IGNORED, LIMIT_IS_IGNORED);
             Limits cached = new Limits(LIMIT_IS_IGNORED, LIMIT_IS_DISABLED);
-            Limits unregulated = new Limits(LIMIT_IS_DISABLED, LIMIT_IS_DISABLED);
+            Limits unlimited = new Limits(LIMIT_IS_DISABLED, LIMIT_IS_DISABLED);
             Limits notVisible = new Limits(mConfiguration.memNotVisible,
                     mConfiguration.swapNotVisible);
             Limits visible = new Limits(mConfiguration.memVisible,
@@ -469,22 +475,39 @@ class MemoryLimiter implements AutoCloseable {
             for (int state = ActivityManager.MIN_PROCESS_STATE;
                     state <= ActivityManager.MAX_PROCESS_STATE;
                     state++) {
-                if (state == ActivityManager.PROCESS_STATE_UNKNOWN
-                        || state == ActivityManager.PROCESS_STATE_NONEXISTENT) {
-                    // Do not try to configure a process that does not exist.
-                    mStateLimit.set(state, ignored);
-                } else if (ActivityManager.isProcStateCached(state)) {
-                    // Limits are lifted from cached processes.
-                    mStateLimit.set(state, cached);
-                } else if (state == ActivityManager.PROCESS_STATE_PERSISTENT_UI) {
-                    // Remove limits from this process state.
-                    mStateLimit.set(state, unregulated);
-                } else if (ActivityManager.isProcStateJankPerceptible(state)) {
-                    mStateLimit.set(state, visible);
-                } else {
-                    mStateLimit.set(state, notVisible);
-                }
+                Limits limit = switch (state) {
+                    case ActivityManager.PROCESS_STATE_UNKNOWN -> ignored;
+                    case ActivityManager.PROCESS_STATE_PERSISTENT -> unlimited;
+                    case ActivityManager.PROCESS_STATE_PERSISTENT_UI -> unlimited;
+                    case ActivityManager.PROCESS_STATE_TOP -> visible;
+                    case ActivityManager.PROCESS_STATE_BOUND_TOP -> visible;
+                    case ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE -> notVisible;
+                    case ActivityManager.PROCESS_STATE_BOUND_FOREGROUND_SERVICE -> notVisible;
+                    case ActivityManager.PROCESS_STATE_IMPORTANT_FOREGROUND -> visible;
+                    case ActivityManager.PROCESS_STATE_IMPORTANT_BACKGROUND -> notVisible;
+                    case ActivityManager.PROCESS_STATE_TRANSIENT_BACKGROUND -> notVisible;
+                    case ActivityManager.PROCESS_STATE_BACKUP -> notVisible;
+                    case ActivityManager.PROCESS_STATE_SERVICE -> notVisible;
+                    case ActivityManager.PROCESS_STATE_RECEIVER -> notVisible;
+                    case ActivityManager.PROCESS_STATE_TOP_SLEEPING -> visible;
+                    case ActivityManager.PROCESS_STATE_HEAVY_WEIGHT -> notVisible;
+                    case ActivityManager.PROCESS_STATE_HOME -> notVisible;
+                    case ActivityManager.PROCESS_STATE_LAST_ACTIVITY -> notVisible;
+                    case ActivityManager.PROCESS_STATE_CACHED_ACTIVITY -> cached;
+                    case ActivityManager.PROCESS_STATE_CACHED_ACTIVITY_CLIENT -> cached;
+                    case ActivityManager.PROCESS_STATE_CACHED_RECENT -> cached;
+                    case ActivityManager.PROCESS_STATE_CACHED_EMPTY -> cached;
+                    case ActivityManager.PROCESS_STATE_NONEXISTENT -> ignored;
+                    default -> {
+                        throw new IllegalArgumentException("Process state "
+                                + state + " is not covered");
+                    }
+                };
+                mStateLimit.set(state, limit);
             }
+
+            // Save the unlimited limit set in case the feature is disabled at runtime.
+            mLimitsUnlimited = unlimited;
 
             // Save the configured limits for dumpsys.
             mLimitsNotVisible = notVisible;
@@ -515,7 +538,11 @@ class MemoryLimiter implements AutoCloseable {
 
         @Override
         public Limits getStateLimit(@ProcessState int newState) {
-            return mStateLimit.get(newState);
+            // If the feature is enabled at runtime then return the limit set appropriate to the
+            // proc state.  If the feature is disabled at runtime, return the wide-open limit set.
+            // Every process that is currently under the feature's control will have its limits
+            // set to "max" on the next proc state change.
+            return sDisableLimits ? mLimitsUnlimited : mStateLimit.get(newState);
         }
 
         // Allow burst of up to MAX_TOKENS reports in any period.
@@ -670,8 +697,9 @@ class MemoryLimiter implements AutoCloseable {
             }
 
             final long meg = 1024 * 1024;
-            final String a = "enabled monitoring=%s ignored=%s";
-            dumpLine(pw, formatSimple(a, mInjector.isMonitoringEnabled(), ignoredUid()));
+            final String a = "enabled limits=%s monitoring=%s killing=%s ignored=%s";
+            dumpLine(pw, formatSimple(a, !sDisableLimits, mInjector.isMonitoringEnabled(),
+                            !sDisableKill, ignoredUid()));
 
             final Limits vis = mLimitsVisible;
             final Limits notVis = mLimitsNotVisible;
@@ -773,6 +801,34 @@ class MemoryLimiter implements AutoCloseable {
     private final Controller mController;
 
     /**
+     * The DeviceConfig key to disable memory limiter limits at runtime.  The default is false
+     * (limits are enabled).
+     */
+    @VisibleForTesting
+    static final String DISABLE_LIMITS_KEY = "memory_limiter_disable_limits";
+
+    /**
+     * The DeviceConfig key to disable killing when limits are exceeded.  The default is false
+     * (killing is enabled).
+     */
+    @VisibleForTesting
+    static final String DISABLE_KILL_KEY = "memory_limiter_disable_kill";
+
+    /** The build-time default value for the memory limiter enablement. */
+    private static final boolean DISABLE_LIMITS_DEFAULT = false;
+
+    /** The build-time default value for the memory limiter kill behavior. */
+    private static final boolean DISABLE_KILL_DEFAULT = false;
+
+    /** The current runtime state of the memory limiter, potentially overridden by DeviceConfig. */
+    @VisibleForTesting
+    static volatile boolean sDisableLimits = DISABLE_LIMITS_DEFAULT;
+
+    /** The current runtime state of the kill behavior, potentially overridden by DeviceConfig. */
+    @VisibleForTesting
+    static volatile boolean sDisableKill = DISABLE_KILL_DEFAULT;
+
+    /**
      * Initialize the native layer and any maps.  This eventually makes a native call and
      * therefore cannot be invoked before the native libraries are loaded.  Unit tests call this
      * directly to supply specialized controllers.
@@ -780,6 +836,42 @@ class MemoryLimiter implements AutoCloseable {
     @VisibleForTesting
     MemoryLimiter(@NonNull Controller controller) {
         mController = controller;
+    }
+
+    void onSystemReady() {
+        DeviceConfig.addOnPropertiesChangedListener(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
+                BackgroundThread.getExecutor(), this::updateRuntimeFlags);
+        updateRuntimeFlags(DeviceConfig.getProperties(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
+                DISABLE_LIMITS_KEY, DISABLE_KILL_KEY));
+    }
+
+    private void updateRuntimeFlags(DeviceConfig.Properties properties) {
+        if (!properties.getNamespace().equals(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER)) {
+            return;
+        }
+        for (String key : properties.getKeyset()) {
+            if (key == null) {
+                continue;
+            }
+            switch (key) {
+                case DISABLE_LIMITS_KEY:
+                    final boolean oldEnable = sDisableLimits;
+                    sDisableLimits = properties.getBoolean(key, DISABLE_LIMITS_DEFAULT);
+                    if (oldEnable != sDisableLimits) {
+                        Slog.i(TAG, "Flag " + key + " changed from " + oldEnable
+                                + " to " + sDisableLimits);
+                    }
+                    break;
+                case DISABLE_KILL_KEY:
+                    final boolean oldKill = sDisableKill;
+                    sDisableKill = properties.getBoolean(key, DISABLE_KILL_DEFAULT);
+                    if (oldKill != sDisableKill) {
+                        Slog.i(TAG, "Flag " + key + " changed from " + oldKill
+                                + " to " + sDisableKill);
+                    }
+                    break;
+            }
+        }
     }
 
     /**

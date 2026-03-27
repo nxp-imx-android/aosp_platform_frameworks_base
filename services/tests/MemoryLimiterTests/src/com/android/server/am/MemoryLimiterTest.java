@@ -16,11 +16,19 @@
 
 package com.android.server.am;
 
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
+
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 
 import android.app.ActivityManager;
 import android.app.ActivityManager.ProcessState;
@@ -31,8 +39,9 @@ import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsEnabled;
-import android.platform.test.flag.junit.CheckFlagsRule;
-import android.platform.test.flag.junit.DeviceFlagsValueProvider;
+import android.platform.test.flag.junit.SetFlagsRule;
+import android.provider.DeviceConfig;
+import android.provider.DeviceConfig.OnPropertiesChangedListener;
 import android.util.ArrayMap;
 import android.util.Log;
 
@@ -41,6 +50,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.android.internal.os.BackgroundThread;
 import com.android.server.am.MemoryLimiter.Configuration;
 import com.android.server.am.MemoryLimiter.Limits;
 
@@ -51,6 +61,9 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockitoSession;
+import org.mockito.quality.Strictness;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -62,6 +75,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.regex.Matcher;
@@ -74,13 +88,15 @@ import java.util.regex.Pattern;
 @LargeTest
 @Presubmit
 @RunWith(AndroidJUnit4.class)
-@RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
 public class MemoryLimiterTest {
 
     private static final String TAG = "MemoryLimiterTest";
 
     @Rule
-    public final CheckFlagsRule mFlagRule = DeviceFlagsValueProvider.createCheckFlagsRule();
+    public final SetFlagsRule mFlagRule = new SetFlagsRule();
+
+    private MockitoSession mMockitoSession;
+    private MemoryLimiter.Controller mMockController;
 
     // Our context, used for sending broadcasts.
     private Context mContext = ApplicationProvider.getApplicationContext();
@@ -333,12 +349,37 @@ public class MemoryLimiterTest {
 
     @Before
     public void setUp() throws Exception {
+        mMockitoSession = mockitoSession()
+                .initMocks(this)
+                .strictness(Strictness.LENIENT)
+                .spyStatic(DeviceConfig.class)
+                .spyStatic(BackgroundThread.class)
+                .startMocking();
+
+        mMockController = mock(MemoryLimiter.Controller.class);
+
+        // Mock BackgroundThread to return a direct executor for testing
+        doAnswer(invocation -> {
+            return (Executor) Runnable::run;
+        }).when(BackgroundThread::getExecutor);
+
+        // Ensure static volatile flags are reset to their default state.
+        resetStaticFlags();
+
         mUid = getHelperUid();
         blockSystemLimiter(mUid, true);
     }
 
+    private void resetStaticFlags() {
+        MemoryLimiter.sDisableLimits = false;
+        MemoryLimiter.sDisableKill = false;
+    }
+
     @After
     public void tearDown() throws Exception {
+        if (mMockitoSession != null) {
+            mMockitoSession.finishMocking();
+        }
         shellCommand("am force-stop " + HELPER);
         blockSystemLimiter(mUid, false);
     }
@@ -994,6 +1035,91 @@ public class MemoryLimiterTest {
         assertThat(testParsing(helper, "memory.events")).isNotNull();
         assertThat(testParsing(helper, "memory.swap.events")).isNotNull();
         assertThat(testParsing(helper, "memory.stat")).isNotNull();
+    }
+
+    @Test
+    public void testFlagsInitializedToDefault_BothDisabled() {
+        resetStaticFlags();
+        assertFalse(MemoryLimiter.sDisableLimits);
+        assertFalse(MemoryLimiter.sDisableKill);
+    }
+
+    @Test
+    public void testOnSystemReadyRegistersListenerAndUpdatesFlags() {
+        // Start with false
+        MemoryLimiter.sDisableLimits = false;
+        MemoryLimiter.sDisableKill = false;
+
+        MemoryLimiter limiter = new MemoryLimiter(mMockController);
+
+        // Capture the listener
+        ArgumentCaptor<OnPropertiesChangedListener> listenerCaptor =
+                ArgumentCaptor.forClass(OnPropertiesChangedListener.class);
+
+        // When onSystemReady is called
+        limiter.onSystemReady();
+
+        // Then it should register a listener for activity_manager namespace
+        verify(() -> DeviceConfig.addOnPropertiesChangedListener(
+                eq(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER),
+                any(Executor.class),
+                listenerCaptor.capture()));
+
+        // And it should update flags from current properties
+        // (Verify updateRuntimeFlags was called by checking flag state)
+        DeviceConfig.Properties properties = new DeviceConfig.Properties.Builder(
+                DeviceConfig.NAMESPACE_ACTIVITY_MANAGER)
+                .setBoolean(MemoryLimiter.DISABLE_LIMITS_KEY, true)
+                .setBoolean(MemoryLimiter.DISABLE_KILL_KEY, true)
+                .build();
+
+        // Simulate a property change event
+        listenerCaptor.getValue().onPropertiesChanged(properties);
+
+        assertTrue(MemoryLimiter.sDisableLimits);
+        assertTrue(MemoryLimiter.sDisableKill);
+    }
+
+    @Test
+    public void testUpdateRuntimeFlags() {
+        resetStaticFlags();
+        MemoryLimiter limiter = new MemoryLimiter(mMockController);
+
+        // Initially false
+        assertFalse(MemoryLimiter.sDisableLimits);
+
+        // Create properties with enable=true
+        DeviceConfig.Properties properties = new DeviceConfig.Properties.Builder(
+                DeviceConfig.NAMESPACE_ACTIVITY_MANAGER)
+                .setBoolean(MemoryLimiter.DISABLE_LIMITS_KEY, true)
+                .build();
+
+        // Call updateRuntimeFlags directly (it's private, but we can test it via listener
+        // or just by having onSystemReady call it).
+        limiter.onSystemReady();
+
+        // Simulate change to true
+        OnPropertiesChangedListener listener = getRegisteredListener();
+        listener.onPropertiesChanged(properties);
+        assertTrue(MemoryLimiter.sDisableLimits);
+
+        // Simulate change back to false (using default)
+        DeviceConfig.Properties propertiesEmpty = new DeviceConfig.Properties.Builder(
+                DeviceConfig.NAMESPACE_ACTIVITY_MANAGER)
+                .setBoolean(MemoryLimiter.DISABLE_LIMITS_KEY, false)
+                .build();
+        listener.onPropertiesChanged(propertiesEmpty);
+        assertFalse(MemoryLimiter.sDisableLimits);
+    }
+
+    private OnPropertiesChangedListener getRegisteredListener() {
+        ArgumentCaptor<OnPropertiesChangedListener> listenerCaptor =
+                ArgumentCaptor.forClass(OnPropertiesChangedListener.class);
+        verify(() -> DeviceConfig.addOnPropertiesChangedListener(
+                eq(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER),
+                any(Executor.class),
+                listenerCaptor.capture()));
+        return listenerCaptor.getValue();
     }
 
     static {
