@@ -2712,6 +2712,14 @@ public class CarrierConfigManager {
             "auto_unhold_on_remote_disconnect_bool";
 
     /**
+     * Flag to indicate whether to show a warning when answering an incoming VoWiFi call on one
+     * subscription will drop an ongoing VoLTE call on another subscription in a DSDS device.
+     * @hide
+     */
+    public static final String KEY_SHOW_VOWIFI_DROP_DIALOG_ON_DSDS_BOOL =
+            "show_vowifi_drop_dialog_on_dsds_bool";
+
+    /**
      * Flag indicating whether the carrier supports call deflection for an incoming IMS call.
      */
     public static final String KEY_CARRIER_ALLOW_DEFLECT_IMS_CALL_BOOL =
@@ -11722,6 +11730,7 @@ public class CarrierConfigManager {
         sDefaults.putString(KEY_CARRIER_CONFIG_VERSION_STRING, "");
         sDefaults.putBoolean(KEY_ALLOW_HOLD_IN_IMS_CALL_BOOL, true);
         sDefaults.putBoolean(KEY_AUTO_UNHOLD_ON_REMOTE_DISCONNECT_BOOL, false);
+        sDefaults.putBoolean(KEY_SHOW_VOWIFI_DROP_DIALOG_ON_DSDS_BOOL, false);
         sDefaults.putBoolean(KEY_CARRIER_ALLOW_DEFLECT_IMS_CALL_BOOL, false);
         sDefaults.putBoolean(KEY_CARRIER_ALLOW_TRANSFER_IMS_CALL_BOOL, false);
         sDefaults.putBoolean(KEY_ALWAYS_PLAY_REMOTE_HOLD_TONE_BOOL, false);
