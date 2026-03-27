@@ -51,6 +51,9 @@ import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.display.domain.interactor.ShadeExpansionTargetDisplayInteractor
+import com.android.systemui.shade.domain.interactor.DisplayAwareShadeElementToggleInteractor
+import com.android.systemui.shade.domain.interactor.NotificationShadeElement
+import com.android.systemui.shade.domain.interactor.QSShadeElement
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.statusbar.chips.mediaprojection.domain.model.MediaProjectionStopDialogModel
 import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.ShareToAppChipViewModel
@@ -289,6 +292,9 @@ constructor(
     sceneInteractor: SceneInteractor,
     private val shadeInteractor: ShadeInteractor,
     private val shadeExpansionTargetDisplayInteractor: ShadeExpansionTargetDisplayInteractor,
+    private val displayAwareShadeElementToggleInteractor: DisplayAwareShadeElementToggleInteractor,
+    private val qsShadeElement: QSShadeElement,
+    private val notificationElement: NotificationShadeElement,
     private val imeIndicatorChipInteractor: ImeIndicatorChipInteractor,
     shareToAppChipViewModel: ShareToAppChipViewModel,
     @DisplayAware private val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel,
@@ -509,20 +515,13 @@ constructor(
     }
 
     override fun onQuickSettingsChipClicked() {
-        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) {
-            return
-        }
-        shadeInteractor.toggleQuickSettingsShade(
-            loggingReason = "HomeStatusBarViewModel.onQuickSettingsChipClicked"
-        )
+        displayAwareShadeElementToggleInteractor.toggleShadeElement(qsShadeElement, thisDisplayId)
     }
 
     override fun onNotificationIconChipClicked() {
-        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) {
-            return
-        }
-        shadeInteractor.toggleNotificationsShade(
-            loggingReason = "HomeStatusBarViewModel.onNotificationIconChipClicked"
+        displayAwareShadeElementToggleInteractor.toggleShadeElement(
+            notificationElement,
+            thisDisplayId,
         )
     }
 

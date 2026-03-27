@@ -16,6 +16,8 @@
 
 package com.android.systemui.statusbar.pipeline.shared.ui.viewmodel
 
+// Force re-run
+
 import android.app.StatusBarManager.DISABLE2_NONE
 import android.app.StatusBarManager.DISABLE_CLOCK
 import android.app.StatusBarManager.DISABLE_NONE
@@ -74,6 +76,8 @@ import com.android.systemui.screenrecord.data.repository.screenRecordRepository
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.shade.data.repository.statusBarTouchShadeDisplayPolicy
 import com.android.systemui.shade.domain.interactor.enableDualShade
+import com.android.systemui.shade.domain.interactor.notificationElement
+import com.android.systemui.shade.domain.interactor.qsElement
 import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.MediaProjectionChipInteractorTest.Companion.NORMAL_PACKAGE
 import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.MediaProjectionChipInteractorTest.Companion.setUpPackageManagerForMediaProjection
@@ -1422,6 +1426,26 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
 
     @Test
     @EnableFlags(FLAG_SCENE_CONTAINER, StatusBarForDesktop.FLAG_NAME, FLAG_DUAL_SHADE)
+    fun onQuickSettingsChipClicked_displayDiffers_setsExpansionIntent() =
+        kosmos.runTest {
+            enableDualShade()
+            val fakeShadeDisplaysRepository = kosmos.fakeShadeDisplaysRepository
+            val statusBarTouchShadeDisplayPolicy = kosmos.statusBarTouchShadeDisplayPolicy
+
+            // ViewModel is for display 0 (default). Set active display to 2.
+            fakeShadeDisplaysRepository.setDisplayId(2)
+            kosmos.displayRepository.addDisplays(
+                display(id = 0, type = android.view.Display.TYPE_INTERNAL)
+            )
+
+            underTest.onQuickSettingsChipClicked()
+
+            assertThat(statusBarTouchShadeDisplayPolicy.consumeExpansionIntent())
+                .isEqualTo(kosmos.qsElement)
+        }
+
+    @Test
+    @EnableFlags(FLAG_SCENE_CONTAINER, StatusBarForDesktop.FLAG_NAME, FLAG_DUAL_SHADE)
     fun onNotificationIconChipClicked_notificationsShadeIsOpen_collapsesShade() =
         kosmos.runTest {
             enableDualShade()
@@ -1441,6 +1465,26 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
             underTest.onNotificationIconChipClicked()
 
             assertThat(currentOverlays).doesNotContain(Overlays.NotificationsShade)
+        }
+
+    @Test
+    @EnableFlags(FLAG_SCENE_CONTAINER, StatusBarForDesktop.FLAG_NAME, FLAG_DUAL_SHADE)
+    fun onNotificationIconChipClicked_displayDiffers_setsExpansionIntent() =
+        kosmos.runTest {
+            enableDualShade()
+            val fakeShadeDisplaysRepository = kosmos.fakeShadeDisplaysRepository
+            val statusBarTouchShadeDisplayPolicy = kosmos.statusBarTouchShadeDisplayPolicy
+
+            // ViewModel is for display 0 (default). Set active display to 2.
+            fakeShadeDisplaysRepository.setDisplayId(2)
+            kosmos.displayRepository.addDisplays(
+                display(id = 0, type = android.view.Display.TYPE_INTERNAL)
+            )
+
+            underTest.onNotificationIconChipClicked()
+
+            assertThat(statusBarTouchShadeDisplayPolicy.consumeExpansionIntent())
+                .isEqualTo(kosmos.notificationElement)
         }
 
     @EnableSceneContainer

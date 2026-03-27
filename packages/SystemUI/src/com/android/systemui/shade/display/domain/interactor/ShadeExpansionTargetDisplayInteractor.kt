@@ -35,6 +35,7 @@ constructor(
     private val qsShadeElement: Lazy<QSShadeElement>,
     private val notificationElement: Lazy<NotificationShadeElement>,
 ) {
+
     /** Called when the status bar on the given display is touched/clicked. */
     fun setExpansionIntentFromStatusBarEvent(
         eventX: Float,
@@ -54,6 +55,14 @@ constructor(
      */
     fun setExpansionIntentForNotificationElement(displayId: Int) {
         policy.setExpansionIntentForElement(notificationElement.get(), displayId)
+    }
+
+    /**
+     * Called when we need to move the quicksettings shade to a specific display. For e.g. when the
+     * quick settings chip on the given display is touched/clicked.
+     */
+    fun setExpansionIntentForQsElement(displayId: Int) {
+        policy.setExpansionIntentForElement(qsShadeElement.get(), displayId)
     }
 
     /** Updates the target display for the shade, if necessary. */
