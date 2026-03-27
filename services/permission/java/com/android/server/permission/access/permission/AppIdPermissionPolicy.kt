@@ -516,7 +516,10 @@ class AppIdPermissionPolicy : SchemePolicy() {
                         )
                         return@forEachIndexed
                     }
-                    if (newState.externalState.packageStates[oldPackageName]?.isSystem == true) {
+                    if (
+                        oldPermission.isReconciled &&
+                            newState.externalState.packageStates[oldPackageName]?.isSystem == true
+                    ) {
                         Slog.w(
                             LOG_TAG,
                             "Ignoring permission $permissionName declared in system package" +
