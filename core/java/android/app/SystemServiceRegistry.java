@@ -2217,7 +2217,7 @@ public final class SystemServiceRegistry {
                 EnhancedConfirmationFrameworkInitializer.registerServiceWrappers();
             }
             ProfilingFrameworkInitializer.registerServiceWrappers();
-            if (android.os.profiling.anomaly.flags.Flags.anomalyDetectorCore()) {
+            if (android.os.profiling.anomaly.flags.Flags.anomalyDetectorCoreC()) {
                 AnomalyDetectorFrameworkInitializer.registerServiceWrappers();
             }
             if (android.webkit.Flags.updateServiceIpcWrapper()) {

@@ -55,7 +55,7 @@ import java.time.Duration;
 import java.util.List;
 
 @RunWith(AndroidJUnit4.class)
-@RequiresFlagsEnabled(Flags.FLAG_ANOMALY_DETECTOR_CORE)
+@RequiresFlagsEnabled(Flags.FLAG_ANOMALY_DETECTOR_CORE_C)
 public class BinderSpamSignalCollectorImplTest {
 
     private static final String TEST_INTERFACE_1 = "com.test.TestInterface1";
