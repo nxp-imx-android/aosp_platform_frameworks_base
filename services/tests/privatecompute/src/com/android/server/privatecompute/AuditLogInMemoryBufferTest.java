@@ -18,7 +18,8 @@ package com.android.server.privatecompute;
 
 import static android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT;
 import static com.android.server.privatecompute.AuditModeTestUtils.TEST_PACKAGE_NAME;
-import static com.android.server.privatecompute.AuditModeTestUtils.TEST_TIMESTAMP;
+import static com.android.server.privatecompute.AuditModeTestUtils.TEST_CURRENT_TIME_MILLIS;
+import static com.android.server.privatecompute.AuditModeTestUtils.TEST_REALTIME_NANOS;
 import static com.android.server.privatecompute.AuditModeTestUtils.TEST_UID;
 import static com.android.server.privatecompute.AuditModeTestUtils.assertEqualsToTestBundle;
 import static com.android.server.privatecompute.AuditModeTestUtils.getTestEntry;
@@ -96,7 +97,8 @@ public class AuditLogInMemoryBufferTest {
         assertThat(file.length()).isGreaterThan(0);
         List<AuditLogEntry> entries = readAuditLogFileFromFile(file);
         assertEquals(1, entries.size());
-        assertEquals(entries.get(0).mTimestamp, TEST_TIMESTAMP);
+        assertEquals(entries.get(0).mRealTimeNanos, TEST_REALTIME_NANOS);
+        assertEquals(entries.get(0).mCurrentTimeMillis, TEST_CURRENT_TIME_MILLIS);
         assertEquals(entries.get(0).mCallingPackage, TEST_PACKAGE_NAME);
         assertEquals(entries.get(0).mCallingUid, TEST_UID);
         assertEqualsToTestBundle(entries.get(0).mData);

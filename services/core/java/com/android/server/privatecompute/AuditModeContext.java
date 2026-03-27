@@ -182,6 +182,7 @@ class AuditModeContext {
                 new AuditLogEntry(
                         data,
                         SystemClock.elapsedRealtimeNanos(),
+                        System.currentTimeMillis(),
                         packageName,
                         callingUid);
         mBundleSerializerExecutor.execute(
@@ -287,7 +288,7 @@ class AuditModeContext {
             return new ArrayList<>();
         }
         List<AuditLogEntry> entries = AuditLogFileWriter.readEntriesForFiles(Arrays.asList(files));
-        entries.sort(Comparator.comparingLong(entry -> entry.mTimestamp));
+        entries.sort(Comparator.comparingLong(entry -> entry.mRealTimeNanos));
         return entries;
     }
 }
