@@ -20,12 +20,16 @@ import android.content.applicationContext
 import android.view.Display
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.statusbar.quickactions.domain.interactor.quickActionsInteractor
 import com.android.systemui.statusbar.quickactions.ime.domain.interactor.imeIndicatorChipInteractor
 
 val Kosmos.imeIndicatorChipViewModel by Fixture {
     ImeIndicatorChipViewModel(
         context = applicationContext,
         displayId = Display.DEFAULT_DISPLAY,
+        sceneInteractor = sceneInteractor,
+        quickActionsInteractor = quickActionsInteractor,
         imeIndicatorChipInteractor = imeIndicatorChipInteractor,
     )
 }
@@ -36,6 +40,8 @@ val Kosmos.imeIndicatorChipViewModelFactory: ImeIndicatorChipViewModel.Factory b
             ImeIndicatorChipViewModel(
                 context = applicationContext,
                 displayId = displayId,
+                sceneInteractor = sceneInteractor,
+                quickActionsInteractor = quickActionsInteractor,
                 imeIndicatorChipInteractor = imeIndicatorChipInteractor,
             )
     }
