@@ -594,13 +594,28 @@ public class InternetDialogDelegateLegacy implements
                         mInternetDetailsContentController.isMobileDataEnabled());
                 mMobileTitleText.setText(getMobileNetworkTitle(mDefaultDataSubId));
                 int activeDataSubId = internetContent.mActiveDataSubId;
+                int autoSwitchNonDdsSubId = internetContent.mActiveAutoSwitchNonDdsSubId;
                 Log.d(TAG, "setMobileDataLayout(), activeDataSubId: " + activeDataSubId
-                        + ", mDefaultDataSubId:" + mDefaultDataSubId);
-                boolean validDataSubId =
-                        activeDataSubId != SubscriptionManager.INVALID_SUBSCRIPTION_ID;
+                        + ", mDefaultDataSubId:" + mDefaultDataSubId
+                        + ", autoSwitchNonDdsSubId: " + autoSwitchNonDdsSubId);
+
+                // SIM Display Logic for Dual SIM Scenarios
+                // There are three case of two SIMs:
+                // 1. Standard: Displays the Active Data SIM only (DDS SIM is the same as active
+                //    data SIM)
+                // 2. Automatic data switching Enabled & Non-DDS is active data:
+                //    Displays DDS SIM and non-DDS SIM.
+                //    - DDS SIM: Displays "Poor connection."
+                //    - Non-DDS SIM: Displays "Temporarily connected."
+                // 3. CBRS SIMs set (Non-DDS CBRS SIM is active data):
+                //    Displays the Active Data SIM only
+                boolean useActiveDataSubId =
+                        activeDataSubId != SubscriptionManager.INVALID_SUBSCRIPTION_ID
+                                && autoSwitchNonDdsSubId
+                                == SubscriptionManager.INVALID_SUBSCRIPTION_ID;
                 mBackgroundExecutor.execute(() -> {
                     String summary = getMobileNetworkSummary(
-                            validDataSubId ? activeDataSubId : mDefaultDataSubId);
+                            useActiveDataSubId ? activeDataSubId : mDefaultDataSubId);
                     mHandler.post(() -> {
                         if (!TextUtils.isEmpty(summary)) {
                             mMobileSummaryText.setText(
@@ -623,7 +638,6 @@ public class InternetDialogDelegateLegacy implements
                         : R.color.disconnected_network_primary_color;
                 mMobileToggleDivider.setBackgroundColor(context.getColor(primaryColor));
                 // Display the info for the non-DDS if it's actively being used
-                int autoSwitchNonDdsSubId = internetContent.mActiveAutoSwitchNonDdsSubId;
 
                 int nonDdsVisibility = autoSwitchNonDdsSubId
                         != SubscriptionManager.INVALID_SUBSCRIPTION_ID ? View.VISIBLE : View.GONE;
