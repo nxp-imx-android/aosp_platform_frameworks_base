@@ -140,7 +140,12 @@
         androidprv:glyphMap="@xml/xbox_game_controller_glyph_map"
         androidprv:vendorId="0x045e"
         androidprv:productId="0x0b21" />
-    <!-- Xbox Series X Controller -->
+    <!-- Xbox Series X Controller (USB) -->
+    <keyboard-glyph-map
+        androidprv:glyphMap="@xml/xbox_game_controller_glyph_map"
+        androidprv:vendorId="0x045e"
+        androidprv:productId="0x0b12" />
+    <!-- Xbox Series X Controller (Bluetooth) -->
     <keyboard-glyph-map
         androidprv:glyphMap="@xml/xbox_game_controller_glyph_map"
         androidprv:vendorId="0x045e"
