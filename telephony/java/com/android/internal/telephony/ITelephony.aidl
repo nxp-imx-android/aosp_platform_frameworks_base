@@ -3711,4 +3711,24 @@ interface ITelephony {
     @JavaPassthrough(annotation = "@android.annotation.RequiresPermission("
                     + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
     void requestPointingUiAppLaunchIntent(in PointingUiAppLaunchIntentAttributes launchIntentAttributes, in ResultReceiver receiver);
+
+    /**
+     * Retrieves whether satellite attach is supported for the given subscription ID.
+     */
+    boolean isSatelliteAttachSupported(int subId);
+
+    /**
+     * Retrieves whether satellite entitlement check is supported for the given subscription ID.
+     */
+    boolean isSatelliteEntitlementSupported(int subId);
+
+    /**
+     * Retrieves the satellite entitlement server URL for the given subscription ID.
+     */
+    String getSatelliteEntitlementServerUrl(int subId);
+
+    /**
+     * Retrieves the satellite NTN connect type for the given subscription ID.
+     */
+    int getSatelliteNtnConnectType(int subId);
 }
