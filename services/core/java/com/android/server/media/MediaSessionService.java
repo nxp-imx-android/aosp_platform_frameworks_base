@@ -2484,7 +2484,9 @@ public class MediaSessionService extends SystemService implements Monitor {
                                     direction = AudioManager.ADJUST_LOWER;
                                     break;
                                 case KeyEvent.KEYCODE_VOLUME_MUTE:
-                                    direction = AudioManager.ADJUST_TOGGLE_MUTE;
+                                    direction = mHasFeatureDesktop
+                                            ? AudioManager.ADJUST_MUTE
+                                            : AudioManager.ADJUST_TOGGLE_MUTE;
                                     break;
                             }
                             record.adjustVolume(packageName, opPackageName, pid, uid,
