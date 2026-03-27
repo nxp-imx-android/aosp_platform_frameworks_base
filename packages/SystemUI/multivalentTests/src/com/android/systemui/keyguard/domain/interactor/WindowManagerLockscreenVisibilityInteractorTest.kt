@@ -634,8 +634,8 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
             assertEquals(
                 listOf(
-                    true // Unsurprisingly, we should start with the lockscreen visible on
-                    // LOCKSCREEN.
+                    true, // Initial stateIn value
+                    true, // Start with the lockscreen visible on LOCKSCREEN.
                 ),
                 values,
             )
@@ -651,7 +651,8 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
             assertEquals(
                 listOf(
-                    true // Lockscreen remains visible while we're transitioning to GONE.
+                    true, // Initial stateIn value
+                    true, // Lockscreen remains visible while we're transitioning to GONE.
                 ),
                 values,
             )
@@ -667,6 +668,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
             assertEquals(
                 listOf(
+                    true, // Initial stateIn value
                     true,
                     false, // Once we're fully GONE, the lockscreen should not be visible.
                 ),
@@ -690,6 +692,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
             assertEquals(
                 listOf(
+                    true, // Initial stateIn value
                     // Initially should be true, as we start in LOCKSCREEN.
                     true,
                     // Then, false, since we finish in GONE.
@@ -716,6 +719,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
             assertEquals(
                 listOf(
+                    true, // Initial stateIn value
                     true,
                     // Should remain false as we transition from GONE.
                     false,
@@ -742,6 +746,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
             assertEquals(
                 listOf(
+                    true, // Initial stateIn value
                     true,
                     false,
                     // If we cancel and then go from LS -> GONE, we should immediately flip to the
@@ -761,7 +766,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
             runCurrent()
 
-            assertEquals(listOf(true, false, true), values)
+            assertEquals(listOf(true, true, false, true), values)
         }
 
     /**
@@ -784,6 +789,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
             runCurrent()
             assertEquals(
                 listOf(
+                    true, // Initial stateIn value
                     true,
                     // Not visible since we're GONE.
                     false,
@@ -844,6 +850,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
             runCurrent()
             assertEquals(
                 listOf(
+                    true, // Initial stateIn value
                     true,
                     // Remains not visible from GONE -> AOD (canceled) -> AOD since we never
                     // FINISHED in AOD, and special-case handling for the insecure camera launch
@@ -862,6 +869,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
             assertEquals(
                 listOf(
+                    true, // Initial stateIn value
                     true,
                     false,
                     // Make sure there's no stuck overrides or something - we should make lockscreen
@@ -887,6 +895,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
             runCurrent()
             assertEquals(
                 listOf(
+                    true, // Initial stateIn value
                     true,
                     // Not visible when finished in GONE.
                     false,
@@ -913,6 +922,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
             assertEquals(
                 listOf(
+                    true, // Initial stateIn value
                     true,
                     // Still not visible during GONE -> LOCKSCREEN.
                     false,
@@ -931,6 +941,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
             assertEquals(
                 listOf(
+                    true, // Initial stateIn value
                     true,
                     false,
                     // Visible now that we're FINISHED in LOCKSCREEN.
@@ -959,6 +970,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
             assertEquals(
                 listOf(
+                    true, // Initial stateIn value
                     true,
                     false,
                     // Remains true until the transition ends.
@@ -978,6 +990,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
             runCurrent()
             assertEquals(
                 listOf(
+                    true, // Initial stateIn value
                     true,
                     false,
                     true,
@@ -1003,6 +1016,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
             runCurrent()
             assertEquals(
                 listOf(
+                    true, // Initial stateIn value
                     true,
                     // Not visible when finished in GONE.
                     false,
@@ -1029,6 +1043,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
             assertEquals(
                 listOf(
+                    true, // Initial stateIn value
                     true,
                     // Still not visible during GONE -> AOD.
                     false,
@@ -1047,6 +1062,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
             assertEquals(
                 listOf(
+                    true, // Initial stateIn value
                     true,
                     false,
                     // Visible now that we're FINISHED in AOD.
@@ -1075,6 +1091,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
             assertEquals(
                 listOf(
+                    true, // Initial stateIn value
                     true,
                     false,
                     true,
@@ -1095,6 +1112,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
             runCurrent()
             assertEquals(
                 listOf(
+                    true, // Initial stateIn value
                     true,
                     false,
                     true,
