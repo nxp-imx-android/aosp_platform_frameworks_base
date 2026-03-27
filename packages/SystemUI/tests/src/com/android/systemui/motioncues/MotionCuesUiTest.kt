@@ -82,6 +82,7 @@ class MotionCuesUiTest : SysuiTestCase() {
 
         val initialConfig = Configuration()
         initialConfig.orientation = Configuration.ORIENTATION_PORTRAIT
+        initialConfig.screenLayout = Configuration.SCREENLAYOUT_SIZE_NORMAL
         context.getOrCreateTestableResources().overrideConfiguration(initialConfig)
 
         underTest = MotionCuesUi(context, windowManager, configurationController)
@@ -217,6 +218,22 @@ class MotionCuesUiTest : SysuiTestCase() {
         verify(windowManager, times(2)).addView(any(), any())
     }
 
+    @Test
+    fun onConfigChanged_screenLayoutChanged_whenStarted_recreatesOverlay() {
+        // Start in normal screen layout
+        underTest.start(SETTINGS, 0, "com.example.app")
+        verify(windowManager, times(1)).addView(any(), any())
+
+        // Simulate large screen layout
+        val newConfig = Configuration()
+        newConfig.screenLayout = Configuration.SCREENLAYOUT_SIZE_LARGE
+        underTest.onConfigChanged(newConfig)
+
+        // Verify overlay was removed and re-added
+        verify(windowManager, times(1)).removeViewImmediate(any())
+        verify(windowManager, times(2)).addView(any(), any())
+    }
+
      @Test
      fun onConfigChanged_orientationChanged_whenStopped_doesNothing() {
         underTest.start(SETTINGS, 0, "com.example.app")
@@ -234,12 +251,13 @@ class MotionCuesUiTest : SysuiTestCase() {
      }
 
      @Test
-     fun onConfigChanged_orientationNotChanged_doesNothing() {
+     fun onConfigChanged_orientationScreenLayoutNotChanged_doesNothing() {
         underTest.start(SETTINGS, 0, "com.example.app")
         verify(windowManager, times(1)).addView(any(), any())
 
         // Simulate config change with same orientation
         val newConfig = Configuration()
+        newConfig.screenLayout = Configuration.SCREENLAYOUT_SIZE_NORMAL
         newConfig.orientation = Configuration.ORIENTATION_PORTRAIT
         whenever(windowMetrics.bounds).thenReturn(PORTRAIT_BOUNDS)
         underTest.onConfigChanged(newConfig)
