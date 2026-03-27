@@ -29,6 +29,8 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
 import android.app.ActivityManager;
+import android.app.ActivityOptions;
+import android.app.PendingIntent;
 import android.app.appfunctions.AppFunctionException;
 import android.app.appfunctions.AppFunctionManager;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
@@ -47,6 +49,7 @@ import android.content.pm.SignedPackage;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.ICancellationSignal;
 import android.os.Process;
 import android.os.ShellCommand;
@@ -103,7 +106,8 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         pw.println(
                 "  execute-app-function --package <PACKAGE_NAME> --function <FUNCTION_ID> "
                         + "--parameters <PARAMETERS_JSON> [--user <USER_ID>]"
-                        + "[--timeout-duration <SECONDS>] [--brief-yaml]");
+                        + "[--timeout-duration <SECONDS>] [--brief-yaml] "
+                        + "[--pending-intent-path <PATH>]");
         pw.println(
                 "    Executes an app function for the given package with the provided parameters "
                         + " and returns the result as a JSON string");
@@ -121,6 +125,10 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                         + DEFAULT_EXECUTE_TIMEOUT_SECONDS
                         + " seconds.");
         pw.println("    --brief-yaml (optional): Prints a concise yaml output.");
+        pw.println(
+                "    --pending-intent-path <PATH> (optional): The key in the response extras to "
+                        + "extract and send a PendingIntent from. Can be nested using '.' as "
+                        + "separator.");
         pw.println();
         pw.println(
                 "  set-enabled --package <PACKAGE_NAME> --function <FUNCTION_ID> "
@@ -568,6 +576,7 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         int userId = ActivityManager.getCurrentUser();
         long timeoutDurationSeconds = DEFAULT_EXECUTE_TIMEOUT_SECONDS;
         boolean briefYaml = false;
+        String pendingIntentPath = null;
         String opt;
 
         while ((opt = getNextOption()) != null) {
@@ -603,6 +612,9 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                 case "--brief-yaml":
                     briefYaml = true;
                     break;
+                case "--pending-intent-path":
+                    pendingIntentPath = getNextArgRequired();
+                    break;
                 default:
                     pw.println("Unknown option: " + opt);
                     return -1;
@@ -637,6 +649,7 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         final AtomicInteger resultCode = new AtomicInteger(0);
         final boolean finalBriefYaml = briefYaml;
+        final String finalPendingIntentPath = pendingIntentPath;
         IExecuteAppFunctionCallback callback =
                 new IExecuteAppFunctionCallback.Stub() {
 
@@ -658,7 +671,11 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                                         convertGenericDocumentToJson(response.getResultDocument());
                                 pw.println(functionReturnJson.toString(/* indentSpace= */ 2));
                             }
-                        } catch (JSONException e) {
+
+                            if (finalPendingIntentPath != null) {
+                                extractAndSendPendingIntent(pw, response, finalPendingIntentPath);
+                            }
+                        } catch (JSONException | PendingIntent.CanceledException e) {
                             pw.println("Failed to convert the function response to JSON.");
                             resultCode.set(-1);
                         } finally {
@@ -688,6 +705,39 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         pw.flush();
 
         return resultCode.get();
+    }
+
+    private void extractAndSendPendingIntent(
+            PrintWriter pw, ExecuteAppFunctionResponse response, String pendingIntentPath)
+            throws PendingIntent.CanceledException {
+        PendingIntent pendingIntent = null;
+        String[] pathSegments = pendingIntentPath.split("\\.");
+        Bundle currentBundle = response.getExtras();
+        for (int i = 0; i < pathSegments.length; i++) {
+            String segment = pathSegments[i];
+            if (i == pathSegments.length - 1) {
+                pendingIntent = currentBundle.getParcelable(segment, PendingIntent.class);
+            } else {
+                currentBundle = currentBundle.getBundle(segment);
+                if (currentBundle == null) {
+                    break;
+                }
+            }
+        }
+        if (pendingIntent != null) {
+            ActivityOptions activityOptions = ActivityOptions.makeBasic();
+            activityOptions.setPendingIntentBackgroundActivityStartMode(
+                    ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS);
+            final long token = Binder.clearCallingIdentity();
+            try {
+                pendingIntent.send(activityOptions.toBundle());
+            } finally {
+                Binder.restoreCallingIdentity(token);
+            }
+            pw.println("Sent PendingIntent from extras key: " + pendingIntentPath);
+        } else {
+            pw.println("No PendingIntent found at extras key: " + pendingIntentPath);
+        }
     }
 
     private int setAdditionalAgents() {
