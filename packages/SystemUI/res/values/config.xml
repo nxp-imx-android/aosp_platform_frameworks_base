@@ -1250,4 +1250,9 @@
     immediately to a bouncer.
     -->
     <bool name="config_alwaysShowBouncerWhenLocked">false</bool>
+
+    <!--
+    Indicates whether to use the Alerts channel for storage notifications.
+    -->
+    <bool name="config_storageNotificationsUseAlertsChannel">false</bool>
 </resources>
