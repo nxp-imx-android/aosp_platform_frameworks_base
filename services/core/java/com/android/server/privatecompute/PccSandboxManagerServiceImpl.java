@@ -26,6 +26,7 @@ import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
+import android.app.KeyguardManager;
 import android.app.privatecompute.DataMigrationToPccService;
 import android.app.privatecompute.IDataMigrationToPccService;
 import android.app.privatecompute.IMigrationRequestResultReceiver;
@@ -371,6 +372,20 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
                     return 0;
                 }
                 case "read-intelligence-audit-log" -> {
+                    // We check if the device is locked to force the user to input their LSKF
+                    // when changing users. Otherwise, a user could `am switch-user` to a different
+                    // user and read the audit log without unlocking the device for the target user.
+                    KeyguardManager keyguardManager =
+                            mContext.getSystemService(KeyguardManager.class);
+                    if (keyguardManager == null) {
+                        pw.println("Error: cannot get KeyguardManager.");
+                        return -1;
+                    }
+                    if (keyguardManager.isKeyguardLocked()) {
+                        pw.println("Please unlock your device to read the audit log.");
+                        return -1;
+                    }
+
                     final int userId = ActivityManager.getCurrentUser();
                     List<AuditLogEntry> entries = AuditModeContext.readAuditLogs(
                             mInjector.getAuditLogFilesDirectory(), userId);
