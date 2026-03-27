@@ -57,8 +57,8 @@ java_defaults {
         "com.android.internal.os.flags-aconfig-java",
     ],
     srcs: [
-        "test/**/*.java",
-        "test/**/*.kt",
+        "src/**/*.java",
+        "src/**/*.kt",
     ],
     jni_libs: [
         "libravenwoodbivalenttest_jni",
@@ -78,8 +78,8 @@ java_defaults {
 
     // TODO(b/371215487): migrate bivalenttest.ravenizer tests to another architecture
     exclude_srcs: [
-        "test/**/ravenizer/*.java",
-        "test/**/ravenizer/*.kt",
+        "src/**/ravenizer/*.java",
+        "src/**/ravenizer/*.kt",
     ],
     static_libs: [
         "junit",
@@ -116,8 +116,8 @@ android_test {
 
 aidl_interface {
     name: "ravenwood_bivalent_aidl",
-    srcs: ["test/**/*.aidl"],
-    local_include_dir: "test",
+    srcs: ["src/**/*.aidl"],
+    local_include_dir: "src",
     unstable: true,
     host_supported: true,
 }
