@@ -64,7 +64,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.hideFromAccessibility
+import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
@@ -129,11 +130,13 @@ fun DreamSelectionDialog(
     onEditClicked: (DreamItemUiModel) -> Unit,
     onSettingsClicked: () -> Unit,
 ) {
+    val paneTitleString = stringResource(R.string.dream_switcher_choose_screensaver)
     Column(
         modifier =
             Modifier.wrapContentSize()
                 .padding(horizontal = Dimensions.DialogPaddingHorizontal)
-                .systemGestureExclusion(),
+                .systemGestureExclusion()
+                .semantics { paneTitle = paneTitleString },
         verticalArrangement = Arrangement.spacedBy(Dimensions.DialogSpacing),
     ) {
         if (dreamInfos.isEmpty()) {
@@ -168,7 +171,10 @@ fun DreamSelectionDialog(
             Spacer(modifier = Modifier.height(Dimensions.ContainerSpacerHeight))
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier =
+                    Modifier.fillMaxWidth().semantics(mergeDescendants = true) {
+                        hideFromAccessibility()
+                    },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
@@ -308,8 +314,7 @@ private fun DreamCarousel(
         ) {
             ScrollHintArrow(
                 onClick = { coroutineScope.launch { lazyListState.animateScrollBy(scrollAmount) } },
-                modifier =
-                    Modifier.padding(horizontal = Dimensions.ScrollArrowPaddingHorizontal),
+                modifier = Modifier.padding(horizontal = Dimensions.ScrollArrowPaddingHorizontal),
             )
         }
     }
@@ -356,7 +361,7 @@ private fun DreamCard(uiDreamInfo: DreamItemUiModel, onClick: () -> Unit) {
                 modifier =
                     Modifier.size(Dimensions.CardSelectedIconSize)
                         .align(Alignment.Center)
-                        .background(MaterialTheme.colorScheme.tertiary, CircleShape),
+                        .background(MaterialTheme.colorScheme.tertiary, CircleShape)
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_check_small),
