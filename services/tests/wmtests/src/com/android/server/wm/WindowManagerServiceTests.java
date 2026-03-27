@@ -889,6 +889,55 @@ public class WindowManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags(android.view.inputmethod.Flags.FLAG_WARM_WORK_PROFILE_IME)
+    public void testAddWindow_staleImeWindow_ignored() {
+        // Setup the active IME token on the display
+        final WindowToken activeImeToken = createImeWindowToken(mDisplayContent);
+        mDisplayContent.getImeContainer().setImeWindowToken(activeImeToken.asImeToken());
+
+        // Create a stale IME window token
+        final WindowToken staleImeToken = createImeWindowToken(mDisplayContent);
+
+        // Add an IME window using the stale token
+        final WindowManager.LayoutParams params = new WindowManager.LayoutParams(TYPE_INPUT_METHOD);
+        params.token = staleImeToken.token;
+        final IWindow staleImeWindow = new TestIWindow();
+        final Session session = createTestSession(mAtm, 1234 /* pid */, Process.SYSTEM_UID);
+
+        final int result = mWm.addWindow(session, staleImeWindow, params, View.VISIBLE,
+                DEFAULT_DISPLAY, UserHandle.USER_SYSTEM, WindowInsets.Type.defaultVisible(), null,
+                new WindowRelayoutResult());
+        assertThat(result).isAtLeast(WindowManagerGlobal.ADD_OKAY);
+
+        final WindowState win = mWm.windowForClient(session, staleImeWindow);
+        // The display's IME window should not be set to the stale window
+        assertThat(mDisplayContent.getImeWindow()).isNotEqualTo(win);
+    }
+
+    @Test
+    @EnableFlags(android.view.inputmethod.Flags.FLAG_WARM_WORK_PROFILE_IME)
+    public void testAddWindow_validImeWindow_added() {
+        // Setup the active IME token on the display
+        final WindowToken activeImeToken = createImeWindowToken(mDisplayContent);
+        mDisplayContent.getImeContainer().setImeWindowToken(activeImeToken.asImeToken());
+
+        // Add an IME window using the active token
+        final WindowManager.LayoutParams params = new WindowManager.LayoutParams(TYPE_INPUT_METHOD);
+        params.token = activeImeToken.token;
+        final IWindow activeImeWindow = new TestIWindow();
+        final Session session = createTestSession(mAtm, 1234 /* pid */, Process.SYSTEM_UID);
+
+        final int result = mWm.addWindow(session, activeImeWindow, params, View.VISIBLE,
+                DEFAULT_DISPLAY, UserHandle.USER_SYSTEM, WindowInsets.Type.defaultVisible(), null,
+                new WindowRelayoutResult());
+        assertThat(result).isAtLeast(WindowManagerGlobal.ADD_OKAY);
+
+        final WindowState win = mWm.windowForClient(session, activeImeWindow);
+        // The display's IME window should be set to the valid window
+        assertThat(mDisplayContent.getImeWindow()).isEqualTo(win);
+    }
+
+    @Test
     public void testIsInTouchMode_returnsDefaultInTouchModeForinexistingDisplay() {
         assertThat(mWm.isInTouchMode(INVALID_DISPLAY)).isEqualTo(
                 mContext.getResources().getBoolean(
