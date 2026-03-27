@@ -8045,6 +8045,10 @@
     <!-- Whether PersonalContextManagerService is enabled on this device -->
     <bool name="config_enablePersonalContextManagerService">false</bool>
 
+    <!-- If true, all personal context connects to must run in the PCC sandbox. If false, services
+    can also pass the check if they have allow-associations configured. -->
+    <bool name="config_enableStrictPersonalContextPccNextCheck">false</bool>
+
     <!-- Packages allowed to publish hints to PersonalContextManagerService -->
     <string-array translatable="false" name="config_allowlistPersonalContextHintPublishing">
     </string-array>

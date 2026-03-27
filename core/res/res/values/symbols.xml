@@ -6585,6 +6585,9 @@
 
   <!-- Whether Personal Context is enabled -->
   <java-symbol type="bool" name ="config_enablePersonalContextManagerService"/>
+  <!-- If true, all personal context connects to must run in the PCC sandbox. If false, services
+  can also pass the check if they have allow-associations configured. -->
+  <java-symbol type="bool" name ="config_enableStrictPersonalContextPccNextCheck"/>
   <!-- Packages allowed to publish context hints -->
   <java-symbol type="array" name="config_allowlistPersonalContextHintPublishing" />
   <!-- Packages allowed to receive context hints -->
