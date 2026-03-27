@@ -122,9 +122,9 @@ constructor(
                 initialValue = ImeIndicatorChipModel(isFeatureEnabled, selectedSubtype = null),
             )
 
-    fun showInputMethodPicker(displayId: Int) {
+    fun toggleInputMethodPicker(displayId: Int) {
         scope.launch {
-            inputMethodRepository.showInputMethodPicker(
+            inputMethodRepository.toggleInputMethodPicker(
                 showAuxiliarySubtypes = true,
                 entryPoint = InputMethodManager.IM_PICKER_ENTRY_POINT_STATUS_BAR_CHIP,
                 displayId = displayId,

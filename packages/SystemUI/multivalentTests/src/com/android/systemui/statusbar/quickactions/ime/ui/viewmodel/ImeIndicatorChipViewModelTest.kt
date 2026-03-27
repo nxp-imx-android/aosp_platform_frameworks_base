@@ -202,16 +202,22 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
-    fun chip_onClick_callsShowInputMethodPicker() =
+    fun chip_onClick_togglesInputMethodPicker() =
         kosmos.runTest {
             fakeInputMethodRepository.selectedInputMethodSubtypes = INPUT_METHOD_SUBTYPES
             val chip = assertIs<QuickActionChipModel.LaunchChip>(underTest.chip)
+            assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId).isNull()
 
             chip.onClick(context)
             testScope.runCurrent()
 
             assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId)
                 .isEqualTo(Display.DEFAULT_DISPLAY)
+
+            chip.onClick(context)
+            testScope.runCurrent()
+
+            assertThat(fakeInputMethodRepository.inputMethodPickerShownDisplayId).isNull()
         }
 
     @Test
