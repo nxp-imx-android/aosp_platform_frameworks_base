@@ -96,6 +96,7 @@ class MenuViewTest : SysuiTestCase() {
         with(kosmos) {
             whenever(accessibilityManager.getAccessibilityShortcutTargets(anyInt()))
                 .thenReturn(shortcutTargets)
+            menuViewModel.onGuardedSceneChanged(false)
         }
 
         createAndAttachMenuView()
@@ -265,6 +266,24 @@ class MenuViewTest : SysuiTestCase() {
             menuViewModel.onTargetFeaturesChanged(initialTargets)
 
             assertThat(menuView.targetFeaturesView.adapter!!.itemCount).isEqualTo(2)
+        }
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FLOATING_MENU_MORE_OPTIONS)
+    fun onTargetFeaturesChanged_withPointer_guardedScene_moreOptionsIsNotAdded() {
+        kosmos.runTest {
+            menuView.show()
+
+            val initialTargets = listOf(TestAccessibilityTarget(context, 1))
+            menuViewModel.onTargetFeaturesChanged(initialTargets)
+            assertThat(menuView.targetFeaturesView.adapter!!.itemCount).isEqualTo(1)
+
+            fakePointerDeviceRepository.setIsAnyPointerConnected(true)
+            menuViewModel.onTargetFeaturesChanged(initialTargets)
+            menuViewModel.onGuardedSceneChanged(true)
+
+            assertThat(menuView.targetFeaturesView.adapter!!.itemCount).isEqualTo(1)
         }
     }
 

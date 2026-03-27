@@ -30,7 +30,10 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.Magnification
 import com.android.systemui.inputdevice.data.repository.PointerDeviceRepository
 import com.android.systemui.keyboard.data.repository.KeyboardRepository
+import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.navigationbar.NavigationModeController
+import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.testKosmosNew
 import com.android.systemui.util.settings.SecureSettings
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
@@ -47,6 +50,7 @@ import org.mockito.kotlin.whenever
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 @SmallTest
 class MenuViewLayerControllerTest : SysuiTestCase() {
+    private val kosmos = testKosmosNew()
     private val windowManager = mock<WindowManager>()
     private val accessibilityManager = mock<AccessibilityManager>()
     private val hearingAidDeviceManager = mock<HearingAidDeviceManager>()
@@ -80,6 +84,8 @@ class MenuViewLayerControllerTest : SysuiTestCase() {
                 keyboardRepository,
                 pointerDeviceRepository,
                 mock<Magnification>(),
+                kosmos.keyguardTransitionInteractor,
+                kosmos.sceneInteractor,
             )
     }
 

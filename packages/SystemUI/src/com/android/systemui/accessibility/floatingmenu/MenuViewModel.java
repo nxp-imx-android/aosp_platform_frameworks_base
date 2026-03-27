@@ -30,16 +30,21 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.android.compose.animation.scene.SceneKey;
 import com.android.internal.accessibility.dialog.AccessibilityTarget;
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.settingslib.bluetooth.HearingAidDeviceManager;
 import com.android.systemui.Flags;
 import com.android.systemui.inputdevice.data.repository.PointerDeviceRepository;
 import com.android.systemui.keyboard.data.repository.KeyboardRepository;
+import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor;
+import com.android.systemui.keyguard.shared.model.KeyguardState;
+import com.android.systemui.scene.domain.interactor.SceneInteractor;
+import com.android.systemui.scene.shared.model.KeyguardScenesKt;
 import com.android.systemui.util.settings.SecureSettings;
 
 import java.util.ArrayList;
 import java.util.List;
-
 /**
  * The view model provides the menu information from the repository{@link MenuInfoRepository} for
  * the menu view{@link MenuView}.
@@ -61,9 +66,11 @@ public class MenuViewModel implements MenuInfoRepository.OnContentsChanged {
     private final MediatorLiveData<Integer> mHearingDeviceTargetIndex =  new MediatorLiveData<>(-1);
     private final MutableLiveData<MenuPosition> mPositionData =
             new MutableLiveData<>();
+    private final MediatorLiveData<Boolean> mIsGuardedScene = new MediatorLiveData<>(false);
 
     private final MenuInfoRepository mInfoRepository;
     private final MoreOptionsTarget mMoreOptionsTarget;
+
 
     private MenuPosition mLastMenuPosition = MenuPosition.BOTTOM_RIGHT;
 
@@ -73,7 +80,9 @@ public class MenuViewModel implements MenuInfoRepository.OnContentsChanged {
             SecureSettings secureSettings,
             HearingAidDeviceManager hearingAidDeviceManager,
             KeyboardRepository keyboardRepository,
-            PointerDeviceRepository pointerDeviceRepository) {
+            PointerDeviceRepository pointerDeviceRepository,
+            KeyguardTransitionInteractor keyguardTransitionInteractor,
+            SceneInteractor sceneInteractor) {
         mInfoRepository =
                 new MenuInfoRepository(
                         context,
@@ -83,6 +92,7 @@ public class MenuViewModel implements MenuInfoRepository.OnContentsChanged {
                         hearingAidDeviceManager);
         mMoreOptionsTarget = new MoreOptionsTarget(context);
 
+        setupKeyguardMonitoring(keyguardTransitionInteractor, sceneInteractor);
         setupTargetFeaturesObservation(keyboardRepository, pointerDeviceRepository);
         setupHearingDeviceMonitoring();
     }
@@ -104,15 +114,47 @@ public class MenuViewModel implements MenuInfoRepository.OnContentsChanged {
         mMenuTargets.addSource(mOriginalTargets, targets -> recalculateTargetFeatures(
                 targets,
                 isKeyboardConnected.getValue(),
-                isPointerDeviceConnected.getValue()));
+                isPointerDeviceConnected.getValue(),
+                mIsGuardedScene.getValue()));
         mMenuTargets.addSource(isKeyboardConnected, connected -> recalculateTargetFeatures(
                 mOriginalTargets.getValue(),
                 connected,
-                isPointerDeviceConnected.getValue()));
+                isPointerDeviceConnected.getValue(),
+                mIsGuardedScene.getValue()));
         mMenuTargets.addSource(isPointerDeviceConnected, connected -> recalculateTargetFeatures(
                 mOriginalTargets.getValue(),
                 isKeyboardConnected.getValue(),
-                connected));
+                connected,
+                mIsGuardedScene.getValue()));
+        mMenuTargets.addSource(mIsGuardedScene, isGuarded -> recalculateTargetFeatures(
+                mOriginalTargets.getValue(),
+                isKeyboardConnected.getValue(),
+                isPointerDeviceConnected.getValue(),
+                isGuarded));
+    }
+
+    private void setupKeyguardMonitoring(
+            KeyguardTransitionInteractor keyguardTransitionInteractor,
+            SceneInteractor sceneInteractor) {
+        if (!Flags.floatingMenuMoreOptions()) {
+            return;
+        }
+
+        if (!Flags.sceneContainer()) {
+            LiveData<KeyguardState> keyguardState =
+                    FlowLiveDataConversions.asLiveData(
+                            keyguardTransitionInteractor.getCurrentKeyguardState());
+            mIsGuardedScene.addSource(
+                    keyguardState, state -> mIsGuardedScene.setValue(
+                            state != KeyguardState.GONE && state != KeyguardState.UNDEFINED));
+        } else {
+            LiveData<SceneKey> sceneKey =
+                    FlowLiveDataConversions.asLiveData(
+                            sceneInteractor.getCurrentScene());
+            mIsGuardedScene.addSource(
+                    sceneKey, key -> mIsGuardedScene.setValue(
+                            KeyguardScenesKt.isKeyguardScene(key)));
+        }
     }
 
     private void setupHearingDeviceMonitoring() {
@@ -125,14 +167,16 @@ public class MenuViewModel implements MenuInfoRepository.OnContentsChanged {
     private void recalculateTargetFeatures(
             List<AccessibilityTarget> targets,
             Boolean isKeyboardConnected,
-            Boolean isPointerDeviceConnected) {
+            Boolean isPointerDeviceConnected,
+            Boolean isGuardedScene) {
         if (targets == null) {
             targets = emptyList();
         }
 
         boolean hasInputDevice = Boolean.TRUE.equals(isKeyboardConnected)
                 || Boolean.TRUE.equals(isPointerDeviceConnected);
-        boolean shouldShowMoreOptions = Flags.floatingMenuMoreOptions() && hasInputDevice;
+        boolean shouldShowMoreOptions = Flags.floatingMenuMoreOptions()
+                && hasInputDevice && !isGuardedScene;
 
         if (!shouldShowMoreOptions) {
             mMenuTargets.setValue(targets);
@@ -163,6 +207,11 @@ public class MenuViewModel implements MenuInfoRepository.OnContentsChanged {
     public void onDevicesConnectionStatusChanged(
             @HearingAidDeviceManager.ConnectionStatus int status) {
         mHearingDeviceStatusData.postValue(status);
+    }
+
+    @VisibleForTesting
+    void onGuardedSceneChanged(boolean isGuardedScene) {
+        mIsGuardedScene.setValue(isGuardedScene);
     }
 
     void updateMenuMoveToTucked(boolean isMoveToTucked) {

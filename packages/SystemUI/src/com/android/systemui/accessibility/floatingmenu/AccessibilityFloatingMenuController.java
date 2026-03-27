@@ -283,7 +283,9 @@ public class AccessibilityFloatingMenuController implements
                             mHearingAidDeviceManager,
                             mKeyboardRepository,
                             mPointerDeviceRepository,
-                            mMagnification);
+                            mMagnification,
+                            mKeyguardInteractor,
+                            mSceneInteractor);
         }
 
         mFloatingMenu.show();
