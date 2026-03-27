@@ -2634,15 +2634,9 @@ public class BubbleStackView extends FrameLayout
                 });
             };
             if (mPositioner.isImeVisible()) {
-                if (Flags.fixBubbleSwipeUpGesture()) {
-                    hideCurrentInputMethod();
-                    onImeHidden.run();
-                } else {
-                    hideCurrentInputMethod(onImeHidden);
-                }
-            } else {
-                onImeHidden.run();
+                hideCurrentInputMethod();
             }
+            onImeHidden.run();
         }
     }
 
@@ -2731,13 +2725,8 @@ public class BubbleStackView extends FrameLayout
         };
 
         if (mPositioner.isImeVisible()) {
-            if (Flags.fixBubbleSwipeUpGesture()) {
-                hideCurrentInputMethod();
-                onImeHidden.run();
-            } else {
-                BubbleLog.d("BubbleStackView.setExpanded IME is visible, delaying animation");
-                hideCurrentInputMethod(onImeHidden);
-            }
+            hideCurrentInputMethod();
+            onImeHidden.run();
         } else {
             // Clear out the existing runnable if one was scheduled to run after IME was hidden.
             // IME hide action can take time or in some cases not trigger at all. And we can
