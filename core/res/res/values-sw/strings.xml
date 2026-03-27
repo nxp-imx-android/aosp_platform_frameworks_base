@@ -2713,6 +2713,5 @@
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Tuma kwa wengine"</string>
     <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
     <skip />
-    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
-    <skip />
+    <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"Imeshindwa kurekebisha mwangaza kwa sababu inadhibitiwa na programu iliyo juu"</string>
 </resources>
