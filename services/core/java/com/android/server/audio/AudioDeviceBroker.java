@@ -1630,8 +1630,9 @@ public class AudioDeviceBroker {
                 mCommunicationStack.applyDeviceRestrictions(
                         AudioDeviceBroker.this::checkRouteClientDevice);
                 // Skip disconnection force-updates for sessions, we handle them upstream
-                    boolean isSession = mCommunicationStack.topClient()
-                        .map(x -> x.isForModeSession()).orElse(false);
+                // See AudioModeSession#onAvailableDevicesChanged
+                boolean isSession = mCommunicationStack.topClient()
+                    .map(x -> x.isForModeSession()).orElse(false);
                 if (connect || (!deviceSwitch && !isSession)) {
                     onUpdateCommunicationRouteClient("handleDeviceConnection");
                 }
