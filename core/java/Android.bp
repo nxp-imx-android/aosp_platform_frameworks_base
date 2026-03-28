@@ -994,12 +994,13 @@ java_system_features_srcs {
     visibility: ["//visibility:private"],
 }
 
+// Set of proguard flags that may be implicitly applied to bundled targets built
+// against private SDK APIs. We don't inject these into framework targets
+// directly as we don't want them propagating across any library boundaries.
 filegroup {
-    name: "systemfeatures-gen-proguard",
+    name: "framework-private-proguard",
     srcs: [":systemfeatures-gen-srcs{.proguardFlagsFiles}"],
-    // TODO(b/203143243): Adjust visibility and apply these rules by default for
-    // `platform_apis: true` targets.
-    visibility: ["//frameworks/base/services"],
+    visibility: ["//visibility:private"],
 }
 
 aidl_interface {
