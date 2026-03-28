@@ -26,6 +26,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -169,6 +170,7 @@ public class ContextComponentManagerTest {
         final String packageName = "com.whatever";
         final Context context = mock(Context.class);
         final PackageManager pm = mock(PackageManager.class);
+        final NotificationManager notificationManager = mock(NotificationManager.class);
         final UserHandle userHandle = mock(UserHandle.class);
         final ResolveInfo resolve = new ResolveInfo();
         resolve.serviceInfo = new ServiceInfo();
@@ -176,6 +178,7 @@ public class ContextComponentManagerTest {
         resolve.serviceInfo.name = "WhateverService";
 
         when(context.getPackageManager()).thenReturn(pm);
+        when(context.getSystemService(NotificationManager.class)).thenReturn(notificationManager);
         when(pm.queryIntentServices(any(), anyInt())).thenReturn(List.of(resolve));
 
         final ContextComponentManager manager = new ContextComponentManager(context, userHandle,

@@ -19,6 +19,8 @@ package com.android.server.personalcontext.component.client;
 import static android.Manifest.permission.RECEIVE_SENSITIVE_NOTIFICATIONS;
 
 import android.annotation.PermissionManuallyEnforced;
+import android.app.NotificationManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
@@ -40,6 +42,7 @@ import androidx.annotation.NonNull;
 import com.android.server.personalcontext.AccessController;
 import com.android.server.personalcontext.component.Renderer;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -87,12 +90,21 @@ public class ServiceClientRenderer
         int properties = 0;
 
         final PackageManager packageManager = context.getPackageManager();
+        final NotificationManager notificationManager =
+                context.getSystemService(NotificationManager.class);
         final boolean hasSensitiveNotificationPermission = packageManager
                 .checkPermission(RECEIVE_SENSITIVE_NOTIFICATIONS, serviceInfo.packageName)
                 == PackageManager.PERMISSION_GRANTED;
+        List<ComponentName> enabledListeners =
+                notificationManager.getEnabledNotificationListeners(userHandle.getIdentifier());
+        final boolean isEnabledNotificationListener =
+                enabledListeners != null
+                        && enabledListeners.contains(serviceInfo.getComponentName());
         if (hasSensitiveNotificationPermission
-                && serviceInfo.metaData != null && serviceInfo.metaData
-                .getBoolean(META_DATA_RECEIVE_NOTIFICATION_INSIGHTS, false)) {
+                && isEnabledNotificationListener
+                && serviceInfo.metaData != null
+                && serviceInfo.metaData.getBoolean(
+                        META_DATA_RECEIVE_NOTIFICATION_INSIGHTS, false)) {
             properties |= Renderer.PROPERTY_CAN_RECEIVE_NOTIFICATION_INSIGHTS;
         }
 
