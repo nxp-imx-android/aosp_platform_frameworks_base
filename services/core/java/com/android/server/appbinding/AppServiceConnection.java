@@ -20,7 +20,6 @@ import android.annotation.NonNull;
 import android.app.supervision.flags.Flags;
 import android.content.ComponentName;
 import android.content.Context;
-import android.os.ConditionVariable;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.IInterface;
@@ -87,7 +86,7 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
 
     @Override
     protected void onConnected(@NonNull IInterface service) {
-        scheduleCallbacksLegacy();
+        scheduleCallbacksNoTimeout();
         scheduleCallbacks();
     }
 
@@ -112,7 +111,7 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
         synchronized (mLock) {
             mCallbacks.add(callback);
         }
-        scheduleCallbacksLegacy();
+        scheduleCallbacksNoTimeout();
     }
     /**
      * Adds a callback to the queue and tries to schedule it immediately
@@ -145,7 +144,7 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
         }
     }
 
-    private void scheduleCallbacksLegacy() {
+    private void scheduleCallbacksNoTimeout() {
         if (isConnected()) {
             ArrayList<Consumer<AppServiceConnection>> callbacks;
             synchronized (mLock) {
