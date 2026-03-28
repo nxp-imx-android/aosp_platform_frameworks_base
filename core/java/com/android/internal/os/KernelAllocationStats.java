@@ -76,4 +76,19 @@ public final class KernelAllocationStats {
 
     /** Return list of pid to gpu memory size. */
     public static native ProcessGpuMem[] getGpuAllocations();
+
+    /** Slab cache statistics */
+    public static final class SlabCacheStats {
+        public final String name;
+        public final int totalMemUsageKb;
+
+        public SlabCacheStats(String name, int totalMemUsageKb) {
+            this.name = name;
+            this.totalMemUsageKb = totalMemUsageKb;
+        }
+    }
+
+    /** Return list of statistics per slab cache. */
+    @Nullable
+    public static native SlabCacheStats[] getSlabInfoStats();
 }

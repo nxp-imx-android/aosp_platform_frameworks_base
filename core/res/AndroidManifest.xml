@@ -3849,7 +3849,7 @@
 
     <!-- Required to be able to interact with other applications via IP packets on the loopback
         interface.
-        @FlaggedApi(android.permission.flags.Flags.FLAG_USE_LOOPBACK_INTERFACE_PERMISSION_ENABLED)
+        @FlaggedApi(android.permission.flags.Flags.FLAG_FULL_LOOPBACK_PROTECTIONS_ENABLED)
         <p>Protection level: normal -->
     <permission
         android:name="android.permission.USE_LOOPBACK_INTERFACE"
@@ -9735,12 +9735,10 @@
         <p>This permission is only granted to system applications.
         <p>Protection level: signature|privileged
         @SystemApi
-        @FlaggedApi(com.android.devicelock.flags.Flags.FLAG_GET_ENROLLMENT_TYPE)
         @hide
     -->
     <permission android:name="android.permission.GET_DEVICE_LOCK_ENROLLMENT_TYPE"
         android:protectionLevel="signature|privileged"
-        android:featureFlag="com.android.devicelock.flags.get_enrollment_type"
         android:permissionFlags="allowedInPrivateComputeCore" />
 
     <!-- @SystemApi Required by a WearableSensingService to

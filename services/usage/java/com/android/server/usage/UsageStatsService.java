@@ -42,6 +42,7 @@ import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
+import android.app.ActivityManager.ProcessCapability;
 import android.app.ActivityManager.ProcessState;
 import android.app.AppOpsManager;
 import android.app.IUidObserver;
@@ -301,7 +302,7 @@ public class UsageStatsService extends SystemService implements
         switch (msg.what) {
             case MSG_UID_STATE_CHANGED: {
                 final int uid = msg.arg1;
-                final int procState = msg.arg2;
+                @ProcessState final int procState = msg.arg2;
 
                 final int newCounter = (procState <= ActivityManager.PROCESS_STATE_TOP) ? 0 : 1;
                 synchronized (mUidToKernelCounter) {
@@ -677,7 +678,8 @@ public class UsageStatsService extends SystemService implements
 
     private final IUidObserver mUidObserver = new UidObserver() {
         @Override
-        public void onUidStateChanged(int uid, int procState, long procStateSeq, int capability) {
+        public void onUidStateChanged(int uid, @ProcessState int procState,
+                long procStateSeq, @ProcessCapability int capability) {
             mIoHandler.obtainMessage(MSG_UID_STATE_CHANGED, uid, procState).sendToTarget();
         }
 

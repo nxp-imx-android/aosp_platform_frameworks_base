@@ -295,6 +295,7 @@ import android.view.View;
 import android.view.View.FocusDirection;
 import android.view.ViewDebug;
 import android.view.WindowContentFrameStats;
+import android.view.WindowInputChannelParams;
 import android.view.WindowInsets;
 import android.view.WindowInsets.Type.InsetsType;
 import android.view.WindowManager;
@@ -363,6 +364,7 @@ import com.android.server.LockGuard;
 import com.android.server.StorageManagerInternal;
 import com.android.server.UiThread;
 import com.android.server.Watchdog;
+import com.android.server.am.ActivityManagerService;
 import com.android.server.am.UserState;
 import com.android.server.input.InputManagerService;
 import com.android.server.inputmethod.InputMethodManagerInternal;
@@ -10080,33 +10082,32 @@ public class WindowManagerService extends IWindowManager.Stub
      * Used by WindowlessWindowManager to enable input on SurfaceControl embedded
      * views.
      */
-    InputChannel grantInputChannel(Session session, int callingUid, int callingPid, int displayId,
-            SurfaceControl surface, IBinder clientToken,
-            @Nullable InputTransferToken hostInputTransferToken, int flags, int privateFlags,
-            int inputFeatures, int type, IBinder windowToken, InputTransferToken inputTransferToken,
-            String inputHandleName) {
-        final int sanitizedType = sanitizeWindowType(session, displayId, windowToken, type);
+    InputChannel grantInputChannel(Session session, int callingUid, int callingPid,
+            @NonNull WindowInputChannelParams params) {
+        final int sanitizedType = sanitizeWindowType(session, params.displayId, params.windowToken,
+                params.type);
         final InputApplicationHandle applicationHandle;
         final String name;
         InputChannel inputChannel;
-        Objects.requireNonNull(inputTransferToken);
+        Objects.requireNonNull(params.inputTransferToken);
 
         synchronized (mGlobalLock) {
-            WindowState hostWindowState = hostInputTransferToken != null
-                    ? mInputToWindowMap.get(hostInputTransferToken.getToken()) : null;
+            WindowState hostWindowState = params.hostInputTransferToken != null
+                    ? mInputToWindowMap.get(params.hostInputTransferToken.getToken()) : null;
             EmbeddedWindowController.EmbeddedWindow win =
-                    new EmbeddedWindowController.EmbeddedWindow(session, this, clientToken,
-                            hostWindowState, callingUid, callingPid, sanitizedType, displayId,
-                            inputTransferToken, inputHandleName, (flags & FLAG_NOT_FOCUSABLE) == 0);
+                    new EmbeddedWindowController.EmbeddedWindow(session, this, params.clientToken,
+                            hostWindowState, callingUid, callingPid, sanitizedType,
+                            params.displayId, params.inputTransferToken,
+                            params.inputHandleName, (params.flags & FLAG_NOT_FOCUSABLE) == 0);
             inputChannel = win.openInputChannel();
             mEmbeddedWindowController.add(inputChannel.getToken(), win);
             applicationHandle = win.getApplicationHandle();
             name = win.toString();
         }
 
-        updateInputChannel(inputChannel.getToken(), callingUid, callingPid, displayId, surface,
-                name, applicationHandle, flags, privateFlags, inputFeatures, sanitizedType,
-                null /* region */, clientToken);
+        updateInputChannel(inputChannel.getToken(), callingUid, callingPid, params.displayId,
+                params.surface, name, applicationHandle, params.flags, params.privateFlags,
+                params.inputFeatures, sanitizedType, null /* region */, params.clientToken);
         return inputChannel;
     }
 
@@ -10205,30 +10206,27 @@ public class WindowManagerService extends IWindowManager.Stub
      * is the one associated with the provided input-channel. If this isn't the case, behavior is
      * undefined.
      */
-    void updateInputChannel(IBinder channelToken,
-            @Nullable InputTransferToken hostInputTransferToken, int displayId,
-            SurfaceControl surface,
-            int flags, int privateFlags, int inputFeatures, Region region) {
+    void updateInputChannel(@NonNull WindowInputChannelParams params) {
         final InputApplicationHandle applicationHandle;
         final String name;
         final EmbeddedWindowController.EmbeddedWindow win;
         synchronized (mGlobalLock) {
-            win = mEmbeddedWindowController.get(channelToken);
+            win = mEmbeddedWindowController.get(params.channelToken);
             if (win == null) {
                 Slog.e(TAG, "Couldn't find window for provided channelToken.");
                 return;
             }
             name = win.toString();
             applicationHandle = win.getApplicationHandle();
-            win.setIsFocusable((flags & FLAG_NOT_FOCUSABLE) == 0);
-            WindowState hostWindowState = hostInputTransferToken != null
-                    ? mInputToWindowMap.get(hostInputTransferToken.getToken()) : null;
+            win.setIsFocusable((params.flags & FLAG_NOT_FOCUSABLE) == 0);
+            WindowState hostWindowState = params.hostInputTransferToken != null
+                    ? mInputToWindowMap.get(params.hostInputTransferToken.getToken()) : null;
             win.updateHost(hostWindowState);
         }
 
-        updateInputChannel(channelToken, win.mOwnerUid, win.mOwnerPid, displayId, surface, name,
-                applicationHandle, flags, privateFlags, inputFeatures, win.mWindowType, region,
-                win.mClient);
+        updateInputChannel(params.channelToken, win.mOwnerUid, win.mOwnerPid, params.displayId,
+                params.surface, name, applicationHandle, params.flags, params.privateFlags,
+                params.inputFeatures, win.mWindowType, params.region, win.mClient);
     }
 
     /**

@@ -746,3 +746,11 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "full_loopback_protections_enabled"
+    is_exported: true
+    namespace: "android_core_networking"
+    description: "Enable the new USE_LOOPBACK_INTERFACE install permission required for traffic on loopback interface."
+    bug: "430058614"
+}

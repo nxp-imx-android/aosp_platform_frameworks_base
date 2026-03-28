@@ -61,13 +61,8 @@ java_genrule {
     out: ["wm_shell_pip_protolog.srcjar"],
 }
 
-android_library {
-    name: "WindowManager-Shell-Pip",
-    srcs: [
-        // TODO(b/168581922) protologtool do not support kotlin(*.kt)
-        ":wm_shell-pip-sources-kt",
-        ":wm_shell_pip_protolog_src",
-    ],
+java_defaults {
+    name: "WindowManager-Shell-Pip-defaults",
     static_libs: [
         "wm_shell_protolog-groups",
     ],
@@ -76,4 +71,31 @@ android_library {
     ],
     kotlincflags: ["-Xjvm-default=all"],
     manifest: "AndroidManifest.xml",
+}
+
+android_library {
+    name: "WindowManager-Shell-Pip",
+    defaults: ["WindowManager-Shell-Pip-defaults"],
+    srcs: [
+        // TODO(b/168581922) protologtool do not support kotlin(*.kt)
+        ":wm_shell-pip-sources-kt",
+        ":wm_shell_pip_protolog_src",
+    ],
+}
+
+// A dedicated library to ensure WindowManager-Shell-Pip raw sources are linted in presubmit.
+// (Android Lint ignores the generated .srcjars from `wm_shell_pip_protolog_src`, which hides
+// ProtoLog validation errors in the main target).
+android_library {
+    name: "WindowManager-Shell-Pip-untransformed",
+    defaults: ["WindowManager-Shell-Pip-defaults"],
+    srcs: [
+        ":wm_shell-pip-sources-kt",
+        ":wm_shell-pip-sources",
+    ],
+    lint: {
+        extra_check_modules: [
+            "ProtoLogLintChecker",
+        ],
+    },
 }

@@ -26,6 +26,8 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
+import android.app.ActivityManager.ProcessCapability;
+import android.app.ActivityManager.ProcessState;
 import android.app.ActivityManagerInternal;
 import android.app.ActivityOptions;
 import android.app.AppGlobals;
@@ -657,7 +659,8 @@ public class ShortcutService extends IShortcutService.Stub {
 
     final private IUidObserver mUidObserver = new UidObserver() {
         @Override
-        public void onUidStateChanged(int uid, int procState, long procStateSeq, int capability) {
+        public void onUidStateChanged(int uid, @ProcessState int procState,
+                long procStateSeq, @ProcessCapability int capability) {
             injectPostToHandler(() -> handleOnUidStateChanged(uid, procState));
         }
 
@@ -668,7 +671,7 @@ public class ShortcutService extends IShortcutService.Stub {
         }
     };
 
-    void handleOnUidStateChanged(int uid, int procState) {
+    void handleOnUidStateChanged(int uid, @ProcessState int procState) {
         if (DEBUG_PROCSTATE) {
             Slog.d(TAG, "onUidStateChanged: uid=" + uid + " state=" + procState);
         }
@@ -686,7 +689,7 @@ public class ShortcutService extends IShortcutService.Stub {
         Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
     }
 
-    private boolean isProcessStateForeground(int processState) {
+    private boolean isProcessStateForeground(@ProcessState int processState) {
         return processState <= PROCESS_STATE_FOREGROUND_THRESHOLD;
     }
 

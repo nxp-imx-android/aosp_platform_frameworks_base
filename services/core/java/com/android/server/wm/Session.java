@@ -72,10 +72,10 @@ import android.view.IWindowId;
 import android.view.IWindowSession;
 import android.view.IWindowSessionCallback;
 import android.view.InputChannel;
-import android.view.InsetsSourceControl;
 import android.view.SurfaceControl;
 import android.view.View;
 import android.view.View.FocusDirection;
+import android.view.WindowInputChannelParams;
 import android.view.WindowInsets;
 import android.view.WindowInsets.Type.InsetsType;
 import android.view.WindowManager;
@@ -127,7 +127,6 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
     private float mLastReportedAnimatorScale;
     protected String mPackageName;
     private String mRelayoutTag;
-    private final InsetsSourceControl.Array mDummyControls =  new InsetsSourceControl.Array();
     final boolean mSetsUnrestrictedKeepClearAreas;
 
     public Session(WindowManagerService service, IWindowSessionCallback callback) {
@@ -934,31 +933,30 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
     }
 
     @Override
-    public InputChannel grantInputChannel(int displayId, SurfaceControl surface,
-            IBinder clientToken, @Nullable InputTransferToken hostInputTransferToken, int flags,
-            int privateFlags, int inputFeatures, int type, IBinder windowToken,
-            InputTransferToken inputTransferToken, String inputHandleName) {
+    public InputChannel grantInputChannel(@NonNull WindowInputChannelParams params) {
         final long identity = Binder.clearCallingIdentity();
         try {
-            return mService.grantInputChannel(this, mUid, mPid, displayId, surface, clientToken,
-                    hostInputTransferToken, flags, mCanAddInternalSystemWindow ? privateFlags : 0,
-                    inputFeatures, type, windowToken, inputTransferToken, inputHandleName);
+            sanitizeInputChannelParams(params);
+            return mService.grantInputChannel(this, mUid, mPid, params);
         } finally {
             Binder.restoreCallingIdentity(identity);
         }
     }
 
     @Override
-    public void updateInputChannel(IBinder channelToken,
-            @Nullable InputTransferToken hostInputTransferToken,
-            int displayId, SurfaceControl surface,
-            int flags, int privateFlags, int inputFeatures, Region region) {
+    public void updateInputChannel(@NonNull WindowInputChannelParams params) {
         final long identity = Binder.clearCallingIdentity();
         try {
-            mService.updateInputChannel(channelToken, hostInputTransferToken, displayId, surface,
-                    flags, mCanAddInternalSystemWindow ? privateFlags : 0, inputFeatures, region);
+            sanitizeInputChannelParams(params);
+            mService.updateInputChannel(params);
         } finally {
             Binder.restoreCallingIdentity(identity);
+        }
+    }
+
+    private void sanitizeInputChannelParams(@NonNull WindowInputChannelParams params) {
+        if (!mCanAddInternalSystemWindow) {
+            params.privateFlags = 0;
         }
     }
 

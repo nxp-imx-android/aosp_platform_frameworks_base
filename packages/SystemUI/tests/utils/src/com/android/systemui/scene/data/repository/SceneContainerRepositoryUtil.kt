@@ -111,10 +111,10 @@ fun Kosmos.setSceneTransition(
     if (!skipChangeScene) {
         runCurrent()
         testScope.backgroundScope
-        if (transition.isIdle()) {
-            sceneInteractor.changeScene(
-                getCurrentCurrentScene(transition),
-                "Kosmos.setSceneTransition",
+        if (transition is ObservableTransitionState.Idle && transition.isIdle()) {
+            sceneContainerRepository.instantlyTransitionTo(
+                transition.currentScene,
+                transition.currentOverlays,
             )
         } else {
             sceneInteractor.startTransitionImmediately(

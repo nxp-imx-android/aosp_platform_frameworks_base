@@ -25,6 +25,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.scene.ui.view.WindowRootView
 import com.android.systemui.statusbar.BlurUtils
 import com.android.systemui.util.Assert
+import com.android.systemui.window.logging.BlurLogger
 import com.android.systemui.window.shared.model.BlurEffect
 import dagger.Module
 import dagger.Provides
@@ -76,6 +77,7 @@ class DefaultBlurChoreographer(
     private val traceTag: String = "windowBlur",
     private val blurUtils: BlurUtils,
     private val choreographer: Choreographer,
+    private val logger: BlurLogger,
 ) : BlurChoreographer {
     private var wasUpdateScheduledForThisFrame = false
     private var lastScheduledBlurEffect = BlurEffect(radius = 0f, scale = 1.0f)
@@ -109,6 +111,13 @@ class DefaultBlurChoreographer(
                 Log.w(TAG, "Multiple blur values emitted in the same frame")
             }
             lastScheduledBlurEffect = blurEffect
+            return
+        } else if (lastScheduledBlurEffect == blurEffect) {
+            logger.logSkipApplyBlur(
+                blurEffect,
+                wasUpdateScheduledForThisFrame,
+                lastScheduledBlurEffect,
+            )
             return
         }
         TrackTracer.instantForGroup(traceTag, "preparedBlurRadius", newBlurRadius)
@@ -144,9 +153,10 @@ object BlurChoreographerModule {
         rootView: WindowRootView,
         blurUtils: BlurUtils,
         choreographer: Choreographer?,
+        logger: BlurLogger,
     ): BlurChoreographer {
         return if (choreographer != null) {
-            DefaultBlurChoreographer(rootView, "windowBlur", blurUtils, choreographer)
+            DefaultBlurChoreographer(rootView, "windowBlur", blurUtils, choreographer, logger)
         } else {
             NoopBlurChoreographer()
         }

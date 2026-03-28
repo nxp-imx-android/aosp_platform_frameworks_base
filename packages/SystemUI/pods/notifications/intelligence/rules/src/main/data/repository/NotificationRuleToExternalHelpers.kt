@@ -32,6 +32,10 @@ object NotificationRuleToExternalHelpers {
                         internalFilter.people?.let { people ->
                             val contacts = people.people.filterIsInstance<PersonModel.Contact>()
                             contacts.forEach { addContact(it.lookupUri) }
+
+                            val conversationPartners =
+                                people.people.filterIsInstance<PersonModel.ConversationPartner>()
+                            conversationPartners.forEach { addShortcutId(it.id) }
                         }
                         internalFilter.includedApps?.let { apps ->
                             apps.apps.forEach { addIncludedPackageUid(it.uid) }

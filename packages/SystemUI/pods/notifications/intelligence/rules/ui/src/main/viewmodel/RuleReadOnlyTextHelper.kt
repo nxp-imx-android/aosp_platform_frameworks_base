@@ -34,7 +34,7 @@ internal fun buildReadOnlyRuleText(
     resources: Resources,
     logger: Logger,
 ): RuleDisplayModel {
-    val appsText: SingleFieldTextModel<AppModel>? =
+    val appsText: TextModel.SingleFieldTextModel<AppModel>? =
         rule.filter?.includedApps?.let {
             createReadOnlyIncludedAppsText(
                 selectedIncludedApps = it,
@@ -43,12 +43,12 @@ internal fun buildReadOnlyRuleText(
             )
         }
 
-    val peopleText: SingleFieldTextModel<PersonModel>? =
+    val peopleText: TextModel.SingleFieldTextModel<PersonModel>? =
         rule.filter?.people?.let {
             createReadOnlyPeopleText(selectedPeople = it, resources = resources, logger = logger)
         }
 
-    val keywordsText: SingleFieldTextModel<String>? =
+    val keywordsText: TextModel.SingleFieldTextModel<String>? =
         rule.filter?.keywords?.let {
             createReadOnlyKeywordsText(
                 selectedKeywords = it,
@@ -57,10 +57,13 @@ internal fun buildReadOnlyRuleText(
             )
         }
 
+    val bundleText = createBundleText(rule.action, resources = resources, logger = logger)
+
     return buildRuleText(
         appsText = appsText,
         peopleText = peopleText,
         keywordsText = keywordsText,
+        bundleText = bundleText,
         resources = resources,
     )
 }
@@ -70,7 +73,7 @@ private fun createReadOnlyIncludedAppsText(
     selectedIncludedApps: IncludedAppsModel,
     resources: Resources,
     logger: Logger,
-): SingleFieldTextModel<AppModel> {
+): TextModel.SingleFieldTextModel<AppModel> {
     return createMultiItemText(
         items = selectedIncludedApps.apps,
         iconId = { it.uniqueId },
@@ -87,7 +90,7 @@ private fun createReadOnlyPeopleText(
     selectedPeople: PeopleModel,
     resources: Resources,
     logger: Logger,
-): SingleFieldTextModel<PersonModel> {
+): TextModel.SingleFieldTextModel<PersonModel> {
     return createMultiItemText(
         items = selectedPeople.people,
         iconId = { it.id },
@@ -103,7 +106,7 @@ private fun createReadOnlyKeywordsText(
     selectedKeywords: KeywordsModel,
     resources: Resources,
     logger: Logger,
-): SingleFieldTextModel<String> {
+): TextModel.SingleFieldTextModel<String> {
     return createMultiItemText(
         items = selectedKeywords.keywords,
         iconId = null, // No icon for keywords

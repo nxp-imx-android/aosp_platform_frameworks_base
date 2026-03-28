@@ -24,9 +24,11 @@ import android.app.NotificationRule.Action.PRIMARY_ACTION_HIGHLIGHT
 import android.app.NotificationRule.Action.PRIMARY_ACTION_HIGHLIGHT_AND_ALERT
 import android.app.NotificationRule.Action.PRIMARY_ACTION_LOW
 import android.app.notificationManager
+import android.graphics.drawable.Icon
 import android.graphics.drawable.ShapeDrawable
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -71,6 +73,8 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
     fun setUp() {
         kosmos.fakeContactsRepository.contacts = listOf(FAKE_CONTACT_1, FAKE_CONTACT_2)
         kosmos.fakeInstalledAppsRepository.installedApps = listOf(FAKE_APP)
+        kosmos.fakeConversationPartnersRepository.conversationPartners =
+            listOf(FAKE_CONVERSATION_PARTNER_1, FAKE_CONVERSATION_PARTNER_2)
 
         // By default, return the rule that was passed in
         whenever(kosmos.notificationManager.addNotificationRule(any(), any())).thenAnswer {
@@ -191,7 +195,7 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
-    fun fetchInitialRules_bundleAction() =
+    fun fetchInitialRules_bundleAction_noNameOrEmoji() =
         kosmos.runTest {
             val rule =
                 createRule(action = NotificationRule.Action.Builder(PRIMARY_ACTION_BUNDLE).build())
@@ -201,7 +205,30 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
             val result = underTest.rules
 
             assertThat(result).hasSize(1)
-            assertThat(result[0].action).isEqualTo(ActionModel.Bundle)
+            assertThat(result[0].action)
+                .isEqualTo(ActionModel.Bundle(name = null, emojiIcon = null))
+        }
+
+    @Test
+    @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
+    fun fetchInitialRules_bundleAction_withNameAndEmoji() =
+        kosmos.runTest {
+            val rule =
+                createRule(
+                    action =
+                        NotificationRule.Action.Builder(PRIMARY_ACTION_BUNDLE)
+                            .setDynamicBundleName("Dynamic Name")
+                            .setDynamicBundleEmojiIcon("\uD83D\uDCE6")
+                            .build()
+                )
+            putRulesIntoNotificationManager(listOf(rule))
+
+            underTest.start()
+            val result = underTest.rules
+
+            assertThat(result).hasSize(1)
+            assertThat(result[0].action)
+                .isEqualTo(ActionModel.Bundle(name = "Dynamic Name", emojiIcon = "\uD83D\uDCE6"))
         }
 
     @Test
@@ -316,6 +343,72 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
+    fun fetchInitialRules_shortcuts_hasOnlyFoundShortcuts() =
+        kosmos.runTest {
+            val filter =
+                NotificationRule.Filter.Builder()
+                    .apply {
+                        addShortcutId(FAKE_CONVERSATION_ID_1)
+                        addShortcutId("unknownShortcutId")
+                        addShortcutId(FAKE_CONVERSATION_ID_2)
+                    }
+                    .build()
+            val rule =
+                NotificationRule.Builder(
+                        300,
+                        NotificationRule.Action.Builder(PRIMARY_ACTION_BLOCK).build(),
+                    )
+                    .addFilter(filter)
+                    .build()
+            putRulesIntoNotificationManager(listOf(rule))
+
+            underTest.start()
+            val result = underTest.rules
+
+            assertThat(result).hasSize(1)
+            assertThat(result[0].filter).isNotNull()
+            assertThat(result[0].filter!!.people!!.people)
+                .containsExactly(FAKE_CONVERSATION_PARTNER_1, FAKE_CONVERSATION_PARTNER_2)
+                .inOrder()
+        }
+
+    @Test
+    @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
+    fun fetchInitialRules_contactsAndShortcuts() =
+        kosmos.runTest {
+            val filter =
+                NotificationRule.Filter.Builder()
+                    .apply {
+                        addShortcutId(FAKE_CONVERSATION_ID_1)
+                        addShortcutId(FAKE_CONVERSATION_ID_2)
+                        addContact(CONTACT_1_URI)
+                    }
+                    .build()
+            val rule =
+                NotificationRule.Builder(
+                        300,
+                        NotificationRule.Action.Builder(PRIMARY_ACTION_BLOCK).build(),
+                    )
+                    .addFilter(filter)
+                    .build()
+            putRulesIntoNotificationManager(listOf(rule))
+
+            underTest.start()
+            val result = underTest.rules
+
+            assertThat(result).hasSize(1)
+            assertThat(result[0].filter).isNotNull()
+            assertThat(result[0].filter!!.people!!.people)
+                .containsExactly(
+                    FAKE_CONTACT_1,
+                    FAKE_CONVERSATION_PARTNER_1,
+                    FAKE_CONVERSATION_PARTNER_2,
+                )
+                .inOrder()
+        }
+
+    @Test
+    @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
     fun fetchInitialRules_includedApps_hasOnlyFoundApps() =
         kosmos.runTest {
             val filter =
@@ -373,9 +466,9 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
-    fun fetchInitialRules_noContacts_isNull() =
+    fun fetchInitialRules_noContactsOrShortcuts_peopleIsNull() =
         kosmos.runTest {
-            // WHEN there's apps but not contacts
+            // WHEN there's apps but not contacts or shortcuts
             val filter =
                 NotificationRule.Filter.Builder()
                     .apply { addIncludedPackageUid(FAKE_APP_UID) }
@@ -463,7 +556,13 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
                         DraftFilterModel(
                             people =
                                 RuleValue.Specified(
-                                    PeopleModel(listOf(FAKE_CONTACT_1, FAKE_CONTACT_2))
+                                    PeopleModel(
+                                        listOf(
+                                            FAKE_CONTACT_1,
+                                            FAKE_CONTACT_2,
+                                            FAKE_CONVERSATION_PARTNER_1,
+                                        )
+                                    )
                                 ),
                             includedApps = RuleValue.Specified(IncludedAppsModel(listOf(FAKE_APP))),
                             keywords = KeywordsModel(listOf("dog")),
@@ -481,6 +580,7 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
                         NotificationRule.Filter.Builder()
                             .addContact(CONTACT_1_URI)
                             .addContact(CONTACT_2_URI)
+                            .addShortcutId(FAKE_CONVERSATION_ID_1)
                             .addIncludedPackageUid(FAKE_APP_UID)
                             .addKeyword("dog")
                             .build()
@@ -494,7 +594,9 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
             assertThat(savedRule.action).isEqualTo(ActionModel.Silence)
             assertThat(savedRule.filter).isNotNull()
             assertThat(savedRule.filter!!.people)
-                .isEqualTo(PeopleModel(listOf(FAKE_CONTACT_1, FAKE_CONTACT_2)))
+                .isEqualTo(
+                    PeopleModel(listOf(FAKE_CONTACT_1, FAKE_CONTACT_2, FAKE_CONVERSATION_PARTNER_1))
+                )
             assertThat(savedRule.filter!!.includedApps)
                 .isEqualTo(IncludedAppsModel(listOf(FAKE_APP)))
             assertThat(savedRule.filter!!.keywords).isEqualTo(KeywordsModel(listOf("dog")))
@@ -551,6 +653,52 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
             assertThat(savedRule.filter!!.includedApps)
                 .isEqualTo(IncludedAppsModel(listOf(FAKE_APP)))
             assertThat(savedRule.filter!!.keywords).isEqualTo(KeywordsModel(listOf("dog")))
+        }
+
+    @Test
+    @EnableFlags(NmContextualDisplayLaunch.FLAG_NAME)
+    fun saveRule_withBundleAction() =
+        kosmos.runTest {
+            underTest.start()
+
+            val draftRule =
+                DraftRuleModel.New(
+                    action =
+                        ActionModel.Bundle(name = "Dynamic Bundle", emojiIcon = "\uD83D\uDCE6"),
+                    filter =
+                        DraftFilterModel(
+                            people = null,
+                            includedApps = RuleValue.Specified(IncludedAppsModel(listOf(FAKE_APP))),
+                            keywords = null,
+                        ),
+                )
+
+            testScope.launch { underTest.saveRule(draftRule) }
+
+            val expectedRule =
+                NotificationRule.Builder(
+                        100,
+                        NotificationRule.Action.Builder(PRIMARY_ACTION_BUNDLE)
+                            .setDynamicBundleName("Dynamic Bundle")
+                            .setDynamicBundleEmojiIcon("\uD83D\uDCE6")
+                            .build(),
+                    )
+                    .addFilter(
+                        NotificationRule.Filter.Builder()
+                            .addIncludedPackageUid(FAKE_APP_UID)
+                            .build()
+                    )
+                    .build()
+            verify(notificationManager).addNotificationRule(expectedRule, 0)
+
+            assertThat(underTest.rules).hasSize(1)
+            val savedRule = underTest.rules[0]
+            assertThat(savedRule.id).isEqualTo(100)
+            assertThat(savedRule.action)
+                .isEqualTo(ActionModel.Bundle(name = "Dynamic Bundle", emojiIcon = "\uD83D\uDCE6"))
+            assertThat(savedRule.filter).isNotNull()
+            assertThat(savedRule.filter!!.includedApps)
+                .isEqualTo(IncludedAppsModel(listOf(FAKE_APP)))
         }
 
     // This should never happen, but if NotificationManager returns a different rule than
@@ -784,7 +932,7 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
 
             // Second attempt to save a draft rule: Succeeds
             val newDraftRule =
-                DraftRuleModel.New(action = ActionModel.Bundle, filter = DraftFilterModel())
+                DraftRuleModel.New(action = ActionModel.Block, filter = DraftFilterModel())
             whenever(kosmos.notificationManager.addNotificationRule(any(), any())).thenAnswer {
                 invocation ->
                 invocation.arguments[0]
@@ -795,7 +943,7 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
             val expectedRule =
                 NotificationRule.Builder(
                         102,
-                        NotificationRule.Action.Builder(PRIMARY_ACTION_BUNDLE).build(),
+                        NotificationRule.Action.Builder(PRIMARY_ACTION_BLOCK).build(),
                     )
                     .build()
             verify(notificationManager).addNotificationRule(expectedRule, 0)
@@ -967,6 +1115,26 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
                 label = "app label",
                 icon = ShapeDrawable(),
                 packageName = "app.name",
+            )
+
+        private const val FAKE_CONVERSATION_ID_1 = "5ab"
+        private const val FAKE_CONVERSATION_ID_2 = "6cd"
+        private val FAKE_CONVERSATION_ICON_1 = Icon.createWithBitmap(createBitmap(1, 1))
+
+        private val FAKE_CONVERSATION_ICON_2 = Icon.createWithBitmap(createBitmap(2, 2))
+        private val FAKE_CONVERSATION_PARTNER_1 =
+            PersonModel.ConversationPartner(
+                id = FAKE_CONVERSATION_ID_1,
+                displayLabel = "Conversation #1",
+                avatarIcon = FAKE_CONVERSATION_ICON_1,
+                appBadgeIcon = null,
+            )
+        private val FAKE_CONVERSATION_PARTNER_2 =
+            PersonModel.ConversationPartner(
+                id = FAKE_CONVERSATION_ID_2,
+                displayLabel = "Conversation #2",
+                avatarIcon = FAKE_CONVERSATION_ICON_2,
+                appBadgeIcon = null,
             )
     }
 }

@@ -20,6 +20,8 @@ import android.view.View
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.absolutePadding
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
@@ -38,6 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.util.trace
 import com.android.systemui.lifecycle.rememberViewModel
@@ -90,7 +93,15 @@ fun LocationButton(
             val contentPadding =
                 remember(viewModel.textResId, referenceHeight) {
                     if (viewModel.textResId != null) {
-                        ButtonDefaults.contentPaddingFor(referenceHeight)
+                        val defaultPadding = ButtonDefaults.contentPaddingFor(referenceHeight)
+                        // The content is already centered vertically, and vertical padding can make
+                        // the text clipped when height is smaller to fit the text.
+                        PaddingValues(
+                            start = defaultPadding.calculateStartPadding(layoutDirection),
+                            top = 0.dp,
+                            end = defaultPadding.calculateEndPadding(layoutDirection),
+                            bottom = 0.dp
+                        )
                     } else {
                         PaddingValues()
                     }

@@ -3131,6 +3131,7 @@ class PermissionService(private val service: AccessCheckingService) :
                 this += Manifest.permission.INTERACT_ACROSS_PROFILES
                 this += Manifest.permission.INTERACT_ACROSS_USERS
                 this += Manifest.permission.INTERACT_ACROSS_USERS_FULL
+                this += android.net.NetworkStack.PERMISSION_MAINLINE_NETWORK_STACK
             }
 
         private const val MAX_ALLOWED_BPF_PERMISSIONS = Int.SIZE_BITS

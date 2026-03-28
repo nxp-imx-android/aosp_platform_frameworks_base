@@ -3468,8 +3468,7 @@ public class TransitionTests extends WindowTestsBase {
 
     @Test
     public void testReadyTrackerBasics() {
-        final TransitionController controller = new TestTransitionController(
-                mock(ActivityTaskManagerService.class));
+        final TransitionController controller = new TestTransitionController(mAtm);
         controller.setFullReadyTrackingForTest(true);
         Transition transit = createTestTransition(TRANSIT_OPEN, controller);
         // Not ready if nothing has happened yet
@@ -3492,8 +3491,7 @@ public class TransitionTests extends WindowTestsBase {
 
     @Test
     public void testReadyTrackerAlternate() {
-        final TransitionController controller = new TestTransitionController(
-                mock(ActivityTaskManagerService.class));
+        final TransitionController controller = new TestTransitionController(mAtm);
         controller.setFullReadyTrackingForTest(true);
         Transition transit = createTestTransition(TRANSIT_OPEN, controller);
 
@@ -3771,6 +3769,36 @@ public class TransitionTests extends WindowTestsBase {
         // Verify cleanup happened even on abort
         verify(mMockT).toggleClientDrawnRoundedCornersOpt(eq(task.getSurfaceControl()), eq(true));
         assertThat(controller.mRoundedCornerOptTasks).isEmpty();
+    }
+
+    @Test
+    @RequiresFlagsEnabled(com.android.graphics.surfaceflinger.flags
+                                                .Flags.FLAG_SET_CLIENT_DRAWN_CORNER_RADII)
+    public void testDisableRoundedCornerOpt_ActivityTarget() {
+        final TransitionController controller = mDisplayContent.mTransitionController;
+        registerTestTransitionPlayer();
+
+        final Task task = createTask(mDefaultDisplay);
+        final ActivityRecord activity = createActivityRecord(task);
+
+        doReturn(mMockT).when(task).getSyncTransaction();
+
+        final Transition transition = createTestTransition(TRANSIT_OPEN, controller);
+        controller.moveToCollecting(transition);
+
+        // Setup change state so it is kept as a target
+        transition.collect(activity);
+        activity.setVisibleRequested(true);
+        transition.mChanges.get(activity).mVisible = false;
+
+        controller.requestStartTransition(transition, null /*startTask*/,
+                null /*remote*/, null /*displayChange*/);
+
+        transition.onTransactionReady(transition.getSyncId(), mMockT);
+
+        // Verify that the optimization was disabled on the parent Task
+        verify(mMockT).toggleClientDrawnRoundedCornersOpt(eq(task.getSurfaceControl()), eq(false));
+        assertThat(controller.mRoundedCornerOptTasks).contains(task);
     }
 
     @Test

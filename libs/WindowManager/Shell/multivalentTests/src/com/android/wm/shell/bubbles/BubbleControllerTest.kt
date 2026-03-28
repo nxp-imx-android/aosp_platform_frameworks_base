@@ -62,7 +62,6 @@ import com.android.internal.statusbar.IStatusBarService
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
-import com.android.wm.shell.Flags.FLAG_FIX_BUBBLE_SWIPE_UP_GESTURE
 import com.android.wm.shell.Flags.FLAG_UPDATE_BUBBLE_BOUNDS_DURING_ROTATION
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
@@ -327,7 +326,6 @@ class BubbleControllerTest {
     }
 
     @Test
-    @EnableFlags(FLAG_FIX_BUBBLE_SWIPE_UP_GESTURE)
     fun onDeviceLocked_expanded_imeVisible_shouldCollapseImmediately() {
         val bubble = createBubble("key")
         getInstrumentation().runOnMainSync {
@@ -352,95 +350,6 @@ class BubbleControllerTest {
         assertThat(bubbleData.isExpanded).isFalse()
         // collapsing while the device is locked goes through display ime controller
         verify(displayImeController).hideImeForBubblesWhenLocked(anyInt())
-    }
-
-    @Test
-    @DisableFlags(FLAG_FIX_BUBBLE_SWIPE_UP_GESTURE)
-    fun onDeviceLocked_expanded_imeVisible_withImeHiddenRunnable_shouldHideImeBeforeCollapsing() {
-        val bubble = createBubble("key")
-        getInstrumentation().runOnMainSync {
-            bubbleController.inflateAndAdd(
-                bubble,
-                /* suppressFlyout= */ true,
-                /* showInShade= */ true,
-            )
-        }
-        assertThat(bubbleData.hasBubbles()).isTrue()
-
-        // expand and show the IME. then lock the device
-        val imeVisibleInsetsState = createFakeInsetsState(imeVisible = true)
-        getInstrumentation().runOnMainSync {
-            bubbleController.expandStackAndSelectBubble(bubble)
-            assertThat(bubbleData.isExpanded).isTrue()
-            imeListener.insetsChanged(imeVisibleInsetsState)
-            assertThat(bubblePositioner.isImeVisible).isTrue()
-            bubbleController.onStatusBarStateChanged(/* isShade= */ false)
-        }
-        // check that we haven't actually started collapsing because we weren't notified yet that
-        // the IME is hidden
-        assertThat(bubbleData.isExpanded).isTrue()
-        // collapsing while the device is locked goes through display ime controller
-        verify(displayImeController).hideImeForBubblesWhenLocked(anyInt())
-
-        // notify that the IME was hidden
-        val imeHiddenInsetsState = createFakeInsetsState(imeVisible = false)
-        getInstrumentation().runOnMainSync { imeListener.insetsChanged(imeHiddenInsetsState) }
-        assertThat(bubblePositioner.isImeVisible).isFalse()
-        // bubbles should be collapsed now
-        assertThat(bubbleData.isExpanded).isFalse()
-    }
-
-    @Test
-    @DisableFlags(FLAG_FIX_BUBBLE_SWIPE_UP_GESTURE)
-    fun onDeviceLocked_whileHidingImeDuringCollapse_withImeHiddenRunnable() {
-        val bubble = createBubble("key")
-        val expandListener = FakeBubbleExpandListener()
-        bubbleController.setExpandListener(expandListener)
-
-        getInstrumentation().runOnMainSync {
-            bubbleController.inflateAndAdd(
-                bubble,
-                /* suppressFlyout= */ true,
-                /* showInShade= */ true,
-            )
-        }
-        assertThat(bubbleData.hasBubbles()).isTrue()
-
-        // expand
-        getInstrumentation().runOnMainSync {
-            bubbleController.expandStackAndSelectBubble(bubble)
-            assertThat(bubbleData.isExpanded).isTrue()
-            mainExecutor.flushAll()
-        }
-
-        assertThat(expandListener.bubblesExpandedState).isEqualTo(mapOf("key" to true))
-
-        // show the IME
-        val imeVisibleInsetsState = createFakeInsetsState(imeVisible = true)
-        getInstrumentation().runOnMainSync { imeListener.insetsChanged(imeVisibleInsetsState) }
-
-        assertThat(bubblePositioner.isImeVisible).isTrue()
-
-        // collapse the stack
-        getInstrumentation().runOnMainSync { bubbleController.collapseStack() }
-        assertThat(bubbleData.isExpanded).isFalse()
-        // since we started to collapse while the IME was visible, we will wait to be notified that
-        // the IME is hidden before completing the collapse. check that the expand listener was not
-        // yet called
-        assertThat(expandListener.bubblesExpandedState).isEqualTo(mapOf("key" to true))
-
-        // lock the device during this state
-        getInstrumentation().runOnMainSync {
-            bubbleController.onStatusBarStateChanged(/* isShade= */ false)
-        }
-        verify(displayImeController).hideImeForBubblesWhenLocked(anyInt())
-
-        // notify that the IME is hidden
-        val imeHiddenInsetsState = createFakeInsetsState(imeVisible = false)
-        getInstrumentation().runOnMainSync { imeListener.insetsChanged(imeHiddenInsetsState) }
-        assertThat(bubblePositioner.isImeVisible).isFalse()
-        // verify the collapse action completed
-        assertThat(expandListener.bubblesExpandedState).isEqualTo(mapOf("key" to false))
     }
 
     @Test

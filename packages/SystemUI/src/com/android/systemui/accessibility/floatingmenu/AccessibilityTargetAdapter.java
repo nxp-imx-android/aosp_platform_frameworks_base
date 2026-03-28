@@ -104,17 +104,13 @@ public class AccessibilityTargetAdapter extends Adapter<ViewHolder> {
         mMagnification = magnification;
     }
 
-    @Override
-    public void onAttachedToRecyclerView(
-            @NonNull RecyclerView recyclerView) {
+    void show() {
         if (Flags.floatingMenuMagnificationStatus()) {
             mMagnification.registerActivationChangedListener(mMagnificationEnabledListener);
         }
     }
 
-    @Override
-    public void onDetachedFromRecyclerView(
-            @NonNull RecyclerView recyclerView) {
+    void hide() {
         mMagnification.unregisterActivationChangedListener(mMagnificationEnabledListener);
     }
 

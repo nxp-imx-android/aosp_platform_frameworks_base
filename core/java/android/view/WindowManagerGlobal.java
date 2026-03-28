@@ -22,6 +22,7 @@ import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_OPT_OUT_EDGE_
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 
 import static com.android.window.flags.Flags.currentAnimatorScaleUsesSharedMemory;
+import static com.android.window.flags.Flags.returnWindowlessRootViewsInWmglobalGetwindowview;
 
 import android.animation.ValueAnimator;
 import android.annotation.NonNull;
@@ -375,6 +376,14 @@ public final class WindowManagerGlobal {
                 final View view = mViews.get(i);
                 if (view.getWindowToken() == windowToken) {
                     return view;
+                }
+            }
+            if (returnWindowlessRootViewsInWmglobalGetwindowview()) {
+                for (int i = 0; i < mWindowlessRoots.size(); ++i) {
+                    final ViewRootImpl root = mWindowlessRoots.get(i);
+                    if (root.getWindowToken() == windowToken) {
+                        return root.getView();
+                    }
                 }
             }
         }
@@ -923,9 +932,15 @@ public final class WindowManagerGlobal {
             // TODO (b/329860681): Use INVALID_DISPLAY for now because the displayId will be
             // selected in  SurfaceFlinger. This should be cleaned up so grantInputChannel doesn't
             // take in a displayId at all
-            return WindowManagerGlobal.getWindowSession().grantInputChannel(INVALID_DISPLAY,
-                    surfaceControl, clientToken, hostToken, 0, 0, TYPE_APPLICATION, 0, null,
-                    inputTransferToken, surfaceControl.getName());
+            final WindowInputChannelParams params = new WindowInputChannelParams();
+            params.displayId = INVALID_DISPLAY;
+            params.clientToken = clientToken;
+            params.hostInputTransferToken = hostToken;
+            params.inputTransferToken = inputTransferToken;
+            params.surface = surfaceControl;
+            params.type = TYPE_APPLICATION;
+            params.inputHandleName = surfaceControl.getName();
+            return WindowManagerGlobal.getWindowSession().grantInputChannel(params);
         } catch (RemoteException e) {
             Log.e(TAG, "Failed to create input channel", e);
             e.rethrowAsRuntimeException();

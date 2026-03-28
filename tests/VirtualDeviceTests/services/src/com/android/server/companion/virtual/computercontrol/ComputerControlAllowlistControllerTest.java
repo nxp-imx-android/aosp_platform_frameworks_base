@@ -277,7 +277,8 @@ public class ComputerControlAllowlistControllerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ROLE_ASSISTANT_REQUIREMENT)
+    @EnableFlags({Flags.FLAG_COMPUTER_CONTROL_ROLE_ASSISTANT_REQUIREMENT,
+            Flags.FLAG_COMPUTER_CONTROL_SUPPORT_V5})
     public void isPackageAllowedToCreateSession_isNotAssistant_returnsFalse()
             throws Exception {
         final Signature signature = generateSignature((byte) 1);

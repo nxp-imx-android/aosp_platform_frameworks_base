@@ -33,16 +33,58 @@ processes are generally exempt to ensure core system stability.
 
 MemoryLimiter assigns memory limits based on the process's current state:
 
--   **Visible Processes**: Processes that are currently perceptible to the user
-    (e.g., foreground activities, foreground services, or otherwise
-    jank-perceptible states).
+-   **Visible Processes**: Processes that are currently perceptible to the user.
+    Memory limits are defined by the configuration file.
 
 -   **Not Visible Processes**: Background processes that are not currently
-    interacting with or visible to the user.
+    interacting with or visible to the user.  Memory limits are defined by the
+    configuration file.
 
-When a process exceeds its assigned `memory.high` limit, the native layer
-notifies the Java layer. This event can be used to trigger debugging actions,
-such as capturing a memory profile or logging an anomaly to `statsd`.
+-   **Cached Processes**: `memory.swap.max` is unlimited.  `memory.high` is left
+    unchanged from whatever previous setting it had.
+
+-   **Unrestricted Processes**: `memory.swap.max` and `memory.high` are both
+    unlimited.
+
+### Limit Details
+
+This table maps process states (defined in `ActivityManger`) to memory limits:
+
+| Process state            | Limit          |
+| :---                     | :---           |
+| UNKNOWN                  | <none>         |
+| PERSISTENT               | Unrestricted   |
+| PERSISTENT_UI            | Unrestricted   |
+| TOP                      | Visible        |
+| BOUND_TOP                | Visible        |
+| FOREGROUND_SERVICE       | Not-visible    |
+| BOUND_FOREGROUND_SERVICE | Not-visible    |
+| IMPORTANT_FOREGROUND     | Visible        |
+| IMPORTANT_BACKGROUND     | Not-visible    |
+| TRANSIENT_BACKGROUND     | Not-visible    |
+| BACKUP                   | Not-visible    |
+| SERVICE                  | Not-visible    |
+| RECEIVER                 | Not-visible    |
+| TOP_SLEEPING             | Visible        |
+| HEAVY_WEIGHT             | Not-visible    |
+| HOME                     | Not-visible    |
+| LAST_ACTIVITY            | Not-visible    |
+| CACHED_ACTIVITY          | Cached         |
+| CACHED_ACTIVITY_CLIENT   | Cached         |
+| CACHED_RECENT            | Cached         |
+| CACHED_EMPTY             | Cached         |
+| NONEXISTENT              | <none>         |
+
+### Over-limit Actions
+
+When a process exceeds its assigned `memory.high` limit or its `memory.swap.max`
+limit, the native layer notifies the Java layer. The Java layer generates a
+statsd atom and a log message.  Atoms are generated once for each process.
+
+If the sum of a process's anon memory and swap exceed the sum of `memory.high` and
+`memory.swap.max` then MemoryLimiter will generate a third atom.  The process
+will be notified via the ProfilingManager service and 30s later the process will
+be killed.
 
 ## Configuration
 

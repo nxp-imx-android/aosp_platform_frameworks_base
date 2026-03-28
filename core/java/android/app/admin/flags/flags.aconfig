@@ -483,13 +483,6 @@ flag {
 }
 
 flag {
-  name: "device_owner_for_all"
-  namespace: "enterprise"
-  description: "Enable any user (not just the Main User) to be a DeviceOwner"
-  bug: "435271558"
-}
-
-flag {
   name: "multi_user_management_device_provisioning"
   is_exported: true
   namespace: "enterprise"
@@ -729,4 +722,14 @@ flag {
   namespace: "enterprise"
   description: "Policy streamlining for the SCREEN_CAPTURE API."
   bug: "434919316"
+}
+
+flag {
+  name: "wipe_device_when_wiped_user_is_last_admin"
+  namespace: "enterprise"
+  description: "Wipe the device instead of the user when the latter is the last admin in the device."
+  bug: "480237028"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
 }

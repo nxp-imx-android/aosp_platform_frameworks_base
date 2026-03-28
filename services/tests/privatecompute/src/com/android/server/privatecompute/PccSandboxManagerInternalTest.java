@@ -40,7 +40,11 @@ import android.app.role.RoleManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
+import android.Manifest;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -95,6 +99,7 @@ public class PccSandboxManagerInternalTest {
     private static final int PCC_UID_1 = Process.FIRST_PCC_UID;
     private static final int PCC_UID_2 = Process.LAST_PCC_UID;
     private static final int PCS_UID = 10199;
+    private static final int PCS_UID_2 = 10201;
     private static final int REGULAR_UID = 10200;
 
     private static final String PCC_PACKAGE_1 = "com.pcc.package1";
@@ -808,6 +813,78 @@ public class PccSandboxManagerInternalTest {
 
         mPccSandboxManagerInternal.removeTestAllowedPackage(testPackage);
         assertFalse(mPccSandboxManagerInternal.isPccAllowedPackage(testPackage, USER_ID_1));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testPopulatePcsUids_populatesCacheCorrectly() {
+        PackageInfo mockPackageInfo1 = new PackageInfo();
+        mockPackageInfo1.applicationInfo = new ApplicationInfo();
+        mockPackageInfo1.applicationInfo.uid = PCS_UID;
+        PackageInfo mockPackageInfo2 = new PackageInfo();
+        mockPackageInfo2.applicationInfo = new ApplicationInfo();
+        mockPackageInfo2.applicationInfo.uid = PCS_UID_2;
+        Context mockContext = mock(Context.class);
+        PackageManager mockPackageManager = mock(PackageManager.class);
+        when(mockContext.getPackageManager()).thenReturn(mockPackageManager);
+        when(mockPackageManager.getPackagesHoldingPermissions(
+                eq(new String[]{Manifest.permission.PROVIDE_PRIVATE_COMPUTE_SERVICES}),
+                anyInt()))
+                .thenReturn(Arrays.asList(mockPackageInfo1, mockPackageInfo2));
+        PccSandboxManagerInternal pccSandboxManagerInternal = new PccSandboxManagerInternal(
+                mockContext, mMockPccSandboxManagerService);
+
+        pccSandboxManagerInternal.populatePcsUids();
+
+        assertTrue(pccSandboxManagerInternal.isPrivateComputeServicesUid(PCS_UID));
+        assertTrue(pccSandboxManagerInternal.isPrivateComputeServicesUid(PCS_UID_2));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testIsPrivateComputeServicesUid_cachesPcsUidResult() {
+        int testUid = PCS_UID;
+        when(mMockPccSandboxManagerService.isPrivateComputeServicesUid(testUid)).thenReturn(true);
+
+        // First call should trigger a call to the service
+        assertTrue(mPccSandboxManagerInternal.isPrivateComputeServicesUid(testUid));
+        verify(mMockPccSandboxManagerService, times(1)).isPrivateComputeServicesUid(testUid);
+
+        // Second call should use the cache and not call the service again
+        assertTrue(mPccSandboxManagerInternal.isPrivateComputeServicesUid(testUid));
+        verify(mMockPccSandboxManagerService, times(1)).isPrivateComputeServicesUid(testUid);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testIsPrivateComputeServicesUid_cachesNonPcsUidResult() {
+        int testUid = REGULAR_UID;
+        when(mMockPccSandboxManagerService.isPrivateComputeServicesUid(testUid)).thenReturn(false);
+
+        // First call should trigger a call to the service
+        assertFalse(mPccSandboxManagerInternal.isPrivateComputeServicesUid(testUid));
+        verify(mMockPccSandboxManagerService, times(1)).isPrivateComputeServicesUid(testUid);
+
+        // Second call should use the cache and not call the service again
+        assertFalse(mPccSandboxManagerInternal.isPrivateComputeServicesUid(testUid));
+        verify(mMockPccSandboxManagerService, times(1)).isPrivateComputeServicesUid(testUid);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testIsPrivateComputeServicesUid_doesNotCacheShellUidResult() {
+        int shellUid = Process.SHELL_UID;
+        when(mMockPccSandboxManagerService.isPrivateComputeServicesUid(shellUid))
+                .thenReturn(true)
+                .thenReturn(false);
+
+        // First call should trigger a call to the service
+        assertTrue(mPccSandboxManagerInternal.isPrivateComputeServicesUid(shellUid));
+        verify(mMockPccSandboxManagerService, times(1)).isPrivateComputeServicesUid(shellUid);
+
+        // Second call should NOT use the cache and call the service again
+        assertFalse(mPccSandboxManagerInternal.isPrivateComputeServicesUid(shellUid));
+        verify(mMockPccSandboxManagerService, times(2)).isPrivateComputeServicesUid(shellUid);
     }
 
     @Test

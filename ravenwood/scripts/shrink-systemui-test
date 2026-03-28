@@ -36,11 +36,19 @@ $SCRIPT_NAME: Shrink / unshrink SystemUiRavenTests.
     (Use `git ls-files -v | sed -ne "s/^[a-zS] //p"` to show ignored filse.)
 
 Usage:
-    $SCRIPT_NAME -s # Shrink the test files.
+    $SCRIPT_NAME -s [FILES] # Shrink the test files.
 
-    $SCRIPT_NAME -u # Undo it.
+    $SCRIPT_NAME -u [FILES] # Undo it.
+
+    If [FILES] are specified, only process those files.
+    Filenames must be relative to f/b/p/SystemUI.
+
+    Options:
+      -d: dry-run
+      -l: list already shrunk files (alias to '-ud')
 
 EOF
+    exit 1
 }
 
 cd "${ANDROID_BUILD_TOP:?}/frameworks/base/packages/SystemUI"
@@ -48,14 +56,40 @@ cd "${ANDROID_BUILD_TOP:?}/frameworks/base/packages/SystemUI"
 # Make grep a bit faster.
 export LC_ALL=C
 
-command=""
-case "$1" in
-    "-s") command=shrink ;;
-    "-u") command=unshrink ;;
-    *) usage ; exit 1 ;;
+command="usage" # Default command, show usage.
+dry=0
+filter_re=""
+while getopts "sudlf:" opt; do
+case "$opt" in
+    s) # Shrink the files.
+        command=shrink
+        ;;
+    u) # Unshrink the files.
+        command=unshrink
+        ;;
+    d) # Dry-run, only print the target files.
+        dry=1
+        ;;
+    l) # List already shrunk files.
+        command=unshrink
+        dry=1
+        ;;
+    f) # Filter regex (case insensitive)
+        filter_re="$OPTARG"
+        ;;
+    '?')
+        usage
+        ;;
 esac
+done
+shift $(($OPTIND - 1))
 
+# Remaining
+direct_targets=("$@")
 
+# Never-shrink classes.
+# These classes may be used by un-shrunk classes, so shrinking them would break the build.
+# (case insensitive)
 exemption='(BaseHeadsUpManagerTest|LeakCheckedTest|SysuiBaseFragmentTest|MobileConnectionRepositoryTest)'
 
 # Print the command and then execute.
@@ -79,7 +113,12 @@ find_targets() {
     # If not, find the files to un-shrink.
     local shrink="$1"
 
-    echo "Listing test files...." 1>&2
+    echo "Finding target files...." 1>&2
+
+    if (( ${#direct_targets[@]} > 0)) ; then
+        echo "${direct_targets[@]}" | tr ' ' '\n'
+        return 0
+    fi
 
     # Only look for regular files, no symlinks
     local find_opts=(-type f)
@@ -87,20 +126,22 @@ find_targets() {
     # Basic options
     find_opts+=(-regextype posix-extended)
 
-    if (( $shrink )) ; then
-        # Exemption files
-        # (Don't use it for unshrink)
-        find_opts+=('!' -regex ".*$exemption.*")
-    fi
-
     # Look for test files
     find_opts+=(-regex '.*Tests?\.(kt|java)')
 
-    # Either find only empty or non-empty files.
-    if (( shrink )) ; then
+    # When shrinking:
+    # - ignore empty files and exempted files.
+    # When unshrinking, only look for empty files.
+    if (( $shrink )) ; then
         find_opts+=('!' -empty)
+        find_opts+=('!' -iregex ".*$exemption.*")
     else
         find_opts+=(-empty)
+    fi
+
+    # Maybe apply filter
+    if [[ "$filter_re" != "" ]] ; then
+        find_opts+=(-iregex ".*$filter_re.*")
     fi
 
     {
@@ -124,7 +165,12 @@ shrink() {
     local target=( $(find_targets 1) )
 
     if (( ${#target[@]} == 0 )) ; then
-        echo "No files to empty."
+        echo "No files to empty." 1>&2
+        return 0
+    fi
+    if (( $dry )) ; then
+        # Dry-run, only print the target filenames.
+        echo "${target[@]}" | tr ' ' '\n'
         return 0
     fi
 
@@ -147,7 +193,12 @@ unshrink() {
     local target=( $(find_targets 0) )
 
     if (( ${#target[@]} == 0 )) ; then
-        echo "No files to restore."
+        echo "No files to restore." 1>&2
+        return 0
+    fi
+    if (( $dry )) ; then
+        # Dry-run, only print the target filenames.
+        echo "${target[@]}" | tr ' ' '\n'
         return 0
     fi
 

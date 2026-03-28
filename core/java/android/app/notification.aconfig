@@ -87,13 +87,6 @@ flag {
 }
 
 flag {
-  name: "notification_flag_computer_control"
-  namespace: "notifications"
-  description: "Adds logic for NotificationManagerService to set or clear Notification.FLAG_COMPUTER_CONTROL for all notifications."
-  bug: "489800294"
-}
-
-flag {
   name: "remove_remote_views"
   namespace: "systemui"
   description: "Removes all custom views"
@@ -286,13 +279,6 @@ flag {
   is_exported: true
   description: "Allows the NAS to summarize notifications of any type"
   bug: "430487852"
-}
-
-flag {
-  name: "nm_highlights"
-  namespace: "notifications"
-  description: "Allows the NAS to highlight notifications"
-  bug: "438704838"
 }
 
 flag {

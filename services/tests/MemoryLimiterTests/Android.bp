@@ -38,6 +38,7 @@ android_test {
         "com.android.server.flags.services-aconfig-java",
         "frameworks-base-testutils",
         "flag-junit",
+        "mockito-target-extended-minus-junit4",
         "services.core",
     ],
     data: [

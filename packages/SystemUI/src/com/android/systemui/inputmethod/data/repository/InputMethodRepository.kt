@@ -84,6 +84,34 @@ interface InputMethodRepository {
         @IMPickerEntryPoint entryPoint: Int,
         displayId: Int,
     )
+
+    /**
+     * Toggles the system's input method picker dialog.
+     *
+     * There's no guarantee that this toggle is an atomic operation. There's potential risk of a
+     * race condition when concurrency is involved, or when this is invoked in quick succession.
+     *
+     * @param showAuxiliarySubtypes Whether to show auxiliary input method subtypes in the list of
+     *   enabled IMEs.
+     * @param entryPoint The entry point where the dialog was requested from.
+     * @param displayId The display ID on which to show the dialog, if it is currently hidden. The
+     * param is unused if the dialog is currently shown and should now be hidden.
+     * @see InputMethodManager.showInputMethodPickerFromSystem
+     */
+    suspend fun toggleInputMethodPicker(
+        showAuxiliarySubtypes: Boolean,
+        @IMPickerEntryPoint entryPoint: Int,
+        displayId: Int,
+    )
+
+    /**
+     * Hides the system's input method picker dialog.
+     *
+     * @param displayId (legacy unused param)
+     * @see InputMethodManager.hideInputMethodPickerFromSystem
+     */
+    // TODO: b/496501764 - Remove unused "displayId" param.
+    suspend fun hideInputMethodPicker(displayId: Int)
 }
 
 @SysUISingleton
@@ -174,6 +202,28 @@ constructor(
                 entryPoint,
                 displayId,
             )
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    override suspend fun toggleInputMethodPicker(
+        showAuxiliarySubtypes: Boolean,
+        @IMPickerEntryPoint entryPoint: Int,
+        displayId: Int,
+    ) {
+        withContext(backgroundDispatcher) {
+            inputMethodManager.toggleInputMethodPickerFromSystem(
+                showAuxiliarySubtypes,
+                entryPoint,
+                displayId,
+            )
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    override suspend fun hideInputMethodPicker(displayId: Int) {
+        withContext(backgroundDispatcher) {
+            inputMethodManager.hideInputMethodPickerFromSystem(displayId)
         }
     }
 

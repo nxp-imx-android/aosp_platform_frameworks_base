@@ -1112,20 +1112,24 @@ constructor(
                     if (keyguardEnabledInteractor.isKeyguardEnabled.value) {
                         deviceEntryInteractor.lockNow("Screen timed out or WM#lockNow() called")
 
-                        val isDreaming =
+                        val isOccludedOrDreaming =
                             if (DriveDreamStateFromOcclusion.isEnabled) {
                                 getOcclusionTargetScene(
                                     occlusionInteractor.showWhenLockedActivityInfo.value,
                                     occlusionInteractor.occlusionState.value,
-                                ) == Scenes.Dream
+                                ) != null
                             } else {
-                                keyguardInteractor.isDreamingNotDozing.value
+                                val dreamingNotDozing = keyguardInteractor.isDreamingNotDozing.value
+                                val isOccluded = occlusionInteractor.isKeyguardOccluded.value
+                                dreamingNotDozing || isOccluded
                             }
 
-                        // If we're dreaming, DreamStartable (or handleOcclusionAndDreaming) will
-                        // take us to Scenes.Dream.
-                        if (!isDreaming) {
-                            switchToScene(Scenes.Lockscreen, "Not dreaming, and $reason")
+                        // If we're dreaming/occluded, DreamStartable or handleOcclusionAndDreaming
+                        // will take us to Scenes.Dream or Scenes.Occluded. In this case, avoid
+                        // forcing the lockscreen scene as this would result in the lockscreen
+                        // displaying over the occluding activity.
+                        if (!isOccludedOrDreaming) {
+                            switchToScene(Scenes.Lockscreen, "Not dreaming/occluded, and $reason")
                         }
                     }
                 }

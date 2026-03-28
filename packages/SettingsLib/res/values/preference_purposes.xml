@@ -16,7 +16,7 @@
 
 <resources>
 
-<string name="special_access_alarms_and_reminders_app_detail_purpose" translatable="false">special_access_alarms_and_reminders_app_detail</string>
-<string name="special_access_alarms_and_reminders_app_list_purpose" translatable="false">special_access_alarms_and_reminders_app_list</string>
+<string name="special_access_alarms_and_reminders_app_detail_purpose" translatable="false">Allows users to control whether the app can set alarms and reminders</string>
+<string name="special_access_alarms_and_reminders_app_list_purpose" translatable="false">Allows users to manage which apps can set alarms and reminders, which can be used to interrupt the user or get their attention.</string>
 
 </resources>

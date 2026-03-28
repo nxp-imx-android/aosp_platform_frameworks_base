@@ -80,6 +80,14 @@ flag {
 }
 
 flag {
+ name: "enable_confirm_supervision_approval_api"
+ is_exported: false
+ namespace: "supervision"
+ description: "Flag that enables the ACTION_CONFIRM_SUPERVISION_APPROVAL intent action API"
+ bug: "452112201"
+}
+
+flag {
   name: "enable_supervision_settings_session_updates"
   is_exported: false
   namespace: "supervision"
@@ -173,16 +181,6 @@ flag {
 }
 
 flag {
-    name: "app_binding_service_rework"
-    namespace: "supervision"
-    description: "Enables improvements to the AppBinding service connection lifecycle"
-    bug: "475606763"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
- }
-
-flag {
     name: "enable_timeout_in_dispatch_app_service_event"
     namespace: "supervision"
     description: "Enables timeout parameter in dispatchAppServiceEvent"
@@ -201,10 +199,13 @@ flag {
 }
 
 flag {
-  name: "remove_role_holder_after_event_dispatch"
+  name: "remove_role_after_event_dispatch"
   namespace: "supervision"
   description: "Removes supervision role only after the 'disable supervision' event has been dispatched."
   bug: "495425956"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {

@@ -43,7 +43,6 @@ constructor(
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
     val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
-    private val motionEventHelper = MotionEventHelper(instrumentation, inputMethod)
 
     @Before
     fun setup() {
@@ -53,7 +52,7 @@ constructor(
     @Test
     open fun resizeAppWithEdgeResizeRight() {
         val initialBounds = wmHelper.getWindowRegion(testApp).bounds
-        testApp.edgeResize(wmHelper, motionEventHelper, DesktopModeAppHelper.Edges.RIGHT)
+        testApp.edgeResize(wmHelper, inputMethod, DesktopModeAppHelper.Edges.RIGHT)
         val finalBounds = wmHelper.getWindowRegion(testApp).bounds
         assertWindowExpandedRight(initialBounds, finalBounds)
     }

@@ -30,7 +30,8 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
-import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRuleConversionHelper.validActionsMap
+import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRuleConversionHelper.toInternalModel
+import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRuleConversionHelper.validPrimaryActionValues
 import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRuleToExternalHelpers.toExternalRuleFormat
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
 import com.android.systemui.notifications.intelligence.rules.shared.NotificationRulesLog
@@ -57,6 +58,7 @@ constructor(
     private val freeformRuleRepository: FreeformRuleRepository,
     private val installedAppsRepository: InstalledAppsRepository,
     private val contactsRepository: ContactsRepository,
+    private val conversationPartnersRepository: ConversationPartnersRepository,
     private val contentResolver: ContentResolver,
     @Application private val applicationContext: Context,
     @Application private val applicationScope: CoroutineScope,
@@ -93,7 +95,7 @@ constructor(
     private suspend fun fetchInitialRules(): List<RuleModel> {
         return notificationManager.notificationRules
             .filter {
-                val isValidAction = validActionsMap.containsKey(it.action.primaryAction)
+                val isValidAction = validPrimaryActionValues.contains(it.action.primaryAction)
                 if (!isValidAction) {
                     logger.w({ "Filtering out invalid action $int1" }) {
                         int1 = it.action.primaryAction
@@ -183,15 +185,14 @@ constructor(
         )
     }
 
-    private fun NotificationRule.Action.toInternalModel(): ActionModel {
-        return validActionsMap[this.primaryAction]
-            ?: throw IllegalStateException("Action $this not present in validActionsMap")
-    }
-
     private suspend fun NotificationRule.Filter.toInternalModel(): FilterModel? {
         val filterModel =
             FilterModel(
-                people = this.contacts.toContactsModel(),
+                people =
+                    createPeopleModel(
+                        contacts = this.contacts,
+                        conversationPartnerIds = this.shortcutIds,
+                    ),
                 includedApps = this.includedPackageUids.toIncludedAppsModel(),
                 keywords = this.keywords.toKeywordsModel(),
             )
@@ -202,12 +203,19 @@ constructor(
         }
     }
 
-    private suspend fun List<Uri>.toContactsModel(): PeopleModel? {
-        val contacts = this.mapNotNull { contactsRepository.lookupContact(it, contentResolver) }
-        if (contacts.isEmpty()) {
+    private suspend fun createPeopleModel(
+        contacts: List<Uri>,
+        conversationPartnerIds: List<String>,
+    ): PeopleModel? {
+        val contacts = contacts.mapNotNull { contactsRepository.lookupContact(it, contentResolver) }
+        val conversationPartners =
+            conversationPartnerIds.mapNotNull {
+                conversationPartnersRepository.lookupConversationPartner(it)
+            }
+        if (contacts.isEmpty() && conversationPartners.isEmpty()) {
             return null
         }
-        return PeopleModel(contacts)
+        return PeopleModel(contacts + conversationPartners)
     }
 
     private suspend fun List<Int>.toIncludedAppsModel(): IncludedAppsModel? {

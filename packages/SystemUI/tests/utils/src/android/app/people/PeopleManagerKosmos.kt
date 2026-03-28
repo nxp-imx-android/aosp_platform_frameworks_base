@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.systemui.notifications.intelligence.rules
+package android.app.people
 
-import com.android.systemui.notifications.intelligence.rules.data.NotificationRulesDataModule
-import com.android.systemui.notifications.intelligence.rules.domain.NotificationRulesDomainModule
-import dagger.Module
+import com.android.systemui.kosmos.Kosmos
+import org.mockito.kotlin.mock
 
-@Module(includes = [NotificationRulesDataModule::class, NotificationRulesDomainModule::class])
-public interface NotificationRulesModule
+var Kosmos.mockIPeopleManager: IPeopleManager? by Kosmos.Fixture { mock<IPeopleManager>() }

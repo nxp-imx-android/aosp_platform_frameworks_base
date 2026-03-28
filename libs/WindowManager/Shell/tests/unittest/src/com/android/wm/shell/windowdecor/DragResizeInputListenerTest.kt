@@ -31,6 +31,7 @@ import android.view.InputEventReceiver
 import android.view.MotionEvent
 import android.view.PointerIcon
 import android.view.SurfaceControl
+import android.view.WindowInputChannelParams
 import androidx.test.core.view.MotionEventBuilder
 import androidx.test.core.view.PointerCoordsBuilder
 import androidx.test.core.view.PointerPropertiesBuilder
@@ -52,11 +53,11 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
-import org.mockito.kotlin.argThat
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -87,19 +88,7 @@ class DragResizeInputListenerTest : ShellTestCase() {
     @Before
     fun setUp() {
         whenever(
-                mockWindowSession.grantInputChannel(
-                    any(), // displayId
-                    any(), // decorationSurface
-                    any(), // clientToken
-                    anyOrNull(), // hostInputToken
-                    any(), // flags
-                    any(), // privateFlags
-                    any(), // inputFeatures
-                    any(), // type
-                    anyOrNull(), // windowToken
-                    any(), // inputTransferToken
-                    any(), // name
-                )
+                mockWindowSession.grantInputChannel(any())
             )
             .thenAnswer {
                 inputChannelPairs.add(
@@ -147,20 +136,14 @@ class DragResizeInputListenerTest : ShellTestCase() {
             decorationSurface.release()
             testBgExecutor.flushAll()
 
-            verify(mockWindowSession)
-                .grantInputChannel(
-                    any(),
-                    argThat<SurfaceControl> { isValid && isSameSurface(forVerification) },
-                    any(),
-                    anyOrNull(),
-                    any(),
-                    any(),
-                    any(),
-                    any(),
-                    anyOrNull(),
-                    any(),
-                    any(),
-                )
+            val paramsCaptor = argumentCaptor<WindowInputChannelParams>()
+
+            // This is called for both the decoration & input sink
+            verify(mockWindowSession, times(2)).grantInputChannel(paramsCaptor.capture())
+
+            val surface = paramsCaptor.firstValue.surface
+            assertThat(surface.isValid).isTrue()
+            assertThat(surface.isSameSurface(forVerification)).isTrue()
         } finally {
             forVerification.release()
         }
@@ -1147,20 +1130,7 @@ class DragResizeInputListenerTest : ShellTestCase() {
     }
 
     private fun verifyNoInputChannelGrantRequests() {
-        verify(mockWindowSession, never())
-            .grantInputChannel(
-                any(),
-                any(),
-                any(),
-                anyOrNull(),
-                any(),
-                any(),
-                any(),
-                any(),
-                anyOrNull(),
-                any(),
-                any(),
-            )
+        verify(mockWindowSession, never()).grantInputChannel(any())
     }
 
     private fun create(): DragResizeInputListener =

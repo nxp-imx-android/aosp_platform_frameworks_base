@@ -20,6 +20,7 @@ import static com.android.internal.widget.remotecompose.core.documentation.Docum
 
 import android.annotation.NonNull;
 
+import com.android.internal.widget.remotecompose.core.CoreDocument;
 import com.android.internal.widget.remotecompose.core.Operation;
 import com.android.internal.widget.remotecompose.core.Operations;
 import com.android.internal.widget.remotecompose.core.PaintContext;
@@ -275,17 +276,31 @@ public class BorderModifierOperation extends DecoratorModifierOperation implemen
         } else {
             mPaint.setColor(mR, mG, mB, mA);
         }
-        if (isAtLeastVersion7(context.getContext())) {
-            mPaint.setStrokeWidth(mBorderWidthValue);
-        } else {
-            mPaint.setStrokeWidth(mBorderWidth * context.getContext().getDensity());
+
+        float borderWidth = mBorderWidthValue;
+        float roundedCorner = mRoundedCorner;
+        switch (context.getDensityBehavior()) {
+            case CoreDocument.DENSITY_BEHAVIOR_DP:
+                float density = context.getDensity();
+                borderWidth *= density;
+                roundedCorner *= density;
+                break;
+            case CoreDocument.DENSITY_BEHAVIOR_LEGACY:
+                if (!isAtLeastVersion7(context.getContext())) {
+                    borderWidth = mBorderWidth * context.getContext().getDensity();
+                }
+                break;
+            case CoreDocument.DENSITY_BEHAVIOR_PIXELS:
+                // nothing to do
         }
+
+        mPaint.setStrokeWidth(borderWidth);
         mPaint.setStyle(PaintBundle.STYLE_STROKE);
         context.replacePaint(mPaint);
         if (mShapeType == ShapeType.RECTANGLE) {
             context.drawRect(0f, 0f, mWidth, mHeight);
         } else {
-            float size = mRoundedCorner;
+            float size = roundedCorner;
             if (mShapeType == ShapeType.CIRCLE) {
                 size = Math.min(mWidth, mHeight) / 2f;
             }

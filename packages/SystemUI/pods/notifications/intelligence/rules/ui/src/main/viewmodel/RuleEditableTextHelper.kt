@@ -39,7 +39,7 @@ internal fun buildEditableRuleText(
     resources: Resources,
     logger: Logger,
 ): RuleDisplayModel {
-    val appsText: SingleFieldTextModel<AppModel>? =
+    val appsText: TextModel.SingleFieldTextModel<AppModel>? =
         viewModel.rule.filter.includedApps?.let {
             createEditableIncludedAppsText(
                 selectedIncludedApps = it,
@@ -51,7 +51,7 @@ internal fun buildEditableRuleText(
             )
         }
 
-    val peopleText: SingleFieldTextModel<PersonModel>? =
+    val peopleText: TextModel.SingleFieldTextModel<PersonModel>? =
         viewModel.rule.filter.people?.let {
             createEditablePeopleText(
                 selectedPeople = it,
@@ -63,7 +63,7 @@ internal fun buildEditableRuleText(
             )
         }
 
-    val keywordsText: SingleFieldTextModel<String>? =
+    val keywordsText: TextModel.SingleFieldTextModel<String>? =
         viewModel.rule.filter.keywords?.let {
             createEditableKeywordsText(
                 selectedKeywords = it,
@@ -75,10 +75,13 @@ internal fun buildEditableRuleText(
             )
         }
 
+    val bundleText = createBundleText(viewModel.rule.action, resources = resources, logger = logger)
+
     return buildRuleText(
         appsText = appsText,
         peopleText = peopleText,
         keywordsText = keywordsText,
+        bundleText = bundleText,
         resources = resources,
     )
 }
@@ -91,7 +94,7 @@ private fun createEditableIncludedAppsText(
     onAppsSaved: (List<AppModel>) -> Unit,
     resources: Resources,
     logger: Logger,
-): SingleFieldTextModel<AppModel> {
+): TextModel.SingleFieldTextModel<AppModel> {
     val onClick = {
         onEnterEditField(
             RulesScreenViewState.EditField.Apps(viewModel = viewModel, onAppsSaved = onAppsSaved)
@@ -127,7 +130,7 @@ private fun createEditablePeopleText(
     onPeopleSaved: (List<PersonModel>) -> Unit,
     resources: Resources,
     logger: Logger,
-): SingleFieldTextModel<PersonModel> {
+): TextModel.SingleFieldTextModel<PersonModel> {
     val onClick: () -> Unit = {
         onEnterEditField(
             RulesScreenViewState.EditField.People(
@@ -167,7 +170,7 @@ private fun createEditableKeywordsText(
     onKeywordsSaved: (List<String>) -> Unit,
     resources: Resources,
     logger: Logger,
-): SingleFieldTextModel<String> {
+): TextModel.SingleFieldTextModel<String> {
     val onClick: () -> Unit = {
         onEnterEditField(
             RulesScreenViewState.EditField.Keywords(
@@ -193,7 +196,7 @@ private fun <T, R> createFieldText(
     fieldData: FieldDataModel<T, R>,
     resources: Resources,
     logger: Logger,
-): SingleFieldTextModel<T> {
+): TextModel.SingleFieldTextModel<T> {
     return when (fieldData.currentValue) {
         is RuleValue.Specified -> {
             createMultiItemText(

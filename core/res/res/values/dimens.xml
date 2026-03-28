@@ -1199,10 +1199,13 @@
     <dimen name="app_lock_line_height_small">20sp</dimen>
     <dimen name="app_lock_line_height_medium">24sp</dimen>
     <dimen name="app_lock_line_height_large">32sp</dimen>
-    <dimen name="app_lock_margin">16dp</dimen>
+    <dimen name="app_lock_margin_extra_small">8dp</dimen>
+    <dimen name="app_lock_margin_small">12dp</dimen>
+    <dimen name="app_lock_margin_medium">16dp</dimen>
+    <dimen name="app_lock_margin_large">24dp</dimen>
     <dimen name="app_lock_padding_extra_small">8dp</dimen>
-    <dimen name="app_lock_padding_small">16dp</dimen>
     <dimen name="app_lock_padding_large">32dp</dimen>
+    <dimen name="app_lock_padding_small">16dp</dimen>
     <dimen name="app_lock_padding_extra_large">40dp</dimen>
     <dimen name="app_lock_permission_review_app_list_expanded_height">320dp</dimen>
     <dimen name="app_lock_pill_radius">100dp</dimen>

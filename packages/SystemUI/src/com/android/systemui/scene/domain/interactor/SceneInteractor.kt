@@ -330,7 +330,7 @@ constructor(
             lockscreenSceneTransitionInteractor.get().setNextLockscreenTargetState(keyguardState)
         }
 
-        val currentSceneKey = currentScene.value
+        val currentSceneKey = currentSceneAsState
         val resolvedScene = sceneFamilyResolvers.get()[toScene]?.resolvedScene?.value ?: toScene
 
         if (resolvedScene == currentSceneKey && forceSettleToTargetScene) {
@@ -439,7 +439,7 @@ constructor(
             lockscreenSceneTransitionInteractor.get().setNextLockscreenTargetState(keyguardState)
         }
 
-        val currentSceneKey = currentScene.value
+        val currentSceneKey = currentSceneAsState
         val resolvedScene = sceneFamilyResolvers.get()[toScene]?.resolvedScene?.value ?: toScene
         if (
             !skipValidateSceneChange &&
@@ -893,9 +893,7 @@ constructor(
             return false
         }
 
-        val inMidTransitionFromGone =
-            (transitionStateFlow.value as? ObservableTransitionState.Transition)?.fromContent ==
-                Scenes.Gone
+        val inMidTransitionFromGone = transitionState.isTransitioning(from = Scenes.Gone)
         val isChangeAllowed =
             to != Scenes.Gone ||
                 inMidTransitionFromGone ||
@@ -904,7 +902,7 @@ constructor(
                 !keyguardEnabledInteractor.get().isKeyguardEnabled.value
         check(isChangeAllowed) {
             "Cannot change to the Gone scene while the device is locked/secured and not currently" +
-                " transitioning from Gone. Current transition state is ${transitionStateFlow.value}." +
+                " transitioning from Gone. Current transition state is $transitionState." +
                 " Logging reason for scene change was: $loggingReason"
         }
 

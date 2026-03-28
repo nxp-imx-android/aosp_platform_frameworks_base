@@ -81,4 +81,21 @@ class FakeInputMethodRepository : InputMethodRepository {
         inputMethodPickerShownEntryPoint = entryPoint
         inputMethodPickerShownDisplayId = displayId
     }
+
+    override suspend fun toggleInputMethodPicker(
+        showAuxiliarySubtypes: Boolean,
+        @IMPickerEntryPoint entryPoint: Int,
+        displayId: Int,
+    ) {
+        if (inputMethodPickerShownDisplayId == null) {
+            showInputMethodPicker(showAuxiliarySubtypes, entryPoint, displayId)
+        } else {
+            hideInputMethodPicker(displayId)
+        }
+    }
+
+    override suspend fun hideInputMethodPicker(displayId: Int) {
+        inputMethodPickerShownEntryPoint = null
+        inputMethodPickerShownDisplayId = null
+    }
 }

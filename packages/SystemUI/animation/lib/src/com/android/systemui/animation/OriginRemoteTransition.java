@@ -17,6 +17,8 @@
 package com.android.systemui.animation;
 
 import static android.view.WindowManager.TRANSIT_CHANGE;
+import static android.window.TransitionInfo.FLAG_BACK_GESTURE_ANIMATED;
+import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
 
 import android.annotation.Nullable;
 import android.content.Context;
@@ -271,11 +273,10 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
         List<SurfaceControl> openingSurfaces = new ArrayList<>();
         List<SurfaceControl> closingSurfaces = new ArrayList<>();
         for (Change change : info.getChanges()) {
-            int mode = change.getMode();
             SurfaceControl leash = change.getLeash();
             // Reparent leash to the transition root.
             tmpTransaction.reparent(leash, rootLeash);
-            if (TransitionUtil.isOpeningMode(mode)) {
+            if (shouldParticipateOpen(change)) {
                 openingSurfaces.add(change.getLeash());
                 // For opening surfaces, ending bounds are base bound. Apply corner radius if
                 // it's full screen.
@@ -285,8 +286,7 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
                             .setCornerRadius(leash, windowRadius)
                             .setWindowCrop(leash, bounds.width(), bounds.height());
                 }
-            } else if (TransitionUtil.isClosingMode(mode) || mode == TRANSIT_CHANGE) {
-                // TRANSIT_CHANGE refers to the closing window in predictive back animation.
+            } else if (shouldParticipateClose(change)) {
                 closingSurfaces.add(change.getLeash());
                 // For closing surfaces, starting bounds are base bounds. Apply corner radius if
                 // it's full screen.
@@ -492,8 +492,8 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
         List<SurfaceControl> surfaces = new ArrayList<>();
         Rect maxBounds = new Rect();
         for (Change change : info.getChanges()) {
-            int mode = change.getMode();
-            if (TransitionUtil.isOpeningMode(mode) == isOpening) {
+            if (shouldParticipateOpen(change) && isOpening
+                    || shouldParticipateClose(change) && !isOpening) {
                 surfaces.add(change.getLeash());
                 Rect bounds = isOpening ? change.getEndAbsBounds() : change.getStartAbsBounds();
                 maxBounds.union(bounds);
@@ -506,6 +506,18 @@ public class OriginRemoteTransition extends IRemoteTransition.Stub implements
                 /* bounds= */ maxBounds,
                 /* baseBounds= */ maxBounds,
                 /* enableBackgroundDimming= */ isOpening);
+    }
+
+    private static boolean shouldParticipateOpen(Change change) {
+        final int mode = change.getMode();
+        return TransitionUtil.isOpeningMode(mode)
+                || (mode == TRANSIT_CHANGE && change.hasFlags(FLAG_MOVED_TO_TOP));
+    }
+
+    private static boolean shouldParticipateClose(Change change) {
+        final int mode = change.getMode();
+        return TransitionUtil.isClosingMode(mode)
+                || (mode == TRANSIT_CHANGE && change.hasFlags(FLAG_BACK_GESTURE_ANIMATED));
     }
 
     private static void applyWindowAnimationStates(

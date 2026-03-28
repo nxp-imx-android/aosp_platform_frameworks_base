@@ -18,6 +18,7 @@ package com.android.server.power;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.app.ActivityManager.ProcessState;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManagerInternal;
@@ -139,7 +140,7 @@ final class PowerManagerBatchProxy implements PowerManagerInternal.UidChangesBat
     }
 
     @Override
-    public void updateUidProcState(int uid, int procState) {
+    public void updateUidProcState(int uid, @ProcessState int procState) {
         if (!batchPowerManagerCalls()) {
             mLocalPowerManager.updateUidProcState(uid, procState);
             return;

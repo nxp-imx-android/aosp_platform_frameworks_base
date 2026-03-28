@@ -48,6 +48,7 @@ import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
+import android.app.ActivityManager.ProcessState;
 import android.app.SynchronousUserSwitchObserver;
 import android.app.compat.CompatChanges;
 import android.compat.annotation.ChangeId;
@@ -4670,7 +4671,7 @@ public final class PowerManagerService extends SystemService
         }
     }
 
-    void updateUidProcStateInternal(int uid, int procState) {
+    void updateUidProcStateInternal(int uid, @ProcessState int procState) {
         synchronized (mLock) {
             UidState state = mUidState.get(uid);
             if (state == null) {
@@ -6311,7 +6312,7 @@ public final class PowerManagerService extends SystemService
     static final class UidState {
         final int mUid;
         int mNumWakeLocks;
-        int mProcState;
+        @ProcessState int mProcState;
         boolean mActive;
 
         UidState(int uid) {
@@ -8002,7 +8003,7 @@ public final class PowerManagerService extends SystemService
         }
 
         @Override
-        public void updateUidProcState(int uid, int procState) {
+        public void updateUidProcState(int uid, @ProcessState int procState) {
             updateUidProcStateInternal(uid, procState);
         }
 

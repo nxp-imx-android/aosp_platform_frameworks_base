@@ -85,15 +85,6 @@ flag {
     bug: "407669465"
 }
 
-flag {
-    namespace: "windowing_sdk"
-    name: "visibility_management_in_bubble_root"
-    description: "Visibility management improvement within Bubble root Task"
-    bug: "456051408"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
 
 flag {
     namespace: "aaos_core_contrib"

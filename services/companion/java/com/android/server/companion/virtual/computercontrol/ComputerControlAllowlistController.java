@@ -18,7 +18,6 @@ package com.android.server.companion.virtual.computercontrol;
 
 import static android.Manifest.permission.ACCESS_COMPUTER_CONTROL;
 import static android.Manifest.permission.POST_NOTIFICATIONS;
-import static android.companion.virtual.computercontrol.ComputerControlSessionParams.MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -236,12 +235,12 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
         mContext.enforceCallingOrSelfPermission(
                 POST_NOTIFICATIONS, "Requires POST_NOTIFICATIONS permission");
 
-        final ApplicationInfo appInfo = getApplicationInfo(packageName, packageManager);
-        if (appInfo == null) {
-            return false;
-        }
-
         if (!hasComputerControlAccessPermission(packageUid) || packageUid == Process.SHELL_UID) {
+            final ApplicationInfo appInfo = getApplicationInfo(packageName, packageManager);
+            if (appInfo == null) {
+                return false;
+            }
+
             // Being here means that the permission was obtained via shell permission identity.
             if (isPackageTestOnly(appInfo)) {
                 Slog.i(TAG, "isPackageAllowedToCreateSession: Found test agent " + packageName);
@@ -254,22 +253,25 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
         }
 
         if (android.companion.virtualdevice.flags.Flags.computerControlRoleAssistantRequirement()) {
-            if (targetComputerControlVersion >= MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17) {
-                final long token = Binder.clearCallingIdentity();
-                try {
-                    RoleManager roleManager = mContext.getSystemService(RoleManager.class);
-                    if (roleManager == null || !roleManager.getRoleHoldersAsUser(
-                            RoleManager.ROLE_ASSISTANT, ownerUser).contains(packageName)) {
-                        Slog.i(TAG, "isPackageAllowedToCreateSession: Calling application "
-                                + packageName
-                                + " is not the ASSISTANT role holder");
-                        return false;
-                    }
-                } finally {
-                    Binder.restoreCallingIdentity(token);
+            final long token = Binder.clearCallingIdentity();
+            try {
+                RoleManager roleManager = mContext.getSystemService(RoleManager.class);
+                if (roleManager == null
+                        || !roleManager
+                                .getRoleHoldersAsUser(RoleManager.ROLE_ASSISTANT, ownerUser)
+                                .contains(packageName)) {
+                    Slog.i(
+                            TAG,
+                            "isPackageAllowedToCreateSession: Calling application "
+                                    + packageName
+                                    + " is not the ASSISTANT role holder");
+                    return false;
                 }
+            } finally {
+                Binder.restoreCallingIdentity(token);
             }
         }
+
         return isPackageApprovedToRunAutomation(packageName, ownerUser.getIdentifier());
     }
 

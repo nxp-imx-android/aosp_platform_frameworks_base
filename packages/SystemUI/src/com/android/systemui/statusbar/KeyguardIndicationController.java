@@ -40,6 +40,7 @@ import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewCont
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_BIOMETRIC_MESSAGE_FOLLOW_UP;
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_CLICK_TO_UNLOCK_HINT;
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_DISCLOSURE;
+import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_ENTER_TO_UNLOCK_HINT;
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_IS_DISMISSIBLE;
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_KEY_TO_UNLOCK_HINT;
 import static com.android.systemui.keyguard.KeyguardIndicationRotateTextViewController.INDICATION_TYPE_LOGOUT;
@@ -552,6 +553,7 @@ public class KeyguardIndicationController {
             updateLockScreenSecureLockDeviceMsg();
         }
         updateClickToUnlockMsg();
+        updatePressEnterToUnlockMsg();
         updatePressKeyToUnlockMsg();
     }
 
@@ -715,6 +717,7 @@ public class KeyguardIndicationController {
 
     private void updatePressKeyToUnlockMsg() {
         if ((Flags.addNewUnlockHintOnKeyguard() || Flags.addNewUnlockHintOnKeyguard2())
+                && Flags.pressAnyKeyToAccessBouncer2()
                 && mBouncerInteractor.isImproveLargeScreenInteractionEnabled()) {
             mRotateTextViewController.updateIndication(
                     INDICATION_TYPE_KEY_TO_UNLOCK_HINT,
@@ -727,6 +730,24 @@ public class KeyguardIndicationController {
         } else {
             mRotateTextViewController.hideIndication(
                     INDICATION_TYPE_KEY_TO_UNLOCK_HINT);
+        }
+    }
+
+    private void updatePressEnterToUnlockMsg() {
+        if ((Flags.addNewUnlockHintOnKeyguard() || Flags.addNewUnlockHintOnKeyguard2())
+                && !Flags.pressAnyKeyToAccessBouncer2()
+                && mBouncerInteractor.isImproveLargeScreenInteractionEnabled()) {
+            mRotateTextViewController.updateIndication(
+                    INDICATION_TYPE_ENTER_TO_UNLOCK_HINT,
+                    new KeyguardIndication.Builder()
+                            .setMessage(mContext.getResources().getText(
+                                    com.android.internal.R.string.lockscreen_enter_to_unlock_hint))
+                            .setTextColor(getInitialTextColorState())
+                            .build(),
+                    false);
+        } else {
+            mRotateTextViewController.hideIndication(
+                    INDICATION_TYPE_ENTER_TO_UNLOCK_HINT);
         }
     }
 

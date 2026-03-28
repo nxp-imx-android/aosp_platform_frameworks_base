@@ -28,6 +28,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+import android.app.ActivityManager.ProcessState;
 import android.app.AlarmManager;
 import android.app.usage.NetworkStatsManager;
 import android.bluetooth.BluetoothActivityEnergyInfo;
@@ -4241,13 +4242,13 @@ public class BatteryStatsImpl extends BatteryStats {
     }
 
     @GuardedBy("this")
-    public void noteUidProcessStateLocked(int uid, int state) {
+    public void noteUidProcessStateLocked(int uid, @ProcessState int state) {
         noteUidProcessStateLocked(uid, state, mClock.elapsedRealtime(), mClock.uptimeMillis());
     }
 
     @GuardedBy("this")
     @SuppressWarnings("GuardedBy")   // errorprone false positive on u.updateUidProcessStateLocked
-    public void noteUidProcessStateLocked(int uid, int state,
+    public void noteUidProcessStateLocked(int uid, @ProcessState int state,
             long elapsedRealtimeMs, long uptimeMs) {
         int parentUid = mPowerStatsUidResolver.getOwnerUid(uid);
         if (uid != parentUid) {
@@ -9939,7 +9940,7 @@ public class BatteryStatsImpl extends BatteryStats {
         }
 
         @GuardedBy("mBsi")
-        public void updateUidProcessStateLocked(int procState,
+        public void updateUidProcessStateLocked(@ProcessState int procState,
                 long elapsedRealtimeMs, long uptimeMs) {
             int uidRunningState;
             // Make special note of Foreground Services

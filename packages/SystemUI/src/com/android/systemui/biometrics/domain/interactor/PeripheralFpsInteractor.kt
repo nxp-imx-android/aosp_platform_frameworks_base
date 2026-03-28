@@ -19,10 +19,12 @@ package com.android.systemui.biometrics.domain.interactor
 import android.graphics.PointF
 import android.graphics.Rect
 import android.util.Log
+import android.view.Surface
 import com.android.systemui.Flags
-import com.android.systemui.biometrics.data.repository.FingerprintPropertyRepository
+import com.android.systemui.biometrics.shared.model.PeripheralFingerprintSensorLocation
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.display.domain.interactor.DisplayTypeInteractor
 import com.android.systemui.shade.ShadeDisplayAware
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -35,18 +37,23 @@ class PeripheralFpsInteractor
 @Inject
 constructor(
     @ShadeDisplayAware val configurationInteractor: ConfigurationInteractor,
-    val fingerprintPropertyRepository: FingerprintPropertyRepository,
+    val fingerprintPropertyInteractor: FingerprintPropertyInteractor,
+    @ShadeDisplayAware val displayTypeInteractor: DisplayTypeInteractor,
 ) {
-    /** Whether fingerprint sensor location is peripheral, i.e. does not have display location. */
+    /**
+     * Whether fingerprint sensor location is peripheral, i.e. does not have display location. This
+     * includes cases when:
+     * - Sensor is of peripheral type.
+     * - Lock screen is showing on non-internal display (for any sensor type).
+     */
     val isSupported: Flow<Boolean>
         get() =
             if (Flags.standaloneFingerprintLockScreenUxFix()) {
                 combine(
-                    fingerprintPropertyRepository.sensorType,
-                    fingerprintPropertyRepository.peripheralSensorLocation,
-                ) { sensorType, peripheralSensorLocation ->
-                    sensorType.isStandalone() ||
-                        (sensorType.isPowerButton() && !peripheralSensorLocation.isUnknown())
+                    fingerprintPropertyInteractor.isPeripheralFps,
+                    displayTypeInteractor.isInternalDisplay,
+                ) { isPeripheralFps, isInternalDisplay ->
+                    isPeripheralFps || !isInternalDisplay
                 }
             } else {
                 flowOf(false)
@@ -57,12 +64,24 @@ constructor(
     val locationForRippleEffect: Flow<PointF>
         get() =
             if (Flags.standaloneFingerprintLockScreenUxFix()) {
-                // TODO b/481645959: Return more specific locations for known peripheral locations.
                 combine(
                     configurationInteractor.maxBounds,
                     configurationInteractor.scaleForResolution,
-                ) { bounds, scale ->
-                    calculateCenterPoint(bounds, scale)
+                    configurationInteractor.displayRotation,
+                    fingerprintPropertyInteractor.peripheralSensorLocation,
+                    displayTypeInteractor.isInternalDisplay,
+                ) { bounds, scale, displayRotation, peripheralSensorLocation, isInternalDisplay ->
+                    // For known peripheral location, sensor location in relation to display can
+                    // only be approximated for internal displays with default rotation.
+                    if (
+                        !peripheralSensorLocation.isUnknown() &&
+                            isInternalDisplay &&
+                            displayRotation == Surface.ROTATION_0
+                    ) {
+                        calculateNearSensorPoint(bounds, scale, peripheralSensorLocation)
+                    } else {
+                        calculateCenterPoint(bounds, scale)
+                    }
                 }
             } else {
                 Log.w(
@@ -71,6 +90,38 @@ constructor(
                 )
                 flowOf(PointF(0f, 0f))
             }
+
+    /**
+     * Calculate the point along the bottom of the screen that's near the sensor based on the
+     * predefined screen fractions for different peripheral locations.
+     */
+    private fun calculateNearSensorPoint(
+        bounds: Rect,
+        scale: Float,
+        peripheralSensorLocation: PeripheralFingerprintSensorLocation,
+    ): PointF {
+        val yOffsetBottom = bounds.height() * scale
+        val xOffset = bounds.width() * scale * peripheralSensorLocation.toNearSensorXFraction()
+        return PointF(xOffset, yOffsetBottom)
+    }
+
+    private fun PeripheralFingerprintSensorLocation.toNearSensorXFraction(): Float =
+        when (this) {
+            PeripheralFingerprintSensorLocation.KEYBOARD_BOTTOM_RIGHT,
+            PeripheralFingerprintSensorLocation.KEYBOARD_TOP_RIGHT,
+            PeripheralFingerprintSensorLocation.RIGHT_SIDE,
+            PeripheralFingerprintSensorLocation.POWER_BUTTON_TOP_RIGHT_KEY -> 0.85f
+            PeripheralFingerprintSensorLocation.KEYBOARD_BOTTOM_LEFT,
+            PeripheralFingerprintSensorLocation.LEFT_SIDE,
+            PeripheralFingerprintSensorLocation.LEFT_OF_POWER_BUTTON_TOP_RIGHT -> 0.15f
+            PeripheralFingerprintSensorLocation.UNKNOWN -> {
+                Log.w(
+                    TAG,
+                    "toNearSensorHorizontalScreenFraction should only be used with known peripheral sensor location.",
+                )
+                0.5f
+            }
+        }
 
     private fun calculateCenterPoint(bounds: Rect, scale: Float) =
         PointF(bounds.width() * 0.5f * scale, bounds.height() * 0.5f * scale)

@@ -70,6 +70,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.window.ScreenCaptureInternal;
+import android.window.WindowAnimationState;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -248,6 +249,8 @@ public class BubbleStackView extends FrameLayout
     private StackAnimationController mStackAnimationController;
     private ExpandedAnimationController mExpandedAnimationController;
     private ExpandedViewAnimationController mExpandedViewAnimationController;
+
+    @Nullable private Animator mConvertAnimator;
 
     private View mScrim;
     @Nullable
@@ -1409,26 +1412,73 @@ public class BubbleStackView extends FrameLayout
                 startScale, /* scaleFactor= */ 1f);
         sca.initialize(bev, taskLeash, snapshot, startT);
 
-        Animator a = sca.buildViewAnimator(bev, tvsc, snapshot, /* onFinish */ va -> {
-            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BubbleStackView.animateConvert(): finished");
-            mIsBubbleSwitchAnimating = false;
-            snapshot.release();
-            bev.setSurfaceZOrderedOnTop(false);
-            bev.setAnimating(false);
-            if (!bev.getContentVisibility()) {
-                ProtoLog.w(WM_SHELL_BUBBLES, "BubbleStackView#animateConvert %s "
-                                + "content wasn't visible so setting it visible",
-                        bev.getBubbleKey());
-                bev.setContentVisibility(true);
-            }
-            if (animFinishWrapper != null) {
-                animFinishWrapper.run();
-            }
-        });
+        Animator a =
+                sca.buildViewAnimator(
+                        bev,
+                        tvsc,
+                        snapshot, /* onFinish */
+                        va -> {
+                            ProtoLog.d(
+                                    WM_SHELL_BUBBLES_NOISY,
+                                    "BubbleStackView.animateConvert(): finished");
+                            mIsBubbleSwitchAnimating = false;
+                            snapshot.release();
+                            bev.setSurfaceZOrderedOnTop(false);
+                            bev.setAnimating(false);
+                            mConvertAnimator = null;
+                            if (!bev.getContentVisibility()) {
+                                ProtoLog.w(
+                                        WM_SHELL_BUBBLES,
+                                        "BubbleStackView#animateConvert %s "
+                                                + "content wasn't visible so setting it visible",
+                                        bev.getBubbleKey());
+                                bev.setContentVisibility(true);
+                            }
+                            if (animFinishWrapper != null) {
+                                animFinishWrapper.run();
+                            }
+                        });
 
         a.setDuration(EXPANDED_VIEW_CONVERSION_ANIMATION_DURATION);
         a.setInterpolator(EMPHASIZED);
+        if (Flags.enableBubbleTransitionPlanner()) {
+            mConvertAnimator = a;
+        }
         a.start();
+    }
+
+    @Override
+    @Nullable
+    public WindowAnimationState cancelAnimation() {
+        if (!Flags.enableBubbleTransitionPlanner()) {
+            throw new IllegalStateException(
+                    "cancelAnimation() should not be called if guarding flag is disabled");
+        }
+        WindowAnimationState state = null;
+        if (mConvertAnimator != null
+                && mConvertAnimator.isRunning()
+                && mExpandedBubble != null
+                && mExpandedBubble.getExpandedView() != null) {
+            BubbleExpandedView bev = mExpandedBubble.getExpandedView();
+            state = new WindowAnimationState();
+            state.scale = bev.getScaleX();
+            state.bounds = new RectF(bev.getLeft(), bev.getTop(), bev.getRight(), bev.getBottom());
+            state.timestamp = System.currentTimeMillis();
+
+            mConvertAnimator.cancel();
+            mConvertAnimator = null;
+        } else if (mIsExpansionAnimating
+                && mExpandedBubble != null
+                && mExpandedBubble.getExpandedView() != null) {
+            BubbleExpandedView bev = mExpandedBubble.getExpandedView();
+            state = new WindowAnimationState();
+            state.scale = mExpandedViewContainerMatrix.getScaleX();
+            state.bounds = new RectF(bev.getLeft(), bev.getTop(), bev.getRight(), bev.getBottom());
+            state.timestamp = System.currentTimeMillis();
+
+            cancelAllExpandCollapseSwitchAnimations();
+        }
+        return state;
     }
 
     @Override
@@ -2634,15 +2684,9 @@ public class BubbleStackView extends FrameLayout
                 });
             };
             if (mPositioner.isImeVisible()) {
-                if (Flags.fixBubbleSwipeUpGesture()) {
-                    hideCurrentInputMethod();
-                    onImeHidden.run();
-                } else {
-                    hideCurrentInputMethod(onImeHidden);
-                }
-            } else {
-                onImeHidden.run();
+                hideCurrentInputMethod();
             }
+            onImeHidden.run();
         }
     }
 
@@ -2731,13 +2775,8 @@ public class BubbleStackView extends FrameLayout
         };
 
         if (mPositioner.isImeVisible()) {
-            if (Flags.fixBubbleSwipeUpGesture()) {
-                hideCurrentInputMethod();
-                onImeHidden.run();
-            } else {
-                BubbleLog.d("BubbleStackView.setExpanded IME is visible, delaying animation");
-                hideCurrentInputMethod(onImeHidden);
-            }
+            hideCurrentInputMethod();
+            onImeHidden.run();
         } else {
             // Clear out the existing runnable if one was scheduled to run after IME was hidden.
             // IME hide action can take time or in some cases not trigger at all. And we can

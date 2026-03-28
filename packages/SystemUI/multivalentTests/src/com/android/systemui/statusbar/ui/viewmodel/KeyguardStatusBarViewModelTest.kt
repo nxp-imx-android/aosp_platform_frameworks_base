@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.ui.viewmodel
 import android.app.StatusBarManager.DISABLE_NONE
 import android.app.StatusBarManager.DISABLE_SYSTEM_INFO
 import android.platform.test.flag.junit.FlagsParameterization
+import android.view.View
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.desktop.domain.interactor.enableUsingDesktopStatusBar
@@ -43,7 +44,6 @@ import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationSt
 import com.android.systemui.statusbar.notification.data.repository.FakeHeadsUpRowRepository
 import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
-import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityState
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -199,7 +199,7 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
 
             // THEN it is visible
             assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.VISIBLE)
+                .isEqualTo(View.VISIBLE)
         }
 
     @Test
@@ -216,7 +216,7 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
                 .isEqualTo(false)
             // THEN it is invisible
             assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.INVISIBLE)
+                .isEqualTo(View.INVISIBLE)
         }
 
     @Test
@@ -231,12 +231,7 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
 
             // VERIFY initial state
             assertThat(underTest.systemInfoCombinedVis.baseVisibility)
-                .isEqualTo(
-                    VisibilityModel(
-                        visibility = VisibilityState.VISIBLE,
-                        shouldAnimateChange = true,
-                    )
-                )
+                .isEqualTo(VisibilityModel(visibility = View.VISIBLE, shouldAnimateChange = true))
             assertThat(underTest.systemInfoCombinedVis.animationState)
                 .isEqualTo(SystemEventAnimationState.Idle)
 
@@ -246,12 +241,7 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
 
             // THEN visibility remains visible, but shouldAnimateChange becomes false
             assertThat(underTest.systemInfoCombinedVis.baseVisibility)
-                .isEqualTo(
-                    VisibilityModel(
-                        visibility = VisibilityState.VISIBLE,
-                        shouldAnimateChange = false,
-                    )
-                )
+                .isEqualTo(VisibilityModel(visibility = View.VISIBLE, shouldAnimateChange = false))
             assertThat(underTest.systemInfoCombinedVis.animationState)
                 .isEqualTo(SystemEventAnimationState.AnimatingIn)
 
@@ -271,11 +261,6 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
             assertThat(underTest.systemInfoCombinedVis.animationState)
                 .isEqualTo(SystemEventAnimationState.AnimatingOut)
             assertThat(underTest.systemInfoCombinedVis.baseVisibility)
-                .isEqualTo(
-                    VisibilityModel(
-                        visibility = VisibilityState.VISIBLE,
-                        shouldAnimateChange = false,
-                    )
-                )
+                .isEqualTo(VisibilityModel(visibility = View.VISIBLE, shouldAnimateChange = false))
         }
 }

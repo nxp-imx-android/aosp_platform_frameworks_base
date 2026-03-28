@@ -154,6 +154,17 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
         void showInputMethodPickerFromSystem(
                 int auxiliarySubtypeMode, @IMPickerEntryPoint int entryPoint, int displayId);
 
+        @PermissionVerified(allOf = {
+                Manifest.permission.INTERACT_ACROSS_USERS_FULL,
+                Manifest.permission.WRITE_SECURE_SETTINGS})
+        void toggleInputMethodPickerFromSystem(
+                int auxiliarySubtypeMode, @IMPickerEntryPoint int entryPoint, int displayId);
+
+        @PermissionVerified(allOf = {
+                Manifest.permission.INTERACT_ACROSS_USERS_FULL,
+                Manifest.permission.WRITE_SECURE_SETTINGS})
+        void hideInputMethodPickerFromSystem(int displayId);
+
         @PermissionVerified(Manifest.permission.TEST_INPUT_METHOD)
         boolean isInputMethodPickerShownForTest(@UserIdInt int userId);
 
@@ -373,6 +384,27 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
         super.showInputMethodPickerFromSystem_enforcePermission();
 
         mCallback.showInputMethodPickerFromSystem(auxiliarySubtypeMode, entryPoint, displayId);
+    }
+
+    @EnforcePermission(allOf = {
+            Manifest.permission.WRITE_SECURE_SETTINGS,
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL})
+    @Override
+    public void toggleInputMethodPickerFromSystem(
+            int auxiliarySubtypeMode, @IMPickerEntryPoint int entryPoint, int displayId) {
+        super.toggleInputMethodPickerFromSystem_enforcePermission();
+
+        mCallback.toggleInputMethodPickerFromSystem(auxiliarySubtypeMode, entryPoint, displayId);
+    }
+
+    @EnforcePermission(allOf = {
+            Manifest.permission.WRITE_SECURE_SETTINGS,
+            Manifest.permission.INTERACT_ACROSS_USERS_FULL})
+    @Override
+    public void hideInputMethodPickerFromSystem(int displayId) {
+        super.hideInputMethodPickerFromSystem_enforcePermission();
+
+        mCallback.hideInputMethodPickerFromSystem(displayId);
     }
 
     @EnforcePermission(Manifest.permission.TEST_INPUT_METHOD)

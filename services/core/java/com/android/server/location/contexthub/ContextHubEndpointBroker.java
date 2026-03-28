@@ -639,6 +639,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
         params.sourceId = mHalEndpointInfo.id;
         params.msg = halMessage;
         params.sessionId = sessionId;
+        Binder.allowBlocking(callback.asBinder());
         IEndpointCommunication.IRegisterOffloadSinkCallback halCallback =
                 new IEndpointCommunication.IRegisterOffloadSinkCallback.Stub() {
                     @Override

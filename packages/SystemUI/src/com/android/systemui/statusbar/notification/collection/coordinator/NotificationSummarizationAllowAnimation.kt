@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.systemui.statusbar.notification.shared
 
-import android.app.Flags
+package com.android.systemui.statusbar.notification.collection.coordinator.shared
+
+import com.android.systemui.Flags
 import com.android.systemui.flags.FlagToken
 import com.android.systemui.flags.RefactorFlagUtils
 
-/** Helper for reading or using the notification bundle ui flag state. */
+/** Helper for reading or using the notification summarization allow animation flag state. */
 @Suppress("NOTHING_TO_INLINE")
-object NmHighlights {
+object NotificationSummarizationAllowAnimation {
     /** The aconfig flag name */
-    const val FLAG_NAME = Flags.FLAG_NM_HIGHLIGHTS
+    const val FLAG_NAME = Flags.FLAG_NOTIFICATION_SUMMARIZATION_ALLOW_ANIMATION
 
     /** A token used for dependency declaration */
     val token: FlagToken
@@ -32,26 +33,30 @@ object NmHighlights {
     /** Is the refactor enabled */
     @JvmStatic
     inline val isEnabled
-        get() = Flags.nmHighlights()
+        get() = Flags.notificationSummarizationAllowAnimation()
 
     /**
-     * Called to ensure code is only run when the flag is enabled. This protects users from the
-     * unintended behaviors caused by accidentally running new logic, while also crashing on an eng
-     * build to ensure that the refactor author catches issues in testing.
+     * Called to ensure code is only run when the flag is enabled. This can be used to protect users
+     * from the unintended behaviors caused by accidentally running new logic, while also crashing
+     * on an eng build to ensure that the refactor author catches issues in testing.
      */
     @JvmStatic
     inline fun isUnexpectedlyInLegacyMode() =
         RefactorFlagUtils.isUnexpectedlyInLegacyMode(isEnabled, FLAG_NAME)
 
     /**
-     * Called to ensure code is only run when the flag is enabled. This will throw an exception if
-     * the flag is not enabled to ensure that the refactor author catches issues in testing.
-     * Caution!! Using this check incorrectly will cause crashes in nextfood builds!
+     * Called to ensure code is only run when the flag is enabled. This will call Log.wtf if the
+     * flag is not enabled to ensure that the refactor author catches issues in testing.
+     *
+     * NOTE: This can be useful for simple methods, but does not return the flag state, so it cannot
+     * be used to implement a safe exit, and as such it does not support code stripping. If the
+     * calling code will do work that is unsafe when the flag is off, it is recommended to write an
+     * early return with `if (isUnexpectedlyInLegacyMode()) return`.
      */
     @JvmStatic
-    @Deprecated("Avoid crashing.", ReplaceWith("if (this.isUnexpectedlyInLegacyMode()) return"))
-    inline fun unsafeAssertInNewMode() =
-        RefactorFlagUtils.unsafeAssertInNewMode(isEnabled, FLAG_NAME)
+    inline fun expectInNewMode() {
+        RefactorFlagUtils.isUnexpectedlyInLegacyMode(isEnabled, FLAG_NAME)
+    }
 
     /**
      * Called to ensure code is only run when the flag is disabled. This will throw an exception if

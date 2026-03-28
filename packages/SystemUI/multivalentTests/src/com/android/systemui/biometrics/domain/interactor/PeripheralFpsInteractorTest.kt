@@ -21,6 +21,7 @@ import android.graphics.PointF
 import android.graphics.Rect
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.view.Display
 import android.view.Surface
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -32,6 +33,7 @@ import com.android.systemui.biometrics.shared.model.PeripheralFingerprintSensorL
 import com.android.systemui.biometrics.shared.model.SensorStrength
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.display.data.repository.setDisplayType
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -55,6 +57,7 @@ class PeripheralFpsInteractorTest : SysuiTestCase() {
     fun setup() {
         setScreenSize(WIDTH, HEIGHT)
         configurationRepository.setScaleForResolution(1f)
+        kosmos.setDisplayType(Display.DEFAULT_DISPLAY, Display.TYPE_INTERNAL)
     }
 
     @Test
@@ -91,6 +94,40 @@ class PeripheralFpsInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(FLAG_STANDALONE_FINGERPRINT_LOCK_SCREEN_UX_FIX)
+    fun isSupported_externalDisplay_unknownType_true() =
+        testScope.runTest {
+            val isSupported by collectLastValue(underTest.isSupported)
+
+            fingerprintRepository.setProperties(
+                sensorId = 0,
+                strength = SensorStrength.STRONG,
+                sensorType = FingerprintSensorType.UNKNOWN,
+                sensorLocations = emptyMap(),
+            )
+            kosmos.setDisplayType(Display.DEFAULT_DISPLAY, Display.TYPE_EXTERNAL)
+
+            assertThat(isSupported).isTrue()
+        }
+
+    @Test
+    @EnableFlags(FLAG_STANDALONE_FINGERPRINT_LOCK_SCREEN_UX_FIX)
+    fun isSupported_externalDisplay_sideFpsType_true() =
+        testScope.runTest {
+            val isSupported by collectLastValue(underTest.isSupported)
+
+            fingerprintRepository.setProperties(
+                sensorId = 0,
+                strength = SensorStrength.STRONG,
+                sensorType = FingerprintSensorType.POWER_BUTTON,
+                sensorLocations = emptyMap(),
+            )
+            kosmos.setDisplayType(Display.DEFAULT_DISPLAY, Display.TYPE_EXTERNAL)
+
+            assertThat(isSupported).isTrue()
+        }
+
+    @Test
+    @EnableFlags(FLAG_STANDALONE_FINGERPRINT_LOCK_SCREEN_UX_FIX)
     fun isSupported_powerButtonWithPeripheralLocation_true() =
         testScope.runTest {
             val isSupported by collectLastValue(underTest.isSupported)
@@ -100,7 +137,8 @@ class PeripheralFpsInteractorTest : SysuiTestCase() {
                 strength = SensorStrength.STRONG,
                 sensorType = FingerprintSensorType.POWER_BUTTON,
                 sensorLocations = emptyMap(),
-                peripheralSensorLocation = PeripheralFingerprintSensorLocation.KEYBOARD_BOTTOM_LEFT,
+                peripheralSensorLocation =
+                    PeripheralFingerprintSensorLocation.POWER_BUTTON_TOP_RIGHT_KEY,
             )
 
             assertThat(isSupported).isTrue()
@@ -167,7 +205,90 @@ class PeripheralFpsInteractorTest : SysuiTestCase() {
 
             for (scale in SCALES) {
                 configurationRepository.setScaleForResolution(scale)
-                assertThat(location).isEqualTo(PointF(WIDTH_CENTER * scale, HEIGHT_CENTER * scale))
+                assertPointF(location)
+                    .isWithin(0.1f)
+                    .of(PointF(WIDTH_CENTER * scale, HEIGHT_CENTER * scale))
+            }
+        }
+
+    @Test
+    @EnableFlags(FLAG_STANDALONE_FINGERPRINT_LOCK_SCREEN_UX_FIX)
+    fun locationForRippleEffect_isNearPeripheralSensor_whenInternalDisplayAndDefaultRotation() =
+        testScope.runTest {
+            val location by collectLastValue(underTest.locationForRippleEffect)
+
+            val testData =
+                listOf(
+                    PeripheralFingerprintSensorLocation.KEYBOARD_BOTTOM_RIGHT to 1360,
+                    PeripheralFingerprintSensorLocation.KEYBOARD_TOP_RIGHT to 1360,
+                    PeripheralFingerprintSensorLocation.RIGHT_SIDE to 1360,
+                    PeripheralFingerprintSensorLocation.POWER_BUTTON_TOP_RIGHT_KEY to 1360,
+                    PeripheralFingerprintSensorLocation.KEYBOARD_BOTTOM_LEFT to 240,
+                    PeripheralFingerprintSensorLocation.LEFT_SIDE to 240,
+                    PeripheralFingerprintSensorLocation.LEFT_OF_POWER_BUTTON_TOP_RIGHT to 240,
+                )
+
+            for ((sensorLocation, expectedX) in testData) {
+                fingerprintRepository.setProperties(
+                    sensorId = 0,
+                    strength = SensorStrength.STRONG,
+                    sensorType = FingerprintSensorType.STANDALONE,
+                    sensorLocations = emptyMap(),
+                    peripheralSensorLocation = sensorLocation,
+                )
+
+                for (scale in SCALES) {
+                    configurationRepository.setScaleForResolution(scale)
+                    assertPointF(location)
+                        .isWithin(0.1f)
+                        .of(PointF(expectedX * scale, HEIGHT * scale))
+                }
+            }
+        }
+
+    @Test
+    @EnableFlags(FLAG_STANDALONE_FINGERPRINT_LOCK_SCREEN_UX_FIX)
+    fun locationForRippleEffect_isScreenCenter_whenExternalDisplay() =
+        testScope.runTest {
+            val location by collectLastValue(underTest.locationForRippleEffect)
+
+            kosmos.setDisplayType(Display.DEFAULT_DISPLAY, Display.TYPE_EXTERNAL)
+            fingerprintRepository.setProperties(
+                sensorId = 0,
+                strength = SensorStrength.STRONG,
+                sensorType = FingerprintSensorType.STANDALONE,
+                sensorLocations = emptyMap(),
+                peripheralSensorLocation = PeripheralFingerprintSensorLocation.RIGHT_SIDE,
+            )
+
+            for (scale in SCALES) {
+                configurationRepository.setScaleForResolution(scale)
+                assertPointF(location)
+                    .isWithin(0.1f)
+                    .of(PointF(WIDTH_CENTER * scale, HEIGHT_CENTER * scale))
+            }
+        }
+
+    @Test
+    @EnableFlags(FLAG_STANDALONE_FINGERPRINT_LOCK_SCREEN_UX_FIX)
+    fun locationForRippleEffect_isScreenCenter_whenRotated() =
+        testScope.runTest {
+            val location by collectLastValue(underTest.locationForRippleEffect)
+
+            setScreenSize(WIDTH, HEIGHT, Surface.ROTATION_90)
+            fingerprintRepository.setProperties(
+                sensorId = 0,
+                strength = SensorStrength.STRONG,
+                sensorType = FingerprintSensorType.STANDALONE,
+                sensorLocations = emptyMap(),
+                peripheralSensorLocation = PeripheralFingerprintSensorLocation.RIGHT_SIDE,
+            )
+
+            for (scale in SCALES) {
+                configurationRepository.setScaleForResolution(scale)
+                assertPointF(location)
+                    .isWithin(0.1f)
+                    .of(PointF(WIDTH_CENTER * scale, HEIGHT_CENTER * scale))
             }
         }
 
@@ -185,8 +306,30 @@ class PeripheralFpsInteractorTest : SysuiTestCase() {
                 peripheralSensorLocation = PeripheralFingerprintSensorLocation.UNKNOWN,
             )
 
-            assertThat(location).isEqualTo(PointF(0f, 0f))
+            assertPointF(location).isEqualTo(PointF(0f, 0f))
         }
+
+    private fun assertPointF(point: PointF?): PointFSubject = PointFSubject(point)
+
+    private class PointFSubject(private val actual: PointF?) {
+        fun isWithin(tolerance: Float): TolerantPointFComparison =
+            TolerantPointFComparison(actual, tolerance)
+
+        fun isEqualTo(expected: PointF) {
+            assertThat(actual).isEqualTo(expected)
+        }
+    }
+
+    private class TolerantPointFComparison(
+        private val actual: PointF?,
+        private val tolerance: Float,
+    ) {
+        fun of(expected: PointF) {
+            assertThat(actual).isNotNull()
+            assertThat(actual!!.x).isWithin(tolerance).of(expected.x)
+            assertThat(actual.y).isWithin(tolerance).of(expected.y)
+        }
+    }
 
     private fun setScreenSize(width: Int, height: Int, rotation: Int = Surface.ROTATION_0) {
         val config = Configuration()

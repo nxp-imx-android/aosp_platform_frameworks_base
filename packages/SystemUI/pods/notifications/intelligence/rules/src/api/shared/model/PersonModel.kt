@@ -20,7 +20,7 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.Icon
 import android.net.Uri
 
-/** Represents a person, like a contact or shortcut. */
+/** Represents a person, like a contact or someone the user has had a conversation with. */
 sealed interface PersonModel {
     /** A unique identifier for the person. */
     val id: String
@@ -39,6 +39,16 @@ sealed interface PersonModel {
         override val displayLabel: String = name
         override val id: String = lookupUri.toString()
     }
+
+    /** A model for long-lived conversation with a person in a particular app. */
+    data class ConversationPartner(
+        override val id: String,
+        override val displayLabel: String,
+        /** The main icon representing this conversation partner. */
+        val avatarIcon: Icon,
+        /** The icon representing which app this conversation is in. */
+        val appBadgeIcon: Drawable?,
+    ) : PersonModel
 }
 
 /**

@@ -904,7 +904,6 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     public void testShouldBeVisible_behindVisibilityBarrier() {
         final Task bottomTask = createTaskWithActivity(mDefaultTaskDisplayArea,
                 WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD, true /* onTop */,
@@ -930,7 +929,6 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     public void testShouldBeVisible_rootTaskWithAllChildBehindVisibilityBarrier() {
         final Task rootTask = createTaskWithActivity(mDefaultTaskDisplayArea,
                 WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD, true /* onTop */,
@@ -951,7 +949,6 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     public void testShouldBeVisible_forceLeafTaskNonOccluding() {
         final Task rootTask = createTaskWithActivity(mDefaultTaskDisplayArea,
                 WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD, true /* onTop */,
@@ -972,7 +969,6 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     public void testShouldBeVisible_forceLeafTaskNonOccludingBehindVisibilityBarrier() {
         final Task rootTask = createTaskWithActivity(mDefaultTaskDisplayArea,
                 WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD, true /* onTop */,
@@ -1156,7 +1152,6 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     public void testOpaque_rootTaskWithAllChildBehindVisibilityBarrier() {
         final Task rootTask = createTaskWithActivity(mDefaultTaskDisplayArea,
                 WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD, true /* onTop */,
@@ -1177,7 +1172,6 @@ public class WindowContainerVisibilityHelperTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT)
     public void testOpaque_forceLeafTaskNonOccluding() {
         final Task rootTask = createTaskWithActivity(mDefaultTaskDisplayArea,
                 WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD, true /* onTop */,

@@ -406,8 +406,8 @@ public class TvPipController implements PipTransitionController.PipTransitionCal
         ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                 "%s: togglePipExpansion()", TAG);
         boolean expanding = !mTvPipBoundsState.isTvPipExpanded();
-        mTvPipBoundsAlgorithm.updateGravityOnExpansionToggled(expanding);
         mTvPipBoundsState.setTvPipManuallyCollapsed(!expanding);
+        mTvPipBoundsAlgorithm.updateGravityOnExpansionToggled(expanding);
         mTvPipBoundsState.setTvPipExpanded(expanding);
 
         updatePinnedStackBounds();

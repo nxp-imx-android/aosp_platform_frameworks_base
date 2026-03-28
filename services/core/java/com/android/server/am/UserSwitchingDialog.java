@@ -72,7 +72,7 @@ class UserSwitchingDialog extends Dialog {
     @SuppressWarnings("DebugTrue")
     protected static final boolean DEBUG = true;
 
-    private static final long DIALOG_SHOW_HIDE_ANIMATION_DURATION_MS = 300;
+    private static final long DIALOG_SHOW_HIDE_ANIMATION_DURATION_MS = 100;
     private volatile boolean mDisableAnimations;
 
     // Time to wait for the onAnimationEnd() callbacks before moving on

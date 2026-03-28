@@ -18,7 +18,6 @@ package com.android.server.wm;
 
 import static android.app.WallpaperManager.COMMAND_FREEZE;
 import static android.app.WallpaperManager.COMMAND_UNFREEZE;
-import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WALLPAPER;
@@ -171,7 +170,7 @@ class WallpaperController {
                         mFindResults.setWallpaperTarget(w);
                         mFindResults.setIsWallpaperTargetForLetterbox(
                                 w.hasWallpaperForLetterboxBackground());
-                    } else if (w.getWindowingMode() != WINDOWING_MODE_FULLSCREEN) {
+                    } else {
                         // Search for the next potential window.
                         return false;
                     }

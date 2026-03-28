@@ -82,6 +82,27 @@ class MobileIconsInteractorTest : MobileIconsInteractorTestBase() {
             assertThat(interactor1).isNotNull()
             assertThat(interactor1).isSameInstanceAs(interactor2)
         }
+
+    @Test
+    fun defaultDataIconInteractor_tracksDefaultDataSubId() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.defaultDataIconInteractor)
+
+            connectionsRepository.setDefaultDataSubId(SUB_1_ID)
+            runCurrent()
+
+            assertThat(latest?.subscriptionId).isEqualTo(SUB_1_ID)
+
+            connectionsRepository.setDefaultDataSubId(SUB_2_ID)
+            runCurrent()
+
+            assertThat(latest?.subscriptionId).isEqualTo(SUB_2_ID)
+
+            connectionsRepository.setDefaultDataSubId(INVALID_SUBSCRIPTION_ID)
+            runCurrent()
+
+            assertThat(latest).isNull()
+        }
 }
 
 abstract class MobileIconsInteractorTestBase : SysuiTestCase() {
@@ -1058,7 +1079,7 @@ abstract class MobileIconsInteractorTestBase : SysuiTestCase() {
                 profileClass = PROFILE_CLASS_UNSET,
             )
 
-        private const val SUB_2_ID = 2
+        const val SUB_2_ID = 2
         private val SUB_2 =
             SubscriptionModel(
                 subscriptionId = SUB_2_ID,

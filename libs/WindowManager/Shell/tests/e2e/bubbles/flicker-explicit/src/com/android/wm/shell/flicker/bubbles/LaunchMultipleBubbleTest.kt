@@ -65,7 +65,6 @@ import org.junit.runners.Parameterized.Parameters
 @RequiresFlagsEnabled(
     Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
     com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK,
-    com.android.window.flags.Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT,
 )
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

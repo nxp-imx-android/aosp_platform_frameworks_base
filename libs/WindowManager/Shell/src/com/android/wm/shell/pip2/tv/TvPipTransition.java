@@ -98,6 +98,7 @@ public class TvPipTransition extends PipTransitionController implements
     private final Context mContext;
     private final PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
     private final TvPipMenuController mTvPipMenuController;
+    private final TvPipTaskListener mTvPipTaskListener;
     private final PipTransitionState mPipTransitionState;
 
     //
@@ -132,12 +133,14 @@ public class TvPipTransition extends PipTransitionController implements
             TvPipBoundsState tvPipBoundsState,
             TvPipMenuController tvPipMenuController,
             TvPipBoundsAlgorithm tvPipBoundsAlgorithm,
+            TvPipTaskListener tvPipTaskListener,
             PipTransitionState pipTransitionState) {
         super(shellInit, shellTaskOrganizer, transitions, tvPipBoundsState, tvPipMenuController,
                 tvPipBoundsAlgorithm);
         mContext = context;
         mPipSurfaceTransactionHelper = pipSurfaceTransactionHelper;
         mTvPipMenuController = tvPipMenuController;
+        mTvPipTaskListener = tvPipTaskListener;
         mPipTransitionState = pipTransitionState;
         mPipTransitionState.addPipTransitionStateChangedListener(this);
         mExitFadeOutDuration = context.getResources().getInteger(
@@ -228,6 +231,7 @@ public class TvPipTransition extends PipTransitionController implements
 
         final TvPipBoundsState tvPipBoundsState = (TvPipBoundsState) mPipBoundsState;
         PictureInPictureParams pipParams = pipTask.pictureInPictureParams;
+        mTvPipTaskListener.setPictureInPictureParams(pipParams);
         tvPipBoundsState.setBoundsStateForEntry(pipTask.topActivity, pipTask.topActivityInfo,
                 pipParams, mPipBoundsAlgorithm);
 

@@ -4758,6 +4758,40 @@ public final class InputMethodManager {
                 mode, entryPoint, displayId);
     }
 
+    /**
+     * Toggles the input method chooser dialog from system.
+     *
+     * There's no guarantee that this toggle is an atomic operation. There's potential risk of a
+     * race condition when concurrency is involved, or when this is invoked in quick succession.
+     *
+     * @param showAuxiliarySubtypes Set true to show auxiliary input methods.
+     * @param entryPoint The entry point where the chooser dialog was requested from.
+     * @param displayId The ID of the display where the chooser dialog should be shown if it is
+     * currently hidden. The param is unused if it is currently shown and should now be hidden.
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.WRITE_SECURE_SETTINGS)
+    public void toggleInputMethodPickerFromSystem(boolean showAuxiliarySubtypes,
+            @IMPickerEntryPoint int entryPoint, int displayId) {
+        final int mode = showAuxiliarySubtypes
+                ? SHOW_IM_PICKER_MODE_INCLUDE_AUXILIARY_SUBTYPES
+                : SHOW_IM_PICKER_MODE_EXCLUDE_AUXILIARY_SUBTYPES;
+        IInputMethodManagerGlobalInvoker.toggleInputMethodPickerFromSystem(
+                mode, entryPoint, displayId);
+    }
+
+    /**
+     * Hides the input method chooser dialog from system.
+     *
+     * @param displayId (legacy unused param)
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.WRITE_SECURE_SETTINGS)
+    public void hideInputMethodPickerFromSystem(int displayId) {
+        // TODO: b/496501764 - Remove unused "displayId" param.
+        IInputMethodManagerGlobalInvoker.hideInputMethodPickerFromSystem(displayId);
+    }
+
     @GuardedBy("mH")
     private void showInputMethodPickerLocked() {
         IInputMethodManagerGlobalInvoker.showInputMethodPickerFromClient(mClient,

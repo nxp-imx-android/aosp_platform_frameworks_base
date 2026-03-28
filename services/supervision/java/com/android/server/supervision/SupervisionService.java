@@ -848,7 +848,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
     }
 
     private void onSupervisionDisabled(@UserIdInt int userId) {
-        if (!Flags.removeRoleHolderAfterEventDispatch()) {
+        if (!Flags.removeRoleAfterEventDispatch()) {
             onSupervisionDisabledLegacy(userId);
             return;
         }
@@ -863,12 +863,10 @@ public class SupervisionService extends ISupervisionManager.Stub {
                                     listener -> listener.onSetSupervisionEnabled(userId, false),
                                     packageName -> removeSupervisionRoleHolder(userId, packageName)
                             ));
-                    if (Flags.appBindingServiceRework()) {
-                        AppBindingService abs = mInjector.getAppBindingService();
-                        if (abs != null) {
-                            abs.unbindAndRemoveInvalidConnections(
-                                    userId, SupervisionAppServiceFinder.class);
-                        }
+                    AppBindingService abs = mInjector.getAppBindingService();
+                    if (abs != null) {
+                        abs.unbindAndRemoveInvalidConnections(
+                                userId, SupervisionAppServiceFinder.class);
                     }
                     clearAllPolicies(userId);
                 });
@@ -880,12 +878,10 @@ public class SupervisionService extends ISupervisionManager.Stub {
                     updateWebContentFilters(userId, false);
                     dispatchSupervisionEvent(
                             userId, listener -> listener.onSetSupervisionEnabled(userId, false));
-                    if (Flags.appBindingServiceRework()) {
-                        AppBindingService abs = mInjector.getAppBindingService();
-                        if (abs != null) {
-                            abs.unbindAndRemoveInvalidConnections(
-                                    userId, SupervisionAppServiceFinder.class);
-                        }
+                    AppBindingService abs = mInjector.getAppBindingService();
+                    if (abs != null) {
+                        abs.unbindAndRemoveInvalidConnections(
+                                userId, SupervisionAppServiceFinder.class);
                     }
                     clearAllDevicePoliciesAndSuspendedPackages(userId);
                     clearAllPolicies(userId);
@@ -981,7 +977,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
         allSupervisionPackages.addAll(systemSupervisionPackage);
 
         clearSuspendedPackagesFor(userId, allSupervisionPackages);
-        if (!Flags.removeRoleHolderAfterEventDispatch()) {
+        if (!Flags.removeRoleAfterEventDispatch()) {
             removeSupervisionRoleHolders(user, supervisionPackages);
         }
 
@@ -1010,7 +1006,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
     private void removeSupervisionRoleHolder(@UserIdInt int userId, String packageName) {
         mInjector.removeRoleHoldersAsUser(ROLE_SUPERVISION, packageName,
-                UserHandle.getUserHandleForUid(userId));
+                UserHandle.of(userId));
     }
 
     private void removeSupervisionRoleHolders(UserHandle user, List<String> supervisionPackages) {

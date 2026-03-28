@@ -1437,9 +1437,8 @@ public class AlarmManager {
     }
 
     /**
-     * Like {@link #setExact(int, long, String, Executor, WorkSource, OnAlarmListener)}, but this
-     * alarm will be allowed to execute even when the system is in low-power idle modes with relaxed
-     * quota.
+     * Like {@link #setExact(int , long, String, OnAlarmListener, Handler)}, but this alarm will be
+     * allowed to execute even when the system is in low-power idle modes.
      *
      * <p>
      * Listener based alarms may be canceled by the Android system whenever the calling process

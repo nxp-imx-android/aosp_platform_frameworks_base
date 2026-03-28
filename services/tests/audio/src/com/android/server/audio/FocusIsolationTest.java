@@ -101,7 +101,6 @@ public class FocusIsolationTest {
                         0,
                         false,
                         0,
-                        true,
                         false /*isInCall*/);
         assertThat(result).isEqualTo(AUDIOFOCUS_REQUEST_GRANTED);
         assertThat(mMediaFocusControl.getFocusStack()).hasSize(1);
@@ -137,7 +136,6 @@ public class FocusIsolationTest {
                 0,
                 false,
                 0,
-                true,
                 false /*isInCall*/);
         IAudioFocusDispatcher focusDispatcher2 = mock(IAudioFocusDispatcher.class);
         IBinder token1 = new Binder();
@@ -155,7 +153,6 @@ public class FocusIsolationTest {
                 0,
                 false,
                 0,
-                true,
                 false /*isInCall*/);
 
         assertThat(mMediaFocusControl.getFocusStack()).hasSize(1);
@@ -181,7 +178,6 @@ public class FocusIsolationTest {
                         0,
                         false,
                         0,
-                        true,
                         false /*isInCall*/);
 
         boolean focusIsolationExitResult =
@@ -208,7 +204,6 @@ public class FocusIsolationTest {
                 0,
                 false,
                 0,
-                true,
                 false /*isInCall*/);
         IBinder token = new Binder();
         mMediaFocusControl.enterFocusIsolation(UID_1, token);
@@ -225,7 +220,6 @@ public class FocusIsolationTest {
                 0,
                 false,
                 0,
-                true,
                 false /*isInCall*/);
         when(mPlayerFocusEnforcer.isPlaybackActiveForUid(UID_1)).thenReturn(true);
 
@@ -256,7 +250,6 @@ public class FocusIsolationTest {
                 0,
                 false,
                 0,
-                true,
                 false /*isInCall*/);
         when(mPlayerFocusEnforcer.isPlaybackActiveForUid(UID_1)).thenReturn(false);
 
@@ -292,7 +285,6 @@ public class FocusIsolationTest {
                         0,
                         false,
                         0,
-                        true,
                         false /*isInCall*/);
         IAudioFocusDispatcher focusDispatcher2 = mock(IAudioFocusDispatcher.class);
 
@@ -309,7 +301,6 @@ public class FocusIsolationTest {
                         0,
                         false,
                         0,
-                        true,
                         false /*isInCall*/);
 
         assertThat(result1).isEqualTo(AUDIOFOCUS_REQUEST_GRANTED);
@@ -333,7 +324,6 @@ public class FocusIsolationTest {
                 0,
                 false,
                 0,
-                true,
                 false /*isInCall*/);
         IAudioFocusDispatcher focusDispatcher2 = mock(IAudioFocusDispatcher.class);
         mMediaFocusControl.requestAudioFocus(
@@ -348,7 +338,6 @@ public class FocusIsolationTest {
                 0,
                 false,
                 0,
-                true,
                 false /*isInCall*/);
 
         mMediaFocusControl.enterFocusIsolation(UID_1, new Binder());

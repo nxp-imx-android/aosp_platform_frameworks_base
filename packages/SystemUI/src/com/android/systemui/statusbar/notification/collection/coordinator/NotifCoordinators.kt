@@ -17,13 +17,13 @@ package com.android.systemui.statusbar.notification.collection.coordinator
 
 import android.multiuser.Flags
 import android.os.UserManager
+import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.PipelineDumpable
 import com.android.systemui.statusbar.notification.collection.PipelineDumper
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifSectioner
 import com.android.systemui.statusbar.notification.collection.provider.SectionStyleProvider
-import com.android.systemui.statusbar.notification.shared.NmHighlights
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism
 import javax.inject.Inject
 
@@ -111,7 +111,7 @@ constructor(
         mCoordinators.add(bundleCoordinator)
         mCoordinators.add(summarizationCoordinator)
         mCoordinators.add(statsLoggerCoordinator)
-        if (NmHighlights.isEnabled) {
+        if (NmContextualDisplayLaunch.isEnabled) {
             mCoordinators.add(highlightsCoordinator)
         }
         if (
@@ -130,7 +130,7 @@ constructor(
             mOrderedSections.add(lockScreenMinimalismCoordinator.topUnseenSectioner) // Top Unseen
         }
         mOrderedSections.add(colorizedFgsCoordinator.sectioner) // ForegroundService
-        if (NmHighlights.isEnabled) {
+        if (NmContextualDisplayLaunch.isEnabled) {
             mOrderedSections.add(highlightsCoordinator.highlightsSectioner) // Highlights
         }
         mOrderedSections.add(conversationCoordinator.priorityPeopleSectioner) // Priority People

@@ -4474,6 +4474,138 @@ public final class SatelliteManager {
         return binder;
     }
 
+    /**
+     * Retrieves whether satellite attach is supported for the given subscription ID.
+     *
+     * This method prioritizes the configuration value from the ConfigUpdater.
+     * If no ConfigUpdater value is available, it falls back to the system's CarrierConfig.
+     *
+     * @param subId The subscription ID.
+     * @return {@code true} if satellite attach is supported; {@code false} otherwise.
+     * @throws IllegalArgumentException if the provided {@code subId} is not valid.
+     * @throws SecurityException if the caller doesn't have required permission.
+     * @throws IllegalStateException if the Telephony process is not currently available.
+     * @throws RuntimeException if an unexpected error occurs during the remote call to the
+     *         Telephony service.
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.SATELLITE_COMMUNICATION)
+    public boolean isSatelliteAttachSupported(int subId) {
+        if (!SubscriptionManager.isValidSubscriptionId(subId)) {
+            throw new IllegalArgumentException("Invalid subscription ID");
+        }
+
+        try {
+            ITelephony telephony = getITelephony();
+            if (telephony != null) {
+                return telephony.isSatelliteAttachSupported(subId);
+            } else {
+                throw new IllegalStateException("telephony service is null.");
+            }
+        } catch (RemoteException ex) {
+            loge("isSatelliteAttachSupported RemoteException: " + ex);
+            ex.rethrowAsRuntimeException();
+        }
+        return false;
+    }
+
+    /**
+     * Retrieves whether satellite entitlement check is supported for the given subscription ID.
+     *
+     * @param subId The subscription ID.
+     * @return {@code true} if satellite entitlement is supported; {@code false} otherwise.
+     * @throws IllegalArgumentException if the provided {@code subId} is not valid.
+     * @throws SecurityException if the caller doesn't have required permission.
+     * @throws IllegalStateException if the Telephony process is not currently available.
+     * @throws RuntimeException if an unexpected error occurs during the remote call to the
+     *         Telephony service.
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.SATELLITE_COMMUNICATION)
+    public boolean isSatelliteEntitlementSupported(int subId) {
+        if (!SubscriptionManager.isValidSubscriptionId(subId)) {
+            throw new IllegalArgumentException("Invalid subscription ID");
+        }
+
+        try {
+            ITelephony telephony = getITelephony();
+            if (telephony != null) {
+                return telephony.isSatelliteEntitlementSupported(subId);
+            } else {
+                throw new IllegalStateException("telephony service is null.");
+            }
+        } catch (RemoteException ex) {
+            loge("isSatelliteEntitlementSupported RemoteException: " + ex);
+            ex.rethrowAsRuntimeException();
+        }
+        return false;
+    }
+
+    /**
+     * Retrieves the satellite entitlement server URL for the given subscription ID.
+     *
+     * @param subId The subscription ID.
+     * @return The entitlement server URL, or {@code null} if not available.
+     * @throws IllegalArgumentException if the provided {@code subId} is not valid.
+     * @throws SecurityException if the caller doesn't have required permission.
+     * @throws IllegalStateException if the Telephony process is not currently available.
+     * @throws RuntimeException if an unexpected error occurs during the remote call to the
+     *         Telephony service.
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.SATELLITE_COMMUNICATION)
+    @Nullable
+    public String getSatelliteEntitlementServerUrl(int subId) {
+        if (!SubscriptionManager.isValidSubscriptionId(subId)) {
+            throw new IllegalArgumentException("Invalid subscription ID");
+        }
+
+        try {
+            ITelephony telephony = getITelephony();
+            if (telephony != null) {
+                return telephony.getSatelliteEntitlementServerUrl(subId);
+            } else {
+                throw new IllegalStateException("telephony service is null.");
+            }
+        } catch (RemoteException ex) {
+            loge("getSatelliteEntitlementServerUrl RemoteException: " + ex);
+            ex.rethrowAsRuntimeException();
+        }
+        return null;
+    }
+
+    /**
+     * Retrieves the satellite NTN connect type for the given subscription ID.
+     *
+     * @param subId The subscription ID.
+     * @return The NTN connect type.
+     * @throws IllegalArgumentException if the provided {@code subId} is not valid.
+     * @throws SecurityException if the caller doesn't have required permission.
+     * @throws IllegalStateException if the Telephony process is not currently available.
+     * @throws RuntimeException if an unexpected error occurs during the remote call to the
+     *         Telephony service.
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.SATELLITE_COMMUNICATION)
+    public int getSatelliteNtnConnectType(int subId) {
+        if (!SubscriptionManager.isValidSubscriptionId(subId)) {
+            throw new IllegalArgumentException("Invalid subscription ID");
+        }
+
+        try {
+            ITelephony telephony = getITelephony();
+            if (telephony != null) {
+                return telephony.getSatelliteNtnConnectType(subId);
+            } else {
+                throw new IllegalStateException("telephony service is null.");
+            }
+        } catch (RemoteException ex) {
+            loge("getSatelliteNtnConnectType() RemoteException:" + ex);
+            ex.rethrowAsRuntimeException();
+        }
+        return 0;
+    }
+
     private static void logd(@NonNull String log) {
         Rlog.d(TAG, log);
     }

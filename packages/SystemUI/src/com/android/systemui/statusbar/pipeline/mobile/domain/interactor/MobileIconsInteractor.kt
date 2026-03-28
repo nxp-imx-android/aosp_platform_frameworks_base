@@ -100,6 +100,12 @@ interface MobileIconsInteractor {
      */
     val activeDataIconInteractor: StateFlow<MobileIconInteractor?>
 
+    /**
+     * Flow providing a reference to the Interactor for the default data subId. This represents the
+     * [MobileIconInteractor] responsible for the default data connection, if any.
+     */
+    val defaultDataIconInteractor: StateFlow<MobileIconInteractor?>
+
     /** True if the RAT icon should always be displayed and false otherwise. */
     val alwaysShowDataRatIcon: StateFlow<Boolean>
 
@@ -186,6 +192,17 @@ constructor(
         mobileConnectionsRepo.activeMobileDataSubscriptionId
             .mapDirect {
                 if (it != null) {
+                    getMobileConnectionInteractorForSubId(it)
+                } else {
+                    null
+                }
+            }
+            .stateIn(scope, SharingStarted.WhileSubscribed(), null)
+
+    override val defaultDataIconInteractor: StateFlow<MobileIconInteractor?> =
+        mobileConnectionsRepo.defaultDataSubId
+            .mapDirect {
+                if (it != null && it != SubscriptionManager.INVALID_SUBSCRIPTION_ID) {
                     getMobileConnectionInteractorForSubId(it)
                 } else {
                     null

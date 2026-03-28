@@ -16,6 +16,7 @@
 
 package com.android.server.credentials;
 
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.Manifest.permission.CREDENTIAL_MANAGER_SET_ALLOWED_PROVIDERS;
 import static android.Manifest.permission.CREDENTIAL_MANAGER_SET_ORIGIN;
 import static android.content.Context.CREDENTIAL_SERVICE;
@@ -56,6 +57,7 @@ import android.os.Binder;
 import android.os.CancellationSignal;
 import android.os.IBinder;
 import android.os.ICancellationSignal;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.provider.DeviceConfig;
@@ -1181,13 +1183,17 @@ public final class CredentialManagerService
         int packageUid;
         PackageManager pm = mContext.createContextAsUser(
                 UserHandle.getUserHandleForUid(callingUid), 0).getPackageManager();
+        int hostAppUid = callingUid;
         try {
             packageUid = pm.getPackageUid(callingPackage,
                     PackageManager.PackageInfoFlags.of(0));
+            if (enablePccFrameworkSupport() && Process.isPrivateComputeCoreUid(callingUid)) {
+                hostAppUid = pm.getAppUidForPrivateComputeCoreUid(callingUid);
+            }
         } catch (PackageManager.NameNotFoundException e) {
             throw new SecurityException(callingPackage + " not found");
         }
-        if (packageUid != callingUid) {
+        if (packageUid != hostAppUid) {
             throw new SecurityException(callingPackage + " does not belong to uid " + callingUid);
         }
     }

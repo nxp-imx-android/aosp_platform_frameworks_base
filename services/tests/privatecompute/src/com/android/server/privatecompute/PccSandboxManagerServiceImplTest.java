@@ -34,6 +34,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -63,6 +64,7 @@ import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.server.LocalServices;
+import com.android.server.pm.UserManagerInternal;
 import com.android.server.privatecompute.PccSandboxManagerServiceImpl.Injector;
 
 import org.junit.Before;
@@ -96,8 +98,8 @@ public class PccSandboxManagerServiceImplTest {
 
     @Rule(order = 1) public MockitoRule mMockitoRule = MockitoJUnit.rule();
 
-    @Rule(order = 2) public TemporaryFolder mTemporaryFolder = new TemporaryFolder();
-
+    @Rule(order = 2) public TemporaryFolder mLogFolderUser1 = new TemporaryFolder();
+    @Rule(order = 3) public TemporaryFolder mLogFolderUser2 = new TemporaryFolder();
 
     @Mock private Context mContext;
     @Mock private PackageManager mPackageManager;
@@ -113,12 +115,14 @@ public class PccSandboxManagerServiceImplTest {
     @Mock private Injector mInjector;
     @Mock private PccSandboxManagerInternal mInternal;
 
-    private File mAuditLogDir;
+    private File mAuditLogDirUser1;
+    private File mAuditLogDirUser2;
     private PccSandboxManagerServiceImpl mService;
 
     @Before
     public void setUp() throws Exception {
-        mAuditLogDir = mTemporaryFolder.newFolder();
+        mAuditLogDirUser1 = mLogFolderUser1.newFolder();
+        mAuditLogDirUser2 = mLogFolderUser2.newFolder();
         when(mContext.getPackageManager()).thenReturn(mPackageManager);
         LocalServices.removeServiceForTest(PackageManagerInternal.class);
         LocalServices.addService(PackageManagerInternal.class, mPackageManagerInternal);
@@ -128,22 +132,30 @@ public class PccSandboxManagerServiceImplTest {
         when(mInjector.getBackgroundLooper()).thenReturn(mBackgroundLooper);
         when(mInjector.getElapsedRealtime()).thenReturn(TEST_ELAPSED_REALTIME);
         when(mInjector.getExecutorService()).thenReturn(newDirectExecutorService());
-        when(mInjector.getAuditLogFilesDirectory()).thenReturn(mAuditLogDir);
+        when(mInjector.getAuditLogFilesDirectory(anyInt())).thenReturn(mAuditLogDirUser1);
+        when(mInjector.getAuditLogFilesDirectory(eq(10))).thenReturn(mAuditLogDirUser2);
         mService = new PccSandboxManagerServiceImpl(mContext, mInjector);
         mService.setPccSandboxManagerInternal(mInternal);
     }
 
     @Test
     public void testFolderIsDeletedOnBoot() throws Exception {
-        mAuditLogDir.mkdirs();
-        assertTrue(mAuditLogDir.exists());
+        clearInvocations(mInjector);
+        UserManagerInternal umi = mock(UserManagerInternal.class);
+        when(umi.getUserIds()).thenReturn(new int[]{0, 10});
+        LocalServices.removeServiceForTest(UserManagerInternal.class);
+        LocalServices.addService(UserManagerInternal.class, umi);
+
+        org.mockito.Mockito.doCallRealMethod().when(mInjector).deleteAuditLogFilesAllUsers();
 
         PccSandboxManagerServiceImpl service = new PccSandboxManagerServiceImpl(mContext,
                 mInjector);
         service.getExecutorService().shutdown();
         assertTrue(service.getExecutorService().awaitTermination(5, TimeUnit.SECONDS));
 
-        assertFalse(mAuditLogDir.exists());
+        verify(mInjector).deleteAuditLogFilesAllUsers();
+        assertFalse(mAuditLogDirUser1.exists());
+        assertFalse(mAuditLogDirUser2.exists());
     }
 
     @Test
@@ -318,10 +330,53 @@ public class PccSandboxManagerServiceImplTest {
     }
 
     @Test
+    public void testWriteToAuditLogInternal_nonPccNonPcsUid_returnsFalse() {
+        int nonPccNonPcsUid = Process.FIRST_APPLICATION_UID;
+        when(mInjector.getCallingUid()).thenReturn(nonPccNonPcsUid);
+        when(mPackageManagerInternal.isSameApp(
+                        TEST_PACKAGE_NAME, nonPccNonPcsUid, UserHandle.getUserId(nonPccNonPcsUid)))
+                .thenReturn(true);
+        when(mInternal.isPccTrustedSystemComponent(nonPccNonPcsUid, TEST_PACKAGE_NAME))
+                .thenReturn(false);
+
+        List<PersistableBundle> data = new ArrayList<>(1);
+        data.add(new PersistableBundle());
+
+        assertFalse(mService.writeToAuditLogInternal(data, TEST_PACKAGE_NAME));
+    }
+
+    @Test
+    public void testWriteToAuditLogInternal_explicitNonPcsUid_returnsFalse() {
+        when(mInjector.auditModeEnabled()).thenReturn(true);
+        int nonPccUid = Process.FIRST_APPLICATION_UID + 1;
+        when(mInjector.getCallingUid()).thenReturn(nonPccUid);
+        when(mPackageManagerInternal.isSameApp(
+                        TEST_PACKAGE_NAME, nonPccUid, UserHandle.getUserId(nonPccUid)))
+                .thenReturn(true);
+        // Explicitly mock that it is NOT a PCC UID
+        when(mInternal.isPccTrustedSystemComponent(nonPccUid, TEST_PACKAGE_NAME))
+                .thenReturn(false);
+        // Explicitly mock that it is NOT a PCS UID
+        when(mPackageManager.getPackagesForUid(nonPccUid))
+                .thenReturn(new String[] {TEST_PACKAGE_NAME});
+        when(mPackageManager.checkPermission(
+                        android.Manifest.permission.PROVIDE_PRIVATE_COMPUTE_SERVICES,
+                        TEST_PACKAGE_NAME))
+                .thenReturn(PackageManager.PERMISSION_DENIED);
+
+        List<PersistableBundle> data = new ArrayList<>(1);
+        data.add(new PersistableBundle());
+
+        assertFalse(mService.writeToAuditLogInternal(data, TEST_PACKAGE_NAME));
+    }
+
+    @Test
     public void testWriteToAuditLogInternal_sysPropDisabled_returnsFalse() {
         when(mInjector.auditModeEnabled()).thenReturn(false);
         when(mPackageManagerInternal.isSameApp(
                         TEST_PACKAGE_NAME, TEST_UID, UserHandle.getUserId(TEST_UID)))
+                .thenReturn(true);
+        when(mInternal.isPccTrustedSystemComponent(TEST_UID, TEST_PACKAGE_NAME))
                 .thenReturn(true);
         List<PersistableBundle> data = new ArrayList<>(1);
         data.add(new PersistableBundle());
@@ -335,10 +390,61 @@ public class PccSandboxManagerServiceImplTest {
         when(mPackageManagerInternal.isSameApp(
                         TEST_PACKAGE_NAME, TEST_UID, UserHandle.getUserId(TEST_UID)))
                 .thenReturn(true);
+        when(mInternal.isPccTrustedSystemComponent(TEST_UID, TEST_PACKAGE_NAME))
+                .thenReturn(true);
         List<PersistableBundle> data = new ArrayList<>(1);
         data.add(new PersistableBundle());
 
         assertTrue(mService.writeToAuditLogInternal(data, TEST_PACKAGE_NAME));
+    }
+
+    @Test
+    public void testWriteToAuditLogInternal_multipleUsers_cleansUpOnlyOnce() {
+        when(mInjector.auditModeEnabled()).thenReturn(true);
+        when(mPackageManagerInternal.isSameApp(
+                        eq(TEST_PACKAGE_NAME), anyInt(), anyInt()))
+                .thenReturn(true);
+        List<PersistableBundle> data = new ArrayList<>(1);
+        data.add(new PersistableBundle());
+
+        // Call for user 0
+        when(mInjector.getCallingUid()).thenReturn(0);
+        mService.writeToAuditLogInternal(data, TEST_PACKAGE_NAME);
+
+        // Call for user 10
+        when(mInjector.getCallingUid()).thenReturn(UserHandle.PER_USER_RANGE * 10);
+        mService.writeToAuditLogInternal(data, TEST_PACKAGE_NAME);
+
+        // Verify this is called only twice: once in constructor, once for the first user
+        verify(mInjector, times(2)).deleteAuditLogFilesAllUsers();
+    }
+
+    @Test
+    public void testWriteToAuditLogInternal_auditModeToggledOff_clearsAllPreviousLogs() {
+        // This tests that when auditing is on for two users, then turned off, the following
+        // enable clears all previous logs, for all users.
+        when(mInjector.auditModeEnabled()).thenReturn(true);
+        when(mPackageManagerInternal.isSameApp(
+                        eq(TEST_PACKAGE_NAME), anyInt(), anyInt()))
+                .thenReturn(true);
+        List<PersistableBundle> data = new ArrayList<>(1);
+        data.add(new PersistableBundle());
+        when(mInjector.getCallingUid()).thenReturn(0);
+        mService.writeToAuditLogInternal(data, TEST_PACKAGE_NAME);
+        when(mInjector.getCallingUid()).thenReturn(UserHandle.PER_USER_RANGE * 10);
+        mService.writeToAuditLogInternal(data, TEST_PACKAGE_NAME);
+        // deleteAuditLogFilesAllUsers is called twice so far (in the constructor, plus when
+        // creating the audit mode context for the first user).
+        verify(mInjector, times(2)).deleteAuditLogFilesAllUsers();
+        // Disable audit mode - Logs are not cleared, so they can be read.
+        when(mInjector.auditModeEnabled()).thenReturn(false);
+        mService.writeToAuditLogInternal(data, TEST_PACKAGE_NAME);
+
+        // Enable audit mode (and trigger the write call again): This should clear all past logs.
+        when(mInjector.auditModeEnabled()).thenReturn(true);
+        mService.writeToAuditLogInternal(data, TEST_PACKAGE_NAME);
+
+        verify(mInjector, times(3)).deleteAuditLogFilesAllUsers();
     }
 
     @Test

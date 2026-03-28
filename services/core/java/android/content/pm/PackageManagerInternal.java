@@ -1411,6 +1411,13 @@ public abstract class PackageManagerInternal {
     @NonNull
     public abstract PackageDataSnapshot snapshot();
 
+    /**
+     * Returns the host app UID for the given Private Compute Core UID.
+     * @param pccUid The Private Compute Core UID.
+     * @return The host app UID, or {@link Process#INVALID_UID} if not found.
+     */
+    public abstract int getAppUidForPrivateComputeCoreUid(int pccUid);
+
     public abstract void shutdown();
 
     public abstract DynamicCodeLogger getDynamicCodeLogger();

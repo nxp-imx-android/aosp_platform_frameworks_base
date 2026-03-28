@@ -1480,8 +1480,9 @@ public class BubbleTransitions {
             if (!mHasPlayed) {
                 // Cleanup the new Bubble which is never used.
                 // This would happen when the animation is aborted.
-                mBubbleData.dismissBubbleWithKey(mBubble.getKey(),
-                        Bubbles.DISMISS_REPLACE_BY_EXISTING);
+                // TODO(b/483107404): fix bubble expanded view flick
+                mBubbleData.dismissBubbleWithKey(
+                        mBubble.getKey(), Bubbles.DISMISS_REPLACE_BY_EXISTING);
             }
             mBubble.setCurrentTransition(null);
             // Trigger finishCb after reset current transition as it will immediately kick off
@@ -1561,10 +1562,7 @@ public class BubbleTransitions {
             SurfaceControl.Transaction finishTransaction = new SurfaceControl.Transaction();
             TransitionInfo.Change change =
                     processChangesFindMatching(plannableInfo, startTransaction, finishTransaction);
-            WindowContainerToken token = null;
-            if (change != null) {
-                token = change.getContainer();
-            }
+            final WindowContainerToken token = change == null ? null : change.getContainer();
             if (token == null) {
                 String reason = change == null ? "change not found" : "no container for change";
                 BubbleLog.e("Expected a TaskView conversion in this transition but didn't get "
@@ -1606,13 +1604,17 @@ public class BubbleTransitions {
                                 @NonNull List<WindowContainerToken> containers,
                                 @NonNull SurfaceControl.Transaction startTransaction) {
                             BubbleLog.w("ITransitionAnimation.detach()");
-                            // TODO(b/483107404) Properly implement detach
                             final ArrayList<WindowAnimationState> states =
                                     new ArrayList<>(containers.size());
                             for (int i = 0; i < containers.size(); ++i) {
-                                final WindowAnimationState state = new WindowAnimationState();
-                                state.scale = 1.f;
-                                state.timestamp = System.currentTimeMillis();
+                                WindowAnimationState state = null;
+                                if (containers.get(i).equals(token)) {
+                                    mHasPlayed = false;
+                                    state = mExpandedViewAnimator.cancelAnimation();
+                                }
+                                if (state == null) {
+                                    state = new WindowAnimationState();
+                                }
                                 states.add(state);
                             }
                             return new DetachResult(states);

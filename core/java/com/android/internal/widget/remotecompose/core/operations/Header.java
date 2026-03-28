@@ -57,7 +57,7 @@ public class Header extends Operation implements RemoteComposeOperation {
     int mWidth = 256;
     int mHeight = 256;
 
-    float mDensity = 3;
+    float mDensity = 1;
     long mCapabilities = 0;
     int mProfiles = 0;
     private @Nullable IntMap<Object> mProperties;
@@ -142,6 +142,14 @@ public class Header extends Operation implements RemoteComposeOperation {
      */
     public static final short FEATURE_CLICK_VERSION = 26;
 
+    /**
+     * Density behavior for the document.
+     * 0: Current behavior (mixed)
+     * 1: Values are interpreted as pixels, no density applied by default
+     * 2: Values are interpreted as dp, density applied by default
+     */
+    public static final short DOC_DENSITY_BEHAVIOR = 27;
+
     /** The object is an integer */
     private static final short DATA_TYPE_INT = 0;
 
@@ -172,6 +180,7 @@ public class Header extends Operation implements RemoteComposeOperation {
             FEATURE_LT_RESIZE,
             FEATURE_ARRAY_LISTENERS,
             FEATURE_CLICK_VERSION,
+            DOC_DENSITY_BEHAVIOR,
     };
     private static final String[] KEY_NAMES = {
             "DOC_WIDTH",
@@ -190,7 +199,8 @@ public class Header extends Operation implements RemoteComposeOperation {
             "PRIORITY_FIX",
             "LT_RESIZE",
             "ARRAY_LISTENERS",
-            "CLICK_VERSION"
+            "CLICK_VERSION",
+            "DENSITY_BEHAVIOR"
     };
 
     /**
@@ -240,13 +250,17 @@ public class Header extends Operation implements RemoteComposeOperation {
             this.mProperties = properties;
             this.mWidth = getInt(DOC_WIDTH, 256);
             this.mHeight = getInt(DOC_HEIGHT, 256);
-            this.mDensity = getFloat(DOC_DENSITY_AT_GENERATION, 0);
+            this.mDensity = getFloat(DOC_DENSITY_AT_GENERATION, 1);
             this.mProfiles = getInt(DOC_PROFILES, 0);
         }
     }
 
     public int getProfiles() {
         return mProfiles;
+    }
+
+    public float getDensity() {
+        return mDensity;
     }
 
     /**

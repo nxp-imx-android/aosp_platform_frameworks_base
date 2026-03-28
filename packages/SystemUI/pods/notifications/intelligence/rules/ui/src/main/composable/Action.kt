@@ -117,7 +117,7 @@ fun ActionModel.toText(): String {
             ActionModel.HighlightAndAlert -> R.string.notification_rules_action_highlight_and_alert
             ActionModel.Highlight -> R.string.notification_rules_action_highlight
             ActionModel.Silence -> R.string.notification_rules_action_silence
-            ActionModel.Bundle -> R.string.notification_rules_action_bundle
+            is ActionModel.Bundle -> R.string.notification_rules_action_bundle
             ActionModel.Block -> R.string.notification_rules_action_block
         }
     return stringResource(resourceId)
@@ -131,7 +131,7 @@ fun ActionModel.toDescription(): String {
                 R.string.notification_rules_action_highlight_and_alert_description
             ActionModel.Highlight -> R.string.notification_rules_action_highlight_description
             ActionModel.Silence -> R.string.notification_rules_action_silence_description
-            ActionModel.Bundle -> R.string.notification_rules_action_bundle_description
+            is ActionModel.Bundle -> R.string.notification_rules_action_bundle_description
             ActionModel.Block -> R.string.notification_rules_action_block_description
         }
     return stringResource(resourceId)
@@ -144,7 +144,7 @@ fun ActionModel.toIconPainter(): Painter {
             ActionModel.HighlightAndAlert -> R.drawable.ic_star_shine
             ActionModel.Highlight -> R.drawable.ic_star
             ActionModel.Silence -> R.drawable.ic_notifications_off
-            ActionModel.Bundle -> com.android.settingslib.R.drawable.ic_dynamic_bundle
+            is ActionModel.Bundle -> com.android.settingslib.R.drawable.ic_dynamic_bundle
             ActionModel.Block -> R.drawable.ic_block
         }
     return painterResource(resourceId)
@@ -157,7 +157,7 @@ fun ActionModel.toColor(): Color {
         ActionModel.HighlightAndAlert -> Color(0xFF81E1D9)
         ActionModel.Highlight -> Color(0xFF86E181)
         ActionModel.Silence -> Color(0xFFE1D381)
-        ActionModel.Bundle -> Color(0xFFE1AE81)
+        is ActionModel.Bundle -> Color(0xFFE1AE81)
         ActionModel.Block -> Color(0xFFE18981)
     }
 }

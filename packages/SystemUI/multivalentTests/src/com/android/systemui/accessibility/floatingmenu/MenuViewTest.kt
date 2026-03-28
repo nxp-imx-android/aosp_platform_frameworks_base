@@ -64,7 +64,7 @@ import org.mockito.kotlin.whenever
 class MenuViewTest : SysuiTestCase() {
     private var nightMode = 0
     private lateinit var uiModeManager: UiModeManager
-    private lateinit var lastPosition: String
+    private var lastPosition: String = ""
     private val shortcutTargets = mutableListOf(MAGNIFICATION_CONTROLLER_NAME)
     private val testTargetList =
         listOf(TestAccessibilityTarget(mContext, 123), TestAccessibilityTarget(mContext, 456))
@@ -72,7 +72,6 @@ class MenuViewTest : SysuiTestCase() {
     private val fakeLifecycleOwner: LifecycleOwner = mock()
 
     private val kosmos = testKosmosNew()
-    private lateinit var menuView: MenuView
 
     private val fakeKeyboardRepository = kosmos.keyboardRepository
 
@@ -105,7 +104,7 @@ class MenuViewTest : SysuiTestCase() {
             Prefs.getString(
                 context,
                 Prefs.Key.ACCESSIBILITY_FLOATING_MENU_POSITION,
-                /* defaultValue= */ null,
+                /* defaultValue= */ "",
             )
     }
 
@@ -298,6 +297,38 @@ class MenuViewTest : SysuiTestCase() {
             assertThat(menuView.targetFeaturesView.adapter!!.itemCount).isEqualTo(1)
         }
     }
+
+    @Test
+    @EnableFlags(Flags.FLAG_FLOATING_MENU_MAGNIFICATION_STATUS)
+    fun onShow_registersMagnificationListener() =
+        kosmos.runTest {
+            clearInvocations(menuViewMagnification)
+
+            menuView.show()
+
+            verify(menuViewMagnification).registerActivationChangedListener(any())
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_FLOATING_MENU_MAGNIFICATION_STATUS)
+    fun onShow_doesNotregisterMagnificationListener() =
+        kosmos.runTest {
+            clearInvocations(menuViewMagnification)
+
+            menuView.show()
+
+            verify(menuViewMagnification, never()).registerActivationChangedListener(any())
+        }
+
+    @Test
+    fun onHide_unregistersMagnificationListener() =
+        kosmos.runTest {
+            clearInvocations(menuViewMagnification)
+
+            menuView.hide()
+
+            verify(menuViewMagnification).unregisterActivationChangedListener(any())
+        }
 
     /** Simplified AccessibilityTarget for testing MenuView. */
     private class TestAccessibilityTarget(context: Context?, uid: Int) :

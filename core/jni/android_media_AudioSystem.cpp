@@ -1605,50 +1605,21 @@ android_media_AudioSystem_listAudioPorts(JNIEnv *env, jobject clazz,
         return AUDIO_JAVA_BAD_VALUE;
     }
 
-    status_t status;
-    unsigned int generation1 = 0;
     unsigned int generation;
-    unsigned int numPorts;
     std::vector<audio_port_v7> nPorts;
-    int attempts = MAX_PORT_GENERATION_SYNC_ATTEMPTS;
-    jint jStatus;
+    status_t status = AudioSystem::listAudioPorts(AUDIO_PORT_ROLE_NONE, AUDIO_PORT_TYPE_NONE,
+                                         nPorts, &generation);
 
-    // get the port count and all the ports until they both return the same generation
-    do {
-        if (attempts-- < 0) {
-            status = TIMED_OUT;
-            break;
-        }
-
-        numPorts = 0;
-        status = AudioSystem::listAudioPorts(AUDIO_PORT_ROLE_NONE, AUDIO_PORT_TYPE_NONE, &numPorts,
-                                             nullptr, &generation1);
-        if (status != NO_ERROR) {
-            ALOGE_IF(status != NO_ERROR, "AudioSystem::listAudioPorts error %d", status);
-            break;
-        }
-        if (numPorts == 0) {
-            return setGeneration(env, jGeneration, generation1) ? AUDIO_JAVA_SUCCESS
-                                                                : AUDIO_JAVA_ERROR;
-        }
-        nPorts.resize(numPorts);
-
-        status = AudioSystem::listAudioPorts(AUDIO_PORT_ROLE_NONE, AUDIO_PORT_TYPE_NONE, &numPorts,
-                                             &nPorts[0], &generation);
-        ALOGV("listAudioPorts AudioSystem::listAudioPorts numPorts %d generation %d generation1 %d",
-              numPorts, generation, generation1);
-    } while (generation1 != generation && status == NO_ERROR);
-
-    jStatus = nativeToJavaStatus(status);
+    jint jStatus = nativeToJavaStatus(status);
     if (jStatus == AUDIO_JAVA_SUCCESS) {
-        for (size_t i = 0; i < numPorts; i++) {
+        for (const auto& port : nPorts) {
             ScopedLocalRef<jobject> jAudioPort(env, nullptr);
-            jStatus = convertAudioPortFromNative(env, &jAudioPort, &nPorts[i]);
+            jStatus = convertAudioPortFromNative(env, &jAudioPort, &port);
             if (jStatus != AUDIO_JAVA_SUCCESS) break;
             env->CallBooleanMethod(jPorts, gArrayListMethods.add, jAudioPort.get());
         }
     }
-    if (!setGeneration(env, jGeneration, generation1)) {
+    if (!setGeneration(env, jGeneration, generation)) {
         jStatus = AUDIO_JAVA_ERROR;
     }
     return jStatus;
@@ -1829,125 +1800,93 @@ android_media_AudioSystem_listAudioPatches(JNIEnv *env, jobject clazz,
         return AUDIO_JAVA_BAD_VALUE;
     }
 
-    status_t status;
-    unsigned int generation1;
     unsigned int generation;
-    unsigned int numPatches;
     std::vector<audio_patch> nPatches;
-    int attempts = MAX_PORT_GENERATION_SYNC_ATTEMPTS;
-    jint jStatus;
 
-    // get the patch count and all the patches until they both return the same generation
-    do {
-        if (attempts-- < 0) {
-            status = TIMED_OUT;
-            break;
-        }
+    status_t status = AudioSystem::listAudioPatches(nPatches, &generation);
 
-        numPatches = 0;
-        status = AudioSystem::listAudioPatches(&numPatches,
-                                               NULL,
-                                               &generation1);
-        if (status != NO_ERROR) {
-            ALOGE_IF(status != NO_ERROR, "listAudioPatches AudioSystem::listAudioPatches error %d",
-                                      status);
-            break;
-        }
-        if (numPatches == 0) {
-            return setGeneration(env, jGeneration, generation1) ? AUDIO_JAVA_SUCCESS
-                                                                : AUDIO_JAVA_ERROR;
-        }
-
-        nPatches.resize(numPatches);
-
-        status = AudioSystem::listAudioPatches(&numPatches, nPatches.data(), &generation);
-        ALOGV("listAudioPatches AudioSystem::listAudioPatches numPatches %d generation %d generation1 %d",
-              numPatches, generation, generation1);
-
-    } while (generation1 != generation && status == NO_ERROR);
-
-    jStatus = nativeToJavaStatus(status);
+    jint jStatus = nativeToJavaStatus(status);
     if (jStatus != AUDIO_JAVA_SUCCESS) {
-        if (!setGeneration(env, jGeneration, generation1)) {
+        if (!setGeneration(env, jGeneration, generation)) {
             jStatus = AUDIO_JAVA_ERROR;
         }
         return jStatus;
     }
 
-    for (size_t i = 0; i < numPatches; i++) {
+    for (const auto& patch : nPatches) {
         ScopedLocalRef<jobject> jPatch(env, nullptr);
         ScopedLocalRef<jobjectArray> jSources(env, nullptr);
         ScopedLocalRef<jobjectArray> jSinks(env, nullptr);
         jobject patchHandle = env->NewObject(gAudioHandleClass, gAudioHandleCstor,
-                                                 nPatches[i].id);
+                                                 patch.id);
         if (patchHandle == NULL) {
-            setGeneration(env, jGeneration, generation1);
+            setGeneration(env, jGeneration, generation);
             return AUDIO_JAVA_ERROR;
         }
-        ALOGV("listAudioPatches patch %zu num_sources %d num_sinks %d",
-              i, nPatches[i].num_sources, nPatches[i].num_sinks);
+        ALOGV("listAudioPatches patch %d num_sources %d num_sinks %d",
+              patch.id, patch.num_sources, patch.num_sinks);
 
-        env->SetIntField(patchHandle, gAudioHandleFields.mId, nPatches[i].id);
+        env->SetIntField(patchHandle, gAudioHandleFields.mId, patch.id);
 
         // load sources
-        jSources.reset(env->NewObjectArray(nPatches[i].num_sources, gAudioPortConfigClass, NULL));
+        jSources.reset(env->NewObjectArray(patch.num_sources, gAudioPortConfigClass, NULL));
         if (jSources == nullptr) {
-            setGeneration(env, jGeneration, generation1);
+            setGeneration(env, jGeneration, generation);
             return AUDIO_JAVA_ERROR;
         }
 
-        for (size_t j = 0; j < nPatches[i].num_sources; j++) {
+        for (size_t j = 0; j < patch.num_sources; j++) {
             ScopedLocalRef<jobject> jSource(env, nullptr);
             ScopedLocalRef<jobject> jAudioPort(env, nullptr);
             jStatus = convertAudioPortConfigFromNative(env, &jAudioPort, &jSource,
-                                                       &nPatches[i].sources[j]);
+                                                       &patch.sources[j]);
             if (jStatus != AUDIO_JAVA_SUCCESS) {
-                if (!setGeneration(env, jGeneration, generation1)) {
+                if (!setGeneration(env, jGeneration, generation)) {
                     jStatus = AUDIO_JAVA_ERROR;
                 }
                 return jStatus;
             }
             env->SetObjectArrayElement(jSources.get(), j, jSource.get());
-            ALOGV("listAudioPatches patch %zu source %zu is a %s handle %d",
-                  i, j,
-                  nPatches[i].sources[j].type == AUDIO_PORT_TYPE_DEVICE ? "device" : "mix",
-                  nPatches[i].sources[j].id);
+            ALOGV("listAudioPatches patch %d source %zu is a %s handle %d",
+                  patch.id, j,
+                  patch.sources[j].type == AUDIO_PORT_TYPE_DEVICE ? "device" : "mix",
+                  patch.sources[j].id);
         }
         // load sinks
-        jSinks.reset(env->NewObjectArray(nPatches[i].num_sinks, gAudioPortConfigClass, NULL));
+        jSinks.reset(env->NewObjectArray(patch.num_sinks, gAudioPortConfigClass, NULL));
         if (jSinks == nullptr) {
-            setGeneration(env, jGeneration, generation1);
+            setGeneration(env, jGeneration, generation);
             return AUDIO_JAVA_ERROR;
         }
 
-        for (size_t j = 0; j < nPatches[i].num_sinks; j++) {
+        for (size_t j = 0; j < patch.num_sinks; j++) {
             ScopedLocalRef<jobject> jSink(env, nullptr);
             ScopedLocalRef<jobject> jAudioPort(env, nullptr);
             jStatus = convertAudioPortConfigFromNative(env, &jAudioPort, &jSink,
-                                                       &nPatches[i].sinks[j]);
+                                                       &patch.sinks[j]);
 
             if (jStatus != AUDIO_JAVA_SUCCESS) {
-                if (!setGeneration(env, jGeneration, generation1)) {
+                if (!setGeneration(env, jGeneration, generation)) {
                     jStatus = AUDIO_JAVA_ERROR;
                 }
                 return jStatus;
             }
             env->SetObjectArrayElement(jSinks.get(), j, jSink.get());
-            ALOGV("listAudioPatches patch %zu sink %zu is a %s handle %d",
-                  i, j,
-                  nPatches[i].sinks[j].type == AUDIO_PORT_TYPE_DEVICE ? "device" : "mix",
-                  nPatches[i].sinks[j].id);
+            ALOGV("listAudioPatches patch %d sink %zu is a %s handle %d",
+                  patch.id, j,
+                  patch.sinks[j].type == AUDIO_PORT_TYPE_DEVICE ? "device" : "mix",
+                  patch.sinks[j].id);
         }
 
         jPatch.reset(env->NewObject(gAudioPatchClass, gAudioPatchCstor, patchHandle, jSources.get(),
                                     jSinks.get()));
         if (jPatch == nullptr) {
-            setGeneration(env, jGeneration, generation1);
+            setGeneration(env, jGeneration, generation);
             return AUDIO_JAVA_ERROR;
         }
         env->CallBooleanMethod(jPatches, gArrayListMethods.add, jPatch.get());
     }
-    if (!setGeneration(env, jGeneration, generation1)) {
+    if (!setGeneration(env, jGeneration, generation)) {
         jStatus = AUDIO_JAVA_ERROR;
     }
     return jStatus;

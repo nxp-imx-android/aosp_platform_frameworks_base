@@ -25,6 +25,7 @@ import android.view.InputEventReceiver
 import android.view.MotionEvent
 import android.view.SurfaceControl
 import android.view.View
+import android.view.WindowInputChannelParams
 import android.view.WindowManager
 import android.view.WindowManagerGlobal
 import android.window.InputTransferToken
@@ -66,20 +67,17 @@ class TouchInterceptLayer(val name: String = TAG) {
         // Create a new input channel to receive input
         val windowSession = WindowManagerGlobal.getWindowSession()
         val inputTransferToken = InputTransferToken()
-        inputChannel =
-            windowSession.grantInputChannel(
-                displayId,
-                layer,
-                clientToken,
-                null, /* hostInputToken */
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY,
-                0 /* inputFeatures */,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                null, /* windowToken */
-                inputTransferToken,
-                name,
-            )
+        val params = WindowInputChannelParams().apply {
+            this.displayId = displayId
+            surface = layer
+            clientToken = this@TouchInterceptLayer.clientToken
+            this.inputTransferToken = inputTransferToken
+            type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+            flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+            privateFlags = WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY
+            inputHandleName = name
+        }
+        inputChannel = windowSession.grantInputChannel(params)
 
         // Create an input event receiver and proxy calls to the provided listeners
         inputEventReceiver =

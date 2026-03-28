@@ -21,4 +21,5 @@ package android.aiseal.tests.odim;
  */
 interface IAiSealOdimTestService {
     String joinStringsWithSpace(String a, String b);
+    void exit(int status);
 }

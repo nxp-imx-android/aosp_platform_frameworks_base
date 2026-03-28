@@ -467,6 +467,23 @@ class MobileIconsInteractorKairosTest : SysuiTestCase() {
         }
 
     @Test
+    fun defaultDataIconInteractor_tracksDefaultDataSubId() = runTest {
+        val latest by underTest.defaultDataIconInteractor.collectLastValue()
+
+        mobileConnectionsRepositoryKairos.fake.setDefaultDataSubId(SUB_1_ID)
+
+        assertThat(latest?.subscriptionId).isEqualTo(SUB_1_ID)
+
+        mobileConnectionsRepositoryKairos.fake.setDefaultDataSubId(SUB_2_ID)
+
+        assertThat(latest?.subscriptionId).isEqualTo(SUB_2_ID)
+
+        mobileConnectionsRepositoryKairos.fake.setDefaultDataSubId(INVALID_SUBSCRIPTION_ID)
+
+        assertThat(latest).isNull()
+    }
+
+    @Test
     fun activeDataConnection_turnedOn() = runTest {
         val connection1 =
             mobileConnectionsRepositoryKairos.fake.mobileConnectionsBySubId.sample()[SUB_1_ID]!!

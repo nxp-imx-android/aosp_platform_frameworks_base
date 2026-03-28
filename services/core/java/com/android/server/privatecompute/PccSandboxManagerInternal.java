@@ -36,6 +36,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ProviderInfo;
@@ -55,6 +56,7 @@ import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Slog;
 import android.util.SparseArray;
+import android.util.SparseBooleanArray;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -112,6 +114,9 @@ public class PccSandboxManagerInternal implements OnRoleHoldersChangedListener {
     @GuardedBy("mLock")
     final Set<String> mPccAllowedPackagesForTesting = new ArraySet<>();
 
+    @GuardedBy("mLock")
+    private final SparseBooleanArray mPcsUidCache = new SparseBooleanArray();
+
     @VisibleForTesting
     static final int[] TRUSTED_UIDS = new int[]{
             Process.BLUETOOTH_UID,
@@ -150,6 +155,7 @@ public class PccSandboxManagerInternal implements OnRoleHoldersChangedListener {
         mPopulateTrustedAndAllowedPackagesFuture = mExecutor.submit(() -> {
             populatePccTrustedPackages();
             populatePccAllowedPackages();
+            populatePcsUids();
         });
         mPackageManagerInternal.getPackageList(new PackageReceiver());
 
@@ -167,6 +173,26 @@ public class PccSandboxManagerInternal implements OnRoleHoldersChangedListener {
             mPopulateTrustedAndAllowedPackagesFuture.get();
         } catch (Exception e) {
             Slog.e(TAG, "Error populating PCC packages", e);
+        }
+    }
+
+    @VisibleForTesting
+    void populatePcsUids() {
+        List<PackageInfo> packages = mContext.getPackageManager().getPackagesHoldingPermissions(
+                new String[]{android.Manifest.permission.PROVIDE_PRIVATE_COMPUTE_SERVICES},
+                PackageManager.MATCH_DIRECT_BOOT_AWARE | PackageManager.MATCH_DIRECT_BOOT_UNAWARE);
+
+        synchronized (mLock) {
+            String s = "";
+            if (packages != null) {
+                for (PackageInfo info : packages) {
+                    if (info.applicationInfo != null) {
+                        mPcsUidCache.put(info.applicationInfo.uid, true);
+                        s += info.applicationInfo.uid + ",";
+                    }
+                }
+            }
+            Slog.d(TAG, "Populated PCC gateway app UIDs cache with UIDs: " + s);
         }
     }
 
@@ -395,7 +421,22 @@ public class PccSandboxManagerInternal implements OnRoleHoldersChangedListener {
      * services.
      */
     public boolean isPrivateComputeServicesUid(int uid) {
-        return mPccSandboxManagerService.isPrivateComputeServicesUid(uid);
+        // Do not cache the result for shell UID. In CTS tests, shell gets temporary elevated
+        // privileges for setup purposes.
+        if (uid == Process.SHELL_UID) {
+            return mPccSandboxManagerService.isPrivateComputeServicesUid(uid);
+        }
+        synchronized (mLock) {
+            int index = mPcsUidCache.indexOfKey(uid);
+            if (index >= 0) {
+                return mPcsUidCache.valueAt(index);
+            }
+        }
+        boolean isPcs = mPccSandboxManagerService.isPrivateComputeServicesUid(uid);
+        synchronized (mLock) {
+            mPcsUidCache.put(uid, isPcs);
+        }
+        return isPcs;
     }
 
     /**
@@ -650,12 +691,25 @@ public class PccSandboxManagerInternal implements OnRoleHoldersChangedListener {
     private final class PackageReceiver implements PackageManagerInternal.PackageListObserver {
         @Override
         public void onPackageAdded(@NonNull String packageName, int uid) {
+            synchronized (mLock) {
+                mPcsUidCache.delete(uid);
+            }
             logWhenPccNotAllowed(packageName, uid);
         }
 
         @Override
         public void onPackageChanged(@NonNull String packageName, int uid) {
+            synchronized (mLock) {
+                mPcsUidCache.delete(uid);
+            }
             logWhenPccNotAllowed(packageName, uid);
+        }
+
+        @Override
+        public void onPackageRemoved(@NonNull String packageName, int uid) {
+            synchronized (mLock) {
+                mPcsUidCache.delete(uid);
+            }
         }
 
         private void logWhenPccNotAllowed(@NonNull String packageName, int uid) {

@@ -55,6 +55,7 @@ import com.android.systemui.shade.carrier.ShadeCarrierGroupController
 import com.android.systemui.shade.data.repository.shadeDisplaysRepository
 import com.android.systemui.statusbar.layout.mockStatusBarContentInsetsProvider
 import com.android.systemui.statusbar.phone.StatusIconContainer
+import com.android.systemui.statusbar.phone.StatusOverlayHoverListener
 import com.android.systemui.statusbar.phone.StatusOverlayHoverListenerFactory
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
 import com.android.systemui.statusbar.phone.ui.TintedIconManager
@@ -180,6 +181,9 @@ class ShadeHeaderControllerTest : SysuiTestCase() {
         whenever(variableDateViewControllerFactory.create(any()))
             .thenReturn(variableDateViewController)
         whenever(iconManagerFactory.create(any(), any())).thenReturn(iconManager)
+
+        whenever(mStatusOverlayHoverListenerFactory.createListener(any()))
+            .thenReturn(mock<StatusOverlayHoverListener>())
 
         setUpDefaultInsets()
         setUpMotionLayout(view)

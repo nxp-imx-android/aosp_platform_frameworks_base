@@ -41,6 +41,7 @@ import com.android.systemui.common.ui.view.ChoreographerUtilsImpl
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.display.data.repository.DisplayTypeRepository
 import com.android.systemui.display.data.repository.ShadeDisplayTypeRepository
+import com.android.systemui.display.domain.interactor.DisplayTypeInteractor
 import com.android.systemui.keyevent.domain.interactor.SysUIKeyEventHandler
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.LogBufferFactory
@@ -284,6 +285,15 @@ object ShadeDisplayAwareModule {
         shadeDisplayTypeRepository: ShadeDisplayTypeRepository
     ): DisplayTypeRepository {
         return shadeDisplayTypeRepository
+    }
+
+    @Provides
+    @ShadeDisplayAware
+    @SysUISingleton
+    fun provideDisplayTypeInteractor(
+        @ShadeDisplayAware displayTypeRepository: DisplayTypeRepository
+    ): DisplayTypeInteractor {
+        return DisplayTypeInteractor(displayTypeRepository)
     }
 
     @Provides

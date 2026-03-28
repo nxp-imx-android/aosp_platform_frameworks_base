@@ -2121,55 +2121,22 @@ public class RemoteComposeBuffer {
             boolean autosize,
             int flags) {
         mLastComponentId = getComponentId(componentId);
-        if (mApiLevel < 7) {
-            if (letterSpacing != 0f
-                    || lineHeightAdd != 0f
-                    || lineHeightMultiplier != 1f
-                    || lineBreakStrategy != 0
-                    || hyphenationFrequency != 0
-                    || justificationMode != 0
-                    || underline
-                    || strikethrough
-                    || (fontAxis != null && fontAxis.length > 0)
-                    || (fontAxisValues != null && fontAxisValues.length > 0)
-                    || autosize
-            ) {
-                StringBuilder error = new StringBuilder();
-                error.append("The following text parameters are not supported on API level < 7:\n");
-                if (letterSpacing != 0f) {
-                    error.append("- letterSpacing\n");
-                }
-                if (lineHeightAdd != 0f || lineHeightMultiplier != 1f) {
-                    error.append("- lineHeight\n");
-                }
-                if (lineBreakStrategy != 0) {
-                    error.append("- lineBreakStrategy\n");
-                }
-                if (hyphenationFrequency != 0) {
-                    error.append("- hyphenationFrequency\n");
-                }
-                if (justificationMode != 0) {
-                    error.append("- justificationMode\n");
-                }
-                if (underline) {
-                    error.append("- underline\n");
-                }
-                if (strikethrough) {
-                    error.append("- strikethrough\n");
-                }
-                if ((fontAxis != null && fontAxis.length > 0)
-                        || (fontAxisValues != null && fontAxisValues.length > 0)) {
-                    error.append("- fontAxis\n");
-                }
-                if (autosize) {
-                    error.append("- autosize\n");
-                }
-                throw new RuntimeException(error.toString());
-            }
+
+        boolean useCoreTextComponent = mBuffer.mValidOperations[Operations.CORE_TEXT];
+        if (!useCoreTextComponent) {
             // Use TextLayout as a backstop
-            TextLayout.apply(mBuffer, mLastComponentId, animationId, textId,
-                    color, fontSize, fontStyle, fontWeight, fontFamilyId,
-                    textAlign, overflow, maxLines);
+            if (colorId != -1) {
+                int flagsAndTextAlign =
+                        (TextLayout.FLAG_IS_DYNAMIC_COLOR << 16) | (textAlign & 0xFFFF);
+                TextLayout.apply(mBuffer, mLastComponentId, animationId, textId,
+                        colorId, fontSize, fontStyle, fontWeight, fontFamilyId,
+                        flagsAndTextAlign, overflow, maxLines);
+            } else {
+                TextLayout.apply(mBuffer, mLastComponentId, animationId, textId,
+                        color, fontSize, fontStyle, fontWeight, fontFamilyId,
+                        textAlign, overflow, maxLines);
+
+            }
         } else {
             CoreText.apply(
                     mBuffer,
@@ -2844,12 +2811,12 @@ public class RemoteComposeBuffer {
      * Add a semantics modifier operation
      */
     public void addSemanticsModifier(int contentDescriptionId,
-                                     byte role,
-                                     int textId,
-                                     int stateDescriptionId,
-                                     int mode,
-                                     boolean enabled,
-                                     boolean clickable) {
+            byte role,
+            int textId,
+            int stateDescriptionId,
+            int mode,
+            boolean enabled,
+            boolean clickable) {
         CoreSemantics.apply(
                 mBuffer, contentDescriptionId,
                 role,
@@ -2895,12 +2862,12 @@ public class RemoteComposeBuffer {
      * @param exitAnimation exit animation
      */
     public void addAnimationSpecModifier(int animationId,
-                                         float motionDuration,
-                                         int motionEasingType,
-                                         float visibilityDuration,
-                                         int visibilityEasingType,
-                                         int enterAnimation,
-                                         int exitAnimation) {
+            float motionDuration,
+            int motionEasingType,
+            float visibilityDuration,
+            int visibilityEasingType,
+            int enterAnimation,
+            int exitAnimation) {
         AnimationSpec.apply(mBuffer,
                 animationId,
                 motionDuration,

@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.quickactions.ime.ui.viewmodel
 
 import android.content.Context
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.shared.model.asIcon
@@ -25,6 +26,8 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayId
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
+import com.android.systemui.scene.domain.interactor.SceneInteractor
+import com.android.systemui.statusbar.quickactions.domain.interactor.QuickActionsInteractor
 import com.android.systemui.statusbar.quickactions.ime.domain.interactor.ImeIndicatorChipInteractor
 import com.android.systemui.statusbar.quickactions.ime.shared.model.ImeIndicatorChipModel
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipViewModel
@@ -34,6 +37,10 @@ import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipM
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 
 /** View model for the IME indicator chip in the status bar. */
@@ -42,8 +49,32 @@ class ImeIndicatorChipViewModel
 constructor(
     @param:Application private val context: Context,
     @Assisted private val displayId: Int,
+    private val sceneInteractor: SceneInteractor,
+    private val quickActionsInteractor: QuickActionsInteractor,
     private val imeIndicatorChipInteractor: ImeIndicatorChipInteractor,
 ) : StatusBarPopupChipViewModel, HydratedActivatable() {
+
+    override suspend fun onActivated() {
+        // TODO: b/478352392 - Consider doing this only when ImeIndicator chip becomes active (i.e.
+        // not in Hidden state) for performance improvement.
+        coroutineScope {
+            // ImeIndicator is a QuickActions LaunchChip (not PopupChip), with no associated popups.
+            // On click it launches the InputMethodPicker (SystemUI Dialog, via InputMethodManager
+            // API) that appears as if it were a StatusBar popup, thus is required to mimic the
+            // behaviour of StatusBar popups. In particular, to ensure mutually exclusive visibility
+            // with StatusBar popups (NotificationsShade, QuickSettingsShade, QuickActions popups),
+            // it needs to be hidden upon showing another popup.
+            snapshotFlow {
+                sceneInteractor.transitionState.currentOverlays.isNotEmpty() ||
+                quickActionsInteractor.activePanel?.chipId != null
+            }
+            .collect { anotherOverlayIsActive ->
+                if (anotherOverlayIsActive) {
+                    imeIndicatorChipInteractor.hideInputMethodPicker(displayId)
+                }
+            }
+        }
+    }
 
     override val chip: QuickActionChipModel by
         imeIndicatorChipInteractor.chipModel
@@ -84,7 +115,14 @@ constructor(
         return QuickActionChipModel.LaunchChip(
             chipId = QuickActionChipId.ImeIndicator,
             chipContent = content,
-            onClick = { imeIndicatorChipInteractor.showInputMethodPicker(displayId) },
+            onClick = {
+                // ImeIndicator is a QuickActions LaunchChip (not PopupChip), with no associated
+                // popups. It launches InputMethodPicker (SystemUI Dialog, via InputMethodManager
+                // API) that appears as if it were a StatusBar popup, thus is required to mimic the
+                // behaviour of StatusBar popups. In particular, clicks on ImeIndicator chip should
+                // toggle InputMethodPicker, like PopupChip clicks toggling their respective popups.
+                imeIndicatorChipInteractor.toggleInputMethodPicker(displayId)
+            },
             contentDescription =
                 ContentDescription.Resource(
                     R.string.accessibility_status_bar_input_method_indicator

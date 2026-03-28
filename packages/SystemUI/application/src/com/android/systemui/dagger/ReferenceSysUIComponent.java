@@ -19,6 +19,7 @@ package com.android.systemui.dagger;
 import com.android.systemui.bundle.phone.PodModulePhone;
 import com.android.systemui.controls.dagger.StartControlsStartableModule;
 import com.android.systemui.keyguard.CustomizationProvider;
+import com.android.systemui.notifications.intelligence.rules.ui.NotificationRulesDefaultModule;
 import com.android.systemui.settings.MultiUserUtilsModule;
 import com.android.systemui.statusbar.NotificationInsetsModule;
 import com.android.systemui.statusbar.QsFrameTranslateModule;
@@ -37,6 +38,7 @@ import dagger.Subcomponent;
         DependencyProvider.class,
         MultiUserUtilsModule.class,
         NotificationInsetsModule.class,
+        NotificationRulesDefaultModule.class,
         QsFrameTranslateModule.class,
         ReferenceSystemUIModule.class,
         StartControlsStartableModule.class,
@@ -62,4 +64,3 @@ public interface ReferenceSysUIComponent extends SysUIComponent {
      */
     void inject(CustomizationProvider customizationProvider);
 }
-

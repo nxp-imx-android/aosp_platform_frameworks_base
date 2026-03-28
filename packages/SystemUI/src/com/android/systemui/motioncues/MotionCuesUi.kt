@@ -344,16 +344,18 @@ class MotionCuesUi(
     override fun onConfigChanged(newConfig: Configuration?) {
         if (newConfig == null) return
 
-        if (lastConfiguration.orientation != newConfig.orientation) {
+        if (lastConfiguration.orientation != newConfig.orientation ||
+            lastConfiguration.screenLayout != newConfig.screenLayout
+        ) {
             if (isStarted) {
-                Log.i(TAG, "Recreating overlay due to orientation change.")
+                Log.i(TAG, "Recreating overlay due to orientation/layout change.")
                 stopDrawingAndRemoveView()
                 updateScreenDimensions()
                 makeOverlayView()
                 makeBubbles()
             }
         }
-        lastConfiguration = Configuration(newConfig)
+        lastConfiguration.updateFrom(newConfig)
     }
 
     /**

@@ -55,7 +55,7 @@ class HighlightsCoordinatorTest : SysuiTestCase() {
     fun sectioner_yes() {
         val entry = kosmos.buildNotificationEntry {
             updateRanking {
-                it.setProposedImportance(IMPORTANCE_MAX)
+                it.setImportance(IMPORTANCE_MAX)
             }
         }
         assertThat(coordinator.highlightsSectioner.isInSection(entry)).isTrue()
