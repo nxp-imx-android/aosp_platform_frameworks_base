@@ -3036,7 +3036,7 @@ public final class SystemServer implements Dumpable {
         t.traceEnd();
 
         // Anomaly Detector
-        if (android.os.profiling.anomaly.flags.Flags.anomalyDetectorCore()) {
+        if (android.os.profiling.anomaly.flags.Flags.anomalyDetectorCoreC()) {
             // Both AnomalyDetectorService and SignalCollectorService are build flagged
             // behind RELEASE_ANOMALY_DETECTOR, beside being behind the above flag.
             // Avoid crashing the system if the aconfig flag is enabled but the build flag is

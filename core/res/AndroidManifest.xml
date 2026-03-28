@@ -10357,13 +10357,13 @@
          {@link android.os.AnomalyDetectorManager}.
          Only one app per device is permitted to hold this permission and set or update the config.
          <p>Protection level: signature|privileged
-         @FlaggedApi(android.os.profiling.anomaly.flags.Flags.FLAG_ANOMALY_DETECTOR_CORE)
+         @FlaggedApi(android.os.profiling.anomaly.flags.Flags.FLAG_ANOMALY_DETECTOR_CORE_C)
          @SystemApi
          @hide
     -->
     <permission android:name="android.permission.CONFIGURE_ANOMALY_DETECTOR"
         android:protectionLevel="signature|privileged"
-        android:featureFlag="android.os.profiling.anomaly.flags.anomaly_detector_core" />
+        android:featureFlag="android.os.profiling.anomaly.flags.anomaly_detector_core_c" />
 
     <!-- Permission required to bind content restriction service
          <p>Protection level: signature
