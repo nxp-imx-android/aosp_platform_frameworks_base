@@ -1051,6 +1051,38 @@ public class Process {
     }
 
     /**
+     * Returns the app UID corresponding to a Private Compute Core UID.
+     *
+     * @param uid the Private Compute Core UID
+     * @return the app UID for the given Private Compute Core UID
+     * @throws IllegalArgumentException if input is not a Private Compute Core UID
+     * @hide
+     */
+    @RavenwoodKeep
+    public static final int getAppUidForPrivateComputeCoreUid(int uid) {
+        if (!isPrivateComputeCoreUid(uid)) {
+            throw new IllegalArgumentException("Input UID is not a Private Compute Core UID");
+        }
+        return uid - (FIRST_PCC_UID - FIRST_APPLICATION_UID);
+    }
+
+    /**
+     * Returns the Private Compute Core UID corresponding to an app UID.
+     *
+     * @param uid the app UID
+     * @return the Private Compute Core UID for the given app UID
+     * @throws IllegalArgumentException if input is not an app UID
+     * @hide
+     */
+    @RavenwoodKeep
+    public static final int getPrivateComputeCoreUidForAppUid(int uid) {
+        if (!isApplicationUid(uid)) {
+            throw new IllegalArgumentException("Input UID is not an app UID");
+        }
+        return uid + (FIRST_PCC_UID - FIRST_APPLICATION_UID);
+    }
+
+    /**
      *
      * Returns the sdk sandbox process corresponding to an app process.
      *
