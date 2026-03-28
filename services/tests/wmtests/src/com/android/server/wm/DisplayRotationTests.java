@@ -146,6 +146,7 @@ public class DisplayRotationTests {
     private static long sCurrentUptimeMillis = 10_000;
 
     private static WindowManagerService sMockWm;
+    private static AppCompatCameraPolicy sMockAppCompatCameraPolicy;
     private DisplayContent mMockDisplayContent;
     private DisplayRotationReversionController mMockDisplayRotationReversionController;
     private DisplayPolicy mMockDisplayPolicy;
@@ -182,11 +183,17 @@ public class DisplayRotationTests {
         sMockWm = mock(WindowManagerService.class);
         sMockWm.mPowerManagerInternal = mock(PowerManagerInternal.class);
         sMockWm.mPolicy = mock(WindowManagerPolicy.class);
+        sMockAppCompatCameraPolicy = mock(AppCompatCameraPolicy.class);
         sMockRoot.mDeviceStateAutoRotateSettingController = null;
         sHandler = new TestHandler(null, sClock);
 
         final WindowManagerService.H wmHandler = mock(WindowManagerService.H.class);
         when(wmHandler.getLooper()).thenReturn(sHandler.getLooper());
+        AppCompatCameraPolicy mockAppCompatCameraPolicy = sMockAppCompatCameraPolicy;
+        doReturn("").when(mockAppCompatCameraPolicy)
+                .getSummaryForDisplayRotationHistoryRecord(any());
+        WindowTestsBase.setFieldValue(sMockWm, "mAppCompatCameraPolicy",
+                sMockAppCompatCameraPolicy);
         WindowTestsBase.setFieldValue(sMockWm, "mRoot", sMockRoot);
         WindowTestsBase.setFieldValue(sMockWm, "mH", wmHandler);
 
@@ -2043,7 +2050,6 @@ public class DisplayRotationTests {
             mDeviceStateController = mock(DeviceStateController.class);
             when(mDeviceStateController.isFoldable()).thenReturn(mIsFoldable);
             when(mDeviceStateController.isLaptop()).thenReturn(mIsLaptop);
-            mMockDisplayContent.mAppCompatCameraPolicy = mock(AppCompatCameraPolicy.class);
             mTarget = new TestDisplayRotation(mMockDisplayContent, mMockDisplayAddress,
                     mMockDisplayPolicy, mMockDisplayWindowSettings, mMockContext,
                     mDeviceStateController);

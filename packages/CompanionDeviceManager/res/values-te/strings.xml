@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"డివైజ్"</string>
     <string name="summary_generic" msgid="1761976003668044801">"ఈ యాప్, కాల్ చేస్తున్న వారి పేరు లాంటి సమాచారాన్ని మీ ఫోన్‌కు, సెలెక్ట్ అయిన పరికరానికి మధ్య సింక్ చేస్తుంది."</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"మీ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> నుండి కాలర్ సమాచారం వంటి సమాచారాన్ని సింక్ చేయడానికి, స్మార్ట్ చర్యలను అమలు చేయడానికి &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt;‌ను అనుమతించండి"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"మీ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> నుండి కాలర్ సమాచారం వంటి సమాచారాన్ని సింక్ చేయడానికి, స్మార్ట్ చర్యలను అమలు చేయడానికి &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt;‌కు అనుమతులు ఇవ్వండి"</string>
     <string name="consent_yes" msgid="8344487259618762872">"అనుమతించండి"</string>
     <string name="consent_no" msgid="2640796915611404382">"అనుమతించవద్దు"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"రద్దు చేయండి"</string>
@@ -93,10 +92,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"మీ <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> స్క్రీన్‌ను &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; డివైజ్‌లో రికార్డ్ చేయండి, ప్రసారం చేయండి లేదా షేర్ చేయండి.ఆడియో, ఫోటోలు, పేమెంట్ సమాచారం, పాస్‌వర్డ్‌లు, ఇంకా మెసేజ్‌లతో సహా మీ <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>‌లో కనిపించే లేదా ప్లే చేయబడే దేనినైనా &lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> యాక్సెస్ చేయగలదు."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"మీ <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>‌లోని యాప్‌లను &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;‌కు స్ట్రీమ్ చేయండి.&lt;br/&gt;&lt;br/&gt;ఆడియో, ఫోటోలు, పేమెంట్ సమాచారం, పాస్‌వర్డ్‌లు, మెసేజ్‌లతో సహా <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>‌లో కనిపించే లేదా ప్లే అయ్యే వాటన్నింటికీ <xliff:g id="APP_NAME">%1$s</xliff:g>‌కు యాక్సెస్ ఉంటుంది, మీ <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> లాక్ అయి ఉన్నా కూడా సదరు యాప్‌నకు యాక్సెస్ ఉంటుంది."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"అందుబాటులో ఉన్న డివైజ్‌ల లిస్ట్‌ను యాక్సెస్ చేసి, ఇతర యాప్‌లలోని ఆడియో లేదా వీడియోను ఏ డివైజ్ స్ట్రీమ్ చేయాలో లేదా ప్రసారం చేయాలో కంట్రోల్ చేయండి"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"మీకు అలర్ట్‌లను పంపుతుంది"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"\'డిస్టర్బ్ చేయవద్దు\' మోడ్ ఆన్‌లో ఉన్నప్పుడు కూడా మీరు అలర్ట్‌లను అందుకుంటారు"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"ఫోన్"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"టాబ్లెట్"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"టీవీ"</string>

@@ -7357,7 +7357,7 @@ public abstract class Context {
      * @hide
      */
     @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
-    @FlaggedApi(android.os.profiling.anomaly.flags.Flags.FLAG_ANOMALY_DETECTOR_CORE)
+    @FlaggedApi(android.os.profiling.anomaly.flags.Flags.FLAG_ANOMALY_DETECTOR_CORE_C)
     public static final String ANOMALY_DETECTOR_SERVICE = "anomaly_detector";
 
     /**

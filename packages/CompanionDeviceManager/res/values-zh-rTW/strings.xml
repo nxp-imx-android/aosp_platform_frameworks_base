@@ -47,7 +47,7 @@
     <string name="summary_virtual_device" msgid="1062189396947962635">"「<xliff:g id="APP_NAME">%2$s</xliff:g>」將獲得下列權限："</string>
     <string name="profile_name_generic" msgid="6851028682723034988">"裝置"</string>
     <string name="summary_generic" msgid="1761976003668044801">"這個應用程式可在手機和指定裝置間同步資訊，例如來電者名稱"</string>
-    <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"允許「<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>」&lt;strong&gt;&lt;/strong&gt;同步處理來電者資訊等資料，並可在「<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>」上執行智慧操作"</string>
+    <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"允許「<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>」&lt;strong&gt;&lt;/strong&gt;同步處理來電者資訊等資料，並可在<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>上執行智慧操作"</string>
     <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
     <skip />
     <string name="consent_yes" msgid="8344487259618762872">"允許"</string>

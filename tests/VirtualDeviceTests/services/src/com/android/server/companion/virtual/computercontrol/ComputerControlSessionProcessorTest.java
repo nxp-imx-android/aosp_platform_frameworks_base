@@ -85,6 +85,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import com.android.server.LocalServices;
 import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.input.InputManagerInternal;
+import com.android.server.notification.NotificationManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
@@ -188,6 +189,8 @@ public class ComputerControlSessionProcessorTest {
     @Mock
     private DevicePolicyManager mDevicePolicyManager;
     @Mock
+    private NotificationManagerInternal mNotificationManagerInternal;
+    @Mock
     private VirtualDeviceManagerInternal mVirtualDeviceManagerInternal;
     @Mock
     private InputManagerInternal mInputManagerInternal;
@@ -242,6 +245,9 @@ public class ComputerControlSessionProcessorTest {
 
         LocalServices.removeServiceForTest(ActivityTaskManagerInternal.class);
         LocalServices.addService(ActivityTaskManagerInternal.class, mActivityTaskManagerInternal);
+
+        LocalServices.removeServiceForTest(NotificationManagerInternal.class);
+        LocalServices.addService(NotificationManagerInternal.class, mNotificationManagerInternal);
 
         Context context = spy(new ContextWrapper(
                 InstrumentationRegistry.getInstrumentation().getTargetContext()));

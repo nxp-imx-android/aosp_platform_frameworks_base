@@ -29,6 +29,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -55,6 +57,7 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.service.personalcontext.Flags;
+import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHint;
@@ -154,7 +157,7 @@ public class PersonalContextManagerServiceTest {
         mFakePermissionEnforcer.grant(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS);
         mFakePermissionEnforcer.grant(Manifest.permission.PERSONAL_CONTEXT_READ_SETTINGS);
         mFakePermissionEnforcer.grant(Manifest.permission.PERSONAL_CONTEXT_WRITE_SETTINGS);
-        mFakePermissionEnforcer.grant(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS);
+        mFakePermissionEnforcer.grant(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS);
         mContext.addMockSystemService(Context.PERMISSION_ENFORCER_SERVICE, mFakePermissionEnforcer);
 
         mService = spy(new PersonalContextManagerService(
@@ -209,6 +212,12 @@ public class PersonalContextManagerServiceTest {
 
     @Test
     public void testOnUserUnlocked_systemUser_registersInternalComponents() {
+        Settings.Secure.putIntForUser(
+                mContext.getContentResolver(),
+                Settings.Secure.PERSONAL_CONTEXT_ENABLED,
+                1,
+                UserHandle.USER_SYSTEM);
+
         mService.onUserStarting(mSystemUser);
         mService.onUserUnlocked(mSystemUser);
 
@@ -388,6 +397,7 @@ public class PersonalContextManagerServiceTest {
     }
 
     @Test
+    @EnableFlags(android.service.personalcontext.Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
     public void testSetPersonalContextModeEnabled_permissionsDenied_throwsSecurityException() {
         mFakePermissionEnforcer.revoke(Manifest.permission.CHANGE_PERSONAL_CONTEXT_MODE);
 
@@ -403,7 +413,10 @@ public class PersonalContextManagerServiceTest {
     @Test
     @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
     public void testPublishTriggeringHint_permissionDenied_throwsSecurityException() {
-        mFakePermissionEnforcer.revoke(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS);
+        mService.onUserStarting(mUser1);
+
+        doThrow(new SecurityException("exception")).when(mAccessController).enforcePermissions(
+                anyInt(), anyInt(), eq(AccessController.ACCESS_PUBLISH_HINTS_PERMISSION));
 
         BundleHint hint = new BundleHint.Builder().build();
         ContextHintWrapper hintWrapper = new ContextHintWrapper(hint);
@@ -415,6 +428,7 @@ public class PersonalContextManagerServiceTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
     public void testPublishTriggeringHint_accessDenied_throwsSecurityException() {
         BundleHint hint = new BundleHint.Builder().build();
         ContextHintWrapper hintWrapper = new ContextHintWrapper(hint);
@@ -431,7 +445,9 @@ public class PersonalContextManagerServiceTest {
     @Test
     @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
     public void testRegisterInsightSurfaceClient_permissionsDenied_throwsSecurityException() {
-        mFakePermissionEnforcer.revoke(Manifest.permission.PERSONAL_CONTEXT_HOST_INSIGHT_SURFACE);
+        mService.onUserStarting(mUser1);
+        doThrow(new SecurityException()).when(mAccessController).enforcePermissions(anyInt(),
+                anyInt(), eq(AccessController.ACCESS_HOST_INSIGHT_SURFACE_PERMISSION));
 
         assertThrows(
                 SecurityException.class,
@@ -443,6 +459,7 @@ public class PersonalContextManagerServiceTest {
     @Test
     @DisableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
     public void testRegisterInsightSurfaceClient_permissionFlagDisabled() {
+        mService.onUserStarting(mUser1);
         mFakePermissionEnforcer.revoke(Manifest.permission.PERSONAL_CONTEXT_HOST_INSIGHT_SURFACE);
 
         assertDoesNotThrow(
@@ -452,6 +469,7 @@ public class PersonalContextManagerServiceTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
     public void testRegisterInsightSurfaceClient_accessDenied_throwsSecurityException() {
         when(mAccessController.isAnyPackageForUidAllowed(anyInt(), anyInt())).thenReturn(false);
         mService.onUserStarting(mUser1);
@@ -464,6 +482,7 @@ public class PersonalContextManagerServiceTest {
 
     @Test
     public void testRegisterInsightSurfaceClient() {
+        mService.onUserStarting(mUser1);
         assertDoesNotThrow(
                 () ->
                         mBinderService.registerInsightSurfaceClient(
@@ -471,12 +490,19 @@ public class PersonalContextManagerServiceTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
     public void testPublishInsightSurfaceHints_accessDenied_throwsException() {
         when(mAccessController.isAnyPackageForUidAllowed(
                 anyInt(), eq(AccessController.ACCESS_PUBLISH_HINTS_ALLOWLIST))).thenReturn(false);
+        doThrow(new SecurityException()).when(mAccessController).enforcePermissions(anyInt(),
+                anyInt(), eq(AccessController.ACCESS_PUBLISH_HINTS_ALLOWLIST
+                        | AccessController.ACCESS_PUBLISH_HINTS_PERMISSION));
         BundleHint hint = new BundleHint.Builder().build();
         ContextHintWrapper hintWrapper = new ContextHintWrapper(hint);
         List<ContextHintWrapper> hints = List.of(hintWrapper);
+
+        // Set the operating mode to default
+        mService.setOperatingMode(USER_ID_1, PersonalContextManager.OPERATING_MODE_DEFAULT);
 
         mService.onUserStarting(mUser1);
 
@@ -488,6 +514,7 @@ public class PersonalContextManagerServiceTest {
 
     @Test
     public void testPublishInsightSurfaceHints() {
+        mService.onUserStarting(mUser1);
         BundleHint hint = new BundleHint.Builder().build();
         ContextHintWrapper hintWrapper = new ContextHintWrapper(hint);
         List<ContextHintWrapper> hints = List.of(hintWrapper);
@@ -502,7 +529,17 @@ public class PersonalContextManagerServiceTest {
     @Test
     @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
     public void testPublishInsightSurfaceHints_permissionDenied_throwsSecurityException() {
-        mFakePermissionEnforcer.revoke(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS);
+        mService.onUserStarting(mUser1);
+        doAnswer(invocation -> {
+            final @AccessController.Access int flags = invocation.getArgument(2);
+
+            if ((flags & AccessController.ACCESS_PUBLISH_HINTS_PERMISSION)
+                    == AccessController.ACCESS_PUBLISH_HINTS_PERMISSION) {
+                throw new SecurityException();
+            }
+
+            return null;
+        }).when(mAccessController).enforcePermissions(anyInt(), anyInt(), anyInt());
 
         BundleHint hint = new BundleHint.Builder().build();
         ContextHintWrapper hintWrapper = new ContextHintWrapper(hint);
@@ -518,10 +555,11 @@ public class PersonalContextManagerServiceTest {
     // TODO(b/495521356): remove test when permission is removed entirely.
     @Test
     public void testIsEnabled_doesNotEnforcePermission() {
+        mBinderService.setEnabled(mContext.getUserId(), /* enabled= */ false);
         mFakePermissionEnforcer.revoke(Manifest.permission.PERSONAL_CONTEXT_READ_SETTINGS);
 
         // Read succeeds.
-        assertThat(mBinderService.isEnabled(mContext.getUserId())).isTrue();
+        assertThat(mBinderService.isEnabled(mContext.getUserId())).isFalse();
     }
 
     @Test
@@ -633,6 +671,7 @@ public class PersonalContextManagerServiceTest {
 
     @Test
     public void testPublishTriggeringHint() {
+        mService.onUserStarting(mUser1);
         BundleHint hint = new BundleHint.Builder().build();
         ContextHintWrapper hintWrapper = new ContextHintWrapper(hint);
         List<ContextHintWrapper> hints = List.of(hintWrapper);
@@ -644,6 +683,7 @@ public class PersonalContextManagerServiceTest {
 
     @Test
     public void testPublishTriggeringHint_nullRenderTokens() {
+        mService.onUserStarting(mUser1);
         BundleHint hint = new BundleHint.Builder().build();
         ContextHintWrapper hintWrapper = new ContextHintWrapper(hint);
         List<ContextHintWrapper> hints = List.of(hintWrapper);
@@ -656,7 +696,16 @@ public class PersonalContextManagerServiceTest {
     @Test
     @EnableFlags(android.service.personalcontext.Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
     public void testPublishInsight_permissionDenied_throwsSecurityException() {
-        mFakePermissionEnforcer.revoke(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS);
+        mService.onUserStarting(mUser1);
+        doAnswer(invocation -> {
+            @AccessController.Access int flags = invocation.getArgument(2);
+
+            if ((flags & AccessController.ACCESS_PUBLISH_INSIGHTS_PERMISSION)
+                    == AccessController.ACCESS_PUBLISH_INSIGHTS_PERMISSION) {
+                throw new SecurityException();
+            }
+            return null;
+        }).when(mAccessController).enforcePermissions(anyInt(), anyInt(), anyInt());
 
         BundleInsight insight = new BundleInsight.Builder().build();
         ContextInsightWrapper wrapper = new ContextInsightWrapper(insight);
@@ -668,6 +717,7 @@ public class PersonalContextManagerServiceTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
     public void testPublishInsight_accessDenied_throwsException() {
         BundleInsight insight = new BundleInsight.Builder().build();
         ContextInsightWrapper wrapper = new ContextInsightWrapper(insight);

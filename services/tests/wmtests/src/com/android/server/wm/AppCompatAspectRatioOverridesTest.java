@@ -218,7 +218,7 @@ public class AppCompatAspectRatioOverridesTest extends WindowTestsBase {
     @EnableCompatChanges({OVERRIDE_MIN_ASPECT_RATIO})
     public void testShouldOverrideMinAspectRatio_overrideEnabled_returnsTrue() {
         runTestScenario((robot)-> {
-            robot.activity().createActivityWithComponent();
+            robot.activity().createActivityWithComponentInNewTaskAndDisplay();
 
             robot.checkShouldOverrideMinAspectRatio(/* expected */ true);
         });
@@ -229,7 +229,7 @@ public class AppCompatAspectRatioOverridesTest extends WindowTestsBase {
     public void testShouldOverrideMinAspectRatio_propertyTrue_overrideEnabled_returnsTrue() {
         runTestScenario((robot)-> {
             robot.prop().enable(PROPERTY_COMPAT_ALLOW_MIN_ASPECT_RATIO_OVERRIDE);
-            robot.activity().createActivityWithComponent();
+            robot.activity().createActivityWithComponentInNewTaskAndDisplay();
 
             robot.checkShouldOverrideMinAspectRatio(/* expected */ true);
         });
@@ -495,17 +495,19 @@ public class AppCompatAspectRatioOverridesTest extends WindowTestsBase {
 
         AspectRatioOverridesRobotTest(@NonNull WindowTestsBase windowTestBase) {
             super(windowTestBase);
+            // Make sure at least one camera policy is enabled.
+            dw().allowEnterDesktopMode(true);
+            reInitCameraPolicy();
+            spyOnCameraPolicies();
         }
 
-        @Override
-        void onPostDisplayContentCreation(@NonNull DisplayContent displayContent) {
-            super.onPostDisplayContentCreation(displayContent);
-            spyOn(displayContent.mAppCompatCameraPolicy);
-            if (displayContent.mAppCompatCameraPolicy.hasDisplayRotationPolicy()) {
-                spyOn(displayContent.mAppCompatCameraPolicy.mDisplayRotationPolicy);
+        void spyOnCameraPolicies() {
+            spyOn(testBase().mWm.mAppCompatCameraPolicy);
+            if (testBase().mWm.mAppCompatCameraPolicy.hasDisplayRotationPolicy()) {
+                spyOn(testBase().mWm.mAppCompatCameraPolicy.mDisplayRotationPolicy);
             }
-            if (displayContent.mAppCompatCameraPolicy.hasSimReqOrientationPolicy()) {
-                spyOn(displayContent.mAppCompatCameraPolicy.mSimReqOrientationPolicy);
+            if (testBase().mWm.mAppCompatCameraPolicy.hasSimReqOrientationPolicy()) {
+                spyOn(testBase().mWm.mAppCompatCameraPolicy.mSimReqOrientationPolicy);
             }
         }
 
@@ -513,6 +515,24 @@ public class AppCompatAspectRatioOverridesTest extends WindowTestsBase {
         void onPostActivityCreation(@NonNull ActivityRecord activity) {
             super.onPostActivityCreation(activity);
             spyOn(activity.mAppCompatController.getAspectRatioOverrides());
+        }
+
+        @Override
+        void applyOnConf(@NonNull Consumer<AppCompatConfigurationRobot> consumer) {
+            super.applyOnConf(consumer);
+            reInitCameraPolicy();
+            spyOnCameraPolicy();
+        }
+
+        private void spyOnCameraPolicy() {
+            final AppCompatCameraPolicy cameraPolicy = testBase().mWm.mAppCompatCameraPolicy;
+            spyOn(cameraPolicy);
+            if (cameraPolicy.hasDisplayRotationPolicy()) {
+                spyOn(cameraPolicy.mDisplayRotationPolicy);
+            }
+            if (cameraPolicy.hasSimReqOrientationPolicy()) {
+                spyOn(cameraPolicy.mSimReqOrientationPolicy);
+            }
         }
 
         void checkShouldApplyUserFullscreenOverride(boolean expected) {
@@ -575,5 +595,4 @@ public class AppCompatAspectRatioOverridesTest extends WindowTestsBase {
             return activity().top().mAppCompatController.getAspectRatioOverrides();
         }
     }
-
 }

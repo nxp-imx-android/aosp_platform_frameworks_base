@@ -17,6 +17,7 @@
 package com.android.wm.shell.desktopmode.api.impl
 
 import android.graphics.Region
+import android.view.Display.DEFAULT_DISPLAY
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.DesktopTasksController
@@ -24,6 +25,7 @@ import com.android.wm.shell.desktopmode.api.DesktopMode
 import com.android.wm.shell.desktopmode.data.DesktopRepository.DeskChangeListener
 import com.android.wm.shell.desktopmode.data.DesktopRepository.VisibleTasksListener
 import com.android.wm.shell.desktopmode.desktopfirst.DesktopFirstListenerManager
+import com.android.wm.shell.desktopmode.homescreenpeeking.DesktopHomeScreenPeekController
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ExternalThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
@@ -40,6 +42,7 @@ import kotlin.jvm.optionals.getOrNull
 class DesktopModeImpl(
     private val desktopTasksController: Optional<DesktopTasksController>,
     private val desktopFirstListenerManager: Optional<DesktopFirstListenerManager>,
+    private val desktopHomeScreenPeekController: DesktopHomeScreenPeekController,
     @ShellMainThread private val mainExecutor: ShellExecutor,
 ) : DesktopMode {
     override fun addVisibleTasksListener(
@@ -166,12 +169,27 @@ class DesktopModeImpl(
 
     override fun isDisplayInDesktopMode(displayId: Int) =
         mainExecutor.executeBlockingForResult(
-            {
-                desktopTasksController.getOrNull()?.isDisplayInDesktopMode(displayId)
-                    ?: false
-            },
+            { desktopTasksController.getOrNull()?.isDisplayInDesktopMode(displayId) ?: false },
             Boolean::class.javaObjectType,
         ) ?: false
+
+    override fun togglePeek(displayId: Int) {
+        if (displayId != DEFAULT_DISPLAY) {
+            ProtoLog.w(
+                WM_SHELL_DESKTOP_MODE,
+                "$TAG: togglePeek currently only supported on default display",
+            )
+            return
+        }
+        ProtoLog.v(WM_SHELL_DESKTOP_MODE, "$TAG: togglePeek")
+        mainExecutor.execute {
+            if (desktopHomeScreenPeekController.isPeeking) {
+                desktopHomeScreenPeekController.unpeek()
+            } else {
+                desktopHomeScreenPeekController.peek()
+            }
+        }
+    }
 
     companion object {
         private const val TAG = "DesktopModeImpl"

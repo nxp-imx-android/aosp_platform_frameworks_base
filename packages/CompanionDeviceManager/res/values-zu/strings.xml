@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"idivayisi"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Le app izokwazi ukuvumelanisa ulwazi, njengegama lomuntu othile ofonayo, phakathi kwefoni yakho nedivayisi ekhethiwe"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Vumela &lt;strong&gt;i-<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; ukuthi ivumelanise ulwazi olufana nolwazi lomshayeli futhi iqalise izenzo ezismathi ku-<xliff:g id="DEVICE_TYPE">%2$s</xliff:g> yakho"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"Vumela &lt;strong&gt;i-<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; ukuthi ivumelanise ulwazi olufana nolwazi lofonayo futhi iqalise izenzo ezismathi ezivela ku-<xliff:g id="DEVICE_TYPE">%2$s</xliff:g> yakho"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Vumela"</string>
     <string name="consent_no" msgid="2640796915611404382">"Ungavumeli"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Khansela"</string>
@@ -93,10 +92,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Rekhoda, sakaza noma wabelane neskrini sakho se-<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> kokuthi &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> izokwazi ukufinyelela kunoma yini ebonakalayo noma edlalwayo ku-<xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> yakho, okuhlanganisa umsindo, izithombe, ulwazi lokukhokha, amaphasiwedi, nemilayezo."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Sakaza ama-app akho e-<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> kokuthi &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;i-<xliff:g id="APP_NAME">%1$s</xliff:g> izokwazi ukufinyelela kunoma yini ebonakalayo noma edlalwa ku-<xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, okuhlanganisa okulalelwayo, izithombe, ulwazi lokukhokha, amaphasiwedi, nemiyalezo, ngisho noma i-<xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> yakho ikhiyiwe."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Finyelela kuhlu lwamadivayisi atholakalayo futhi ulawule ukuthi iyiphi esakaza umsindo noma ividiyo kusuka kwamanye ama-app"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Ikuthumela izexwayiso"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Ikuthumela izexwayiso ngisho noma imodi ethi Ungaphazamisi ivuliwe"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"ifoni"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"ithebulethi"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"i-tv"</string>

@@ -878,18 +878,13 @@ public class LocationManagerService extends ILocationManager.Stub implements
                 listenerId);
         int permissionLevel = LocationPermissions.getPermissionLevel(mContext, identity.getUid(),
                 identity.getPid());
-        if (Flags.enableLocationBypass()) {
-            if (permissionLevel == PERMISSION_NONE) {
-                if (mContext.checkCallingPermission(LOCATION_BYPASS) != PERMISSION_GRANTED) {
-                    LocationPermissions.enforceLocationPermission(
-                            identity.getUid(), permissionLevel, PERMISSION_COARSE);
-                } else {
-                    permissionLevel = PERMISSION_FINE;
-                }
+        if (permissionLevel == PERMISSION_NONE) {
+            if (mContext.checkCallingPermission(LOCATION_BYPASS) != PERMISSION_GRANTED) {
+                LocationPermissions.enforceLocationPermission(
+                        identity.getUid(), permissionLevel, PERMISSION_COARSE);
+            } else {
+                permissionLevel = PERMISSION_FINE;
             }
-        } else {
-            LocationPermissions.enforceLocationPermission(identity.getUid(), permissionLevel,
-                    PERMISSION_COARSE);
         }
 
         // clients in the system process must have an attribution tag set
@@ -917,18 +912,13 @@ public class LocationManagerService extends ILocationManager.Stub implements
                 listenerId);
         int permissionLevel = LocationPermissions.getPermissionLevel(mContext, identity.getUid(),
                 identity.getPid());
-        if (Flags.enableLocationBypass()) {
-            if (permissionLevel == PERMISSION_NONE) {
-                if (mContext.checkCallingPermission(LOCATION_BYPASS) != PERMISSION_GRANTED) {
-                    LocationPermissions.enforceLocationPermission(
-                            identity.getUid(), permissionLevel, PERMISSION_COARSE);
-                } else {
-                    permissionLevel = PERMISSION_FINE;
-                }
+        if (permissionLevel == PERMISSION_NONE) {
+            if (mContext.checkCallingPermission(LOCATION_BYPASS) != PERMISSION_GRANTED) {
+                LocationPermissions.enforceLocationPermission(
+                        identity.getUid(), permissionLevel, PERMISSION_COARSE);
+            } else {
+                permissionLevel = PERMISSION_FINE;
             }
-        } else {
-            LocationPermissions.enforceLocationPermission(identity.getUid(), permissionLevel,
-                    PERMISSION_COARSE);
         }
 
         // clients in the system process should have an attribution tag set
@@ -952,18 +942,13 @@ public class LocationManagerService extends ILocationManager.Stub implements
                 AppOpsManager.toReceiverId(pendingIntent));
         int permissionLevel = LocationPermissions.getPermissionLevel(mContext, identity.getUid(),
                 identity.getPid());
-        if (Flags.enableLocationBypass()) {
-            if (permissionLevel == PERMISSION_NONE) {
-                if (mContext.checkCallingPermission(LOCATION_BYPASS) != PERMISSION_GRANTED) {
-                    LocationPermissions.enforceLocationPermission(
-                            identity.getUid(), permissionLevel, PERMISSION_COARSE);
-                } else {
-                    permissionLevel = PERMISSION_FINE;
-                }
+        if (permissionLevel == PERMISSION_NONE) {
+            if (mContext.checkCallingPermission(LOCATION_BYPASS) != PERMISSION_GRANTED) {
+                LocationPermissions.enforceLocationPermission(
+                        identity.getUid(), permissionLevel, PERMISSION_COARSE);
+            } else {
+                permissionLevel = PERMISSION_FINE;
             }
-        } else {
-            LocationPermissions.enforceLocationPermission(identity.getUid(), permissionLevel,
-                    PERMISSION_COARSE);
         }
 
         // clients in the system process must have an attribution tag set
@@ -1112,18 +1097,13 @@ public class LocationManagerService extends ILocationManager.Stub implements
         CallerIdentity identity = CallerIdentity.fromBinder(mContext, packageName, attributionTag);
         int permissionLevel = LocationPermissions.getPermissionLevel(mContext, identity.getUid(),
                 identity.getPid());
-        if (Flags.enableLocationBypass()) {
-            if (permissionLevel == PERMISSION_NONE) {
-                if (mContext.checkCallingPermission(LOCATION_BYPASS) != PERMISSION_GRANTED) {
-                    LocationPermissions.enforceLocationPermission(
-                            identity.getUid(), permissionLevel, PERMISSION_COARSE);
-                } else {
-                    permissionLevel = PERMISSION_FINE;
-                }
+        if (permissionLevel == PERMISSION_NONE) {
+            if (mContext.checkCallingPermission(LOCATION_BYPASS) != PERMISSION_GRANTED) {
+                LocationPermissions.enforceLocationPermission(
+                        identity.getUid(), permissionLevel, PERMISSION_COARSE);
+            } else {
+                permissionLevel = PERMISSION_FINE;
             }
-        } else {
-            LocationPermissions.enforceLocationPermission(identity.getUid(), permissionLevel,
-                    PERMISSION_COARSE);
         }
 
         // clients in the system process must have an attribution tag set

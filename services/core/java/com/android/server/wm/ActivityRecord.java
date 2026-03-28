@@ -8358,6 +8358,7 @@ final class ActivityRecord extends WindowToken {
 
         final boolean wasInPictureInPicture = inPinnedWindowingMode();
         final DisplayContent display = mDisplayContent;
+        final int oldWindowingMode = getWindowConfiguration().getWindowingMode();
         final int oldDisplayRotation = getWindowConfiguration().getDisplayRotation();
         final int activityType = getActivityType();
         if (wasInPictureInPicture && attachedToProcess() && display != null) {
@@ -8407,8 +8408,9 @@ final class ActivityRecord extends WindowToken {
             return;
         }
 
-        notifyCameraCompatPolicyRotationChangedIfNeeded(oldDisplayRotation, newParentConfig
-                .windowConfiguration.getDisplayRotation());
+        notifyCameraCompatPolicyConfigurationChangedIfNeeded(oldDisplayRotation,
+                newParentConfig.windowConfiguration.getDisplayRotation(), oldWindowingMode,
+                newParentConfig.windowConfiguration.getWindowingMode());
 
         if (mVisibleRequested) {
             // It may toggle the UI for user to restart the size compatibility mode activity.
@@ -8494,10 +8496,16 @@ final class ActivityRecord extends WindowToken {
         return mPauseConfigurationDispatchCount > 0;
     }
 
-    private void notifyCameraCompatPolicyRotationChangedIfNeeded(
+    private void notifyCameraCompatPolicyConfigurationChangedIfNeeded(
             @Surface.Rotation int oldDisplayRotation,
-            @Surface.Rotation int newDisplayRotation) {
-        if (Flags.cameraCompatUpdateTreatmentOnRotation()
+            @Surface.Rotation int newDisplayRotation,
+            @WindowConfiguration.WindowingMode int oldWindowingMode,
+            @WindowConfiguration.WindowingMode int newWindowingMode) {
+        if (oldWindowingMode != WINDOWING_MODE_UNDEFINED
+                && newWindowingMode != WINDOWING_MODE_UNDEFINED
+                && newWindowingMode != oldWindowingMode) {
+            AppCompatCameraPolicy.onWindowingModeChanged(this, newWindowingMode);
+        } else if (Flags.cameraCompatUpdateTreatmentOnRotation()
                 && oldDisplayRotation != ROTATION_UNDEFINED
                 && newDisplayRotation != ROTATION_UNDEFINED
                 && oldDisplayRotation != newDisplayRotation) {

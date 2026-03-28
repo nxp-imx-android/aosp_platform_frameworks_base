@@ -816,10 +816,12 @@ public abstract class WMShellModule {
     static DesktopMode provideDesktopMode(
             Optional<DesktopTasksController> desktopTasksController,
             Optional<DesktopFirstListenerManager> desktopFirstListenerManager,
+            DesktopHomeScreenPeekController desktopHomeScreenPeekController,
             @ShellMainThread ShellExecutor mainExecutor) {
         return new DesktopModeImpl(
                 desktopTasksController,
                 desktopFirstListenerManager,
+                desktopHomeScreenPeekController,
                 mainExecutor);
     }
 

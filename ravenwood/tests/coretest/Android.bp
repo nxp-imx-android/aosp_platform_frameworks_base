@@ -27,9 +27,9 @@ android_ravenwood_test {
         "ravenwood-junit-impl",
     ],
     srcs: [
-        "test/**/*.java",
-        "test/**/*.kt",
-        "test/**/*.aidl",
+        "src/**/*.java",
+        "src/**/*.kt",
+        "src/**/*.aidl",
     ],
     data: [
         "data/**/*",

@@ -34,6 +34,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -104,7 +106,7 @@ fun PromptHeader(
                 style = MaterialTheme.typography.headlineSmall,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(top = 16.dp).testTag("title"),
+                modifier = Modifier.padding(top = 16.dp).testTag("title").semantics { heading() },
             )
         }
 
@@ -177,7 +179,7 @@ fun PromptHeaderLandscape(
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.Start,
-                modifier = Modifier.testTag("title"),
+                modifier = Modifier.testTag("title").semantics { heading() },
             )
         }
 

@@ -26,6 +26,7 @@ import android.service.personalcontext.insight.PublishedContextInsightWrapper;
 import android.util.Slog;
 
 import com.android.server.personalcontext.AccessController;
+import com.android.server.personalcontext.OperatingModeProvider;
 
 import java.util.UUID;
 
@@ -42,8 +43,10 @@ public class ServiceClientUnderstander extends ServiceClientRefiner {
             AccessController accessController,
             UUID componentId,
             ServiceInfo serviceInfo,
-            UserHandle userHandle) {
-        super(context, accessController, componentId, serviceInfo, userHandle);
+            UserHandle userHandle,
+            OperatingModeProvider operatingModeProvider) {
+        super(context, accessController, componentId, serviceInfo, userHandle,
+                operatingModeProvider);
     }
 
     @Override

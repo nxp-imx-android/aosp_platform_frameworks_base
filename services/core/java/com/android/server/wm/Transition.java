@@ -1787,7 +1787,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 final ChangeInfo changeInfo = mChanges.get(dc);
                 if (changeInfo != null
                         && changeInfo.mRotation != dc.getWindowConfiguration().getRotation()) {
-                    dc.mAppCompatCameraPolicy.onScreenRotationAnimationFinished();
+                    mWmService.mAppCompatCameraPolicy.onScreenRotationAnimationFinished(dc);
                 }
             }
             if (mTransientLaunches != null) {

@@ -156,7 +156,7 @@ public class RouteSelectionStack implements IBinder.DeathRecipient {
     public synchronized void applyDeviceRestrictions(
             Function<AudioDeviceAttributes, AudioDeviceAttributes> pred) {
         for (var client : mClients) {
-            if (!client.getDevice().isPresent()) {
+            if (!client.getDevice().isPresent() || client.isForModeSession()) {
                 continue;
             }
             var newDevice = pred.apply(client.getDevice().get());
@@ -182,7 +182,7 @@ public class RouteSelectionStack implements IBinder.DeathRecipient {
     // AudioManager for existing/legacy clients (which moves matching from uid to process, but this
     // is better, and almost certainly non-breaking), or via API exposed sessions which hold
     // explicit tokens.
-    public RouteClient getClientForUid(int uid) {
+    public synchronized RouteClient getClientForUid(int uid) {
         for (var client : mClients) {
             if (client.getUid() == uid) {
                 return client;
@@ -249,15 +249,22 @@ public class RouteSelectionStack implements IBinder.DeathRecipient {
 
         // Route selection should not be considered due to device invalidation
         private boolean mDisabled;
+        private boolean mForModeSession;
 
         RouteClient(IBinder cb, @NonNull AttributionSource attributionSource,
                 AudioDeviceAttributes device, boolean isPrivileged) {
+            this(cb, attributionSource, device, isPrivileged, false);
+        }
+
+        RouteClient(IBinder cb, @NonNull AttributionSource attributionSource,
+                AudioDeviceAttributes device, boolean isPrivileged, boolean forModeSession) {
             mToken = cb;
             mAttributionSource = attributionSource;
             mDevice = Optional.ofNullable(device);
             mIsPrivileged = isPrivileged;
             mStreamActive = true;
             mDisabled = false;
+            mForModeSession = forModeSession;
         }
 
         IBinder getToken() {
@@ -275,6 +282,10 @@ public class RouteSelectionStack implements IBinder.DeathRecipient {
 
         boolean isPrivileged() {
             return mIsPrivileged;
+        }
+
+        boolean isForModeSession() {
+            return mForModeSession;
         }
 
         Optional<AudioDeviceAttributes> getDevice() {

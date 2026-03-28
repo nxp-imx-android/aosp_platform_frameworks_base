@@ -29,6 +29,20 @@ import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
+import android.app.ondeviceintelligence.embedding.EmbeddingModel;
+import android.app.ondeviceintelligence.embedding.EmbeddingRequest;
+import android.app.ondeviceintelligence.embedding.EmbeddingResponse;
+import android.app.ondeviceintelligence.embedding.IEmbeddingCallback;
+import android.app.ondeviceintelligence.embedding.IEmbeddingModelCallback;
+import android.app.ondeviceintelligence.embedding.IEmbeddingModelListCallback;
+import android.app.ondeviceintelligence.imagedescription.IImageDescriptionCallback;
+import android.app.ondeviceintelligence.imagedescription.IImageDescriptionModelCallback;
+import android.app.ondeviceintelligence.imagedescription.IImageDescriptionModelListCallback;
+import android.app.ondeviceintelligence.imagedescription.ImageDescriptionCallback;
+import android.app.ondeviceintelligence.imagedescription.ImageDescriptionModel;
+import android.app.ondeviceintelligence.imagedescription.ImageDescriptionRequest;
+import android.app.ondeviceintelligence.imagedescription.ImageDescriptionResponse;
+import android.app.ondeviceintelligence.utils.BinderUtils;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Binder;
@@ -44,27 +58,6 @@ import android.service.ondeviceintelligence.OnDeviceSandboxedInferenceService;
 import android.system.OsConstants;
 import android.util.Log;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-
-import android.app.ondeviceintelligence.embedding.EmbeddingModel;
-import android.app.ondeviceintelligence.embedding.EmbeddingRequest;
-import android.app.ondeviceintelligence.embedding.EmbeddingResponse;
-import android.app.ondeviceintelligence.embedding.IEmbeddingCallback;
-import android.app.ondeviceintelligence.embedding.IEmbeddingModelCallback;
-import android.app.ondeviceintelligence.embedding.IEmbeddingModelListCallback;
-import android.app.ondeviceintelligence.imagedescription.ImageDescriptionModel;
-import android.app.ondeviceintelligence.imagedescription.ImageDescriptionRequest;
-import android.app.ondeviceintelligence.imagedescription.ImageDescriptionCallback;
-import android.app.ondeviceintelligence.imagedescription.ImageDescriptionResponse;
-import android.app.ondeviceintelligence.imagedescription.IImageDescriptionCallback;
-import android.app.ondeviceintelligence.imagedescription.IImageDescriptionModelCallback;
-import android.app.ondeviceintelligence.imagedescription.IImageDescriptionModelListCallback;
-import android.app.ondeviceintelligence.utils.BinderUtils;
-
 import com.android.internal.infra.AndroidFuture;
 
 import java.lang.annotation.ElementType;
@@ -72,6 +65,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.function.LongConsumer;
 
@@ -111,7 +107,6 @@ public final class OnDeviceIntelligenceManager {
     public static final String KEY_REQUEST_INFERENCE_INFO = "request_inference_info";
 
     private static final String TAG = "OnDeviceIntelligence";
-    private final Context mContext;
     private final IOnDeviceIntelligenceManager mService;
 
     private final Map<OnDeviceSandboxedInferenceService.LifecycleListener, ILifecycleListener.Stub>
@@ -121,7 +116,6 @@ public final class OnDeviceIntelligenceManager {
      * @hide
      */
     public OnDeviceIntelligenceManager(Context context, IOnDeviceIntelligenceManager service) {
-        mContext = context;
         mService = service;
     }
 

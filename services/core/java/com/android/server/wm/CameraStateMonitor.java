@@ -56,8 +56,6 @@ class CameraStateMonitor {
 
     /** Returns the information about apps using camera, for logging purposes. */
     @NonNull
-    private final DisplayContent mDisplayContent;
-    @NonNull
     private final WindowManagerService mWmService;
     @Nullable
     private final CameraManager mCameraManager;
@@ -95,16 +93,14 @@ class CameraStateMonitor {
                 }
             };
 
-    CameraStateMonitor(@NonNull DisplayContent displayContent, @NonNull Handler handler,
+    CameraStateMonitor(@NonNull WindowManagerService wmService, @NonNull Handler handler,
             @NonNull AppCompatCameraStatePolicy appCompatCameraStatePolicy) {
-        // This constructor is called from DisplayContent constructor. Don't use any fields in
-        // DisplayContent here since they aren't guaranteed to be set.
+        // This constructor is called from WindowManagerService constructor.
         mHandler = handler;
-        mDisplayContent = displayContent;
         mAppCompatCameraStatePolicy = appCompatCameraStatePolicy;
-        mWmService = displayContent.mWmService;
+        mWmService = wmService;
         mCameraManager = mWmService.mContext.getSystemService(CameraManager.class);
-        mAppCompatCameraStateStrategy = new AppCompatCameraStateStrategyForTask(displayContent);
+        mAppCompatCameraStateStrategy = new AppCompatCameraStateStrategyForTask(mWmService);
     }
 
     /** Starts listening to camera opened/closed signals. */
@@ -146,9 +142,8 @@ class CameraStateMonitor {
         // delaying orientation update to accommodate for that.
         // If an activity is restarting or camera is flipping, the camera connection can be
         // quickly closed and reopened.
-        ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
-                "%s: Display id=%d is notified that Camera %s is open for package %s",
-                TAG_CAMERA_COMPAT, mDisplayContent.mDisplayId, cameraId, packageName);
+        ProtoLog.v(WM_DEBUG_CAMERA_COMPAT, "%s: Camera %s is open for package %s",
+                TAG_CAMERA_COMPAT, cameraId, packageName);
         final CameraAppInfo cameraAppInfo = mAppCompatCameraStateStrategy.trackOnCameraOpened(
                 cameraId, packageName);
         mHandler.postDelayed(() -> {
@@ -169,9 +164,8 @@ class CameraStateMonitor {
      * and when an activity is refreshed due to camera compat treatment.
      */
     private void notifyCameraClosedWithDelay(@NonNull String cameraId) {
-        ProtoLog.v(WM_DEBUG_CAMERA_COMPAT,
-                "%s: Display id=%d is notified that Camera %s is closed.",
-                TAG_CAMERA_COMPAT, mDisplayContent.mDisplayId, cameraId);
+        ProtoLog.v(WM_DEBUG_CAMERA_COMPAT, "%s: Camera %s is closed.", TAG_CAMERA_COMPAT,
+                cameraId);
         scheduleRemoveCameraId(cameraId);
     }
 

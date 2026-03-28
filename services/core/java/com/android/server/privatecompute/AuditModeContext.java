@@ -38,13 +38,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
-/* Current Audit Mode limitations (tracked in b/461406944):
- * - Audit mode is set to true. Instead, a system property should be introduced to toggle
- *   audit mode on/off.
- * - Incoming data is not sanitized. Depends on ag/36599762.
- * - If the logging frequency is too high, the log might be incomplete.
- * - The first logging file is always "0".
- */
 
 /**
  * Manages the state of audit mode; when on, collects logs and periodically writes them to disk.
@@ -189,6 +182,7 @@ class AuditModeContext {
                 new AuditLogEntry(
                         data,
                         SystemClock.elapsedRealtimeNanos(),
+                        System.currentTimeMillis(),
                         packageName,
                         callingUid);
         mBundleSerializerExecutor.execute(
@@ -294,7 +288,7 @@ class AuditModeContext {
             return new ArrayList<>();
         }
         List<AuditLogEntry> entries = AuditLogFileWriter.readEntriesForFiles(Arrays.asList(files));
-        entries.sort(Comparator.comparingLong(entry -> entry.mTimestamp));
+        entries.sort(Comparator.comparingLong(entry -> entry.mRealTimeNanos));
         return entries;
     }
 }

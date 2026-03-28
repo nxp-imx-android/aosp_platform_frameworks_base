@@ -1704,12 +1704,12 @@
     <string name="date_picker_decrement_year_button" msgid="4102586521754172684">"Намали година"</string>
     <string name="date_picker_prev_month_button" msgid="3418694374017868369">"Претходниот месец"</string>
     <string name="date_picker_next_month_button" msgid="4858207337779144840">"Следниот месец"</string>
-    <string name="keyboardview_keycode_alt" msgid="8997420058584292385">"Копче „Alt“"</string>
+    <string name="keyboardview_keycode_alt" msgid="8997420058584292385">"Alt"</string>
     <string name="keyboardview_keycode_cancel" msgid="2134624484115716975">"Откажи"</string>
     <string name="keyboardview_keycode_delete" msgid="2661117313730098650">"Копче „Избриши“"</string>
     <string name="keyboardview_keycode_done" msgid="2524518019001653851">"Готово"</string>
     <string name="keyboardview_keycode_mode_change" msgid="2743735349997999020">"Копче „Промени режим“"</string>
-    <string name="keyboardview_keycode_shift" msgid="3026509237043975573">"Копче „Shift“"</string>
+    <string name="keyboardview_keycode_shift" msgid="3026509237043975573">"Shift"</string>
     <string name="keyboardview_keycode_enter" msgid="168054869339091055">"Копче „Внеси“"</string>
     <string name="activitychooserview_choose_application" msgid="3500574466367891463">"Избери апликација"</string>
     <string name="activitychooserview_choose_application_error" msgid="6937782107559241734">"Не може да се стартува <xliff:g id="APPLICATION_NAME">%s</xliff:g>"</string>

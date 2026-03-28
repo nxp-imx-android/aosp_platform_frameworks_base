@@ -183,12 +183,12 @@ public class PccSandboxManagerInternal implements OnRoleHoldersChangedListener {
                 PackageManager.MATCH_DIRECT_BOOT_AWARE | PackageManager.MATCH_DIRECT_BOOT_UNAWARE);
 
         synchronized (mLock) {
-            String s = "";
+            StringBuilder s = new StringBuilder();
             if (packages != null) {
                 for (PackageInfo info : packages) {
                     if (info.applicationInfo != null) {
                         mPcsUidCache.put(info.applicationInfo.uid, true);
-                        s += info.applicationInfo.uid + ",";
+                        s.append(info.applicationInfo.uid).append(",");
                     }
                 }
             }

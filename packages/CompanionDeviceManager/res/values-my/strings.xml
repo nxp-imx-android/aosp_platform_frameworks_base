@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"စက်"</string>
     <string name="summary_generic" msgid="1761976003668044801">"ဤအက်ပ်သည် သင့်ဖုန်းနှင့် ရွေးထားသောစက်အကြား ခေါ်ဆိုသူ၏အမည်ကဲ့သို့ အချက်အလက်ကို စင့်ခ်လုပ်နိုင်ပါမည်"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; အား ဖုန်းဆက်သူ အချက်အလက်ကဲ့သို့ အချက်အလက်များကို စင့်ခ်လုပ်ခွင့်ပြုပြီး သင့် <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> မှ စမတ်လုပ်ဆောင်ချက်များ လုပ်ဆောင်ခွင့်ပြုပါ"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; အား ခေါ်ဆိုသူ အချက်အလက်ကဲ့သို့သော အချက်အလက်များကို စင့်ခ်လုပ်ခွင့်ပြုပြီး သင့် <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> မှ စမတ်လုပ်ဆောင်ချက်များ လုပ်ဆောင်ခွင့်ပြုသည်"</string>
     <string name="consent_yes" msgid="8344487259618762872">"ခွင့်ပြုရန်"</string>
     <string name="consent_no" msgid="2640796915611404382">"ခွင့်မပြုပါ"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"မလုပ်တော့"</string>
@@ -93,10 +92,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"သင့် <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> ၏ စခရင်ကို &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; သို့ မှတ်တမ်းတင်ခြင်း၊ ကာစ်လုပ်ခြင်း (သို့) မျှဝေခြင်း လုပ်နိုင်သည်။&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> သည် အသံ၊ ဓာတ်ပုံ၊ ငွေချေအချက်အလက်၊ စကားဝှက်နှင့် မက်ဆေ့ဂျ်များအပါအဝင် သင့် <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> တွင် မြင်နိုင်သော၊ ဖွင့်ထားသောအရာအားလုံးကို သုံးခွင့်ရမည်။"</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"သင့် <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> ၏ အက်ပ်များကို &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; တွင် တိုက်ရိုက်ဖွင့်နိုင်သည်။&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> သည် အသံ၊ ဓာတ်ပုံ၊ ငွေချေအချက်အလက်၊ စကားဝှက်နှင့် မက်ဆေ့ဂျ်များအပါအဝင် သင့် <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> တွင် မြင်နိုင်သော၊ ဖွင့်ထားသော အရာအားလုံးကို <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> အား လော့ခ်ချထားချိန်၌ပင် သုံးခွင့်ရှိပါမည်။"</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"အခြားအက်ပ်များတွင် အသံ (သို့) ဗီဒီယို တိုက်ရိုက်ဖွင့်၍ (သို့) ကာစ်လုပ်၍ ရနိုင်သော စက်ပစ္စည်းစာရင်းကို ဝင်ကြည့်ပြီး ရွေးလိုက်သည့်တစ်ခုကို ထိန်းချုပ်နိုင်သည်"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"သင့်ထံ သတိပေးချက်များ ပို့ခြင်း"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"‘မနှောင့်ယှက်ရ’ မုဒ် ဖွင့်ထားချိန်၌ပင် သင့်ထံ သတိပေးချက်များ ပို့သည်"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"ဖုန်း"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"တက်ဘလက်"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"tv"</string>

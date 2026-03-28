@@ -616,7 +616,7 @@ class MemoryLimiter implements AutoCloseable {
             }
 
             if (!android.os.profiling.Flags.systemTriggeredProfilingNew()
-                    || !android.os.profiling.anomaly.flags.Flags.anomalyDetectorCore()) {
+                    || !android.os.profiling.anomaly.flags.Flags.anomalyDetectorCoreC()) {
                 // Profiling is disabled globally.
                 return;
             }

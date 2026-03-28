@@ -387,7 +387,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
         runTestScenario((robot) -> {
             robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT);
             final float configAspectRatio = 1.5f;
-            robot.conf().setCameraCompatAspectRatio(configAspectRatio);
+            robot.applyOnConf(c -> c.setCameraCompatAspectRatio(configAspectRatio));
 
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
             robot.refreshActivityIfEnabled();
@@ -400,7 +400,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     public void testGetCameraCompatAspectRatio_inCameraCompatPerAppOverride_returnDefAspectRatio() {
         runTestScenario((robot) -> {
             robot.configureActivity(SCREEN_ORIENTATION_PORTRAIT);
-            robot.conf().setCameraCompatAspectRatio(1.5f);
+            robot.applyOnConf(c -> c.setCameraCompatAspectRatio(1.5f));
             robot.setOverrideMinAspectRatioEnabled(true);
 
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
@@ -528,7 +528,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
         runTestScenario((robot) -> {
             robot.configureActivityAndDisplay(SCREEN_ORIENTATION_PORTRAIT, ORIENTATION_LANDSCAPE,
                     WINDOWING_MODE_FREEFORM);
-            robot.conf().enableCameraCompatLandscapeToPortraitTreatment(true);
+            robot.applyOnConf(c -> c.enableCameraCompatLandscapeToPortraitTreatment(true));
             robot.rotateDisplay(ROTATION_0);
 
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
@@ -593,7 +593,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
                     WINDOWING_MODE_FREEFORM);
             robot.setupSupportedRotateAndCropModes(new int[]{SCALER_ROTATE_AND_CROP_NONE,
                     SCALER_ROTATE_AND_CROP_AUTO});
-            robot.conf().enableCameraCompatLandscapeToPortraitTreatment(true);
+            robot.applyOnConf(c -> c.enableCameraCompatLandscapeToPortraitTreatment(true));
             robot.rotateDisplay(ROTATION_0);
 
             robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
@@ -711,6 +711,51 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
         });
     }
 
+    @Test
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
+    public void testOnCameraOpened_windowingModeChanged_recomputesCameraCompatMode() {
+        runTestScenario((robot) -> {
+            robot.configureActivityAndDisplay(SCREEN_ORIENTATION_PORTRAIT, ORIENTATION_PORTRAIT,
+                    WINDOWING_MODE_FREEFORM);
+            robot.rotateDisplay(ROTATION_90);
+
+            robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+
+            // Display rotation for fixed-orientation portrait apps should always be 0.
+            robot.assertCompatibilityInfoSentWithDisplayRotation(ROTATION_0);
+            robot.assertCompatibilityInfoSentWithSensorOverride(false);
+            robot.assertCompatibilityInfoSentWithLetterbox(true);
+            robot.assertCompatibilityInfoSentWithInverseTransformAllowed(false);
+            robot.assertCompatibilityInfoSentWithRotateAndCrop(ROTATION_270);
+
+            robot.changeWindowingMode(WINDOWING_MODE_FULLSCREEN);
+
+            robot.assertCompatibilityInfoNoCameraCompatMode(/* times */ 2, /* order */ 1);
+        });
+    }
+
+    @Test
+    @DisableFlags(FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
+    public void testOnCameraOpened_fullscreenToFreeform_activatesCameraCompatMode() {
+        runTestScenario((robot) -> {
+            robot.configureActivityAndDisplay(SCREEN_ORIENTATION_PORTRAIT, ORIENTATION_PORTRAIT,
+                    WINDOWING_MODE_FULLSCREEN);
+            robot.rotateDisplay(ROTATION_0);
+
+            robot.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+
+            robot.assertCompatibilityInfoNeverUpdated();
+
+            robot.changeWindowingMode(WINDOWING_MODE_FREEFORM);
+
+            robot.assertCompatibilityInfoSentWithDisplayRotation(ROTATION_0);
+            robot.assertCompatibilityInfoSentWithSensorOverride(false);
+            robot.assertCompatibilityInfoSentWithLetterbox(true);
+            robot.assertCompatibilityInfoSentWithInverseTransformAllowed(false);
+            robot.assertCompatibilityInfoSentWithRotateAndCrop(ROTATION_0);
+        });
+    }
+
     /**
      * Runs a test scenario providing a Robot.
      */
@@ -734,15 +779,22 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
             mWindowTestsBase = windowTestsBase;
             setupCameraManager();
             setupAppCompatConfiguration();
+            reInitCameraPolicy();
+            spyOnPolicy();
         }
 
         @Override
-        void onPostDisplayContentCreation(@NonNull DisplayContent displayContent) {
-            super.onPostDisplayContentCreation(displayContent);
-            spyOn(displayContent.mAppCompatCameraPolicy);
-            if (displayContent.mAppCompatCameraPolicy.mSimReqOrientationPolicy
+        void applyOnConf(@NonNull Consumer<AppCompatConfigurationRobot> consumer) {
+            super.applyOnConf(consumer);
+            reInitCameraPolicy();
+            spyOnPolicy();
+        }
+
+        private void spyOnPolicy() {
+            spyOn(mWindowTestsBase.mWm.mAppCompatCameraPolicy);
+            if (mWindowTestsBase.mWm.mAppCompatCameraPolicy.mSimReqOrientationPolicy
                     != null) {
-                spyOn(displayContent.mAppCompatCameraPolicy.mSimReqOrientationPolicy);
+                spyOn(mWindowTestsBase.mWm.mAppCompatCameraPolicy.mSimReqOrientationPolicy);
             }
         }
 
@@ -842,15 +894,18 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
         private void configureActivityAndDisplay(@ScreenOrientation int activityOrientation,
                 @Orientation int naturalOrientation, @WindowingMode int windowingMode,
                 int displayType) {
-            applyOnActivity(a -> {
+            // applyOnConf will force camera compat policies to renitialize required components.
+            applyOnConf(c -> {
                 dw().allowEnterDesktopMode(true);
+                c.enableCameraCompatSimReqOrientationTreatment(true);
+            });
+            applyOnActivity(a -> {
                 a.createActivityWithComponentInNewTaskAndDisplay(displayType);
                 a.setIgnoreOrientationRequest(true);
                 rotateDisplay(ROTATION_90);
                 a.configureTopActivity(/* minAspect */ -1, /* maxAspect */ -1,
                         activityOrientation, /* isUnresizable */ false);
-                a.top().setWindowingMode(windowingMode);
-                a.displayContent().setWindowingMode(windowingMode);
+                a.setTaskWindowingMode(windowingMode);
                 setIgnoreOrientationRequest(true);
                 a.setDisplayNaturalOrientation(naturalOrientation);
                 spyOn(a.top().mAppCompatController.getCameraOverrides());
@@ -868,6 +923,14 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
             }
         }
 
+        private void changeWindowingMode(@WindowingMode int windowingMode) {
+            activity().setTaskWindowingMode(windowingMode);
+            if (cameraCompatFreeformPolicy() != null) {
+                cameraCompatFreeformPolicy().onWindowingModeChanged(activity().top(),
+                        windowingMode);
+            }
+        }
+
         private void onCameraOpened(@NonNull String cameraId, @NonNull String packageName) {
             mCameraAvailabilityCallback.onCameraOpened(cameraId, packageName);
             waitHandlerIdle();
@@ -878,7 +941,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
         }
 
         private void waitHandlerIdle() {
-            mWindowTestsBase.waitHandlerIdle(activity().displayContent().mWmService.mH);
+            mWindowTestsBase.waitHandlerIdle(testBase().mWm.mH);
         }
 
         void detachActivityFromProcess() {
@@ -931,8 +994,8 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
         }
 
         private void refreshActivityIfEnabled() {
-            activity().displayContent().mAppCompatCameraPolicy.mActivityRefresher
-                    .refreshActivityIfEnabled(activity().top());
+            testBase().mWm.mAppCompatCameraPolicy.mActivityRefresher.refreshActivityIfEnabled(
+                    activity().top());
         }
 
         void checkIsCameraCompatTreatmentActiveForTopActivity(boolean active) {
@@ -959,7 +1022,8 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
         void assertCompatibilityInfoSentWithDisplayRotation(@Surface.Rotation int
                 expectedRotation, int times, int order) {
             final CompatibilityInfo compatInfo = getCompatibilityInfo(times, order);
-            assertTrue(compatInfo.isOverrideCameraCompatibilityInfoRequired());
+            assertEquals(expectedRotation != ROTATION_UNDEFINED,
+                    compatInfo.isOverrideCameraCompatibilityInfoRequired());
             assertEquals(expectedRotation, compatInfo.cameraCompatibilityInfo
                     .getDisplayRotationSandbox());
         }
@@ -1018,7 +1082,11 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
         }
 
         void assertCompatibilityInfoNoCameraCompatMode() {
-            final CompatibilityInfo compatInfo = getCompatibilityInfo();
+            assertCompatibilityInfoNoCameraCompatMode(/* times */ 1, /* order */ 0);
+        }
+
+        void assertCompatibilityInfoNoCameraCompatMode(int times, int order) {
+            final CompatibilityInfo compatInfo = getCompatibilityInfo(times, order);
             assertFalse(compatInfo.isOverrideCameraCompatibilityInfoRequired());
         }
 
@@ -1051,7 +1119,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
         }
 
         AppCompatCameraSimReqOrientationPolicy cameraCompatFreeformPolicy() {
-            return activity().displayContent().mAppCompatCameraPolicy.mSimReqOrientationPolicy;
+            return testBase().mWm.mAppCompatCameraPolicy.mSimReqOrientationPolicy;
         }
 
         void setSensorOrientation(int orientation) {
@@ -1060,7 +1128,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
         }
 
         void makeCurrentDisplayDefault() {
-            doReturn(activity().displayContent()).when(activity().displayContent().mWmService)
+            doReturn(activity().displayContent()).when(testBase().mWm)
                     .getDefaultDisplayContentLocked();
         }
     }

@@ -604,7 +604,7 @@ public class LocationProviderManager extends
         boolean onBypassLocationPermissionsChanged(boolean isInEmergency) {
             synchronized (mMultiplexerLock) {
                 boolean bypassPermitted =
-                        Flags.enableLocationBypass() && isInEmergency
+                        isInEmergency
                                 && mContext.checkPermission(
                                 LOCATION_BYPASS, mIdentity.getPid(), mIdentity.getUid())
                                 == PERMISSION_GRANTED;
@@ -1008,7 +1008,7 @@ public class LocationProviderManager extends
 
             // note app ops
             int op =
-                    Flags.enableLocationBypass() && isOnlyBypassPermitted()
+                    isOnlyBypassPermitted()
                             ? AppOpsManager.OP_EMERGENCY_LOCATION
                             : LocationPermissions.asAppOp(getPermissionLevel());
             if (!mAppOpsHelper.noteOpNoThrow(op, getIdentity())) {
@@ -1363,7 +1363,7 @@ public class LocationProviderManager extends
             // lastly - note app ops
             if (fineLocationResult != null) {
                 int op =
-                        Flags.enableLocationBypass() && isOnlyBypassPermitted()
+                        isOnlyBypassPermitted()
                                 ? AppOpsManager.OP_EMERGENCY_LOCATION
                                 : LocationPermissions.asAppOp(getPermissionLevel());
                 if (!mAppOpsHelper.noteOpNoThrow(op, getIdentity())) {
@@ -1845,8 +1845,7 @@ public class LocationProviderManager extends
             int op;
             if (Flags.checkBypassPermissionBeforeEmergencyMode()) {
                 op =
-                        (Flags.enableLocationBypass()
-                                        && !mLocationPermissionsHelper.hasLocationPermissions(
+                        (!mLocationPermissionsHelper.hasLocationPermissions(
                                                 permissionLevel, identity)
                                         && mContext.checkPermission(
                                                         LOCATION_BYPASS,
@@ -1858,8 +1857,7 @@ public class LocationProviderManager extends
                                 : LocationPermissions.asAppOp(permissionLevel);
             } else {
                 op =
-                        (Flags.enableLocationBypass()
-                                        && !mLocationPermissionsHelper.hasLocationPermissions(
+                        (!mLocationPermissionsHelper.hasLocationPermissions(
                                                 permissionLevel, identity)
                                         && mEmergencyHelper.isInEmergency(0)
                                         && mContext.checkPermission(
@@ -2171,9 +2169,7 @@ public class LocationProviderManager extends
         mAppForegroundHelper.addListener(mAppForegroundChangedListener);
         mLocationPowerSaveModeHelper.addListener(mLocationPowerSaveModeChangedListener);
         mScreenInteractiveHelper.addListener(mScreenInteractiveChangedListener);
-        if (Flags.enableLocationBypass()) {
-            mEmergencyHelper.addOnEmergencyStateChangedListener(mEmergencyStateChangedListener);
-        }
+        mEmergencyHelper.addOnEmergencyStateChangedListener(mEmergencyStateChangedListener);
         mPackageResetHelper.register(mPackageResetResponder);
     }
 
@@ -2193,9 +2189,7 @@ public class LocationProviderManager extends
         mAppForegroundHelper.removeListener(mAppForegroundChangedListener);
         mLocationPowerSaveModeHelper.removeListener(mLocationPowerSaveModeChangedListener);
         mScreenInteractiveHelper.removeListener(mScreenInteractiveChangedListener);
-        if (Flags.enableLocationBypass()) {
-            mEmergencyHelper.removeOnEmergencyStateChangedListener(mEmergencyStateChangedListener);
-        }
+        mEmergencyHelper.removeOnEmergencyStateChangedListener(mEmergencyStateChangedListener);
         mPackageResetHelper.unregister(mPackageResetResponder);
     }
 

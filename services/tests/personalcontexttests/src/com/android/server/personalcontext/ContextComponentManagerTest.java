@@ -26,15 +26,20 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.Manifest;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.service.personalcontext.Flags;
+import android.service.personalcontext.PersonalContextManager;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -62,16 +67,20 @@ public class ContextComponentManagerTest {
     @Mock
     private AccessController mAccessController;
 
+
+    private OperatingModeProvider mOperatingModeProvider = new OperatingModeProvider();
+
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
+        mOperatingModeProvider.setMode(PersonalContextManager.OPERATING_MODE_DEFAULT);
     }
 
     @Test
     @DisableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
     public void testRegistrationEmptyAtStart() {
         final ContextComponentManager manager = new ContextComponentManager(mock(Context.class),
-                mock(UserHandle.class), mAccessController);
+                mock(UserHandle.class), mOperatingModeProvider, mAccessController);
 
         assertThat(manager.getRefiners()).isEmpty();
         assertThat(manager.getRenderers()).isEmpty();
@@ -84,7 +93,7 @@ public class ContextComponentManagerTest {
         when(refiner.getComponentId()).thenReturn(UUID.randomUUID());
 
         final ContextComponentManager manager = new ContextComponentManager(mock(Context.class),
-                mock(UserHandle.class), mAccessController);
+                mock(UserHandle.class), mOperatingModeProvider, mAccessController);
         manager.register(refiner);
 
         assertThat(manager.getRefiners()).containsExactly(refiner);
@@ -97,7 +106,7 @@ public class ContextComponentManagerTest {
         when(renderer.getComponentId()).thenReturn(UUID.randomUUID());
 
         final ContextComponentManager manager = new ContextComponentManager(mock(Context.class),
-                mock(UserHandle.class), mAccessController);
+                mock(UserHandle.class), mOperatingModeProvider, mAccessController);
         manager.register(renderer);
 
         assertThat(manager.getRenderers()).containsExactly(renderer);
@@ -118,7 +127,7 @@ public class ContextComponentManagerTest {
                 .thenReturn(true);
 
         final ContextComponentManager manager = new ContextComponentManager(mock(Context.class),
-                userHandle, mAccessController);
+                userHandle, mOperatingModeProvider, mAccessController);
         manager.register(nonMatchingRenderer);
         manager.register(matchingRenderer);
 
@@ -136,7 +145,7 @@ public class ContextComponentManagerTest {
 
         when(context.getPackageManager()).thenReturn(pm);
 
-        new ContextComponentManager(context, userHandle, mAccessController)
+        new ContextComponentManager(context, userHandle, mOperatingModeProvider, mAccessController)
                 .registerComponentsForAllPackages();
 
         final ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
@@ -155,7 +164,7 @@ public class ContextComponentManagerTest {
 
         when(context.getPackageManager()).thenReturn(pm);
 
-        new ContextComponentManager(context, userHandle, mAccessController)
+        new ContextComponentManager(context, userHandle, mOperatingModeProvider, mAccessController)
                 .registerComponentsForPackage(packageName);
 
         final ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
@@ -165,7 +174,7 @@ public class ContextComponentManagerTest {
     }
 
     @Test
-    public void testRegisterPackageComponentsIntentWithAccessControl() {
+    public void testRegisterNonTestComponentsInTestMode() {
         final String packageName = "com.whatever";
         final Context context = mock(Context.class);
         final PackageManager pm = mock(PackageManager.class);
@@ -174,29 +183,95 @@ public class ContextComponentManagerTest {
         resolve.serviceInfo = new ServiceInfo();
         resolve.serviceInfo.packageName = packageName;
         resolve.serviceInfo.name = "WhateverService";
+        resolve.serviceInfo.applicationInfo = new ApplicationInfo();
 
         when(context.getPackageManager()).thenReturn(pm);
+        when(context.getSystemService(eq(NotificationManager.class)))
+                .thenReturn(mock(NotificationManager.class));
+        when(pm.queryIntentServices(any(), anyInt())).thenReturn(List.of(resolve));
+
+        final OperatingModeProvider operatingModeProvider = new OperatingModeProvider();
+        operatingModeProvider.setMode(PersonalContextManager.OPERATING_MODE_TEST);
+
+        final ContextComponentManager manager = new ContextComponentManager(context, userHandle,
+                operatingModeProvider, mAccessController);
+        manager.registerComponentsForAllPackages();
+
+        // Nothing should be registered as the test attribute should be missing.
+        assertThat(manager.getRefiners()).isEmpty();
+        assertThat(manager.getRenderers()).isEmpty();
+    }
+
+    @Test
+    public void testRegisterTestComponentsInTestMode() {
+        final String packageName = "com.whatever";
+        final Context context = mock(Context.class);
+        final PackageManager pm = mock(PackageManager.class);
+        final UserHandle userHandle = mock(UserHandle.class);
+        final ResolveInfo resolve = new ResolveInfo();
+        resolve.serviceInfo = new ServiceInfo();
+        resolve.serviceInfo.packageName = packageName;
+        resolve.serviceInfo.name = "WhateverService";
+        resolve.serviceInfo.applicationInfo = new ApplicationInfo();
+        resolve.serviceInfo.applicationInfo.flags |= ApplicationInfo.FLAG_TEST_ONLY;
+        resolve.serviceInfo.permission = Manifest.permission.BIND_CONTEXT_COMPONENT_SERVICE;
+
+        when(context.getPackageManager()).thenReturn(pm);
+        when(context.getSystemService(eq(NotificationManager.class)))
+                .thenReturn(mock(NotificationManager.class));
+        when(pm.queryIntentServices(any(), anyInt())).thenReturn(List.of(resolve));
+
+        when(mAccessController.isServiceAllowed(eq(resolve.serviceInfo), anyInt()))
+                .thenReturn(true);
+
+        final OperatingModeProvider operatingModeProvider = new OperatingModeProvider();
+        operatingModeProvider.setMode(PersonalContextManager.OPERATING_MODE_TEST);
+
+        final ContextComponentManager manager = new ContextComponentManager(context, userHandle,
+                operatingModeProvider, mAccessController);
+        manager.registerComponentsForAllPackages();
+
+        // The above code reports the same service for all requested service types. Because
+        // understanders are modeled as refiners this looks like 2 refiners, but 1 of all others.
+        assertThat(manager.getRefiners().size()).isEqualTo(2);
+        assertThat(manager.getRenderers().size()).isEqualTo(1);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
+    @DisableFlags({Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS,
+            Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PCC_ACCESS_CONTROL })
+    public void testRegisterPackageComponentsIntentWithAccessControl() {
+        final String packageName = "com.whatever";
+        final Context context = mock(Context.class);
+        final PackageManager pm = mock(PackageManager.class);
+        final NotificationManager notificationManager = mock(NotificationManager.class);
+        final UserHandle userHandle = mock(UserHandle.class);
+        final ResolveInfo resolve = new ResolveInfo();
+        resolve.serviceInfo = new ServiceInfo();
+        resolve.serviceInfo.packageName = packageName;
+        resolve.serviceInfo.name = "WhateverService";
+
+        when(context.getPackageManager()).thenReturn(pm);
+        when(context.getSystemService(NotificationManager.class)).thenReturn(notificationManager);
         when(pm.queryIntentServices(any(), anyInt())).thenReturn(List.of(resolve));
 
         final ContextComponentManager manager = new ContextComponentManager(context, userHandle,
-                mAccessController);
+                mOperatingModeProvider, mAccessController);
         manager.registerComponentsForAllPackages();
 
         assertThat(manager.getRefiners()).isEmpty();
         assertThat(manager.getRenderers()).isEmpty();
 
         when(mAccessController.isServiceAllowed(eq(resolve.serviceInfo), eq(
-                AccessController.ACCESS_PCC
-                        | AccessController.ACCESS_RECEIVE_HINTS_ALLOWLIST
-                        | AccessController.ACCESS_RECEIVE_HINTS_PERMISSION)))
+                        AccessController.ACCESS_RECEIVE_HINTS_ALLOWLIST
+                        | AccessController.ACCESS_BIND_CONTEXT_PERMISSION)))
                 .thenReturn(true);
 
         when(mAccessController.isServiceAllowed(eq(resolve.serviceInfo), eq(
-                AccessController.ACCESS_PCC
-                        | AccessController.ACCESS_RECEIVE_HINTS_ALLOWLIST
-                        | AccessController.ACCESS_RECEIVE_HINTS_PERMISSION
+                        AccessController.ACCESS_RECEIVE_HINTS_ALLOWLIST
                         | AccessController.ACCESS_PUBLISH_INSIGHTS_ALLOWLIST
-                        | AccessController.ACCESS_PUBLISH_INSIGHTS_PERMISSION)))
+                        | AccessController.ACCESS_BIND_CONTEXT_PERMISSION)))
                 .thenReturn(true);
 
         when(mAccessController.isClientAllowed(any(), anyInt())).thenReturn(false);
@@ -207,7 +282,7 @@ public class ContextComponentManagerTest {
 
         when(mAccessController.isServiceAllowed(eq(resolve.serviceInfo), eq(
                 AccessController.ACCESS_RECEIVE_INSIGHTS_ALLOWLIST
-                        | AccessController.ACCESS_RECEIVE_INSIGHTS_PERMISSION)))
+                        | AccessController.ACCESS_BIND_CONTEXT_PERMISSION)))
                 .thenReturn(true);
 
         manager.registerComponentsForAllPackages();

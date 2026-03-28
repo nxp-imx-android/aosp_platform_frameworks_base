@@ -53,6 +53,7 @@ data class GeneratedValue<T>(
 inline fun <reified T : Any> GeneratedType(
     @StringRes description: Int,
     unit: String? = null,
+    key: String? = null,
     noinline lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<T>>
 ): GeneratedType<T> {
     val externalType = when (T::class) {
@@ -61,12 +62,13 @@ inline fun <reified T : Any> GeneratedType(
         Boolean::class -> EType.Boolean
         else -> error("Unsupported external type.")
     } as EType<T>
-    return GeneratedType(externalType, descriptionRes = description, description = null, unit = unit, lambda = lambda)
+    return GeneratedType(externalType, descriptionRes = description, description = null, unit = unit, key = key, lambda = lambda)
 }
 
 inline fun <reified T : Any> GeneratedType(
         description: String,
         unit: String? = null,
+        key: String? = null,
     noinline lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<T>>
 ): GeneratedType<T> {
     val externalType = when (T::class) {
@@ -75,20 +77,22 @@ inline fun <reified T : Any> GeneratedType(
         Boolean::class -> EType.Boolean
         else -> error("Unsupported external type.")
     } as EType<T>
-    return GeneratedType(externalType, descriptionRes = null, description = description, unit = unit, lambda = lambda)
+    return GeneratedType(externalType, descriptionRes = null, description = description, unit = unit, key = key, lambda = lambda)
 }
 
 inline fun GeneratedParameterType(
     @StringRes description: Int,
     unit: String? = null,
+    key: String? = null,
     noinline lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<String>>
-): GeneratedType<String> = GeneratedType(EType.String, descriptionRes = description, description = null, unit = unit, lambda = lambda)
+): GeneratedType<String> = GeneratedType(EType.String, descriptionRes = description, description = null, unit = unit, key = key, lambda = lambda)
 
 inline fun GeneratedParameterType(
         description: String,
         unit: String? = null,
+        key: String? = null,
     noinline lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<String>>
-): GeneratedType<String> = GeneratedType(EType.String, descriptionRes = null, description = description, unit = unit, lambda = lambda)
+): GeneratedType<String> = GeneratedType(EType.String, descriptionRes = null, description = description, unit = unit, key = key, lambda = lambda)
 
 
 /**
@@ -103,6 +107,7 @@ class GeneratedType<ExternalType : Any> constructor(
     val description: String?,
     private val lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<ExternalType>>,
     private val unit: String? = null,
+    private val key: String? = null,
 ) : DirectFiniteOptionsType<ExternalType> {
     init {
         require(descriptionRes != null || description != null)
@@ -124,5 +129,5 @@ class GeneratedType<ExternalType : Any> constructor(
         it.value to it.description
     }
 
-    override fun getKey(): String = "GeneratedType:${descriptionRes ?: description?.hashCode() ?: 0}"
+    override fun getKey(): String = key ?: "GeneratedType:${descriptionRes ?: description?.hashCode() ?: 0}"
 }

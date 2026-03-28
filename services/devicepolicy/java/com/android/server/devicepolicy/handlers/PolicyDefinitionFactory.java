@@ -176,8 +176,8 @@ public class PolicyDefinitionFactory {
         addFactory(
                 PolicyIdentifier.CONTENT_RESTRICTION_APPS,
                 builder -> {
-                    return builder.setResolutionMechanism(ListUnion.PACKAGE)
-                            .setEnforcerCallback(PolicyEnforcerCallbacks::setContentRestrictionApps)
+                    return builder.setEnforcerCallback(
+                                    PolicyEnforcerCallbacks::setContentRestrictionApps)
                             .build();
                 });
         addFactory(

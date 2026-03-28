@@ -29,18 +29,21 @@ import java.nio.charset.StandardCharsets;
 /** Data class for an audit log entry. */
 @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
 class AuditLogEntry {
-    final long mTimestamp;
+    final long mRealTimeNanos;
+    final long mCurrentTimeMillis;
     final String mCallingPackage;
     final int mCallingUid;
     final PersistableBundle mData;
 
     AuditLogEntry(
             PersistableBundle data,
-            long timestamp,
+            long realTimeNanos,
+            long currentTimeMillis,
             @NonNull String callingPackage,
             int callingUid) {
         mData = data;
-        mTimestamp = timestamp;
+        mRealTimeNanos = realTimeNanos;
+        mCurrentTimeMillis = currentTimeMillis;
         mCallingPackage = callingPackage;
         mCallingUid = callingUid;
     }
@@ -59,18 +62,21 @@ class AuditLogEntry {
      *   <li>The format version as an int. Only version 0 is supported at the moment.
      *   <li>For each AuditLogEntry:
      *       <ul>
-     *         <li>The elapsed milliseconds since boot when the audit log entry was submitted, as a
+     *         <li>The elapsed nanoseconds since boot when the audit log entry was submitted, as a
+     *             long.
+     *         <li>The current time in milliseconds when the audit log entry was submitted, as a
      *             long.
      *         <li>The calling UID as an int.
      *         <li>The calling package as a byte array, prepended by its size.
-     *         <li>Te PersistableBundle to a byte array, prepended by its size.
+     *         <li>The PersistableBundle to a byte array, prepended by its size.
      *       </ul>
      * </ul>
      */
     public byte[] toByteArray() throws IOException {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         DataOutputStream stream = new DataOutputStream(output);
-        stream.writeLong(mTimestamp);
+        stream.writeLong(mRealTimeNanos);
+        stream.writeLong(mCurrentTimeMillis);
         stream.writeInt(mCallingUid);
 
         // Write the calling package to a byte array to know its length.
@@ -91,7 +97,8 @@ class AuditLogEntry {
     }
 
     static AuditLogEntry readFromStream(DataInputStream input) throws IOException {
-        long timestamp = input.readLong();
+        long realTimeNanos = input.readLong();
+        long currentTimeMillis = input.readLong();
         int uid = input.readInt();
         int pkgLen = input.readInt();
         byte[] pkgBytes = new byte[pkgLen];
@@ -104,6 +111,6 @@ class AuditLogEntry {
         PersistableBundle bundle =
                 PersistableBundle.readFromStream(new ByteArrayInputStream(bundleBytes));
 
-        return new AuditLogEntry(bundle, timestamp, pkg, uid);
+        return new AuditLogEntry(bundle, realTimeNanos, currentTimeMillis, pkg, uid);
     }
 }

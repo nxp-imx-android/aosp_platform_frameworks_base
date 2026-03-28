@@ -168,14 +168,15 @@ public class AppCompatCameraStateStrategyForTaskTests extends WindowTestsBase {
             super(windowTestsBase);
             setupAppCompatConfiguration();
             configureActivityAndDisplay();
-        }
-
-        @Override
-        void onPostDisplayContentCreation(@NonNull DisplayContent displayContent) {
-            super.onPostDisplayContentCreation(displayContent);
             mRegisteredPolicies = new ArraySet<>();
             mFakePolicyCannotCloseOnce = new FakeAppCompatCameraStatePolicy(true);
             mFakePolicyCanClose = new FakeAppCompatCameraStatePolicy(false);
+        }
+
+        @Override
+        void applyOnConf(@NonNull Consumer<AppCompatConfigurationRobot> consumer) {
+            super.applyOnConf(consumer);
+            reInitCameraPolicy();
         }
 
         private void configureActivityAndDisplay() {
@@ -185,9 +186,12 @@ public class AppCompatCameraStateStrategyForTaskTests extends WindowTestsBase {
         }
 
         private void setupAppCompatConfiguration() {
+            // This is to make sure other camera compat classes - like camera monitor - are created.
+            // Fake policies are used in this test.
             applyOnConf((c) -> {
                 c.enableCameraCompatForceRotateTreatment(true);
                 c.enableCameraCompatSimReqOrientationTreatment(true);
+                dw().allowEnterDesktopMode(true);
             });
         }
 
@@ -284,7 +288,7 @@ public class AppCompatCameraStateStrategyForTaskTests extends WindowTestsBase {
         }
 
         private CameraStateMonitor getCameraStateMonitor() {
-            return activity().top().mDisplayContent.mAppCompatCameraPolicy.mCameraStateMonitor;
+            return testBase().mWm.mAppCompatCameraPolicy.mCameraStateMonitor;
         }
 
         private AppCompatCameraStateStrategyForTask getCameraStateStrategy() {

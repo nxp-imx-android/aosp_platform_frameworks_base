@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.pipeline.shared.ui.composable
 
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.view.flags.Flags as ViewFlags
 import android.widget.FrameLayout
@@ -33,7 +34,6 @@ import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.clock.ui.viewmodel.clockViewModelFactory
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.plugins.fakeDarkIconDispatcher
 import com.android.systemui.scene.ui.view.mockShadeRootView
 import com.android.systemui.statusbar.events.domain.interactor.systemStatusEventAnimationInteractor
@@ -41,10 +41,10 @@ import com.android.systemui.statusbar.notification.icon.ui.viewbinder.connectedD
 import com.android.systemui.statusbar.phone.ui.DarkIconManager
 import com.android.systemui.statusbar.phone.ui.TintedIconManager
 import com.android.systemui.statusbar.phone.ui.statusBarIconController
+import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinder
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.defaultDisplayHomeStatusBarViewModelFactory
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.displayAwareHeadlineViewModelImplFactory
-import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.homeStatusBarViewModel
 import com.android.systemui.statusbar.ui.viewmodel.statusBarRegionSamplingViewModelFactory
 import com.android.systemui.testKosmosNew
 import com.android.wm.shell.scrolltotop.fakeScrollToTop
@@ -59,13 +59,13 @@ import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@DisableFlags(StatusBarMobileIconKairos.FLAG_NAME)
 class StatusBarRootTest : SysuiTestCase() {
 
     @get:Rule val composeTestRule = createComposeRule()
 
     private val kosmos = testKosmosNew()
     private val testScope = kosmos.testScope
-    private val viewModel by lazy { kosmos.homeStatusBarViewModel }
 
     private val darkIconManagerFactory = mock<DarkIconManager.Factory>()
     private val tintedIconManagerFactory = mock<TintedIconManager.Factory>()
@@ -73,7 +73,6 @@ class StatusBarRootTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
-        viewModel.activateIn(testScope)
         whenever(darkIconManagerFactory.create(any(), any(), any())).thenReturn(mock())
         whenever(tintedIconManagerFactory.create(any(), any())).thenReturn(mock())
     }

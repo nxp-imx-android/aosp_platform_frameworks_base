@@ -234,27 +234,34 @@ class AppCompatActivityRobot {
     }
 
     void enableFullscreenCameraCompatTreatmentForTopActivity(boolean enabled) {
-        if (mDisplayContent.mAppCompatCameraPolicy.hasDisplayRotationPolicy()) {
-            doReturn(enabled).when(
-                    mDisplayContent.mAppCompatCameraPolicy.mDisplayRotationPolicy)
-                        .isTreatmentEnabledForActivity(eq(mActivityStack.top()));
+        final AppCompatCameraPolicy cameraPolicy = mDisplayContent.mWmService
+                .mAppCompatCameraPolicy;
+        if (cameraPolicy.hasDisplayRotationPolicy()) {
+            doReturn(enabled).when(cameraPolicy.mDisplayRotationPolicy)
+                    .isTreatmentEnabledForActivity(eq(mActivityStack.top()));
         }
     }
 
     void setIsCameraRunningAndWindowingModeEligibleFullscreen(boolean enabled) {
-        doReturn(enabled).when(getTopDisplayRotationCompatPolicy())
+        final AppCompatCameraDisplayRotationPolicy policy = getTopDisplayRotationCompatPolicy();
+        doReturn(enabled).when(policy)
                 .isCameraRunningAndWindowingModeEligible(eq(mActivityStack.top()),
                         /* mustBeFullscreen= */ eq(true));
     }
 
     void setIsCameraRunningAndWindowingModeEligibleFreeform(boolean enabled) {
-        doReturn(enabled).when(getTopCameraCompatSimReqOrientationPolicy())
-                .isCameraRunningAndWindowingModeEligible(eq(mActivityStack.top()));
+        final AppCompatCameraSimReqOrientationPolicy policy =
+                getTopCameraCompatSimReqOrientationPolicy();
+        doReturn(enabled).when(policy).isCameraRunningAndWindowingModeEligible(
+                eq(mActivityStack.top()));
     }
 
     void setTopActivityEligibleForOrientationOverride(boolean enabled) {
-        doReturn(enabled).when(getTopDisplayRotationCompatPolicy())
-                .isActivityEligibleForOrientationOverride(eq(mActivityStack.top()));
+        final AppCompatCameraDisplayRotationPolicy policy = getTopDisplayRotationCompatPolicy();
+        if (policy != null) {
+            doReturn(enabled).when(policy).isActivityEligibleForOrientationOverride(
+                    eq(mActivityStack.top()));
+        }
     }
 
     void setTopActivityInTransition(boolean inTransition) {
@@ -706,12 +713,11 @@ class AppCompatActivityRobot {
     }
 
     private AppCompatCameraDisplayRotationPolicy getTopDisplayRotationCompatPolicy() {
-        return mActivityStack.top().mDisplayContent.mAppCompatCameraPolicy
-                .mDisplayRotationPolicy;
+        return mActivityStack.top().mWmService.mAppCompatCameraPolicy.mDisplayRotationPolicy;
     }
 
     private AppCompatCameraSimReqOrientationPolicy getTopCameraCompatSimReqOrientationPolicy() {
-        return mActivityStack.top().mDisplayContent.mAppCompatCameraPolicy.mSimReqOrientationPolicy;
+        return mActivityStack.top().mWmService.mAppCompatCameraPolicy.mSimReqOrientationPolicy;
     }
 
     // We add the activity to the stack and spyOn() on its properties.

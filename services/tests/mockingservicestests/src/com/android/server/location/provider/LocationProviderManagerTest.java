@@ -71,7 +71,6 @@ import android.location.LocationManagerInternal;
 import android.location.LocationManagerInternal.ProviderEnabledListener;
 import android.location.LocationRequest;
 import android.location.LocationResult;
-import android.location.flags.Flags;
 import android.location.provider.IProviderRequestListener;
 import android.location.provider.IS2LevelCallback;
 import android.location.provider.ProviderProperties;
@@ -87,7 +86,6 @@ import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.WorkSource;
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.DeviceConfig;
 import android.provider.Settings;
 import android.util.Log;
@@ -150,9 +148,6 @@ public class LocationProviderManagerTest {
             "mypackage", "attribution", "listener");
     private static final WorkSource WORK_SOURCE = new WorkSource(IDENTITY.getUid());
     private static final String MISSING_PERMISSION = "missing_permission";
-
-    @Rule
-    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     private Random mRandom;
 
@@ -1178,8 +1173,6 @@ public class LocationProviderManagerTest {
 
     @Test
     public void testProviderRequest_IgnoreLocationSettings_LocationBypass() {
-        mSetFlagsRule.enableFlags(Flags.FLAG_ENABLE_LOCATION_BYPASS);
-
         doReturn(PackageManager.PERMISSION_GRANTED)
                 .when(mContext)
                 .checkPermission(LOCATION_BYPASS, IDENTITY.getPid(), IDENTITY.getUid());
@@ -1205,8 +1198,6 @@ public class LocationProviderManagerTest {
 
     @Test
     public void testProviderRequest_IgnoreLocationSettings_LocationBypass_EmergencyCall() {
-        mSetFlagsRule.enableFlags(Flags.FLAG_ENABLE_LOCATION_BYPASS);
-
         doReturn(PackageManager.PERMISSION_GRANTED)
                 .when(mContext)
                 .checkPermission(LOCATION_BYPASS, IDENTITY.getPid(), IDENTITY.getUid());

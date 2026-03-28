@@ -358,7 +358,7 @@ public final class PolicyIdentifier<T> {
                                             managedProfileOwnerOfOrganizationOwnedDevice = ALLOWED,
                                             managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
                                             unaffiliatedFullUserProfileOwner = DISALLOWED)),
-            resolutionMechanism = @ListResolutionMechanism(custom = true))
+            resolutionMechanism = @ListResolutionMechanism(union = true))
     public static final PolicyIdentifier<List<String>> CONTENT_RESTRICTION_APPS =
             new PolicyIdentifier<>("CONTENT_RESTRICTION_APPS");
 

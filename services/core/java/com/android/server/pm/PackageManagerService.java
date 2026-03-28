@@ -3225,7 +3225,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         } else {
             // We set timeout for shared-uid with running siblings to 3 seconds
             SharedUidProcessStatus sharedUidStatus = SharedUidProcessStatus.from(snapshotComputer(),
-                    ActivityManager.getService(), userId, appId, pkgName);
+                    ActivityManager.getService(), appId, pkgName);
             int timeoutMs = (sharedUidStatus != null && sharedUidStatus.siblingsRunning)
                     ? STOP_AND_KILL_APP_SHARED_USER_TIMEOUT_MS
                     : STOP_AND_KILL_APP_TIMEOUT_MS;
@@ -3250,7 +3250,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 }
 
                 if (!blocker.waitAppProcessGone(ami, snapshotComputer(), mUserManager, pkgName)) {
-                    Slog.w(TAG, "Timeout reached waiting for " + pkgName
+                    Slog.w(TAG, "Timeout " + timeoutMs + "ms reached waiting for " + pkgName
                             + " to be gone. Force killing now.");
                     killApplication(pkgName, appId, userId, reason + " (force-kill)",
                             exitInfoReason);
@@ -3279,11 +3279,12 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
          */
         @Nullable
         static SharedUidProcessStatus from(Computer snapshot, IActivityManager am,
-                @UserIdInt int userId, @AppIdInt int appId, String pkgName) {
-            final int checkUserId = userId == USER_ALL ? UserHandle.USER_SYSTEM : userId;
-            final int uid = UserHandle.getUid(checkUserId, appId);
-            String[] packages = snapshot.getPackagesForUid(uid);
-            if (packages == null || packages.length <= 1) {
+                @AppIdInt int appId, String pkgName) {
+
+            // Check if this app is using shared-userId or not
+            Pair<PackageStateInternal, SharedUserApi> sharedUser =
+                    snapshot.getPackageOrSharedUser(appId);
+            if (sharedUser == null || sharedUser.second == null) {
                 return null;
             }
 
@@ -3297,7 +3298,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                     final int size = runningProcesses.size();
                     for (int i = 0; i < size; i++) {
                         ActivityManager.RunningAppProcessInfo info = runningProcesses.get(i);
-                        if (info.uid == uid && info.pkgList != null) {
+                        if (UserHandle.getAppId(info.uid) == appId && info.pkgList != null) {
                             for (String runningPkg : info.pkgList) {
                                 if (pkgName.equals(runningPkg)) {
                                     targetAppRunning = true;

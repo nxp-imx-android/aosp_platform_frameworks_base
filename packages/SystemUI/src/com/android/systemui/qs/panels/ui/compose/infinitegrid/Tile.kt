@@ -78,6 +78,7 @@ import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.mechanics.compose.modifier.verticalFadeContentReveal
 import com.android.mechanics.compose.modifier.verticalTactileSurfaceReveal
 import com.android.mechanics.effects.VerticalTactileSurfaceRevealEffect
+import com.android.systemui.Flags
 import com.android.systemui.animation.Expandable
 import com.android.systemui.animation.TransitionAnimator.Companion.dynamicTargetResolutionEnabled
 import com.android.systemui.common.shared.model.Icon
@@ -86,6 +87,7 @@ import com.android.systemui.haptics.msdl.qs.TileHapticsViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.qs.flags.QsDetailedView
 import com.android.systemui.qs.panels.ui.compose.BounceableInfo
+import com.android.systemui.qs.panels.ui.compose.Tooltip
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.ActiveIconCornerRadius
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.ActiveTileCornerRadius
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.InactiveIconCornerRadius
@@ -211,129 +213,140 @@ fun ContentScope.Tile(
         val expandable =
             if (dynamicTargetResolutionEnabled()) tile.expandable
             else remember { Expandable(mutableSetOf()) }
-
-        TileExpandable(
-            expandable = expandable,
-            color = { animatedColor },
-            shape = tileShape,
-            squishiness = squishiness,
-            hapticsViewModel = hapticsViewModel,
-            modifier =
-                modifier
-                    .then(surfaceRevealModifier)
-                    .borderOnFocus(color = MaterialTheme.colorScheme.secondary, tileShape.topEnd)
-                    .sysuiResTag("tile_expandable")
-                    .fillMaxWidth()
-                    .bounceable(
-                        currentBounceableInfo.bounceable,
-                        currentBounceableInfo.previousTile,
-                        currentBounceableInfo.nextTile,
-                        orientation = Orientation.Horizontal,
-                        bounceEnd = currentBounceableInfo.bounceEnd,
-                        interactionSource = interactionSource,
-                    ),
-        ) { expandable ->
-            // Use main click on long press for small, available dual target tiles.
-            // Open settings otherwise.
-            val useLongClickToSettings = !(iconOnly && isDualTarget && isClickable)
-            val longClick: (() -> Unit)? =
-                {
-                        hapticsViewModel.setTileInteractionState(
-                            TileHapticsViewModel.TileInteractionState.LONG_CLICKED
+        Tooltip(
+            text = uiState.label,
+            modifier = modifier,
+            enabled = Flags.enableQsTileTooltips(),
+        ) { modifier ->
+            TileExpandable(
+                expandable = expandable,
+                color = { animatedColor },
+                shape = tileShape,
+                squishiness = squishiness,
+                hapticsViewModel = hapticsViewModel,
+                modifier =
+                    modifier
+                        .then(surfaceRevealModifier)
+                        .borderOnFocus(
+                            color = MaterialTheme.colorScheme.secondary,
+                            tileShape.topEnd,
                         )
+                        .sysuiResTag("tile_expandable")
+                        .fillMaxWidth()
+                        .bounceable(
+                            currentBounceableInfo.bounceable,
+                            currentBounceableInfo.previousTile,
+                            currentBounceableInfo.nextTile,
+                            orientation = Orientation.Horizontal,
+                            bounceEnd = currentBounceableInfo.bounceEnd,
+                            interactionSource = interactionSource,
+                        ),
+            ) { expandable ->
+                // Use main click on long press for small, available dual target tiles.
+                // Open settings otherwise.
+                val useLongClickToSettings = !(iconOnly && isDualTarget && isClickable)
+                val longClick: (() -> Unit)? =
+                    {
+                            hapticsViewModel.setTileInteractionState(
+                                TileHapticsViewModel.TileInteractionState.LONG_CLICKED
+                            )
 
-                        if (useLongClickToSettings) {
-                            tile.settingsClick(expandable)
-                        } else {
-                            val hasDetails =
-                                QsDetailedView.isEnabled &&
-                                    detailsViewModel?.onTileClicked(tile.spec) == true
-                            if (!hasDetails) {
+                            if (useLongClickToSettings) {
+                                tile.settingsClick(expandable)
+                            } else {
+                                val hasDetails =
+                                    QsDetailedView.isEnabled &&
+                                        detailsViewModel?.onTileClicked(tile.spec) == true
+                                if (!hasDetails) {
+                                    tile.mainClick(expandable)
+                                }
+                            }
+                        }
+                        .takeIf { !useLongClickToSettings || uiState.handlesSettingsClick }
+
+                // Bounce the tile's container if it is toggleable and is not a large
+                // dual target tile. These don't toggle on main click.
+                val bounceContainer = uiState.isToggleable && (iconOnly || !isDualTarget)
+                TileContainer(
+                    interactionSource = interactionSource.takeIf { bounceContainer },
+                    onClick = onClick@{
+                            if (!isClickable) return@onClick
+
+                            if (iconOnly && isDualTarget) {
+                                tile.toggleClick()
+                            } else {
+                                val hasDetails =
+                                    QsDetailedView.isEnabled &&
+                                        detailsViewModel?.onTileClicked(tile.spec) == true
+                                if (hasDetails) return@onClick
+
+                                // For those tile's who doesn't have a detailed view, process with
+                                // their `onClick` behavior.
                                 tile.mainClick(expandable)
                             }
-                        }
-                    }
-                    .takeIf { !useLongClickToSettings || uiState.handlesSettingsClick }
 
-            // Bounce the tile's container if it is toggleable and is not a large
-            // dual target tile. These don't toggle on main click.
-            val bounceContainer = uiState.isToggleable && (iconOnly || !isDualTarget)
-            TileContainer(
-                interactionSource = interactionSource.takeIf { bounceContainer },
-                onClick = onClick@{
-                        if (!isClickable) return@onClick
+                            // Side effects of the click
+                            hapticsViewModel.setTileInteractionState(
+                                TileHapticsViewModel.TileInteractionState.CLICKED
+                            )
 
-                        if (iconOnly && isDualTarget) {
-                            tile.toggleClick()
-                        } else {
-                            val hasDetails =
-                                QsDetailedView.isEnabled &&
-                                    detailsViewModel?.onTileClicked(tile.spec) == true
-                            if (hasDetails) return@onClick
-
-                            // For those tile's who doesn't have a detailed view, process with
-                            // their `onClick` behavior.
-                            tile.mainClick(expandable)
-                        }
-
-                        // Side effects of the click
-                        hapticsViewModel.setTileInteractionState(
-                            TileHapticsViewModel.TileInteractionState.CLICKED
+                            coroutineScope.launch {
+                                // Bounce the content of the tile if we're not animating the
+                                // container.
+                                if (!bounceContainer) {
+                                    currentBounceableInfo.bounceable.animateContentBounce(iconOnly)
+                                }
+                            }
+                            if (uiState.isToggleable && iconOnly) {
+                                // And show footer text feedback for icons
+                                requestToggleTextFeedback(tile.spec)
+                            }
+                        },
+                    onLongClick = longClick,
+                    accessibilityUiState = uiState.accessibilityUiState,
+                    iconOnly = iconOnly,
+                    isDualTarget = isDualTarget,
+                    modifier = contentRevealModifier,
+                ) {
+                    val iconProvider: Context.() -> Icon = { getTileIcon(icon = icon) }
+                    if (iconOnly) {
+                        SmallTileContent(
+                            iconProvider = iconProvider,
+                            color = colors.icon,
+                            modifier =
+                                Modifier.align(Alignment.Center).bounceScale {
+                                    currentBounceableInfo.bounceable.iconBounceScale
+                                },
                         )
-
-                        coroutineScope.launch {
-                            // Bounce the content of the tile if we're not animating the container.
-                            if (!bounceContainer) {
-                                currentBounceableInfo.bounceable.animateContentBounce(iconOnly)
-                            }
-                        }
-                        if (uiState.isToggleable && iconOnly) {
-                            // And show footer text feedback for icons
-                            requestToggleTextFeedback(tile.spec)
-                        }
-                    },
-                onLongClick = longClick,
-                accessibilityUiState = uiState.accessibilityUiState,
-                iconOnly = iconOnly,
-                isDualTarget = isDualTarget,
-                modifier = contentRevealModifier,
-            ) {
-                val iconProvider: Context.() -> Icon = { getTileIcon(icon = icon) }
-                if (iconOnly) {
-                    SmallTileContent(
-                        iconProvider = iconProvider,
-                        color = colors.icon,
-                        modifier =
-                            Modifier.align(Alignment.Center).bounceScale {
-                                currentBounceableInfo.bounceable.iconBounceScale
-                            },
-                    )
-                } else {
-                    val iconShape by TileDefaults.animateIconShapeAsState(uiState)
-                    val secondaryClick: (() -> Unit)? =
-                        {
-                                hapticsViewModel.setTileInteractionState(
-                                    TileHapticsViewModel.TileInteractionState.CLICKED
-                                )
-                                tile.toggleClick()
-                            }
-                            .takeIf { isDualTarget }
-                    LargeTileContent(
-                        label = uiState.label,
-                        secondaryLabel = uiState.secondaryLabel,
-                        iconProvider = iconProvider,
-                        sideDrawable = uiState.sideDrawable,
-                        colors = colors,
-                        iconShape = iconShape,
-                        toggleClick = secondaryClick,
-                        onLongClick = longClick,
-                        accessibilityUiState = uiState.accessibilityUiState,
-                        squishiness = squishiness,
-                        isVisible = isVisible,
-                        textScale = { currentBounceableInfo.bounceable.textBounceScale },
-                        modifier =
-                            Modifier.largeTilePadding(isDualTarget = uiState.handlesSettingsClick),
-                    )
+                    } else {
+                        val iconShape by TileDefaults.animateIconShapeAsState(uiState)
+                        val secondaryClick: (() -> Unit)? =
+                            {
+                                    hapticsViewModel.setTileInteractionState(
+                                        TileHapticsViewModel.TileInteractionState.CLICKED
+                                    )
+                                    tile.toggleClick()
+                                }
+                                .takeIf { isDualTarget }
+                        LargeTileContent(
+                            label = uiState.label,
+                            secondaryLabel = uiState.secondaryLabel,
+                            iconProvider = iconProvider,
+                            sideDrawable = uiState.sideDrawable,
+                            colors = colors,
+                            iconShape = iconShape,
+                            toggleClick = secondaryClick,
+                            onLongClick = longClick,
+                            accessibilityUiState = uiState.accessibilityUiState,
+                            squishiness = squishiness,
+                            isVisible = isVisible,
+                            textScale = { currentBounceableInfo.bounceable.textBounceScale },
+                            modifier =
+                                Modifier.largeTilePadding(
+                                    isDualTarget = uiState.handlesSettingsClick
+                                ),
+                        )
+                    }
                 }
             }
         }

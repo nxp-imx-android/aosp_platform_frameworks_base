@@ -316,11 +316,14 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private boolean mIsWaitingForScreenshotResult = false;
 
     private final Context mDisplayUiContext;
-    @GuardedBy("mInsetsProviderView")
-    private final View mInsetsProviderView;
-    @GuardedBy("mInsetsProviderView")
+    // Access on the UI thread only.
+    @Nullable
+    private View mInsetsProviderView;
+    // Access on the UI thread only.
     @NonNull
     private Insets mAppliedInsets = Insets.NONE;
+    private final WindowManager.LayoutParams mInsetsProviderLayoutParams =
+            createInsetsProviderLayoutParams();
 
     private final InteractiveMirrorImpl.InteractiveMirrorImplCallback mInteractiveMirrorCallback =
             new InteractiveMirrorImpl.InteractiveMirrorImplCallback() {
@@ -337,6 +340,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                                     .setFocusedA11yEmbeddedConnectionReceiverOnDisplay(
                                             mVirtualDisplayId,
                                             firstMirror.getA11yEmbeddedConnectionReceiver());
+                            mVirtualDevice.setDisplayImePolicy(mVirtualDisplayId,
+                                    WindowManager.DISPLAY_IME_POLICY_FALLBACK_DISPLAY);
 
                         } else {
                             // If all mirrors are non-interactive, disable top focus stealing for
@@ -346,6 +351,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                             mWindowManagerInternal
                                     .setFocusedA11yEmbeddedConnectionReceiverOnDisplay(
                                             mVirtualDisplayId, null);
+                            mVirtualDevice.setDisplayImePolicy(mVirtualDisplayId,
+                                    WindowManager.DISPLAY_IME_POLICY_HIDE);
                         }
                     }
                     mStatsController.onMirrorViewInteractive(isInteractive);
@@ -460,7 +467,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     mVirtualDisplayId, /* enable = */true);
             mWindowManagerInternal.setCanStealTopFocusForDisplay(
                     mVirtualDisplayId, /* canStealTopFocus= */ false);
-            mInsetsProviderView = new View(mDisplayUiContext);
 
             mVirtualDevice.setDisplayImePolicy(
                     mVirtualDisplayId, WindowManager.DISPLAY_IME_POLICY_HIDE);
@@ -1351,50 +1357,60 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     // to the virtual display as systemOverlays().
     @android.annotation.UiThread
     private void handleInsetsUpdate(@NonNull Insets insets) {
-        synchronized (mInsetsProviderView) {
-            if (Objects.equals(mAppliedInsets, insets)) {
-                return;
-            }
-
-            Slog.d(TAG,
-                    "handleInsetsUpdate: Updating insets from old: " + mAppliedInsets + ", to new: "
-                            + insets);
-
-            final var wm = mDisplayUiContext.getSystemService(WindowManager.class);
-            if (!Insets.NONE.equals(mAppliedInsets)) {
-                wm.removeView(mInsetsProviderView);
-            }
-            mAppliedInsets = insets;
-            if (!Insets.NONE.equals(mAppliedInsets)) {
-                final var lp = new WindowManager.LayoutParams(
-                        WindowManager.LayoutParams.MATCH_PARENT,
-                        WindowManager.LayoutParams.MATCH_PARENT,
-                        WindowManager.LayoutParams.TYPE_STATUS_BAR,
-                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                                | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-                                | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
-                                | WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
-                        PixelFormat.TRANSPARENT);
-                lp.setTitle("InsetsProviderView");
-                lp.layoutInDisplayCutoutMode =
-                        WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
-                lp.setInsetsParams(
-                        List.of(new WindowManager.InsetsParams(
-                                        WindowInsets.Type.systemOverlays())
-                                        .setInsetsSize(Insets.of(insets.left, 0, 0, 0)),
-                                new WindowManager.InsetsParams(
-                                        WindowInsets.Type.systemOverlays())
-                                        .setInsetsSize(Insets.of(0, insets.top, 0, 0)),
-                                new WindowManager.InsetsParams(
-                                        WindowInsets.Type.systemOverlays())
-                                        .setInsetsSize(Insets.of(0, 0, insets.right, 0)),
-                                new WindowManager.InsetsParams(
-                                        WindowInsets.Type.systemOverlays())
-                                        .setInsetsSize(Insets.of(0, 0, 0, insets.bottom))
-                        ));
-                wm.addView(mInsetsProviderView, lp);
-            }
+        if (Objects.equals(mAppliedInsets, insets)) {
+            return;
         }
+
+        Slog.d(TAG,
+                "handleInsetsUpdate: Updating insets from old: " + mAppliedInsets + ", to new: "
+                        + insets);
+        mAppliedInsets = insets;
+
+        final var wm = mDisplayUiContext.getSystemService(WindowManager.class);
+        if (Insets.NONE.equals(mAppliedInsets)) {
+            if (mInsetsProviderView != null) {
+                wm.removeView(mInsetsProviderView);
+                mInsetsProviderView = null;
+            }
+            return;
+        }
+
+        mInsetsProviderLayoutParams.setInsetsParams(
+                List.of(new WindowManager.InsetsParams(
+                                WindowInsets.Type.systemOverlays())
+                                .setInsetsSize(Insets.of(insets.left, 0, 0, 0)),
+                        new WindowManager.InsetsParams(
+                                WindowInsets.Type.systemOverlays())
+                                .setInsetsSize(Insets.of(0, insets.top, 0, 0)),
+                        new WindowManager.InsetsParams(
+                                WindowInsets.Type.systemOverlays())
+                                .setInsetsSize(Insets.of(0, 0, insets.right, 0)),
+                        new WindowManager.InsetsParams(
+                                WindowInsets.Type.systemOverlays())
+                                .setInsetsSize(Insets.of(0, 0, 0, insets.bottom))
+                ));
+        if (mInsetsProviderView == null) {
+            mInsetsProviderView = new View(mDisplayUiContext);
+            wm.addView(mInsetsProviderView, mInsetsProviderLayoutParams);
+        } else {
+            wm.updateViewLayout(mInsetsProviderView, mInsetsProviderLayoutParams);
+        }
+    }
+
+    private static WindowManager.LayoutParams createInsetsProviderLayoutParams() {
+        final var lp = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.TYPE_STATUS_BAR,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+                        | WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS,
+                PixelFormat.TRANSPARENT);
+        lp.setTitle("InsetsProviderView");
+        lp.layoutInDisplayCutoutMode =
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+        return lp;
     }
 
     private class ComputerControlActivityListener implements VirtualDeviceManager.ActivityListener {

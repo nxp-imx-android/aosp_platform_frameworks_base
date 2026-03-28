@@ -17,7 +17,7 @@ java_defaults {
     ],
 
     srcs: [
-        "test/**/*.java",
+        "src/**/*.java",
     ],
     sdk_version: "test_current",
 }

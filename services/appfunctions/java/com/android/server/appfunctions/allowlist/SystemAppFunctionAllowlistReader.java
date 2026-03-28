@@ -75,8 +75,6 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
 
     private final Object mCacheLock = new Object();
 
-    private final AtomicBoolean mEnable = new AtomicBoolean(false);
-
     @GuardedBy("mCacheLock")
     private final LruCache<SignedPackage, ArraySet<String>> mCache;
 
@@ -107,18 +105,6 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
         mBackgroundExecutor = Objects.requireNonNull(backgroundExecutor);
     }
 
-    // TODO(b/457349791): Remove this once the source is stable to avoid disruption
-    /** Enable allowlist. */
-    public void enableAllowlist() {
-        mEnable.set(true);
-    }
-
-    // TODO(b/457349791): Remove this once the source is stable to avoid disruption
-    /** Disable allowlist. */
-    public void disableAllowlist() {
-        mEnable.set(false);
-    }
-
     /**
      * Purge the cache.
      *
@@ -139,10 +125,6 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
             })
     public CompletableFuture<Boolean> isAllowlisted(
             @NonNull String agentPackageName, @NonNull String targetPackageName, int userId) {
-        if (!mEnable.get()) {
-            return AndroidFuture.completedFuture(true);
-        }
-
         if (agentPackageName.equals(targetPackageName)) {
             // Interaction with the app's own AppFunction is implicitly allowed.
             return AndroidFuture.completedFuture(true);

@@ -82,4 +82,7 @@ interface IPersonalContextManager {
         in InsightSurfaceClientInfo oldClientInfo,
         in InsightSurfaceClientInfo newClientInfo,
         int userId);
+
+    @EnforcePermission("CHANGE_PERSONAL_CONTEXT_OPERATING_MODE")
+    oneway void setOperatingMode(int userId, int mode);
 }

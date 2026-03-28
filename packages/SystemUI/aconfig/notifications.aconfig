@@ -55,11 +55,17 @@ flag {
 }
 
 flag {
+    name: "notification_storage_alerts_channel"
+    namespace: "notifications"
+    description: "Use the high priority ALERTS channel for notification storage alerts."
+    bug: "466401283"
+}
+
+flag {
     name: "notification_summarization_allow_animation"
     namespace: "notifications"
     description: "Animation support for notification summarization icon."
     bug: "486942439"
 }
-
 
 # go/keep-sorted end

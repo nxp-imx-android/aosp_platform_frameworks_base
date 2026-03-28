@@ -19,6 +19,8 @@ package com.android.server.personalcontext.component.client;
 import static android.Manifest.permission.RECEIVE_SENSITIVE_NOTIFICATIONS;
 
 import android.annotation.PermissionManuallyEnforced;
+import android.app.NotificationManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
@@ -38,8 +40,10 @@ import android.util.Slog;
 import androidx.annotation.NonNull;
 
 import com.android.server.personalcontext.AccessController;
+import com.android.server.personalcontext.OperatingModeProvider;
 import com.android.server.personalcontext.component.Renderer;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -63,7 +67,8 @@ public class ServiceClientRenderer
             AccessController accessController,
             UUID componentId,
             ServiceInfo serviceInfo,
-            UserHandle userHandle) {
+            UserHandle userHandle,
+            OperatingModeProvider operatingModeProvider) {
         this(
                 context,
                 accessController,
@@ -71,7 +76,8 @@ public class ServiceClientRenderer
                 serviceInfo,
                 userHandle,
                 Executors.newSingleThreadExecutor(),
-                new Handler(Looper.getMainLooper()));
+                new Handler(Looper.getMainLooper()),
+                operatingModeProvider);
     }
 
     protected ServiceClientRenderer(
@@ -81,18 +87,29 @@ public class ServiceClientRenderer
             ServiceInfo serviceInfo,
             UserHandle userHandle,
             Executor executor,
-            Handler handler) {
-        super(context, accessController, componentId, serviceInfo, userHandle, executor, handler);
+            Handler handler,
+            OperatingModeProvider operatingModeProvider) {
+        super(context, accessController, componentId, serviceInfo, userHandle, executor, handler,
+                operatingModeProvider);
 
         int properties = 0;
 
         final PackageManager packageManager = context.getPackageManager();
+        final NotificationManager notificationManager =
+                context.getSystemService(NotificationManager.class);
         final boolean hasSensitiveNotificationPermission = packageManager
                 .checkPermission(RECEIVE_SENSITIVE_NOTIFICATIONS, serviceInfo.packageName)
                 == PackageManager.PERMISSION_GRANTED;
+        List<ComponentName> enabledListeners =
+                notificationManager.getEnabledNotificationListeners(userHandle.getIdentifier());
+        final boolean isEnabledNotificationListener =
+                enabledListeners != null
+                        && enabledListeners.contains(serviceInfo.getComponentName());
         if (hasSensitiveNotificationPermission
-                && serviceInfo.metaData != null && serviceInfo.metaData
-                .getBoolean(META_DATA_RECEIVE_NOTIFICATION_INSIGHTS, false)) {
+                && isEnabledNotificationListener
+                && serviceInfo.metaData != null
+                && serviceInfo.metaData.getBoolean(
+                        META_DATA_RECEIVE_NOTIFICATION_INSIGHTS, false)) {
             properties |= Renderer.PROPERTY_CAN_RECEIVE_NOTIFICATION_INSIGHTS;
         }
 
@@ -139,8 +156,10 @@ public class ServiceClientRenderer
     @Override
     public void render(@NonNull PublishedContextInsight publishedContextInsight,
             RenderToken renderToken) {
-        // Do the delivery time check that renderer has PCC or automotive companion role.
-        if (!isAllowed(AccessController.ACCESS_PCC_OR_AUTO_COMPANION_ROLE)) {
+        if (!isAllowed(
+                AccessController.ACCESS_PCC_OR_AUTO_COMPANION_ROLE
+                | AccessController.ACCESS_RECEIVE_INSIGHTS_PERMISSION
+                | AccessController.ACCESS_RECEIVE_INSIGHTS_ALLOWLIST)) {
             Slog.w(TAG, getComponentName() + " is not allowed to receive insights.");
             return;
         }

@@ -16,6 +16,8 @@
 
 package com.android.systemui.personalcontext.dagger
 
+import com.android.personalcontext.ace.visualizer.compat.CardInsightCompat
+import com.android.personalcontext.ace.visualizer.compat.ClientSignalCompat
 import com.android.personalcontext.ace.visualizer.compat.EmbeddedScrollCompat
 import com.android.personalcontext.ace.visualizer.compat.EmptyRenderCompat
 import com.android.personalcontext.ace.visualizer.compat.FlexFontCompat
@@ -51,6 +53,16 @@ interface PersonalContextModuleCompat {
         @Provides
         fun provideInsightEventReporterCompat(): InsightEventReporterCompat {
             return object : InsightEventReporterCompat {}
+        }
+
+        @Provides
+        fun provideCardInsightCompat(): CardInsightCompat {
+            return object : CardInsightCompat {}
+        }
+
+        @Provides
+        fun provideClientSignalCompat(): ClientSignalCompat {
+            return object : ClientSignalCompat {}
         }
     }
 }

@@ -509,7 +509,7 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
         @Override
         void onPostDisplayContentCreation(@NonNull DisplayContent displayContent) {
             super.onPostDisplayContentCreation(displayContent);
-            spyOn(displayContent.mAppCompatCameraPolicy);
+            spyOn(displayContent.mWmService.mAppCompatCameraPolicy);
         }
 
         void checkShouldRefreshActivityForCameraCompat(boolean expected) {

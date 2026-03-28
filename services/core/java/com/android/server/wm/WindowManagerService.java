@@ -122,6 +122,7 @@ import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ANIM;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_BOOT;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_FOCUS;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_FOCUS_LIGHT;
+import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_IME;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ORIENTATION;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_SCREEN_ON;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_STARTING_WINDOW;
@@ -1128,6 +1129,9 @@ public class WindowManagerService extends IWindowManager.Stub
     @NonNull
     final AppCompatConfiguration mAppCompatConfiguration;
 
+    @NonNull
+    final AppCompatCameraPolicy mAppCompatCameraPolicy;
+
     private boolean mIsIgnoreOrientationRequestDisabled;
 
     @NonNull
@@ -1390,6 +1394,8 @@ public class WindowManagerService extends IWindowManager.Stub
         mPolicy = policy;
         mAnimator = new WindowAnimator(this);
         mRoot = new RootWindowContainer(this);
+        mAppCompatCameraPolicy = new AppCompatCameraPolicy(this);
+        mAppCompatCameraPolicy.start();
 
         final ContentResolver resolver = context.getContentResolver();
 
@@ -2050,8 +2056,25 @@ public class WindowManagerService extends IWindowManager.Stub
                 // IME window is always touchable.
                 // Ignore non-touchable windows e.g. Stylus InkWindow.java.
                 && (win.mAttrs.flags & FLAG_NOT_TOUCHABLE) == 0) {
-            displayContent.setImeWindow(win);
-            imMayMove = false;
+            final ImeWindowToken imeToken = win.mToken.asImeToken();
+            // Due to a race between InputMethodService adding a window and user profile switching,
+            // IMS may add their window after switching the user away.
+            // We need to avoid setting such a window to display content.
+            // InputMethodManagerService is the source of truth here, and it updates ImeContainer's
+            // ImeWindowToken on user switch.
+            // We set ImeWindow to DisplayContent only when the window token agrees with it.
+            final boolean isCurrentIme = !android.view.inputmethod.Flags.warmWorkProfileIme()
+                    || (imeToken != null
+                    && imeToken == displayContent.getImeContainer().getImeWindowToken());
+            if (isCurrentIme) {
+                displayContent.setImeWindow(win);
+                imMayMove = false;
+            } else {
+                ProtoLog.w(WM_DEBUG_IME,
+                        "addWindowInner: ignoring non-active IME window. imeToken=%s, "
+                                + "currentToken=%s",
+                        imeToken, displayContent.getImeContainer().getImeWindowToken());
+            }
         } else if (type == TYPE_INPUT_METHOD_DIALOG) {
             displayContent.computeImeLayeringTarget(true /* update */);
             imMayMove = false;

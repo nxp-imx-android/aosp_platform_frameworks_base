@@ -663,7 +663,9 @@ public class Component extends PaintOperation
         if (mAnimateMeasure == null) {
             applyMeasure(m);
             updateComponentValues(context, mWidth, mHeight);
-            clearNeedsBoundsAnimation();
+            if (mParent != null) {
+                clearNeedsBoundsAnimation();
+            }
         } else {
             mAnimateMeasure.apply(context);
             updateComponentValues(context, mWidth, mHeight);
@@ -683,7 +685,9 @@ public class Component extends PaintOperation
             mAnimateMeasure.apply(context);
             updateComponentValues(context, mWidth, mHeight);
         } else {
-            clearNeedsBoundsAnimation();
+            if (mParent != null) {
+                clearNeedsBoundsAnimation();
+            }
         }
         for (Operation op : mList) {
             if (op instanceof Measurable) {
@@ -1448,7 +1452,9 @@ public class Component extends PaintOperation
             mAnimateMeasure.paint(context);
             if (mAnimateMeasure.isDone()) {
                 mAnimateMeasure = null;
-                clearNeedsBoundsAnimation();
+                if (mParent != null) {
+                    clearNeedsBoundsAnimation();
+                }
                 needsRepaint();
             } else {
                 markNeedsBoundsAnimation();

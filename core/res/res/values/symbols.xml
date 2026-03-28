@@ -6586,6 +6586,9 @@
 
   <!-- Whether Personal Context is enabled -->
   <java-symbol type="bool" name ="config_enablePersonalContextManagerService"/>
+  <!-- If true, all personal context connects to must run in the PCC sandbox. If false, services
+  can also pass the check if they have allow-associations configured. -->
+  <java-symbol type="bool" name ="config_enableStrictPersonalContextPccNextCheck"/>
   <!-- Packages allowed to publish context hints -->
   <java-symbol type="array" name="config_allowlistPersonalContextHintPublishing" />
   <!-- Packages allowed to receive context hints -->
@@ -6603,13 +6606,6 @@
   <java-symbol type="integer" name="config_textClassifierPersonalContextTimeoutMillis" />
   <java-symbol type="integer" name="config_textClassifierPersonalContextMergeStrategy" />
 
-  <!-- TV Watchdog configuration -->
-  <java-symbol type="integer" name="config_tvWatchdogUidIoUsageSummaryTopCount" />
-  <java-symbol type="integer" name="config_tvWatchdogIoUsageSummaryMinSystemTotalWrittenBytes" />
-  <java-symbol type="integer" name="config_tvWatchdogUserPackageSettingsResetDays" />
-  <java-symbol type="integer" name="config_tvWatchdogRecurringOverusePeriodInDays" />
-  <java-symbol type="integer" name="config_tvWatchdogRecurringOveruseTimes" />
-
   <!-- Wallpaper Local Color Extraction configuration -->
   <java-symbol type="bool" name="config_enableWallpaperLocalColorExtraction"/>
 
@@ -6624,4 +6620,13 @@
 
   <!-- ART Service configuration -->
   <java-symbol type="array" name="config_pr_dexopt_sync_forced_packages" />
-</resources>
+  <!-- CrossDeviceSync -->
+  <java-symbol type="string" name="airplane_mode_sync_notification_channel_name" />
+  <java-symbol type="string" name="airplane_mode_sync_notification_title" />
+  <java-symbol type="string" name="airplane_mode_sync_notification_content" />
+  <java-symbol type="string" name="apm_sync_notification_settings_action" />
+  <java-symbol type="string" name="do_not_disturb_sync_notification_channel_name" />
+  <java-symbol type="string" name="do_not_disturb_sync_notification_title" />
+  <java-symbol type="string" name="do_not_disturb_sync_notification_content" />
+  <java-symbol type="drawable" name="ic_cross_device_sync_airplane" />
+  </resources>

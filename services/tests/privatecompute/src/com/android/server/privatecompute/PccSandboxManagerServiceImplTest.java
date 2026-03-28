@@ -32,6 +32,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -40,6 +41,9 @@ import static org.mockito.Mockito.when;
 
 import android.app.AlarmManager;
 import android.app.privatecompute.DataMigrationToPccService;
+import android.content.BroadcastReceiver;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.app.privatecompute.IDataMigrationToPccService;
 import android.app.privatecompute.IMigrationRequestResultReceiver;
 import android.app.privatecompute.IMigrationRequestResultSender;
@@ -134,28 +138,34 @@ public class PccSandboxManagerServiceImplTest {
         when(mInjector.getExecutorService()).thenReturn(newDirectExecutorService());
         when(mInjector.getAuditLogFilesDirectory(anyInt())).thenReturn(mAuditLogDirUser1);
         when(mInjector.getAuditLogFilesDirectory(eq(10))).thenReturn(mAuditLogDirUser2);
+        doCallRealMethod().when(mInjector).deleteAuditLogFiles(anyInt());
         mService = new PccSandboxManagerServiceImpl(mContext, mInjector);
         mService.setPccSandboxManagerInternal(mInternal);
     }
 
+
     @Test
-    public void testFolderIsDeletedOnBoot() throws Exception {
-        clearInvocations(mInjector);
-        UserManagerInternal umi = mock(UserManagerInternal.class);
-        when(umi.getUserIds()).thenReturn(new int[]{0, 10});
-        LocalServices.removeServiceForTest(UserManagerInternal.class);
-        LocalServices.addService(UserManagerInternal.class, umi);
+    public void testWhenUserUnlocked_folderIsDeleted() throws Exception {
+        mAuditLogDirUser1.mkdirs();
+        mAuditLogDirUser2.mkdirs();
+        assertTrue(mAuditLogDirUser1.exists());
+        assertTrue(mAuditLogDirUser2.exists());
+        ArgumentCaptor<BroadcastReceiver> receiverCaptor =
+                ArgumentCaptor.forClass(BroadcastReceiver.class);
+        verify(mContext).registerReceiverForAllUsers(
+                receiverCaptor.capture(), any(IntentFilter.class), any(), any(Handler.class));
+        BroadcastReceiver receiver = receiverCaptor.getValue();
 
-        org.mockito.Mockito.doCallRealMethod().when(mInjector).deleteAuditLogFilesAllUsers();
+        // Act: User 10 is unlocked.
+        Intent intent = new Intent(Intent.ACTION_USER_UNLOCKED);
+        intent.putExtra(Intent.EXTRA_USER_HANDLE, 10);
+        receiver.onReceive(mContext, intent);
+        mService.getExecutorService().shutdown();
+        assertTrue(mService.getExecutorService().awaitTermination(5, TimeUnit.SECONDS));
 
-        PccSandboxManagerServiceImpl service = new PccSandboxManagerServiceImpl(mContext,
-                mInjector);
-        service.getExecutorService().shutdown();
-        assertTrue(service.getExecutorService().awaitTermination(5, TimeUnit.SECONDS));
-
-        verify(mInjector).deleteAuditLogFilesAllUsers();
-        assertFalse(mAuditLogDirUser1.exists());
-        assertFalse(mAuditLogDirUser2.exists());
+        verify(mInjector).deleteAuditLogFiles(10);
+        assertTrue(mAuditLogDirUser1.exists());  // User 0's folder is not deleted
+        assertFalse(mAuditLogDirUser2.exists()); // User 10's folder is deleted
     }
 
     @Test
@@ -183,20 +193,14 @@ public class PccSandboxManagerServiceImplTest {
     }
 
     @Test
-    public void testConstructor_schedulesPeriodicTask() {
-        // Assert: alarm is scheduled.
-        long expectedTriggerAtMillis = TEST_ELAPSED_REALTIME + AUDIT_LOG_CLEANUP_INTERVAL_MS;
-        verify(mAlarmManager)
-                .set(
-                        eq(AlarmManager.ELAPSED_REALTIME),
-                        eq(expectedTriggerAtMillis),
-                        anyString(),
-                        any(AlarmManager.OnAlarmListener.class),
-                        any(Handler.class));
-    }
-
-    @Test
     public void testAlarmListener_runsCleanupTaskAndReschedules() {
+        when(mInjector.auditModeEnabled()).thenReturn(true);
+        when(mPackageManagerInternal.isSameApp(anyString(), anyInt(), anyInt())).thenReturn(true);
+        when(mInternal.isPccTrustedSystemComponent(anyInt(), anyString())).thenReturn(true);
+        List<PersistableBundle> data = new ArrayList<>(1);
+        data.add(new PersistableBundle());
+        // Trigger the first write, which schedules the cleanup task.
+        mService.writeToAuditLogInternal(data, TEST_PACKAGE_NAME);
         // Capture the listener.
         ArgumentCaptor<AlarmManager.OnAlarmListener> listenerCaptor =
                 ArgumentCaptor.forClass(AlarmManager.OnAlarmListener.class);

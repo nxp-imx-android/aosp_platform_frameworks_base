@@ -1825,9 +1825,10 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
             //TODO: StatusBarStateController should probably know about hiding the keyguard and
             // notify listeners.
 
-            // If the state didn't change, we may still need to update public mode
-            mLockscreenUserManager.updatePublicMode();
-            if (SceneContainerFlag.isEnabled()) {
+            if (!SceneContainerFlag.isEnabled()) {
+                // If the state didn't change, we may still need to update public mode
+                mLockscreenUserManager.updatePublicMode();
+            } else {
                 mStackScrollerController.updateSensitivenessWithoutAnimation();
             }
         }
