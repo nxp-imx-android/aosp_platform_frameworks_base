@@ -174,6 +174,9 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
             if (Objects.equals(mPendingRoute, route)) {
                 final int pRequestId = mPendingRequestId;
                 final IAudioModeSession.Route pRoute = mPendingRoute;
+                if (DEBUG) {
+                    Slog.d(TAG, "dispatching result: " + pRoute + " : " + pRequestId);
+                }
                 dispatchRemote(
                         () ->
                                 mCallback.onRoutingResult(
@@ -320,7 +323,7 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
                         mCallback.asBinder(),
                         mAttributionSource.getPackageName());
                 mDeviceBroker.setCommunicationDevice(
-                        mCallback.asBinder(), mAttributionSource, null, true, TAG);
+                        mCallback.asBinder(), mAttributionSource, null, true, true, TAG);
                 updateAudioFocus();
                 dispatchRemote(() -> mCallback.onPaused());
             } else {
@@ -359,7 +362,7 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
                     mCallback.asBinder(),
                     mAttributionSource.getPackageName());
             mDeviceBroker.setCommunicationDevice(
-                    mCallback.asBinder(), mAttributionSource, null, true, TAG);
+                    mCallback.asBinder(), mAttributionSource, null, true, true, TAG);
             updateAudioFocus();
         }
         mDeviceBroker.removeAudioModeSession(this);
@@ -381,7 +384,7 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
                         mCallback.asBinder(),
                         mAttributionSource.getPackageName());
                 mDeviceBroker.setCommunicationDevice(
-                        mCallback.asBinder(), mAttributionSource, null, true, TAG);
+                        mCallback.asBinder(), mAttributionSource, null, true, true, TAG);
                 updateAudioFocus();
             }
             dispatchRemote(() -> mCallback.onPaused());
@@ -450,7 +453,7 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
 
 
             mDeviceBroker.setCommunicationDevice(mCallback.asBinder(), mAttributionSource,
-                    selectedDevice, true, TAG);
+                    selectedDevice, true, true, TAG);
 
             mPendingRequestId = requestId;
             mPendingRoute = mSelectedRoute;
