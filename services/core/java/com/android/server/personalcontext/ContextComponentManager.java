@@ -117,7 +117,7 @@ class ContextComponentManager
         for (ServiceInfo serviceInfo : getServiceInfo(ACTION_REFINER_SERVICE, packageName)) {
             registerComponent(
                     serviceInfo,
-                                AccessController.ACCESS_PCC
+                                AccessController.ACCESS_PCC_OR_TRUSTED_PACKAGE
                                         | AccessController.ACCESS_RECEIVE_HINTS_ALLOWLIST
                                         | AccessController.ACCESS_RECEIVE_HINTS_PERMISSION
                                         | AccessController.ACCESS_BIND_CONTEXT_PERMISSION,
@@ -131,7 +131,7 @@ class ContextComponentManager
         for (ServiceInfo serviceInfo : getServiceInfo(ACTION_UNDERSTANDER_SERVICE, packageName)) {
             registerComponent(
                     serviceInfo,
-                    AccessController.ACCESS_PCC
+                    AccessController.ACCESS_PCC_OR_TRUSTED_PACKAGE
                             | AccessController.ACCESS_RECEIVE_HINTS_ALLOWLIST
                             | AccessController.ACCESS_RECEIVE_HINTS_PERMISSION
                             | AccessController.ACCESS_PUBLISH_INSIGHTS_ALLOWLIST
@@ -148,8 +148,7 @@ class ContextComponentManager
                 getServiceInfo(InsightRendererService.SERVICE_INTERFACE, packageName)) {
             registerComponent(
                     serviceInfo,
-                    AccessController.ACCESS_RECEIVE_INSIGHTS_ALLOWLIST
-                            | AccessController.ACCESS_RECEIVE_INSIGHTS_PERMISSION
+                    AccessController.ACCESS_RECEIVE_INSIGHTS_PERMISSION
                             | AccessController.ACCESS_BIND_CONTEXT_PERMISSION,
                     new ServiceClientRenderer(mContext, mAccessController,
                             UUID.randomUUID(), serviceInfo, mUserHandle,
