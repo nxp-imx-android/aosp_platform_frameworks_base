@@ -71,6 +71,9 @@ import com.android.server.pm.UserManagerInternal;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -470,10 +473,17 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
                         return 0;
                     }
                     pw.println("Found " + entries.size() + " log entries:");
+                    DateTimeFormatter formatter =
+                            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z")
+                                    .withZone(ZoneId.systemDefault());
                     for (AuditLogEntry entry : entries) {
+                        Instant instant = Instant.ofEpochMilli(entry.mCurrentTimeMillis);
+                        String humanReadableTime = formatter.format(instant);
                         pw.println(
-                                "  Entry: timestamp="
-                                        + entry.mTimestamp
+                                "  Entry: realtime_nanos="
+                                        + entry.mRealTimeNanos
+                                        + " current_time="
+                                        + humanReadableTime
                                         + " uid="
                                         + entry.mCallingUid
                                         + " package="

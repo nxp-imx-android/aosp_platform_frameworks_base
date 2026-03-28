@@ -32,7 +32,8 @@ import java.util.List;
 @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
 class AuditModeTestUtils {
 
-    static final long TEST_TIMESTAMP = 1764409688L;
+    static final long TEST_REALTIME_NANOS = 1764409688L;
+    static final long TEST_CURRENT_TIME_MILLIS = 1764409688000L;
     static final String TEST_PACKAGE_NAME = "test_package";
     static final int TEST_UID = 12;
 
@@ -58,7 +59,12 @@ class AuditModeTestUtils {
     private static final byte[] VALUE_BYTE_ARRAY = new byte[] {1, 2, 3};
 
     static AuditLogEntry getTestEntry() {
-        return new AuditLogEntry(getTestBundle(), TEST_TIMESTAMP, TEST_PACKAGE_NAME, TEST_UID);
+        return new AuditLogEntry(
+                getTestBundle(),
+                TEST_REALTIME_NANOS,
+                TEST_CURRENT_TIME_MILLIS,
+                TEST_PACKAGE_NAME,
+                TEST_UID);
     }
 
     static PersistableBundle getTestBundle() {
@@ -134,7 +140,8 @@ class AuditModeTestUtils {
     static List<AuditLogEntry> readLogEntriesFromStream(DataInputStream stream) throws Exception {
         List<AuditLogEntry> result = new ArrayList<>();
         while (stream.available() > 0) {
-            long timestamp = stream.readLong();
+            long realTimeNanos = stream.readLong();
+            long currentTimeMillis = stream.readLong();
             int callingUid = stream.readInt();
             int callingPackageLength = stream.readInt();
             byte[] callingPackageBytes = new byte[callingPackageLength];
@@ -145,7 +152,9 @@ class AuditModeTestUtils {
             stream.read(bundleBytes);
             ByteArrayInputStream dataStream = new ByteArrayInputStream(bundleBytes);
             PersistableBundle bundle = PersistableBundle.readFromStream(dataStream);
-            result.add(new AuditLogEntry(bundle, timestamp, callingPackage, callingUid));
+            result.add(
+                    new AuditLogEntry(
+                            bundle, realTimeNanos, currentTimeMillis, callingPackage, callingUid));
         }
         return result;
     }

@@ -18,7 +18,8 @@ package com.android.server.privatecompute;
 
 import static android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT;
 import static com.android.server.privatecompute.AuditModeTestUtils.TEST_PACKAGE_NAME;
-import static com.android.server.privatecompute.AuditModeTestUtils.TEST_TIMESTAMP;
+import static com.android.server.privatecompute.AuditModeTestUtils.TEST_CURRENT_TIME_MILLIS;
+import static com.android.server.privatecompute.AuditModeTestUtils.TEST_REALTIME_NANOS;
 import static com.android.server.privatecompute.AuditModeTestUtils.TEST_UID;
 import static com.android.server.privatecompute.AuditModeTestUtils.assertEqualsToTestBundle;
 import static com.android.server.privatecompute.AuditModeTestUtils.getTestBundle;
@@ -79,17 +80,21 @@ public class AuditLogFileWriterTest {
     public void writeEntries_oneEntry_canBeParsedBack() throws Exception {
         File file = mTemporaryFolder.newFile();
         AuditLogFileWriter writer = new AuditLogFileWriter(file);
-        long timestamp = 1764409688L; // 2025-11-29 09:48:08 GMT
+        long realTimeNanos = 1764409688L; // 2025-11-29 09:48:08 GMT
+        long currentTimeMillis = 1764409688000L;
         String packageName = "test_package";
         int uid = 12;
-        AuditLogEntry entry = new AuditLogEntry(getTestBundle(), timestamp, packageName, uid);
+        AuditLogEntry entry =
+                new AuditLogEntry(
+                        getTestBundle(), realTimeNanos, currentTimeMillis, packageName, uid);
 
         writer.writeEntries(ImmutableList.of(entry.toByteArray()));
 
         List<AuditLogEntry> entries = readAuditLogFileFromFile(file);
         assertEquals(entries.size(), 1);
         assertEqualsToTestBundle(entries.get(0).mData);
-        assertEquals(entries.get(0).mTimestamp, timestamp);
+        assertEquals(entries.get(0).mRealTimeNanos, realTimeNanos);
+        assertEquals(entries.get(0).mCurrentTimeMillis, currentTimeMillis);
         assertEquals(entries.get(0).mCallingPackage, packageName);
         assertEquals(entries.get(0).mCallingUid, uid);
     }
@@ -101,17 +106,19 @@ public class AuditLogFileWriterTest {
         AuditLogEntry entry1 = getTestEntry();
         PersistableBundle bundle2 = new PersistableBundle();
         bundle2.putInt("test_key2", 123);
-        AuditLogEntry entry2 = new AuditLogEntry(bundle2, 234L, "other_package", 23);
+        AuditLogEntry entry2 = new AuditLogEntry(bundle2, 234L, 234000L, "other_package", 23);
 
         writer.writeEntries(ImmutableList.of(entry1.toByteArray(), entry2.toByteArray()));
 
         List<AuditLogEntry> entries = readAuditLogFileFromFile(file);
         assertEquals(entries.size(), 2);
-        assertEquals(entries.get(0).mTimestamp, TEST_TIMESTAMP);
+        assertEquals(entries.get(0).mRealTimeNanos, TEST_REALTIME_NANOS);
+        assertEquals(entries.get(0).mCurrentTimeMillis, TEST_CURRENT_TIME_MILLIS);
         assertEquals(entries.get(0).mCallingPackage, TEST_PACKAGE_NAME);
         assertEquals(entries.get(0).mCallingUid, TEST_UID);
         assertEqualsToTestBundle(entries.get(0).mData);
-        assertEquals(entries.get(1).mTimestamp, 234L);
+        assertEquals(entries.get(1).mRealTimeNanos, 234L);
+        assertEquals(entries.get(1).mCurrentTimeMillis, 234000L);
         assertEquals(entries.get(1).mCallingPackage, "other_package");
         assertEquals(entries.get(1).mCallingUid, 23);
         assertThat(entries.get(1).mData.getInt("test_key2")).isEqualTo(123);
@@ -124,14 +131,15 @@ public class AuditLogFileWriterTest {
         AuditLogFileWriter writer = new AuditLogFileWriter(file);
         PersistableBundle bundle2 = new PersistableBundle();
         bundle2.putInt("test_key2", 123);
-        AuditLogEntry entry2 = new AuditLogEntry(bundle2, 234L, "other_package", 23);
+        AuditLogEntry entry2 = new AuditLogEntry(bundle2, 234L, 234000L, "other_package", 23);
         writer.writeEntries(ImmutableList.of(entry.toByteArray()));
 
         writer.writeEntries(ImmutableList.of(entry2.toByteArray())); // 2nd write to same instance
 
         List<AuditLogEntry> entries = readAuditLogFileFromFile(file);
         assertEquals(entries.size(), 1);
-        assertEquals(entries.get(0).mTimestamp, 234L);
+        assertEquals(entries.get(0).mRealTimeNanos, 234L);
+        assertEquals(entries.get(0).mCurrentTimeMillis, 234000L);
         assertEquals(entries.get(0).mCallingPackage, "other_package");
         assertEquals(entries.get(0).mCallingUid, 23);
         assertThat(entries.get(0).mData.getInt("test_key2")).isEqualTo(123);
@@ -144,7 +152,7 @@ public class AuditLogFileWriterTest {
         AuditLogFileWriter writer = new AuditLogFileWriter(file);
         PersistableBundle bundle2 = new PersistableBundle();
         bundle2.putInt("test_key2", 123);
-        AuditLogEntry entry2 = new AuditLogEntry(bundle2, 234L, "other_package", 23);
+        AuditLogEntry entry2 = new AuditLogEntry(bundle2, 234L, 234000L, "other_package", 23);
         writer.writeEntries(ImmutableList.of(entry.toByteArray()));
 
         AuditLogFileWriter writer2 = new AuditLogFileWriter(file); // new instance, same file
@@ -152,7 +160,8 @@ public class AuditLogFileWriterTest {
 
         List<AuditLogEntry> entries = readAuditLogFileFromFile(file);
         assertEquals(entries.size(), 1);
-        assertEquals(entries.get(0).mTimestamp, 234L);
+        assertEquals(entries.get(0).mRealTimeNanos, 234L);
+        assertEquals(entries.get(0).mCurrentTimeMillis, 234000L);
         assertEquals(entries.get(0).mCallingPackage, "other_package");
         assertEquals(entries.get(0).mCallingUid, 23);
         assertThat(entries.get(0).mData.getInt("test_key2")).isEqualTo(123);
@@ -196,7 +205,8 @@ public class AuditLogFileWriterTest {
 
         AuditLogEntry parsedEntry = AuditLogEntry.readFromStream(stream);
 
-        assertEquals(originalEntry.mTimestamp, parsedEntry.mTimestamp);
+        assertEquals(originalEntry.mRealTimeNanos, parsedEntry.mRealTimeNanos);
+        assertEquals(originalEntry.mCurrentTimeMillis, parsedEntry.mCurrentTimeMillis);
         assertEquals(originalEntry.mCallingPackage, parsedEntry.mCallingPackage);
         assertEquals(originalEntry.mCallingUid, parsedEntry.mCallingUid);
         assertEqualsToTestBundle(parsedEntry.mData);
@@ -207,7 +217,7 @@ public class AuditLogFileWriterTest {
         AuditLogEntry entry1 = getTestEntry();
         PersistableBundle bundle2 = new PersistableBundle();
         bundle2.putInt("test_key2", 123);
-        AuditLogEntry entry2 = new AuditLogEntry(bundle2, 234L, "other_package", 23);
+        AuditLogEntry entry2 = new AuditLogEntry(bundle2, 234L, 234000L, "other_package", 23);
         byte[] entry1Bytes = entry1.toByteArray();
         byte[] entry2Bytes = entry2.toByteArray();
         ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -219,11 +229,13 @@ public class AuditLogFileWriterTest {
         AuditLogEntry parsedEntry1 = AuditLogEntry.readFromStream(stream);
         AuditLogEntry parsedEntry2 = AuditLogEntry.readFromStream(stream);
 
-        assertEquals(entry1.mTimestamp, parsedEntry1.mTimestamp);
+        assertEquals(entry1.mRealTimeNanos, parsedEntry1.mRealTimeNanos);
+        assertEquals(entry1.mCurrentTimeMillis, parsedEntry1.mCurrentTimeMillis);
         assertEquals(entry1.mCallingPackage, parsedEntry1.mCallingPackage);
         assertEquals(entry1.mCallingUid, parsedEntry1.mCallingUid);
         assertEqualsToTestBundle(parsedEntry1.mData);
-        assertEquals(entry2.mTimestamp, parsedEntry2.mTimestamp);
+        assertEquals(entry2.mRealTimeNanos, parsedEntry2.mRealTimeNanos);
+        assertEquals(entry2.mCurrentTimeMillis, parsedEntry2.mCurrentTimeMillis);
         assertEquals(entry2.mCallingPackage, parsedEntry2.mCallingPackage);
         assertEquals(entry2.mCallingUid, parsedEntry2.mCallingUid);
         assertThat(parsedEntry2.mData.getInt("test_key2")).isEqualTo(123);
@@ -254,17 +266,19 @@ public class AuditLogFileWriterTest {
         AuditLogEntry entry1 = getTestEntry();
         PersistableBundle bundle2 = new PersistableBundle();
         bundle2.putInt("test_key2", 123);
-        AuditLogEntry entry2 = new AuditLogEntry(bundle2, 234L, "other_package", 23);
+        AuditLogEntry entry2 = new AuditLogEntry(bundle2, 234L, 234000L, "other_package", 23);
         writer.writeEntries(ImmutableList.of(entry1.toByteArray(), entry2.toByteArray()));
 
         List<AuditLogEntry> entries = AuditLogFileWriter.readEntries(file);
 
         assertEquals(2, entries.size());
-        assertEquals(TEST_TIMESTAMP, entries.get(0).mTimestamp);
+        assertEquals(TEST_REALTIME_NANOS, entries.get(0).mRealTimeNanos);
+        assertEquals(TEST_CURRENT_TIME_MILLIS, entries.get(0).mCurrentTimeMillis);
         assertEquals(TEST_PACKAGE_NAME, entries.get(0).mCallingPackage);
         assertEquals(TEST_UID, entries.get(0).mCallingUid);
         assertEqualsToTestBundle(entries.get(0).mData);
-        assertEquals(234L, entries.get(1).mTimestamp);
+        assertEquals(234L, entries.get(1).mRealTimeNanos);
+        assertEquals(234000L, entries.get(1).mCurrentTimeMillis);
         assertEquals("other_package", entries.get(1).mCallingPackage);
         assertEquals(23, entries.get(1).mCallingUid);
         assertThat(entries.get(1).mData.getInt("test_key2")).isEqualTo(123);
@@ -279,7 +293,7 @@ public class AuditLogFileWriterTest {
         AuditLogEntry entry1 = getTestEntry();
         PersistableBundle bundle2 = new PersistableBundle();
         bundle2.putInt("test_key2", 123);
-        AuditLogEntry entry2 = new AuditLogEntry(bundle2, 234L, "other_package", 23);
+        AuditLogEntry entry2 = new AuditLogEntry(bundle2, 234L, 234000L, "other_package", 23);
         writer1.writeEntries(ImmutableList.of(entry1.toByteArray()));
         writer2.writeEntries(ImmutableList.of(entry2.toByteArray()));
 
@@ -287,11 +301,13 @@ public class AuditLogFileWriterTest {
                 AuditLogFileWriter.readEntriesForFiles(ImmutableList.of(file1, file2));
 
         assertEquals(2, entries.size());
-        assertEquals(TEST_TIMESTAMP, entries.get(0).mTimestamp);
+        assertEquals(TEST_REALTIME_NANOS, entries.get(0).mRealTimeNanos);
+        assertEquals(TEST_CURRENT_TIME_MILLIS, entries.get(0).mCurrentTimeMillis);
         assertEquals(TEST_PACKAGE_NAME, entries.get(0).mCallingPackage);
         assertEquals(TEST_UID, entries.get(0).mCallingUid);
         assertEqualsToTestBundle(entries.get(0).mData);
-        assertEquals(234L, entries.get(1).mTimestamp);
+        assertEquals(234L, entries.get(1).mRealTimeNanos);
+        assertEquals(234000L, entries.get(1).mCurrentTimeMillis);
         assertEquals("other_package", entries.get(1).mCallingPackage);
         assertEquals(23, entries.get(1).mCallingUid);
         assertThat(entries.get(1).mData.getInt("test_key2")).isEqualTo(123);
@@ -315,7 +331,8 @@ public class AuditLogFileWriterTest {
                 AuditLogFileWriter.readEntriesForFiles(ImmutableList.of(file1, file2));
 
         assertEquals(1, entries.size());
-        assertEquals(TEST_TIMESTAMP, entries.get(0).mTimestamp);
+        assertEquals(TEST_REALTIME_NANOS, entries.get(0).mRealTimeNanos);
+        assertEquals(TEST_CURRENT_TIME_MILLIS, entries.get(0).mCurrentTimeMillis);
         assertEquals(TEST_PACKAGE_NAME, entries.get(0).mCallingPackage);
         assertEquals(TEST_UID, entries.get(0).mCallingUid);
         assertEqualsToTestBundle(entries.get(0).mData);
