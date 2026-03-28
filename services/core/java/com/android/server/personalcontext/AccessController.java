@@ -164,6 +164,7 @@ public class AccessController {
             RESULT_ALLOWED,
             RESULT_DENIED,
             RESULT_BYPASSED,
+            RESULT_SYSTEM,
     })
     public @interface AccessResult {
     }
@@ -171,11 +172,14 @@ public class AccessController {
     /** Allowed. */
     public static final int RESULT_ALLOWED = 0;
 
-    /** Allowed. */
+    /** Denied. */
     public static final int RESULT_DENIED = 1;
 
-    /** Allowed. */
+    /** Bypassed. */
     public static final int RESULT_BYPASSED = 2;
+
+    /** System. */
+    public static final int RESULT_SYSTEM = 3;
 
     /** Listener for access checks. */
     public interface EventListener {
@@ -306,6 +310,10 @@ public class AccessController {
             Log.d(TAG, "Checking package " + packageName);
         }
 
+        if (PersonalContextManagerService.isSystemPackage(packageName)) {
+            return true;
+        }
+
         boolean result = true;
 
         // We need the service info to check the PCC flag.
@@ -405,6 +413,10 @@ public class AccessController {
             return makeAccessDecision(packageName, "Permission " + permission, RESULT_BYPASSED);
         }
 
+        if (PersonalContextManagerService.isSystemPackage(packageName)) {
+            return makeAccessDecision(packageName, "Permission " + permission, RESULT_SYSTEM);
+        }
+
         final int permissionResult = mPermissionManager.checkPackageNamePermission(
                 permission,
                 packageName,
@@ -425,6 +437,10 @@ public class AccessController {
                 : mResources.getResourceName(allowListResId));
         if (!Flags.enforcePersonalContextAllowlistAccessControl()) {
             return makeAccessDecision(packageName, description, RESULT_BYPASSED);
+        }
+
+        if (PersonalContextManagerService.isSystemPackage(packageName)) {
+            return makeAccessDecision(packageName, description, RESULT_SYSTEM);
         }
 
         if (!mAllowLists.contains(allowListResId)) {

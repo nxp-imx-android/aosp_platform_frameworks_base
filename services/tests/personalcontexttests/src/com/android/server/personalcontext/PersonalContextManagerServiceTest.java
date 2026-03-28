@@ -139,6 +139,13 @@ public class PersonalContextManagerServiceTest {
         mContext.addMockUserContext(UserHandle.of(USER_ID_2), mPackageManager);
         mContext.addMockUserContext(UserHandle.SYSTEM, mPackageManager);
 
+        // Set default per-app setting to enabled.
+        Settings.Secure.putIntForUser(
+                mContext.getContentResolver(),
+                Settings.Secure.PERSONAL_CONTEXT_MODE_ENABLED_DEFAULT,
+                1,
+                USER_ID_1);
+
         // By Default, allow all behavior through
         when(mAccessController.isPackageAllowed(any(), anyInt())).thenReturn(true);
         when(mAccessController.isServiceAllowed(any(), anyInt())).thenReturn(true);
