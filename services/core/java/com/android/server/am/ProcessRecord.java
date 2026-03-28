@@ -695,7 +695,11 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     @GuardedBy({"mService", "mProcLock"})
     void setUidRecord(UidRecord uidRecord) {
         mUidRecord = uidRecord;
-        mMemoryLimiter.setUid((mUidRecord != null) ? mUidRecord.getUid() : INVALID_UID);
+        if (mUidRecord != null) {
+            mMemoryLimiter.setUid(mUidRecord.getUid(), info.packageName);
+        } else {
+            mMemoryLimiter.setUid(INVALID_UID, null);
+        }
     }
 
     PackageList getPkgList() {

@@ -27,6 +27,8 @@ import android.app.ActivityManager;
 import android.app.ActivityManager.ProcessState;
 import android.app.ActivityManagerInternal;
 import android.app.IActivityManager;
+import android.content.ComponentName;
+import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Process;
@@ -59,6 +61,7 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -195,6 +198,12 @@ class MemoryLimiter implements AutoCloseable {
          */
         boolean isEnabled();
 
+        // Execute boot-time initialization.
+        void onSystemReady();
+
+        // Return true if the pid is exempt from processing.
+        boolean isExempt(String pkg);
+
         // The pid or uid of the object has changed.  Push the update to the native layer.
         void setPidUid(int pid, int uid);
 
@@ -227,6 +236,15 @@ class MemoryLimiter implements AutoCloseable {
         @Override
         public boolean isEnabled() {
             return false;
+        }
+
+        @Override
+        public void onSystemReady() {
+        }
+
+        @Override
+        public boolean isExempt(String pkg) {
+            return true;
         }
 
         @Override
@@ -265,6 +283,16 @@ class MemoryLimiter implements AutoCloseable {
      * default behavior.
      */
     static class Injector {
+
+        @Nullable
+        final Context mContext;
+
+        // Create a new Injector.  It is legal to create one with a null Context, for situations
+        // where the injector is only needed to sample flags or configuration file values.
+        Injector(@Nullable Context context) {
+            mContext = context;
+        }
+
         // Return true if the monitoring is enabled.  The default behavior returns the value of
         // the feature flag.
         boolean isMonitoringEnabled() {
@@ -314,8 +342,6 @@ class MemoryLimiter implements AutoCloseable {
 
         // Kill the process, but only if the runtime disable flag is false.
         void killProcess(int pid, int uid, String reason) {
-            if (sDisableKill) return;
-
             IActivityManager am = ActivityManager.getService();
 
             if (am != null) {
@@ -347,20 +373,58 @@ class MemoryLimiter implements AutoCloseable {
         private final Handler mQueue;
 
         // The opcode to start a process.
-        private static final int MESSAGE_START = 0;
+        static final int MESSAGE_START = 0;
 
         // The opcode to configure a process.  The configuration data is in 'obj'.
-        private static final int MESSAGE_CONFIG = 1;
+        static final int MESSAGE_CONFIG = 1;
 
         // The opcode to ignore a UID.  Whatever is in arg2 (the uid field) is ignored.  Pass a
         // negative value to ignore nothing (since real UIDs are non-negative).
-        private static final int MESSAGE_IGNORE = 2;
+        static final int MESSAGE_IGNORE = 2;
 
         // The opcode to close the controller.
-        private static final int MESSAGE_CLOSE = 3;
+        static final int MESSAGE_CLOSE = 3;
 
         // The opcode to kill the pid.
-        private static final int MESSAGE_KILL = 4;
+        static final int MESSAGE_KILL = 4;
+
+        // The opcode to complete initialization.
+        static final int MESSAGE_INIT = 5;
+
+        // This flag indicates that controller initialization has completed.
+        @VisibleForTesting
+        volatile boolean mInitialized = false;
+
+        // The DeviceConfig namespace for the runtime flags.
+        private static final String DC_NAMESPACE = DeviceConfig.NAMESPACE_ACTIVITY_MANAGER;
+
+        /**
+         * The DeviceConfig key to disable memory limiter limits at runtime.  The default is false
+         * (limits are enabled).
+         */
+        @VisibleForTesting
+        static final String DISABLE_LIMITS_KEY = "memory_limiter_disable_limits";
+
+        /**
+         * The DeviceConfig key to disable killing when limits are exceeded.  The default is false
+         * (killing is enabled).
+         */
+        @VisibleForTesting
+        static final String DISABLE_KILL_KEY = "memory_limiter_disable_kill";
+
+        /** The build-time default value for the memory limiter enablement. */
+        private static final boolean DISABLE_LIMITS_DEFAULT = false;
+
+        /** The build-time default value for the memory limiter kill behavior. */
+        private static final boolean DISABLE_KILL_DEFAULT = false;
+
+        /** The current runtime state of the memory limiter. */
+        @VisibleForTesting
+        volatile boolean mDisableLimits = DISABLE_LIMITS_DEFAULT;
+
+        /** The current runtime state of the kill behavior. */
+        @VisibleForTesting
+        volatile boolean mDisableKill = DISABLE_KILL_DEFAULT;
 
         // This is saved in case the feature is runtime-disabled.
         private Limits mLimitsUnlimited;
@@ -381,6 +445,10 @@ class MemoryLimiter implements AutoCloseable {
         // The native pointer.  It is set and read by the handler code and read by the dump()
         // method.
         private final AtomicLong mNative = new AtomicLong(0);
+
+        // A list of exempt package names. The list is expected to be very small (0 or 1).  It is
+        // written only during system start.
+        private final CopyOnWriteArrayList<String> mExemptList = new CopyOnWriteArrayList<>();
 
         // A mutex to ensure that the native layer is not closed underneath a call to dump().
         // dump() is the only operation against the native service that is not single-threaded.
@@ -437,28 +505,67 @@ class MemoryLimiter implements AutoCloseable {
                             }
 
                             case MESSAGE_CLOSE -> {
-                                synchronized (mDumpLock) {
-                                    mNative.set(0);
-                                    closeLimiter(service);
-                                }
-                                mOpen = false;
+                                shutdown();
                             }
 
                             case MESSAGE_KILL -> {
-                                Slog.w(TAG, "killing process " + pid);
-                                String reason = (String) msg.obj;
-                                mInjector.killProcess(pid, uid, reason);
+                                if (mDisableKill) {
+                                    Slog.i(TAG, "not killing process " + pid);
+                                } else {
+                                    Slog.w(TAG, "killing process " + pid);
+                                    String reason = (String) msg.obj;
+                                    mInjector.killProcess(pid, uid, reason);
+                                }
+                            }
+
+                            case MESSAGE_INIT -> {
+                                initializeExemptList();
+                                updateRuntimeFlags(DeviceConfig.getProperties(DC_NAMESPACE,
+                                                DISABLE_LIMITS_KEY, DISABLE_KILL_KEY));
+                                mInitialized = true;
+                                Slog.i(TAG, "initialization complete");
+
                             }
 
                             default ->
                                     Slog.e(TAG, "invalid message: op=" + op);
                         }
                     }
+
+                    // Close the limiter to further actions.
+                    private void shutdown() {
+                        synchronized (mDumpLock) {
+                            long service = mNative.get();
+                            mNative.set(0);
+                            closeLimiter(service);
+                        }
+                        unregisterForFlagUpdates();
+                        mOpen = false;
+                        Slog.i(TAG, "shutdown");
+                    }
                 };
 
             // Note that getConfiguration() accepts a null input.
             mConfiguration = getConfiguration(mInjector.configFile());
             initializeMemoryLimits();
+        }
+
+        // Initialize the allow-list
+        @VisibleForTesting
+        void initializeExemptList() {
+            Context context = mInjector.mContext;
+            if (context == null) return;
+
+            String serviceStr = context.getString(com.android.internal.R.string
+                    .config_defaultOnDeviceSandboxedInferenceService);
+            if (serviceStr != null && !serviceStr.isEmpty()) {
+                ComponentName cname = ComponentName.unflattenFromString(serviceStr);
+                if (cname != null && cname.getPackageName() != null) {
+                    String pkg = cname.getPackageName();
+                    Slog.i(TAG, "adding " + pkg + " to the exempt list");
+                    mExemptList.add(pkg);
+                }
+            }
         }
 
         // Initialize the memory limits.  This exits immediately if memTotal or swapTotal is not
@@ -527,6 +634,73 @@ class MemoryLimiter implements AutoCloseable {
         }
 
         @Override
+        public void onSystemReady() {
+            registerForFlagUpdates();
+            sendCommand(MESSAGE_INIT, 0, 0, null);
+        }
+
+        // The flag update listener.
+        private final DeviceConfig.OnPropertiesChangedListener mFlagListener =
+                this::updateRuntimeFlags;
+        /**
+         * Register for DeviceConfig updates.
+         */
+        private void registerForFlagUpdates() {
+            DeviceConfig.addOnPropertiesChangedListener(DC_NAMESPACE,
+                    BackgroundThread.getExecutor(), mFlagListener);
+        }
+
+        /**
+         * Unregister for DeviceConfig updates.
+         */
+        private void unregisterForFlagUpdates() {
+            DeviceConfig.removeOnPropertiesChangedListener(mFlagListener);
+        }
+
+        /**
+         * Fetch the current values of the runtime-disable flags.  This is called during system
+         * initialization and whenever the flags may have changed.
+         */
+        @VisibleForTesting
+        void updateRuntimeFlags(DeviceConfig.Properties properties) {
+            if (!properties.getNamespace().equals(DC_NAMESPACE)) {
+                return;
+            }
+            for (String key : properties.getKeyset()) {
+                if (key == null) {
+                    continue;
+                }
+                switch (key) {
+                    case DISABLE_LIMITS_KEY:
+                        final boolean oldEnable = mDisableLimits;
+                        mDisableLimits = properties.getBoolean(key, DISABLE_LIMITS_DEFAULT);
+                        if (oldEnable != mDisableLimits) {
+                            Slog.i(TAG, "Flag " + key + " changed from " + oldEnable
+                                    + " to " + mDisableLimits);
+                        }
+                        break;
+                    case DISABLE_KILL_KEY:
+                        final boolean oldKill = mDisableKill;
+                        mDisableKill = properties.getBoolean(key, DISABLE_KILL_DEFAULT);
+                        if (oldKill != mDisableKill) {
+                            Slog.i(TAG, "Flag " + key + " changed from " + oldKill
+                                    + " to " + mDisableKill);
+                        }
+                        break;
+                }
+            }
+        }
+
+        @Override
+        public boolean isExempt(String pkg) {
+            if (mExemptList.contains(pkg)) {
+                Slog.i(TAG, "exempting " + pkg);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
         public void setPidUid(int pid, int uid) {
             sendCommand(MESSAGE_START, pid, uid, null);
         }
@@ -542,7 +716,7 @@ class MemoryLimiter implements AutoCloseable {
             // proc state.  If the feature is disabled at runtime, return the wide-open limit set.
             // Every process that is currently under the feature's control will have its limits
             // set to "max" on the next proc state change.
-            return sDisableLimits ? mLimitsUnlimited : mStateLimit.get(newState);
+            return mDisableLimits ? mLimitsUnlimited : mStateLimit.get(newState);
         }
 
         // Allow burst of up to MAX_TOKENS reports in any period.
@@ -698,8 +872,8 @@ class MemoryLimiter implements AutoCloseable {
 
             final long meg = 1024 * 1024;
             final String a = "enabled limits=%s monitoring=%s killing=%s ignored=%s";
-            dumpLine(pw, formatSimple(a, !sDisableLimits, mInjector.isMonitoringEnabled(),
-                            !sDisableKill, ignoredUid()));
+            dumpLine(pw, formatSimple(a, !mDisableLimits, mInjector.isMonitoringEnabled(),
+                            !mDisableKill, ignoredUid()));
 
             final Limits vis = mLimitsVisible;
             final Limits notVis = mLimitsNotVisible;
@@ -801,34 +975,6 @@ class MemoryLimiter implements AutoCloseable {
     private final Controller mController;
 
     /**
-     * The DeviceConfig key to disable memory limiter limits at runtime.  The default is false
-     * (limits are enabled).
-     */
-    @VisibleForTesting
-    static final String DISABLE_LIMITS_KEY = "memory_limiter_disable_limits";
-
-    /**
-     * The DeviceConfig key to disable killing when limits are exceeded.  The default is false
-     * (killing is enabled).
-     */
-    @VisibleForTesting
-    static final String DISABLE_KILL_KEY = "memory_limiter_disable_kill";
-
-    /** The build-time default value for the memory limiter enablement. */
-    private static final boolean DISABLE_LIMITS_DEFAULT = false;
-
-    /** The build-time default value for the memory limiter kill behavior. */
-    private static final boolean DISABLE_KILL_DEFAULT = false;
-
-    /** The current runtime state of the memory limiter, potentially overridden by DeviceConfig. */
-    @VisibleForTesting
-    static volatile boolean sDisableLimits = DISABLE_LIMITS_DEFAULT;
-
-    /** The current runtime state of the kill behavior, potentially overridden by DeviceConfig. */
-    @VisibleForTesting
-    static volatile boolean sDisableKill = DISABLE_KILL_DEFAULT;
-
-    /**
      * Initialize the native layer and any maps.  This eventually makes a native call and
      * therefore cannot be invoked before the native libraries are loaded.  Unit tests call this
      * directly to supply specialized controllers.
@@ -838,40 +984,11 @@ class MemoryLimiter implements AutoCloseable {
         mController = controller;
     }
 
+    /**
+     * Complete initialization.
+     */
     void onSystemReady() {
-        DeviceConfig.addOnPropertiesChangedListener(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
-                BackgroundThread.getExecutor(), this::updateRuntimeFlags);
-        updateRuntimeFlags(DeviceConfig.getProperties(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
-                DISABLE_LIMITS_KEY, DISABLE_KILL_KEY));
-    }
-
-    private void updateRuntimeFlags(DeviceConfig.Properties properties) {
-        if (!properties.getNamespace().equals(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER)) {
-            return;
-        }
-        for (String key : properties.getKeyset()) {
-            if (key == null) {
-                continue;
-            }
-            switch (key) {
-                case DISABLE_LIMITS_KEY:
-                    final boolean oldEnable = sDisableLimits;
-                    sDisableLimits = properties.getBoolean(key, DISABLE_LIMITS_DEFAULT);
-                    if (oldEnable != sDisableLimits) {
-                        Slog.i(TAG, "Flag " + key + " changed from " + oldEnable
-                                + " to " + sDisableLimits);
-                    }
-                    break;
-                case DISABLE_KILL_KEY:
-                    final boolean oldKill = sDisableKill;
-                    sDisableKill = properties.getBoolean(key, DISABLE_KILL_DEFAULT);
-                    if (oldKill != sDisableKill) {
-                        Slog.i(TAG, "Flag " + key + " changed from " + oldKill
-                                + " to " + sDisableKill);
-                    }
-                    break;
-            }
-        }
+        mController.onSystemReady();
     }
 
     /**
@@ -901,13 +1018,13 @@ class MemoryLimiter implements AutoCloseable {
      */
     @VisibleForTesting
     static boolean isMemoryLimiterSupported() {
-        return isMemoryLimiterSupported(new Injector().configFile());
+        return isMemoryLimiterSupported(new Injector(null).configFile());
     }
 
     /**
      * Construct the default memory limiter.
      */
-    private static Controller getDefaultController() {
+    private static Controller getDefaultController(Context context) {
         if (!Flags.memoryLimiterEnable()) {
             // The feature is disabled.
             return new ControllerDisabled();
@@ -922,15 +1039,15 @@ class MemoryLimiter implements AutoCloseable {
         } else {
             // The feature is enabled, this is system_server, a configuration file is
             // present, and there is sufficient ram.
-            return new ControllerEnabled(new Injector());
+            return new ControllerEnabled(new Injector(context));
         }
     }
 
     /**
      * Create the default MemoryLimiter, based on the feature flag and the enclosing process.
      */
-    static MemoryLimiter getDefaultMemoryLimiter() {
-        return new MemoryLimiter(getDefaultController());
+    static MemoryLimiter getDefaultMemoryLimiter(Context context) {
+        return new MemoryLimiter(getDefaultController(context));
     }
 
     // The object that tracks the state of an individual process.  It is not static.  Methods in
@@ -941,14 +1058,31 @@ class MemoryLimiter implements AutoCloseable {
         private int mPid = INVALID_PID;
         // The uid that this instance controls.
         private int mUid = INVALID_UID;
+        // The package name as known at the time the UID was set.
+        private String mPkg = null;
         // The last limit assigned to the process.
         private Limits mLimit = null;
 
+        // No limits are applied until this flag goes true.
+        private boolean mIsReady = false;
+
         /**
-         * Return true if the process should be monitored and limited.
+         * Update the exemption flag.  This is called whenever the pid or uid changes.  Return the
+         * final state of the flag.  Note that this is only called if the controller is enabled.
          */
-        private boolean shouldMonitor() {
-            return (mPid != INVALID_PID && mUid != INVALID_UID && mUid >= FIRST_APPLICATION_UID);
+        private boolean updateIsReady() {
+            if (mPid == INVALID_PID || mUid == INVALID_UID || mUid < FIRST_APPLICATION_UID) {
+                mIsReady = false;
+            } else if (mPkg == null) {
+                // No package name, so no exemption check.
+                mIsReady = true;
+            } else if (mController.isExempt(mPkg)) {
+                // This process will never go ready because it is exempt.
+                mIsReady = false;
+            } else {
+                mIsReady = true;
+            }
+            return mIsReady;
         }
 
         /**
@@ -957,7 +1091,7 @@ class MemoryLimiter implements AutoCloseable {
          * the pid or uid changes.
          */
         private void maybeStart() {
-            if (!shouldMonitor()) return;
+            if (!updateIsReady()) return;
             mLimit = null;
             mController.setPidUid(mPid, mUid);
         }
@@ -966,12 +1100,13 @@ class MemoryLimiter implements AutoCloseable {
          * Set the UID.  If this is change from the previous pid/uid combination then start the
          * process.
          */
-        void setUid(int uid) {
+        void setUid(int uid, String pkg) {
             if (!mController.isEnabled()) return;
-            if (uid == mUid) {
+            if (mUid == uid && Objects.equals(mPkg, pkg)) {
                 return;
             }
             mUid = uid;
+            mPkg = pkg;
             maybeStart();
         }
 
@@ -1010,8 +1145,8 @@ class MemoryLimiter implements AutoCloseable {
         void onProcStateUpdated(@ProcessState int newState) {
             if (!mController.isEnabled()) return;
 
-            // Do not assign limits if the process should not be monitored.
-            if (!shouldMonitor()) return;
+            // Do not assign limits if the process is not ready.
+            if (!mIsReady) return;
 
             final Limits newLimit = mController.getStateLimit(newState);
             if (newLimit != null && !Objects.equals(mLimit, newLimit)) {

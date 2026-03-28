@@ -773,7 +773,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     public final IntentFirewall mIntentFirewall;
 
-    private final MemoryLimiter mMemoryLimiter = MemoryLimiter.getDefaultMemoryLimiter();
+    private MemoryLimiter mMemoryLimiter;
 
     /**
      * The global lock for AMS, it's de-facto the ActivityManagerService object as of now.
@@ -2632,6 +2632,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         mComponentAliasResolver = new ComponentAliasResolver(this);
         mApplicationSharedMemoryReadOnlyFd = null;
         sCreatorTokenCacheCleaner = new Handler(mHandlerThread.getLooper());
+        mMemoryLimiter = MemoryLimiter.getDefaultMemoryLimiter(mContext);
     }
 
     // Note: This method is invoked on the main thread but may need to attach various
@@ -2713,6 +2714,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                 mHandlerThread.getLooper(), mUserController, mConstants);
 
         mAppRestrictionController = new AppRestrictionController(mContext, this);
+
+        mMemoryLimiter = MemoryLimiter.getDefaultMemoryLimiter(mContext);
 
         mUseFifoUiScheduling = SystemProperties.getInt("sys.use_fifo_ui", 0) != 0;
 

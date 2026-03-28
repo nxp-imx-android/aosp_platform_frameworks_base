@@ -240,9 +240,9 @@ public class MockingOomAdjusterTests {
     private OomAdjusterInjector mInjector = new OomAdjusterInjector();
     private ActivityManagerService.OomAdjusterCallback mCallback;
     private final Handler mUpdateHandler = mock(Handler.class);
-    // A limiter that does nothing, because it is created with no arguments, outside
+    // A limiter that does nothing, because it is created without an Injector, outside
     // system_server.
-    private final MemoryLimiter mMemoryLimiter = MemoryLimiter.getDefaultMemoryLimiter();
+    private final MemoryLimiter mMemoryLimiter = MemoryLimiter.getDefaultMemoryLimiter(mContext);
 
     private HandlerThread mActivityStateHandlerThread;
     private Handler mActivityStateHandler;
