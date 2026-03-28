@@ -236,9 +236,7 @@ constructor(
     }
 
     interface Listener {
-        /**
-         * Called when the Internet details UI content is updated.
-         */
+        /** Called when the Internet details UI content is updated. */
         fun onContentDataUpdated()
     }
 
@@ -1167,6 +1165,13 @@ constructor(
         if (DEBUG) {
             Log.d(TAG, "unBind")
         }
+
+        // Android view inside of the composable view can call onRelease (triggering unBind) before
+        // bind() has ever been executed, so we must check if the lifecycle is initialized.
+        if (!::lifecycleRegistry.isInitialized) {
+            return
+        }
+
         listeners.forEach { listeners.remove(it) }
         lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
         connectedMobileLayout?.setOnClickListener(null)
