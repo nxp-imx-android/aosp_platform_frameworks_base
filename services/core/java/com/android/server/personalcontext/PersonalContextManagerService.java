@@ -729,11 +729,10 @@ public class PersonalContextManagerService extends SystemService {
     }
 
     private boolean isEnabledForUser(int userId) {
-        // TODO(b/477958468): Make the default "disabled".
         return Settings.Secure.getIntForUser(
                 getContext().getContentResolver(),
                 Settings.Secure.PERSONAL_CONTEXT_ENABLED,
-                1, userId) == 1;
+                0, userId) == 1;
     }
 
     @VisibleForTesting
