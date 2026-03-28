@@ -137,6 +137,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.modifier
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ClipRectModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.CollapsiblePriorityModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ComponentVisibilityOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.DimensionConstraintsModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.DimensionModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.DrawContentOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.GraphicsLayerModifierOperation;
@@ -1577,6 +1578,11 @@ public class RecordingRemoteComposeBuffer extends RemoteComposeBuffer {
     @Override
     public void addWidthInModifierOperation(float min, float max) {
         addOperation(new WidthInModifierOperation(min, max));
+    }
+
+    @Override
+    public void addDimensionConstraintsModifierOperation(int type, float min, float max) {
+        addOperation(new DimensionConstraintsModifierOperation(type, min, max));
     }
 
     @Override

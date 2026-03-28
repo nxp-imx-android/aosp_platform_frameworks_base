@@ -28,8 +28,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.measure.
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.Measurable;
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.MeasurePass;
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.Size;
-import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.HeightInModifierOperation;
-import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.WidthInModifierOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.DimensionInModifierOperation;
 
 /** Base class for layout managers -- resizable components. */
 public abstract class LayoutManager extends LayoutComponent implements Measurable {
@@ -38,6 +37,7 @@ public abstract class LayoutManager extends LayoutComponent implements Measurabl
 
     private static final int INSET_WRAP_MEASURE = 2;
     private static final int INLINE_EXPRESSION_MEASURE = 3;
+    private static final int ENFORCE_CONSTRAINTS = 4;
 
     public static final int DEFAULT_MEASURE_TYPE = INLINE_EXPRESSION_MEASURE;
 
@@ -315,12 +315,12 @@ public abstract class LayoutManager extends LayoutComponent implements Measurabl
         if (mHeightModifier.isIntrinsicMin()) {
             maxHeight = minIntrinsicHeight(context.getContext()) + mPaddingTop + mPaddingBottom;
         }
-        WidthInModifierOperation widthIn = mWidthModifier.getWidthIn();
+        DimensionInModifierOperation widthIn = mWidthModifier.getWidthIn();
         if (widthIn != null) {
             minWidth = Math.max(minWidth, widthIn.getMin());
             maxWidth = Math.min(maxWidth, widthIn.getMax());
         }
-        HeightInModifierOperation heightIn = mHeightModifier.getHeightIn();
+        DimensionInModifierOperation heightIn = mHeightModifier.getHeightIn();
         if (heightIn != null) {
             minHeight = Math.max(minHeight, heightIn.getMin());
             maxHeight = Math.min(maxHeight, heightIn.getMax());
@@ -564,6 +564,13 @@ public abstract class LayoutManager extends LayoutComponent implements Measurabl
         measuredWidth = Math.max(measuredWidth, minWidth);
         measuredHeight = Math.max(measuredHeight, minHeight);
 
+        if (measureVersion >= ENFORCE_CONSTRAINTS) {
+            measuredWidth = Math.min(measuredWidth, maxWidth);
+            measuredHeight = Math.min(measuredHeight, maxHeight);
+
+            measuredWidth = applyWidthConstraints(measuredWidth);
+            measuredHeight = applyHeightConstraints(measuredHeight);
+        }
         ComponentMeasure m = measure.get(this);
         m.setW(measuredWidth);
         m.setH(measuredHeight);

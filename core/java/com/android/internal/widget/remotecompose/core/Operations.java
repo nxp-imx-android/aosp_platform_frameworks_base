@@ -144,6 +144,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.modifier
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ClipRectModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.CollapsiblePriorityModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ComponentVisibilityOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.DimensionConstraintsModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.DrawContentOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.GraphicsLayerModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.HeightInModifierOperation;
@@ -322,6 +323,7 @@ public class Operations {
     public static final int LAYOUT_TEXT = 208;
     public static final int CORE_TEXT = 239;
     public static final int TEXT_STYLE = 242;
+    public static final int MODIFIER_DIMENSION_CONSTRAINTS = 243;
     public static final int LAYOUT_STATE = 217;
     public static final int LAYOUT_IMAGE = 234;
 
@@ -473,6 +475,8 @@ public class Operations {
             sMapV7AndroidXExperimental.put(LAYOUT_COMPUTE, LayoutComputeOperation::read);
             sMapV7AndroidXExperimental.put(LAYOUT_FLOW, FlowLayout::read);
             sMapV7AndroidXExperimental.put(MODIFIER_MULTI_CLICK, MultiClickModifier::read);
+            sMapV7AndroidXExperimental.put(MODIFIER_DIMENSION_CONSTRAINTS,
+                    DimensionConstraintsModifierOperation::read);
         }
         return sMapV7AndroidXExperimental;
     }
@@ -517,6 +521,8 @@ public class Operations {
             sMapV7WidgetsExperimental.put(LAYOUT_COMPUTE, LayoutComputeOperation::read);
             sMapV7WidgetsExperimental.put(LAYOUT_FLOW, FlowLayout::read);
             sMapV7WidgetsExperimental.put(MODIFIER_MULTI_CLICK, MultiClickModifier::read);
+            sMapV7WidgetsExperimental.put(MODIFIER_DIMENSION_CONSTRAINTS,
+                    DimensionConstraintsModifierOperation::read);
         }
         return sMapV7WidgetsExperimental;
     }

@@ -33,7 +33,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.LayoutCo
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.ComponentMeasure;
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.MeasurePass;
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.Size;
-import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.HeightInModifierOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.DimensionInModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ScrollModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.utils.DebugLog;
 import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
@@ -350,7 +350,7 @@ public class ColumnLayout extends LayoutManager {
                         }
                         float weight = ((LayoutComponent) child).getHeightModifier().getValue();
                         float childHeight = (weight * availableSpace) / totalWeights;
-                        HeightInModifierOperation heightInConstraints =
+                        DimensionInModifierOperation heightInConstraints =
                                 ((LayoutComponent) child).getHeightModifier().getHeightIn();
                         if (heightInConstraints != null) {
                             float min = heightInConstraints.getMin();
