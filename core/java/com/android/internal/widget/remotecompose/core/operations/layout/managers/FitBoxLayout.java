@@ -31,9 +31,8 @@ import com.android.internal.widget.remotecompose.core.operations.layout.LayoutCo
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.ComponentMeasure;
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.MeasurePass;
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.Size;
-import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.HeightInModifierOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.DimensionInModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.HeightModifierOperation;
-import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.WidthInModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.WidthModifierOperation;
 import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 
@@ -128,14 +127,14 @@ public class FitBoxLayout extends LayoutManager {
                 LayoutComponent lc = (LayoutComponent) c;
                 WidthModifierOperation widthModifier = lc.getWidthModifier();
                 if (widthModifier != null) {
-                    WidthInModifierOperation widthIn = lc.getWidthModifier().getWidthIn();
+                    DimensionInModifierOperation widthIn = lc.getWidthModifier().getWidthIn();
                     if (widthIn != null) {
                         cw = widthIn.getMin();
                     }
                 }
                 HeightModifierOperation heightModifier = lc.getHeightModifier();
                 if (heightModifier != null) {
-                    HeightInModifierOperation heightIn = lc.getHeightModifier().getHeightIn();
+                    DimensionInModifierOperation heightIn = lc.getHeightModifier().getHeightIn();
                     if (heightIn != null) {
                         ch = heightIn.getMin();
                     }
@@ -256,14 +255,14 @@ public class FitBoxLayout extends LayoutManager {
                 LayoutComponent lc = (LayoutComponent) c;
                 WidthModifierOperation widthModifier = lc.getWidthModifier();
                 if (widthModifier != null) {
-                    WidthInModifierOperation widthIn = lc.getWidthModifier().getWidthIn();
+                    DimensionInModifierOperation widthIn = lc.getWidthModifier().getWidthIn();
                     if (widthIn != null) {
                         cw = widthIn.getMin();
                     }
                 }
                 HeightModifierOperation heightModifier = lc.getHeightModifier();
                 if (heightModifier != null) {
-                    HeightInModifierOperation heightIn = lc.getHeightModifier().getHeightIn();
+                    DimensionInModifierOperation heightIn = lc.getHeightModifier().getHeightIn();
                     if (heightIn != null) {
                         ch = heightIn.getMin();
                     }

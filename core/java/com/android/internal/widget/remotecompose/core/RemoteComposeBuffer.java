@@ -139,6 +139,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.modifier
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ClipRectModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.CollapsiblePriorityModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ComponentVisibilityOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.DimensionConstraintsModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.DrawContentOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.GraphicsLayerModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.HeightInModifierOperation;
@@ -2783,6 +2784,13 @@ public class RemoteComposeBuffer {
      */
     public void addWidthInModifierOperation(float min, float max) {
         WidthInModifierOperation.apply(mBuffer,  min, max);
+    }
+
+    /**
+     * Add a dimension constraints modifier operation
+     */
+    public void addDimensionConstraintsModifierOperation(int type, float min, float max) {
+        DimensionConstraintsModifierOperation.apply(mBuffer, type, min, max);
     }
 
     /**
