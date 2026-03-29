@@ -79,6 +79,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -165,6 +166,7 @@ import com.android.server.job.JobSchedulerInternal;
 import com.android.server.notification.NotificationManagerInternal;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.privatecompute.PccSandboxManagerInternal;
+import com.android.server.privatecompute.PrivateComputeStatsLogUtil;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.ActivityTaskManagerService;
 
@@ -310,6 +312,7 @@ public class ActivityManagerServiceTest {
                 .initMocks(this)
                 .mockStatic(AppGlobals.class)
                 .spyStatic(ServiceManager.class)
+                .spyStatic(PrivateComputeStatsLogUtil.class)
                 .strictness(Strictness.LENIENT)
                 .startMocking();
         MockitoAnnotations.initMocks(this);
@@ -366,6 +369,63 @@ public class ActivityManagerServiceTest {
                 mAms.mConstants.USAGE_STATS_INTERACTION_INTERVAL_POST_S);
         assertEquals(SERVICE_USAGE_INTERACTION,
                 mAms.mConstants.SERVICE_USAGE_INTERACTION_TIME_POST_S);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void bindPccBackupAgent_logsPccBackupAgentStarted() throws Exception {
+        runBindBackupAgentAndVerifyLogging(BACKUP_AGENT_PROCESS_PCC, PCC_UID_1, true, times(1));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void bindPccBackupAgent_processStartFailed_doesNotLogPccBackupAgentStarted()
+            throws Exception {
+        runBindBackupAgentAndVerifyLogging(BACKUP_AGENT_PROCESS_PCC, PCC_UID_1, false, never());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void bindPccBackupAgent_nonPccProcess_doesNotLogPccBackupAgentStarted()
+            throws Exception {
+        runBindBackupAgentAndVerifyLogging(BACKUP_AGENT_PROCESS_MAIN, -1, true, never());
+    }
+
+    @Test
+    @RequiresFlagsDisabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void bindPccBackupAgent_pccFlagDisabled_doesNotLogPccBackupAgentStarted()
+            throws Exception {
+        runBindBackupAgentAndVerifyLogging(BACKUP_AGENT_PROCESS_PCC, PCC_UID_1, true, never());
+    }
+
+    private void runBindBackupAgentAndVerifyLogging(int backupAgentProcess, int expectedPccUid,
+            boolean startSucceeds, VerificationMode mode) throws Exception {
+        ActivityManagerService spyAms = spy(mAms);
+
+        ApplicationInfo applicationInfo = new ApplicationInfo();
+        applicationInfo.packageName = TEST_PACKAGE;
+        applicationInfo.processName = TEST_PACKAGE;
+        applicationInfo.uid = TEST_UID;
+        applicationInfo.pccUid = expectedPccUid;
+        applicationInfo.backupAgentProcess = backupAgentProcess;
+
+        doReturn(applicationInfo).when(mPackageManager).getApplicationInfo(eq(TEST_PACKAGE),
+                anyLong(), anyInt());
+
+        doReturn(null).when(spyAms).getProcessRecordLocked(eq(TEST_PACKAGE), anyInt());
+
+        ProcessRecord appRec = startSucceeds
+                ? new ProcessRecord(mAms, applicationInfo, TAG, expectedPccUid)
+                : null;
+
+        doReturn(appRec).when(spyAms).startProcessLocked(anyString(), any(), anyBoolean(),
+                anyInt(), any(), anyInt(), anyBoolean(), anyBoolean());
+
+        spyAms.bindBackupAgent(TEST_PACKAGE, ApplicationThreadConstants.BACKUP_MODE_FULL,
+                UserHandle.USER_SYSTEM, BackupAnnotations.BackupDestination.CLOUD,
+                /* shouldUseRestrictedMode= */ true);
+
+        ExtendedMockito.verify(() -> PrivateComputeStatsLogUtil.logPccBackupAgentStarted(), mode);
     }
 
     @Test

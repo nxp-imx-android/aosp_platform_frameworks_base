@@ -39,7 +39,7 @@ per-file *Assist* = file:/core/java/android/service/voice/OWNERS
 per-file *Voice* = file:/core/java/android/service/voice/OWNERS
 
 # Content Provider
-per-file ContentProvider* = varunshah@google.com, yamasani@google.com
+per-file ContentProvider* = yamasani@google.com, rajekumar@google.com
 
 # Cached App Freezer
 per-file ProcessCachedOptimizerRecord.java = file:/PERFORMANCE_OWNERS

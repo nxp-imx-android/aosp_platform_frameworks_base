@@ -110,6 +110,7 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class PersonalContextManagerService extends SystemService {
     private static final String TAG = "PersonalContext";
+    protected static final String SYSTEM_PACKAGE = "android";
 
     @VisibleForTesting
     static final String ROLE_SYSTEM_UI_INTELLIGENCE = "android.app.role.SYSTEM_UI_INTELLIGENCE";
@@ -453,6 +454,18 @@ public class PersonalContextManagerService extends SystemService {
         return null;
     }
 
+    // TODO(b/497092547): Move someplace better.
+    protected static boolean isSystemPackage(String packageName) {
+        return TextUtils.equals(SYSTEM_PACKAGE, packageName);
+    }
+
+    private String getPackageNameForUid(int uid) {
+        if (Process.SYSTEM_UID == uid) {
+            return SYSTEM_PACKAGE;
+        }
+        return mPackageManager.getNameForUid(uid);
+    }
+
     @VisibleForTesting
     void startRefinerWorkflow(
             @UserIdInt int userId,
@@ -463,6 +476,11 @@ public class PersonalContextManagerService extends SystemService {
         if (!isEnabledForUser(userId)) {
             Slog.w(TAG, "Can't start refiner workflow because personal context is not enabled.");
             return;
+        }
+
+        final String packageName = getPackageNameForUid(callingUid);
+        if (!isPersonalContextModeEnabled(packageName, callingUid, userId)) {
+            throw new IllegalStateException("Personal Context is disabled for publishing package");
         }
 
         final UserState userState = getUserStateSynchronized(userId);
@@ -734,7 +752,7 @@ public class PersonalContextManagerService extends SystemService {
             return;
         }
 
-        final String packageName = mPackageManager.getNameForUid(callingUid);
+        final String packageName = getPackageNameForUid(callingUid);
         refiner.handleEvent(packageName, event);
     }
 
@@ -796,7 +814,7 @@ public class PersonalContextManagerService extends SystemService {
             Set<PublishedContextHint> attributionHints)
             throws GeneralSecurityException {
         return new PublishedContextHint.Builder(hint, HINT_SIGNING_KEY)
-                .setOriginatingPackage(mPackageManager.getNameForUid(callingUid))
+                .setOriginatingPackage(getPackageNameForUid(callingUid))
                 .addRenderTokens(renderTokens)
                 .addAttributionHints(attributionHints)
                 .build();
