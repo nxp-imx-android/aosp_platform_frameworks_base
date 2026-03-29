@@ -272,6 +272,45 @@ public class AccessControllerTest {
                 AccessController.ACCESS_BIND_CONTEXT_PERMISSION)).isFalse();
     }
 
+    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
+    @Test
+    public void testIsPackageAllowed_SystemPackage() {
+        final AccessController controller = new AccessControllerBuilder().build();
+        assertThat(controller.isPackageAllowed(
+            PersonalContextManagerService.SYSTEM_PACKAGE,
+            AccessController.ACCESS_PUBLISH_HINTS_ALLOWLIST)).isTrue();
+        assertThat(controller.isPackageAllowed(
+            PersonalContextManagerService.SYSTEM_PACKAGE,
+            AccessController.ACCESS_PUBLISH_INSIGHTS_ALLOWLIST)).isTrue();
+        assertThat(controller.isPackageAllowed(
+            PersonalContextManagerService.SYSTEM_PACKAGE,
+            AccessController.ACCESS_RECEIVE_HINTS_ALLOWLIST)).isTrue();
+        assertThat(controller.isPackageAllowed(
+            PersonalContextManagerService.SYSTEM_PACKAGE,
+            AccessController.ACCESS_RECEIVE_INSIGHTS_ALLOWLIST)).isTrue();
+        assertThat(controller.isPackageAllowed(
+            PersonalContextManagerService.SYSTEM_PACKAGE,
+            AccessController.ACCESS_FILTER_INSIGHTS_ALLOWLIST)).isTrue();
+        assertThat(controller.isPackageAllowed(
+            PersonalContextManagerService.SYSTEM_PACKAGE,
+            AccessController.ACCESS_REGISTER_VISUALIZER)).isTrue();
+        assertThat(controller.isPackageAllowed(
+            PersonalContextManagerService.SYSTEM_PACKAGE,
+            AccessController.ACCESS_PUBLISH_HINTS_PERMISSION)).isTrue();
+        assertThat(controller.isPackageAllowed(
+            PersonalContextManagerService.SYSTEM_PACKAGE,
+            AccessController.ACCESS_PUBLISH_INSIGHTS_PERMISSION)).isTrue();
+        assertThat(controller.isPackageAllowed(
+            PersonalContextManagerService.SYSTEM_PACKAGE,
+            AccessController.ACCESS_RECEIVE_HINTS_PERMISSION)).isTrue();
+        assertThat(controller.isPackageAllowed(
+            PersonalContextManagerService.SYSTEM_PACKAGE,
+            AccessController.ACCESS_RECEIVE_INSIGHTS_PERMISSION)).isTrue();
+        assertThat(controller.isPackageAllowed(
+            PersonalContextManagerService.SYSTEM_PACKAGE,
+            AccessController.ACCESS_BIND_CONTEXT_PERMISSION)).isTrue();
+    }
+
     private static ServiceInfo serviceInfo(
             String packageName,
             String name,
