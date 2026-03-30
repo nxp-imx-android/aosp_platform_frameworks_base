@@ -44,7 +44,8 @@ public class AiSealOdimTestService extends Service {
     }
 
     public class AiSealOdimTestServiceImpl extends IAiSealOdimTestService.Stub {
-        private final HandlerThread mHandlerThread = new HandlerThread("AiSealOdimTestServiceThread");
+        private final HandlerThread mHandlerThread =
+                new HandlerThread("AiSealOdimTestServiceThread");
         private Handler mHandler;
 
         // Synchronizes AiSeal service connection.
@@ -56,7 +57,10 @@ public class AiSealOdimTestService extends Service {
         public void onCreate() {
             mHandlerThread.start();
             mHandler = new Handler(mHandlerThread.getLooper());
-            connectGuestService();
+            mHandler.post(
+                    () -> {
+                        connectGuestService();
+                    });
         }
 
         public void onDestroy() {
