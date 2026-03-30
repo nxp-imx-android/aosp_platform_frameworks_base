@@ -59,6 +59,9 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.Looper;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -68,6 +71,7 @@ import com.android.server.wm.ActivityTaskManagerInternal;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -79,10 +83,13 @@ import org.mockito.quality.Strictness;
 public class PendingIntentControllerTest {
     private static final String TEST_PACKAGE_NAME = "test-package-1";
     private static final String TEST_FEATURE_ID = "test-feature-1";
+    private static final String TEST_FEATURE_ID_2 = "test-feature-2";
     private static final int TEST_CALLING_UID = android.os.Process.myUid();
     private static final int TEST_USER_ID = 0;
     private static final Intent[] TEST_INTENTS = new Intent[]{new Intent("com.test.intent")};
 
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
     @Mock
     private UserController mUserController;
     @Mock
@@ -208,6 +215,54 @@ public class PendingIntentControllerTest {
                     CANCEL_REASON_USER_STOPPED);
             assertCancelReason(CANCEL_REASON_USER_STOPPED, pir.cancelReason);
         }
+    }
+
+    @Test
+    @EnableFlags(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testRemovePendingIntentsForPackage_withPccUid_cleansUp() {
+        final int hostAppId = 10001;
+        final int hostUid = UserHandle.getUid(TEST_USER_ID, hostAppId);
+        final int pccUid = 30001;
+
+        final PendingIntentRecord pccPir = mPendingIntentController.getIntentSender(
+                ActivityManager.INTENT_SENDER_BROADCAST,
+                TEST_PACKAGE_NAME, TEST_FEATURE_ID, pccUid, TEST_USER_ID, null, null, 0,
+                TEST_INTENTS, null, 0, null);
+
+        final PendingIntentRecord hostPir = mPendingIntentController.getIntentSender(
+                ActivityManager.INTENT_SENDER_BROADCAST,
+                TEST_PACKAGE_NAME, TEST_FEATURE_ID_2, hostUid, TEST_USER_ID, null, null, 0,
+                TEST_INTENTS, null, 0, null);
+
+        mPendingIntentController.removePendingIntentsForPackage(TEST_PACKAGE_NAME,
+                TEST_USER_ID, hostAppId, true, CANCEL_REASON_OWNER_FORCE_STOPPED);
+
+        assertCancelReason(CANCEL_REASON_OWNER_FORCE_STOPPED, hostPir.cancelReason);
+        assertCancelReason(CANCEL_REASON_OWNER_FORCE_STOPPED, pccPir.cancelReason);
+    }
+
+    @Test
+    @DisableFlags(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testRemovePendingIntentsForPackage_withPccUid_flagDisabled_doesNotCleanUp() {
+        final int hostAppId = 10001;
+        final int hostUid = UserHandle.getUid(TEST_USER_ID, hostAppId);
+        final int pccUid = 30001; // Maps to hostAppId 10001
+
+        final PendingIntentRecord pccPir = mPendingIntentController.getIntentSender(
+                ActivityManager.INTENT_SENDER_BROADCAST,
+                TEST_PACKAGE_NAME, TEST_FEATURE_ID, pccUid, TEST_USER_ID, null, null, 0,
+                TEST_INTENTS, null, 0, null);
+
+        final PendingIntentRecord hostPir = mPendingIntentController.getIntentSender(
+                ActivityManager.INTENT_SENDER_BROADCAST,
+                TEST_PACKAGE_NAME, TEST_FEATURE_ID_2, hostUid, TEST_USER_ID, null, null, 0,
+                TEST_INTENTS, null, 0, null);
+
+        mPendingIntentController.removePendingIntentsForPackage(TEST_PACKAGE_NAME,
+                TEST_USER_ID, hostAppId, true, CANCEL_REASON_OWNER_FORCE_STOPPED);
+
+        assertCancelReason(CANCEL_REASON_OWNER_FORCE_STOPPED, hostPir.cancelReason);
+        assertCancelReason(CANCEL_REASON_NULL, pccPir.cancelReason);
     }
 
     @Test

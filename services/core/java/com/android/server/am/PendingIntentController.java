@@ -16,6 +16,8 @@
 
 package com.android.server.am;
 
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
+
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_MU;
 import static com.android.server.am.ActivityManagerDebugConfig.POSTFIX_MU;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
@@ -65,6 +67,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Helper class for {@link ActivityManagerService} responsible for managing pending intents.
@@ -217,6 +220,7 @@ public class PendingIntentController {
                 return false;
             }
 
+            final boolean pccEnabled = enablePccFrameworkSupport();
             Iterator<WeakReference<PendingIntentRecord>> it
                     = mIntentSenderRecords.values().iterator();
             while (it.hasNext()) {
@@ -237,16 +241,18 @@ public class PendingIntentController {
                         continue;
                     }
                 } else {
-                    if (!getPackageManagerInternal().isSameApp(packageName, pir.uid,
-                            UserHandle.getUserId(pir.uid))) {
-                        // Different app, skip it.
+                    final boolean isSameApp = pccEnabled
+                            ? UserHandle.isSameAppIdWithPcc(pir.uid, appId)
+                            : UserHandle.getAppId(pir.uid) == appId;
+                    if (!isSameApp) {
+                        // Different app id, skip it.
                         continue;
                     }
                     if (userId != UserHandle.USER_ALL && pir.key.userId != userId) {
                         // Different user, skip it.
                         continue;
                     }
-                    if (!pir.key.packageName.equals(packageName)) {
+                    if (!Objects.equals(pir.key.packageName, packageName)) {
                         // Different package, skip it.
                         continue;
                     }
