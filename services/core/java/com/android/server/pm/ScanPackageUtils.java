@@ -26,6 +26,7 @@ import static com.android.server.pm.PackageManagerService.DEBUG_PACKAGE_SCANNING
 import static com.android.server.pm.PackageManagerService.PLATFORM_PACKAGE_NAME;
 import static com.android.server.pm.PackageManagerService.SCAN_AS_APEX;
 import static com.android.server.pm.PackageManagerService.SCAN_AS_APK_IN_APEX;
+import static com.android.server.pm.PackageManagerService.SCAN_AS_FACTORY;
 import static com.android.server.pm.PackageManagerService.SCAN_AS_FULL_APP;
 import static com.android.server.pm.PackageManagerService.SCAN_AS_INSTANT_APP;
 import static com.android.server.pm.PackageManagerService.SCAN_AS_ODM;
@@ -284,12 +285,9 @@ final class ScanPackageUtils {
             final boolean fullApp = (scanFlags & SCAN_AS_FULL_APP) != 0;
             setInstantAppForUser(injector, pkgSetting, userId, instantApp, fullApp);
         }
-        // Note that we scan APKs in updated APEXes as new installs, but such APKs should not
-        // be marked as updated system apps (they completely replace system packages of the
-        // same name, rather than update them).
         // TODO(patb): see if we can do away with disabled check here.
         if (disabledPkgSetting != null
-                || ((scanFlags & (SCAN_NEW_INSTALL | SCAN_AS_APK_IN_APEX)) == SCAN_NEW_INSTALL
+                || (0 != (scanFlags & SCAN_NEW_INSTALL)
                 && pkgSetting != null && pkgSetting.isSystem())) {
             pkgSetting.getPkgState().setUpdatedSystemApp(true);
         }
@@ -309,10 +307,7 @@ final class ScanPackageUtils {
         // The native libs of Apex is located in apex_payload.img, don't need to parse it from
         // the original apex file
         if (!isApex) {
-            // Note that we scan APKs in updated APEXes as new installs, but such APKs should not
-            // skip ABI derivation or restoration. They don't go through the regular installation
-            // path where ABI is normally derived.
-            if ((scanFlags & (SCAN_NEW_INSTALL | SCAN_AS_APK_IN_APEX)) != SCAN_NEW_INSTALL) {
+            if ((scanFlags & SCAN_NEW_INSTALL) == 0) {
                 if (needToDeriveAbi) {
                     Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, "derivePackageAbi");
                     try {
@@ -1141,5 +1136,12 @@ final class ScanPackageUtils {
     /** Directory where installed application's 32-bit native libraries are copied. */
     public static File getAppLib32InstallDir() {
         return new File(Environment.getDataDirectory(), "app-lib");
+    }
+
+    /** Returns true if the package is being scanned as an APK-in-APEX in an updated APEX. */
+    public static boolean isApkInUpdatedApex(@PackageManagerService.ScanFlags int scanFlags) {
+        // LINT.IfChange(isApkInUpdatedApex)
+        return (scanFlags & (SCAN_AS_APK_IN_APEX | SCAN_AS_FACTORY)) == SCAN_AS_APK_IN_APEX;
+        // LINT.ThenChange()
     }
 }

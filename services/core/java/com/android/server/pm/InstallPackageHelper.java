@@ -99,6 +99,7 @@ import static com.android.server.pm.PackageManagerServiceUtils.isInstalledByAdb;
 import static com.android.server.pm.PackageManagerServiceUtils.logCriticalInfo;
 import static com.android.server.pm.PackageManagerServiceUtils.makeDirRecursive;
 import static com.android.server.pm.ParallelPackageParser.OrderedResult;
+import static com.android.server.pm.ScanPackageUtils.isApkInUpdatedApex;
 import static com.android.server.pm.SharedUidMigration.BEST_EFFORT;
 
 import android.annotation.NonNull;
@@ -4264,8 +4265,7 @@ final class InstallPackageHelper {
         // image; treat this as a replacement of the existing system image package.
         final boolean replace =
                 (scanApksInUpdatedApexAsNewInstalls()
-                        && (scanFlags & (SCAN_AS_APK_IN_APEX | SCAN_NEW_INSTALL))
-                                == (SCAN_AS_APK_IN_APEX | SCAN_NEW_INSTALL)
+                        && isApkInUpdatedApex(scanFlags)
                         && scanResult.mRequest.mOldPkg != null
                         && existingPkgSetting != null
                         && existingPkgSetting.isSystem()
@@ -5005,8 +5005,15 @@ final class InstallPackageHelper {
                 }
             }
 
+            // An updated APEX can include a package that is already present in the system
+            // image; addForInitLI() will treat it as a replacement of the existing system
+            // image package.
+            final boolean allowDuplicatePackageName =
+                    scanApksInUpdatedApexAsNewInstalls() && isApkInUpdatedApex(scanFlags);
+
             // A package name must be unique; don't allow duplicates
             if ((scanFlags & SCAN_NEW_INSTALL) == 0
+                    && !allowDuplicatePackageName
                     && mPm.mPackages.containsKey(pkg.getPackageName())) {
                 throw new PackageManagerException(INSTALL_FAILED_DUPLICATE_PACKAGE,
                         "Application package " + pkg.getPackageName()
@@ -5017,6 +5024,7 @@ final class InstallPackageHelper {
                 // Static libs have a synthetic package name containing the version
                 // but we still want the base name to be unique.
                 if ((scanFlags & SCAN_NEW_INSTALL) == 0
+                        && !allowDuplicatePackageName
                         && mPm.mPackages.containsKey(pkg.getManifestPackageName())) {
                     throw PackageManagerException.ofInternalError(
                             "Duplicate static shared lib provider package",
