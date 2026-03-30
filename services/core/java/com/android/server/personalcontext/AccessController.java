@@ -26,6 +26,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
 import android.content.res.Resources;
+import android.os.Process;
 import android.os.UserHandle;
 import android.permission.PermissionManager;
 import android.service.personalcontext.Flags;
@@ -221,6 +222,10 @@ public class AccessController {
      * @return {@code true} if the service client has the specified access, {@code false} otherwise
      */
     public boolean isAnyPackageForUidAllowed(int uid, @Access int accessFlags) {
+        if (uid == Process.SYSTEM_UID) {
+            return true;
+        }
+
         final String[] packagesForUid = mPackageManager.getPackagesForUid(uid);
 
         if (packagesForUid == null) {

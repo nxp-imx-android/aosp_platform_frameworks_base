@@ -29,6 +29,7 @@ import android.Manifest;
 import android.app.role.RoleManager;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.os.Process;
 import android.os.UserHandle;
 import android.permission.PermissionManager;
 import android.platform.test.annotations.EnableFlags;
@@ -248,6 +249,17 @@ public class AccessControllerTest {
                         | AccessController.ACCESS_RECEIVE_HINTS_ALLOWLIST
                         | AccessController.ACCESS_RECEIVE_INSIGHTS_ALLOWLIST))
                 .isFalse();
+    }
+
+    @Test
+    public void testBypassAllowlistCheckForSystemUid() {
+        final AccessController controller = new AccessControllerBuilder()
+                .build();
+        assertThat(controller.isAnyPackageForUidAllowed(12345,
+                AccessController.ACCESS_FILTER_INSIGHTS_ALLOWLIST)).isFalse();
+        assertThat(controller.isAnyPackageForUidAllowed(
+                    Process.SYSTEM_UID,
+                    AccessController.ACCESS_FILTER_INSIGHTS_ALLOWLIST)).isTrue();
     }
 
     private static class AccessControllerBuilder {
