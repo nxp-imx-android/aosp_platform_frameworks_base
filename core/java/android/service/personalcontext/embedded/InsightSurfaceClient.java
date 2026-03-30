@@ -224,7 +224,12 @@ public class InsightSurfaceClient implements AutoCloseable {
                         Log.d(TAG, "onSurfaceUpdated [" + surfacePackage + "]");
                     }
                     executeWithCallbacks(clientCallback -> {
-                        Preconditions.checkState(mSession != null);
+                        if (mSession == null) {
+                            // The session was released before the update arrived.
+                            // TODO(b/497854105): Root-cause and fix the underlying issue.
+                            Log.e(TAG, "mSession null in onSurfaceUpdated");
+                            return;
+                        }
 
                         // SurfacePackage's SurfaceControl can be null if the SurfaceControlViewHost
                         // has been detached from its window before the update has arrived.
