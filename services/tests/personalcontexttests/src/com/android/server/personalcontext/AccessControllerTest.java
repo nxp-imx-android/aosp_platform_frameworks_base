@@ -35,6 +35,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
 import android.content.res.Resources;
 import android.os.PermissionEnforcer;
+import android.os.Process;
 import android.os.UserHandle;
 import android.permission.PermissionManager;
 import android.platform.test.annotations.EnableFlags;
@@ -344,6 +345,33 @@ public class AccessControllerTest {
                 Manifest.permission.PERSONAL_CONTEXT_RECEIVE_INSIGHTS);
         checkPermission(AccessController.ACCESS_HOST_INSIGHT_SURFACE_PERMISSION,
                 Manifest.permission.PERSONAL_CONTEXT_HOST_INSIGHT_SURFACE);
+    }
+
+    @Test
+    public void testBypassAllowlistCheckForSystemUid() {
+        final AccessController controller = new AccessControllerBuilder()
+                .build();
+        assertThat(controller.isAnyPackageForUidAllowed(12345,
+                AccessController.ACCESS_FILTER_INSIGHTS_ALLOWLIST)).isFalse();
+        assertThat(controller.isAnyPackageForUidAllowed(
+                    Process.SYSTEM_UID,
+                    AccessController.ACCESS_FILTER_INSIGHTS_ALLOWLIST)).isTrue();
+    }
+
+    @Test
+    public void testBypassPermissionsCheckForSystemUid() {
+        final AccessController controller = new AccessControllerBuilder()
+                .revokePermission(Manifest.permission.PERSONAL_CONTEXT_RECEIVE_HINTS)
+                .build();
+
+        assertThrows(SecurityException.class, () -> controller.enforcePermissions(0, 12345,
+                AccessController.ACCESS_RECEIVE_HINTS_PERMISSION));
+        try {
+            controller.enforcePermissions(0, Process.SYSTEM_UID,
+                    AccessController.ACCESS_RECEIVE_HINTS_PERMISSION);
+        } catch (Throwable e) {
+            fail("Should not have thrown " + e);
+        }
     }
 
     private void checkPermission(@AccessController.Access int access, String permission) {
