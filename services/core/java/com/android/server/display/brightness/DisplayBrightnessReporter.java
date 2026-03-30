@@ -27,6 +27,7 @@ import android.os.Handler;
 import android.os.PowerManager;
 
 import com.android.internal.display.BrightnessSynchronizer;
+import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.server.display.DisplayBrightnessState;
 import com.android.server.display.config.SensorData;
@@ -107,22 +108,32 @@ public class DisplayBrightnessReporter {
             FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_100000_INF,
     };
 
-    private final Handler mHandler;
     private final SensorManager mSensorManager;
     private final Sensor mLightSensor;
     private final Sensor mColorSensor;
-    private final java.util.List<AsyncSensorReader> mActiveReaders = java.util.Collections
-            .synchronizedList(new java.util.ArrayList<>());
+    private volatile float mLastAmbientLuxReading = -1f;
+    private volatile long mLastAmbientLuxReadingTimestamp = -1;
 
+    private volatile float mLastColorTemperatureReading = -1f;
+    private volatile long mLastColorTemperatureReadingTimestamp = -1;
+
+    private static final int EVENT_VALIDITY_MS = 1000;
     private static final int SENSOR_READ_TIMEOUT_MS = 500;
 
-    public DisplayBrightnessReporter(Handler handler, SensorManager sensorManager,
-            Sensor lightSensor, SensorData colorSensorData) {
-        mHandler = handler;
+    private PendingEvent mLastWaitingEvent = null;
+    private final boolean mAsyncSensorReadingEnabled;
+    private final Handler mBgHandler;
+    private boolean mLightSensorRegistered = false;
+    private boolean mColorSensorRegistered = false;
+
+    public DisplayBrightnessReporter(SensorManager sensorManager,
+            Sensor lightSensor, SensorData colorSensorData, boolean asyncSensorReadingEnabled) {
         mSensorManager = sensorManager;
         mLightSensor = lightSensor;
         mColorSensor = SensorUtils.findSensor(sensorManager, colorSensorData,
                 SensorUtils.NO_FALLBACK);
+        mAsyncSensorReadingEnabled = asyncSensorReadingEnabled;
+        mBgHandler = BackgroundThread.getHandler();
     }
 
     public void report(BrightnessEvent event, float unmodifiedBrightness,
@@ -136,15 +147,34 @@ public class DisplayBrightnessReporter {
             return;
         }
 
-        final boolean luxInvalid = (event.getFlags() & BrightnessEvent.FLAG_INVALID_LUX) != 0
-                || event.getLux() < 0;
-        final boolean colorTempInvalid = Float.isNaN(event.getAmbientColorTemperature())
-                || event.getAmbientColorTemperature() < 0;
+        final boolean luxInvalid = isLuxInvalid(event);
+        final boolean colorTempInvalid = isColorTempInvalid(event);
+        final boolean isUserSet = (event.getFlags() & BrightnessEvent.FLAG_USER_SET) != 0;
 
-        if (luxInvalid || colorTempInvalid) {
-            requestAsyncSensorReadings(event, unmodifiedBrightness, brightnessState,
-                    brightnessInNits, initialBrightnessInNits,
-                    appliedHbmMaxNits, appliedThermalCapNits);
+        if (mAsyncSensorReadingEnabled && (luxInvalid || colorTempInvalid) && isUserSet) {
+            final long now = android.os.SystemClock.uptimeMillis();
+            final boolean luxRecentlyValid = !luxInvalid || (mLastAmbientLuxReadingTimestamp > 0
+                    && now - mLastAmbientLuxReadingTimestamp < EVENT_VALIDITY_MS);
+            final boolean colorRecentlyValid = !colorTempInvalid || (
+                    mLastColorTemperatureReadingTimestamp > 0
+                    && now - mLastColorTemperatureReadingTimestamp < EVENT_VALIDITY_MS);
+
+            if (luxRecentlyValid && colorRecentlyValid) {
+                if (luxInvalid) {
+                    event.setLux(mLastAmbientLuxReading);
+                    event.setFlags(event.getFlags() & ~BrightnessEvent.FLAG_INVALID_LUX);
+                }
+                if (colorTempInvalid) {
+                    event.setAmbientColorTemperature(mLastColorTemperatureReading);
+                }
+                logBrightnessEvent(event, unmodifiedBrightness, brightnessState,
+                        brightnessInNits, initialBrightnessInNits,
+                        appliedHbmMaxNits, appliedThermalCapNits);
+            } else {
+                requestAsyncSensorReadings(event, unmodifiedBrightness, brightnessState,
+                        brightnessInNits, initialBrightnessInNits,
+                        appliedHbmMaxNits, appliedThermalCapNits);
+            }
         } else {
             logBrightnessEvent(event, unmodifiedBrightness, brightnessState,
                     brightnessInNits, initialBrightnessInNits,
@@ -152,24 +182,47 @@ public class DisplayBrightnessReporter {
         }
     }
 
+    private static boolean isLuxInvalid(BrightnessEvent event) {
+        return (event.getFlags() & BrightnessEvent.FLAG_INVALID_LUX) != 0 || event.getLux() < 0;
+    }
+
+    private static boolean isColorTempInvalid(BrightnessEvent event) {
+        return Float.isNaN(event.getAmbientColorTemperature()) ||
+                event.getAmbientColorTemperature() < 0;
+    }
+
     private void requestAsyncSensorReadings(BrightnessEvent event, float unmodifiedBrightness,
             DisplayBrightnessState brightnessState,
             float brightnessInNits, float initialBrightnessInNits,
             float appliedHbmMaxNits, float appliedThermalCapNits) {
-        // Create a copy of the event to ensure we have the state at the time of the
-        // request
-        // The user's change passes `brightnessState` directly, so `stateCopy` is not
-        // strictly needed.
+        // Create a copy of the event to ensure we have the state at the time of the request
+        final BrightnessEvent clonedEvent = new BrightnessEvent(event);
+        final PendingEvent newEvent = new PendingEvent(clonedEvent, unmodifiedBrightness,
+                brightnessState, brightnessInNits, initialBrightnessInNits,
+                appliedHbmMaxNits, appliedThermalCapNits);
 
-        AsyncSensorReader reader = new AsyncSensorReader(new BrightnessEvent(event),
-                unmodifiedBrightness, brightnessState,
-                brightnessInNits, initialBrightnessInNits,
-                appliedHbmMaxNits, appliedThermalCapNits,
-                mSensorManager, mHandler, mLightSensor, mColorSensor, mActiveReaders);
-        synchronized (mActiveReaders) {
-            mActiveReaders.add(reader);
-        }
-        reader.start();
+        final boolean luxInvalid = isLuxInvalid(event);
+        final boolean colorTempInvalid = isColorTempInvalid(event);
+
+        mBgHandler.post(() -> {
+            if (mLastWaitingEvent != null) {
+                logPendingEvent(mLastWaitingEvent);
+                mBgHandler.removeCallbacks(mTimeoutRunnable);
+            }
+            mLastWaitingEvent = newEvent;
+
+            if (luxInvalid && mLightSensor != null && !mLightSensorRegistered) {
+                mSensorManager.registerListener(mSensorListener, mLightSensor,
+                        SensorManager.SENSOR_DELAY_NORMAL, mBgHandler);
+                mLightSensorRegistered = true;
+            }
+            if (colorTempInvalid && mColorSensor != null && !mColorSensorRegistered) {
+                mSensorManager.registerListener(mSensorListener, mColorSensor,
+                        SensorManager.SENSOR_DELAY_NORMAL, mBgHandler);
+                mColorSensorRegistered = true;
+            }
+            mBgHandler.postDelayed(mTimeoutRunnable, SENSOR_READ_TIMEOUT_MS);
+        });
     }
 
     private static void logBrightnessEvent(BrightnessEvent event, float unmodifiedBrightness,
@@ -308,38 +361,30 @@ public class DisplayBrightnessReporter {
     }
 
     public void stop() {
-        synchronized (mActiveReaders) {
-            for (AsyncSensorReader reader : mActiveReaders) {
-                reader.cancel();
+        mBgHandler.post(() -> {
+            if (mLastWaitingEvent != null) {
+                mLastWaitingEvent = null;
+                mSensorManager.unregisterListener(mSensorListener);
+                mLightSensorRegistered = false;
+                mColorSensorRegistered = false;
+                mBgHandler.removeCallbacks(mTimeoutRunnable);
             }
-            mActiveReaders.clear();
-        }
+        });
     }
 
-    static class AsyncSensorReader implements SensorEventListener {
-        private final BrightnessEvent mEvent;
-        private final float mUnmodifiedBrightness;
-        private final DisplayBrightnessState mBrightnessState;
-        private final float mBrightnessInNits;
-        private final float mInitialBrightnessInNits;
-        private final float mAppliedHbmMaxNits;
-        private final float mAppliedThermalCapNits;
-        private final SensorManager mSensorManager;
-        private final Handler mHandler;
-        private final Sensor mLightSensor;
-        private final Sensor mColorSensor;
-        private final java.util.List<AsyncSensorReader> mActiveReadersList;
-        private final AtomicBoolean mFinished = new AtomicBoolean(false);
+    private static class PendingEvent {
+        final BrightnessEvent mEvent;
+        final float mUnmodifiedBrightness;
+        final DisplayBrightnessState mBrightnessState;
+        final float mBrightnessInNits;
+        final float mInitialBrightnessInNits;
+        final float mAppliedHbmMaxNits;
+        final float mAppliedThermalCapNits;
 
-        private final Runnable mTimeoutRunnable = () -> finish();
-
-        AsyncSensorReader(BrightnessEvent event, float unmodifiedBrightness,
-                DisplayBrightnessState brightnessState,
-                float brightnessInNits, float initialBrightnessInNits,
-                float appliedHbmMaxNits, float appliedThermalCapNits,
-                SensorManager sensorManager, Handler handler,
-                Sensor lightSensor, Sensor colorSensor,
-                java.util.List<AsyncSensorReader> activeReadersList) {
+        PendingEvent(BrightnessEvent event, float unmodifiedBrightness,
+                DisplayBrightnessState brightnessState, float brightnessInNits,
+                float initialBrightnessInNits, float appliedHbmMaxNits,
+                float appliedThermalCapNits) {
             mEvent = event;
             mUnmodifiedBrightness = unmodifiedBrightness;
             mBrightnessState = brightnessState;
@@ -347,85 +392,74 @@ public class DisplayBrightnessReporter {
             mInitialBrightnessInNits = initialBrightnessInNits;
             mAppliedHbmMaxNits = appliedHbmMaxNits;
             mAppliedThermalCapNits = appliedThermalCapNits;
-            mSensorManager = sensorManager;
-            mHandler = handler;
-            mLightSensor = lightSensor;
-            mColorSensor = colorSensor;
-            mActiveReadersList = activeReadersList;
         }
+    }
 
-        private boolean mLightNeeded = false;
-        private boolean mColorNeeded = false;
-
-        void start() {
-            mLightNeeded = (mEvent.getFlags() & BrightnessEvent.FLAG_INVALID_LUX) != 0
-                    || mEvent.getLux() < 0;
-            mColorNeeded = Float.isNaN(mEvent.getAmbientColorTemperature())
-                    || mEvent.getAmbientColorTemperature() < 0;
-
-            if (mLightNeeded && mLightSensor != null) {
-                mSensorManager.registerListener(this, mLightSensor,
-                    SensorManager.SENSOR_DELAY_NORMAL, mHandler);
-            } else {
-                mLightNeeded = false;
-            }
-
-            if (mColorNeeded && mColorSensor != null) {
-                mSensorManager.registerListener(this, mColorSensor,
-                    SensorManager.SENSOR_DELAY_NORMAL, mHandler);
-            } else {
-                mColorNeeded = false;
-            }
-
-            if (!mLightNeeded && !mColorNeeded) {
-                finish();
-            } else {
-                mHandler.postDelayed(mTimeoutRunnable, SENSOR_READ_TIMEOUT_MS);
-            }
-        }
-
+    private final SensorEventListener mSensorListener = new SensorEventListener() {
         @Override
         public void onSensorChanged(SensorEvent event) {
-            if (mFinished.get()) {
-                return;
-            }
+            final Sensor sensor = event.sensor;
+            final float value = event.values[0];
+            final long now = android.os.SystemClock.uptimeMillis();
 
-            if (event.sensor == mLightSensor) {
-                mEvent.setLux(event.values[0]);
-                mEvent.setFlags(mEvent.getFlags() & ~BrightnessEvent.FLAG_INVALID_LUX);
-                mLightNeeded = false;
-            } else if (event.sensor == mColorSensor) {
-                mEvent.setAmbientColorTemperature(event.values[0]);
-                mColorNeeded = false;
-            }
+            mBgHandler.post(() -> {
+                if (sensor == mLightSensor) {
+                    mLastAmbientLuxReading = value;
+                    mLastAmbientLuxReadingTimestamp = now;
+                } else if (sensor == mColorSensor) {
+                    mLastColorTemperatureReading = value;
+                    mLastColorTemperatureReadingTimestamp = now;
+                }
 
-            if (!mLightNeeded && !mColorNeeded) {
-                finish();
-            }
+                if (mLastWaitingEvent != null) {
+                    boolean luxReady = !isLuxInvalid(mLastWaitingEvent.mEvent)
+                            || (mLastAmbientLuxReadingTimestamp > 0
+                                && now - mLastAmbientLuxReadingTimestamp < EVENT_VALIDITY_MS);
+                    boolean colorReady = !isColorTempInvalid(mLastWaitingEvent.mEvent)
+                            || (mLastColorTemperatureReadingTimestamp > 0
+                                && now - mLastColorTemperatureReadingTimestamp < EVENT_VALIDITY_MS);
+
+                    if (luxReady && colorReady) {
+                        logAndCleanUpWaitingEvent();
+                    }
+                }
+            });
         }
 
         @Override
         public void onAccuracyChanged(Sensor sensor, int accuracy) {
         }
+    };
 
-        void cancel() {
-            if (mFinished.compareAndSet(false, true)) {
-                mHandler.removeCallbacks(mTimeoutRunnable);
-                mSensorManager.unregisterListener(this);
-            }
-        }
+    private final Runnable mTimeoutRunnable = this::logAndCleanUpWaitingEvent;
 
-        private void finish() {
-            if (mFinished.compareAndSet(false, true)) {
-                synchronized (mActiveReadersList) {
-                    mActiveReadersList.remove(this);
-                }
-                mHandler.removeCallbacks(mTimeoutRunnable);
-                mSensorManager.unregisterListener(this);
-                logBrightnessEvent(mEvent, mUnmodifiedBrightness, mBrightnessState,
-                        mBrightnessInNits, mInitialBrightnessInNits,
-                        mAppliedHbmMaxNits, mAppliedThermalCapNits);
-            }
+    private void logAndCleanUpWaitingEvent() {
+        if (mLastWaitingEvent != null) {
+            logPendingEvent(mLastWaitingEvent);
+            mLastWaitingEvent = null;
+            mSensorManager.unregisterListener(mSensorListener);
+            mLightSensorRegistered = false;
+            mColorSensorRegistered = false;
+            mBgHandler.removeCallbacks(mTimeoutRunnable);
         }
+    }
+
+    private void logPendingEvent(PendingEvent pendingEvent) {
+        BrightnessEvent event = pendingEvent.mEvent;
+        final long now = android.os.SystemClock.uptimeMillis();
+
+        if (isLuxInvalid(event) && mLastAmbientLuxReadingTimestamp > 0
+                && now - mLastAmbientLuxReadingTimestamp < EVENT_VALIDITY_MS) {
+            event.setLux(mLastAmbientLuxReading);
+            event.setFlags(event.getFlags() & ~BrightnessEvent.FLAG_INVALID_LUX);
+        }
+        if (isColorTempInvalid(event) && mLastColorTemperatureReadingTimestamp > 0
+                && now - mLastColorTemperatureReadingTimestamp < EVENT_VALIDITY_MS) {
+            event.setAmbientColorTemperature(mLastColorTemperatureReading);
+        }
+        logBrightnessEvent(event, pendingEvent.mUnmodifiedBrightness,
+                pendingEvent.mBrightnessState, pendingEvent.mBrightnessInNits,
+                pendingEvent.mInitialBrightnessInNits, pendingEvent.mAppliedHbmMaxNits,
+                pendingEvent.mAppliedThermalCapNits);
     }
 }

@@ -6255,6 +6255,7 @@
   <!-- DisplayManager configs. -->
   <java-symbol type="bool" name="config_evenDimmerEnabled" />
   <java-symbol type="string" name="config_pluginsProviderJarPath" />
+  <java-symbol type="bool" name="config_displayBrightnessAsyncSensorReadingEnabled" />
 
   <java-symbol type="bool" name="config_watchlistUseFileHashesCache" />
   <java-symbol type="string" name="config_defaultContextualSearchPackageName" />
