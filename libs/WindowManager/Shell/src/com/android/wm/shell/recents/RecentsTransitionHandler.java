@@ -65,6 +65,7 @@ import android.util.Pair;
 import android.util.Slog;
 import android.view.RemoteAnimationTarget;
 import android.view.SurfaceControl;
+import android.window.DesktopExperienceFlags;
 import android.window.PictureInPictureSurfaceTransaction;
 import android.window.TaskSnapshot;
 import android.window.TaskSnapshotManager;
@@ -657,8 +658,12 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             mListener = null;
             mFinishCB = null;
             // clean-up leash surfacecontrols and anything that might reference them.
-            TransitionUtil.releaseLeashMap(mLeashMap);
-            mLeashMap = null;
+            if (mLeashMap != null) {
+                for (int i = 0; i < mLeashMap.size(); ++i) {
+                    mLeashMap.valueAt(i).release();
+                }
+                mLeashMap = null;
+            }
             mFinishTransaction = null;
             mAwaitingCancelCompletion = false;
             mTaskStates.clear();
