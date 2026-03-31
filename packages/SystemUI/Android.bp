@@ -581,7 +581,14 @@ android_library {
 
 platform_compat_config {
     name: "SystemUI-application-compat-config",
-    src: ":SystemUI-application",
+    src: ":SystemUI-application-compat-library",
+}
+
+java_library {
+    name: "SystemUI-application-compat-library",
+    srcs: ["src/com/android/systemui/statusbar/notification/row/NotificationCustomContentCompat.java"],
+    defaults: ["SystemUI-srcs-defaults"],
+    libs: ["app-compat-annotations"],
 }
 
 // The top-level build target that creates AOSP System UI Application (including Dagger graph).
