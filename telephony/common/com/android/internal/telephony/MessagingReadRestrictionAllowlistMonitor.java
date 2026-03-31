@@ -22,6 +22,9 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.AppOpsManager;
 import android.content.Context;
+import android.content.BroadcastReceiver;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -29,6 +32,8 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.SigningDetails;
 import android.content.pm.SignedPackage;
 import android.content.pm.UserInfo;
+import android.net.Uri;
+
 import android.content.res.Resources.NotFoundException;
 import android.util.AtomicFile;
 import android.util.Log;
@@ -169,6 +174,13 @@ public class MessagingReadRestrictionAllowlistMonitor
 
         DeviceConfig.addOnPropertiesChangedListener(DeviceConfig.NAMESPACE_TELEPHONY,
             mBackgroundExecutor, this);
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_PACKAGE_ADDED);
+        filter.addAction(Intent.ACTION_PACKAGE_CHANGED);
+        filter.addDataScheme("package");
+        mContext.registerReceiverAsUser(mPackageReceiver, UserHandle.ALL, filter, null,
+            BackgroundThread.getHandler());
     }
 
     @Override
@@ -177,6 +189,53 @@ public class MessagingReadRestrictionAllowlistMonitor
             return;
         }
         refreshAllowlistAndApplyAppOps();
+    }
+
+    /**
+     * Receiver to track package changes. If the package is in the allowlist, update the AppOp mode
+     * accordingly.
+     */
+    private final BroadcastReceiver mPackageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            synchronized (MessagingReadRestrictionAllowlistMonitor.this) {
+                final Uri data = intent.getData();
+                if (data == null) {
+                    Slog.w(TAG, "onBroadcastReceived: data is null. Ignoring the broadcast.");
+                    return;
+                }
+                String packageName = data.getSchemeSpecificPart();
+                int userId = intent.getIntExtra(Intent.EXTRA_USER_HANDLE, 0);
+                onPackageInstalled(packageName, userId);
+            }
+        }
+    };
+
+    /**
+     * Handles the broadcast received from the package manager when a package is added or changed.
+     * If the package is in the allowlist, update the AppOp mode accordingly.
+     */
+    @VisibleForTesting
+    public void onPackageInstalled(String packageName, int userId) {
+        if (mAllowlist == null) {
+            // Allowlist is not initialized yet. AppOp will be set at the init time.
+            Slog.v(TAG, "onBroadcastReceived: Allowlist is not initialized yet.");
+            return;
+        }
+        List<AppOpChange> appOpChanges = mAllowlist.packages().stream()
+            .filter(entry -> entry.packageName.equals(packageName))
+            .map(entry -> new AppOpChange(AppOpsManager.MODE_ALLOWED, entry))
+            .collect(Collectors.toList());
+
+        if (appOpChanges.isEmpty()) {
+            Slog.v(TAG, "onBroadcastReceived: No AppOp changes for package: " + packageName);
+            return;
+        }
+        PackageManager packageManager = mContext.getPackageManager();
+        AppOpsManager appOpsManager = mContext.getSystemService(AppOpsManager.class);
+        appOpChanges.forEach(change -> {
+            change.apply(packageManager, appOpsManager, userId);
+        });
     }
 
     /**
@@ -218,9 +277,34 @@ public class MessagingReadRestrictionAllowlistMonitor
                 return Allowlist.EMPTY_ALLOWLIST;
             }
             return new Allowlist(allowlistedPackages.stream()
-                .map(packageName ->
-                    new AllowlistedPackage(packageName, AllowlistedPackage.ANY_CERTIFICATE))
+                .map(StaticResourcesAllowlist::parseResourceArrayItemEntry)
+                .filter(entry -> entry != null)
                 .collect(Collectors.toSet()));
+        }
+
+        /**
+         * Parses a single entry from the resource array. If the entry is invalid, returns {@code
+         * null}. If the entry contains a package name only, returns an {@link AllowlistedPackage}
+         * with any certificate. If the entry contains a package name and a certificate hash,
+         * returns an {@link AllowlistedPackage} with the package name and certificate hash.
+         *
+         * @param input The entry to parse.
+         * @return The parsed entry or {@code null} if the entry is invalid.
+         */
+        @Nullable
+        private static AllowlistedPackage parseResourceArrayItemEntry(@NonNull String input) {
+            if (input == null || input.isEmpty()) {
+                return null;
+            }
+            String[] parts = input.split(":");
+            if (parts.length > 2) {
+                Slog.w(TAG, "Failed to parse allowlisted package: " + input);
+                return null;
+            }
+            if (parts.length == 1) {
+                return new AllowlistedPackage(parts[0], AllowlistedPackage.ANY_CERTIFICATE);
+            }
+            return new AllowlistedPackage(parts[0], parts[1]);
         }
     }
 
@@ -465,7 +549,7 @@ public class MessagingReadRestrictionAllowlistMonitor
             try {
                 uid = packageManager.getPackageUidAsUser(packageName, userId);
             } catch (PackageManager.NameNotFoundException e) {
-                Slog.v(TAG, "No package " + packageName + "found for userId " + userId);
+                Slog.v(TAG, "No package " + packageName + " found for userId " + userId);
                 return;
             }
 
