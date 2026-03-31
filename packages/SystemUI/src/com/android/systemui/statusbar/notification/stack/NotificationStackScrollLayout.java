@@ -1466,11 +1466,6 @@ public class NotificationStackScrollLayout
         } else {
             startAnimationToState();
         }
-        if (SceneContainerFlag.isEnabled()) {
-            // Skip invalidate because we are already in the draw phase and do not need to schedule
-            // a new draw pass in another frame.
-            updateFirstAndLastBackgroundViews(/* shouldInvalidate= */ false);
-        }
         avoidNotificationOverlaps();
         Trace.endSection();
     }
@@ -3461,16 +3456,11 @@ public class NotificationStackScrollLayout
     }
 
     private void updateFirstAndLastBackgroundViews() {
-        updateFirstAndLastBackgroundViews(/* shouldInvalidate= */ true);
-    }
-
-    private void updateFirstAndLastBackgroundViews(boolean shouldInvalidate) {
         ExpandableView lastChild = getLastChildWithBackground();
         mSectionsManager.updateFirstAndLastViewsForAllSections(getChildrenWithBackground());
+
         mAmbientState.setLastVisibleBackgroundChild(lastChild);
-        if (shouldInvalidate) {
-            invalidate();
-        }
+        invalidate();
     }
 
     private void onViewAddedInternal(ExpandableView child) {

@@ -32,7 +32,6 @@ import com.android.systemui.log.table.TableLogBufferFactory
 import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
-import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
@@ -144,27 +143,24 @@ constructor(
             )
             .stateIn(bgDisplayScope, SharingStarted.WhileSubscribed(), initialValue = false)
 
+    private val isSceneGone: Flow<Boolean> =
+        sceneInteractor.currentScene.map { it == Scenes.Gone }.distinctUntilChanged()
+
     private val isHomeStatusBarAllowedByScene: Flow<Boolean> =
         combine(
-                sceneInteractor.currentScene,
-                sceneInteractor.currentOverlays,
+                isSceneGone,
+                isShadeVisibleOnAnyDisplay,
                 occlusionInteractor.isKeyguardOccluded,
                 isShadeWindowOnThisDisplay,
-            ) { currentScene, currentOverlays, isOccluded, isShadeWindowOnThisDisplay ->
-                val isShadeVisible =
-                    currentScene == Scenes.Shade ||
-                        currentScene == Scenes.QuickSettings ||
-                        Overlays.NotificationsShade in currentOverlays ||
-                        Overlays.QuickSettingsShade in currentOverlays
-                val isSceneGone = currentScene == Scenes.Gone
+            ) { isSceneGone, isShadeVisibleOnAnyDisplay, isOccluded, isShadeWindowOnThisDisplay ->
                 if (isOccluded) {
                     true
                 } else if (isShadeWindowOnThisDisplay) {
-                    isSceneGone && !isShadeVisible
+                    isSceneGone && !isShadeVisibleOnAnyDisplay
                 } else {
                     // When the shade is visible on another display,
                     // allow the home status bar on the current display.
-                    isSceneGone || isShadeVisible
+                    isSceneGone || isShadeVisibleOnAnyDisplay
                 }
             }
             .distinctUntilChanged()

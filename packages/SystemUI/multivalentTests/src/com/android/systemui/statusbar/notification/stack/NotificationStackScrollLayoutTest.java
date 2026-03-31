@@ -2258,20 +2258,6 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         verify(scroller).accept(null);
     }
 
-    @Test
-    @EnableSceneContainer
-    public void updateChildren_updatesSectionBoundaries() {
-        // GIVEN a children update is requested
-        mStackScroller.requestChildrenUpdate();
-        clearInvocations(mNotificationSectionsManager);
-
-        // WHEN the draw phase occurs, which triggers updateChildren() when SceneContainer is on
-        mStackScroller.onDraw(mock(android.graphics.Canvas.class));
-
-        // THEN section boundaries update to base corner roundness on latest state
-        verify(mNotificationSectionsManager).updateFirstAndLastViewsForAllSections(any());
-    }
-
     private void setBarStateForTest(int state) {
         // Can't inject this through the listener or we end up on the actual implementation
         // rather than the mock because the spy just coppied the anonymous inner /shruggie.
