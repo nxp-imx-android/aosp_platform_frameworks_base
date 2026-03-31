@@ -117,10 +117,10 @@ class ContextComponentManager
         for (ServiceInfo serviceInfo : getServiceInfo(ACTION_REFINER_SERVICE, packageName)) {
             registerComponent(
                     serviceInfo,
-                                AccessController.ACCESS_PCC_OR_TRUSTED_PACKAGE
-                                        | AccessController.ACCESS_RECEIVE_HINTS_ALLOWLIST
-                                        | AccessController.ACCESS_RECEIVE_HINTS_PERMISSION
-                                        | AccessController.ACCESS_BIND_CONTEXT_PERMISSION,
+                    AccessController.ACCESS_PCC_OR_TRUSTED_PACKAGE
+                                | AccessController.ACCESS_RECEIVE_HINTS_ALLOWLIST
+                                | AccessController.ACCESS_RECEIVE_HINTS_PERMISSION
+                                | AccessController.ACCESS_BIND_CONTEXT_PERMISSION,
                     new ServiceClientRefiner(mContext, mAccessController, UUID.randomUUID(),
                             serviceInfo, mUserHandle, mOperatingModeProvider),
                     mRefiners,

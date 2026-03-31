@@ -39,6 +39,7 @@ public class OperatingModeProvider {
     public static final int OPERATING_PROPERTY_FLAG_TEST_PACKAGES_ONLY = 1 << 2;
     public static final int OPERATING_PROPERTY_FLAG_BUILT_IN_COMPONENTS = 1 << 3;
     public static final int OPERATING_PROPERTY_FLAG_ENFORCE_PCC = 1 << 4;
+    public static final int OPERATING_PROPERTY_FLAG_ENFORCE_BIND_PERMISSIONS = 1 << 5;
 
     @IntDef(flag = true, value = {
             OPERATING_PROPERTY_FLAG_UNKNOWN,
@@ -47,11 +48,26 @@ public class OperatingModeProvider {
             OPERATING_PROPERTY_FLAG_TEST_PACKAGES_ONLY,
             OPERATING_PROPERTY_FLAG_BUILT_IN_COMPONENTS,
             OPERATING_PROPERTY_FLAG_ENFORCE_PCC,
+            OPERATING_PROPERTY_FLAG_ENFORCE_BIND_PERMISSIONS,
     })
     @Target(ElementType.TYPE_USE)
     @Retention(RetentionPolicy.SOURCE)
     public @interface OperatingPropertyFlag {
     }
+
+    private static final @AccessController.Access int OPERATING_MODE_TEST_ACCESS_FLAGS =
+            OPERATING_PROPERTY_FLAG_TEST_PACKAGES_ONLY;
+
+    private static final @AccessController.Access int OPERATING_MODE_DEFAULT_ACCESS_FLAGS =
+            (Flags.enforcePersonalContextAllowlistAccessControl()
+            ? OPERATING_PROPERTY_FLAG_ENFORCE_ALLOW_LIST : 0)
+            | (Flags.enforcePersonalContextPermissions()
+            ? OPERATING_PROPERTY_FLAG_ENFORCE_PERMISSIONS : 0)
+            | (Flags
+            .enforcePersonalContextPccAccessControl()
+            ? OPERATING_PROPERTY_FLAG_ENFORCE_PCC : 0)
+            | OPERATING_PROPERTY_FLAG_BUILT_IN_COMPONENTS
+            | OPERATING_PROPERTY_FLAG_ENFORCE_BIND_PERMISSIONS;
 
     /**
      * Filters flags based on the operating mode.
@@ -70,6 +86,10 @@ public class OperatingModeProvider {
             flags &= ~AccessController.ACCESS_PCC_OR_TRUSTED_PACKAGE;
         }
 
+        if (!hasProperties(OPERATING_PROPERTY_FLAG_ENFORCE_BIND_PERMISSIONS)) {
+            flags &= ~AccessController.ACCESS_BIND_CONTEXT_PERMISSION;
+        }
+
         return flags;
     }
 
@@ -77,15 +97,11 @@ public class OperatingModeProvider {
             @PersonalContextManager.OperatingMode int mode) {
         return switch (mode) {
             case PersonalContextManager.OPERATING_MODE_TEST ->
-                    OPERATING_PROPERTY_FLAG_TEST_PACKAGES_ONLY;
-            default -> (Flags.enforcePersonalContextAllowlistAccessControl()
-                    ? OPERATING_PROPERTY_FLAG_ENFORCE_ALLOW_LIST : 0)
-                    | (android.service.personalcontext.Flags.enforcePersonalContextPermissions()
-                    ? OPERATING_PROPERTY_FLAG_ENFORCE_PERMISSIONS : 0)
-                    | (android.service.personalcontext.Flags
-                            .enforcePersonalContextPccAccessControl()
-                    ? OPERATING_PROPERTY_FLAG_ENFORCE_PCC : 0)
-                    | OPERATING_PROPERTY_FLAG_BUILT_IN_COMPONENTS;
+                    OPERATING_MODE_TEST_ACCESS_FLAGS;
+            case PersonalContextManager.OPERATING_MODE_DEFAULT ->
+                    OPERATING_MODE_DEFAULT_ACCESS_FLAGS;
+            default ->
+                    OPERATING_MODE_DEFAULT_ACCESS_FLAGS;
         };
     }
 
