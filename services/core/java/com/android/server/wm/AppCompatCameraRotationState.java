@@ -61,7 +61,8 @@ class AppCompatCameraRotationState {
     void start() {
         // TODO(b/495372418): start the listener only while external display is connected.
         // Listen to orientation changes of the host device.
-        setupSensorOrientationListener();
+        // TODO(b/497656545): enable listener and use wake lock more efficiently.
+        // setupSensorOrientationListener();
     }
 
     /** Disables {@link OrientationEventListener} if set up. */
@@ -113,7 +114,8 @@ class AppCompatCameraRotationState {
      */
     @Surface.Rotation
     int getCameraDeviceRotation(@NonNull DisplayContent displayContent) {
-        return isExternalDisplay(displayContent)
+        return (isExternalDisplay(displayContent)
+                && mDisplayRotationIfExternal != ROTATION_UNDEFINED)
                 ? mDisplayRotationIfExternal : displayContent.getRotation();
     }
 
@@ -164,7 +166,7 @@ class AppCompatCameraRotationState {
                 : displayContent;
     }
 
-    private boolean isExternalDisplay(@NonNull DisplayContent displayContent) {
+    boolean isExternalDisplay(@NonNull DisplayContent displayContent) {
         return displayContent.getDisplay().getType() == Display.TYPE_EXTERNAL;
     }
 }

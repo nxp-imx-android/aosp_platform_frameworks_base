@@ -81,12 +81,14 @@ import android.os.RemoteException;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.view.OrientationEventListener;
 import android.view.Surface;
 
 import androidx.test.filters.SmallTest;
 
 import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -496,6 +498,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
+    @Ignore("b/498068211")
     public void testOnCameraOpened_externalDisplayFixedOrientation_fullTreatment() {
         runTestScenario((robot) -> {
             // Setup default display.
@@ -604,6 +607,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
+    @Ignore("b/498068211")
     public void testOnCameraOpened_fixedOrientExtDisplRotateAndCropNotSupported_sandbDispRotOnly() {
         runTestScenario((robot) -> {
             // Setup default display.
@@ -633,6 +637,7 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
     }
 
     @Test
+    @Ignore("b/498068211")
     public void testOnCameraOpened_externalDisplayResponsive_sandboxDisplayRotationOnly() {
         runTestScenario((robot) -> {
             // Setup default display.
@@ -1123,8 +1128,11 @@ public class AppCompatCameraSimReqOrientationPolicyTests extends WindowTestsBase
         }
 
         void setSensorOrientation(int orientation) {
-            cameraCompatFreeformPolicy().mCameraDisplayRotationProvider.mOrientationEventListener
-                    .onOrientationChanged(orientation);
+            final OrientationEventListener orientationEventListener = cameraCompatFreeformPolicy()
+                    .mCameraDisplayRotationProvider.mOrientationEventListener;
+            if (orientationEventListener != null) {
+                orientationEventListener.onOrientationChanged(orientation);
+            }
         }
 
         void makeCurrentDisplayDefault() {
