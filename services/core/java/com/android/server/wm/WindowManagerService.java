@@ -1395,7 +1395,6 @@ public class WindowManagerService extends IWindowManager.Stub
         mAnimator = new WindowAnimator(this);
         mRoot = new RootWindowContainer(this);
         mAppCompatCameraPolicy = new AppCompatCameraPolicy(this);
-        mAppCompatCameraPolicy.start();
 
         final ContentResolver resolver = context.getContentResolver();
 
@@ -6083,6 +6082,7 @@ public class WindowManagerService extends IWindowManager.Stub
         mPolicy.systemReady();
         mRoot.forAllDisplayPolicies(DisplayPolicy::systemReady);
         mSnapshotController.systemReady();
+        mAppCompatCameraPolicy.start();
         UiThread.getHandler().post(mSettingsObserver::loadSettings);
         IVrManager vrManager = IVrManager.Stub.asInterface(
                 ServiceManager.getService(Context.VR_SERVICE));
