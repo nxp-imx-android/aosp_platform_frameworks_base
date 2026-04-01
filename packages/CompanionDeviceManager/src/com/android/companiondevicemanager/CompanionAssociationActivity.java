@@ -514,6 +514,8 @@ public class CompanionAssociationActivity extends FragmentActivity implements
         mTimeoutMessage.setVisibility(View.GONE);
         mProgressBar.setVisibility(View.GONE);
         mBorderBottom.setVisibility(View.GONE);
+        mTitle.post(() -> mTitle.performAccessibilityAction(
+                AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, null));
     }
 
     private void initUiForDeviceDiscovery() {
@@ -663,6 +665,8 @@ public class CompanionAssociationActivity extends FragmentActivity implements
         mSummary.setVisibility(View.VISIBLE);
         mButtonAllow.setVisibility(View.VISIBLE);
         mButtonNotAllow.setVisibility(View.VISIBLE);
+        mTitle.post(() -> mTitle.performAccessibilityAction(
+                AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, null));
     }
 
     private Spanned getSummary(String deviceName) {
