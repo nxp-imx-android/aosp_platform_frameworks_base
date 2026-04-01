@@ -605,8 +605,11 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         }
         mDisplayWhiteBalanceSettings = displayWhiteBalanceSettings;
         mDisplayWhiteBalanceController = displayWhiteBalanceController;
+        final boolean asyncSensorReadingEnabled = mContext.getResources().getBoolean(
+                com.android.internal.R.bool.config_displayBrightnessAsyncSensorReadingEnabled);
         mDisplayBrightnessReporter = new DisplayBrightnessReporter(
-                mHandler, mSensorManager, mLightSensor, mDisplayDeviceConfig.getColorSensor());
+                mSensorManager, mLightSensor,
+                mDisplayDeviceConfig.getColorSensor(), asyncSensorReadingEnabled);
 
         loadNitsRange(resources);
 

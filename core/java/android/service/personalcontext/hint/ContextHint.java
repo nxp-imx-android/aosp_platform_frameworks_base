@@ -184,6 +184,15 @@ public abstract class ContextHint {
         return getClass().getCanonicalName();
     }
 
+    /**
+     * Gets the package that the contents of this hint came from (if available).
+     * @hide
+     */
+    @Nullable
+    public String getSourcePackageName() {
+        return null;
+    }
+
     /** Returns the unique ID of this hint. */
     public final @NonNull UUID getHintId() {
         return mId;

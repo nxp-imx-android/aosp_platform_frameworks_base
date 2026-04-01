@@ -466,6 +466,18 @@ public class PersonalContextManagerService extends SystemService {
         return mPackageManager.getNameForUid(uid);
     }
 
+    private void validateHints(int userId, int callingUid, Set<ContextHint> hints) {
+        for (ContextHint hint : hints) {
+            String targetPackage = hint.getSourcePackageName();
+            if (targetPackage != null
+                    && !isPersonalContextModeEnabled(targetPackage, callingUid, userId)) {
+                throw new IllegalStateException(TextUtils.formatSimple(
+                        "Personal Context is disabled for package %s, used by hint %s",
+                        targetPackage, hint.getHintId()));
+            }
+        }
+    }
+
     @VisibleForTesting
     void startRefinerWorkflow(
             @UserIdInt int userId,
@@ -482,6 +494,9 @@ public class PersonalContextManagerService extends SystemService {
         if (!isPersonalContextModeEnabled(packageName, callingUid, userId)) {
             throw new IllegalStateException("Personal Context is disabled for publishing package");
         }
+
+        validateHints(userId, callingUid, hints);
+        validateHints(userId, callingUid, attributionHints);
 
         final UserState userState = getUserStateSynchronized(userId);
         if (userState == null) {
@@ -720,7 +735,10 @@ public class PersonalContextManagerService extends SystemService {
         final UserState userState = getUserStateSynchronized(userId);
 
         if (userState == null) {
-            Slog.e(TAG, "No user state when reporting insight event");
+            Slog.e(
+                    TAG,
+                    TextUtils.formatSimple(
+                            "No user state when enforcing permissions %s", accessFlags));
             throw new RuntimeException("Service not available");
         }
 

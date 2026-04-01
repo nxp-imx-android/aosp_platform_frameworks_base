@@ -24,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -41,10 +42,12 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.Signature;
 import android.content.pm.SigningInfo;
 import android.content.pm.UserInfo;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.Process;
@@ -88,6 +91,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RunWith(AndroidJUnit4.class)
 public class MessagingReadRestrictionAllowlistMonitorTest {
@@ -159,6 +163,28 @@ public class MessagingReadRestrictionAllowlistMonitorTest {
         mAllowlistMonitor.initialize();
 
         awaitForUpdateInBackground();
+        verify(mAppOpsManager).setMode(eq(AppOpsManager.OP_READ_RESTRICTED_MESSAGES),
+                eq(Process.myUid()), eq(TEST_PACKAGE_ONE), eq(AppOpsManager.MODE_ALLOWED));
+        assertFileContents(mReadRestrictionAllowlistFile, packageInfo.getConfigValue());
+    }
+
+    @Test
+    public void initialize_deviceConfigHasAllowlist_appGetsInstalledLater_setsAppOps()
+            throws Exception {
+        InstalledPackageInfo packageInfo =
+            installAllowlistedPackage(TEST_PACKAGE_ONE, /* isSystem= */ false,
+                /* anyCertificate = */ false);
+        packageInfo.uninstallPackage(mPackageManager);
+        writeDeviceConfigAllowlist(KEY_READ_RESTRICTION_ALLOWLIST, packageInfo.getConfigValue());
+
+        mAllowlistMonitor.initialize();
+        awaitForUpdateInBackground();
+        verifyNoInteractions(mAppOpsManager);
+        assertFileContents(mReadRestrictionAllowlistFile, packageInfo.getConfigValue());
+
+        packageInfo.reinstallPackage(mPackageManager);
+        mAllowlistMonitor.onPackageInstalled(TEST_PACKAGE_ONE, DEFAULT_USER_ID);
+
         verify(mAppOpsManager).setMode(eq(AppOpsManager.OP_READ_RESTRICTED_MESSAGES),
                 eq(Process.myUid()), eq(TEST_PACKAGE_ONE), eq(AppOpsManager.MODE_ALLOWED));
         assertFileContents(mReadRestrictionAllowlistFile, packageInfo.getConfigValue());
@@ -354,20 +380,46 @@ public class MessagingReadRestrictionAllowlistMonitorTest {
     @Test
     public void deviceConfig_HSUMDevice_forStaticAllowlist_updatesAppOpsForTargetUserIds()
             throws Exception {
-        final List<InstalledPackageInfo> staticListPackages = Arrays.asList(
+        // Setup HSUM device with three users (headless system user, 2 x user).
+        UserInfo headlessSystemUser = new UserInfo();
+        headlessSystemUser.id = DEFAULT_USER_ID;
+        UserInfo primaryUser = new UserInfo();
+        primaryUser.id = HSUM_PRIMARY_UID;
+        UserInfo secondaryUser = new UserInfo();
+        secondaryUser.id = HSUM_SECONDARY_UID;
+        when(mUserManager.getUsers())
+            .thenReturn(Arrays.asList(headlessSystemUser, primaryUser, secondaryUser));
+
+        final List<InstalledPackageInfo> staticSystemListPackages = Arrays.asList(
             installAllowlistedPackageForUser("com.one", /* isSystem= */ true,
                 /* anyCertificate = */ true, HSUM_PRIMARY_UID),
             installAllowlistedPackageForUser("com.two", /* isSystem= */ true,
                 /* anyCertificate = */ true, HSUM_PRIMARY_UID),
             installAllowlistedPackageForUser("com.two", /* isSystem= */ true,
-                /* anyCertificate = */ true, HSUM_PRIMARY_UID),
+                /* anyCertificate = */ true, HSUM_SECONDARY_UID),
             installAllowlistedPackageForUser("com.three", /* isSystem= */ true,
                 /* anyCertificate = */ true, HSUM_SECONDARY_UID),
             installAllowlistedPackageForUser("com.four", /* isSystem= */ true,
                 /* anyCertificate = */ true, HSUM_SECONDARY_UID)
             );
-        updateStaticAllowlist(staticListPackages.stream().map(InstalledPackageInfo::packageName)
-                    .toArray(String[]::new));
+        // Installable packages are not installed on the device at first.
+        final List<InstalledPackageInfo> staticInstallablePackages = Arrays.asList(
+            installAllowlistedPackageForUser("com.five", /* isSystem= */ false,
+                /* anyCertificate = */ false, HSUM_PRIMARY_UID),
+            installAllowlistedPackageForUser("com.six", /* isSystem= */ false,
+                /* anyCertificate = */ false, HSUM_SECONDARY_UID)
+            );
+        String[] staticAllowlist = Stream.concat(
+                    staticSystemListPackages.stream().map(InstalledPackageInfo::packageName),
+                    staticInstallablePackages.stream().map(InstalledPackageInfo::getConfigValue))
+                .toArray(String[]::new);
+
+        staticInstallablePackages.forEach(pkgInfo -> {
+            pkgInfo.uninstallPackage(mPackageManager);
+        });
+
+        updateStaticAllowlist(staticAllowlist);
+
         mAllowlistMonitor.initialize();
         awaitForUpdateInBackground();
 
@@ -386,6 +438,17 @@ public class MessagingReadRestrictionAllowlistMonitorTest {
         verify(mAppOpsManager).setMode(eq(AppOpsManager.OP_READ_RESTRICTED_MESSAGES),
                 eq(UserHandle.getUid(HSUM_SECONDARY_UID, Process.myUid())), eq("com.four"),
                 eq(AppOpsManager.MODE_ALLOWED));
+        verifyNoMoreInteractions(mAppOpsManager);
+
+        InstalledPackageInfo packageToInstall = staticInstallablePackages.get(0);
+        packageToInstall.reinstallPackage(mPackageManager);
+        // Package com.five gets installed on the device.
+        mAllowlistMonitor.onPackageInstalled("com.five", HSUM_PRIMARY_UID);
+
+        verify(mAppOpsManager).setMode(eq(AppOpsManager.OP_READ_RESTRICTED_MESSAGES),
+                eq(UserHandle.getUid(HSUM_PRIMARY_UID, Process.myUid())), eq("com.five"),
+                eq(AppOpsManager.MODE_ALLOWED));
+        verifyNoMoreInteractions(mAppOpsManager);
     }
 
     @Test
@@ -561,6 +624,34 @@ public class MessagingReadRestrictionAllowlistMonitorTest {
         String getConfigValue() {
             return packageName + ":" + acceptedCertificate;
         }
+
+        void uninstallPackage(PackageManager packageManager) {
+            try {
+                when(packageManager.getPackageUidAsUser(eq(packageName), eq(userId)))
+                    .thenThrow(new NameNotFoundException());
+                when(packageManager.getApplicationInfoAsUser(eq(packageName), any(), eq(userId)))
+                    .thenThrow(new NameNotFoundException());
+            } catch (NameNotFoundException e) {
+                fail("Package not found: " + packageName);
+            }
+        }
+
+        void reinstallPackage(PackageManager packageManager) {
+            int uid = UserHandle.getUid(userId, Process.myUid());
+            final ApplicationInfo applicationInfo = new ApplicationInfo();
+            applicationInfo.uid = uid;
+            if (preinstalled) {
+                applicationInfo.flags |= ApplicationInfo.FLAG_SYSTEM;
+            }
+            try {
+                when(packageManager.getPackageUidAsUser(eq(packageName), eq(userId)))
+                        .thenReturn(uid);
+                when(packageManager.getApplicationInfoAsUser(eq(packageName), any(), eq(userId)))
+                        .thenReturn(applicationInfo);
+            } catch (NameNotFoundException e) {
+                fail("Package not found: " + packageName);
+            }
+        }
     }
 
     private InstalledPackageInfo installAllowlistedPackage(@NonNull String packageName,
@@ -572,9 +663,9 @@ public class MessagingReadRestrictionAllowlistMonitorTest {
     private InstalledPackageInfo installAllowlistedPackageForUser(@NonNull String packageName,
         boolean isSystem, boolean anyCertificate, int userId) throws Exception {
         final Signature signature = generateSignature((byte) (RANDOM.nextInt(127)));
-        final String certificateDigest = installInPackageManager(packageName, signature, isSystem);
+        final String certificateDigest =
+            installInPackageManagerForUser(packageName, signature, isSystem, userId);
         final String acceptedCertificate = anyCertificate ? "*" : certificateDigest;
-        installInPackageManagerForUser(packageName, signature, isSystem, userId);
         return new InstalledPackageInfo(packageName, certificateDigest, isSystem,
             acceptedCertificate, userId);
     }

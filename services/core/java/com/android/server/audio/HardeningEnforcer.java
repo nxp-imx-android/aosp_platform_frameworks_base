@@ -15,7 +15,6 @@
  */
 package com.android.server.audio;
 
-import static android.Manifest.permission.SCHEDULE_EXACT_ALARM;
 import static android.Manifest.permission.USE_EXACT_ALARM;
 import static android.media.audio.Flags.autoPublicVolumeApiHardening;
 
@@ -59,7 +58,6 @@ import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.AppOpsManager;
 import android.content.Context;
-import android.content.PermissionChecker;
 import android.content.pm.PackageManager;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
@@ -288,7 +286,7 @@ public class HardeningEnforcer {
                 // automotive hardening flag disabled, no blocking on auto
                 return false;
             }
-            if (uid < UserHandle.AID_APP_START) {
+            if (isPrivileged) {
                 return false;
             }
             // TODO metrics?

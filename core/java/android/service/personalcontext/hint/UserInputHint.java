@@ -26,6 +26,8 @@ import android.os.Bundle;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.Token;
 
+import androidx.annotation.Nullable;
+
 import java.util.Objects;
 
 /**
@@ -91,6 +93,13 @@ public final class UserInputHint extends ContextHint {
     @NonNull
     public ComponentName getSourceAppActivityComponentName() {
         return mSourceAppActivityComponentName;
+    }
+
+    /** @hide */
+    @Nullable
+    @Override
+    public String getSourcePackageName() {
+        return mSourceAppActivityComponentName.getPackageName();
     }
 
     @NonNull

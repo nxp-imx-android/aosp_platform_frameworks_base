@@ -29,6 +29,7 @@ import com.android.server.display.createSensorEvent
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
+import com.android.server.display.config.SensorData
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -50,8 +51,6 @@ class DisplayBrightnessReporterTest {
     @Mock
     private lateinit var mockSensorManager: SensorManager
     @Mock
-    private lateinit var mockHandler: Handler
-    @Mock
     private lateinit var mockBrightnessController: DisplayBrightnessController
     @Mock
     private lateinit var mockBrightnessState: DisplayBrightnessState
@@ -63,12 +62,17 @@ class DisplayBrightnessReporterTest {
     fun setUp() {
         MockitoAnnotations.openMocks(this)
         lightSensor = createSensor(Sensor.TYPE_LIGHT, Sensor.STRING_TYPE_LIGHT)
+        // Set the stringType to match loadTempSensorUnspecifiedConfig() to
+        // trick SensorUtils
         colorSensor = createSensor(Sensor.TYPE_AMBIENT_TEMPERATURE,
-            Sensor.STRING_TYPE_AMBIENT_TEMPERATURE)
+            SensorData.TEMPERATURE_TYPE_SKIN)
+        whenever(mockSensorManager.getSensorList(Sensor.TYPE_ALL)).thenReturn(
+            listOf(lightSensor, colorSensor))
     }
 
     @Test
-    fun testMapLuxToProtoEnumBucket(@TestParameter testCase: LuxBucketTestCase) {
+    fun testMapLuxToProtoEnumBucket(@TestParameter testCase: LuxBucketTestCase)
+    {
         val result = DisplayBrightnessReporter.mapLuxToProtoEnumBucket(
             testCase.luxValue)
         assertThat(result).isEqualTo(testCase.expectedBucket)
@@ -85,110 +89,98 @@ class DisplayBrightnessReporterTest {
     }
 
     @Test
-    fun testAsyncSensorReader_registersCorrectly() {
+    fun testReport_registersCorrectly() {
+        val reporter = DisplayBrightnessReporter(mockSensorManager,
+            lightSensor, SensorData.loadTempSensorUnspecifiedConfig(), true)
         val event = BrightnessEvent(1)
-        event.flags = BrightnessEvent.FLAG_INVALID_LUX
+        event.flags =
+            BrightnessEvent.FLAG_INVALID_LUX or BrightnessEvent.FLAG_USER_SET
         event.ambientColorTemperature = -1f
 
-        val reader = DisplayBrightnessReporter.AsyncSensorReader(
-            event, 0.5f, mockBrightnessState,
-            0.5f, 0.5f, 0.5f, 0.5f,
-            mockSensorManager, mockHandler, lightSensor, colorSensor,
-            ArrayList<DisplayBrightnessReporter.AsyncSensorReader>()
-        )
+        reporter.report(event, 0.5f, mockBrightnessState,
+            0.5f, 0.5f, 0.5f, 0.5f, true)
 
-        reader.start()
-
-        verify(mockSensorManager).registerListener(eq(reader), eq(lightSensor),
-            anyInt(), eq(mockHandler))
-        verify(mockSensorManager).registerListener(eq(reader), eq(colorSensor),
-            anyInt(), eq(mockHandler))
-        verify(mockHandler).postDelayed(any(Runnable::class.java), anyLong())
+        verify(mockSensorManager, org.mockito.Mockito.timeout(1000)).
+            registerListener(
+                any(SensorEventListener::class.java), eq(lightSensor),
+                anyInt(), any(Handler::class.java))
+        verify(mockSensorManager, org.mockito.Mockito.timeout(1000)).
+            registerListener(
+                any(SensorEventListener::class.java), eq(colorSensor),
+                anyInt(), any(Handler::class.java))
     }
 
     @Test
-    fun testAsyncSensorReader_onlyRegistersNeeded() {
+    fun testReport_onlyRegistersNeeded() {
+        val reporter = DisplayBrightnessReporter(
+            mockSensorManager, lightSensor,
+            SensorData.loadTempSensorUnspecifiedConfig(), true)
         val event = BrightnessEvent(1)
+        event.flags = BrightnessEvent.FLAG_USER_SET
         event.lux = 100f // valid lux
         event.ambientColorTemperature = -1f // invalid color
 
-        val reader = DisplayBrightnessReporter.AsyncSensorReader(
-            event, 0.5f, mockBrightnessState,
-            0.5f, 0.5f, 0.5f, 0.5f,
-            mockSensorManager, mockHandler, lightSensor, colorSensor,
-            ArrayList<DisplayBrightnessReporter.AsyncSensorReader>()
-        )
+        reporter.report(event, 0.5f, mockBrightnessState,
+            0.5f, 0.5f, 0.5f, 0.5f, true)
 
-        reader.start()
-
+        verify(mockSensorManager, org.mockito.Mockito.timeout(1000))
+            .registerListener(
+                any(SensorEventListener::class.java),
+                eq(colorSensor), anyInt(), any(Handler::class.java))
         verify(mockSensorManager, never()).registerListener(
             any(SensorEventListener::class.java),
             eq(lightSensor), anyInt(), any(Handler::class.java))
-        verify(mockSensorManager).registerListener(eq(reader),
-            eq(colorSensor), anyInt(), eq(mockHandler))
     }
 
     @Test
-    fun testAsyncSensorReader_unregistersOnFinish() {
+    fun testReport_unregistersOnFinish() {
+        val reporter = DisplayBrightnessReporter(
+            mockSensorManager, lightSensor, null, true)
         val event = BrightnessEvent(1)
-        event.flags = BrightnessEvent.FLAG_INVALID_LUX
+        event.flags =
+            BrightnessEvent.FLAG_INVALID_LUX or BrightnessEvent.FLAG_USER_SET
+        event.ambientColorTemperature = 6500f // valid color
 
-        val reader = DisplayBrightnessReporter.AsyncSensorReader(
-            event, 0.5f, mockBrightnessState,
-            0.5f, 0.5f, 0.5f, 0.5f,
-            mockSensorManager, mockHandler, lightSensor, null,
-            ArrayList<DisplayBrightnessReporter.AsyncSensorReader>()
-        )
+        reporter.report(event, 0.5f, mockBrightnessState,
+            0.5f, 0.5f, 0.5f, 0.5f, true)
 
-        reader.start()
+        val captor = ArgumentCaptor.forClass(SensorEventListener::class.java)
+        verify(mockSensorManager, org.mockito.Mockito.timeout(1000))
+            .registerListener(
+                captor.capture(), eq(lightSensor),
+                anyInt(), any(Handler::class.java))
 
         val sensorEvent = createSensorEvent(lightSensor, 50f)
-        reader.onSensorChanged(sensorEvent)
+        captor.value.onSensorChanged(sensorEvent)
 
-        verify(mockSensorManager).unregisterListener(reader)
-        verify(mockHandler).removeCallbacks(any(Runnable::class.java))
-        assertThat(event.lux).isEqualTo(50f)
-        assertThat(event.flags and BrightnessEvent.FLAG_INVALID_LUX).isEqualTo(0)
+        verify(mockSensorManager, org.mockito.Mockito.timeout(1000))
+            .unregisterListener(captor.value)
+        // we can't easily assert the passed BrightnessEvent since the event
+        // object is cloned, but the fact that it unregisters is proof that
+        // it finished
     }
 
     @Test
-    fun testAsyncSensorReader_colorSensorUpdate() {
+    fun testStop_unregistersListener() {
+        val reporter = DisplayBrightnessReporter(
+            mockSensorManager, lightSensor, null, true)
         val event = BrightnessEvent(1)
-        event.ambientColorTemperature = -1f
+        event.flags =
+            BrightnessEvent.FLAG_INVALID_LUX or BrightnessEvent.FLAG_USER_SET
 
-        val reader = DisplayBrightnessReporter.AsyncSensorReader(
-            event, 0.5f, mockBrightnessState,
-            0.5f, 0.5f, 0.5f, 0.5f,
-            mockSensorManager, mockHandler, null, colorSensor,
-            ArrayList<DisplayBrightnessReporter.AsyncSensorReader>()
-        )
+        reporter.report(event, 0.5f, mockBrightnessState,
+            0.5f, 0.5f, 0.5f, 0.5f, true)
 
-        reader.start()
+        // Wait for it to be registered first so that stop() actually unregisters
+        verify(mockSensorManager, org.mockito.Mockito.timeout(1000))
+            .registerListener(
+                any(SensorEventListener::class.java), eq(lightSensor),
+                anyInt(), any(Handler::class.java))
 
-        val sensorEvent = createSensorEvent(colorSensor, 6500f)
-        reader.onSensorChanged(sensorEvent)
+        reporter.stop()
 
-        verify(mockSensorManager).unregisterListener(reader)
-        assertThat(event.ambientColorTemperature).isEqualTo(6500f)
-    }
-
-    @Test
-    fun testAsyncSensorReader_cancelUnregistersWithoutLogging() {
-        val event = BrightnessEvent(1)
-        event.flags = BrightnessEvent.FLAG_INVALID_LUX
-
-        val reader = DisplayBrightnessReporter.AsyncSensorReader(
-            event, 0.5f, mockBrightnessState,
-            0.5f, 0.5f, 0.5f, 0.5f,
-            mockSensorManager, mockHandler, lightSensor, null,
-            ArrayList<DisplayBrightnessReporter.AsyncSensorReader>()
-        )
-
-        reader.start()
-        reader.cancel()
-
-        verify(mockSensorManager).unregisterListener(reader)
-        verify(mockHandler).removeCallbacks(any(Runnable::class.java))
+        verify(mockSensorManager, org.mockito.Mockito.timeout(1000))
+            .unregisterListener(any(SensorEventListener::class.java))
     }
 
     enum class LuxBucketTestCase(
