@@ -396,7 +396,7 @@ constructor(
                         )
                     }
                 }
-                if (previousIndex > 0) {
+                if (previousIndex >= 0) {
                     val unselectedButton = getChildAt(count - previousIndex) as ImageButton
 
                     val unselectedCornerRadius = unselectedButton.backgroundShape().cornerRadius
