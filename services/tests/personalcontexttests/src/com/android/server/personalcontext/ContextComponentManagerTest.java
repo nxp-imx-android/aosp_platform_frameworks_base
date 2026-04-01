@@ -16,12 +16,17 @@
 
 package com.android.server.personalcontext;
 
+import static com.android.server.personalcontext.AccessController.ACCESS_BIND_CONTEXT_PERMISSION;
+import static com.android.server.personalcontext.AccessController.ACCESS_PUBLISH_INSIGHTS_ALLOWLIST;
+import static com.android.server.personalcontext.AccessController.ACCESS_RECEIVE_HINTS_ALLOWLIST;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -263,16 +268,21 @@ public class ContextComponentManagerTest {
         assertThat(manager.getRefiners()).isEmpty();
         assertThat(manager.getRenderers()).isEmpty();
 
-        when(mAccessController.isServiceAllowed(eq(resolve.serviceInfo), eq(
-                        AccessController.ACCESS_RECEIVE_HINTS_ALLOWLIST
-                        | AccessController.ACCESS_BIND_CONTEXT_PERMISSION)))
-                .thenReturn(true);
+        doAnswer(invocation -> {
+            final @AccessController.Access int flags = invocation.getArgument(1);
 
-        when(mAccessController.isServiceAllowed(eq(resolve.serviceInfo), eq(
-                        AccessController.ACCESS_RECEIVE_HINTS_ALLOWLIST
-                        | AccessController.ACCESS_PUBLISH_INSIGHTS_ALLOWLIST
-                        | AccessController.ACCESS_BIND_CONTEXT_PERMISSION)))
-                .thenReturn(true);
+            if ((flags & ACCESS_RECEIVE_HINTS_ALLOWLIST) == ACCESS_RECEIVE_HINTS_ALLOWLIST) {
+                return true;
+            }
+
+            if ((flags & ACCESS_PUBLISH_INSIGHTS_ALLOWLIST)
+                    == ACCESS_PUBLISH_INSIGHTS_ALLOWLIST) {
+                return true;
+            }
+
+            return false;
+        }).when(mAccessController).isServiceAllowed(eq(resolve.serviceInfo), anyInt());
+
 
         when(mAccessController.isClientAllowed(any(), anyInt())).thenReturn(false);
         manager.registerComponentsForAllPackages();
@@ -280,9 +290,19 @@ public class ContextComponentManagerTest {
         assertThat(manager.getRefiners()).hasSize(2);
         assertThat(manager.getRenderers()).isEmpty();
 
+        doAnswer(invocation -> {
+            final @AccessController.Access int flags = invocation.getArgument(1);
+
+            if ((flags & ACCESS_BIND_CONTEXT_PERMISSION) == ACCESS_BIND_CONTEXT_PERMISSION) {
+                return true;
+            }
+
+            return false;
+        }).when(mAccessController).isServiceAllowed(eq(resolve.serviceInfo), anyInt());
+
         when(mAccessController.isServiceAllowed(
                         eq(resolve.serviceInfo),
-                        eq(AccessController.ACCESS_BIND_CONTEXT_PERMISSION)))
+                        eq(ACCESS_BIND_CONTEXT_PERMISSION)))
                 .thenReturn(true);
 
         manager.registerComponentsForAllPackages();
