@@ -1904,7 +1904,8 @@ public final class AppExitInfoTracker {
             if (allUsers) {
                 uid = UserHandle.getAppId(uid);
                 for (int i = mData.size() - 1; i >= 0; i--) {
-                    if (UserHandle.getAppId(mData.keyAt(i)) == uid) {
+                    int entUid = mData.keyAt(i);
+                    if (UserHandle.isSameAppIdWithPcc(UserHandle.getAppId(entUid), uid)) {
                         mData.removeAt(i);
                     }
                 }

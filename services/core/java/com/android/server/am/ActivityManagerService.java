@@ -14718,7 +14718,7 @@ public class ActivityManagerService extends IActivityManager.Stub
      */
     boolean isValidSingletonCall(int callingUid, int componentUid) {
         int componentAppId = UserHandle.getAppId(componentUid);
-        return UserHandle.isSameApp(callingUid, componentUid)
+        return UserHandle.isSameAppIdWithPcc(callingUid, componentUid)
                 || componentAppId == SYSTEM_UID
                 || componentAppId == PHONE_UID
                 || ActivityManager.checkUidPermission(INTERACT_ACROSS_USERS_FULL, componentUid)
