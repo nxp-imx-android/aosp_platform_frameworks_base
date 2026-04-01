@@ -870,9 +870,6 @@
   <java-symbol type="string" name="supervision_blocked_app_title" />
   <java-symbol type="string" name="supervision_blocked_app_content" />
   <java-symbol type="string" name="supervision_unblocked_app_content" />
-  <java-symbol type="string" name="tv_watchdog_notification_channel_name" />
-  <java-symbol type="string" name="tv_watchdog_notification_title" />
-  <java-symbol type="string" name="tv_watchdog_notification_content" />
   <java-symbol type="integer" name="config_turnOffTvToastSuppressionDelayMs" />
   <java-symbol type="integer" name="config_turnOffTvToastPostDelayMs" />
   <java-symbol type="string" name="low_memory" />
