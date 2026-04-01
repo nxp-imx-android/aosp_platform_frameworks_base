@@ -119,10 +119,13 @@ public class ExtensionOutputConfiguration {
                 ret.sharedSurfaceConfigs.add(sharedConfig);
             }
         } else if (Flags.multiResolutionConcurrentReaders() &&
-                mMultiResolutionImageReader != null &&
-                mMultiResolutionImageReader.isConcurrencyEnabled()) {
-            ret.onActiveOutputSurfaceCallback =
-                    mMultiResolutionImageReader.getIOnActiveOutputSurfaceCallback();
+                mMultiResolutionImageReader != null) {
+            if (mMultiResolutionImageReader.isConcurrencyEnabled()) {
+                ret.onActiveOutputSurfaceCallback =
+                        mMultiResolutionImageReader.getIOnActiveOutputSurfaceCallback();
+            } else {
+                ret.isMultiResolutionOutput = true;
+            }
         }
 
         return ret;
