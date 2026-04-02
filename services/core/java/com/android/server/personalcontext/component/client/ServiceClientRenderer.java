@@ -16,13 +16,9 @@
 
 package com.android.server.personalcontext.component.client;
 
-import static android.Manifest.permission.RECEIVE_SENSITIVE_NOTIFICATIONS;
 
 import android.annotation.PermissionManuallyEnforced;
-import android.app.NotificationManager;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
 import android.os.Handler;
 import android.os.IBinder;
@@ -43,7 +39,6 @@ import com.android.server.personalcontext.AccessController;
 import com.android.server.personalcontext.OperatingModeProvider;
 import com.android.server.personalcontext.component.Renderer;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -56,11 +51,9 @@ import java.util.concurrent.Executors;
 public class ServiceClientRenderer
         extends BaseServiceClientComponent<IInsightRenderer> implements Renderer {
     private static final String TAG = "ServiceClientRenderer";
-    static final String META_DATA_RECEIVE_NOTIFICATION_INSIGHTS =
-            "android.service.personalcontext.renderer.receive_notification_insights";
     private InsightFilter mFilter = InsightFilter.REQUIRE_RENDER_TOKEN;
 
-    private final int mProperties;
+    private final int mProperties = 0;
 
     public ServiceClientRenderer(
             Context context,
@@ -91,29 +84,6 @@ public class ServiceClientRenderer
             OperatingModeProvider operatingModeProvider) {
         super(context, accessController, componentId, serviceInfo, userHandle, executor, handler,
                 operatingModeProvider);
-
-        int properties = 0;
-
-        final PackageManager packageManager = context.getPackageManager();
-        final NotificationManager notificationManager =
-                context.getSystemService(NotificationManager.class);
-        final boolean hasSensitiveNotificationPermission = packageManager
-                .checkPermission(RECEIVE_SENSITIVE_NOTIFICATIONS, serviceInfo.packageName)
-                == PackageManager.PERMISSION_GRANTED;
-        List<ComponentName> enabledListeners =
-                notificationManager.getEnabledNotificationListeners(userHandle.getIdentifier());
-        final boolean isEnabledNotificationListener =
-                enabledListeners != null
-                        && enabledListeners.contains(serviceInfo.getComponentName());
-        if (hasSensitiveNotificationPermission
-                && isEnabledNotificationListener
-                && serviceInfo.metaData != null
-                && serviceInfo.metaData.getBoolean(
-                        META_DATA_RECEIVE_NOTIFICATION_INSIGHTS, false)) {
-            properties |= Renderer.PROPERTY_CAN_RECEIVE_NOTIFICATION_INSIGHTS;
-        }
-
-        mProperties = properties;
 
         if (isAllowed(AccessController.ACCESS_FILTER_INSIGHTS_ALLOWLIST)) {
             runWithScopedBinder((binder, callback) -> {
