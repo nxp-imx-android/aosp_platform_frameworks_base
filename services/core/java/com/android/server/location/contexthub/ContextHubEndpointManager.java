@@ -20,8 +20,8 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.content.Context;
 import android.hardware.contexthub.ContextHubInfo;
-import android.hardware.contexthub.DataFlowSinkContext;
 import android.hardware.contexthub.DataFlowId;
+import android.hardware.contexthub.DataFlowSinkContext;
 import android.hardware.contexthub.EndpointInfo;
 import android.hardware.contexthub.ErrorCode;
 import android.hardware.contexthub.HubEndpointInfo;
@@ -267,6 +267,16 @@ import java.util.function.Consumer;
             mNextSessionId = mMinSessionId;
         }
         mIsRegistered = true;
+
+        PccAccessList.getInstance()
+                .registerPccAccessChangeCallback(
+                        (endpointId) -> {
+                            synchronized (mHalRestartLock) {
+                                for (ContextHubEndpointBroker broker : mEndpointMap.values()) {
+                                    broker.onPccAccessChanged(endpointId);
+                                }
+                            }
+                        });
     }
 
     /**

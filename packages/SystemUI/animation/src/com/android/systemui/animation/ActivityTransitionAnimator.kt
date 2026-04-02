@@ -1671,7 +1671,7 @@ constructor(
             val wrappedCallback: IRemoteAnimationFinishedCallback =
                 object : IRemoteAnimationFinishedCallback.Stub() {
                     override fun onAnimationFinished() {
-                        TransitionUtil.releaseLeashMap(leashMap)
+                        leashMap.clear()
                         val finishTransaction = SurfaceControl.Transaction()
                         finishCallback?.onTransitionFinished(null, finishTransaction)
                         finishTransaction.close()

@@ -56,7 +56,6 @@ class AppCompatCameraPolicy {
 
     AppCompatCameraPolicy(@NonNull WindowManagerService wmService) {
         mWmService = wmService;
-        initialize();
     }
 
     /**
@@ -188,6 +187,7 @@ class AppCompatCameraPolicy {
     }
 
     void start() {
+        initialize();
         if (mDisplayRotationPolicy != null) {
             mDisplayRotationPolicy.start();
         }

@@ -624,6 +624,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             throw new SecurityException(
                     "Insufficient permission to register a data flow offload sink: " + sink);
         }
+        PccAccessList.getInstance().maybeNotePccAccessForEndpoint(mUid, sink);
 
         if (Flags.fmcqShareDataFlowMessageFix() && msg != null) {
             // The incoming message is forced to be reliable since we utilize the transaction
@@ -771,6 +772,38 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                 }
             }
             handleDataFlowPermissionChanges();
+        }
+    }
+
+    /**
+     * Handles a change in the PCC access list.
+     *
+     * @param pccEndpointId The endpoint ID that was added to the PCC access list.
+     */
+    /* package */ void onPccAccessChanged(HubEndpointInfo.HubEndpointIdentifier pccEndpointId) {
+        List<DataFlowId> inaccessibleFlows = new ArrayList<>();
+        synchronized (mDataFlowLock) {
+            Iterator<Map.Entry<DataFlowIdWrapper, HubEndpointInfo>> iterator =
+                    mDataFlowAsSinkMap.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<DataFlowIdWrapper, HubEndpointInfo> entry = iterator.next();
+                if (entry.getValue().getIdentifier().equals(pccEndpointId)
+                        && !PccAccessList.getInstance()
+                                .checkPccAccessForEndpoint(mUid, entry.getValue())) {
+                    Log.i(TAG, "Closing data flow from PCC-restricted endpoint " + pccEndpointId);
+                    inaccessibleFlows.add(entry.getKey().getId());
+                }
+            }
+        }
+
+        if (!inaccessibleFlows.isEmpty()) {
+            invokeCallback(
+                    (consumer) ->
+                            consumer.onDataFlowsInaccessible(
+                                    inaccessibleFlows.toArray(new DataFlowId[0])));
+            for (DataFlowId id : inaccessibleFlows) {
+                unregisterDataFlowHostSink(id);
+            }
         }
     }
 
@@ -925,7 +958,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                 && !hasSessionId(sessionId)) {
             Log.w(
                     TAG,
-                    "Received data flow host consumer registration for unknown session: id="
+                    "Received data flow host sink registration for unknown session: id="
                             + sessionId);
             return;
         }
@@ -946,14 +979,25 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                     () -> {
                         if (!notePermissions(source)) {
                             throw new RuntimeException(
-                                "onDataFlowHostSinkRegistered: "
-                                        + mEndpointInfo
-                                        + " doesn't have AppOps permission for "
-                                        + source);
+                                    "onDataFlowHostSinkRegistered: "
+                                            + mEndpointInfo
+                                            + " doesn't have AppOps permission for "
+                                            + source);
                         }
                     });
         } catch (RuntimeException e) {
             Log.e(TAG, e.getMessage());
+            unregisterDataFlowHostSink(context.id);
+            return;
+        }
+        if (!PccAccessList.getInstance().checkPccAccessForEndpoint(mUid, source)) {
+            Log.w(
+                    TAG,
+                    "Dropping data flow host sink registration from "
+                            + source
+                            + ". Target client "
+                            + mPackageName
+                            + " is not PCC");
             unregisterDataFlowHostSink(context.id);
             return;
         }

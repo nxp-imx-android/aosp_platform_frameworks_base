@@ -131,7 +131,10 @@ public class InsightSurfaceClientTest {
         mClient.register(mExecutor, mClientCallbacks);
 
         final IInsightSurfaceClient client = mClient.getClientInfo().getClient();
-        assertThrows(IllegalStateException.class, () -> client.onSurfaceUpdated(mSurfacePackage));
+        client.onSurfaceCreated(mSurfacePackage, mSession);
+        client.onSurfaceReleased(mSurfacePackage);
+        client.onSurfaceUpdated(mSurfacePackage);
+        verify(mClientCallbacks, never()).onSessionUpdated(any(InsightSurfaceSession.class));
     }
 
     @Test

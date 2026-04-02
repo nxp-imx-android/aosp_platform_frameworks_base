@@ -490,31 +490,12 @@ public class StackScrollAlgorithm {
         state.visibleChildren.clear();
         state.visibleChildren.ensureCapacity(childCount);
         int notGoneIndex = 0;
-        boolean emptyShadeVisible = false;
         for (int i = 0; i < childCount; i++) {
             ExpandableView v = (ExpandableView) mHostView.getChildAt(i);
             if (v.getVisibility() != View.GONE) {
                 if (v == ambientState.getShelf()) {
                     continue;
                 }
-                if (isEmptyShadeView(v)) {
-                    emptyShadeVisible = true;
-                }
-                if (!SceneContainerFlag.isEnabled() && v instanceof FooterView footerView) {
-                    // If the empty shade is visible or the footer is the first visible
-                    // view, we're in a transitory state so let's leave the footer alone.
-                    if (emptyShadeVisible || notGoneIndex == 0) {
-                        // ...except for the hidden state, to prevent it from flashing on
-                        // the screen (this piece is copied from updateChild, and is not
-                        // necessary in flexiglass).
-                        if (footerView.shouldBeHidden() || !ambientState.isShadeExpanded()) {
-                            footerView.getViewState().hidden = true;
-                        }
-
-                        continue;
-                    }
-                }
-
                 state.visibleChildren.add(v);
                 notGoneIndex = updateNotGoneIndex(notGoneIndex, v);
             }
