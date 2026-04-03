@@ -177,6 +177,7 @@ import android.security.metrics.KeyCreationWithAuthInfo;
 import android.security.metrics.KeyCreationWithGeneralInfo;
 import android.security.metrics.KeyCreationWithPurposeAndModesInfo;
 import android.security.metrics.KeyOperationPerUid;
+import android.security.metrics.KeyOperationStreamingStats;
 import android.security.metrics.KeyOperationWithGeneralInfo;
 import android.security.metrics.KeyOperationWithPurposeAndModesInfo;
 import android.security.metrics.KeysPerUid;
@@ -866,6 +867,7 @@ public class StatsPullAtomService extends SystemService {
                     case FrameworkStatsLog.KEYSTORE2_KEY_CREATION_PER_UID:
                     case FrameworkStatsLog.KEYSTORE2_KEY_OPERATION_PER_UID:
                     case FrameworkStatsLog.KEYSTORE2_OPERATION_LATENCY:
+                    case FrameworkStatsLog.KEYSTORE2_KEY_OPERATION_STREAMING_STATS:
                         return pullKeystoreAtoms(atomTag, data);
                     case FrameworkStatsLog.ACCESSIBILITY_SHORTCUT_STATS:
                         return pullAccessibilityShortcutStatsLocked(data);
@@ -4881,7 +4883,8 @@ public class StatsPullAtomService extends SystemService {
             for (int tag : new int[] {
                     FrameworkStatsLog.KEYSTORE2_KEY_CREATION_PER_UID,
                     FrameworkStatsLog.KEYSTORE2_KEY_OPERATION_PER_UID,
-                    FrameworkStatsLog.KEYSTORE2_OPERATION_LATENCY
+                    FrameworkStatsLog.KEYSTORE2_OPERATION_LATENCY,
+                    FrameworkStatsLog.KEYSTORE2_KEY_OPERATION_STREAMING_STATS
             }) {
                 mStatsManager.setPullAtomCallback(
                         tag,
@@ -5023,7 +5026,8 @@ public class StatsPullAtomService extends SystemService {
             KeyOperationWithGeneralInfo atom = atomWrapper.payload.getKeyOperationWithGeneralInfo();
             pulledData.add(FrameworkStatsLog.buildStatsEvent(
                     FrameworkStatsLog.KEYSTORE2_KEY_OPERATION_WITH_GENERAL_INFO, atom.outcome,
-                    atom.error_code, atom.key_upgraded, atom.security_level, atomWrapper.count));
+                    atom.error_code, atom.key_upgraded, atom.security_level, atomWrapper.count,
+                    atom.is_attested));
         }
         return StatsManager.PULL_SUCCESS;
     }
@@ -5115,6 +5119,22 @@ public class StatsPullAtomService extends SystemService {
         return StatsManager.PULL_SUCCESS;
     }
 
+    int parseKeystoreKeyOperationStreamingStats(KeystoreAtom[] atoms,
+            List<StatsEvent> pulledData) {
+        if (Arrays.stream(atoms).anyMatch(
+                atom -> atom.payload.getTag() != KeystoreAtomPayload.keyOperationStreamingStats)) {
+            return StatsManager.PULL_SKIP;
+        }
+        for (KeystoreAtom atomWrapper : atoms) {
+            KeyOperationStreamingStats atom = atomWrapper.payload.getKeyOperationStreamingStats();
+            pulledData.add(FrameworkStatsLog.buildStatsEvent(
+                    FrameworkStatsLog.KEYSTORE2_KEY_OPERATION_STREAMING_STATS, atom.algorithm,
+                    atom.is_success, atom.call_count, atom.total_input_bytes,
+                    atomWrapper.count));
+        }
+        return StatsManager.PULL_SUCCESS;
+    }
+
     int pullKeystoreAtoms(int atomTag, List<StatsEvent> pulledData) {
         IKeystoreMetrics keystoreMetricsService = getIKeystoreMetricsService();
         if (keystoreMetricsService == null) {
@@ -5151,6 +5171,8 @@ public class StatsPullAtomService extends SystemService {
                     return parseKeystoreKeyOperationPerUid(atoms, pulledData);
                 case FrameworkStatsLog.KEYSTORE2_OPERATION_LATENCY:
                     return parseKeystoreOperationLatency(atoms, pulledData);
+                case FrameworkStatsLog.KEYSTORE2_KEY_OPERATION_STREAMING_STATS:
+                    return parseKeystoreKeyOperationStreamingStats(atoms, pulledData);
                 default:
                     Slog.w(TAG, "Unsupported keystore atom: " + atomTag);
                     return StatsManager.PULL_SKIP;

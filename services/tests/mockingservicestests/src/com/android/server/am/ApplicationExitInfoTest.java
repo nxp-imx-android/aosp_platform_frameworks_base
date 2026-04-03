@@ -25,6 +25,7 @@ import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHE
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_SERVICE;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_SERVICE;
+import static android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT;
 import static android.os.Process.INVALID_UID;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
@@ -54,8 +55,10 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Process;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.system.OsConstants;
 import android.text.TextUtils;
 import android.util.Pair;
@@ -104,6 +107,7 @@ import java.util.zip.GZIPInputStream;
 public class ApplicationExitInfoTest {
     private static final String TAG = ApplicationExitInfoTest.class.getSimpleName();
 
+    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
     @Rule public ServiceThreadRule mServiceThreadRule = new ServiceThreadRule();
     @Mock private AppOpsService mAppOpsService;
     @Mock private PackageManagerInternal mPackageManagerInt;
@@ -198,6 +202,90 @@ public class ApplicationExitInfoTest {
     @EnableFlags(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE)
     public void testApplicationExitInfoNative() throws Exception {
         testApplicationExitInfoVariant(/*isNativeService=*/ true);
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testApplicationExitInfoPccFlagEnabled() throws Exception {
+        testApplicationExitInfoPccVariant(/*isPccFlagEnabled=*/ true);
+    }
+
+    @Test
+    @DisableFlags(FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testApplicationExitInfoPccFlagDisabled() throws Exception {
+        testApplicationExitInfoPccVariant(/*isPccFlagEnabled=*/ false);
+    }
+
+    private void testApplicationExitInfoPccVariant(boolean isPccFlagEnabled) {
+        mAppExitInfoTracker.clearProcessExitInfo(true);
+        mAppExitInfoTracker.mAppExitInfoLoaded.set(true);
+        mAppExitInfoTracker.mProcExitStoreDir = new File(mContext.getFilesDir(),
+                AppExitInfoTracker.APP_EXIT_STORE_DIR);
+        assertTrue(FileUtils.createDir(mAppExitInfoTracker.mProcExitStoreDir));
+        mAppExitInfoTracker.mProcExitInfoFile = new File(mAppExitInfoTracker.mProcExitStoreDir,
+                AppExitInfoTracker.APP_EXIT_INFO_FILE);
+
+        doNothing().when(mAppExitInfoTracker).schedulePersistProcessExitInfo(anyBoolean());
+        doReturn(/* toBeReturned */ true).when(mAppExitInfoTracker).isFresh(anyLong());
+
+        final int pccUid = Process.FIRST_PCC_UID + 1;
+        final int packageUid = Process.FIRST_APPLICATION_UID + 1;
+        final int pid = 12345;
+        final String processName = "com.android.test.pcc:process";
+        final String packageName = "com.android.test.pcc";
+        final long now = System.currentTimeMillis();
+        final int connectionGroup = 0;
+        final int status = 0;
+        final int pss = 1000;
+        final int rss = 2000;
+
+        ProcessRecord app = makeProcessRecord(
+                pid,                         // pid
+                pccUid,                      // uid
+                packageUid,                  // packageUid
+                null,                        // definingUid
+                connectionGroup,
+                PROCESS_STATE_LAST_ACTIVITY, // procstate
+                pss,
+                rss,
+                processName,
+                packageName,
+                false);                     // isNativeService
+
+        doReturn(new Pair<Long, Object>(now, makeExitStatus(0)))
+                .when(mAppExitInfoTracker.mAppExitInfoSourceZygote)
+                .remove(anyInt(), anyInt());
+        doReturn(/* lmkdReportedRss */ null)
+                .when(mAppExitInfoTracker.mAppExitInfoSourceLmkd)
+                .remove(anyInt(), anyInt());
+
+        updateExitInfo(app, now);
+
+        ArrayList<ApplicationExitInfo> list = new ArrayList<>();
+
+        // Should be retrievable by package name and PCC UID
+        mAppExitInfoTracker.getExitInfo(packageName, pccUid, pid, /* maxNum */ 0, list);
+        assertEquals(1, list.size());
+        verifyApplicationExitInfo(list.get(0), now, pid, pccUid, packageUid, /* definingUid */ null,
+                processName, connectionGroup, ApplicationExitInfo.REASON_EXIT_SELF,
+                /* subReason */ null, status, (long) pss, (long) rss, IMPORTANCE_CACHED,
+                /* description */ null);
+
+        if (isPccFlagEnabled) {
+            // Should also be retrievable by package name and package UID
+            list.clear();
+            mAppExitInfoTracker.getExitInfo(packageName, packageUid, pid, 0, list);
+            assertEquals(1, list.size());
+            verifyApplicationExitInfo(list.get(0), now, pid, pccUid, packageUid,
+                    /* definingUid */ null, processName, connectionGroup,
+                    ApplicationExitInfo.REASON_EXIT_SELF, /* subReason */ null, status, (long) pss,
+                    (long) rss, IMPORTANCE_CACHED, /* description */ null);
+        } else {
+            // Should NOT be retrievable by package name and package UID when flag is disabled
+            list.clear();
+            mAppExitInfoTracker.getExitInfo(packageName, packageUid, pid, 0, list);
+            assertEquals(0, list.size());
+        }
     }
 
     private void testApplicationExitInfoVariant(boolean isNativeService) throws Exception {

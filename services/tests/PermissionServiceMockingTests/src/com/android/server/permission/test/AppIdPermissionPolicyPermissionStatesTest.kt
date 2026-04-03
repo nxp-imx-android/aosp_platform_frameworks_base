@@ -216,7 +216,7 @@ class AppIdPermissionPolicyPermissionStatesTest : BasePermissionPolicyTest() {
         ) {
             val platformPackage =
                 mockPackageState(PLATFORM_APP_ID, mockAndroidPackage(PLATFORM_PACKAGE_NAME))
-            setupAllowlist(PACKAGE_NAME_1, false)
+            setupAllowlist(PACKAGE_NAME_1, allowlistStateForProductApp = false)
             addPackageState(platformPackage)
         }
 
@@ -249,7 +249,7 @@ class AppIdPermissionPolicyPermissionStatesTest : BasePermissionPolicyTest() {
                     PLATFORM_APP_ID,
                     mockAndroidPackage(PLATFORM_PACKAGE_NAME, isSignatureMatching = true),
                 )
-            setupAllowlist(PACKAGE_NAME_1, false)
+            setupAllowlist(PACKAGE_NAME_1, allowlistStateForProductApp = false)
             addPackageState(platformPackage)
         }
 
@@ -277,7 +277,7 @@ class AppIdPermissionPolicyPermissionStatesTest : BasePermissionPolicyTest() {
         ) {
             val platformPackage =
                 mockPackageState(PLATFORM_APP_ID, mockAndroidPackage(PLATFORM_PACKAGE_NAME))
-            setupAllowlist(PACKAGE_NAME_1, true)
+            setupAllowlist(PACKAGE_NAME_1, allowlistStateForProductApp = true)
             addPackageState(platformPackage)
         }
 
@@ -294,7 +294,11 @@ class AppIdPermissionPolicyPermissionStatesTest : BasePermissionPolicyTest() {
 
     private fun setupAllowlist(
         packageName: String,
-        allowlistState: Boolean,
+        allowlistStateForSystemExtApp: Boolean? = null,
+        allowlistStateForProductApp: Boolean? = null,
+        allowlistStateForVendorApp: Boolean? = null,
+        allowlistStateForOtherApp: Boolean? = null,
+        allowlistStateForApkInApex: Boolean? = null,
         state: MutableAccessState = oldState,
     ) {
         state
@@ -304,8 +308,22 @@ class AppIdPermissionPolicyPermissionStatesTest : BasePermissionPolicyTest() {
             )
         val mockAllowlist =
             mock<PermissionAllowlist> {
+                whenever(getPrivilegedAppAllowlistState(packageName, PERMISSION_NAME_0))
+                    .thenReturn(allowlistStateForOtherApp)
                 whenever(getProductPrivilegedAppAllowlistState(packageName, PERMISSION_NAME_0))
-                    .thenReturn(allowlistState)
+                    .thenReturn(allowlistStateForProductApp)
+                whenever(
+                    getSystemExtPrivilegedAppAllowlistState(packageName, PERMISSION_NAME_0))
+                    .thenReturn(allowlistStateForSystemExtApp)
+                whenever(getVendorPrivilegedAppAllowlistState(packageName, PERMISSION_NAME_0))
+                    .thenReturn(allowlistStateForVendorApp)
+                whenever(
+                    getApexPrivilegedAppAllowlistState(
+                        APEX_MODULE_ID,
+                        packageName,
+                        PERMISSION_NAME_0,
+                    ))
+                    .thenReturn(allowlistStateForApkInApex)
             }
         state.mutateExternalState().setPermissionAllowlist(mockAllowlist)
     }
@@ -1387,6 +1405,161 @@ class AppIdPermissionPolicyPermissionStatesTest : BasePermissionPolicyTest() {
         }
     }
 
+    @Test
+    fun testEvaluatePermissionState_apkInProductApex_privilegedPermissionAllowlistedForApex_isGranted() {
+        val oldFlags = 0
+
+        val actualFlags = testEvaluatePermissionStateForApkInApex(
+            oldFlags,
+            isInstalledPackageProduct = true,
+            allowlistStateForProductApp = false,
+            allowlistStateForApkInApex = true,
+        )
+
+        val expectedNewFlags = PermissionFlags.PROTECTION_GRANTED
+        assertWithMessage(
+                "After $action is called for an APK-in-APEX package that requests a privileged" +
+                    " permission that's allowlisted in the APEX, the actual permission flags " +
+                    " $actualFlags should match the expected flags $expectedNewFlags"
+            )
+            .that(actualFlags)
+            .isEqualTo(expectedNewFlags)
+    }
+
+    @Test
+    fun testEvaluatePermissionState_apkInProductApex_privilegedPermissionAllowlistedForProduct_isGranted() {
+        val oldFlags = 0
+
+        val actualFlags = testEvaluatePermissionStateForApkInApex(
+            oldFlags,
+            isInstalledPackageProduct = true,
+            allowlistStateForProductApp = true,
+            allowlistStateForApkInApex = null,
+        )
+
+        val expectedNewFlags = PermissionFlags.PROTECTION_GRANTED
+        assertWithMessage(
+                "After $action is called for an APK-in-APEX package that requests a privileged" +
+                    " permission that's allowlisted in the /product partition, the actual" +
+                    " permission flags $actualFlags should match the expected flags" +
+                    " $expectedNewFlags"
+            )
+            .that(actualFlags)
+            .isEqualTo(expectedNewFlags)
+    }
+
+    @Test
+    fun testEvaluatePermissionState_apkInSystemExtApex_privilegedPermissionAllowlistedForSystemExt_isGranted() {
+        val oldFlags = 0
+
+        val actualFlags = testEvaluatePermissionStateForApkInApex(
+            oldFlags,
+            isInstalledPackageSystemExt = true,
+            allowlistStateForSystemExtApp = true,
+            allowlistStateForApkInApex = null,
+        )
+
+        val expectedNewFlags = PermissionFlags.PROTECTION_GRANTED
+        assertWithMessage(
+                "After $action is called for a system_ext APK-in-APEX package that requests a" +
+                    " privileged permission that's allowlisted in the /system_ext partition, the" +
+                    " actual permission flags $actualFlags should match the expected flags" +
+                    " $expectedNewFlags"
+            )
+            .that(actualFlags)
+            .isEqualTo(expectedNewFlags)
+    }
+
+    @Test
+    fun testEvaluatePermissionState_apkInVendorApex_privilegedPermissionAllowlistedForApex_isNotGranted() {
+        val oldFlags = 0
+
+        val actualFlags = testEvaluatePermissionStateForApkInApex(
+            oldFlags,
+            isInstalledPackageVendor = true,
+            allowlistStateForVendorApp = null,
+            allowlistStateForApkInApex = true,
+        )
+
+        val expectedNewFlags = oldFlags
+        assertWithMessage(
+                "After $action is called for a vendor APK-in-APEX package that requests a" +
+                    " privileged permission that's allowlisted in the APEX, the actual" +
+                    " permission flags $actualFlags should match the expected flags" +
+                    " $expectedNewFlags"
+            )
+            .that(actualFlags)
+            .isEqualTo(expectedNewFlags)
+    }
+
+    @Test
+    fun testEvaluatePermissionState_apkInVendorApex_privilegedPermissionAllowlistedForVendor_isGranted() {
+        val oldFlags = 0
+
+        val actualFlags = testEvaluatePermissionStateForApkInApex(
+            oldFlags,
+            isInstalledPackageVendor = true,
+            allowlistStateForVendorApp = true,
+            allowlistStateForApkInApex = false,
+        )
+
+        val expectedNewFlags = PermissionFlags.PROTECTION_GRANTED
+        assertWithMessage(
+                "After $action is called for a vendor APK-in-APEX package that requests a" +
+                    " privileged permission that's allowlisted in the /vendor partition, the" +
+                    " actual permission flags $actualFlags should match the expected flags" +
+                    " $expectedNewFlags"
+            )
+            .that(actualFlags)
+            .isEqualTo(expectedNewFlags)
+    }
+
+    private fun testEvaluatePermissionStateForApkInApex(
+        oldFlags: Int,
+        isInstalledPackageSystemExt: Boolean = false,
+        isInstalledPackageProduct: Boolean = false,
+        isInstalledPackageVendor: Boolean = false,
+        allowlistStateForSystemExtApp: Boolean? = null,
+        allowlistStateForProductApp: Boolean? = null,
+        allowlistStateForVendorApp: Boolean? = null,
+        allowlistStateForApkInApex: Boolean? = null,
+        state: MutableAccessState = oldState,
+    ): Int {
+        testEvaluatePermissionState(
+            oldFlags,
+            PermissionInfo.PROTECTION_SIGNATURE or
+                PermissionInfo.PROTECTION_FLAG_PRIVILEGED or
+                PermissionInfo.PROTECTION_FLAG_VENDOR_PRIVILEGED,
+            isInstalledPackageSystem = true,
+            isInstalledPackagePrivileged = true,
+            isInstalledPackageSystemExt = isInstalledPackageSystemExt,
+            isInstalledPackageProduct = isInstalledPackageProduct,
+            isInstalledPackageVendor = isInstalledPackageVendor,
+            isInstalledPackageApkInApex = true,
+        ) {
+            val platformPackage =
+                mockPackageState(PLATFORM_APP_ID, mockAndroidPackage(PLATFORM_PACKAGE_NAME))
+            setupAllowlist(
+                PACKAGE_NAME_1,
+                allowlistStateForSystemExtApp = allowlistStateForSystemExtApp,
+                allowlistStateForProductApp = allowlistStateForProductApp,
+                allowlistStateForVendorApp = allowlistStateForVendorApp,
+                allowlistStateForApkInApex = allowlistStateForApkInApex,
+                state = state,
+            )
+            // testEvaluatePermissionState() assigns ownership of the permission to APP_ID_0,
+            // so it must also be included in the allowlist.
+            state
+                .mutateExternalState()
+                .setPrivilegedPermissionAllowlistPackages(
+                    MutableIndexedListSet<String>().apply { add(PACKAGE_NAME_0) }
+                )
+            addPackageState(platformPackage)
+        }
+
+        return getPermissionFlags(APP_ID_1, getUserIdEvaluated(), PERMISSION_NAME_0)
+    }
+
     /**
      * Setup simple package states for testing evaluatePermissionState().
      * permissionOwnerPackageState is definer of permissionName with APP_ID_0. installedPackageState
@@ -1411,9 +1584,11 @@ class AppIdPermissionPolicyPermissionStatesTest : BasePermissionPolicyTest() {
         permissionInfoFlags: Int = 0,
         isInstalledPackageSystem: Boolean = false,
         isInstalledPackagePrivileged: Boolean = false,
+        isInstalledPackageSystemExt: Boolean = false,
         isInstalledPackageProduct: Boolean = false,
-        isInstalledPackageSignatureMatching: Boolean = false,
         isInstalledPackageVendor: Boolean = false,
+        isInstalledPackageApkInApex: Boolean = false,
+        isInstalledPackageSignatureMatching: Boolean = false,
         installedPackageTargetSdkVersion: Int = Build.VERSION_CODES.UPSIDE_DOWN_CAKE,
         isNewInstall: Boolean = false,
         additionalSetup: () -> Unit,
@@ -1443,8 +1618,10 @@ class AppIdPermissionPolicyPermissionStatesTest : BasePermissionPolicyTest() {
                 ),
                 isSystem = isInstalledPackageSystem,
                 isPrivileged = isInstalledPackagePrivileged,
+                isSystemExt = isInstalledPackageSystemExt,
                 isProduct = isInstalledPackageProduct,
                 isVendor = isInstalledPackageVendor,
+                apexModuleName = if (isInstalledPackageApkInApex) APEX_MODULE_ID else null,
             )
         addPackageState(permissionOwnerPackageState)
         if (!isNewInstall) {

@@ -1517,12 +1517,18 @@ class AppIdPermissionPolicy : SchemePolicy() {
         permissionName: String,
     ): Boolean? {
         val permissionAllowlist = newState.externalState.permissionAllowlist
+        val apexModuleName = packageState.apexModuleName
         val packageName = packageState.packageName
         return when {
             packageState.isVendor || packageState.isOdm ->
                 permissionAllowlist.getVendorSignatureAppAllowlistState(packageName, permissionName)
             packageState.isProduct ->
-                permissionAllowlist.getProductSignatureAppAllowlistState(
+                apexModuleName?.let {
+                    permissionAllowlist.getApexSignatureAppAllowlistState(
+                        packageName,
+                        permissionName,
+                    )
+                } ?: permissionAllowlist.getProductSignatureAppAllowlistState(
                     packageName,
                     permissionName,
                 )
@@ -1616,46 +1622,51 @@ class AppIdPermissionPolicy : SchemePolicy() {
         permissionName: String,
     ): Boolean? {
         val permissionAllowlist = newState.externalState.permissionAllowlist
-        val apexModuleName = packageState.apexModuleName
         val packageName = packageState.packageName
-        return when {
-            packageState.isVendor || packageState.isOdm ->
-                permissionAllowlist.getVendorPrivilegedAppAllowlistState(
-                    packageName,
-                    permissionName,
-                )
-            packageState.isProduct ->
-                permissionAllowlist.getProductPrivilegedAppAllowlistState(
-                    packageName,
-                    permissionName,
-                )
-            packageState.isSystemExt ->
-                permissionAllowlist.getSystemExtPrivilegedAppAllowlistState(
-                    packageName,
-                    permissionName,
-                )
-            apexModuleName != null -> {
-                val nonApexAllowlistState =
-                    permissionAllowlist.getPrivilegedAppAllowlistState(packageName, permissionName)
-                if (nonApexAllowlistState != null) {
-                    // TODO(andreionea): Remove check as soon as all apk-in-apex
-                    // permission allowlists are migrated.
-                    Slog.w(
-                        LOG_TAG,
-                        "Package $packageName is an APK in APEX but has permission" +
-                            " allowlist on the system image, please bundle the allowlist in the" +
-                            " $apexModuleName APEX instead",
-                    )
-                }
-                val apexAllowlistState =
-                    permissionAllowlist.getApexPrivilegedAppAllowlistState(
-                        apexModuleName,
+        val nonApexAllowlistState =
+            when {
+                packageState.isVendor || packageState.isOdm ->
+                    permissionAllowlist.getVendorPrivilegedAppAllowlistState(
                         packageName,
                         permissionName,
                     )
-                apexAllowlistState ?: nonApexAllowlistState
+                packageState.isProduct ->
+                    permissionAllowlist.getProductPrivilegedAppAllowlistState(
+                        packageName,
+                        permissionName,
+                    )
+                packageState.isSystemExt ->
+                    permissionAllowlist.getSystemExtPrivilegedAppAllowlistState(
+                        packageName,
+                        permissionName,
+                    )
+                else ->
+                    permissionAllowlist.getPrivilegedAppAllowlistState(packageName, permissionName)
             }
-            else -> permissionAllowlist.getPrivilegedAppAllowlistState(packageName, permissionName)
+        val apexModuleName = packageState.apexModuleName
+        return if (
+            apexModuleName != null &&
+                !(packageState.isVendor || packageState.isOdm || packageState.isSystemExt)
+        ) {
+            if (nonApexAllowlistState != null) {
+                // TODO(andreionea): Remove check as soon as all apk-in-apex
+                // permission allowlists are migrated.
+                Slog.w(
+                    LOG_TAG,
+                    "Package $packageName is an APK in APEX but has permission" +
+                        " allowlist on the system image, please bundle the allowlist in the" +
+                        " $apexModuleName APEX instead",
+                )
+            }
+            val apexAllowlistState =
+                permissionAllowlist.getApexPrivilegedAppAllowlistState(
+                    apexModuleName,
+                    packageName,
+                    permissionName,
+                )
+            apexAllowlistState ?: nonApexAllowlistState
+        } else {
+            nonApexAllowlistState
         }
     }
 

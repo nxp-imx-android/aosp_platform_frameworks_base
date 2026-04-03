@@ -161,6 +161,11 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
                     TAG_CAMERA_COMPAT);
             return;
         }
+        if (cameraTask.getDisplayContent().getDisplay().getType() == TYPE_EXTERNAL) {
+            // Camera compat temporarily disabled on the external display.
+            // TODO(b/497656545): enable sensor listener only when needed and allow camera compat.
+            return;
+        }
         mDisplayRotation = cameraTask.getDisplayContent().getRotation();
         updateAndDispatchCameraConfiguration(cameraAppInfo.mTaskId, appProcess, cameraActivity);
     }
@@ -640,9 +645,11 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
                 == TYPE_EXTERNAL;
         final int displayRotation = activity.getConfiguration().windowConfiguration
                 .getDisplayRotation();
+        final int cameraDeviceRotation = mCameraDisplayRotationProvider
+                .getCameraDeviceRotation(activity.getDisplayContent());
         // If camera and external display rotations are the same, this treatment has no effect.
-        return externalDisplay && (displayRotation != mCameraDisplayRotationProvider
-                .getCameraDeviceRotation(activity.getDisplayContent()));
+        return externalDisplay && cameraDeviceRotation != ROTATION_UNDEFINED
+                && displayRotation != cameraDeviceRotation;
     }
 
     @Nullable

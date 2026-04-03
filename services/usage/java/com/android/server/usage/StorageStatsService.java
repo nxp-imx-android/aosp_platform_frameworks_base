@@ -55,6 +55,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.ParcelableException;
+import android.os.Process;
 import android.os.StatFs;
 import android.os.SystemProperties;
 import android.os.Trace;
@@ -413,7 +414,7 @@ public class StorageStatsService extends IStorageStatsManager.Stub {
         }
 
         final boolean callerHasStatsPermission;
-        if (Binder.getCallingUid() == appInfo.uid) {
+        if (Binder.getCallingUid() == appInfo.uid || Binder.getCallingUid() == appInfo.pccUid) {
             // No permissions required when asking about themselves. We still check since it is
             // needed later on but don't throw if caller doesn't have the permission.
             callerHasStatsPermission = checkStatsPermission(
@@ -423,13 +424,24 @@ public class StorageStatsService extends IStorageStatsManager.Stub {
             callerHasStatsPermission = true;
         }
 
+        boolean isCallFromPccSandbox = enablePccFrameworkSupport()
+                && Process.isPrivateComputeCoreUid(Binder.getCallingUid());
+
         StorageStats storageStats;
         if (defeatNullable(mPackage.getPackagesForUid(appInfo.uid)).length == 1) {
             // Only one package inside UID means we can fast-path
-            storageStats = queryStatsForUid(volumeUuid, appInfo.uid, callingPackage);
+            if (callerHasStatsPermission) {
+                storageStats = queryStatsForUid(volumeUuid, appInfo.uid, callingPackage);
+                if (enablePccFrameworkSupport() && appInfo.pccUid != Process.INVALID_UID) {
+                    addStorageStats(/* toStats */ storageStats, queryStatsForUid(volumeUuid,
+                            appInfo.pccUid, callingPackage));
+                }
+            } else {
+                int uid = isCallFromPccSandbox ? appInfo.pccUid : appInfo.uid;
+                storageStats = queryStatsForUid(volumeUuid, uid, callingPackage);
+            }
         } else {
             // Multiple packages means we need to go manual
-            final int appId = UserHandle.getAppId(appInfo.uid);
             final String[] packageNames = new String[] { packageName };
             final long[] ceDataInodes = new long[1];
             String[] codePaths = new String[0];
@@ -445,12 +457,17 @@ public class StorageStatsService extends IStorageStatsManager.Stub {
 
             final PackageStats stats = new PackageStats(TAG);
             try {
-                // Don't allow an app to see its own PCC quota usage unless it has the stats
+                // Skip getting app stats if the call is from a pccUid and caller doesn't have stats
                 // permission
-                // pccId = -1 is passed when the app does not have pcc components
-                // pccId = 0 is passed when the app does not have stats permission
-                int pccId = (enablePccFrameworkSupport() && callerHasStatsPermission)
-                        ? (appInfo.pccUid != -1 ? UserHandle.getAppId(appInfo.pccUid) : -1) : 0;
+                final int appId = (!callerHasStatsPermission && isCallFromPccSandbox)
+                        ? 0 : UserHandle.getAppId(appInfo.uid);
+                // Only include PCC usage if caller is PCC or has stats permission.
+                int pccId = Process.INVALID_UID;
+                if (enablePccFrameworkSupport()
+                        && (isCallFromPccSandbox || callerHasStatsPermission)
+                        && appInfo.pccUid != Process.INVALID_UID) {
+                    pccId = UserHandle.getAppId(appInfo.pccUid);
+                }
                 mInstaller.getAppSize(volumeUuid, packageNames, userId, 0,
                         appId, pccId, ceDataInodes, codePaths, stats);
             } catch (InstallerException e) {
@@ -474,7 +491,6 @@ public class StorageStatsService extends IStorageStatsManager.Stub {
     public StorageStats queryStatsForUid(String volumeUuid, int uid,
             String callingPackage) {
         final int userId = UserHandle.getUserId(uid);
-        final int appId = UserHandle.getAppId(uid);
 
         if (userId != UserHandle.getCallingUserId()) {
             mContext.enforceCallingOrSelfPermission(
@@ -492,43 +508,45 @@ public class StorageStatsService extends IStorageStatsManager.Stub {
             callerHasStatsPermission = true;
         }
 
+        boolean isCallForPccUid = enablePccFrameworkSupport()
+                && Process.isPrivateComputeCoreUid(uid);
+
         final String[] packageNames = defeatNullable(mPackage.getPackagesForUid(uid));
         final long[] ceDataInodes = new long[packageNames.length];
         String[] codePaths = new String[0];
-        // TODO: b/482926883 - Use a method to find pccId, given appId instead of making the
-        //  assumption that all packages have the same pccId.
-        int anyPccId = -1;
 
         final PackageStats stats = new PackageStats(TAG);
-        for (int i = 0; i < packageNames.length; i++) {
-            try {
-                final ApplicationInfo appInfo = mPackage.getApplicationInfoAsUser(packageNames[i],
-                        PackageManager.MATCH_UNINSTALLED_PACKAGES, userId);
-                if (appInfo.isSystemApp() && !appInfo.isUpdatedSystemApp()) {
-                    // We don't count code baked into system image
-                } else {
-                    if (appInfo.getCodePath() != null) {
-                        codePaths = ArrayUtils.appendElement(String.class, codePaths,
-                                appInfo.getCodePath());
+        // App stats are not populated by installd if the call is for a PCC UID
+        // We therefore skip computation of params if the call is for a PCC UID
+        if (!isCallForPccUid) {
+            for (int i = 0; i < packageNames.length; i++) {
+                try {
+                    final ApplicationInfo appInfo =
+                            mPackage.getApplicationInfoAsUser(packageNames[i],
+                            PackageManager.MATCH_UNINSTALLED_PACKAGES, userId);
+                    if (appInfo.isSystemApp() && !appInfo.isUpdatedSystemApp()) {
+                        // We don't count code baked into system image
+                    } else {
+                        if (appInfo.getCodePath() != null) {
+                            codePaths = ArrayUtils.appendElement(String.class, codePaths,
+                                    appInfo.getCodePath());
+                        }
+                        if (Flags.getAppBytesByDataTypeApi()) {
+                            computeAppStatsByDataTypes(
+                                    stats, appInfo.sourceDir, packageNames[i]);
+                        }
                     }
-                    if (Flags.getAppBytesByDataTypeApi()) {
-                        computeAppStatsByDataTypes(
-                                stats, appInfo.sourceDir, packageNames[i]);
-                    }
-                    // Assuming pccUid value remains same across packages
-                    if (anyPccId == -1 && appInfo.pccUid != -1) {
-                        anyPccId = UserHandle.getAppId(appInfo.pccUid);
-                    }
+                } catch (NameNotFoundException e) {
+                    throw new ParcelableException(e);
                 }
-            } catch (NameNotFoundException e) {
-                throw new ParcelableException(e);
             }
         }
 
         try {
-            // Don't allow an app to see its own PCC quota usage unless it has the stats permission
-            int pccId = (enablePccFrameworkSupport() && callerHasStatsPermission)
-                    ? anyPccId : 0;
+            final int pccId = isCallForPccUid ? UserHandle.getAppId(uid) : Process.INVALID_UID;
+
+            final int appId = isCallForPccUid ? Process.INVALID_UID : UserHandle.getAppId(uid);
+
             mInstaller.getAppSize(volumeUuid, packageNames, userId, getDefaultFlags(),
                     appId, pccId, ceDataInodes, codePaths, stats);
 
@@ -1075,5 +1093,22 @@ public class StorageStatsService extends IStorageStatsManager.Stub {
         stats.curProfSize +=
             artManagedFileStats
                 .getTotalSizeBytesByType(ArtManagedFileStats.TYPE_CUR_PROFILE);
+    }
+
+    private void addStorageStats(StorageStats toStats, StorageStats fromStats) {
+        if (toStats == null || fromStats == null) {
+            return;
+        }
+
+        toStats.codeBytes += fromStats.codeBytes;
+        toStats.dataBytes += fromStats.dataBytes;
+        toStats.cacheBytes += fromStats.cacheBytes;
+        toStats.dexoptBytes += fromStats.dexoptBytes;
+        toStats.refProfBytes += fromStats.refProfBytes;
+        toStats.curProfBytes += fromStats.curProfBytes;
+        toStats.apkBytes += fromStats.apkBytes;
+        toStats.libBytes += fromStats.libBytes;
+        toStats.dmBytes += fromStats.dmBytes;
+        toStats.externalCacheBytes += fromStats.externalCacheBytes;
     }
 }

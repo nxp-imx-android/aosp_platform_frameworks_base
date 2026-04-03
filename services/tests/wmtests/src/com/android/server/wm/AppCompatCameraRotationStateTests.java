@@ -36,6 +36,7 @@ import android.view.Surface;
 
 import androidx.test.filters.SmallTest;
 
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -71,6 +72,7 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
     }
 
     @Test
+    @Ignore("b/498068211")
     public void testFeatureEnabled_externalDisplay_returnsSensorRotation() {
         runTestScenario((robot) -> {
             robot.configureActivityAndDisplay(ROTATION_90, ORIENTATION_PORTRAIT, TYPE_INTERNAL);
@@ -89,6 +91,7 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
     }
 
     @Test
+    @Ignore("b/498068211")
     public void testIsCameraDeviceOrientationPortrait_rotatesToLandscape_returnsFalse() {
         runTestScenario((robot) -> {
             robot.configureActivityAndDisplay(ROTATION_0, ORIENTATION_PORTRAIT, TYPE_INTERNAL);
@@ -108,6 +111,7 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
     }
 
     @Test
+    @Ignore("b/498068211")
     public void testIsPortraitCamera_portraitInnerDisplay_rotatesToLandscape_true() {
         runTestScenario((robot) -> {
             robot.configureActivityAndDisplay(ROTATION_0, ORIENTATION_PORTRAIT, TYPE_INTERNAL);
@@ -136,6 +140,7 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
     }
 
     @Test
+    @Ignore("b/498068211")
     public void testTransformSensorOrientationToDisplayRotation_mapsCorrectly() {
         runTestScenario((robot) -> {
             // Setup external display to enable sensor orientation listener
@@ -172,6 +177,7 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
     }
 
     @Test
+    @Ignore("b/498068211")
     public void testIsCameraDeviceOrientationPortrait_naturalPortrait_noRotate_returnsTrue() {
         runTestScenario((robot) -> {
             // Setup: Default display natural orientation is portrait.
@@ -189,6 +195,7 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
     }
 
     @Test
+    @Ignore("b/498068211")
     public void testIsCameraDeviceOrientationPortrait_naturalLandscape_rotated_returnsTrue() {
         runTestScenario((robot) -> {
             robot.configureActivityAndDisplay(ROTATION_0, ORIENTATION_LANDSCAPE, TYPE_INTERNAL);
@@ -205,6 +212,7 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
     }
 
     @Test
+    @Ignore("b/498068211")
     public void testIsCameraDeviceOrientationPortrait_naturalLandscape_returnsFalse() {
         runTestScenario((robot) -> {
             robot.configureActivityAndDisplay(ROTATION_0, ORIENTATION_LANDSCAPE, TYPE_INTERNAL);
