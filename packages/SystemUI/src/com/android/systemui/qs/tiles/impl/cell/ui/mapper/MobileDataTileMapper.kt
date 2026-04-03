@@ -39,7 +39,11 @@ constructor(
             contentDescription = label
 
             val iconResId: Int
-            if (data.isSimActive) {
+            if (data.isAirplaneModeEnabled) {
+                activationState = QSTileState.ActivationState.INACTIVE
+                secondaryLabel = resources.getString(R.string.status_bar_airplane)
+                iconResId = R.drawable.ic_cell_off
+            } else if (data.isSimActive) {
                 if (data.isEnabled) {
                     activationState = QSTileState.ActivationState.ACTIVE
                     secondaryLabel = data.secondaryLabel
@@ -50,8 +54,8 @@ constructor(
                     iconResId = R.drawable.ic_cell_off
                 }
             } else {
-                secondaryLabel = resources.getString(R.string.tile_unavailable)
                 activationState = QSTileState.ActivationState.UNAVAILABLE
+                secondaryLabel = null
                 iconResId = R.drawable.ic_cell_off
             }
 
@@ -64,7 +68,7 @@ constructor(
             supportedActions = buildSet {
                 add(QSTileState.UserAction.CLICK)
                 add(QSTileState.UserAction.LONG_CLICK)
-                if (data.isSimActive) {
+                if (data.isSimActive && !data.isAirplaneModeEnabled) {
                     add(QSTileState.UserAction.TOGGLE_CLICK)
                 }
             }

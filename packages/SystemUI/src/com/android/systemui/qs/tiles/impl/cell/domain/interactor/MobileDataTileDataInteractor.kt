@@ -28,6 +28,7 @@ import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
 import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileModel
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.connectivity.ui.MobileContextProvider
+import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor
 import com.android.systemui.statusbar.pipeline.mobile.NewSatelliteIcon
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
@@ -47,6 +48,7 @@ constructor(
     @Application private val context: Context,
     private val userRepository: UserRepository,
     private val mobileIconsInteractor: MobileIconsInteractor,
+    private val airplaneModeInteractor: AirplaneModeInteractor,
     private val mobileContextProvider: MobileContextProvider,
     private val connectivityConstants: ConnectivityConstants,
 ) : QSTileDataInteractor<MobileDataTileModel> {
@@ -146,9 +148,18 @@ constructor(
         }
 
     fun tileData(): Flow<MobileDataTileModel> =
-        mobileIconsInteractor.defaultDataIconInteractor.flatMapLatest { default ->
+        combine(
+            mobileIconsInteractor.defaultDataIconInteractor,
+            airplaneModeInteractor.isAirplaneMode,
+        ) { default, isAirplaneMode ->
             if (default == null) {
-                flowOf(MobileDataTileModel(isSimActive = false, isEnabled = false))
+                flowOf(
+                    MobileDataTileModel(
+                        isSimActive = false,
+                        isEnabled = false,
+                        isAirplaneModeEnabled = isAirplaneMode,
+                    )
+                )
             } else {
                 combine(default.isDataEnabled, mobileDescriptionFlow, default.networkName) {
                     isDataEnabled,
@@ -157,11 +168,12 @@ constructor(
                     MobileDataTileModel(
                         isSimActive = true,
                         isEnabled = isDataEnabled,
+                        isAirplaneModeEnabled = isAirplaneMode,
                         secondaryLabel = description ?: defaultName.name,
                     )
                 }
             }
-        }
+        }.flatMapLatest { it }
 
     private fun mobileDataContentConcat(
         networkName: String?,

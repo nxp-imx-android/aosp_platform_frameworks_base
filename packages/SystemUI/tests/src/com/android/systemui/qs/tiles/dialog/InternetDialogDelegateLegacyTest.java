@@ -972,6 +972,46 @@ public class InternetDialogDelegateLegacyTest extends SysuiTestCase {
     }
 
     @Test
+    public void updateDialog_canConfigMobileDataFalse_mobileDataToggleHidden() {
+        mInternetDialogDelegateLegacy.dismissDialog();
+        mInternetDialogDelegateLegacy = new InternetDialogDelegateLegacy(
+                mContext,
+                mock(InternetDialogManager.class),
+                mInternetDetailsContentController,
+                false, // canConfigMobileData
+                true,
+                true,
+                mKosmos.getTestScope(),
+                mock(UiEventLogger.class),
+                mDialogTransitionAnimator,
+                mHandler,
+                mBgExecutor,
+                mKeyguard,
+                mSystemUIDialogFactory,
+                new FakeShadeDialogContextInteractor(mContext),
+                mKosmos.getShadeModeInteractor(),
+                mRetailModeInteractor,
+                mKosmos.getFakeUserRepository(),
+                mTroubleshootingViewModelFactory,
+                mock(JavaAdapter.class));
+        mInternetDialogDelegateLegacy.createDialog();
+        mInternetDialogDelegateLegacy.onCreate(mSystemUIDialog, null);
+        mMobileToggleSwitch = mInternetDialogDelegateLegacy.mDialogView.requireViewById(
+                R.id.mobile_toggle);
+
+        when(mInternetDetailsContentController.hasActiveSubIdOnDds()).thenReturn(true);
+        when(mInternetDetailsContentController.isCarrierNetworkActive()).thenReturn(true);
+
+        mInternetDialogDelegateLegacy.updateDialog(true);
+        mBgExecutor.runAllReady();
+
+        mInternetDialogDelegateLegacy.mDataInternetContent.observe(
+                mInternetDialogDelegateLegacy.mLifecycleOwner, i -> {
+                    assertThat(mMobileToggleSwitch.getVisibility()).isEqualTo(View.INVISIBLE);
+                });
+    }
+
+    @Test
     public void updateDialog_wifiIsDisabled_turnOffProgressBar() {
         when(mInternetDetailsContentController.isWifiEnabled()).thenReturn(false);
         mInternetDialogDelegateLegacy.mIsProgressBarVisible = true;

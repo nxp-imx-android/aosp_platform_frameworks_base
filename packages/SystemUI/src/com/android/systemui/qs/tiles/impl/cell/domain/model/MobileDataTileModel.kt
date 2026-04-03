@@ -21,10 +21,12 @@ package com.android.systemui.qs.tiles.impl.cell.domain.model
  *
  * @param isSimActive True if a data sim is active.
  * @param isEnabled True if mobile data is enabled.
+ * @param isAirplaneModeEnabled True if airplane mode is enabled.
  * @param secondaryLabel The secondary label to display for the tile.
  */
 data class MobileDataTileModel(
     val isSimActive: Boolean,
     val isEnabled: Boolean,
+    val isAirplaneModeEnabled: Boolean,
     val secondaryLabel: CharSequence? = null,
 )

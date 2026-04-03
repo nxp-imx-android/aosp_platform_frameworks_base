@@ -40,6 +40,9 @@ import com.android.systemui.qs.flags.QsSplitInternetTile
 import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileModel
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.connectivity.ui.MobileContextProvider
+import com.android.systemui.statusbar.pipeline.airplane.data.repository.airplaneModeRepository
+import com.android.systemui.statusbar.pipeline.airplane.data.repository.fake
+import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.airplaneModeInteractor
 import com.android.systemui.statusbar.pipeline.mobile.NewSatelliteIcon
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
@@ -88,6 +91,7 @@ class MobileDataTileDataInteractorTest(flags: FlagsParameterization) : SysuiTest
     private val userSetupRepo = kosmos.userSetupRepository
     private val featureFlags = kosmos.featureFlagsClassic
     private val carrierConfigTracker: CarrierConfigTracker = mock()
+    private val airplaneModeRepository = kosmos.airplaneModeRepository.fake
 
     // Real MobileIconsInteractor, fed by fakes
     private var mobileIconsInteractor: MobileIconsInteractor =
@@ -111,6 +115,7 @@ class MobileDataTileDataInteractorTest(flags: FlagsParameterization) : SysuiTest
             context,
             userRepository,
             mobileIconsInteractor,
+            kosmos.airplaneModeInteractor,
             mobileContextProvider,
             connectivityConstants,
         )
@@ -129,7 +134,12 @@ class MobileDataTileDataInteractorTest(flags: FlagsParameterization) : SysuiTest
             )
             runCurrent()
 
-            val expectedModel = MobileDataTileModel(isSimActive = false, isEnabled = false)
+            val expectedModel =
+                MobileDataTileModel(
+                    isSimActive = false,
+                    isEnabled = false,
+                    isAirplaneModeEnabled = false,
+                )
             assertThat(tileData).isEqualTo(expectedModel)
         }
 
@@ -151,6 +161,7 @@ class MobileDataTileDataInteractorTest(flags: FlagsParameterization) : SysuiTest
 
             assertThat(tileData?.isSimActive).isTrue()
             assertThat(tileData?.isEnabled).isFalse()
+            assertThat(tileData?.isAirplaneModeEnabled).isFalse()
         }
 
     @Test
@@ -172,6 +183,7 @@ class MobileDataTileDataInteractorTest(flags: FlagsParameterization) : SysuiTest
 
             assertThat(tileData?.isSimActive).isTrue()
             assertThat(tileData?.isEnabled).isTrue()
+            assertThat(tileData?.isAirplaneModeEnabled).isFalse()
         }
 
     @Test
@@ -415,6 +427,21 @@ class MobileDataTileDataInteractorTest(flags: FlagsParameterization) : SysuiTest
             defaultRepo.dataEnabled.value = true
             runCurrent()
             assertThat(tileData?.isEnabled).isTrue()
+        }
+
+    @Test
+    fun tileData_airplaneMode_populatesModel() =
+        kosmos.runTest {
+            val tileData by collectLastValue(underTest.tileData())
+            airplaneModeRepository.setIsAirplaneMode(true)
+            runCurrent()
+
+            assertThat(tileData?.isAirplaneModeEnabled).isTrue()
+
+            airplaneModeRepository.setIsAirplaneMode(false)
+            runCurrent()
+
+            assertThat(tileData?.isAirplaneModeEnabled).isFalse()
         }
 
     private fun getSecondaryLabel(
