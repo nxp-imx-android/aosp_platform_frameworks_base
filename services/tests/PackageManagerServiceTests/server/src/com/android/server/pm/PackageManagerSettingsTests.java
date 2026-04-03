@@ -2350,6 +2350,22 @@ public class PackageManagerSettingsTests {
     }
 
     @Test
+    public void testClearOldPaths() {
+        final PackageSetting ps1 = createPackageSetting(PACKAGE_NAME_1);
+        ps1.setAppId(Process.FIRST_APPLICATION_UID);
+        ps1.setPkg(PackageImpl.forTesting(PACKAGE_NAME_1).hideAsParsed()
+                .setUid(ps1.getAppId())
+                .hideAsFinal());
+        ps1.addOldPath(INITIAL_CODE_PATH);
+        ps1.addOldPath(UPDATED_CODE_PATH);
+        ps1.clearOldPaths();
+        assertThat(ps1.getOldPaths().size(), is(0));
+        // Clear again shouldn't throw
+        ps1.clearOldPaths();
+        assertThat(ps1.getOldPaths().size(), is(0));
+    }
+
+    @Test
     public void testDeveloperVerificationStatus_nothingChangedAfterReboot() {
         Settings settings = makeSettings();
         final PackageSetting ps1 = createPackageSetting(PACKAGE_NAME_1);
