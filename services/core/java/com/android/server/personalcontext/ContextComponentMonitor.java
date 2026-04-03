@@ -24,17 +24,23 @@ import android.util.Slog;
 
 import com.android.internal.content.PackageMonitor;
 
+import java.util.concurrent.Executor;
+
 /**
  * Monitors packages that are installed, uninstalled, and modified for re-registering components.
  * @hide
  */
 final class ContextComponentMonitor extends PackageMonitor {
     private static final String TAG = "ContextComponentMonitor";
+
     private final ContextComponentManager mComponentManager;
+    private final Executor mExecutor;
+
     private boolean mRegistered;
 
-    ContextComponentMonitor(ContextComponentManager componentManager) {
+    ContextComponentMonitor(ContextComponentManager componentManager, Executor executor) {
         mComponentManager = componentManager;
+        mExecutor = executor;
     }
 
     @Override
@@ -57,8 +63,12 @@ final class ContextComponentMonitor extends PackageMonitor {
         if (Log.isLoggable(TAG, Log.DEBUG)) {
             Slog.d(TAG, "Package " + packageName + " changed, reregistering components");
         }
-        mComponentManager.unregisterComponentsForPackage(packageName);
-        mComponentManager.registerComponentsForPackage(packageName);
+
+        mExecutor.execute(() -> {
+            mComponentManager.unregisterComponentsForPackage(packageName);
+            mComponentManager.registerComponentsForPackage(packageName);
+        });
+
         return false;
     }
 
@@ -67,8 +77,11 @@ final class ContextComponentMonitor extends PackageMonitor {
         if (Log.isLoggable(TAG, Log.DEBUG)) {
             Slog.d(TAG, "Package " + packageName + " updated, reregistering components");
         }
-        mComponentManager.unregisterComponentsForPackage(packageName);
-        mComponentManager.registerComponentsForPackage(packageName);
+
+        mExecutor.execute(() -> {
+            mComponentManager.unregisterComponentsForPackage(packageName);
+            mComponentManager.registerComponentsForPackage(packageName);
+        });
     }
 
     @Override
@@ -76,7 +89,10 @@ final class ContextComponentMonitor extends PackageMonitor {
         if (Log.isLoggable(TAG, Log.DEBUG)) {
             Slog.d(TAG, "Package " + packageName + " added, registering components");
         }
-        mComponentManager.registerComponentsForPackage(packageName);
+
+        mExecutor.execute(() -> {
+            mComponentManager.registerComponentsForPackage(packageName);
+        });
     }
 
     @Override
@@ -84,6 +100,9 @@ final class ContextComponentMonitor extends PackageMonitor {
         if (Log.isLoggable(TAG, Log.DEBUG)) {
             Slog.d(TAG, "Package " + packageName + " removed, unregistering components");
         }
-        mComponentManager.unregisterComponentsForPackage(packageName);
+
+        mExecutor.execute(() -> {
+            mComponentManager.unregisterComponentsForPackage(packageName);
+        });
     }
 }

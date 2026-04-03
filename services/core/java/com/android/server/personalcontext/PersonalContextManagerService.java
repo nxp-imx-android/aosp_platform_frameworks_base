@@ -299,7 +299,8 @@ public class PersonalContextManagerService extends SystemService {
             final ContextComponentManager componentManager =
                     new ContextComponentManager(userContext, user.getUserHandle(),
                             operatingModeProvider, accessController);
-            final ContextComponentMonitor monitor = new ContextComponentMonitor(componentManager);
+            final ContextComponentMonitor monitor =
+                    new ContextComponentMonitor(componentManager, mExecutor);
             final HintInvalidationUnderstander hintInvalidationUnderstander =
                     new HintInvalidationUnderstander((insight, componentId) ->
                             startPublishedInsightWorkflow(userId, componentId, Set.of(insight)));
