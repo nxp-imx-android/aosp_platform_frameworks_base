@@ -21,8 +21,6 @@ import static com.android.server.personalcontext.util.InsightUtils.fakePublishIn
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -46,6 +44,7 @@ import android.view.textclassifier.TextClassification;
 import androidx.test.InstrumentationRegistry;
 
 import com.android.server.textclassifier.personalcontext.PersonalContextBridge;
+import com.android.server.textclassifier.personalcontext.PersonalContextBridge.TextClassificationKey;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -72,21 +71,22 @@ public class TextClassificationActionRendererTest {
         ContextInsight insight = new BundleInsight.Builder().build();
         mRenderer.render(fakePublishInsight(insight), null);
 
-        verify(mPersonalContextBridge, never()).merge(anyString(), any());
+        verify(mPersonalContextBridge, never()).merge(any(), any());
     }
 
     @Test
     public void testRender_actionableInsightWithNoTextClassificationHint_noMerge() {
         InsightActionDetails actionDetails =
                 new InsightActionDetails.Builder()
-                        .setPendingIntent(mock(PendingIntent.class)).build();
+                        .setPendingIntent(mock(PendingIntent.class))
+                        .build();
         InsightDisplayDetails displayDetails =
                 new InsightDisplayDetails.Builder("title", TEST_ICON).build();
         ActionableInsight insight =
                 new ActionableInsight.Builder(actionDetails, displayDetails).build();
         mRenderer.render(fakePublishInsight(insight), null);
 
-        verify(mPersonalContextBridge, never()).merge(anyString(), any());
+        verify(mPersonalContextBridge, never()).merge(any(), any());
     }
 
     @Test
@@ -95,10 +95,16 @@ public class TextClassificationActionRendererTest {
 
         mRenderer.render(fakePublishInsight(insight), null);
 
-        ArgumentCaptor<TextClassification> captor =
+        ArgumentCaptor<TextClassificationKey> keyCaptor =
+                ArgumentCaptor.forClass(TextClassificationKey.class);
+        ArgumentCaptor<TextClassification> responseCaptor =
                 ArgumentCaptor.forClass(TextClassification.class);
-        verify(mPersonalContextBridge, times(1)).merge(eq("sessionId"), captor.capture());
-        TextClassification response = captor.getValue();
+        verify(mPersonalContextBridge, times(1))
+                .merge(keyCaptor.capture(), responseCaptor.capture());
+
+        TextClassificationKey key = keyCaptor.getValue();
+        assertThat(key.sessionId()).isEqualTo("sessionId");
+        TextClassification response = responseCaptor.getValue();
         assertThat(response.getActions()).hasSize(1);
         RemoteAction action = response.getActions().getFirst();
         assertThat(action.getTitle().toString()).isEqualTo("title");
@@ -113,10 +119,16 @@ public class TextClassificationActionRendererTest {
 
         mRenderer.render(fakePublishInsight(insightCollection), null);
 
-        ArgumentCaptor<TextClassification> captor =
+        ArgumentCaptor<TextClassificationKey> keyCaptor =
+                ArgumentCaptor.forClass(TextClassificationKey.class);
+        ArgumentCaptor<TextClassification> responseCaptor =
                 ArgumentCaptor.forClass(TextClassification.class);
-        verify(mPersonalContextBridge, times(1)).merge(eq("sessionId"), captor.capture());
-        TextClassification response = captor.getValue();
+        verify(mPersonalContextBridge, times(1))
+                .merge(keyCaptor.capture(), responseCaptor.capture());
+
+        TextClassificationKey key = keyCaptor.getValue();
+        assertThat(key.sessionId()).isEqualTo("sessionId");
+        TextClassification response = responseCaptor.getValue();
         assertThat(response.getActions()).hasSize(1);
         RemoteAction action = response.getActions().getFirst();
         assertThat(action.getTitle().toString()).isEqualTo("title");

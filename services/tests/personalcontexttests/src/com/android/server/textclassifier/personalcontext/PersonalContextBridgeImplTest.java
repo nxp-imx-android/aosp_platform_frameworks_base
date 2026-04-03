@@ -46,6 +46,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.server.textclassifier.personalcontext.PersonalContextBridge.Config;
+import com.android.server.textclassifier.personalcontext.PersonalContextBridge.TextClassificationKey;
 
 import com.google.common.collect.Lists;
 
@@ -67,6 +68,10 @@ public class PersonalContextBridgeImplTest {
     private static final long TEST_TIMEOUT_MILLIS = 50;
     private static final String TEST_SESSION_ID = "test-session-id";
     private static final String TEST_TEXT = "test-text";
+    private static final TextClassification.Request TEST_REQUEST =
+            new TextClassification.Request.Builder(TEST_TEXT, 0, TEST_TEXT.length()).build();
+    private static final TextClassificationKey TEST_KEY =
+            new TextClassificationKey(TEST_SESSION_ID, TEST_REQUEST);
     private static final String TEST_SYSTEM_ACTION_TITLE = "system-action";
     private static final String TEST_PERSONAL_CONTEXT_ACTION_TITLE = "personal-context-action";
 
@@ -102,7 +107,7 @@ public class PersonalContextBridgeImplTest {
                         mPersonalContextAsyncReceiver);
 
         final ITextClassifierCallback mergedCallback =
-                mPersonalContextBridgeImpl.wrap(TEST_SESSION_ID, mSystemCallback);
+                mPersonalContextBridgeImpl.wrap(TEST_SESSION_ID, TEST_REQUEST, mSystemCallback);
         mergedCallback.onSuccess(remoteActionsToResult(Lists.newArrayList(mSystemRemoteAction)));
 
         final Bundle mergedResult = captureMergedResult();
@@ -126,7 +131,7 @@ public class PersonalContextBridgeImplTest {
                         mPersonalContextAsyncReceiver);
 
         final ITextClassifierCallback mergedCallback =
-                mPersonalContextBridgeImpl.wrap(TEST_SESSION_ID, mSystemCallback);
+                mPersonalContextBridgeImpl.wrap(TEST_SESSION_ID, TEST_REQUEST, mSystemCallback);
         mergedCallback.onSuccess(remoteActionsToResult(Lists.newArrayList(mSystemRemoteAction)));
 
         final Bundle mergedResult = captureMergedResult();
@@ -150,7 +155,7 @@ public class PersonalContextBridgeImplTest {
                         mPersonalContextAsyncReceiver);
 
         final ITextClassifierCallback mergedCallback =
-                mPersonalContextBridgeImpl.wrap(TEST_SESSION_ID, mSystemCallback);
+                mPersonalContextBridgeImpl.wrap(TEST_SESSION_ID, TEST_REQUEST, mSystemCallback);
         mergedCallback.onSuccess(remoteActionsToResult(Lists.newArrayList(mSystemRemoteAction)));
 
         final Bundle mergedResult = captureMergedResult();
@@ -175,7 +180,7 @@ public class PersonalContextBridgeImplTest {
                         mPersonalContextAsyncReceiver);
 
         final ITextClassifierCallback mergedCallback =
-                mPersonalContextBridgeImpl.wrap(TEST_SESSION_ID, mSystemCallback);
+                mPersonalContextBridgeImpl.wrap(TEST_SESSION_ID, TEST_REQUEST, mSystemCallback);
         mergedCallback.onSuccess(remoteActionsToResult(Lists.newArrayList(mSystemRemoteAction)));
 
         final Bundle mergedResult = captureMergedResult();
@@ -199,7 +204,7 @@ public class PersonalContextBridgeImplTest {
                         mPersonalContextAsyncReceiver);
 
         final ITextClassifierCallback mergedCallback =
-                mPersonalContextBridgeImpl.wrap(TEST_SESSION_ID, mSystemCallback);
+                mPersonalContextBridgeImpl.wrap(TEST_SESSION_ID, TEST_REQUEST, mSystemCallback);
         mergedCallback.onSuccess(remoteActionsToResult(Lists.newArrayList(mSystemRemoteAction)));
 
         final Bundle mergedResult = captureMergedResult();
@@ -223,7 +228,7 @@ public class PersonalContextBridgeImplTest {
                         mPersonalContextAsyncReceiver);
 
         final ITextClassifierCallback mergedCallback =
-                mPersonalContextBridgeImpl.wrap(TEST_SESSION_ID, mSystemCallback);
+                mPersonalContextBridgeImpl.wrap(TEST_SESSION_ID, TEST_REQUEST, mSystemCallback);
         mergedCallback.onSuccess(remoteActionsToResult(Lists.newArrayList(mSystemRemoteAction)));
 
         final Bundle mergedResult = captureMergedResult();
@@ -247,7 +252,7 @@ public class PersonalContextBridgeImplTest {
                         mPersonalContextAsyncReceiver);
 
         final ITextClassifierCallback mergedCallback =
-                mPersonalContextBridgeImpl.wrap(TEST_SESSION_ID, mSystemCallback);
+                mPersonalContextBridgeImpl.wrap(TEST_SESSION_ID, TEST_REQUEST, mSystemCallback);
         mergedCallback.onSuccess(remoteActionsToResult(Lists.newArrayList(mSystemRemoteAction)));
 
         final Bundle mergedResult = captureMergedResult();
@@ -278,7 +283,7 @@ public class PersonalContextBridgeImplTest {
                             return null;
                         })
                 .when(mPersonalContextAsyncReceiver)
-                .getAsync(eq(TEST_SESSION_ID), any());
+                .getAsync(eq(TEST_KEY), any());
     }
 
     private void givenPersonalContextErrored() {
@@ -290,7 +295,7 @@ public class PersonalContextBridgeImplTest {
                             return null;
                         })
                 .when(mPersonalContextAsyncReceiver)
-                .getAsync(eq(TEST_SESSION_ID), any());
+                .getAsync(eq(TEST_KEY), any());
     }
 
     @NonNull

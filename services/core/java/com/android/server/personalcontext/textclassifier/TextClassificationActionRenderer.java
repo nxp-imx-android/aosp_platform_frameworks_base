@@ -36,6 +36,7 @@ import androidx.annotation.NonNull;
 
 import com.android.server.personalcontext.component.Renderer;
 import com.android.server.textclassifier.personalcontext.PersonalContextBridge;
+import com.android.server.textclassifier.personalcontext.PersonalContextBridge.TextClassificationKey;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -66,19 +67,19 @@ public class TextClassificationActionRenderer implements Renderer {
     }
 
     @Override
-    public void render(@NonNull PublishedContextInsight publishedContextInsight,
-            RenderToken renderToken) {
-        Map<String, TextClassification.Builder> textClassificationSessionToBuilders =
+    public void render(
+            @NonNull PublishedContextInsight publishedContextInsight, RenderToken renderToken) {
+        Map<TextClassificationKey, TextClassification.Builder> textClassificationSessionToBuilders =
                 new LinkedHashMap<>();
         InsightTraverser.traverse(
                 publishedContextInsight.getInsight(),
                 new InsightCollector(textClassificationSessionToBuilders));
 
         if (DEBUG) {
-            Slog.w(TAG, textClassificationSessionToBuilders.size() + "valid insights received");
+            Slog.w(TAG, textClassificationSessionToBuilders.size() + " valid insights received");
         }
 
-        for (final Entry<String, TextClassification.Builder> entry :
+        for (final Entry<TextClassificationKey, TextClassification.Builder> entry :
                 textClassificationSessionToBuilders.entrySet()) {
             mTcPersonalContextBridge.merge(entry.getKey(), entry.getValue().build());
         }
@@ -101,10 +102,12 @@ public class TextClassificationActionRenderer implements Renderer {
     }
 
     private record InsightCollector(
-            Map<String, TextClassification.Builder> mTextClassificationBuilders)
+            Map<TextClassificationKey, TextClassification.Builder> mTextClassificationBuilders)
             implements InsightVisitor {
         private InsightCollector(
-                @NonNull Map<String, TextClassification.Builder> mTextClassificationBuilders) {
+                @NonNull
+                        Map<TextClassificationKey, TextClassification.Builder>
+                                mTextClassificationBuilders) {
             this.mTextClassificationBuilders = mTextClassificationBuilders;
         }
 
@@ -127,14 +130,16 @@ public class TextClassificationActionRenderer implements Renderer {
                 return;
             }
 
-            final TextClassification.Builder builder =
-                    mTextClassificationBuilders.get(textClassificationHint.getSessionId());
+            TextClassificationKey sessionKey =
+                    new TextClassificationKey(
+                            textClassificationHint.getSessionId(),
+                            textClassificationHint.getTextClassificationRequest());
+            final TextClassification.Builder builder = mTextClassificationBuilders.get(sessionKey);
             if (builder != null) {
                 builder.addAction(remoteAction);
             } else {
                 mTextClassificationBuilders.put(
-                        textClassificationHint.getSessionId(),
-                        new TextClassification.Builder().addAction(remoteAction));
+                        sessionKey, new TextClassification.Builder().addAction(remoteAction));
             }
         }
     }

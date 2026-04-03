@@ -53,21 +53,24 @@ public class PersonalContextBridgeImpl extends PersonalContextBridge {
             Slog.w(TAG, "Did not find PersonalContextManagerInternal system service");
             return;
         }
+        mReceiver.clearSession(sessionId);
         pcmi.onTextClassifyRequest(userId, sessionId, request);
     }
 
     @Override
-    public void merge(@NonNull String sessionId, TextClassification response) {
-        mReceiver.put(sessionId, response);
+    public void merge(@NonNull TextClassificationKey key, TextClassification response) {
+        mReceiver.put(key, response);
     }
 
     @Override
     public ITextClassifierCallback wrap(
-            @NonNull String sessionId, @NonNull ITextClassifierCallback callback) {
+            @NonNull String sessionId,
+            @NonNull TextClassification.Request request,
+            @NonNull ITextClassifierCallback callback) {
         if (!isPersonalContextEnabled()) {
             return callback;
         }
-        return new MergeCallback(sessionId, callback);
+        return new MergeCallback(new TextClassificationKey(sessionId, request), callback);
     }
 
     @Override
@@ -76,11 +79,12 @@ public class PersonalContextBridgeImpl extends PersonalContextBridge {
     }
 
     private class MergeCallback extends ITextClassifierCallback.Stub {
-        private final String mSessionId;
+        private final TextClassificationKey mSession;
         private final ITextClassifierCallback mWrappedCallback;
 
-        MergeCallback(String sessionId, @NonNull ITextClassifierCallback wrappedCallback) {
-            mSessionId = sessionId;
+        MergeCallback(
+                TextClassificationKey session, @NonNull ITextClassifierCallback wrappedCallback) {
+            mSession = session;
             mWrappedCallback = Objects.requireNonNull(wrappedCallback);
         }
 
@@ -101,7 +105,7 @@ public class PersonalContextBridgeImpl extends PersonalContextBridge {
         private void merge(Bundle result) {
             TextClassification originalResult = TextClassifierService.getResponse(result);
             mReceiver.getAsync(
-                    mSessionId,
+                    mSession,
                     new OutcomeReceiver<>() {
                         @Override
                         public void onResult(TextClassification personalContextResult) {
@@ -197,7 +201,10 @@ public class PersonalContextBridgeImpl extends PersonalContextBridge {
 
                         @Override
                         public void onError(@NonNull TimeoutException exception) {
-                            Slog.d(TAG, "Timed out waiting for personal context results.");
+                            Slog.d(
+                                    TAG,
+                                    "Timed out waiting for personal context results.",
+                                    exception);
                             try {
                                 // Pass through original text classification result
                                 mWrappedCallback.onSuccess(result);

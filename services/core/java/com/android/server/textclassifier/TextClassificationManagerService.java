@@ -280,8 +280,11 @@ public final class TextClassificationManagerService extends ITextClassifierServi
         final ITextClassifierCallback wrappedCallback =
                 (sessionId != null && PersonalContextBridge.isPersonalContextEnabled())
                         ? mPersonalContextBridge.wrap(
-                                sessionId.getValue(), wrap(callback, Binder.getCallingUid()))
+                                sessionId.getValue(),
+                                request,
+                                wrap(callback, Binder.getCallingUid()))
                         : wrap(callback, Binder.getCallingUid());
+
         handleRequest(
                 request.getSystemTextClassifierMetadata(),
                 /* verifyCallingPackage= */ true,
