@@ -55,20 +55,6 @@ public class OperatingModeProvider {
     public @interface OperatingPropertyFlag {
     }
 
-    private static final @AccessController.Access int OPERATING_MODE_TEST_ACCESS_FLAGS =
-            OPERATING_PROPERTY_FLAG_TEST_PACKAGES_ONLY;
-
-    private static final @AccessController.Access int OPERATING_MODE_DEFAULT_ACCESS_FLAGS =
-            (Flags.enforcePersonalContextAllowlistAccessControl()
-            ? OPERATING_PROPERTY_FLAG_ENFORCE_ALLOW_LIST : 0)
-            | (Flags.enforcePersonalContextPermissions()
-            ? OPERATING_PROPERTY_FLAG_ENFORCE_PERMISSIONS : 0)
-            | (Flags
-            .enforcePersonalContextPccAccessControl()
-            ? OPERATING_PROPERTY_FLAG_ENFORCE_PCC : 0)
-            | OPERATING_PROPERTY_FLAG_BUILT_IN_COMPONENTS
-            | OPERATING_PROPERTY_FLAG_ENFORCE_BIND_PERMISSIONS;
-
     /**
      * Filters flags based on the operating mode.
      */
@@ -92,16 +78,29 @@ public class OperatingModeProvider {
 
         return flags;
     }
-
     private static @OperatingPropertyFlag int getFlagsEnabledForMode(
             @PersonalContextManager.OperatingMode int mode) {
+        final @AccessController.Access int testAccessFlags =
+                OPERATING_PROPERTY_FLAG_TEST_PACKAGES_ONLY;
+
+        final @AccessController.Access int defaultAccessFlags =
+                (Flags.enforcePersonalContextAllowlistAccessControl()
+                        ? OPERATING_PROPERTY_FLAG_ENFORCE_ALLOW_LIST : 0)
+                        | (Flags.enforcePersonalContextPermissions()
+                        ? OPERATING_PROPERTY_FLAG_ENFORCE_PERMISSIONS : 0)
+                        | (Flags
+                        .enforcePersonalContextPccAccessControl()
+                        ? OPERATING_PROPERTY_FLAG_ENFORCE_PCC : 0)
+                        | OPERATING_PROPERTY_FLAG_BUILT_IN_COMPONENTS
+                        | OPERATING_PROPERTY_FLAG_ENFORCE_BIND_PERMISSIONS;
+
         return switch (mode) {
             case PersonalContextManager.OPERATING_MODE_TEST ->
-                    OPERATING_MODE_TEST_ACCESS_FLAGS;
+                    testAccessFlags;
             case PersonalContextManager.OPERATING_MODE_DEFAULT ->
-                    OPERATING_MODE_DEFAULT_ACCESS_FLAGS;
+                    defaultAccessFlags;
             default ->
-                    OPERATING_MODE_DEFAULT_ACCESS_FLAGS;
+                    defaultAccessFlags;
         };
     }
 
