@@ -93,7 +93,7 @@ class MemoryLimiter implements AutoCloseable {
     static final int LIMIT_TYPE_UNKNOWN = 0;
     // The memory.high limit has been breached.
     static final int LIMIT_TYPE_MEMORY = 1;
-    // The memory.swap.max limit has been breached.
+    // The memory.swap.high limit has been breached.
     static final int LIMIT_TYPE_SWAP = 2;
     // The sum of anon+swap has breached its threshold.
     static final int LIMIT_TYPE_ANON_SWAP = 3;
@@ -124,7 +124,7 @@ class MemoryLimiter implements AutoCloseable {
         return switch (type) {
             case LIMIT_TYPE_UNKNOWN -> "unknown";
             case LIMIT_TYPE_MEMORY -> "memory.high";
-            case LIMIT_TYPE_SWAP -> "memory.swap.max";
+            case LIMIT_TYPE_SWAP -> "memory.swap.high";
             case LIMIT_TYPE_ANON_SWAP -> "anon+swap";
             default -> "unexpected";
         };
@@ -174,10 +174,10 @@ class MemoryLimiter implements AutoCloseable {
     static final String CONFIG_PATH = "/vendor/etc/memory-limiter-config.xml";
 
     // A single set of limits to be applied to the process immediately.  memHigh is applied to
-    // memory.high and swapMax is applied to memory.swap.max.  See {@link memLimit()} for details
+    // memory.high and swapHigh is applied to memory.swap.high.  See {@link memLimit()} for details
     // on how special limit values are interpreted.
     @VisibleForTesting
-    public record Limits(long memHigh, long swapMax) {}
+    public record Limits(long memHigh, long swapHigh) {}
 
     // Return the available memory in the system.  This is memTotal from /proc/meminfo.
     private static long memTotal() {
@@ -201,7 +201,7 @@ class MemoryLimiter implements AutoCloseable {
         // Execute boot-time initialization.
         void onSystemReady();
 
-        // Return true if the pid is exempt from processing.
+        // Return true if the package is exempt from processing.
         boolean isExempt(String pkg);
 
         // The pid or uid of the object has changed.  Push the update to the native layer.
@@ -221,7 +221,7 @@ class MemoryLimiter implements AutoCloseable {
          *
          * @param pid The pid of the process to set the limit for.
          * @param uid The uid of the process to set the limit for.
-         * @param limit The limit, in bytes, for memHigh and swapMax.
+         * @param limit The limit, in bytes, for memHigh and swapHigh.
          */
         void setManualLimit(int pid, int uid, long limit);
 
@@ -299,7 +299,7 @@ class MemoryLimiter implements AutoCloseable {
             return Flags.memoryLimiterTrigger();
         }
 
-        // Return true if memory.swap.max should be configured.  The default behavior returns the
+        // Return true if memory.swap.high should be configured.  The default behavior returns the
         // value of the feature flag.
         boolean isSwapMonitoringEnabled() {
             return Flags.memoryLimiterSwap();
@@ -491,7 +491,8 @@ class MemoryLimiter implements AutoCloseable {
                             case MESSAGE_CONFIG -> {
                                 if (msg.obj != null && !shouldIgnore(uid)) {
                                     Limits limit = (Limits) msg.obj;
-                                    configureLimit(service, pid, uid, limit.memHigh, limit.swapMax);
+                                    configureLimit(service, pid, uid, limit.memHigh,
+                                            limit.swapHigh);
                                 }
                             }
 
@@ -559,9 +560,9 @@ class MemoryLimiter implements AutoCloseable {
             String serviceStr = context.getString(com.android.internal.R.string
                     .config_defaultOnDeviceSandboxedInferenceService);
             if (serviceStr != null && !serviceStr.isEmpty()) {
-                ComponentName cname = ComponentName.unflattenFromString(serviceStr);
-                if (cname != null && cname.getPackageName() != null) {
-                    String pkg = cname.getPackageName();
+                ComponentName componentName = ComponentName.unflattenFromString(serviceStr);
+                if (componentName != null && componentName.getPackageName() != null) {
+                    String pkg = componentName.getPackageName();
                     Slog.i(TAG, "adding " + pkg + " to the exempt list");
                     mExemptList.add(pkg);
                 }
@@ -762,12 +763,20 @@ class MemoryLimiter implements AutoCloseable {
             return shouldLogAtom(System.currentTimeMillis());
         }
 
+
+        /**
+         * The callback from the native code when a limit is exceeded.  The type is one of the
+         * LIMIT_TYPE_* constants.  memHigh and swapHigh are the currently-provisioned limits.  The
+         * native layer is not holding any locks when this function is called, so it is safe to
+         * call back.
+         */
         @UsedByNative
-        private void onLimitExceeded(int pid, int uid, int type, long limit) {
+        private void onLimitExceeded(int pid, int uid, int type, long memHigh, long swapHigh) {
             final String pkg = mInjector.getPackageNameForPid(pid);
 
-            Slog.i(TAG, formatSimple("onLimitExceeded: pid=%d uid=%d type=%s limit=%d pkg=%s",
-                    pid, uid, limitTypeToString(type), limit, pkg));
+            Slog.i(TAG, formatSimple("onLimitExceeded: pid=%d uid=%d type=%s memHigh=%d"
+                            + " swapHigh=%d pkg=%s",
+                            pid, uid, limitTypeToString(type), memHigh, swapHigh, pkg));
 
             // TODO (491137082) The limit is no longer a percentage of available memory and a new
             // definition must be found.  For the moment, the percentage is set to zero.
@@ -775,39 +784,55 @@ class MemoryLimiter implements AutoCloseable {
 
             // statsd logging is throttled to at most 28 events per day.
             if (shouldLogAtom()) {
+                // TODO: handle LIMIT_IS_DISABLED more gracefully that -1 in the atom.
+                long limit = switch (type) {
+                    case LIMIT_TYPE_MEMORY -> memHigh;
+                    case LIMIT_TYPE_SWAP -> swapHigh;
+                    case LIMIT_TYPE_ANON_SWAP -> memHigh + swapHigh;
+                    default -> 0;
+                };
+
                 FrameworkStatsLog.write(FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT,
                         uid, limitTypeToAtom(type), percent, limit);
             }
-            onLimitExceeded(pid, uid, type, limit, percent, pkg);
+
+            if (type == LIMIT_TYPE_ANON_SWAP) {
+                // Release all limits.  This call is safe because the native layer is not
+                // holding  any locks.
+                configureLimit(mNative.get(), pid, uid, LIMIT_IS_DISABLED, LIMIT_IS_DISABLED);
+            }
+
+            onLimitExceeded(pid, uid, type, memHigh, swapHigh, pkg);
         }
 
-        // This method can be overridden by test clients to capture the full over-limit event.
-        public void onLimitExceeded(int pid, int uid, int type, long limit, int percent,
+        // This method can be overridden by test clients to capture the full over-limit event
+        // without profiling or killing the target.
+        public void onLimitExceeded(int pid, int uid, int type, long memHigh, long swapHigh,
                 String pkg) {
-            if (pkg == null) {
-                // A null package cannot be reported.
-                return;
-            }
 
-            if (!android.os.profiling.Flags.systemTriggeredProfilingNew()
-                    || !android.os.profiling.anomaly.flags.Flags.anomalyDetectorCoreC()) {
-                // Profiling is disabled globally.
-                return;
-            }
+            if (type == LIMIT_TYPE_ANON_SWAP) {
+                try {
+                    if (android.os.profiling.Flags.systemTriggeredProfilingNew()
+                            && android.os.profiling.anomaly.flags.Flags.anomalyDetectorCoreC()
+                            && pkg != null) {
 
-            try {
-                ProfilingServiceHelper helper = ProfilingServiceHelper.getInstance();
-                helper.onProfilingTriggerOccurred(uid, pkg, ProfilingTrigger.TRIGGER_TYPE_ANOMALY);
-
-                if (type == LIMIT_TYPE_ANON_SWAP) {
-                    Message msg = mQueue.obtainMessage(MESSAGE_KILL, pid, uid,
-                            "MemoryLimiter:AnonSwap");
-                    mQueue.sendMessageDelayed(msg, KILL_DELAY_MS);
+                        ProfilingServiceHelper helper = ProfilingServiceHelper.getInstance();
+                        helper.onProfilingTriggerOccurred(uid, pkg,
+                                ProfilingTrigger.TRIGGER_TYPE_ANOMALY);
+                    }
+                } catch (IllegalStateException e) {
+                    // Log the exception but otherwise discard it.  A failure to generate a
+                    // profile is not fatal.
+                    Slog.w(TAG, e.getMessage());
                 }
-            } catch (IllegalStateException e) {
-                // Log the exception but otherwise discard it.  A failure to generate a profile is
-                // not fatal.
-                Slog.w(TAG, e.getMessage());
+
+                // Request that the target be killed.  The delay allows the profiler, if
+                // configured to complete.
+                // TODO: eliminate this when the ProfilingServiceHelper API accepts a "kill when
+                // finsished" flag.
+                Message msg = mQueue.obtainMessage(MESSAGE_KILL, pid, uid,
+                        "MemoryLimiter:AnonSwap");
+                mQueue.sendMessageDelayed(msg, KILL_DELAY_MS);
             }
         }
 
@@ -879,8 +904,8 @@ class MemoryLimiter implements AutoCloseable {
             final Limits notVis = mLimitsNotVisible;
             final String b =
                     "visibleMem=%dMB visibleSwap=%dMB notVisibleMem=%dMB notVisibleSwap=%dMB";
-            dumpLine(pw, formatSimple(b, vis.memHigh / meg, vis.swapMax / meg,
-                            notVis.memHigh / meg, notVis.swapMax / meg));
+            dumpLine(pw, formatSimple(b, vis.memHigh / meg, vis.swapHigh / meg,
+                            notVis.memHigh / meg, notVis.swapHigh / meg));
 
             if (stats != null) {
                 // Format the output.  Use the line splits provided by the native layer but put
@@ -1235,11 +1260,11 @@ class MemoryLimiter implements AutoCloseable {
     private static native void onProcessStarted(long service, int pid, int uid);
 
     /**
-     * Request that a process's memory.high and memory.swap.max be configured to the respective
+     * Request that a process's memory.high and memory.swap.high be configured to the respective
      * limits.  Negative values for the limit mean "maximum memory".
      */
     private static native void configureLimit(long service, int pid, int uid, long memHigh,
-            long swapMax);
+            long swapHigh);
 
     /**
      * Fetch the native statistics.  This returns an null pointer if the service pointer is
