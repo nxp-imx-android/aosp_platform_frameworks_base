@@ -2776,6 +2776,140 @@ public class ActivityManagerServiceTest {
                 });
     }
 
+    @Test
+    public void testIsPccAssociationAllowedBySysConfig_nullInputs_returnsFalse() {
+        // Null inputs should safely and immediately return false
+        assertFalse("Should safely handle null caller package",
+                mAms.isPccAssociationAllowedBySysConfigLocked(null, TEST_TARGET_PKG));
+        assertFalse("Should safely handle null target package",
+                mAms.isPccAssociationAllowedBySysConfigLocked(TEST_CALLER_PKG, null));
+        assertFalse("Should safely handle all null inputs",
+                mAms.isPccAssociationAllowedBySysConfigLocked(null, null));
+    }
+
+    @Test
+    public void testIsPccAssociationAllowedBySysConfig_lazyInitialization_cachesSysConfig()
+            throws Exception {
+        MockitoSession mockitoSession = mockitoSession()
+                .mockStatic(SystemConfig.class)
+                .strictness(Strictness.LENIENT)
+                .startMocking();
+        try {
+            SystemConfig mockSystemConfig = mock(SystemConfig.class);
+            ExtendedMockito.doReturn(mockSystemConfig).when(SystemConfig::getInstance);
+            when(mockSystemConfig.getAllowedAssociations()).thenReturn(new ArrayMap<>());
+
+            // First call: Should trigger ensureAllowedAssociations() and query SystemConfig
+            mAms.isPccAssociationAllowedBySysConfigLocked(TEST_CALLER_PKG, TEST_TARGET_PKG);
+            verify(mockSystemConfig, times(1)).getAllowedAssociations();
+
+            // Second call: Should use the cached mAllowedAssociations map
+            mAms.isPccAssociationAllowedBySysConfigLocked(TEST_CALLER_PKG, TEST_TARGET_PKG);
+            verify(mockSystemConfig, times(1)).getAllowedAssociations();
+        } finally {
+            mockitoSession.finishMocking();
+        }
+    }
+
+    @Test
+    public void testIsPccAssociationAllowedBySysConfig_appliesRulesBidirectionally()
+            throws Exception {
+        MockitoSession mockitoSession = mockitoSession()
+                .mockStatic(SystemConfig.class)
+                .strictness(Strictness.LENIENT)
+                .startMocking();
+        try {
+            SystemConfig mockSystemConfig = mock(SystemConfig.class);
+            ExtendedMockito.doReturn(mockSystemConfig).when(SystemConfig::getInstance);
+
+            // Set up SysConfig to allow an association between TEST_CALLER_PKG and TEST_TARGET_PKG
+            ArrayMap<String, ArraySet<String>> allowedAssociations = new ArrayMap<>();
+            allowedAssociations.put(TEST_CALLER_PKG,
+                    new ArraySet<>(new String[] {TEST_TARGET_PKG}));
+            when(mockSystemConfig.getAllowedAssociations()).thenReturn(allowedAssociations);
+
+            // Assert 1: Caller -> Target (Forward check)
+            assertTrue("Association should be allowed when caller explicitly allows target",
+                    mAms.isPccAssociationAllowedBySysConfigLocked(
+                            TEST_CALLER_PKG, TEST_TARGET_PKG));
+
+            // Assert 2: Target -> Caller (Reverse check, method should handle bidirectionally)
+            assertTrue("Association should be allowed when target explicitly allows caller",
+                    mAms.isPccAssociationAllowedBySysConfigLocked(
+                            TEST_TARGET_PKG, TEST_CALLER_PKG));
+
+            // Assert 3: Unrelated packages
+            assertFalse("Association should be denied for unrelated packages",
+                    mAms.isPccAssociationAllowedBySysConfigLocked(
+                            TEST_CALLER_PKG, "com.unrelated.pkg"));
+        } finally {
+            mockitoSession.finishMocking();
+        }
+    }
+
+    @Test
+    public void testIsPccAssociationAllowedBySysConfig_emptyOrMissingRules_returnsFalse()
+            throws Exception {
+        MockitoSession mockitoSession = mockitoSession()
+                .mockStatic(SystemConfig.class)
+                .strictness(Strictness.LENIENT)
+                .startMocking();
+        try {
+            SystemConfig mockSystemConfig = mock(SystemConfig.class);
+            ExtendedMockito.doReturn(mockSystemConfig).when(SystemConfig::getInstance);
+
+            // Empty SysConfig associations
+            when(mockSystemConfig.getAllowedAssociations()).thenReturn(new ArrayMap<>());
+
+            assertFalse("Should return false when no explicit sysconfig associations exist",
+                    mAms.isPccAssociationAllowedBySysConfigLocked(
+                            TEST_CALLER_PKG, TEST_TARGET_PKG));
+        } finally {
+            mockitoSession.finishMocking();
+        }
+    }
+
+    @Test
+    public void testIsPccAssociationAllowedBySysConfig_mutualConsent_enforced() throws Exception {
+        MockitoSession mockitoSession = mockitoSession()
+                .mockStatic(SystemConfig.class)
+                .strictness(Strictness.LENIENT)
+                .startMocking();
+        try {
+            SystemConfig mockSystemConfig = mock(SystemConfig.class);
+            ExtendedMockito.doReturn(mockSystemConfig).when(SystemConfig::getInstance);
+
+            ArrayMap<String, ArraySet<String>> allowedAssociations = new ArrayMap<>();
+
+            // Setup: Caller explicitly allows Target
+            allowedAssociations.put(TEST_CALLER_PKG,
+                    new ArraySet<>(new String[] {TEST_TARGET_PKG}));
+
+            // Setup: Target defines rules, but DOES NOT allow Caller
+            allowedAssociations.put(TEST_TARGET_PKG,
+                    new ArraySet<>(new String[] {"com.some.other.pkg"}));
+
+            when(mockSystemConfig.getAllowedAssociations()).thenReturn(allowedAssociations);
+
+            // Assert 1: Since Target defines an allowlist that omits Caller, it MUST be denied.
+            assertFalse(
+                    "Association should be denied if target has an allowlist that omits the caller",
+                    mAms.isPccAssociationAllowedBySysConfigLocked(
+                            TEST_CALLER_PKG, TEST_TARGET_PKG));
+
+            // Fix the Target so it mutually allows the Caller
+            allowedAssociations.get(TEST_TARGET_PKG).add(TEST_CALLER_PKG);
+
+            // Assert 2: Now both sides mutually consent
+            assertTrue(
+                    "Association should be allowed when both sides explicitly allow each other",
+                    mAms.isPccAssociationAllowedBySysConfigLocked(
+                            TEST_CALLER_PKG, TEST_TARGET_PKG));
+        } finally {
+            mockitoSession.finishMocking();
+        }
+    }
+
     private static class TestHandler extends Handler {
         private static final long WAIT_FOR_MSG_TIMEOUT_MS = 4000; // 4 sec
         private static final long WAIT_FOR_MSG_INTERVAL_MS = 400; // 0.4 sec

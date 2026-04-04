@@ -605,11 +605,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         }
         mDisplayWhiteBalanceSettings = displayWhiteBalanceSettings;
         mDisplayWhiteBalanceController = displayWhiteBalanceController;
-        final boolean asyncSensorReadingEnabled = mContext.getResources().getBoolean(
-                com.android.internal.R.bool.config_displayBrightnessAsyncSensorReadingEnabled);
-        mDisplayBrightnessReporter = new DisplayBrightnessReporter(
-                mSensorManager, mLightSensor,
-                mDisplayDeviceConfig.getColorSensor(), asyncSensorReadingEnabled);
+
+        setUpDisplayBrightnessReporter();
 
         loadNitsRange(resources);
 
@@ -944,7 +941,11 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         mScreenBrightnessDozeConfig = BrightnessUtils.clampAbsoluteBrightness(
                 mDisplayDeviceConfig.getDefaultDozeBrightness());
         loadBrightnessRampRates();
+        loadAmbientLightSensor();
         loadNitsRange(mContext.getResources());
+
+        setUpDisplayBrightnessReporter();
+
         setUpAutoBrightness(mContext, mHandler);
         reloadReduceBrightColours();
         setAnimatorConfig(/* isIdle= */ false);
@@ -1016,6 +1017,17 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                 Settings.System.getUriFor(Settings.System.SCREEN_BRIGHTNESS_FOR_ALS),
                 /* notifyForDescendants= */ false, mSettingsObserver, UserHandle.USER_ALL);
         handleBrightnessModeChange();
+    }
+
+    private void setUpDisplayBrightnessReporter() {
+        if (mDisplayBrightnessReporter != null) {
+            mDisplayBrightnessReporter.stop();
+        }
+        final boolean asyncSensorReadingEnabled = mContext.getResources().getBoolean(
+                com.android.internal.R.bool.config_displayBrightnessAsyncSensorReadingEnabled);
+        mDisplayBrightnessReporter = new DisplayBrightnessReporter(
+                mSensorManager, mLightSensor,
+                mDisplayDeviceConfig.getColorSensor(), asyncSensorReadingEnabled);
     }
 
     private void setUpAutoBrightness(Context context, Handler handler) {

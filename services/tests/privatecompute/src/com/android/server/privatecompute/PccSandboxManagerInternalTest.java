@@ -183,7 +183,8 @@ public class PccSandboxManagerInternalTest {
         mPccSandboxManagerInternal.setTrustInstrumentedClients(false);
 
         IBinder returnedBinder = mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, 0,
-                mIntent, mRealBinder, instrumentedUid);
+                mIntent, mRealBinder, instrumentedUid,
+                false /* hasSysConfigExemption */);
 
         assertNotEquals("Should return a proxy binder when trust is disabled", mRealBinder,
                 returnedBinder);
@@ -197,7 +198,8 @@ public class PccSandboxManagerInternalTest {
         mPccSandboxManagerInternal.setTrustInstrumentedClients(true);
 
         IBinder returnedBinder = mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, 0,
-                mIntent, mRealBinder, instrumentedUid);
+                mIntent, mRealBinder, instrumentedUid,
+                false /* hasSysConfigExemption */);
 
         assertEquals("Should return a direct binder when trust is enabled", mRealBinder,
                 returnedBinder);
@@ -211,7 +213,8 @@ public class PccSandboxManagerInternalTest {
         mPccSandboxManagerInternal.setTrustInstrumentedClients(true);
 
         IBinder returnedBinder = mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, 0,
-                mIntent, mRealBinder, nonInstrumentedUid);
+                mIntent, mRealBinder, nonInstrumentedUid,
+                false /* hasSysConfigExemption */);
 
         assertNotEquals("Should return a proxy binder for non-instrumented client even if trust is "
                         + "enabled", mRealBinder, returnedBinder);
@@ -220,7 +223,8 @@ public class PccSandboxManagerInternalTest {
     @Test
     public void createPccProxyIfNeeded_asRegularClient_returnsProxyBinder() {
         IBinder returnedBinder = mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, 0,
-                mIntent, mRealBinder, NON_PCC_CLIENT_UID);
+                mIntent, mRealBinder, NON_PCC_CLIENT_UID,
+                false /* hasSysConfigExemption */);
 
         assertNotEquals("Should return a proxy binder", mRealBinder, returnedBinder);
     }
@@ -236,7 +240,8 @@ public class PccSandboxManagerInternalTest {
         when(mPackageManagerInternal.isSameApp(any(), anyInt(), anyInt())).thenReturn(true);
 
         IBinder returnedBinder = mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, 0,
-                mIntent, mRealBinder, TRUSTED_PACKAGE_UID);
+                mIntent, mRealBinder, TRUSTED_PACKAGE_UID,
+                false /* hasSysConfigExemption */);
 
         assertEquals("Should return a direct binder for trusted package", mRealBinder,
                 returnedBinder);
@@ -247,7 +252,8 @@ public class PccSandboxManagerInternalTest {
     @Test
     public void createPccProxyIfNeeded_asPccClient_returnsDirectBinder() {
         IBinder returnedBinder = mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, 0,
-                mIntent, mRealBinder, PCC_CLIENT_UID);
+                mIntent, mRealBinder, PCC_CLIENT_UID,
+                false /* hasSysConfigExemption */);
 
         assertEquals("Should return a direct binder", mRealBinder, returnedBinder);
         assertEquals("Connection should be tracked for pcc client", 1,
@@ -257,7 +263,8 @@ public class PccSandboxManagerInternalTest {
     @Test
     public void createPccProxyIfNeeded_asSystemService_returnsDirectBinder() {
         IBinder returnedBinder = mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, 0,
-                mIntent, mRealBinder, Process.SYSTEM_UID);
+                mIntent, mRealBinder, Process.SYSTEM_UID,
+                false /* hasSysConfigExemption */);
 
         assertEquals("Should return a direct binder", mRealBinder, returnedBinder);
         assertEquals("Connection should be tracked for system service", 1,
@@ -275,7 +282,8 @@ public class PccSandboxManagerInternalTest {
         when(mPackageManagerInternal.isSameApp(any(), anyInt(), anyInt())).thenReturn(true);
 
         mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, 0,
-                mIntent, mRealBinder, TRUSTED_PACKAGE_UID);
+                mIntent, mRealBinder, TRUSTED_PACKAGE_UID,
+                false /* hasSysConfigExemption */);
 
         PccSandboxManagerInternal.PccServiceInfo serviceInfo =
                 mPccSandboxManagerInternal.mPccServiceConnections.get(mRealBinder);
@@ -286,7 +294,8 @@ public class PccSandboxManagerInternalTest {
     @Test
     public void createPccProxyIfNeeded_asPccClient_noProxyInitialized() {
         IBinder unusedReturnedBinder = mPccSandboxManagerInternal.createPccProxyIfNeeded(
-                mServiceName, 0, mIntent, mRealBinder, PCC_CLIENT_UID);
+                mServiceName, 0, mIntent, mRealBinder, PCC_CLIENT_UID,
+                false /* hasSysConfigExemption */);
 
         PccSandboxManagerInternal.PccServiceInfo serviceInfo =
                 mPccSandboxManagerInternal.mPccServiceConnections.get(mRealBinder);
@@ -297,7 +306,8 @@ public class PccSandboxManagerInternalTest {
     @Test
     public void createPccProxyIfNeeded_asSystemService_noProxyInitialized() {
         IBinder unusedReturnedBinder = mPccSandboxManagerInternal.createPccProxyIfNeeded(
-                mServiceName, 0, mIntent, mRealBinder, Process.SYSTEM_UID);
+                mServiceName, 0, mIntent, mRealBinder, Process.SYSTEM_UID,
+                false /* hasSysConfigExemption */);
 
         PccSandboxManagerInternal.PccServiceInfo serviceInfo =
                 mPccSandboxManagerInternal.mPccServiceConnections.get(mRealBinder);
@@ -308,10 +318,10 @@ public class PccSandboxManagerInternalTest {
     @Test
     public void fetchPccProxyIfNeeded_afterTrustedClientBinds_returnsProxy() {
         mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, 0, mIntent, mRealBinder,
-                PCC_CLIENT_UID);
+                PCC_CLIENT_UID, false /* hasSysConfigExemption */);
 
         IBinder proxy = mPccSandboxManagerInternal.fetchPccProxyIfNeeded(mRealBinder,
-                NON_PCC_CLIENT_UID);
+                NON_PCC_CLIENT_UID, false /* hasSysConfigExemption */);
 
         assertNotNull("Proxy should be found even if only trusted clients are bound", proxy);
         assertNotEquals("Fetched binder should be a proxy, not the real binder", mRealBinder,
@@ -321,13 +331,13 @@ public class PccSandboxManagerInternalTest {
     @Test
     public void fetchPccProxyIfNeeded_triggersLazyInitialization() {
         mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, 0, mIntent, mRealBinder,
-                PCC_CLIENT_UID);
+                PCC_CLIENT_UID, false /* hasSysConfigExemption */);
         PccSandboxManagerInternal.PccServiceInfo serviceInfo =
                 mPccSandboxManagerInternal.mPccServiceConnections.get(mRealBinder);
         assertNull(serviceInfo.getPccServiceProxy());
 
         IBinder proxy = mPccSandboxManagerInternal.fetchPccProxyIfNeeded(mRealBinder,
-                NON_PCC_CLIENT_UID);
+                NON_PCC_CLIENT_UID, false /* hasSysConfigExemption */);
 
         assertNotNull("Proxy should be created on first untrusted access", proxy);
         assertNotNull("Internal proxy field should now be populated",
@@ -337,9 +347,9 @@ public class PccSandboxManagerInternalTest {
     @Test
     public void multipleClientsBind_singleServiceInstance() {
         mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, 0, mIntent, mRealBinder,
-                NON_PCC_CLIENT_UID);
+                NON_PCC_CLIENT_UID, false /* hasSysConfigExemption */);
         mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, 0, mIntent, mRealBinder,
-                NON_PCC_CLIENT_UID);
+                NON_PCC_CLIENT_UID, false /* hasSysConfigExemption */);
 
         assertEquals("Should only have one service connection info", 1,
                 mPccSandboxManagerInternal.mPccServiceConnections.size());
@@ -351,13 +361,14 @@ public class PccSandboxManagerInternalTest {
     @Test
     public void allClientsUnbind_serviceDestroyed() {
         mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, 0, mIntent, mRealBinder,
-                NON_PCC_CLIENT_UID);
+                NON_PCC_CLIENT_UID, false /* hasSysConfigExemption */);
         PccSandboxManagerInternal.PccServiceInfo serviceInfo =
                 mPccSandboxManagerInternal.mPccServiceConnections.get(mRealBinder);
         assertNotNull(serviceInfo);
         PccSandboxManagerInternal.PccServiceProxy proxy = serviceInfo.getWrappedBinder();
 
-        mPccSandboxManagerInternal.removePccProxyIfNeeded(mServiceName, 0, mIntent, mRealBinder);
+        mPccSandboxManagerInternal.removePccProxyIfNeeded(
+                mServiceName, 0, mIntent, mRealBinder, NON_PCC_CLIENT_UID);
 
         assertNull("realBinder should be null after destroy()", proxy.getRealBinder());
         assertEquals(0, mPccSandboxManagerInternal.mPccServiceConnections.size());
@@ -366,12 +377,13 @@ public class PccSandboxManagerInternalTest {
     @Test
     public void removePccProxy_oneOfMultipleClients() {
         mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, 0, mIntent, mRealBinder,
-                NON_PCC_CLIENT_UID);
+                NON_PCC_CLIENT_UID, false /* hasSysConfigExemption */);
         mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, 0, mIntent, mRealBinder,
-                NON_PCC_CLIENT_UID);
+                NON_PCC_CLIENT_UID, false /* hasSysConfigExemption */);
 
         // Unbind one client
-        mPccSandboxManagerInternal.removePccProxyIfNeeded(mServiceName, 0, mIntent, mRealBinder);
+        mPccSandboxManagerInternal.removePccProxyIfNeeded(
+                mServiceName, 0, mIntent, mRealBinder, NON_PCC_CLIENT_UID);
 
         assertEquals("Should still have one service connection info", 1,
                 mPccSandboxManagerInternal.mPccServiceConnections.size());
@@ -383,13 +395,15 @@ public class PccSandboxManagerInternalTest {
     @Test
     public void singleClientUnbinds_thenRebinds_newProxyCreated() {
         IBinder proxyBinder1 = mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName,
-                USER_ID_1, mIntent, mRealBinder, NON_PCC_CLIENT_UID);
+                USER_ID_1, mIntent, mRealBinder, NON_PCC_CLIENT_UID,
+                false /* hasSysConfigExemption */);
         mPccSandboxManagerInternal.removePccProxyIfNeeded(mServiceName, USER_ID_1, mIntent,
-                mRealBinder);
+                mRealBinder, NON_PCC_CLIENT_UID);
         assertNotNull(proxyBinder1);
 
         IBinder proxyBinder2 = mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName,
-                USER_ID_1, mIntent, mRealBinder, NON_PCC_CLIENT_UID);
+                USER_ID_1, mIntent, mRealBinder, NON_PCC_CLIENT_UID,
+                false /* hasSysConfigExemption */);
 
         assertNotNull(proxyBinder2);
         assertNotEquals(proxyBinder1, proxyBinder2);
@@ -398,15 +412,18 @@ public class PccSandboxManagerInternalTest {
     @Test
     public void multipleClients_oneUnbindsAndRebinds_sameProxyReturned() {
         IBinder proxyBinder1 = mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName,
-                USER_ID_1, mIntent, mRealBinder, NON_PCC_CLIENT_UID);
+                USER_ID_1, mIntent, mRealBinder, NON_PCC_CLIENT_UID,
+                false /* hasSysConfigExemption */);
         mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, USER_ID_2, mIntent,
-                mRealBinder, NON_PCC_CLIENT_UID);
+                mRealBinder, NON_PCC_CLIENT_UID,
+                false /* hasSysConfigExemption */);
         assertNotNull(proxyBinder1);
 
         mPccSandboxManagerInternal.removePccProxyIfNeeded(mServiceName, USER_ID_1, mIntent,
-                mRealBinder);
+                mRealBinder, NON_PCC_CLIENT_UID);
         IBinder proxyBinder2 = mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName,
-                USER_ID_1, mIntent, mRealBinder, NON_PCC_CLIENT_UID);
+                USER_ID_1, mIntent, mRealBinder, NON_PCC_CLIENT_UID,
+                false /* hasSysConfigExemption */);
         assertNotNull(proxyBinder2);
 
         assertEquals(proxyBinder1, proxyBinder2);
@@ -415,10 +432,11 @@ public class PccSandboxManagerInternalTest {
     @Test
     public void removePccProxyIfNeeded_asTrustedClient_removesConnection() {
         mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, 0, mIntent, mRealBinder,
-                PCC_CLIENT_UID);
+                PCC_CLIENT_UID, false /* hasSysConfigExemption */);
         assertEquals(1, mPccSandboxManagerInternal.mPccServiceConnections.size());
 
-        mPccSandboxManagerInternal.removePccProxyIfNeeded(mServiceName, 0, mIntent, mRealBinder);
+        mPccSandboxManagerInternal.removePccProxyIfNeeded(
+                mServiceName, 0, mIntent, mRealBinder, PCC_CLIENT_UID);
 
         assertEquals("Connection should be removed for trusted client", 0,
                 mPccSandboxManagerInternal.mPccServiceConnections.size());
@@ -430,9 +448,11 @@ public class PccSandboxManagerInternalTest {
         IBinder invalidBinder = createInvalidBinder();
 
         IBinder binder1 = mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, USER_ID_1,
-                mIntent, nullBinder, NON_PCC_CLIENT_UID);
+                mIntent, nullBinder, NON_PCC_CLIENT_UID,
+                false /* hasSysConfigExemption */);
         IBinder binder2 = mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, USER_ID_1,
-                mIntent, invalidBinder, NON_PCC_CLIENT_UID);
+                mIntent, invalidBinder, NON_PCC_CLIENT_UID,
+                false /* hasSysConfigExemption */);
 
         assertNull(binder1);
         assertNull(binder2);
@@ -441,7 +461,8 @@ public class PccSandboxManagerInternalTest {
     @Test
     public void binderDied_removesConnectionAndDestroysProxy() throws Exception {
         IBinder binder = mPccSandboxManagerInternal.createPccProxyIfNeeded(mServiceName, USER_ID_1,
-                mIntent, mRealBinder, NON_PCC_CLIENT_UID);
+                mIntent, mRealBinder, NON_PCC_CLIENT_UID,
+                false /* hasSysConfigExemption */);
         assertEquals("Should have one active connection", 1,
                 mPccSandboxManagerInternal.mPccServiceConnections.size());
 
@@ -926,6 +947,120 @@ public class PccSandboxManagerInternalTest {
 
         assertFalse("Assistant package without permission should be denied",
                 mPccSandboxManagerInternal.isPccAllowedPackage(assistantPackage, USER_ID_1));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void createPccProxyIfNeeded_sysConfigExemption_returnsDirectBinderAndTracksConnection() {
+        IBinder returnedBinder = mPccSandboxManagerInternal.createPccProxyIfNeeded(
+                mServiceName, USER_ID_1, mIntent, mRealBinder, NON_PCC_CLIENT_UID,
+                true /* hasSysConfigExemption */);
+
+        assertEquals("Should return direct binder for exempted client", mRealBinder,
+                returnedBinder);
+
+        PccSandboxManagerInternal.PccServiceInfo serviceInfo =
+                mPccSandboxManagerInternal.mPccServiceConnections.get(mRealBinder);
+        assertNotNull("Connection should be tracked", serviceInfo);
+        assertNull("Proxy should not be eagerly initialized for exempted connections",
+                serviceInfo.getPccServiceProxy());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void fetchPccProxyIfNeeded_withSysConfigExemption_returnsDirectBinder() {
+        // Arrange: Bind the exempted client
+        mPccSandboxManagerInternal.createPccProxyIfNeeded(
+                mServiceName, USER_ID_1, mIntent, mRealBinder, NON_PCC_CLIENT_UID,
+                true /* hasSysConfigExemption */);
+
+        // Act: Simulate a peekService call
+        IBinder fetchedBinder = mPccSandboxManagerInternal.fetchPccProxyIfNeeded(
+                mRealBinder, NON_PCC_CLIENT_UID, true /* hasSysConfigExemption */);
+
+        // Assert: Return the raw binder
+        assertEquals("fetchPccProxyIfNeeded should return the raw binder",
+                mRealBinder, fetchedBinder);
+    }
+
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void removePccProxyIfNeeded_withSysConfigExemption_removesSafelyWithoutNPE() {
+        // Arrange: Create an exempted connection (which means mProxy is null inside PccServiceInfo)
+        mPccSandboxManagerInternal.createPccProxyIfNeeded(
+                mServiceName, USER_ID_1, mIntent, mRealBinder, NON_PCC_CLIENT_UID,
+                true /* hasSysConfigExemption */);
+
+        // Act: Simulate the client unbinding
+        mPccSandboxManagerInternal.removePccProxyIfNeeded(
+                mServiceName, USER_ID_1, mIntent, mRealBinder, NON_PCC_CLIENT_UID);
+
+        // Assert: Safely removed, no NPE on destroy()
+        assertEquals("Connection should be removed from the map", 0,
+                mPccSandboxManagerInternal.mPccServiceConnections.size());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void createPccProxyIfNeeded_sysConfigExemption_skipsValidationForInvalidBinder() {
+        IBinder nonPccBinder = new Binder(); // Not an IPccService
+
+        IBinder returnedBinder = mPccSandboxManagerInternal.createPccProxyIfNeeded(
+                mServiceName, USER_ID_1, mIntent, nonPccBinder, NON_PCC_CLIENT_UID,
+                true /* hasSysConfigExemption */);
+
+        // If validation was NOT bypassed, this would return null
+        assertEquals("Should bypass validation and return the raw invalid binder",
+                nonPccBinder, returnedBinder);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void fetchPccProxyIfNeeded_invalidBinderCachedByExemptedClient_returnsNull() {
+        // Arrange: An exempted client binds to an INVALID service. Validation is skipped.
+        IBinder invalidBinder = createInvalidBinder();
+        mPccSandboxManagerInternal.createPccProxyIfNeeded(
+                mServiceName, USER_ID_1, mIntent, invalidBinder, NON_PCC_CLIENT_UID,
+                true /* hasSysConfigExemption */);
+
+        // Act: A non-exempted client peeks at that same invalid service.
+        IBinder fetchedBinder = mPccSandboxManagerInternal.fetchPccProxyIfNeeded(
+                invalidBinder, NON_PCC_CLIENT_UID, false /* hasSysConfigExemption */);
+
+        // Assert: It must return null rather than attempting to wrap an invalid binder.
+        assertNull("Should validate and reject the invalid cached binder", fetchedBinder);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void removePccProxyIfNeeded_clientUidPreventsTeardownCollisions() {
+        IBinder invalidBinder = createInvalidBinder(); // Not an IPccService
+        int exemptedUid = NON_PCC_CLIENT_UID;
+        int nonExemptedUid = NON_PCC_CLIENT_UID + 1; // Different client
+
+        // 1. Exempted client binds (bypasses validation, connection is tracked)
+        mPccSandboxManagerInternal.createPccProxyIfNeeded(
+                mServiceName, USER_ID_1, mIntent, invalidBinder, exemptedUid,
+                true /* hasSysConfigExemption */);
+        assertEquals("Exempted connection should be tracked",
+                1, mPccSandboxManagerInternal.mPccServiceConnections.size());
+
+        // 2. Non-exempted client attempts to bind (fails validation, tracking size stays 1)
+        mPccSandboxManagerInternal.createPccProxyIfNeeded(
+                mServiceName, USER_ID_1, mIntent, invalidBinder, nonExemptedUid,
+                false /* hasSysConfigExemption */);
+        assertEquals("Failed non-exempted connection should not increase tracking size",
+                1, mPccSandboxManagerInternal.mPccServiceConnections.size());
+
+        // 3. Non-exempted client unbinds (triggering removePccProxyIfNeeded)
+        mPccSandboxManagerInternal.removePccProxyIfNeeded(
+                mServiceName, USER_ID_1, mIntent, invalidBinder, nonExemptedUid);
+
+        // 4. Assert: Because of the clientUid check, the exempted client's connection MUST survive
+        assertEquals(
+                "Exempted client's connection should not be removed by another client's unbind",
+                1, mPccSandboxManagerInternal.mPccServiceConnections.size());
     }
 }
 

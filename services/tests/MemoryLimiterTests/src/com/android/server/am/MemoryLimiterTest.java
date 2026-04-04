@@ -16,19 +16,12 @@
 
 package com.android.server.am;
 
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
-
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 
 import android.app.ActivityManager;
 import android.app.ActivityManager.ProcessState;
@@ -41,7 +34,6 @@ import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.DeviceConfig;
-import android.provider.DeviceConfig.OnPropertiesChangedListener;
 import android.util.ArrayMap;
 import android.util.Log;
 
@@ -50,20 +42,16 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import com.android.internal.os.BackgroundThread;
 import com.android.server.am.MemoryLimiter.Configuration;
+import com.android.server.am.MemoryLimiter.ControllerEnabled;
 import com.android.server.am.MemoryLimiter.Limits;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.MockitoSession;
-import org.mockito.quality.Strictness;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -75,7 +63,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.regex.Matcher;
@@ -94,9 +81,6 @@ public class MemoryLimiterTest {
 
     @Rule
     public final SetFlagsRule mFlagRule = new SetFlagsRule();
-
-    private MockitoSession mMockitoSession;
-    private MemoryLimiter.Controller mMockController;
 
     // Our context, used for sending broadcasts.
     private Context mContext = ApplicationProvider.getApplicationContext();
@@ -146,9 +130,9 @@ public class MemoryLimiterTest {
     @ProcessState
     private static final int PROCESS_STATE_MAX = ActivityManager.PROCESS_STATE_TOP;
 
-    // High limit MB
-    private static final int LIMIT_MEM = 20;
-    private static final int LIMIT_SWAP = 10;
+    // High limits, in MB.
+    private static final int LIMIT_MEM = 100;
+    private static final int LIMIT_SWAP = 50;
 
     // The memory assigned to a process in PROCESS_STATE_FG.
     private static final long sProcessMemoryFG = LIMIT_MEM * MB;
@@ -167,10 +151,15 @@ public class MemoryLimiterTest {
     private static final long sProcessMemoryMax = (long) (-1);
 
     // The memory that will make the process exceed mem-high.  Units are MB.
-    private static final int sProcessSizeOverHigh = LIMIT_MEM + 1;
+    private static final int sProcessSizeOverHigh = LIMIT_MEM + 10;
 
     // The memory that will make the process exceed mem-high + swap-max.  Units are MB.
-    private static final int sProcessSizeOverAnon = LIMIT_MEM + LIMIT_SWAP + 1;
+    private static final int sProcessSizeOverAnon = LIMIT_MEM + LIMIT_SWAP + 10;
+
+    // The limits for FG and BG processes, and the limits for an unlimited process.
+    private static final Limits limitsFG = new Limits(LIMIT_MEM * MB, LIMIT_SWAP * MB);
+    private static final Limits limitsBG = new Limits(LIMIT_MEM / 2 * MB, LIMIT_SWAP * MB);
+    private static final Limits limitsMax = new Limits(sProcessMemoryMax, sProcessMemoryMax);
 
     // Return true if MemoryLimiter is running in system_server.
     private static boolean isMemoryLimiterRunning() {
@@ -179,13 +168,14 @@ public class MemoryLimiterTest {
     }
 
     // An Injector for testing.
-    private static class TestInjector extends MemoryLimiter.Injector {
+    private class TestInjector extends MemoryLimiter.Injector {
 
         private final String mConfigFile;
 
         private final boolean mLimitMode;
 
         TestInjector(String config, boolean limitMode) {
+            super(MemoryLimiterTest.this.mContext);
             mConfigFile = (config != null) ? dataFile(config) : super.configFile();
             mLimitMode = limitMode;
         }
@@ -220,12 +210,13 @@ public class MemoryLimiterTest {
 
         @Override
         String getPackageNameForPid(int pid) {
-            return "Package" + Integer.toString(pid);
+            // By default return the helper package name, regardless of the pid.
+            return HELPER;
         }
     }
 
     // Capture over-limit events.
-    private static class EventCounter extends MemoryLimiter.ControllerEnabled {
+    private class EventCounter extends MemoryLimiter.ControllerEnabled {
         // A lock that ensures the countdown latch and the event count are consistent.
         private final Object mLock = new Object();
 
@@ -235,7 +226,11 @@ public class MemoryLimiterTest {
 
         // A single over-limit event.  The limit is configured limit in bytes.  The percent is the
         // percentage of available memory represented by the limit.
-        record Event(int pid, int uid, long limit, int percent) {}
+        record Event(int pid, int uid, int limit, long memHigh, long swapHigh) {}
+
+        // True if the getStateLimit() should return the production limits.  The default is false,
+        // which means getStateLimit() will return small, well-known limits.
+        private boolean mUseRawLimits = false;
 
         // The events received by this counter.
         final ArrayList<Event> mEvents = new ArrayList<>();
@@ -258,6 +253,10 @@ public class MemoryLimiterTest {
             }
         }
 
+        void useRawLimits(boolean useRaw) {
+            mUseRawLimits = useRaw;
+        }
+
         // Wait for the counter to go to zero within timeout seconds.  This cannot take the lock!
         boolean await(long timeout) {
             try {
@@ -276,20 +275,25 @@ public class MemoryLimiterTest {
         }
 
         // Match the n'th event.  Fail the test if there is no match.
-        void expect(int index, Helper helper, long limit) {
+        void expect(int index, Helper helper, int limit, Limits expected) {
             final Event event = mEvents.get(index);
             assertThat(event.pid).isEqualTo(helper.getPid());
             assertThat(event.uid).isEqualTo(helper.getUid());
             assertThat(event.limit).isEqualTo(limit);
+            assertThat(event.memHigh).isEqualTo(expected.memHigh());
+            assertThat(event.swapHigh).isEqualTo(expected.swapHigh());
         }
 
         // Get the memory limit for the process state.  Use one of the process states above.
         @Override
         public Limits getStateLimit(@ProcessState int newState) {
+            if (mUseRawLimits) {
+                return super.getStateLimit(newState);
+            }
             return switch (newState) {
-                case PROCESS_STATE_BG -> new Limits(sProcessMemoryBG, sProcessSwapBG);
-                case PROCESS_STATE_FG -> new Limits(sProcessMemoryFG, sProcessSwapFG);
-                case PROCESS_STATE_MAX -> new Limits(sProcessMemoryMax, sProcessMemoryMax);
+                case PROCESS_STATE_BG -> limitsBG;
+                case PROCESS_STATE_FG -> limitsFG;
+                case PROCESS_STATE_MAX -> limitsMax;
                 default -> {
                     fail("invalid state for testing: " + newState);
                     yield null;
@@ -299,11 +303,35 @@ public class MemoryLimiterTest {
 
         // Capture an actual event.
         @Override
-        public void onLimitExceeded(int pid, int uid, int type, long limit, int pct, String pkg) {
+        public void onLimitExceeded(int pid, int uid, int type, long memHigh, long swapHigh,
+                String pkg) {
             synchronized (mLock) {
                 mLatch.countDown();
-                mEvents.add(new Event(pid, uid, limit, pct));
+                mEvents.add(new Event(pid, uid, type, memHigh, swapHigh));
             }
+        }
+
+        // Complete initialization. This method launches the initialization routine and then waits
+        // for initialization to complete.
+        @Override
+        public void onSystemReady() {
+            super.onSystemReady();
+            waitUntil(()-> mInitialized, 2000);
+        }
+
+        // If true, exempt the helper package from limiting.
+        boolean mExemptHelper = false;
+
+        void setHelperExempt(boolean exempt) {
+            mExemptHelper = exempt;
+        }
+
+        // Possibly override the isExempt() method.  If mExemptHelper is true, then the helper
+        // package is exempt, along with anything else in the exempt list.
+        @Override
+        public boolean isExempt(String pkg) {
+            if (super.isExempt(pkg)) return true;
+            return mExemptHelper && HELPER.equals(pkg);
         }
 
         /**
@@ -349,37 +377,12 @@ public class MemoryLimiterTest {
 
     @Before
     public void setUp() throws Exception {
-        mMockitoSession = mockitoSession()
-                .initMocks(this)
-                .strictness(Strictness.LENIENT)
-                .spyStatic(DeviceConfig.class)
-                .spyStatic(BackgroundThread.class)
-                .startMocking();
-
-        mMockController = mock(MemoryLimiter.Controller.class);
-
-        // Mock BackgroundThread to return a direct executor for testing
-        doAnswer(invocation -> {
-            return (Executor) Runnable::run;
-        }).when(BackgroundThread::getExecutor);
-
-        // Ensure static volatile flags are reset to their default state.
-        resetStaticFlags();
-
         mUid = getHelperUid();
         blockSystemLimiter(mUid, true);
     }
 
-    private void resetStaticFlags() {
-        MemoryLimiter.sDisableLimits = false;
-        MemoryLimiter.sDisableKill = false;
-    }
-
     @After
     public void tearDown() throws Exception {
-        if (mMockitoSession != null) {
-            mMockitoSession.finishMocking();
-        }
         shellCommand("am force-stop " + HELPER);
         blockSystemLimiter(mUid, false);
     }
@@ -442,7 +445,7 @@ public class MemoryLimiterTest {
 
         // Attach the Helper to the Limiter
         void attach(MemoryLimiter.Limiter limiter) {
-            limiter.setUid(mUid);
+            limiter.setUid(mUid, HELPER);
             limiter.setPid(mPid);
         }
 
@@ -494,16 +497,22 @@ public class MemoryLimiterTest {
 
         // Return the value from a cgroup file.  As a special case, this converts the string "max"
         // to sProcessMemoryMax (aka, -1).
-        private long cgroupValue(String which) throws Exception {
-            String value = cgroupData(which);
+        private long cgroupValue(String which) {
+            try {
+                String value = cgroupData(which);
 
-            // The value can be the string "max"; if so, return -1.  Otherwise, the string must be
-            // a valid integer.
-            if (value.equals("max")) {
-                return sProcessMemoryMax;
-            } else {
-                return Long.parseLong(value);
+                // The value can be the string "max"; if so, return -1.  Otherwise, the string
+                // must be a valid integer.
+                if (value.equals("max")) {
+                    return sProcessMemoryMax;
+                } else {
+                    return Long.parseLong(value);
+                }
+            } catch (Exception e) {
+                fail(e.toString());
             }
+            // Satisfy Java that the function actually returns a value.
+            return -1;
         }
 
         // Return the current memory of the helper app, as reported by memcg.
@@ -512,13 +521,23 @@ public class MemoryLimiterTest {
         }
 
         // Return the current memory.high limit of the helper app, as reported by memcg.
-        private long currentMemHigh() throws Exception {
+        private long currentMemHigh() {
             return cgroupValue("memory.high");
         }
 
+        // Wait for memory.high to meet some limit.  Return true if it meets the limit.
+        boolean waitMemoryHigh(long want) {
+            return waitUntil(() -> currentMemHigh() == want, 5000);
+        }
+
         // Return the current memory.high limit of the helper app, as reported by memcg.
-        private long currentSwapMax() throws Exception {
-            return cgroupValue("memory.swap.max");
+        private long currentSwapHigh() {
+            return cgroupValue("memory.swap.high");
+        }
+
+        // Wait for memory.swap.high to meet some limit.  Return true if it meets the limit.
+        boolean waitSwapHigh(long want) {
+            return waitUntil(() -> currentSwapHigh() == want, 5000);
         }
 
         // Return the current value for high events.
@@ -599,7 +618,7 @@ public class MemoryLimiterTest {
 
                 // There should be exactly one event in the counter.
                 assertThat(counter.eventCount()).isEqualTo(1);
-                counter.expect(0, helper, sProcessMemoryFG);
+                counter.expect(0, helper, MemoryLimiter.LIMIT_TYPE_MEMORY, limitsFG);
 
                 // Verify that limitMode is honored.
                 assertThat(helper.currentMemHigh()).isEqualTo(sProcessMemoryFG);
@@ -608,7 +627,6 @@ public class MemoryLimiterTest {
     }
 
     @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
-    @Ignore
     @Test
     public void testLimiterAnonSwap() throws Exception {
         try (EventCounter counter = new EventCounter(1)) {
@@ -625,23 +643,28 @@ public class MemoryLimiterTest {
 
                 // There should be exactly one event in the counter.
                 assertThat(counter.eventCount()).isEqualTo(1);
-                counter.expect(0, helper, sProcessMemoryFG);
+                counter.expect(0, helper, MemoryLimiter.LIMIT_TYPE_MEMORY, limitsFG);
 
                 // Verify that limitMode is honored.
                 assertThat(helper.currentMemHigh()).isEqualTo(sProcessMemoryFG);
+                assertThat(helper.currentSwapHigh()).isEqualTo(sProcessSwapFG);
 
                 // Grow the helper another 10M.  This should fill swap and then should exceed
                 // anon+rss.
                 counter.reset(2);
-                helper.resize(sProcessSizeOverAnon, 1);
+                helper.resize(sProcessSizeOverAnon);
                 assertTrue(counter.await(300));
 
-                // There should be exactly one event in the counter.
+                // There should be exactly two events in the counter: swapHigh and AnonRss
                 assertThat(counter.eventCount()).isEqualTo(2);
                 // The swap limit limit.
-                counter.expect(0, helper, sProcessSwapFG);
+                counter.expect(0, helper, MemoryLimiter.LIMIT_TYPE_SWAP, limitsFG);
                 // The anon+swap limit.
-                counter.expect(1, helper, sProcessMemoryFG + sProcessSwapFG);
+                counter.expect(1, helper, MemoryLimiter.LIMIT_TYPE_ANON_SWAP, limitsFG);
+
+                // The memory.high and memory.swap.high limits have been released.
+                assertThat(helper.currentMemHigh()).isEqualTo(sProcessMemoryMax);
+                assertThat(helper.currentSwapHigh()).isEqualTo(sProcessMemoryMax);
             }
         }
     }
@@ -663,7 +686,7 @@ public class MemoryLimiterTest {
 
                 // There should be exactly one event in the counter.
                 assertThat(counter.eventCount()).isEqualTo(1);
-                counter.expect(0, helper, sProcessMemoryFG);
+                counter.expect(0, helper, MemoryLimiter.LIMIT_TYPE_MEMORY, limitsFG);
 
                 // Verify that limitMode is honored.
                 assertThat(helper.currentMemHigh()).isEqualTo(sProcessMemoryMax);
@@ -688,7 +711,62 @@ public class MemoryLimiterTest {
 
                 // There should be exactly one event in the counter.
                 assertThat(counter.eventCount()).isEqualTo(1);
-                counter.expect(0, helper, sProcessMemoryFG);
+                counter.expect(0, helper, MemoryLimiter.LIMIT_TYPE_MEMORY, limitsFG);
+            }
+        }
+    }
+
+    @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
+    @Test
+    public void testLimiterNoLimits() throws Exception {
+        try (EventCounter counter = new EventCounter(0)) {
+            counter.useRawLimits(true);
+            Limits fg = counter.getStateLimit(PROCESS_STATE_FG);
+            Limits bg = counter.getStateLimit(PROCESS_STATE_BG);
+
+            try (MemoryLimiter controller = new MemoryLimiter(counter)) {
+                MemoryLimiter.Limiter limiter = controller.newLimiter();
+
+                Helper helper = new Helper();
+                helper.attach(limiter);
+
+                // Update the process state and verify that memory.high is correct.
+                limiter.onProcStateUpdated(PROCESS_STATE_FG);
+                assertTrue(helper.waitMemoryHigh(fg.memHigh()));
+
+                limiter.onProcStateUpdated(PROCESS_STATE_BG);
+                assertTrue(helper.waitMemoryHigh(bg.memHigh()));
+
+                // Disable limits and verify that memory.high is set to max.
+                setRuntimeFlags(counter, true, null);
+                assertThat(counter.mDisableLimits).isEqualTo(true);
+                limiter.onProcStateUpdated(PROCESS_STATE_FG);
+                assertTrue(helper.waitMemoryHigh(sProcessMemoryMax));
+            }
+        }
+    }
+
+    @RequiresFlagsEnabled(Flags.FLAG_MEMORY_LIMITER_ENABLE)
+    @Test
+    public void testExemptList() throws Exception {
+        try (EventCounter counter = new EventCounter(0)) {
+            counter.useRawLimits(true);
+            Limits fg = counter.getStateLimit(PROCESS_STATE_FG);
+            counter.setHelperExempt(true);
+
+            try (MemoryLimiter controller = new MemoryLimiter(counter)) {
+                MemoryLimiter.Limiter limiter = controller.newLimiter();
+
+                Helper helper = new Helper();
+                helper.attach(limiter);
+                assertTrue(helper.waitMemoryHigh(sProcessMemoryMax));
+
+                // Update the process state and verify that memory.high is correct.
+                limiter.onProcStateUpdated(PROCESS_STATE_FG);
+                // Unfortunately, we must wait for the process state to NOT be changed.  The
+                // cgroup files are updated asynchronously, so all we can do here is wait a bit.
+                assertFalse(helper.waitMemoryHigh(fg.memHigh()));
+                assertTrue(helper.waitMemoryHigh(sProcessMemoryMax));
             }
         }
     }
@@ -721,23 +799,17 @@ public class MemoryLimiterTest {
                 // is not monitored until the first time a limit is configured.
                 limiter.onProcStateUpdated(PROCESS_STATE_MAX);
 
-                BooleanSupplier one = () -> {
-                    return counter.stat("processes") == 1;
-                };
+                BooleanSupplier one = () -> counter.stat("processes") == 1;
                 assertThat(waitUntil(one, 4000)).isTrue();
                 assertThat(counter.stat("started")).isEqualTo(1);
                 assertThat(counter.stat("process-hwm")).isEqualTo(1);
                 assertThat(counter.stat("watched")).isEqualTo(2);
 
                 helper.exit();
-                BooleanSupplier exit = () -> {
-                    return !helper.exists();
-                };
+                BooleanSupplier exit = () -> !helper.exists();
                 waitUntil(exit, 4000);
 
-                BooleanSupplier zero = () -> {
-                    return counter.stat("processes") == 0;
-                };
+                BooleanSupplier zero = () -> counter.stat("processes") == 0;
                 assertThat(waitUntil(zero, 4000)).isTrue();
 
                 var stats = counter.stats();
@@ -802,20 +874,13 @@ public class MemoryLimiterTest {
         Helper helper = new Helper();
 
         // Poll until the limit is set by system_server.
-        for (int i = 0; i < 100 && helper.currentMemHigh() != expectedLimit.memHigh(); i++) {
-            Thread.sleep(100); // Wait a bit before polling again.
-        }
-        assertThat(helper.currentMemHigh()).isEqualTo(expectedLimit.memHigh());
+        assertTrue(helper.waitMemoryHigh(expectedLimit.memHigh()));
 
         if (Flags.memoryLimiterSwap()) {
-            // Poll until the limit is set by system_server.
-            for (int i = 0; i < 100 && helper.currentSwapMax() != expectedLimit.swapMax(); i++) {
-                Thread.sleep(100); // Wait a bit before polling again.
-            }
-            assertThat(helper.currentSwapMax()).isEqualTo(expectedLimit.swapMax());
+            assertTrue(helper.waitSwapHigh(expectedLimit.swapHigh()));
         } else {
             Thread.sleep(200);
-            assertThat(helper.currentSwapMax()).isEqualTo(sProcessMemoryMax);
+            assertThat(helper.currentSwapHigh()).isEqualTo(sProcessMemoryMax);
         }
 
         // Now test the manual shell command.  This goes through system_server so it cannot be done
@@ -824,17 +889,10 @@ public class MemoryLimiterTest {
         int limitInMB = 975;
         shellCommand(String.format("am memory-limiter manual %d %d", helper.getPid(), limitInMB));
         long expected = limitInMB * MB;
-        for (int i = 0; i < 100 && helper.currentMemHigh() != expected; i++) {
-            Thread.sleep(100); // Wait a bit before polling again.
-        }
-        assertThat(helper.currentMemHigh()).isEqualTo(expected);
+        assertTrue(helper.waitMemoryHigh(expected));
 
         if (Flags.memoryLimiterSwap()) {
-            // Poll until the limit is set by system_server.
-            for (int i = 0; i < 100 && helper.currentSwapMax() != expected; i++) {
-                Thread.sleep(100); // Wait a bit before polling again.
-            }
-            assertThat(helper.currentSwapMax()).isEqualTo(expected);
+            assertTrue(helper.waitSwapHigh(expected));
         }
     }
 
@@ -869,16 +927,16 @@ public class MemoryLimiterTest {
                 assertThat(helper.currentMemHigh()).isNotEqualTo(sProcessMemoryMax);
 
                 if (Flags.memoryLimiterSwap()) {
-                    for (int i = 0; i < 100 && helper.currentSwapMax() != sProcessMemoryMax; i++) {
+                    for (int i = 0; i < 100 && helper.currentSwapHigh() != sProcessMemoryMax; i++) {
                         Thread.sleep(100); // Wait a bit before polling again.
                     }
-                    assertThat(helper.currentSwapMax()).isNotEqualTo(sProcessMemoryMax);
+                    assertThat(helper.currentSwapHigh()).isNotEqualTo(sProcessMemoryMax);
                 } else {
                     // The flag is off, so the swap limit should always be "max".  Wait 200ms ,
                     // because limit are set asynchronously, and then verify that the limit is still
                     // max.
                     Thread.sleep(200);
-                    assertThat(helper.currentSwapMax()).isEqualTo(sProcessMemoryMax);
+                    assertThat(helper.currentSwapHigh()).isEqualTo(sProcessMemoryMax);
                 }
 
                 // Now make system server stop watching the UID.  The native layer may still be
@@ -892,7 +950,7 @@ public class MemoryLimiterTest {
 
                 // There should be exactly one event in the counter.
                 assertThat(counter.eventCount()).isEqualTo(1);
-                counter.expect(0, helper, sProcessMemoryFG);
+                counter.expect(0, helper, MemoryLimiter.LIMIT_TYPE_MEMORY, limitsFG);
             }
         }
     }
@@ -1037,89 +1095,61 @@ public class MemoryLimiterTest {
         assertThat(testParsing(helper, "memory.stat")).isNotNull();
     }
 
-    @Test
-    public void testFlagsInitializedToDefault_BothDisabled() {
-        resetStaticFlags();
-        assertFalse(MemoryLimiter.sDisableLimits);
-        assertFalse(MemoryLimiter.sDisableKill);
+    // Set the runtime flags.  The inputs are Booleans; a null value is not pushed to the
+    // controller.
+    private void setRuntimeFlags(ControllerEnabled controller, Boolean limits, Boolean kill) {
+        final String limitsKey = ControllerEnabled.DISABLE_LIMITS_KEY;
+        final String killKey = ControllerEnabled.DISABLE_KILL_KEY;
+
+        DeviceConfig.Properties.Builder updated =
+                new DeviceConfig.Properties.Builder(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER);
+        if (limits != null) {
+            updated.setBoolean(limitsKey, limits);
+        }
+        if (kill != null) {
+            updated.setBoolean(killKey, kill);
+        }
+        controller.updateRuntimeFlags(updated.build());
+    }
+
+    private void validateRuntimeFlags(ControllerEnabled controller) {
+        final String limitsKey = ControllerEnabled.DISABLE_LIMITS_KEY;
+        final String killKey = ControllerEnabled.DISABLE_KILL_KEY;
+        DeviceConfig.Properties actual =
+                DeviceConfig.getProperties(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER,
+                        limitsKey, killKey);
+        for (String key : actual.getKeyset()) {
+            if (limitsKey.equals(key)) {
+                boolean val = actual.getBoolean(key, false);
+                assertThat(controller.mDisableLimits).isEqualTo(val);
+            } else if (killKey.equals(key)) {
+                boolean val = actual.getBoolean(key, false);
+                assertThat(controller.mDisableKill).isEqualTo(val);
+            }
+        }
     }
 
     @Test
-    public void testOnSystemReadyRegistersListenerAndUpdatesFlags() {
-        // Start with false
-        MemoryLimiter.sDisableLimits = false;
-        MemoryLimiter.sDisableKill = false;
+    public void testRuntimeFlags() {
+        try (EventCounter counter = new EventCounter(0)) {
+            assertThat(counter.mDisableKill).isEqualTo(false);
+            assertThat(counter.mDisableLimits).isEqualTo(false);
 
-        MemoryLimiter limiter = new MemoryLimiter(mMockController);
+            counter.onSystemReady();
+            assertThat(counter.mInitialized).isTrue();
 
-        // Capture the listener
-        ArgumentCaptor<OnPropertiesChangedListener> listenerCaptor =
-                ArgumentCaptor.forClass(OnPropertiesChangedListener.class);
+            // Verify that the values loaded reflect the current operational state of the system,
+            // whatever that might be.
+            validateRuntimeFlags(counter);
 
-        // When onSystemReady is called
-        limiter.onSystemReady();
-
-        // Then it should register a listener for activity_manager namespace
-        verify(() -> DeviceConfig.addOnPropertiesChangedListener(
-                eq(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER),
-                any(Executor.class),
-                listenerCaptor.capture()));
-
-        // And it should update flags from current properties
-        // (Verify updateRuntimeFlags was called by checking flag state)
-        DeviceConfig.Properties properties = new DeviceConfig.Properties.Builder(
-                DeviceConfig.NAMESPACE_ACTIVITY_MANAGER)
-                .setBoolean(MemoryLimiter.DISABLE_LIMITS_KEY, true)
-                .setBoolean(MemoryLimiter.DISABLE_KILL_KEY, true)
-                .build();
-
-        // Simulate a property change event
-        listenerCaptor.getValue().onPropertiesChanged(properties);
-
-        assertTrue(MemoryLimiter.sDisableLimits);
-        assertTrue(MemoryLimiter.sDisableKill);
-    }
-
-    @Test
-    public void testUpdateRuntimeFlags() {
-        resetStaticFlags();
-        MemoryLimiter limiter = new MemoryLimiter(mMockController);
-
-        // Initially false
-        assertFalse(MemoryLimiter.sDisableLimits);
-
-        // Create properties with enable=true
-        DeviceConfig.Properties properties = new DeviceConfig.Properties.Builder(
-                DeviceConfig.NAMESPACE_ACTIVITY_MANAGER)
-                .setBoolean(MemoryLimiter.DISABLE_LIMITS_KEY, true)
-                .build();
-
-        // Call updateRuntimeFlags directly (it's private, but we can test it via listener
-        // or just by having onSystemReady call it).
-        limiter.onSystemReady();
-
-        // Simulate change to true
-        OnPropertiesChangedListener listener = getRegisteredListener();
-        listener.onPropertiesChanged(properties);
-        assertTrue(MemoryLimiter.sDisableLimits);
-
-        // Simulate change back to false (using default)
-        DeviceConfig.Properties propertiesEmpty = new DeviceConfig.Properties.Builder(
-                DeviceConfig.NAMESPACE_ACTIVITY_MANAGER)
-                .setBoolean(MemoryLimiter.DISABLE_LIMITS_KEY, false)
-                .build();
-        listener.onPropertiesChanged(propertiesEmpty);
-        assertFalse(MemoryLimiter.sDisableLimits);
-    }
-
-    private OnPropertiesChangedListener getRegisteredListener() {
-        ArgumentCaptor<OnPropertiesChangedListener> listenerCaptor =
-                ArgumentCaptor.forClass(OnPropertiesChangedListener.class);
-        verify(() -> DeviceConfig.addOnPropertiesChangedListener(
-                eq(DeviceConfig.NAMESPACE_ACTIVITY_MANAGER),
-                any(Executor.class),
-                listenerCaptor.capture()));
-        return listenerCaptor.getValue();
+            // Toggle the flags and verify that they change as expected.
+            setRuntimeFlags(counter, true, false);
+            assertThat(counter.mDisableKill).isEqualTo(false);
+            assertThat(counter.mDisableLimits).isEqualTo(true);
+            setRuntimeFlags(counter, false, true);
+            assertThat(counter.mDisableKill).isEqualTo(true);
+            assertThat(counter.mDisableLimits).isEqualTo(false);
+        }
     }
 
     static {

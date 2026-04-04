@@ -25,6 +25,7 @@ import static com.android.companiondevicemanager.Utils.getIcon;
 import android.content.Context;
 import android.text.Spanned;
 import android.util.SparseBooleanArray;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -79,6 +80,16 @@ class PermissionListAdapter extends RecyclerView.Adapter<PermissionListAdapter.V
             holder.itemView.setClickable(true);
             holder.itemView.setFocusable(true);
             boolean isExpanded = mExpandedPositions.get(position);
+            // Set listener for keyboard event.
+            holder.itemView.setOnKeyListener((view, keyCode, event) -> {
+                if (event.getAction() == KeyEvent.ACTION_UP
+                        && (keyCode == KeyEvent.KEYCODE_ENTER
+                                || keyCode == KeyEvent.KEYCODE_DPAD_CENTER)) {
+                    view.performClick();
+                    return true;
+                }
+                return false;
+            });
 
             holder.mPermissionSummary.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
             holder.mExpandButton.setVisibility(View.VISIBLE);
@@ -90,8 +101,37 @@ class PermissionListAdapter extends RecyclerView.Adapter<PermissionListAdapter.V
             setAccessibility(holder.itemView, type, AccessibilityNodeInfo.ACTION_CLICK, statusRes);
 
             holder.itemView.setOnClickListener(v -> {
-                mExpandedPositions.put(position, !isExpanded);
+                boolean willExpand = !isExpanded;
+                mExpandedPositions.put(position, willExpand);
+
+                boolean hadHardwareFocus = v.isFocused();
+
+                if (hadHardwareFocus) {
+                    v.clearFocus();
+                }
                 notifyItemChanged(position);
+
+                if (willExpand) {
+                    RecyclerView recyclerView = (RecyclerView) v.getParent();
+                    if (recyclerView != null) {
+                        recyclerView.postDelayed(() -> {
+                            RecyclerView.ViewHolder currentHolder =
+                                    recyclerView.findViewHolderForAdapterPosition(position);
+                            if (currentHolder != null) {
+                                View summaryView = currentHolder.itemView.findViewById(
+                                        R.id.permission_summary);
+                                if (summaryView != null
+                                        && summaryView.getVisibility() == View.VISIBLE) {
+                                    summaryView.performAccessibilityAction(
+                                            AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, null);
+                                }
+                            }
+                            if (hadHardwareFocus) {
+                                currentHolder.itemView.requestFocus();
+                            }
+                        }, 200);
+                    }
+                }
             });
         } else {
             holder.itemView.setOnClickListener(null);

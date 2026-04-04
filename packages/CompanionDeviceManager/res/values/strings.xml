@@ -246,7 +246,7 @@
     <string name="permission_notification_listener_access_summary">Read all notifications, including information like contacts, messages, and photos</string>
 
     <!-- Description of NLA & POST_NOTIFICATION of corresponding profile [CHAR LIMIT=NONE] -->
-    <string name="permission_notifications_summary">\u2022 Read all notifications, including info like contacts, messages, and photos&lt;br/>\u2022 Send you notifications&lt;br/>&lt;br/>You can manage this app\'s ability to read and send notifications anytime in Settings > Notifications.</string>
+    <string name="permission_notifications_summary">\u2022 Read all notifications, including info like contacts, messages, and photos&lt;br/>\u2022 Send you notifications&lt;br/>&lt;br/>You can manage this app\'s ability to read and send notifications anytime in Settings &#8250; Notifications.</string>
 
     <!-- Description of storage permission of corresponding profile [CHAR LIMIT=NONE] -->
     <string name="permission_storage_summary">Share your phone\'s photos and media with your other devices.</string>

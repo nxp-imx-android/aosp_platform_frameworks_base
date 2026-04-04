@@ -31,6 +31,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.IRemoteCallback;
@@ -138,7 +139,8 @@ public final class TranslationManagerService
         final PackageManager pm = getContext().getPackageManager();
         final int serviceUid;
         try {
-            serviceUid = pm.getPackageUidAsUser(servicePackageName, userId);
+            final ServiceInfo serviceInfo = pm.getServiceInfo(serviceComponent, /*flags*/ 0);
+            serviceUid = serviceInfo.getUid();
         } catch (PackageManager.NameNotFoundException e) {
             Slog.w(TAG, methodName + ": could not verify UID for " + serviceName);
             return false;
