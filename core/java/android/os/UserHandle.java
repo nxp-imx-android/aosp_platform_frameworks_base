@@ -223,6 +223,35 @@ public final class UserHandle implements Parcelable {
     }
 
     /**
+     * Whether a UID refers to the same app, treating a Private Compute Core (PCC)
+     * sandbox UID as equal to its host app's UID.
+     *
+     * @param uid1 The first UID to compare
+     * @param uid2 The second UID to compare
+     * @hide
+     */
+    public static boolean isSameAppIdWithPcc(int uid1, int uid2) {
+        int appId1 = getAppId(uid1);
+        int appId2 = getAppId(uid2);
+
+        if (appId1 == appId2) {
+            return true;
+        }
+
+        if (enablePccFrameworkSupport()) {
+            if (Process.isPrivateComputeCoreUid(appId1)) {
+                appId1 = Process.getAppUidForPrivateComputeCoreUid(appId1);
+            }
+            if (Process.isPrivateComputeCoreUid(appId2)) {
+                appId2 = Process.getAppUidForPrivateComputeCoreUid(appId2);
+            }
+            return appId1 == appId2;
+        }
+
+        return false;
+    }
+
+    /**
      * Whether a UID is an "isolated" UID.
      * @hide
      */
