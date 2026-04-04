@@ -2306,6 +2306,10 @@ public final class SystemServiceRegistry {
                 case Context.VIRTUALIZATION_SERVICE:
                 case Context.VIRTUAL_DEVICE_SERVICE:
                     return null;
+                case Context.DROPBOX_SERVICE:
+                    // If the Dropbox service is missing, we don't want to trigger a WTF, because
+                    // this can lead to an infinite loop in WTF reporting to Dropbox.
+                    return null;
                 case Context.VCN_MANAGEMENT_SERVICE:
                     if (!hasSystemFeatureOpportunistic(ctx,
                             PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION)) {
