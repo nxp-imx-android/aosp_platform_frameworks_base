@@ -442,11 +442,15 @@ class AppErrors {
             final int entUid = ba.keyAt(i);
             if (!resetEntireUser) {
                 if (userId == UserHandle.USER_ALL) {
-                    if (UserHandle.getAppId(entUid) == appId) {
+                    if (UserHandle.isSameAppIdWithPcc(UserHandle.getAppId(entUid), appId)) {
                         remove = true;
                     }
                 } else {
-                    if (entUid == UserHandle.getUid(userId, appId)) {
+                    final int uidFromAppIdPccAware = Process.isPrivateComputeCoreUid(appId)
+                            ? Process.getAppUidForPrivateComputeCoreUid(appId) : appId;
+                    final int entUidPccAware = Process.isPrivateComputeCoreUid(entUid)
+                            ? Process.getAppUidForPrivateComputeCoreUid(entUid) : entUid;
+                    if (entUidPccAware == UserHandle.getUid(userId, uidFromAppIdPccAware)) {
                         remove = true;
                     }
                 }

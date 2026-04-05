@@ -138,6 +138,7 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.os.PowerExemptionManager.ReasonCode;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.os.UserHandle;
@@ -2833,14 +2834,20 @@ public final class AppRestrictionController {
     }
 
     boolean isOnDeviceIdleAllowlist(int uid) {
-        final int appId = UserHandle.getAppId(uid);
+        int appId = UserHandle.getAppId(uid);
+        if (Process.isPrivateComputeCoreUid(appId)) {
+            appId = UserHandle.getAppId(Process.getAppUidForPrivateComputeCoreUid(appId));
+        }
 
         return Arrays.binarySearch(mDeviceIdleAllowlist, appId) >= 0
                 || Arrays.binarySearch(mDeviceIdleExceptIdleAllowlist, appId) >= 0;
     }
 
     boolean isOnSystemDeviceIdleAllowlist(int uid) {
-        final int appId = UserHandle.getAppId(uid);
+        int appId = UserHandle.getAppId(uid);
+        if (Process.isPrivateComputeCoreUid(appId)) {
+            appId = UserHandle.getAppId(Process.getAppUidForPrivateComputeCoreUid(appId));
+        }
 
         return mSystemDeviceIdleAllowlist.contains(appId)
                 || mSystemDeviceIdleExceptIdleAllowlist.contains(appId);
