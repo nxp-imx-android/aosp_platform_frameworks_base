@@ -486,6 +486,18 @@ public class BubbleDataTest extends ShellTestCase {
         assertThat(b.getUser().getIdentifier()).isEqualTo(10);
     }
 
+    @Test
+    public void getOrCreateBubble_withTaskInfo_usesCorrectUser() {
+        TaskInfo info = createTaskInfo();
+        info.userId = 10;
+
+        // set the current user to be different from the task -- this can happen with work profiles
+        mBubbleData.setCurrentUserId(0);
+
+        Bubble b = mBubbleData.getOrCreateBubble(info);
+        assertThat(b.getUser().getIdentifier()).isEqualTo(10);
+    }
+
     //
     // Overflow
     //
