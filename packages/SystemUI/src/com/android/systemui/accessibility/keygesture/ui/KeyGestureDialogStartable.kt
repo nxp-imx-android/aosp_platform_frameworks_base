@@ -26,6 +26,7 @@ import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.Icon
@@ -33,6 +34,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.booleanResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
@@ -48,16 +50,19 @@ import com.android.compose.PlatformButton
 import com.android.compose.PlatformOutlinedButton
 import com.android.compose.dialog.AlertDialogContent
 import com.android.compose.theme.PlatformTheme
+import com.android.internal.R as InternalR
 import com.android.internal.accessibility.util.AccessibilityUtils
 import com.android.internal.accessibility.util.TtsPrompt
 import com.android.internal.annotations.VisibleForTesting
 import com.android.systemui.CoreStartable
+import com.android.systemui.Flags
 import com.android.systemui.accessibility.keygesture.domain.KeyGestureDialogInteractor
 import com.android.systemui.accessibility.keygesture.shared.model.DialogContentSection
 import com.android.systemui.accessibility.keygesture.shared.model.KeyGestureConfirmInfo
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.display.data.repository.DisplayRepository
+import com.android.systemui.qs.ui.compose.borderOnFocus
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.ComponentSystemUIDialog
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
@@ -261,6 +266,11 @@ constructor(
         currentDialog =
             dialogFactory.create(context = dialogContext) { dialog ->
                 PlatformTheme {
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    val isFocusRingEnabled =
+                        Flags.enableInsetFocusRings() &&
+                            booleanResource(InternalR.bool.config_enableInsetFocusRingsInSuw)
+
                     AlertDialogContent(
                         title = { Text(text = keyGestureConfirmInfo.title) },
                         content = {
@@ -284,21 +294,50 @@ constructor(
                         },
                         negativeButton = {
                             PlatformOutlinedButton(
+                                modifier =
+                                    if (isFocusRingEnabled) {
+                                        Modifier.borderOnFocus(
+                                            // TODO(b/501501800): revert the changes for
+                                            // borderOnFocus in ag/39299067 and move the modifier to
+                                            // PlatformOutlinedButton.
+                                            color = MaterialTheme.colorScheme.primary,
+                                            cornerSize = FOCUS_RING_CORNER_SIZE,
+                                            strokeWidth = FOCUS_RING_STROKE_WIDTH,
+                                            paddingHorizontal = FOCUS_RING_PADDING_HORIZONTAL,
+                                            paddingVertical = FOCUS_RING_PADDING_VERTICAL,
+                                        )
+                                    } else {
+                                        Modifier
+                                    },
                                 onClick = {
                                     // We need explicitly call `cancel` here; otherwise, clicking
                                     // the negative button, the cancel listener won't be triggered.
                                     dialog.cancel()
-                                }
+                                },
                             ) {
                                 Text(stringResource(id = delegate.negativeButtonTextId))
                             }
                         },
                         positiveButton = {
                             PlatformButton(
+                                modifier =
+                                    if (isFocusRingEnabled) {
+                                        // TODO(b/501501800): revert the changes for borderOnFocus
+                                        // in ag/39299067 and move the modifier to PlatformButton.
+                                        Modifier.borderOnFocus(
+                                            color = MaterialTheme.colorScheme.primary,
+                                            cornerSize = FOCUS_RING_CORNER_SIZE,
+                                            strokeWidth = FOCUS_RING_STROKE_WIDTH,
+                                            paddingHorizontal = FOCUS_RING_PADDING_HORIZONTAL,
+                                            paddingVertical = FOCUS_RING_PADDING_VERTICAL,
+                                        )
+                                    } else {
+                                        Modifier
+                                    },
                                 onClick = {
                                     delegate.onPositiveButtonClick(keyGestureConfirmInfo)
                                     dialog.dismiss()
-                                }
+                                },
                             ) {
                                 Text(stringResource(id = delegate.positiveButtonTextId))
                             }
@@ -396,5 +435,10 @@ constructor(
     companion object {
         const val TAG = "KeyGestureDialogStartable"
         const val ICON_INLINE_CONTENT_ID = "iconInlineContentId"
+
+        private val FOCUS_RING_CORNER_SIZE = CornerSize(28.dp)
+        private val FOCUS_RING_STROKE_WIDTH = 2.dp
+        private val FOCUS_RING_PADDING_HORIZONTAL = 3.dp
+        private val FOCUS_RING_PADDING_VERTICAL = (-3).dp
     }
 }
