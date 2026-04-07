@@ -159,7 +159,7 @@
     <string name="bluetooth_hearing_aid_profile_summary_connected" msgid="5757754050938807276">"Conectado a aparelhos auditivos"</string>
     <string name="bluetooth_le_audio_profile_summary_connected" msgid="6916226974453480650">"Conectado ao perfil Áudio de baixa energia"</string>
     <string name="bluetooth_a2dp_profile_summary_connected" msgid="7422607970115444153">"Conectado ao áudio da mídia"</string>
-    <string name="bluetooth_headset_profile_summary_connected" msgid="2420981566026949688">"Conectado ao áudio do smartphone"</string>
+    <string name="bluetooth_headset_profile_summary_connected" msgid="2420981566026949688">"Conectado ao áudio do telefone"</string>
     <string name="bluetooth_opp_profile_summary_connected" msgid="2393521801478157362">"Conectado ao servidor de transferência de arquivo"</string>
     <string name="bluetooth_map_profile_summary_connected" msgid="4141725591784669181">"Conectado ao mapa"</string>
     <string name="bluetooth_sap_profile_summary_connected" msgid="1280297388033001037">"Conectado a SAP"</string>
@@ -171,7 +171,7 @@
     <string name="bluetooth_map_profile_summary_use_for" msgid="4453622103977592583">"Usar para mapa"</string>
     <string name="bluetooth_sap_profile_summary_use_for" msgid="6204902866176714046">"Use para acesso ao chip"</string>
     <string name="bluetooth_a2dp_profile_summary_use_for" msgid="7324694226276491807">"Usar para áudio de mídia"</string>
-    <string name="bluetooth_headset_profile_summary_use_for" msgid="808970643123744170">"Usar para áudio do smartphone"</string>
+    <string name="bluetooth_headset_profile_summary_use_for" msgid="808970643123744170">"Usar para áudio do telefone"</string>
     <string name="bluetooth_opp_profile_summary_use_for" msgid="461981154387015457">"Usado para transferência de arquivo"</string>
     <string name="bluetooth_hid_profile_summary_use_for" msgid="4289460627406490952">"Usar para entrada"</string>
     <string name="bluetooth_hearing_aid_profile_summary_use_for" msgid="3374057355721486932">"Usar para aparelhos auditivos"</string>
@@ -331,7 +331,7 @@
     <string name="bluetooth_select_a2dp_codec_type_dialog_title" msgid="7510542404227225545">"Acionar codec de áudio Bluetooth\nSeleção"</string>
     <string name="bluetooth_select_a2dp_codec_sample_rate" msgid="1638623076480928191">"Taxa de amostra do áudio Bluetooth"</string>
     <string name="bluetooth_select_a2dp_codec_sample_rate_dialog_title" msgid="5876305103137067798">"Acionar codec de áudio Bluetooth\nSeleção: taxa de amostra"</string>
-    <string name="bluetooth_select_a2dp_codec_type_help_info" msgid="8647200416514412338">"Os itens esmaecidos não são compatíveis com o smartphone ou o fone de ouvido"</string>
+    <string name="bluetooth_select_a2dp_codec_type_help_info" msgid="8647200416514412338">"Os itens esmaecidos não são compatíveis com o telefone ou o fone de ouvido"</string>
     <string name="bluetooth_select_a2dp_codec_bits_per_sample" msgid="6253965294594390806">"Bits por amostra do áudio Bluetooth"</string>
     <string name="bluetooth_select_a2dp_codec_bits_per_sample_dialog_title" msgid="4898693684282596143">"Acionar codec de áudio Bluetooth\nSeleção: bits por amostra"</string>
     <string name="bluetooth_select_a2dp_codec_channel_mode" msgid="364277285688014427">"Modo de canal de áudio Bluetooth"</string>
@@ -581,7 +581,7 @@
     <string name="use_system_language_to_select_input_method_subtypes" msgid="4865195835541387040">"Usa idiomas do sistema"</string>
     <string name="failed_to_open_app_settings_toast" msgid="764897252657692092">"Falha ao abrir as configurações de <xliff:g id="SPELL_APPLICATION_NAME">%1$s</xliff:g>"</string>
     <string name="ime_security_warning" msgid="6547562217880551450">"Este método de entrada pode coletar todo o texto que você digita, incluindo dados pessoais, como senhas e números de cartão de crédito. É um método do app <xliff:g id="IME_APPLICATION_NAME">%1$s</xliff:g>. Usar este método de entrada?"</string>
-    <string name="direct_boot_unaware_dialog_message" msgid="7845398276735021548">"Observação: após uma reinicialização, não é possível iniciar este app até que você desbloqueie seu smartphone"</string>
+    <string name="direct_boot_unaware_dialog_message" msgid="7845398276735021548">"Observação: após uma reinicialização, não é possível iniciar este app até que você desbloqueie seu telefone"</string>
     <string name="ims_reg_title" msgid="8197592958123671062">"Estado do registro de IMS"</string>
     <string name="ims_reg_status_registered" msgid="884916398194885457">"Registrado"</string>
     <string name="ims_reg_status_not_registered" msgid="2989287366045704694">"Não registrado"</string>
@@ -751,7 +751,7 @@
     <string name="accessibility_phone_one_bar" msgid="5719721147018970063">"Uma barra de sinal do telefone."</string>
     <string name="accessibility_phone_two_bars" msgid="2531458337458953263">"Duas barras de sinal do telefone."</string>
     <string name="accessibility_phone_three_bars" msgid="1523967995996696619">"Três barras de sinal do telefone."</string>
-    <string name="accessibility_phone_four_bars" msgid="4477202400261338403">"Quatro barras do smartphone."</string>
+    <string name="accessibility_phone_four_bars" msgid="4477202400261338403">"Quatro barras do telefone."</string>
     <string name="accessibility_phone_signal_full" msgid="4302338883816077134">"Sinal do telefone cheio."</string>
     <string name="accessibility_no_data" msgid="4563181886936931008">"Nenhum dado."</string>
     <string name="accessibility_data_one_bar" msgid="6892888138070752480">"Uma barra de sinal de dados."</string>
