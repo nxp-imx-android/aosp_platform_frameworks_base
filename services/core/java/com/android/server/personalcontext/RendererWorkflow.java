@@ -140,7 +140,12 @@ public final class RendererWorkflow {
                     for (RenderToken renderToken : renderTokens) {
                         final Renderer renderer =
                                 mProvider.getRendererById(renderToken.getRendererComponentId());
-                        if (renderer == null) throw new IllegalStateException("Renderer not found");
+                        if (renderer == null) {
+                            Log.e(TAG, String.format("Renderer for %s not found", renderToken));
+                            mEventListener.onRendererWorkflowError(
+                                    mFlowId, new IllegalStateException("Renderer not found"));
+                            continue;
+                        }
 
                         mEventListener.onInsightSentToRenderer(mFlowId, mPublishedContextInsight,
                                 renderer);
