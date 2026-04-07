@@ -5040,8 +5040,13 @@ public class ActivityManagerService extends IActivityManager.Stub
             if (didSomething && subReason == ApplicationExitInfo.SUBREASON_FORCE_STOP
                     && android.os.profiling.Flags.profiling25q4()
                     && packageName != null) {
+                // We must calculate uid using the specified userId. If the base uid was
+                // queried on USER_SYSTEM (0), passing it as-is would send an incorrect uid to the
+                // profiling service if the targeted user was different (e.g. User 10 in HSUM).
                 sendProfilingTrigger(
-                        uid,
+                        (userId >= 0)
+                                ? UserHandle.getUid(userId, appId)
+                                : uid,
                         packageName,
                         ProfilingTrigger.TRIGGER_TYPE_KILL_FORCE_STOP);
             }
