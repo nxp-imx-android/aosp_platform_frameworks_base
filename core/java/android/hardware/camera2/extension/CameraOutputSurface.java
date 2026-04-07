@@ -21,6 +21,7 @@ import android.annotation.NonNull;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.graphics.ImageFormat;
+import android.hardware.camera2.impl.CameraExtensionUtils;
 import android.hardware.camera2.params.ColorSpaceProfiles;
 import android.hardware.camera2.params.DynamicRangeProfiles;
 import android.hardware.camera2.utils.SurfaceUtils;
@@ -46,7 +47,13 @@ public final class CameraOutputSurface {
     private final OutputSurface mOutputSurface;
 
     CameraOutputSurface(@NonNull OutputSurface surface) {
-       mOutputSurface = surface;
+        mOutputSurface = surface;
+        if (surface.surface != null) {
+            CameraExtensionUtils.SurfaceInfo surfaceInfo = CameraExtensionUtils.querySurface(
+                    surface.surface);
+            mOutputSurface.imageFormat = SurfaceUtils.getOverrideFormat(surfaceInfo.mFormat,
+                    surfaceInfo.mUsage);
+        }
     }
 
     /**
