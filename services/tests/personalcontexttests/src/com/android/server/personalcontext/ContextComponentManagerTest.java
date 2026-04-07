@@ -280,9 +280,9 @@ public class ContextComponentManagerTest {
         assertThat(manager.getRefiners()).hasSize(2);
         assertThat(manager.getRenderers()).isEmpty();
 
-        when(mAccessController.isServiceAllowed(eq(resolve.serviceInfo), eq(
-                AccessController.ACCESS_RECEIVE_INSIGHTS_ALLOWLIST
-                        | AccessController.ACCESS_BIND_CONTEXT_PERMISSION)))
+        when(mAccessController.isServiceAllowed(
+                        eq(resolve.serviceInfo),
+                        eq(AccessController.ACCESS_BIND_CONTEXT_PERMISSION)))
                 .thenReturn(true);
 
         manager.registerComponentsForAllPackages();

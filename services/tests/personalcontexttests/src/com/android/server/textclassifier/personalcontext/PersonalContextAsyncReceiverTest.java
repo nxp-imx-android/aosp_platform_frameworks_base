@@ -33,6 +33,8 @@ import androidx.annotation.NonNull;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import com.android.server.textclassifier.personalcontext.PersonalContextBridge.TextClassificationKey;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,6 +55,10 @@ public class PersonalContextAsyncReceiverTest {
     private static final long TEST_TIMEOUT_MILLIS = 5;
     private static final String TEST_SESSION_ID = "test-session-id";
     private static final String TEST_TEXT = "test-text";
+    private static final TextClassification.Request TEST_REQUEST =
+            new TextClassification.Request.Builder(TEST_TEXT, 0, TEST_TEXT.length()).build();
+    private static final TextClassificationKey TEST_KEY =
+            new TextClassificationKey(TEST_SESSION_ID, TEST_REQUEST);
     private static final TextClassification TEST_CLASSIFICATION =
             new TextClassification.Builder().setText(TEST_TEXT).build();
     @Mock private ScheduledExecutorService mScheduledExecutorService;
@@ -74,42 +80,40 @@ public class PersonalContextAsyncReceiverTest {
 
     @Test
     public void testGetAsync_afterPut_returnsImmediately() {
-        mRetriever.put(TEST_SESSION_ID, TEST_CLASSIFICATION);
+        mRetriever.put(TEST_KEY, TEST_CLASSIFICATION);
 
-        mRetriever.getAsync(
-                TEST_SESSION_ID, result -> assertThat(result).isEqualTo(TEST_CLASSIFICATION));
+        mRetriever.getAsync(TEST_KEY, result -> assertThat(result).isEqualTo(TEST_CLASSIFICATION));
     }
 
     @Test
     public void testGetAsync_beforePut_returnsAfter() {
-        mRetriever.getAsync(
-                TEST_SESSION_ID, result -> assertThat(result).isEqualTo(TEST_CLASSIFICATION));
+        mRetriever.getAsync(TEST_KEY, result -> assertThat(result).isEqualTo(TEST_CLASSIFICATION));
 
-        mRetriever.put(TEST_SESSION_ID, TEST_CLASSIFICATION);
+        mRetriever.put(TEST_KEY, TEST_CLASSIFICATION);
     }
 
     @Test
     public void testGetAsync_withoutPut_timesOut() throws Exception {
-        mRetriever.getAsync(TEST_SESSION_ID, expectTimeoutRetriever());
+        mRetriever.getAsync(TEST_KEY, expectTimeoutRetriever());
 
         getTimeoutTask().run();
     }
 
     @Test
     public void testGetAsync_afterTimeout_returnsNothing() throws Exception {
-        mRetriever.getAsync(TEST_SESSION_ID, expectTimeoutRetriever());
+        mRetriever.getAsync(TEST_KEY, expectTimeoutRetriever());
         getTimeoutTask().run();
 
-        mRetriever.put(TEST_SESSION_ID, TEST_CLASSIFICATION);
+        mRetriever.put(TEST_KEY, TEST_CLASSIFICATION);
     }
 
     @Test
     public void testGetAsync_withGetAsyncAlreadyCalled_returnsNothing() {
-        mRetriever.put(TEST_SESSION_ID, TEST_CLASSIFICATION);
-        mRetriever.getAsync(TEST_SESSION_ID, result -> {});
+        mRetriever.put(TEST_KEY, TEST_CLASSIFICATION);
+        mRetriever.getAsync(TEST_KEY, result -> {});
 
         mRetriever.getAsync(
-                TEST_SESSION_ID,
+                TEST_KEY,
                 new OutcomeReceiver<>() {
                     @Override
                     public void onResult(TextClassification result) {
@@ -125,13 +129,15 @@ public class PersonalContextAsyncReceiverTest {
 
     @Test
     public void testGetAsync_withSessionsFull_timesOut() {
-        mRetriever.put(TEST_SESSION_ID, TEST_CLASSIFICATION);
+        mRetriever.put(TEST_KEY, TEST_CLASSIFICATION);
 
         for (int i = 0; i < MAX_SESSIONS; i++) {
-            mRetriever.put(TEST_SESSION_ID + i, TEST_CLASSIFICATION);
+            mRetriever.put(
+                    new TextClassificationKey(TEST_SESSION_ID + i, TEST_REQUEST),
+                    TEST_CLASSIFICATION);
         }
 
-        mRetriever.getAsync(TEST_SESSION_ID, expectTimeoutRetriever());
+        mRetriever.getAsync(TEST_KEY, expectTimeoutRetriever());
     }
 
     private Runnable getTimeoutTask() {

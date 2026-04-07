@@ -3322,6 +3322,9 @@ final class InstallPackageHelper {
                     }
                 } else {
                     mRemovePackageHelper.cleanUpResources(packageName, args.getCodeFile());
+                    // Updating an app with kill. Deleting all the old paths that may have been
+                    // preserved for previous dont_kill updates.
+                    mRemovePackageHelper.cleanUpOldPaths(packageName);
                 }
             } else {
                 // Force a gc to clear up things. Ask for a background one, it's fine to go on

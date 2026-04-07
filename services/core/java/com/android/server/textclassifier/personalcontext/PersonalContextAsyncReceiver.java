@@ -18,11 +18,13 @@ package com.android.server.textclassifier.personalcontext;
 
 import android.annotation.NonNull;
 import android.os.OutcomeReceiver;
+import android.text.TextUtils;
 import android.util.Slog;
 import android.view.textclassifier.TextClassification;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.textclassifier.personalcontext.PersonalContextBridge.TextClassificationKey;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -32,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /** Retriever that supports asynchronously getting Personal Context results with a timeout. */
-class PersonalContextAsyncReceiver {
+public class PersonalContextAsyncReceiver {
 
     private static final String TAG = "PersonalContextAsyncReceiver";
 
@@ -40,14 +42,15 @@ class PersonalContextAsyncReceiver {
     @VisibleForTesting static final int MAX_SESSIONS = 20;
 
     private final ScheduledExecutorService mScheduledExecutorService;
-    private final ConcurrentHashMap<String, TextClassification> mIdToResults =
+    private final ConcurrentHashMap<TextClassificationKey, TextClassification> mIdToResults =
             new ConcurrentHashMap<>(MAX_SESSIONS);
 
     @GuardedBy("mIdToResults")
-    private final ConcurrentLinkedQueue<String> mSessionIds = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<TextClassificationKey> mSessions =
+            new ConcurrentLinkedQueue<>();
 
     @GuardedBy("mIdToResults")
-    private final ConcurrentHashMap<String, PersonalContextBridgeTask> mIdToTasks =
+    private final ConcurrentHashMap<TextClassificationKey, PersonalContextBridgeTask> mIdToTasks =
             new ConcurrentHashMap<>(MAX_SESSIONS);
 
     private final long mTimeoutInMillis;
@@ -63,42 +66,49 @@ class PersonalContextAsyncReceiver {
      * result, notify and pass the result to the receiver, and cancel the timeout task. Else, put
      * the result in the result map to wait for immediate retrieval in {@link #getAsync}.
      */
-    public void put(@NonNull String sessionId, @NonNull TextClassification textClassification) {
-        if (mIdToTasks.containsKey(sessionId)) {
+    public void put(
+            @NonNull TextClassificationKey key, @NonNull TextClassification textClassification) {
+        if (mIdToTasks.containsKey(key)) {
             synchronized (mIdToResults) {
-                mIdToTasks.get(sessionId).receiver.onResult(textClassification);
-                mIdToTasks.get(sessionId).cancellationTask.cancel(false);
-                clearSession(sessionId);
+                mIdToTasks.get(key).receiver.onResult(textClassification);
+                mIdToTasks.get(key).cancellationTask.cancel(false);
+                clearSession(key);
             }
         } else {
             synchronized (mIdToResults) {
-                mIdToResults.put(sessionId, textClassification);
-                mSessionIds.add(sessionId);
+                mIdToResults.put(key, textClassification);
+                mSessions.add(key);
                 maybePopOldestSession();
             }
         }
     }
 
     /**
-     * Gets result for the TextClassification sessionId into the receiver.
+     * Gets result for the TextClassification session into the receiver.
      *
-     * <p>If result for sessionId is already present, immediately call receiver. Else, register the
+     * <p>If result for session is already present, immediately call receiver. Else, register the
      * receiver to await until {@link #put} notifies the receiver, or the timeout task cancels the
      * task.
      *
-     * <p>Only one get request can be made for a sessionId at once.
+     * <p>Only one get request can be made for a session at once. If there already is a request
+     * waiting, it'll be overridden by the more recent request.
      */
     public void getAsync(
-            @NonNull String sessionId,
+            @NonNull TextClassificationKey key,
             @NonNull OutcomeReceiver<TextClassification, TimeoutException> callback) {
-        if (mIdToTasks.containsKey(sessionId)) {
-            Slog.d(TAG, "Only one callback is allowed to wait on given sessionId.");
-            return;
+        if (mIdToTasks.containsKey(key)) {
+            Slog.w(TAG, "Only one callback is allowed to wait on given session.");
+            mIdToTasks
+                    .get(key)
+                    .receiver
+                    .onError(new TimeoutException("Overridden by new request."));
+            mIdToTasks.get(key).cancellationTask.cancel(true);
+            mIdToTasks.remove(key);
         }
-        if (mIdToResults.containsKey(sessionId)) {
+        if (mIdToResults.containsKey(key)) {
             synchronized (mIdToResults) {
-                callback.onResult(mIdToResults.remove(sessionId));
-                clearSession(sessionId);
+                callback.onResult(mIdToResults.remove(key));
+                clearSession(key);
             }
             return;
         }
@@ -109,42 +119,60 @@ class PersonalContextAsyncReceiver {
                             callback.onError(
                                     new TimeoutException(
                                             "Timed out while waiting for personal context result"));
-                            clearSession(sessionId);
+                            clearSession(key);
                         },
                         mTimeoutInMillis,
                         TimeUnit.MILLISECONDS);
         synchronized (mIdToResults) {
-            mIdToTasks.put(sessionId, new PersonalContextBridgeTask(callback, cancellationTask));
-            mSessionIds.add(sessionId);
+            mIdToTasks.put(key, new PersonalContextBridgeTask(callback, cancellationTask));
+            mSessions.add(key);
             maybePopOldestSession();
         }
     }
 
     /**
-     * Clears the cache of any sessionId results or tasks.
+     * Clears the cache of any session results or tasks.
      *
      * <p>Used when session is destroyed before personal context service returns or result is
      * requested.
      */
-    public void clearSession(String sessionId) {
+    private void clearSession(TextClassificationKey key) {
         synchronized (mIdToResults) {
-            mSessionIds.remove(sessionId);
-            mIdToResults.remove(sessionId);
-            mIdToTasks.remove(sessionId);
+            mSessions.remove(key);
+            mIdToResults.remove(key);
+            mIdToTasks.remove(key);
         }
     }
 
-    /** Pops oldest session if adding a new sessionId will exceed the limit. */
+    /**
+     * Clears the cache of any session results or tasks.
+     *
+     * <p>Used when session is destroyed before personal context service returns
+     */
+    public void clearSession(String sessionId) {
+        synchronized (mIdToResults) {
+            for (TextClassificationKey foundSession :
+                    mSessions.stream()
+                            .filter(key -> TextUtils.equals(key.sessionId(), sessionId))
+                            .toList()) {
+                mSessions.remove(foundSession);
+                mIdToResults.remove(foundSession);
+                mIdToTasks.remove(foundSession);
+            }
+        }
+    }
+
+    /** Pops oldest session if adding a new session has exceeded the limit. */
     @GuardedBy("mIdToResults")
     private void maybePopOldestSession() {
-        if (mSessionIds.size() <= MAX_SESSIONS) {
+        if (mSessions.size() <= MAX_SESSIONS) {
             return;
         }
-        String oldestSessionId = mSessionIds.poll();
-        mIdToResults.remove(oldestSessionId);
-        if (mIdToTasks.containsKey(oldestSessionId)) {
-            mIdToTasks.get(oldestSessionId).cancellationTask.cancel(false);
-            mIdToTasks.remove(oldestSessionId);
+        TextClassificationKey oldestSession = mSessions.poll();
+        mIdToResults.remove(oldestSession);
+        if (mIdToTasks.containsKey(oldestSession)) {
+            mIdToTasks.get(oldestSession).cancellationTask.cancel(false);
+            mIdToTasks.remove(oldestSession);
         }
     }
 

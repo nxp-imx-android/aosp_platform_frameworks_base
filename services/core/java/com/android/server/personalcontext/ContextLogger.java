@@ -39,7 +39,7 @@ public class ContextLogger implements
         RendererWorkflow.EventListener,
         AccessController.EventListener {
     private static final int MAX_RECENT_TIMELINES_TO_KEEP = 3;
-    private static final int MAX_RECENT_ACCESSES_TO_KEEP = 12;
+    private static final int MAX_RECENT_ACCESSES_TO_KEEP = 25;
 
     private final Queue<Timeline> mRecentRefinerTimelines = new LinkedList<>();
     private final Map<Long, Timeline> mActiveRefinerTimelines = new HashMap<>();

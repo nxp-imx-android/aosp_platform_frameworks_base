@@ -1524,6 +1524,16 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
         return this;
     }
 
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+    public PackageSetting clearOldPaths() {
+        if (mOldPaths == null || mOldPaths.isEmpty()) {
+            return this;
+        }
+        mOldPaths.clear();
+        onChanged();
+        return this;
+    }
+
     /**
      * @param userId the specific user to change the label/icon for
      * @see PackageUserStateImpl#overrideLabelAndIcon(ComponentName, String, Integer)

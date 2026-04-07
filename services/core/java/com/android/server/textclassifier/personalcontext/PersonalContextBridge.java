@@ -44,14 +44,21 @@ public abstract class PersonalContextBridge {
      * TextClassification insight generation. {@link
      * PersonalContextManagerInternal#onTextClassifyRequest} is a oneway lightweight hint publish
      * method that does not block.
+     *
+     * <p>Will also abandon any existing merges for the sessionId so that only one insight is
+     * accepted per workflow.
+     *
+     * <p>TODO(b/499173425): Use HintInvalidationHint or similar to properly invalidate the
+     * generated hint
      */
     public abstract void trigger(int userId, String sessionId, TextClassification.Request request);
 
     /**
      * Queues up the TextClassification response from {@link TextClassificationActionRenderer} so
-     * that {@link PersonalContextBridgeImpl.MergeCallback} can merge the results.
+     * that {@link PersonalContextBridgeImpl.MergeCallback} can merge the results based on the
+     * matching key.
      */
-    public abstract void merge(@NonNull String sessionId, TextClassification response);
+    public abstract void merge(@NonNull TextClassificationKey key, TextClassification response);
 
     /**
      * Wraps callback with a {@link ITextClassifierCallback} that will merge personal context
@@ -59,7 +66,9 @@ public abstract class PersonalContextBridge {
      * PersonalContext service is not enabled, returns the original callback without wrapping.
      */
     public abstract ITextClassifierCallback wrap(
-            @NonNull String sessionId, @NonNull ITextClassifierCallback callback);
+            @NonNull String sessionId,
+            @NonNull TextClassification.Request request,
+            @NonNull ITextClassifierCallback callback);
 
     /**
      * Clears any pending personal context results for the session. Must be called from {@link
@@ -86,6 +95,19 @@ public abstract class PersonalContextBridge {
 
         public Config(Context context) {
             this(getTimeoutInMillis(context), getMergeStrategy(context));
+        }
+    }
+
+    /** Key to identify a text classification request uniquely. */
+    public record TextClassificationKey(
+            String sessionId, String text, int startIndex, int endIndex) {
+
+        public TextClassificationKey(String sessionId, TextClassification.Request request) {
+            this(
+                    sessionId,
+                    request.getText().toString(),
+                    request.getStartIndex(),
+                    request.getEndIndex());
         }
     }
 }

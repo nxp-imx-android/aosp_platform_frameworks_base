@@ -556,7 +556,7 @@ public class BubbleData {
     }
 
     Bubble getOrCreateBubble(TaskInfo taskInfo) {
-        UserHandle user = UserHandle.of(mCurrentUserId);
+        UserHandle user = UserHandle.of(taskInfo.userId);
         String bubbleKey = Bubble.getAppBubbleKeyForTask(taskInfo);
         Bubble bubbleToReturn = findAndRemoveBubbleFromOverflow(bubbleKey);
         if (bubbleToReturn == null) {

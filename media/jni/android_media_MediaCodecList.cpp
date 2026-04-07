@@ -253,29 +253,30 @@ static jobject android_media_MediaCodecList_getCodecCapabilities(
         return NULL;
     }
 
-
-    const char *typeStr = env->GetStringUTFChars(type, NULL);
-    if (typeStr == NULL) {
+    const char *extractedMediaType = env->GetStringUTFChars(type, NULL);
+    if (extractedMediaType == NULL) {
         // Out of memory exception already pending.
         return NULL;
     }
+    std::string mediaType = extractedMediaType;
+    env->ReleaseStringUTFChars(type, extractedMediaType);
+    extractedMediaType = NULL;
 
     jobject caps;
     if (android::media::codec::provider_->native_capabilites()) {
-        std::shared_ptr<CodecCapabilities> codecCaps = info.info->getCodecCapsFor(typeStr);
+        std::shared_ptr<CodecCapabilities> codecCaps =
+                        info.info->getCodecCapsFor(mediaType.c_str());
         caps = android::convertToJavaCodecCapabiliites(env, codecCaps);
     } else {
         Vector<MediaCodecInfo::ProfileLevel> profileLevels;
         Vector<uint32_t> colorFormats;
 
         sp<AMessage> defaultFormat = new AMessage();
-        defaultFormat->setString("mime", typeStr);
+        defaultFormat->setString("mime", mediaType.c_str());
 
         // TODO query default-format also from codec/codec list
         const sp<MediaCodecInfo::Capabilities> &capabilities =
-            info.info->getCapabilitiesFor(typeStr);
-        env->ReleaseStringUTFChars(type, typeStr);
-        typeStr = NULL;
+            info.info->getCapabilitiesFor(mediaType.c_str());
         if (capabilities == NULL) {
             jniThrowException(env, "java/lang/IllegalArgumentException", NULL);
             return NULL;
