@@ -85,8 +85,10 @@ public class ServiceClientRenderer
         super(context, accessController, componentId, serviceInfo, userHandle, executor, handler,
                 operatingModeProvider);
 
-        if (isAllowed(AccessController.ACCESS_FILTER_INSIGHTS_ALLOWLIST)) {
-            runWithScopedBinder((binder, callback) -> {
+        // Always connect to the service, whether we can fetch a filter or not, so that it can
+        // distribute its RenderTokens.
+        runWithScopedBinder((binder, callback) -> {
+            if (isAllowed(AccessController.ACCESS_FILTER_INSIGHTS_ALLOWLIST)) {
                 try {
                     binder.getFilter(getParcelComponentId(), new IGetFilterCallback.Stub() {
                         @PermissionManuallyEnforced
@@ -98,10 +100,10 @@ public class ServiceClientRenderer
                 } catch (RemoteException e) {
                     Slog.e(TAG, "Failed to get renderer filter", e);
                 }
-            });
-        } else {
-            Slog.d(TAG, getComponentName() + " is not allowed to filter for insights.");
-        }
+            } else {
+                Slog.d(TAG, getComponentName() + " is not allowed to filter for insights.");
+            }
+        });
     }
 
     @Override
