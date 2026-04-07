@@ -124,12 +124,9 @@
     <string name="kg_prompt_reason_restart_pattern" msgid="3321211830602827742">"ডিভাইস রিস্টার্ট হওয়ার পরে প্যাটার্ন দিতে হবে"</string>
     <string name="kg_prompt_reason_restart_pin" msgid="2672166323886110512">"ডিভাইস রিস্টার্ট হওয়ার পরে পিন দিতে হবে"</string>
     <string name="kg_prompt_reason_restart_password" msgid="3967993994418885887">"ডিভাইস রিস্টার্ট হওয়ার পরে পাসওয়ার্ড দিতে হবে"</string>
-    <!-- no translation found for kg_prompt_reason_signin_pattern (1650886553162854395) -->
-    <skip />
-    <!-- no translation found for kg_prompt_reason_signin_pin (636031498838532631) -->
-    <skip />
-    <!-- no translation found for kg_prompt_reason_signin_password (1020939174735616114) -->
-    <skip />
+    <string name="kg_prompt_reason_signin_pattern" msgid="1650886553162854395">"সাইন-ইন করার জন্য প্যাটার্ন সমাধান করতে হবে"</string>
+    <string name="kg_prompt_reason_signin_pin" msgid="636031498838532631">"সাইন-ইন করার জন্য পিন লিখতে হবে"</string>
+    <string name="kg_prompt_reason_signin_password" msgid="1020939174735616114">"সাইন-ইন করার জন্য পাসওয়ার্ড লিখতে হবে"</string>
     <string name="kg_prompt_reason_timeout_pattern" msgid="5514969660010197363">"অতিরিক্ত সুরক্ষার জন্য, এর বদলে প্যাটার্ন ব্যবহার করুন"</string>
     <string name="kg_prompt_reason_timeout_pin" msgid="4227962059353859376">"অতিরিক্ত সুরক্ষার জন্য, এর বদলে পিন ব্যবহার করুন"</string>
     <string name="kg_prompt_reason_timeout_password" msgid="8810879144143933690">"অতিরিক্ত সুরক্ষার জন্য, এর বদলে পাসওয়ার্ড ব্যবহার করুন"</string>

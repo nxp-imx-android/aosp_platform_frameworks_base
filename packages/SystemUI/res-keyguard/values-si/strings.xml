@@ -124,12 +124,9 @@
     <string name="kg_prompt_reason_restart_pattern" msgid="3321211830602827742">"උපාංගය යළි ඇරඹීමෙන් පසු රටාව අවශ්‍ය වේ"</string>
     <string name="kg_prompt_reason_restart_pin" msgid="2672166323886110512">"උපාංගය යළි ඇරඹීමෙන් පසු PIN අවශ්‍ය වේ"</string>
     <string name="kg_prompt_reason_restart_password" msgid="3967993994418885887">"උපාංගය යළි ඇරඹීමෙන් පසු මුරපදය අවශ්‍ය වේ"</string>
-    <!-- no translation found for kg_prompt_reason_signin_pattern (1650886553162854395) -->
-    <skip />
-    <!-- no translation found for kg_prompt_reason_signin_pin (636031498838532631) -->
-    <skip />
-    <!-- no translation found for kg_prompt_reason_signin_password (1020939174735616114) -->
-    <skip />
+    <string name="kg_prompt_reason_signin_pattern" msgid="1650886553162854395">"පුරනය වීමට රටාව අවශ්‍ය වේ"</string>
+    <string name="kg_prompt_reason_signin_pin" msgid="636031498838532631">"පුරනය වීමට PIN අවශ්‍ය වේ"</string>
+    <string name="kg_prompt_reason_signin_password" msgid="1020939174735616114">"පුරනය වීමට මුරපදය අවශ්‍ය වේ"</string>
     <string name="kg_prompt_reason_timeout_pattern" msgid="5514969660010197363">"අතිරේක ආරක්ෂාව සඳහා, ඒ වෙනුවට රටාව භාවිතා කරන්න"</string>
     <string name="kg_prompt_reason_timeout_pin" msgid="4227962059353859376">"අතිරේක ආරක්ෂාව සඳහා, ඒ වෙනුවට PIN භාවිතා කරන්න"</string>
     <string name="kg_prompt_reason_timeout_password" msgid="8810879144143933690">"අතිරේක ආරක්ෂාව සඳහා, ඒ වෙනුවට මුරපදය භාවිතා කරන්න"</string>
