@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"appareil"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Cette appli pourra synchroniser des infos, comme le nom de l\'appelant, entre votre téléphone et l\'appareil choisi"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Autoriser &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; à synchroniser des informations telles que les infos sur l\'appelant et à exécuter des actions intelligentes depuis votre <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"Autoriser &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; à synchroniser des informations telles que les infos sur l\'appelant et à exécuter des actions intelligentes depuis votre <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Autoriser"</string>
     <string name="consent_no" msgid="2640796915611404382">"Ne pas autoriser"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Annuler"</string>
@@ -85,7 +84,8 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Enregistrer un fichier audio"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Trouver les appareils à proximité, s\'y connecter et déterminer leur position relative"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Lire toutes les notifications, y compris des informations comme les contacts, messages et photos"</string>
-    <string name="permission_notifications_summary" msgid="6819393427371255636">"• Lire toutes les notifications, y compris les informations comme les contacts, les messages et les photos&lt;br/&gt;• Envoyer des notifications&lt;br/&gt;&lt;br/&gt;Vous pouvez gérer les autorisations de lecture et d\'envoi des notifications à tout moment dans Paramètres &gt; Notifications."</string>
+    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
+    <skip />
     <string name="permission_storage_summary" msgid="3779040306012319942">"Partager les photos et contenus multimédias de votre téléphone avec vos autres appareils."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Vous envoie des notifications"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Partager l\'écran de votre téléphone, y compris les applis, sur vos appareils. Vos appareils auront accès à tout ce qui est visible sur votre téléphone, y compris les contenus audio, les photos, les infos de paiement, les mots de passe et les messages, même lorsque votre téléphone est verrouillé.&lt;br/&gt;&lt;br/&gt;Transmettre les données du micro, de la caméra et d\'autres données des capteurs de vos appareils à votre téléphone, y compris les interactions comme les gestes tactiles et les clics de souris."</string>
@@ -93,10 +93,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Enregistrez, castez ou partagez l\'écran de votre <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> sur &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> aura accès à tout ce qui est visible ou lu sur votre <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, y compris les contenus audio, les photos, les infos de paiement, les mots de passe et les messages."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Castez les applis de votre <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> sur &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> aura accès à tout ce qui est visible ou lu sur <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, y compris les contenus audio, les photos, les infos de paiement, les mots de passe et les messages, même lorsque votre <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> est verrouillé."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Accédez à une liste d\'appareils disponibles et choisissez lequel caste ou lit en streaming une piste audio ou une vidéo à partir d\'autres applis."</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Vous envoyer des alertes"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Vous envoyer des alertes même lorsque le mode Ne pas déranger est activé"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"téléphone"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablette"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"tv"</string>

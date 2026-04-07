@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"device"</string>
     <string name="summary_generic" msgid="1761976003668044801">"This app will be able to sync info, like the name of someone calling, between your phone and the chosen device"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Allow &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; to sync info such as caller info and run smart actions from your <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"Give &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; permissions to sync info such as caller info and run smart actions from your <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Allow"</string>
     <string name="consent_no" msgid="2640796915611404382">"Don\'t allow"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Cancel"</string>
@@ -85,7 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Record audio"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Find, connect to and determine the relative position of Nearby devices"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Read all notifications, including information like contacts, messages and photos"</string>
-    <string name="permission_notifications_summary" msgid="6819393427371255636">"• Read all notifications, including info like contacts, messages and photos&lt;br/&gt;• Send notifications&lt;br/&gt;&lt;br/&gt;You can manage this app\'s ability to read and send notifications at any time in Settings &gt; Notifications."</string>
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Read all notifications, including info such as contacts, messages and photos&lt;br/&gt;• Send you notifications&lt;br/&gt;&lt;br/&gt;You can manage this app\'s ability to read and send notifications at any time in Settings › Notifications."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Share your phone\'s photos and media with your other devices."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Send you notifications"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Share your phone\'s screen, including apps, to your devices. Your devices will have access to anything that\'s visible on your phone, including audio, photos, payment info, passwords and messages, even when your phone is locked.&lt;br/&gt;&lt;br/&gt;Provide microphone, camera and other sensor data from your devices back to your phone, including interactions like touch gestures and mouse clicks."</string>
@@ -93,10 +92,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Record, cast or share your <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>’s screen to &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> will have access to anything that’s visible or played on your <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, including audio, photos, payment info, passwords and messages."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Stream your <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>\'s apps to &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> will have access to anything that\'s visible or played on <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, including audio, photos, payment info, passwords and messages, even when your <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> is locked."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Access a list of available devices and control which one streams or casts audio or video from other apps"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Send you alerts"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Send you alerts even when Do Not Disturb mode is on"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"phone"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablet"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"tv"</string>

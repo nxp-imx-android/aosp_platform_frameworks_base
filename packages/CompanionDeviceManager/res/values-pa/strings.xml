@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"ਡੀਵਾਈਸ"</string>
     <string name="summary_generic" msgid="1761976003668044801">"ਇਹ ਐਪ ਤੁਹਾਡੇ ਫ਼ੋਨ ਅਤੇ ਚੁਣੇ ਗਏ ਡੀਵਾਈਸ ਵਿਚਕਾਰ ਕਾਲਰ ਦੇ ਨਾਮ ਵਰਗੀ ਜਾਣਕਾਰੀ ਨੂੰ ਸਿੰਕ ਕਰ ਸਕੇਗੀ"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; ਨੂੰ ਤੁਹਾਡੇ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ਤੋਂ ਕਾਲਰ ਜਾਣਕਾਰੀ ਵਰਗੀ ਜਾਣਕਾਰੀ ਨੂੰ ਸਿੰਕ ਕਰਨ ਅਤੇ ਸਮਾਰਟ ਕਾਰਵਾਈਆਂ ਕਰਨ ਦੀ ਆਗਿਆ ਦਿਓ"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; ਨੂੰ ਤੁਹਾਡੇ <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ਤੋਂ ਕਾਲਰ ਜਾਣਕਾਰੀ ਵਰਗੀ ਜਾਣਕਾਰੀ ਨੂੰ ਸਿੰਕ ਕਰਨ ਅਤੇ ਸਮਾਰਟ ਕਾਰਵਾਈਆਂ ਕਰਨ ਦੀਆਂ ਇਜਾਜ਼ਤਾਂ ਦਿਓ"</string>
     <string name="consent_yes" msgid="8344487259618762872">"ਆਗਿਆ ਦਿਓ"</string>
     <string name="consent_no" msgid="2640796915611404382">"ਆਗਿਆ ਨਾ ਦਿਓ"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"ਰੱਦ ਕਰੋ"</string>
@@ -85,7 +84,8 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"ਆਡੀਓ ਰਿਕਾਰਡ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"ਨਜ਼ਦੀਕੀ ਡੀਵਾਈਸਾਂ ਨੂੰ ਲੱਭਣ, ਉਨ੍ਹਾਂ ਨਾਲ ਕਨੈਕਟ ਕਰਨ ਅਤੇ ਸੰਬੰਧਿਤ ਸਥਿਤੀ ਨਿਰਧਾਰਿਤ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"ਸਾਰੀਆਂ ਸੂਚਨਾਵਾਂ ਪੜ੍ਹਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ, ਜਿਵੇਂ ਕਿ ਸੰਪਰਕਾਂ, ਸੁਨੇਹਿਆਂ ਅਤੇ ਫ਼ੋਟੋਆਂ ਦੀ ਜਾਣਕਾਰੀ"</string>
-    <string name="permission_notifications_summary" msgid="6819393427371255636">"• ਸਾਰੀਆਂ ਸੂਚਨਾਵਾਂ ਪੜ੍ਹਨ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ, ਜਿਵੇਂ ਕਿ ਸੰਪਰਕਾਂ, ਸੁਨੇਹਿਆਂ ਅਤੇ ਫ਼ੋਟੋਆਂ ਦੀ ਜਾਣਕਾਰੀ&lt;br/&gt;• ਤੁਹਾਨੂੰ ਸੂਚਨਾਵਾਂ ਭੇਜਣ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ&lt;br/&gt;&lt;br/&gt;ਤੁਸੀਂ ਸੈਟਿੰਗਾਂ &gt; ਸੂਚਨਾਵਾਂ ਵਿੱਚ ਜਾ ਕੇ ਕਿਸੇ ਵੀ ਵੇਲੇ ਸੂਚਨਾਵਾਂ ਨੂੰ ਪੜ੍ਹਨ ਅਤੇ ਭੇਜਣ ਦੀ ਇਸ ਐਪ ਦੀ ਯੋਗਤਾ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰ ਸਕਦੇ ਹੋ।"</string>
+    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
+    <skip />
     <string name="permission_storage_summary" msgid="3779040306012319942">"ਆਪਣੇ ਫ਼ੋਨ ਦੀਆਂ ਫ਼ੋਟੋਆਂ ਅਤੇ ਮੀਡੀਆ ਨੂੰ ਆਪਣੇ ਹੋਰ ਡੀਵਾਈਸਾਂ ਨਾਲ ਸਾਂਝਾ ਕਰੋ।"</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"ਤੁਹਾਨੂੰ ਸੂਚਨਾਵਾਂ ਭੇਜਣ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"ਆਪਣੇ ਡੀਵਾਈਸਾਂ ਨਾਲ ਐਪਾਂ ਸਮੇਤ ਆਪਣੇ ਫ਼ੋਨ ਦੀ ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕਰੋ। ਤੁਹਾਡੇ ਫ਼ੋਨ ਦੇ ਲਾਕ ਹੋਣ \'ਤੇ ਵੀ, ਤੁਹਾਡੇ ਡੀਵਾਈਸਾਂ ਕੋਲ ਆਡੀਓ, ਫ਼ੋਟੋਆਂ, ਭੁਗਤਾਨ ਜਾਣਕਾਰੀ, ਪਾਸਵਰਡ ਅਤੇ ਸੁਨੇਹਿਆਂ ਸਮੇਤ, ਤੁਹਾਡੇ ਫ਼ੋਨ \'ਤੇ ਦਿਖਣਯੋਗ ਕਿਸੇ ਵੀ ਚੀਜ਼ ਤੱਕ ਪਹੁੰਚ ਹੋਵੇਗੀ।&lt;br/&gt;&lt;br/&gt;ਸਪਰਸ਼ ਇਸ਼ਾਰਿਆਂ ਅਤੇ ਮਾਊਸ ਕਲਿੱਕਾਂ ਵਰਗੀਆਂ ਅੰਤਰਕਿਰਿਆਵਾਂ ਸਮੇਤ, ਆਪਣੇ ਡੀਵਾਈਸਾਂ ਤੋਂ ਮਾਈਕ੍ਰੋਫ਼ੋਨ, ਕੈਮਰਾ ਅਤੇ ਹੋਰ ਸੈਂਸਰ ਡਾਟਾ ਵਾਪਸ ਆਪਣੇ ਫ਼ੋਨ \'ਤੇ ਮੁਹੱਈਆ ਕਰਵਾਓ।"</string>
@@ -93,10 +93,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"ਆਪਣੇ <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> ਦੀ ਸਕ੍ਰੀਨ ਨੂੰ &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; \'ਤੇ ਰਿਕਾਰਡ, ਕਾਸਟ ਜਾਂ ਸਾਂਝਾ ਕਰੋ।&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> ਕੋਲ ਤੁਹਾਡੇ <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> \'ਤੇ ਦਿਖਾਈ ਦੇਣ ਵਾਲੀ ਜਾਂ ਚਲਾਈ ਜਾਣ ਵਾਲੀ ਹਰ ਚੀਜ਼ ਤੱਕ ਪਹੁੰਚ ਹੋਵੇਗੀ, ਜਿਸ ਵਿੱਚ ਆਡੀਓ, ਫ਼ੋਟੋਆਂ, ਭੁਗਤਾਨ ਜਾਣਕਾਰੀ, ਪਾਸਵਰਡ ਅਤੇ ਸੁਨੇਹੇ ਸ਼ਾਮਲ ਹਨ।"</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"ਆਪਣੇ <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> ਦੀਆਂ ਐਪਾਂ ਨੂੰ &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; \'ਤੇ ਸਟ੍ਰੀਮ ਕਰੋ।&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> ਕੋਲ <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> \'ਤੇ ਦਿਖਾਈ ਦੇਣ ਵਾਲੀ ਜਾਂ ਚਲਾਈ ਜਾਣ ਵਾਲੀ ਹਰ ਚੀਜ਼ ਤੱਕ ਪਹੁੰਚ ਹੋਵੇਗੀ, ਜਿਸ ਵਿੱਚ ਆਡੀਓ, ਫ਼ੋਟੋਆਂ, ਭੁਗਤਾਨ ਜਾਣਕਾਰੀ, ਪਾਸਵਰਡ ਅਤੇ ਸੁਨੇਹੇ ਸ਼ਾਮਲ ਹਨ, ਭਾਵੇਂ ਤੁਹਾਡਾ <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> ਲਾਕ ਹੋਵੇ।"</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"ਉਪਲਬਧ ਡੀਵਾਈਸਾਂ ਦੀ ਸੂਚੀ ਤੱਕ ਪਹੁੰਚ ਕਰੋ ਅਤੇ ਇਹ ਕੰਟਰੋਲ ਕਰੋ ਕਿ ਕਿਹੜਾ ਡੀਵਾਈਸ ਹੋਰ ਐਪਾਂ ਤੋਂ ਆਡੀਓ ਜਾਂ ਵੀਡੀਓ ਨੂੰ ਸਟ੍ਰੀਮ ਜਾਂ ਕਾਸਟ ਕਰ ਸਕਦਾ ਹੈ"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"ਤੁਹਾਨੂੰ ਅਲਰਟ ਭੇਜਿਆ ਜਾਂਦਾ ਹੈ"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"\'ਪਰੇਸ਼ਾਨ ਨਾ ਕਰੋ\' ਮੋਡ ਚਾਲੂ ਹੋਣ \'ਤੇ ਵੀ ਤੁਹਾਨੂੰ ਅਲਰਟ ਭੇਜਿਆ ਜਾਂਦਾ ਹੈ"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"ਫ਼ੋਨ"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"ਟੈਬਲੈੱਟ"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"ਟੀਵੀ"</string>

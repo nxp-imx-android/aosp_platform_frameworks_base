@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"cihaz"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Tətbiq zəng edənin adı kimi məlumatları telefon ilə seçilmiş cihaz arasında sinxronlaşdıracaq"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; tətbiqinə zəng edən şəxs haqqında məlumat kimi məlumatları sinxronlaşdırmaq və <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> cihazınızdakı smart əməliyyatları icra etmək icazəsi verin"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; tətbiqinə zəng edən şəxs haqqında məlumat kimi məlumatları sinxronlaşdırmaq və <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> cihazınızdakı smart əməliyyatları icra etmək icazəsi verin"</string>
     <string name="consent_yes" msgid="8344487259618762872">"İcazə verin"</string>
     <string name="consent_no" msgid="2640796915611404382">"İcazə verməyin"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Ləğv edin"</string>
@@ -85,7 +84,8 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Audionun qeydə alınması"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Yaxınlıqdakı cihazların tapılması, onlara qoşulmaq və nisbi mövqelərinin təyin edilməsi"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Kontakt, mesaj və foto kimi məlumatlar daxil olmaqla bütün bildirişlərin oxunması"</string>
-    <string name="permission_notifications_summary" msgid="6819393427371255636">"• Kontakt, mesaj və foto kimi məlumatlar daxil olmaqla bütün bildirişlərin oxunması&lt;br/&gt;• Sizə bildirişin göndərilməsi&lt;br/&gt;&lt;br/&gt;Bu tətbiqin bildirişləri oxumaq və göndərmək imkanını Ayarlar &gt; Bildirişlər bölməsində idarə edə bilərsiniz."</string>
+    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
+    <skip />
     <string name="permission_storage_summary" msgid="3779040306012319942">"Telefonunuzun foto və mediasını digər cihazlarınızla paylaşın."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Sizə bildirişin göndərilməsi"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Telefonun ekranını, o cümlədən tətbiqləri cihazlarınızla paylaşın. Telefon kilidli olsa belə, cihazlar audio, foto, ödəniş məlumatı, parol və mesajlar daxil olmaqla telefonda görünən hər şeyə giriş əldə edəcək.&lt;br/&gt;&lt;br/&gt;Toxunuş jestləri və maus klikləri kimi interaksiyalar da daxil olmaqla cihazlarınızdakı mikrofon, kamera və digər sensor datasını telefona qaytarın."</string>
@@ -93,10 +93,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> cihazının ekranını qeydə alın, yayımlayın və ya &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; cihazı ilə paylaşın.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> cihazınızda görünən və ya oxudulan hər elementə, o cümlədən audio, foto, ödəniş məlumatları, parollar və mesajlara giriş əldə edəcək."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> cihazının tətbiqlərini &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; cihazına yayımlayın.&lt;br/&gt;&lt;br/&gt;<xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> cihazı kilidli olsa belə, <xliff:g id="APP_NAME">%1$s</xliff:g> <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> cihazında görünən və ya oxudulan hər elementə, o cümlədən audio, foto, ödəniş məlumatları, parollar və mesajlara giriş əldə edəcək."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Əlçatan cihazların siyahısına daxil olun, digər tətbiqlərdən audio və ya video yayımlayacaq cihazı idarə edin"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Sizə xəbərdarlıq göndərilsin"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Narahat Etməyin rejimi aktiv olsa belə, sizə xəbərdarlıq göndərilsin"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telefonda"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"planşetdə"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"tv"</string>

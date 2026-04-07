@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"pajisje"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Ky aplikacion do të mund të sinkronizojë informacione, si p.sh emrin e dikujt që po telefonon, mes telefonit tënd dhe pajisjes së zgjedhur."</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Lejo që &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; të sinkronizojë informacionet si p.sh. informacionet e telefonuesit dhe të ekzekutojë veprimet inteligjente nga <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"Jepi &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; leje që të sinkronizojë informacionet, si p.sh. informacionet e telefonuesit, dhe të ekzekutojë veprimet inteligjente nga <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Lejo"</string>
     <string name="consent_no" msgid="2640796915611404382">"Mos lejo"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Anulo"</string>
@@ -85,7 +84,8 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Të regjistrojë audion"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Të gjejë, të lidhet dhe të përcaktojë pozicionin e përafërt të pajisjeve në afërsi"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Të lexojë të gjitha njoftimet, duke përfshirë informacione si kontaktet, mesazhet dhe fotografitë"</string>
-    <string name="permission_notifications_summary" msgid="6819393427371255636">"• Të lexojë të gjitha njoftimet, duke përfshirë informacione si kontaktet, mesazhet dhe fotografitë&lt;br/&gt;• Të të dërgojë njoftime&lt;br/&gt;&lt;br/&gt;Mund ta menaxhosh aftësinë e këtij aplikacioni që të lexojë dhe të dërgojë njoftime në çdo kohë te Cilësimet &gt; Njoftimet."</string>
+    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
+    <skip />
     <string name="permission_storage_summary" msgid="3779040306012319942">"Ndaj fotografitë dhe mediat e telefonit me pajisjet e tjera."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Të të dërgojë njoftime"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Ndaj ekranin e telefonit, duke përfshirë aplikacionet, në pajisjet e tua. Pajisjet e tua do të kenë qasje te çdo gjë që është e dukshme në telefonin tënd, duke përfshirë audion, fotografitë, informacionet për pagesën, fjalëkalimet dhe mesazhet, edhe kur telefoni yt është i kyçur.&lt;br/&gt;&lt;br/&gt;Ofro të dhënat e mikrofonit, kamerës dhe sensorëve të tjerë nga pajisjet e tua përsëri te telefoni yt, duke përfshirë ndërveprimet si gjestet me prekje dhe klikimet e miut."</string>
@@ -93,10 +93,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Regjistro, transmeto ose ndaj ekranin e <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> te &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> do të ketë qasje në çdo gjë që është e dukshme ose që luhet në <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, duke përfshirë audion, fotografitë, informacionet për pagesën, fjalëkalimet dhe mesazhet."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Transmeto aplikacionet e <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> në &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> do të ketë qasje te çdo gjë që është e dukshme ose që luhet në <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, duke përfshirë audion, fotografitë, informacionin për pagesën, fjalëkalimet dhe mesazhet, edhe kur <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> është kyçur."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Të qaset te një listë e pajisjeve të disponueshme dhe të kontrollojë se cila transmeton audion ose videon nga aplikacionet e tjera"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Të të dërgojë sinjalizime"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Të të dërgojë sinjalizime edhe kur modaliteti \"Mos shqetëso\" është aktiv"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telefon"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablet"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"televizori"</string>

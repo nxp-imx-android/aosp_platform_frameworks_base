@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"toestel"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Hierdie app sal inligting kan sinkroniseer, soos die naam van iemand wat bel, tussen jou foon en die gekose toestel"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Gee &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; toestemming om inligting soos bellerinligting te sinkroniseer en slimhandelinge vanaf jou <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> te laat loop"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"Gee &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; toestemming om inligting soos bellerinligting te sinkroniseer en slimhandelinge vanaf jou <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> te laat loop"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Laat toe"</string>
     <string name="consent_no" msgid="2640796915611404382">"Moenie toelaat nie"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Kanselleer"</string>
@@ -85,7 +84,8 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Neem oudio op"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Vind, koppel aan en bepaal die relatiewe posisie van toestelle in die omtrek"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Lees alle kennisgewings, insluitend inligting soos kontakte, boodskappe en foto’s"</string>
-    <string name="permission_notifications_summary" msgid="6819393427371255636">"• Lees alle kennisgewings, insluitend inligting soos kontakte, boodskappe en foto\'s&lt;br/&gt;• Stuur vir jou kennisgewings&lt;br/&gt;&lt;br/&gt;Jy kan hierdie app se vermoë om kennisgewings te lees en stuur enige tyd in Instellings &gt; Kennisgewings bestuur."</string>
+    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
+    <skip />
     <string name="permission_storage_summary" msgid="3779040306012319942">"Deel jou foon se foto’s en media met jou ander toestelle."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Stuur vir jou kennisgewings"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Deel jou foon se skerm, insluitend apps, na jou toestelle. Jou toestelle sal toegang hê tot enigiets wat op jou foon sigbaar is, insluitend oudio, foto’s, betaalinligting, wagwoorde en boodskappe, selfs wanneer jou foon gesluit is.&lt;br/&gt;&lt;br/&gt;Verskaf mikrofoon-, kamera- en ander sensordata vanaf jou toestelle terug na jou foon toe, insluitend interaksies soos raakgebare en muisklikke."</string>
@@ -93,10 +93,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Neem op, saai uit of deel jou <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> se skerm na &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> sal tot enigiets wat sigbaar of gespeel is op jou <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> toegang hê, insluitend oudio, foto\'s, betalingsinligting, wagwoorde en boodskappe."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Stroom jou <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> se apps na &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> sal tot enigiets wat sigbaar of gespeel is op jou <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> toegang hê, insluitend oudio, foto\'s, betalingsinligting, wagwoorde en boodskappe, selfs wanneer jou <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> gesluit is."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Kry toegang tot ’n lys beskikbare toestelle en beheer watter een oudio of video van ander apps af stroom of uitsaai"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Stuur vir jou opletberigte"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Stuur vir jou opletberigte selfs wanneer Moenie Steur Nie-modus aan is"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"foon"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablet"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"tv"</string>

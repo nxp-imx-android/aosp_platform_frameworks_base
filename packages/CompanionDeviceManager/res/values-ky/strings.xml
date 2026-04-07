@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"түзмөк"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Бул колдонмо маалыматты шайкештире алат, мисалы, чалып жаткан кишинин атын телефон жана тандалган түзмөк менен шайкештирет"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; түзмөгүнө чалуучунун маалыматы сыяктуу нерселерди шайкештирип, <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> түзмөгүңүздө акылдуу аракеттерди аткарууга уруксат бериңиз"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; түзмөгүнө абоненттин маалыматы сыяктуу нерселерди шайкештирип, <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> түзмөгүңүздө акылдуу аракеттерди аткарууга уруксат бериңиз"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Ооба"</string>
     <string name="consent_no" msgid="2640796915611404382">"Уруксат берилбесин"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Жок"</string>
@@ -85,7 +84,8 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Аудио жаздыруу"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Жакын жердеги түзмөктөрдү таап, аларга туташып, абалын аныктоо"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Бардык билдирмелерди, анын ичинде байланыштар, билдирүүлөр жана сүрөттөр сыяктуу маалыматты окуу"</string>
-    <string name="permission_notifications_summary" msgid="6819393427371255636">"• Бардык билдирмелерди, анын ичинде байланыштар, билдирүүлөр жана сүрөттөр сыяктуу маалыматты окуу&lt;br/&gt;• Билдирмелерди жөнөтүү&lt;br/&gt;&lt;br/&gt;Бул колдонмонун билдирмелерди окуу жана жөнөтүү мүмкүнчүлүгүн каалаган убакта Параметрлер &gt; Билдирмелер бөлүмүнөн тескей аласыз."</string>
+    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
+    <skip />
     <string name="permission_storage_summary" msgid="3779040306012319942">"Телефонуңуздагы сүрөттөрдү жана медиа файлдарды башка түзмөктөрүңүз менен бөлүшүңүз."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Билдирмелериңизди жөнөтүү"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Башка түзмөктөргө телефонуңуздун экранын жана колдонмолордогу нерселерди чыгарыңыз. Түзмөктөр телефонуңуздагы аудио, сүрөттөр, сырсөздөр, төлөм маалыматы жана билдирүүлөр сыяктуу нерселерди көрө алышат.&lt;br/&gt;&lt;br/&gt;Түзмөктөрдөгү микрофон, камера жана башка сенсорлордун маалыматын, ошондой эле тийүүлөр жана чычканды басуулар сыяктуу аракеттерди телефонуңузга жөнөтөсүз."</string>
@@ -93,10 +93,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> экранын &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>\\&lt;/strong&gt; түзмөгүнө жаздырып, тышкы экранга чыгарып же аны менен бөлүшүңүз.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> колдонмосу <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> түзмөгүңүздө көрүнгөн же ойнотулган бардык нерселерге, анын ичинде аудио, сүрөттөр, төлөм маалыматы, сырсөздөр жана билдирүүлөргө кире алат."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> колдонмолорун &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; түзмөгүнө алып ойнотуңуз.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> колдонмосу <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> түзмөгүндө көрүнгөн же ойнотулган бардык нерселерге, анын ичинде аудио, сүрөттөр, төлөм маалыматы, сырсөздөр жана билдирүүлөргө <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> кулпуланып турса да, кире алат."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Жеткиликтүү түзмөктөрдүн тизмесине кирип, кайсынысы башка колдонмолордон аудио же видеону алып ойнотуп же тышкы экранга чыгара турганын көзөмөлдөңүз"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Эскертүүлөрдү жөнөтүү"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"\"Тынчымды алба\" режими күйүп турса да, сизге эскертүүлөрдү жөнөтөт"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"телефон"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"планшет"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"сыналгы"</string>

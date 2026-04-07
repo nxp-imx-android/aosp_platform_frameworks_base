@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"ierīce"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Šī lietotne varēs sinhronizēt informāciju (piemēram, zvanītāja vārdu) starp jūsu tālruni un izvēlēto ierīci"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Vai atļaut ierīcei &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; sinhronizēt informāciju, piemēram, zvanītāja informāciju, un veikt viedās darbības no jūsu ierīces (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>)?"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"Piešķiriet atļauju ierīcei &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; sinhronizēt informāciju, piemēram, zvanītāja informāciju, un veikt viedās darbības no jūsu ierīces (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>)"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Atļaut"</string>
     <string name="consent_no" msgid="2640796915611404382">"Neatļaut"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Atcelt"</string>
@@ -85,7 +84,8 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Ierakstīt audio"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Atrast tuvumā esošas ierīces, izveidot ar tām savienojumu un noteikt to relatīvo atrašanās vietu"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Lasīt visus paziņojumus, tostarp tādu informāciju kā kontaktpersonas, ziņojumi un fotoattēli"</string>
-    <string name="permission_notifications_summary" msgid="6819393427371255636">"• Lasīt visus paziņojumus, tostarp tādu informāciju kā kontaktpersonas, ziņojumi un fotoattēli&lt;br/&gt;• Sūtīt jums paziņojumus&lt;br/&gt;&lt;br/&gt;Jebkurā brīdī sadaļā “Iestatījumi un paziņojumi” varat pārvaldīt šīs lietotnes atļauju lasīt un sūtīt paziņojumus."</string>
+    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
+    <skip />
     <string name="permission_storage_summary" msgid="3779040306012319942">"Kopīgojiet tālruņa fotoattēlus un multivides saturu ar citām savām ierīcēm."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Paziņojumu nosūtīšana sev"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Kopīgojiet tālruņa ekrānu, tostarp lietotnes, ar savām ierīcēm. Jūsu ierīcēm būs piekļuve visam saturam, kas ir redzams jūsu tālrunī, tostarp audio, fotoattēliem, maksājuma informācijai, parolēm un ziņojumiem, pat ja tālrunis ir bloķēts.&lt;br/&gt;&lt;br/&gt;Ierīces varēs tālrunim nodrošināt mikrofona, kameras un citu sensoru datus, tostarp mijiedarbības, piemēram, skāriena žestus un peles klikšķus."</string>
@@ -93,10 +93,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Ierakstiet, apraidiet vai kopīgojiet savas ierīces (<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>) ekrānu ar ierīci &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Lietotne <xliff:g id="APP_NAME">%1$s</xliff:g> varēs piekļūt visam jūsu ierīces (<xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>) ekrānā redzamajam vai atskaņotajam saturam, tostarp audio, fotoattēliem, maksājumu informācijai, parolēm un ziņojumiem."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Straumējiet savas ierīces (<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>) lietotnes uz ierīci &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Lietotne <xliff:g id="APP_NAME">%1$s</xliff:g> varēs piekļūt visam jūsu ierīces (<xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>), ekrānā redzamajam vai atskaņotajam saturam, tostarp audio, fotoattēliem, maksājumu informācijai, parolēm un ziņojumiem arī tad, kad jūsu ierīce (<xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g>) būs bloķēta."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Piekļuve pieejamo ierīču sarakstam un iespēja kontrolēt, kura ierīce straumē vai apraida audio vai video no citām lietotnēm"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Sūtīt jums brīdinājumus"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Sūtīt jums brīdinājumus pat tad, ja ir ieslēgts režīms “Netraucēt”"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"tālrunī"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"planšetdatorā"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"televizora"</string>

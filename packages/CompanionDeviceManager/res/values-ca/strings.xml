@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"dispositiu"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Aquesta aplicació podrà sincronitzar informació, com ara el nom d\'algú que truca, entre el teu telèfon i el dispositiu triat"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Permet que &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; sincronitzi informació, com ara de les persones que truquen, i que dugui a terme accions intel·ligents des del teu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"Dona permisos a &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; perquè sincronitzi informació, com ara de les persones que truquen, i que dugui a terme accions intel·ligents des del teu <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Permet"</string>
     <string name="consent_no" msgid="2640796915611404382">"No permetis"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Cancel·la"</string>
@@ -85,7 +84,8 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Gravar àudio"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Determinar la posició relativa dels dispositius propers, trobar-los i connectar-s\'hi"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Llegir totes les notificacions, inclosa informació com ara els contactes, els missatges i les fotos"</string>
-    <string name="permission_notifications_summary" msgid="6819393427371255636">"• Llegir totes les notificacions, inclosa informació com ara els contactes, els missatges i les fotos.&lt;br/&gt;• Enviar-te notificacions.&lt;br/&gt;&lt;br/&gt;A Configuració &gt; Notificacions, pots gestionar en qualsevol moment els permisos de l\'aplicació per llegir i enviar notificacions."</string>
+    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
+    <skip />
     <string name="permission_storage_summary" msgid="3779040306012319942">"Comparteix les fotos i el contingut multimèdia del telèfon amb els altres dispositius."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Rebre notificacions"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Comparteix la pantalla del telèfon, incloses les aplicacions, amb els teus dispositius. Tindran accés a tot el que sigui visible al telèfon, incloent-hi l\'àudio, les fotos, la informació de pagament, les contrasenyes i els missatges, fins i tot quan el telèfon estigui bloquejat.&lt;br/&gt;&lt;br/&gt;Proporciona dades del micròfon, de la càmera i d\'altres sensors dels teus dispositius al telèfon, incloses interaccions com ara gestos tàctils i clics de ratolí."</string>
@@ -93,10 +93,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Grava, emet o comparteix la pantalla del teu <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> a &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> podrà accedir a qualsevol cosa que sigui visible o que es reprodueixi al teu <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, inclosos àudio, fotos, informació de pagament, contrasenyes i missatges."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Reprodueix en continu les aplicacions del teu dispositiu (<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>) a &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> podrà accedir a qualsevol cosa que sigui visible o que es reprodueixi al teu dispositiu <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, inclosos àudio, fotos, informació de pagament, contrasenyes i missatges, fins i tot quan el dispositiu (<xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g>) està bloquejat."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Accedeix a una llista de dispositius disponibles i controla quin reprodueix o emet àudio o vídeo des d\'altres aplicacions"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Enviar-te alertes"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Enviar-te alertes fins i tot quan el mode No molestis està activat"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telèfon"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tauleta"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"televisor"</string>

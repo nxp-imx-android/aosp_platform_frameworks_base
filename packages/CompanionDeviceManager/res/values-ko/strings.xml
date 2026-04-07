@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"기기"</string>
     <string name="summary_generic" msgid="1761976003668044801">"이 앱에서 휴대전화와 선택한 기기 간에 정보(예: 발신자 이름)를 동기화할 수 있게 됩니다."</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; 기기가 <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>에서 발신자 정보와 같은 정보를 동기화하고 스마트 작업을 실행하도록 허용합니다."</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt;에 사용자의 <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>에서 발신자 정보와 같은 정보를 동기화하고 스마트 작업을 실행할 수 있는 권한을 부여합니다."</string>
     <string name="consent_yes" msgid="8344487259618762872">"허용"</string>
     <string name="consent_no" msgid="2640796915611404382">"허용 안함"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"취소"</string>
@@ -85,7 +84,8 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"오디오 녹음"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"근처 기기를 찾아 연결하고 기기 간 상대 위치를 파악할 수 있습니다."</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"연락처, 메시지, 사진 등의 정보를 포함한 모든 알림을 읽을 수 있습니다."</string>
-    <string name="permission_notifications_summary" msgid="6819393427371255636">"• 연락처, 메시지, 사진 등의 정보를 비롯해 모든 알림을 읽습니다.&lt;br/&gt;• 나에게 알림을 보냅니다.&lt;br/&gt;&lt;br/&gt;언제든지 \'설정 &gt; 알림\'에서 앱이 알림을 읽고 전송할 수 있는 권한을 관리할 수 있습니다."</string>
+    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
+    <skip />
     <string name="permission_storage_summary" msgid="3779040306012319942">"휴대전화의 사진과 미디어를 다른 기기와 공유합니다."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"나에게 알림을 보냅니다."</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"앱을 포함한 휴대전화 화면을 기기에 공유합니다. 휴대전화가 잠겨 있을 때도 기기에서 오디오, 사진, 결제 정보, 비밀번호, 메시지 등 휴대전화에 표시되는 모든 항목에 액세스할 수 있습니다.&lt;br/&gt;&lt;br/&gt;터치 동작, 마우스 클릭과 같은 상호작용을 포함하여 기기의 마이크, 카메라, 기타 센서 데이터를 휴대전화로 다시 전송합니다."</string>
@@ -93,10 +93,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>의 화면을 &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; 기기로 녹화하거나, 전송하거나, 공유합니다.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>에서 오디오, 사진, 결제 정보, 비밀번호, 메시지 등 <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>에 표시되거나 해당 기기에서 재생되는 모든 항목에 액세스할 수 있습니다."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>의 앱을 &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; 기기로 스트리밍합니다.&lt;br/&gt;&lt;br/&gt;<xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> 기기가 잠겨 있어도 <xliff:g id="APP_NAME">%1$s</xliff:g>에서 오디오, 사진, 결제 정보, 비밀번호, 메시지 등 <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>에 표시되거나 해당 기기에서 재생되는 모든 항목에 액세스할 수 있습니다."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"사용할 수 있는 기기 목록에 액세스하고, 다른 앱에서 오디오 또는 동영상을 스트리밍하거나 전송할 기기를 제어합니다."</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"알림 전송"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"방해 금지 모드가 사용 설정되어 있어도 알림을 보냅니다."</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"스마트폰"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"태블릿"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"TV"</string>

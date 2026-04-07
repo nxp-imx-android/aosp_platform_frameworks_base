@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"device"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Magagawa ng app na ito na mag-sync ng impormasyon, tulad ng pangalan ng taong tumatawag, sa pagitan ng telepono mo at ng napiling device"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Payagan ang &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; na mag-sync ng impormasyon gaya ng impormasyon ng tumatawag at magpagana ng mga smart action mula sa iyong <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"Bigyan ang &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; ng pahintulot na mag-sync ng impormasyon gaya ng impormasyon ng tumatawag at magpagana ng mga smart action mula sa iyong <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Payagan"</string>
     <string name="consent_no" msgid="2640796915611404382">"Huwag payagan"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Kanselahin"</string>
@@ -85,7 +84,8 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Mag-record ng audio"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Maghanap ng, kumonekta sa, at tukuyin ang relatibong posisyon ng mga kalapit na device"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Basahin ang lahat ng notification, kabilang ang impormasyon tulad ng mga contact, mensahe, at larawan"</string>
-    <string name="permission_notifications_summary" msgid="6819393427371255636">"• Basahin ang lahat ng notification, kabilang ang impormasyon tulad ng mga contact, mensahe, at larawan&lt;br/&gt;• Padalhan ka ng mga notification&lt;br/&gt;&lt;br/&gt;Puwede mong pamahalaan ang kakayahan ng app na ito na magbasa at magpadala ng mga notification kahit kailan sa Mga Setting &gt; Mga Notification."</string>
+    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
+    <skip />
     <string name="permission_storage_summary" msgid="3779040306012319942">"I-share ang mga larawan at media ng iyong telepono sa iba mo pang device."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Padalhan ka ng mga notification"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"I-share ang screen ng iyong telepono, kasama ang mga app, sa mga device mo. Magkakaroon ng access ang iyong mga device sa anumang nakikita sa telepono mo, kasama ang audio, mga larawan, impormasyon sa pagbabayad, mga password, at mga mensahe, kahit naka-lock ang iyong telepono.&lt;br/&gt;&lt;br/&gt;Ibigay sa telepono mo ang data ng mikropono, camera, at iba pang sensor mula sa iyong mga device, kasama ang mga interaction tulad ng mga galaw ng pagpindot at pag-click ng mouse."</string>
@@ -93,10 +93,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"I-record, i-cast, o i-share ang screen ng iyong <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> sa &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Magkakaroon ng access ang <xliff:g id="APP_NAME">%1$s</xliff:g> sa anumang nakikita o nagpe-play sa <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> mo, kasama ang audio, mga larawan, impormasyon sa pagbabayad, mga password, at mga mensahe."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"I-stream ang mga app ng iyong <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> sa &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Magkakaroon ng access ang <xliff:g id="APP_NAME">%1$s</xliff:g> sa anumang nakikita o nagpe-play sa <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, kasama ang audio, mga larawan, impormasyon sa pagbabayad, mga password, at mga mensahe, kahit kapag naka-lock ang <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> mo."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"I-access ang listahan ng mga available na device at kontrolin kung alin ang magsi-stream o magka-cast ng audio o video mula sa iba pang app"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Padalhan ka ng mga alerto"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Padalhan ka ng mga alerto kahit naka-on ang mode na Huwag Istorbohin"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telepono"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablet"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"tv"</string>
