@@ -957,11 +957,6 @@ private:
     struct PollStatus {
         bool running = true;
         bool anyRed = false;
-
-        void reset() {
-            running = true;
-            anyRed = false;
-        }
     };
 
     // The main monitoring loop.
@@ -1010,7 +1005,6 @@ private:
             } else {
                 timeout = PID_POLL_PERIOD_MS;
             }
-            status.reset();
         }
 
         mVm->DetachCurrentThread();
@@ -1022,6 +1016,7 @@ private:
     void handle_timeout(PollStatus& status) {
         std::vector<Process> red;
         int count = 0;
+        status.anyRed = false;
         {
             const std::lock_guard _l(mLock);
             for (auto i = mTargets.begin(); i != mTargets.end();) {
