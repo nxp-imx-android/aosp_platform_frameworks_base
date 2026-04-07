@@ -437,7 +437,7 @@
     <string name="permdesc_receiveWapPush" msgid="1638677888301778457">"Permite que la aplicación reciba y procese mensajes WAP, lo que significa que podría controlar o eliminar mensajes enviados al usuario sin mostrártelos."</string>
     <string name="permlab_getTasks" msgid="7460048811831750262">"recuperar aplicaciones en ejecución"</string>
     <string name="permdesc_getTasks" msgid="7388138607018233726">"Permite que la aplicación recupere información sobre las tareas que se estén ejecutando en ese momento o que se hayan ejecutado recientemente. La aplicación puede utilizar este permiso para descubrir cuáles son las aplicaciones que se utilizan en el dispositivo."</string>
-    <string name="permlab_manageProfileAndDeviceOwners" msgid="639849495253987493">"administrar perfiles de propietarios y propietario del dispositivo"</string>
+    <string name="permlab_manageProfileAndDeviceOwners" msgid="639849495253987493">"administrar propietarios del perfil y del dispositivo"</string>
     <string name="permdesc_manageProfileAndDeviceOwners" msgid="7304240671781989283">"Permite que las aplicaciones configuren los perfiles de propietarios y el propietario del dispositivo."</string>
     <string name="permlab_reorderTasks" msgid="7598562301992923804">"reorganizar aplicaciones en ejecución"</string>
     <string name="permdesc_reorderTasks" msgid="8796089937352344183">"Permite que la aplicación mueva tareas a segundo o a primer plano. La aplicación puede utilizar este permiso para realizar estos movimientos sin indicártelo."</string>
@@ -1091,6 +1091,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Vuelve a intentarlo."</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Volver a intentarlo"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Haz clic para desbloquear"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"Presiona Intro para desbloquear"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Presiona cualquier tecla para desbloquear"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Desbloquea para acceder a funciones y datos"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Se superó el máximo de intentos permitido para el desbloqueo facial del dispositivo."</string>
@@ -2705,15 +2706,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Presiona para revisar las sugerencias para mejorar la experiencia de desbloqueo"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Sin parpadeo"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Mantén presionado el botón de encendido para apagar la TV"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Alertas de recursos del sistema"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Uso excesivo de recursos"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"Se inhabilitó la app \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" debido al uso excesivo de recursos. Puedes volver a habilitarla desde el menú Aplicaciones en Configuración."</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Actualización de tu madre o padre"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"Por el momento, se quitó <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> ya está disponible"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Transmitir a otros"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
-    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"divisor arrastrable"</string>
+    <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"La app superior controla el brillo, por lo que no se puede ajustar"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"Sincronización en modo avión"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"Modo avión"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"El modo avión ahora se sincronizará en tu teléfono y reloj.\n\nAdministra las preferencias de sincronización de modos en la configuración de tu reloj y teléfono."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"Administrar configuración"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"Sincronización de No interrumpir"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"No interrumpir"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"Se sincronizó desde tu dispositivo cercano"</string>
 </resources>

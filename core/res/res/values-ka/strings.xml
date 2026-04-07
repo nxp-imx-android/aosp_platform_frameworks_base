@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"კიდევ სცადეთ"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"კიდევ სცადეთ"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"დააწკაპუნეთ განსაბლოკად"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"განსაბლოკად დააჭირეთ შეყვანის კლავიშს"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"განსაბლოკად დააჭირეთ ნებისმიერ კლავიშს"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"ყველა ფუნქციისა და მონაცემის განბლოკვა"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"სახით განბლოკვის მცდელობამ დაშვებულ რაოდენობას გადააჭარბა"</string>
@@ -2704,14 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"შეეხეთ, რომ მიმოიხილოთ მინიშნებები თქვენი განბლოკვის გამოცდილების გასაუმჯობესებლად"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"არ იციმციმოს"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"ტელევიზორის გამოსართავად ხანგრძლივად დააჭირეთ ჩართვის ღილაკს"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"სისტემის რესურსების გაფრთხილებები"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"რესურსების გადაჭარბებული გამოყენება"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"აპი „<xliff:g id="APP_NAME">%1$s</xliff:g> გათიშულია რესურსების გადაჭარბებული გამოყენების გამო. მისი ხელახლა ჩართვა შეგიძლიათ პარამეტრებში, აპების მენიუდან.“"</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"განახლება თქვენი მშობლისგან"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> ამოიშალა დროებით"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> ახლა ხელმისაწვდომია"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"სხვებისთვის ტრანსლირება"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"ჩასავლები გამყოფი"</string>
     <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"სიკაშკაშის კორექტირება ვერ ხერხდება, რადგან ის იმართება ზედა აპის მიერ"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"თვითმფრინავის რეჟიმის სინქრონიზაცია"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"თვითმფრინავის რეჟიმი"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"თვითმფრინავის რეჟიმი ახლა სინქრონიზდება თქვენს ტელეფონსა და საათს შორის.\n\nმართეთ რეჟიმის სინქრონიზაციის პარამეტრები თქვენი საათისა და ტელეფონის პარამეტრებში."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"პარამეტრების მართვა"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"„არ შემაწუხოთ“ რეჟიმის სინქრონიზაცია"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"არ შემაწუხოთ"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"სინქრონიზებულია თქვენი ახლომახლო მოწყობილობიდან"</string>
 </resources>

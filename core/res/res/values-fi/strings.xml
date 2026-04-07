@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Yritä uudelleen"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Yritä uudelleen"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Avaa lukitus klikkaamalla"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"Avaa painamalla Enter"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Avaa lukitus painamalla mitä tahansa näppäintä"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Käytä kaikkia ominaisuuksia avaamalla lukitus."</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Kasvojentunnistusavauksen yrityksiä tehty suurin sallittu määrä."</string>
@@ -2184,7 +2185,7 @@
     <string name="work_mode_off_title" msgid="6367463960165135829">"Laita työsovellukset päälle?"</string>
     <string name="work_mode_turn_on" msgid="5316648862401307800">"Laita päälle"</string>
     <string name="work_mode_emergency_call_button" msgid="6818855962881612322">"Hätätilanne"</string>
-    <string name="set_up_screen_lock_title" msgid="8346083801616474030">"Valitse näytön lukitus"</string>
+    <string name="set_up_screen_lock_title" msgid="8346083801616474030">"Näytön lukituksen valinta"</string>
     <string name="set_up_screen_lock_action_label" msgid="2687634803649209367">"Valitse näytön lukitus"</string>
     <string name="private_space_set_up_screen_lock_message" msgid="1109956797005149814">"Jos haluat käyttää yksityistä tilaa, valitse laitteelle näytön lukitus"</string>
     <string name="private_space_set_up_screen_lock_for_reset" msgid="7817091386408432097">"Jos haluat poistaa yksityisen tilan, lisää laitteelle näytön lukitus"</string>
@@ -2704,15 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Katso napauttamalla vinkkejä lukituksen avaamiseen"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Lopeta vilkkuminen"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Sammuta TV painamalla virtapainiketta pitkään"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Järjestelmäresurssien ilmoitukset"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Resurssien liikakäyttö"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"Sovellus \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" on poistettu käytöstä liiallisen resurssien käytön vuoksi. Voit ottaa sen uudelleen käyttöön asetusten Sovellukset-valikosta.\""</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Päivitys vanhemmalta"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> poistettiin toistaiseksi"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> on nyt saatavilla"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Striimaa muille"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
-    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"vedettävä jakaja"</string>
+    <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"Kirkkautta ei voi säätää, koska ensisijainen sovellus ohjaa sitä"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"Synkronointi lentokonetilassa"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"Lentokonetila"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"Lentokonetila synkronoidaan nyt puhelimen ja kellon välillä.\n\nVoit muuttaa tilojen synkronointiasetuksia kellon ja puhelimen asetuksista."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"Muuta asetuksia"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"Älä häiritse ‑tilan synkronointi"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"Älä häiritse"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"Synkronoitu lähellä olevasta laitteesta"</string>
 </resources>

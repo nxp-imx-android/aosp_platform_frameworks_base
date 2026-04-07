@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Prøv på nytt"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Prøv på nytt"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Klikk for å låse opp"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"Trykk på Enter for å låse opp"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Trykk på en tast for å låse opp"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Lås opp for å få alle funksjoner og data"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Du har overskredet grensen for opplåsingsforsøk med Ansiktslås"</string>
@@ -2704,15 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Trykk for å se tips om hvordan du kan forbedre opplåsingsopplevelsen"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Ikke blink"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Trykk lenge på av/på-knappen for å slå av TV-en"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Varsler om systemressurser"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Overforbruk av ressurser"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"Appen «<xliff:g id="APP_NAME">%1$s</xliff:g>» er deaktivert på grunn av for høy ressursbruk. Du kan slå den på igjen i Apper-menyen i innstillingene."</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Oppdatering fra forelderen din"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> er fjernet inntil videre"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"Nå er <xliff:g id="APP_NAME">%1$s</xliff:g> tilgjengelig"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Cast til andre"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
-    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"dra-aktivert skillelinje"</string>
+    <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"Kan ikke justere lysstyrken, fordi den kontrolleres av den øvre appen"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"Synkronisering i flymodus"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"Flymodus"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"Nå synkroniseres flymodus mellom telefonen og klokken.\n\nAdministrer preferanser for modussynkronisering i innstillingene på klokken og telefonen."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"Administrer innstillinger"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"Synkronisering av Ikke forstyrr"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"Ikke forstyrr"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"Synkronisert fra enheten i nærheten"</string>
 </resources>

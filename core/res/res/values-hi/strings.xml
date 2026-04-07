@@ -84,7 +84,7 @@
     <string name="page_size_compat_apk_and_elf_not_aligned" msgid="7140216083697701972">"&amp;#8226; %1$s : लोड सेगमेंट और कंप्रेस नहीं की गई लाइब्रेरी एक-दूसरे से अलाइन नहीं हैं&lt;br&gt;"</string>
     <string name="page_size_compat_unknown" msgid="5183026525148169891">"&amp;#8226; %1$s : ऐसी गड़बड़ी जिसके बारे में जानकारी नहीं है&lt;br&gt;"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"सेवा प्रावधान की हुई नहीं है."</string>
-    <string name="CLIRPermanent" msgid="166443681876381118">"आप कॉलर आईडी सेटिंग नहीं बदल सकते."</string>
+    <string name="CLIRPermanent" msgid="166443681876381118">"कॉलर आईडी की सेटिंग बदली नहीं जा सकती."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"डेटा को <xliff:g id="CARRIERDISPLAY">%s</xliff:g> पर स्विच किया गया"</string>
     <string name="auto_data_switch_content" msgid="803557715007110959">"सेटिंग में जाकर, इसे कभी भी बंद किया जा सकता है"</string>
     <string name="RestrictedOnDataTitle" msgid="1500576417268169774">"मोबाइल डेटा सेवा पर रोक लगा दी गई है"</string>
@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"फिर से कोशिश करें"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"फिर से कोशिश करें"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"डिवाइस अनलॉक करने के लिए क्लिक करें"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"अनलॉक करने के लिए Enter दबाएं"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"डिवाइस अनलॉक करने के लिए कोई भी बटन दबाएं"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"सभी सुविधाओं और डेटा के लिए अनलॉक करें"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"मालिक का चेहरा पहचानकर अनलॉक करने की तय सीमा खत्म हो गई"</string>
@@ -2704,15 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"डिवाइस को अनलॉक करने का अनुभव बेहतर बनाने की सलाह देखने के लिए टैप करें"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"कर्सर ब्लिंक करने की सेटिंग बंद करें"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"टीवी बंद करने के लिए पावर बटन को दबाकर रखें"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"सिस्टम के संसाधन से जुड़ी सूचनाएं"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"संसाधन का ज़्यादा इस्तेमाल"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"बहुत ज़्यादा रिसॉर्स इस्तेमाल होने की वजह से <xliff:g id="APP_NAME">%1$s</xliff:g> ऐप्लिकेशन को बंद कर दिया गया है. \'सेटिंग\' में मौजूद ऐप्लिकेशन मेन्यू में जाकर, इसे फिर से चालू किया जा सकता है."</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"माता-पिता की ओर से किया गया अपडेट"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> को फ़िलहाल हटा दिया गया है"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> अब उपलब्ध है"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"अन्य डिवाइसों पर कास्ट करें"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
-    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"खींचने और छोड़ने लायक डिवाइडर"</string>
+    <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"स्क्रीन की रोशनी को अडजस्ट नहीं किया जा सकता, क्योंकि इसे टॉप ऐप्लिकेशन कंट्रोल कर रहा है"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"फ़्लाइट मोड में डेटा सिंक करने की सुविधा"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"फ़्लाइट मोड"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"फ़्लाइट मोड अब आपके फ़ोन और स्मार्टवॉच पर सिंक हो जाएगा.\n\nमोड सिंक करने की सेटिंग को अपनी स्मार्टवॉच और फ़ोन की सेटिंग में जाकर मैनेज करें."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"सेटिंग मैनेज करें"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"\'परेशान न करें\' मोड को सिंक करने की सुविधा"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"परेशान न करें"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"आस-पास मौजूद डिवाइस के साथ सिंक किया गया"</string>
 </resources>

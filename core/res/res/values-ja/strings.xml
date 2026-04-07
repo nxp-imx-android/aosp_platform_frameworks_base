@@ -365,7 +365,7 @@
     <string name="permgrouplab_nearby_devices" msgid="5529147543651181991">"付近のデバイス"</string>
     <string name="permgroupdesc_nearby_devices" msgid="3213561597116913508">"付近のデバイスの検出と接⁠続"</string>
     <string name="permgrouplab_calllog" msgid="7926834372073550288">"通話履歴"</string>
-    <string name="permgroupdesc_calllog" msgid="2026996642917801803">"通話履歴の読み取りと書き込み"</string>
+    <string name="permgroupdesc_calllog" msgid="2026996642917801803">"通話履歴の読み取りと書⁠き⁠込⁠み"</string>
     <string name="permgrouplab_phone" msgid="570318944091926620">"電話"</string>
     <string name="permgroupdesc_phone" msgid="270048070781478204">"電話の発信と管理"</string>
     <string name="permgrouplab_sensors" msgid="9134046949784064495">"ボディセンサー"</string>
@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"もう一度お試しください"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"もう一度お試しください"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"クリックしてロックを解除"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"ロック解除するには Enter キーを押します"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"いずれかのキーを押してロックを解除"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"すべての機能とデータを利用するにはロック解除"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"顔認証の最大試行回数を超えました"</string>
@@ -2704,15 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"タップして、ロック解除の操作を改善するためのヒントをご確認ください"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"点滅なし"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"テレビの電源を切るには電源ボタンを長押しします"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"システム リソースのアラート"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"リソースの過剰使用"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"「<xliff:g id="APP_NAME">%1$s</xliff:g>」アプリは、リソースを過剰に使用したため無効になりました。[設定] の [アプリ] メニューから再度有効にできます。"</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"保護者の方による更新"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> は削除されました"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> が利用可能になりました"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"他にキャスト"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
-    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"ドラッグ可能な分割線"</string>
+    <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"明るさはトップ アプリによって制御されているため、調整できません"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"機内モードの同期"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"機内モード"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"機内モードがスマートフォンとスマートウォッチの間で同期されるようになりました。\n\nモードの同期設定は、スマートウォッチとスマートフォンの設定で管理できます。"</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"設定を管理"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"サイレント モードの同期"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"サイレント モード"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"付近のデバイスから同期しました"</string>
 </resources>

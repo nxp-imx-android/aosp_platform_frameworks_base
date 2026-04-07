@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"ಅನ್‌ಲಾಕ್ ಮಾಡಲು ಕ್ಲಿಕ್ ಮಾಡಿ"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"ಅನ್‌ಲಾಕ್ ಮಾಡಲು Enter ಅನ್ನು ಒತ್ತಿ"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"ಅನ್‌ಲಾಕ್ ಮಾಡಲು ಯಾವುದೇ ಕೀಯನ್ನು ಒತ್ತಿರಿ"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"ಎಲ್ಲ ಫೀಚರ್‌ಗಳು ಮತ್ತು ಡೇಟಾಗೆ ಅನ್‌ಲಾಕ್ ಮಾಡಿ"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"ಗರಿಷ್ಠ ಫೇಸ್ ಅನ್‍ಲಾಕ್ ಪ್ರಯತ್ನಗಳು ಮೀರಿವೆ"</string>
@@ -2704,14 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"ನಿಮ್ಮ ಅನ್‌ಲಾಕ್ ಮಾಡುವಿಕೆ ಅನುಭವವನ್ನು ಸುಧಾರಿಸಲು ಸಲಹೆಗಳನ್ನು ಪರಿಶೀಲಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"ಬ್ಲಿಂಕ್ ಮಾಡಬೇಡಿ"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"ಟಿವಿ ಆಫ್ ಮಾಡಲು ಪವರ್ ಬಟನ್ ಅನ್ನು ಲಾಂಗ್ ಪ್ರೆಸ್ ಮಾಡಿ"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"ಸಿಸ್ಟಮ್ ಸಂಪನ್ಮೂಲಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ಎಚ್ಚರಿಕೆಗಳು"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"ಸಂಪನ್ಮೂಲಗಳನ್ನು ಮಿತಿಮೀರಿ ಬಳಸಲಾಗುತ್ತಿದೆ"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"ಅತಿಯಾದ ಸಂಪನ್ಮೂಲ ಬಳಕೆಯಿಂದಾಗಿ ಆ್ಯಪ್‌ \'<xliff:g id="APP_NAME">%1$s</xliff:g> ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ. ನೀವು ಅದನ್ನು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿನ ಆ್ಯಪ್‌ಗಳ ಮೆನುವಿನಿಂದ ಮರು-ಸಕ್ರಿಯಗೊಳಿಸಬಹುದು.\""</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"ನಿಮ್ಮ ಪೋಷಕರಿಂದ ಬಂದ ಅಪ್‌ಡೇಟ್"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಅನ್ನು ಸದ್ಯಕ್ಕೆ ತೆಗೆದುಹಾಕಲಾಗಿದೆ"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಈಗ ಲಭ್ಯವಿದೆ"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"ಇತರರಿಗೆ ಬಿತ್ತರಿಸಿ"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"ಡ್ರ್ಯಾಗ್ ಮಾಡಬಹುದಾದ ಡಿವೈಡರ್"</string>
     <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"ಬ್ರೈಟ್‌ನೆಸ್ ಟಾಪ್ ಆ್ಯಪ್ ನಿಯಂತ್ರಿಸುತ್ತಿರುವ ಕಾರಣ ಅದನ್ನು ಅಡ್ಜಸ್ಟ್ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"ಏರ್‌ಪ್ಲೇನ್ ಮೋಡ್ ಸಿಂಕ್"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"ಏರ್‌ಪ್ಲೇನ್ ಮೋಡ್"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"ಏರ್‌ಪ್ಲೇನ್ ಮೋಡ್ ಈಗ ನಿಮ್ಮ ಫೋನ್ ಮತ್ತು ವಾಚ್‌ನಾದ್ಯಂತ ಸಿಂಕ್ ಆಗುತ್ತದೆ.\n\nನಿಮ್ಮ ವಾಚ್ ಮತ್ತು ಫೋನ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಮೋಡ್ ಸಿಂಕ್ ಆದ್ಯತೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಿ"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"ಅಡಚಣೆ ಮಾಡಬೇಡಿ ಫೀಚರ್ ಅನ್ನು ಸಿಂಕ್ ಮಾಡಿ"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"ಅಡಚಣೆ ಮಾಡಬೇಡಿ"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"ನಿಮ್ಮ ಸಮೀಪದ ಸಾಧನದಿಂದ ಸಿಂಕ್ ಮಾಡಲಾಗಿದೆ"</string>
 </resources>

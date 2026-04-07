@@ -1092,6 +1092,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Spróbuj ponownie."</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Spróbuj ponownie."</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Kliknij, aby odblokować"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"Aby odblokować, naciśnij Enter"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Naciśnij dowolny klawisz, aby odblokować"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Odblokuj, by używać wszystkich funkcji i danych"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Przekroczono maksymalną liczbę prób rozpoznania twarzy."</string>
@@ -2706,15 +2707,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Kliknij, aby poznać wskazówki, które ułatwią odblokowywanie"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Brak migania"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Aby wyłączyć telewizor, przytrzymaj przycisk zasilania"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Alerty dotyczące zasobów systemowych"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Nadmierne zużycie zasobów"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"Aplikacja „<xliff:g id="APP_NAME">%1$s</xliff:g>” została wyłączona z powodu nadmiernego wykorzystania zasobów. Możesz ją ponownie włączyć w menu Aplikacje w Ustawieniach."</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Rodzic wprowadził zmianę"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"Aplikacja <xliff:g id="APP_NAME">%1$s</xliff:g> została usunięta"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"Aplikacja <xliff:g id="APP_NAME">%1$s</xliff:g> jest już dostępna"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Przesyłaj do innych"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
-    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"separator, który można przeciągnąć"</string>
+    <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"Nie można dostosować jasności, ponieważ reguluje ją aplikacja na pierwszym planie"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"Synchronizacja trybu samolotowego"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"Tryb samolotowy"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"Tryb samolotowy będzie teraz synchronizowany na telefonie i zegarku.\n\nPreferencjami synchronizacji trybu możesz zarządzać w ustawieniach zegarka i telefonu."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"Zarządzaj ustawieniami"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"Synchronizacja trybu Nie przeszkadzać"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"Nie przeszkadzać"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"Zsynchronizowano z urządzeniem w pobliżu"</string>
 </resources>

@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"మళ్లీ ట్రై చేయండి"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"మళ్లీ ట్రై చేయండి"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"అన్‌లాక్ కోసం క్లిక్ చేయండి"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"అన్‌లాక్ చేయడానికి Enter నొక్కండి"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"అన్‌లాక్ చేయడానికి ఏదైనా కీని నొక్కండి"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"అన్ని ఫీచర్ల కోసం, డేటా కోసం అన్‌లాక్ చేయండి"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"ఫేస్ అన్‌లాక్ ప్రయత్నాల గరిష్ఠ పరిమితిని మించిపోయారు"</string>
@@ -2704,14 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"మీ అన్‌లాకింగ్ ఎక్స్‌పీరియన్స్‌ను మెరుగుపరిచేందుకు చిట్కాలను రివ్యూ చేయడానికి ట్యాప్ చేయండి"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"బ్లింక్ అవ్వకూడదు"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"పవర్ బటన్‌ను ఎక్కువసేపు నొక్కి, ఉంచి, టీవీని ఆఫ్ చేయండి"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"సిస్టమ్ రిసోర్స్ అలర్ట్‌లు"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"రిసోర్స్‌ల మితిమీరిన వినియోగం"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"అధిక రిసోర్స్ వినియోగం కారణంగా \'<xliff:g id="APP_NAME">%1$s</xliff:g> యాప్ డిజేబుల్ అయింది. మీరు దీన్ని సెట్టింగ్‌లలోని యాప్‌ల మెనూ నుండి మళ్లీ ఎనేబుల్ చేయవచ్చు.\""</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"మీ పేరెంట్ నుండి అప్‌డేట్"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> ప్రస్తుతానికి తీసివేయబడింది"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> ఇప్పుడు అందుబాటులో ఉంది"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"ఇతరులకు ప్రసారం చేయండి"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"డ్రాగ్ చేయగలిగే డివైడర్"</string>
     <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"దీనిని టాప్ యాప్ కంట్రోల్ చేస్తోంది కాబట్టి బ్రైట్‌నెస్‌ను సర్దుబాటు చేయడం సాధ్యం కాదు"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"విమానం మోడ్ సింక్ అయింది"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"విమానం మోడ్"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"విమానం మోడ్ ఇప్పుడు మీ ఫోన్, వాచ్ అంతటా సింక్ అవుతుంది.\n\nమీ వాచ్, ఫోన్ సెట్టింగ్‌లలో మోడ్ సింక్ ప్రాధాన్యతలను మేనేజ్ చేయండి."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"సెట్టింగ్‌లను మేనేజ్ చేయండి"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"\'డిస్టర్బ్ చేయవద్దు\' సింక్"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"డిస్టర్బ్ చేయవద్దు"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"మీకు సమీపంలోని డివైజ్ నుండి సింక్ అయింది"</string>
 </resources>

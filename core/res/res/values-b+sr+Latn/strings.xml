@@ -1091,6 +1091,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Probajte ponovo"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Probajte ponovo"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Kliknite da biste otključali"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"Pritisnite Enter da biste otključali"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Pritisnite bilo koji taster da biste otključali"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Otključajte za sve funkcije i podatke"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Premašen je najveći dozvoljeni broj pokušaja Otključavanja licem"</string>
@@ -2705,14 +2706,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Dodirnite da biste videli savete za poboljšanje doživljaja otključavanja"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Bez treptanja"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Dugo pritisnite dugme za uključivanje i isključite TV"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Upozorenja o resursima sistema"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Prekomerno korišćenje resursa"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> je onemogućena zbog prekomernog korišćenja resursa. Možete ponovo da je omogućite u meniju Aplikacije u Podešavanjima."</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Novosti od roditelja"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> je za sad uklonjena"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> je sada dostupna"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Prebacuj na druge"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"razdelnik koji može da se prevuče"</string>
     <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"Ne možete da prilagodite osvetljenost jer je kontroliše aplikacija u prvom planu"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"Sinhronizacija u režimu rada u avionu"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"Režim rada u avionu"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"Režim rada u avionu će se sada sinhronizovati na telefonu i satu.\n\nUpravljajte podešavanjima sinhronizacije režima u podešavanjima sata i telefona."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"Upravljaj podešavanjima"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"Sinhronizacija režima Ne uznemiravaj"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"Ne uznemiravaj"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"Sinhronizovano sa uređaja u blizini"</string>
 </resources>

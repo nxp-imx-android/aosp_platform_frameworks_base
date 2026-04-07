@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"আকৌ চেষ্টা কৰক"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"আকৌ চেষ্টা কৰক"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"আনলক কৰিবলৈ ক্লিক কৰক"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"আনলক কৰিবলৈ এণ্টাৰ টিপক"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"আনলক কৰিবলৈ যিকোনো কী টিপক"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"আটাইবোৰ সুবিধা আৰু ডেটাৰ বাবে আনলক কৰক"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"গৰাকীৰ ফেচ আনলক কৰা সৰ্বাধিক সীমা অতিক্ৰম কৰা হ’ল"</string>
@@ -2704,14 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"আপুনি আনলক কৰাৰ অভিজ্ঞতা উন্নত কৰাৰ পৰামৰ্শসমূহ পৰ্যালোচনা কৰিবলৈ টিপক"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"ব্লিংক নকৰিব"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"টিভিটো অফ কৰিবলৈ পাৱাৰ বুটামটো দীঘলীয়াকৈ টিপক"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"ছিষ্টেমৰ সম্পদৰ সতৰ্কবাৰ্তা"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"সম্পদৰ অতি ব্যৱহাৰ"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"অতিমাত্ৰা সম্পদ ব্যৱহাৰ কৰাৰ বাবে এপ্‌ ‘<xliff:g id="APP_NAME">%1$s</xliff:g> অক্ষম কৰা হৈছে। আপুনি ছেটিঙত এপ্‌সমূহৰ মেনুৰ পৰা এইটো পুনৰ সক্ষম কৰিব পাৰে।\""</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"আপোনাৰ অভিভাৱকে কৰা আপডে’ট"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g>ক এতিয়া বাবে আঁতৰোৱা হৈছে"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"এতিয়া <xliff:g id="APP_NAME">%1$s</xliff:g> উপলব্ধ"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"আনৰ সৈতে কাষ্ট কৰক"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"টানি আনিব পৰা বিভাজক"</string>
     <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"উজ্জ্বলতা মিলাব নোৱাৰি কাৰণ সেয়া শীৰ্ষৰ এপ্‌টোৱে নিয়ন্ত্ৰণ কৰি আছে"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"এয়াৰপ্লে’ন ম’ডৰ ছিংক"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"এয়াৰপ্লে’ন ম’ড"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"এয়াৰপ্লেন ম’ড এতিয়া আপোনাৰ সমগ্ৰ ফ’ন আৰু ঘড়ীত ছিংক হ’ব।\n\nআপোনাৰ ঘড়ী আৰু ফ’নৰ ছেটিঙত ম’ড ছিংক কৰাৰ অগ্ৰাধিকাৰ পৰিচালনা কৰক।"</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"ছেটিং পৰিচালনা কৰক"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"অসুবিধা নিদিব ম’ডৰ ছিংক"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"অসুবিধা নিদিব"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"আপোনাৰ নিকটৱৰ্তী ডিভাইচৰ পৰা ছিংক কৰা হৈছে"</string>
 </resources>

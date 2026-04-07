@@ -239,7 +239,7 @@
     <string name="factory_reset_message" msgid="2657049595153992213">"منتظم کی ایپ استعمال نہیں کی جا سکتی۔ آپ کا آلہ اب مٹا دیا جائے گا۔\n\nاگر آپ کے سوالات ہیں تو اپنی تنظیم کے منتظم سے رابطہ کریں۔"</string>
     <string name="printing_disabled_by" msgid="3517499806528864633">"<xliff:g id="OWNER_APP">%s</xliff:g> نے پرنٹنگ کو غیر فعال کر دیا ہے۔"</string>
     <string name="personal_apps_suspension_title" msgid="7561416677884286600">"اپنی دفتری پروفائل آن کریں"</string>
-    <string name="personal_apps_suspension_text" msgid="6115455688932935597">"آپ کے ذاتی ایپس کو اس وقت تک بلاک کر دیا جاتا ہے جب تک کہ آپ اپنے ورک پروفایل کو آن نہیں کرتے"</string>
+    <string name="personal_apps_suspension_text" msgid="6115455688932935597">"آپ کی ذاتی ایپس اس وقت تک بلاک رہتی ہیں جب تک کہ آپ اپنی دفتری پروفائل کو آن نہیں کرتے"</string>
     <string name="personal_apps_suspension_soon_text" msgid="8123898693479590">"‏‫<xliff:g id="DATE">%1$s</xliff:g> کو <xliff:g id="TIME">%2$s</xliff:g> بجے ذاتی ایپس کو مسدود کر دیا جائے گا۔ آپ کا IT منتظم آپ کی دفتری پروفائل کو <xliff:g id="NUMBER">%3$d</xliff:g> دن سے زیادہ بند رکھنے کی اجازت نہیں دیتا ہے۔"</string>
     <string name="personal_apps_suspended_turn_profile_on" msgid="2758012869627513689">"آن کریں"</string>
     <string name="work_profile_telephony_paused_title" msgid="7690804479291839519">"کالز اور پیغامات آف ہیں"</string>
@@ -270,7 +270,7 @@
     <string name="shutdown_confirm" product="default" msgid="136816458966692315">"آپ کا فون بند ہو جائے گا۔"</string>
     <string name="shutdown_confirm_question" msgid="796151167261608447">"کیا آپ بند کرنا چاہتے ہیں؟"</string>
     <string name="reboot_safemode_title" msgid="5853949122655346734">"محفوظ طرز میں ریبوٹ کریں"</string>
-    <string name="reboot_safemode_confirm" msgid="1658357874737219624">"کیا آپ محفوظ طرز میں ریبوٹ کرنا چاہتے ہیں؟ یہ آپ کی انسٹال کردہ تیسرے فریق کی سبھی ایپلیکیشنز کو غیر فعال کردے گا۔ دوبارہ آپ کے ریبوٹ کرنے پر وہ بحال ہوجائیں گے۔"</string>
+    <string name="reboot_safemode_confirm" msgid="1658357874737219624">"کیا آپ حفاظتی وضع میں ریبوٹ کرنا چاہتے ہیں؟ اس سے آپ کی انسٹال کردہ تیسرے فریق کی سبھی ایپلیکیشنز غیر فعال ہو جائیں گی۔ دوبارہ آپ کے ریبوٹ کرنے پر وہ بحال ہوجائیں گی۔"</string>
     <string name="recent_tasks_title" msgid="8183172372995396653">"حالیہ"</string>
     <string name="no_recent_tasks" msgid="9063946524312275906">"کوئی حالیہ ایپس نہیں ہیں۔"</string>
     <string name="global_actions" product="tablet" msgid="4412132498517933867">"ٹیبلیٹ کے اختیارات"</string>
@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"دوبارہ کوشش کریں"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"دوبارہ کوشش کریں"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"غیر مقفل کرنے کے لیے کلک کریں"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"‏غیر مقفل کرنے کے لیے Enter دبائیں"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"غیر مقفل کرنے کے لیے کوئی بھی کلید دبائیں"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"تمام خصوصیات اور ڈیٹا کیلئے غیر مقفل کریں"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"فیس اَنلاک کی زیادہ سے زیادہ کوششوں سے تجاوز کرگیا"</string>
@@ -2535,7 +2536,7 @@
     <string name="PERSOSUBSTATE_SIM_NETWORK_SUBSET_PUK_SUCCESS" msgid="2861223407953766632">"‏PUK غیر مقفل ہو گیا۔"</string>
     <string name="PERSOSUBSTATE_SIM_CORPORATE_PUK_SUCCESS" msgid="5345648571175243272">"‏PUK غیر مقفل ہو گیا۔"</string>
     <string name="PERSOSUBSTATE_SIM_SERVICE_PROVIDER_PUK_SUCCESS" msgid="3725278343103422466">"‏PUK غیر مقفل ہو گیا۔"</string>
-    <string name="PERSOSUBSTATE_SIM_SIM_PUK_SUCCESS" msgid="6998502547560297983">"‏PUK غیر مقفل ہو گیا۔"</string>
+    <string name="PERSOSUBSTATE_SIM_SIM_PUK_SUCCESS" msgid="6998502547560297983">"‏PUK انلاک ہو گیا۔"</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK1_PUK_SUCCESS" msgid="8555433771162560361">"‏PUK غیر مقفل ہو گیا۔"</string>
     <string name="PERSOSUBSTATE_RUIM_NETWORK2_PUK_SUCCESS" msgid="3555767296933606232">"‏PUK غیر مقفل ہو گیا۔"</string>
     <string name="PERSOSUBSTATE_RUIM_HRPD_PUK_SUCCESS" msgid="6778051818199974237">"‏PUK غیر مقفل ہو گیا۔"</string>
@@ -2704,15 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"اپنے اَن لاک کرنے کے تجربے کو بہتر بنانے کے لیے انگلیوں کے نقشے کا جائزہ لینے کے لیے تھپتھپائیں"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"کرسر بلنک نہیں کرتا ہے"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"‏‫TV کو آف کرنے کے لیے پاور بٹن کو دیر تک دبائیں"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"سسٹم کے وسیلے سے متعلق الرٹس"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"وسیلے کا زیادہ استعمال"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"وسائل کے زیادہ استعمال کی وجہ سے ایپ ‘<xliff:g id="APP_NAME">%1$s</xliff:g> کو غیر فعال کر دیا گیا ہے۔ آپ اسے ترتیبات میں ایپس مینو سے دوبارہ فعال کر سکتے ہیں۔\""</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"آپ کے والد/والدہ کی جانب سے اپ ڈیٹ"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"‫<xliff:g id="APP_NAME">%1$s</xliff:g> کو ابھی کیلئے ہٹا دیا گیا"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"‫<xliff:g id="APP_NAME">%1$s</xliff:g> اب دستیاب ہے"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"دوسروں پر کاسٹ کریں"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
-    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"گھسیٹنے کے قابل ڈیوائیڈر"</string>
+    <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"چمک کو ایڈجسٹ نہیں کیا جا سکتا کیونکہ اسے سرفہرست ایپ کے ذریعے کنٹرول کیا جا رہا ہے"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"ہوائی جہاز وضع کی مطابقت پذیری"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"ہوائی جہاز وضع"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"ہوائی جہاز وضع اب آپ کے فون اور گھڑی پر مطابقت پذیر ہو جائے گی۔\n\nاپنی گھڑی اور فون کی ترتیبات پر موڈ کی مطابقت پذیری کی ترجیحات کا نظم کریں۔"</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"ترتیبات کا نظم کریں"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"ڈسٹرب نہ کریں کی مطابقت پذیری"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"ڈسٹرب نہ کریں"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"آپ کے قریبی آلہ سے مطابقت پذیر"</string>
 </resources>

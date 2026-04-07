@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Provo sërish"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Provo sërish"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Kliko për ta shkyçur"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"Shtyp Enter për ta shkyçur"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Shtyp një tast çfarëdo për ta shkyçur"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Shkyçe për të gjitha funksionet dhe të dhënat"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Përpjektet maksimale të \"Shkyçjes me fytyrë\" u tejkaluan"</string>
@@ -2704,15 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Trokit për të shikuar këshilla për të përmirësuar përvojën tënde me shkyçjen"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Mos pulso"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Mbaj shtypur gjatë butonin e energjisë për të fikur televizorin"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Sinjalizimet për burimet e sistemit"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Mbipërdorimi i burimeve"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"Aplikacioni <xliff:g id="APP_NAME">%1$s</xliff:g> është çaktivizuar për shkak të përdorimit të tepërt të burimeve. Mund ta riaktivizosh nga menyja \"Aplikacionet\" te \"Cilësimet\"."</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Përditësim nga prindi"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"\"<xliff:g id="APP_NAME">%1$s</xliff:g>\" u hoq për momentin"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"\"<xliff:g id="APP_NAME">%1$s</xliff:g>\" ofrohet tani"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Transmeto te të tjerët"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
-    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"ndarësi i zvarritshëm"</string>
+    <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"Ndriçimi nuk mund të rregullohet, pasi po kontrollohet nga aplikacioni në plan të parë"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"Sinkronizimi i \"Modalitetit të aeroplanit\""</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"Modaliteti i aeroplanit"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"\"Modaliteti i aeroplanit\" tani do të sinkronizohet në telefonin dhe orën tënde.\n\nMenaxho preferencat e sinkronizimit të modaliteteve te cilësimet e orës dhe telefonit."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"Menaxho cilësimet"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"Sinkronizimi i modalitetit \"Mos shqetëso\""</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"Mos shqetëso"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"Sinkronizuar nga pajisja jote në afërsi"</string>
 </resources>

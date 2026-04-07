@@ -1092,6 +1092,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Skúsiť znova"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Skúsiť znova"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Odomknite kliknutím"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"Odomknete stlačením tlačidla Enter"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Odomknite stlačením ľubovoľného klávesa"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Všetky funkcie a dáta získate po odomknutí"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Prekročili ste maximálny povolený počet pokusov o odomknutie tvárou"</string>
@@ -2706,14 +2707,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Klepnutím si zobrazte tipy na zlepšenie odomykania"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Neblikať"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Televízor vypnete dlhým stlačením vypínača"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Upozornenia na zdroje systému"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Nadmerné využívanie zdrojov"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"Aplikácia <xliff:g id="APP_NAME">%1$s</xliff:g> bola deaktivovaná pre nadmerné využívanie zdrojov. Môžete ju znova aktivovať v ponuke Aplikácie v Nastaveniach."</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Aktualizácia od rodiča"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"Aplikácia <xliff:g id="APP_NAME">%1$s</xliff:g> bola nateraz odstránená"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> je teraz k dispozícii"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Prenášať ostatným"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"presúvateľný rozdeľovač"</string>
     <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"Jas sa nedá upraviť, pretože ho ovláda horná aplikácia"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"Synchronizácia v režime v lietadle"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"Režim v lietadle"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"Režim v lietadle sa odteraz bude synchronizovať medzi telefónom a hodinkami.\n\nPredvoľby synchronizácie režimu môžete spravovať v nastaveniach hodiniek aj telefónu."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"Spravovať nastavenia"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"Synchronizácia režimu bez vyrušení"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"Režim bez vyrušení"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"Synchronizované z vášho zariadenia v okolí"</string>
 </resources>

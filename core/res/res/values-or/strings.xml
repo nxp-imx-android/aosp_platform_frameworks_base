@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"ଅନଲକ କରିବାକୁ କ୍ଲିକ କରନ୍ତୁ"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"ଅନଲକ କରିବାକୁ ଏଣ୍ଟର ଦବାନ୍ତୁ"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"ଅନଲକ କରିବାକୁ ଯେ କୌଣସି କୀ ଦବାନ୍ତୁ"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"ସବୁ ଫିଚର ଓ ଡାଟା ପାଇଁ ଅନଲକ କରନ୍ତୁ"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"ସର୍ବାଧିକ ଫେସ୍ ଅନଲକ୍‍ ପ୍ରଚେଷ୍ଟା ଅତିକ୍ରମ କରିଛି"</string>
@@ -2704,14 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"ଆପଣଙ୍କ ଅନଲକ କରିବାର ଅନୁଭୂତିକୁ ଉନ୍ନତ କରିବା ପାଇଁ ଟିପ୍ସର ସମୀକ୍ଷା କରିବାକୁ ଟାପ କରନ୍ତୁ"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"ବ୍ଲିଙ୍କ କରନ୍ତୁ ନାହିଁ"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"ଟିଭି ବନ୍ଦ କରିବା ପାଇଁ ପାୱାର ବଟନକୁ ଅଧିକ ସମୟ ଦବାନ୍ତୁ"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"ସିଷ୍ଟମ ରିସୋର୍ସ ଆଲର୍ଟ"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"ରିସୋର୍ସର ଅତ୍ୟଧିକ ବ୍ୟବହାର"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"ଅତ୍ୟଧିକ ରିସୋର୍ସ ବ୍ୟବହାର ଯୋଗୁଁ ଆପ \'<xliff:g id="APP_NAME">%1$s</xliff:g>କୁ ଅକ୍ଷମ କରାଯାଇଛି। ଆପଣ ସେଟିଂସରେ ଆପ୍ସ ମେନୁରୁ ଏହାକୁ ପୁଣି-ସକ୍ଷମ କରିପାରିବେ।\""</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"ଆପଣଙ୍କ ବାପାମାଙ୍କଠାରୁ ଅପଡେଟ"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g>କୁ ବର୍ତ୍ତମାନ ପାଇଁ କାଢ଼ି ଦିଆଯାଇଛି"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> ବର୍ତ୍ତମାନ ଉପଲବ୍ଧ ଅଛି"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"ଅନ୍ୟମାନଙ୍କୁ କାଷ୍ଟ କରନ୍ତୁ"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"ଡ୍ରାଗ କରି ହେଉଥିବା ଡିଭାଇଡର"</string>
     <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"ଟପ ଆପ ଦ୍ୱାରା ଉଜ୍ଜ୍ୱଳତା ନିୟନ୍ତ୍ରିତ ହେଉଥିବା ଯୋଗୁଁ ଏହାକୁ ଆଡଜଷ୍ଟ କରିପାରିବେ ନାହିଁ"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"ଏୟାରପ୍ଲେନ ମୋଡ ସିଙ୍କ"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"ଏୟାରପ୍ଲେନ ମୋଡ"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"ଏୟାରପ୍ଲେନ ମୋଡ ବର୍ତ୍ତମାନ ଆପଣଙ୍କ ସମଗ୍ର ଫୋନ ଏବଂ ୱାଚରେ ସିଙ୍କ ହେବ।\n\nଆପଣଙ୍କ ୱାଚ ଏବଂ ଫୋନ ସେଟିଂସରେ ମୋଡ ସିଙ୍କ ପସନ୍ଦଗୁଡ଼ିକୁ ପରିଚାଳନା କରନ୍ତୁ।"</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"ସେଟିଂସ ପରିଚାଳନା କରନ୍ତୁ"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"ବିରକ୍ତ କରନ୍ତୁ ନାହିଁ ସିଙ୍କ"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"ବିରକ୍ତ କରନ୍ତୁ ନାହିଁ"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"ଆପଣଙ୍କ ଆଖପାଖର ଡିଭାଇସରୁ ସିଙ୍କ କରାଯାଇଛି"</string>
 </resources>
