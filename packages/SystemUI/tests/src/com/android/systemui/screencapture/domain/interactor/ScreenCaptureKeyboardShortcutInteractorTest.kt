@@ -35,6 +35,7 @@ import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiSta
 import com.android.systemui.screencapture.data.repository.fakeScreenCaptureDeviceStateRepository
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType as LargeScreenCaptureType
+import com.android.systemui.statusbar.policy.data.repository.fakeUserSetupRepository
 import com.android.systemui.testKosmosNew
 import com.android.systemui.user.domain.interactor.fakeHeadlessSystemUserMode
 import com.google.common.truth.Truth.assertThat
@@ -124,6 +125,23 @@ class ScreenCaptureKeyboardShortcutInteractorTest : SysuiTestCase() {
             assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Invisible::class.java)
 
             fakeKeyguardRepository.setKeyguardShowing(true)
+            underTest.attemptPartialRegionScreenshot()
+
+            assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Invisible::class.java)
+
+            // Nothing is logged.
+            assertThat(uiEventLoggerFake.numLogs()).isEqualTo(0)
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_SCREENCAPTURE)
+    fun attemptPartialRegionScreenshot_userNotSetUp_doesNotShowUi() =
+        kosmos.runTest {
+            val uiState by
+                collectLastValue(screenCaptureUiInteractor.uiState(ScreenCaptureType.RECORD))
+            assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Invisible::class.java)
+
+            kosmos.fakeUserSetupRepository.setUserSetUp(false)
             underTest.attemptPartialRegionScreenshot()
 
             assertThat(uiState).isInstanceOf(ScreenCaptureUiState.Invisible::class.java)

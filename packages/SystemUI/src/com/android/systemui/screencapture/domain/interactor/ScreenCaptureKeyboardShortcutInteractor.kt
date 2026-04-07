@@ -29,10 +29,12 @@ import com.android.systemui.screencapture.record.largescreen.domain.interactor.L
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenshotInteractor
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureRegion as LargeScreenCaptureRegion
 import com.android.systemui.screencapture.record.largescreen.shared.model.ScreenCaptureType as LargeScreenCaptureType
+import com.android.systemui.statusbar.policy.domain.interactor.UserSetupInteractor
 import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /** Handles the resulting actions of screen capture related keyboard shortcuts. */
@@ -48,6 +50,7 @@ constructor(
     private val featuresInteractor: LargeScreenCaptureFeaturesInteractor,
     private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
     private val screenshotInteractor: ScreenshotInteractor,
+    private val userSetupInteractor: UserSetupInteractor,
 ) {
     fun attemptPartialRegionScreenshot() {
         backgroundScope.launch {
@@ -87,6 +90,11 @@ constructor(
 
         if (keyguardInteractor.isKeyguardCurrentlyShowing()) {
             Log.i(TAG, "Screen capture UI is disabled when keyguard is showing.")
+            return
+        }
+
+        if (!userSetupInteractor.isUserSetUp.first()) {
+            Log.i(TAG, "Screen capture UI is disabled during OOBE.")
             return
         }
 
