@@ -557,10 +557,10 @@
     <string name="custom_trace_settings_dialog_title" msgid="2608570500144830554">"自定义跟踪记录设置"</string>
     <string name="restore_default" msgid="5259420807486239755">"恢复默认设置"</string>
     <string name="quick_settings_onehanded_label" msgid="2416537930246274991">"单手模式"</string>
-    <string name="quick_settings_hearing_devices_label" msgid="7277170419679404129">"助听装置"</string>
+    <string name="quick_settings_hearing_devices_label" msgid="7277170419679404129">"助听设备"</string>
     <string name="quick_settings_hearing_devices_connected" msgid="6519069502397037781">"正在使用"</string>
     <string name="quick_settings_hearing_devices_disconnected" msgid="8907061223998176187">"已断开连接"</string>
-    <string name="quick_settings_hearing_devices_dialog_title" msgid="9004774017688484981">"助听装置"</string>
+    <string name="quick_settings_hearing_devices_dialog_title" msgid="9004774017688484981">"助听设备"</string>
     <string name="quick_settings_pair_hearing_devices" msgid="5987105102207447322">"与新设备配对"</string>
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"点击即可与新设备配对"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"无法更新预设"</string>
@@ -660,8 +660,7 @@
     <string name="keyguard_indication_charging_time_slowly" msgid="301936949731705417">"<xliff:g id="PERCENTAGE">%2$s</xliff:g> • 正在慢速充电 • 将于 <xliff:g id="CHARGING_TIME_LEFT">%1$s</xliff:g>后充满"</string>
     <string name="keyguard_indication_charging_time_dock" msgid="3149328898931741271">"<xliff:g id="PERCENTAGE">%2$s</xliff:g> • 正在充电 • 将于 <xliff:g id="CHARGING_TIME_LEFT">%1$s</xliff:g>后充满"</string>
     <string name="accessibility_action_open_communal_hub" msgid="3081702792413787849">"锁屏界面上的微件"</string>
-    <!-- no translation found for accessibility_action_customize_lock_screen (1998560311105362696) -->
-    <skip />
+    <string name="accessibility_action_customize_lock_screen" msgid="1998560311105362696">"自定义锁屏画面"</string>
     <string name="accessibility_announcement_communal_widget_added" msgid="6911593106099328271">"“<xliff:g id="WIDGET_NAME">%1$s</xliff:g>”微件已添加至锁定屏幕"</string>
     <string name="communal_tutorial_indicator_text" msgid="4503010353591430123">"向左滑动即可启动公共教程"</string>
     <string name="cta_tile_button_to_open_widget_editor" msgid="3871562362382963878">"自定义"</string>
@@ -1879,7 +1878,7 @@
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"左侧电量：%1$s    右侧电量：%2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"左侧电量：%1$s"</string>
     <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"右侧电量：%1$s"</string>
-    <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"助听装置状态"</string>
+    <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"助听设备状态"</string>
     <string name="more_options_edit" msgid="6337988646114341329">"修改"</string>
     <string name="more_options_move" msgid="2226159413422979066">"移动"</string>
     <string name="more_options_remove_all" msgid="194855000797536179">"全部移除"</string>
