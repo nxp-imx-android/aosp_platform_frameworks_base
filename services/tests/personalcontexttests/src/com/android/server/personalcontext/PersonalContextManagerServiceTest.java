@@ -117,6 +117,9 @@ public class PersonalContextManagerServiceTest {
     @Mock private RoleManager mRoleManager;
     @Mock private AccessController mAccessController;
     @Mock private EmbeddedInsightRenderer mEmbeddedInsightRenderer;
+
+    @Mock private PackageMonitorProxy mPackageMonitorProxy;
+
     private FakePermissionEnforcer mFakePermissionEnforcer;
 
     private PersonalContextManagerService mService;
@@ -170,7 +173,8 @@ public class PersonalContextManagerServiceTest {
         mService = spy(new PersonalContextManagerService(
                 mContext,
                 (userContext, mAccessController, executor) -> mEmbeddedInsightRenderer,
-                (context, eventListener, user) -> mAccessController));
+                (context, eventListener, user) -> mAccessController,
+                mPackageMonitorProxy));
 
         mLocalService = mService.new LocalService();
 

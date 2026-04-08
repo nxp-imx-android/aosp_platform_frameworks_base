@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"төхөөрөмж"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Энэ апп залгаж буй хүний нэр зэрэг мэдээллийг таны утас болон сонгосон төхөөрөмжийн хооронд синк хийх боломжтой болно"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt;-д таны <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>-с залгагчийн мэдээлэл зэрэг мэдээллийг синк хийх, ухаалаг үйлдэл ажиллуулахыг зөвшөөрнө үү"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt;-д таны <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>-с дуудлага хийгчийн мэдээлэл зэрэг мэдээллийг синк хийх, ухаалаг үйлдэл ажиллуулах зөвшөөрөл өгнө үү"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Зөвшөөрөх"</string>
     <string name="consent_no" msgid="2640796915611404382">"Бүү зөвшөөр"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Цуцлах"</string>
@@ -85,7 +84,8 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Аудио бичих"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Ойролцоох төхөөрөмжүүдийн харьцангуй байрлалыг олох, тодорхойлох болон тэдгээрт холбогдох"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Харилцагчид, мессеж болон зургууд зэрэг мэдээллийг оруулаад бүх мэдэгдлийг унших"</string>
-    <string name="permission_notifications_summary" msgid="6819393427371255636">"• Харилцагчид, мессеж, зураг зэрэг мэдээллийг оруулаад бүх мэдэгдлийг унших&lt;br/&gt;• Танд мэдэгдэл илгээх&lt;br/&gt;&lt;br/&gt;Та хүссэн үедээ энэ аппын мэдэгдэл унших, илгээх чадамжийг Тохиргоо &gt; Мэдэгдлээс удирдах боломжтой."</string>
+    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
+    <skip />
     <string name="permission_storage_summary" msgid="3779040306012319942">"Утасныхаа зураг, медиаг бусад төхөөрөмжтэйгөө хуваалцана уу."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Танд мэдэгдэл илгээх"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Утасныхаа дэлгэцийг аппуудтай нь хамт төхөөрөмжүүдтэйгээ хуваалцана уу. Таны төхөөрөмжүүд таны утас түгжээтэй байсан ч аудио, зураг, төлбөрийн мэдээлэл, нууц үг, мессеж зэрэг таны утсан дээр харагдаж буй аливаа зүйлд хандах эрхтэй байх болно.&lt;br/&gt;&lt;br/&gt;Төхөөрөмжүүдээсээ микрофон, камер болон бусад мэдрэгчийн өгөгдлийг тэр дундаа хүрэх зангаа, хулганын товшилт зэрэг харилцан үйлдлийг утсандаа буцааж дамжуулна уу."</string>
@@ -93,10 +93,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Өөрийн <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>-н дэлгэцийг бичих, &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; руу дамжуулах эсвэл хуваалцана уу.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> аудио, зураг, төлбөрийн мэдээлэл, нууц үг, мессеж зэрэг таны <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> дээр харагдаж эсвэл тоглуулж буй аливаа зүйлд хандах эрхтэй байх болно."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Өөрийн <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>-н аппыг &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; руу дамжуулна уу.&lt;br/&gt;&lt;br/&gt;Таны <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> түгжээтэй байсан ч <xliff:g id="APP_NAME">%1$s</xliff:g> аудио, зураг, төлбөрийн мэдээлэл, нууц үг, мессеж зэрэг <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> дээр харагдаж эсвэл тоглуулж буй аливаа зүйлд хандах эрхтэй байх болно."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Боломжтой төхөөрөмжүүдийн жагсаалтад хандаж, аль нь бусад аппаас аудио эсвэл видео дамжуулах, нэвтрүүлэхийг хянана уу"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Танд сэрэмжлүүлэг илгээнэ"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Бүү саад бол горим асаалттай байсан ч танд сэрэмжлүүлэг илгээнэ"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"утас"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"таблет"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"тв"</string>

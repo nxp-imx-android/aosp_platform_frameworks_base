@@ -39,6 +39,7 @@ public class OperatingModeProvider {
     public static final int OPERATING_PROPERTY_FLAG_TEST_PACKAGES_ONLY = 1 << 2;
     public static final int OPERATING_PROPERTY_FLAG_BUILT_IN_COMPONENTS = 1 << 3;
     public static final int OPERATING_PROPERTY_FLAG_ENFORCE_PCC = 1 << 4;
+    public static final int OPERATING_PROPERTY_FLAG_ENFORCE_BIND_PERMISSIONS = 1 << 5;
 
     @IntDef(flag = true, value = {
             OPERATING_PROPERTY_FLAG_UNKNOWN,
@@ -47,6 +48,7 @@ public class OperatingModeProvider {
             OPERATING_PROPERTY_FLAG_TEST_PACKAGES_ONLY,
             OPERATING_PROPERTY_FLAG_BUILT_IN_COMPONENTS,
             OPERATING_PROPERTY_FLAG_ENFORCE_PCC,
+            OPERATING_PROPERTY_FLAG_ENFORCE_BIND_PERMISSIONS,
     })
     @Target(ElementType.TYPE_USE)
     @Retention(RetentionPolicy.SOURCE)
@@ -70,22 +72,35 @@ public class OperatingModeProvider {
             flags &= ~AccessController.ACCESS_PCC_OR_TRUSTED_PACKAGE;
         }
 
+        if (!hasProperties(OPERATING_PROPERTY_FLAG_ENFORCE_BIND_PERMISSIONS)) {
+            flags &= ~AccessController.ACCESS_BIND_CONTEXT_PERMISSION;
+        }
+
         return flags;
     }
-
     private static @OperatingPropertyFlag int getFlagsEnabledForMode(
             @PersonalContextManager.OperatingMode int mode) {
+        final @AccessController.Access int testAccessFlags =
+                OPERATING_PROPERTY_FLAG_TEST_PACKAGES_ONLY;
+
+        final @AccessController.Access int defaultAccessFlags =
+                (Flags.enforcePersonalContextAllowlistAccessControl()
+                        ? OPERATING_PROPERTY_FLAG_ENFORCE_ALLOW_LIST : 0)
+                        | (Flags.enforcePersonalContextPermissions()
+                        ? OPERATING_PROPERTY_FLAG_ENFORCE_PERMISSIONS : 0)
+                        | (Flags
+                        .enforcePersonalContextPccAccessControl()
+                        ? OPERATING_PROPERTY_FLAG_ENFORCE_PCC : 0)
+                        | OPERATING_PROPERTY_FLAG_BUILT_IN_COMPONENTS
+                        | OPERATING_PROPERTY_FLAG_ENFORCE_BIND_PERMISSIONS;
+
         return switch (mode) {
             case PersonalContextManager.OPERATING_MODE_TEST ->
-                    OPERATING_PROPERTY_FLAG_TEST_PACKAGES_ONLY;
-            default -> (Flags.enforcePersonalContextAllowlistAccessControl()
-                    ? OPERATING_PROPERTY_FLAG_ENFORCE_ALLOW_LIST : 0)
-                    | (android.service.personalcontext.Flags.enforcePersonalContextPermissions()
-                    ? OPERATING_PROPERTY_FLAG_ENFORCE_PERMISSIONS : 0)
-                    | (android.service.personalcontext.Flags
-                            .enforcePersonalContextPccAccessControl()
-                    ? OPERATING_PROPERTY_FLAG_ENFORCE_PCC : 0)
-                    | OPERATING_PROPERTY_FLAG_BUILT_IN_COMPONENTS;
+                    testAccessFlags;
+            case PersonalContextManager.OPERATING_MODE_DEFAULT ->
+                    defaultAccessFlags;
+            default ->
+                    defaultAccessFlags;
         };
     }
 

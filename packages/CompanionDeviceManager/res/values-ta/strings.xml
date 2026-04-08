@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"சாதனம்"</string>
     <string name="summary_generic" msgid="1761976003668044801">"அழைப்பவரின் பெயர் போன்ற தகவலை உங்கள் மொபைல் மற்றும் தேர்வுசெய்த சாதனத்திற்கு இடையில் இந்த ஆப்ஸால் ஒத்திசைக்க முடியும்"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"அழைப்பாளர் தகவல் போன்ற தகவல்களை ஒத்திசைக்கவும் உங்கள் <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> சாதனத்தில் இருந்து ஸ்மார்ட் செயல்களை இயக்கவும் &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; சாதனத்தை அனுமதிக்கும்"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"அழைப்பாளர் தகவல் போன்ற தகவல்களை ஒத்திசைக்கவும் உங்கள் <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> சாதனத்தில் இருந்து ஸ்மார்ட் செயல்களை இயக்கவும் &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; சாதனத்திற்கு அணுகல் வழங்கும்"</string>
     <string name="consent_yes" msgid="8344487259618762872">"அனுமதி"</string>
     <string name="consent_no" msgid="2640796915611404382">"அனுமதிக்க வேண்டாம்"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"ரத்துசெய்"</string>
@@ -85,7 +84,8 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"ஆடியோவை ரெக்கார்டு செய்யலாம்"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"அருகிலுள்ள சாதனங்களைக் கண்டறியலாம், அவற்றுடன் இணையலாம், அவற்றின் தூரத்தைத் தீர்மானிக்கலாம்"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"தொடர்புகள், மெசேஜ்கள், படங்கள் போன்ற தகவல்கள் உட்பட அனைத்து அறிவிப்புகளையும் படிக்கலாம்"</string>
-    <string name="permission_notifications_summary" msgid="6819393427371255636">"• தொடர்புகள், மெசேஜ்கள், படங்கள் போன்ற தகவல்கள் உட்பட அனைத்து அறிவிப்புகளையும் படிக்கும்&lt;br/&gt;• உங்களுக்கு அறிவிப்புகளை அனுப்பும்&lt;br/&gt;&lt;br/&gt;அறிவிப்புகளைப் படிக்கும் மற்றும் அனுப்பும் இந்த ஆப்ஸின் திறனை எப்போது வேண்டுமானாலும் அமைப்புகள் &gt; அறிவிப்புகள் என்பதில் நிர்வகிக்கலாம்."</string>
+    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
+    <skip />
     <string name="permission_storage_summary" msgid="3779040306012319942">"உங்கள் மொபைலில் உள்ள படங்களையும் மீடியாவையும் உங்களது பிற சாதனங்களுடன் பகிரலாம்."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"அறிவிப்புகள் அனுப்பப்படுதல்"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"ஆப்ஸ் உட்பட உங்கள் மொபைலின் திரையை உங்கள் சாதனங்களுடன் பகிரலாம். உங்கள் மொபைல் பூட்டப்பட்டிருக்கும்போதும் ஆடியோ, படங்கள், பேமெண்ட் தகவல், கடவுச்சொற்கள், மெசேஜ்கள் உட்பட உங்கள் மொபைலில் தோன்றும் அனைத்திற்குமான அணுகல் உங்கள் சாதனங்களுக்கு இருக்கும்.&lt;br/&gt;&lt;br/&gt;தொடுதல் சைகைகள், மவுஸ் கிளிக்குகள் போன்ற பங்கேற்றல்கள் உட்பட உங்கள் சாதனங்களில் இருந்து மைக்ரோஃபோன், கேமரா மற்றும் பிற சென்சார் தரவை உங்கள் மொபைலுக்குத் திரும்ப வழங்கலாம்."</string>
@@ -93,10 +93,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"&lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt; உடன் உங்கள் <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> சாதனத்தின் திரையைப் பகிரலாம், அலைபரப்பலாம், ரெக்கார்டு செய்யலாம். உங்கள் <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> சாதனத்தில் காட்டப்படும்/பிளே செய்யப்படும் எதுவாக இருந்தாலும் (ஆடியோ, படங்கள், பேமெண்ட் தகவல், கடவுச்சொற்கள், மெசேஜ்கள் உட்பட) அதற்கான அணுகல் <xliff:g id="APP_NAME">%1$s</xliff:g> ஆப்ஸுக்கு இருக்கும்."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"&lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; உடன் உங்கள் <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> இன் ஆப்ஸை ஸ்ட்ரீம் செய்யலாம்.&lt;br/&gt;&lt;br/&gt;உங்கள் <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> சாதனம் பூட்டப்பட்டிருக்கும்போதும் ஆடியோ, படங்கள், பேமெண்ட் தகவல், கடவுச்சொற்கள், மெசேஜ்கள் உட்பட <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> இல் காட்டப்படுகின்ற/பிளே செய்யப்படுகின்ற அனைத்திற்குமான அணுகல் <xliff:g id="APP_NAME">%1$s</xliff:g> ஆப்ஸுக்கு இருக்கும்."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"கிடைக்கக்கூடிய சாதனங்களின் பட்டியலை அணுகி, அவற்றில் எது பிற ஆப்ஸின் ஆடியோ/வீடியோவைப் பிளே செய்யலாம் அல்லது அலைபரப்பலாம் என்பதைக் கட்டுப்படுத்தும்"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"உங்களுக்கு விழிப்பூட்டல்களை அனுப்பும்"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"‘தொந்தரவு செய்ய வேண்டாம்’ மோட் ஆன் செய்யப்பட்டு இருந்தாலும் உங்களுக்கு விழிப்பூட்டல்களை அனுப்பும்"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"மொபைல்"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"டேப்லெட்"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"டிவி"</string>

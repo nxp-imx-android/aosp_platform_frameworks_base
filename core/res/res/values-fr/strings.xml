@@ -1095,6 +1095,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Veuillez réessayer."</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Veuillez réessayer."</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Cliquez pour déverrouiller"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"Appuyer sur Entrée pour déverrouiller"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Appuyez sur une touche pour déverrouiller"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Déverr. pour autres fonctionnalités et données"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Nombre maximal de tentatives de déverrouillage par reconnaissance faciale atteint"</string>
@@ -1499,7 +1500,7 @@
     <string name="no_permissions" msgid="5729199278862516390">"Aucune autorisation requise"</string>
     <string name="perm_costs_money" msgid="749054595022779685">"Cela peut engendrer des frais"</string>
     <string name="dlg_ok" msgid="5103447663504839312">"OK"</string>
-    <string name="usb_charging_notification_title" msgid="1674124518282666955">"Recharge de cet appareil via USB"</string>
+    <string name="usb_charging_notification_title" msgid="1674124518282666955">"Appareil en charge par USB"</string>
     <string name="usb_supplying_notification_title" msgid="5378546632408101811">"Recharge via USB de l\'appareil connecté"</string>
     <string name="usb_mtp_notification_title" msgid="1065989144124499810">"Transfert de fichiers via USB activé"</string>
     <string name="usb_ptp_notification_title" msgid="5043437571863443281">"PTP via USB activé"</string>
@@ -2709,15 +2710,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Appuyez pour consulter des conseils afin d\'améliorer votre expérience de déverrouillage"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Ne pas faire clignoter"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Appuyez de manière prolongée sur le bouton Marche/Arrêt pour éteindre le téléviseur"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Alertes sur les ressources système"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Utilisation excessive des ressources"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"L\'appli <xliff:g id="APP_NAME">%1$s</xliff:g> a été désactivée en raison d\'une utilisation excessive des ressources. Vous pouvez la réactiver depuis le menu \"Applications\" dans les paramètres."</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Modification effectuée par ton parent"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"L\'application <xliff:g id="APP_NAME">%1$s</xliff:g> a été supprimée pour le moment"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> est désormais disponible"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Caster sur d\'autres"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
-    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"séparateur déplaçable"</string>
+    <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"Impossible d\'ajuster la luminosité, car celle-ci est contrôlée par l\'appli principale"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"Synchronisation du mode Avion"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"Mode Avion"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"Le mode Avion sera désormais synchronisé sur votre téléphone et votre montre.\n\nGérez les préférences de synchronisation dans les paramètres de votre montre et de votre téléphone."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"Gérer les paramètres"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"Synchronisation du mode Ne pas déranger"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"Ne pas déranger"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"Synchronisé depuis votre appareil à proximité"</string>
 </resources>

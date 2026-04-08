@@ -8076,4 +8076,7 @@
 
     <!-- Whether the speech compass is available. -->
     <bool name="config_speechCompassAvailable">false</bool>
+
+    <!-- Whether to explicitly disable the Video capability over IWLAN when Wi-Fi Calling is turned off. -->
+    <bool name="config_disable_video_capability_when_wfc_off">false</bool>
 </resources>

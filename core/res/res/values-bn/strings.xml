@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"আবার চেষ্টা করুন"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"আবার চেষ্টা করুন"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"আনলক করতে ক্লিক করুন"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"আনলক করতে \'Enter\' বোতাম প্রেস করুন"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"আনলক করতে যেকোনও \'কি\' প্রেস করুন"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"সব ফিচার এবং ডেটার জন্য আনলক করুন"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"ফেস আনলক ফিচারের সাহায্যে আনলকের চেষ্টা সর্বোচ্চ সীমা পেরিয়ে গেছে"</string>
@@ -2704,15 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"আপনার আনলক করার অভিজ্ঞতা উন্নত করতে রিভিউ সংক্রান্ত পরামর্শে ট্যাপ করুন"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"ব্লিঙ্ক করবেন না"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"টিভি বন্ধ করতে, পাওয়ার বোতাম বেশিক্ষণ প্রেস করে রাখুন"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"সিস্টেম রিসোর্স সংক্রান্ত সতর্কতা"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"রিসোর্সের অতিরিক্ত ব্যবহার"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"অতিরিক্ত রিসোর্স ব্যবহারের কারণে <xliff:g id="APP_NAME">%1$s</xliff:g> অ্যাপ বন্ধ করা হয়েছে। আপনি সেটিংসের অ্যাপ মেনু থেকে এটি আবার চালু করতে পারবেন।"</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"আপনার অভিভাবকের থেকে আসা আপডেট"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> অ্যাপটি এখনকার মতো সরিয়ে দেওয়া হয়েছে"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> এখন উপলভ্য আছে"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"অন্যদের সাথে কাস্ট করুন"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
-    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"ড্র্যাগ করা যায় এমন ডিভাইডার"</string>
+    <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"উজ্জ্বলতা অ্যাডজাস্ট করা যাচ্ছে না, কারণ এটি সেরা অ্যাপের মাধ্যমে কন্ট্রোল করা হচ্ছে"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"বিমান মোড সিঙ্ক"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"বিমান মোড"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"বিমান মোড এখন আপনার ফোন ও স্মার্টওয়াচ জুড়ে সিঙ্ক করা হবে।\n\nআপনার স্মার্টওয়াচ ও ফোনের সেটিংসে গিয়ে মোড সিঙ্ক করার পছন্দ ম্যানেজ করুন।"</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"সেটিংস ম্যানেজ করুন"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"\'বিরক্ত করবে না\' সেটিংস সিঙ্ক করে"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"বিরক্ত করবে না"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"আপনার আশেপাশের ডিভাইস থেকে সিঙ্ক করা হয়েছে"</string>
 </resources>

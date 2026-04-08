@@ -16,6 +16,9 @@
 
 package com.android.server.personalcontext;
 
+import android.content.Context;
+import android.os.Looper;
+import android.os.UserHandle;
 import android.util.Log;
 import android.util.Slog;
 
@@ -28,9 +31,25 @@ import com.android.internal.content.PackageMonitor;
 final class ContextComponentMonitor extends PackageMonitor {
     private static final String TAG = "ContextComponentMonitor";
     private final ContextComponentManager mComponentManager;
+    private boolean mRegistered;
 
     ContextComponentMonitor(ContextComponentManager componentManager) {
         mComponentManager = componentManager;
+    }
+
+    @Override
+    public void register(Context context, Looper thread, UserHandle user,
+            boolean externalStorage) {
+        super.register(context, thread, user, externalStorage);
+        mRegistered = true;
+    }
+
+    @Override
+    public void unregister() {
+        if (!mRegistered) {
+            return;
+        }
+        super.unregister();
     }
 
     @Override

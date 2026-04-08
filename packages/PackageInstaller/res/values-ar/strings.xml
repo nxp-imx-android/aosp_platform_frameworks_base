@@ -86,7 +86,7 @@
     <string name="uninstall_failed_app" msgid="5506028705017601412">"لم يتم إلغاء تثبيت <xliff:g id="PACKAGE_LABEL">%1$s</xliff:g> بنجاح."</string>
     <string name="uninstalling_cloned_app" msgid="1826380164974984870">"جارٍ حذف النسخة الطبق الأصل عن \"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>\"…"</string>
     <string name="uninstall_failed_device_policy_manager" msgid="785293813665540305">"تعذر إلغاء تثبيت تطبيق مشرف الأجهزة النشطة"</string>
-    <string name="uninstall_failed_device_policy_manager_of_user" msgid="4813104025494168064">"تعذر إلغاء تثبيت تطبيق مشرف الأجهزة النشطة لدى <xliff:g id="USERNAME">%1$s</xliff:g>"</string>
+    <string name="uninstall_failed_device_policy_manager_of_user" msgid="4813104025494168064">"تعذر إلغاء تثبيت تطبيق مشرف الجهاز النشط لدى <xliff:g id="USERNAME">%1$s</xliff:g>"</string>
     <string name="uninstall_all_blocked_profile_owner" msgid="2009393666026751501">"هذا التطبيق مطلوب لبعض المستخدمين أو الملفات الشخصية وتم إلغاء تثبيته لآخرين."</string>
     <string name="uninstall_blocked_profile_owner" msgid="6373897407002404848">"هذا التطبيق مطلوب لملفك الشخصي ولا يمكن إلغاء تثبيته."</string>
     <string name="uninstall_blocked_device_owner" msgid="6724602931761073901">"مشرف الجهاز يحتاج إلى هذا التطبيق ولا يمكن إزالته."</string>

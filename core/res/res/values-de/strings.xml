@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Erneut versuchen"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Erneut versuchen"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Zum Entsperren klicken"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"Drücke zum Entsperren die Eingabetaste"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Zum Entsperren eine beliebige Taste drücken"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Entsperren, um alle Funktionen und Daten zu nutzen"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Die maximal zulässige Anzahl an Versuchen zur Entsperrung per Gesichtserkennung wurde überschritten."</string>
@@ -2704,15 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Tippe, um Tipps zur optimalen Nutzung der Entsperrung zu erhalten"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Nicht blinken"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Ein/Aus-Taste lange drücken, um den Fernseher auszuschalten"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Benachrichtigungen zu Systemressourcen"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Übermäßige Ressourcennutzung"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"Die App „<xliff:g id="APP_NAME">%1$s</xliff:g>“ wurde aufgrund übermäßiger Ressourcennutzung deaktiviert. Du kannst sie in den Einstellungen im Menü „Apps“ wieder aktivieren."</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Deine Eltern haben etwas geändert"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> wurde vorerst entfernt"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> ist jetzt verfügbar"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Auf andere Geräte streamen"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
-    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"ziehbarer Trennstrich"</string>
+    <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"Die Helligkeit kann nicht angepasst werden, weil sie von der obersten App gesteuert wird"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"Synchronisierung im Flugmodus"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"Flugmodus"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"Der Flugmodus wird jetzt auf deinem Smartphone und deiner Smartwatch synchronisiert.\n\nDu kannst die Einstellungen für die Synchronisierung von Modi in den Einstellungen deiner Smartwatch und deines Smartphones verwalten."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"Einstellungen verwalten"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"Synchronisierung von „Bitte nicht stören“"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"Bitte nicht stören"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"Von deinem Gerät in der Nähe synchronisiert"</string>
 </resources>

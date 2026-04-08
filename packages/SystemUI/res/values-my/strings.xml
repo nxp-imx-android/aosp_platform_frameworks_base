@@ -1136,7 +1136,7 @@
     <string name="keyboard_shortcut_group_applications_maps" msgid="7312554713993114342">"Maps"</string>
     <string name="group_accessibility_toggle_bounce_keys" msgid="4183584952493519179">"ကြိမ်ထပ်နှိပ်ခြင်းများ ပြောင်းရန်"</string>
     <string name="group_accessibility_toggle_mouse_keys" msgid="534757719357514361">"မောက်စ်ကီးများ ပြောင်းရန်"</string>
-    <string name="group_accessibility_toggle_sticky_keys" msgid="7722214637652104184">"Sticky ကီးများ ပြောင်းရန်"</string>
+    <string name="group_accessibility_toggle_sticky_keys" msgid="7722214637652104184">"ခလုတ်တွဲကီးများ ပြောင်းရန်"</string>
     <string name="group_accessibility_toggle_slow_keys" msgid="8569881436531795062">"အနှေးကီးများ ပြောင်းရန်"</string>
     <string name="group_accessibility_toggle_voice_access" msgid="5436708239015479017">"အသံဖြင့်ထိန်းချုပ်ခြင်း ပြောင်းရန်"</string>
     <string name="group_accessibility_toggle_talkback" msgid="5017967056006325713">"Talkback ခလုတ်ပြောင်းရန်"</string>

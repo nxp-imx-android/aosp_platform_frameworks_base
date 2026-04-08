@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Opnieuw proberen"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Nogmaals proberen"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Klik om te ontgrendelen"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"Druk op Enter om te ontgrendelen"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Druk op een toets om te ontgrendelen"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Ontgrendelen voor alle functies en gegevens"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Maximaal aantal pogingen voor Ontgrendelen via gezichtsherkenning overschreden"</string>
@@ -2704,14 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Tik voor tips om de ontgrendelfunctie te verbeteren"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Niet knipperen"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Houd je vinger lang op aan/uit-knop om de tv uit te zetten"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Meldingen over systeemresources"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Overmatig gebruik van resources"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"De app <xliff:g id="APP_NAME">%1$s</xliff:g> is uitgezet vanwege overmatig brongebruik. Je kunt de functie weer aanzetten via het menu Apps in Instellingen."</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Update van je ouder"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> is voorlopig verwijderd"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> is nu beschikbaar"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Casten naar anderen"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"sleepbare scheidingslijn"</string>
     <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"Kan de helderheid niet aanpassen omdat deze wordt beheerd door de bovenste app"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"Synchronisatie in vliegtuigmodus"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"Vliegtuigmodus"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"De vliegtuigmodus wordt nu gesynchroniseerd op je telefoon en smartwatch.\n\nBeheer de voorkeuren voor modussynchronisatie in de instellingen van je smartwatch en telefoon."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"Instellingen beheren"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"Niet storen synchroniseren"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"Niet storen"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"Gesynchroniseerd vanaf je apparaat in de buurt"</string>
 </resources>

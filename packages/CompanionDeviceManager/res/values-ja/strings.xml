@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"デバイス"</string>
     <string name="summary_generic" msgid="1761976003668044801">"このアプリは、あなたのスマートフォンと選択したデバイスとの間で、通話相手の名前などの情報を同期できるようになります"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>からの発信者情報などの情報の同期とスマート アクションの実行を&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt;に許可します"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>からの発信者情報などの情報の同期とスマート アクションの実行の権限を&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt;に付与します"</string>
     <string name="consent_yes" msgid="8344487259618762872">"許可"</string>
     <string name="consent_no" msgid="2640796915611404382">"許可しない"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"キャンセル"</string>
@@ -85,7 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"録音"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"付近のデバイスの検出、接続、相対位置の特定"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"すべての通知の読み取り（連絡先、メッセージ、写真に関する情報を含む）"</string>
-    <string name="permission_notifications_summary" msgid="6819393427371255636">"• すべての通知の読み取り（連絡先、メッセージ、写真に関する情報を含む）&lt;br/&gt;• 通知の送信&lt;br/&gt;&lt;br/&gt;このアプリの通知読み取り機能と通知送信機能はいつでも [設定] &gt; [通知] で管理できます。"</string>
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• すべての通知の読み取り（連絡先、メッセージ、写真に関する情報を含む）&lt;br/&gt;• 通知の送信&lt;br/&gt;&lt;br/&gt;このアプリの通知読み取り機能と通知送信機能はいつでも [設定] › [通知] で管理できます。"</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"スマートフォンの写真やメディアがお使いの他のデバイスと共有されます。"</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"通知の送信"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"スマートフォンの画面（アプリを含む）がお使いのデバイスと共有されます。お使いのデバイスは、音声、写真、お支払い情報、パスワード、メッセージを含め、スマートフォンに表示されるすべての情報に、スマートフォンがロックされていてもアクセスできるようになります。&lt;br/&gt;&lt;br/&gt;お使いのデバイスからは、タップやマウスクリックなどの操作を含め、マイク、カメラ、その他のセンサーデータがスマートフォンに送り返されます。"</string>
@@ -93,10 +92,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> の画面を &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; に録画、キャスト、共有します。&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> は、音声、写真、お支払い情報、パスワード、メッセージを含め、<xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> で表示、再生されるすべてのコンテンツにアクセスできるようになります。"</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> のアプリを &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; にストリーミングします。&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> は、<xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> がロックされている場合でも、音声、写真、お支払い情報、パスワード、メッセージを含め、<xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> で表示、再生されるすべてのコンテンツにアクセスできるようになります。"</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"他のアプリから音声や動画をストリーミングまたはキャストする際に使用可能なデバイスとコントロールのリストにアクセスできます"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"アラートが届きます"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"サイレント モードが有効であっても、アラートが届きます"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"スマートフォン"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"タブレット"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"テレビ"</string>

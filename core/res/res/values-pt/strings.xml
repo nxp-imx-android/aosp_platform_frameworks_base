@@ -1091,6 +1091,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Tente novamente"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Tente novamente"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Clique para desbloquear"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"Pressione Enter para desbloquear"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Pressione qualquer tecla para desbloquear"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Desbloqueio para todos os recursos e dados"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"O número máximo de tentativas de desbloqueio facial foi excedido"</string>
@@ -2705,15 +2706,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Toque para ver dicas sobre como melhorar a experiência de desbloqueio"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Não piscar"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Toque e mantenha pressionado o botão liga/desliga para desligar a TV"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Alertas de recursos do sistema"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Uso excessivo de recursos"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"O app <xliff:g id="APP_NAME">%1$s</xliff:g> foi desativado devido ao uso excessivo de recursos. Você pode reativá-lo no menu \"Apps\" nas configurações."</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Atualização do seu familiar responsável"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"O app <xliff:g id="APP_NAME">%1$s</xliff:g> foi removido temporariamente"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"O app <xliff:g id="APP_NAME">%1$s</xliff:g> já está disponível"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Transmitir para outros"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
-    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"divisor arrastável"</string>
+    <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"Não é possível ajustar o brilho, porque ele está sendo controlado pelo app em execução"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"Sincronização do modo avião"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"Modo avião"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"O modo avião agora será sincronizado entre o smartphone e o relógio.\n\nGerencie as preferências de sincronização de modo nas configurações dos dois dispositivos."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"Gerenciar configurações"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"Sincronização do modo Não Perturbe"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"Não perturbe"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"Sincronizado com seu dispositivo por perto"</string>
 </resources>

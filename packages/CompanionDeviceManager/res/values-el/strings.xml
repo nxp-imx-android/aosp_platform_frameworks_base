@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"συσκευή"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Αυτή η εφαρμογή θα μπορεί να συγχρονίζει πληροφορίες μεταξύ του τηλεφώνου και της επιλεγμένης συσκευής σας, όπως το όνομα ενός ατόμου που σας καλεί."</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Να επιτρέπεται στην εφαρμογή &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; ο συγχρονισμός πληροφοριών, όπως τα στοιχεία καλούντος, και η εκτέλεση έξυπνων ενεργειών από τη συσκευή <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"Παραχωρήστε άδειες στη συσκευή &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; για τον συγχρονισμό πληροφοριών, όπως τα στοιχεία καλούντος και η εκτέλεση έξυπνων ενεργειών από τη συσκευή <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Να επιτρέπεται"</string>
     <string name="consent_no" msgid="2640796915611404382">"Να μην επιτρέπεται"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Ακύρωση"</string>
@@ -85,7 +84,8 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Ηχογράφηση"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Εύρεση, σύνδεση και προσδιορισμός της σχετικής τοποθεσίας συσκευών σε κοντινή απόσταση"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Ανάγνωση όλων των ειδοποιήσεων, συμπεριλαμβανομένων πληροφοριών όπως επαφές, μηνύματα και φωτογραφίες"</string>
-    <string name="permission_notifications_summary" msgid="6819393427371255636">"• Ανάγνωση όλων των ειδοποιήσεων, συμπεριλαμβανομένων πληροφοριών όπως επαφές, μηνύματα και φωτογραφίες&lt;br/&gt;• Αποστολή ειδοποιήσεων σε εσάς&lt;br/&gt;&lt;br/&gt;Μπορείτε να διαχειριστείτε τη δυνατότητα της εφαρμογής να διαβάζει και να στέλνει ειδοποιήσεις οποιαδήποτε στιγμή στις Ρυθμίσεις &gt; Ειδοποιήσεις."</string>
+    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
+    <skip />
     <string name="permission_storage_summary" msgid="3779040306012319942">"Κοινοποιήστε τις φωτογραφίες και τα πολυμέσα του τηλεφώνου σας στις άλλες συσκευές σας."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Να σας αποστέλλονται ειδοποιήσεις"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Κοινοποιήστε την οθόνη του τηλεφώνου σας, συμπεριλαμβανομένων των εφαρμογών, στις συσκευές σας. Οι συσκευές σας θα έχουν πρόσβαση σε οτιδήποτε είναι ορατό στο τηλέφωνό σας, συμπεριλαμβανομένων ήχων, φωτογραφιών, στοιχείων πληρωμής, κωδικών πρόσβασης και μηνυμάτων, ακόμα και όταν το τηλέφωνό σας είναι κλειδωμένο.&lt;br/&gt;&lt;br/&gt;Παρέχετε δεδομένα μικροφώνου, κάμερας και άλλων αισθητήρων από τις συσκευές σας στο τηλέφωνό σας, συμπεριλαμβανομένων αλληλεπιδράσεων όπως κινήσεις αφής και κλικ ποντικιού."</string>
@@ -93,10 +93,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Εγγράψτε, μεταδώστε ή μοιραστείτε την οθόνη της συσκευής <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> στο &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Η εφαρμογή <xliff:g id="APP_NAME">%1$s</xliff:g> θα έχει πρόσβαση σε οτιδήποτε είναι ορατό ή αναπαράγεται στη συσκευή <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, συμπεριλαμβανομένων ήχων, φωτογραφιών, στοιχείων πληρωμής, κωδικών πρόσβασης και μηνυμάτων."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Μεταδώστε σε ροή τις εφαρμογές της συσκευής <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> στη συσκευή &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Η εφαρμογή <xliff:g id="APP_NAME">%1$s</xliff:g> θα έχει πρόσβαση σε οτιδήποτε είναι ορατό ή αναπαράγεται στη συσκευή <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, συμπεριλαμβανομένων ήχων, φωτογραφιών, στοιχείων πληρωμής, κωδικών πρόσβασης και μηνυμάτων, ακόμα και όταν η συσκευή <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> είναι κλειδωμένη."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Αποκτήστε πρόσβαση σε μια λίστα διαθέσιμων συσκευών και ελέγξτε ποιες κάνουν ροή ή μετάδοση ήχου ή βίντεο από άλλες εφαρμογές"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Αποστολή ειδοποιήσεων"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Αποστολή ειδοποιήσεων ακόμη και όταν η λειτουργία Μην ενοχλείτε είναι ενεργή"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"τηλέφωνο"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablet"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"τηλεόραση"</string>

@@ -195,6 +195,7 @@ public class OneTimePermissionUserManager {
         private static final int STATE_ACTIVE = 2;
 
         private final int mUid;
+        private final int mPccUid;
         private final @NonNull String mPackageName;
         private final int mDeviceId;
         private long mTimeout;
@@ -215,21 +216,16 @@ public class OneTimePermissionUserManager {
         private final IUidObserver mObserver = new UidObserver() {
             @Override
             public void onUidGone(int uid, boolean disabled) {
-                if (uid == mUid) {
-                    PackageInactivityListener.this.updateUidState(STATE_GONE);
+                if (uid == mUid || uid == mPccUid) {
+                    PackageInactivityListener.this.updateUidState();
                 }
             }
 
             @Override
             public void onUidStateChanged(int uid, @ProcessState int procState,
                     long procStateSeq, @ProcessCapability int capability) {
-                if (uid == mUid) {
-                    if (procState > ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE
-                            && procState != ActivityManager.PROCESS_STATE_NONEXISTENT) {
-                        PackageInactivityListener.this.updateUidState(STATE_TIMER);
-                    } else {
-                        PackageInactivityListener.this.updateUidState(STATE_ACTIVE);
-                    }
+                if (uid == mUid || uid == mPccUid) {
+                    PackageInactivityListener.this.updateUidState();
                 }
             }
         };
@@ -241,6 +237,9 @@ public class OneTimePermissionUserManager {
                             + " killedDelay=" + revokeAfterkilledDelay);
 
             mUid = uid;
+            mPccUid = android.app.privatecompute.flags.Flags.enablePccFrameworkSupport()
+                    ? android.os.Process.getPrivateComputeCoreUidForAppUid(uid)
+                    : android.os.Process.INVALID_UID;
             mPackageName = packageName;
             mDeviceId = deviceId;
             mTimeout = timeout;
@@ -324,7 +323,13 @@ public class OneTimePermissionUserManager {
         }
 
         private int getCurrentState() {
-            return getStateFromProcState(mActivityManagerInternal.getUidProcessState(mUid));
+            int state = getStateFromProcState(mActivityManagerInternal.getUidProcessState(mUid));
+            if (mPccUid != android.os.Process.INVALID_UID) {
+                int pccState = getStateFromProcState(
+                        mActivityManagerInternal.getUidProcessState(mPccUid));
+                state = Math.max(state, pccState);
+            }
+            return state;
         }
 
         private int getStateFromProcState(@ProcessState int procState) {

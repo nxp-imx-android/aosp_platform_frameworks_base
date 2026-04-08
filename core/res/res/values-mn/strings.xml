@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Дахин оролдох"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Дахин оролдох"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Түгжээг тайлахын тулд товшино уу"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"Түгжээг тайлахын тулд Enter дээр дарна уу"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Түгжээг тайлахын тулд дурын товчийг дарна уу"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Бүх онцлог, өгөгдлийн түгжээг тайлах"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Царайгаар түгжээ тайлах оролдлогын тоо дээд хэмжээнээс хэтэрсэн"</string>
@@ -2704,15 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Түгжээг тайлах хэрэглээгээ сайжруулах зөвлөгөөг хянахын тулд товшино уу"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Бүү анивчуул"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"ТВ-ийг унтраах бол Асаах/унтраах товчийг удаан дарна уу"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Системийн нөөцийн сэрэмжлүүлэг"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Нөөцийг хэтрүүлэн ашиглах"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"Нөөцийг хэт их ашигласан тул <xliff:g id="APP_NAME">%1$s</xliff:g> аппыг идэвхгүй болгосон. Та үүнийг Тохиргоон дахь Апп цэсээс дахин идэвхжүүлэх боломжтой."</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Таны эцэг эхийн хийсэн шинэчлэлт"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g>-г одоо хаслаа"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g>-г одоо ашиглах боломжтой"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Бусад руу дамжуулах"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
-    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"чирэх боломжтой хуваагч"</string>
+    <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"Гэрэлтүүлгийг давуу эрхтэй аппаас хянаж байгаа тул тохируулах боломжгүй"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"Нислэгийн горимын синк"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"Нислэгийн горим"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"Нислэгийн горим одоо таны утас, цаган дээр синк хийнэ.\n\nГоримын синк хийх сонголтуудыг цаг, утасныхаа тохиргоон дээр удирдана уу."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"Тохиргоог удирдах"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"Бүү саад бол онцлогийг синк хийх"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"Бүү саад бол"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"Таны ойролцоох төхөөрөмжөөс синк хийсэн"</string>
 </resources>

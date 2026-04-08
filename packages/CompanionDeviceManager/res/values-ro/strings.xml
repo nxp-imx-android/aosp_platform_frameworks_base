@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"dispozitiv"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Aplicația va putea să sincronizeze informații, cum ar fi numele unui apelant, între telefonul tău și dispozitivul ales"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Permite ca &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; să sincronizeze informații, cum ar fi cele despre apelant, și să ruleze acțiuni inteligente de pe <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>."</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"Acordă permisiuni ca &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; să sincronizeze informații, cum ar fi cele despre apelant, și să ruleze acțiuni inteligente de pe <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>."</string>
     <string name="consent_yes" msgid="8344487259618762872">"Permite"</string>
     <string name="consent_no" msgid="2640796915611404382">"Nu permite"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Anulează"</string>
@@ -85,7 +84,8 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Să înregistreze conținut audio"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Să găsească dispozitivele apropiate, să se conecteze la ele și să le determine poziția relativă"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Să citească toate notificările, inclusiv informații cum ar fi agenda, mesajele și fotografiile"</string>
-    <string name="permission_notifications_summary" msgid="6819393427371255636">"• Să citească toate notificările, inclusiv informații cum ar fi agenda, mesajele și fotografiile&lt;br/&gt;• Să trimită notificări&lt;br/&gt;&lt;br/&gt;Poți să gestionezi oricând permisiunea acestei aplicații de a citi și trimite notificări în Setări &gt; Notificări."</string>
+    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
+    <skip />
     <string name="permission_storage_summary" msgid="3779040306012319942">"Trimite fotografiile și conținutul media de pe telefon pe alte dispozitive."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Să îți trimită notificări"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Permite dispozitivelor tale să aibă acces la ecranul telefonului, inclusiv la aplicații. Dispozitivele tale vor avea acces la tot conținutul vizibil pe telefon, inclusiv conținutul audio, fotografii, informații de plată, parole și mesaje, chiar dacă telefonul este blocat.&lt;br/&gt;&lt;br/&gt;Trimite înapoi pe telefon date de la microfon, camera foto și alți senzori de pe dispozitive, inclusiv interacțiuni cum ar fi gesturile tactile și clicurile de mouse."</string>
@@ -93,10 +93,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Să înregistreze, să proiecteze sau să trimită ecranul <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> la &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> va avea acces la tot conținutul vizibil sau redat pe <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, inclusiv conținut audio, fotografii, informații de plată, parole și mesaje."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Să redea în stream aplicațiile de pe <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> pe &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> va avea acces la tot conținutul vizibil sau redat pe <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, inclusiv conținut audio, fotografii, informații de plată, parole și mesaje, chiar dacă <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> este blocat."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Accesează lista dispozitivelor disponibile și alege-l pe cel care redă în stream sau proiectează conținut audio sau video din alte aplicații"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Să-ți trimită alerte"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Să-ți trimită alerte chiar și când modul Nu deranja este activat"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telefon"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tabletă"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"televizor"</string>

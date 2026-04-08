@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"再試一次"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"再試一次"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"按一下即可解鎖"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"按 Enter 鍵即可解鎖"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"按任何鍵即可解鎖"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"解鎖即可使用所有功能和資料"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"已超過面孔解鎖嘗試次數上限"</string>
@@ -2704,15 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"輕按即可查看關於改善解鎖體驗的貼士"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"不要閃動"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"長按開關按鈕即可關閉電視"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"系統資源警示"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"過量使用資源"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"應用程式「<xliff:g id="APP_NAME">%1$s</xliff:g>」因使用過多資源而被停用。你可以在「設定」的「應用程式」選單中重新啟用該應用程式。"</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"你的家長已更新設定"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> 目前已被移除"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"現可使用 <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"投放到其他裝置"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
-    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"可拖曳的分隔線"</string>
+    <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"無法調整亮度，因為目前是由上層應用程式控制亮度"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"飛行模式同步"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"飛行模式"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"手機和手錶現在會同步啟用「飛行模式」。\n\n你可以在手錶和手機設定中管理模式同步偏好設定。"</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"管理設定"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"同步請勿騷擾"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"請勿騷擾"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"已從附近的裝置同步"</string>
 </resources>

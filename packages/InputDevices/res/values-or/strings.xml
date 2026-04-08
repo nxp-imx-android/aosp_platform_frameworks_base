@@ -68,20 +68,12 @@
     <string name="default_game_controller_left_button" msgid="8135197345326445929">"ବାମପଟ ବଟନ"</string>
     <string name="default_game_controller_right_button" msgid="7213665536684737133">"ଡାହାଣପଟ ବଟନ"</string>
     <string name="default_game_controller_up_button" msgid="5466016771871639338">"ଅପ ବଟନ"</string>
-    <!-- no translation found for nintendo_game_controller_l_button (4725333055757177703) -->
-    <skip />
-    <!-- no translation found for nintendo_game_controller_r_button (1916817307166823755) -->
-    <skip />
-    <!-- no translation found for nintendo_game_controller_zl_button (7980363034784417011) -->
-    <skip />
-    <!-- no translation found for nintendo_game_controller_zr_button (301860128142672009) -->
-    <skip />
-    <!-- no translation found for xbox_game_controller_lb_button (3531058576782769049) -->
-    <skip />
-    <!-- no translation found for xbox_game_controller_rb_button (7009478913470850721) -->
-    <skip />
-    <!-- no translation found for xbox_game_controller_lt_button (6613016668751667815) -->
-    <skip />
-    <!-- no translation found for xbox_game_controller_rt_button (1259415225164057316) -->
-    <skip />
+    <string name="nintendo_game_controller_l_button" msgid="4725333055757177703">"L ବଟନ"</string>
+    <string name="nintendo_game_controller_r_button" msgid="1916817307166823755">"R ବଟନ"</string>
+    <string name="nintendo_game_controller_zl_button" msgid="7980363034784417011">"ZL ବଟନ"</string>
+    <string name="nintendo_game_controller_zr_button" msgid="301860128142672009">"ZR ବଟନ"</string>
+    <string name="xbox_game_controller_lb_button" msgid="3531058576782769049">"LB ବଟନ"</string>
+    <string name="xbox_game_controller_rb_button" msgid="7009478913470850721">"RB ବଟନ"</string>
+    <string name="xbox_game_controller_lt_button" msgid="6613016668751667815">"LT ବଟନ"</string>
+    <string name="xbox_game_controller_rt_button" msgid="1259415225164057316">"RT ବଟନ"</string>
 </resources>

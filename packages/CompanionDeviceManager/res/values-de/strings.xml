@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"Gerät"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Diese App kann dann Daten wie den Namen eines Anrufers zwischen deinem Smartphone und dem ausgewählten Gerät synchronisieren"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; erlauben, Informationen wie Anruferinformationen zu synchronisieren und intelligente Aktionen über dein Gerät (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>) auszuführen"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; die Berechtigung erteilen, Informationen wie Anruferinformationen zu synchronisieren und intelligente Aktionen über dein Gerät (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>) auszuführen"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Zulassen"</string>
     <string name="consent_no" msgid="2640796915611404382">"Nicht zulassen"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Abbrechen"</string>
@@ -85,7 +84,8 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Audio aufnehmen"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Geräte in der Nähe finden, eine Verbindung zu ihnen herstellen und ihren relativen Standort ermitteln"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Alle Benachrichtigungen sehen, einschließlich Informationen wie Kontakten, Nachrichten und Fotos"</string>
-    <string name="permission_notifications_summary" msgid="6819393427371255636">"• Auf alle Benachrichtigungen zugreifen, einschließlich Informationen wie Kontakte, Nachrichten und Fotos&lt;br/&gt;• Benachrichtigungen senden&lt;br/&gt;&lt;br/&gt;Ob diese App auf Benachrichtigungen zugreifen und diese senden darf, kannst du jederzeit unter „Einstellungen &gt; Benachrichtigungen“ ändern."</string>
+    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
+    <skip />
     <string name="permission_storage_summary" msgid="3779040306012319942">"Fotos und Medien von deinem Smartphone mit deinen anderen Geräten teilen."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Benachrichtigungen senden"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Den Bildschirm deines Smartphones, einschließlich Apps, auf deinen Geräten teilen. Deine Geräte haben dann Zugriff auf alle Inhalte, die auf deinem Smartphone sichtbar sind, einschließlich Audioinhalten, Fotos, Zahlungsinformationen, Passwörtern und Nachrichten, selbst wenn dein Smartphone gesperrt ist.&lt;br/&gt;&lt;br/&gt;Mikrofon-, Kamera- und andere Sensordaten von deinen Geräten an dein Smartphone übertragen, einschließlich Interaktionen wie Touchgesten und Mausklicks."</string>
@@ -93,10 +93,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Bildschirm deines Geräts (<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>) aufzeichnen, streamen oder mit &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt; teilen.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> hat dann Zugriff auf alles, was auf deinem Gerät (<xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>) sichtbar ist oder abgespielt wird, einschließlich Audioinhalten, Fotos, Zahlungsinformationen, Passwörtern und Nachrichten."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Apps von deinem <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> auf dein &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt; streamen.&lt;br/&gt;&lt;br/&gt;Die App „<xliff:g id="APP_NAME">%1$s</xliff:g>“ hat dann Zugriff auf alles, was auf deinem <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> sichtbar ist oder abgespielt wird, einschließlich Audioinhalten, Fotos, Zahlungsinformationen, Passwörtern und Nachrichten, selbst wenn dein <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> gesperrt ist."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Auf eine Liste mit verfügbaren Geräten zugreifen und festlegen, welches Gerät Audio- oder Videoinhalte aus anderen Apps streamt oder überträgt"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Benachrichtigungen senden"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Benachrichtigungen senden, auch wenn der Modus „Bitte nicht stören“ aktiviert ist"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"Smartphone"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"Tablet"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"Fernseher"</string>

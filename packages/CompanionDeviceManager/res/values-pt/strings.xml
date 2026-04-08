@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"dispositivo"</string>
     <string name="summary_generic" msgid="1761976003668044801">"O app poderá sincronizar informações, como o nome de quem está ligando, entre seu smartphone e o dispositivo escolhido"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Permitir que o app &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; sincronize informações, como dados de quem está ligando, e execute ações inteligentes no seu dispositivo <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"Permitir que o app &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; sincronize informações, como dados de quem está ligando, e execute ações inteligentes no seu dispositivo <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Permitir"</string>
     <string name="consent_no" msgid="2640796915611404382">"Não permitir"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Cancelar"</string>
@@ -85,7 +84,8 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Gravar áudio"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Encontrar, determinar o posicionamento relativo e se conectar a dispositivos por perto"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Ler todas as notificações, incluindo informações como contatos, mensagens e fotos"</string>
-    <string name="permission_notifications_summary" msgid="6819393427371255636">"• Ler todas as notificações, incluindo informações como, por exemplo, contatos, mensagens e fotos&lt;br/&gt;• Enviar notificações&lt;br/&gt;&lt;br/&gt;Você pode gerenciar a capacidade deste app de ler e enviar notificações quando quiser em Configurações &gt; Notificações."</string>
+    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
+    <skip />
     <string name="permission_storage_summary" msgid="3779040306012319942">"Compartilhe fotos e mídias do seu celular com outros dispositivos."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Enviar notificações"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Compartilhar a tela do celular, incluindo apps, com seus dispositivos. Seus dispositivos terão acesso a tudo o que estiver visível no telefone, incluindo áudios, fotos, informações de pagamento, senhas e mensagens, mesmo quando o telefone estiver bloqueado.&lt;br/&gt;&lt;br/&gt;Fornecer dados de microfone, câmera e outros sensores dos seus dispositivos de volta para o telefone, incluindo interações como gestos e cliques do mouse."</string>
@@ -93,10 +93,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Grave, transmita ou compartilhe a tela do seu <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> com o &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;O <xliff:g id="APP_NAME">%1$s</xliff:g> terá acesso a tudo que estiver visível ou for aberto no <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, incluindo áudios, fotos, informações de pagamento, senhas e mensagens."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Faça streaming dos apps do seu <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> para o &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;O <xliff:g id="APP_NAME">%1$s</xliff:g> terá acesso a tudo que estiver visível ou for aberto no <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, incluindo áudios, fotos, informações de pagamento, senhas e mensagens, mesmo quando o <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> estiver bloqueado."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Acesse uma lista de dispositivos disponíveis e controle quais deles podem reproduzir ou transmitir áudio ou vídeo de outros apps"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Enviar alertas"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Enviar alertas mesmo quando o modo não perturbe estiver ativado"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"smartphone"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablet"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"tv"</string>

@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"устройство"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Това приложение ще може да синхронизира различна информация, като например името на обаждащия се, между телефона ви и избраното устройство"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Разрешете на &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; да синхронизира информация, като например такава за обаждащия се, и да изпълнява интелигентни действия от <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ви"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"Разрешете на &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; да синхронизира информация, като например такава за обаждащия се, и да изпълнява интелигентни действия от <xliff:g id="DEVICE_TYPE">%2$s</xliff:g> ви"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Разрешаване"</string>
     <string name="consent_no" msgid="2640796915611404382">"Забраняване"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Отказ"</string>
@@ -85,7 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Записване на звук"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Намиране и свързване с устройства в близост, както и определяне на относителната им позиция"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Четене на всички известия, включително различна информация, като например контакти, съобщения и снимки"</string>
-    <string name="permission_notifications_summary" msgid="6819393427371255636">"• Четене на всички известия, включително различна информация, като например контакти, съобщения и снимки.&lt;br/&gt;• Изпращане на известия до вас.&lt;br/&gt;&lt;br/&gt;По всяко време можете да управлявате способността на това приложение да чете и изпраща известия в „Настройки &gt; Известия“."</string>
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Четене на всички известия, включително различна информация, като например контакти, съобщения и снимки.&lt;br/&gt;• Изпращане на известия до вас.&lt;br/&gt;&lt;br/&gt;По всяко време можете да управлявате способността на това приложение да чете и изпраща известия в „Настройки › Известия“."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Споделяйте с другите си устройства снимките и мултимедийните файлове на телефона си."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Изпращане на известия до вас"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Споделяйте екрана на телефона си, включително приложенията, с устройствата си. Устройствата ви ще имат достъп до всичко, което се показва на телефона ви, включително аудио, снимки, данни за плащане, пароли и съобщения, дори когато телефонът ви е заключен.&lt;br/&gt;&lt;br/&gt;Предоставяйте на телефона си данните от микрофона, камерата и други данни от сензорите на устройствата си, включително взаимодействия, като например жестове с докосване и кликвания с мишката."</string>
@@ -93,10 +92,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Записвайте, предавайте или споделяйте екрана на вашия <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> с устройство &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> ще има достъп до всичко, което се показва или възпроизвежда на вашия <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, включително аудио, снимки, данни за плащане, пароли и съобщения."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Предавайте поточно приложенията от своя <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> към &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> ще има достъп до всичко, което се показва или възпроизвежда на устройството <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, включително аудио, снимки, данни за плащане, пароли и съобщения, дори когато вашият <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> е заключен."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Осъществяване на достъп до списъка с налични устройства и контролиране на това кое да се използва за поточно предаване или предаване на аудио/видео от други приложения"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Изпращане на сигнали до вас"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Изпращане на сигнали до вас дори когато режимът „Не безпокойте“ е включен"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"телефон"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"таблет"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"телевизор"</string>

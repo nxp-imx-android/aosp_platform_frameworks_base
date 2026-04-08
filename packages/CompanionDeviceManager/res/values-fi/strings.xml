@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"laite"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Sovellus voi synkronoida tietoja (esimerkiksi soittajan nimen) puhelimesi ja valitun laitteen välillä"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Salli, että &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; voi synkronoida tietoja (esim. soittajan tiedot) ja suorittaa älykkäitä toimintoja laitteelta (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>)"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"Salli, että <xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g> voi synkronoida tietoja (esim. soittajan tiedot) ja suorittaa älykkäitä toimintoja laitteelta (<xliff:g id="DEVICE_TYPE">%2$s</xliff:g>)"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Salli"</string>
     <string name="consent_no" msgid="2640796915611404382">"Älä salli"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Peruuta"</string>
@@ -85,7 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"tallentaa audiota"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Löytää lähellä olevia laitteita, muodostaa niihin yhteyden ja määrittää niiden suhteellisen sijainnin"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"lukea kaikkia ilmoituksia, esim. yhteystietoihin, viesteihin ja kuviin liittyviä tietoja"</string>
-    <string name="permission_notifications_summary" msgid="6819393427371255636">"• lukea kaikki ilmoitukset ja niihin liittyvät tiedot, mm. yhteystiedot, viestit ja kuvat&lt;br/&gt;• lähettää ilmoituksia.&lt;br/&gt;&lt;br/&gt;Avaamalla Asetukset &gt; Ilmoitukset voit milloin tahansa valita, saako sovellus lukea ja lähettää ilmoituksia."</string>
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• lukea kaikkia ilmoituksia, esim. yhteystietoihin, viesteihin ja kuviin liittyviä tietoja&lt;br/&gt;• lähettää ilmoituksia.&lt;br/&gt;&lt;br/&gt;Voit milloin tahansa valita, saako sovellus lukea ja lähettää ilmoituksia, avaamalla Asetukset › Ilmoitukset."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Jakaa puhelimen kuvat ja median muille laitteille."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Lähettää sinulle ilmoituksia"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Jakaa puhelimen näytön (myös sovellukset) laitteillesi. Laitteilla on pääsy kaikkeen puhelimessa näkyvään sisältöön, mukaan lukien audioon, kuviin, maksutietoihin, salasanoihin ja viesteihin, vaikka puhelin olisi lukittu.&lt;br/&gt;&lt;br/&gt;Jakaa laitteiden mikrofonin, kameran ja muiden anturien datan puhelimelle, mukaan lukien kosketuseleet ja hiiren klikkaukset."</string>
@@ -93,10 +92,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> voi tallentaa, striimata tai jakaa näytön laitteelle &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> saa pääsyn kaikkeen sisältöön, jota <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g> näyttää tai toistaa, mukaan lukien audioon, kuviin, maksutietoihin, salasanoihin ja viesteihin."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Striimaa laitteen (<xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g>) sovelluksia laitteelle &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;<xliff:g id="APP_NAME">%1$s</xliff:g> saa pääsyn kaikkeen sisältöön, jota <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g> näyttää tai toistaa, mukaan lukien audioon, kuviin, maksutietoihin, salasanoihin ja viesteihin myös silloin, kun <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> on lukittu."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Näkee saatavilla olevat laitteet ja voi ohjata sitä, millä niistä striimataan muiden sovellusten audiota tai videota"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Lähetä ilmoituksia"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Lähetä ilmoituksia, vaikka Älä häiritse ‑tila olisi päällä"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"puhelin"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tabletti"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"TV:llä"</string>

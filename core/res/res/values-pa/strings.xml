@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"ਅਣਲਾਕ ਕਰਨ ਲਈ ਕਲਿੱਕ ਕਰੋ"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"ਅਣਲਾਕ ਕਰਨ ਲਈ Enter ਦਬਾਓ"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"ਅਣਲਾਕ ਕਰਨ ਲਈ ਕੋਈ ਵੀ ਕੁੰਜੀ ਦਬਾਓ"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"ਸਾਰੀਆਂ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਅਤੇ ਡਾਟੇ ਲਈ ਅਣਲਾਕ ਕਰੋ"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"ਫ਼ੇਸ ਅਣਲਾਕ ਦੀਆਂ ਕੋਸ਼ਿਸ਼ਾਂ ਸੀਮਾ ਤੋਂ ਪਾਰ ਹੋ ਗਈਆਂ"</string>
@@ -2704,15 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"ਆਪਣੇ ਅਣਲਾਕ ਕਰਨ ਸੰਬੰਧੀ ਅਨੁਭਵ ਨੂੰ ਬਿਹਤਰ ਬਣਾਉਣ ਵਾਸਤੇ ਸੁਝਾਵਾਂ ਦੀ ਸਮੀਖਿਆ ਕਰਨ ਲਈ ਟੈਪ ਕਰੋ"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"ਪਲਕਾਂ ਨਾ ਝਪਕੋ"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"ਟੀਵੀ ਬੰਦ ਕਰਨ ਲਈ ਪਾਵਰ ਬਟਨ ਨੂੰ ਦਬਾਈ ਰੱਖੋ"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"ਸਿਸਟਮ ਸਰੋਤ ਸੰਬੰਧੀ ਅਲਰਟ"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"ਸਰੋਤ ਦੀ ਜ਼ਿਆਦਾ ਵਰਤੋਂ"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"ਐਪ ‘<xliff:g id="APP_NAME">%1$s</xliff:g> ਨੂੰ ਸਰੋਤਾਂ ਦੀ ਬਹੁਤ ਜ਼ਿਆਦਾ ਵਰਤੋਂ ਕਰਨ ਕਰਕੇ ਬੰਦ ਕਰ ਦਿੱਤਾ ਗਿਆ ਹੈ। ਤੁਸੀਂ ਇਸਨੂੰ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਐਪਾਂ ਮੀਨੂ ਤੋਂ ਮੁੜ-ਚਾਲੂ ਕਰ ਸਕਦੇ ਹੋ।\""</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"ਤੁਹਾਡੇ ਮਾਂ-ਪਿਓ ਵੱਲੋਂ ਅੱਪਡੇਟ"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> ਨੂੰ ਫ਼ਿਲਹਾਲ ਹਟਾਇਆ ਗਿਆ"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> ਹੁਣ ਉਪਲਬਧ ਹੈ"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"ਹੋਰ ਡੀਵਾਈਸਾਂ \'ਤੇ ਕਾਸਟ ਕਰੋ"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
-    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"ਘਸੀਟਣਯੋਗ ਵਿਭਾਜਕ"</string>
+    <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"ਚਮਕ ਨੂੰ ਵਿਵਸਥਿਤ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ ਕਿਉਂਕਿ ਪਹਿਲਾਂ ਤੋਂ ਚੱਲ ਰਹੀ ਐਪ ਇਸਨੂੰ ਕੰਟਰੋਲ ਕਰ ਰਹੀ ਹੈ"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"ਹਵਾਈ-ਜਹਾਜ਼ ਮੋਡ ਸਿੰਕ"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"ਹਵਾਈ-ਜਹਾਜ਼ ਮੋਡ"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"ਹਵਾਈ-ਜਹਾਜ਼ ਮੋਡ ਹੁਣ ਤੁਹਾਡੇ ਫ਼ੋਨ ਅਤੇ ਘੜੀ ਵਿਚਾਲੇ ਸਿੰਕ ਹੋਵੇਗਾ।\n\nਆਪਣੀ ਘੜੀ ਅਤੇ ਫ਼ੋਨ ਦੀਆਂ ਸੈਟਿੰਗਾਂ \'ਤੇ ਮੋਡ ਸਿੰਕ ਤਰਜੀਹਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ।"</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"ਸੈਟਿੰਗਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"\'ਪਰੇਸ਼ਾਨ ਨਾ ਕਰੋ\' ਮੋਡ ਨਾਲ ਸਿੰਕ"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"ਪਰੇਸ਼ਾਨ ਨਾ ਕਰੋ"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"ਤੁਹਾਡੇ ਨਜ਼ਦੀਕੀ ਡੀਵਾਈਸ ਤੋਂ ਸਿੰਕ ਕੀਤਾ ਗਿਆ"</string>
 </resources>

@@ -146,7 +146,7 @@
     <string name="screenrecord_continue" msgid="4055347133700593164">"Başlat"</string>
     <string name="screenrecord_ongoing_screen_only" msgid="4459670242451527727">"Ekran kaydediliyor"</string>
     <string name="screenrecord_ongoing_screen_and_audio" msgid="5351133763125180920">"Ekran ve ses kaydediliyor"</string>
-    <string name="screenrecord_taps_label" msgid="1595690528298857649">"Ekrana dokunmaları göster"</string>
+    <string name="screenrecord_taps_label" msgid="1595690528298857649">"Ekranda dokunulan yerleri göster"</string>
     <string name="screenrecord_stop_label" msgid="72699670052087989">"Durdur"</string>
     <string name="screenrecord_stop_description" msgid="4656717003438764637">"Kaydı durdur"</string>
     <string name="screenrecord_start_description" msgid="8173864933793754995">"Kaydı başlat"</string>
@@ -167,7 +167,7 @@
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Mikrofon kaydı"</string>
     <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"Kayıttayken ses ayarı değiştirilemez"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Selfie kamerasını göster"</string>
-    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Dokunmaları göster"</string>
+    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Dokunulan yerleri göster"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Kaydedilecek uygulamayı seçin"</string>
     <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"Sonrakini göster"</string>
     <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"Öncekini göster"</string>
@@ -660,8 +660,7 @@
     <string name="keyguard_indication_charging_time_slowly" msgid="301936949731705417">"<xliff:g id="PERCENTAGE">%2$s</xliff:g> • Yavaş şarj oluyor • Dolmasına <xliff:g id="CHARGING_TIME_LEFT">%1$s</xliff:g> kaldı"</string>
     <string name="keyguard_indication_charging_time_dock" msgid="3149328898931741271">"<xliff:g id="PERCENTAGE">%2$s</xliff:g> • Şarj oluyor • Dolmasına <xliff:g id="CHARGING_TIME_LEFT">%1$s</xliff:g> kaldı"</string>
     <string name="accessibility_action_open_communal_hub" msgid="3081702792413787849">"Kilit ekranındaki widget\'lar"</string>
-    <!-- no translation found for accessibility_action_customize_lock_screen (1998560311105362696) -->
-    <skip />
+    <string name="accessibility_action_customize_lock_screen" msgid="1998560311105362696">"Kilit ekranını özelleştir"</string>
     <string name="accessibility_announcement_communal_widget_added" msgid="6911593106099328271">"<xliff:g id="WIDGET_NAME">%1$s</xliff:g> widget\'ı kilit ekranına eklendi"</string>
     <string name="communal_tutorial_indicator_text" msgid="4503010353591430123">"Ortak eğitimi başlatmak için sola kaydırın"</string>
     <string name="cta_tile_button_to_open_widget_editor" msgid="3871562362382963878">"Özelleştir"</string>

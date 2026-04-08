@@ -1054,7 +1054,7 @@
     <string name="relationTypeAssistant" msgid="4057605157116589315">"Palīgs"</string>
     <string name="relationTypeBrother" msgid="7141662427379247820">"Brālis"</string>
     <string name="relationTypeChild" msgid="9076258911292693601">"Bērns"</string>
-    <string name="relationTypeDomesticPartner" msgid="7825306887697559238">"Vietējais partneris"</string>
+    <string name="relationTypeDomesticPartner" msgid="7825306887697559238">"Dzīvesbiedrs"</string>
     <string name="relationTypeFather" msgid="3856225062864790596">"Tēvs"</string>
     <string name="relationTypeFriend" msgid="3192092625893980574">"Draugs"</string>
     <string name="relationTypeManager" msgid="2272860813153171857">"Pārvaldnieks"</string>
@@ -1091,6 +1091,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Mēģināt vēlreiz"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Mēģināt vēlreiz"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Noklikšķiniet, lai atbloķētu"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"Nospiediet taustiņu Enter, lai atbloķētu"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Nospiediet jebkuru taustiņu, lai atbloķētu"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Atbloķēt visām funkcijām un datiem"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Ir pārsniegts maksimālais Autorizācijas pēc sejas mēģinājumu skaits."</string>
@@ -2705,15 +2706,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Pieskarieties, lai skatītu padomus par to, kā uzlabot atbloķēšanas pieredzi."</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Atspējot mirgošanu"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Turiet nospiestu barošanas pogu, lai izslēgtu televizoru."</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Sistēmas resursu brīdinājumi"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Pārmērīga resursu izmantošana"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"Lietotne <xliff:g id="APP_NAME">%1$s</xliff:g> ir atspējota, jo tā pārmērīgi izmanto resursus. Varat to atkārtoti iespējot iestatījumu izvēlnē Lietotnes."</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Atjauninājums no vecākiem"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"Lietotne <xliff:g id="APP_NAME">%1$s</xliff:g> tika noņemta."</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"Lietotne <xliff:g id="APP_NAME">%1$s</xliff:g> tagad ir pieejama."</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Apraidīt citām ierīcēm"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
-    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"velkams atdalītājs"</string>
+    <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"Nevar mainīt spilgtumu, jo to kontrolē lietotne augšpusē"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"Sinhronizācija lidojuma režīmā"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"Lidojuma režīms"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"Tagad lidojuma režīms tiks sinhronizēts jūsu tālrunī un pulkstenī.\n\nPārvaldiet režīma sinhronizēšanas preferences pulksteņa un tālruņa iestatījumos."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"Pārvaldīt iestatījumus"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"Režīma “Netraucēt” sinhronizācija"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"Režīms “Netraucēt”"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"Sinhronizēts no tuvumā esošas ierīces"</string>
 </resources>

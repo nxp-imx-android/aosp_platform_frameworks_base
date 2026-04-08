@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"ફરી પ્રયાસ કરો"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"ફરી પ્રયાસ કરો"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"અનલૉક કરવા માટે ક્લિક કરો"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"અનલૉક કરવા માટે Enter દબાવો"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"અનલૉક કરવા માટે કોઈપણ કી દબાવો"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"તમામ સુવિધાઓ અને ડેટા માટે અનલૉક કરો"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"મહત્તમ ફેસ અનલૉક પ્રયાસો ઓળંગાયા"</string>
@@ -2704,14 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"તમારા અનલૉકિંગના અનુભવને બહેતર બનાવવા માટેની ટિપનો રિવ્યૂ કરવા માટે ટૅપ કરો"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"બ્લિંક ન કરો"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"ટીવી બંધ કરવા માટે પાવર બટનને થોડીવાર દબાવી રાખો"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"સિસ્ટમ સંસાધન સંબંધિત અલર્ટ"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"સંસાધનનો વધુ પડતો ઉપયોગ"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"સંસાધનનો વધુ પડતો ઉપયોગ થવાને કારણે ઍપ ‘<xliff:g id="APP_NAME">%1$s</xliff:g> બંધ કરવામાં આવી છે. તમે સેટિંગમાં ઍપ મેનૂમાંથી તેને ફરીથી ચાલુ કરી શકો છો.\""</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"તમારા માતાપિતા તરફથી અપડેટ"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> હાલ પૂરતી કાઢી નાખવામાં આવી હતી"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> હવે ઉપલબ્ધ છે"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"અન્ય લોકો સાથે કાસ્ટ કરો"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"ખેંચી શકાય તેવું વિભાજક"</string>
     <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"બ્રાઇટનેસ ગોઠવી શકાતી નથી કારણ કે તે લોકપ્રિય ઍપ દ્વારા નિયંત્રિત કરવામાં આવી રહી છે"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"એરપ્લેન મોડમાં સિંક કરવાની સુવિધા"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"એરપ્લેન મોડ"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"એરપ્લેન મોડ હવે તમારા ફોન અને વૉચ પર સિંક થશે.\n\nતમારી વૉચ અને ફોનના સેટિંગ પર મોડ સિંક કરવાની પસંદગીઓ મેનેજ કરો."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"સેટિંગ મેનેજ કરો"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"\'ખલેલ પાડશો નહીં\' સુવિધા સિંક કરો"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"ખલેલ પાડશો નહીં"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"તમારા નજીકના ડિવાઇસ પરથી સિંક કરવામાં આવ્યું છે"</string>
 </resources>

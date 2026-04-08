@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Qaytadan urining"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Qaytadan urining"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Ochish uchun bosing"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"Enter tugmasini bosing"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Qulfni ochish uchun istalgan tugmani bosing"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Barcha funksiya va ma’lumotlar uchun qulfdan chiqaring"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Yuz bilan ochishga urinish miqdoridan oshib ketdi"</string>
@@ -2704,14 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Qulfdan chiqarish tajribangizni yaxshilash borasida maslahatlar bilan tanishish uchun bosing"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Miltillamasin"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"TVni oʻchirish uchun Quvvat tugmasini bosib turing"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Tizim resurlari signallari"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Ortiqcha resurs ishlatilishi"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"“<xliff:g id="APP_NAME">%1$s</xliff:g>” ilovasi ortiqcha resurs ishlatgani uchun faolsizlantirildi. Uni Sozlamalardagi Ilovalar menyusidan qayta yoqish mumkin.\""</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Ota-onangiz sozlamalarni yangiladi"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> olib tashlangan"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> chiqdi"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Boshqalarga translatsiya qilish"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"tortiladigan ajratkich"</string>
     <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"Yorqinlikni sozlash imkonsiz, chunki tepadago ilova tomonidan boshqariladi"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"Parvoz rejimida sinxronlash"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"Parvoz rejimi"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"Parvoz rejimi endi telefon va soat orasida sinxronlanadi.\n\nRejimlar sinxronlanishini soat va telefon sozlamalari orqali boshqarish mumkin."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"Sozlamalarni boshqarish"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"Bezovta qilinmasin rejimi sinxronlanmasin"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"Bezovta qilinmasin"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"Atrofdagi qurilma orqali sinxronlangan"</string>
 </resources>

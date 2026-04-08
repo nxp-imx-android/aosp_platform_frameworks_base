@@ -48,8 +48,7 @@
     <string name="profile_name_generic" msgid="6851028682723034988">"uređaj"</string>
     <string name="summary_generic" msgid="1761976003668044801">"Ta će aplikacija moći sinkronizirati podatke između vašeg telefona i odabranog uređaja, primjerice ime pozivatelja"</string>
     <string name="summary_generic_with_remote_ai_capability" msgid="5053633566439056634">"Dopustite aplikaciji &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; da sinkronizira informacije kao što su podaci o pozivatelju i pokreće pametne radnje za vaš <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
-    <!-- no translation found for summary_with_permissions_and_remote_ai_capability (5240771314596527096) -->
-    <skip />
+    <string name="summary_with_permissions_and_remote_ai_capability" msgid="5240771314596527096">"Dopustite aplikaciji &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; da sinkronizira podatke kao što su podaci o pozivatelju i pokreće pametne radnje s vašeg uređaja <xliff:g id="DEVICE_TYPE">%2$s</xliff:g>"</string>
     <string name="consent_yes" msgid="8344487259618762872">"Dopusti"</string>
     <string name="consent_no" msgid="2640796915611404382">"Nemoj dopustiti"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Odustani"</string>
@@ -85,7 +84,8 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Snimanje zvuka"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Pronalaženje i određivanje relativnog položaja uređaja u blizini i povezivanje s njima"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Čitanje svih obavijesti, uključujući podatke kao što su kontakti, poruke i fotografije"</string>
-    <string name="permission_notifications_summary" msgid="6819393427371255636">"• Čitanje svih obavijesti, uključujući podatke kao što su kontakti, poruke i fotografije&lt;br/&gt;• Slanje obavijesti&lt;br/&gt;&lt;br/&gt;Uvijek možete upravljati mogućnostima čitanja i slanja obavijesti ove aplikacije u odjeljku Postavke &gt; Obavijesti."</string>
+    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
+    <skip />
     <string name="permission_storage_summary" msgid="3779040306012319942">"Dijeljenje fotografija i medija telefona s drugim uređajima."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Slanje obavijesti"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Dijeljenje zaslona vašeg telefona, uključujući aplikacije, s vašim uređajima. Vaši će uređaji imati pristup svemu što je vidljivo na vašem telefonu, uključujući zvuk, fotografije, podatke o plaćanju, zaporke i poruke, čak i kad je telefon zaključan.&lt;br/&gt;&lt;br/&gt;Povratno dijeljenje podataka mikrofona, kamere i drugih senzora, uključujući interakcije kao što su pokreti dodira i klikovi mišem, s telefonom."</string>
@@ -93,10 +93,8 @@
     <string name="permission_add_mirror_display_summary" msgid="1385423940454941534">"Snimite, emitirajte ili podijelite zaslon uređaja <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> s uređajem &lt;strong&gt;<xliff:g id="DEVICE_NAME">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> imat će pristup svemu što je vidljivo ili se reproducira na vašem uređaju <xliff:g id="DEVICE_TYPE_1">%2$s</xliff:g>, uključujući zvuk, fotografije, podatke o plaćanju, zaporke i poruke."</string>
     <string name="permission_add_trusted_display_summary" msgid="7399955172055281447">"Streamajte aplikacije s uređaja <xliff:g id="DEVICE_TYPE_0">%2$s</xliff:g> na uređaj &lt;strong&gt;<xliff:g id="DEVICE_NAME_1">%3$s</xliff:g>&lt;/strong&gt;.&lt;br/&gt;&lt;br/&gt;Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> imat će pristup svemu što je vidljivo ili se reproducira na uređaju <xliff:g id="DEVICE_NAME_2">%3$s</xliff:g>, uključujući zvuk, fotografije, podatke o plaćanju, zaporke i poruke, čak i kad je uređaj <xliff:g id="DEVICE_TYPE_3">%2$s</xliff:g> zaključan."</string>
     <string name="permission_media_routing_control_summary" msgid="2714631092321412250">"Pristupite popisu dostupnih uređaja i upravljajte time koji streama ili emitira zvuk ili videozapise iz drugih aplikacija"</string>
-    <!-- no translation found for permission_schedule_exact_alarm_summary (4263728689361283271) -->
-    <skip />
-    <!-- no translation found for permission_bypass_dnd_summary (3649231048838415756) -->
-    <skip />
+    <string name="permission_schedule_exact_alarm_summary" msgid="4263728689361283271">"Šalje vam upozorenja"</string>
+    <string name="permission_bypass_dnd_summary" msgid="3649231048838415756">"Šalje vam upozorenja čak i kad je uključen način Ne uznemiravaj"</string>
     <string name="device_type" product="default" msgid="8268703872070046263">"telefon"</string>
     <string name="device_type" product="tablet" msgid="5038791954983067774">"tablet"</string>
     <string name="device_type" product="tv" msgid="5355611506659405636">"TV"</string>

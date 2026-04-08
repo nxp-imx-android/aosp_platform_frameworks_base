@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Reyndu aftur"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Reyndu aftur"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Smelltu til að taka tækið úr lás"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"Ýttu á færslulykil til að opna"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Ýttu á hvaða hnapp sem er til að taka tækið úr lás"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Taktu úr lás til að sjá alla eiginleika og gögn"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Hámarksfjölda tilrauna til andlitsopnunar náð"</string>
@@ -2704,15 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Ýttu til að sjá ábendingar um hvernig þú getur bætt ferlið við að taka tækið úr lás"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Ekki blikka"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Haltu aflrofanum inni til að slökkva á sjónvarpinu"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Viðvaranir vegna kerfistilfanga"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Ofnotkun tilfanga"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"Slökkt var á forritinu „<xliff:g id="APP_NAME">%1$s</xliff:g>“ vegna of mikillar notkunar á tilföngum. Þú getur kveikt aftur á því í forritavalmyndinni í stillingum."</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Uppfærsla frá foreldri þínu"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> var fjarlægt í bili"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> er nú í boði"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Varpa í önnur tæki"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
-    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"draganlegur sirkill"</string>
+    <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"Ekki er hægt að breyta birtustiginu vegna þess að efsta forritið stjórnar því"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"Samstilling í flugstillingu"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"Flugstilling"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"Flugstilling verður nú samstillt í símanum og úrinu.\n\nStjórnaðu stillingum fyrir samstillingu í stillingum úrsins og símans."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"Stjórna stillingum"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"Samstilla „Ónáðið ekki“"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"Ónáðið ekki"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"Samstillt úr nálægu tæki"</string>
 </resources>

@@ -583,7 +583,7 @@
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"Stäng av omgivningsljudet"</string>
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"Slå på omgivningsljudet"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"Verktyg"</string>
-    <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"Live Caption"</string>
+    <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"Livetextning"</string>
     <string name="hearing_devices_settings_button" msgid="999474385481812222">"Inställningar"</string>
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"Anteckning"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"Vill du återaktivera enhetens mikrofon?"</string>
@@ -660,8 +660,7 @@
     <string name="keyguard_indication_charging_time_slowly" msgid="301936949731705417">"<xliff:g id="PERCENTAGE">%2$s</xliff:g> • Laddas långsamt • Fulladdat om <xliff:g id="CHARGING_TIME_LEFT">%1$s</xliff:g>"</string>
     <string name="keyguard_indication_charging_time_dock" msgid="3149328898931741271">"<xliff:g id="PERCENTAGE">%2$s</xliff:g> • Laddas • Fulladdat om <xliff:g id="CHARGING_TIME_LEFT">%1$s</xliff:g>"</string>
     <string name="accessibility_action_open_communal_hub" msgid="3081702792413787849">"Widgetar på låsskärmen"</string>
-    <!-- no translation found for accessibility_action_customize_lock_screen (1998560311105362696) -->
-    <skip />
+    <string name="accessibility_action_customize_lock_screen" msgid="1998560311105362696">"Anpassa låsskärmen"</string>
     <string name="accessibility_announcement_communal_widget_added" msgid="6911593106099328271">"Widgeten <xliff:g id="WIDGET_NAME">%1$s</xliff:g> har lagts till på låsskärmen"</string>
     <string name="communal_tutorial_indicator_text" msgid="4503010353591430123">"Svep åt vänster för att börja med gruppguiden"</string>
     <string name="cta_tile_button_to_open_widget_editor" msgid="3871562362382963878">"Anpassa"</string>
@@ -848,7 +847,7 @@
     <string name="volume_odi_captions_hint_disable" msgid="2518846326748183407">"inaktivera"</string>
     <string name="sound_settings" msgid="8874581353127418308">"Ljud och vibration"</string>
     <string name="volume_panel_dialog_settings_button" msgid="2513228491513390310">"Inställningar"</string>
-    <string name="volume_panel_captioning_title" msgid="5984936949147684357">"Live Caption"</string>
+    <string name="volume_panel_captioning_title" msgid="5984936949147684357">"Livetextning"</string>
     <string name="csd_lowered_title" product="default" msgid="2464112924151691129">"Volymen har sänkts till en säkrare nivå"</string>
     <string name="csd_system_lowered_text" product="default" msgid="1250251883692996888">"Volymen i hörlurarna har varit hög längre än vad som rekommenderas"</string>
     <string name="csd_500_system_lowered_text" product="default" msgid="7414943302186884124">"Volymen i hörlurarna har överskridit den säkra gränsen för veckan"</string>
@@ -1873,7 +1872,7 @@
     <string name="av_studio_look" msgid="631085505786989852">"Studioutseende"</string>
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d effekter"</string>
     <string name="av_blur" msgid="405131343487260171">"Oskärpa"</string>
-    <string name="av_live_captions" msgid="802763867449401889">"Live Caption"</string>
+    <string name="av_live_captions" msgid="802763867449401889">"Livetextning"</string>
     <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"Tillbaka"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Batteri: %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Vänster batteri: %1$s    Höger batteri: %2$s"</string>

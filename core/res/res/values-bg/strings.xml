@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Опитайте отново"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Опитайте отново"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Кликнете за отключване"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"Натиснете Enter, за да отключите"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Натиснете произволен клавиш, за да отключите"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Отключете за достъп до всички функции и данни"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Максималният брой опити за отключване с лице е надвишен"</string>
@@ -2704,15 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Докоснете, за да прегледате съвети за подобряване на практическата работа при отключване"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Без мигане"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Натиснете продължително бутона за захранване, за да изключите телевизора"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Сигнали за системните ресурси"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Прекомерно използване на ресурсите"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"Приложението „<xliff:g id="APP_NAME">%1$s</xliff:g>“ е деактивирано поради прекомерна употреба на ресурсите. Можете да го активирате отново от менюто „Приложения“ в настройките."</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Актуализация от родителя ви"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"Приложението <xliff:g id="APP_NAME">%1$s</xliff:g> бе премахнато засега"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> вече е налице"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Предаване към други"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
-    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"разделител с възможност за преместване с плъзгане"</string>
+    <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"Яркостта не може да се коригира, защото се контролира от приложението на екрана"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"Синхронизиране в самолетен режим"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"Самолетен режим"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"Самолетният режим вече ще се синхронизира на телефона и часовника ви.\n\nУправлявайте предпочитанията за синхронизиране на режимите от настройките на часовника и телефона си."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"Управление на настройките"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"Синхронизиране на режима „Не безпокойте“"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"Не безпокойте"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"Синхронизирано от устройството ви в близост"</string>
 </resources>

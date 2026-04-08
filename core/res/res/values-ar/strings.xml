@@ -1094,6 +1094,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"أعد المحاولة"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"أعد المحاولة"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"يُرجى النقر لفتح الجهاز"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"‏يمكنك الضغط على مفتاح Enter لفتح الجهاز"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"يُرجى الضغط على أي مفتاح لفتح الجهاز"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"فتح القفل للوصول إلى جميع الميزات والبيانات"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"تم تجاوز الحد الأقصى لعدد محاولات فتح الجهاز ببصمة الوجه"</string>
@@ -1219,7 +1220,7 @@
     <string name="searchview_description_submit" msgid="6771060386117334686">"إرسال طلب البحث"</string>
     <string name="searchview_description_voice" msgid="42360159504884679">"البحث الصوتي"</string>
     <string name="enable_explore_by_touch_warning_title" msgid="5095399706284943314">"‏هل تريد تفعيل ميزة Explore by Touch؟"</string>
-    <string name="enable_explore_by_touch_warning_message" product="tablet" msgid="1037295476738940824">"‏يريد <xliff:g id="ACCESSIBILITY_SERVICE_NAME">%1$s</xliff:g> تفعيل ميزة Explore by Touch. عند تفعيل ميزة Explore by Touch، سيكون بإمكانك سماع أو مشاهدة أوصاف لما تحت إصبعك أو إجراء إيماءات للتفاعل مع الجهاز اللوحي."</string>
+    <string name="enable_explore_by_touch_warning_message" product="tablet" msgid="1037295476738940824">"تريد خدمة <xliff:g id="ACCESSIBILITY_SERVICE_NAME">%1$s</xliff:g> تفعيل ميزة \"الاستكشاف باللمس\". عند تفعيلها، سيكون بإمكانك سماع أو مشاهدة أوصاف لما تحت إصبعك أو إجراء إيماءات للتفاعل مع الجهاز اللوحي."</string>
     <string name="enable_explore_by_touch_warning_message" product="default" msgid="4312979647356179250">"‏يريد <xliff:g id="ACCESSIBILITY_SERVICE_NAME">%1$s</xliff:g> تفعيل ميزة Explore by Touch. عند تفعيل ميزة Explore by Touch، سيكون بإمكانك سماع أو مشاهدة أوصاف لما تحت إصبعك أو إجراء إيماءات للتفاعل مع الهاتف."</string>
     <string name="oneMonthDurationPast" msgid="4538030857114635777">"قبل شهر واحد"</string>
     <string name="beforeOneMonthDurationPast" msgid="8315149541372065392">"قبل شهر واحد"</string>
@@ -2708,15 +2709,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"يمكنك النقر لمراجعة النصائح من أجل تحسين تجربة فتح القفل"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"عدم تشغيل الوميض"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"يُرجى الضغط مع الاستمرار على زر التشغيل لإطفاء التلفزيون"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"تنبيهات بشأن موارد النظام"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"فرط استخدام الموارد"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"تم إيقاف التطبيق \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" بسبب استخدام المصادر بشكلٍ مفرط. يمكنك إعادة تفعيله من قائمة \"التطبيقات\" في \"الإعدادات\"."</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"تحديث من أحد الوالدين"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"تمت إزالة \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" الآن"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"أصبح \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" متاحًا الآن"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"بثّ المحتوى للأجهزة الأخرى"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
-    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"الفاصل القابل للسحب"</string>
+    <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"لا يمكن ضبط مستوى السطوع لأنّ التطبيق العلوي يتحكّم فيه"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"مزامنة \"وضع الطيران\""</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"وضع الطيران"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"ستتم الآن مزامنة \"وضع الطيران\" على هاتفك وساعتك.\n\nيمكنك إدارة الإعدادات المفضَّلة لمزامنة الأوضاع في إعدادات هاتفك وساعتك."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"إدارة الإعدادات"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"مزامنة ميزة \"عدم الإزعاج\""</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"عدم الإزعاج"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"تمّت المزامنة من جهازك المجاور"</string>
 </resources>

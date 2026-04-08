@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Կրկին փորձեք"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Կրկին փորձեք"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Սեղմեք ապակողպելու համար"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"Սեղմեք Enter՝ ապակողպելու համար"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Սեղմեք որևէ ստեղն՝ ապակողպելու համար"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Ապակողպեք՝ բոլոր գործառ․ ու տվյալների համար"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Դեմքով ապակողպման փորձերի առավելագույն քանակը գերազանցված են"</string>
@@ -2704,14 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Էկրանն ապակողպելն ավելի հեշտ է դարձել։ Հպեք՝ հուշումները տեսնելու համար։"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Չթարթել"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Երկար սեղմեք սնուցման կոճակը՝ հեռուստացույցն անջատելու համար"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Համակարգի ռեսուրսների մասին ծանուցումներ"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Ռեսուրսների գերօգտագործում"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"«<xliff:g id="APP_NAME">%1$s</xliff:g>» հավելվածն անջատվել է, քանի որ այն չափազանց շատ ռեսուրսներ է օգտագործում։ Դուք կարող եք նորից միացնել այն՝ Կարգավորումներում բացելով հավելվածների ընտրացանկը։"</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Ծնողը փոխել է կարգավորումները"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> հավելվածը հեռացվել է"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> հավելվածն արդեն հասանելի է"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Հեռարձակել ուրիշներին"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"տեղաշարժվող բաժանիչ"</string>
     <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"Հնարավոր չէ կարգավորել պայծառությունը, քանի որ այն կառավարվում է գլխավոր հավելվածի կողմից"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"Համաժամացում ավիառեժիմում"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"Ավիառեժիմ"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"Ավիառեժիմն այժմ կհամաժամացվի ձեր հեռախոսում և ժամացույցում։\n\nԿառավարեք ռեժիմների համաժամացման կարգավորումները ժամացույցի և հեռախոսի կարգավորումներում։"</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"Կառավարել կարգավորումները"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"«Չանհանգստացնել» ռեժիմի համաժամացում"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"Չանհանգստացնել"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"Համաժամացվել է ձեր մոտակա սարքից"</string>
 </resources>

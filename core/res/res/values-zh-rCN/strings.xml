@@ -328,7 +328,7 @@
     <string name="notification_channel_heavy_weight_app" msgid="17455756500828043">"应用正在运行中"</string>
     <string name="notification_channel_foreground_service" msgid="7102189948158885178">"消耗电量的应用"</string>
     <string name="notification_channel_accessibility_magnification" msgid="1707913872219798098">"放大功能"</string>
-    <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"助听装置"</string>
+    <string name="notification_channel_accessibility_hearing_device" msgid="7816963856388758952">"助听设备"</string>
     <string name="notification_channel_accessibility_security_policy" msgid="1727787021725251912">"无障碍功能使用情况"</string>
     <string name="notification_channel_display" msgid="6905032605735615090">"显示屏"</string>
     <string name="notification_channel_parental_controls" msgid="2963963315750128538">"家长控制"</string>
@@ -342,7 +342,7 @@
     <string name="managed_profile_label" msgid="7316778766973512382">"切换到工作资料"</string>
     <string name="user_owner_app_label" msgid="1553595155465750298">"切换到个人 <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="managed_profile_app_label" msgid="367401088383965725">"切换到工作 <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="permgrouplab_contacts" msgid="7443702399615347952">"通讯录和账号"</string>
+    <string name="permgrouplab_contacts" msgid="7443702399615347952">"联系人和账号"</string>
     <string name="permgroupdesc_contacts" msgid="2001771388402758264">"访问您的通讯录，并查看有哪些账号可在此设备上保存联系人信息"</string>
     <string name="permgrouplab_location" msgid="1858277002233964394">"位置信息"</string>
     <string name="permgroupdesc_location" msgid="1995955142118450685">"获取此设备的位置信息"</string>
@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"重试"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"重试"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"点击即可解锁"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"按 Enter 键即可解锁"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"按任意键即可解锁"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"解锁即可使用所有功能和数据"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"已超过“人脸解锁”尝试次数上限"</string>
@@ -1878,7 +1879,7 @@
     <string name="color_correction_feature_name" msgid="7975133554160979214">"色彩校正"</string>
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"单手模式"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"极暗"</string>
-    <string name="hearing_aids_feature_name" msgid="1125892105105852542">"助听装置"</string>
+    <string name="hearing_aids_feature_name" msgid="1125892105105852542">"助听设备"</string>
     <string name="autoclick_feature_name" msgid="4056260617171267864">"自动点击（停留时间）"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"鼠标键"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"已断开连接"</string>
@@ -2704,15 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"点按即可查看提升解锁体验的小贴士"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"不闪烁"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"长按电源按钮即可将电视关机"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"系统资源提醒"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"资源过度使用"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"应用“<xliff:g id="APP_NAME">%1$s</xliff:g>”因资源使用量过大而被停用。您可以在“设置”中的“应用”菜单中重新启用它。"</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"家长进行的更新"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"“<xliff:g id="APP_NAME">%1$s</xliff:g>”现已移除"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"“<xliff:g id="APP_NAME">%1$s</xliff:g>”现已可用"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"投放到其他设备"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
-    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"可拖动分隔线"</string>
+    <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"亮度当前由顶层应用控制，无法调整"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"飞行模式同步"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"飞行模式"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"飞行模式现在会在手机和手表之间同步。\n\n您可以在手表和手机的设置中管理模式同步偏好设置。"</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"管理设置"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"同步“勿扰设置”"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"勿扰"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"已同步附近设备的勿扰设置"</string>
 </resources>

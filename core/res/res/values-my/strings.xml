@@ -1090,6 +1090,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"ထပ် စမ်းပါ"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"ထပ် စမ်းပါ"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"လော့ခ်ဖွင့်ရန် နှိပ်ပါ"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"လော့ခ်ဖွင့်ရန် Enter နှိပ်ပါ"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"လော့ခ်ဖွင့်ရန် ကီးတစ်ခုခု နှိပ်ပါ"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"ဝန်ဆောင်မှုနှင့် ဒေတာအားလုံးသုံးရန် လော့ခ်ဖွင့်ပါ"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"မျက်မှာပြ လော့ခ်ဖွင့်ခြင်း ခွင့်ပြုသော အကြိမ်ရေထက် ကျော်လွန်သွားပါပြီ"</string>
@@ -2704,14 +2705,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"လော့ခ်ဖွင့်ရာတွင် ပိုအဆင်ပြေစေရန်အတွက် အကြံပြုချက်များကြည့်ရန် တို့ပါ"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"မှိတ်တုတ်မလင်းပါနှင့်"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"TV ပိတ်ရန်အတွက် ဖွင့်ပိတ်ခလုတ်ကို ကြာကြာနှိပ်ပါ"</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"စနစ်ရင်းမြစ် သတိပေးချက်များ"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"ရင်းမြစ် အလွန်အကျွံသုံးစွဲခြင်း"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"ရင်းမြစ်အလွန်အကျွံသုံးသဖြင့် အက်ပ် <xliff:g id="APP_NAME">%1$s</xliff:g> ကို ပိတ်ထားသည်။ ၎င်းကို ဆက်တင်များရှိ အက်ပ်များမီနူးမှ ပြန်ဖွင့်နိုင်သည်။"</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"သင့်မိဘထံမှ အပ်ဒိတ်"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> ကို လောလောဆယ် ဖယ်ရှားထားသည်"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> ကို ယခုရနိုင်ပါပြီ"</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"အခြားသူများထံ ကာစ်လုပ်ရန်"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"ဖိဆွဲနိုင်သော နေရာခြားစနစ်"</string>
     <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"အပေါ်ဆုံးအက်ပ်မှ ထိန်းချုပ်ထားသောကြောင့် တောက်ပမှုကို ချိန်ညှိ၍ မရပါ"</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"လေယာဉ်ပျံမုဒ် စင့်ခ်လုပ်ခြင်း"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"လေယာဉ်ပျံမုဒ်"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"လေယာဉ်ပျံမုဒ်ကို သင့်ဖုန်းနှင့် လက်ပတ်နာရီတို့တွင် ယခု စင့်ခ်လုပ်ပါမည်။\n\nမုဒ်စင့်ခ်လုပ်ခြင်း သတ်မှတ်ချက်များကို လက်ပတ်နာရီနှင့် ဖုန်းဆက်တင်များတွင် စီမံနိုင်သည်။"</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"ဆက်တင်များကို စီမံရန်"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"မနှောင့်ယှက်ရ စင့်ခ်လုပ်ခြင်း"</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"မနှောင့်ယှက်ရ"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"အနီးတစ်ဝိုက်ရှိ စက်မှ စင့်ခ်လုပ်ထားသည်"</string>
 </resources>

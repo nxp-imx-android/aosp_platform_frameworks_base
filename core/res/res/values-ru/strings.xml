@@ -1092,6 +1092,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Повторите попытку"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Повторите попытку"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Для разблокировки нажмите на любую часть экрана"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"Для разблокировки нажмите Ввод"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Для разблокировки нажмите любую клавишу"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Разблок. для доступа ко всем функциям и данным"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Все попытки войти с помощью фейсконтроля использованы"</string>
@@ -2706,15 +2707,17 @@
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Нажмите, чтобы посмотреть советы о том, как разблокировать экран."</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Без мигания"</string>
     <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"Чтобы выключить телевизор, нажмите и удерживайте кнопку питания."</string>
-    <string name="tv_watchdog_notification_channel_name" msgid="4936803270000103737">"Оповещения о системных ресурсах"</string>
-    <string name="tv_watchdog_notification_title" msgid="195239206215922517">"Перерасход ресурсов"</string>
-    <string name="tv_watchdog_notification_content" msgid="8330578168178291921">"Приложение \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" отключено из-за чрезмерного использования ресурсов. Вы можете снова включить его в меню \"Приложения\" в настройках."</string>
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Родитель изменил настройки"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"Приложение \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" удалено."</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"Теперь тебе доступно приложение \"<xliff:g id="APP_NAME">%1$s</xliff:g>\"."</string>
     <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Транслировать другим"</string>
-    <!-- no translation found for activity_embedding_divider_drag_handle_description (4922243158119077780) -->
-    <skip />
-    <!-- no translation found for brightness_unable_adjust_msg (739363986705194491) -->
-    <skip />
+    <string name="activity_embedding_divider_drag_handle_description" msgid="4922243158119077780">"перетаскиваемый разделитель"</string>
+    <string name="brightness_unable_adjust_msg" msgid="739363986705194491">"Невозможно изменить яркость, поскольку ею управляет приложение сверху."</string>
+    <string name="airplane_mode_sync_notification_channel_name" msgid="474278137226432576">"Синхронизация в режиме полета"</string>
+    <string name="airplane_mode_sync_notification_title" msgid="1093374489486832486">"Режим полета"</string>
+    <string name="airplane_mode_sync_notification_content" msgid="300807352375759726">"Режим полета теперь синхронизируется между телефоном и часами.\n\nУправлять синхронизацией режимов можно в настройках часов и телефона."</string>
+    <string name="apm_sync_notification_settings_action" msgid="3453490777165524861">"Открыть настройки"</string>
+    <string name="do_not_disturb_sync_notification_channel_name" msgid="8652220979613037381">"Синхронизировать режим \"Не беспокоить\""</string>
+    <string name="do_not_disturb_sync_notification_title" msgid="6732475150089465528">"Не беспокоить"</string>
+    <string name="do_not_disturb_sync_notification_content" msgid="2755604717509797896">"Синхронизировано с устройством поблизости."</string>
 </resources>
