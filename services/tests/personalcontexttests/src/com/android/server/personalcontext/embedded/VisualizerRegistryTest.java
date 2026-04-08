@@ -49,6 +49,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.internal.content.PackageMonitor;
 import com.android.server.personalcontext.AccessController;
+import com.android.server.personalcontext.OperatingModeProvider;
 
 import com.google.android.collect.Lists;
 
@@ -72,6 +73,8 @@ public class VisualizerRegistryTest {
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
+    @Mock
+    private OperatingModeProvider mOperatingModeProvider;
     @Mock
     private AccessController mAccessController;
 
@@ -248,12 +251,17 @@ public class VisualizerRegistryTest {
         when(packageManager.queryIntentServices(any(Intent.class), anyInt()))
                 .thenReturn(List.of(resolveInfo));
 
+        when(mOperatingModeProvider.filterAccessFlags(anyInt()))
+                .thenAnswer(invocation -> invocation.getArguments()[0]);
         when(mAccessController.isServiceAllowed(
-                any(), eq(AccessController.ACCESS_REGISTER_VISUALIZER)))
+                any(), eq(AccessController.ACCESS_REGISTER_VISUALIZER
+                        | AccessController.ACCESS_RECEIVE_INSIGHTS_PERMISSION
+                        | AccessController.ACCESS_RECEIVE_INSIGHTS_ALLOWLIST)))
                 .thenReturn(hasAccess);
 
         final VisualizerRegistry.DefaultInjector injector =
-                new VisualizerRegistry.DefaultInjector(context, mAccessController, Runnable::run);
+                new VisualizerRegistry.DefaultInjector(
+                        context, mOperatingModeProvider, mAccessController, Runnable::run);
         final List<ServiceInfo> services =
                 injector.fetchVisualizerServiceInfos(VISUALIZER_PACKAGE_NAME);
         assertThat(services).hasSize(hasPermission && hasAccess ? 1 : 0);
