@@ -633,6 +633,10 @@
     <bool name="config_satellite_enabled_reason_user_default">true</bool>
     <java-symbol type="bool" name="config_satellite_enabled_reason_user_default" />
 
+    <!-- Whether the device handles STK SEND USSD command is processed by the Telephony framework -->
+    <bool name="config_stk_send_ussd_by_telephony">false</bool>
+    <java-symbol type="bool" name="config_stk_send_ussd_by_telephony" />
+
     <!-- Whether the device handles STK SET UP CALL command is processed by the Telephony framework -->
     <bool name="config_stk_set_up_call_by_telephony">false</bool>
     <java-symbol type="bool" name="config_stk_set_up_call_by_telephony" />
