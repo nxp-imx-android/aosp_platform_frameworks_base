@@ -96,7 +96,7 @@ constructor(
     @Background private val backgroundDispatcher: CoroutineDispatcher,
     private val faceManager: FaceManager?,
     private val cameraManager: CameraManager,
-    displayStateRepository: DisplayStateRepository,
+    private val displayStateRepository: DisplayStateRepository,
     configurationRepository: ConfigurationRepository,
 ) : FacePropertyRepository {
 
