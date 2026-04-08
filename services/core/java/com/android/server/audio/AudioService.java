@@ -329,7 +329,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -13850,35 +13849,17 @@ public class AudioService extends IAudioService.Stub
             return true;
         }
 
-        boolean hasActiveSims = false;
         SubscriptionManager subscriptionManager = mContext.getSystemService(
                 SubscriptionManager.class);
-        if (subscriptionManager != null) {
-            int[] subscriptionIds = subscriptionManager.getActiveSubscriptionIdList(false);
-            if (subscriptionIds != null && subscriptionIds.length > 0) {
-                hasActiveSims = true;
-                for (int subId : subscriptionIds) {
-                    if (SubscriptionManager.getResourcesForSubId(mContext, subId).getBoolean(
-                            com.android.internal.R.bool.config_camera_sound_forced)) {
-                        return true;
-                    }
-                }
-            }
-        } else {
-            Log.e(TAG, "fails to get SubscriptionManager.");
+        if (subscriptionManager == null) {
+            Log.e(TAG, "readCameraSoundForced cannot create SubscriptionManager!");
+            return false;
         }
-
-        if (cameraShutterSound()) {
-            if (SystemProperties.getBoolean("audio.camerasound.locale.enabled", false)
-                    && !hasActiveSims) {
-                String language = Locale.getDefault().getLanguage();
-                String[] languageList = mContext.getResources()
-                        .getStringArray(
-                                com.android.internal.R.array.config_cameraSoundForcedLanguage);
-                if (Arrays.asList(languageList).contains(language)) {
-                    Log.i(TAG, "force camera sound in case of no SIM");
-                    return true;
-                }
+        int[] subscriptionIds = subscriptionManager.getActiveSubscriptionIdList(false);
+        for (int subId : subscriptionIds) {
+            if (SubscriptionManager.getResourcesForSubId(mContext, subId).getBoolean(
+                    com.android.internal.R.bool.config_camera_sound_forced)) {
+                return true;
             }
         }
         return false;
