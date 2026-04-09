@@ -7,6 +7,7 @@
     {
       "package": "apk",
       "name": "android.aiseal.tests.odim",
+      "uid": 10000,
       "min_version": {ODIM_VERSION},
       "expected_authority": {
           "dev-keys": "{ODIM_EXPECTED_AUTHORITY}",

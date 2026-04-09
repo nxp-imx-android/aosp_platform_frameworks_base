@@ -26,13 +26,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import android.Manifest;
-import android.app.NotificationManager;
 import android.app.role.RoleManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.UserHandle;
 import android.permission.PermissionManager;
@@ -50,7 +47,6 @@ import androidx.test.filters.SmallTest;
 
 import com.android.server.personalcontext.AccessController;
 import com.android.server.personalcontext.OperatingModeProvider;
-import com.android.server.personalcontext.component.Renderer;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -61,8 +57,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.Executor;
@@ -80,7 +74,6 @@ public class ServiceClientRendererTest {
     @Mock private UserHandle mUserHandle;
     @Mock private IInsightRenderer mIInsightRenderer;
     @Mock private PermissionManager mPermissionManager;
-    @Mock private NotificationManager mNotificationManager;
     @Mock private Handler mHandler;
     @Mock private AccessController mAccessController;
 
@@ -93,15 +86,11 @@ public class ServiceClientRendererTest {
         MockitoAnnotations.initMocks(this);
         when(mContext.getPackageManager()).thenReturn(mPackageManager);
         when(mContext.getSystemService(PermissionManager.class)).thenReturn(mPermissionManager);
-        when(mContext.getSystemService(NotificationManager.class)).thenReturn(mNotificationManager);
         when(mContext.getSystemService(eq(RoleManager.class))).thenReturn(mock(RoleManager.class));
 
         final ServiceInfo serviceInfo = new ServiceInfo();
         serviceInfo.packageName = TEST_PACKAGE_NAME;
         serviceInfo.name = "baz";
-
-        when(mNotificationManager.getEnabledNotificationListeners(anyInt()))
-                .thenReturn(List.of(serviceInfo.getComponentName()));
 
         mServiceClientRenderer =
                 new ServiceClientRenderer(
@@ -114,62 +103,6 @@ public class ServiceClientRendererTest {
                         mHandler,
                         new OperatingModeProvider());
         mFakeExecutor.runAll();
-    }
-
-    boolean hasNotificationProperty(boolean metaDataPresent, boolean permissionGranted) {
-        final ServiceInfo serviceInfo = new ServiceInfo();
-        serviceInfo.packageName = TEST_PACKAGE_NAME;
-        serviceInfo.name = "baz";
-        serviceInfo.metaData = new Bundle();
-
-        if (metaDataPresent) {
-            serviceInfo.metaData
-                    .putBoolean(ServiceClientRenderer.META_DATA_RECEIVE_NOTIFICATION_INSIGHTS,
-                            true);
-        }
-
-        when(mPackageManager.checkPermission(Manifest.permission.RECEIVE_SENSITIVE_NOTIFICATIONS,
-                serviceInfo.packageName)).thenReturn(permissionGranted
-                ? PackageManager.PERMISSION_GRANTED : PackageManager.PERMISSION_DENIED);
-
-        final ServiceClientRenderer renderer = new ServiceClientRenderer(
-                mContext, mAccessController, UUID.randomUUID(), serviceInfo, mUserHandle,
-                new OperatingModeProvider());
-        return (renderer.getProperties()
-                & Renderer.PROPERTY_CAN_RECEIVE_NOTIFICATION_INSIGHTS)
-                == Renderer.PROPERTY_CAN_RECEIVE_NOTIFICATION_INSIGHTS;
-    }
-
-    @Test
-    public void testNotifications_requestNoPermissionDenied() {
-        assertThat(hasNotificationProperty(true /* metaDataPresent */,
-                false /* permissionGranted*/)).isFalse();
-    }
-
-    @Test
-    public void testNotifications_requestWithPermissionGranted() {
-        assertThat(hasNotificationProperty(true /* metaDataPresent */,
-                true /* permissionGranted*/)).isTrue();
-    }
-
-    @Test
-    public void testNotifications_notEnabledListener() {
-        when(mNotificationManager.getEnabledNotificationListeners(anyInt()))
-                .thenReturn(new ArrayList<>());
-        assertThat(hasNotificationProperty(true /* metaDataPresent */,
-                true /* permissionGranted*/)).isFalse();
-    }
-
-    @Test
-    public void testNotifications_noRequestWithPermissionDenied() {
-        assertThat(hasNotificationProperty(false /* metaDataPresent */,
-                true /* permissionGranted*/)).isFalse();
-    }
-
-    @Test
-    public void testNotifications_noRequestNoPermissionDenied() {
-        assertThat(hasNotificationProperty(false /* metaDataPresent */,
-                false /* permissionGranted*/)).isFalse();
     }
 
     @Test

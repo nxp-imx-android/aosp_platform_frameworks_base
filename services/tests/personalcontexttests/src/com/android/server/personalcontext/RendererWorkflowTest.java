@@ -127,7 +127,7 @@ public class RendererWorkflowTest {
 
         verify(listener).onRendererWorkflowStarted(anyLong(), eq(publishedInsight));
         verify(listener).onRendererWorkflowError(anyLong(), any());
-        verify(listener, never()).onRendererWorkflowFinished(anyLong());
+        verify(listener).onRendererWorkflowFinished(anyLong());
         verify(provider, never()).getRenderers();
     }
 

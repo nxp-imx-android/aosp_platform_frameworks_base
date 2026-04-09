@@ -30,6 +30,7 @@ import androidx.annotation.NonNull;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.personalcontext.AccessController;
+import com.android.server.personalcontext.OperatingModeProvider;
 import com.android.server.personalcontext.component.Renderer;
 
 import java.io.PrintWriter;
@@ -49,11 +50,12 @@ public class EmbeddedInsightRenderer implements Renderer {
 
     public EmbeddedInsightRenderer(
             Context context,
+            OperatingModeProvider operatingModeProvider,
             AccessController accessController,
             Executor executor) {
         this(
                 new ClientRegistry(),
-                new VisualizerRegistry(context, accessController, executor),
+                new VisualizerRegistry(context, operatingModeProvider, accessController, executor),
                 executor);
     }
 

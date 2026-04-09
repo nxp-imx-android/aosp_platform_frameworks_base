@@ -37,6 +37,7 @@ import androidx.annotation.Nullable;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.content.PackageMonitor;
 import com.android.server.personalcontext.AccessController;
+import com.android.server.personalcontext.OperatingModeProvider;
 
 import com.google.android.collect.Lists;
 
@@ -130,14 +131,17 @@ public class VisualizerRegistry {
     @VisibleForTesting
     static final class DefaultInjector implements Injector {
         private final Context mContext;
+        private final OperatingModeProvider mOperatingModeProvider;
         private final AccessController mAccessController;
         private final Executor mExecutor;
 
         DefaultInjector(
                 Context context,
+                OperatingModeProvider operatingModeProvider,
                 AccessController accessController,
                 Executor executor) {
             mContext = context;
+            mOperatingModeProvider = operatingModeProvider;
             mAccessController = accessController;
             mExecutor = executor;
         }
@@ -165,9 +169,13 @@ public class VisualizerRegistry {
                     continue;
                 }
 
+                int permissions =
+                        AccessController.ACCESS_REGISTER_VISUALIZER
+                                | AccessController.ACCESS_RECEIVE_INSIGHTS_PERMISSION
+                                | AccessController.ACCESS_RECEIVE_INSIGHTS_ALLOWLIST;
                 if (!mAccessController.isServiceAllowed(
-                                resolveInfo.serviceInfo,
-                                AccessController.ACCESS_REGISTER_VISUALIZER)) {
+                        resolveInfo.serviceInfo,
+                        mOperatingModeProvider.filterAccessFlags(permissions))) {
                     Slog.w(TAG, resolveInfo.serviceInfo.packageName
                             + " does not have access to register a visualizer.");
                     continue;
@@ -201,9 +209,10 @@ public class VisualizerRegistry {
 
     VisualizerRegistry(
             Context context,
+            OperatingModeProvider operatingModeProvider,
             AccessController accessController,
             Executor executor) {
-        this(new DefaultInjector(context, accessController, executor));
+        this(new DefaultInjector(context, operatingModeProvider, accessController, executor));
     }
 
     /** Construct a new {@link VisualizerRegistry}. Provided for testing. */
