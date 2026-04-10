@@ -517,7 +517,7 @@ class SplitScreenTransitions {
             final var animations = new ArrayList<>(mAnimations);
             for (int i = animations.size() - 1; i >= 0; --i) {
                 final Animator anim = animations.get(i);
-                mTransitions.getAnimExecutor().execute(anim::end);
+                anim.end();
             }
         }
     }
@@ -529,7 +529,7 @@ class SplitScreenTransitions {
         final var animations = new ArrayList<>(mAnimations);
         for (int i = animations.size() - 1; i >= 0; --i) {
             final Animator anim = animations.get(i);
-            mTransitions.getAnimExecutor().execute(anim::end);
+            anim.end();
         }
         return true;
     }
@@ -633,7 +633,7 @@ class SplitScreenTransitions {
             }
         });
         mAnimations.add(va);
-        mTransitions.getAnimExecutor().execute(va::start);
+        va.start();
     }
 
     private void startDismissAnimation(@NonNull TransitionInfo.Change change,
@@ -655,7 +655,7 @@ class SplitScreenTransitions {
 
         if (animator != null) {
             mAnimations.add(animator);
-            mTransitions.getAnimExecutor().execute(animator::start);
+            animator.start();
         }
     }
 

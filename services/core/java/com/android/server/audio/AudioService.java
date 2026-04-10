@@ -329,7 +329,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -541,7 +540,6 @@ public class AudioService extends IAudioService.Stub
     private static final int MSG_UPDATE_CONTEXTUAL_VOLUMES = 56;
     private static final int MSG_PERSIST_VOLUME_MUTE = 57;
     private static final int MSG_PERSIST_VOLUME_GROUP_MUTE = 58;
-    private static final int MSG_UPDATE_CAMERA_SOUND_FORCED_METRICS = 59;
 
     /**
      * Messages handled by the {@link SoundDoseHelper}, do not exceed
@@ -1385,8 +1383,6 @@ public class AudioService extends IAudioService.Stub
 
     private final HardeningEnforcer mHardeningEnforcer;
 
-    private final CameraMetricsHelper mCameraMetricsHelper;
-
     private final AudioVolumeGroupHelperBase mAudioVolumeGroupHelper;
 
     private final Object mSupportedSystemUsagesLock = new Object();
@@ -1852,8 +1848,6 @@ public class AudioService extends IAudioService.Stub
 
         mMusicFxHelper = new MusicFxHelper(mContext, mAudioHandler);
 
-        mCameraMetricsHelper = new CameraMetricsHelper(mContext);
-
         mHardeningEnforcer = new HardeningEnforcer(mContext, isPlatformAutomotive(),
                 mHardeningOverride,
                 mAppOps,
@@ -1976,10 +1970,6 @@ public class AudioService extends IAudioService.Stub
                 @Override
                 public void onSubscriptionsChanged() {
                     Log.i(TAG, "onSubscriptionsChanged()");
-                    if (cameraShutterSound()) {
-                        sendMsg(mAudioHandler, MSG_UPDATE_CAMERA_SOUND_FORCED_METRICS,
-                                SENDMSG_REPLACE, 0, 0, null, 0);
-                    }
                     sendMsg(mAudioHandler, MSG_CONFIGURATION_CHANGED, SENDMSG_REPLACE,
                             0, 0, null, 0);
                 }
@@ -12268,10 +12258,6 @@ public class AudioService extends IAudioService.Stub
                     onUpdateContextualVolumes();
                     break;
 
-                case MSG_UPDATE_CAMERA_SOUND_FORCED_METRICS:
-                    mCameraMetricsHelper.updateCameraSoundForcedStatus();
-                    break;
-
                 case MusicFxHelper.MSG_EFFECT_CLIENT_GONE:
                     mMusicFxHelper.handleMessage(msg);
                     break;
@@ -13850,35 +13836,17 @@ public class AudioService extends IAudioService.Stub
             return true;
         }
 
-        boolean hasActiveSims = false;
         SubscriptionManager subscriptionManager = mContext.getSystemService(
                 SubscriptionManager.class);
-        if (subscriptionManager != null) {
-            int[] subscriptionIds = subscriptionManager.getActiveSubscriptionIdList(false);
-            if (subscriptionIds != null && subscriptionIds.length > 0) {
-                hasActiveSims = true;
-                for (int subId : subscriptionIds) {
-                    if (SubscriptionManager.getResourcesForSubId(mContext, subId).getBoolean(
-                            com.android.internal.R.bool.config_camera_sound_forced)) {
-                        return true;
-                    }
-                }
-            }
-        } else {
-            Log.e(TAG, "fails to get SubscriptionManager.");
+        if (subscriptionManager == null) {
+            Log.e(TAG, "readCameraSoundForced cannot create SubscriptionManager!");
+            return false;
         }
-
-        if (cameraShutterSound()) {
-            if (SystemProperties.getBoolean("audio.camerasound.locale.enabled", false)
-                    && !hasActiveSims) {
-                String language = Locale.getDefault().getLanguage();
-                String[] languageList = mContext.getResources()
-                        .getStringArray(
-                                com.android.internal.R.array.config_cameraSoundForcedLanguage);
-                if (Arrays.asList(languageList).contains(language)) {
-                    Log.i(TAG, "force camera sound in case of no SIM");
-                    return true;
-                }
+        int[] subscriptionIds = subscriptionManager.getActiveSubscriptionIdList(false);
+        for (int subId : subscriptionIds) {
+            if (SubscriptionManager.getResourcesForSubId(mContext, subId).getBoolean(
+                    com.android.internal.R.bool.config_camera_sound_forced)) {
+                return true;
             }
         }
         return false;
@@ -14121,10 +14089,6 @@ public class AudioService extends IAudioService.Stub
      */
     private void onConfigurationChanged() {
         try {
-            if (cameraShutterSound()) {
-                sendMsg(mAudioHandler, MSG_UPDATE_CAMERA_SOUND_FORCED_METRICS,
-                        SENDMSG_REPLACE, 0, 0, null, 0);
-            }
             // reading new configuration "safely" (i.e. under try catch) in case anything
             // goes wrong.
             Configuration config = mContext.getResources().getConfiguration();

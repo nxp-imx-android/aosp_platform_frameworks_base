@@ -653,7 +653,8 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 return false;
             }
 
-            if (mSplitHandler.getSplitPosition(triggerTask.taskId) != SPLIT_POSITION_UNDEFINED) {
+            if (mSplitHandler.getSplitPositionIgnoreVisible(triggerTask.taskId)
+                    != SPLIT_POSITION_UNDEFINED) {
                 return true;
             }
         }
@@ -661,7 +662,8 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         if (PipFlags.isPip2ExperimentEnabled() && request.getPipChange() != null) {
             // In PiP2, PiP-able task can also come in through the pip change request field.
             final TaskInfo pipChangeTask = request.getPipChange().getTaskInfo();
-            if (mSplitHandler.getSplitPosition(pipChangeTask.taskId) != SPLIT_POSITION_UNDEFINED) {
+            if (mSplitHandler.getSplitPositionIgnoreVisible(pipChangeTask.taskId)
+                    != SPLIT_POSITION_UNDEFINED) {
                 return true;
             }
         }
