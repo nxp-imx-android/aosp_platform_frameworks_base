@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -244,7 +245,8 @@ private fun PortraitCredentialLayout(
     isPin: Boolean = false,
     onContentViewMoreOptionsButtonPressed: () -> Unit,
 ) {
-    Box(modifier = Modifier.fillMaxWidth()) {
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val maxContentHeight = maxHeight * 0.6f
         Column(
             modifier =
                 Modifier.fillMaxWidth().imePadding().padding(horizontal = 24.dp, vertical = 32.dp),
@@ -264,9 +266,9 @@ private fun PortraitCredentialLayout(
                 )
             }
             if (isPin) {
-                // Pin is larger than the other credentials and requires some extra space
+                // Constrain pin to max of 60% of screen height
                 Box(
-                    modifier = Modifier.weight(3f, fill = false),
+                    modifier = Modifier.heightIn(max = maxContentHeight),
                     contentAlignment = Alignment.Center,
                 ) {
                     content()
