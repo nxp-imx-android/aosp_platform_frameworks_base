@@ -572,13 +572,11 @@ class SplitScreenTransitions {
         if (!mAnimations.isEmpty()) return;
 
         if (wct == null) wct = new WindowContainerTransaction();
-        boolean isDismiss = false;
         if (isPendingEnter(mAnimatingTransition)) {
             mPendingEnter.onFinished(wct, mFinishTransaction);
             mPendingEnter = null;
             ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "onFinish for enter transition");
         } else if (isPendingDismiss(mAnimatingTransition)) {
-            isDismiss = true;
             mPendingDismiss.onFinished(wct, mFinishTransaction);
             mPendingDismiss = null;
             ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "onFinish for dismiss transition");
@@ -601,7 +599,7 @@ class SplitScreenTransitions {
             mFinishCallback = null;
             currentFinishCallback.onTransitionFinished(null /* wct */);
         }
-        if (!wct.isEmpty() && isDismiss) {
+        if (!wct.isEmpty()) {
             mTransitions.startTransition(TRANSIT_SPLIT_CANCEL, wct, mStageCoordinator);
         }
     }
