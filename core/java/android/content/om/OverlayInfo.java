@@ -623,6 +623,7 @@ public final class OverlayInfo implements CriticalOverlayInfo, Parcelable {
                 + ", targetOverlayable=" + targetOverlayableName
                 + ", state=" + state + " (" + stateToString(state) + "),"
                 + ", userId=" + userId
+                + ", isFabricated=" + isFabricated
                 + ", constraints=" + OverlayConstraint.constraintsToString(constraints)
                 + " }";
     }
