@@ -10706,7 +10706,7 @@ public class WindowManagerService extends IWindowManager.Stub
         }
     }
 
-    void setOnBackInvokedCallbackInfoToEmbedded(Session session,
+    void setOnBackInvokedCallbackInfoToEmbedded(Session session, int callingUid,
             InputTransferToken inputTransferToken, OnBackInvokedCallbackInfo callbackInfo) {
         synchronized (mGlobalLock) {
             final EmbeddedWindowController.EmbeddedWindow embeddedWindow =
@@ -10714,6 +10714,10 @@ public class WindowManagerService extends IWindowManager.Stub
             if (embeddedWindow == null) {
                 Slog.e(TAG, "Embedded window not found");
                 return;
+            }
+            if (callingUid != embeddedWindow.mOwnerUid) {
+                throw new SecurityException("Register BackInvokedCallback request must originate "
+                        + "from owner of inputTransferToken");
             }
             if (embeddedWindow.mSession != session) {
                 Slog.e(TAG, "Window not in session:" + session);

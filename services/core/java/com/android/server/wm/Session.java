@@ -984,10 +984,11 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
     @Override
     public void setOnBackInvokedCallbackInfoToEmbedded(InputTransferToken targetInputToken,
             OnBackInvokedCallbackInfo callbackInfo) {
+        final int callingUid = Binder.getCallingUid();
         final long identity = Binder.clearCallingIdentity();
         try {
-            mService.setOnBackInvokedCallbackInfoToEmbedded(this, targetInputToken,
-                    callbackInfo);
+            mService.setOnBackInvokedCallbackInfoToEmbedded(this, callingUid,
+                    targetInputToken, callbackInfo);
         } finally {
             Binder.restoreCallingIdentity(identity);
         }
