@@ -23,11 +23,11 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.data.repository.HomeStatusBarComponentsRepository
+import com.android.systemui.statusbar.disableflags.data.repository.DisableFlagsRepository
 import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsModel
 import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.phone.PhoneStatusBarViewController
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
-import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -48,12 +48,12 @@ class ShadeStatusBarComponentsInteractor
 @Inject
 constructor(
     @Background private val bgScope: CoroutineScope,
-    shadeDisplaysInteractor: Lazy<ShadeDisplaysInteractor>,
+    shadeDisplaysInteractor: ShadeDisplaysInteractor,
     homeStatusBarComponentsRepository: HomeStatusBarComponentsRepository,
-    perDisplaySubcomponentRepository: PerDisplayRepository<SystemUIDisplaySubcomponent>,
+    private val perDisplaySubcomponentRepository: PerDisplayRepository<SystemUIDisplaySubcomponent>,
 ) {
 
-    private val shadeDisplayId: StateFlow<Int> = shadeDisplaysInteractor.get().displayId
+    private val shadeDisplayId: StateFlow<Int> = shadeDisplaysInteractor.displayId
 
     /**
      * Provides the [HomeStatusBarComponent] for the display the shade is currently on. Returns null
@@ -97,12 +97,7 @@ constructor(
             .stateIn(
                 bgScope,
                 SharingStarted.Eagerly,
-                initialValue =
-                    perDisplaySubcomponentRepository
-                        .getOrDefault(shadeDisplayId.value)
-                        .disableFlagsInteractor
-                        .disableFlags
-                        .value,
+                initialValue = DisableFlagsRepository.DISABLE_FLAGS_DEFAULT,
             )
 
     val systemStatusEventAnimationInteractor: Flow<SystemStatusEventAnimationInteractor> =

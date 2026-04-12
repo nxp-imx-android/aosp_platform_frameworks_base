@@ -2716,6 +2716,9 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         // Disallow child tasks to override bounds and always inherits from the stage root tasks
         wct.setDisallowOverrideBoundsForChildren(mMainStage.mRootTaskInfo.token, true);
         wct.setDisallowOverrideBoundsForChildren(mSideStage.mRootTaskInfo.token, true);
+        // Inherit Windowing Mode from the root stage tasks.
+        wct.setDisallowOverrideWindowingModeForChildren(mMainStage.mRootTaskInfo.token, true);
+        wct.setDisallowOverrideWindowingModeForChildren(mSideStage.mRootTaskInfo.token, true);
 
         setRootForceTranslucent(true, wct);
         if (!enableFlexibleSplit()) {

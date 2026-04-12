@@ -36,6 +36,10 @@ import kotlinx.coroutines.flow.stateIn
 interface DisableFlagsRepository {
     /** A model of the disable flags last received from [IStatusBar]. */
     val disableFlags: StateFlow<DisableFlagsModel>
+
+    companion object {
+        val DISABLE_FLAGS_DEFAULT = DisableFlagsModel(animate = false)
+    }
 }
 
 @PerDisplaySingleton
@@ -82,5 +86,5 @@ constructor(
             .distinctUntilChanged()
             .onEach { it.logChange(logBuffer, disableFlagsLogger) }
             // Use Eagerly because we always need to know about disable flags
-            .stateIn(scope, SharingStarted.Eagerly, DisableFlagsModel(animate = false))
+            .stateIn(scope, SharingStarted.Eagerly, DisableFlagsRepository.DISABLE_FLAGS_DEFAULT)
 }

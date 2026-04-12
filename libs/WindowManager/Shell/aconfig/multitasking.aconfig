@@ -519,3 +519,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fix_pip_to_bubble_relaunch"
+    namespace: "multitasking"
+    description: "Fixes a bug where relaunching an app that was bubble'd after being PIP'd didn't work"
+    bug: "496911676"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

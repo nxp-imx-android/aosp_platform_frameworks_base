@@ -985,11 +985,6 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
     public void setOnBackInvokedCallbackInfoToEmbedded(InputTransferToken targetInputToken,
             OnBackInvokedCallbackInfo callbackInfo) {
         final long identity = Binder.clearCallingIdentity();
-        if (!mCanAddInternalSystemWindow) {
-            // Callers without INTERNAL_SYSTEM_WINDOW permission cannot register
-            // onBackInvokeCallback by embedded method.
-            throw new SecurityException("Requires INTERNAL_SYSTEM_WINDOW permission");
-        }
         try {
             mService.setOnBackInvokedCallbackInfoToEmbedded(this, targetInputToken,
                     callbackInfo);
