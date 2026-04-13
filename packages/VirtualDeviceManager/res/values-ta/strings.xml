@@ -18,9 +18,9 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="1092971641119916701">"விர்ச்சுவல் சாதன நிர்வாகி"</string>
-    <string name="request_computer_control_access_dialog_title" msgid="1970509993635617382">"திரை ஆட்டோமேஷனை உபயோகிக்க &lt;strong&gt;<xliff:g id="AGENT_APP_NAME">%1$s</xliff:g>&lt;/strong&gt; ஆப்ஸை அனுமதிக்கவா?"</string>
-    <string name="request_computer_control_access_per_app_consent_dialog_title" msgid="8118885324223570680">"&lt;strong&gt;<xliff:g id="AUTOMATABLE_APP_NAME">%2$s</xliff:g>&lt;/strong&gt; ஆப்ஸில் திரை ஆட்டோமேஷனை உபயோகிக்க &lt;strong&gt;<xliff:g id="AGENT_APP_NAME">%1$s</xliff:g>&lt;/strong&gt; ஆப்ஸை அனுமதிக்கவா?"</string>
-    <string name="request_computer_control_access_dialog_description" msgid="3423347516805473691">"பணிகளை நிறைவுசெய்ய உங்களுக்கு உதவ, இந்த ஆப்ஸால் பிற ஆப்ஸின் திரை உள்ளடக்கத்தைப் பார்க்கவும் அவற்றுடன் செயல்படவும் முடியும் (பிற ஆப்ஸ் பின்னணியில் இயங்கும்போது கூட)"</string>
+    <string name="request_computer_control_access_dialog_title" msgid="1970509993635617382">"ஸ்கிரீன் ஆட்டோமேஷனை உபயோகிக்க &lt;strong&gt;<xliff:g id="AGENT_APP_NAME">%1$s</xliff:g>&lt;/strong&gt; ஆப்ஸை அனுமதிக்கவா?"</string>
+    <string name="request_computer_control_access_per_app_consent_dialog_title" msgid="8118885324223570680">"&lt;strong&gt;<xliff:g id="AUTOMATABLE_APP_NAME">%2$s</xliff:g>&lt;/strong&gt; ஆப்ஸில் ஸ்கிரீன் ஆட்டோமேஷனை உபயோகிக்க &lt;strong&gt;<xliff:g id="AGENT_APP_NAME">%1$s</xliff:g>&lt;/strong&gt; ஆப்ஸை அனுமதிக்கவா?"</string>
+    <string name="request_computer_control_access_dialog_description" msgid="3423347516805473691">"பணிகளை நிறைவுசெய்ய உங்களுக்கு உதவ, இந்த ஆப்ஸால் பிற ஆப்ஸின் திரையில் உள்ளவற்றைப் பார்க்கவும் அவற்றுடன் இணைந்து செயல்படவும் முடியும் (பிற ஆப்ஸ் பின்னணியில் இயங்கும்போது கூட)"</string>
     <string name="request_computer_control_access_dialog_button_allow" msgid="6210271960695301518">"இப்போது மட்டும்"</string>
     <string name="request_computer_control_access_dialog_button_dont_allow" msgid="4793579155406896411">"அனுமதிக்காதே"</string>
     <string name="request_computer_control_access_dialog_button_always_allow" msgid="1551784758130170359">"எப்போதும் அனுமதி"</string>

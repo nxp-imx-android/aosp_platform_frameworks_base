@@ -20,7 +20,7 @@
     <string name="app_label" msgid="1092971641119916701">"虚拟设备管理器"</string>
     <string name="request_computer_control_access_dialog_title" msgid="1970509993635617382">"允许“&lt;strong&gt;<xliff:g id="AGENT_APP_NAME">%1$s</xliff:g>&lt;/strong&gt;”使用屏幕自动化操作？"</string>
     <string name="request_computer_control_access_per_app_consent_dialog_title" msgid="8118885324223570680">"允许“&lt;strong&gt;<xliff:g id="AGENT_APP_NAME">%1$s</xliff:g>&lt;/strong&gt;”使用屏幕自动化操作与“&lt;strong&gt;<xliff:g id="AUTOMATABLE_APP_NAME">%2$s</xliff:g>&lt;/strong&gt;”互动？"</string>
-    <string name="request_computer_control_access_dialog_description" msgid="3423347516805473691">"此应用将能查看其他应用的屏幕内容并与之互动，以帮助您完成任务，即使应用在后台运行时也是如此"</string>
+    <string name="request_computer_control_access_dialog_description" msgid="3423347516805473691">"此应用将能查看其他应用的界面内容并与之互动，帮助您完成各种任务，即使这些应用在后台运行也无妨"</string>
     <string name="request_computer_control_access_dialog_button_allow" msgid="6210271960695301518">"仅限这一次"</string>
     <string name="request_computer_control_access_dialog_button_dont_allow" msgid="4793579155406896411">"不允许"</string>
     <string name="request_computer_control_access_dialog_button_always_allow" msgid="1551784758130170359">"始终允许"</string>

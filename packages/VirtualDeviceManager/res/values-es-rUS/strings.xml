@@ -20,7 +20,7 @@
     <string name="app_label" msgid="1092971641119916701">"Administrador de dispositivos virtual"</string>
     <string name="request_computer_control_access_dialog_title" msgid="1970509993635617382">"¿Quieres permitir que &lt;strong&gt;<xliff:g id="AGENT_APP_NAME">%1$s</xliff:g>&lt;/strong&gt; use la automatización de pantalla?"</string>
     <string name="request_computer_control_access_per_app_consent_dialog_title" msgid="8118885324223570680">"¿Quieres permitir que &lt;strong&gt;<xliff:g id="AGENT_APP_NAME">%1$s</xliff:g>&lt;/strong&gt; use la automatización de pantalla con &lt;strong&gt;<xliff:g id="AUTOMATABLE_APP_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
-    <string name="request_computer_control_access_dialog_description" msgid="3423347516805473691">"Esta app podrá ver el contenido de la pantalla de otras apps y realizar interacciones con él para ayudarte a completar tareas, incluso cuando las apps estén en segundo plano"</string>
+    <string name="request_computer_control_access_dialog_description" msgid="3423347516805473691">"Esta app podrá ver el contenido de la pantalla de otras apps e interactuar con él para ayudarte a completar tareas, incluso cuando las apps estén en segundo plano"</string>
     <string name="request_computer_control_access_dialog_button_allow" msgid="6210271960695301518">"Solo esta vez"</string>
     <string name="request_computer_control_access_dialog_button_dont_allow" msgid="4793579155406896411">"No permitir"</string>
     <string name="request_computer_control_access_dialog_button_always_allow" msgid="1551784758130170359">"Permitir siempre"</string>

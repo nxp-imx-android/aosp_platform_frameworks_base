@@ -20,7 +20,7 @@
     <string name="app_label" msgid="1092971641119916701">"Gestionnaire d\'appareils virtuels"</string>
     <string name="request_computer_control_access_dialog_title" msgid="1970509993635617382">"Autoriser &lt;strong&gt;<xliff:g id="AGENT_APP_NAME">%1$s</xliff:g>&lt;/strong&gt; à utiliser l\'automatisation de l\'écran ?"</string>
     <string name="request_computer_control_access_per_app_consent_dialog_title" msgid="8118885324223570680">"Autoriser &lt;strong&gt;<xliff:g id="AGENT_APP_NAME">%1$s</xliff:g>&lt;/strong&gt; à utiliser l\'automatisation de l\'écran avec &lt;strong&gt;<xliff:g id="AUTOMATABLE_APP_NAME">%2$s</xliff:g>&lt;/strong&gt; ?"</string>
-    <string name="request_computer_control_access_dialog_description" msgid="3423347516805473691">"Cette appli pourra voir le contenu affiché sur l\'écran d\'autres applis et interagir avec lui pour vous aider à effectuer des tâches, même lorsque les applis sont en arrière-plan"</string>
+    <string name="request_computer_control_access_dialog_description" msgid="3423347516805473691">"Cette appli pourra voir le contenu affiché sur l\'écran par d\'autres applis et interagir avec ce contenu pour vous aider à effectuer des tâches, même lorsque les applis sont en arrière-plan"</string>
     <string name="request_computer_control_access_dialog_button_allow" msgid="6210271960695301518">"Uniquement cette fois-ci"</string>
     <string name="request_computer_control_access_dialog_button_dont_allow" msgid="4793579155406896411">"Ne pas autoriser"</string>
     <string name="request_computer_control_access_dialog_button_always_allow" msgid="1551784758130170359">"Toujours autoriser"</string>
