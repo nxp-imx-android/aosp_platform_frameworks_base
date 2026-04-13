@@ -119,7 +119,7 @@
     <string name="exit_fullscreen_button_text" msgid="7970660979589417830">"Esci da schermo intero per <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="close_button_text" msgid="4544839489310949894">"Chiudi <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="back_button_text" msgid="1469718707134137085">"Indietro"</string>
-    <string name="handle_text" msgid="4419667835599523257">"Punto di manipolazione app"</string>
+    <string name="handle_text" msgid="4419667835599523257">"Handle app"</string>
     <string name="app_icon_text" msgid="2823268023931811747">"Icona dell\'app"</string>
     <string name="fullscreen_text" msgid="1162316685217676079">"Schermo intero"</string>
     <string name="desktop_text" msgid="9058641752519570266">"App in finestre"</string>
