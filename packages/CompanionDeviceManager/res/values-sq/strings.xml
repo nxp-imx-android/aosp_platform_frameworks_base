@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Të regjistrojë audion"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Të gjejë, të lidhet dhe të përcaktojë pozicionin e përafërt të pajisjeve në afërsi"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Të lexojë të gjitha njoftimet, duke përfshirë informacione si kontaktet, mesazhet dhe fotografitë"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Të lexojë të gjitha njoftimet, duke përfshirë informacione si kontaktet, mesazhet dhe fotografitë&lt;br/&gt;• Të të dërgojë njoftime&lt;br/&gt;&lt;br/&gt;Mund ta menaxhosh aftësinë e këtij aplikacioni që të lexojë dhe të dërgojë njoftime në çdo kohë te Cilësimet › Njoftimet."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Ndaj fotografitë dhe mediat e telefonit me pajisjet e tjera."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Të të dërgojë njoftime"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Ndaj ekranin e telefonit, duke përfshirë aplikacionet, në pajisjet e tua. Pajisjet e tua do të kenë qasje te çdo gjë që është e dukshme në telefonin tënd, duke përfshirë audion, fotografitë, informacionet për pagesën, fjalëkalimet dhe mesazhet, edhe kur telefoni yt është i kyçur.&lt;br/&gt;&lt;br/&gt;Ofro të dhënat e mikrofonit, kamerës dhe sensorëve të tjerë nga pajisjet e tua përsëri te telefoni yt, duke përfshirë ndërveprimet si gjestet me prekje dhe klikimet e miut."</string>

@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Rekhoda umsindo"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Thola, uxhume, futhi unqume indawo yamadivayisi aseduze"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Funda zonke izaziso, okuhlanganisa ulwazi loxhumana nabo, imiyalezo, nezithombe"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Funda zonke izaziso, okuhlanganisa ulwazi olufana noxhumana nabo, imiyalezo, nezithombe&lt;br/&gt;• Ukukuthumelela izaziso&lt;br/&gt;&lt;br/&gt;Ungakwazi ukulawula ikhono lale app lokufunda nokuthumela izaziso noma nini Kumasethingi › Izaziso."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Yabelana ngezithombe nemidiya yefoni yakho namanye amadivayisi akho."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Thumela izexwayiso"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Yabelana ngesikrini sefoni yakho, okuhlanganisa nama-app, kumadivayisi akho. Amadivayisi wakho azokwazi ukufinyelela kunoma yini ebonakalayo efonini yakho, okuhlanganisa umsindo, izithombe, ulwazi lokukhokha, amaphasiwedi nemilayezo, ngisho noma ifoni yakho ikhiyiwe.&lt;br/&gt;&lt;br/&gt;Nikeza imakrofoni, ikhamera kanye nenye idatha yenzwa kusuka kumadivayisi akho ubuyisele efonini yakho, okuhlanganisa ukuxhumana okufana nokunyakazisa umzimba ngokuthinta nokuchofoza imawusi."</string>

@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Ses kaydetme"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Yakındaki cihazları keşfedip bağlanma ve bu cihazların göreli konumunu belirleme"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Kişiler, mesajlar ve fotoğraflar da dahil olmak üzere tüm bildirimleri okuma"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Kişiler, mesajlar ve fotoğraflar gibi bilgiler dahil tüm bildirimleri okuma&lt;br/&gt;• Bildirim gönderme&lt;br/&gt;&lt;br/&gt;Dilediğiniz zaman bu uygulamanın bildirim okuma ve gönderme iznini Ayarlar > Bildirimler bölümünden yönetebilirsiniz."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Telefonunuzdaki fotoğraf ve medya içeriklerini diğer cihazlarınızla paylaşın."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Size bildirim gönderme"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Uygulamalar da dahil olmak üzere telefonunuzun ekranını cihazlarınızla paylaşın. Cihazlarınız, telefonunuz kilitliyken bile ses, fotoğraflar, ödeme bilgileri, şifreler ve mesajlar da dahil olmak üzere telefonunuzda görünen her şeye erişebilir.&lt;br/&gt;&lt;br/&gt;Dokunma hareketleri ve fare tıklamaları gibi etkileşimler de dahil olmak üzere cihazlarınızdaki mikrofon, kamera ve diğer sensör verileri telefonunuza geri gönderilir."</string>

@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"ශ්‍රව්‍ය පටිගත කරන්න"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"අවට උපාංගවල සාපේක්ෂ පිහිටීම සොයා ගන්න, සම්බන්ධ වන්න, සහ තීරණය කරන්න"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"සම්බන්ධතා, පණිවිඩ, සහ ඡායාරූප වැනි තොරතුරු ඇතුළුව, සියලු දැනුම්දීම් කියවන්න"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• සම්බන්ධතා, පණිවිඩ, සහ ඡායාරූප වැනි තතු ඇතුළුව, සියලු දැනුම්දීම් කියවන්න&lt;br/&gt;• ඔබට දැනුම්දීම් යවන්න&lt;br/&gt;&lt;br/&gt;ඔබට සැකසීම් › දැනුම්දීම් තුළ ඕනෑම වේලාවක මෙම යෙදුමට දැනුම්දීම් කියවීමට සහ යැවීමට ඇති හැකියාව කළමනාකරණය කළ හැක."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"ඔබේ දුරකථනයේ ඡායාරූප සහ මාධ්‍ය ඔබේ අනෙකුත් උපාංග සමග බෙදා ගන්න."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"ඔබේ දැනුම්දීම් යවන්න"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"යෙදුම් ඇතුළුව, ඔබේ දුරකථනයේ තිරය ඔබේ උපාංග වෙත බෙදා ගන්න. ඔබේ දුරකථනය අගුළු දමා ඇති විට පවා, ශ්‍රව්‍ය, ඡායාරූප, ගෙවීම් තොරතුරු, මුරපද සහ පණිවිඩ ඇතුළුව, ඔබේ දුරකථනයේ දෘශ්‍යමාන ඕනෑම දෙයකට ඔබේ උපාංගවලට ප්‍රවේශය ඇත.&lt;br/&gt;&lt;br/&gt;ස්පර්ශ ඉංගිත සහ මූසික ක්ලික් කිරීම් වැනි අන්තර්ක්‍රියා ඇතුළුව, ඔබේ උපාංගවලින් මයික්‍රොෆෝනය, කැමරාව සහ අනෙකුත් සංවේදක දත්ත ඔබේ දුරකථනයට ආපසු ලබා දෙන්න."</string>

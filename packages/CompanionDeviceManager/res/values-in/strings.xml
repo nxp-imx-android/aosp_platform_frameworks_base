@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Merekam audio"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Menemukan, meng­hu­bung­kan, dan menentukan posisi relatif dari perangkat di sekitar"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Membaca semua notifikasi, termasuk informasi seperti kontak, pesan, dan foto"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Membaca semua notifikasi, termasuk informasi seperti kontak, pesan, dan foto&lt;br/&gt;• Mengirimi Anda notifikasi&lt;br/&gt;&lt;br/&gt;Anda dapat mengelola kemampuan aplikasi untuk membaca dan mengirim notifikasi kapan saja di Setelan › Notifikasi."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Membagikan foto dan media ponsel Anda ke perangkat lain."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Mengirimi Anda notifikasi"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Membagikan layar ponsel Anda, termasuk aplikasi, ke perangkat Anda. Perangkat Anda akan memiliki akses ke apa pun yang ditampilkan di ponsel Anda, termasuk audio, foto, info pembayaran, sandi, dan pesan, bahkan saat ponsel Anda terkunci.&lt;br/&gt;&lt;br/&gt;Memberikan data mikrofon, kamera, dan sensor lainnya dari perangkat Anda kembali ke ponsel Anda, termasuk interaksi seperti gestur sentuh dan klik mouse."</string>

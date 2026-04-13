@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Mag-record ng audio"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Maghanap ng, kumonekta sa, at tukuyin ang relatibong posisyon ng mga kalapit na device"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Basahin ang lahat ng notification, kabilang ang impormasyon tulad ng mga contact, mensahe, at larawan"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Basahin ang lahat ng notification, kabilang ang impormasyon tulad ng mga contact, mensahe, at larawan&lt;br/&gt;• Padalhan ka ng mga notification&lt;br/&gt;&lt;br/&gt;Puwede mong pamahalaan ang kakayahan ng app na ito na magbasa at magpadala ng mga notification kahit kailan sa Mga Setting › Mga Notification."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"I-share ang mga larawan at media ng iyong telepono sa iba mo pang device."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Padalhan ka ng mga notification"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"I-share ang screen ng iyong telepono, kasama ang mga app, sa mga device mo. Magkakaroon ng access ang iyong mga device sa anumang nakikita sa telepono mo, kasama ang audio, mga larawan, impormasyon sa pagbabayad, mga password, at mga mensahe, kahit naka-lock ang iyong telepono.&lt;br/&gt;&lt;br/&gt;Ibigay sa telepono mo ang data ng mikropono, camera, at iba pang sensor mula sa iyong mga device, kasama ang mga interaction tulad ng mga galaw ng pagpindot at pag-click ng mouse."</string>

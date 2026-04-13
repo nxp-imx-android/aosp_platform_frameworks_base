@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Gravar áudio"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Encontrar, determinar o posicionamento relativo e se conectar a dispositivos por perto"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Ler todas as notificações, incluindo informações como contatos, mensagens e fotos"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Ler todas as notificações, incluindo informações como contatos, mensagens e fotos&lt;br/&gt;• Enviar notificações&lt;br/&gt;&lt;br/&gt;Você pode gerenciar a capacidade deste app de ler e enviar notificações quando quiser em Configurações › Notificações."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Compartilhe fotos e mídias do seu celular com outros dispositivos."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Enviar notificações"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Compartilhar a tela do celular, incluindo apps, com seus dispositivos. Seus dispositivos terão acesso a tudo o que estiver visível no telefone, incluindo áudios, fotos, informações de pagamento, senhas e mensagens, mesmo quando o telefone estiver bloqueado.&lt;br/&gt;&lt;br/&gt;Fornecer dados de microfone, câmera e outros sensores dos seus dispositivos de volta para o telefone, incluindo interações como gestos e cliques do mouse."</string>

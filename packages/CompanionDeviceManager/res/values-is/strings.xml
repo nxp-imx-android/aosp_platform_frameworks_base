@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Taka upp hljóð"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Finna, tengjast og áætla staðsetningu nálægra tækja"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Lesa allar tilkynningar, þar á meðal upplýsingar á borð við tengiliði, skilaboð og myndir"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Lesa allar tilkynningar, þ.m.t. upplýsingar um tengiliði, skilaboð og myndir&lt;br/&gt;• Senda þér tilkynningar&lt;br/&gt;&lt;br/&gt;Þú getur stjórnað getu forritsins til að lesa og senda tilkynningar hvenær sem er með því að fara í „Stillingar › Tilkynningar“."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Deildu myndum og margmiðlunarefni símans með öðrum tækjum."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Senda þér tilkynningar"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Deildu skjá símans, þar á meðal forritum, með tækjunum þínum. Tækin þín fá aðgang að öllu sem er sýnilegt í símanum þínum, þ.m.t. hljóði, myndum, greiðsluupplýsingum, aðgangsorðum og skilaboðum, jafnvel þótt síminn sé læstur.&lt;br/&gt;&lt;br/&gt;Veittu símanum þínum aðgang að hljóðnema-, myndavélar- og öðrum skynjaragögnum úr tækjunum þínum, þ.m.t. gagnvirkni á borð við snertihreyfingar og músarsmelli."</string>

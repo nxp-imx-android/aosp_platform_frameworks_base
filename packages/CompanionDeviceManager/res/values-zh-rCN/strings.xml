@@ -70,7 +70,7 @@
     <string name="permission_media_routing_control" msgid="5498639511586715253">"更改媒体输出"</string>
     <string name="permission_storage" msgid="6831099350839392343">"照片和媒体内容"</string>
     <string name="permission_notifications" msgid="4099418516590632909">"通知"</string>
-    <string name="permission_app_streaming" msgid="4488910074894929222">"镜像屏幕并串流应用内容"</string>
+    <string name="permission_app_streaming" msgid="4488910074894929222">"屏幕镜像和应用串流"</string>
     <string name="permission_create_virtual_device" msgid="1102905050922460040">"将数据流式传输到<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_add_mirror_display" msgid="3743433250535606288">"镜像屏幕"</string>
     <string name="permission_add_trusted_display" msgid="9052824856626276723">"串流应用内容"</string>
@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"录音"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"查找、连接附近的设备以及确定附近设备的相对位置"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"读取所有通知，包括通讯录、消息和照片等信息"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• 读取所有通知，包括通讯录、消息和照片等信息&lt;br/&gt;• 发送通知&lt;br/&gt;&lt;br/&gt;您随时可以依次前往“设置”›“通知”，并在其中管理此应用读取和发送通知的权限。"</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"将手机中的照片和媒体内容共享到您的其他设备。"</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"向您发送通知"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"将手机屏幕（包括应用）共享到您的其他设备上。您的其他设备将能够访问手机上可见的任何内容，包括音频、照片、支付信息、密码和消息，即使手机处于锁定状态也是如此。&lt;br/&gt;&lt;br/&gt;将其他设备上的麦克风、摄像头和其他传感器数据（包括触摸手势和鼠标点击等互动操作）提供给手机。"</string>

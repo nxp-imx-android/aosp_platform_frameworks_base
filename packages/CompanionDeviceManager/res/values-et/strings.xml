@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Heli salvestamine"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Läheduses olevate seadmete leidmine, nendega ühenduse loomine ja nende suhtelise asendi määramine"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Kõikide märguannete, sh sellise teabe nagu kontaktid, sõnumid ja fotod lugemine"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Kõikide märguannete, sh sellise teabe nagu kontaktid, sõnumid ja fotod lugemine&lt;br/&gt;• Märguannete saatmine&lt;br/&gt;&lt;br/&gt;Saate selle rakenduse võimalusi märguannete lugemiseks ja saatmiseks igal ajal hallata jaotises Seaded › Märguanded."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Jagage oma telefoni fotosid ja meediafaile teiste seadmetega."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Märguannete saatmine"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Jagage oma seadmetega telefoni ekraani, sh rakendusi. Teie seadmed saavad juurdepääsu kõigile teie telefonis nähtavatele andmetele (sh heli, fotod, makseteave, paroolid ja sõnumid), isegi kui telefon on lukus.&lt;br/&gt;&lt;br/&gt;Edastage oma seadmetest mikrofoni, kaamera ja muude andurite andmed (sh interaktsioonid, nagu puuteliigutused ja hiireklikid) tagasi oma telefoni."</string>

@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"تسجيل الصوت"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"يمكن العثور على الأجهزة المجاورة والربط بها وتحديد موقعها النسبي."</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"يمكن لهذا الملف الشخصي قراءة جميع الإشعارات، بما في ذلك المعلومات، مثل جهات الاتصال والرسائل والصور."</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"‏• قراءة كل الإشعارات بما فيها المعلومات، مثل جهات الاتصال والرسائل والصور&lt;br/&gt;• إرسال الإشعارات إليك&lt;br/&gt;&lt;br/&gt;يمكنك إدارة الإذن الممنوح لهذا التطبيق بقراءة الإشعارات وإرسالها في أي وقت من خلال \"الإعدادات\" › \"الإشعارات\"."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"يمكنك مشاركة الصور والوسائط من هاتفك مع أجهزتك الأخرى."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"إرسال الإشعارات إليك"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"‏يمكنك مشاركة شاشة هاتفك، بما في ذلك التطبيقات، مع أجهزتك. وستتمكّن أجهزتك من الوصول إلى كل المحتوى المعروض على هاتفك، بما في ذلك المحتوى الصوتي والصور ومعلومات الدفع وكلمات المرور والرسائل، حتى عندما يكون هاتفك مقفلاً.&lt;br/&gt;&lt;br/&gt;يمكنك مشاركة بيانات الميكروفون والكاميرا وأجهزة الاستشعار الأخرى من أجهزتك مع هاتفك، بما في ذلك التفاعلات مثل إيماءات اللمس ونقرات الماوس."</string>

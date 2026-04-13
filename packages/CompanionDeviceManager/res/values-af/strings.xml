@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Neem oudio op"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Vind, koppel aan en bepaal die relatiewe posisie van toestelle in die omtrek"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Lees alle kennisgewings, insluitend inligting soos kontakte, boodskappe en foto’s"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Lees alle kennisgewings, insluitend inligting soos kontakte, boodskappe en foto’s&lt;br/&gt;• Stuur vir jou kennisgewings&lt;br/&gt;&lt;br/&gt;Jy kan hierdie app se vermoë om kennisgewings te lees en stuur, enige tyd bestuur in Instellings › Kennisgewings."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Deel jou foon se foto’s en media met jou ander toestelle."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Stuur vir jou kennisgewings"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Deel jou foon se skerm, insluitend apps, na jou toestelle. Jou toestelle sal toegang hê tot enigiets wat op jou foon sigbaar is, insluitend oudio, foto’s, betaalinligting, wagwoorde en boodskappe, selfs wanneer jou foon gesluit is.&lt;br/&gt;&lt;br/&gt;Verskaf mikrofoon-, kamera- en ander sensordata vanaf jou toestelle terug na jou foon toe, insluitend interaksies soos raakgebare en muisklikke."</string>

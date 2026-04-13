@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Kurekodi sauti"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Kutafuta, kuunganisha na kubaini umbali wa vifaa vilivyo karibu"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Kusoma arifa zote, ikiwa ni pamoja na maelezo kama vile anwani, ujumbe na picha"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Kusoma arifa zote, ikiwa ni pamoja na maelezo kama vile anwani, ujumbe na picha&lt;br/&gt;• Kukutumia arifa&lt;br/&gt;&lt;br/&gt;Unaweza kudhibiti uwezo wa programu hii wa kusoma na kutuma arifa wakati wowote katika Mipangilio › Arifa."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Kutuma picha na maudhui yaliyo kwenye simu yako katika vifaa vyako vingine."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Kukutumia arifa"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Kuonyesha skrini ya simu yako, ikiwa ni pamoja na programu, kwenye vifaa vyako. Vifaa vyako vitafikia chochote kinachoonekana kwenye simu yako, ikiwa ni pamoja na sauti, picha, maelezo ya malipo, manenosiri na ujumbe, hata wakati umefunga simu yako.&lt;br/&gt;&lt;br/&gt;Kuruhusu data ya maikrofoni, kamera na vitambuzi vingine kutoka kwenye vifaa vyako ifikiwe na simu yako, ikiwa ni pamoja na matukio kama vile miguso na mibofyo ya kipanya."</string>
