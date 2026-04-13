@@ -1841,7 +1841,7 @@
     <string name="safe_media_volume_warning" product="default" msgid="3751676824423049994">"Vuoi aumentare il volume oltre il livello consigliato?\n\nL\'ascolto ad alto volume per lunghi periodi di tempo potrebbe danneggiare l\'udito."</string>
     <string name="csd_dose_reached_warning" product="default" msgid="491875107583931974">"Vuoi continuare ad ascoltare a un volume alto?\n\nIl volume delle cuffie è rimasto alto per un periodo superiore a quello raccomandato, con il rischio di danneggiare l\'udito"</string>
     <string name="csd_momentary_exposure_warning" product="default" msgid="7730840903435405501">"Rilevato suono forte\n\nIl volume delle cuffie è più alto di quello raccomandato e potrebbe danneggiare il tuo udito"</string>
-    <string name="accessibility_shortcut_warning_dialog_title" msgid="4017995837692622933">"Usare la scorciatoia Accessibilità?"</string>
+    <string name="accessibility_shortcut_warning_dialog_title" msgid="4017995837692622933">"Usare la scorciatoia di accessibilità?"</string>
     <string name="accessibility_shortcut_toogle_warning" msgid="4161716521310929544">"Quando la scorciatoia è attiva, puoi premere entrambi i pulsanti del volume per tre secondi per avviare una funzione di accessibilità."</string>
     <string name="accessibility_shortcut_multiple_service_warning_title" msgid="3135860819356676426">"Vuoi attivare la scorciatoia per le funzioni di accessibilità?"</string>
     <string name="accessibility_shortcut_multiple_service_warning" msgid="3740723309483706911">"Se tieni premuti entrambi i tasti del volume per qualche secondo, vengono attivate le funzioni di accessibilità. Questa operazione potrebbe modificare il funzionamento del dispositivo.\n\nFunzioni correnti:\n<xliff:g id="SERVICE">%1$s</xliff:g>\nPuoi modificare le funzioni selezionate in Impostazioni &gt; Accessibilità."</string>
@@ -2382,9 +2382,9 @@
     <string name="accessibility_system_action_lock_screen_label" msgid="5484190691945563838">"Schermata di blocco"</string>
     <string name="accessibility_system_action_screenshot_label" msgid="3581566515062741676">"Screenshot"</string>
     <string name="accessibility_system_action_headset_hook_label" msgid="8524691721287425468">"Hook cuffie"</string>
-    <string name="accessibility_system_action_on_screen_a11y_shortcut_label" msgid="8488701469459210309">"Scorciatoia Accessibilità sullo schermo"</string>
-    <string name="accessibility_system_action_on_screen_a11y_shortcut_chooser_label" msgid="1057878690209817886">"Selettore scorciatoia Accessibilità sullo schermo"</string>
-    <string name="accessibility_system_action_hardware_a11y_shortcut_label" msgid="5764644187715255107">"Scorciatoia Accessibilità"</string>
+    <string name="accessibility_system_action_on_screen_a11y_shortcut_label" msgid="8488701469459210309">"Scorciatoia di accessibilità su schermo"</string>
+    <string name="accessibility_system_action_on_screen_a11y_shortcut_chooser_label" msgid="1057878690209817886">"Selettore scorciatoia di accessibilità su schermo"</string>
+    <string name="accessibility_system_action_hardware_a11y_shortcut_label" msgid="5764644187715255107">"Scorciatoia di accessibilità"</string>
     <string name="accessibility_system_action_dismiss_notification_shade" msgid="8931637495533770352">"Ignora area notifiche"</string>
     <string name="accessibility_system_action_menu_label" msgid="3385283204496447040">"Menu"</string>
     <string name="accessibility_system_action_media_play_pause_label" msgid="1905647491347119748">"Play/Pausa contenuti multimediali"</string>

@@ -404,7 +404,7 @@
     <string name="permlab_fullScreenIntent" msgid="4310888199502509104">"prikaz obavještenja kao aktivnosti preko cijelog ekrana na zaključanom uređaju"</string>
     <string name="permdesc_fullScreenIntent" msgid="1100721419406643997">"Dozvoljava aplikaciji da prikazuje obavještenja kao aktivnosti preko cijelog ekrana na zaključanom uređaju"</string>
     <string name="permlab_postPromotedNotifications" msgid="4873499297871691102">"Prikazuje obavještenja uživo"</string>
-    <string name="permdesc_postPromotedNotifications" msgid="4530634734172420651">"Dozvoljava aplikaciji da prikazuje kontinuirana, vremenski osjetljiva obavještenja na statusnoj traci i zaključanom ekranu"</string>
+    <string name="permdesc_postPromotedNotifications" msgid="4530634734172420651">"Dozvoljava aplikaciji da prikazuje tekuća i vremenski osjetljiva obavještenja na statusnoj traci i zaključanom ekranu"</string>
     <string name="permlab_install_shortcut" msgid="7451554307502256221">"Instaliranje prečica"</string>
     <string name="permdesc_install_shortcut" msgid="4476328467240212503">"Omogućava aplikaciji dodavanje prečice za početni ekran bez intervencije korisnika."</string>
     <string name="permlab_uninstall_shortcut" msgid="295263654781900390">"uklanjanje prečica"</string>

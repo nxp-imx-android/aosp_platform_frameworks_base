@@ -1121,7 +1121,7 @@
     <string name="lockscreen_too_many_failed_pin_attempts_dialog_message" msgid="2874278239714821984">"E ke shkruar <xliff:g id="NUMBER_0">%1$d</xliff:g> herë gabimisht PIN-in tënd.\n\nProvo sërish për <xliff:g id="NUMBER_1">%2$d</xliff:g> sekonda."</string>
     <string name="lockscreen_failed_attempts_almost_glogin" product="tablet" msgid="3069635524964070596">"Ke vizatuar <xliff:g id="NUMBER_0">%1$d</xliff:g> herë gabimisht motivin tënd të shkyçjes. Pas <xliff:g id="NUMBER_1">%2$d</xliff:g> tentativave të tjera të pasuksesshme, do të të kërkohet ta shkyçësh tabletin duke përdorur identifikimin në Google.\n\n Provo sërish për <xliff:g id="NUMBER_2">%3$d</xliff:g> sekonda."</string>
     <string name="lockscreen_failed_attempts_almost_glogin" product="tv" msgid="6399092175942158529">"Je përpjekur pa sukses të vizatosh motivin tënd të shkyçjes <xliff:g id="NUMBER_0">%1$d</xliff:g> herë. Pas <xliff:g id="NUMBER_1">%2$d</xliff:g> përpjekjesh të tjera të pasuksesshme, do të të kërkohet të shkyçësh pajisjen tënde Android TV duke përdorur identifikimin tënd të Google.\n\n Provo përsëri për <xliff:g id="NUMBER_2">%3$d</xliff:g> sekonda."</string>
-    <string name="lockscreen_failed_attempts_almost_glogin" product="default" msgid="5691623136957148335">"Ke vizatuar <xliff:g id="NUMBER_0">%1$d</xliff:g> herë gabimisht motivin tënd të shkyçjes. Pas <xliff:g id="NUMBER_1">%2$d</xliff:g> tentativave të tjera të pasuksesshme, do të të kërkohet ta shkyçësh telefonin duke përdorur identifikimin në Google.\n\n Provo sërish për <xliff:g id="NUMBER_2">%3$d</xliff:g> sekonda."</string>
+    <string name="lockscreen_failed_attempts_almost_glogin" product="default" msgid="5691623136957148335">"Ke vizatuar <xliff:g id="NUMBER_0">%1$d</xliff:g> herë gabim motivin tënd të shkyçjes. Pas <xliff:g id="NUMBER_1">%2$d</xliff:g> tentativave të tjera të pasuksesshme, do të të kërkohet ta shkyçësh telefonin duke përdorur identifikimin në Google.\n\n Provo përsëri pas <xliff:g id="NUMBER_2">%3$d</xliff:g> sekondash."</string>
     <string name="lockscreen_failed_attempts_almost_at_wipe" product="tablet" msgid="7914445759242151426">"Ke tentuar <xliff:g id="NUMBER_0">%1$d</xliff:g> herë pa sukses për ta shkyçur tabletin. Pas <xliff:g id="NUMBER_1">%2$d</xliff:g> tentativave të tjera të pasuksesshme, tableti do të rivendoset në gjendjen e fabrikës dhe të gjitha të dhënat e përdoruesit do të humben."</string>
     <string name="lockscreen_failed_attempts_almost_at_wipe" product="tv" msgid="4275591249631864248">"Je përpjekur pa sukses të shkyçësh pajisjen tënde Android TV <xliff:g id="NUMBER_0">%1$d</xliff:g> herë. Pas <xliff:g id="NUMBER_1">%2$d</xliff:g> përpjekjesh të tjera të pasuksesshme, pajisja jote Android TV do të rivendoset në gjendje fabrike dhe të gjitha të dhënat e përdoruesit do të humbasin."</string>
     <string name="lockscreen_failed_attempts_almost_at_wipe" product="default" msgid="1166532464798446579">"Ke tentuar <xliff:g id="NUMBER_0">%1$d</xliff:g> herë pa sukses për ta shkyçur telefonin. Pas <xliff:g id="NUMBER_1">%2$d</xliff:g> tentativave të tjera të pasuksesshme, telefoni do të rivendoset në gjendjen e fabrikës dhe të gjitha të dhënat e përdoruesit do të humben."</string>
@@ -1832,7 +1832,7 @@
     <string name="kg_failed_attempts_now_wiping" product="tablet" msgid="2299099385175083308">"Ke tentuar <xliff:g id="NUMBER">%d</xliff:g> herë pa sukses për ta shkyçur tabletin tënd. Tableti tani do të rivendoset në gjendje fabrike."</string>
     <string name="kg_failed_attempts_now_wiping" product="tv" msgid="5045460916106267585">"Je përpjekur pa sukses të shkyçësh pajisjen tënde Android TV <xliff:g id="NUMBER">%d</xliff:g> herë. Pajisja jote Android TV tani do të rivendoset në gjendje fabrike."</string>
     <string name="kg_failed_attempts_now_wiping" product="default" msgid="5043730590446071189">"Ke tentuar <xliff:g id="NUMBER">%d</xliff:g> herë ta shkyçësh pa sukses telefonin tënd. Telefoni do të rivendoset tani si në gjendjen e fabrikës."</string>
-    <string name="kg_failed_attempts_almost_at_login" product="tablet" msgid="7086799295109717623">"E ke vizatuar gabimisht motivin tënd të shkyçjes <xliff:g id="NUMBER_0">%1$d</xliff:g> herë. Pas <xliff:g id="NUMBER_1">%2$d</xliff:g> tentativave të tjera të pasuksesshme do të të kërkohet ta shkyçësh tabletin duke përdorur një llogari mail-i.\n\n Provo sërish për <xliff:g id="NUMBER_2">%3$d</xliff:g> sekonda."</string>
+    <string name="kg_failed_attempts_almost_at_login" product="tablet" msgid="7086799295109717623">"Ke vizatuar <xliff:g id="NUMBER_0">%1$d</xliff:g> herë pa sukses motivin tënd. Pas <xliff:g id="NUMBER_1">%2$d</xliff:g> tentativave të tjera të pasuksesshme, do të të duhet ta shkyçësh tabletin duke përdorur një llogari email-i.\n\n Provo sërish për <xliff:g id="NUMBER_2">%3$d</xliff:g> sekonda."</string>
     <string name="kg_failed_attempts_almost_at_login" product="tv" msgid="4670840383567106114">"Ke vizatuar <xliff:g id="NUMBER_0">%1$d</xliff:g> herë pa sukses motivin tënd të shkyçjes. Pas <xliff:g id="NUMBER_1">%2$d</xliff:g> përpjekjesh të tjera të pasuksesshme, do të të kërkohet të shkyçësh pajisjen tënde Android TV duke përdorur një llogari email-i.\n\n Provo përsëri për <xliff:g id="NUMBER_2">%3$d</xliff:g> sekonda."</string>
     <string name="kg_failed_attempts_almost_at_login" product="default" msgid="5270861875006378092">"Ke vizatuar <xliff:g id="NUMBER_0">%1$d</xliff:g> herë pa sukses motivin tënd. Pas <xliff:g id="NUMBER_1">%2$d</xliff:g> tentativave të tjera të pasuksesshme, do të të duhet ta shkyçësh telefonin duke përdorur një llogari email-i.\n\n Provo sërish për <xliff:g id="NUMBER_2">%3$d</xliff:g> sekonda."</string>
     <string name="kg_text_message_separator" product="default" msgid="4503708889934976866">" - "</string>
@@ -1860,7 +1860,7 @@
     <string name="accessibility_dialog_button_allow" msgid="2092558122987144530">"Lejo"</string>
     <string name="accessibility_dialog_button_deny" msgid="4129575637812472671">"Refuzo"</string>
     <string name="accessibility_dialog_button_uninstall" msgid="2952465517671708108">"Çinstalo"</string>
-    <string name="accessibility_dialog_touch_filtered_warning" msgid="3741940116597822451">"Një aplikacion po fsheh kërkesën për leje, prandaj përgjigja jote nuk mund të verifikohet."</string>
+    <string name="accessibility_dialog_touch_filtered_warning" msgid="3741940116597822451">"Një aplikacion po fsheh kërkesën për leje, prandaj përgjigjja jote nuk mund të verifikohet."</string>
     <string name="accessibility_select_shortcut_menu_title" msgid="6002726538854613272">"Trokit te një veçori për të filluar ta përdorësh atë:"</string>
     <string name="accessibility_edit_shortcut_menu_button_title" msgid="239446795930436325">"Zgjidh veçoritë që do të përdorësh me butonin e qasshmërisë"</string>
     <string name="accessibility_edit_shortcut_menu_volume_title" msgid="2245540598834891500">"Zgjidh veçoritë që do të përdorësh me shkurtoren e tasteve të volumit"</string>
@@ -1954,7 +1954,7 @@
     <string name="mediasize_na_index_3x5" msgid="990821038991491710">"Kartë indeksi 3x5"</string>
     <string name="mediasize_na_index_4x6" msgid="4414381976602032401">"Karta e indeksit 4x6"</string>
     <string name="mediasize_na_index_5x8" msgid="4499341583361946948">"Kartë indeksi 5x8"</string>
-    <string name="mediasize_na_monarch" msgid="4396943937986136896">"\"Monarch\""</string>
+    <string name="mediasize_na_monarch" msgid="4396943937986136896">"Monarch"</string>
     <string name="mediasize_na_quarto" msgid="2119101847712239885">"\"Quatro\""</string>
     <string name="mediasize_na_foolscap" msgid="5011612828564394648">"Foolscap"</string>
     <string name="mediasize_na_ansi_c" msgid="3104916921818289618">"ANSI C"</string>
@@ -2125,7 +2125,7 @@
     <string name="call_notification_incoming_text" msgid="6143109825406638201">"Telefonatë hyrëse"</string>
     <string name="call_notification_ongoing_text" msgid="3880832933933020875">"Telefonatë në vazhdim"</string>
     <string name="call_notification_screening_text" msgid="8396931408268940208">"Po filtron një telefonatë hyrëse"</string>
-    <string name="default_notification_channel_label" msgid="3697928973567217330">"E pakategorizuara"</string>
+    <string name="default_notification_channel_label" msgid="3697928973567217330">"Të pakategorizuara"</string>
     <string name="promotional_notification_channel_label" msgid="7414844730492860233">"Promovime"</string>
     <string name="social_notification_channel_label" msgid="106520267132019945">"Sociale"</string>
     <string name="news_notification_channel_label" msgid="4299937455247883311">"Lajme"</string>
@@ -2643,7 +2643,7 @@
     <string name="satellite_sos_not_supported_notification_title" msgid="2659100983227637285">"\"SOS satelitor\" nuk mbështetet"</string>
     <string name="satellite_sos_not_supported_notification_summary" msgid="1071762454665310549">"\"SOS satelitor\" nuk mbështetet në këtë pajisje"</string>
     <string name="satellite_sos_not_provisioned_notification_title" msgid="8564738683795406715">"\"SOS satelitor\" nuk është konfiguruar"</string>
-    <string name="satellite_sos_not_provisioned_notification_summary" msgid="3127320958911180629">"Sigurohu që të jesh lidhur me internetin dhe provo përsëri konfigurimin"</string>
+    <string name="satellite_sos_not_provisioned_notification_summary" msgid="3127320958911180629">"Sigurohu që të jesh i lidhur me internetin dhe provo përsëri konfigurimin"</string>
     <string name="satellite_sos_not_in_allowed_region_notification_title" msgid="3164093193467075926">"\"SOS satelitor\" nuk ofrohet"</string>
     <string name="satellite_sos_not_in_allowed_region_notification_summary" msgid="7686947667515679672">"\"SOS satelitor\" nuk ofrohet në këtë shtet ose rajon"</string>
     <string name="satellite_sos_unsupported_default_sms_app_notification_title" msgid="292528603128702080">"\"SOS satelitor\" nuk është konfiguruar"</string>
@@ -2655,7 +2655,7 @@
     <string name="satellite_messaging_not_supported_notification_title" msgid="8202139632766878610">"Shkëmbimi i mesazheve nëpërmjet satelitit nuk mbështetet"</string>
     <string name="satellite_messaging_not_supported_notification_summary" msgid="61629858627638545">"Shkëmbimi i mesazheve nëpërmjet satelitit nuk mbështetet në këtë pajisje"</string>
     <string name="satellite_messaging_not_provisioned_notification_title" msgid="961909101918169727">"Shkëmbimi i mesazheve nëpërmjet satelitit nuk është konfiguruar"</string>
-    <string name="satellite_messaging_not_provisioned_notification_summary" msgid="1060961852174442155">"Sigurohu që të jesh lidhur me internetin dhe provo përsëri konfigurimin"</string>
+    <string name="satellite_messaging_not_provisioned_notification_summary" msgid="1060961852174442155">"Sigurohu që të jesh i lidhur me internetin dhe provo përsëri konfigurimin"</string>
     <string name="satellite_messaging_not_in_allowed_region_notification_title" msgid="2035303593479031655">"Shkëmbimi i mesazheve nëpërmjet satelitit nuk ofrohet"</string>
     <string name="satellite_messaging_not_in_allowed_region_notification_summary" msgid="5270294879531815854">"Shkëmbimi i mesazheve nëpërmjet satelitit nuk ofrohet në këtë shtet ose rajon"</string>
     <string name="satellite_messaging_unsupported_default_sms_app_notification_title" msgid="1004808759472360189">"Shkëmbimi i mesazheve nëpërmjet satelitit nuk është konfiguruar"</string>

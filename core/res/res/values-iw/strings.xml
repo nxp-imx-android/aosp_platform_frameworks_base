@@ -85,7 +85,7 @@
     <string name="page_size_compat_apk_and_elf_not_aligned" msgid="7140216083697701972">"‏&amp;#8226;‏ %1$s : אין התאמה בין מקטע הטעינה והספרייה הלא דחוסה&lt;br&gt;"</string>
     <string name="page_size_compat_unknown" msgid="5183026525148169891">"‏&amp;#8226;‏ %1$s : שגיאה לא ידועה&lt;br&gt;"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"השירות לא הוקצה."</string>
-    <string name="CLIRPermanent" msgid="166443681876381118">"אינך יכול לשנות את הגדרת זיהוי המתקשר."</string>
+    <string name="CLIRPermanent" msgid="166443681876381118">"אי אפשר לשנות את הגדרת השיחה המזוהה."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"הנתונים עברו אל <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
     <string name="auto_data_switch_content" msgid="803557715007110959">"תמיד אפשר לשנות זאת ב\'הגדרות‘"</string>
     <string name="RestrictedOnDataTitle" msgid="1500576417268169774">"אין שירות של חבילת גלישה"</string>
