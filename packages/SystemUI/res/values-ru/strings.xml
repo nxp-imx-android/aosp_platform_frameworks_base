@@ -160,7 +160,7 @@
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Вы записываете экран приложения \"<xliff:g id="APP_NAME">%1$s</xliff:g>\"."</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Остановить запись"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"Весь экран"</string>
-    <string name="screen_record_single_app" msgid="7355880948574569290">"Отдельное приложение"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"Одно приложение"</string>
     <string name="screen_record_single_app_hint" msgid="8404332826093639170">"Выбрать приложение"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Отдельное приложение (откройте его)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Записывать звук с устройства"</string>
@@ -168,7 +168,7 @@
     <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"Сейчас нельзя менять настройки."</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Показывать селфи-камеру"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Показывать нажатия"</string>
-    <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Выберите приложение для записи"</string>
+    <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Какое приложение записать?"</string>
     <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"Показать следующее"</string>
     <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"Показать предыдущее"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"Настройки записи экрана"</string>
@@ -320,7 +320,7 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Подтвердить другим способом"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Настроить проверку личности"</string>
     <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"Подробнее о проверке личности…"</string>
-    <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"Проверка личности включена. Для нее можно использовать только отпечаток пальца или распознавание лица. %1$s"</string>
+    <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"Проверка личности включена. Для нее можно использовать только отпечаток пальца или фейсконтроль. %1$s"</string>
     <string name="biometric_dialog_identity_check_watch_ranging" msgid="2994378079915744485">"Оценка риска…"</string>
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"Недоступно"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"PIN-код"</string>

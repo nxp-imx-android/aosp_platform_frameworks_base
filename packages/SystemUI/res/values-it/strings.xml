@@ -134,7 +134,7 @@
     <string name="screenrecord_permission_dialog_option_text_single_app" msgid="1996450687814647583">"Registra un\'app"</string>
     <string name="screenrecord_permission_dialog_option_text_entire_screen" msgid="4882406311415082016">"Registra questa schermata"</string>
     <string name="screenrecord_permission_dialog_option_text_entire_screen_for_display" msgid="4169494703993148253">"Registra %s"</string>
-    <string name="screenrecord_permission_dialog_warning_entire_screen" msgid="1321758636709366068">"Quando registri l\'intera schermata, tutto ciò che viene mostrato sullo schermo viene registrato. Presta quindi attenzione a password, dati di pagamento, messaggi, foto, audio e video."</string>
+    <string name="screenrecord_permission_dialog_warning_entire_screen" msgid="1321758636709366068">"Quando registri l\'intero schermo, tutto ciò che viene mostrato sullo schermo viene registrato. Presta quindi attenzione a password, dati di pagamento, messaggi, foto, audio e video."</string>
     <string name="screenrecord_permission_dialog_warning_single_app" msgid="3738199712880063924">"Quando registri un\'app, tutto ciò che viene mostrato o riprodotto al suo interno viene registrato. Presta quindi attenzione a password, dati di pagamento, messaggi, foto, audio e video."</string>
     <string name="screenrecord_permission_dialog_continue_entire_screen" msgid="5557974446773486600">"Registra schermo"</string>
     <string name="screenrecord_app_selector_title" msgid="3854492366333954736">"Scegli l\'app da registrare"</string>
@@ -163,7 +163,7 @@
     <string name="screen_record_single_app" msgid="7355880948574569290">"Singola app"</string>
     <string name="screen_record_single_app_hint" msgid="8404332826093639170">"App da registrare"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Singola app (aprine una)"</string>
-    <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Registra audio del dispositivo"</string>
+    <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Registra audio dispositivo"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Registra microfono"</string>
     <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"Impossibile modificare le impostazioni audio durante la registrazione"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Mostra fotocamera selfie"</string>
@@ -195,10 +195,10 @@
     <string name="screen_capture_record_region_selection_button" msgid="3699353194755563053">"Registra l\'area selezionata"</string>
     <string name="screen_capture_toolbar_screenshot_button" msgid="5676585348709494125">"Screenshot"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Registra"</string>
-    <string name="screen_capture_region_box_top_left_handle_description" msgid="3619310281612042126">"Punto di manipolazione in alto a sinistra: usa i tasti freccia per ridimensionare"</string>
-    <string name="screen_capture_region_box_top_right_handle_description" msgid="7732373569053287436">"Punto di manipolazione in alto a destra: usa i tasti freccia per ridimensionare"</string>
-    <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"Punto di manipolazione in basso a destra: usa i tasti freccia per ridimensionare"</string>
-    <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"Punto di manipolazione in basso a sinistra: usa i tasti freccia per ridimensionare"</string>
+    <string name="screen_capture_region_box_top_left_handle_description" msgid="3619310281612042126">"Handle superiore sinistro: usa i tasti freccia per ridimensionare"</string>
+    <string name="screen_capture_region_box_top_right_handle_description" msgid="7732373569053287436">"Handle superiore destro: usa i tasti freccia per ridimensionare"</string>
+    <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"Handle inferiore destro: usa i tasti freccia per ridimensionare"</string>
+    <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"Handle inferiore sinistro: usa i tasti freccia per ridimensionare"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Condividi"</string>
     <string name="screen_share_no_select_app_thumbnail" msgid="1886183147809224215">"Seleziona la finestra dell\'app da condividere"</string>
     <string name="screen_share_no_select_tab_thumbnail" msgid="677801966729809584">"Seleziona la scheda da condividere"</string>
@@ -1371,10 +1371,10 @@
     <string name="accessibility_resize" msgid="5733759136600611551">"Ridimensiona"</string>
     <string name="accessibility_change_magnification_type" msgid="666000085077432421">"Modifica il tipo di ingrandimento"</string>
     <string name="accessibility_magnification_end_resizing" msgid="4881690585800302628">"Termina ridimensionamento"</string>
-    <string name="accessibility_magnification_top_handle" msgid="2716851102182220718">"Punto di manipolazione superiore"</string>
-    <string name="accessibility_magnification_left_handle" msgid="6694953733271752950">"Punto di manipolazione sinistro"</string>
-    <string name="accessibility_magnification_right_handle" msgid="9055988237319397605">"Punto di manipolazione destro"</string>
-    <string name="accessibility_magnification_bottom_handle" msgid="6531646968813821258">"Punto di manipolazione inferiore"</string>
+    <string name="accessibility_magnification_top_handle" msgid="2716851102182220718">"Handle superiore"</string>
+    <string name="accessibility_magnification_left_handle" msgid="6694953733271752950">"Handle sinistro"</string>
+    <string name="accessibility_magnification_right_handle" msgid="9055988237319397605">"Handle destro"</string>
+    <string name="accessibility_magnification_bottom_handle" msgid="6531646968813821258">"Handle inferiore"</string>
     <string name="accessibility_magnification_settings_panel_description" msgid="8174187340747846953">"Impostazioni di ingrandimento"</string>
     <string name="accessibility_magnifier_size" msgid="3038755600030422334">"Dimensione ingrandimento"</string>
     <string name="accessibility_magnification_zoom" msgid="4222088982642063979">"Zoom"</string>

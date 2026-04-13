@@ -1874,18 +1874,10 @@
     <string name="av_blur" msgid="405131343487260171">"Tia ukungu"</string>
     <string name="av_live_captions" msgid="802763867449401889">"Manukuu papo hapo"</string>
     <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"Rudi nyuma"</string>
-    <!-- String.format failed for translation -->
-    <!-- no translation found for accessibility_hearing_device_battery_level (1032601787487328432) -->
-    <skip />
-    <!-- String.format failed for translation -->
-    <!-- no translation found for accessibility_hearing_device_left_right_battery_level (5327672450604052979) -->
-    <skip />
-    <!-- String.format failed for translation -->
-    <!-- no translation found for accessibility_hearing_device_left_battery_level (327961080394238636) -->
-    <skip />
-    <!-- String.format failed for translation -->
-    <!-- no translation found for accessibility_hearing_device_right_battery_level (7598843215226414563) -->
-    <skip />
+    <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Chaji ya betri ni %s"</string>
+    <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Chaji ya betri ya kushoto ni %1$s  Chaji ya betri ya kulia ni %2$s"</string>
+    <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Chai ya betri ya kushoto ni %1$s"</string>
+    <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"Chaji ya betri ya kulia ni %1$s"</string>
     <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"Hali ya Vifaa vya Kusikilizia"</string>
     <string name="more_options_edit" msgid="6337988646114341329">"Hariri"</string>
     <string name="more_options_move" msgid="2226159413422979066">"Hamisha"</string>

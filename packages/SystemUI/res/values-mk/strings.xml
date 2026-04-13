@@ -1875,7 +1875,7 @@
     <string name="av_live_captions" msgid="802763867449401889">"Автоматски титлови"</string>
     <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"Назад"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Батерија: %s"</string>
-    <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Л – батерија: %1$s   Д – батерија: %1$s"</string>
+    <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Л – батерија: %1$s   Д – батерија: %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Л – батерија: %1$s"</string>
     <string name="accessibility_hearing_device_right_battery_level" msgid="7598843215226414563">"Д – батерија: %1$s"</string>
     <string name="accessibility_hearing_device_notification_channel_name" msgid="7365020777623709400">"Статус на слушниот апарат"</string>

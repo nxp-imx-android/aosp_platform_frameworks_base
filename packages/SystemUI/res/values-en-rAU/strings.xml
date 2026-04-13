@@ -707,7 +707,7 @@
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"Let\'s go"</string>
     <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"Show your favourite screensavers while charging"</string>
     <string name="dream_switcher_select_dream_title" msgid="2784437029616150736">"Select dream"</string>
-    <string name="dream_switcher_choose_screensaver" msgid="3073471555365511227">"Choose a screensaver"</string>
+    <string name="dream_switcher_choose_screensaver" msgid="3073471555365511227">"Choose a screen saver"</string>
     <string name="dream_switcher_edit_button_text" msgid="2152516873780618659">"Edit <xliff:g id="DREAM_NAME">%1$s</xliff:g>"</string>
     <string name="dream_switcher_go_to_app_button_text" msgid="6043693674135654080">"Go to <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="dream_switcher_more_screensavers" msgid="6672017768044989604">"More screensavers"</string>

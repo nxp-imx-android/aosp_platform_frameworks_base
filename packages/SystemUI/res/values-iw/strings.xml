@@ -187,7 +187,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"השתקה"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"ביטול ההשתקה"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"‫<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> מתוך <xliff:g id="DURATION">%2$s</xliff:g>"</string>
-    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"כדי לשנות את מיקום הסלפי, סוגרים את האצבעות על גבי המסך, גוררים ולוחצים על הסלפי"</string>
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"אפשר לגרור את הסלפי במסך, להגדיל/להקטין אותו בשתי אצבעות וללחוץ עליו לעוד אפשרויות"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"‏צילום המסך חסום על ידי האדמין ממחלקת IT"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"צילום מסך של כל המסך"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"הקלטה של כל המסך"</string>
