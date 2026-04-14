@@ -911,7 +911,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS, "Collecting in transition %d: %s",
                 mSyncId, wc);
         // Snapshot before checking if this is a participant in case it has been re-parented.
-        snapshotStartState(getAnimatableParent(wc));
+        snapshotStartState(getAnimatableParent(wc), true /* addReadyGroup */);
         if (mParticipants.contains(wc)) return;
         // Transient-hide may be hidden later, so no need to request redraw.
         // Also, recents transition can play without waiting for its host to draw.
@@ -939,14 +939,14 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
     }
 
     /** "snapshot" `wc` and all its parents (as potential promotion targets). */
-    private void snapshotStartState(@NonNull WindowContainer<?> wc) {
+    private void snapshotStartState(@NonNull WindowContainer<?> wc, boolean addReadyGroup) {
         for (WindowContainer<?> curr = wc;
                 curr != null && !mChanges.containsKey(curr);
                 curr = getAnimatableParent(curr)) {
             final ChangeInfo info = new ChangeInfo(curr);
             updateTransientFlags(info);
             mChanges.put(curr, info);
-            if (isReadyGroup(curr)) {
+            if (addReadyGroup && isReadyGroup(curr)) {
                 mReadyTrackerOld.addGroup(curr);
                 ProtoLog.v(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS, " Creating Ready-group for"
                         + " Transition %d with root=%s", mSyncId, curr);
@@ -1007,7 +1007,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         }
 
         mLifecycleChangingContainers.add(wc);
-        snapshotStartState(wc);
+        snapshotStartState(wc, false /* addReadyGroup */);
     }
 
     /** Adds the top visible non-alwaysOnTop tasks within `task` to `out`. */
