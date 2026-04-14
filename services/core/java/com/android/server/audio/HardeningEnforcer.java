@@ -447,6 +447,9 @@ public class HardeningEnforcer {
                 } else if (!hardeningPartial() && isPreVic) {
                     yield new int[]{ALLOWED,
                         AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_FLAG_DISABLED};
+                } else if (holdsPermission(Manifest.permission.BLUETOOTH_CONNECT, callingUid)) {
+                    yield new int[]{DENIED_IF_PARTIAL,
+                        AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_PRIVILEGED_APP};
                 } else if (isPreCinnamonBun) {
                     yield new int[]{DENIED_IF_PARTIAL,
                         AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_TARGET_SDK};
