@@ -914,12 +914,17 @@ public abstract class DisplayManagerInternal {
         /**
          * Start display offload.
          *
-         * @param displayState display state at time of offload request.
+         * @param displayState display state at time of the start request.
          * @return {@code true} on success, {@code false} otherwise.
          */
         boolean startOffload(@Display.DisplayState int displayState);
 
-        void stopOffload();
+        /**
+         * Stop display offload.
+         *
+         * @param displayState display state at time of the stop request.
+         */
+        void stopOffload(@Display.DisplayState int displayState);
 
         /**
          * Called when {@link DisplayOffloadSession} tries to block screen turning on.

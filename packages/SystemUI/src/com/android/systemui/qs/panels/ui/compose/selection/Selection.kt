@@ -322,7 +322,8 @@ private fun MinimumInteractiveSizeComponent(
                     color = MaterialTheme.colorScheme.secondary,
                     cornerSize = CornerSize(50),
                     // Negative padding is needed on the focus ring to offset the touch target
-                    padding = if (QsEditModeFocusFixes.isEnabled) (-8).dp else 2.dp,
+                    paddingHorizontal = if (QsEditModeFocusFixes.isEnabled) (-8).dp else 2.dp,
+                    paddingVertical = if (QsEditModeFocusFixes.isEnabled) (-8).dp else 2.dp,
                 )
                 .thenIf(QsEditModeHoverFixes.isEnabled) {
                     Modifier.clickable(

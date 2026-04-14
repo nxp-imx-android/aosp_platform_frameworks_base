@@ -169,6 +169,10 @@ abstract class MediaOutputAdapterBase(protected val mController: MediaSwitchingC
                 mCurrentActivePosition = position
             }
 
+            if (device.isInputDevice) {
+                restrictVolumeAdjustment = true
+            }
+
             renderDeviceItem(
                 device,
                 connectionState,

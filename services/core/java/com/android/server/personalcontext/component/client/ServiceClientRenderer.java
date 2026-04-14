@@ -88,20 +88,23 @@ public class ServiceClientRenderer
         // Always connect to the service, whether we can fetch a filter or not, so that it can
         // distribute its RenderTokens.
         runWithScopedBinder((binder, callback) -> {
-            if (isAllowed(AccessController.ACCESS_FILTER_INSIGHTS_ALLOWLIST)) {
-                try {
-                    binder.getFilter(getParcelComponentId(), new IGetFilterCallback.Stub() {
-                        @PermissionManuallyEnforced
-                        @Override
-                        public void updateFilter(InsightFilter filter) {
+            try {
+                binder.getFilter(getParcelComponentId(), new IGetFilterCallback.Stub() {
+                    @PermissionManuallyEnforced
+                    @Override
+                    public void updateFilter(InsightFilter filter) {
+                        // We check to see if a filter is allowed after requesting it to make sure
+                        // that the renderer gets an onConnected call.
+                        if (isAllowed(AccessController.ACCESS_FILTER_INSIGHTS_ALLOWLIST)) {
                             mFilter = filter;
+                        } else {
+                            Slog.d(TAG, getComponentName()
+                                    + " is not allowed to filter for insights.");
                         }
-                    }, callback);
-                } catch (RemoteException e) {
-                    Slog.e(TAG, "Failed to get renderer filter", e);
-                }
-            } else {
-                Slog.d(TAG, getComponentName() + " is not allowed to filter for insights.");
+                    }
+                }, callback);
+            } catch (RemoteException e) {
+                Slog.e(TAG, "Failed to get renderer filter", e);
             }
         });
     }

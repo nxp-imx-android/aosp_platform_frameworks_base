@@ -984,7 +984,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                         // before we can change its power mode, so do that first.
                         if (displayOffloadSession != null
                                 && !DisplayOffloadSession.isSupportedOffloadState(state)) {
-                            displayOffloadSession.stopOffload();
+                            displayOffloadSession.stopOffload(state);
                         }
 
 

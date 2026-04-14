@@ -24,8 +24,6 @@ import android.os.Trace;
 import android.util.Slog;
 import android.view.Display;
 
-import android.util.Log;
-
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.server.display.utils.DebugUtils;
 
@@ -135,16 +133,17 @@ public class DisplayOffloadSessionImpl implements DisplayManagerInternal.Display
     /**
      * Stop the offload session. The method returns if the session is not active.
      */
-    public void stopOffload() {
+    public void stopOffload(int displayState) {
         if (mDisplayOffloader == null || !mIsActive) {
             return;
         }
         Trace.traceBegin(Trace.TRACE_TAG_POWER, "DisplayOffloader#stopOffload");
         try {
-            mDisplayOffloader.stopOffload();
+            mDisplayOffloader.stopOffload(displayState);
             mIsActive = false;
             if (DEBUG) {
-                Slog.i(TAG, "stopOffload");
+                Slog.i(TAG, "stopOffload "
+                        + Display.stateToString(displayState));
             }
         } finally {
             Trace.traceEnd(Trace.TRACE_TAG_POWER);
