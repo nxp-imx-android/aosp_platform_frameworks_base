@@ -149,7 +149,6 @@ public class TestActivity extends ListActivity {
                     // Meh.  Ignore and keep going.
                 }
             }
-            Log.i(TAG, "added block " + (j + 1));
         }
         Log.i(TAG, String.format("Memory set to %dMB (%d blocks)", size, mMemory.size()));
     }

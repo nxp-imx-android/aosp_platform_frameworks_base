@@ -1701,8 +1701,10 @@ public final class MediaFormat {
     /**
      * An optional key describing the SMPTE ST 2094-50 metadata of the video content.
      *
-     * The associated value is a ByteBuffer containing SMPTE ST 2094-50 metadata conforming to
-     * the user_data_registered_itu_t_t35() syntax of SEI message.
+     * The associated value is a ByteBuffer containing the user_data_payload segment of
+     * an ITU-T T.35 SEI message, specifically for SMPTE ST 2094-50.
+     * The buffer's contents must conform to the syntax defined in SMPTE ST 2094-50,
+     * and must not include the initial 5-byte ITU-T T.35 header.
      */
     @FlaggedApi(FLAG_AGTM_METADATA)
     public static final String KEY_HDR_ST2094_50_INFO = "hdr-st2094-50-info";

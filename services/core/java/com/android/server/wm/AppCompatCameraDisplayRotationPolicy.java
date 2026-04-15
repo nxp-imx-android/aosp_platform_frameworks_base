@@ -213,8 +213,8 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
 
     void dump(@NonNull ActivityRecord activity, @NonNull PrintWriter pw, @NonNull String prefix) {
         pw.println(prefix + "AppCompatCameraDisplayRotationPolicy:");
-        final boolean isTreatmentEnabledForDisplay = isTreatmentEnabledForDisplay(
-                activity.getDisplayContent());
+        final boolean isTreatmentEnabledForDisplay = activity.getDisplayContent() != null
+                && isTreatmentEnabledForDisplay(activity.getDisplayContent());
         pw.println(prefix + "  isTreatmentEnabledForDisplay=" + isTreatmentEnabledForDisplay);
         if (isTreatmentEnabledForDisplay) {
             pw.println(prefix + "  mLastReportedOrientation="

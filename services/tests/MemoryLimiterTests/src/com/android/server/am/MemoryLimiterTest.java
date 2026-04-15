@@ -156,6 +156,14 @@ public class MemoryLimiterTest {
     // The memory that will make the process exceed mem-high + swap-max.  Units are MB.
     private static final int sProcessSizeOverAnon = LIMIT_MEM + LIMIT_SWAP + 10;
 
+    // The memory margin granted to a process that exceeds memory.high.  The margin does not
+    // affect the anon+swap limit but it gives the process extra headroom to run and possibly shed
+    // memory.
+    // TODO: This value is defined in the native layer and is not exposed to the Java layer except
+    // right here, for these tests.  Expose the value formally or find a way to avoid relying on
+    // it in tests.
+    private static final long MEM_MARGIN = 100 * MB;
+
     // The limits for FG and BG processes, and the limits for an unlimited process.
     private static final Limits limitsFG = new Limits(LIMIT_MEM * MB, LIMIT_SWAP * MB);
     private static final Limits limitsBG = new Limits(LIMIT_MEM / 2 * MB, LIMIT_SWAP * MB);
@@ -530,14 +538,19 @@ public class MemoryLimiterTest {
             return waitUntil(() -> currentMemHigh() == want, 5000);
         }
 
-        // Return the current memory.high limit of the helper app, as reported by memcg.
-        private long currentSwapHigh() {
-            return cgroupValue("memory.swap.high");
+        // Return the current memory.swap.max limit of the helper app, as reported by memcg.
+        private long currentSwapMax() {
+            return cgroupValue("memory.swap.max");
         }
 
-        // Wait for memory.swap.high to meet some limit.  Return true if it meets the limit.
-        boolean waitSwapHigh(long want) {
-            return waitUntil(() -> currentSwapHigh() == want, 5000);
+        // Wait for memory.swap.max to meet some limit.  Return true if it meets the limit.
+        boolean waitSwapMax(long want) {
+            return waitUntil(() -> currentSwapMax() == want, 5000);
+        }
+
+        // Wait for the helper to be not-alive.
+        boolean waitExited(long maxWaitMs) {
+            return waitUntil(() -> !exists(), maxWaitMs);
         }
 
         // Return the current value for high events.
@@ -621,7 +634,7 @@ public class MemoryLimiterTest {
                 counter.expect(0, helper, MemoryLimiter.LIMIT_TYPE_MEMORY, limitsFG);
 
                 // Verify that limitMode is honored.
-                assertThat(helper.currentMemHigh()).isEqualTo(sProcessMemoryFG);
+                assertThat(helper.currentMemHigh()).isEqualTo(sProcessMemoryFG + MEM_MARGIN);
             }
         }
     }
@@ -645,26 +658,23 @@ public class MemoryLimiterTest {
                 assertThat(counter.eventCount()).isEqualTo(1);
                 counter.expect(0, helper, MemoryLimiter.LIMIT_TYPE_MEMORY, limitsFG);
 
-                // Verify that limitMode is honored.
-                assertThat(helper.currentMemHigh()).isEqualTo(sProcessMemoryFG);
-                assertThat(helper.currentSwapHigh()).isEqualTo(sProcessSwapFG);
+                assertThat(helper.currentMemHigh()).isEqualTo(sProcessMemoryFG + MEM_MARGIN);
+                assertThat(helper.currentSwapMax()).isEqualTo(sProcessSwapFG);
 
                 // Grow the helper another 10M.  This should fill swap and then should exceed
                 // anon+rss.
-                counter.reset(2);
+                counter.reset(1);
                 helper.resize(sProcessSizeOverAnon);
                 assertTrue(counter.await(300));
 
-                // There should be exactly two events in the counter: swapHigh and AnonRss
-                assertThat(counter.eventCount()).isEqualTo(2);
-                // The swap limit limit.
-                counter.expect(0, helper, MemoryLimiter.LIMIT_TYPE_SWAP, limitsFG);
+                // There should be one event in the counter: AnonRss
+                assertThat(counter.eventCount()).isEqualTo(1);
                 // The anon+swap limit.
-                counter.expect(1, helper, MemoryLimiter.LIMIT_TYPE_ANON_SWAP, limitsFG);
+                counter.expect(0, helper, MemoryLimiter.LIMIT_TYPE_ANON_SWAP, limitsFG);
 
                 // The memory.high and memory.swap.high limits have been released.
                 assertThat(helper.currentMemHigh()).isEqualTo(sProcessMemoryMax);
-                assertThat(helper.currentSwapHigh()).isEqualTo(sProcessMemoryMax);
+                assertThat(helper.currentSwapMax()).isEqualTo(sProcessMemoryMax);
             }
         }
     }
@@ -803,7 +813,7 @@ public class MemoryLimiterTest {
                 assertThat(waitUntil(one, 4000)).isTrue();
                 assertThat(counter.stat("started")).isEqualTo(1);
                 assertThat(counter.stat("process-hwm")).isEqualTo(1);
-                assertThat(counter.stat("watched")).isEqualTo(2);
+                assertThat(counter.stat("watched")).isEqualTo(1);
 
                 helper.exit();
                 BooleanSupplier exit = () -> !helper.exists();
@@ -816,7 +826,7 @@ public class MemoryLimiterTest {
                 Log.i(TAG, counter.stats().toString());
                 assertThat(stats.get("started")).isEqualTo(1);
                 assertThat(stats.get("process-hwm")).isEqualTo(1);
-                assertThat(stats.get("watched")).isEqualTo(2);
+                assertThat(stats.get("watched")).isEqualTo(1);
                 assertThat(stats.get("processes")).isEqualTo(0);
             }
         }
@@ -875,13 +885,7 @@ public class MemoryLimiterTest {
 
         // Poll until the limit is set by system_server.
         assertTrue(helper.waitMemoryHigh(expectedLimit.memHigh()));
-
-        if (Flags.memoryLimiterSwap()) {
-            assertTrue(helper.waitSwapHigh(expectedLimit.swapHigh()));
-        } else {
-            Thread.sleep(200);
-            assertThat(helper.currentSwapHigh()).isEqualTo(sProcessMemoryMax);
-        }
+        assertTrue(helper.waitSwapMax(expectedLimit.swapHigh()));
 
         // Now test the manual shell command.  This goes through system_server so it cannot be done
         // locally.  Set the limit to 975MB, which is unlikely to be confused with a valid from the
@@ -890,10 +894,14 @@ public class MemoryLimiterTest {
         shellCommand(String.format("am memory-limiter manual %d %d", helper.getPid(), limitInMB));
         long expected = limitInMB * MB;
         assertTrue(helper.waitMemoryHigh(expected));
+        assertTrue(helper.waitSwapMax(expected));
 
-        if (Flags.memoryLimiterSwap()) {
-            assertTrue(helper.waitSwapHigh(expected));
-        }
+        // Now try to exceed the limits.  Set a lower limit (40MB), otherwise the test will time
+        // out as the app tries to grow.  Then grow the app and wait for the app to exit.  The
+        // test completes as soon as the process exits, with a maximum wait of 120s.
+        shellCommand(String.format("am memory-limiter manual %d %d", helper.getPid(), 40));
+        helper.resize(100);
+        assertTrue(helper.waitExited(120_000));
     }
 
     /**
@@ -927,16 +935,16 @@ public class MemoryLimiterTest {
                 assertThat(helper.currentMemHigh()).isNotEqualTo(sProcessMemoryMax);
 
                 if (Flags.memoryLimiterSwap()) {
-                    for (int i = 0; i < 100 && helper.currentSwapHigh() != sProcessMemoryMax; i++) {
+                    for (int i = 0; i < 100 && helper.currentSwapMax() != sProcessMemoryMax; i++) {
                         Thread.sleep(100); // Wait a bit before polling again.
                     }
-                    assertThat(helper.currentSwapHigh()).isNotEqualTo(sProcessMemoryMax);
+                    assertThat(helper.currentSwapMax()).isNotEqualTo(sProcessMemoryMax);
                 } else {
                     // The flag is off, so the swap limit should always be "max".  Wait 200ms ,
                     // because limit are set asynchronously, and then verify that the limit is still
                     // max.
                     Thread.sleep(200);
-                    assertThat(helper.currentSwapHigh()).isEqualTo(sProcessMemoryMax);
+                    assertThat(helper.currentSwapMax()).isEqualTo(sProcessMemoryMax);
                 }
 
                 // Now make system server stop watching the UID.  The native layer may still be
@@ -1048,26 +1056,36 @@ public class MemoryLimiterTest {
             assertThat(Arrays.equals(expected, parsed)).isTrue();
         }
 
-        final String swapEvents = """
-                                  high 1
-                                  max 3
-                                  fail 5
-                                  """;
-        {
-            long[] expected = {1, 3, 5};
-            long[] parsed = MemoryLimiter.testParseCgroup("memory.swap.events", swapEvents);
-            assertThat(Arrays.equals(expected, parsed)).isTrue();
-        }
-
-        // Only the first two lines of memory.stat are parsed.  The source data includes three
-        // lines, just in case that affects the results.
+        // This is the leading fragment of a memory.stat file.  It includes all fields that the code
+        // parses but not the entire file.  It includes some lines following what is parsed, just in
+        // case those can cause errors.
         final String memStats = """
-                                anon 113405952
-                                file 812163072
-                                kernel 5
+                                anon 110718976
+                                file 1063903232
+                                kernel 0
+                                kernel_stack 0
+                                pagetables 0
+                                sec_pagetables 0
+                                percpu 0
+                                sock 0
+                                vmalloc 0
+                                shmem 2269184
+                                file_mapped 671019008
+                                file_dirty 0
+                                file_writeback 0
+                                swapcached 0
+                                anon_thp 0
+                                file_thp 0
+                                shmem_thp 0
+                                inactive_anon 85643264
+                                active_anon 26238976
+                                inactive_file 689344512
+                                active_file 107540480
+                                unevictable 265846784
                                 """;
         {
-            long[] expected = {113405952, 812163072};
+            // "anon" and "shmem" are the extracted fields.
+            long[] expected = {110718976, 2269184};
             long[] parsed = MemoryLimiter.testParseCgroup("memory.stat", memStats);
             assertThat(Arrays.equals(expected, parsed)).isTrue();
         }
@@ -1091,7 +1109,6 @@ public class MemoryLimiterTest {
         // successfully parsed.
         Helper helper = new Helper();
         assertThat(testParsing(helper, "memory.events")).isNotNull();
-        assertThat(testParsing(helper, "memory.swap.events")).isNotNull();
         assertThat(testParsing(helper, "memory.stat")).isNotNull();
     }
 
