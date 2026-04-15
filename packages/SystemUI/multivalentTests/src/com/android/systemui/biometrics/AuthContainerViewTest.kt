@@ -193,7 +193,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
         verify(callback, never()).onDialogAnimatedIn(anyLong(), anyBoolean())
 
-        container.addToView()
+        ViewUtils.attachView(container)
         waitForIdleSync()
 
         // attaching the view resets the state and allows this to happen again
@@ -470,9 +470,21 @@ open class AuthContainerViewTest : SysuiTestCase() {
     @Test
     @EnableFlags(Flags.FLAG_LARGE_SCREEN_BP)
     fun testWearDeviceUsesLegacyCredentialPatternView() {
-        whenever(packageManager.hasSystemFeature(
-            android.content.pm.PackageManager.FEATURE_WATCH)
-        ).thenReturn(true)
+        testDeviceFeatureUsesLegacyCredentialPatternView(
+            android.content.pm.PackageManager.FEATURE_WATCH
+        )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_BP)
+    fun testAutomotiveDeviceUsesLegacyCredentialPatternView() {
+        testDeviceFeatureUsesLegacyCredentialPatternView(
+            android.content.pm.PackageManager.FEATURE_AUTOMOTIVE
+        )
+    }
+
+    fun testDeviceFeatureUsesLegacyCredentialPatternView(deviceFeature: String) {
+        whenever(packageManager.hasSystemFeature(deviceFeature)).thenReturn(true)
 
         whenever(userManager.getCredentialOwnerProfile(anyInt())).thenReturn(20)
         whenever(lockPatternUtils.getCredentialTypeForUser(eq(20)))
@@ -481,30 +493,49 @@ open class AuthContainerViewTest : SysuiTestCase() {
         // initializeFingerprintContainer handles boilerplate of creating the Config object, but we
         // override authenticators with DEVICE_CREDENTIAL (non biometric) to end up with
         // CREDENTIAL_TYPE_PATTERN
-        val container = initializeFingerprintContainer(
-            authenticators = BiometricManager.Authenticators.DEVICE_CREDENTIAL
-        )
+        val container =
+            initializeFingerprintContainer(
+                authenticators = BiometricManager.Authenticators.DEVICE_CREDENTIAL
+            )
 
         assertThat(container.hasCredentialPatternView()).isTrue()
+        // compose view is not visible
+        assertThat(container.findViewById<View>(R.id.compose_credential_view)?.visibility)
+            .isNotEqualTo(View.VISIBLE)
     }
+
     @Test
     @EnableFlags(Flags.FLAG_LARGE_SCREEN_BP)
     fun testWearDeviceUsesLegacyCredentialViewPinView() {
-        // GIVEN a watch device
-        whenever(packageManager.hasSystemFeature(
-            android.content.pm.PackageManager.FEATURE_WATCH)
-        ).thenReturn(true)
+        // Test a watch device
+        testDeviceFeatureUsesLegacyCredentialViewPinView(
+            android.content.pm.PackageManager.FEATURE_WATCH
+        )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_BP)
+    fun testAutomotiveDeviceUsesLegacyCredentialViewPinView() {
+        // Test an automotive device
+        testDeviceFeatureUsesLegacyCredentialViewPinView(
+            android.content.pm.PackageManager.FEATURE_AUTOMOTIVE
+        )
+    }
+
+    fun testDeviceFeatureUsesLegacyCredentialViewPinView(deviceFeature: String) {
+        // GIVEN a specific device feature
+        whenever(packageManager.hasSystemFeature(deviceFeature)).thenReturn(true)
 
         whenever(userManager.getCredentialOwnerProfile(anyInt())).thenReturn(20)
-        whenever(lockPatternUtils.getCredentialTypeForUser(eq(20)))
-            .thenReturn(CREDENTIAL_TYPE_PIN)
+        whenever(lockPatternUtils.getCredentialTypeForUser(eq(20))).thenReturn(CREDENTIAL_TYPE_PIN)
 
         // initializeFingerprintContainer handles boilerplate of creating the Config object, but we
         // override authenticators with DEVICE_CREDENTIAL (non biometric) to end up with
         // CREDENTIAL_TYPE_PIN
-        val container = initializeFingerprintContainer(
-            authenticators = BiometricManager.Authenticators.DEVICE_CREDENTIAL
-        )
+        val container =
+            initializeFingerprintContainer(
+                authenticators = BiometricManager.Authenticators.DEVICE_CREDENTIAL
+            )
 
         // legacy PIN view is shown (checked via lockPassword ID)
         assertThat(container.hasCredentialPasswordView()).isTrue()
@@ -516,16 +547,28 @@ open class AuthContainerViewTest : SysuiTestCase() {
     @Test
     @EnableFlags(Flags.FLAG_LARGE_SCREEN_BP)
     fun testWearDevicePanelNotConstrainedToComposeView() {
-        whenever(packageManager.hasSystemFeature(
-            android.content.pm.PackageManager.FEATURE_WATCH)
-        ).thenReturn(true)
-        whenever(userManager.getCredentialOwnerProfile(anyInt())).thenReturn(20)
-        whenever(lockPatternUtils.getCredentialTypeForUser(eq(20)))
-            .thenReturn(CREDENTIAL_TYPE_PIN)
-
-        val container = initializeFingerprintContainer(
-            authenticators = BiometricManager.Authenticators.DEVICE_CREDENTIAL
+        testDeviceFeaturePanelNotConstrainedToComposeView(
+            android.content.pm.PackageManager.FEATURE_WATCH
         )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_BP)
+    fun testAutomotiveDevicePanelNotConstrainedToComposeView() {
+        testDeviceFeaturePanelNotConstrainedToComposeView(
+            android.content.pm.PackageManager.FEATURE_AUTOMOTIVE
+        )
+    }
+
+    fun testDeviceFeaturePanelNotConstrainedToComposeView(deviceFeature: String) {
+        whenever(packageManager.hasSystemFeature(deviceFeature)).thenReturn(true)
+        whenever(userManager.getCredentialOwnerProfile(anyInt())).thenReturn(20)
+        whenever(lockPatternUtils.getCredentialTypeForUser(eq(20))).thenReturn(CREDENTIAL_TYPE_PIN)
+
+        val container =
+            initializeFingerprintContainer(
+                authenticators = BiometricManager.Authenticators.DEVICE_CREDENTIAL
+            )
         waitForIdleSync()
 
         val panel = container.findViewById<View>(R.id.panel)
