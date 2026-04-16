@@ -59,6 +59,7 @@ import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -700,6 +701,68 @@ public class SecureLockDeviceServiceTest {
         isSecureLockDeviceEnabled = mSecureLockDeviceService.isSecureLockDeviceEnabled();
 
         assertThat(isSecureLockDeviceEnabled).isFalse();
+    }
+
+    @Test
+    public void hasUserCompletedTwoFactorAuthentication_whenStrongAuthRequiredChangedForOtherUser()
+            throws RemoteException {
+        when(mUserManagerInternal.getProfileParentId(TEST_USER_ID)).thenReturn(TEST_USER_ID);
+        when(mUserManagerInternal.getProfileParentId(OTHER_USER_ID)).thenReturn(OTHER_USER_ID);
+
+        final SecureLockDeviceService.StrongAuthTracker strongAuthTracker = spy(
+                mSecureLockDeviceService.new StrongAuthTracker(mContext, Looper.getMainLooper()));
+
+        when(strongAuthTracker.getStrongAuthForUser(anyInt()))
+                .thenReturn(PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE);
+
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                true, /* primaryUserHasStrongBiometricEnrollment */
+                true, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                true /* otherUserHasEnabledBiometricsOnKeyguard */
+        );
+        enableSecureLockDevice(mUser);
+        mSecureLockDeviceService.onStrongBiometricAuthenticationSuccess(mUser);
+
+        assertThat(mSecureLockDeviceService.hasUserCompletedTwoFactorAuthentication(mUser))
+                .isTrue();
+
+        strongAuthTracker.onStrongAuthRequiredChanged(OTHER_USER_ID);
+
+        assertThat(mSecureLockDeviceService.hasUserCompletedTwoFactorAuthentication(mUser))
+                .isTrue();
+    }
+
+    @Test
+    public void hasUserCompletedTwoFactorAuthentication_whenStrongAuthRequiredChangedForTestUser()
+            throws RemoteException {
+        when(mUserManagerInternal.getProfileParentId(TEST_USER_ID)).thenReturn(TEST_USER_ID);
+        when(mUserManagerInternal.getProfileParentId(OTHER_USER_ID)).thenReturn(OTHER_USER_ID);
+
+        final SecureLockDeviceService.StrongAuthTracker strongAuthTracker = spy(
+                mSecureLockDeviceService.new StrongAuthTracker(mContext, Looper.getMainLooper()));
+
+        when(strongAuthTracker.getStrongAuthForUser(anyInt()))
+                .thenReturn(PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE);
+
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                true, /* primaryUserHasStrongBiometricEnrollment */
+                true, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                true /* otherUserHasEnabledBiometricsOnKeyguard */
+        );
+        enableSecureLockDevice(mUser);
+        mSecureLockDeviceService.onStrongBiometricAuthenticationSuccess(mUser);
+
+        assertThat(mSecureLockDeviceService.hasUserCompletedTwoFactorAuthentication(mUser))
+                .isTrue();
+
+        strongAuthTracker.onStrongAuthRequiredChanged(TEST_USER_ID);
+
+        assertThat(mSecureLockDeviceService.hasUserCompletedTwoFactorAuthentication(mUser))
+                .isFalse();
     }
 
     @SuppressWarnings("ConstantConditions")
