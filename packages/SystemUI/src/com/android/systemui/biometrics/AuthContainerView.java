@@ -439,10 +439,11 @@ public class AuthContainerView extends LinearLayout
      * @param animatePanel if the credential view needs to own the panel expansion animation
      */
     private void addCredentialView(boolean animatePanel, boolean animateContents) {
-        // Ensure we don't use the large screen compose path on Wear OS devices
-        final boolean isWatch = mContext.getPackageManager().hasSystemFeature(
-                PackageManager.FEATURE_WATCH);
-        if (Flags.largeScreenBp() && !isWatch) {
+        // Ensure we don't use the large screen compose path on Wear or Automotive OS devices
+        final PackageManager pm = mContext.getPackageManager();
+        final boolean isWatchOrCar = pm.hasSystemFeature(PackageManager.FEATURE_WATCH)
+                || pm.hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE);
+        if (Flags.largeScreenBp() && !isWatchOrCar) {
             ComposeView credentialView = mLayout.findViewById(R.id.compose_credential_view);
             mCredentialView = credentialView;
             CredentialViewBinder.bindCompose(credentialView, mCredentialViewModelFactory,

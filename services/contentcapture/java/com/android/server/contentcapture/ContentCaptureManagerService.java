@@ -22,6 +22,7 @@ import static android.content.Context.CONTENT_CAPTURE_MANAGER_SERVICE;
 import static android.service.contentcapture.ContentCaptureService.ASSIST_CONTENT_ACTIVITY_START_KEY;
 import static android.service.contentcapture.ContentCaptureService.setClientState;
 import static android.view.contentcapture.ContentCaptureHelper.toList;
+import static android.view.contentcapture.ContentCaptureManager.DEVICE_CONFIG_ENABLE_ACTIVITY_START_ASSIST_CONTENT;
 import static android.view.contentcapture.ContentCaptureManager.DEVICE_CONFIG_PROPERTY_CONTENT_PROTECTION_ALLOWLIST_DELAY_MS;
 import static android.view.contentcapture.ContentCaptureManager.DEVICE_CONFIG_PROPERTY_CONTENT_PROTECTION_ALLOWLIST_TIMEOUT_MS;
 import static android.view.contentcapture.ContentCaptureManager.DEVICE_CONFIG_PROPERTY_CONTENT_PROTECTION_AUTO_DISCONNECT_TIMEOUT;
@@ -30,7 +31,6 @@ import static android.view.contentcapture.ContentCaptureManager.DEVICE_CONFIG_PR
 import static android.view.contentcapture.ContentCaptureManager.DEVICE_CONFIG_PROPERTY_CONTENT_PROTECTION_OPTIONAL_GROUPS_THRESHOLD;
 import static android.view.contentcapture.ContentCaptureManager.DEVICE_CONFIG_PROPERTY_CONTENT_PROTECTION_REQUIRED_GROUPS_CONFIG;
 import static android.view.contentcapture.ContentCaptureManager.DEVICE_CONFIG_PROPERTY_ENABLE_CONTENT_PROTECTION_RECEIVER;
-import static android.view.contentcapture.ContentCaptureManager.DEVICE_CONFIG_ENABLE_ACTIVITY_START_ASSIST_CONTENT;
 import static android.view.contentcapture.ContentCaptureManager.RESULT_CODE_FALSE;
 import static android.view.contentcapture.ContentCaptureManager.RESULT_CODE_OK;
 import static android.view.contentcapture.ContentCaptureManager.RESULT_CODE_SECURITY_EXCEPTION;
@@ -67,8 +67,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityPresentationInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ParceledListSlice;
+import android.content.pm.ServiceInfo;
 import android.content.pm.UserInfo;
 import android.database.ContentObserver;
 import android.os.Binder;
@@ -78,6 +78,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
+import android.os.Process;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
@@ -810,16 +811,10 @@ public class ContentCaptureManagerService extends
             return false;
         }
 
-        final String servicePackageName = serviceComponent.getPackageName();
+        final ContentCapturePerUserService service = getServiceForUserLocked(userId);
+        final ServiceInfo serviceInfo = (service != null) ? service.getServiceInfo() : null;
+        final int serviceUid = (serviceInfo != null) ? serviceInfo.getUid() : Process.INVALID_UID;
 
-        final PackageManager pm = getContext().getPackageManager();
-        final int serviceUid;
-        try {
-            serviceUid = pm.getServiceInfo(serviceComponent, /*flags*/ 0).getUid();
-        } catch (NameNotFoundException e) {
-            Slog.w(TAG, methodName + ": could not verify UID for " + serviceName);
-            return false;
-        }
         if (callingUid != serviceUid) {
             Slog.e(TAG, methodName + ": called by UID " + callingUid + ", but service UID is "
                     + serviceUid);

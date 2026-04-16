@@ -3874,6 +3874,36 @@ public class TransitionTests extends WindowTestsBase {
 
     @Test
     @EnableFlags(Flags.FLAG_ALLOW_DRAG_AND_DROP_WHEN_INTERACTIVE_BUGFIX)
+    public void testRecordLifecycle_doesNotBlockTransition() {
+        final TransitionController controller = mDisplayContent.mTransitionController;
+        final Transition transition = createTestTransition(TRANSIT_CHANGE, controller);
+
+        // Task on first display
+        final Task task0 = createTask(mDisplayContent);
+        // Task on second display
+        final DisplayContent dc1 = createNewDisplay();
+        final Task task1 = dc1.getDefaultTaskDisplayArea().createRootTask(
+                WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_STANDARD, true /* onTop */);
+
+        controller.moveToCollecting(transition);
+
+        // Actively collect task0 on Display 0. This registers Display 0 in mReadyGroups.
+        transition.collect(task0);
+
+        // Passively record lifecycle for task1 on Display 1.
+        // This should NOT register Display 1 in mReadyGroups (the fix).
+        controller.recordLifecycle(task1);
+
+        // Mark only Display 0 as ready.
+        transition.setReady(mDisplayContent, true);
+
+        // The transition should be all ready because Display 1 was never added to groups.
+        assertTrue("Transition should be ready as secondary display was recorded passively.",
+                transition.allReady());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ALLOW_DRAG_AND_DROP_WHEN_INTERACTIVE_BUGFIX)
     public void testTransientHideInteractivity() {
         final TransitionController controller = mDisplayContent.mTransitionController;
         final TestTransitionPlayer player = registerTestTransitionPlayer();

@@ -93,6 +93,9 @@ public class OverlayManagerSettingsTests {
             createInfo(OVERLAY_B, USER_0, List.of(CONSTRAINT_1));
     private static final OverlayInfo OVERLAY_B_USER1_WITH_CONSTRAINTS =
             createInfo(OVERLAY_B, USER_1, List.of(CONSTRAINT_1));
+    private static final OverlayInfo OVERLAY_FABRICATED_USER0_WITH_CONSTRAINTS =
+            createInfo(OVERLAY_B, USER_0, List.of(CONSTRAINT_0, CONSTRAINT_1),
+                    true /* isFabricated */);
 
     private static final String TARGET_PACKAGE = "com.test.target";
 
@@ -588,6 +591,50 @@ public class OverlayManagerSettingsTests {
         return count;
     }
 
+    @Test
+    public void testRemoveIfConstraints() throws Exception {
+        insertSetting(OVERLAY_A_USER0);
+        insertSetting(OVERLAY_B_USER0_WITH_CONSTRAINTS);
+        insertSetting(OVERLAY_C_USER0);
+
+        final List<OverlayInfo> removed = mSettings.removeIf(oi -> !oi.constraints.isEmpty());
+        assertEquals(1, removed.size());
+        assertEquals(OVERLAY_B, removed.get(0).getOverlayIdentifier());
+
+        final List<OverlayInfo> overlays = mSettings.getOverlaysForUser(USER_0).get(TARGET_PACKAGE);
+        assertEquals(2, overlays.size());
+        assertTrue(overlays.stream().anyMatch(oi -> oi.getOverlayIdentifier().equals(OVERLAY_A)));
+        assertTrue(overlays.stream().anyMatch(oi -> oi.getOverlayIdentifier().equals(OVERLAY_C)));
+    }
+
+    @Test
+    public void testPersistRestoreAndCleanup() throws Exception {
+        insertSetting(OVERLAY_A_USER0);
+        insertSetting(OVERLAY_FABRICATED_USER0_WITH_CONSTRAINTS);
+        insertSetting(OVERLAY_C_USER0);
+
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        mSettings.persist(os);
+        final byte[] data = os.toByteArray();
+
+        mSettings = new OverlayManagerSettings();
+        mSettings.restore(new ByteArrayInputStream(data));
+
+        // Simulate OverlayManagerService boot cleanup
+        final List<OverlayInfo> removed = mSettings.removeIf(oi -> oi.isFabricated
+                && !oi.constraints.isEmpty());
+
+        assertEquals(1, removed.size());
+        assertEquals(OVERLAY_B, removed.get(0).getOverlayIdentifier());
+        assertTrue(removed.get(0).isFabricated);
+
+        final List<OverlayInfo> overlays = mSettings.getOverlaysForUser(USER_0).get(TARGET_PACKAGE);
+        assertEquals(2, overlays.size());
+        assertTrue(overlays.stream().anyMatch(oi -> oi.getOverlayIdentifier().equals(OVERLAY_A)
+                && !oi.isFabricated));
+        assertTrue(overlays.stream().anyMatch(oi -> oi.getOverlayIdentifier().equals(OVERLAY_C)));
+    }
+
     private void insertSetting(OverlayInfo oi) throws Exception {
         mSettings.init(oi.getOverlayIdentifier(), oi.userId, oi.targetPackageName, null,
                 oi.baseCodePath, true, false,0, oi.category, oi.isFabricated);
@@ -622,11 +669,16 @@ public class OverlayManagerSettingsTests {
     }
 
     private static OverlayInfo createInfo(@NonNull OverlayIdentifier identifier, int userId) {
-        return createInfo(identifier, userId, Collections.emptyList());
+        return createInfo(identifier, userId, Collections.emptyList(), false /* isFabricated */);
     }
 
     private static OverlayInfo createInfo(@NonNull OverlayIdentifier identifier, int userId,
             @NonNull List<OverlayConstraint> constraints) {
+        return createInfo(identifier, userId, constraints, false /* isFabricated */);
+    }
+
+    private static OverlayInfo createInfo(@NonNull OverlayIdentifier identifier, int userId,
+            @NonNull List<OverlayConstraint> constraints, boolean isFabricated) {
         return new OverlayInfo(
                 identifier.getPackageName(),
                 identifier.getOverlayName(),
@@ -638,7 +690,7 @@ public class OverlayManagerSettingsTests {
                 userId,
                 0 /* priority */,
                 true /* isMutable */,
-                false /* isFabricated */,
+                isFabricated,
                 constraints);
     }
 

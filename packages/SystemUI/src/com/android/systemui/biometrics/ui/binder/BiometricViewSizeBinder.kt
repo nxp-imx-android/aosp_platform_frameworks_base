@@ -16,29 +16,22 @@
 
 package com.android.systemui.biometrics.ui.binder
 
-import android.animation.Animator
-import android.animation.AnimatorSet
-import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Outline
 import android.transition.AutoTransition
 import android.transition.TransitionManager
 import android.util.TypedValue
 import android.view.View
-import android.view.ViewGroup
 import android.view.ViewOutlineProvider
 import android.view.WindowInsets
-import android.view.accessibility.AccessibilityManager
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.helper.widget.Flow
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
-import androidx.core.animation.addListener
 import androidx.lifecycle.lifecycleScope
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.Flags
-import com.android.systemui.biometrics.Utils
 import com.android.systemui.biometrics.domain.interactor.BiometricPromptView
 import com.android.systemui.biometrics.ui.BiometricPromptLayoutState
 import com.android.systemui.biometrics.ui.PromptPosition
@@ -61,26 +54,6 @@ object BiometricViewSizeBinder {
     // TODO(b/201510778): make private when related misuse is fixed
     const val ANIMATE_MEDIUM_TO_LARGE_DURATION_MS = 450
 
-    private var isWatchGlobal: Boolean? = null
-
-    /*
-     * Helper function to check if we should use the large screen layout.
-     * AuthContainerView uses the legacy path for watches even if largeScreenBp is enabled.
-     * We must mirror that logic here to ensure we don't collapse the legacy container.
-     */
-    private fun useLargeScreen(context: Context): Boolean {
-        if (!Flags.largeScreenBp()) {
-            return false
-        }
-        val isWatch =
-            isWatchGlobal
-                ?: context.packageManager.hasSystemFeature(PackageManager.FEATURE_WATCH).also {
-                    watch ->
-                    isWatchGlobal = watch
-                }
-        return !isWatch
-    }
-
     /** Resizes [BiometricPromptLayout] and the [panelViewController] via the [PromptViewModel]. */
     fun bind(
         view: View,
@@ -88,22 +61,11 @@ object BiometricViewSizeBinder {
         viewsToHideWhenSmall: List<View>,
         jankListener: BiometricJankListener,
     ) {
+        val isLargeScreen =
+            Flags.largeScreenBp() &&
+                !view.context.packageManager.hasSystemFeature(PackageManager.FEATURE_WATCH) &&
+                !view.context.packageManager.hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)
         val windowManager = WindowManagerUtils.getWindowManager(view.context)
-        val accessibilityManager =
-            requireNotNull(view.context.getSystemService(AccessibilityManager::class.java))
-
-        fun notifyAccessibilityChanged() {
-            Utils.notifyAccessibilityContentChanged(accessibilityManager, view as ViewGroup)
-        }
-
-        fun startMonitoredAnimation(animators: List<Animator>) {
-            with(AnimatorSet()) {
-                addListener(jankListener)
-                addListener(onEnd = { notifyAccessibilityChanged() })
-                play(animators.first()).apply { animators.drop(1).forEach { next -> with(next) } }
-                start()
-            }
-        }
 
         val panelView = view.requireViewById<View>(R.id.panel)
         val cornerRadius = view.resources.getDimension(R.dimen.biometric_dialog_corner_size)
@@ -121,10 +83,7 @@ object BiometricViewSizeBinder {
         panelView.outlineProvider =
             object : ViewOutlineProvider() {
                 override fun getOutline(view: View, outline: Outline) {
-                    if (
-                        !useLargeScreen(view.context) &&
-                            currentView == BiometricPromptView.CREDENTIAL
-                    ) {
+                    if (!isLargeScreen && currentView == BiometricPromptView.CREDENTIAL) {
                         outline.setRect(0, 0, view.width, view.height)
                         return
                     }
@@ -258,7 +217,7 @@ object BiometricViewSizeBinder {
                     val isBiometric = currentState.activeView == BiometricPromptView.BIOMETRIC
 
                     // Handle center positioning for large screen
-                    if (currentState.position.isCenter && useLargeScreen(view.context)) {
+                    if (currentState.position.isCenter && isLargeScreen) {
                         val activeViewId =
                             when {
                                 isFallback -> R.id.fallback_view
@@ -359,7 +318,7 @@ object BiometricViewSizeBinder {
                     viewsToHideWhenSmall.forEach { view -> view.showContentOrHide(isSmall) }
 
                     // Handle fullscreen credential
-                    if (!useLargeScreen(view.context) && isCredential) {
+                    if (!isLargeScreen && isCredential) {
                         nextConstraintSet.constrainMaxWidth(R.id.panel, 0)
                         nextConstraintSet.setGuidelineBegin(R.id.leftGuideline, 0)
                         nextConstraintSet.setGuidelineBegin(R.id.topGuideline, 0)
@@ -367,7 +326,7 @@ object BiometricViewSizeBinder {
                     }
 
                     // Handle fallback max width
-                    if (isFallback || (isCredential && useLargeScreen(view.context))) {
+                    if (isFallback || (isCredential && isLargeScreen)) {
                         nextConstraintSet.constrainMaxWidth(
                             R.id.panel,
                             view.resources.getDimensionPixelSize(
@@ -378,7 +337,7 @@ object BiometricViewSizeBinder {
 
                     // Handle current active view
                     nextConstraintSet.setVisibility(
-                        if (useLargeScreen(view.context)) {
+                        if (isLargeScreen) {
                             R.id.compose_credential_view
                         } else {
                             R.id.credential_view
