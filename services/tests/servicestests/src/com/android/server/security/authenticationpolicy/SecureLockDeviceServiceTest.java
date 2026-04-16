@@ -329,14 +329,14 @@ public class SecureLockDeviceServiceTest {
                     return null;
                 })
                 .when(mStatusBarService)
-                .disable(anyInt(), any(), anyString());
+                .disableForUser(anyInt(), any(), anyString(), anyInt());
         doAnswer(
                 invocation -> {
                     mDisable2Flags = invocation.getArgument(0);
                     return null;
                 })
                 .when(mStatusBarService)
-                .disable2(anyInt(), any(), anyString());
+                .disable2ForUser(anyInt(), any(), anyString(), anyInt());
         when(mStatusBarService.getDisableFlags(any(), anyInt())).thenReturn(
                 new int[] {mDisableFlags, mDisable2Flags});
         when(mStrongAuthTracker.getStub()).thenReturn(mock(IStrongAuthTracker.Stub.class));
@@ -801,8 +801,8 @@ public class SecureLockDeviceServiceTest {
         });
 
         verify(mActivityTaskManager).stopSystemLockTaskMode();
-        verify(mStatusBarService).disable(eq(DISABLE_FLAGS), any(), anyString());
-        verify(mStatusBarService).disable2(eq(DISABLE2_FLAGS), any(), anyString());
+        verify(mStatusBarService).disableForUser(eq(DISABLE_FLAGS), any(), anyString(), anyInt());
+        verify(mStatusBarService).disable2ForUser(eq(DISABLE2_FLAGS), any(), anyString(), anyInt());
         verify(mVoiceInteractionManagerService).setDisabled(eq(true));
 
         DEVICE_POLICY_RESTRICTIONS.forEach(setting -> {
