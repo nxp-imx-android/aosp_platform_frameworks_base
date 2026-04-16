@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Nagrywanie dźwięku"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Znajdowanie urządzeń w pobliżu, określanie ich względnego położenia oraz łączenie się z nimi"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Odczytywanie wszystkich powiadomień, w tym informacji takich jak kontakty, wiadomości i zdjęcia"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Odczytywanie wszystkich powiadomień, w tym informacji takich jak kontakty, wiadomości i zdjęcia&lt;br/&gt;• Wysyłanie powiadomień&lt;br/&gt;&lt;br/&gt;W każdej chwili możesz zmienić uprawnienia tej aplikacji do odczytywania i wysyłania powiadomień, klikając Ustawienia › Powiadomienia."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Udostępnianie zdjęć i plików multimedialnych z telefonu na inne urządzenia."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Wysyłanie powiadomień"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Udostępnianie ekranu telefonu, w tym aplikacji, na innych urządzeniach. Będą one miały dostęp do wszystkiego, co jest widoczne na telefonie, w tym do dźwięku, zdjęć, danych do płatności, haseł i wiadomości, nawet gdy telefon jest zablokowany.&lt;br/&gt;&lt;br/&gt;Przekazywanie danych z mikrofonu, aparatu i innych czujników, w tym interakcji takich jak gesty dotykowe i kliknięcia myszą, z urządzeń z powrotem do telefonu."</string>

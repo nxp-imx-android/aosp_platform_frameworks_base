@@ -134,7 +134,7 @@
     <string name="screenrecord_permission_dialog_option_text_single_app" msgid="1996450687814647583">"تسجيل شاشة تطبيق واحد"</string>
     <string name="screenrecord_permission_dialog_option_text_entire_screen" msgid="4882406311415082016">"تسجيل محتوى هذه الشاشة"</string>
     <string name="screenrecord_permission_dialog_option_text_entire_screen_for_display" msgid="4169494703993148253">"‏تسجيل محتوى \"%s\""</string>
-    <string name="screenrecord_permission_dialog_warning_entire_screen" msgid="1321758636709366068">"أثناء تسجيل محتوى الشاشة بالكامل، يتم تسجيل كل المحتوى المعروض على شاشتك، لذا يُرجى توخي الحذر بشأن المعلومات الظاهرة، مثل كلمات المرور وتفاصيل الدفع والرسائل والصور والمقاطع الصوتية والفيديوهات."</string>
+    <string name="screenrecord_permission_dialog_warning_entire_screen" msgid="1321758636709366068">"سيتم تسجيل كل المحتوى المعروض أو المشغّل على الشاشة بكاملها، لذا يُرجى توخي الحذر بشأن المعلومات الظاهرة، مثل كلمات المرور وتفاصيل الدفع والرسائل والصور والصوت والفيديوهات."</string>
     <string name="screenrecord_permission_dialog_warning_single_app" msgid="3738199712880063924">"سيتم تسجيل كل المحتوى المعروض أو المشغَّل على شاشة التطبيق، لذا يُرجى توخي الحذر بشأن المعلومات الظاهرة، مثل كلمات المرور وتفاصيل الدفع والرسائل والصور والمقاطع الصوتية والفيديوهات."</string>
     <string name="screenrecord_permission_dialog_continue_entire_screen" msgid="5557974446773486600">"تسجيل الشاشة"</string>
     <string name="screenrecord_app_selector_title" msgid="3854492366333954736">"يُرجى اختيار تطبيق لتسجيل شاشته"</string>
@@ -159,9 +159,9 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"يتم حاليًا تسجيل محتوى الشاشة بأكمله"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"يتم حاليًا تسجيل محتوى \"<xliff:g id="APP_NAME">%1$s</xliff:g>\""</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"إيقاف التسجيل"</string>
-    <string name="screen_record_entire_screen" msgid="66944996337928170">"الشاشة بالكامل"</string>
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"الشاشة بكاملها"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"تطبيق واحد"</string>
-    <string name="screen_record_single_app_hint" msgid="8404332826093639170">"اختيار تطبيق لتسجيل الشاشة"</string>
+    <string name="screen_record_single_app_hint" msgid="8404332826093639170">"التطبيق التي سيتم تسجيل شاشته"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"تطبيق واحد (يُرجى فتح أي تطبيق لاختياره)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"تسجيل صوت الجهاز"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"التسجيل من الميكروفون"</string>
@@ -1309,7 +1309,7 @@
     <string name="mobile_data_enable_title" msgid="8259903353761259200">"هل المطلوب تفعيل بيانات الجوّال؟"</string>
     <string name="mobile_data_enable_message" msgid="2013861580086078913">"قد يتم تحصيل رسوم مقابل استخدام بيانات الجوّال حسب خطة خدمة الجوّال."</string>
     <string name="mobile_data_enable_turn_on" msgid="5577732543207882533">"تفعيل"</string>
-    <string name="mobile_data_disable_message" msgid="8604966027899770415">"‏لن تتمكّن من استخدام البيانات أو الإنترنت من خلال <xliff:g id="CARRIER">%s</xliff:g>. ولن يتوفر اتصال الإنترنت إلا عبر Wi-Fi."</string>
+    <string name="mobile_data_disable_message" msgid="8604966027899770415">"‏لن يكون بإمكانك استخدام البيانات أو الإنترنت من خلال <xliff:g id="CARRIER">%s</xliff:g>. ولن يتوفر اتصال الإنترنت إلا عبر Wi-Fi."</string>
     <string name="mobile_data_disable_message_default_carrier" msgid="6496033312431658238">"مشغّل شبكة الجوّال"</string>
     <string name="auto_data_switch_disable_title" msgid="5146527155665190652">"هل تريد التبديل مرة أخرى إلى \"<xliff:g id="CARRIER">%s</xliff:g>\"؟"</string>
     <string name="auto_data_switch_disable_message" msgid="5885533647399535852">"لن يتم تلقائيًا تبديل بيانات الجوّال بناءً على التوفّر."</string>

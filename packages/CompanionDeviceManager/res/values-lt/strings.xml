@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Įrašyti garsą"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Rasti apytikslę netoliese esančių įrenginių poziciją, aptikti juos ir prisijungti prie jų"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Skaityti visus pranešimus, įskaitant tokią informaciją kaip kontaktai, pranešimai ir nuotraukos"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Skaityti visus pranešimus, įskaitant tokią informaciją kaip kontaktai, pranešimai ir nuotraukos&lt;br/&gt;• Siųsti pranešimus&lt;br/&gt;&lt;br/&gt;Šios programos leidimą skaityti ir siųsti pranešimus bet kada galite tvarkyti skiltyje „Nustatymai“ › „Pranešimai“."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Bendrinkite telefono nuotraukas ir mediją su kitais įrenginiais."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Siųsti pranešimus"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Bendrinkite telefono ekraną, įskaitant programas, su įrenginiais. Įrenginiai galės pasiekti visą telefone matomą turinį, įskaitant garso įrašus, nuotraukas, mokėjimo informaciją, slaptažodžius ir pranešimus, net kai telefonas užrakintas.&lt;br/&gt;&lt;br/&gt;Pateikite mikrofono, fotoaparato ir kitų jutiklių duomenis iš įrenginių atgal į telefoną, įskaitant tokius sąveikos veiksmus kaip palietimo gestai ir pelės paspaudimai."</string>

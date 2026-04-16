@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Enregistrer un fichier audio"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Trouver les appareils à proximité, s\'y connecter et déterminer leur position relative"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Lire toutes les notifications, y compris des informations comme les contacts, messages et photos"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Lit toutes les notifications, y compris les informations comme les contacts, les messages et les photos&lt;br/&gt;• Vous envoie des notifications&lt;br/&gt;&lt;br/&gt;Vous pouvez gérer les autorisations de lecture et d\'envoi des notifications à tout moment dans Paramètres › Notifications."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Partager les photos et contenus multimédias de votre téléphone avec vos autres appareils."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Vous envoie des notifications"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Partager l\'écran de votre téléphone, y compris les applis, sur vos appareils. Vos appareils auront accès à tout ce qui est visible sur votre téléphone, y compris les contenus audio, les photos, les infos de paiement, les mots de passe et les messages, même lorsque votre téléphone est verrouillé.&lt;br/&gt;&lt;br/&gt;Transmettre les données du micro, de la caméra et d\'autres données des capteurs de vos appareils à votre téléphone, y compris les interactions comme les gestes tactiles et les clics de souris."</string>

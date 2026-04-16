@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Optage lyd"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Finde, oprette forbindelse til og fastslå den omtrentlige lokation af enheder i nærheden"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Læse alle notifikationer, herunder oplysninger som f.eks. kontakter, beskeder og billeder"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Læse alle notifikationer, herunder oplysninger som f.eks. kontakter, beskeder og billeder&lt;br/&gt;• Sende dig notifikationer&lt;br/&gt;&lt;br/&gt;Du kan til enhver tid administrere appens mulighed for at læse og sende notifikationer under Indstillinger › Notifikationer."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Del billeder og mediefiler på din telefon med dine andre enheder."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Sende dig notifikationer"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Del din telefons skærm, herunder apps, med dine enheder. Dine enheder får adgang til alt, der er synligt på din telefon, herunder lyd, billeder, betalingsoplysninger, adgangskoder og beskeder, også når din telefon er låst.&lt;br/&gt;&lt;br/&gt;Levere mikrofon-, kamera- og andre sensordata fra dine enheder tilbage til din telefon, herunder interaktioner som f.eks. tryk, bevægelser og museklik."</string>

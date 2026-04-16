@@ -163,7 +163,7 @@
     <string name="screen_record_single_app" msgid="7355880948574569290">"Egyetlen alkalmazás"</string>
     <string name="screen_record_single_app_hint" msgid="8404332826093639170">"Rögzíteni kívánt alkalmazás"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Egyetlen app (a választáshoz nyisson meg egy appot)"</string>
-    <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Eszköz hangjának rögzítése"</string>
+    <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Eszközhang rögzítése"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Mikrofonos hangrögzítés"</string>
     <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"Felvétel közben nem módosíthatók a hangbeállítások"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Szelfikamera megjelenítése"</string>

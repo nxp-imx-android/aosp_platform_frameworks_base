@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Audioa grabatu"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Inguruko gailuak aurkitu, haietara konektatu eta haien posizio erlatiboa zehaztu"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Jakinarazpen guztiak irakurri; besteak beste, kontaktuak, mezuak, argazkiak eta antzeko informazioa"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Jakinarazpen guztiak irakurri; besteak beste, kontaktuak, mezuak, argazkiak eta antzeko informazioa.&lt;br/&gt;• Jakinarazpenak bidali.&lt;br/&gt;&lt;br/&gt;Aplikazioak jakinarazpenak irakurri eta bidaltzeko dituen baimenak kudeatzeko, joan Ezarpenak › Jakinarazpenak atalera."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Telefonoko argazkiak eta multimedia-edukia beste gailuekin partekatu."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Jakinarazpenak bidali"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Telefonoaren pantaila partekatu (aplikazioak barne) zure gailuekin. Gailuek telefonoan ikusgai dagoen eduki guztia atzitu ahal izango dute, audioa, argazkiak, ordainketa-informazioa, pasahitzak eta mezuak barne, telefonoa blokeatuta badago ere.&lt;br/&gt;&lt;br/&gt;Bidali gailuen mikrofonoak, kamerak eta bestelako sentsoreek bildutako datuak telefonora, ukipen-keinuak, saguarekin egindako klikak eta bestelako interakzioak barne."</string>

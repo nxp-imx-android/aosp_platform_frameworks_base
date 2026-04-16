@@ -1092,7 +1092,7 @@
     <string name="lockscreen_pattern_wrong" msgid="2940138714468358458">"Skúsiť znova"</string>
     <string name="lockscreen_password_wrong" msgid="8605355913868947490">"Skúsiť znova"</string>
     <string name="lockscreen_click_to_unlock_hint" msgid="6056691847669178119">"Odomknite kliknutím"</string>
-    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"Odomknete stlačením tlačidla Enter"</string>
+    <string name="lockscreen_enter_to_unlock_hint" msgid="4248057180339112937">"Odomknete stlačením klávesa Enter"</string>
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Odomknite stlačením ľubovoľného klávesa"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Všetky funkcie a dáta získate po odomknutí"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Prekročili ste maximálny povolený počet pokusov o odomknutie tvárou"</string>

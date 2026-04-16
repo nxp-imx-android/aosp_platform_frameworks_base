@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Gravar àudio"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Determinar la posició relativa dels dispositius propers, trobar-los i connectar-s\'hi"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Llegir totes les notificacions, inclosa informació com ara els contactes, els missatges i les fotos"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Llegir totes les notificacions, inclosa informació com ara contactes, missatges i fotos.&lt;br/&gt;• Enviar-te notificacions.&lt;br/&gt;&lt;br/&gt;Pots gestionar la capacitat de l\'aplicació de llegir i enviar notificacions en qualsevol moment a Configuració › Notificacions."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Comparteix les fotos i el contingut multimèdia del telèfon amb els altres dispositius."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Rebre notificacions"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Comparteix la pantalla del telèfon, incloses les aplicacions, amb els teus dispositius. Tindran accés a tot el que sigui visible al telèfon, incloent-hi l\'àudio, les fotos, la informació de pagament, les contrasenyes i els missatges, fins i tot quan el telèfon estigui bloquejat.&lt;br/&gt;&lt;br/&gt;Proporciona dades del micròfon, de la càmera i d\'altres sensors dels teus dispositius al telèfon, incloses interaccions com ara gestos tàctils i clics de ratolí."</string>

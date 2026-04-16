@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Ghi âm"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Tìm, kết nối và xác định vị trí tương đối của các thiết bị ở gần"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Đọc tất cả thông báo, kể cả những thông tin như danh bạ, tin nhắn và ảnh"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Đọc tất cả thông báo, kể cả những thông tin như danh bạ, tin nhắn và ảnh&lt;br/&gt;• Gửi thông báo cho bạn&lt;br/&gt;&lt;br/&gt;Bạn có thể quản lý tính năng đọc và gửi thông báo của ứng dụng này bất cứ lúc nào trong phần Cài đặt › Thông báo."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Chia sẻ ảnh và nội dung nghe nhìn trên điện thoại với các thiết bị khác của bạn."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Gửi thông báo cho bạn"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Chia sẻ màn hình điện thoại (kể cả ứng dụng) với các thiết bị của bạn. Các thiết bị của bạn sẽ có quyền truy cập vào mọi nội dung hiển thị trên điện thoại, kể cả âm thanh, ảnh, thông tin thanh toán, mật khẩu và tin nhắn, ngay cả khi điện thoại đang khoá.&lt;br/&gt;&lt;br/&gt;Cung cấp dữ liệu về micrô, camera và các cảm biến khác trên thiết bị của bạn cho điện thoại, trong đó có cả các tương tác như cử chỉ chạm và thao tác nhấp chuột."</string>

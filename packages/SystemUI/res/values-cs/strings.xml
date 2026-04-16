@@ -161,14 +161,14 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Ukončit nahrávání"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"Celá obrazovka"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"Jedna aplikace"</string>
-    <string name="screen_record_single_app_hint" msgid="8404332826093639170">"Aplikace k zaznamenání"</string>
+    <string name="screen_record_single_app_hint" msgid="8404332826093639170">"Nahrávaná aplikace"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Jedna aplikace (nějakou otevřete)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Nahrávat zvuk zařízení"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Nahrávat mikrofon"</string>
     <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"Během nahrávání nelze nastavení zvuku změnit"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Zobrazit fotoaparát pro selfie"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Zobrazovat dotyky"</string>
-    <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Vyberte aplikaci pro nahrávání"</string>
+    <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Vyberte aplikaci, která se bude nahrávat"</string>
     <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"Zobrazit další"</string>
     <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"Zobrazit předchozí"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"Nastavení nahrávání obrazovky"</string>

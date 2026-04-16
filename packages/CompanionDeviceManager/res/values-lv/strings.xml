@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Ierakstīt audio"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Atrast tuvumā esošas ierīces, izveidot ar tām savienojumu un noteikt to relatīvo atrašanās vietu"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Lasīt visus paziņojumus, tostarp tādu informāciju kā kontaktpersonas, ziņojumi un fotoattēli"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Lasīt visus paziņojumus, tostarp tādu informāciju kā kontaktpersonas, ziņojumi un fotoattēli&lt;br/&gt;• Sūtīt jums paziņojumus&lt;br/&gt;&lt;br/&gt;Jebkurā brīdī varat pārvaldīt šīs lietotnes atļauju lasīt un sūtīt paziņojumus sadaļā Iestatījumi › Paziņojumi."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Kopīgojiet tālruņa fotoattēlus un multivides saturu ar citām savām ierīcēm."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Paziņojumu nosūtīšana sev"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Kopīgojiet tālruņa ekrānu, tostarp lietotnes, ar savām ierīcēm. Jūsu ierīcēm būs piekļuve visam saturam, kas ir redzams jūsu tālrunī, tostarp audio, fotoattēliem, maksājuma informācijai, parolēm un ziņojumiem, pat ja tālrunis ir bloķēts.&lt;br/&gt;&lt;br/&gt;Ierīces varēs tālrunim nodrošināt mikrofona, kameras un citu sensoru datus, tostarp mijiedarbības, piemēram, skāriena žestus un peles klikšķus."</string>

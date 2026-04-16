@@ -167,7 +167,7 @@
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"录制麦克风音频"</string>
     <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"录制时无法更改音频设置"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"显示自拍摄像头"</string>
-    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"显示触摸操作"</string>
+    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"显示触控操作"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"选择要录制的应用"</string>
     <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"显示下一个"</string>
     <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"显示上一个"</string>
@@ -1569,7 +1569,7 @@
     <string name="wifi_wont_autoconnect_for_now" msgid="5782282612749867762">"WLAN 暂时无法自动连接"</string>
     <string name="see_all_networks" msgid="3773666844913168122">"查看全部"</string>
     <string name="to_switch_networks_disconnect_ethernet" msgid="6698111101156951955">"如要切换网络，请断开以太网连接"</string>
-    <string name="wifi_scan_notify_message" msgid="3753839537448621794">"为了提升设备的使用体验，即使 WLAN 已关闭，应用和服务仍可以随时扫描 WLAN 网络。您可以在 WLAN 扫描设置中更改此设置。"<annotation id="link">"更改"</annotation></string>
+    <string name="wifi_scan_notify_message" msgid="3753839537448621794">"为提升设备使用体验，即使 WLAN 已关闭，应用和服务仍可随时扫描 WLAN 网络。您可在 WLAN 扫描设置中更改此设置。"<annotation id="link">"更改"</annotation></string>
     <string name="turn_off_airplane_mode" msgid="8425587763226548579">"关闭飞行模式"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"“<xliff:g id="APPNAME">%1$s</xliff:g>”希望将以下功能块添加到“快捷设置”"</string>
     <string name="qs_tile_request_dialog_text_with_size" msgid="732578771040573291">"“<xliff:g id="APPNAME">%1$s</xliff:g>”想在“快捷设置”中添加功能块。请选择功能块尺寸以继续。"</string>

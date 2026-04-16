@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Registra l\'audio"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Trova e si connette ai dispositivi nelle vicinanze, oltre a stabilire la loro posizione relativa"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Legge tutte le notifiche, incluse informazioni come contatti, messaggi e foto"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Leggi tutte le notifiche, incluse informazioni come contatti, messaggi e foto&lt;br/&gt;• Invia notifiche&lt;br/&gt;&lt;br/&gt;Puoi gestire la capacità dell\'app di leggere e inviare notifiche in qualsiasi momento in Impostazioni › Notifiche."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Condividi foto e contenuti multimediali del tuo smartphone con gli altri dispositivi."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Ti invia notifiche"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Condividi lo schermo dello smartphone, incluse le app, sui tuoi dispositivi. I tuoi dispositivi avranno accesso a tutto ciò che è visibile sullo smartphone, inclusi audio, foto, dati di pagamento, password e messaggi, anche quando lo smartphone è bloccato.&lt;br/&gt;&lt;br/&gt;Fornisci i dati del microfono, della fotocamera e di altri sensori dai tuoi dispositivi allo smartphone, incluse le interazioni come i gesti touch e i clic del mouse."</string>

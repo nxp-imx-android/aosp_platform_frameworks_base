@@ -1072,10 +1072,10 @@
     <string name="keyboard_shortcut_group_system_recents" msgid="8628108256824616927">"최근"</string>
     <string name="keyboard_shortcut_group_system_back" msgid="1055709713218453863">"뒤로"</string>
     <string name="keyboard_shortcut_group_system_notifications" msgid="3615971650562485878">"알림"</string>
-    <string name="keyboard_shortcut_group_system_shortcuts_helper" msgid="4856808328618265589">"단축키"</string>
+    <string name="keyboard_shortcut_group_system_shortcuts_helper" msgid="4856808328618265589">"키보드 단축키"</string>
     <string name="keyboard_shortcut_join" msgid="3578314570034512676">"또는"</string>
     <string name="keyboard_shortcut_clear_text" msgid="6631051796030377857">"검색어 삭제"</string>
-    <string name="keyboard_shortcut_search_list_title" msgid="4271769465397671138">"단축키"</string>
+    <string name="keyboard_shortcut_search_list_title" msgid="4271769465397671138">"키보드 단축키"</string>
     <string name="keyboard_shortcut_search_list_hint" msgid="5982623262974326746">"단축키 검색"</string>
     <string name="keyboard_shortcut_search_list_no_result" msgid="6819302191660875501">"단축키 없음"</string>
     <string name="keyboard_shortcut_search_category_system" msgid="1151182120757052669">"시스템"</string>
@@ -1228,24 +1228,24 @@
     <string name="accessibility_quick_settings_power_menu_collapsed" msgid="5800930916550853776">"접힘"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_2">%2$d</xliff:g>페이지 중 <xliff:g id="ID_1">%1$d</xliff:g>페이지"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> 기능을 사용 설정하시겠습니까?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> 키는 <xliff:g id="ID_4">^4</xliff:g> 기능을 사용할 수 있는 단축키입니다. <xliff:g id="ID_5">^5</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> 키는 <xliff:g id="ID_4">^4</xliff:g> 기능을 사용할 수 있는 키보드 단축키입니다. <xliff:g id="ID_5">^5</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"<xliff:g id="ID_4">%4$s</xliff:g> 기능을 사용 설정하려면 <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> + <xliff:g id="ID_3">%3$s</xliff:g> 키를 다시 누르세요"</string>
-    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> 단축키를 사용 설정하시겠습니까?"</string>
+    <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"<xliff:g id="ID_1">%1$s</xliff:g> 키보드 단축키를 사용 설정하시겠습니까?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"사용 설정 안함"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"단축키 사용 설정"</string>
-    <string name="accessibility_key_gesture_color_inversion_dialog_content" msgid="8831745570619953566">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> 키는 색상 반전을 사용할 수 있는 단축키입니다. 색상 반전은 밝은 색상을 어두운 색상으로 바꿉니다. 어두운 화면을 밝게 바꾸기도 합니다."</string>
-    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> 단축키 사용 설정됨"</string>
-    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> 키는 접근성 기능인 <xliff:g id="ID_4">^4</xliff:g> 기능을 사용할 수 있는 단축키입니다. 이를 통해 화면을 빠르게 확대하여 콘텐츠를 더 크게 표시할 수 있습니다. 확대 기능이 사용 설정되면 <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> 키에 \'+\' 또는 \'-\'를 눌러 확대/축소 수준을 조정합니다."</string>
+    <string name="accessibility_key_gesture_color_inversion_dialog_content" msgid="8831745570619953566">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> 키는 색상 반전을 사용할 수 있는 키보드 단축키입니다. 색상 반전은 밝은 색상을 어두운 색상으로 바꿉니다. 어두운 화면을 밝게 바꾸기도 합니다."</string>
+    <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"<xliff:g id="ID_1">%1$s</xliff:g> 키보드 단축키 사용 설정됨"</string>
+    <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> 키는 접근성 기능인 <xliff:g id="ID_4">^4</xliff:g> 기능을 사용할 수 있는 키보드 단축키입니다. 이를 통해 화면을 빠르게 확대하여 콘텐츠를 더 크게 표시할 수 있습니다. 확대 기능이 사용 설정되면 <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> 키에 \'+\' 또는 \'-\'를 눌러 확대/축소 수준을 조정합니다."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"단축키 사용 중지"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"계속 사용"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> 키는 <xliff:g id="ID_4">^4</xliff:g> 기능을 사용할 수 있는 단축키입니다. <xliff:g id="ID_5">^4</xliff:g> 기능은 항목을 소리 내어 읽어 주는 스크린 리더로, 화면을 보기 어려운 사용자에게 유용할 수 있습니다. 이를 설정하면 기기 작동 방식이 달라질 수 있습니다."</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"단축키를 사용 설정하면 TalkBack에서 기기를 완전히 제어할 수 있게 됩니다."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> 키는 <xliff:g id="ID_4">^4</xliff:g> 기능을 사용할 수 있는 키보드 단축키입니다. <xliff:g id="ID_5">^4</xliff:g> 기능은 항목을 소리 내어 읽어 주는 스크린 리더로, 화면을 보기 어려운 사용자에게 유용할 수 있습니다. 이를 설정하면 기기 작동 방식이 달라질 수 있습니다."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"키보드 단축키를 사용 설정하면 TalkBack에서 기기를 완전히 제어할 수 있게 됩니다."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"완전한 제어권을 부여하는 것은 접근성 관련 지원을 제공하는 앱에는 적합하나, 대부분의 앱에는 적합하지 않습니다."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"화면 확인 및 제어"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"화면에 표시된 모든 콘텐츠를 읽고 다른 앱 위에 콘텐츠를 표시할 수 있습니다."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"작업 확인 및 실행"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"앱 또는 하드웨어 센서와의 상호작용을 추적할 수 있으며, 나를 대신해 앱과 상호작용할 수 있습니다."</string>
-    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> 키는 <xliff:g id="ID_4">^4</xliff:g> 기능을 사용할 수 있는 단축키입니다. 이렇게 하면 글꼴과 간격을 맞춤설정하고 기기에서 바로 텍스트를 음성으로 들을 수 있습니다."</string>
+    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> 키는 <xliff:g id="ID_4">^4</xliff:g> 기능을 사용할 수 있는 키보드 단축키입니다. 이렇게 하면 글꼴과 간격을 맞춤설정하고 기기에서 바로 텍스트를 음성으로 들을 수 있습니다."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"아이콘"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> 키를 누르면 접근성 기능인 <xliff:g id="ID_4">^4</xliff:g> 기능이 사용 설정됩니다. 이를 통해 핸즈프리로 기기를 제어할 수 있습니다."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"접근성 키"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"접근성 키를 눌러 접근성 기능을 사용할 수 있습니다."</string>
@@ -1705,7 +1705,7 @@
     <string name="shortcut_helper_category_app_shortcuts" msgid="8010249408308587117">"앱 단축키"</string>
     <string name="shortcut_helper_category_current_app_shortcuts" msgid="4017840565974573628">"현재 앱"</string>
     <string name="shortcut_helper_category_a11y" msgid="6314444792641773464">"접근성"</string>
-    <string name="shortcut_helper_title" msgid="8567500639300970049">"단축키"</string>
+    <string name="shortcut_helper_title" msgid="8567500639300970049">"키보드 단축키"</string>
     <string name="shortcut_helper_customize_mode_title" msgid="8327297960035006036">"단축키 맞춤설정"</string>
     <string name="shortcut_customize_mode_remove_shortcut_dialog_title" msgid="7106420484940737208">"단축키를 삭제하시겠어요?"</string>
     <string name="shortcut_customize_mode_reset_shortcut_dialog_title" msgid="8131184731313717780">"기본값으로 재설정하시겠어요?"</string>
@@ -1740,11 +1740,11 @@
     <string name="shortcut_helper_app_custom_shortcut_limit_exceeded" msgid="7766416877791564255">"앱 맞춤 단축키 한도(10개)에 도달했습니다."</string>
     <string name="shortcut_helper_app_custom_shortcut_limit_exceeded_instruction" msgid="6146855266321804624">"새 단축키를 추가하려면 기존 단축키를 삭제하세요."</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"키보드를 사용하여 이동"</string>
-    <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"단축키 알아보기"</string>
+    <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"키보드 단축키 알아보기"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"터치패드를 사용하여 이동"</string>
     <string name="launch_touchpad_tutorial_notification_content" msgid="7931085031240753226">"터치패드 동작을 알아보세요."</string>
     <string name="launch_keyboard_touchpad_tutorial_notification_title" msgid="1940023776496198762">"키보드와 터치패드를 사용하여 이동"</string>
-    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="8557098239919786046">"터치패드 동작, 단축키 등 알아보기"</string>
+    <string name="launch_keyboard_touchpad_tutorial_notification_content" msgid="8557098239919786046">"터치패드 동작, 키보드 단축키 등 알아보기"</string>
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"뒤로 이동"</string>
     <string name="touchpad_tutorial_home_gesture_button" msgid="8023973153559885624">"홈으로 이동"</string>
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"최근 앱 보기"</string>

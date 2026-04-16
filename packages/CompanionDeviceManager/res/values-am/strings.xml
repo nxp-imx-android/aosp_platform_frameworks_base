@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"ኦዲዮ ቅረጽ"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"በአቅራቢያ ያሉ መሣሪያዎችን ማግኘት፣ ከእነሱ ጋር መገናኘት እና አንጻራዊ ቦታቸውን መወሰን"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"እንደ እውቂያዎች፣ መልዕክቶች እና ፎቶዎች ያሉ መረጃዎችን ጨምሮ ሁሉንም ማሳወቂያዎች ማንበብ"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• እንደ ዕውቂያዎች፣ መልዕክቶች እና ፎቶዎች ያሉ መረጃዎችን ጨምሮ ሁሉንም ማሳወቂያዎች ያንብቡ&lt;br/&gt;• ማሳወቂያዎችን ለእርስዎ ይልካል&lt;br/&gt;&lt;br/&gt;የዚህን መተግበሪያ ማሳወቂያዎችን የማንበብ እና የመላክ ችሎታን በቅንብሮች › ማሳወቂያዎች ውስጥ በማንኛውም ጊዜ ማስተዳደር ይችላሉ።"</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"የስልክዎን ፎቶዎች እና ሚዲያ ከሌሎች መሣሪያዎችዎ ጋር ማጋራት።"</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"ማሳወቂያዎችን ለእርስዎ መላክ"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"መተግበሪያዎችን ጨምሮ የስልክዎን ማያ ገጽ ወደ መሣሪያዎችዎ ማጋራት። ስልክዎ ተቆልፎ ሳለ እንኳን ኦዲዮ፣ ፎቶዎች፣ የክፍያ መረጃ፣ የይለፍ ቃሎች እና መልዕክቶችን ጨምሮ መሣሪያዎችዎ በስልክዎ ላይ ለሚታየው ማንኛውም ነገር መዳረሻ ይኖራቸዋል።&lt;br/&gt;&lt;br/&gt;እንደ የመንካት ምልክቶች እና የመዳፊት ጠቅታዎች ያሉ መስተጋብሮችን ጨምሮ ከመሣሪያዎችዎ ላይ የማይክሮፎን፣ የካሜራ እና የሌላ ዳሳሽ ውሂብን ወደ ስልክዎ መልሶ ማቅረብ።"</string>

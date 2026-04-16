@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Să înregistreze conținut audio"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Să găsească dispozitivele apropiate, să se conecteze la ele și să le determine poziția relativă"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Să citească toate notificările, inclusiv informații cum ar fi agenda, mesajele și fotografiile"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Să citească toate notificările, inclusiv informații cum ar fi agenda, mesajele și fotografiile&lt;br/&gt;• Să-ți trimită notificări&lt;br/&gt;&lt;br/&gt;Poți să gestionezi oricând permisiunea acestei aplicații de a citi și trimite notificări în Setări › Notificări."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Trimite fotografiile și conținutul media de pe telefon pe alte dispozitive."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Să îți trimită notificări"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Permite dispozitivelor tale să aibă acces la ecranul telefonului, inclusiv la aplicații. Dispozitivele tale vor avea acces la tot conținutul vizibil pe telefon, inclusiv conținutul audio, fotografii, informații de plată, parole și mesaje, chiar dacă telefonul este blocat.&lt;br/&gt;&lt;br/&gt;Trimite înapoi pe telefon date de la microfon, camera foto și alți senzori de pe dispozitive, inclusiv interacțiuni cum ar fi gesturile tactile și clicurile de mouse."</string>

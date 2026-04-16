@@ -160,7 +160,7 @@
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Salvestate praegu rakendust <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Peata salvestamine"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"Kogu ekraan"</string>
-    <string name="screen_record_single_app" msgid="7355880948574569290">"Üks rakendus"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"Kindel rakendus"</string>
     <string name="screen_record_single_app_hint" msgid="8404332826093639170">"Rakendus salvestamiseks"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Üks rakendus (ava valimiseks äpp)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Salvesta seadme heli"</string>

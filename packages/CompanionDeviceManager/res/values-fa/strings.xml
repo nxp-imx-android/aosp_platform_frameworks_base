@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"ضبط کردن صدا"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"دستگاه‌های اطراف را پیدا کنید، به آن‌ها متصل شوید، و موقعیت نسبی آن‌ها را مشخصی کنید"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"خواندن همه اعلان‌ها، شامل اطلاعاتی مثل مخاطبین، پیام‌ها، و عکس‌ها"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"‏• خواندن همه اعلان‌ها، ازجمله اطلاعاتی مانند مخاطبین، پیام‌ها و عکس‌ها&lt;br/&gt;• ارسال اعلان برای شما&lt;br/&gt;&lt;br/&gt;در هر زمان می‌توانید قابلیت این برنامه برای خواندن و ارسال اعلان‌ها را در «تنظیمات › اعلان‌ها» مدیریت کنید."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"عکس‌ها و رسانه‌های تلفنتان را با دستگاه‌های دیگرتان هم‌رسانی کنید."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"ارسال اعلان‌ها برای شما"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"‏صفحه‌نمایش تلفن، ازجمله برنامه‌ها، را با دستگاه‌هایتان هم‌رسانی کنید. دستگاه‌هایتان به هرچیزی که در تلفن نمایان است، ازجمله صداها، عکس‌ها، اطلاعات پرداخت، گذرواژه‌ها، و پیام‌ها دسترسی خواهد داشت، حتی وقتی تلفن قفل باشد.&lt;br/&gt;&lt;br/&gt;داده‌های میکروفون، دوربین، و سایر حسگرهای دستگاه‌هایتان را به تلفن برگردانید، ازجمله تعاملاتی مثل اشاره‌های لمسی و کلیک‌های موشواره."</string>

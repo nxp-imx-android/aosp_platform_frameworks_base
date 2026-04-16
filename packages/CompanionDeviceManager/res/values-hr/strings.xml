@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"Snimanje zvuka"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"Pronalaženje i određivanje relativnog položaja uređaja u blizini i povezivanje s njima"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"Čitanje svih obavijesti, uključujući podatke kao što su kontakti, poruke i fotografije"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• Čitanje svih obavijesti, uključujući podatke kao što su kontakti, poruke i fotografije&lt;br/&gt;• Slanje obavijesti&lt;br/&gt;&lt;br/&gt;Uvijek možete upravljati mogućnostima čitanja i slanja obavijesti ove aplikacije u odjeljku Postavke › Obavijesti."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"Dijeljenje fotografija i medija telefona s drugim uređajima."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"Slanje obavijesti"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"Dijeljenje zaslona vašeg telefona, uključujući aplikacije, s vašim uređajima. Vaši će uređaji imati pristup svemu što je vidljivo na vašem telefonu, uključujući zvuk, fotografije, podatke o plaćanju, zaporke i poruke, čak i kad je telefon zaključan.&lt;br/&gt;&lt;br/&gt;Povratno dijeljenje podataka mikrofona, kamere i drugih senzora, uključujući interakcije kao što su pokreti dodira i klikovi mišem, s telefonom."</string>

@@ -134,8 +134,8 @@
     <string name="screenrecord_permission_dialog_option_text_single_app" msgid="1996450687814647583">"एउटा एप रेकर्ड गर्नुहोस्"</string>
     <string name="screenrecord_permission_dialog_option_text_entire_screen" msgid="4882406311415082016">"यो स्क्रिन रेकर्ड गर्नुहोस्"</string>
     <string name="screenrecord_permission_dialog_option_text_entire_screen_for_display" msgid="4169494703993148253">"%s रेकर्ड गर्नुहोस्"</string>
-    <string name="screenrecord_permission_dialog_warning_entire_screen" msgid="1321758636709366068">"तपाईंले आफ्नो पूरै स्क्रिन रेकर्ड गरिरहेका बेला तपाईंको स्क्रिनमा देखाइने सबै सामग्री रेकर्ड गरिन्छ। त्यसैले पासवर्ड, भुक्तानीसम्बन्धी विवरण, म्यासेज, फोटो र अडियो तथा भिडियो जस्ता कुरा हेर्दा वा प्ले गर्दा सावधानी अपनाउनुहोला।"</string>
-    <string name="screenrecord_permission_dialog_warning_single_app" msgid="3738199712880063924">"तपाईंले यो एप रेकर्ड गरिरहेका बेला यो एपमा देखाइने वा प्ले गरिने सबै सामग्री रेकर्ड गरिन्छ। त्यसैले पासवर्ड, भुक्तानीसम्बन्धी विवरण, म्यासेज, फोटो र अडियो तथा भिडियो जस्ता कुरा हेर्दा वा प्ले गर्दा सावधानी अपनाउनुहोला।"</string>
+    <string name="screenrecord_permission_dialog_warning_entire_screen" msgid="1321758636709366068">"तपाईंले आफ्नो पूरै स्क्रिन रेकर्ड गरिरहेका बेला तपाईंको स्क्रिनमा देखाइने सबै कन्टेन्ट रेकर्ड गरिन्छ। त्यसैले पासवर्ड, भुक्तानीसम्बन्धी विवरण, म्यासेज, फोटो र अडियो तथा भिडियो जस्ता कुरा हेर्दा वा प्ले गर्दा सावधानी अपनाउनुहोला।"</string>
+    <string name="screenrecord_permission_dialog_warning_single_app" msgid="3738199712880063924">"तपाईंले यो एप रेकर्ड गरिरहेका बेला यो एपमा देखाइने वा प्ले गरिने सबै कन्टेन्ट रेकर्ड गरिन्छ। त्यसैले पासवर्ड, भुक्तानीसम्बन्धी विवरण, म्यासेज, फोटो र अडियो तथा भिडियो जस्ता कुरा हेर्दा वा प्ले गर्दा सावधानी अपनाउनुहोला।"</string>
     <string name="screenrecord_permission_dialog_continue_entire_screen" msgid="5557974446773486600">"स्क्रिन रेकर्ड गर्नुहोस्"</string>
     <string name="screenrecord_app_selector_title" msgid="3854492366333954736">"रेकर्ड गर्न एप छनौट गर्नुहोस्"</string>
     <string name="screenrecord_audio_label" msgid="6183558856175159629">"अडियो रेकर्ड गर्नुहोस्"</string>

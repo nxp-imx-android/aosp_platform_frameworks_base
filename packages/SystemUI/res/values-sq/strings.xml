@@ -159,7 +159,7 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Po regjistron aktualisht të gjithë ekranin"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Po regjistron aktualisht \"<xliff:g id="APP_NAME">%1$s</xliff:g>\""</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Ndalo regjistrimin"</string>
-    <string name="screen_record_entire_screen" msgid="66944996337928170">"I gjithë ekrani"</string>
+    <string name="screen_record_entire_screen" msgid="66944996337928170">"Të gjithë ekranin"</string>
     <string name="screen_record_single_app" msgid="7355880948574569290">"Një aplikacion të vetëm"</string>
     <string name="screen_record_single_app_hint" msgid="8404332826093639170">"Aplikacionet për regjistrim"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Një aplikacion të vetëm (hap një aplikacion për ta zgjedhur)"</string>
@@ -364,7 +364,7 @@
     <skip />
     <string name="keyguard_face_failed" msgid="2346762871330729634">"Fytyra nuk njihet"</string>
     <string name="keyguard_suggest_fingerprint" msgid="8742015961962702960">"Përdor më mirë gjurmën e gishtit"</string>
-    <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Pajisja është lidhur me \"bluetooth\"."</string>
+    <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Bluetooth-i është i lidhur."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Ikona e pajisjes me Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Kliko për të konfiguruar detajet e pajisjes"</string>
     <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Konfiguro detajet e pajisjes"</string>
@@ -715,7 +715,7 @@
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"Ndërro përdorues"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"menyja me tërheqje poshtë"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"Të gjitha aplikacionet dhe të dhënat në këtë sesion do të fshihen."</string>
-    <string name="guest_wipe_session_title" msgid="7147965814683990944">"Mirë se erdhe, i ftuar!"</string>
+    <string name="guest_wipe_session_title" msgid="7147965814683990944">"Mirë se erdhe, vizitor!"</string>
     <string name="guest_wipe_session_message" msgid="3393823610257065457">"Dëshiron ta vazhdosh sesionin tënd?"</string>
     <string name="guest_wipe_session_wipe" msgid="8056836584445473309">"Fillo nga e para"</string>
     <string name="guest_wipe_session_dontwipe" msgid="3211052048269304205">"Po, vazhdo"</string>
@@ -1218,7 +1218,7 @@
     <string name="accessibility_quick_settings_settings" msgid="7098489591715844713">"Hap cilësimet."</string>
     <string name="accessibility_quick_settings_expand" msgid="2609275052412521467">"Hap cilësimet e shpejta."</string>
     <string name="accessibility_quick_settings_collapse" msgid="4674876336725041982">"Mbyll cilësimet e shpejta."</string>
-    <string name="accessibility_quick_settings_user" msgid="505821942882668619">"Identifikuar si <xliff:g id="ID_1">%s</xliff:g>"</string>
+    <string name="accessibility_quick_settings_user" msgid="505821942882668619">"I identifikuar si <xliff:g id="ID_1">%s</xliff:g>"</string>
     <string name="accessibility_quick_settings_choose_user_action" msgid="4554388498186576087">"zgjidh përdoruesin"</string>
     <string name="data_connection_no_internet" msgid="691058178914184544">"Nuk ka internet"</string>
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"Hap cilësimet e <xliff:g id="ID_1">%s</xliff:g>."</string>

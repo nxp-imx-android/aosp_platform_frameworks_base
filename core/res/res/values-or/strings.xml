@@ -2332,7 +2332,7 @@
     <string name="notification_feedback_indicator_silenced" msgid="3799442124723177262">"ଏହି ବିଜ୍ଞପ୍ତିକୁ ନୀରବ ଭାବେ ଡିମୋଟ୍ କରାଯାଇଛି। ମତାମତ ପ୍ରଦାନ କରିବାକୁ ଟାପ୍ କରନ୍ତୁ।"</string>
     <string name="notification_feedback_indicator_promoted" msgid="9030204303764698640">"ଏହି ବିଜ୍ଞପ୍ତିର ରେଙ୍କ ଉପରକୁ କରାଯାଇଛି। ମତାମତ ପ୍ରଦାନ କରିବାକୁ ଟାପ୍ କରନ୍ତୁ।"</string>
     <string name="notification_feedback_indicator_demoted" msgid="8880309924296450875">"ଏହି ବିଜ୍ଞପ୍ତିର ରେଙ୍କ ତଳକୁ କରାଯାଇଛି। ମତାମତ ପ୍ରଦାନ କରିବାକୁ ଟାପ୍ କରନ୍ତୁ।"</string>
-    <string name="nas_upgrade_notification_title" msgid="8436359459300146555">"ଉନ୍ନତ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ"</string>
+    <string name="nas_upgrade_notification_title" msgid="8436359459300146555">"ଉନ୍ନତ ବିଜ୍ଞପ୍ତି"</string>
     <string name="nas_upgrade_notification_content" msgid="5157550369837103337">"ପ୍ରସ୍ତାବିତ କାର୍ଯ୍ୟ ଏବଂ ପ୍ରତ୍ୟୁତ୍ତରଗୁଡ଼ିକ ବର୍ତ୍ତମାନ ଉନ୍ନତ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ମାଧ୍ୟମରେ ପ୍ରଦାନ କରାଯାଉଛି। Android ଆଡେପ୍ଟିଭ୍ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ଆଉ ସମର୍ଥିତ ନୁହେଁ।"</string>
     <string name="nas_upgrade_notification_enable_action" msgid="3046406808378726874">"ଠିକ ଅଛି"</string>
     <string name="nas_upgrade_notification_disable_action" msgid="3794833210043497982">"ବନ୍ଦ କରନ୍ତୁ"</string>

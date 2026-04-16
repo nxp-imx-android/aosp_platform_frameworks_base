@@ -404,7 +404,7 @@
     <string name="permlab_fullScreenIntent" msgid="4310888199502509104">"mostrar notificacions com a activitats de pantalla completa en un dispositiu bloquejat"</string>
     <string name="permdesc_fullScreenIntent" msgid="1100721419406643997">"Permet a l\'aplicació mostrar notificacions com a activitats de pantalla completa en un dispositiu bloquejat"</string>
     <string name="permlab_postPromotedNotifications" msgid="4873499297871691102">"Mostra les actualitzacions en temps real"</string>
-    <string name="permdesc_postPromotedNotifications" msgid="4530634734172420651">"Permet que l\'aplicació mostri notificacions urgents en curs a la barra d\'estat i a la pantalla de bloqueig"</string>
+    <string name="permdesc_postPromotedNotifications" msgid="4530634734172420651">"Permet que l\'aplicació mostri les notificacions en curs de caràcter urgent a la barra d\'estat i a la pantalla de bloqueig"</string>
     <string name="permlab_install_shortcut" msgid="7451554307502256221">"Instal·lar dreceres"</string>
     <string name="permdesc_install_shortcut" msgid="4476328467240212503">"Permet que una aplicació afegeixi dreceres a la pantalla d\'inici sense la intervenció de l\'usuari."</string>
     <string name="permlab_uninstall_shortcut" msgid="295263654781900390">"desinstal·la dreceres"</string>

@@ -56,7 +56,7 @@
     <string name="wifi_disabled_password_failure" msgid="6892387079613226738">"Problème d\'authentification"</string>
     <string name="wifi_cant_connect" msgid="5718417542623056783">"Connexion impossible"</string>
     <string name="wifi_cant_connect_to_ap" msgid="3099667989279700135">"Impossible de se connecter à « <xliff:g id="AP_NAME">%1$s</xliff:g> »"</string>
-    <string name="wifi_check_password_try_again" msgid="8817789642851605628">"Vérifiez le mot de passe et réessayez"</string>
+    <string name="wifi_check_password_try_again" msgid="8817789642851605628">"vérifiez le mot de passe et réessayez"</string>
     <string name="wifi_not_in_range" msgid="1541760821805777772">"Hors de portée"</string>
     <string name="wifi_no_internet_no_reconnect" msgid="821591791066497347">"Reconnexion automatique impossible"</string>
     <string name="wifi_no_internet" msgid="1774198889176926299">"Aucun accès à Internet"</string>

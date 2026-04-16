@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"오디오 녹음"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"근처 기기를 찾아 연결하고 기기 간 상대 위치를 파악할 수 있습니다."</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"연락처, 메시지, 사진 등의 정보를 포함한 모든 알림을 읽을 수 있습니다."</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"• 연락처, 메시지, 사진 등의 정보를 비롯해 모든 알림을 읽습니다.&lt;br/&gt;• 나에게 알림을 보냅니다.&lt;br/&gt;&amp;l-t;br/&gt;언제든지 설정 › 알림에서 이 앱의 알림 읽기 및 전송 권한을 관리할 수 있습니다."</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"휴대전화의 사진과 미디어를 다른 기기와 공유합니다."</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"나에게 알림을 보냅니다."</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"앱을 포함한 휴대전화 화면을 기기에 공유합니다. 휴대전화가 잠겨 있을 때도 기기에서 오디오, 사진, 결제 정보, 비밀번호, 메시지 등 휴대전화에 표시되는 모든 항목에 액세스할 수 있습니다.&lt;br/&gt;&lt;br/&gt;터치 동작, 마우스 클릭과 같은 상호작용을 포함하여 기기의 마이크, 카메라, 기타 센서 데이터를 휴대전화로 다시 전송합니다."</string>

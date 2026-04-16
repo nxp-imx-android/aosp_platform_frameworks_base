@@ -163,12 +163,12 @@
     <string name="screen_record_single_app" msgid="7355880948574569290">"O aplicație"</string>
     <string name="screen_record_single_app_hint" msgid="8404332826093639170">"Aplicația pentru înregistrare"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"O aplicație (deschide ca să alegi)"</string>
-    <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Înregistrează audio de la dispozitiv"</string>
+    <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Înregistrează audio dispozitiv"</string>
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Înregistrează microfonul"</string>
     <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"Nu poți schimba setările audio când înregistrezi"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Afișează camera foto pentru selfie"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Afișează atingerile"</string>
-    <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Alege o aplicație pentru a înregistra"</string>
+    <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Alege o aplicație de înregistrat"</string>
     <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"Afișează aplicația următoare"</string>
     <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"Afișează aplicația anterioară"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"Setări pentru înregistrarea ecranului"</string>

@@ -363,7 +363,7 @@
     <string name="permgrouplab_camera" msgid="9090413408963547706">"Kamera"</string>
     <string name="permgroupdesc_camera" msgid="7585150538459320326">"tage billeder og optage video"</string>
     <string name="permgrouplab_nearby_devices" msgid="5529147543651181991">"Enheder i nærheden"</string>
-    <string name="permgroupdesc_nearby_devices" msgid="3213561597116913508">"finde og oprette forbindelse til enheder i nærheder"</string>
+    <string name="permgroupdesc_nearby_devices" msgid="3213561597116913508">"finde og oprette forbindelse til enheder i nærheden"</string>
     <string name="permgrouplab_calllog" msgid="7926834372073550288">"Opkaldshistorik"</string>
     <string name="permgroupdesc_calllog" msgid="2026996642917801803">"læse og redigere opkaldshistorik"</string>
     <string name="permgrouplab_phone" msgid="570318944091926620">"Telefon"</string>

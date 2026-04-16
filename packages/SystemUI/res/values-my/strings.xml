@@ -167,8 +167,8 @@
     <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"မိုက်ခရိုဖုန်း အသံဖမ်းရန်"</string>
     <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"ရိုက်ကူးနေစဉ် အသံဆက်တင်ပြောင်း၍မရပါ"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"ဆယ်လ်ဖီ ကင်မရာ ပြပါ"</string>
-    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ထိတွေ့ခြင်းများကို ပြပါ"</string>
-    <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ရိုက်ကူးရန် အက်ပ်ရွေးခြင်း"</string>
+    <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ထိတွေ့မှုများ ပြရန်"</string>
+    <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ရိုက်ကူးရန် အက်ပ်ရွေးပါ"</string>
     <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"နောက်တစ်ခု ပြပါ"</string>
     <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"ယခင်တစ်ခု ပြပါ"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"ဖန်သားပြင်ရိုက်ကူးခြင်း ဆက်တင်များ"</string>

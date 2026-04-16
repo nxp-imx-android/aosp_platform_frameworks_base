@@ -160,7 +160,7 @@
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"మీరు ప్రస్తుతం <xliff:g id="APP_NAME">%1$s</xliff:g>‌ను రికార్డ్ చేస్తున్నారు"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"రికార్డింగ్‌ను ఆపివేయండి"</string>
     <string name="screen_record_entire_screen" msgid="66944996337928170">"ఫుల్ స్క్రీన్"</string>
-    <string name="screen_record_single_app" msgid="7355880948574569290">"సింగల్ యాప్"</string>
+    <string name="screen_record_single_app" msgid="7355880948574569290">"సింగిల్‌ యాప్"</string>
     <string name="screen_record_single_app_hint" msgid="8404332826093639170">"రికార్డ్ చేయడానికి యాప్"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"సింగల్ యాప్ (ఎంచుకోవడానికి యాప్ తెరవండి)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"డివైజ్ ఆడియోను రికార్డ్ చేయండి"</string>

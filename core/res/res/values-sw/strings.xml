@@ -263,7 +263,7 @@
     <string name="reboot_to_update_reboot" msgid="4474726009984452312">"Inazima na kuwasha upya..."</string>
     <string name="reboot_to_reset_title" msgid="2226229680017882787">"Rejesha mipangilio ya kiwandani"</string>
     <string name="reboot_to_reset_message" msgid="3347690497972074356">"Inazima na kuwasha upya..."</string>
-    <string name="shutdown_progress" msgid="5017145516412657345">"Inafunga..."</string>
+    <string name="shutdown_progress" msgid="5017145516412657345">"Inazima..."</string>
     <string name="shutdown_confirm" product="tablet" msgid="2872769463279602432">"Kompyuta kibao yako itazima."</string>
     <string name="shutdown_confirm" product="tv" msgid="7975942887313518330">"Kifaa chako cha Android TV kitazima."</string>
     <string name="shutdown_confirm" product="watch" msgid="2977299851200240146">"Saa yako itajizima."</string>

@@ -993,7 +993,7 @@
     <string name="notification_alert_title" msgid="3656229781017543655">"Par défaut"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Automatique"</string>
     <string name="notification_bridged_title" msgid="4213554380230273828">"Cette notification provient de votre <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
-    <string name="notification_channel_summary_low" msgid="4860617986908931158">"Aucun son ni vibration"</string>
+    <string name="notification_channel_summary_low" msgid="4860617986908931158">"Ni son ni vibration"</string>
     <string name="notification_conversation_summary_low" msgid="3855696451919728790">"Pas de son ni de vibration, mais s\'affiche tout de même dans la section « conversations »"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"Peut sonner ou vibrer, selon les paramètres de l\'appareil"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"Peut sonner ou vibrer, selon les paramètres de l\'appareil. Conversations des bulles de <xliff:g id="APP_NAME">%1$s</xliff:g> par défaut."</string>

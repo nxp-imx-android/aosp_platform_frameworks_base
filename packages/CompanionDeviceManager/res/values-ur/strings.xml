@@ -84,8 +84,7 @@
     <string name="permission_microphone_summary" msgid="4862628553869973259">"آڈیو ریکارڈ کریں"</string>
     <string name="permission_nearby_devices_summary" msgid="1306752848196464817">"قریبی آلات کی متعلقہ پوزیشن تلاش کریں، ان سے منسلک کریں اور اس کا تعین کریں"</string>
     <string name="permission_notification_listener_access_summary" msgid="7856071768185367749">"رابطوں، پیغامات اور تصاویر جیسی معلومات سمیت تمام اطلاعات پڑھیں"</string>
-    <!-- no translation found for permission_notifications_summary (7491920318334824691) -->
-    <skip />
+    <string name="permission_notifications_summary" msgid="7491920318334824691">"‏‫• تمام اطلاعات کو پڑھیں، بشمول رابطے، پیغامات اور تصاویر‎&lt;br/&gt;‎• اپنی اطلاعات بھیجیں‎&lt;br/&gt;&lt;br/&gt;‎آپ ترتیبات › اطلاعات میں کسی بھی وقت اس ایپ کی اطلاعات کو پڑھنے اور بھیجنے کی اہلیت کا نظم کر سکتی ہیں۔"</string>
     <string name="permission_storage_summary" msgid="3779040306012319942">"اپنے فون کی تصاویر اور میڈیا کا اپنے دیگر آلات کے ساتھ اشتراک کریں۔"</string>
     <string name="permission_post_notifications_summary" msgid="1099188848900200165">"اپنی اطلاعات بھیجیں"</string>
     <string name="permission_app_streaming_summary" msgid="4114223538437344105">"‏اپنے آلات پر ایپس سمیت اپنے فون کی اسکرین کا اشتراک کریں۔ آپ کے آلات کو آپ کے فون کے مقفل ہونے پر بھی آڈیو، تصاویر، ادائیگی کی معلومات، پاس ورڈز اور پیغامات سمیت آپ کے فون پر نظر آنے والی کسی بھی چیز تک رسائی حاصل ہوگی۔‎&lt;br/&gt;&lt;br/&gt;‎اپنے آلات سے ٹچ اشارے اور ماؤس کلکس جیسے تعاملات سمیت مائیکروفون، کیمرا اور دیگر سینسر ڈیٹا کو اپنے فون پر واپس فراہم کریں۔"</string>
