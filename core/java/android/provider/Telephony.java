@@ -223,26 +223,20 @@ public final class Telephony {
                 throw new UnsupportedOperationException(
                         "Read restriction column cannot be set by the client.");
             }
-            final boolean hasRestrictedKey = values.containsKey(ReadRestriction.RESTRICTED);
-            final boolean clientRequestedRestriction = hasRestrictedKey
-                    && values.getAsBoolean(ReadRestriction.RESTRICTED);
+            boolean isRestricted = values.containsKey(ReadRestriction.RESTRICTED)
+                    ? values.getAsBoolean(ReadRestriction.RESTRICTED)
+                    : shouldBeRestrictedByDefault(callerPackageName, context);
             values.remove(ReadRestriction.RESTRICTED);
-            if (hasRestrictedKey && !canWriteRestrictedMessages) {
-                throw new UnsupportedOperationException(
-                        "Client does not have permission to write restricted messages.");
-            }
-            // If the caller is not DMA, the system marks the message as restricted. The message
-            // will be eventually marked as unrestricted if the message promotion is not attempted
-            // or it fails.
-            // TODO(b/473718205): Replace getDefaultSmsPackage with a cached value.
-            final boolean systemForcesRestriction
-                 = Flags.messagePromotion()
-                    && !Objects.equals(callerPackageName, Sms.getDefaultSmsPackage(context));
-            final boolean finalRestrictedState = systemForcesRestriction
-                || clientRequestedRestriction;
-            values.put(ReadRestriction.READ_RESTRICTION_COLUMN_NAME, finalRestrictedState
+            values.put(ReadRestriction.READ_RESTRICTION_COLUMN_NAME, isRestricted
                     ? ReadRestriction.ReadRestrictionValues.READ_RESTRICTION_RESTRICTED : 0);
         }
+
+        private static boolean shouldBeRestrictedByDefault(String callerPackageName,
+                Context context) {
+            return Flags.messagePromotion()
+                    // TODO(b/473718205): Replace getDefaultSmsPackage with a cached value.
+                    && !Objects.equals(callerPackageName, Sms.getDefaultSmsPackage(context));
+        };
 
         /**
          * Verifies that the client has permission to update the read restriction value for the

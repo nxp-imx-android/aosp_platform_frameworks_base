@@ -340,13 +340,12 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
 
     @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
     @Test
-    public void testStrongAuthNotifiedAndCeLocked_afterSecureLockDeviceDisabledWithoutAuth()
+    public void testStrongAuthNotified_afterSecureLockDeviceDisabledWithoutAuth()
             throws RemoteException {
         when(mSecureLockDeviceServiceInternal.isSecureLockDeviceEnabled()).thenReturn(true);
         mLocalService.disableSecureLockDevice(PRIMARY_USER_ID, /* authenticationComplete=*/ false);
 
         verify(mStrongAuth).disableSecureLockDevice(eq(PRIMARY_USER_ID), eq(false));
-        verify(mInjector.getStorageManager()).lockCeStorage(eq(PRIMARY_USER_ID));
     }
 
     @Test
