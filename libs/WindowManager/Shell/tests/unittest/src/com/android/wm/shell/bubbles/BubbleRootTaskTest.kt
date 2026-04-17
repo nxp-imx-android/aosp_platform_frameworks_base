@@ -31,9 +31,9 @@ import com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.shared.bubbles.FakeBubbleFeatureConfig
 import com.android.wm.shell.sysui.ShellInit
 import com.google.common.truth.Truth.assertThat
-import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
@@ -54,17 +54,14 @@ class BubbleRootTaskTest : ShellTestCase() {
 
     private val shellInit = mock<ShellInit>()
     private val taskOrganizer = mock<ShellTaskOrganizer>()
+    private val bubbleFeatureConfig = FakeBubbleFeatureConfig()
     private lateinit var bubbleRootTask: BubbleRootTask
-
-    @Before
-    fun setUp() {
-        bubbleRootTask = BubbleRootTask(mContext, shellInit, taskOrganizer)
-    }
 
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
     @DisableFlags(FLAG_ENABLE_BUBBLE_ROOT_TASK)
     @Test
     fun init_flagDisabled_doNothing() {
+        bubbleRootTask = BubbleRootTask(mContext, shellInit, taskOrganizer, bubbleFeatureConfig)
         verify(shellInit, never()).addInitCallback<BubbleRootTask>(any(), any())
         verify(taskOrganizer, never()).createTask(any())
     }
@@ -72,6 +69,7 @@ class BubbleRootTaskTest : ShellTestCase() {
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK)
     @Test
     fun init_createRootTask() {
+        bubbleRootTask = BubbleRootTask(mContext, shellInit, taskOrganizer, bubbleFeatureConfig)
         val initCallback =
             argumentCaptor<Runnable>().let { initCallbackCaptor ->
                 verify(shellInit)
@@ -111,6 +109,7 @@ class BubbleRootTaskTest : ShellTestCase() {
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK)
     @Test
     fun onTaskInfoChanged_updatesRootTask() {
+        bubbleRootTask = BubbleRootTask(mContext, shellInit, taskOrganizer, bubbleFeatureConfig)
         val initCallbackCaptor = argumentCaptor<Runnable>()
         verify(shellInit).addInitCallback<BubbleRootTask>(initCallbackCaptor.capture(), any())
         initCallbackCaptor.firstValue.run()
@@ -132,6 +131,7 @@ class BubbleRootTaskTest : ShellTestCase() {
 
     @Test
     fun onTaskAppeared_addVisibilityBarrier() {
+        bubbleRootTask = BubbleRootTask(mContext, shellInit, taskOrganizer, bubbleFeatureConfig)
         val rootTaskToken = MockToken.token()
         val visibilityBarrierToken = MockToken.token()
         val visibilityBarrierTask =
@@ -161,6 +161,7 @@ class BubbleRootTaskTest : ShellTestCase() {
 
     @Test
     fun visibilityBarrier_onTaskAppearedOrChanged_doesNotAffectRootTask() {
+        bubbleRootTask = BubbleRootTask(mContext, shellInit, taskOrganizer, bubbleFeatureConfig)
         val rootTaskToken = MockToken.token()
         val visibilityBarrierToken = MockToken.token()
         val visibilityBarrierTaskInfo =
@@ -186,6 +187,14 @@ class BubbleRootTaskTest : ShellTestCase() {
 
         assertThat(bubbleRootTask.windowContainerToken).isEqualTo(rootTaskToken)
         assertThat(bubbleRootTask.taskId).isEqualTo(123)
+    }
+
+    @Test
+    fun appBubblesUnsupported_shouldNotCreateRootTask() {
+        bubbleFeatureConfig.areAppBubblesSupported = false
+        bubbleRootTask = BubbleRootTask(mContext, shellInit, taskOrganizer, bubbleFeatureConfig)
+        verify(shellInit, never()).addInitCallback<BubbleRootTask>(any(), any())
+        verify(taskOrganizer, never()).createTask(any())
     }
 
     companion object {
