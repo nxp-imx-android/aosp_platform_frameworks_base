@@ -337,6 +337,33 @@ public class ActivityMetricsLaunchObserverTests extends WindowTestsBase {
     }
 
     @Test
+    public void testAbortInvisibleWhenOtherTrackedInSameTask() {
+        // Launch Activity A.
+        onActivityLaunched(mTopActivity);
+        final long idA = mExpectedStartedId;
+        // Launch Activity B in the same task but with a different launching state by a different
+        // calling uid.
+        final ActivityRecord activityB = new ActivityBuilder(mAtm)
+                .setTask(mTopActivity.getTask())
+                .setComponent(createRelative(DEFAULT_COMPONENT_PACKAGE_NAME, "ActivityB"))
+                .build();
+        mLaunchingState = mActivityMetricsLogger.notifyActivityLaunching(activityB.intent,
+                null /* caller */, mTopActivity.getUid() + 1);
+        notifyAndVerifyActivityLaunched(activityB);
+        final long idB = mExpectedStartedId;
+
+        assertWithMessage("Should have different launch IDs").that(idA).isNotEqualTo(idB);
+
+        // Activity A becomes invisible because Activity B occludes it.
+        mTopActivity.setVisibleRequested(false);
+        mActivityMetricsLogger.notifyVisibilityChanged(mTopActivity);
+
+        // Activity A's launch is cancelled because Activity B remains visible and tracked.
+        verifyAsync(mLaunchObserver).onActivityLaunchCancelled(eq(idA));
+        verify(mLaunchObserver, never()).onActivityLaunchCancelled(eq(idB));
+    }
+
+    @Test
     public void testOnReportFullyDrawn() {
         // Create an invisible event that should be cancelled after the next event starts.
         final ActivityRecord prev = new ActivityBuilder(mAtm).setCreateTask(true).build();
