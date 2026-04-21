@@ -381,10 +381,11 @@ constructor(
     fun onGoneTransitionFinished() {
         logBuffer.log(TAG, LogLevel.DEBUG, "onGoneTransitionFinished")
         authenticationPolicyManager?.disableSecureLockDevice(
+            selectedUserInteractor.getSelectedUserId(),
             DisableSecureLockDeviceParams(
                 "Disabling secure lock device on completed two-factor primary and strong " +
                     "biometric authentication"
-            )
+            ),
         )
         resetBiometricAuthState(isBiometricAuthRequested = false)
         _isFullyUnlockedAndReadyToDismiss.value = false

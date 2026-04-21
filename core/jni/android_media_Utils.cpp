@@ -93,6 +93,7 @@ bool isPossiblyYUV(PixelFormat format) {
         case HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED:
         case HAL_PIXEL_FORMAT_YCBCR_P010:
         case static_cast<int>(AidlPixelFormat::YCBCR_P210):
+        case HAL_PIXEL_FORMAT_RGBA_1010102:
             return false;
 
         case HAL_PIXEL_FORMAT_YV12:
@@ -122,6 +123,7 @@ bool isPossibly10BitYUV(PixelFormat format) {
         case HAL_PIXEL_FORMAT_YV12:
         case HAL_PIXEL_FORMAT_YCbCr_420_888:
         case HAL_PIXEL_FORMAT_YCrCb_420_SP:
+        case HAL_PIXEL_FORMAT_RGBA_1010102:
             return false;
 
         case HAL_PIXEL_FORMAT_YCBCR_P010:

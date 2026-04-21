@@ -938,6 +938,7 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
             if (secureLockDevice() && isSecureLockDeviceEnabled()
                     && containsFlag(getStrongAuthForUser(userId),
                     PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE)
+                    && userId == mStore.retrieveSecureLockDeviceClientId()
             ) {
                 Slog.d(TAG, "Primary auth is required for secure lock device; reset pending "
                         + "biometric auth success state for user id " + userId);
