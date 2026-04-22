@@ -3679,6 +3679,11 @@ public class BubbleController implements ConfigurationChangeListener,
         }
 
         @Override
+        public boolean isAppBubbleTask(ActivityManager.RunningTaskInfo taskInfo) {
+            return BubbleController.this.mBubbleHelper.isAppBubbleTask(taskInfo);
+        }
+
+        @Override
         @Nullable
         public SynchronousScreenCaptureListener getScreenshotExcludingBubble(int displayId) {
             SynchronousScreenCaptureListener screenCaptureListener =

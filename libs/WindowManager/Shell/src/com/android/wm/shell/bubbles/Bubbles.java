@@ -21,6 +21,7 @@ import static java.lang.annotation.ElementType.LOCAL_VARIABLE;
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
+import android.app.ActivityManager;
 import android.app.NotificationChannel;
 import android.content.Intent;
 import android.content.pm.ShortcutInfo;
@@ -159,6 +160,9 @@ public interface Bubbles {
 
     /** @return true if the specified {@code taskId} corresponds to app bubble's taskId. */
     boolean isNoteBubbleTaskId(int taskId);
+
+    /** Whether the specified {@code taskInfo} runs in a Bubble task. */
+    boolean isAppBubbleTask(ActivityManager.RunningTaskInfo taskInfo);
 
     /**
 `    * @return a {@link SynchronousScreenCaptureListener} after performing a screenshot that may
