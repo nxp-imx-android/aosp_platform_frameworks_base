@@ -584,6 +584,10 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
             try {
                 fileStream.write(currentStateByteArray);
                 currentFile.finishWrite(fileStream);
+                if(DEBUG) {
+                    Slog.i(TAG, "Successfully wrote appwidgets.xml file for user "
+                            + currentProfileId);
+                }
             } catch (IOException e) {
                 Log.e(TAG, "Failed to write state byte stream to file", e);
                 currentFile.failWrite(fileStream);
@@ -1261,6 +1265,10 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         }
         final int[] profileIds = mSecurityPolicy.getEnabledGroupProfileIds(userId);
 
+        if (profileIds.length == 0) {
+            Slog.i(TAG, "No enabled profiles to load for user " + userId);
+        }
+
         IntArray newIds = new IntArray(1);
         for (int profileId : profileIds) {
             if (!mLoadedUserIds.get(profileId)) {
@@ -1269,8 +1277,18 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
             }
         }
         if (newIds.size() <= 0) {
+            if (DEBUG) {
+                Slog.i(
+                        TAG,
+                        "No new profiles to load for user "
+                                + userId
+                                + " profileIds: "
+                                + Arrays.toString(profileIds));
+            }
             return;
         }
+
+        Slog.i(TAG, "Loading providers for " + newIds.size() + " profiles for user " + userId);
         final int[] newProfileIds = newIds.toArray();
         clearProvidersAndHostsTagsLocked();
 
@@ -3526,11 +3544,16 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
             final int profileId = profileIds[i];
 
             List<ResolveInfo> receivers = queryIntentReceivers(intent, profileId);
+            if (DEBUG) {
+                Slog.i(TAG, "Found " + receivers.size() + " receivers for profile " + profileId);
+            }
             if (receivers != null && !receivers.isEmpty()) {
                 if (allReceivers == null) {
                     allReceivers = new ArrayList<>();
                 }
                 allReceivers.addAll(receivers);
+            } else {
+                Slog.w(TAG, "No receivers found for profile " + profileId);
             }
         }
 
@@ -3543,6 +3566,10 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
 
     private boolean addProviderLocked(ResolveInfo ri) {
         if ((ri.activityInfo.applicationInfo.flags & ApplicationInfo.FLAG_EXTERNAL_STORAGE) != 0) {
+            Slog.w(
+                    TAG,
+                    "Skipping external storage provider for package "
+                            + ri.activityInfo.packageName);
             return false;
         }
 
@@ -3577,6 +3604,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         }
 
         if (isPackageAppLockEnabled(providerId)) {
+            Slog.i(TAG, "Skipping app lock enabled provider: " + providerId);
             return false;
         }
 
@@ -4162,6 +4190,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                     intent.resolveTypeIfNeeded(mContext.getContentResolver()),
                     flags, userId).getList();
         } catch (RemoteException re) {
+            Slog.w(TAG, "Failed to query intent receivers for user " + userId, re);
             return Collections.emptyList();
         } finally {
             Binder.restoreCallingIdentity(identity);
@@ -4175,6 +4204,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
      */
     void handleUserUnlocked(int userId) {
         if (isProfileWithLockedParent(userId)) {
+            Slog.w(TAG, "User " + userId + " has a locked parent - exiting userId");
             return;
         }
         if (!mUserManager.isUserUnlockingOrUnlocked(userId)) {
@@ -4270,6 +4300,9 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     }
 
     private void bindLoadedWidgetsLocked(List<LoadedWidgetState> loadedWidgets) {
+        if (DEBUG) {
+            Slog.i(TAG, "bindLoadedWidgetsLocked() " + loadedWidgets.size());
+        }
         final int loadedWidgetCount = loadedWidgets.size();
         for (int i = loadedWidgetCount - 1; i >= 0; i--) {
             LoadedWidgetState loadedWidget = loadedWidgets.remove(i);
