@@ -1218,9 +1218,12 @@ class ActivityMetricsLogger {
             // If the task of the launched activity contains any activity to be drawn, then the
             // window drawn event should report later to complete the transition. Otherwise all
             // activities in this task may be finished, invisible or drawn, so the transition event
-            // should be cancelled.
-            if (t != null && t.forAllActivities(
-                    a -> a.isVisibleRequested() && !a.isReportedDrawn() && !a.finishing)) {
+            // should be cancelled. The info is also aborted if the activity to be drawn is tracked
+            // by another info or no info tracks it.
+            final ActivityRecord drawingActivity = t == null ? null : t.getActivity(
+                    a -> a.isVisibleRequested() && !a.isReportedDrawn() && !a.finishing);
+            if (drawingActivity != null && getActiveTransitionInfo(drawingActivity) == info) {
+                // If the activity is tracked by the current info, then wait for it to draw.
                 return;
             }
 

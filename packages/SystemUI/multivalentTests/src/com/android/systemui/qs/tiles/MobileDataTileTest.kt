@@ -82,7 +82,11 @@ class MobileDataTileTest : SysuiTestCase() {
     private lateinit var underTest: MobileDataTile
     private val tileDataFlow =
         MutableStateFlow<MobileDataTileModel>(
-            MobileDataTileModel(isSimActive = false, isEnabled = false)
+            MobileDataTileModel(
+                isSimActive = false,
+                isEnabled = false,
+                isAirplaneModeEnabled = false,
+            )
         )
 
     @Before
@@ -143,7 +147,12 @@ class MobileDataTileTest : SysuiTestCase() {
 
     @Test
     fun tileDataChanges_triggersMapperWithNewModel() {
-        val model = MobileDataTileModel(isSimActive = true, isEnabled = true)
+        val model =
+            MobileDataTileModel(
+                isSimActive = true,
+                isEnabled = true,
+                isAirplaneModeEnabled = false,
+            )
         // Mock a placeholder state to be returned by the mapper
         whenever(tileMapper.map(any(), any())).thenReturn(mock(QSTileState::class.java))
 
@@ -163,6 +172,16 @@ class MobileDataTileTest : SysuiTestCase() {
 
         // Assert
         verify(userActionInteractor).handleClick(any())
+    }
+
+    @Test
+    fun secondaryClick_callsUserActionInteractor() = runTest {
+        // Act: Use the public secondaryClick() method
+        underTest.secondaryClick(mock(Expandable::class.java))
+        testableLooper.processAllMessages()
+
+        // Assert
+        verify(userActionInteractor).handleSecondaryClick(any())
     }
 
     @Test

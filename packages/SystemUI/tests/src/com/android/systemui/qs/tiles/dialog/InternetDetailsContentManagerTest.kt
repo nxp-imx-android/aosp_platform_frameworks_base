@@ -1089,6 +1089,38 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
     }
 
     @Test
+    fun updateContent_canConfigMobileDataFalse_mobileDataToggleHidden() {
+        internetDetailsContentManager =
+            InternetDetailsContentManager(
+                internetDetailsContentController,
+                canConfigMobileData = false,
+                canConfigWifi = true,
+                isInDialog = isInDialog,
+                uiEventLogger = mock<UiEventLogger>(),
+                handler = handler,
+                backgroundExecutor = bgExecutor,
+                keyguard = keyguard,
+                userRepository = userRepository,
+                troubleshootingViewModelFactory = troubleshootingViewModelFactory,
+                mainDispatcher = kosmos.testDispatcher,
+            )
+        internetDetailsContentManager.bind(contentView, null, testScope)
+        mobileToggleSwitch = contentView.requireViewById(R.id.mobile_toggle)
+
+        whenever(internetDetailsContentController.hasActiveSubIdOnDds()).thenReturn(true)
+        whenever(internetDetailsContentController.isCarrierNetworkActive).thenReturn(true)
+
+        internetDetailsContentManager.updateContent(true)
+        bgExecutor.runAllReady()
+
+        internetDetailsContentManager.internetContentData.observe(
+            internetDetailsContentManager.lifecycleOwner!!
+        ) {
+            assertThat(mobileToggleSwitch!!.visibility).isEqualTo(View.INVISIBLE)
+        }
+    }
+
+    @Test
     fun updateContent_headlessSystemUser_hideWifiContent() {
         whenever(internetDetailsContentController.isHeadlessSystemUser).thenReturn(true)
 

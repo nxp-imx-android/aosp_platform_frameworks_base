@@ -49,6 +49,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -93,7 +94,27 @@ class MobileDataTileUserActionInteractorTest : SysuiTestCase() {
     @Test
     fun handleClick_showsDialog() =
         testScope.runTest {
-            val testData = MobileDataTileModel(true, true)
+            val testData =
+                MobileDataTileModel(
+                    isSimActive = true,
+                    isEnabled = true,
+                    isAirplaneModeEnabled = false,
+                )
+            underTest.handleInput(QSTileInputTestKtx.click(testData))
+
+            verify(internetDialogManager)
+                .create(anyBoolean(), anyBoolean(), anyBoolean(), anyOrNull())
+        }
+
+    @Test
+    fun handleClick_airplaneModeEnabled_showsDialog() =
+        testScope.runTest {
+            val testData =
+                MobileDataTileModel(
+                    isSimActive = true,
+                    isEnabled = true,
+                    isAirplaneModeEnabled = true,
+                )
             underTest.handleInput(QSTileInputTestKtx.click(testData))
 
             verify(internetDialogManager)
@@ -103,7 +124,29 @@ class MobileDataTileUserActionInteractorTest : SysuiTestCase() {
     @Test
     fun handleLongClick_opensSimSettings() =
         testScope.runTest {
-            val testData = MobileDataTileModel(true, true)
+            val testData =
+                MobileDataTileModel(
+                    isSimActive = true,
+                    isEnabled = true,
+                    isAirplaneModeEnabled = false,
+                )
+            underTest.handleInput(QSTileInputTestKtx.longClick(testData))
+
+            QSTileIntentUserInputHandlerSubject.assertThat(intentHandler).handledOneIntentInput {
+                assertThat(it.intent.action)
+                    .isEqualTo(Settings.ACTION_MANAGE_ALL_SIM_PROFILES_SETTINGS)
+            }
+        }
+
+    @Test
+    fun handleLongClick_airplaneModeEnabled_opensSimSettings() =
+        testScope.runTest {
+            val testData =
+                MobileDataTileModel(
+                    isSimActive = true,
+                    isEnabled = true,
+                    isAirplaneModeEnabled = true,
+                )
             underTest.handleInput(QSTileInputTestKtx.longClick(testData))
 
             QSTileIntentUserInputHandlerSubject.assertThat(intentHandler).handledOneIntentInput {
@@ -118,7 +161,12 @@ class MobileDataTileUserActionInteractorTest : SysuiTestCase() {
             getDataRepo()?.setDataEnabled(true)
             runCurrent()
 
-            val testData = MobileDataTileModel(true, true)
+            val testData =
+                MobileDataTileModel(
+                    isSimActive = true,
+                    isEnabled = true,
+                    isAirplaneModeEnabled = false,
+                )
             underTest.handleInput(QSTileInputTestKtx.toggleClick(testData))
             runCurrent()
 
@@ -137,7 +185,12 @@ class MobileDataTileUserActionInteractorTest : SysuiTestCase() {
                 )
             defaultRepository.setDataEnabled(true)
 
-            val testData = MobileDataTileModel(true, true)
+            val testData =
+                MobileDataTileModel(
+                    isSimActive = true,
+                    isEnabled = true,
+                    isAirplaneModeEnabled = false,
+                )
             underTest.handleInput(QSTileInputTestKtx.toggleClick(testData))
             runCurrent()
 
@@ -149,7 +202,12 @@ class MobileDataTileUserActionInteractorTest : SysuiTestCase() {
         testScope.runTest {
             getDataRepo()?.setDataEnabled(false)
 
-            val testData = MobileDataTileModel(true, false)
+            val testData =
+                MobileDataTileModel(
+                    isSimActive = true,
+                    isEnabled = false,
+                    isAirplaneModeEnabled = false,
+                )
             underTest.handleInput(QSTileInputTestKtx.toggleClick(testData))
 
             verify(dialogFactory).create()
@@ -161,7 +219,12 @@ class MobileDataTileUserActionInteractorTest : SysuiTestCase() {
         testScope.runTest {
             getDataRepo()?.setDataEnabled(false)
             val captor = argumentCaptor<DialogInterface.OnClickListener>()
-            val testData = MobileDataTileModel(true, true)
+            val testData =
+                MobileDataTileModel(
+                    isSimActive = true,
+                    isEnabled = true,
+                    isAirplaneModeEnabled = false,
+                )
             underTest.handleInput(QSTileInputTestKtx.toggleClick(testData))
 
             verify(dialog).setPositiveButton(any(), captor.capture())

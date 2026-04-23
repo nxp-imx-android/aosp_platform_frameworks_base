@@ -287,7 +287,25 @@ public class SharedConnectivityManager {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
                 Log.i(TAG, "onServiceConnected");
+                // This is to fix timing issue of binding and unbinding. When unbind() is posted to
+                // background thread, mService is set to null. However, the background thread is
+                // not starting to bind to the service, and then when onServiceConnected() is
+                // triggered after service connection is established, the mService will be set to
+                // returned binder. This will let the manager in a bad state. So we need to skip to
+                // set the binder when callback proxy cache is empty which means no client is
+                // registered.
+                if (Flags.fixMainThreadBlockingOnFirstUnlock()) {
+                    synchronized (mProxyDataLock) {
+                        if (mCallbackProxyCache.isEmpty()) {
+                            Log.i(TAG, "onServiceConnected: skip, callback proxy cache is empty,"
+                                    + " unbind() will be called later");
+                            return;
+                        }
+                    }
+                }
+
                 mService = ISharedConnectivityService.Stub.asInterface(service);
+                Log.i(TAG, "onServiceConnected: binder received, service=" + mService);
                 synchronized (mProxyDataLock) {
                     if (!mCallbackProxyCache.isEmpty()) {
                         mCallbackProxyCache.keySet().forEach(callback ->
@@ -327,7 +345,7 @@ public class SharedConnectivityManager {
                 new Intent().setPackage(mServicePackageName).setAction(mIntentAction),
                 mServiceConnection, Context.BIND_AUTO_CREATE);
         if (!result) {
-            // No matter what the returned valus is, we should call unbind() to
+            // No matter what the returned value is, we should call unbind() to
             // release the connection.
             unbind();
 
@@ -462,7 +480,14 @@ public class SharedConnectivityManager {
     private void unbind() {
         if (mServiceConnection != null) {
             Log.i(TAG, "unbind");
-            mContext.unbindService(mServiceConnection);
+            try {
+                // Unbind the service connection.
+                mContext.unbindService(mServiceConnection);
+            } catch (IllegalArgumentException e) {
+                // This is fine, it means the service connection was never established.
+                Log.e(TAG, "Exception in unbind", e);
+            }
+            // no matter what the result is, clear the service connection.
             mServiceConnection = null;
             if (!Flags.fixMainThreadBlockingOnFirstUnlock()) {
                 mService = null;
@@ -497,7 +522,7 @@ public class SharedConnectivityManager {
             return;
         }
 
-        Log.i(TAG, "registerCallback: callback=" + callback);
+        Log.i(TAG, "registerCallback: callback=" + callback + ", service=" + mService);
         SharedConnectivityCallbackProxy proxy =
                 new SharedConnectivityCallbackProxy(executor, callback);
         if (mService == null) {
@@ -544,7 +569,7 @@ public class SharedConnectivityManager {
             // This is fine, it means the receiver was never registered or was already unregistered.
         }
 
-        Log.i(TAG, "unregisterCallback: callback=" + callback);
+        Log.i(TAG, "unregisterCallback: callback=" + callback + ", service=" + mService);
         if (mService == null) {
             boolean shouldUnbind;
             synchronized (mProxyDataLock) {
