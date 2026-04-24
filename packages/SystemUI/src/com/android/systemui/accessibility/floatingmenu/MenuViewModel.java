@@ -263,6 +263,10 @@ public class MenuViewModel implements MenuInfoRepository.OnContentsChanged {
         return mPositionData;
     }
 
+    MenuPosition getMenuPosition() {
+        return mLastMenuPosition;
+    }
+
     void cycleMenuPosition() {
         MenuPosition currentPosition = mPositionData.getValue();
 

@@ -325,8 +325,22 @@ class MenuViewLayer extends FrameLayout implements
 
     @Override
     public void onMoreOptionsClicked(View anchorView) {
+        MenuPosition currentPosition = mMenuViewModel.getMenuPosition();
+        if (currentPosition == null) {
+            currentPosition = MenuPosition.BOTTOM_RIGHT;
+        }
+
+        int nextPositionHintResId = switch (currentPosition) {
+            case BOTTOM_RIGHT -> R.string.accessibility_floating_button_action_move_bottom_left;
+            case BOTTOM_LEFT -> R.string.accessibility_floating_button_action_move_top_left;
+            case TOP_LEFT -> R.string.accessibility_floating_button_action_move_top_right;
+            case TOP_RIGHT -> R.string.accessibility_floating_button_action_move_bottom_right;
+        };
+        String nextPositionHint = getContext().getString(nextPositionHintResId);
+
         final MoreOptionsPopup popup =
                 createMoreOptionsPopup(
+                        nextPositionHint,
                         new MoreOptionsPopup.OnItemClickListener() {
                             @Override
                             public void onEditClicked() {
@@ -347,8 +361,9 @@ class MenuViewLayer extends FrameLayout implements
     }
 
     @VisibleForTesting
-    MoreOptionsPopup createMoreOptionsPopup(MoreOptionsPopup.OnItemClickListener listener) {
-        return new MoreOptionsPopup(getContext(), listener);
+    MoreOptionsPopup createMoreOptionsPopup(
+            String nextMovePositionHint, MoreOptionsPopup.OnItemClickListener listener) {
+        return new MoreOptionsPopup(getContext(), nextMovePositionHint, listener);
     }
 
     private void onPositionChanged(MenuPosition position) {

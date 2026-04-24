@@ -33,6 +33,7 @@ import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.bubbles.BubbleRootTaskTest.Companion.prepareRootTaskForTest
+import com.android.wm.shell.shared.bubbles.FakeBubbleFeatureConfig
 import com.android.wm.shell.sysui.ShellInit
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -54,13 +55,14 @@ class BubbleHelperImplTest : ShellTestCase() {
     private val shellInit = mock<ShellInit>()
     private val taskOrganizer = mock<ShellTaskOrganizer>()
     val bubbleData = mock<BubbleData>()
+    private val bubbleFeatureConfig = FakeBubbleFeatureConfig()
 
     private lateinit var bubbleRootTask: BubbleRootTask
     private lateinit var bubbleHelper: BubbleHelper
 
     @Before
     fun setUp() {
-        bubbleRootTask = BubbleRootTask(mContext, shellInit, taskOrganizer)
+        bubbleRootTask = BubbleRootTask(mContext, shellInit, taskOrganizer, bubbleFeatureConfig)
         bubbleHelper = BubbleHelperImpl(bubbleRootTask, bubbleData)
     }
 

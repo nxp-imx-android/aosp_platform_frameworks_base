@@ -26,6 +26,7 @@ import android.window.TaskPropertiesRequest
 import android.window.WindowContainerToken
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.dagger.WMSingleton
+import com.android.wm.shell.shared.bubbles.BubbleFeatureConfig
 import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog
 import com.android.wm.shell.sysui.ShellInit
@@ -44,10 +45,14 @@ constructor(
     private val context: Context,
     shellInit: ShellInit,
     private val taskOrganizer: ShellTaskOrganizer,
+    bubbleFeatureConfig: BubbleFeatureConfig,
 ) : ShellTaskOrganizer.TaskListener, TaskViewRootTask {
 
     init {
-        if (BubbleFlagHelper.enableRootTaskForBubble()) {
+        if (
+            BubbleFlagHelper.enableRootTaskForBubble() &&
+                bubbleFeatureConfig.areAppBubblesSupported()
+        ) {
             shellInit.addInitCallback({ onInit() }, this)
         }
     }

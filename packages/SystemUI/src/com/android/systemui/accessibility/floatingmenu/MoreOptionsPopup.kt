@@ -25,12 +25,18 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.ListPopupWindow
 import android.widget.TextView
+import androidx.core.view.ViewCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import com.android.internal.annotations.VisibleForTesting
 import com.android.systemui.accessibility.floatingmenu.R as FloatingMenuR
 import com.android.systemui.res.R
 
 /** A popup menu that displays additional options for the accessibility floating menu. */
-class MoreOptionsPopup(context: Context, private val listener: OnItemClickListener) {
+class MoreOptionsPopup(
+    context: Context,
+    private val nextMovePositionHint: String,
+    private val listener: OnItemClickListener,
+) {
 
     interface OnItemClickListener {
         fun onEditClicked()
@@ -72,6 +78,7 @@ class MoreOptionsPopup(context: Context, private val listener: OnItemClickListen
                 context.getString(R.string.more_options_move),
                 R.drawable.ic_move,
                 R.id.action_move,
+                customActionLabel = nextMovePositionHint,
             ),
             MoreOptionsItem(
                 context.getString(R.string.more_options_remove_all),
@@ -99,6 +106,22 @@ class MoreOptionsPopup(context: Context, private val listener: OnItemClickListen
 
                 icon.setImageResource(item.iconResId)
                 text.text = item.text
+
+                if (item.customActionLabel != null) {
+                    ViewCompat.replaceAccessibilityAction(
+                        view,
+                        AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_CLICK,
+                        item.customActionLabel,
+                        null,
+                    )
+                } else {
+                    ViewCompat.replaceAccessibilityAction(
+                        view,
+                        AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_CLICK,
+                        null,
+                        null,
+                    )
+                }
 
                 return view
             }
@@ -177,5 +200,10 @@ class MoreOptionsPopup(context: Context, private val listener: OnItemClickListen
         return view.measuredWidth
     }
 
-    private data class MoreOptionsItem(val text: String, val iconResId: Int, val actionId: Int)
+    private data class MoreOptionsItem(
+        val text: String,
+        val iconResId: Int,
+        val actionId: Int,
+        val customActionLabel: String? = null,
+    )
 }

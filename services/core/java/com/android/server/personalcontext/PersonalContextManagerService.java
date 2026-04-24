@@ -504,7 +504,8 @@ public class PersonalContextManagerService extends SystemService {
 
         final String packageName = getPackageNameForUid(callingUid);
         if (!isPersonalContextModeEnabled(packageName, callingUid, userId)) {
-            throw new IllegalStateException("Personal Context is disabled for publishing package");
+            Slog.w(TAG, "Personal Context is disabled for publishing package " + packageName);
+            return;
         }
 
         validateHints(userId, callingUid, hints);

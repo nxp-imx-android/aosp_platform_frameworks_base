@@ -137,7 +137,7 @@ class MenuViewLayerTest : SysuiTestCase() {
                 )
             )
         // doReturn avoids problems when trying to stub a spy via other methods
-        doReturn(mockMoreOptionsPopup).whenever(underTest).createMoreOptionsPopup(any())
+        doReturn(mockMoreOptionsPopup).whenever(underTest).createMoreOptionsPopup(any(), any())
 
         lastAccessibilityButtonTargets =
             Settings.Secure.getStringForUser(
@@ -173,7 +173,7 @@ class MenuViewLayerTest : SysuiTestCase() {
         clearInvocations(mockMoreOptionsPopup)
         val onItemClickListenerCaptor = argumentCaptor<MoreOptionsPopup.OnItemClickListener>()
         underTest.onMoreOptionsClicked(mockMoreOptionsView)
-        verify(underTest).createMoreOptionsPopup(onItemClickListenerCaptor.capture())
+        verify(underTest).createMoreOptionsPopup(any(), onItemClickListenerCaptor.capture())
         verify(mockMoreOptionsPopup).show(mockMoreOptionsView)
         return onItemClickListenerCaptor.firstValue
     }
@@ -459,6 +459,58 @@ class MenuViewLayerTest : SysuiTestCase() {
 
         showMoreOptionsPopup().onMoveClicked()
         verify(menuAnimationController).moveToBottomLeftPosition()
+    }
+
+    @Test
+    fun onMoreOptionsClicked_atBottomRight_passesBottomLeftHint() {
+        val hintCaptor = argumentCaptor<String>()
+        underTest.onMoreOptionsClicked(mockMoreOptionsView)
+        verify(underTest).createMoreOptionsPopup(hintCaptor.capture(), any())
+        assertThat(hintCaptor.firstValue)
+            .isEqualTo(
+                spyContext.getString(R.string.accessibility_floating_button_action_move_bottom_left)
+            )
+    }
+
+    @Test
+    fun onMoreOptionsClicked_atBottomLeft_passesTopLeftHint() {
+        kosmos.menuViewModel.cycleMenuPosition()
+        val hintCaptor = argumentCaptor<String>()
+        underTest.onMoreOptionsClicked(mockMoreOptionsView)
+        verify(underTest).createMoreOptionsPopup(hintCaptor.capture(), any())
+        assertThat(hintCaptor.firstValue)
+            .isEqualTo(
+                spyContext.getString(R.string.accessibility_floating_button_action_move_top_left)
+            )
+    }
+
+    @Test
+    fun onMoreOptionsClicked_atTopLeft_passesTopRightHint() {
+        kosmos.menuViewModel.cycleMenuPosition()
+        kosmos.menuViewModel.cycleMenuPosition()
+        val hintCaptor = argumentCaptor<String>()
+        underTest.onMoreOptionsClicked(mockMoreOptionsView)
+        verify(underTest).createMoreOptionsPopup(hintCaptor.capture(), any())
+        assertThat(hintCaptor.firstValue)
+            .isEqualTo(
+                spyContext.getString(R.string.accessibility_floating_button_action_move_top_right)
+            )
+    }
+
+    @Test
+    fun onMoreOptionsClicked_atTopRight_passesBottomRightHint() {
+        kosmos.menuViewModel.cycleMenuPosition()
+        kosmos.menuViewModel.cycleMenuPosition()
+        kosmos.menuViewModel.cycleMenuPosition()
+        val hintCaptor = argumentCaptor<String>()
+        underTest.onMoreOptionsClicked(mockMoreOptionsView)
+        verify(underTest).createMoreOptionsPopup(hintCaptor.capture(), any())
+        assertThat(hintCaptor.firstValue)
+            .isEqualTo(
+                spyContext.getString(
+                    R.string.accessibility_floating_button_action_move_bottom_right
+                )
+            )
     }
 
     /** Simplified AccessibilityTarget for testing MenuViewLayer. */
