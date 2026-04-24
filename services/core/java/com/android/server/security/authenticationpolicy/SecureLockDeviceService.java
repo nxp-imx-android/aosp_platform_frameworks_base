@@ -463,6 +463,11 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
             return ERROR_UNSUPPORTED;
         }
 
+        //TODO (b/506185486): Revisit SLD support for multi-user
+        if (!user.isSystem()) {
+            return ERROR_UNSUPPORTED;
+        }
+
         if (mBiometricManager == null) {
             Slog.w(TAG, "BiometricManager not available: secure lock device is unsupported.");
             return ERROR_UNSUPPORTED;

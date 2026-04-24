@@ -524,7 +524,7 @@ public class SecureLockDeviceServiceTest {
     }
 
     @Test
-    public void enableSecureLockDevice_switchesCallingUserToForeground_restrictsUserSwitching()
+    public void enableSecureLockDeviceForOtherUser_secureLockDeviceUnavailable()
             throws RemoteException {
         setupBiometricState(
                 true, /* deviceHasStrongBiometricSensor */
@@ -539,14 +539,11 @@ public class SecureLockDeviceServiceTest {
                 .thenReturn(true);
         when(mActivityManager.switchUser(eq(mOtherUser))).thenReturn(true);
 
-        assertThat(enableSecureLockDevice(mOtherUser)).isEqualTo(SUCCESS);
+        assertThat(enableSecureLockDevice(mOtherUser)).isEqualTo(ERROR_UNSUPPORTED);
 
-        assertThat(mSecureLockDeviceService.isSecureLockDeviceEnabled()).isTrue();
+        assertThat(mSecureLockDeviceService.isSecureLockDeviceEnabled()).isFalse();
         assertThat(mSecureLockDeviceStore.retrieveSecureLockDeviceClientId()).isEqualTo(
-                OTHER_USER_ID);
-
-        verify(mDevicePolicyManager).addUserRestrictionGlobally(
-                eq(DevicePolicyRestrictionsController.TAG), eq(DISALLOW_USER_SWITCH));
+                UserHandle.USER_NULL);
     }
 
     @Test
@@ -936,7 +933,7 @@ public class SecureLockDeviceServiceTest {
                 mSecureLockDeviceEnabledStatusArgumentCaptor.capture());
         available = mSecureLockDeviceAvailableStatusArgumentCaptor.getValue();
         enabled = mSecureLockDeviceEnabledStatusArgumentCaptor.getValue();
-        assertThat(available).isEqualTo(ERROR_NO_BIOMETRICS_ENROLLED);
+        assertThat(available).isEqualTo(ERROR_UNSUPPORTED);
         assertThat(enabled).isTrue();
     }
 
@@ -976,7 +973,8 @@ public class SecureLockDeviceServiceTest {
                 mSecureLockDeviceEnabledStatusArgumentCaptor.capture());
         available = mSecureLockDeviceAvailableStatusArgumentCaptor.getValue();
         enabled = mSecureLockDeviceEnabledStatusArgumentCaptor.getValue();
-        assertThat(available).isEqualTo(ERROR_NO_BIOMETRICS_ENROLLED);
+
+        assertThat(available).isEqualTo(ERROR_UNSUPPORTED);
         assertThat(enabled).isFalse();
     }
 
