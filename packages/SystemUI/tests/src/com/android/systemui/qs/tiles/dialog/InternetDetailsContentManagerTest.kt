@@ -1101,8 +1101,6 @@ class InternetDetailsContentManagerTest(private val isInDialog: Boolean) : Sysui
                 backgroundExecutor = bgExecutor,
                 keyguard = keyguard,
                 userRepository = userRepository,
-                troubleshootingViewModelFactory = troubleshootingViewModelFactory,
-                mainDispatcher = kosmos.testDispatcher,
             )
         internetDetailsContentManager.bind(contentView, null, testScope)
         mobileToggleSwitch = contentView.requireViewById(R.id.mobile_toggle)
