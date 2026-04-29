@@ -1873,6 +1873,38 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
     }
 
     /**
+     * Tests a task with specific display category exist in system and launching another
+     * activity without display category from that task. Make sure the launching activity
+     * is placed on the different task since the source has display category.
+     */
+    @Test
+    public void testLaunchActivityFromSourceWithDisplayCategory() {
+        final String category = "automotive";
+        final String affinity = ActivityRecord.computeTaskAffinity("test", DEFAULT_FAKE_UID);
+
+        // Create source activity with display category
+        final ActivityRecord sourceActivity = new ActivityBuilder(mAtm)
+                .setRequiredDisplayCategory(category)
+                .setAffinity(affinity)
+                .setCreateTask(true)
+                .build();
+        final Task task = sourceActivity.getTask();
+
+        // Create target activity without display category
+        final ActivityRecord target = new ActivityBuilder(mAtm)
+                .setAffinity(affinity)
+                .build();
+
+        final ActivityStarter starter = prepareStarter(0, false);
+        spyOn(starter);
+        doReturn(START_SUCCESS).when(starter).isAllowedToStart(any(), anyBoolean(), any());
+        startActivityInner(starter, target, sourceActivity, null /* options */,
+                null /* inTask */, null /* inTaskFragment */);
+
+        assertNotEquals(task, target.getTask());
+    }
+
+    /**
      * Tests a task with specific display category exist in system and then launching another
      * activity with the same display category. Make sure the launching activity is placed on the
      * same task.
