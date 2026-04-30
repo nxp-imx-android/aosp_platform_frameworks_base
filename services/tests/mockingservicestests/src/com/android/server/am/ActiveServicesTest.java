@@ -15,7 +15,6 @@
  */
 package com.android.server.am;
 
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
 import static com.android.internal.app.procstats.ProcessStats.ADJ_MEM_FACTOR_CRITICAL;
 import static com.android.internal.app.procstats.ProcessStats.ADJ_MEM_FACTOR_LOW;
@@ -43,8 +42,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.Manifest;
+import android.app.ActivityManagerInternal.ForegroundServiceStateListener;
 import android.app.AnrTypes;
 import android.app.IApplicationThread;
+import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.compat.CompatChanges;
 import android.app.privatecompute.flags.Flags;
 import android.app.usage.UsageStatsManagerInternal;
@@ -56,6 +58,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ServiceInfo;
+import android.graphics.drawable.Icon;
 import android.os.IBinder;
 import android.os.Process;
 import android.os.SystemClock;
@@ -71,9 +74,12 @@ import android.util.ArraySet;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import com.android.modules.utils.testing.ExtendedMockitoRule;
+import com.android.server.LocalServices;
 import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.ProcessStateController;
 import com.android.server.am.psc.ServiceRecordInternal;
+import com.android.server.notification.NotificationManagerInternal;
 import com.android.server.wm.ActivityTaskManagerService;
 
 import org.junit.After;
@@ -82,12 +88,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.MockitoSession;
 import org.mockito.quality.Strictness;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.List;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -97,6 +103,7 @@ public final class ActiveServicesTest {
 
     private static final String PACKAGE_NAME_1 = "com.foo";
     private static final String PACKAGE_NAME_2 = "com.bar";
+    private static final String PACKAGE_NAME_PCC = "com.android.pcc";
     private static final String SERVICE_NAME = "barService";
     private static final String PROCESS_NAME_1 = PACKAGE_NAME_1;
     private static final String TRUSTED_ISOLATED_PROCESS_NAME_1 =
@@ -115,6 +122,7 @@ public final class ActiveServicesTest {
     };
 
     private static final int TEST_UID = 10123;
+    private static final int TEST_UID_PCC = 30001;
     private static final int TEST_USERID = 0;
     private static final int TEST_PID = 1234;
 
@@ -759,6 +767,139 @@ public final class ActiveServicesTest {
         assertThat(mActiveServices.mPendingServices).isEmpty();
     }
 
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testPostNotification_usesPccUid() {
+        setMockHandlerOnAms();
+        mContext = mock(Context.class);
+        when(mService.getPackageManagerInternal()).thenReturn(mPackageManagerInternal);
+        setFieldValue(ActivityManagerService.class, mService, "mContext", mContext);
+
+        List<ForegroundServiceStateListener> fsslList = new ArrayList<>();
+        ForegroundServiceStateListener listener = mock(ForegroundServiceStateListener.class);
+        fsslList.add(listener);
+        setFieldValue(
+                ActivityManagerService.class,
+                mService,
+                "mForegroundServiceStateListeners",
+                fsslList);
+
+        NotificationManagerInternal nmi = mock(NotificationManagerInternal.class);
+        NotificationChannel nc = mock(NotificationChannel.class);
+        when(nmi.getNotificationChannel(
+                        eq(PACKAGE_NAME_PCC),
+                        eq(TEST_UID_PCC),
+                        eq("testPostNotification_usesPccUid")))
+                .thenReturn(nc);
+        when(nmi.areNotificationsEnabledForPackage(eq(PACKAGE_NAME_PCC), eq(TEST_UID_PCC)))
+                .thenReturn(true);
+        LocalServices.removeServiceForTest(NotificationManagerInternal.class);
+        LocalServices.addService(NotificationManagerInternal.class, nmi);
+
+        try {
+            final ServiceRecord r = createPccServiceRecord();
+            when(r.isForeground()).thenReturn(true);
+            Notification notification = mock(Notification.class);
+            when(notification.getSmallIcon()).thenReturn(mock(Icon.class));
+            when(notification.getChannelId()).thenReturn("testPostNotification_usesPccUid");
+            r.foregroundNoti = notification;
+            r.foregroundId = 42;
+
+            final ProcessRecord pr = mock(ProcessRecord.class);
+            when(pr.getPid()).thenReturn(1234);
+            when(r.getHostProcess()).thenReturn(pr);
+
+            // Allow calling real postNotification
+            doCallRealMethod().when(r).postNotification(anyBoolean());
+
+            r.postNotification(true);
+
+            // Verify enqueueNotification is called with the PCC UID (30001)
+            verify(nmi)
+                    .enqueueNotification(
+                            eq(PACKAGE_NAME_PCC),
+                            eq(PACKAGE_NAME_PCC),
+                            eq(TEST_UID_PCC),
+                            eq(1234),
+                            any(),
+                            eq(42),
+                            eq(r.foregroundNoti),
+                            eq(TEST_USERID),
+                            anyBoolean());
+
+            // Verify listener is called with PCC UID
+            verify(listener)
+                    .onForegroundServiceNotificationUpdated(
+                            eq(PACKAGE_NAME_PCC), eq(TEST_UID_PCC), eq(42), eq(false));
+
+        } finally {
+            LocalServices.removeServiceForTest(NotificationManagerInternal.class);
+        }
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    public void testCancelNotification_usesPccUid() {
+        setMockHandlerOnAms();
+        List<ForegroundServiceStateListener> fsslList = new ArrayList<>();
+        ForegroundServiceStateListener listener = mock(ForegroundServiceStateListener.class);
+        fsslList.add(listener);
+        setFieldValue(
+                ActivityManagerService.class,
+                mService,
+                "mForegroundServiceStateListeners",
+                fsslList);
+
+        NotificationManagerInternal nmi = mock(NotificationManagerInternal.class);
+        LocalServices.removeServiceForTest(NotificationManagerInternal.class);
+        LocalServices.addService(NotificationManagerInternal.class, nmi);
+
+        try {
+            final ServiceRecord r = createPccServiceRecord();
+            r.foregroundId = 42;
+
+            final ProcessRecord pr = mock(ProcessRecord.class);
+            when(pr.getPid()).thenReturn(1234);
+            when(r.getHostProcess()).thenReturn(pr);
+
+            doCallRealMethod().when(r).cancelNotification();
+
+            r.cancelNotification();
+
+            // Verify cancelNotification is called with the PCC UID (30001)
+            verify(nmi)
+                    .cancelNotification(
+                            eq(PACKAGE_NAME_PCC),
+                            eq(PACKAGE_NAME_PCC),
+                            eq(TEST_UID_PCC),
+                            eq(1234),
+                            any(),
+                            eq(42),
+                            eq(TEST_USERID));
+
+            // Verify listener is called with PCC UID
+            verify(listener)
+                    .onForegroundServiceNotificationUpdated(
+                            eq(PACKAGE_NAME_PCC), eq(TEST_UID_PCC), eq(42), eq(true));
+
+        } finally {
+            LocalServices.removeServiceForTest(NotificationManagerInternal.class);
+        }
+    }
+
+    private void setMockHandlerOnAms() {
+        ActivityManagerService.MainHandler mockHandler =
+                mock(ActivityManagerService.MainHandler.class);
+        when(mockHandler.post(any(Runnable.class)))
+                .thenAnswer(
+                        invocation -> {
+                            ((Runnable) invocation.getArgument(0)).run();
+                            return true;
+                        });
+
+        setFieldValue(ActivityManagerService.class, mService, "mHandler", mockHandler);
+    }
+
     private void prepareTestRescheduleServiceRestarts() {
         mService.mConstants = mock(ActivityManagerConstants.class);
         mService.mConstants.mEnableExtraServiceRestartDelayOnMemPressure = true;
@@ -883,10 +1024,10 @@ public final class ActiveServicesTest {
 
         proc.info = new ApplicationInfo();
         proc.info.uid = 20001;
-        proc.info.pccUid = 30001;
-        proc.info.packageName = "com.android.pcc";
+        proc.info.pccUid = TEST_UID_PCC;
+        proc.info.packageName = PACKAGE_NAME_PCC;
         setFieldValue(ProcessRecord.class, proc, "mService", ams);
-        setFieldValue(ProcessRecordInternal.class, proc, "uid", 30001);
+        setFieldValue(ProcessRecordInternal.class, proc, "uid", TEST_UID_PCC);
 
         return proc;
     }
@@ -895,11 +1036,14 @@ public final class ActiveServicesTest {
         final ServiceRecord r = mock(ServiceRecord.class);
         r.appInfo = new ApplicationInfo();
         r.appInfo.uid = 20001;
-        r.appInfo.pccUid = 30001;
-        r.appInfo.packageName = "com.android.pcc";
+        r.appInfo.pccUid = TEST_UID_PCC;
+        r.appInfo.packageName = PACKAGE_NAME_PCC;
         final ServiceInfo si = new ServiceInfo();
         si.applicationInfo = r.appInfo;
         si.flags = ServiceInfo.FLAG_RUN_IN_PCC_SANDBOX;
+        setFieldValue(ServiceRecord.class, r, "ams", mService);
+        setFieldValue(ServiceRecord.class, r, "userId", TEST_USERID);
+        setFieldValue(ServiceRecord.class, r, "packageName", PACKAGE_NAME_PCC);
         setFieldValue(ServiceRecord.class, r, "serviceInfo", si);
         setFieldValue(ServiceRecord.class, r, "processName", "test");
         setFieldValue(ServiceRecord.class, r, "intent", new Intent.FilterComparison(new Intent()));
@@ -1320,7 +1464,7 @@ public final class ActiveServicesTest {
 
         // Verify that getUid() returns the PCC UID (30001)
         // createPccServiceRecord sets pccUid to 30001 and flag FLAG_RUN_IN_PCC_SANDBOX
-        assertThat(r.serviceInfo.getUid()).isEqualTo(30001);
+        assertThat(r.serviceInfo.getUid()).isEqualTo(TEST_UID_PCC);
     }
 
     @Test
