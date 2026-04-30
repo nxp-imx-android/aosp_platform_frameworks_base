@@ -32,6 +32,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -44,6 +45,7 @@ import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.AppOpsManagerInternal;
+import android.app.AppGlobals;
 import android.app.UiAutomation;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.appwidget.AppWidgetManager;
@@ -58,6 +60,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.IPackageManager;
 import android.content.pm.LauncherApps;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
@@ -67,6 +70,7 @@ import android.graphics.Point;
 import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.RemoteException;
 import android.os.UserHandle;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -98,6 +102,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.AdditionalAnswers;
 import org.mockito.ArgumentCaptor;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -182,6 +187,36 @@ public class AppWidgetServiceImplTest {
     @After
     public void tearDown() {
         mUiAutomation.dropShellPermissionIdentity();
+    }
+
+    @Test
+    public void testQueryIntentReceivers_errorOnFirstCall_successOnSecondCall() throws Exception {
+        IPackageManager realIPm = AppGlobals.getPackageManager();
+        IPackageManager mockIPm =
+                mock(IPackageManager.class, AdditionalAnswers.delegatesTo(realIPm));
+        Field pmField = AppWidgetServiceImpl.class.getDeclaredField("mPackageManager");
+        pmField.setAccessible(true);
+        pmField.set(mService, mockIPm);
+
+        doThrow(new RemoteException("Simulated error"))
+                .doAnswer(
+                        invocation ->
+                                invocation.getMethod().invoke(realIPm, invocation.getArguments()))
+                .when(mockIPm)
+                .queryIntentReceivers(any(), any(), anyLong(), anyInt());
+
+        // The first call will hit the simulated error in queryIntentReceivers
+        // and return an empty list, keeping the user in the unloaded state.
+        List<AppWidgetProviderInfo> providers1 =
+                mManager.getInstalledProvidersForPackage(mPkgName, null);
+        assertTrue(
+                "Providers should be empty on first call due to simulated error",
+                providers1.isEmpty());
+
+        // The second call will succeed, load the providers and populate the widgets.
+        List<AppWidgetProviderInfo> providers2 =
+                mManager.getInstalledProvidersForPackage(mPkgName, null);
+        assertFalse("Providers should be populated on second call", providers2.isEmpty());
     }
 
     @Test

@@ -1272,7 +1272,6 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         IntArray newIds = new IntArray(1);
         for (int profileId : profileIds) {
             if (!mLoadedUserIds.get(profileId)) {
-                mLoadedUserIds.put(profileId, true);
                 newIds.add(profileId);
             }
         }
@@ -1292,8 +1291,15 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
         final int[] newProfileIds = newIds.toArray();
         clearProvidersAndHostsTagsLocked();
 
-        loadGroupWidgetProvidersLocked(newProfileIds);
-        loadGroupStateLocked(newProfileIds);
+        int[] loadedProfileIds = loadGroupWidgetProvidersLocked(newProfileIds);
+
+        for (int profileId : loadedProfileIds) {
+            if (!mLoadedUserIds.get(profileId)) {
+                mLoadedUserIds.put(profileId, true);
+            }
+        }
+
+        loadGroupStateLocked(loadedProfileIds);
     }
 
     private boolean isUserRunningAndUnlocked(@UserIdInt int userId) {
@@ -3535,19 +3541,27 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     }
 
     @GuardedBy("mLock")
-    private void loadGroupWidgetProvidersLocked(int[] profileIds) {
+    private int[] loadGroupWidgetProvidersLocked(int[] profileIds) {
         List<ResolveInfo> allReceivers = null;
         Intent intent = new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        IntArray loadedProfileIds = new IntArray(profileIds.length);
 
         final int profileCount = profileIds.length;
         for (int i = 0; i < profileCount; i++) {
             final int profileId = profileIds[i];
 
             List<ResolveInfo> receivers = queryIntentReceivers(intent, profileId);
+            if (receivers == null) {
+                if (DEBUG) {
+                    Slog.i(TAG, "No receivers found for profile " + profileId + ". Skipping.");
+                }
+                continue;
+            }
+            loadedProfileIds.add(profileId);
             if (DEBUG) {
                 Slog.i(TAG, "Found " + receivers.size() + " receivers for profile " + profileId);
             }
-            if (receivers != null && !receivers.isEmpty()) {
+            if (!receivers.isEmpty()) {
                 if (allReceivers == null) {
                     allReceivers = new ArrayList<>();
                 }
@@ -3562,6 +3576,8 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
             ResolveInfo receiver = allReceivers.get(i);
             addProviderLocked(receiver);
         }
+
+        return loadedProfileIds.toArray();
     }
 
     private boolean addProviderLocked(ResolveInfo ri) {
@@ -4158,13 +4174,14 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
 
         List<ResolveInfo> receivers = queryIntentReceivers(intent, userId);
         // We are setting component, so there is only one or none.
-        if (!receivers.isEmpty()) {
+        if (receivers != null && !receivers.isEmpty()) {
             return receivers.get(0).activityInfo;
         }
 
         return null;
     }
 
+    @Nullable
     private List<ResolveInfo> queryIntentReceivers(Intent intent, int userId) {
         final long identity = Binder.clearCallingIdentity();
         try {
@@ -4191,7 +4208,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                     flags, userId).getList();
         } catch (RemoteException re) {
             Slog.w(TAG, "Failed to query intent receivers for user " + userId, re);
-            return Collections.emptyList();
+            return null;
         } finally {
             Binder.restoreCallingIdentity(identity);
         }
@@ -4662,6 +4679,8 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
 
                         ActivityInfo providerInfo = getProviderInfo(componentName, userId);
                         if (providerInfo == null) {
+                            Slog.w(TAG, "Unable to get provider info for " + componentName
+                                    + ", skipping xml parsing for this provider.");
                             continue;
                         }
 
@@ -4797,7 +4816,7 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                 | XmlPullParserException
                 | IOException
                 | IndexOutOfBoundsException e) {
-            Slog.w(TAG, "failed parsing " + e);
+            Slog.w(TAG, "failed parsing app widget state file: " + e);
             return -1;
         }
 
