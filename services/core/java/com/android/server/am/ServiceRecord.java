@@ -20,6 +20,7 @@ import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
 import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_BOUND_SERVICE;
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.os.PowerExemptionManager.REASON_DENIED;
 import static android.os.PowerExemptionManager.reasonCodeToString;
 import static android.os.Process.INVALID_UID;
@@ -1596,10 +1597,14 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
         return lastStartId;
     }
 
+    private int getServiceUid() {
+        return enablePccFrameworkSupport() ? serviceInfo.getUid() : appInfo.uid;
+    }
+
     private void updateFgsHasNotificationPermission() {
         // Do asynchronous communication with notification manager to avoid deadlocks.
         final String localPackageName = packageName;
-        final int appUid = appInfo.uid;
+        final int appUid = getServiceUid();
 
         ams.mHandler.post(new Runnable() {
             public void run() {
@@ -1617,7 +1622,7 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
 
     public void postNotification(boolean byForegroundService) {
         if (isForeground() && foregroundNoti != null && getHostProcess() != null) {
-            final int appUid = appInfo.uid;
+            final int appUid = getServiceUid();
             final int appPid = getHostProcess().getPid();
             // Do asynchronous communication with notification manager to
             // avoid deadlocks.
@@ -1727,7 +1732,7 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
 
                         foregroundNoti = localForegroundNoti; // save it for amending next time
 
-                        signalForegroundServiceNotification(packageName, appInfo.uid,
+                        signalForegroundServiceNotification(packageName, appUid,
                                 localForegroundId, false /* canceling */);
 
                     } catch (RuntimeException e) {
@@ -1748,7 +1753,7 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
         // avoid deadlocks.
         final String localPackageName = packageName;
         final int localForegroundId = foregroundId;
-        final int appUid = appInfo.uid;
+        final int appUid = getServiceUid();
         final int appPid = getHostProcess() != null ? getHostProcess().getPid() : 0;
         ams.mHandler.post(new Runnable() {
             public void run() {
@@ -1763,7 +1768,7 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
                 } catch (RuntimeException e) {
                     Slog.w(TAG, "Error canceling notification for service", e);
                 }
-                signalForegroundServiceNotification(packageName, appInfo.uid, localForegroundId,
+                signalForegroundServiceNotification(packageName, appUid, localForegroundId,
                         true /* canceling */);
             }
         });
@@ -1774,7 +1779,7 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
         synchronized (ams) {
             for (int i = ams.mForegroundServiceStateListeners.size() - 1; i >= 0; i--) {
                 ams.mForegroundServiceStateListeners.get(i).onForegroundServiceNotificationUpdated(
-                        packageName, appInfo.uid, foregroundId, canceling);
+                        packageName, uid, foregroundId, canceling);
             }
         }
     }
