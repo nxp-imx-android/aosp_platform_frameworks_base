@@ -937,9 +937,14 @@ private:
         // its correct value after the first event is handled.
         int timeout = TEST_POLL_PERIOD_MS;
 
-        int ready;
-        while ((ready = epoll_wait(mEpollFd, events, event_size, timeout)) >= 0) {
-            if (ready == 0) {
+        while (true) {
+            int ready = epoll_wait(mEpollFd, events, event_size, timeout);
+            if (ready < 0) {
+                if (errno != EINTR) {
+                    ALOGE("epoll_wait fails: %s", strerror(errno));
+                    break;
+                }
+            } else if (ready == 0) {
                 handle_timeout(status);
             } else {
                 handle_epoll(events, ready, status);
