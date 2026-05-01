@@ -22,6 +22,7 @@ import static android.Manifest.permission.QUERY_ALLOWLIST;
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.PermissionManuallyEnforced;
 import android.annotation.RequiresNoPermission;
 import android.annotation.UserIdInt;
 import android.app.appfunctions.flags.Flags;
@@ -30,10 +31,12 @@ import android.content.pm.SignedPackage;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.ParcelFileDescriptor;
 import android.os.RemoteCallback;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
+import android.os.UserHandle;
 import android.os.allowlist.AllowlistManager;
 import android.os.allowlist.AllowlistRequest;
 import android.os.allowlist.AllowlistResponse;
@@ -620,13 +623,12 @@ public final class AllowlistService extends SystemService {
         }
 
         @Override
-        @RequiresNoPermission
-        public void onShellCommand(@Nullable FileDescriptor in, @Nullable FileDescriptor out,
-                @Nullable FileDescriptor err,
-                @NonNull String[] args, @Nullable ShellCallback callback,
-                @NonNull ResultReceiver resultReceiver) {
-            new AllowlistShellCommand(AllowlistService.this).exec(this, in, out, err, args,
-                    callback, resultReceiver);
+        @PermissionManuallyEnforced
+        public int handleShellCommand(@NonNull ParcelFileDescriptor in,
+                @NonNull ParcelFileDescriptor out, @NonNull ParcelFileDescriptor err,
+                @NonNull String[] args) {
+            return new AllowlistShellCommand(AllowlistService.this).exec(this,
+                    in.getFileDescriptor(), out.getFileDescriptor(), err.getFileDescriptor(), args);
         }
 
         @Override
