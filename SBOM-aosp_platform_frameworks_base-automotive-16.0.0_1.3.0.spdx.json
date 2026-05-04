@@ -1,0 +1,224 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2026-04-24T03:41:27Z",
+    "creators": [
+      "Organization: NXP"
+    ],
+    "licenseListVersion": "3.26"
+  },
+  "name": "aosp_platform_frameworks_base-automotive-16.0.0_1.3.0",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://nxp.com/spdx/9ee6ff4d-129b-4158-886a-bcfadc9e886a",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a",
+      "name": "aosp_platform_frameworks_base",
+      "versionInfo": "automotive-16.0.0_1.3.0",
+      "licenseConcluded": "(Apache-2.0)",
+      "licenseDeclared": "(Apache-2.0)",
+      "downloadLocation": "https://github.com/nxp-imx-android/aosp_platform_frameworks_base",
+      "originator": "Organization: NXP",
+      "supplier": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a---9a23d424-3544-496e-b40f-49562886f217",
+      "name": "Android-platform-frameworks-base",
+      "versionInfo": "android-16.0.0_r4",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "homepage": "http://github.com/android/platform_frameworks_base",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: Android-platform-frameworks-base",
+      "supplier": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a---c9744437-309d-4518-a9ca-3f9efb757191",
+      "name": "checksumdir",
+      "versionInfo": "0.2.0",
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "homepage": "https://crates.io/crates/checksumdir",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: crates",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "922cc95b-1f62-4ec2-b3ff-a3c8832bd71b",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/checksumdir@0.2.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a---d227a9c9-c263-4e5a-a8ef-297c77d975dc",
+      "name": "jabcode",
+      "versionInfo": "1.1.0",
+      "licenseConcluded": "LGPL-2.1-only",
+      "licenseDeclared": "LGPL-2.1-only",
+      "homepage": "https://crates.io/crates/jabcode",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: crates",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "fc29bb7a-784f-4516-bea7-235163c824b0",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:cargo/jabcode@1.1.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a---b391c402-e4ca-4d47-a7c0-091cfbab71df",
+      "name": "montelco/roboto",
+      "versionInfo": "v1.100141",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "homepage": "https://www.openhub.net/p/montelco_roboto",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: montelco",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "170ef3da-730c-4add-b85b-eac9b7a692c4",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:github/montelco/roboto@v1.100141",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a---7343f064-2b84-467e-b5e7-e2820aeb37cc",
+      "name": "SettingsLibBarChartPreference",
+      "versionInfo": "104.2.1",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: io.github.dot166",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "f2e43657-e7c0-40e2-b3f8-952284bcb62f",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/io.github.dot166/SettingsLibBarChartPreference@104.2.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a---7dfb6495-7677-4e45-98b7-72311a664d3d",
+      "name": "SettingsLibCollapsingToolbarBaseActivity",
+      "versionInfo": "104.2.24",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: io.github.dot166",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "cebe5bf1-4bb2-4644-b785-5b1cf6c6f612",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/io.github.dot166/SettingsLibCollapsingToolbarBaseActivity@104.2.24",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a---aaaa7fbc-06f9-4168-baf3-bb38edc3c830",
+      "name": "SettingsLibSelectorWithWidgetPreference",
+      "versionInfo": "104.2.24",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: io.github.dot166",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "0492e7d3-c9e6-4fba-b8bf-faa5264f5485",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/io.github.dot166/SettingsLibSelectorWithWidgetPreference@104.2.24",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a---7343f064-2b84-467e-b5e7-e2820aeb37cc"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a---7dfb6495-7677-4e45-98b7-72311a664d3d"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a---9a23d424-3544-496e-b40f-49562886f217"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a---aaaa7fbc-06f9-4168-baf3-bb38edc3c830"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a---b391c402-e4ca-4d47-a7c0-091cfbab71df"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a---c9744437-309d-4518-a9ca-3f9efb757191"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-9ee6ff4d-129b-4158-886a-bcfadc9e886a---d227a9c9-c263-4e5a-a8ef-297c77d975dc"
+    }
+  ]
+}
