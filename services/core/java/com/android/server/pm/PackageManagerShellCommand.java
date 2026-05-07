@@ -2943,6 +2943,20 @@ class PackageManagerShellCommand extends ShellCommand {
     private String getPrivAppPermissionsString(@NonNull String packageName, boolean allowed) {
         final PermissionAllowlist permissionAllowlist =
                 SystemConfig.getInstance().getPermissionAllowlist();
+
+        final String apexPackageName = getApexPackageNameContainingPackage(packageName);
+        final String apexModuleName = apexPackageName != null
+                ? ApexManager.getInstance().getApexModuleNameForPackageName(apexPackageName)
+                : null;
+
+        if (apexModuleName != null && !(isVendorApp(packageName) || isSystemExtApp(packageName))) {
+            final ArrayMap<String, ArrayMap<String, Boolean>> apexAllowlistMap =
+                    permissionAllowlist.getApexPrivilegedAppAllowlists().get(apexModuleName);
+            if (apexAllowlistMap != null && apexAllowlistMap.get(packageName) != null) {
+                return formatPermissions(apexAllowlistMap.get(packageName), allowed);
+            }
+        }
+
         final ArrayMap<String, ArrayMap<String, Boolean>> privAppPermissions;
         if (isVendorApp(packageName)) {
             privAppPermissions = permissionAllowlist.getVendorPrivilegedAppAllowlist();
@@ -2950,16 +2964,18 @@ class PackageManagerShellCommand extends ShellCommand {
             privAppPermissions = permissionAllowlist.getProductPrivilegedAppAllowlist();
         } else if (isSystemExtApp(packageName)) {
             privAppPermissions = permissionAllowlist.getSystemExtPrivilegedAppAllowlist();
-        } else if (isApexApp(packageName)) {
-            final String moduleName = ApexManager.getInstance().getApexModuleNameForPackageName(
-                    getApexPackageNameContainingPackage(packageName));
-            privAppPermissions = permissionAllowlist.getApexPrivilegedAppAllowlists()
-                    .get(moduleName);
         } else {
             privAppPermissions = permissionAllowlist.getPrivilegedAppAllowlist();
         }
+
         final ArrayMap<String, Boolean> permissions = privAppPermissions != null
                 ? privAppPermissions.get(packageName) : null;
+
+        return formatPermissions(permissions, allowed);
+    }
+
+    @NonNull
+    private String formatPermissions(ArrayMap<String, Boolean> permissions, boolean allowed) {
         if (permissions == null) {
             return "{}";
         }
