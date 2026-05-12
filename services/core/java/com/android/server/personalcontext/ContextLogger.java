@@ -28,10 +28,11 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executor;
 
 /** @hide */
 public class ContextLogger implements
@@ -41,76 +42,91 @@ public class ContextLogger implements
     private static final int MAX_RECENT_TIMELINES_TO_KEEP = 3;
     private static final int MAX_RECENT_ACCESSES_TO_KEEP = 25;
 
-    private final Queue<Timeline> mRecentRefinerTimelines = new LinkedList<>();
+    private final Executor mExecutor;
+    private final Queue<Timeline> mRecentRefinerTimelines = new ConcurrentLinkedQueue<>();
     private final Map<Long, Timeline> mActiveRefinerTimelines = new HashMap<>();
-    private final Queue<Timeline> mRecentRendererTimelines = new LinkedList<>();
+    private final Queue<Timeline> mRecentRendererTimelines = new ConcurrentLinkedQueue<>();
     private final Map<Long, Timeline> mActiveRendererTimelines = new HashMap<>();
-    private final Queue<Timeline> mRecentAccessTimelines = new LinkedList<>();
+    private final Queue<Timeline> mRecentAccessTimelines = new ConcurrentLinkedQueue<>();
+
+    public ContextLogger(Executor executor) {
+        mExecutor = executor;
+    }
 
     /** Called when a workflow is started. */
     @Override
     public void onRefinerWorkflowStarted(long flowId, Collection<PublishedContextHint> hints) {
-        final Timeline flowTimeline = new Timeline();
+        mExecutor.execute(() -> {
+            final Timeline flowTimeline = new Timeline();
 
-        flowTimeline.addStringDetail(
-                "Hint workflow %s started with %s hints", flowId, hints.size());
+            flowTimeline.addStringDetail(
+                    "Hint workflow %s started with %s hints", flowId, hints.size());
 
-        flowTimeline.addHintListDetail(hints);
+            flowTimeline.addHintListDetail(hints);
 
-        mActiveRefinerTimelines.put(flowId, flowTimeline);
+            mActiveRefinerTimelines.put(flowId, flowTimeline);
+        });
     }
 
     /** Called when a set of hints is sent to a refiner. */
     @Override
     public void onHintsSentToRefiner(
             long flowId, Collection<PublishedContextHint> hints, Refiner refiner) {
-        Timeline flowTimeline = mActiveRefinerTimelines.get(flowId);
-        if (flowTimeline == null) return;
+        mExecutor.execute(() -> {
+            Timeline flowTimeline = mActiveRefinerTimelines.get(flowId);
+            if (flowTimeline == null) return;
 
-        flowTimeline.addStringDetail(
-                "Hint workflow %s sent %s hints to refiner/understander", flowId, hints.size());
+            flowTimeline.addStringDetail(
+                    "Hint workflow %s sent %s hints to refiner/understander", flowId, hints.size());
 
-        flowTimeline.addComponentDetail(refiner);
-        flowTimeline.addHintListDetail(hints);
+            flowTimeline.addComponentDetail(refiner);
+            flowTimeline.addHintListDetail(hints);
+        });
     }
 
     /** Called when a set of hints is received from a refiner. */
     @Override
     public void onHintsReceivedFromRefiner(
             long flowId, Collection<PublishedContextHint> hints, Refiner refiner) {
-        Timeline flowTimeline = mActiveRefinerTimelines.get(flowId);
-        if (flowTimeline == null) return;
+        mExecutor.execute(() -> {
+            Timeline flowTimeline = mActiveRefinerTimelines.get(flowId);
+            if (flowTimeline == null) return;
 
-        flowTimeline.addStringDetail(
-                "Hint workflow %s received %s hints from refiner/understander",
-                flowId,
-                hints.size());
+            flowTimeline.addStringDetail(
+                    "Hint workflow %s received %s hints from refiner/understander",
+                    flowId,
+                    hints.size());
 
-        flowTimeline.addComponentDetail(refiner);
-        flowTimeline.addHintListDetail(hints);
+            flowTimeline.addComponentDetail(refiner);
+            flowTimeline.addHintListDetail(hints);
+        });
     }
 
     /** Called when a workflow stops. */
     @Override
     public void onRefinerWorkflowFinished(long flowId) {
-        Timeline flowTimeline = mActiveRefinerTimelines.get(flowId);
-        if (flowTimeline == null) return;
+        mExecutor.execute(() -> {
+            Timeline flowTimeline = mActiveRefinerTimelines.get(flowId);
+            if (flowTimeline == null) return;
 
-        flowTimeline.addStringDetail("Hint workflow %s finished", flowId);
+            flowTimeline.addStringDetail("Hint workflow %s finished", flowId);
 
-        flushRefinerWorkflowTimeline(flowId, flowTimeline);
+            flushRefinerWorkflowTimeline(flowId, flowTimeline);
+        });
     }
 
     /** Called when a workflow has an unexpected error. */
     @Override
     public void onRefinerWorkflowError(long flowId, Throwable t) {
-        Timeline flowTimeline = mActiveRefinerTimelines.get(flowId);
-        if (flowTimeline == null) return;
+        mExecutor.execute(() -> {
+            Timeline flowTimeline = mActiveRefinerTimelines.get(flowId);
+            if (flowTimeline == null) return;
 
-        flowTimeline.addStringDetail("Hint workflow %s failed", flowId);
-        flowTimeline.addThrowableDetail(t);
+            flowTimeline.addStringDetail("Hint workflow %s failed", flowId);
+            flowTimeline.addThrowableDetail(t);
 
-        flushRefinerWorkflowTimeline(flowId, flowTimeline);
+            flushRefinerWorkflowTimeline(flowId, flowTimeline);
+        });
     }
 
     private void flushRefinerWorkflowTimeline(long flowId, Timeline timeline) {
@@ -124,65 +140,74 @@ public class ContextLogger implements
     /** Called when a workflow is started. */
     @Override
     public void onRendererWorkflowStarted(long flowId, PublishedContextInsight insight) {
-        final Timeline flowTimeline = new Timeline();
+        mExecutor.execute(() -> {
+            final Timeline flowTimeline = new Timeline();
 
-        flowTimeline.addStringDetail("Render workflow %s started", flowId);
+            flowTimeline.addStringDetail("Insight workflow %s started", flowId);
+            flowTimeline.addInsightDetail(insight);
 
-        flowTimeline.addInsightDetail(insight);
-
-        mActiveRendererTimelines.put(flowId, flowTimeline);
+            mActiveRendererTimelines.put(flowId, flowTimeline);
+        });
     }
 
     /** Called when an insight is sent to a renderer. */
     @Override
     public void onInsightSentToRenderer(
             long flowId, PublishedContextInsight insight, Renderer renderer) {
-        Timeline flowTimeline = mActiveRendererTimelines.get(flowId);
-        if (flowTimeline == null) return;
+        mExecutor.execute(() -> {
+            Timeline flowTimeline = mActiveRendererTimelines.get(flowId);
+            if (flowTimeline == null) return;
 
-        flowTimeline.addStringDetail("Render workflow %s sent insight to renderer", flowId);
-        flowTimeline.addComponentDetail(renderer);
+            flowTimeline.addStringDetail("Insight workflow %s sent insight to renderer", flowId);
+            flowTimeline.addComponentDetail(renderer);
+        });
     }
 
     /** Called when a workflow stops. */
     @Override
     public void onRendererWorkflowFinished(long flowId) {
-        Timeline flowTimeline = mActiveRendererTimelines.get(flowId);
-        if (flowTimeline == null) return;
+        mExecutor.execute(() -> {
+            Timeline flowTimeline = mActiveRendererTimelines.get(flowId);
+            if (flowTimeline == null) return;
 
-        flowTimeline.addStringDetail("Render workflow %s finished", flowId);
+            flowTimeline.addStringDetail("Insight workflow %s finished", flowId);
 
-        flushRendererWorkflowTimeline(flowId, flowTimeline);
+            flushRendererWorkflowTimeline(flowId, flowTimeline);
+        });
     }
 
     /** Called when a workflow has an unexpected error. */
     @Override
     public void onRendererWorkflowError(long flowId, Throwable t) {
-        Timeline flowTimeline = mActiveRendererTimelines.get(flowId);
-        if (flowTimeline == null) return;
+        mExecutor.execute(() -> {
+            Timeline flowTimeline = mActiveRendererTimelines.get(flowId);
+            if (flowTimeline == null) return;
 
-        flowTimeline.addStringDetail("Render workflow %s failed", flowId);
-        flowTimeline.addThrowableDetail(t);
+            flowTimeline.addStringDetail("Insight workflow %s failed", flowId);
+            flowTimeline.addThrowableDetail(t);
 
-        flushRendererWorkflowTimeline(flowId, flowTimeline);
+            flushRendererWorkflowTimeline(flowId, flowTimeline);
+        });
     }
 
     @Override
     public void onAccessChecked(String packageName, UserHandle user, String description,
             int result) {
-        final Timeline accessTimeline = new Timeline();
+        mExecutor.execute(() -> {
+            final Timeline accessTimeline = new Timeline();
 
-        accessTimeline.addStringDetail("%s (Package: %s, User: %s) - %s",
-                description,
-                packageName,
-                user.getIdentifier(),
-                result == AccessController.RESULT_ALLOWED ? "allowed" :
-                        result == AccessController.RESULT_DENIED ? "denied" : "bypassed");
+            accessTimeline.addStringDetail("%s (Package: %s, User: %s) - %s",
+                    description,
+                    packageName,
+                    user.getIdentifier(),
+                    result == AccessController.RESULT_ALLOWED ? "allowed" :
+                            result == AccessController.RESULT_DENIED ? "denied" : "bypassed");
 
-        mRecentAccessTimelines.add(accessTimeline);
-        while (mRecentAccessTimelines.size() > MAX_RECENT_ACCESSES_TO_KEEP) {
-            mRecentAccessTimelines.remove();
-        }
+            mRecentAccessTimelines.add(accessTimeline);
+            while (mRecentAccessTimelines.size() > MAX_RECENT_ACCESSES_TO_KEEP) {
+                mRecentAccessTimelines.remove();
+            }
+        });
     }
 
     private void flushRendererWorkflowTimeline(long flowId, Timeline timeline) {
@@ -194,40 +219,39 @@ public class ContextLogger implements
     }
 
     /** Writes recent activity in a log format to the PrintWriter. */
-    public void dump(PrintWriter fout) {
-        fout.write("Active Hint Workflows\n");
-        fout.write("=====================\n");
-        dumpTimelines(fout, mActiveRefinerTimelines.values());
+    public void dump(PrintWriter fout, Runnable onComplete) {
+        mExecutor.execute(() -> {
+            fout.write("Recent Hint Workflows\n");
+            fout.write("=====================\n");
+            dumpTimelines(fout, List.of(mRecentRefinerTimelines, mActiveRefinerTimelines.values()));
 
-        fout.write("Recent Hint Workflows\n");
-        fout.write("=====================\n");
-        dumpTimelines(fout, mRecentRefinerTimelines);
+            fout.write("Recent Insight Workflows\n");
+            fout.write("========================\n");
+            dumpTimelines(fout,
+                    List.of(mRecentRendererTimelines, mActiveRendererTimelines.values()));
 
-        fout.write("Active Render Workflows\n");
-        fout.write("=======================\n");
-        dumpTimelines(fout, mActiveRendererTimelines.values());
+            fout.write("Recent Access Checks\n");
+            fout.write("====================\n");
+            for (Timeline timeline : mRecentAccessTimelines) {
+                timeline.dump(fout);
+            }
+            fout.write("\n");
 
-        fout.write("Recent Render Workflows\n");
-        fout.write("=======================\n");
-        dumpTimelines(fout, mRecentRendererTimelines);
-
-        fout.write("Recent Access Checks\n");
-        fout.write("====================\n");
-        for (Timeline timeline : mRecentAccessTimelines) {
-            timeline.dump(fout);
-        }
-        fout.write("\n");
+            onComplete.run();
+        });
     }
 
-    private void dumpTimelines(PrintWriter fout, Collection<Timeline> timelines) {
+    private void dumpTimelines(PrintWriter fout, Collection<Collection<Timeline>> timelineLists) {
         boolean first = true;
-        for (Timeline timeline : timelines) {
-            if (first) {
-                first = false;
-            } else {
-                fout.write("---------------------\n");
+        for (Collection<Timeline> timelines : timelineLists) {
+            for (Timeline timeline : timelines) {
+                if (first) {
+                    first = false;
+                } else {
+                    fout.write("---------------------\n");
+                }
+                timeline.dump(fout);
             }
-            timeline.dump(fout);
         }
         fout.write("\n");
     }
