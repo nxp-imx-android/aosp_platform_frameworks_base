@@ -92,9 +92,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.crypto.spec.SecretKeySpec;
 
@@ -217,7 +219,7 @@ public class PersonalContextManagerService extends SystemService {
     // TODO(b/454430085): Inject these fields.
     private final ScheduledExecutorService mExecutor = Executors.newSingleThreadScheduledExecutor();
     private final SparseArray<UserState> mUserStates = new SparseArray<>();
-    private final ContextLogger mLogger = new ContextLogger();
+    private final ContextLogger mLogger = new ContextLogger(mExecutor);
     private final RoleManager mRoleManager;
     private final PackageManagerInternal mPackageManager;
     private final ContentCaptureManagerInternal mContentCaptureManagerInternal;
@@ -1147,6 +1149,7 @@ public class PersonalContextManagerService extends SystemService {
                 return;
             }
 
+            // Use a synchronizer so that we wait for the dump to complete
             synchronized (service.mUserStates) {
                 for (int i = 0; i < service.mUserStates.size(); i++) {
                     int userId = service.mUserStates.keyAt(i);
@@ -1167,7 +1170,14 @@ public class PersonalContextManagerService extends SystemService {
                                 + " Mode:" + service.mOperatingModeProviders.get(userId));
             }
 
-            service.mLogger.dump(fout);
+            // Block until ContextLogger#dump (which runs on the executor) is complete.
+            try {
+                final CountDownLatch block = new CountDownLatch(1);
+                service.mLogger.dump(fout, block::countDown);
+                block.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                // Ignore this exception.
+            }
         }
 
         @PermissionManuallyEnforced
