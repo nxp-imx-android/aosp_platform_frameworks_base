@@ -33,6 +33,7 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -66,6 +67,7 @@ constructor(
         viewModel.launchVolumeDialog()
 
         viewModel.isShowingSafetyWarning
+            .distinctUntilChanged()
             .mapLatest { isShowingSafetyWarning ->
                 if (isShowingSafetyWarning) {
                     viewModel.onSafetyWarningDialogShown()
@@ -75,6 +77,7 @@ constructor(
             .launchIn(this)
 
         viewModel.csdWarning
+            .distinctUntilChanged()
             .mapLatest { csdWarning ->
                 if (csdWarning != null) {
                     viewModel.onCsdWarningDialogShown()
