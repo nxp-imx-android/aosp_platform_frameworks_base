@@ -109,8 +109,23 @@ class WindowDecorationGestureExclusionTracker(
         try {
             windowManager.registerSystemGestureExclusionListener(exclusionListener, displayId)
             exclusionRegions[displayId] = Region()
-        } catch (ex: RemoteException) {
-            Slog.e(TAG, "Failed to register window manager callbacks for display: $displayId", ex)
+        } catch (ex: Exception) {
+            when (ex) {
+                is IllegalArgumentException,
+                is RemoteException -> {
+                    // The display may already be gone by the time this onDisplayAdded callback is
+                    // processed (e.g. a short-lived virtual display created/destroyed rapidly by
+                    // VDM). In that case WindowManagerService throws IllegalArgumentException for
+                    // the invalid display. Catch it here - just like onDisplayRemoved does - so a
+                    // stale display event does not crash the whole SystemUI process.
+                    Slog.e(
+                        TAG,
+                        "Failed to register window manager callbacks for display: $displayId",
+                        ex,
+                    )
+                }
+                else -> throw ex
+            }
         }
     }
 
