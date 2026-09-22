@@ -770,16 +770,25 @@ public class CameraDeviceImpl extends CameraDevice
                         }
                     }
 
-                    // Add new output streams to mConfiguredOutputs
-                    int i = 0;
-                    for (OutputConfiguration outConfig : outputs) {
-                        if (addSet.contains(outConfig)) {
-                            mConfiguredOutputs.put(
-                                    outputAndInputStreamIds.outputStreamIds[i],
-                                    Flags.seamlessTransitions() ?
-                                            new OutputConfiguration(outConfig) : outConfig);
-                            i++;
-                        }
+                    // outputStreamIds is positionally aligned with configuredOutputs: the
+                    // service iterates the submitted list in order and returns one stream ID
+                    // per element. Map by that position instead of re-scanning outputs against
+                    // addSet; OutputConfiguration equality is value-based, so a second scan can
+                    // collapse, reorder, or drop entries when a Surface is reused across a rapid
+                    // close/reopen, silently mis-binding or dropping stream IDs.
+                    if (outputAndInputStreamIds.outputStreamIds.length
+                            != configuredOutputs.size()) {
+                        throw new IllegalStateException("Camera service returned "
+                                + outputAndInputStreamIds.outputStreamIds.length
+                                + " output stream IDs for " + configuredOutputs.size()
+                                + " configured outputs");
+                    }
+                    for (int i = 0; i < configuredOutputs.size(); i++) {
+                        OutputConfiguration outConfig = configuredOutputs.get(i);
+                        mConfiguredOutputs.put(
+                                outputAndInputStreamIds.outputStreamIds[i],
+                                Flags.seamlessTransitions() ?
+                                        new OutputConfiguration(outConfig) : outConfig);
                     }
                     // Add offline stream ids to mOfflineSupport
                     offlineStreamIds = outputAndInputStreamIds.offlineStreamIds;
