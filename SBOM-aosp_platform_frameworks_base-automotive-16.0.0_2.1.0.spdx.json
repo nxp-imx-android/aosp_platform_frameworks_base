@@ -1,0 +1,450 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "creationInfo": {
+    "created": "2026-09-14T09:52:30Z",
+    "creators": [
+      "Organization: NXP"
+    ],
+    "licenseListVersion": "3.28"
+  },
+  "name": "aosp_platform_frameworks_base-automotive-16.0.0_2.1.0",
+  "dataLicense": "CC0-1.0",
+  "documentNamespace": "https://nxp.com/spdx/2b6c24c5-117d-4df9-8a65-4c0e3bfff644",
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644",
+      "name": "aosp_platform_frameworks_base",
+      "versionInfo": "automotive-16.0.0_2.1.0",
+      "licenseConcluded": "(Apache-2.0)",
+      "licenseDeclared": "(Apache-2.0)",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: NXP",
+      "supplier": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---96dc355d-6f8e-4754-86a6-026074f2cca0",
+      "name": "android",
+      "versionInfo": "1.0",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "NOASSERTION",
+      "homepage": "https://mvn.cloud.alipay.com/nexus/content/repositories/releases/android/support/v4/android/",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: android.support.v4",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "743118d4-6b13-4dcb-9dd4-37221bff7ec0",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/android.support.v4/android@1.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---2455f211-ec01-4b25-900d-09289baaadbb",
+      "name": "Android Auto Scroll ViewPager",
+      "versionInfo": "20170612-snapshot-6dcbf643",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "homepage": "http://www.trinea.cn/",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: trinea",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "2ffa5ca9-b446-4298-920b-3cdda9adcca1",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:github/trinea/android-auto-scroll-view-pager@6dcbf643236a347b5c4ca15ad62b444c60783d05",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---f53e0cb5-cc41-4503-9295-7347b065091f",
+      "name": "Android Support Library v4",
+      "versionInfo": "13.0.0",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: com.android.support",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "cd58ad0c-1840-4ede-b302-b9814c79481f",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/com.android.support/support-v4@13.0.0",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---6d2e09dc-6784-4e5c-ad5e-7efa0d7241b6",
+      "name": "Android-platform-frameworks-base",
+      "versionInfo": "android-17.0.0_r1",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "GPL-3.0-or-later",
+      "homepage": "http://github.com/android/platform_frameworks_base",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: Android-platform-frameworks-base",
+      "supplier": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---de68a534-9b29-4be2-8c15-d12ccf73b76c",
+      "name": "android-ps-tools",
+      "versionInfo": "master-20121217",
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "homepage": "https://github.com/timroes/android-ps-tools",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: android-ps-tools",
+      "supplier": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---39a6e553-6a6b-45b6-b559-8961f3d32e1a",
+      "name": "AndroidImageCache",
+      "versionInfo": "imagecache-0.2",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "(GPL-2.0-or-later AND LGPL-2.0-or-later AND LGPL-2.1-or-later)",
+      "homepage": "https://github.com/Polidea/AndroidImageCache",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: mitmel",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "507a24c4-589b-49f6-9b05-7e3e4139ebb0",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:github/mitmel/android-image-cache@imagecache-0.2",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---af531991-117c-475f-aef8-2c9c28c72035",
+      "name": "couchbase-lite-android",
+      "versionInfo": "0.7.4",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "homepage": "https://groups.google.com/forum/#!forum/mobile-couchbase",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: couchbase",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "1c714aa9-7c36-4136-9e9f-6442d16bbc82",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:github/couchbase/couchbase-lite-android@0.7.4",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---becef15c-46c1-4598-8bf2-780665e9a706",
+      "name": "derosa/MultiImageChooser",
+      "versionInfo": "master-20121214",
+      "licenseConcluded": "BSD-2-Clause",
+      "licenseDeclared": "BSD-2-Clause",
+      "homepage": "http://github.com/derosa/MultiImageChooser/",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: derosa/MultiImageChooser",
+      "supplier": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---f0923ee3-5039-4959-8548-48496fce968b",
+      "name": "minixxie/wpp-qt",
+      "versionInfo": "20151227-snapshot-2f10da20",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "NOASSERTION",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: minixxie",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "92ce3f71-6b1d-43e3-83de-322d3810af50",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:github/minixxie/wpp-qt@2f10da203c9459cd274ee212a3841cc74d304ec4",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---b391c402-e4ca-4d47-a7c0-091cfbab71df",
+      "name": "montelco/roboto",
+      "versionInfo": "v1.100141",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "homepage": "https://www.openhub.net/p/montelco_roboto",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: montelco",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "170ef3da-730c-4add-b85b-eac9b7a692c4",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:github/montelco/roboto@v1.100141",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---c1dc7d92-1931-4442-a654-b70f3ac3c601",
+      "name": "seeds-net",
+      "versionInfo": "14.0.1",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "homepage": "http://seeds.tribe7.net/",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: net.tribe7.seeds",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "87f4498c-d49f-4ed5-a94b-19d83a1342a2",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/net.tribe7.seeds/seeds-net@14.0.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---7343f064-2b84-467e-b5e7-e2820aeb37cc",
+      "name": "SettingsLibBarChartPreference",
+      "versionInfo": "104.2.1",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: io.github.dot166",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "f2e43657-e7c0-40e2-b3f8-952284bcb62f",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/io.github.dot166/SettingsLibBarChartPreference@104.2.1",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---7dfb6495-7677-4e45-98b7-72311a664d3d",
+      "name": "SettingsLibCollapsingToolbarBaseActivity",
+      "versionInfo": "104.2.24",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: io.github.dot166",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "cebe5bf1-4bb2-4644-b785-5b1cf6c6f612",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/io.github.dot166/SettingsLibCollapsingToolbarBaseActivity@104.2.24",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---aaaa7fbc-06f9-4168-baf3-bb38edc3c830",
+      "name": "SettingsLibSelectorWithWidgetPreference",
+      "versionInfo": "104.2.24",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: io.github.dot166",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "0492e7d3-c9e6-4fba-b8bf-faa5264f5485",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/io.github.dot166/SettingsLibSelectorWithWidgetPreference@104.2.24",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---b1d8c950-42d1-4bc0-a411-b41677c7ceaa",
+      "name": "SpaLib",
+      "versionInfo": "136.1.202606082050",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "homepage": "https://github.com/dot166/platform_frameworks_base/tree/16-qpr2/packages/SettingsLib",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: io.github.dot166",
+      "supplier": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "OTHER",
+          "referenceLocator": "64c2f65e-ffc9-4163-bb89-ad17815c8f70",
+          "referenceType": "BlackDuck-ComponentOrigin"
+        },
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:maven/io.github.dot166/SpaLib@136.1.202606082050",
+          "referenceType": "purl"
+        }
+      ],
+      "filesAnalyzed": false
+    },
+    {
+      "SPDXID": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---cc07d673-f204-40cc-83a9-4165693b2de8",
+      "name": "StaggeredGridView",
+      "versionInfo": "master-20130828",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "homepage": "https://github.com/maurycyw/StaggeredGridViewDemo",
+      "downloadLocation": "NOASSERTION",
+      "originator": "Organization: StaggeredGridView",
+      "supplier": "NOASSERTION",
+      "externalRefs": [],
+      "filesAnalyzed": false
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---2455f211-ec01-4b25-900d-09289baaadbb"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---39a6e553-6a6b-45b6-b559-8961f3d32e1a"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644",
+      "relationshipType": "CONTAINS",
+      "relatedSpdxElement": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---6d2e09dc-6784-4e5c-ad5e-7efa0d7241b6"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---7343f064-2b84-467e-b5e7-e2820aeb37cc"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---7dfb6495-7677-4e45-98b7-72311a664d3d"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---96dc355d-6f8e-4754-86a6-026074f2cca0"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---aaaa7fbc-06f9-4168-baf3-bb38edc3c830"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---af531991-117c-475f-aef8-2c9c28c72035"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---b1d8c950-42d1-4bc0-a411-b41677c7ceaa"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---b391c402-e4ca-4d47-a7c0-091cfbab71df"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---becef15c-46c1-4598-8bf2-780665e9a706"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---c1dc7d92-1931-4442-a654-b70f3ac3c601"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---cc07d673-f204-40cc-83a9-4165693b2de8"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---de68a534-9b29-4be2-8c15-d12ccf73b76c"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---f0923ee3-5039-4959-8548-48496fce968b"
+    },
+    {
+      "spdxElementId": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644",
+      "relationshipType": "DYNAMIC_LINK",
+      "relatedSpdxElement": "SPDXRef-package-2b6c24c5-117d-4df9-8a65-4c0e3bfff644---f53e0cb5-cc41-4503-9295-7347b065091f"
+    }
+  ]
+}
